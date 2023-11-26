@@ -1,0 +1,25 @@
+# In final implementation, move this file one diectory level higher and reference all services here
+version: "3.9"
+
+services:
+    backendAPI:
+        build:
+            target: dev
+        environment:
+            - ENVIRONMENT="test"
+            - TEST_POSTGRES_DB=${TEST_POSTGRES_DB}
+            - TEST_POSTGRES_USER=${TEST_POSTGRES_USER}
+            - TEST_POSTGRES_PASSWORD=${TEST_POSTGRES_PASSWORD}
+
+
+    postgres:
+        volumes:
+            - test-postgres-data:/var/lib/postgresql/data/
+        environment:
+            - ENVIRONMENT="test"
+            - TEST_POSTGRES_DB=${TEST_POSTGRES_DB}
+            - TEST_POSTGRES_USER=${TEST_POSTGRES_USER}
+            - TEST_POSTGRES_PASSWORD=${TEST_POSTGRES_PASSWORD}
+
+volumes:
+    test-postgres-data:
