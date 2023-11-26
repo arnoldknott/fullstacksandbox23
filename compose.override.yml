@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-    backendAPI:
+    backend_api:
         build:
             target: dev
         env_file:
@@ -13,6 +13,7 @@ services:
         env_file:
         # TBD: change to ./backend/src/.env, when compose file is moved one level up
             - ./backendAPI/src/.env
+        # command: ["postgres", "-c", "listen_addresses=*", "-c", "POSTGRES_DB=${DEV_POSTGRES_DB}", "-c", "POSTGRES_USER=${DEV_POSTGRES_USER}", "-c", "POSTGRES_PASSWORD=${DEV_POSTGRES_PASSWORD}"]
 
 volumes:
     dev-postgres-data:

@@ -1,0 +1,35 @@
+name: Testing
+
+on: [push, pull_request]
+
+jobs:
+    backend:
+        name: Backend testing
+        runs-on: ubuntu-23.10
+        environment: test
+        # env:
+        #     DB_HOST: ${{ vars.DB_HOST }}
+        #     DB_NAME: ${{ vars.DB_NAME }}
+        #     DB_USER: ${{ vars.DB_USER }}
+        #     DB_PASS: ${{ secrets.DB_PASS }}
+        steps:
+            - uses: actions/checkout@v3
+            - name: Build
+              run: docker compose -f compose.yml -f compose.override.test.yml build
+            - name: Code Formating
+              run: docker compose -f compose.yml -f compose.override.test.yml run --rm backend_api sh -c "black --check ."
+            - name: Linting
+              run: docker compose -f compose.yml -f compose.override.test.yml run --rm backend_api sh -c "ruff check ."
+            # - name: Unit testing
+            #   run: docker compose -f compose.yml -f compose.override.test.yml run --rm backend_api sh -c "pytest"
+        
+    frontend:
+        name: Frontend testing
+        runs-on: ubuntu-23.10
+        environment: test
+        steps:
+            - uses: actions/checkout@v3
+            # - name: Build
+            #   run: docker compose -f compose.yml -f compose.override.test.yml build
+            # - name: Code Formating
+            #   run: docker compose -f compose.yml -f compose.override.test.yml run --rm frontend sh -c "npm run lint"
