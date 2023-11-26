@@ -25,3 +25,4 @@ see [license file](LICENSE)
 # Contributing
 
 make sure you run code formatter, linting and testing before opening a pull request.
+See the github actions workflow for more details.
