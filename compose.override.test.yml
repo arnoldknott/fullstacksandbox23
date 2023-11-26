@@ -9,9 +9,9 @@ services:
             target: dev
         environment:
             - ENVIRONMENT="test"
-            - TEST_POSTGRES_DB=${TEST_POSTGRES_DB}
-            - TEST_POSTGRES_USER=${TEST_POSTGRES_USER}
-            - TEST_POSTGRES_PASSWORD=${TEST_POSTGRES_PASSWORD}
+            - TEST_POSTGRES_DB=$POSTGRES_DB
+            - TEST_POSTGRES_USER=$POSTGRES_USER
+            - TEST_POSTGRES_PASSWORD=$POSTGRES_PASSWORD
 
     postgres:
         volumes:
