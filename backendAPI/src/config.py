@@ -27,7 +27,8 @@ def select_variable_set(environment: str) -> str:
 class DevelopmentConfig(Config):
     """Development configuration class."""
 
-    prefix = select_variable_set("development");POSTGRES_USER: str = os.getenv(f"{prefix}POSTGRES_USER")
+    prefix = select_variable_set("development")
+    POSTGRES_USER: str = os.getenv(f"{prefix}POSTGRES_USER")
     POSTGRES_PASSWORD: str = os.getenv(f"{prefix}POSTGRES_PASSWORD")
     POSTGRES_DB: str = os.getenv(f"{prefix}POSTGRES_DB")
     REDIS_HOST: str = os.getenv(f"{prefix}REDIS_HOST")
