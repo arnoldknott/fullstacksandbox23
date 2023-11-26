@@ -10,11 +10,11 @@ Sandbox to experiment with a full stack applications using
 
 # Documentation
 
-## Build the container:
+## Build the containers:
 
 `docker compose build`
 
-## Run the container:
+## Run the containers:
 
 `docker compose up`
 
