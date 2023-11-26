@@ -7,11 +7,10 @@ jobs:
         name: Backend testing
         runs-on: ubuntu-22.04
         environment: test
-        # env:
-        #     DB_HOST: ${{ vars.DB_HOST }}
-        #     DB_NAME: ${{ vars.DB_NAME }}
-        #     DB_USER: ${{ vars.DB_USER }}
-        #     DB_PASS: ${{ secrets.DB_PASS }}
+        env:
+            POSTGRES_DB: ${{ vars.TEST_POSTGRES_DB }}
+            POSTGRES_USER: ${{ vars.TEST_POSTGRES_USER }}
+            POSTGRES_PASSWORD: ${{ vars.TEST_POSTGRES_PASSWORD }}
         steps:
             - uses: actions/checkout@v3
             - name: Build
