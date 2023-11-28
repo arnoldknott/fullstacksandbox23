@@ -29,17 +29,22 @@ jobs:
                 password: ${{ secrets.GITHUB_TOKEN }}
             - name: Build for production
               run: |
-                COMMIT_TAG=$GITHUB_SHA
                 docker compose -f compose.yml build
-                docker image list
-            # TBD: add container registry:
+            - name: Show images
+              run: docker image list
+            - name: Tag with commit hash
+              run: | 
+                $LATEST_IMAGE=${{ env.REGISTRY }}/${{ github.repository }}/backend_api:latest
+                $COMMIT_IMAGE=${{ env.REGISTRY }}/${{ github.repository }}/backend_api:$GITHUB_SHA
+                docker tag backend_api:latest $LATEST_IMAGE
+                docker tag backend_api:latest $COMMIT_IMAGE
               # LATEST_TAG=latest
                 # docker tag $IMAGE_NAME $COMMIT_IMAGE
                 # docker tag $IMAGE_NAME $LATEST_IMAGE
-            # - name: Push to github container registry
-            #   run: |
-            #     docker push ${{ env.registry}}/${{ github.actor }}/$COMMIT_IMAGE
-            #     docker push ${{ env.registry}}/${{ github.actor }}/$LATEST_IMAGE
+            - name: Push to github container registry
+              run: |
+                docker push $LATEST_IMAGE
+                docker push $COMMIT_IMAGE
             - name: Login to Azure
               uses: azure/login@v1
               with:

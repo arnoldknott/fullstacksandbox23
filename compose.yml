@@ -2,10 +2,11 @@ version: "3.9"
 
 services:
     backend_api:
-        container_name: "backend_api"
+        # container_name: "backend_api"
         build:
             context: ./backendAPI
             target: prod
+        image: backend_api:latest
         # TBD: consider moving into compose.override.yml - in case a build stage is involved
         volumes:
             - ./backendAPI/src:/app
