@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
     backend:
         runs-on: ubuntu-22.04
@@ -24,6 +28,12 @@ jobs:
                 client-id: ${{ secrets.AZURE_CLIENT_ID }}
                 tenant-id: ${{ secrets.AZURE_TENANT_ID }}
                 subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            - name: Azure CLI script
+              uses: azure/CLI@v1
+              with:
+                azcliversion: latest
+                inlineScript: |
+                  az account show
             - name: Deploy to staging
               run: echo "Deploying to staging"
             #   TBD: move production deployment to a separate workflow - trigger: workflow_dispatch (which is manual
