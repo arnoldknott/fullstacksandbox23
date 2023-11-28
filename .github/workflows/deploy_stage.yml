@@ -16,6 +16,7 @@ env:
   REGISTRY: ghcr.io
   PROJECT_NAME: "fullstacksandbox23"
 
+# TBD: rethink strategy creating jobs and separting into frontend and backend.
 jobs:
     backend:
         runs-on: ubuntu-22.04
