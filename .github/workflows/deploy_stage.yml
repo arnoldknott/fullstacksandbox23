@@ -35,8 +35,8 @@ jobs:
               run: docker image list
             - name: Tag with commit hash
               run: | 
-                LATEST_IMAGE=${{ env.REGISTRY }}/${{ github.repository }}/backend_api:latest
-                COMMIT_IMAGE=${{ env.REGISTRY }}/${{ github.repository }}/backend_api:$GITHUB_SHA
+                LATEST_IMAGE=${{ env.REGISTRY }}/${{ github.actor }}/${{env.PROJECT_NAME}}/backend_api:latest
+                COMMIT_IMAGE=${{ env.REGISTRY }}/${{ github.actor }}/${{env.PROJECT_NAME}}/backend_api:$GITHUB_SHA
                 docker tag ${{env.PROJECT_NAME}}-backend_api:latest $LATEST_IMAGE
                 docker tag ${{env.PROJECT_NAME}}-backend_api:latest $COMMIT_IMAGE
               # LATEST_TAG=latest
