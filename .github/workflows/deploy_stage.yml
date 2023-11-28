@@ -43,7 +43,9 @@ jobs:
             - name: Tag and push with latest and commit hash
               run: |
                 docker tag ${{env.PROJECT_NAME}}-backend_api:latest ${{env.CONTAINER_REPO}}/backend_api:latest
+                docker tag ${{env.PROJECT_NAME}}-backend_api:latest ${{env.CONTAINER_REPO}}/backend_api:$GITHUB_SHA
                 docker push ${{env.CONTAINER_REPO}}/backend_api:latest
+                docker push ${{env.CONTAINER_REPO}}/backend_api:$GITHUB_SHA
               # docker tag ${{env.PROJECT_NAME}}-backend_api:latest ${{env.CONTAINER_REPO}}/backend_api:$GITHUB_SHA
                 # docker push ${{env.CONTAINER_REPO}}/backend_api:$GITHUB_SHA
             # docker tag ${{env.PROJECT_NAME}}-backend_api:latest $COMMIT_IMAGE
