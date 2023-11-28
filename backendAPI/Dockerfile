@@ -21,4 +21,11 @@ RUN pip install  --upgrade pip && \
 # USER backend-user
 CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8660"]
 
-# TBD - add prod stage
+FROM base as prod
+EXPOSE 8660
+RUN rm -rf tests/ .pytest_cache/ .vscode/ .git/ .github/ .gitignore README.md Dockerfile
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -e . && \
+    adduser --disabled-password --no-create-home backend-user
+USER backend-user
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8660"]

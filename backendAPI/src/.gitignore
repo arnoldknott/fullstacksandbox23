@@ -42,6 +42,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# Testing and linting
+**/.ruff_cache/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
