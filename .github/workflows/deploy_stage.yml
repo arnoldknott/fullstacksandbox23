@@ -39,6 +39,9 @@ jobs:
               run: |
                 echo $CONTAINER_REPO
                 echo ${{ env.CONTAINER_REPO }}
+            - name: Echo repository_owner variable
+              run: |
+                echo ${{ github.repository_owner }}
             - name: Tag and push with latest and commit hash
               run: |
                 docker tag ${{env.CONTAINER_REPO}}/backend_api:latest ${{env.CONTAINER_REPO}}/backend_api:latest
