@@ -33,8 +33,8 @@ jobs:
                 COMMIT_IMAGE=$IMAGE_NAME:$GITHUB_SHA
                 LATEST_IMAGE=$IMAGE_NAME:latest
                 docker compose -f compose.yml build
-                docker tag backendAPI $COMMIT_IMAGE
-                docker tag backendAPI $LATEST_IMAGE
+                docker tag $IMAGE_NAME $COMMIT_IMAGE
+                docker tag $IMAGE_NAME $LATEST_IMAGE
             - name: Push to github container registry
               run: |
                 docker push $COMMIT_IMAGE
