@@ -34,7 +34,7 @@ jobs:
             - name: Show images
               run: docker image list
             - name: Set CONTAINER_REPO variable
-              run: echo "CONTAINER_REPO=${{ env.REGISTRY }}/${{ github.repository }}" >> $GITHUB_ENV
+              run: echo "CONTAINER_REPO=${{ env.REGISTRY }}/${{ github.repository_owner }}" >> $GITHUB_ENV
             - name: Use CONTAINER_REPO variable
               run: |
                 echo $CONTAINER_REPO
@@ -44,10 +44,10 @@ jobs:
                 echo ${{ github.repository_owner }}
             - name: Tag and push with latest and commit hash
               run: |
-                docker tag ${{env.CONTAINER_REPO}}/backend_api:latest ${{env.CONTAINER_REPO}}/backend_api:latest
-                docker tag ${{env.CONTAINER_REPO}}/backend_api:latest ${{env.CONTAINER_REPO}}/backend_api:$GITHUB_SHA
-                docker push ${{env.CONTAINER_REPO}}/backend_api:latest
-                docker push ${{env.CONTAINER_REPO}}/backend_api:$GITHUB_SHA
+                docker tag ${{github.repository}}-backend_api:latest ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
+                docker tag ${{github.repository}}-backend_api:latest ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
+                docker push ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
+                docker push ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
               # docker tag ${{github.repository}}-backend_api:latest ${{env.CONTAINER_REPO}}/backend_api:$GITHUB_SHA
                 # docker push ${{env.CONTAINER_REPO}}/backend_api:$GITHUB_SHA
             # docker tag ${{github.repository}}-backend_api:latest $COMMIT_IMAGE
