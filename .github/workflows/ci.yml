@@ -13,6 +13,9 @@ jobs:
             POSTGRES_PASSWORD: ${{ vars.TEST_POSTGRES_PASSWORD }}
         steps:
             - uses: actions/checkout@v3
+            # TBD: This is building both backend and frontend! move build to a separate job and reuse the image
+            # make backend and frontend testing dependend on the build stage!
+            # this way backend and frontend can be tested in parallel
             - name: Build
               run: docker compose -f compose.yml -f compose.override.test.yml build
             - name: Code Formating
