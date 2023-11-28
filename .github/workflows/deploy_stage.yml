@@ -36,7 +36,7 @@ jobs:
             - name: Show images
               run: docker image list
             - name: Set CONTAINER_REPO variable
-              run: echo "CONTAINER_REPO=${{ env.REGISTRY }}/${{ github.actor }}/${{ github.repository }}" >> $GITHUB_ENV
+              run: echo "CONTAINER_REPO=${{ env.REGISTRY }}/${{ github.repository }}" >> $GITHUB_ENV
             - name: Use CONTAINER_REPO variable
               run: |
                 echo $CONTAINER_REPO
