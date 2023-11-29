@@ -26,7 +26,7 @@ LABEL org.opencontainers.image.source https://github.com/arnoldknott/fullstacksa
 EXPOSE 80
 RUN rm -rf tests/ .pytest_cache/ .vscode/ .git/ .github/ .gitignore README.md Dockerfile
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -e . && \
-    adduser --disabled-password --no-create-home backend-user
-USER backend-user
+    pip install --no-cache-dir -e .
+#     adduser --disabled-password --no-create-home backend-user
+# USER backend-user
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
