@@ -2,10 +2,10 @@ import logging
 
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
+from routers.system import router as system_router
 
 # from dependencies.databases import postgres
 
-from routers.system import router as system_router
 
 # from src.dependencies.databases import mongodb
 # from src.dependencies.cache import redis
@@ -29,8 +29,8 @@ logger = logging.getLogger(__name__)
 global_prefix = "/api/v1"
 
 app = FastAPI(
-    title="pyUserSession",
-    summary="Python User Session",
+    title="backendAPI",
+    summary="Backend for fullstack Sandbox.",
     description="Handling user authentication and session handling.",  # TBD: add the longer markdown description here
     version="0.0.1",  # TBD: read from CHANGELOG.md or environment variable or so?
     # TBD: add contact - also through environment variables?
