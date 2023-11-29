@@ -50,6 +50,7 @@ jobs:
                 docker push ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
 
     deploy_stage:
+      needs: containerize
       runs-on: ubuntu-22.04
       permissions:
         id-token: write
