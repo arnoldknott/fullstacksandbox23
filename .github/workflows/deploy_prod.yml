@@ -1,7 +1,14 @@
 name: "Deploying Production"
 
 on:
-  workflow_dispatch:
+  # workflow_dispatch: # allows to run the workflow manually
+  # But: the manual rview is now controlled through the environment, which requires a manual approval
+  workflow_run:
+    workflows: ["Deploying Staging"]
+    types:
+      - completed
+    branches:
+      - main
 
 env:
   REGISTRY: ghcr.io
