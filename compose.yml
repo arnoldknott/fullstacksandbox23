@@ -9,7 +9,7 @@ services:
         volumes:
             - ./backendAPI/src:/app
         ports:
-            - "80:8660"
+            - "80:80"
 
     postgres:
         container_name: "postgres"

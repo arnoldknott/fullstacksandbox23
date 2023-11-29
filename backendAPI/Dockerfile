@@ -29,4 +29,4 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -e . && \
     adduser --disabled-password --no-create-home backend-user
 USER backend-user
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8660"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
