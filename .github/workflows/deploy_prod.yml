@@ -2,9 +2,9 @@ name: "Deploying Production"
 
 on:
   # workflow_dispatch: # allows to run the workflow manually
-  # But: the manual rview is now controlled through the environment, which requires a manual approval
+  # But: the manual review is now controlled through the environment, which requires a manual approval
   workflow_run:
-    workflows: ["Deploying Staging"]
+    workflows: ["Deploying Stage"]
     types:
       - completed
     branches:
