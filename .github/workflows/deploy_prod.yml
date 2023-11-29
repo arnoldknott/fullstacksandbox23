@@ -3,6 +3,10 @@ name: "Deploying Production"
 on:
   workflow_dispatch:
 
+env:
+  REGISTRY: ghcr.io
+  CONTAINER_REPO: $REGISTRY/${{ github.repository_owner }}
+
 jobs:
   deploy_prod:
     runs-on: ubuntu-22.04
