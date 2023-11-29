@@ -32,3 +32,10 @@ jobs:
         run: |
           az containerapp revision set-mode --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --mode single
           az containerapp update --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
+      - name: Azure CLI script
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
