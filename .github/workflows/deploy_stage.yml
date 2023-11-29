@@ -11,9 +11,8 @@ on:
 env:
   REGISTRY: ghcr.io
 
-# TBD: rethink strategy creating jobs and separting into frontend and backend.
 jobs:
-    backend:
+    containerize:
         runs-on: ubuntu-22.04
         permissions:
           id-token: write
@@ -35,50 +34,35 @@ jobs:
               run: docker image list
             - name: Set CONTAINER_REPO variable
               run: echo "CONTAINER_REPO=${{ env.REGISTRY }}/${{ github.repository_owner }}" >> $GITHUB_ENV
-            - name: Use CONTAINER_REPO variable
-              run: |
-                echo $CONTAINER_REPO
-                echo ${{ env.CONTAINER_REPO }}
-            - name: Echo repository_owner variable
-              run: |
-                echo ${{ github.repository_owner }}
+            # - name: Use CONTAINER_REPO variable
+            #   run: |
+            #     echo $CONTAINER_REPO
+            #     echo ${{ env.CONTAINER_REPO }}
+            # - name: Echo repository_owner variable
+            #   run: |
+            #     echo ${{ github.repository_owner }}
             - name: Tag and push with latest and commit hash
               run: |
                 docker tag ${{github.event.repository.name}}-backend_api:latest ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
                 docker tag ${{github.event.repository.name}}-backend_api:latest ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
                 docker push ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
                 docker push ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
-              # docker tag ${{github.repository}}-backend_api:latest ${{env.CONTAINER_REPO}}/backend_api:$GITHUB_SHA
-                # docker push ${{env.CONTAINER_REPO}}/backend_api:$GITHUB_SHA
-            # docker tag ${{github.repository}}-backend_api:latest $COMMIT_IMAGE
-            # LATEST_IMAGE=${{ env.REGISTRY }}/${{ github.actor }}/${{github.repository}}/backend_api:latest
-              #   COMMIT_IMAGE=${{ env.REGISTRY }}/${{ github.actor }}/${{github.repository}}/backend_api:$GITHUB_SHA
-                # docker tag ${{github.repository}}-backend_api:latest $LATEST_IMAGE
-                # docker tag ${{github.repository}}-backend_api:latest $COMMIT_IMAGE
-              # LATEST_TAG=latest
-                # docker tag $IMAGE_NAME $COMMIT_IMAGE
-                # docker tag $IMAGE_NAME $LATEST_IMAGE
-            # - name: Push to github container registry
-            #   run: |
-            #     docker push $LATEST_IMAGE
-            #     docker push $COMMIT_IMAGE
-            - name: Login to Azure
-              uses: azure/login@v1
-              with:
-                client-id: ${{ secrets.AZURE_CLIENT_ID }}
-                tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-                subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-            - name: Azure CLI script
-              uses: azure/CLI@v1
-              with:
-                azcliversion: latest
-                inlineScript: |
-                  az account show
-            - name: Deploy to staging
-            # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
-              run: |
-                az containerapp revision set-mode --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --mode single
-                az containerapp update --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
-              # az containerapp update --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --image mcr.microsoft.com/azuredocs/containerapps-helloworld:latest
-            
-            #   TBD: move production deployment to a separate workflow - trigger: workflow_dispatch (which is manual
+
+    deploy_stage:
+      runs-on: ubuntu-22.04
+      permissions:
+        id-token: write
+        packages: read
+      environment: stage
+      steps:
+        - name: Login to Azure
+          uses: azure/login@v1
+          with:
+            client-id: ${{ secrets.AZURE_CLIENT_ID }}
+            tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+            subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        - name: Deploy to staging
+        # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
+          run: |
+            az containerapp revision set-mode --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --mode single
+            az containerapp update --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
