@@ -12,6 +12,14 @@ jobs:
             POSTGRES_USER: ${{ vars.TEST_POSTGRES_USER }}
             POSTGRES_PASSWORD: ${{ vars.TEST_POSTGRES_PASSWORD }}
         steps:
+            - name: echos github.event variable
+              run: |
+                echo "github.event.workflow_run.head_sha:"
+                echo ${{ github.event.workflow_run.head_sha }}
+                echo "github.event.workflow_run.head_branch:"
+                echo ${{ github.event.workflow_run.head_sha }}
+                echo "github.event:"
+                echo ${{ github.event }}
             - uses: actions/checkout@v4
             # TBD: This is building both backend and frontend! move build to a separate job and reuse the image
             # make backend and frontend testing dependend on the build stage!
