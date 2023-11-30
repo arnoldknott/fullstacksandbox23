@@ -36,10 +36,10 @@ jobs:
           echo $GITHUB_WORKFLOW_SHA
       - uses: actions/checkout@v4
       - name: Build
-        run: >
-          docker compose
-            -f compose.yml
-            -f compose.override.test.yml
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
             build backend_api
       - name: Code Formating
         run: >
