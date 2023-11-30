@@ -6,6 +6,8 @@ services:
             target: dev
         env_file:
             - ./backendAPI/src/.env
+        ports:
+            - "8660:8660"
 
     postgres:
         volumes:

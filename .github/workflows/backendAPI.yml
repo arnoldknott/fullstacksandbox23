@@ -34,6 +34,8 @@ jobs:
           echo $GITHUB_SHA
           echo "GITHUB_WORKFLOW_SHA:"
           echo $GITHUB_WORKFLOW_SHA
+          echo "github.sha:"
+          echo ${{ github.sha }}
       - uses: actions/checkout@v4
       - name: Build
         run: |
@@ -101,11 +103,11 @@ jobs:
             ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
           docker tag \
             ${{github.event.repository.name}}-backend_api:latest \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
+            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.sha }}}
           docker push \
             ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
           docker push \
-              ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
+              ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.sha }}}
 
   deploy_stage:
     needs: containerize
@@ -138,7 +140,7 @@ jobs:
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA \
+            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.sha }}} \
             --set-env-vars \
               AZ_KEYVAULT_URL=${{ vars.AZ_KEYVAULT_URL }}
           az containerapp secret set \
@@ -184,7 +186,7 @@ jobs:
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
+            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.sha }}}
         # TBD: add variables and secrets
       - name: Logout from Azure
         uses: azure/CLI@v1

@@ -53,8 +53,8 @@ class Config(BaseSettings):
     POSTGRES_DB: str = os.getenv("POSTGRES_DB")
 
     # get those variables from keyvault if keyvault URL is set, otherwise get from environment:
-    test_secret: str = get_variable("test-secret")
-    print(f"test_secret: {test_secret}")
+    TEST_SECRET: str = get_variable("test-secret")
+    print(f"test_secret: {TEST_SECRET}")
 
     # not in keyvault yet:
     # REDIS_HOST: str = get_variable("REDIS_HOST")

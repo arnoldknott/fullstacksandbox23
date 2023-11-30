@@ -1,7 +1,7 @@
 import logging
 
+from config import config
 from fastapi import APIRouter
-from src.config import config
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

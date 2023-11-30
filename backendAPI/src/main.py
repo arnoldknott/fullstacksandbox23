@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 print(f"POSTGRES_DB: {config.POSTGRES_DB}")
 print(f"POSTGRES_USER: {config.POSTGRES_USER}")
 
+
 # TBD: add postgres database:
 # context manager does setup and tear down
 # @asynccontextmanager
