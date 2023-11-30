@@ -15,14 +15,23 @@ env:
 
 jobs:
     containerize:
+        if: ${{ github.event.workflow_run.head_branch == 'main' }} || ${{ github.event.workflow_run.head_branch == 'stage' }}
         runs-on: ubuntu-22.04
         permissions:
           id-token: write
           contents: read
           packages: write
         environment: stage
-        steps:
-            - uses: actions/checkout@v3
+        steps:           
+            - name: echos github.event variable
+              run: |
+                echo "github.event.workflow_run.head_sha:"
+                echo ${{ github.event.workflow_run.head_sha }}
+                echo "github.event.workflow_run.head_branch:"
+                echo ${{ github.event.workflow_run.head_branch }}
+                echo "github.event:"
+                echo ${{ github.event }}
+            - uses: actions/checkout@v4
             - name: Login to GitHub Container Registry
               uses: docker/login-action@v3
               with:
