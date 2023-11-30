@@ -6,7 +6,7 @@ on:
     types:
       - completed
     branches:
-      - main
+      # - main
       - stage
 
 env:
@@ -90,7 +90,7 @@ jobs:
             az containerapp env add --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --variables AZ_KEYVAULT_URL=${{ vars.AZ_KEYVAULT_URL }}
           # TBD: use to add environment variables and secrets - see above!
 
-        - name: Azure CLI script
+        - name: Logout from Azure
           uses: azure/CLI@v1
           with:
             inlineScript: |
