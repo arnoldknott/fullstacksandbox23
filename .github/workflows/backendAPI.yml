@@ -144,7 +144,7 @@ jobs:
           az containerapp secret set \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --secrets TEST_SECRET=${{ secrets.TEST_SECRET }}
+            --secrets test-secret=${{ secrets.TEST_SECRET }}
       - name: Logout from Azure
         uses: azure/CLI@v1
         with:
