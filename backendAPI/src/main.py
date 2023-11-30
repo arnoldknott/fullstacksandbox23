@@ -1,5 +1,6 @@
 import logging
 
+from config import config
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from routers.system import router as system_router
@@ -13,6 +14,8 @@ from routers.system import router as system_router
 
 logger = logging.getLogger(__name__)
 
+print(f"POSTGRES_DB: {config.POSTGRES_DB}")
+print(f"POSTGRES_USER: {config.POSTGRES_USER}")
 
 # TBD: add postgres database:
 # context manager does setup and tear down

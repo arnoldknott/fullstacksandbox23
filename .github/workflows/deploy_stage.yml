@@ -75,6 +75,10 @@ jobs:
           run: |
             az containerapp revision set-mode --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --mode single
             az containerapp update --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
+            az containerapp secret add --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --secrets TEST_SECRET=${{ secrets.TEST_SECRET }}          
+            az containerapp env add --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{vars.AZURE_RESOURCE_GROUP}} --variables AZ_KEYVAULT_URL=${{ vars.AZ_KEYVAULT_URL }}
+          # TBD: use to add environment variables and secrets - see above!
+
         - name: Azure CLI script
           uses: azure/CLI@v1
           with:
