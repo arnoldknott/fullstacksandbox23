@@ -36,24 +36,24 @@ jobs:
           echo $GITHUB_WORKFLOW_SHA
       - uses: actions/checkout@v4
       - name: Build
-        run: |
+        run: >
           docker compose
             -f compose.yml
             -f compose.override.test.yml
             build backend_api
       - name: Code Formating
-        run: |
-          docker compose \
-            -f compose.yml \
-            -f compose.override.test.yml \
-            run --rm backend_api \
+        run: >
+          docker compose
+            -f compose.yml
+            -f compose.override.test.yml
+            run --rm backend_api
             sh -c "black --check ."
       - name: Linting
-        run: |
-          docker compose \
-            -f compose.yml \
-            -f compose.override.test.yml \
-            run --rm backend_api \
+        run: >
+          docker compose
+            -f compose.yml
+            -f compose.override.test.yml
+            run --rm backend_api
             sh -c "ruff check ."
       # - name: Unit testing
             #   run: docker compose -f compose.yml -f compose.override.test.yml run --rm backend_api sh -c "pytest"
@@ -95,17 +95,17 @@ jobs:
       - name: Show images
         run: docker image list
       - name: Tag and push with latest and commit hash
-        run: |
-          docker tag \
-            ${{github.event.repository.name}}-backend_api:latest \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
-          docker tag \
-            ${{github.event.repository.name}}-backend_api:latest \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
-          docker push \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
-          docker push \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
+        run: >
+          - docker tag
+              ${{github.event.repository.name}}-backend_api:latest
+              ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
+          - docker tag
+              ${{github.event.repository.name}}-backend_api:latest
+              ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
+          - docker push
+              ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
+          - docker push
+              ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
 
   deploy_stage:
     needs: containerize
@@ -130,20 +130,20 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to staging
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
-        run: |
-          az containerapp revision set-mode \
-            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+        run: >
+          - az containerapp revision set-mode
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }}
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}}
             --mode single
-          az containerapp update \
-            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA \
-            --set-env-vars \
+          - az containerapp update
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }}
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}}
+            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$GITHUB_SHA
+            --set-env-vars
               AZ_KEYVAULT_URL=${{ vars.AZ_KEYVAULT_URL }}
-          az containerapp secret set \
-            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+          - az containerapp secret set
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }}
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}}
             --secrets TEST_SECRET=${{ secrets.TEST_SECRET }}
       - name: Logout from Azure
         uses: azure/CLI@v1
