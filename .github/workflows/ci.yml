@@ -12,7 +12,7 @@ jobs:
             POSTGRES_USER: ${{ vars.TEST_POSTGRES_USER }}
             POSTGRES_PASSWORD: ${{ vars.TEST_POSTGRES_PASSWORD }}
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             # TBD: This is building both backend and frontend! move build to a separate job and reuse the image
             # make backend and frontend testing dependend on the build stage!
             # this way backend and frontend can be tested in parallel
