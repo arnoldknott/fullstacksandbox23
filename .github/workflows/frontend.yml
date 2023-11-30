@@ -17,6 +17,15 @@ jobs:
       run: echo "Dummy"
     # - uses: actions/checkout@v3
     # - name: Build
-    #   run: docker compose -f compose.yml -f compose.override.test.yml build frontend
+    #   run: |
+          # docker compose \
+          # -f compose.yml \
+          # -f compose.override.test.yml \
+          # build frontend
     # - name: Code Formating
-    #   run: docker compose -f compose.yml -f compose.override.test.yml run --rm frontend sh -c "npm run format"
+    #   run: |
+        # docker compose \
+        # -f compose.yml \
+        # -f compose.override.test.yml \
+        # run --rm frontend \
+        # sh -c "npm run format"
