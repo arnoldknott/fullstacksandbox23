@@ -13,9 +13,9 @@ on:
 env:
   REGISTRY: ghcr.io
   CONTAINER_REPO: $REGISTRY/${{ github.repository_owner }}
+  CONTAINER_TAG: ${{ github.event.after }}
 
 jobs:
-
   test:
     runs-on: ubuntu-22.04
     environment: test
@@ -28,6 +28,7 @@ jobs:
         run: |
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
+          echo $CONTAINER_TAG
       - name: echos github.event variable
         env:
           GITHUB_EVENT: ${{ toJSON(github.event) }}
@@ -84,6 +85,7 @@ jobs:
         run: |
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
+          echot $CONTAINER_TAG
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }} 
@@ -105,11 +107,11 @@ jobs:
             ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
           docker tag \
             ${{github.event.repository.name}}-backend_api:latest \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.event.after }}
+            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$CONTAINER_TAG
           docker push \
             ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
           docker push \
-              ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.event.after }}
+              ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$CONTAINER_TAG
 
   deploy_stage:
     needs: containerize
@@ -124,6 +126,7 @@ jobs:
         run: |
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
+          echo $CONTAINER_TAG
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -139,7 +142,7 @@ jobs:
       - name: Deploy to staging
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
         env:
-          IDENTITY_REF: /subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}
+          IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}"
         run: |
           az containerapp revision set-mode \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
@@ -149,20 +152,19 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --secrets \
-              "test-secret1=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret1,identityref:$IDENTITY_REF" \
+              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
               "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-user,identityref:$IDENTITY_REF" \
               "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-password,identityref:$IDENTITY_REF"
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.event.after }} \
+            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$CONTAINER_TAG \
             --set-env-vars \
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "KEYVAULT_HEALTH=secretref:keyvault-health" \
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "POSTGRES_USER=secretref:postgres-user" \
-              "POSTGRES_PASSWORD=secretref:postgres-password" \
-              "TEST_SECRET1=secretref:test-secret1" \
-              "TEST_SECRET2=secretref:test-secret2"
+              "POSTGRES_PASSWORD=secretref:postgres-password"
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
       - name: Logout from Azure
@@ -186,6 +188,7 @@ jobs:
         run: |
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
+          echo $CONTAINER_TAG
           - name: Login to GitHub Container Registry
           uses: docker/login-action@v3
           with:
@@ -201,7 +204,7 @@ jobs:
       - name: Deploy to production
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
         env:
-          IDENTITY_REF: /subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}
+          IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}"
         # TBD: consider putting all of this into adeploymentscript and reuse her and in deploy_stage!
         run: |
           az containerapp revision set-mode \
@@ -212,20 +215,19 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --secrets \
-              "test-secret1=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret1,identityref:$IDENTITY_REF" \
+              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
               "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-user,identityref:$IDENTITY_REF" \
               "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-password,identityref:$IDENTITY_REF"
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.event.after }} \
+            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$CONTAINER_TAG \
             --set-env-vars \
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "KEYVAULT_HEALTH=secretref:keyvault-health" \
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "POSTGRES_USER=secretref:postgres-user" \
-              "POSTGRES_PASSWORD=secretref:postgres-password" \
-              "TEST_SECRET1=secretref:test-secret1" \
-              "TEST_SECRET2=secretref:test-secret2"
+              "POSTGRES_PASSWORD=secretref:postgres-password"
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
       - name: Logout from Azure
