@@ -27,6 +27,22 @@ jobs:
         run: |
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
+      - name: echos github.event variable
+        run: |
+          echo "=== github.event.pull_request.head.sha ==="
+          echo ${{ github.event.pull_request.head.sha }}
+          echo "=== github.event.workflow_run.head_sha ==="
+          echo ${{ github.event.workflow_run.head_sha }}
+          echo "=== github.event.workflow_run.head_branch ==="
+          echo ${{ github.event.workflow_run.head_branch }}
+          echo "=== JSON deserialized github.event ==="
+          echo "${{ toJSON(github.event) }}"
+          echo "=== GITHUB_SHA ==="
+          echo $GITHUB_SHA
+          echo "=== GITHUB_WORKFLOW_SHA ==="
+          echo $GITHUB_WORKFLOW_SHA
+          echo "=== github.sha ==="
+          echo ${{ github.sha }}
       - uses: actions/checkout@v4
       - name: Build
         run: |
@@ -61,6 +77,10 @@ jobs:
       packages: write
     environment: stage
     steps:
+      - name: echos github.event variable
+        run: |
+          echo "=== Is this the correct tag: github.event.after? ==="
+          echo ${{ github.event.after }}
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }} 
@@ -135,6 +155,8 @@ jobs:
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"
         # TBD: consider deleting all existing environment variables before setting the new ones?
+        # "test-secret1=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret1,identityref:${{ secrets.AZURE_BACKENDIDENTITY_CLIENT_ID }}" \
+        # "TEST_SECRET2=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret2,identityref:${{ secrets.AZURE_BACKENDIDENTITY_CLIENT_ID }}" \
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
 
       - name: Logout from Azure
