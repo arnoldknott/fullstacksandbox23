@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build
         run: |
-          dockrewf compose \
+          docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
             build backend_api
