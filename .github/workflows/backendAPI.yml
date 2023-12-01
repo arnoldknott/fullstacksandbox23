@@ -189,12 +189,12 @@ jobs:
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
           echo $CONTAINER_TAG
-          - name: Login to GitHub Container Registry
-          uses: docker/login-action@v3
-          with:
-            registry: ${{ env.REGISTRY }}
-            username: ${{ github.actor }}
-            password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to Azure
         uses: azure/login@v1
         with:
