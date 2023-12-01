@@ -29,8 +29,8 @@ jobs:
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
       - name: echos github.event variable
-        # env:
-        #   GITHUB_EVENT: ${{ toJSON(github.event) }}
+        env:
+          GITHUB_EVENT: ${{ toJSON(github.event) }}
         run: |
           echo "=== github.event.pull_request.head.sha ==="
           echo ${{ github.event.pull_request.head.sha }}
@@ -39,7 +39,7 @@ jobs:
           echo "=== github.event.workflow_run.head_branch ==="
           echo ${{ github.event.workflow_run.head_branch }}
           echo "=== JSON deserialized github.event ==="
-          echo "${{ toJSON(github.event) }}"
+          echo $GITHUB_EVENT
           echo "=== GITHUB_SHA ==="
           echo $GITHUB_SHA
           echo "=== GITHUB_WORKFLOW_SHA ==="
