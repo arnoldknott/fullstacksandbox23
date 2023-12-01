@@ -68,8 +68,13 @@ jobs:
             -f compose.override.test.yml \
             run --rm backend_api \
             sh -c "ruff check ."
-      # - name: Unit testing
-            #   run: docker compose -f compose.yml -f compose.override.test.yml run --rm backend_api sh -c "pytest"
+      - name: Unit testing
+      run: |
+        docker compose \
+          -f compose.yml \
+          -f compose.override.test.yml \
+          run --rm backend_api \
+          sh -c "pytest -v"
   
   containerize:
     if: ${{ github.event.workflow_run.head_branch == 'main' }} || ${{ github.event.workflow_run.head_branch == 'stage' }}
