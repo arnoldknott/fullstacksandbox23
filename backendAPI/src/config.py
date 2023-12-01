@@ -1,86 +1,78 @@
 import os
 from functools import lru_cache
 
-from azure.identity import DefaultAzureCredential, SecretClient
+from azure.identity import ManagedIdentityCredential
+from azure.keyvault.secrets import SecretClient
 from pydantic_settings import BaseSettings
+
+# from azure.identity import EnvironmentCredential
+# from azure.identity import DefaultAzureCredential
+
+
+# def get_azure_client(vault_url):
+#     """Returns an Azure client instance."""
+#     credential = DefaultAzureCredential()
+#     client = SecretClient(vault_url=vault_url, credential=credential)
+#     return client
+
+
+def get_variable(variable_name):
+    """Returns a function that retrieves a variable from the environment."""
+
+    # note: the existence of the environment variable AZURE_KEYVAULT_URL is used to determine whether to use keyvault or not.
+    if os.getenv("AZURE_KEYVAULT_HOST"):
+        # credential = DefaultAzureCredential()
+        # credential = ManagedIdentityCredential(client_id=os.getenv("AZURE_CLIENT_ID"))
+        credential = ManagedIdentityCredential()
+        # Following line works, when the environment variable AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET and AZURE_AUTHORITY_HOST are set.
+        # credential = EnvironmentCredential()
+        client = SecretClient(
+            # TBD: check if we need host or URL here?
+            vault_url=os.getenv("AZURE_KEYVAULT_HOST"),
+            credential=credential,
+        )
+
+        def get_variable_inner(variable_name):
+            """Returns a variable from the environment."""
+            variable_name = variable_name.replace("_", "-").lower()
+            return client.get_secret(variable_name).value
+
+    else:
+
+        def get_variable_inner(variable_name):
+            """Returns a variable from the environment."""
+            return os.getenv(variable_name)
+
+    return get_variable_inner(variable_name)
 
 
 class Config(BaseSettings):
     """Base configuration class."""
 
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT")
+    # always get those variables from the environment:
+    POSTGRES_USER: str = os.getenv("POSTGRES_USER")
+    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
+    POSTGRES_DB: str = os.getenv("POSTGRES_DB")
 
+    # get those variables from keyvault if keyvault URL is set, otherwise get from environment:
+    TEST_SECRET1: str = get_variable("TEST_SECRET1")
+    TEST_SECRET2: str = get_variable("TEST_SECRET2")
+    print(f"test_secret: {TEST_SECRET2}")
 
-def select_variable_set(environment: str) -> str:
-    """Selects the variable set to use from environment."""
-    if environment == "development":
-        return "DEV_"
-    elif environment == "test":
-        return "TEST_"
-    else:
-        raise ValueError(
-            f"Invalid environment variable: {environment}."
-            f"Must be one of: ['development', 'test']"
-        )
+    # not in keyvault yet:
+    # REDIS_HOST: str = get_variable("REDIS_HOST")
+    # REDIS_PORT: int = get_variable("REDIS_PORT")
 
-
-class DevelopmentConfig(Config):
-    """Development configuration class."""
-
-    prefix = select_variable_set("development")
-    POSTGRES_USER: str = os.getenv(f"{prefix}POSTGRES_USER")
-    POSTGRES_PASSWORD: str = os.getenv(f"{prefix}POSTGRES_PASSWORD")
-    POSTGRES_DB: str = os.getenv(f"{prefix}POSTGRES_DB")
-    REDIS_HOST: str = os.getenv(f"{prefix}REDIS_HOST")
-    REDIS_PORT: int = os.getenv(f"{prefix}REDIS_PORT")
-    MONGODB_HOST: str = os.getenv(f"{prefix}MONGODB_HOST")
-    MONGODB_PORT: int = os.getenv(f"{prefix}MONGODB_PORT")
-
-
-class TestingConfig(DevelopmentConfig):
-    """Testing configuration class."""
-
-    prefix = select_variable_set("test")
-
-
-def get_azure_client(vault_url):
-    """Returns an Azure client instance."""
-    credential = DefaultAzureCredential()
-    client = SecretClient(vault_url=vault_url, credential=credential)
-    return client
-
-
-class StagingConfig(Config):
-    """Staging configuration class."""
-
-    client = get_azure_client(os.getenv("STAGING_AZURE_KEYVAULT_URL"))
-    POSTGRES_USER: str = client.get_secret("postgres-user").value
-    POSTGRES_PASSWORD: str = client.get_secret("postgres-password").value
-    POSTGRES_DB: str = client.get_secret("postgres-db").value
-    REDIS_HOST: str = client.get_secret("redis-host").value
-    REDIS_PORT: int = client.get_secret("redis-port").value
-    MONGODB_HOST: str = client.get_secret("mongodb-host").value
-    MONGODB_PORT: int = client.get_secret("mongodb-port").value
-
-
-class ProductionConfig(StagingConfig):
-    """Production configuration class."""
-
-    client = get_azure_client(os.getenv("PRODUCTION_AZURE_KEYVAULT_URL"))
-
-
-config_classes = {
-    "development": DevelopmentConfig,
-    "testing": TestingConfig,
-    "staging": StagingConfig,
-    "production": ProductionConfig,
-}
+    # MONGODB_HOST: str = get_variable("MONGODB_HOST")
+    # MONGODB_PORT: int = get_variable("MONGODB_PORT")
 
 
 @lru_cache(maxsize=None)
-def get_active_config():
-    config_class = config_classes[os.getenv("ENVIRONMENT")]
-    return config_class()
+def get_config():
+    """Returns the configuration instance."""
+    # configuration = Config()
+    # print(f"POSTGRES_DB: {configuration.POSTGRES_DB}")
+    return Config()
 
 
-active_config = get_active_config()
+config = get_config()

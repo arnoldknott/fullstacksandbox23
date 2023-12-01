@@ -1,6 +1,7 @@
 # In final implementation, move this file one diectory level higher and reference all services here
 version: "3.9"
 
+
 services:
     backend_api:
         build:
@@ -9,19 +10,26 @@ services:
             target: dev
         image: backend_api:test
         environment:
-            - ENVIRONMENT="test"
-            - TEST_POSTGRES_DB=$POSTGRES_DB
-            - TEST_POSTGRES_USER=$POSTGRES_USER
-            - TEST_POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-
-    postgres:
-        volumes:
-            - test-postgres-data:/var/lib/postgresql/data/
-        environment:
-            - ENVIRONMENT="test"
             - POSTGRES_DB=$POSTGRES_DB
             - POSTGRES_USER=$POSTGRES_USER
             - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+            - REDIS_HOST=$REDIS_HOST
+            - REDIS_PORT=$REDIS_PORT
+            - MONGODB_HOST=$MONGODB_HOST
+            - MONGODB_PORT=$MONGODB_PORT
+
+    postgres:
+        container_name: postgres-test
+        volumes:
+            - test-postgres-data:/var/lib/postgresql/data/
+        environment:
+            - POSTGRES_DB=$POSTGRES_DB
+            - POSTGRES_USER=$POSTGRES_USER
+            - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+            - REDIS_HOST=$REDIS_HOST
+            - REDIS_PORT=$REDIS_PORT
+            - MONGODB_HOST=$MONGODB_HOST
+            - MONGODB_PORT=$MONGODB_PORT
 
 volumes:
     test-postgres-data:

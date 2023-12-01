@@ -6,9 +6,12 @@ license = {file = "LICENSE"}
 
 dependencies = [
     'fastapi>=0.104.1,<0.105',
-    'pyjwt[crypto]>=2.8.0,<2.9',
-    'requests>=2.31.0,<2.32',
-    'uvicorn[all]>=0.23.2,<0.24'
+    'pyjwt[crypto]>=2.8.0,<3',
+    'requests>=2.31.0,<3',
+    'uvicorn[all]>=0.23.2,<0.24',
+    'azure-identity>=1.15.0,<2',
+    'azure-keyvault-secrets>=4.7.0,<5',
+    'pydantic-settings>=2.1.0,<3',
 ]
 
 [project.optional-dependencies]

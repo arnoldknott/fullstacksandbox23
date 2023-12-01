@@ -1,0 +1,214 @@
+name: BackendAPI
+
+on:
+  push:
+    paths:
+      - 'backendAPI/**'
+  # pull_request:
+  #   paths:
+  #     - 'backendAPI/**'
+
+
+env:
+  REGISTRY: ghcr.io
+  CONTAINER_REPO: $REGISTRY/${{ github.repository_owner }}
+
+jobs:
+
+  test:
+    runs-on: ubuntu-22.04
+    environment: test
+    env:
+      POSTGRES_DB: ${{ vars.TEST_POSTGRES_DB }}
+      POSTGRES_USER: ${{ vars.TEST_POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ vars.TEST_POSTGRES_PASSWORD }}
+    steps:
+      - name: echos github.event.afte variable => use for tagging the images?
+        run: |
+          echo "=== Is this the correct tag: github.event.after? ==="
+          echo ${{ github.event.after }}
+      - name: echos github.event variable
+        run: |
+          echo "=== github.event.pull_request.head.sha ==="
+          echo ${{ github.event.pull_request.head.sha }}
+          echo "=== github.event.workflow_run.head_sha ==="
+          echo ${{ github.event.workflow_run.head_sha }}
+          echo "=== github.event.workflow_run.head_branch ==="
+          echo ${{ github.event.workflow_run.head_branch }}
+          echo "=== JSON deserialized github.event ==="
+          echo "${{ toJSON(github.event) }}"
+          echo "=== GITHUB_SHA ==="
+          echo $GITHUB_SHA
+          echo "=== GITHUB_WORKFLOW_SHA ==="
+          echo $GITHUB_WORKFLOW_SHA
+          echo "=== github.sha ==="
+          echo ${{ github.sha }}
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            build backend_api
+      - name: Code Formating
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            run --rm backend_api \
+            sh -c "black --check ."
+      - name: Linting
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            run --rm backend_api \
+            sh -c "ruff check ."
+      # - name: Unit testing
+            #   run: docker compose -f compose.yml -f compose.override.test.yml run --rm backend_api sh -c "pytest"
+  
+  containerize:
+    if: ${{ github.event.workflow_run.head_branch == 'main' }} || ${{ github.event.workflow_run.head_branch == 'stage' }}
+    needs: test
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+    environment: stage
+    steps:
+      - name: echos github.event.after variable
+        run: |
+          echo "=== Is this the correct tag: github.event.after? ==="
+          echo ${{ github.event.after }}
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }} 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build for production
+        run: |
+          docker compose -f compose.yml build
+      - name: Show images
+        run: docker image list
+      - name: Tag and push with latest and commit hash
+        run: |
+          docker tag \
+            ${{github.event.repository.name}}-backend_api:latest \
+            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
+          docker tag \
+            ${{github.event.repository.name}}-backend_api:latest \
+            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.event.after }}
+          docker push \
+            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
+          docker push \
+              ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.event.after }}
+
+  deploy_stage:
+    needs: containerize
+    if: ${{ github.event.workflow_run.head_branch == 'main' }} || ${{ github.event.workflow_run.head_branch == 'stage' }}
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      packages: read
+    environment: stage
+    steps:
+      - name: echos github.event.after variable
+        run: |
+          echo "=== Is this the correct tag: github.event.after? ==="
+          echo ${{ github.event.after }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy to staging
+      # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
+        run: |
+          az containerapp revision set-mode \
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --mode single
+          az containerapp secret set \
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --secrets \
+              "test-secret1=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret1,identityref:/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}" \
+              "postgres-user=${{ secrets.POSTGRES_USER }}" \
+              "postgres-password=${{ secrets.POSTGRES_PASSWORD }}"
+          az containerapp update \
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.event.after }} \
+            --set-env-vars \
+              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
+              "TEST_SECRET1=secretref:test-secret1" \
+              "TEST_SECRET2=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret2,identityref:/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}" \
+              "POSTGRES_USER=secretref:postgres-user" \
+              "POSTGRES_PASSWORD=secretref:postgres-password"
+        # TBD: consider deleting all existing environment variables before setting the new ones?
+        # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
+      - name: Logout from Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
+
+  deploy_prod:
+    if: ${{ github.event.workflow_run.head_branch == 'main' }}
+    needs: deploy_stage
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      packages: read
+    environment: prod
+    steps:
+      - name: echos github.event.after variable
+        run: |
+          echo "=== Is this the correct tag: github.event.after? ==="
+          echo ${{ github.event.after }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy to production
+      # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
+        run: |
+          az containerapp revision set-mode \
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --mode single
+          az containerapp update \
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.github.event.after }}
+        # TBD: add variables and secrets
+      - name: Logout from Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
