@@ -130,20 +130,26 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --mode single
+          az containerapp secret set \
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --secrets \
+              "test-secret1=keyvaultref:${{ vars.AZURE_KEYVAULT_URL }}/secrets/test-secret1,identityref:${{ secrets.AZURE_BACKENDIDENTITY_OBJECT_ID }}" \
+              "postgres-user=${{ secrets.POSTGRES_USER }}" \
+              "postgres-password=${{ secrets.POSTGRES_PASSWORD }}"
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.sha }} \
             --set-env-vars \
-              AZ_KEYVAULT_URL=${{ vars.AZ_KEYVAULT_URL }} \
-              POSTGRES_DB=${{ vars.POSTGRES_DB }}
-          az containerapp secret set \
-            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --secrets \
-              test-secret=${{ secrets.TEST_SECRET }} \
-              postgres-user=${{ secrets.POSTGRES_USER }} \
-              postgres-password=${{ secrets.POSTGRES_PASSWORD }}
+              "AZ_KEYVAULT_URL=${{ vars.AZURE_KEYVAULT_URL }}"" \
+              "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
+              "TEST_SECRET1=secretref:test-secret1" \
+              "TEST_SECRET2=keyvaultref:${{ vars.AZURE_KEYVAULT_URL }}/secrets/test-secret2,identityref:${{ secrets.AZURE_BACKENDIDENTITY_OBJECT_ID }}" \
+              "POSTGRES_USER=secretref:postgres-user" \
+              "POSTGRES_PASSWORD=secretref:postgres-password"
+        # TBD: consider deleting all existing environment variables before setting the new ones?
+        # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
 
       - name: Logout from Azure
         uses: azure/CLI@v1

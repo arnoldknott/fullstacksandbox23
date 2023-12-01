@@ -26,5 +26,6 @@ async def get_config():
     """Returns the configuration of the backendAPI."""
     logger.info("Config check")
     return {
-        "TEST_SECRET": config.TEST_SECRET,
+        "TEST_SECRET1": config.TEST_SECRET1,
+        "TEST_SECRET2": config.TEST_SECRET2,
     }
