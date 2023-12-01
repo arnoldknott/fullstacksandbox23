@@ -20,14 +20,16 @@ def get_variable(variable_name):
     """Returns a function that retrieves a variable from the environment."""
 
     # note: the existence of the environment variable AZURE_KEYVAULT_URL is used to determine whether to use keyvault or not.
-    if os.getenv("AZURE_KEYVAULT_URL"):
+    if os.getenv("AZURE_KEYVAULT_HOST"):
         # credential = DefaultAzureCredential()
         # credential = ManagedIdentityCredential(client_id=os.getenv("AZURE_CLIENT_ID"))
         credential = ManagedIdentityCredential()
         # Following line works, when the environment variable AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET and AZURE_AUTHORITY_HOST are set.
         # credential = EnvironmentCredential()
         client = SecretClient(
-            vault_url=os.getenv("AZURE_KEYVAULT_URL"), credential=credential
+            # TBD: check if we need host or URL here?
+            vault_url=os.getenv("AZURE_KEYVAULT_HOST"),
+            credential=credential,
         )
 
         def get_variable_inner(variable_name):
