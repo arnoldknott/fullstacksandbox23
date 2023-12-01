@@ -4,10 +4,11 @@ on:
   push:
     paths:
       - 'frontend/**'
-  pull_request:
-    paths:
-      - 'frontend/**'
       - '.github/workflows/frontend.yml'
+  # pull_request:
+  #   paths:
+  #     - 'frontend/**'
+      
 
 jobs:
   dummy:
