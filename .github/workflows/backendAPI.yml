@@ -28,8 +28,10 @@ jobs:
           echo ${{ github.event.workflow_run.head_sha }}
           echo "=== github.event.workflow_run.head_branch ==="
           echo ${{ github.event.workflow_run.head_branch }}
-          echo "=== github.event ==="
-          echo ${{ github.event }}
+          echo "=== toJSON(github.event) ==="
+          echo ${{ toJSON(github.event) }}
+          echo "=== toJSON(github.event.action) ==="
+          echo ${{ toJSON(github.event.action) }}
           echo "=== GITHUB_SHA ==="
           echo $GITHUB_SHA
           echo "=== GITHUB_WORKFLOW_SHA ==="
@@ -72,18 +74,6 @@ jobs:
       packages: write
     environment: stage
     steps:
-      # - name: echos github.event variable
-      #   run: |
-      #     echo "github.event.workflow_run.head_sha:"
-      #     echo ${{ github.event.workflow_run.head_sha }}
-      #     echo "github.event.workflow_run.head_branch:"
-      #     echo ${{ github.event.workflow_run.head_branch }}
-      #     echo "github.event:"
-      #     echo ${{ github.event }}
-      #     echo "GITHUB_SHA:"
-      #     echo $GITHUB_SHA
-      #     echo "GITHUB_WORKFLOW_SHA:"
-      #     echo $GITHUB_WORKFLOW_SHA
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }} 
