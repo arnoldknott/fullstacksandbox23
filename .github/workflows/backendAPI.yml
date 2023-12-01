@@ -148,7 +148,7 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.sha }} \
             --set-env-vars \
-              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}"" \
+              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "TEST_SECRET1=secretref:test-secret1" \
               "TEST_SECRET2=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret2,identityref:/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}" \
