@@ -14,6 +14,7 @@ env:
   CONTAINER_REPO: $REGISTRY/${{ github.repository_owner }}
 
 jobs:
+
   test:
     runs-on: ubuntu-22.04
     environment: test
@@ -119,7 +120,7 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to staging
@@ -134,11 +135,16 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.sha }} \
             --set-env-vars \
-              AZ_KEYVAULT_URL=${{ vars.AZ_KEYVAULT_URL }}
+              AZ_KEYVAULT_URL=${{ vars.AZ_KEYVAULT_URL }} \
+              POSTGRES_DB=${{ vars.POSTGRES_DB }}
           az containerapp secret set \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --secrets test-secret=${{ secrets.TEST_SECRET }}
+            --secrets \
+              test-secret=${{ secrets.TEST_SECRET }} \
+              postgres-user=${{ secrets.POSTGRES_USER }} \
+              postgres-password=${{ secrets.POSTGRES_PASSWORD }}
+
       - name: Logout from Azure
         uses: azure/CLI@v1
         with:

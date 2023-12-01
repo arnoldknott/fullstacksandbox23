@@ -48,8 +48,8 @@ class Config(BaseSettings):
     """Base configuration class."""
 
     # always get those variables from the environment:
-    POSTGRES_USER: str = os.getenv("POSTGRES_USER")
-    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
+    POSTGRES_USER: str = os.getenv("postgres-user")
+    POSTGRES_PASSWORD: str = os.getenv("postgres-password")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB")
 
     # get those variables from keyvault if keyvault URL is set, otherwise get from environment:
