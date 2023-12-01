@@ -85,7 +85,7 @@ jobs:
         run: |
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
-          echot $CONTAINER_TAG
+          echo $CONTAINER_TAG
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }} 
