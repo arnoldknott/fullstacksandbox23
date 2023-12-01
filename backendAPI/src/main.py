@@ -1,8 +1,13 @@
 import logging
+import os
+import sys
 
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
-from routers.system import router as system_router
+from routers.system.status import router as system_status_router
+
+print("Current directory:", os.getcwd())
+print("sys.path:", sys.path)
 
 # from dependencies.databases import postgres
 
@@ -38,7 +43,7 @@ app = FastAPI(
     version="0.0.1",  # TBD: read from CHANGELOG.md or environment variable or so?
     # TBD: add contact - also through environment variables?
 )
-app.include_router(system_router, prefix=f"{global_prefix}/system")
+app.include_router(system_status_router, prefix=f"{global_prefix}/system")
 
 
 # exception handler logs exceptions before passing them to the default exception handler
