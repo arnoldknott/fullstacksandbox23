@@ -25,10 +25,6 @@ jobs:
     steps:
       - name: echos github.event variable
         run: |
-          echo "=== github.event.workflow_run.head_sha ==="
-          echo ${{ github.event.workflow_run.head_sha }}
-          echo "=== github.event.workflow_run.head_branch ==="
-          echo ${{ github.event.workflow_run.head_branch }}
           echo "=== JSON deserialized github.event ==="
           echo ${{ toJSON(github.event) }}
           echo "=== GITHUB_SHA ==="
@@ -37,8 +33,12 @@ jobs:
           echo $GITHUB_WORKFLOW_SHA
           echo "=== github.sha ==="
           echo ${{ github.sha }}
-          echo "=== github.event.pull_request.head.sha ==="
-          echo ${{ github.event.pull_request.head.sha }}
+        # echo "=== github.event.pull_request.head.sha ==="
+          # echo ${{ github.event.pull_request.head.sha }}
+          # echo "=== github.event.workflow_run.head_sha ==="
+          # echo ${{ github.event.workflow_run.head_sha }}
+          # echo "=== github.event.workflow_run.head_branch ==="
+          # echo ${{ github.event.workflow_run.head_branch }}
       - uses: actions/checkout@v4
       - name: Build
         run: |
