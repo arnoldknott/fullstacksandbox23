@@ -140,7 +140,7 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --secrets \
-              "test-secret1=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret1,identityref:/subscriptions/${{secrets.AZURE_SUBSCRIPTION_IDURE}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}" \
+              "test-secret1=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret1,identityref:/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}" \
               "postgres-user=${{ secrets.POSTGRES_USER }}" \
               "postgres-password=${{ secrets.POSTGRES_PASSWORD }}"
           az containerapp update \
@@ -151,7 +151,7 @@ jobs:
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}"" \
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "TEST_SECRET1=secretref:test-secret1" \
-              "TEST_SECRET2=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret2,identityref:/subscriptions/${{secrets.AZURE_SUBSCRIPTION_IDURE}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}" \
+              "TEST_SECRET2=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret2,identityref:/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}" \
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"
         # TBD: consider deleting all existing environment variables before setting the new ones?
