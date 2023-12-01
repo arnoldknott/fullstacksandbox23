@@ -11,8 +11,8 @@ services:
         image: backend_api:test
         environment:
             - POSTGRES_DB=$POSTGRES_DB
-            - postgres-user=$postgres-user
-            - postgres-password=$postgres-password
+            - POSTGRES_USER=$POSTGRES_USER
+            - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
             - REDIS_HOST=$REDIS_HOST
             - REDIS_PORT=$REDIS_PORT
             - MONGODB_HOST=$MONGODB_HOST
@@ -24,8 +24,8 @@ services:
             - test-postgres-data:/var/lib/postgresql/data/
         environment:
             - POSTGRES_DB=$POSTGRES_DB
-            - postgres-user=$postgres-user
-            - postgres-password=$postgres-password
+            - POSTGRES_USER=$POSTGRES_USER
+            - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
             - REDIS_HOST=$REDIS_HOST
             - REDIS_PORT=$REDIS_PORT
             - MONGODB_HOST=$MONGODB_HOST
