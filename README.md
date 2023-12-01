@@ -16,19 +16,19 @@ see [license file](LICENSE)
 
 ## Development:
 
-Use a local `.env` file for the environment variables in development. If you specify a variable `AZURE_KEYVAULT_HOST`, the application will retrieve all variables from there - but you might still need to specify the necessary variables to start the postgres container.
-feel free to ask for an example of the `.env` file.
+Use a local `.env` file for the environment variables in development. If you specify a variable `AZURE_KEYVAULT_HOST`, the application will retrieve all variables from there. Make sure your app has access to this keyvault then from the host you are running the development containers on. You might still need to specify the necessary variables to start the postgres container.
+Feel free to ask the repository owner for an example of the `.env` file.
+
+Here's how you run the application locally in development:
+
 
 ```bash
-
-`docker compose build`
-
-## Run the containers:
-
-`docker compose up`
+docker compose build
+docker compose up
+```
 
 
-## Build and run for testing:
+## Testing:
 
 use a local `.env` file for the environment variables in testing:
 
@@ -47,6 +47,5 @@ docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI
 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "ruff check ."
 ```
 
-
-make sure you run code formatter, linting and testing before opening a pull request.
+Ideally you run code formatter, linting and testing before opening a pull request.
 See the github actions workflow for more details.
