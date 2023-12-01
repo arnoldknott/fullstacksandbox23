@@ -113,7 +113,7 @@ jobs:
 
   deploy_stage:
     needs: containerize
-    if: ${{ github.event.workflow_run.head_branch == 'main' }} || ${{ github.event.workflow_run.head_branch == 'stage' }}
+    if: ${{ github.event.ref == 'refs/heads/main' }} || ${{ github.event.ref == 'refs/heads/stage' }}
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
@@ -172,7 +172,7 @@ jobs:
             az account clear
 
   deploy_prod:
-    if: ${{ github.event.workflow_run.head_branch == 'main' }}
+    if: ${{ github.event.ref == 'refs/heads/main' }}
     needs: deploy_stage
     runs-on: ubuntu-22.04
     permissions:
@@ -196,17 +196,17 @@ jobs:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Deploy to production
+      # - name: Deploy to production
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
-        run: |
-          az containerapp revision set-mode \
-            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --mode single
-          az containerapp update \
-            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.github.event.after }}
+        # run: |
+        #   az containerapp revision set-mode \
+        #     --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+        #     --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+        #     --mode single
+        #   az containerapp update \
+        #     --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+        #     --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+        #     --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.github.event.after }}
         # TBD: add variables and secrets
       - name: Logout from Azure
         uses: azure/CLI@v1
