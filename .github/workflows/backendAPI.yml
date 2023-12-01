@@ -28,6 +28,8 @@ jobs:
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
       - name: echos github.event variable
+        # env:
+        #   GITHUB_EVENT: ${{ toJSON(github.event) }}
         run: |
           echo "=== github.event.pull_request.head.sha ==="
           echo ${{ github.event.pull_request.head.sha }}
