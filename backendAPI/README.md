@@ -1,2 +1,5 @@
-# Backend for user authentication and session handling
+# Backend API for all backend services
+
+- user authentication
+- session handling
 

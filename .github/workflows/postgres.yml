@@ -1,4 +1,4 @@
-name: postgres
+name: Postgres
 
 on:
   workflow_dispatch
