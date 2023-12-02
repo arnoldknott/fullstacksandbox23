@@ -23,7 +23,7 @@ async def get_health():
 
 @router.get("/keyvault")
 async def get_keyvault():
-    """Returns the configuration of the backendAPI."""
+    """Returns the configuration of the Azure keyvault."""
     logger.info("Config check")
     return {
         "Azure keyvault status": config.KEYVAULT_HEALTH,
