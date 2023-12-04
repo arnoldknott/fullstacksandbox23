@@ -23,6 +23,8 @@ services:
             - postgres
         env_file:
             - ./backendAPI/src/.env
+        environment:
+            - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
         ports:
             - "5555:80"
         volumes:
