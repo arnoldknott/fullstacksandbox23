@@ -10,6 +10,8 @@ jobs:
   deploy-stage:
     runs-on: ubuntu-20.04
     environment: stage
+    permissions:
+      id-token: write
     steps:
       - name: Login to Azure
         uses: azure/login@v1
@@ -49,6 +51,8 @@ jobs:
     runs-on: ubuntu-22.04
     needs: deploy-stage
     environment: prod
+    permissions:
+      id-token: write
     steps:
       - name: Login to Azure
         uses: azure/login@v1
