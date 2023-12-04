@@ -1,13 +1,11 @@
 import logging
-import os
-import sys
 
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from routers.system.status import router as system_status_router
 
-print("Current directory:", os.getcwd())
-print("sys.path:", sys.path)
+# print("Current directory:", os.getcwd())
+# print("sys.path:", sys.path)
 
 # from dependencies.databases import postgres
 
