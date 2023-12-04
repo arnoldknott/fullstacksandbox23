@@ -13,9 +13,22 @@ services:
         volumes:
             - dev-postgres-data:/var/lib/postgresql/data/
         env_file:
-        # TBD: change to ./backend/src/.env, when compose file is moved one level up
             - ./backendAPI/src/.env
-        # command: ["postgres", "-c", "listen_addresses=*", "-c", "POSTGRES_DB=${DEV_POSTGRES_DB}", "-c", "POSTGRES_USER=${DEV_POSTGRES_USER}", "-c", "POSTGRES_PASSWORD=${DEV_POSTGRES_PASSWORD}"]
+        ports:
+            - "5432:5432"
+
+    pgadmin:
+        image: dpage/pgadmin4
+        depends_on:
+            - postgres
+        env_file:
+            - ./backendAPI/src/.env
+        ports:
+            - "5555:80"
+        volumes:
+            - dev-pgadmin-data:/var/lib/pgadmin
+        restart: unless-stopped
 
 volumes:
     dev-postgres-data:
+    dev-pgadmin-data:

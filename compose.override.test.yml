@@ -22,10 +22,11 @@ services:
             - "8660:8660"
 
     postgres:
-        container_name: postgres-test
+        container_name: $POSTGRES_HOST
         volumes:
             - test-postgres-data:/var/lib/postgresql/data/
         environment:
+            - POSTGRES_HOST=$POSTGRES_HOST
             - POSTGRES_DB=$POSTGRES_DB
             - POSTGRES_USER=$POSTGRES_USER
             - POSTGRES_PASSWORD=$POSTGRES_PASSWORD

@@ -1,8 +1,10 @@
 import os
 from functools import lru_cache
+from typing import Any, Dict, Optional
 
 from azure.identity import ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
+from pydantic import PostgresDsn, field_validator
 from pydantic_settings import BaseSettings
 
 # from azure.identity import EnvironmentCredential
@@ -52,7 +54,23 @@ class Config(BaseSettings):
     # always get those variables from the environment:
     POSTGRES_USER: str = os.getenv("POSTGRES_USER")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
+    POSTGRES_HOST: Optional[str] = os.getenv("POSTGRES_HOST")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB")
+    POSTGRES_URL: Optional[PostgresDsn] = None
+
+    @classmethod
+    @field_validator("POSTGRES_URL")
+    def build_postgres_url(cls, url: Optional[str], values: Dict[str, Any]) -> Any:
+        """Validates and builds the postgres URL."""
+        if isinstance(url, PostgresDsn):
+            return url
+        return PostgresDsn.build(
+            scheme="postgresql+asyncpg",
+            user=values.POSTGRES_USER,
+            password=values.POSTGRES_PASSWORD,
+            host=f"/{values.POSTGRES_HOST or 'postgres'}",  # TBD: consider putting the host in an environment variable => it's the container name!
+            path=f"/{values.POSTGRES_DB or ''}",
+        )
 
     # get those variables from keyvault if keyvault URL is set, otherwise get from environment:
     KEYVAULT_HEALTH: str = get_variable("KEYVAULT_HEALTH")

@@ -43,6 +43,21 @@ app = FastAPI(
     version="0.0.1",  # TBD: read from CHANGELOG.md or environment variable or so?
     # TBD: add contact - also through environment variables?
 )
+
+
+# @app.on_event("startup")
+# async def startup():
+#     """Runs when the app starts."""
+#     # configure_logging()# TBD: add logging configuration
+#     SQLModel.metadata.create_all(postgres)
+
+
+# @app.on_event("shutdown")
+# async def shutdown():
+#     """Runs when the app stops."""
+#     await postgres.disconnect()
+
+
 app.include_router(system_status_router, prefix=f"{global_prefix}/system")
 
 
