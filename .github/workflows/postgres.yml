@@ -1,7 +1,10 @@
 name: Postgres
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/postgres.yml'
 
 jobs:
   deploy-stage:
