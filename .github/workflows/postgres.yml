@@ -44,6 +44,7 @@ jobs:
 
   deploy-prod:
     runs-on: ubuntu-22-04
+    needs: deploy-stage
     environment: prod
     steps:
       - name: Login to Azure
