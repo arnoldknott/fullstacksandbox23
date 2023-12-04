@@ -1,15 +1,18 @@
+import logging
 import os
-from functools import lru_cache
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from azure.identity import ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
-from pydantic import PostgresDsn, field_validator
+from pydantic import PostgresDsn, ValidationInfo, field_validator
+
+# from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings
 
 # from azure.identity import EnvironmentCredential
 # from azure.identity import DefaultAzureCredential
 
+logger = logging.getLogger(__name__)
 
 # def get_azure_client(vault_url):
 #     """Returns an Azure client instance."""
@@ -56,20 +59,28 @@ class Config(BaseSettings):
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
     POSTGRES_HOST: Optional[str] = os.getenv("POSTGRES_HOST")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB")
-    POSTGRES_URL: Optional[PostgresDsn] = None
+    POSTGRES_URL: Optional[PostgresDsn] = None  # Field(None, validate_default=True)
+    # POSTGRES_URL:
 
-    @classmethod
     @field_validator("POSTGRES_URL")
-    def build_postgres_url(cls, url: Optional[str], values: Dict[str, Any]) -> Any:
+    @classmethod
+    def build_postgres_url(cls, url: Optional[str], values: ValidationInfo) -> Any:
         """Validates and builds the postgres URL."""
-        if isinstance(url, PostgresDsn):
+        print("Building postgres URL")
+        logger.info("Building postgres URL")
+        if isinstance(url, str):
             return url
+        print(values.data)
+        print(values.data["POSTGRES_USER"])
+        print(values.data.get("POSTGRES_USER"))
         return PostgresDsn.build(
             scheme="postgresql+asyncpg",
-            user=values.POSTGRES_USER,
-            password=values.POSTGRES_PASSWORD,
-            host=f"/{values.POSTGRES_HOST or 'postgres'}",  # TBD: consider putting the host in an environment variable => it's the container name!
-            path=f"/{values.POSTGRES_DB or ''}",
+            username=values.data["POSTGRES_USER"],
+            password=values.data["POSTGRES_PASSWORD"],
+            host=values.data["POSTGRES_HOST"] or "postgres",
+            path=values.data["POSTGRES_DB"] or "",
+            # host=f"/{values.POSTGRES_HOST or 'postgres'}",  # TBD: consider putting the host in an environment variable => it's the container name!
+            # path=f"/{values.POSTGRES_DB or ''}",
         )
 
     # get those variables from keyvault if keyvault URL is set, otherwise get from environment:
@@ -86,12 +97,16 @@ class Config(BaseSettings):
     # MONGODB_PORT: int = get_variable("MONGODB_PORT")
 
 
-@lru_cache(maxsize=None)
+# @lru_cache(maxsize=None)
 def get_config():
     """Returns the configuration instance."""
+    print("Configuration called")
+    logger.info("Configuration called")
     # configuration = Config()
     # print(f"POSTGRES_DB: {configuration.POSTGRES_DB}")
     return Config()
 
 
 config = get_config()
+
+# print(f"POSTGRES_URL: {config.POSTGRES_URL}")  # TBD: remove this line
