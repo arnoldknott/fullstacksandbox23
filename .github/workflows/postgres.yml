@@ -5,7 +5,7 @@ on:
 
 jobs:
   deploy-stage:
-    runs-on: ubuntu-22-04
+    runs-on: ubuntu-20.04
     environment: stage
     steps:
       - name: Login to Azure
@@ -43,7 +43,7 @@ jobs:
             az account clear
 
   deploy-prod:
-    runs-on: ubuntu-22-04
+    runs-on: ubuntu-22.04
     needs: deploy-stage
     environment: prod
     steps:
