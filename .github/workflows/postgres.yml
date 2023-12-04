@@ -29,6 +29,7 @@ jobs:
             --secrets \
               "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-user,identityref:$IDENTITY_REF" \
               "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-password,identityref:$IDENTITY_REF"
+          sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_POSTGRES }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
@@ -70,6 +71,7 @@ jobs:
             --secrets \
               "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-user,identityref:$IDENTITY_REF" \
               "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-password,identityref:$IDENTITY_REF"
+          sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_POSTGRES }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
