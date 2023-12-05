@@ -165,6 +165,7 @@ jobs:
               "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
               "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-user,identityref:$IDENTITY_REF" \
               "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-password,identityref:$IDENTITY_REF"
+          sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
@@ -228,6 +229,7 @@ jobs:
               "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
               "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-user,identityref:$IDENTITY_REF" \
               "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-password,identityref:$IDENTITY_REF"
+          sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
