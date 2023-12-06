@@ -65,7 +65,7 @@ class Config(BaseSettings):
     @classmethod
     def build_postgres_url(cls, url: Optional[str], values: ValidationInfo) -> Any:
         """Validates and builds the postgres URL."""
-        print("Building postgres URL")
+        # print("Building postgres URL")
         logger.info("Building postgres URL")
         if isinstance(url, str):
             return url
@@ -95,7 +95,7 @@ class Config(BaseSettings):
 @lru_cache(maxsize=None)
 def get_config():
     """Returns the configuration instance."""
-    print("Configuration called")
+    # print("Configuration called")
     logger.info("Configuration called")
     # configuration = Config()
     # print(f"POSTGRES_DB: {configuration.POSTGRES_DB}")
