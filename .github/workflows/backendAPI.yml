@@ -13,7 +13,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  CONTAINER_REPO: $REGISTRY/${{ github.repository_owner }}
   CONTAINER_TAG: ${{ github.event.after }}
 
 jobs:
@@ -34,8 +33,6 @@ jobs:
         env:
           GITHUB_EVENT: ${{ toJSON(github.event) }}
         run: |
-          echo "=== $CONTAINER_REPO ==="
-          echo $CONTAINER_REPO
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
           echo $CONTAINER_TAG

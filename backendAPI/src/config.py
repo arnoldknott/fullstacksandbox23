@@ -6,8 +6,6 @@ from typing import Any, Optional
 from azure.identity import ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
 from pydantic import PostgresDsn, ValidationInfo, field_validator
-
-# from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings
 
 # from azure.identity import EnvironmentCredential
@@ -62,7 +60,6 @@ class Config(BaseSettings):
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB")
     POSTGRES_URL: Optional[PostgresDsn] = None  # Field(None, validate_default=True)
-    # POSTGRES_URL:
 
     @field_validator("POSTGRES_URL")
     @classmethod
@@ -72,10 +69,6 @@ class Config(BaseSettings):
         logger.info("Building postgres URL")
         if isinstance(url, str):
             return url
-        # print(values.data)
-        print(values.data["POSTGRES_HOST"])
-        # print(values.data["POSTGRES_USER"])
-        # print(values.data.get("POSTGRES_USER"))
         return PostgresDsn.build(
             scheme="postgresql+asyncpg",
             username=values.data["POSTGRES_USER"],
@@ -83,8 +76,6 @@ class Config(BaseSettings):
             # "postgres" is the container name
             host=values.data["POSTGRES_HOST"] or "postgres",
             path=values.data["POSTGRES_DB"] or "",
-            # host=f"/{values.POSTGRES_HOST or 'postgres'}",  # TBD: consider putting the host in an environment variable => it's the container name!
-            # path=f"/{values.POSTGRES_DB or ''}",
         )
 
     # get those variables from keyvault if keyvault URL is set, otherwise get from environment:
@@ -112,5 +103,3 @@ def get_config():
 
 
 config = get_config()
-
-print(f"POSTGRES_URL: {config.POSTGRES_URL}")  # TBD: remove this line
