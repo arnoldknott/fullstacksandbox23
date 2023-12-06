@@ -35,7 +35,7 @@ use a local `.env` file for the environment variables in testing:
 ```bash
 
 ```bash
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env build
+docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env --remove-orphans build
 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run backend_api sh -c "black ."
 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run backend_api sh -c "ruff format ."
 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run backend_api sh -c "pytest"
@@ -45,7 +45,7 @@ docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI
 Preferably run code format and linting in a pre-commit script `.git/hooks/pre-commit`:
 
 ```bash
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "black ."
+docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env --remove-orphans run -T --rm backend_api sh -c "black ."
 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "ruff format ."
 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "pytest -v"
 ```
