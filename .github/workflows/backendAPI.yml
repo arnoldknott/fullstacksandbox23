@@ -38,6 +38,8 @@ jobs:
         env:
           GITHUB_EVENT: ${{ toJSON(github.event) }}
         run: |
+          echo "=== $CONTAINER_REPO ==="
+          echo $CONTAINER_REPO
           echo "=== github.event.pull_request.head.sha ==="
           echo ${{ github.event.pull_request.head.sha }}
           echo "=== github.event.workflow_run.head_sha ==="
@@ -114,14 +116,14 @@ jobs:
         run: |
           docker tag \
             ${{github.event.repository.name}}-backend_api:latest \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
+            ${{env.REGISTRY}}/${{github.repository}}-backend_api:latest
           docker tag \
             ${{github.event.repository.name}}-backend_api:latest \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$CONTAINER_TAG
+            ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG
           docker push \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
+            ${{env.REGISTRY}}/${{github.repository}}-backend_api:latest
           docker push \
-              ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$CONTAINER_TAG
+              ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG
 
   deploy_stage:
     needs: containerize
@@ -170,7 +172,7 @@ jobs:
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$CONTAINER_TAG \
+            --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG \
             --set-env-vars \
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
@@ -236,7 +238,7 @@ jobs:
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:$CONTAINER_TAG \
+            --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG \
             --set-env-vars \
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
