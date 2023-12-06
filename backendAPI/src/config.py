@@ -1,5 +1,6 @@
 import logging
 import os
+from functools import lru_cache
 from typing import Any, Optional
 
 from azure.identity import ManagedIdentityCredential
@@ -55,9 +56,10 @@ class Config(BaseSettings):
     """Base configuration class."""
 
     # always get those variables from the environment:
+    # TBD: refactor:     this should no longer be necessary from the environment since database is now an Azure postgres database:
+    POSTGRES_HOST: Optional[str] = os.getenv("POSTGRES_HOST")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
-    POSTGRES_HOST: Optional[str] = os.getenv("POSTGRES_HOST")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB")
     POSTGRES_URL: Optional[PostgresDsn] = None  # Field(None, validate_default=True)
     # POSTGRES_URL:
@@ -70,15 +72,16 @@ class Config(BaseSettings):
         logger.info("Building postgres URL")
         if isinstance(url, str):
             return url
-        print(values.data)
-        print(values.data["POSTGRES_USER"])
-        print(values.data.get("POSTGRES_USER"))
+        # print(values.data)
+        print(values.data["POSTGRES_HOST"])
+        # print(values.data["POSTGRES_USER"])
+        # print(values.data.get("POSTGRES_USER"))
         return PostgresDsn.build(
             scheme="postgresql+asyncpg",
             username=values.data["POSTGRES_USER"],
             password=values.data["POSTGRES_PASSWORD"],
-            host=values.data["POSTGRES_HOST"]
-            or "postgres",  # "postgres" is the container name
+            # "postgres" is the container name
+            host=values.data["POSTGRES_HOST"] or "postgres",
             path=values.data["POSTGRES_DB"] or "",
             # host=f"/{values.POSTGRES_HOST or 'postgres'}",  # TBD: consider putting the host in an environment variable => it's the container name!
             # path=f"/{values.POSTGRES_DB or ''}",
@@ -98,7 +101,7 @@ class Config(BaseSettings):
     # MONGODB_PORT: int = get_variable("MONGODB_PORT")
 
 
-# @lru_cache(maxsize=None)
+@lru_cache(maxsize=None)
 def get_config():
     """Returns the configuration instance."""
     print("Configuration called")
@@ -110,4 +113,4 @@ def get_config():
 
 config = get_config()
 
-# print(f"POSTGRES_URL: {config.POSTGRES_URL}")  # TBD: remove this line
+print(f"POSTGRES_URL: {config.POSTGRES_URL}")  # TBD: remove this line
