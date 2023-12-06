@@ -28,6 +28,7 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_POSTGRES }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --secrets \
+              "postgres-host=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-host,identityref:$IDENTITY_REF" \
               "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-user,identityref:$IDENTITY_REF" \
               "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-password,identityref:$IDENTITY_REF"
           sleep 10
@@ -36,6 +37,7 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image postgres:${{vars.POSTGRES_IMAGE_TAG}} \
             --set-env-vars \
+              "POSTGRES_HOST=secretref:postgres-host" \
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"

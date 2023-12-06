@@ -77,7 +77,8 @@ class Config(BaseSettings):
             scheme="postgresql+asyncpg",
             username=values.data["POSTGRES_USER"],
             password=values.data["POSTGRES_PASSWORD"],
-            host=values.data["POSTGRES_HOST"] or "postgres",
+            host=values.data["POSTGRES_HOST"]
+            or "postgres",  # "postgres" is the container name
             path=values.data["POSTGRES_DB"] or "",
             # host=f"/{values.POSTGRES_HOST or 'postgres'}",  # TBD: consider putting the host in an environment variable => it's the container name!
             # path=f"/{values.POSTGRES_DB or ''}",
