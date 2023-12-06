@@ -1,6 +1,7 @@
 name: BackendAPI
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'backendAPI/**'
