@@ -29,17 +29,15 @@ jobs:
       MONGODB_HOST: ${{ vars.MONGODB_HOST }}
       MONGODB_PORT: ${{ vars.MONGODB_PORT }}
     steps:
-      - name: echos github.event.afte variable => use for tagging the images?
-        run: |
-          echo "=== Is this the correct tag: github.event.after? ==="
-          echo ${{ github.event.after }}
-          echo $CONTAINER_TAG
-      - name: echos github.event variable
+      - name: echos different variables
         env:
           GITHUB_EVENT: ${{ toJSON(github.event) }}
         run: |
           echo "=== $CONTAINER_REPO ==="
           echo $CONTAINER_REPO
+          echo "=== Is this the correct tag: github.event.after? ==="
+          echo ${{ github.event.after }}
+          echo $CONTAINER_TAG
           echo "=== github.event.pull_request.head.sha ==="
           echo ${{ github.event.pull_request.head.sha }}
           echo "=== github.event.workflow_run.head_sha ==="
@@ -93,11 +91,11 @@ jobs:
       packages: write
     environment: stage
     steps:
-      - name: echos github.event.after variable
-        run: |
-          echo "=== Is this the correct tag: github.event.after? ==="
-          echo ${{ github.event.after }}
-          echo $CONTAINER_TAG
+      # - name: echos github.event.after variable
+      #   run: |
+      #     echo "=== Is this the correct tag: github.event.after? ==="
+      #     echo ${{ github.event.after }}
+      #     echo $CONTAINER_TAG
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }} 
@@ -134,11 +132,11 @@ jobs:
       packages: read
     environment: stage
     steps:
-      - name: echos github.event.after variable
-        run: |
-          echo "=== Is this the correct tag: github.event.after? ==="
-          echo ${{ github.event.after }}
-          echo $CONTAINER_TAG
+      # - name: echos github.event.after variable
+      #   run: |
+      #     echo "=== Is this the correct tag: github.event.after? ==="
+      #     echo ${{ github.event.after }}
+      #     echo $CONTAINER_TAG
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -199,11 +197,11 @@ jobs:
       packages: read
     environment: prod
     steps:
-      - name: echos github.event.after variable
-        run: |
-          echo "=== Is this the correct tag: github.event.after? ==="
-          echo ${{ github.event.after }}
-          echo $CONTAINER_TAG
+      # - name: echos github.event.after variable
+      #   run: |
+      #     echo "=== Is this the correct tag: github.event.after? ==="
+      #     echo ${{ github.event.after }}
+      #     echo $CONTAINER_TAG
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
