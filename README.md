@@ -35,6 +35,6 @@ See the [pre commit hooks](hooks/pre-commit) to get inspiration on how to run co
 
 ## Use hooks
 
-In your root directory, run `ln -s /hooks/* .git/hooks` to install the hooks for your local repository.
+In your `.git/hooks directory`, run `ln -s -f ../../hooks/* .` to install the hooks for your local repository.
 
 The github actions workflow will run those things as well on commits.
