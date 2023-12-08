@@ -5,7 +5,7 @@ services:
         build:
             target: dev
         env_file:
-            - ./backendAPI/app/.env
+            - ./backendAPI/src/.env
         ports:
             - "8660:8660"
 
@@ -13,7 +13,7 @@ services:
         volumes:
             - dev-postgres-data:/var/lib/postgresql/data/
         env_file:
-            - ./backendAPI/app/.env
+            - ./backendAPI/src/.env
         ports:
             - "5432:5432"
 
@@ -22,7 +22,7 @@ services:
         depends_on:
             - postgres
         env_file:
-            - ./backendAPI/app/.env
+            - ./backendAPI/src/.env
         environment:
             - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
         ports:

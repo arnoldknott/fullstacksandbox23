@@ -134,9 +134,16 @@ jobs:
   #
   # new ideas: run only
   # alembic check
-  # in case it axits with other than 0 => write log as artifact
-  # and trigger another workflow, that depolys a database admin container 
-  # including the migration tools to the container app environment
+  # in case it exits with other than 0 => write log as artifact
+  # and trigger another workflow, that depolys a database admin container
+  # and/or the current image to do following jobs:
+  # - alembic revision --autogenerate -m "commit_id"
+  # - get migrations script and commit back to git repo
+  # - put migration scripts as artifacts?¿?
+  # - manual approval step (show artifacts)?
+  # - alembic upgrade head
+  # then back to original script and run deploy_stage
+  # same thing for prod OR reuse the migration scripts from stage?
   #
   #
   # a) create migration script:

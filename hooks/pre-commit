@@ -3,7 +3,7 @@
 # TBD: move environment fiel to a place, where frontend and backend can access it - maybe in the root folder. Or check if multiple env files are possible?
 # TBD: consider moving most of this into pre-push?
 # TBD: move into a script directory, commit to repo and then call from here / symlink here?
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/app/tests/.env build
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/app/tests/.env run -T --rm backend_api sh -c "black ."
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/app/tests/.env run -T --rm backend_api sh -c "ruff format ."
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/app/tests/.env run -T --rm backend_api sh -c "pytest -v"
+docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env build
+docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "black ."
+docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "ruff format ."
+docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "pytest -v"
