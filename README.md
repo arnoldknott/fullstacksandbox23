@@ -30,26 +30,11 @@ docker compose up
 
 ## Testing:
 
-use a local `.env` file for the environment variables in testing:
+use a local `.env` file for the environment variables in testing.
+See the [pre commit hooks](hooks/pre-commit) to get inspiration on how to run code formating, linting and testing manually.
 
-```bash
+## Use hooks
 
-```bash
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env build
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run backend_api sh -c "black ."
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run backend_api sh -c "ruff format ."
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run backend_api sh -c "pytest"
-```
+In your root directory, run `ln -s /hooks/* .git/hooks` to install the hooks for your local repository.
 
-
-Preferably run code format and linting in a pre-commit script `.git/hooks/pre-commit`:
-
-```bash
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env build
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "black ."
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "ruff format ."
-docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "pytest -v"
-```
-
-Ideally you run code formatter, linting and testing before opening a pull request.
-See the github actions workflow for more details.
+The github actions workflow will run those things as well on commits.

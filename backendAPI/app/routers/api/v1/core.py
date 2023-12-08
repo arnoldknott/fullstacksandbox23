@@ -1,6 +1,6 @@
 import logging
 
-from config import config
+from core.config import config
 from fastapi import APIRouter
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ async def get_health():
 @router.get("/keyvault")
 async def get_keyvault():
     """Returns the configuration of the Azure keyvault."""
-    logger.info("Config check")
+    logger.info("Keyvault check")
     return {
         "Azure keyvault status": config.KEYVAULT_HEALTH,
     }

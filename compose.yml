@@ -7,7 +7,7 @@ services:
             target: prod
         # TBD: consider moving into compose.override.yml - in case a build stage is involved
         volumes:
-            - ./backendAPI/src:/app
+            - ./backendAPI/app:/app
         ports:
             - "80:80"
 

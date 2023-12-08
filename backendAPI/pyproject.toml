@@ -12,11 +12,11 @@ dependencies = [
     'azure-identity>=1.15.0,<2',
     'azure-keyvault-secrets>=4.7.0,<5',
     'pydantic-settings>=2.1.0,<3',
-    # 'pydantic-settings',
     'httpx>=0.25.2,<0.26',
+    'asyncpg>=0.29.0,<1',
     'sqlmodel>=0.0.14,<0.1.0',
-    # 'sqlalchemy>=2.0.23,<3',
     'pydantic>=2.5.2,<3',# sqlmodel dependes on pydantic <2.0.0!
+    'alembic>=1.13.0,<2',
 ]
 
 [project.optional-dependencies]
