@@ -83,7 +83,7 @@ jobs:
             sh -c "pytest -v"
   
   containerize:
-    if: ${{ github.event.ref }} == 'refs/heads/main' || 'refs/heads/stage'
+    if: ${{ github.event.ref }} == 'refs/heads/main' || ${{ github.event.ref }} == 'refs/heads/stage'
     needs: test
     runs-on: ubuntu-22.04
     permissions:
@@ -131,6 +131,14 @@ jobs:
   # add azure files as volume to store alembic.ini and migrations folder?
   # could run as a container app job? / at least needs to run in container app environment!
   # executes
+  #
+  # new ideas: run only
+  # alembic check
+  # in case it axits with other than 0 => write log as artifact
+  # and trigger another workflow, that depolys a database admin container 
+  # including the migration tools to the container app environment
+  #
+  #
   # a) create migration script:
   # - alembic revision --autogenerate -m "message"
   # az containerapp ... jobs ... docker compose ... alembic revision --autogenerate  -m "$github.event.after"
@@ -196,7 +204,7 @@ jobs:
 
   deploy_stage:
     needs: containerize
-    if: ${{ github.event.ref }} == 'refs/heads/main' || 'refs/heads/stage'
+    if: ${{ github.event.ref }} == 'refs/heads/main' || ${{ github.event.ref }} == 'refs/heads/stage'
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
@@ -260,7 +268,7 @@ jobs:
             az account clear
 
   deploy_prod:
-    if: ${{ github.event.ref }} == 'refs/heads/main'
+    if: ${{ github.event.ref }}  == 'refs/heads/main'
     needs: deploy_stage
     runs-on: ubuntu-22.04
     permissions:
