@@ -1,9 +1,11 @@
 FROM python:3.10-alpine as base
 COPY . /app
 WORKDIR /app
-ENV VIRTUAL_ENV=/py
+ENV PYTHONPATH="/app"
+ENV VIRTUAL_ENV="/py"
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 
 FROM base as dev
 EXPOSE 8660

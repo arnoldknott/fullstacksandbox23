@@ -1,9 +1,14 @@
 name: BackendAPI
 
 on:
+  workflow_dispatch:
   push:
+    # branches:
+    #   - main
+    #   - stage
     paths:
       - 'backendAPI/**'
+      - '.github/workflows/backendAPI.yml'
   # pull_request:
   #   paths:
   #     - 'backendAPI/**'
@@ -11,24 +16,29 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  CONTAINER_REPO: $REGISTRY/${{ github.repository_owner }}
+  CONTAINER_TAG: ${{ github.event.after }}
 
 jobs:
-
   test:
     runs-on: ubuntu-22.04
     environment: test
     env:
-      POSTGRES_DB: ${{ vars.TEST_POSTGRES_DB }}
-      POSTGRES_USER: ${{ vars.TEST_POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ vars.TEST_POSTGRES_PASSWORD }}
+      KEYVAULT_HEALTH: ${{ vars.KEYVAULT_HEALTH }}
+      POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      REDIS_HOST: ${{ vars.REDIS_HOST }}
+      REDIS_PORT: ${{ vars.REDIS_PORT }}
+      MONGODB_HOST: ${{ vars.MONGODB_HOST }}
+      MONGODB_PORT: ${{ vars.MONGODB_PORT }}
     steps:
-      - name: echos github.event.afte variable => use for tagging the images?
+      - name: echos different variables
+        env:
+          GITHUB_EVENT: ${{ toJSON(github.event) }}
         run: |
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
-      - name: echos github.event variable
-        run: |
+          echo $CONTAINER_TAG
           echo "=== github.event.pull_request.head.sha ==="
           echo ${{ github.event.pull_request.head.sha }}
           echo "=== github.event.workflow_run.head_sha ==="
@@ -36,7 +46,7 @@ jobs:
           echo "=== github.event.workflow_run.head_branch ==="
           echo ${{ github.event.workflow_run.head_branch }}
           echo "=== JSON deserialized github.event ==="
-          echo "${{ toJSON(github.event) }}"
+          echo $GITHUB_EVENT
           echo "=== GITHUB_SHA ==="
           echo $GITHUB_SHA
           echo "=== GITHUB_WORKFLOW_SHA ==="
@@ -64,11 +74,16 @@ jobs:
             -f compose.override.test.yml \
             run --rm backend_api \
             sh -c "ruff check ."
-      # - name: Unit testing
-            #   run: docker compose -f compose.yml -f compose.override.test.yml run --rm backend_api sh -c "pytest"
+      - name: Unit testing
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            run --rm backend_api \
+            sh -c "pytest -v"
   
   containerize:
-    if: ${{ github.event.workflow_run.head_branch == 'main' }} || ${{ github.event.workflow_run.head_branch == 'stage' }}
+    if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
     needs: test
     runs-on: ubuntu-22.04
     permissions:
@@ -77,10 +92,11 @@ jobs:
       packages: write
     environment: stage
     steps:
-      - name: echos github.event.after variable
-        run: |
-          echo "=== Is this the correct tag: github.event.after? ==="
-          echo ${{ github.event.after }}
+      # - name: echos github.event.after variable
+      #   run: |
+      #     echo "=== Is this the correct tag: github.event.after? ==="
+      #     echo ${{ github.event.after }}
+      #     echo $CONTAINER_TAG
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }} 
@@ -99,28 +115,114 @@ jobs:
         run: |
           docker tag \
             ${{github.event.repository.name}}-backend_api:latest \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
+            ${{env.REGISTRY}}/${{github.repository}}-backend_api:latest
           docker tag \
             ${{github.event.repository.name}}-backend_api:latest \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.event.after }}
+            ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG
           docker push \
-            ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:latest
+            ${{env.REGISTRY}}/${{github.repository}}-backend_api:latest
           docker push \
-              ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.event.after }}
+              ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG
+
+  # postgres_migrations:
+  #   needs: containerize
+  #   runs-on: ubuntu-22.04
+  # needs to run in azure container app environment, as it needs to access the database
+  # add azure files as volume to store alembic.ini and migrations folder?
+  # could run as a container app job? / at least needs to run in container app environment!
+  # executes
+  #
+  # new ideas: run only
+  # alembic check
+  # in case it exits with other than 0 => write log as artifact
+  # and trigger another workflow, that depolys a database admin container
+  # and/or the current image to do following jobs:
+  # - alembic revision --autogenerate -m "commit_id"
+  # - get migrations script and commit back to git repo
+  # - put migration scripts as artifacts?¿?
+  # - manual approval step (show artifacts)?
+  # - alembic upgrade head
+  # then back to original script and run deploy_stage
+  # same thing for prod OR reuse the migration scripts from stage?
+  #
+  #
+  # a) create migration script:
+  # - alembic revision --autogenerate -m "message"
+  # az containerapp ... jobs ... docker compose ... alembic revision --autogenerate  -m "$github.event.after"
+  #     message gets part of filename: use github.event.after AND/OR containertag? (should be same) AND/OR configre time_stemps for file_naming?
+  # in between those steps include a manual approval step? So two jobs in github actions, where one gets a specific environment for approval?
+  # just add the environment to the step - not the job! - no doesn't work. Need to add it to the job!
+  # Well: a) is part of the code the migration versions can be commited to the repo, so no need for mounting a volume on the container app to persist the changes.
+  # But what about the manual approval?
+  # or check if migrations are necessary:
+  # - alembic check
+  #
+  # b) review migration script:
+    # that should be short and simple - just a manual approval step? => probably just referencing the migration environment in the following job is enough?
+  #
+  # c) run migration:
+  # - alembic upgarde head
+  #
+  #
+  # This hould be doable further up in the pipeline, as it is not dependent on the container app environment - only the codebase
+  # Can even run somewhere after the tests and before the containerization - just needs to commit the changes to the repo, i.e. the migration scripts
+  # putting them as artifacts somewhere and then downloading them in the containerize job?
+  # jobs:
+  #   generate_migrations:
+  #     runs-on: ubuntu-latest
+  #     steps:
+  #       - name: Generate migration scripts
+  #         run: |
+  #           # Your commands to generate the migration scripts
+  #           alembic revision --autogenerate -m "message"
+  #       - name: Upload migration scripts
+  #         uses: actions/upload-artifact@v2
+  #         with:
+  #           name: migrations
+  #           path: /path/to/your/migration/scripts
+  #
+  #   review_migrations:
+  #     needs: generate_migrations
+  #     runs-on: ubuntu-latest
+  #     environment: review
+  #     steps:
+  #       - name: Download migration scripts
+  #         uses: actions/download-artifact@v2
+  #         with:
+  #           name: migrations
+  #           path: /path/to/download/migration/scripts
+  #       - name: Review migration scripts
+  #         run: |
+  #           # Your commands to review the migration scripts
+  
+  #   apply_migrations:
+  #     needs: review_migrations
+  #     runs-on: ubuntu-latest
+  #     steps:
+  #       - name: Download migration scripts
+  #         uses: actions/download-artifact@v2
+  #         with:
+  #           name: migrations
+  #           path: /path/to/download/migration/scripts
+  #       - name: Apply migration scripts
+  #         run: |
+  #           # Your commands to apply the migration scripts
+  #           alembic upgrade head
 
   deploy_stage:
     needs: containerize
-    if: ${{ github.event.workflow_run.head_branch == 'main' }} || ${{ github.event.workflow_run.head_branch == 'stage' }}
+    if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
       packages: read
     environment: stage
     steps:
-      - name: echos github.event.after variable
-        run: |
-          echo "=== Is this the correct tag: github.event.after? ==="
-          echo ${{ github.event.after }}
+      # - name: echos github.event.after variable
+      #   run: |
+      #     echo "=== Is this the correct tag: github.event.after? ==="
+      #     echo ${{ github.event.after }}
+      #     echo $CONTAINER_TAG
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -135,6 +237,8 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to staging
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
+        env:
+          IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}"
         run: |
           az containerapp revision set-mode \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
@@ -144,18 +248,20 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --secrets \
-              "test-secret1=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret1,identityref:/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}" \
-              "postgres-user=${{ secrets.POSTGRES_USER }}" \
-              "postgres-password=${{ secrets.POSTGRES_PASSWORD }}"
+              "postgres-host=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-host,identityref:$IDENTITY_REF" \
+              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
+              "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-user,identityref:$IDENTITY_REF" \
+              "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-password,identityref:$IDENTITY_REF"
+          sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.event.after }} \
+            --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG \
             --set-env-vars \
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "KEYVAULT_HEALTH=secretref:keyvault-health" \
+              "POSTGRES_HOST=secretref:postgres-host" \
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
-              "TEST_SECRET1=secretref:test-secret1" \
-              "TEST_SECRET2=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/test-secret2,identityref:/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}" \
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"
         # TBD: consider deleting all existing environment variables before setting the new ones?
@@ -169,7 +275,7 @@ jobs:
             az account clear
 
   deploy_prod:
-    if: ${{ github.event.workflow_run.head_branch == 'main' }}
+    if: ${{ github.event.ref  == 'refs/heads/main' }}
     needs: deploy_stage
     runs-on: ubuntu-22.04
     permissions:
@@ -177,10 +283,11 @@ jobs:
       packages: read
     environment: prod
     steps:
-      - name: echos github.event.after variable
-        run: |
-          echo "=== Is this the correct tag: github.event.after? ==="
-          echo ${{ github.event.after }}
+      # - name: echos github.event.after variable
+      #   run: |
+      #     echo "=== Is this the correct tag: github.event.after? ==="
+      #     echo ${{ github.event.after }}
+      #     echo $CONTAINER_TAG
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -195,16 +302,36 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to production
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
+        env:
+          IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}"
+        # TBD: consider putting all of this into adeploymentscript and reuse her and in deploy_stage!
         run: |
           az containerapp revision set-mode \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --mode single
+          az containerapp secret set \
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --secrets \
+              "postgres-host=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-host,identityref:$IDENTITY_REF" \
+              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
+              "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-user,identityref:$IDENTITY_REF" \
+              "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-password,identityref:$IDENTITY_REF"
+          sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.CONTAINER_REPO}}/${{github.repository}}-backend_api:${{ github.github.event.after }}
-        # TBD: add variables and secrets
+            --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG \
+            --set-env-vars \
+              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "KEYVAULT_HEALTH=secretref:keyvault-health" \
+              "POSTGRES_HOST=secretref:postgres-host" \
+              "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
+              "POSTGRES_USER=secretref:postgres-user" \
+              "POSTGRES_PASSWORD=secretref:postgres-password"
+        # TBD: consider deleting all existing environment variables before setting the new ones?
+        # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
       - name: Logout from Azure
         uses: azure/CLI@v1
         with:

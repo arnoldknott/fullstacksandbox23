@@ -13,4 +13,4 @@ services:
 
     postgres:
         container_name: "postgres"
-        image: postgres:13-alpine
+        image: postgres:16.1-alpine
