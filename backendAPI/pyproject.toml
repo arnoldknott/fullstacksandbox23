@@ -29,3 +29,6 @@ dev = [
 
 [tool.isort]
 profile = "black"
+
+[tool.black]
+exclude = 'app/migrations/versions/*'
