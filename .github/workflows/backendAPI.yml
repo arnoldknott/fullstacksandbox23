@@ -3,9 +3,9 @@ name: BackendAPI
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-      - stage
+    # branches:
+    #   - main
+    #   - stage
     paths:
       - 'backendAPI/**'
       - '.github/workflows/backendAPI.yml'
