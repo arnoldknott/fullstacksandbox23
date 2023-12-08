@@ -3,6 +3,9 @@ name: BackendAPI
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
+      - stage
     paths:
       - 'backendAPI/**'
       - '.github/workflows/backendAPI.yml'
@@ -80,7 +83,7 @@ jobs:
             sh -c "pytest -v"
   
   containerize:
-    if: ${{ github.event.workflow_run.head_branch == 'main' }} || ${{ github.event.workflow_run.head_branch == 'stage' }}
+    if: ${{ github.event.ref }} == 'refs/heads/main' || 'refs/heads/stage'
     needs: test
     runs-on: ubuntu-22.04
     permissions:
@@ -193,7 +196,7 @@ jobs:
 
   deploy_stage:
     needs: containerize
-    if: ${{ github.event.ref == 'refs/heads/main' }} || ${{ github.event.ref == 'refs/heads/stage' }}
+    if: ${{ github.event.ref }} == 'refs/heads/main' || 'refs/heads/stage'
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
@@ -257,7 +260,7 @@ jobs:
             az account clear
 
   deploy_prod:
-    if: ${{ github.event.ref == 'refs/heads/main' }}
+    if: ${{ github.event.ref }} == 'refs/heads/main'
     needs: deploy_stage
     runs-on: ubuntu-22.04
     permissions:
