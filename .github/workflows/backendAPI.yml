@@ -16,7 +16,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  CONTAINER_TAG: ${{ github.event.after }}
+  COMMIT_SHA: ${{ github.event.after }}
+  CONTAINER_TAG: $COMMIT_SHA
 
 jobs:
   test:
@@ -108,7 +109,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build for production
         run: |
-          docker compose -f compose.yml build
+          docker compose -f compose.yml build --build.arg COMMIT_SHA=${{env.COMMIT_SHA}} backend_api
       - name: Show images
         run: docker image list
       - name: Tag and push with latest and commit hash
@@ -140,6 +141,17 @@ jobs:
   # - alembic revision --autogenerate -m "commit_id"
   # - get migrations script and commit back to git repo
   # - put migration scripts as artifacts?¿?
+  # -     - name: Generate Alembic migration script
+        #   run: |
+        #   script=$(az containerapp exec --name <app-name> --resource-group <resource-group> --exec-command "/bin/sh -c 'alembic revision --autogenerate -m \"commit_id\"'")
+        #   echo "$script" > migration_script.py
+        # - name: Commit and push migration script
+        # run: |
+        #   git config --global user.name 'GitHub Actions'
+        #   git config --global user.email 'github-actions@github.com'
+        #   git add migration_script.py
+        #   git commit -m "Add migration script"
+        #   git push
   # - manual approval step (show artifacts)?
   # - alembic upgrade head
   # then back to original script and run deploy_stage
