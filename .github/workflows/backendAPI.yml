@@ -17,7 +17,6 @@ on:
 env:
   REGISTRY: ghcr.io
   COMMIT_SHA: ${{ github.event.after }}
-  CONTAINER_TAG: $COMMIT_SHA
 
 jobs:
   test:
@@ -39,7 +38,6 @@ jobs:
         run: |
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
-          echo $CONTAINER_TAG
           echo "=== github.event.pull_request.head.sha ==="
           echo ${{ github.event.pull_request.head.sha }}
           echo "=== github.event.workflow_run.head_sha ==="
@@ -119,11 +117,11 @@ jobs:
             ${{env.REGISTRY}}/${{github.repository}}-backend_api:latest
           docker tag \
             ${{github.event.repository.name}}-backend_api:latest \
-            ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG
+            ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA
           docker push \
             ${{env.REGISTRY}}/${{github.repository}}-backend_api:latest
           docker push \
-              ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG
+              ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA
 
   # postgres_migrations:
   #   needs: containerize
@@ -268,7 +266,7 @@ jobs:
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG \
+            --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA \
             --set-env-vars \
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
@@ -334,7 +332,7 @@ jobs:
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$CONTAINER_TAG \
+            --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA \
             --set-env-vars \
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
