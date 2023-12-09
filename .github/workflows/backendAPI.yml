@@ -141,7 +141,7 @@ jobs:
   # - put migration scripts as artifacts?¿?
   # -     - name: Generate Alembic migration script
         #   run: |
-        #   script=$(az containerapp exec --name <app-name> --resource-group <resource-group> --exec-command "/bin/sh -c 'alembic revision --autogenerate -m \"commit_id\"'")
+        #   script=$(az containerapp exec --name <app-name> --resource-group <resource-group> --command "/bin/sh -c 'alembic revision --autogenerate -m \"commit_id\"'")
         #   echo "$script" > migration_script.py
         # - name: Commit and push migration script
         # run: |
@@ -276,6 +276,35 @@ jobs:
               "POSTGRES_PASSWORD=secretref:postgres-password"
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
+        # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
+      - name: Logout from Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
+
+  check_postgres_migrations:
+    needs: deploy_stage
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      packages: read
+    environment: stage
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Check for migrations
+        run: |
+          az containerapp exec \
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --command "script/postgres_migration_check.sh"
       - name: Logout from Azure
         uses: azure/CLI@v1
         with:
