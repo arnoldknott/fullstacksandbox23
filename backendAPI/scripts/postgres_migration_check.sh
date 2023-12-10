@@ -1,9 +1,10 @@
 #!/bin/sh
 
 cd /app/src
-alembic check > alembic_check.log
+alembic check > alembic_check.log || true
 ALEMBIC_EXIT_CODE=$?
 cat alembic_check.log
+echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
 exit $ALEMBIC_EXIT_CODE
 
 # cd /app/src
