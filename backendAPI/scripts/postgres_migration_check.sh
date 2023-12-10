@@ -3,6 +3,7 @@
 cd /app/src
 alembic check > alembic_check.log || true
 ALEMBIC_EXIT_CODE=$?
+echo $ALEMBIC_EXIT_CODE > alembic_check_exit_code.log
 cat alembic_check.log
 echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
 exit $ALEMBIC_EXIT_CODE
