@@ -301,12 +301,12 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Check for migrations
         id: check_run
-        # OUTPUT=$(script -q -e c "az containerapp exec \
-        # --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-        # --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-        # --command \"scripts/postgres_migration_check.sh\"")
+        # OUTPUT=$(script -q -e -c "pwd")
         run: |
-          OUTPUT=$(script -q -e -c "pwd")
+          OUTPUT=$(script -q -e -c "az containerapp exec \
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --command \"scripts/postgres_migration_check.sh\"")
           EXIT_CODE=$?
           echo $OUTPUT
           echo $EXIT_CODE
