@@ -25,7 +25,7 @@ jobs:
         # --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
         # --command \"scripts/postgres_migration_check.sh\""
         run: |
-          mkdir -p postgres_migration_check
+          mkdir -p postgres_migration
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
