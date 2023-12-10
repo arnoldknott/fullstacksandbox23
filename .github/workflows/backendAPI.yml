@@ -311,8 +311,9 @@ jobs:
           echo $EXIT_CODE
           echo "OUTPUT=$OUTPUT" >> $GITHUB_OUTPUT
           echo "EXIT_CODE=$EXIT_CODE" >> $GITHUB_OUTPUT
-          echo $OUTPUT > postgres_migration_check/output_${{ vars.COMMIT_SHA }}.txt
-          echo $EXIT_CODE > postgres_migration_check/exit_code_${{ vars.COMMIT_SHA }}.txt
+          mkdir -p postgres_migration_check
+          echo $OUTPUT > postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
+          echo $EXIT_CODE > postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt
         # echo "::set-output name=postgres_migration_check_output::$OUTPUT"
         # echo "::set-output name=postgres_migration_check__exit_code::$EXIT_CODE"
         
@@ -320,24 +321,17 @@ jobs:
       #   run: |
       #     echo "${{ steps.check_run.outputs.postgres_migration_check_output }}" > ${{ github.workspace }}/postgres_migration_check/output.txt
       #     echo "${{ steps.check_run.outputs.postgres_migration_check_exit_code }}" > ${{ github.workspace }}/postgres_migration_check/exit_code.txt
-        # echo $OUTPUT
-        # echo $EXIT_CODE
-        # run: |
-        #   script -q -e -c "az containerapp exec \
-        #   --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-        #   --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-        #   --command \"pwd\""
-      - name: Upload migration check artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: postgres_migration_check_results
-          path: |
-            postgres_migration_check/output_${{ vars.COMMIT_SHA }}.txt
-            postgres_migration_check/exit_code_${{ vars.COMMIT_SHA }}.txt
-      - name: Display migration check output
-        run: |
-          echo ${{ steps.check_run.outputs.script_output }}
-          echo ${{ steps.check_run.outputs.script_exit_code }}
+      # - name: Upload migration check artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: postgres_migration_check_results
+      #     path: |
+      #       postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
+      #       postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt
+      # - name: Display migration check output
+      #   run: |
+      #     echo ${{ steps.check_run.outputs.script_output }}
+      #     echo ${{ steps.check_run.outputs.script_exit_code }}
       - name: Logout from Azure
         uses: azure/CLI@v1
         with:
@@ -362,12 +356,12 @@ jobs:
         with:
           name: postgres_migration_check_results
           path: |
-            postgres_migration_check/output_${{ vars.COMMIT_SHA }}.txt
-            postgres_migration_check/exit_code_${{ vars.COMMIT_SHA }}.txt
+            postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
+            postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt
       - name: Display migration check output
         run: |
-          OUTPUT=$(cat postgres_migration_check/output_${{ vars.COMMIT_SHA }}.txt)
-          EXIT_CODE=$(cat postgres_migration_check/exit_code_${{ vars.COMMIT_SHA }}.txt)
+          OUTPUT=$(cat postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt)
+          EXIT_CODE=$(cat postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt)
           echo $OUTPUT
           echo $EXIT_CODE
       # call another workflow here, that
