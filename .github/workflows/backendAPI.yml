@@ -301,11 +301,12 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Check for migrations
         id: check_run
+        # OUTPUT=$(script -q -e c "az containerapp exec \
+        # --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+        # --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+        # --command \"scripts/postgres_migration_check.sh\"")
         run: |
-          OUTPUT=$(script -q -e c "az containerapp exec \
-            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_check.sh\"")
+          OUTPUT=$(script -q -e -c "pwd")
           EXIT_CODE=$?
           echo $OUTPUT
           echo $EXIT_CODE
@@ -321,13 +322,13 @@ jobs:
       #   run: |
       #     echo "${{ steps.check_run.outputs.postgres_migration_check_output }}" > ${{ github.workspace }}/postgres_migration_check/output.txt
       #     echo "${{ steps.check_run.outputs.postgres_migration_check_exit_code }}" > ${{ github.workspace }}/postgres_migration_check/exit_code.txt
-      # - name: Upload migration check artifacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: postgres_migration_check_results
-      #     path: |
-      #       postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
-      #       postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt
+      - name: Upload migration check artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: postgres_migration_check_results
+          path: |
+            postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
+            postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt
       # - name: Display migration check output
       #   run: |
       #     echo ${{ steps.check_run.outputs.script_output }}
@@ -390,6 +391,13 @@ jobs:
       #       az logout
       #       az cache purge
       #       az account clear
+
+# deploy_prod:
+  # needs: [deploy-stage, check_postgres_migrations, migration-workflow]
+  # if: |
+  #   github.event.ref == 'refs/heads/main' &&
+  #   (needs.check_postgres_migrations.outputs.script_exit_code == '0' || needs.migration-workflow.result == 'success')
+  # # ...
 
   deploy_prod:
     if: ${{ github.event.ref  == 'refs/heads/main' }}
