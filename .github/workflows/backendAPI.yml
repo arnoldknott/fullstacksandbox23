@@ -311,8 +311,8 @@ jobs:
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_check.sh\"" > postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
-          ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}')
+            --command \"scripts/postgres_migration_check.sh\"" > postgres_migration/check_${{ env.COMMIT_SHA }}.txt
+          ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration/check_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}')
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
       # TBD: remove if proven to work:
@@ -336,8 +336,8 @@ jobs:
       - name: Upload migration check artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: postgres_migration_check_results
-          path: postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
+          name: postgres_migration_results
+          path: postgres_migration/check_${{ env.COMMIT_SHA }}.txt
       # - name: Display migration check output
       #   run: |
       #     echo ${{ steps.check_run.outputs.script_output }}
@@ -352,6 +352,7 @@ jobs:
     outputs:
       alembic_check: ${{ steps.check_run.outputs.alembic_check_exit_code }}
 
+      # This was just a dummy:
   call_migrations:
     needs: check_postgres_migrations
     if: ${{ needs.check_postgres_migrations.outputs.alembic_check != 0 }}
@@ -369,11 +370,11 @@ jobs:
       - name: Download migration check artifacts
         uses: actions/download-artifact@v3
         with:
-          name: postgres_migration_check_results
-          path: postgres_migration_check
+          name: postgres_migration_results
+          path: postgres_migration
       - name: Display migration check output
         run: |
-          cat postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
+          cat postgres_migration/check_${{ env.COMMIT_SHA }}.txt
           echo $ALEMBIC_CHECK_EXIT_CODE
       # call another workflow here, that
       # - builds the migration scripts
@@ -408,6 +409,14 @@ jobs:
   #   github.event.ref == 'refs/heads/main' &&
   #   (needs.check_postgres_migrations.outputs.alembic_check == '0' || needs.migration-workflow.result == 'success')
   # # ...
+
+# No: the whole piepline is rerun on pull request from migrating database:
+# deploy_prod:
+  # needs: [deploy-stage, check_postgres_migrations
+  # if: |
+  #   github.event.ref == 'refs/heads/main' &&
+  #   needs.check_postgres_migrations.outputs.alembic_check == '0'
+  # if the migration workflow was not successful, the pull request did not get created!
 
   deploy_prod:
     if: ${{ github.event.ref  == 'refs/heads/main' }}
