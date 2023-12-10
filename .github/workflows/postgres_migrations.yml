@@ -2,6 +2,10 @@ name: postgres_migrations
 
 on:
   workflow_call:
+    inputs:
+      COMMIT_SHA:
+        required: true
+        type: string
 
 jobs:
   create_migration_scripts:
@@ -9,8 +13,14 @@ jobs:
     permissions:
       id-token: write
       pull-requests: write
+    environment: stage
     steps:
       - uses: actions/checkout@v4
+      - name: Check what directory we are in
+        # maybe we need a checkout repo step?
+        run: |
+          pwd
+          ls -la
       - name: Login to Azure
         uses: azure/login@v1
         with:
@@ -37,6 +47,7 @@ jobs:
           name: postgres_migration_results
           path: postgres_migration/create_${{ env.COMMIT_SHA }}.txt
       # Shall I really run it here already or first after pull request is merged?
+      # No - let's run them right after deployment az containerapp update in stage & prod
       # - name: Run the migrations
       #   run: |
       #     mkdir -p postgres_migration_check
@@ -51,22 +62,18 @@ jobs:
       #     path: |
       #       postgres_migration/create_${{ env.COMMIT_SHA }}.txt
       #       postgres_migration/run_${{ env.COMMIT_SHA }}.txt
-      - name: Check what directory we are in
-        # maybe we need a checkout repo step?
-        run: |
-          pwd
-          ls -la
       - name: Retrieve migration script from log
         run: |
           MIGRATION_SCRIPT_FILENAME=$(tail -n +4 postgres_migration/create_${{ env.COMMIT_SHA }}.txt | head -n 1)
           tail -n +5 postgres_migration/create_${{ env.COMMIT_SHA }}.txt | head -n -2 > $MIGRATION_SCRIPT_FILENAME.sql
+          mv $MIGRATION_SCRIPT_FILENAME.sql backendAPI/src/migrations/versions
       - name: Echo the migration script
         run: |
           cat postgres_migration/create_${{ env.COMMIT_SHA }}.sql
       - name: Commit migration script
         uses: EndBug/add-and-commit@v9
         with:
-          add: 'postgres_migration/create_${{ env.COMMIT_SHA }}.sql'
+          add: 'backendAPI/src/migrations/versions/create_${{ env.COMMIT_SHA }}.sql'
           message: '[migrations] Add migration script for commit ${{ env.COMMIT_SHA }}'
       - name: Echo git status
         run: |

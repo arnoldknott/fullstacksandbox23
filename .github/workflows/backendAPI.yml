@@ -353,30 +353,41 @@ jobs:
     outputs:
       alembic_check: ${{ steps.check_run.outputs.alembic_check_exit_code }}
 
-      # This was just a dummy:
   call_migrations:
     needs: check_postgres_migrations
-    if: ${{ needs.check_postgres_migrations.outputs.alembic_check != 0 }}
-    env: 
-      ALEMBIC_CHECK_EXIT_CODE: ${{ needs.check_postgres_migrations.outputs.alembic_check }}
-    runs-on: ubuntu-22.04
-    permissions:
-      id-token: write
-      packages: read
-    environment: stage
-    steps:
-      - name: Echo alembic check exit code
-        run: |
-          echo ${{ env.ALEMBIC_CHECK_EXIT_CODE }}
-      - name: Download migration check artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: postgres_migration_results
-          path: postgres_migration
-      - name: Display migration check output
-        run: |
-          cat postgres_migration/check_${{ env.COMMIT_SHA }}.txt
-          echo $ALEMBIC_CHECK_EXIT_CODE
+    uses: ./.github/workflows/postgres_migrations.yml
+    with:
+      COMMIT_SHA: ${{ env.COMMIT_SHA }}
+    
+    # inputs are missing here!
+
+      # This was just a dummy:
+  # call_migrations:
+  #   needs: check_postgres_migrations
+  #   if: ${{ needs.check_postgres_migrations.outputs.alembic_check != 0 }}
+  #   env: 
+  #     ALEMBIC_CHECK_EXIT_CODE: ${{ needs.check_postgres_migrations.outputs.alembic_check }}
+  #   runs-on: ubuntu-22.04
+  #   permissions:
+  #     id-token: write
+  #     packages: read
+  #   environment: stage
+  #   steps:
+  #     - name: Echo alembic check exit code
+  #       run: |
+  #         echo ${{ env.ALEMBIC_CHECK_EXIT_CODE }}
+  #     - name: Download migration check artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: postgres_migration_results
+  #         path: postgres_migration
+  #     - name: Display migration check output
+  #       run: |
+  #         cat postgres_migration/check_${{ env.COMMIT_SHA }}.txt
+  #         echo $ALEMBIC_CHECK_EXIT_CODE
+  #
+  #
+  #
       # call another workflow here, that
       # - builds the migration scripts
       # - commits them to the repo
@@ -420,11 +431,11 @@ jobs:
   # if the migration workflow was not successful, the pull request did not get created!
 
   deploy_prod:
-    if: ${{ github.event.ref  == 'refs/heads/main' }}
+    needs: [ deploy_stage, check_postgres_migrations ]
+    if: ${{ github.event.ref  == 'refs/heads/main' && needs.check_postgres_migrations.outputs.alembic_check == 0 }}
     # as this environmnet requires a manual review:
     # also wait on the pull request from postgres migrations to be merged
     # if check migrations detected changes.
-    needs: deploy_stage
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
