@@ -290,7 +290,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
-      packages: read
+      # packages: read
     environment: stage
     steps:
       - name: Login to Azure
@@ -300,16 +300,39 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Check for migrations
+        id: check_run
         run: |
-          script -q -e c "az containerapp exec \
+          OUTPUT=$(script -q -e c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_check.sh\""
+            --command \"scripts/postgres_migration_check.sh\"")
+          EXIT_CODE=$?
+          echo "::set-output name=postgres_migration_check_output::$OUTPUT"
+          echo "::set-output name=postgres_migration_check__exit_code::$EXIT_CODE"
+          echo $OUTPUT > postgres_migration_check/output_${{ vars.COMMIT_SHA }}.txt
+          echo $EXIT_CODE > postgres_migration_check/exit_code_${{ vars.COMMIT_SHA }}.txt
+      # - name: Safe migration check output to files
+      #   run: |
+      #     echo "${{ steps.check_run.outputs.postgres_migration_check_output }}" > ${{ github.workspace }}/postgres_migration_check/output.txt
+      #     echo "${{ steps.check_run.outputs.postgres_migration_check_exit_code }}" > ${{ github.workspace }}/postgres_migration_check/exit_code.txt
+        # echo $OUTPUT
+        # echo $EXIT_CODE
         # run: |
         #   script -q -e -c "az containerapp exec \
         #   --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
         #   --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
         #   --command \"pwd\""
+      - name: Upload migration check artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: postgres_migration_check_results
+          path: |
+            postgres_migration_check/output_${{ vars.COMMIT_SHA }}.txt
+            postgres_migration_check/exit_code_${{ vars.COMMIT_SHA }}.txt
+      - name: Display migration check output
+        run: |
+          echo ${{ steps.check_run.outputs.script_output }}
+          echo ${{ steps.check_run.outputs.script_exit_code }}
       - name: Logout from Azure
         uses: azure/CLI@v1
         with:
@@ -317,9 +340,63 @@ jobs:
             az logout
             az cache purge
             az account clear
+    outputs:
+      var: ${{ steps.check_run.outputs.migration_check_exit_code }}
+
+  call_migrations:
+    needs: check_postgres_migrations
+    if: ${{ needs.check_postgres_migrations.outputs.script_exit_code != 1 }}
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      packages: read
+    environment: stage
+    steps:
+      - name: Download migration check artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: postgres_migration_check_results
+          path: |
+            postgres_migration_check/output_${{ vars.COMMIT_SHA }}.txt
+            postgres_migration_check/exit_code_${{ vars.COMMIT_SHA }}.txt
+      - name: Display migration check output
+        run: |
+          OUTPUT=$(cat postgres_migration_check/output_${{ vars.COMMIT_SHA }}.txt)
+          EXIT_CODE=$(cat postgres_migration_check/exit_code_${{ vars.COMMIT_SHA }}.txt)
+          echo $OUTPUT
+          echo $EXIT_CODE
+      # call another workflow here, that
+      # - builds the migration scripts
+      # - commits them to the repo
+      # - opens a pull request to repo
+      # - on manual approval of pull request
+      # - runs the migrations in stage
+
+      # - name: Login to Azure
+      #   uses: azure/login@v1
+      #   with:
+      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      # - name: Call migrations
+      #   run: |
+      #     script -q -e -c "az containerapp exec \
+      #       --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+      #       --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+      #       --command \"scripts/postgres_migration_call.sh\""
+      # - name: Logout from Azure
+      #   uses: azure/CLI@v1
+      #   with:
+      #     inlineScript: |
+      #       az logout
+      #       az cache purge
+      #       az account clear
 
   deploy_prod:
     if: ${{ github.event.ref  == 'refs/heads/main' }}
+    # as this environmnet requires a manual review:
+    # also wait on the pull request from postgres migrations to be merged
+    # if check migrations detected changes.
     needs: deploy_stage
     runs-on: ubuntu-22.04
     permissions:
@@ -376,6 +453,9 @@ jobs:
               "POSTGRES_PASSWORD=secretref:postgres-password"
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
+      # TBD: add checking out the migration scripts from the repo (created in stage) and running them here
+      # TBD: consider displaying a "maintanance" page while the migrations are running
+      # TBD: or consider creating separate migration scripts for stage and prod? => another pull request? 2 different directories?
       - name: Logout from Azure
         uses: azure/CLI@v1
         with:
