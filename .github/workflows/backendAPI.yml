@@ -333,9 +333,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: postgres_migration_check_results
-          path: |
-            postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
-            postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt
+          path: postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
       # - name: Display migration check output
       #   run: |
       #     echo ${{ steps.check_run.outputs.script_output }}
@@ -353,24 +351,26 @@ jobs:
   call_migrations:
     needs: check_postgres_migrations
     if: ${{ needs.check_postgres_migrations.outputs.alembic_check != 0 }}
+    env: 
+      ALEMBIC_CHECK_EXIT_CODE: ${{ needs.check_postgres_migrations.outputs.alembic_check }}
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
       packages: read
     environment: stage
     steps:
+      - name: Echo alembic check exit code
+        run: |
+          echo ${{ env.ALEMBIC_CHECK_EXIT_CODE }}
       - name: Download migration check artifacts
         uses: actions/download-artifact@v3
         with:
           name: postgres_migration_check_results
-          path: |
-            postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
+          path: postgres_migration_check
       - name: Display migration check output
         run: |
           cat postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
-          OUTPUT=$(cat postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt)
-          echo $OUTPUT
-          echo $EXIT_CODE
+          echo $ALEMBIC_CHECK_EXIT_CODE
       # call another workflow here, that
       # - builds the migration scripts
       # - commits them to the repo
