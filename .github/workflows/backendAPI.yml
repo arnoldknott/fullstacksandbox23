@@ -307,10 +307,15 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --command \"scripts/postgres_migration_check.sh\"")
           EXIT_CODE=$?
-          echo "::set-output name=postgres_migration_check_output::$OUTPUT"
-          echo "::set-output name=postgres_migration_check__exit_code::$EXIT_CODE"
+          echo $OUTPUT
+          echo $EXIT_CODE
+          echo "OUTPUT=$OUTPUT" >> $GITHUB_OUTPUT
+          echo "EXIT_CODE=$EXIT_CODE" >> $GITHUB_OUTPUT
           echo $OUTPUT > postgres_migration_check/output_${{ vars.COMMIT_SHA }}.txt
           echo $EXIT_CODE > postgres_migration_check/exit_code_${{ vars.COMMIT_SHA }}.txt
+        # echo "::set-output name=postgres_migration_check_output::$OUTPUT"
+        # echo "::set-output name=postgres_migration_check__exit_code::$EXIT_CODE"
+        
       # - name: Safe migration check output to files
       #   run: |
       #     echo "${{ steps.check_run.outputs.postgres_migration_check_output }}" > ${{ github.workspace }}/postgres_migration_check/output.txt
@@ -345,7 +350,7 @@ jobs:
 
   call_migrations:
     needs: check_postgres_migrations
-    if: ${{ needs.check_postgres_migrations.outputs.script_exit_code != 1 }}
+    if: ${{ needs.check_postgres_migrations.outputs.script_exit_code != 0 }}
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
