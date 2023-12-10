@@ -312,7 +312,9 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --command \"scripts/postgres_migration_check.sh\"" > postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
-          EXIT_CODE=$?
+          ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}')
+          echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
+          echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
         # echo $OUTPUT
           # echo $EXIT_CODE
           # echo "OUTPUT=$OUTPUT" >> $GITHUB_OUTPUT
@@ -346,11 +348,11 @@ jobs:
             az cache purge
             az account clear
     outputs:
-      var: ${{ steps.check_run.outputs.migration_check_exit_code }}
+      alembic_check: ${{ steps.check_run.outputs.alembic_check_exit_code }}
 
   call_migrations:
     needs: check_postgres_migrations
-    if: ${{ needs.check_postgres_migrations.outputs.script_exit_code != 0 }}
+    if: ${{ needs.check_postgres_migrations.outputs.alembic_check != 0 }}
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
@@ -363,11 +365,10 @@ jobs:
           name: postgres_migration_check_results
           path: |
             postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
-            postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt
       - name: Display migration check output
         run: |
+          cat postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
           OUTPUT=$(cat postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt)
-          EXIT_CODE=$(cat postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt)
           echo $OUTPUT
           echo $EXIT_CODE
       # call another workflow here, that
