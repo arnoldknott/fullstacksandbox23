@@ -306,10 +306,10 @@ jobs:
           #   --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
           #   --command "scripts/postgres_migration_check.sh"
         run: |
-          az containerapp exec \
+          script -q -e -c "az containerapp exec \
           --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
           --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-          --command "pwd"
+          --command \"pwd\""
       - name: Logout from Azure
         uses: azure/CLI@v1
         with:
