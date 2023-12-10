@@ -356,6 +356,7 @@ jobs:
   call_migrations:
     needs: check_postgres_migrations
     uses: ./.github/workflows/postgres_migrations.yml
+    environment: COMMIT_SHA: ${{ env.COMMIT_SHA }}
     with:
       COMMIT_SHA: ${{ env.COMMIT_SHA }}
     
