@@ -274,7 +274,22 @@ jobs:
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"
-        # TBD: Run migrations here?
+      #
+      # TBD: this should be ready to go Remember to put into prod as well!
+      # - name: Upgrade database
+      #   run: |
+      #     mkdir -p postgres_migration
+      #     script -q -e -c "az containerapp exec \
+      #       --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+      #       --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+      #       --command \"scripts/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_${{ env.COMMIT_SHA }}.txt
+      # - name: Upload migration upgrade artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: postgres_migration_results
+      #     path: postgres_migration/upgrade_${{ env.COMMIT_SHA }}.txt
+      #
+      #
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
         # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
