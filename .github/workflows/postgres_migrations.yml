@@ -95,4 +95,4 @@ jobs:
       # when the pull request is merged into stage, 
       # we need another "containerize", "deploy_stage"
       # -> which should now result in migrations_check to return 0
-      # that would tri
+      # that would trigger deplyment to prod

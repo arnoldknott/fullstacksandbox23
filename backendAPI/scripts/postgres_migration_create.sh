@@ -3,7 +3,7 @@
 # apk add --no-cache git
 cd /app/src
 alembic revision --autogenerate -m \"$COMMIT_SHA\" > alembic_revision.log
-MIGRATION_SCRIPT_FILENAME=$(cat alembic_revision.log | grep -oP 'Generating \K[^ ]+')
+MIGRATION_SCRIPT_FILENAME=$(cat alembic_revision.log | awk '/Generating /{print $2}')
 echo $MIGRATION_SCRIPT_FILENAME
 cat $MIGRATION_SCRIPT_FILENAME
 
