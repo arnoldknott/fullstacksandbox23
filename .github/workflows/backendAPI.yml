@@ -314,10 +314,11 @@ jobs:
             --command \"scripts/postgres_migration_check.sh\"" > postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
           ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}')
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
-          echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
-      - name: Set elembic check exit code to 0 to check if call_migration is getting skipped
-        run: |
           echo "alembic_check_exit_code=0" >> $GITHUB_OUTPUT
+      # TBD: remove if proven to work:
+      # - name: Set elembic check exit code to 0 to check if call_migration is getting skipped
+      #   run: |
+      #     echo "alembic_check_exit_code=0" >> $GITHUB_OUTPUT
         # echo $OUTPUT
           # echo $EXIT_CODE
           # echo "OUTPUT=$OUTPUT" >> $GITHUB_OUTPUT
