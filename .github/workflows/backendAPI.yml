@@ -359,6 +359,7 @@ jobs:
     # environment: COMMIT_SHA: ${{ env.COMMIT_SHA }}
     with:
       COMMIT_SHA: ${{ github.event.after }}
+    secrets: inherit
     
     # inputs are missing here!
 
