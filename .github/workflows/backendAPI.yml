@@ -315,6 +315,9 @@ jobs:
           ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}')
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
+      - name: Set elembic check exit code to 0 to check if call_migration is getting skipped
+        run: |
+          echo "alembic_check_exit_code=0" >> $GITHUB_OUTPUT
         # echo $OUTPUT
           # echo $EXIT_CODE
           # echo "OUTPUT=$OUTPUT" >> $GITHUB_OUTPUT
@@ -402,7 +405,7 @@ jobs:
   # needs: [deploy-stage, check_postgres_migrations, migration-workflow]
   # if: |
   #   github.event.ref == 'refs/heads/main' &&
-  #   (needs.check_postgres_migrations.outputs.script_exit_code == '0' || needs.migration-workflow.result == 'success')
+  #   (needs.check_postgres_migrations.outputs.alembic_check == '0' || needs.migration-workflow.result == 'success')
   # # ...
 
   deploy_prod:
