@@ -300,11 +300,16 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Check for migrations
+        # run: |
+          # az containerapp exec \
+          #   --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+          #   --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+          #   --command "scripts/postgres_migration_check.sh"
         run: |
           az containerapp exec \
-            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command "scripts/postgres_migration_check.sh"
+          --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+          --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+          --command "pwd"
       - name: Logout from Azure
         uses: azure/CLI@v1
         with:

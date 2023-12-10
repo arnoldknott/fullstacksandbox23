@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd /app/src
+alembic downgrade \"$1\"
+# docker compose run -T --rm backend_api sh -c "alembic upgrade head"
