@@ -3,7 +3,7 @@
 set +e
 
 cd /app/src
-alembic check > alembic_check.log
+alembic -c alembic_stage_prod.ini check > alembic_check.log
 ALEMBIC_EXIT_CODE=$?
 echo $ALEMBIC_EXIT_CODE > alembic_check_exit_code.log
 cat alembic_check.log

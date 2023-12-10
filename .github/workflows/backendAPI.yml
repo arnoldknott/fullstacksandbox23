@@ -421,9 +421,12 @@ jobs:
       #     path: |
       #       postgres_migration/create_${{ env.COMMIT_SHA }}.txt
       #       postgres_migration/run_${{ env.COMMIT_SHA }}.txt
+      # If the following step fails, the migration script was not created correctly.
+      # Probably line "/Generating <file_name>" is missing" - see artifacts!
       - name: Retrieve migration script from log
         run: |
           MIGRATION_SCRIPT_FILENAME=$(tail -n +4 postgres_migration/create_${{ env.COMMIT_SHA }}.txt | head -n 1)
+          echo "---$MIGRATION_SCRIPT_FILENAME---"
           tail -n +5 postgres_migration/create_${{ env.COMMIT_SHA }}.txt | head -n -2 > $MIGRATION_SCRIPT_FILENAME.sql
           mv $MIGRATION_SCRIPT_FILENAME.sql backendAPI/src/migrations/versions
       - name: Echo the migration script
