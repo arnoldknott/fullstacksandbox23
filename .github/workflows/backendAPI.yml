@@ -274,6 +274,7 @@ jobs:
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"
+        # TBD: Run migrations here?
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
         # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
@@ -307,7 +308,7 @@ jobs:
         # --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
         # --command \"scripts/postgres_migration_check.sh\""
         run: |
-          mkdir -p postgres_migration_check
+          mkdir -p postgres_migration
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
@@ -479,7 +480,10 @@ jobs:
               "POSTGRES_PASSWORD=secretref:postgres-password"
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
-      # TBD: add checking out the migration scripts from the repo (created in stage) and running them here
+      # TBD: add running migration scripts - this should be the container,
+      # - that worked in stage and has the latest scripts in the versions folder
+      # - only alembic upgrade head should be necessary! (but maybe I can generate a new script and diff with the one from stage?)
+      # - if that diff fails - roll immediately back to the previous revision?
       # TBD: consider displaying a "maintanance" page while the migrations are running
       # TBD: or consider creating separate migration scripts for stage and prod? => another pull request? 2 different directories?
       - name: Logout from Azure
