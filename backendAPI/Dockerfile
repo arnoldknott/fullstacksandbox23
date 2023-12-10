@@ -31,4 +31,5 @@ RUN pip install --no-cache-dir --upgrade pip && \
 #     adduser --disabled-password --no-create-home backend-user
 # USER backend-user
 ARG COMMIT_SHA="noGitBuild"
+ENV COMMIT_SHA=$COMMIT_SHA
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
