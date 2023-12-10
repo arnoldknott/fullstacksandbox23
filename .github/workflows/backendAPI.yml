@@ -302,19 +302,23 @@ jobs:
       - name: Check for migrations
         id: check_run
         # OUTPUT=$(script -q -e -c "pwd")
+        # OUTPUT=$(script -q -e -c "az containerapp exec \
+        # --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+        # --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+        # --command \"scripts/postgres_migration_check.sh\""
         run: |
-          OUTPUT=$(script -q -e -c "az containerapp exec \
+          script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_check.sh\"")
+            --command \"scripts/postgres_migration_check.sh\"" > postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
           EXIT_CODE=$?
-          echo $OUTPUT
-          echo $EXIT_CODE
-          echo "OUTPUT=$OUTPUT" >> $GITHUB_OUTPUT
-          echo "EXIT_CODE=$EXIT_CODE" >> $GITHUB_OUTPUT
-          mkdir -p postgres_migration_check
-          echo $OUTPUT > postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
-          echo $EXIT_CODE > postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt
+        # echo $OUTPUT
+          # echo $EXIT_CODE
+          # echo "OUTPUT=$OUTPUT" >> $GITHUB_OUTPUT
+          # echo "EXIT_CODE=$EXIT_CODE" >> $GITHUB_OUTPUT
+          # mkdir -p postgres_migration_check
+          # echo $OUTPUT > postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
+          # echo $EXIT_CODE > postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt
         # echo "::set-output name=postgres_migration_check_output::$OUTPUT"
         # echo "::set-output name=postgres_migration_check__exit_code::$EXIT_CODE"
         
