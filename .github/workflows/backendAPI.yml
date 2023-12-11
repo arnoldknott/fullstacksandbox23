@@ -484,7 +484,7 @@ jobs:
       #     mv $MIGRATION_SCRIPT_FILENAME.sql $MIGRATION_FILES_PATH
       - name: Echo the migration script
         run: |
-          cat $MIGRATION_FILES_PATH/${{ env.MIGRATION_SCRIPT_FILENAME }}}
+          cat $MIGRATION_FILES_PATH/${{ env.MIGRATION_SCRIPT_FILENAME }}
       - name: Commit migration script
         uses: EndBug/add-and-commit@v9
         with:
