@@ -9,7 +9,7 @@ mkdir -p /data/migrations/stage_prod/versions
 cd /app/src
 alembic -c alembic_stage_prod.ini  revision --autogenerate -m \"$COMMIT_SHA\" > $LOGFILE_PATH/revision_$COMMIT_SHA.log
 MIGRATION_SCRIPT_FILENAME=$(cat $LOGFILE_PATH/revision_$COMMIT_SHA.log | awk '/Generating /{print $2}')
-mv $MIGRATION_SCRIPT_FILENAME $VERSIONSFILE_PATH
+cp $MIGRATION_SCRIPT_FILENAME $VERSIONSFILE_PATH
 # mv $LOGFILE_PATH/revision_$COMMIT_SHA.log /data/migrations/stage_prod/logs
 # Leave those outputs as they are, as the runner picks up the echo and recreates the file for pull request:
 cat $MIGRATION_SCRIPT_FILENAME
