@@ -302,6 +302,9 @@ jobs:
             az cache purge
             az account clear
 
+
+  # DEBUG: manually fix migrations on the servers: az containerapp exec -g <resource_group> -n <backendAPI_containerapp_name> --command "/bin/sh"
+  # Make sure to persist the changes to mounted volume and commit them to the repo afterwards!
   check_postgres_migrations:
     needs: deploy_stage
     runs-on: ubuntu-22.04
@@ -430,8 +433,11 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --command \"scripts/postgres_migration_revision.sh\"" > postgres_migration/revision_old_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_${{ env.COMMIT_SHA }}.log
-          MIGRATION_SCRIPT_PATH_REMOTE=$(cat postgres_migration/revision_${{ env.COMMIT_SHA }}.log | awk '/Generating /{print $2}')
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_filename_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log
+          MIGRATION_SCRIPT_PATH_REMOTE=$(cat postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log)
+          echo $MIGRATION_SCRIPT_PATH_REMOTE
           MIGRATION_SCRIPT_FILENAME=$(basename $MIGRATION_SCRIPT_PATH_REMOTE)
+          echo $MIGRATION_SCRIPT_FILENAME
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p $MIGRATION_SCRIPT_PATH_REMOTE --dest $MIGRATION_SCRIPT_PATH/$MIGRATION_SCRIPT_FILENAME
       # TBD: another version below, that includes the migration run artifacts
       - name: Upload migration check artifacts
