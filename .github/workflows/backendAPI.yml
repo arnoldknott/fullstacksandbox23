@@ -497,6 +497,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           title: "[migrations] for postgres for commit ${{ env.COMMIT_SHA }}"
+          add-paths: '${{ env.MIGRATION_FILES_PATH}}/*'
           commit-message: "[migrations] for commit ${{ env.COMMIT_SHA }}"
           branch: "migrations/${{ env.COMMIT_SHA }}"
           base: stage
