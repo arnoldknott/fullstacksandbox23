@@ -283,12 +283,12 @@ jobs:
       #     script -q -e -c "az containerapp exec \
       #       --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
       #       --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-      #       --command \"scripts/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_${{ env.COMMIT_SHA }}.log
+      #       --command \"scripts/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
       # - name: Upload migration upgrade artifacts
       #   uses: actions/upload-artifact@v3
       #   with:
       #     name: postgres_migration_results
-      #     path: postgres_migration/upgrade_${{ env.COMMIT_SHA }}.log
+      #     path: postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
       #
       #
         # TBD: consider deleting all existing environment variables before setting the new ones?
@@ -435,6 +435,7 @@ jobs:
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_filename_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log
           MIGRATION_SCRIPT_PATH_REMOTE=$(cat postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log)
+          MIGRATION_SCRIPT_PATH_REMOTE=${MIGRATION_SCRIPT_PATH_REMOTE#/}
           echo "====MIGRATION_SCRIPT_PATH_REMOTE===="
           echo $MIGRATION_SCRIPT_PATH_REMOTE
           MIGRATION_SCRIPT_FILENAME=$(basename $MIGRATION_SCRIPT_PATH_REMOTE)
@@ -443,8 +444,10 @@ jobs:
           echo "====MIGRATION_FILES_PATH===="
           echo $MIGRATION_FILES_PATH
           echo "====MIGRATION_FILES_PATH+MIGRATION_SCRIPT_FILENAME==="
-          echo $MIGRATION_FILES_PATH$MIGRATION_SCRIPT_FILENAME
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p $MIGRATION_SCRIPT_PATH_REMOTE --dest $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
+          echo $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
+          echo "====Contents of MIGRATION_FILES_PATH==="
+          ls -la $MIGRATION_FILES_PATH
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p migrations/stage_prod/versions/$MIGRATION_SCRIPT_FILENAME --dest $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
       # TBD: another version below, that includes the migration run artifacts
       - name: Upload migration check artifacts
         uses: actions/upload-artifact@v3
@@ -484,7 +487,7 @@ jobs:
       - name: Commit migration script
         uses: EndBug/add-and-commit@v9
         with:
-          add: '$MIGRATION_FILES_PATH$MIGRATION_SCRIPT_FILENAME'
+          add: '$MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME'
           message: '[migrations] Add migration script for commit ${{ env.COMMIT_SHA }}'
       - name: Echo git status
         run: |
