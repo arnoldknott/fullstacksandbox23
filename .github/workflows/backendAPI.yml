@@ -444,7 +444,7 @@ jobs:
           echo $MIGRATION_FILES_PATH
           echo "====MIGRATION_FILES_PATH+MIGRATION_SCRIPT_FILENAME==="
           echo $MIGRATION_FILES_PATH$MIGRATION_SCRIPT_FILENAME
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p $MIGRATION_SCRIPT_PATH_REMOTE --dest $MIGRATION_FILES_PATH$MIGRATION_SCRIPT_FILENAME
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p $MIGRATION_SCRIPT_PATH_REMOTE --dest $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
       # TBD: another version below, that includes the migration run artifacts
       - name: Upload migration check artifacts
         uses: actions/upload-artifact@v3
@@ -453,7 +453,7 @@ jobs:
           path: |
             postgres_migration/revision_old_${{ env.COMMIT_SHA }}.log
             postgres_migration/revision_${{ env.COMMIT_SHA }}.log
-            $MIGRATION_FILES_PATH$MIGRATION_SCRIPT_FILENAME
+            $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
       # Shall I really run it here already or first after pull request is merged?
       # No - let's run them right after deployment az containerapp update in stage & prod
       # - name: Run the migrations
@@ -462,14 +462,14 @@ jobs:
       #     script -q -e -c "az containerapp exec \
       #       --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
       #       --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-      #       --command \"scripts/postgres_migration_run.sh\"" > postgres_migration/run_$COMMIT_SHA.txt
+      #       --command \"scripts/postgres_migration_run.sh\"" > postgres_migration/upgrade_$COMMIT_SHA.txt
       # - name: Upload migration check artifacts
       #   uses: actions/upload-artifact@v3
       #   with:
       #     name: postgres_migration_results
       #     path: |
       #       postgres_migration/create_${{ env.COMMIT_SHA }}.txt
-      #       postgres_migration/run_${{ env.COMMIT_SHA }}.txt
+      #       postgres_migration/upgrade_${{ env.COMMIT_SHA }}.txt
       # If the following step fails, the migration script was not created correctly.
       # Probably line "/Generating <file_name>" is missing" - see artifacts!
       # - name: Retrieve migration script from log
