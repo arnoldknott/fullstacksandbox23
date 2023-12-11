@@ -435,10 +435,16 @@ jobs:
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_filename_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log
           MIGRATION_SCRIPT_PATH_REMOTE=$(cat postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log)
+          echo "====MIGRATION_SCRIPT_PATH_REMOTE===="
           echo $MIGRATION_SCRIPT_PATH_REMOTE
           MIGRATION_SCRIPT_FILENAME=$(basename $MIGRATION_SCRIPT_PATH_REMOTE)
+          echo "====MIGRATION_SCRIPT_FILENAME===="
           echo $MIGRATION_SCRIPT_FILENAME
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p $MIGRATION_SCRIPT_PATH_REMOTE --dest $MIGRATION_SCRIPT_PATH/$MIGRATION_SCRIPT_FILENAME
+          echo "====MIGRATION_FILES_PATH===="
+          echo $MIGRATION_FILES_PATH
+          echo "====MIGRATION_FILES_PATH+MIGRATION_SCRIPT_FILENAME==="
+          echo $MIGRATION_FILES_PATH$MIGRATION_SCRIPT_FILENAME
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p $MIGRATION_SCRIPT_PATH_REMOTE --dest $MIGRATION_FILES_PATH$MIGRATION_SCRIPT_FILENAME
       # TBD: another version below, that includes the migration run artifacts
       - name: Upload migration check artifacts
         uses: actions/upload-artifact@v3
@@ -447,7 +453,7 @@ jobs:
           path: |
             postgres_migration/revision_old_${{ env.COMMIT_SHA }}.log
             postgres_migration/revision_${{ env.COMMIT_SHA }}.log
-            $MIGRATION_SCRIPT_PATH/$MIGRATION_SCRIPT_FILENAME
+            $MIGRATION_FILES_PATH$MIGRATION_SCRIPT_FILENAME
       # Shall I really run it here already or first after pull request is merged?
       # No - let's run them right after deployment az containerapp update in stage & prod
       # - name: Run the migrations
@@ -478,7 +484,7 @@ jobs:
       - name: Commit migration script
         uses: EndBug/add-and-commit@v9
         with:
-          add: '$MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME'
+          add: '$MIGRATION_FILES_PATH$MIGRATION_SCRIPT_FILENAME'
           message: '[migrations] Add migration script for commit ${{ env.COMMIT_SHA }}'
       - name: Echo git status
         run: |
