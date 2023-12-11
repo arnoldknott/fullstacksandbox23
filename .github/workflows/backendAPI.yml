@@ -485,24 +485,24 @@ jobs:
       - name: Echo the migration script
         run: |
           cat $MIGRATION_FILES_PATH/${{ env.MIGRATION_SCRIPT_FILENAME }}
-      - name: Commit migration script
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: '${{ env.MIGRATION_FILES_PATH}}/${{ env.MIGRATION_SCRIPT_FILENAME }}'
-          message: '[migrations] Add migration script for commit ${{ env.COMMIT_SHA }}'
-      - name: Echo git status
-        run: |
-          git status
-      # - name: Create a pull request
-      #   uses: peter-evans/create-pull-request@v5
+      # - name: Commit migration script
+      #   uses: EndBug/add-and-commit@v9
       #   with:
-      #     title: "[migrations] for postgres for commit ${{ env.COMMIT_SHA }}"
-      #     commit-message: "[migrations] for commit ${{ env.COMMIT_SHA }}"
-      #    # branch: "migrations/${{ env.COMMIT_SHA }}" really in doubt - let's see what comes out of add and commit?
-      #     base: stage
-      #     delete-branch: true
-      #     labels: "postgres"
-    
+      #     add: '${{ env.MIGRATION_FILES_PATH}}/${{ env.MIGRATION_SCRIPT_FILENAME }}'
+      #     message: '[migrations] Add migration script for commit ${{ env.COMMIT_SHA }}'
+      # - name: Echo git status
+      #   run: |
+      #     git status
+      - name: Create a pull request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: "[migrations] for postgres for commit ${{ env.COMMIT_SHA }}"
+          commit-message: "[migrations] for commit ${{ env.COMMIT_SHA }}"
+          branch: "migrations/${{ env.COMMIT_SHA }}"
+          base: stage
+          delete-branch: true
+          labels: "postgres"
+          # or branch: "migrations/${{ env.COMMIT_SHA }}"
     # inputs are missing here!
 
       # This was just a dummy:
