@@ -17,6 +17,7 @@ on:
 env:
   REGISTRY: ghcr.io
   COMMIT_SHA: ${{ github.event.after }}
+  FILESHARE_APPDATA_MIGRATIONS_PATH: migrations/stage_prod
 
 jobs:
   test:
@@ -328,8 +329,8 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --command \"scripts/postgres_migration_check.sh\"" > postgres_migration/check_${{ env.COMMIT_SHA }}.txt
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p /data/migrations/stage_prod/logs/check_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_new_${{ env.COMMIT_SHA }}.log
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p /data/migrations/stage_prod/logs/check_exit_code_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_new_${{ env.COMMIT_SHA }}.log
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_exit_code_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
           ls -la
           ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration/check_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}')
           ALEMBIIC_EXIT_CODE_NEW=$(grep "Alembic exit code:" postgres_migration/check_new_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}'
