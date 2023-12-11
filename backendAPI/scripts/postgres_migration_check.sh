@@ -2,7 +2,7 @@
 
 set +e
 
-$LOGFILE_PATH="/data/migrations/stage_prod/logs"
+LOGFILE_PATH="/data/migrations/stage_prod/logs"
 
 # TBD: add $COMMIT_SHA to file names
 mkdir -p $LOGFILE_PATH
