@@ -328,11 +328,13 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --command \"scripts/postgres_migration_check.sh\"" > postgres_migration/check_${{ env.COMMIT_SHA }}.txt
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p /data/migrations/stage_prod/logs/alembic_check.log --dest postgres_migration/alembic_check.log
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p /data/migrations/stage_prod/logs/alembic_check_exit_code.log --dest postgres_migration/alembic_check_exit_code.log
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p /data/migrations/stage_prod/logs/check_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_new_${{ env.COMMIT_SHA }}.log
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p /data/migrations/stage_prod/logs/check_exit_code_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
           ls -la
           ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration/check_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}')
+          ALEMBIIC_EXIT_CODE_NEW=$(grep "Alembic exit code:" postgres_migration/check_new_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}'
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
+          echo "Alembic exit code - new: $ALEMBIC_EXIT_CODE_NEW"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
       # TBD: remove if proven to work:
       # - name: Set elembic check exit code to 0 to check if call_migration is getting skipped
@@ -358,8 +360,9 @@ jobs:
           name: postgres_migration_results
           path: |
             postgres_migration/check_${{ env.COMMIT_SHA }}.txt
-            postgres_migrations/alembic_check.log
-            postgres_migrations/alembic_check_exit_code.log
+            postgres_migrations/check_new_${{ env.COMMIT_SHA }}.log
+            postgres_migrations/check_exit_code_${{ env.COMMIT_SHA }}.log
+      # TBD: remove "old" file above and rename new!
       # - name: Display migration check output
       #   run: |
       #     echo ${{ steps.check_run.outputs.script_output }}
