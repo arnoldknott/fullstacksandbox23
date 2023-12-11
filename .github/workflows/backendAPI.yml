@@ -328,15 +328,18 @@ jobs:
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_check.sh\"" > postgres_migration/check_${{ env.COMMIT_SHA }}.txt
+            --command \"scripts/postgres_migration_check.sh\"" > postgres_migration/check_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_new_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_exit_code_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
+          pwd
           ls -la
-          ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration/check_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}')
-          ALEMBIIC_EXIT_CODE_NEW=$(grep "Alembic exit code:" postgres_migration/check_new_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}'
+          ls -la postgres_migration
+          ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration/check_${{ env.COMMIT_SHA }}.log | awk -F': ' '{print $2}')
+          ALEMBIIC_EXIT_CODE_NEW=$(grep "Alembic exit code:" postgres_migration/check_new_${{ env.COMMIT_SHA }}.log | awk -F': ' '{print $2}')
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
           echo "Alembic exit code - new: $ALEMBIC_EXIT_CODE_NEW"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
+      # 
       # TBD: remove if proven to work:
       # - name: Set elembic check exit code to 0 to check if call_migration is getting skipped
       #   run: |
@@ -360,7 +363,7 @@ jobs:
         with:
           name: postgres_migration_results
           path: |
-            postgres_migration/check_${{ env.COMMIT_SHA }}.txt
+            postgres_migration/check_${{ env.COMMIT_SHA }}.log
             postgres_migrations/check_new_${{ env.COMMIT_SHA }}.log
             postgres_migrations/check_exit_code_${{ env.COMMIT_SHA }}.log
       # TBD: remove "old" file above and rename new!
@@ -425,13 +428,13 @@ jobs:
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_create.sh\"" > postgres_migration/create_${{ env.COMMIT_SHA }}.txt
+            --command \"scripts/postgres_migration_create.sh\"" > postgres_migration/create_${{ env.COMMIT_SHA }}.log
       # TBD: another version below, that includes the migration run artifacts
       - name: Upload migration check artifacts
         uses: actions/upload-artifact@v3
         with:
           name: postgres_migration_results
-          path: postgres_migration/create_${{ env.COMMIT_SHA }}.txt
+          path: postgres_migration/create_${{ env.COMMIT_SHA }}.log
       # Shall I really run it here already or first after pull request is merged?
       # No - let's run them right after deployment az containerapp update in stage & prod
       # - name: Run the migrations
@@ -452,9 +455,9 @@ jobs:
       # Probably line "/Generating <file_name>" is missing" - see artifacts!
       - name: Retrieve migration script from log
         run: |
-          MIGRATION_SCRIPT_FILENAME=$(tail -n 3 postgres_migration/create_${{ env.COMMIT_SHA }}.txt | head -n 1 | tr -d '\n\n')
+          MIGRATION_SCRIPT_FILENAME=$(tail -n 3 postgres_migration/create_${{ env.COMMIT_SHA }}.log | head -n 1 | tr -d '\n\n')
           echo "---$MIGRATION_SCRIPT_FILENAME---"
-          tail -n +5 postgres_migration/create_${{ env.COMMIT_SHA }}.txt | head -n -2 > $MIGRATION_SCRIPT_FILENAME
+          tail -n +5 postgres_migration/create_${{ env.COMMIT_SHA }}.log | head -n -2 > $MIGRATION_SCRIPT_FILENAME
           mv $MIGRATION_SCRIPT_FILENAME.sql $MIGRATION_FILES_PATH
       - name: Echo the migration script
         run: |
