@@ -328,6 +328,9 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --command \"scripts/postgres_migration_check.sh\"" > postgres_migration/check_${{ env.COMMIT_SHA }}.txt
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p /data/migrations/stage_prod/logs/alembic_check.log --dest postgres_migration/alembic_check.log
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p /data/migrations/stage_prod/logs/alembic_check_exit_code.log --dest postgres_migration/alembic_check_exit_code.log
+          ls -la
           ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration/check_${{ env.COMMIT_SHA }}.txt | awk -F': ' '{print $2}')
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
@@ -353,7 +356,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: postgres_migration_results
-          path: postgres_migration/check_${{ env.COMMIT_SHA }}.txt
+          path: |
+            postgres_migration/check_${{ env.COMMIT_SHA }}.txt
+            postgres_migrations/alembic_check.log
+            postgres_migrations/alembic_check_exit_code.log
       # - name: Display migration check output
       #   run: |
       #     echo ${{ steps.check_run.outputs.script_output }}
