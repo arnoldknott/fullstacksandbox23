@@ -337,6 +337,10 @@ jobs:
           pwd
           ls -la
           ls -la postgres_migration
+          echo "====cat of postgres_migration/check_${{ env.COMMIT_SHA }}.log===="
+          cat postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
+          echo "====less of postgres_migration/check_${{ env.COMMIT_SHA }}.log===="
+          less postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
           ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration/check_${{ env.COMMIT_SHA }}.log | awk -F': ' '{print $2}')
           ALEMBIIC_EXIT_CODE_NEW=$(cat postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log)
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"

@@ -31,4 +31,5 @@ dev = [
 profile = "black"
 
 [tool.black]
-exclude = '(src/migrations/|backendAPI/src/migrations/)'
+# exclude = '(src/migrations/|backendAPI/src/migrations/)'
+exclude = '*/src/migrations/'
