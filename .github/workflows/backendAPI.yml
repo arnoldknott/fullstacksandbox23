@@ -284,6 +284,8 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --command \"scripts/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
+          echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
+          cat postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -321,57 +323,24 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Check for migrations
         id: check_run
-        # OUTPUT=$(script -q -e -c "pwd")
-        # OUTPUT=$(script -q -e -c "az containerapp exec \
-        # --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-        # --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-        # --command \"scripts/postgres_migration_check.sh\""
         run: |
           mkdir -p postgres_migration
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_check.sh\"" > postgres_migration/check_${{ env.COMMIT_SHA }}.log
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_new_${{ env.COMMIT_SHA }}.log
+            --command \"scripts/postgres_migration_check.sh\"" > postgres_migration/check_connection_${{ env.COMMIT_SHA }}.log
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_exit_code_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
-          pwd
-          ls -la
-          ls -la postgres_migration
-          echo "====cat of postgres_migration/check_${{ env.COMMIT_SHA }}.log===="
-          cat postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
-          echo "====less of postgres_migration/check_${{ env.COMMIT_SHA }}.log===="
-          less postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
-          ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration/check_${{ env.COMMIT_SHA }}.log | awk -F': ' '{print $2}')
-          ALEMBIC_EXIT_CODE_NEW=$(cat postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log)
+          ALEMBIC_EXIT_CODE=$(cat postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log)
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
-          echo "Alembic exit code - new: $ALEMBIC_EXIT_CODE_NEW"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
-      # TBD: switch to new ALEMBIC_EXIT_CODE and remove old one!
-      # TBD: remove if proven to work:
-      # - name: Set elembic check exit code to 0 to check if call_migration is getting skipped
-      #   run: |
-      #     echo "alembic_check_exit_code=0" >> $GITHUB_OUTPUT
-        # echo $OUTPUT
-          # echo $EXIT_CODE
-          # echo "OUTPUT=$OUTPUT" >> $GITHUB_OUTPUT
-          # echo "EXIT_CODE=$EXIT_CODE" >> $GITHUB_OUTPUT
-          # mkdir -p postgres_migration_check
-          # echo $OUTPUT > postgres_migration_check/output_${{ env.COMMIT_SHA }}.txt
-          # echo $EXIT_CODE > postgres_migration_check/exit_code_${{ env.COMMIT_SHA }}.txt
-        # echo "::set-output name=postgres_migration_check_output::$OUTPUT"
-        # echo "::set-output name=postgres_migration_check__exit_code::$EXIT_CODE"
-        
-      # - name: Safe migration check output to files
-      #   run: |
-      #     echo "${{ steps.check_run.outputs.postgres_migration_check_output }}" > ${{ github.workspace }}/postgres_migration_check/output.txt
-      #     echo "${{ steps.check_run.outputs.postgres_migration_check_exit_code }}" > ${{ github.workspace }}/postgres_migration_check/exit_code.txt
       - name: Upload migration check artifacts
         uses: actions/upload-artifact@v3
         with:
           name: postgres_migration_results
           path: |
             postgres_migration/check_${{ env.COMMIT_SHA }}.log
-            postgres_migration/check_new_${{ env.COMMIT_SHA }}.log
+            postgres_migration/check_connection_${{ env.COMMIT_SHA }}.log
             postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
       # TBD: remove "old" file above and rename new!
       # - name: Display migration check output
@@ -388,13 +357,6 @@ jobs:
     outputs:
       alembic_check: ${{ steps.check_run.outputs.alembic_check_exit_code }}
 
-  # call_migrations:
-  #   needs: check_postgres_migrations
-  #   uses: ./.github/workflows/postgres_migrations.yml
-  #   # environment: COMMIT_SHA: ${{ env.COMMIT_SHA }}
-  #   with:
-  #     COMMIT_SHA: ${{ github.event.after }}
-  #   secrets: inherit
 
   create_postgres_migration_scripts:
     needs: check_postgres_migrations
@@ -436,57 +398,22 @@ jobs:
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_revision.sh\"" > postgres_migration/revision_old_${{ env.COMMIT_SHA }}.log
+            --command \"scripts/postgres_migration_revision.sh\"" > postgres_migration/revision_connection_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_filename_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log
           MIGRATION_SCRIPT_PATH_REMOTE=$(cat postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log)
           MIGRATION_SCRIPT_PATH_REMOTE=${MIGRATION_SCRIPT_PATH_REMOTE#/}
-          echo "====MIGRATION_SCRIPT_PATH_REMOTE===="
-          echo $MIGRATION_SCRIPT_PATH_REMOTE
           MIGRATION_SCRIPT_FILENAME=$(basename $MIGRATION_SCRIPT_PATH_REMOTE)
           echo "MIGRATION_SCRIPT_FILENAME=$MIGRATION_SCRIPT_FILENAME" >> $GITHUB_ENV
-          echo "====MIGRATION_SCRIPT_FILENAME===="
-          echo $MIGRATION_SCRIPT_FILENAME
-          echo "====MIGRATION_FILES_PATH===="
-          echo $MIGRATION_FILES_PATH
-          echo "====MIGRATION_FILES_PATH+MIGRATION_SCRIPT_FILENAME==="
-          echo $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
-          echo "====Contents of MIGRATION_FILES_PATH==="
-          ls -la $MIGRATION_FILES_PATH
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p migrations/stage_prod/versions/$MIGRATION_SCRIPT_FILENAME --dest $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
-      # TBD: another version below, that includes the migration run artifacts
       - name: Upload migration check artifacts
         uses: actions/upload-artifact@v3
         with:
           name: postgres_migration_results
           path: |
-            postgres_migration/revision_old_${{ env.COMMIT_SHA }}.log
+            postgres_migration/revision_connection_${{ env.COMMIT_SHA }}.log
             postgres_migration/revision_${{ env.COMMIT_SHA }}.log
-            ${{ env.MIGRATION_FILES_PATH}}/${{ env.MIGRATION_SCRIPT_FILENAME }}
-      # Shall I really run it here already or first after pull request is merged?
-      # No - let's run them right after deployment az containerapp update in stage & prod
-      # - name: Run the migrations
-      #   run: |
-      #     mkdir -p postgres_migration_check
-      #     script -q -e -c "az containerapp exec \
-      #       --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-      #       --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-      #       --command \"scripts/postgres_migration_run.sh\"" > postgres_migration/upgrade_$COMMIT_SHA.txt
-      # - name: Upload migration check artifacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: postgres_migration_results
-      #     path: |
-      #       postgres_migration/create_${{ env.COMMIT_SHA }}.txt
-      #       postgres_migration/upgrade_${{ env.COMMIT_SHA }}.txt
-      # If the following step fails, the migration script was not created correctly.
-      # Probably line "/Generating <file_name>" is missing" - see artifacts!
-      # - name: Retrieve migration script from log
-      #   run: |
-      #     MIGRATION_SCRIPT_FILENAME=$(tail -n 3 postgres_migration/create_${{ env.COMMIT_SHA }}.log | head -n 1 | tr -d '\n\n')
-      #     echo "---$MIGRATION_SCRIPT_FILENAME---"
-      #     tail -n +5 postgres_migration/create_${{ env.COMMIT_SHA }}.log | head -n -2 > $MIGRATION_SCRIPT_FILENAME
-      #     mv $MIGRATION_SCRIPT_FILENAME.sql $MIGRATION_FILES_PATH
+            $MIGRATION_FILES_PATH/${{ env.MIGRATION_SCRIPT_FILENAME }}
       - name: Echo the migration script
         run: |
           cat $MIGRATION_FILES_PATH/${{ env.MIGRATION_SCRIPT_FILENAME }}
@@ -509,61 +436,7 @@ jobs:
           delete-branch: true
           labels: "postgres"
           # or branch: "migrations/${{ env.COMMIT_SHA }}"
-    # inputs are missing here!
 
-      # This was just a dummy:
-  # call_migrations:
-  #   needs: check_postgres_migrations
-  #   if: ${{ needs.check_postgres_migrations.outputs.alembic_check != 0 }}
-  #   env: 
-  #     ALEMBIC_CHECK_EXIT_CODE: ${{ needs.check_postgres_migrations.outputs.alembic_check }}
-  #   runs-on: ubuntu-22.04
-  #   permissions:
-  #     id-token: write
-  #     packages: read
-  #   environment: stage
-  #   steps:
-  #     - name: Echo alembic check exit code
-  #       run: |
-  #         echo ${{ env.ALEMBIC_CHECK_EXIT_CODE }}
-  #     - name: Download migration check artifacts
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: postgres_migration_results
-  #         path: postgres_migration
-  #     - name: Display migration check output
-  #       run: |
-  #         cat postgres_migration/check_${{ env.COMMIT_SHA }}.txt
-  #         echo $ALEMBIC_CHECK_EXIT_CODE
-  #
-  #
-  #
-      # call another workflow here, that
-      # - builds the migration scripts
-      # - commits them to the repo
-      # - opens a pull request to repo
-      # - on manual approval of pull request
-      # - runs the migrations in stage
-
-      # - name: Login to Azure
-      #   uses: azure/login@v1
-      #   with:
-      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-      #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      # - name: Call migrations
-      #   run: |
-      #     script -q -e -c "az containerapp exec \
-      #       --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-      #       --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-      #       --command \"scripts/postgres_migration_call.sh\""
-      # - name: Logout from Azure
-      #   uses: azure/CLI@v1
-      #   with:
-      #     inlineScript: |
-      #       az logout
-      #       az cache purge
-      #       az account clear
 
 # deploy_prod:
   # needs: [deploy-stage, check_postgres_migrations, migration-workflow]
