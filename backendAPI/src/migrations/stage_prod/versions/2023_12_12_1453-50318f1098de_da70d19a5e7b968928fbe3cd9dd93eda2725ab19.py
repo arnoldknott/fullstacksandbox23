@@ -1,4 +1,5 @@
 # fmt: off
+# ruff: noqa
 """"da70d19a5e7b968928fbe3cd9dd93eda2725ab19"
 
 Revision ID: 50318f1098de
@@ -8,10 +9,9 @@ Create Date: 2023-12-12 14:53:46.328539+01:00
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 import sqlmodel
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = '50318f1098de'
