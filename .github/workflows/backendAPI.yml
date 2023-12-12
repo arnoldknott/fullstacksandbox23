@@ -342,7 +342,7 @@ jobs:
           echo "====less of postgres_migration/check_${{ env.COMMIT_SHA }}.log===="
           less postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
           ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration/check_${{ env.COMMIT_SHA }}.log | awk -F': ' '{print $2}')
-          ALEMBIIC_EXIT_CODE_NEW=$(cat postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log)
+          ALEMBIIC_EXIT_CODE_NEW=$(cat postgres_migration/check_exit_code_$COMMIT_SHA.log)
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
           echo "Alembic exit code - new: $ALEMBIC_EXIT_CODE_NEW"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
