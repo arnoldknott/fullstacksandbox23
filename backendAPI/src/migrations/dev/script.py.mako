@@ -1,4 +1,5 @@
 # fmt: off
+# ruff: noqa
 """${message}
 
 Revision ID: ${up_revision}

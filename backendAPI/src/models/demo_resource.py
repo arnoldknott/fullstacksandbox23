@@ -7,7 +7,8 @@ class DemoResource(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     description: Optional[str] = None
-    # language: Optional[str] = None
+    language: Optional[str] = None
+    timezone: Optional[str] = None
 
     # Lots and lots of inspiration here:
     # TBD: url: str
