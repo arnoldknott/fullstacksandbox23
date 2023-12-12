@@ -338,7 +338,7 @@ jobs:
           ls -la
           ls -la postgres_migration
           ALEMBIC_EXIT_CODE=$(grep "Alembic exit code:" postgres_migration/check_${{ env.COMMIT_SHA }}.log | awk -F': ' '{print $2}')
-          ALEMBIIC_EXIT_CODE_NEW=$(grep "Alembic exit code:" postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log | awk -F': ' '{print $2}')
+          ALEMBIIC_EXIT_CODE_NEW=$(cat postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log)
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
           echo "Alembic exit code - new: $ALEMBIC_EXIT_CODE_NEW"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
@@ -635,6 +635,18 @@ jobs:
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"
+      - name: Upgrade database
+        run: |
+          mkdir -p postgres_migration
+          script -q -e -c "az containerapp exec \
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --command \"scripts/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
+      - name: Upload migration upgrade artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: postgres_migration_results
+          path: postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
       # TBD: add running migration scripts - this should be the container,
