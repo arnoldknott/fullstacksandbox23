@@ -31,4 +31,4 @@ dev = [
 profile = "black"
 
 [tool.black]
-exclude = ['app/migrations/dev/versions/*','app/migrations/stage_prod/versions/*']
+exclude = 'app/migrations/*'
