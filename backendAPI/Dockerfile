@@ -8,7 +8,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 FROM base as dev
 EXPOSE 8660
-RUN pip install  --upgrade pip && \
+RUN pip install --upgrade pip && \
     pip install -e .[dev]
     # following install only needed for building psycopg2:
     # TBD: add when adding database:
