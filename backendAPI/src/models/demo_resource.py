@@ -3,12 +3,15 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 
 
-class DemoResource(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+class DemoResourceIn(SQLModel):
     name: str
     description: Optional[str] = None
     language: Optional[str] = None
     timezone: Optional[str] = None
+
+
+class DemoResource(DemoResourceIn, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
 
     # Lots and lots of inspiration here:
     # TBD: url: str

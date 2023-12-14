@@ -20,6 +20,8 @@ services:
             - MONGODB_PORT=$MONGODB_PORT
         ports:
             - "8660:8660"
+        volumes:
+            - test-app-data:/data
 
     postgres:
         container_name: $POSTGRES_HOST
@@ -37,3 +39,4 @@ services:
 
 volumes:
     test-postgres-data:
+    test-app-data:

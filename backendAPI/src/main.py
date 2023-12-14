@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from routers.api.v1.core import router as core_router
+from routers.api.v1.demo_resource import router as demo_resource_router
 
 # print("Current directory:", os.getcwd())
 # print("sys.path:", sys.path)
@@ -36,7 +37,7 @@ global_prefix = "/api/v1"
 app = FastAPI(
     title="backendAPI",
     summary="Backend for fullstack Sandbox.",
-    description="Handling user authentication and session handling.",  # TBD: add the longer markdown description here
+    description="Playground for trying out anything freely before using in projects.",  # TBD: add the longer markdown description here
     version="0.0.1",  # TBD: read from CHANGELOG.md or environment variable or so?
     lifespan=lifespan,
     # TBD: add contact - also through environment variables?
@@ -57,7 +58,12 @@ app = FastAPI(
 #     await postgres.disconnect()
 
 
-app.include_router(core_router, prefix=f"{global_prefix}/core", tags=["core"])
+app.include_router(core_router, prefix=f"{global_prefix}/core", tags=["Core"])
+app.include_router(
+    demo_resource_router,
+    prefix=f"{global_prefix}/demo_resource",
+    tags=["Demo Resource"],
+)
 
 
 # exception handler logs exceptions before passing them to the default exception handler

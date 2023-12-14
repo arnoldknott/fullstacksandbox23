@@ -8,6 +8,8 @@ services:
             - ./backendAPI/src/.env
         ports:
             - "8660:8660"
+        volumes:
+            - dev-app-data:/data
 
     postgres:
         volumes:
@@ -34,3 +36,4 @@ services:
 volumes:
     dev-postgres-data:
     dev-pgadmin-data:
+    dev-app-data:

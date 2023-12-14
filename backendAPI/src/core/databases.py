@@ -1,18 +1,18 @@
 from core.config import config
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 # from sqlmodel import SQLmodel  # noqa: F401
 
-postgres_async_engine = create_async_engine(config.POSTGRES_URL)
+postgres_async_engine = create_async_engine(config.POSTGRES_URL.unicode_string())
 
 
 async def get_async_session() -> AsyncSession:
     """Returns a database session."""
-    async_session = sessionmaker(
+    async_session = async_sessionmaker(
         bind=postgres_async_engine, class_=AsyncSession, expire_on_commit=False
     )
-    async with async_session(postgres_async_engine) as session:
+    async with async_session() as session:
         yield session
 
 

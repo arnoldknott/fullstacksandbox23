@@ -181,7 +181,7 @@ jobs:
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
+            --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
           echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
           cat postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
@@ -225,7 +225,7 @@ jobs:
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_check.sh\"" > postgres_migration/check_connection_${{ env.COMMIT_SHA }}.log
+            --command \"scripts/stage_prod/postgres_migration_check.sh\"" > postgres_migration/check_connection_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_exit_code_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
           ALEMBIC_EXIT_CODE=$(cat postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log)
@@ -288,13 +288,13 @@ jobs:
         # OUTPUT=$(script -q -e -c "az containerapp exec \
         # --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
         # --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-        # --command \"scripts/postgres_migration_check.sh\""
+        # --command \"scripts/stage_prod/postgres_migration_check.sh\""
         run: |
           mkdir -p postgres_migration
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_revision.sh\"" > postgres_migration/revision_connection_${{ env.COMMIT_SHA }}.log
+            --command \"scripts/stage_prod/postgres_migration_revision.sh\"" > postgres_migration/revision_connection_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_filename_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log
           MIGRATION_SCRIPT_PATH_REMOTE=$(cat postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log)
@@ -414,7 +414,7 @@ jobs:
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
+            --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v3
         with:
