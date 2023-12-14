@@ -20,6 +20,8 @@ services:
             - REDIS_PORT=$REDIS_PORT
             - MONGODB_HOST=$MONGODB_HOST
             - MONGODB_PORT=$MONGODB_PORT
+        networks:
+            - test_network
         ports:
             - "8660:8660"
         volumes:
@@ -38,7 +40,13 @@ services:
             # - REDIS_PORT=$REDIS_PORT
             # - MONGODB_HOST=$MONGODB_HOST
             # - MONGODB_PORT=$MONGODB_PORT
+        networks:
+            - test_network
 
 volumes:
     test-postgres-data:
     test-app-data:
+
+networks:
+    test_network:
+        name: test_network

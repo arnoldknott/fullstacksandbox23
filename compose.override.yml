@@ -27,6 +27,7 @@ services:
             - ./backendAPI/src/.env
         environment:
             - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
+            - MASTER_PASSWORD_REQUIRED=False
         ports:
             - "5555:80"
         volumes:
