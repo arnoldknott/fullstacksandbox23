@@ -9,6 +9,8 @@ services:
             #     ./backendAPI
             target: dev
         image: backend_api:test
+        depends_on:
+            - postgres
         environment:
             - KEYVAULT_HEALTH=$KEYVAULT_HEALTH
             - POSTGRES_DB=$POSTGRES_DB

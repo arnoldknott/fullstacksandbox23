@@ -80,7 +80,15 @@ jobs:
             -f compose.override.test.yml \
             exec -T backend_api \
             sh -c "pytest -v"
-          sleep 20
+          sleep 5
+          until docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T backend_api \
+            sh -c "pg_isready -h $POSTGRES_HOST -p 5432"; do
+            echo "Waiting for database..."
+            sleep 5
+          done
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
