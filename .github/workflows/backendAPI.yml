@@ -79,16 +79,12 @@ jobs:
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T backend_api \
-            sh -c "pytest -v"
-          sleep 5
-          until docker compose \
+            sh -c "scripts/dev/postgres_migration_check.sh && scripts/dev/postgres_migration_upgrade.sh"
+          docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T backend_api \
-            sh -c "pg_isready -h $POSTGRES_HOST -p 5432"; do
-            echo "Waiting for database..."
-            sleep 5
-          done
+            sh -c "pytest -v"
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
