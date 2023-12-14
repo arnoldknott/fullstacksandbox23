@@ -37,3 +37,7 @@ async def get_demo_resource() -> List[DemoResource]:
 #     """Returns a demo resource."""
 #     logger.info("GET demo resource")
 #     return demo_resource_crud.read_resource_by_id(resource_id)
+
+# @router.put("/{resource_id}")
+
+# @router.delete("/{resource_id}")
