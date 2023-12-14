@@ -78,8 +78,9 @@ jobs:
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
-            exec -it backend_api \
+            exec -T backend_api \
             sh -c "pytest -v"
+          sleep 20
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
