@@ -79,7 +79,7 @@ jobs:
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T backend_api \
-            sh -c "scripts/dev/postgres_migration_revision.sh && scripts/dev/postgres_migration_upgrade.sh"
+            sh -c "alembic revision --autogenerate && alembic upgrade head"
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
