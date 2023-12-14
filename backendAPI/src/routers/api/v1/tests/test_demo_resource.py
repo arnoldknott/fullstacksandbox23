@@ -12,6 +12,7 @@ async def test_post_demo_resource(
 ):
     """Tests POST of a demo_resource."""
     resource = demo_resource_test_input
+    await get_async_test_session()
     response = await async_client.post("/api/v1/demo_resource/", json=resource)
     assert response.status_code == 201
     content = response.json()
