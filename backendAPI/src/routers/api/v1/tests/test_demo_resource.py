@@ -1,12 +1,15 @@
 import pytest
 from httpx import AsyncClient
+from sqlmodel.ext.asyncio.session import AsyncSession
 from utils import demo_resource_test_input
 
 
 # , get_async_test_session: AsyncSession
 @pytest.mark.anyio
 # @pytest.mark.usefixtures("get_async_test_session")
-async def test_post_demo_resource(async_client: AsyncClient):
+async def test_post_demo_resource(
+    async_client: AsyncClient, get_async_test_session: AsyncSession
+):
     """Tests POST of a demo_resource."""
     resource = demo_resource_test_input
     response = await async_client.post("/api/v1/demo_resource/", json=resource)
