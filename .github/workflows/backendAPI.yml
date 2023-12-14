@@ -79,16 +79,16 @@ jobs:
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T backend_api \
-            sh -c "cd /app/src && alembic revision --autogenerate && alembic upgrade head"
-          docker compose \
-            -f compose.yml \
-            -f compose.override.test.yml \
-            exec -T backend_api \
             sh -c "pytest -v"
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
             down
+        # docker compose \
+        # -f compose.yml \
+        # -f compose.override.test.yml \
+        # exec -T backend_api \
+        # sh -c "cd /app/src && alembic revision --autogenerate && alembic upgrade head"
         # docker compose \
         #   -f compose.yml \
         #   -f compose.override.test.yml \
