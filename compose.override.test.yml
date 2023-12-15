@@ -1,6 +1,4 @@
-# In final implementation, move this file one diectory level higher and reference all services here
 version: "3.9"
-
 
 services:
     backend_api:
@@ -8,11 +6,13 @@ services:
             # context: 
             #     ./backendAPI
             target: dev
-        image: backend_api:test
+        # image: backend_api:test
         depends_on:
             - postgres
         environment:
             - KEYVAULT_HEALTH=$KEYVAULT_HEALTH
+            - POSTGRES_HOST=$POSTGRES_HOST
+            # - POSTGRES_PORT=$POSTGRES_PORT
             - POSTGRES_DB=$POSTGRES_DB
             - POSTGRES_USER=$POSTGRES_USER
             - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
@@ -22,13 +22,13 @@ services:
             - MONGODB_PORT=$MONGODB_PORT
         networks:
             - test_network
-        ports:
-            - "8660:8660"
+        ports: 
+            - "8670:80"
         volumes:
             - test-app-data:/data
 
     postgres:
-        container_name: $POSTGRES_HOST
+        container_name: test_postgres
         volumes:
             - test-postgres-data:/var/lib/postgresql/data/
         environment:
@@ -49,4 +49,3 @@ volumes:
 
 networks:
     test_network:
-        name: test_network

@@ -7,17 +7,24 @@ services:
         env_file:
             - ./backendAPI/src/.env
         ports:
-            - "8660:8660"
+            - "8660:80"
         volumes:
             - dev-app-data:/data
+        networks:
+            - dev_network
 
     postgres:
+        container_name: dev_postgres
+        environment:
+            - POSTGRES_HOST=$POSTGRES_HOST
         volumes:
             - dev-postgres-data:/var/lib/postgresql/data/
         env_file:
             - ./backendAPI/src/.env
         ports:
             - "5432:5432"
+        networks:
+            - dev_network
 
     pgadmin:
         image: dpage/pgadmin4
@@ -33,8 +40,13 @@ services:
         volumes:
             - dev-pgadmin-data:/var/lib/pgadmin
         restart: unless-stopped
+        networks:
+            - dev_network
 
 volumes:
     dev-postgres-data:
     dev-pgadmin-data:
     dev-app-data:
+
+networks:
+    dev_network:
