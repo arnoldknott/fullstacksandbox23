@@ -9,8 +9,9 @@
 # docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "ruff format ."
 # docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "pytest -v"
 
-docker-compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env up -d
-docker-compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "black ."
-docker-compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "ruff format ."
-docker-compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "pytest -v"
-docker-compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env down
+COMPOSE_PROJECT_NAME=test-fssb23 docker-compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env build
+COMPOSE_PROJECT_NAME=test-fssb23 docker-compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env up -d
+COMPOSE_PROJECT_NAME=test-fssb23 docker-compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "black ."
+COMPOSE_PROJECT_NAME=test-fssb23 docker-compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "ruff format ."
+COMPOSE_PROJECT_NAME=test-fssb23 docker-compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "pytest -v"
+COMPOSE_PROJECT_NAME=test-fssb23 docker-compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env down

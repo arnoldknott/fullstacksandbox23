@@ -6,7 +6,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 postgres_async_engine = create_async_engine(
     config.POSTGRES_URL.unicode_string(), echo=True
-)
+)  # TBD: remove echo=True
 
 
 async def get_async_session() -> AsyncSession:
