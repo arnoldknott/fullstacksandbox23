@@ -31,15 +31,20 @@ async def get_demo_resource(
     logger.info("GET all demo resource")
     # return [{"description": "ok"}]
     crud = DemoResourceCRUD(session)
-    result = await crud.read_resources()
-    return result
+    response = await crud.read_resources()
+    return response
 
 
 # @router.get("/{resource_id}")
-# async def get_demo_resource(resource_id: int) -> DemoResource:
+# async def get_demo_resource(
+#     resource_id: int, session: AsyncSession = Depends(get_async_session)
+# ) -> DemoResource:
 #     """Returns a demo resource."""
 #     logger.info("GET demo resource")
-#     return demo_resource_crud.read_resource_by_id(resource_id)
+#     crud = DemoResourceCRUD(session)
+#     response = crud.read_resource_by_id(resource_id)
+#     return response
+
 
 # @router.put("/{resource_id}")
 
