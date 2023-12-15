@@ -5,7 +5,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 # from sqlmodel import SQLmodel  # noqa: F401
 
 postgres_async_engine = create_async_engine(
-    config.POSTGRES_URL.unicode_string(), echo=True
+    config.POSTGRES_URL.unicode_string()
 )  # TBD: remove echo=True
 
 

@@ -1,5 +1,5 @@
 from core.databases import get_async_session
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from models.demo_resource import DemoResource, DemoResourceIn
 from sqlalchemy.future import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -23,14 +23,19 @@ class DemoResourceCRUD:
     async def read_resources(self) -> list[DemoResource]:
         """Returns all demo resources."""
         statement = select(DemoResource)
-        result = await self.session.exec(statement)
-        return result.scalars().all()
+        response = await self.session.exec(statement)
+        if response is None:
+            raise HTTPException(status_code=404, detail="No resources found")
+        return response.scalars().all()
 
     async def read_resource_by_id(self, resource_id: int) -> DemoResource:
         """Returns a demo resource by id."""
-        statement = select(DemoResource).where(DemoResource.id == resource_id)
+        statement = select(DemoResource)  # .where(DemoResource.id == resource_id)
         result = await self.session.exec(statement)
-        return result.scalars().first()
+        resource = result.first()[0]
+        if resource is None:
+            raise HTTPException(status_code=404, detail="Resource not found")
+        return resource
 
     async def update_resource(self, resource: DemoResource) -> DemoResource:
         """Updates a demo resource."""
@@ -41,7 +46,7 @@ class DemoResourceCRUD:
 
     async def delete_resource(self, resource_id: int) -> DemoResource:
         """Deletes a demo resource."""
-        statement = select(DemoResource).where(DemoResource.id == resource_id)
+        statement = select(DemoResource).where(DemoResource.id == int(resource_id))
         result = await self.session.exec(statement)
         resource = result.scalars().first()
         self.session.delete(resource)
