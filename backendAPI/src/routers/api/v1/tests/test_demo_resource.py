@@ -1,6 +1,6 @@
 import pytest
 from httpx import AsyncClient
-from utils import demo_resource_test_input
+from utils import demo_resource_test_input, demo_resource_test_inputs
 
 
 # , get_async_test_session: AsyncSession
@@ -21,18 +21,35 @@ async def test_post_demo_resource(async_client: AsyncClient):
 
 
 # TBD: check for correct data in response
-# @pytest.mark.anyio
-# async def test_get_demo_resource(async_client: AsyncClient):
-#     """Tests GET all demo resources."""
-#     response = await async_client.get("/api/v1/demo_resource/")
+@pytest.mark.anyio
+async def test_get_demo_resource(async_client: AsyncClient):
+    """Tests GET all demo resources."""
+    resources = demo_resource_test_inputs
+    for resource in resources:
+        response = await async_client.post("/api/v1/demo_resource/", json=resource)
+        assert response.status_code == 201
+    response = await async_client.get("/api/v1/demo_resource/")
 
-#     assert response.status_code == 200
-#     assert len(response.json()) == 1
-#     assert response.json()[0]["description"] == "ok"
-#     assert "id" in response.json()[0]
-#     # assert DemoResource == [
-#     #     DemoResource(**item).model_dump() for item in response.json()
-#     # ]
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+    for response_item in response.json():
+        assert response_item["name"] in [
+            resources[0]["name"],
+            resources[1]["name"],
+        ]
+        assert response_item["description"] in [
+            resources[0]["description"],
+            resources[1]["description"],
+        ]
+        assert response_item["language"] in [
+            resources[0]["language"],
+            resources[1]["language"],
+        ]
+        assert response_item["timezone"] in [
+            resources[0]["timezone"],
+            resources[1]["timezone"],
+        ]
+        assert "id" in response_item
 
 
 # @pytest.mark.anyio

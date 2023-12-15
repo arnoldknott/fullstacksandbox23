@@ -24,12 +24,15 @@ async def post_demo_resource(
 
 # Let the tests fail first!
 @router.get("/")
-# async def get_demo_resource() -> [DemoResource]:
-async def get_demo_resource() -> List[DemoResource]:
+async def get_demo_resource(
+    session: AsyncSession = Depends(get_async_session),
+) -> List[DemoResource]:
     """Returns all demo resource."""
     logger.info("GET all demo resource")
-    return [{"description": "ok"}]
-    # return demo_resource_crud.read_resources()
+    # return [{"description": "ok"}]
+    crud = DemoResourceCRUD(session)
+    result = await crud.read_resources()
+    return result
 
 
 # @router.get("/{resource_id}")

@@ -83,6 +83,15 @@ async def run_migrations():
         await connection.run_sync(SQLModel.metadata.drop_all)
         await postgres_async_engine.dispose()
 
+
+@pytest.fixture(scope="function", autouse=True)
+async def clear_tables():
+    async with postgres_async_engine.begin() as connection:
+        for tabled in reversed(SQLModel.metadata.sorted_tables):
+            await connection.execute(tabled.delete())
+
+    yield
+
     # async_session = get_async_session()
     # async with async_session() as session:
     # SQLModel.metadata.create_all(postgres_async_engine)
