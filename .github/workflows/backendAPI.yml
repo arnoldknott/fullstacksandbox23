@@ -49,37 +49,76 @@ jobs:
           echo "=== github.sha ==="
           echo ${{ github.sha }}
       - uses: actions/checkout@v4
+      # - name: Build
+      #   run: |
+      #     docker compose \
+      #       -f compose.yml \
+      #       -f compose.override.test.yml \
+      #       build backend_api
       - name: Build
         run: |
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
-            build backend_api
-      - name: Code Formating
-        run: |
-          docker compose \
-            -f compose.yml \
-            -f compose.override.test.yml \
-            run --rm backend_api \
-            sh -c "black --check ."
-      - name: Linting
-        run: |
-          docker compose \
-            -f compose.yml \
-            -f compose.override.test.yml \
-            run --rm backend_api \
-            sh -c "ruff check ."
-      - name: Unit testing
+            build
+      - name: Spin up containers
         run: |
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
             up -d
+      # - name: Code Formating
+      #   run: |
+      #     docker compose \
+      #       -f compose.yml \
+      #       -f compose.override.test.yml \
+      #       run --rm backend_api \
+      #       sh -c "black --check ."
+      - name: Code Formating
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T backend_api \
+            sh -c "black --check ."
+      # - name: Linting
+      #   run: |
+      #     docker compose \
+      #       -f compose.yml \
+      #       -f compose.override.test.yml \
+      #       run --rm backend_api \
+      #       sh -c "ruff check ."
+      - name: Linting
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T backend_api \
+            sh -c "ruff check ."
+      # - name: Unit testing
+      #   run: |
+      #     docker compose \
+      #       -f compose.yml \
+      #       -f compose.override.test.yml \
+      #       up -d
+      #     docker compose \
+      #       -f compose.yml \
+      #       -f compose.override.test.yml \
+      #       exec -T backend_api \
+      #       sh -c "pytest -v"
+      #     docker compose \
+      #       -f compose.yml \
+      #       -f compose.override.test.yml \
+      #       down
+      - name: Unit testing
+        run: |
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T backend_api \
             sh -c "pytest -v"
+      - name: Stop containers
+        run: |
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
@@ -121,7 +160,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build for production
         run: |
-          docker compose -f compose.yml build --build-arg COMMIT_SHA=${{env.COMMIT_SHA}} backend_api
+          docker compose -f compose.yml -f compose.prod.yml build --build-arg COMMIT_SHA=${{env.COMMIT_SHA}} backend_api
       - name: Show images
         run: docker image list
       - name: Tag and push with latest and commit hash
