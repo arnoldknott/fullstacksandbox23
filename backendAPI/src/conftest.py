@@ -5,7 +5,9 @@ from core.databases import postgres_async_engine
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from main import app
+from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 
 @pytest.fixture(scope="session")
@@ -71,7 +73,7 @@ async def async_client(client) -> AsyncGenerator:
 #     await postgres_async_engine.dispose()
 
 
-@pytest.fixture(scope="session", autouse=True)  # , autouse=True
+@pytest.fixture(scope="function", autouse=True)  # , autouse=True
 async def run_migrations():
     """Runs the migrations before each test function."""
     async with postgres_async_engine.begin() as connection:
@@ -84,13 +86,23 @@ async def run_migrations():
         await postgres_async_engine.dispose()
 
 
-@pytest.fixture(scope="function", autouse=True)
-async def clear_tables():
-    async with postgres_async_engine.begin() as connection:
-        for tabled in reversed(SQLModel.metadata.sorted_tables):
-            await connection.execute(tabled.delete())
+# @pytest.fixture(scope="function", autouse=True)
+# async def clear_tables():
+#     async with postgres_async_engine.begin() as connection:
+#         for tabled in reversed(SQLModel.metadata.sorted_tables):
+#             await connection.execute(tabled.delete())
 
-    yield
+#     yield
+
+
+@pytest.fixture(scope="function")
+async def get_async_test_session() -> AsyncSession:
+    """Returns a database session."""
+    async_session = async_sessionmaker(
+        bind=postgres_async_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    async with async_session() as session:
+        yield session
 
     # async_session = get_async_session()
     # async with async_session() as session:
