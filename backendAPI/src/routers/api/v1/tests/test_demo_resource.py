@@ -26,13 +26,9 @@ async def test_get_demo_resource(
     async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
 ):
     """Tests GET all demo resources."""
-    # resources = DemoResource(**add_test_demo_resources[])
     resources = add_test_demo_resources
     print("=== demo resources ===")
     print(resources)
-    # for resource in resources:
-    #     response = await async_client.post("/api/v1/demo_resource/", json=resource)
-    #     assert response.status_code == 201
     response = await async_client.get("/api/v1/demo_resource/")
 
     assert response.status_code == 200
@@ -62,41 +58,24 @@ async def test_get_demo_resource_by_id(
     async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
 ):
     """Tests GET of a demo resources."""
-    # TBD: turn into fixture, that puts in data into the database for testing.
-    # resource = demo_resource_test_inputs
-    # response = await async_client.post("/api/v1/demo_resource/", json=resource[0])
-    # response = await async_client.post("/api/v1/demo_resource/", json=resource[1])
-    # assert response.status_code == 201
-    # content = response.json()
-    # assert content["name"] == demo_resource_test_inputs[1]["name"]
-    # assert content["description"] == demo_resource_test_inputs[1]["description"]
-    # assert "id" in content
     resources = add_test_demo_resources
-    print("=== demo resources id ===")
-    print(resources[0].id)
 
     response = await async_client.get("/api/v1/demo_resource/1")
-    print("=== response ===")
-    print(response)
     assert response.status_code == 200
     content = response.json()
-    print("=== response ===")
-    print(content)
     assert content["name"] == resources[0].name
     assert content["description"] == resources[0].description
     assert "id" in content
-    # assert response.json()["name"] == demo_resource_test_input["name"]
-    # assert response.json()["description"] == demo_resource_test_input["description"]
-    # assert "id" in response.json()
 
 
-# @pytest.mark.anyio
-# async def test_get_demo_resource_by_id(async_client: AsyncClient):
-#     """Tests GET of a demo resources."""
-#     response = await async_client.get("/api/v1/demo_resource/1")
+@pytest.mark.anyio
+async def test_get_demo_resource_by_invalid_id(async_client: AsyncClient):
+    """Tests GET of a demo resources."""
 
-#     assert response.status_code == 200
-#     assert {"status": "ok"} == response.json()
+    response = await async_client.get("/api/v1/demo_resource/invalid_id")
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Invalid resource id"
 
 
 # @pytest.mark.anyio

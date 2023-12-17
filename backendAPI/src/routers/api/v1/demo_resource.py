@@ -3,7 +3,7 @@ from typing import List
 
 from core.databases import get_async_session
 from crud.demo_resource import DemoResourceCRUD
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends  # , HTTPException
 from models.demo_resource import DemoResource, DemoResourceIn
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -40,11 +40,12 @@ async def get_demo_resource_by_id(
     """Returns a demo resource."""
     logger.info("GET demo resource")
     crud = DemoResourceCRUD(session)
-    try:
-        resource_id = int(resource_id)
-    except ValueError:
-        logger.error("Resource ID is not an integer")
-        raise HTTPException(status_code=400, detail="Invalid resource id")
+    resource_id = int(resource_id)
+    # try:
+    #     resource_id = int(resource_id)
+    # except ValueError:
+    #     logger.error("Resource ID is not an integer")
+    #     raise HTTPException(status_code=400, detail="Invalid resource id")
     response = await crud.read_resource_by_id(resource_id)
     return response
 
