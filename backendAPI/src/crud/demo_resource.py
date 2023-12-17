@@ -32,9 +32,7 @@ class DemoResourceCRUD:
 
     async def read_resource_by_id(self, resource_id: int) -> DemoResource:
         """Returns a demo resource by id."""
-        statement = select(DemoResource).where(DemoResource.id == resource_id)
-        result = await self.session.exec(statement)
-        resource = result.first()
+        resource = await self.session.get(DemoResource, resource_id)
         if resource is None:
             raise HTTPException(status_code=404, detail="Resource not found")
         return resource
