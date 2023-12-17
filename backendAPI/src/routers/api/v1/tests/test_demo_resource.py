@@ -177,15 +177,38 @@ async def test_put_demo_resource_by_resource_does_not_exist(
 #     assert response.status_code == 400
 
 
-# TBD: add more tests for PUT, for example:
-# - test for wrong input
-# - test for non-existing id
+@pytest.mark.anyio
+async def test_delete_demo_resource(
+    async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
+):
+    """Tests DELETE of a demo resource."""
+    resources = add_test_demo_resources
+    id = 1
+    print("=== URL ===")
+    print(f"/api/v1/demo_resource/${id}")
+    response = await async_client.get(f"/api/v1/demo_resource/{id}")
 
+    # Check if resource exists before deleting:
+    assert response.status_code == 200
+    content = response.json()
+    assert content["id"] == id
+    assert content["name"] == resources[0].name
+    assert content["description"] == resources[0].description
+    assert content["language"] == resources[0].language
+    assert content["timezone"] == resources[0].timezone
 
-# @pytest.mark.anyio
-# async def test_delete_demo_resource(async_client: AsyncClient):
-#     """Tests DELETE of a demo resource."""
-#     response = await async_client.get("/demo_resource/1")
+    # Delete resource:
+    response = await async_client.delete(f"/api/v1/demo_resource/${id}")
+    assert response.status_code == 200
+    content = response.json()
+    assert "Resource ${id} deleted." in content["detail"]
+
+    # Check if resource exists after deleting:
+    response = await async_client.get(f"/api/v1/demo_resource/${id}")
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "Resource not found"
+
 
 #     assert response.status_code == 200
 #     assert {"status": "ok"} == response.json()
