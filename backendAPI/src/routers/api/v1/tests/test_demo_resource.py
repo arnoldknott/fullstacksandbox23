@@ -4,11 +4,7 @@ from models.demo_resource import DemoResource
 from utils import demo_resource_test_input
 
 
-# , get_async_test_session: AsyncSession
 @pytest.mark.anyio
-# @pytest.mark.usefixtures("run_migrations")
-# @pytest.mark.usefixtures("get_async_test_session")
-# async def test_post_demo_resource(async_client: AsyncClient, get_async_test_session):
 async def test_post_demo_resource(async_client: AsyncClient):
     """Tests POST of a demo_resource."""
     resource = demo_resource_test_input
@@ -78,13 +74,25 @@ async def test_get_demo_resource_by_invalid_id(async_client: AsyncClient):
     assert content["detail"] == "Invalid resource id"
 
 
-# @pytest.mark.anyio
-# async def test_put_demo_resource(async_client: AsyncClient):
-#     """Tests PUT of a demo resource."""
-#     response = await async_client.get("/demo_resource/1")
+@pytest.mark.anyio
+async def test_put_demo_resource(
+    async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
+):
+    """Tests PUT of a demo resource."""
+    resources = add_test_demo_resources
+    updated_resource = {
+        "name": "Updated Name",
+        "description": "Updated Description",
+        "timezone": "UTC+10",
+    }
+    response = await async_client.put("/demo_resource/1", json=updated_resource)
 
-#     assert response.status_code == 200
-#     assert {"status": "ok"} == response.json()
+    assert response.status_code == 200
+    content = response.json()
+    assert content["name"] == updated_resource["name"]
+    assert content["description"] == updated_resource["description"]
+    assert content["language"] == resources[0].language  # this one is not updatged!
+    assert content["timezone"] == updated_resource["timezone"]
 
 
 # @pytest.mark.anyio
