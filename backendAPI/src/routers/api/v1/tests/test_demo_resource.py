@@ -83,6 +83,28 @@ async def test_put_demo_resource(
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
+        "language": "es-ES",
+        "timezone": "UTC+9",
+    }
+    response = await async_client.put("/api/v1/demo_resource/1", json=updated_resource)
+
+    assert response.status_code == 200
+    content = response.json()
+    assert content["name"] == updated_resource["name"]
+    assert content["description"] == updated_resource["description"]
+    assert content["language"] == updated_resource["language"]
+    assert content["timezone"] == updated_resource["timezone"]
+
+
+@pytest.mark.anyio
+async def test_put_demo_resource_not_all_updated(
+    async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
+):
+    """Tests PUT of a demo resource."""
+    resources = add_test_demo_resources
+    updated_resource = {
+        "name": "Updated Name",
+        "description": "Updated Description",
         "timezone": "UTC+10",
     }
     response = await async_client.put("/api/v1/demo_resource/1", json=updated_resource)
@@ -97,6 +119,67 @@ async def test_put_demo_resource(
     print(content["language"])
     assert content["language"] == resources[0].language  # this one is not updatged!
     assert content["timezone"] == updated_resource["timezone"]
+
+
+@pytest.mark.anyio
+async def test_put_demo_resource_by_invalid_id(
+    async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
+):
+    """Tests GET of a demo resources."""
+    add_test_demo_resources
+    updated_resource = {
+        "name": "Updated Name",
+        "description": "Updated Description",
+        "timezone": "UTC+10",
+    }
+    response = await async_client.put(
+        "/api/v1/demo_resource/not_an_integer", json=updated_resource
+    )
+
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Invalid resource id"
+
+
+@pytest.mark.anyio
+async def test_put_demo_resource_by_resource_does_not_exist(
+    async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
+):
+    """Tests GET of a demo resources."""
+    add_test_demo_resources
+    updated_resource = {
+        "name": "Updated Name",
+        "description": "Updated Description",
+        "timezone": "UTC+10",
+    }
+    response = await async_client.put(
+        "/api/v1/demo_resource/100", json=updated_resource
+    )
+
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "Resource not found"
+
+
+# TBD: This is not checked - up to the user for now, to get the input correct. Wrong input does not change anything.
+# @pytest.mark.anyio
+# async def test_put_demo_resource_wrong_input(
+#     async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
+# ):
+#     """Tests PUT of a demo resource."""
+#     add_test_demo_resources
+#     updated_resource = {
+#         "title": "Some title",
+#         "category": 42,
+#     }
+#     response = await async_client.put("/api/v1/demo_resource/1", json=updated_resource)
+
+#     assert response.status_code == 400
+
+
+# TBD: add more tests for PUT, for example:
+# - test for wrong input
+# - test for non-existing id
 
 
 # @pytest.mark.anyio

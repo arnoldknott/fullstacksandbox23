@@ -57,6 +57,8 @@ async def update_demo_resource(
 ) -> DemoResource:
     """Updates a demo resource."""
     logger.info("PUT demo resource")
+    print("=== demo_resource ===")
+    print(demo_resource)
     crud = DemoResourceCRUD(session)
     try:
         resource_id = int(resource_id)
@@ -64,8 +66,6 @@ async def update_demo_resource(
         logger.error("Resource ID is not an integer")
         raise HTTPException(status_code=400, detail="Invalid resource id")
     old_resource = await crud.read_resource_by_id(resource_id)
-    if old_resource is None:
-        raise HTTPException(status_code=404, detail="Resource not found")
     updated_resource = await crud.update_resource(old_resource, demo_resource)
     return updated_resource
 

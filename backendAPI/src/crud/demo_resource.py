@@ -41,20 +41,6 @@ class DemoResourceCRUD:
         self, old: DemoResource, new: DemoResourceUpdate
     ) -> DemoResource:
         """Updates a demo resource."""
-        print("=================")
-        print("=== new ===")
-        print(new)
-        print("=== new.model_dump() ===")
-        print(new.model_dump())
-        print("=== new.model_dump().items() ===")
-        print(new.model_dump().items())
-        print("=== old ===")
-        print(old)
-        # print("=== **new.model_dump() ===")
-        # print(**new.model_dump())
-        # print("=== **new.model_dump().items() ===")
-        # print(**new.model_dump().items())
-        print("=================")
         for key, value in vars(new).items():  # .model_dump().items():
             if value is not None:
                 setattr(old, key, value)
