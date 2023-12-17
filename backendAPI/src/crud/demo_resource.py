@@ -1,6 +1,6 @@
 from core.databases import get_async_session
 from fastapi import Depends, HTTPException
-from models.demo_resource import DemoResource, DemoResourceIn
+from models.demo_resource import DemoResource, DemoResourceIn, DemoResourceUpdate
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -37,8 +37,28 @@ class DemoResourceCRUD:
             raise HTTPException(status_code=404, detail="Resource not found")
         return resource
 
-    async def update_resource(self, resource: DemoResource) -> DemoResource:
+    async def update_resource(
+        self, old: DemoResource, new: DemoResourceUpdate
+    ) -> DemoResource:
         """Updates a demo resource."""
+        print("=================")
+        print("=== new ===")
+        print(new)
+        print("=== new.model_dump() ===")
+        print(new.model_dump())
+        print("=== new.model_dump().items() ===")
+        print(new.model_dump().items())
+        print("=== old ===")
+        print(old)
+        # print("=== **new.model_dump() ===")
+        # print(**new.model_dump())
+        # print("=== **new.model_dump().items() ===")
+        # print(**new.model_dump().items())
+        print("=================")
+        for key, value in vars(new).items():  # .model_dump().items():
+            if value is not None:
+                setattr(old, key, value)
+        resource = old
         self.session.add(resource)
         await self.session.commit()
         await self.session.refresh(resource)

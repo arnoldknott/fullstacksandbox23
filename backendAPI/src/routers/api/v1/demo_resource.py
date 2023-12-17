@@ -4,7 +4,7 @@ from typing import List
 from core.databases import get_async_session
 from crud.demo_resource import DemoResourceCRUD
 from fastapi import APIRouter, Depends, HTTPException
-from models.demo_resource import DemoResource, DemoResourceIn
+from models.demo_resource import DemoResource, DemoResourceIn, DemoResourceUpdate
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,25 @@ async def get_demo_resource_by_id(
     return response
 
 
-# @router.put("/{resource_id}")
+@router.put("/{resource_id}")
+async def update_demo_resource(
+    resource_id: str,
+    demo_resource: DemoResourceUpdate,
+    session: AsyncSession = Depends(get_async_session),
+) -> DemoResource:
+    """Updates a demo resource."""
+    logger.info("PUT demo resource")
+    crud = DemoResourceCRUD(session)
+    try:
+        resource_id = int(resource_id)
+    except ValueError:
+        logger.error("Resource ID is not an integer")
+        raise HTTPException(status_code=400, detail="Invalid resource id")
+    old_resource = await crud.read_resource_by_id(resource_id)
+    if old_resource is None:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    updated_resource = await crud.update_resource(old_resource, demo_resource)
+    return updated_resource
+
 
 # @router.delete("/{resource_id}")

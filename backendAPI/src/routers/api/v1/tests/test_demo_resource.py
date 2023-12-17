@@ -85,12 +85,16 @@ async def test_put_demo_resource(
         "description": "Updated Description",
         "timezone": "UTC+10",
     }
-    response = await async_client.put("/demo_resource/1", json=updated_resource)
+    response = await async_client.put("/api/v1/demo_resource/1", json=updated_resource)
 
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == updated_resource["name"]
     assert content["description"] == updated_resource["description"]
+    print("=== resources[0].language ===")
+    print(resources[0].language)
+    print("=== content['language'] ===")
+    print(content["language"])
     assert content["language"] == resources[0].language  # this one is not updatged!
     assert content["timezone"] == updated_resource["timezone"]
 

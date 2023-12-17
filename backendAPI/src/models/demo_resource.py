@@ -13,6 +13,13 @@ class DemoResourceIn(SQLModel):
 class DemoResource(DemoResourceIn, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
+
+class DemoResourceUpdate(DemoResourceIn):
+    name: Optional[str] = None
+    # description: Optional[str] = None
+    # language: Optional[str] = None
+    # timezone: Optional[str] = None
+
     # Lots and lots of inspiration here:
     # TBD: url: str
     # TBD: add tags
