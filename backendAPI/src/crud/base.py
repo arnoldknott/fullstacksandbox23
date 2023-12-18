@@ -1,7 +1,7 @@
 from typing import Generic, Type, TypeVar
 
 from core.databases import get_async_session
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -16,11 +16,19 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
     def __init__(
         self,
         base_model: Type[BaseModelType],
-        session: AsyncSession = Depends(get_async_session),
     ):
         """Provides a database session for CRUD operations."""
-        self.session = session
+        self.session = None
         self.model = base_model
+
+    async def __aenter__(self) -> AsyncSession:
+        """Returns a database session."""
+        self.session = await get_async_session()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Closes the database session."""
+        await self.session.close()
 
     async def create(self, object: BaseSchemaTypeCreate) -> BaseModelType:
         """Creates a new object."""
@@ -80,69 +88,3 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
         await session.delete(object)
         await session.commit()
         return object
-
-    # highly inspired by
-    # https://github.com/tiangolo/full-stack-fastapi-postgresql/blob/311939e6409d46c6547075095c051863c1cc0de2/src/backend/app/app/crud/base.py
-    # async def get(
-    #     self, id: Any, session: AsyncSession = Depends(get_async_session)
-    # ) -> Optional[BaseModelType]:
-    #     """Returns a model by id."""
-    #     statement = select(self.model).where(self.model.id == id)
-    #     result = await session.exec(statement)
-    #     return result.first()
-
-    # async def get_multi(
-    #     self,
-    #     *,
-    #     skip: int = 0,
-    #     limit: int = 100,
-    #     session: AsyncSession = Depends(get_async_session)
-    # ) -> List[BaseModelType]:
-    #     """Returns multiple models."""
-    #     statement = select(self.model).offset(skip).limit(limit)
-    #     result = await session.exec(statement)
-    #     return result.all()
-
-    # async def create(
-    #     self,
-    #     *,
-    #     obj_in: BaseSchemaTypeCreate,
-    #     session: AsyncSession = Depends(get_async_session)
-    # ) -> BaseModelType:
-    #     """Creates a new model."""
-    #     obj_in_data = jsonable_encoder(obj_in)
-    #     db_obj = self.model(**obj_in_data)
-    #     session.add(db_obj)
-    #     await session.commit()
-    #     await session.refresh(db_obj)
-    #     return db_obj
-
-    # async def update(
-    #     self,
-    #     *,
-    #     db_obj: BaseModelType,
-    #     obj_in: Union[BaseSchemaTypeUpdate, Dict[str, Any]],
-    #     session: AsyncSession = Depends(get_async_session)
-    # ) -> BaseModelType:
-    #     """Updates a model."""
-    #     obj_data = jsonable_encoder(db_obj)
-    #     if isinstance(obj_in, dict):
-    #         update_data = obj_in
-    #     else:
-    #         update_data = obj_in.dict(exclude_unset=True)
-    #     for field in obj_data:
-    #         if field in update_data:
-    #             setattr(db_obj, field, update_data[field])
-    #     session.add(db_obj)
-    #     await session.commit()
-    #     await session.refresh(db_obj)
-    #     return db_obj
-
-    # async def delete(
-    #     self, *, id: int, session: AsyncSession = Depends(get_async_session)
-    # ) -> BaseModelType:
-    #     """Deletes a model."""
-    #     obj = await session.get(self.model, id)
-    #     session.delete(obj)
-    #     await session.commit()
-    #     return obj

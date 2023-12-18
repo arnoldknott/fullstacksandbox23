@@ -14,6 +14,12 @@ async def get_async_session() -> AsyncSession:
     async_session = async_sessionmaker(
         bind=postgres_async_engine, class_=AsyncSession, expire_on_commit=False
     )
+    return async_session()
+
+
+async def use_async_session() -> AsyncSession:
+    """Yields a database session."""
+    async_session = get_async_session()
     async with async_session() as session:
         yield session
 

@@ -1,20 +1,17 @@
-from core.databases import get_async_session
-
 # from fastapi import Depends, HTTPException
-from fastapi import Depends
 from models.demo_resource import DemoResource, DemoResourceCreate, DemoResourceUpdate
 
-# from sqlmodel import select
-from sqlmodel.ext.asyncio.session import AsyncSession
-
 from .base import BaseCRUD
+
+# from sqlmodel import select
+
 
 # from sqlalchemy.future import select
 
 
 class DemoResourceCRUD(BaseCRUD[DemoResource, DemoResourceCreate, DemoResourceUpdate]):
-    def __init__(self, session: AsyncSession = Depends(get_async_session)):
-        super().__init__(DemoResource, session)
+    def __init__(self):
+        super().__init__(DemoResource)
 
 
 # class DemoResourceCRUD:

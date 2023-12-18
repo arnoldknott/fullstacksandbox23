@@ -103,23 +103,3 @@ async def get_async_test_session() -> AsyncSession:
     )
     async with async_session() as session:
         yield session
-
-    # async_session = get_async_session()
-    # async with async_session() as session:
-    # SQLModel.metadata.create_all(postgres_async_engine)
-    # yield
-    # SQLModel.metadata.drop_all(postgres_async_engine)
-    # ==============
-    # async with postgres_async_engine.begin() as connection:
-    #     await connection.run_sync(SQLModel.metadata.create_all)
-    #     yield
-    #     await connection.run_sync(SQLModel.metadata.drop_all)
-    # ==============
-    # await SQLModel.metadata.create_all(postgres_async_engine)
-    # yield
-    # await SQLModel.metadata.drop_all(postgres_async_engine)
-    # session = get_async_session()
-    # async with session:
-    #     await connection.run_sync(SQLModel.metadata.create_all)
-    #     yield
-    #     await connection.run_sync(SQLModel.metadata.drop_all)
