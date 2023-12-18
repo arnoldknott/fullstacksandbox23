@@ -1,5 +1,4 @@
 from core.databases import get_async_session
-from crud.base import BaseCRUD
 
 # from fastapi import Depends, HTTPException
 from fastapi import Depends
@@ -7,6 +6,8 @@ from models.demo_resource import DemoResource, DemoResourceCreate, DemoResourceU
 
 # from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
+
+from .base import BaseCRUD
 
 # from sqlalchemy.future import select
 
