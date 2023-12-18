@@ -23,8 +23,8 @@ async def test_get_demo_resource(
 ):
     """Tests GET all demo resources."""
     resources = add_test_demo_resources
-    print("=== demo resources ===")
-    print(resources)
+    # print("=== demo resources ===")
+    # print(resources)
     response = await async_client.get("/api/v1/demo_resource/")
 
     assert response.status_code == 200
@@ -113,10 +113,10 @@ async def test_put_demo_resource_partial_update(
     content = response.json()
     assert content["name"] == updated_resource["name"]
     assert content["description"] == updated_resource["description"]
-    print("=== resources[0].language ===")
-    print(resources[0].language)
-    print("=== content['language'] ===")
-    print(content["language"])
+    # print("=== resources[0].language ===")
+    # print(resources[0].language)
+    # print("=== content['language'] ===")
+    # print(content["language"])
     assert content["language"] == resources[0].language  # this one is not updatged!
     assert content["timezone"] == updated_resource["timezone"]
 
@@ -199,8 +199,8 @@ async def test_delete_demo_resource(
     response = await async_client.delete(f"/api/v1/demo_resource/{id}")
     assert response.status_code == 200
     content = response.json()
-    print("=== content ===")
-    print(content)
+    # print("=== content ===")
+    # print(content)
     # assert "Deleted resource ${id}." in content["detail"]
     assert content["name"] == resources[0].name
     assert content["description"] == resources[0].description

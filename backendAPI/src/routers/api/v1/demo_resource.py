@@ -19,7 +19,7 @@ async def post_demo_resource(
     """Creates a new demo resource."""
     logger.info("POST demo resource")
     crud = DemoResourceCRUD(session)
-    created_demo_resource = await crud.create_resource(demo_resource)
+    created_demo_resource = await crud.create(demo_resource)
     return created_demo_resource
 
 
@@ -30,7 +30,7 @@ async def get_all_demo_resources(
     """Returns all demo resource."""
     logger.info("GET all demo resource")
     crud = DemoResourceCRUD(session)
-    response = await crud.read_resources()
+    response = await crud.read()
     return response
 
 
@@ -46,7 +46,7 @@ async def get_demo_resource_by_id(
     except ValueError:
         logger.error("Resource ID is not an integer")
         raise HTTPException(status_code=400, detail="Invalid resource id")
-    response = await crud.read_resource_by_id(resource_id)
+    response = await crud.read_by_id(resource_id)
     return response
 
 
@@ -58,16 +58,16 @@ async def update_demo_resource(
 ) -> DemoResource:
     """Updates a demo resource."""
     logger.info("PUT demo resource")
-    print("=== demo_resource ===")
-    print(demo_resource)
+    # print("=== demo_resource ===")
+    # print(demo_resource)
     crud = DemoResourceCRUD(session)
     try:
         resource_id = int(resource_id)
     except ValueError:
         logger.error("Resource ID is not an integer")
         raise HTTPException(status_code=400, detail="Invalid resource id")
-    old_resource = await crud.read_resource_by_id(resource_id)
-    updated_resource = await crud.update_resource(old_resource, demo_resource)
+    old_resource = await crud.read_by_id(resource_id)
+    updated_resource = await crud.update(old_resource, demo_resource)
     return updated_resource
 
 
@@ -83,7 +83,7 @@ async def delete_demo_resource(
     except ValueError:
         logger.error("Resource ID is not an integer")
         raise HTTPException(status_code=400, detail="Invalid resource id")
-    result = await crud.delete_resource(resource_id)
-    print("=== result ===")
-    print(result)
+    result = await crud.delete(resource_id)
+    # print("=== result ===")
+    # print(result)
     return result

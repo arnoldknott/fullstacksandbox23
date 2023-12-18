@@ -15,7 +15,7 @@ async def add_test_demo_resources(get_async_test_session: AsyncSession):
     # print(database_resources)
     for resource in database_resources:
         demo_resource_instance = DemoResource(**resource)
-        # print("=== demoe_resource_instance ===")
+        # print("=== demo_resource_instance ===")
         # print(demo_resource_instance)
         session.add(demo_resource_instance)
         await session.commit()
