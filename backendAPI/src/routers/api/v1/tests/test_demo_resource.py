@@ -79,7 +79,7 @@ async def test_put_demo_resource(
     async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
 ):
     """Tests PUT of a demo resource."""
-    resources = add_test_demo_resources
+    add_test_demo_resources
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
