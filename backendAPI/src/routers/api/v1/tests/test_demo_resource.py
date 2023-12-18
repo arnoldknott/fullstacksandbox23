@@ -158,7 +158,7 @@ async def test_put_demo_resource_by_resource_does_not_exist(
 
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Resource not found"
+    assert content["detail"] == "Object not found"
 
 
 # TBD: This is not checked - up to the user for now, to get the input correct. Wrong input does not change anything.
@@ -211,7 +211,7 @@ async def test_delete_demo_resource(
     response = await async_client.get(f"/api/v1/demo_resource/{id}")
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Resource not found"
+    assert content["detail"] == "Object not found"
 
 
 @pytest.mark.anyio
@@ -233,4 +233,4 @@ async def test_delete_demo_resource_by_resource_does_not_exist(
 
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Resource not found"
+    assert content["detail"] == "Object not found"

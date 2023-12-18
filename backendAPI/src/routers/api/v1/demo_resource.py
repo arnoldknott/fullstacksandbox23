@@ -30,7 +30,7 @@ async def get_all_demo_resources(
     """Returns all demo resource."""
     logger.info("GET all demo resource")
     crud = DemoResourceCRUD(session)
-    response = await crud.read()
+    response = await crud.read_all()
     return response
 
 
