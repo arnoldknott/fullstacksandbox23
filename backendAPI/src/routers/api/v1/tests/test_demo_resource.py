@@ -66,7 +66,7 @@ async def test_get_demo_resource_by_id(
 
 @pytest.mark.anyio
 async def test_get_demo_resource_by_invalid_id(async_client: AsyncClient):
-    """Tests GET of a demo resources."""
+    """Tests GET of a demo resources with invalid id."""
 
     response = await async_client.get("/api/v1/demo_resource/invalid_id")
     assert response.status_code == 400
@@ -97,10 +97,10 @@ async def test_put_demo_resource(
 
 
 @pytest.mark.anyio
-async def test_put_demo_resource_not_all_updated(
+async def test_put_demo_resource_partial_update(
     async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
 ):
-    """Tests PUT of a demo resource."""
+    """Tests PUT of a demo resource, where not all fields are updated."""
     resources = add_test_demo_resources
     updated_resource = {
         "name": "Updated Name",
@@ -125,7 +125,7 @@ async def test_put_demo_resource_not_all_updated(
 async def test_put_demo_resource_by_invalid_id(
     async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
 ):
-    """Tests GET of a demo resources."""
+    """Tests PUT of a demo resources with invalid id."""
     add_test_demo_resources
     updated_resource = {
         "name": "Updated Name",
@@ -145,7 +145,7 @@ async def test_put_demo_resource_by_invalid_id(
 async def test_put_demo_resource_by_resource_does_not_exist(
     async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
 ):
-    """Tests GET of a demo resources."""
+    """Tests PUT of nonexisting demo resources."""
     add_test_demo_resources
     updated_resource = {
         "name": "Updated Name",
@@ -214,5 +214,23 @@ async def test_delete_demo_resource(
     assert content["detail"] == "Resource not found"
 
 
-#     assert response.status_code == 200
-#     assert {"status": "ok"} == response.json()
+@pytest.mark.anyio
+async def test_delete_demo_resource_by_invalid_id(async_client: AsyncClient):
+    """Tests DELETE of a demo resources with invalid id."""
+    response = await async_client.delete("/api/v1/demo_resource/invalid_id")
+
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Invalid resource id"
+
+
+@pytest.mark.anyio
+async def test_delete_demo_resource_by_resource_does_not_exist(
+    async_client: AsyncClient,
+):
+    """Tests GET of a demo resources."""
+    response = await async_client.delete("/api/v1/demo_resource/100")
+
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "Resource not found"
