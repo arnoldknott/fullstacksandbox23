@@ -17,17 +17,9 @@ async def get_async_session() -> AsyncSession:
     return async_session()
 
 
+# TBD: remove this?
 async def use_async_session() -> AsyncSession:
     """Yields a database session."""
     async_session = get_async_session()
     async with async_session() as session:
         yield session
-
-
-# postgres = create_engine(config.POSTGRES_URL)
-
-# then, I can handle database crud like this:
-# @app.get("/items/")
-# def read_items(session: Session = Depends(get_session)):
-#     result = session.exec(select(Item)).all()
-#     return result

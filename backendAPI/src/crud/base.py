@@ -34,8 +34,6 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
         """Creates a new object."""
         session = self.session
         model = self.model
-        # database_object = BaseModelType(**object.model_dump())
-        # database_object = jsonable_encoder(object)
         database_object = model(**object.model_dump())
         session.add(database_object)
         await session.commit()

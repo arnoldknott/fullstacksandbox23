@@ -1,8 +1,8 @@
-# from fastapi import Depends, HTTPException
 from models.demo_resource import DemoResource, DemoResourceCreate, DemoResourceUpdate
 
 from .base import BaseCRUD
 
+# from fastapi import Depends, HTTPException
 # from sqlmodel import select
 
 
