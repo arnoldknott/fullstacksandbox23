@@ -1,6 +1,6 @@
 from core.databases import get_async_session
 from fastapi import Depends, HTTPException
-from models.demo_resource import DemoResource, DemoResourceIn, DemoResourceUpdate
+from models.demo_resource import DemoResource, DemoResourceCreate, DemoResourceUpdate
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -14,7 +14,7 @@ class DemoResourceCRUD:
         """Provides a database session for CRUD operations."""
         self.session = session
 
-    async def create_resource(self, resource: DemoResourceIn) -> DemoResource:
+    async def create_resource(self, resource: DemoResourceCreate) -> DemoResource:
         """Creates a new resource."""
         database_resource = DemoResource(**resource.model_dump())
         self.session.add(database_resource)

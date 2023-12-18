@@ -4,7 +4,7 @@ from typing import List
 from core.databases import get_async_session
 from crud.demo_resource import DemoResourceCRUD
 from fastapi import APIRouter, Depends, HTTPException
-from models.demo_resource import DemoResource, DemoResourceIn, DemoResourceUpdate
+from models.demo_resource import DemoResource, DemoResourceCreate, DemoResourceUpdate
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,8 @@ router = APIRouter()
 
 @router.post("/", status_code=201)  # change to 201 - this is just to try the tests!
 async def post_demo_resource(
-    demo_resource: DemoResourceIn, session: AsyncSession = Depends(get_async_session)
+    demo_resource: DemoResourceCreate,
+    session: AsyncSession = Depends(get_async_session),
 ) -> DemoResource:
     """Creates a new demo resource."""
     logger.info("POST demo resource")
