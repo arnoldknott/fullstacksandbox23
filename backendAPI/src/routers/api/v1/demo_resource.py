@@ -70,4 +70,19 @@ async def update_demo_resource(
     return updated_resource
 
 
-# @router.delete("/{resource_id}")
+@router.delete("/{resource_id}")
+async def delete_demo_resource(
+    resource_id: str, session: AsyncSession = Depends(get_async_session)
+) -> DemoResource:
+    """Deletes a demo resource."""
+    logger.info("DELETE demo resource")
+    crud = DemoResourceCRUD(session)
+    try:
+        resource_id = int(resource_id)
+    except ValueError:
+        logger.error("Resource ID is not an integer")
+        raise HTTPException(status_code=400, detail="Invalid resource id")
+    result = await crud.delete_resource(resource_id)
+    print("=== result ===")
+    print(result)
+    return result

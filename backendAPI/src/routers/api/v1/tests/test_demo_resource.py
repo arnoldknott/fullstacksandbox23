@@ -184,8 +184,6 @@ async def test_delete_demo_resource(
     """Tests DELETE of a demo resource."""
     resources = add_test_demo_resources
     id = 1
-    print("=== URL ===")
-    print(f"/api/v1/demo_resource/${id}")
     response = await async_client.get(f"/api/v1/demo_resource/{id}")
 
     # Check if resource exists before deleting:
@@ -198,13 +196,19 @@ async def test_delete_demo_resource(
     assert content["timezone"] == resources[0].timezone
 
     # Delete resource:
-    response = await async_client.delete(f"/api/v1/demo_resource/${id}")
+    response = await async_client.delete(f"/api/v1/demo_resource/{id}")
     assert response.status_code == 200
     content = response.json()
-    assert "Resource ${id} deleted." in content["detail"]
+    print("=== content ===")
+    print(content)
+    # assert "Deleted resource ${id}." in content["detail"]
+    assert content["name"] == resources[0].name
+    assert content["description"] == resources[0].description
+    assert content["language"] == resources[0].language
+    assert content["timezone"] == resources[0].timezone
 
     # Check if resource exists after deleting:
-    response = await async_client.get(f"/api/v1/demo_resource/${id}")
+    response = await async_client.get(f"/api/v1/demo_resource/{id}")
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "Resource not found"

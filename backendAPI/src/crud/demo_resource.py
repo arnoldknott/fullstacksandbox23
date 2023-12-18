@@ -52,9 +52,9 @@ class DemoResourceCRUD:
 
     async def delete_resource(self, resource_id: int) -> DemoResource:
         """Deletes a demo resource."""
-        statement = select(DemoResource).where(DemoResource.id == int(resource_id))
-        result = await self.session.exec(statement)
-        resource = result.first()
-        self.session.delete(resource)
+        resource = await self.session.get(DemoResource, resource_id)
+        if resource is None:
+            raise HTTPException(status_code=404, detail="Resource not found")
+        await self.session.delete(resource)
         await self.session.commit()
         return resource
