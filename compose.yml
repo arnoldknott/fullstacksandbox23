@@ -7,9 +7,10 @@ services:
             target: prod
         # TBD: consider moving into compose.override.yml - in case a build stage is involved
         volumes:
-            - ./backendAPI/src:/app
-        ports:
-            - "80:80"
+        # TBD: consider - ./backendAPI:/app
+            - ./backendAPI:/app
+        # ports:
+        #     - "80:80"
 
     postgres:
         container_name: "postgres"

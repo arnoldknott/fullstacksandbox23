@@ -1,48 +1,50 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
-from routers.system.status import router as system_status_router
+from routers.api.v1.core import router as core_router
+from routers.api.v1.demo_resource import router as demo_resource_router
 
 # print("Current directory:", os.getcwd())
 # print("sys.path:", sys.path)
 
-# from dependencies.databases import postgres
-
-
-# from src.dependencies.databases import mongodb
-# from src.dependencies.cache import redis
-# from src.dependencies.logging import configure_logging
+# from core.databases import postgres
+# from core.databases import mongodb
+# from core.cache import redis
+# from core.logging import configure_logging
 
 logger = logging.getLogger(__name__)
-
-# print(f"POSTGRES_DB: {config.POSTGRES_DB}")
-# print(f"POSTGRES_USER: {config.POSTGRES_USER}")
 
 
 # TBD: add postgres database:
 # context manager does setup and tear down
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     """Awaits the database when the app starts and disconnects when it stops."""
-#     # configure_logging()# TBD: add logging configuration
-#     await postgres.connect()
-#     yield  # this is where the FastAPI runs - when its done, it comes back here and closes down
-#     await postgres.disconnect()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Configures application startup and shutdown events."""
+    logger.info("Application startup")
+    # configure_logging()# TBD: add logging configuration
+    # Don't do that: use Sessions instead!
+    # await postgres.connect()
+    yield  # this is where the FastAPI runs - when its done, it comes back here and closes down
+    # await postgres.disconnect()
+    logger.info("Application shutdown")
 
-# app = FastAPI(lifespan=lifespan)
 
+# TBD consider moving to router?
 global_prefix = "/api/v1"
 
 app = FastAPI(
     title="backendAPI",
     summary="Backend for fullstack Sandbox.",
-    description="Handling user authentication and session handling.",  # TBD: add the longer markdown description here
+    description="Playground for trying out anything freely before using in projects.",  # TBD: add the longer markdown description here
     version="0.0.1",  # TBD: read from CHANGELOG.md or environment variable or so?
+    lifespan=lifespan,
     # TBD: add contact - also through environment variables?
 )
 
 
+### DEPRECTATED: use lifespan instead
 # @app.on_event("startup")
 # async def startup():
 #     """Runs when the app starts."""
@@ -56,7 +58,12 @@ app = FastAPI(
 #     await postgres.disconnect()
 
 
-app.include_router(system_status_router, prefix=f"{global_prefix}/system")
+app.include_router(core_router, prefix=f"{global_prefix}/core", tags=["Core"])
+app.include_router(
+    demo_resource_router,
+    prefix=f"{global_prefix}/demo_resource",
+    tags=["Demo Resource"],
+)
 
 
 # exception handler logs exceptions before passing them to the default exception handler
