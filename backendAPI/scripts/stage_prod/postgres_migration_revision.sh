@@ -5,7 +5,8 @@ VERSIONSFILE_PATH="/data/migrations/stage_prod/versions"
 
 
 # apk add --no-cache git
-mkdir -p /data/migrations/stage_prod/versions
+
+mkdir -p $VERSIONSFILE_PATH
 cd /app/src
 alembic -c alembic_stage_prod.ini revision --autogenerate -m \"$COMMIT_SHA\" > $LOGFILE_PATH/revision_$COMMIT_SHA.log
 MIGRATION_SCRIPT_FILENAME=$(cat $LOGFILE_PATH/revision_$COMMIT_SHA.log | awk '/Generating /{print $2}')
