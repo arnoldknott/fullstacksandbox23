@@ -355,11 +355,15 @@ jobs:
             --command \"scripts/stage_prod/postgres_migration_revision.sh\"" > postgres_migration/revision_connection_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_${{ env.COMMIT_SHA }}.log
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_filename_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log
+          cat postgres_migration/revision_connection_${{ env.COMMIT_SHA }}.log
+          cat postgres_migration/revision_${{ env.COMMIT_SHA }}.log
+          cat postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log
           MIGRATION_SCRIPT_PATH_REMOTE=$(cat postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log)
           MIGRATION_SCRIPT_PATH_REMOTE=${MIGRATION_SCRIPT_PATH_REMOTE#/}
           MIGRATION_SCRIPT_FILENAME=$(basename $MIGRATION_SCRIPT_PATH_REMOTE)
           echo "MIGRATION_SCRIPT_FILENAME=$MIGRATION_SCRIPT_FILENAME" >> $GITHUB_ENV
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p migrations/stage_prod/versions/$MIGRATION_SCRIPT_FILENAME --dest $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
+          cat $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
       - name: Upload migration check artifacts
         uses: actions/upload-artifact@v3
         with:

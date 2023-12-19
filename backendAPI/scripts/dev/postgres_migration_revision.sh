@@ -4,7 +4,6 @@ LOGFILE_PATH="/data/migrations/dev/logs"
 VERSIONSFILE_PATH="/data/migrations/dev/versions"
 
 
-# apk add --no-cache git
 mkdir -p $VERSIONSFILE_PATH
 cd /app/src
 alembic revision --autogenerate -m \"$COMMIT_SHA\" > $LOGFILE_PATH/revision_$COMMIT_SHA.log
