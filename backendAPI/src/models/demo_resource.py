@@ -3,18 +3,18 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 
 
-class DemoResourceIn(SQLModel):
+class DemoResourceCreate(SQLModel):
     name: str
     description: Optional[str] = None
     language: Optional[str] = None
     timezone: Optional[str] = None
 
 
-class DemoResource(DemoResourceIn, table=True):
+class DemoResource(DemoResourceCreate, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
 
-class DemoResourceUpdate(DemoResourceIn):
+class DemoResourceUpdate(DemoResourceCreate):
     name: Optional[str] = None
     # description: Optional[str] = None
     # language: Optional[str] = None
