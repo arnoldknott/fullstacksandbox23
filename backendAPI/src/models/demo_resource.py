@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+from .category import Category
 
 
 class DemoResourceCreate(SQLModel):
@@ -15,6 +17,9 @@ class DemoResource(DemoResourceCreate, table=True):
     created_at: datetime = Field(default=datetime.now())
     last_updated_at: datetime = Field(default=datetime.now())
     # Note: so far all times are UTC!
+
+    category_id: Optional[int] = Field(default=None, foreign_key="category.id")
+    category: Optional[Category] = Relationship(back_populates="demo_resources")
 
 
 class DemoResourceUpdate(DemoResourceCreate):
