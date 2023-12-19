@@ -5,6 +5,7 @@ VERSIONSFILE_PATH="/data/migrations/stage_prod/versions"
 
 
 # apk add --no-cache git
+
 mkdir -p $VERSIONSFILE_PATH
 cd /app/src
 alembic -c alembic_stage_prod.ini revision --autogenerate -m \"$COMMIT_SHA\" > $LOGFILE_PATH/revision_$COMMIT_SHA.log
