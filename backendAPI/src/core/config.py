@@ -75,6 +75,7 @@ class Config(BaseSettings):
             password=values.data["POSTGRES_PASSWORD"],
             # "postgres" is the container name
             host=values.data["POSTGRES_HOST"] or "postgres",
+            # port=values.data["POSTGRES_PORT"] or 5432,
             path=values.data["POSTGRES_DB"] or "",
         )
 
