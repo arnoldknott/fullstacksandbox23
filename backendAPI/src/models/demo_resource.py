@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
@@ -7,15 +8,18 @@ class DemoResourceCreate(SQLModel):
     name: str
     description: Optional[str] = None
     language: Optional[str] = None
-    timezone: Optional[str] = None
 
 
 class DemoResource(DemoResourceCreate, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default=datetime.now())
+    last_updated_at: datetime = Field(default=datetime.now())
+    # Note: so far all times are UTC!
 
 
 class DemoResourceUpdate(DemoResourceCreate):
     name: Optional[str] = None
+    last_updated_at: datetime = Field(default=datetime.now())
     # description: Optional[str] = None
     # language: Optional[str] = None
     # timezone: Optional[str] = None
