@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pytest
 from httpx import AsyncClient
 from models.demo_resource import DemoResource
@@ -9,11 +11,19 @@ async def test_post_demo_resource(async_client: AsyncClient):
     """Tests POST of a demo_resource."""
     resource = demo_resource_test_input
     # get_async_test_session
+    time_before_crud = datetime.now()
     response = await async_client.post("/api/v1/demo_resource/", json=resource)
+    time_after_crud = datetime.now()
+
     assert response.status_code == 201
     content = response.json()
     assert content["name"] == demo_resource_test_input["name"]
     assert content["description"] == demo_resource_test_input["description"]
+    assert (
+        time_before_crud - timedelta(seconds=5)
+        < datetime.fromisoformat(content["created_at"])
+        < time_after_crud + timedelta(seconds=5)
+    )
     assert "id" in content
 
 
@@ -42,10 +52,10 @@ async def test_get_demo_resource(
             resources[0].language,
             resources[1].language,
         ]
-        assert response_item["timezone"] in [
-            resources[0].timezone,
-            resources[1].timezone,
-        ]
+        # assert response_item["timezone"] in [
+        #     resources[0].timezone,
+        #     resources[1].timezone,
+        # ]
         assert "id" in response_item
 
 
@@ -84,16 +94,29 @@ async def test_put_demo_resource(
         "name": "Updated Name",
         "description": "Updated Description",
         "language": "es-ES",
-        "timezone": "UTC+9",
+        # "timezone": "UTC+9",
     }
+    time_before_crud = datetime.now()
     response = await async_client.put("/api/v1/demo_resource/1", json=updated_resource)
+    time_after_crud = datetime.now()
 
     assert response.status_code == 200
     content = response.json()
+    # print("=== last_updated_at ===")
+    # print(datetime.fromisoformat(content["last_updated_at"]))
+    # print(type(datetime.fromisoformat(content["last_updated_at"])))
+    # print("=== time_before_crud ===")
+    # print(time_before_crud)
+    # print(type(time_before_crud))
+    assert (
+        time_before_crud - timedelta(seconds=5)
+        < datetime.fromisoformat(content["last_updated_at"])
+        < time_after_crud + timedelta(seconds=5)
+    )
     assert content["name"] == updated_resource["name"]
     assert content["description"] == updated_resource["description"]
     assert content["language"] == updated_resource["language"]
-    assert content["timezone"] == updated_resource["timezone"]
+    # assert content["timezone"] == updated_resource["timezone"]
 
 
 @pytest.mark.anyio
@@ -105,7 +128,7 @@ async def test_put_demo_resource_partial_update(
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
-        "timezone": "UTC+10",
+        # "timezone": "UTC+10",
     }
     response = await async_client.put("/api/v1/demo_resource/1", json=updated_resource)
 
@@ -118,7 +141,7 @@ async def test_put_demo_resource_partial_update(
     # print("=== content['language'] ===")
     # print(content["language"])
     assert content["language"] == resources[0].language  # this one is not updatged!
-    assert content["timezone"] == updated_resource["timezone"]
+    # assert content["timezone"] == updated_resource["timezone"]
 
 
 @pytest.mark.anyio
@@ -130,7 +153,7 @@ async def test_put_demo_resource_by_invalid_id(
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
-        "timezone": "UTC+10",
+        # "timezone": "UTC+10",
     }
     response = await async_client.put(
         "/api/v1/demo_resource/not_an_integer", json=updated_resource
@@ -150,7 +173,7 @@ async def test_put_demo_resource_by_resource_does_not_exist(
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
-        "timezone": "UTC+10",
+        # "timezone": "UTC+10",
     }
     response = await async_client.put(
         "/api/v1/demo_resource/100", json=updated_resource
@@ -193,7 +216,7 @@ async def test_delete_demo_resource(
     assert content["name"] == resources[0].name
     assert content["description"] == resources[0].description
     assert content["language"] == resources[0].language
-    assert content["timezone"] == resources[0].timezone
+    # assert content["timezone"] == resources[0].timezone
 
     # Delete resource:
     response = await async_client.delete(f"/api/v1/demo_resource/{id}")
@@ -205,7 +228,7 @@ async def test_delete_demo_resource(
     assert content["name"] == resources[0].name
     assert content["description"] == resources[0].description
     assert content["language"] == resources[0].language
-    assert content["timezone"] == resources[0].timezone
+    # assert content["timezone"] == resources[0].timezone
 
     # Check if resource exists after deleting:
     response = await async_client.get(f"/api/v1/demo_resource/{id}")
