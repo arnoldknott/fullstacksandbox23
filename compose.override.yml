@@ -15,8 +15,8 @@ services:
 
     postgres:
         container_name: dev_postgres
-        environment:
-            - POSTGRES_HOST=$POSTGRES_HOST
+        # environment:
+        #     - POSTGRES_HOST=$POSTGRES_HOST
         volumes:
             - dev-postgres-data:/var/lib/postgresql/data/
         env_file:

@@ -3,6 +3,7 @@ import logging
 from crud.category import CategoryCRUD
 from fastapi import APIRouter, HTTPException
 from models.category import Category, CategoryCreate, CategoryUpdate
+from models.demo_resource import DemoResource
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -71,4 +72,18 @@ async def delete_category(category_id: str) -> Category:
         raise HTTPException(status_code=400, detail="Invalid category id")
     async with CategoryCRUD() as crud:
         response = await crud.delete(category_id)
+    return response
+
+
+@router.get("/{category_id}/demo_resources")
+async def get_all_demo_resources_in_category(category_id: str) -> list[DemoResource]:
+    """Returns all demo resources within category."""
+    logger.info("GET all demo resources within category")
+    try:
+        category_id = int(category_id)
+    except ValueError:
+        logger.error("Category ID is not an integer")
+        raise HTTPException(status_code=400, detail="Invalid category id")
+    async with CategoryCRUD() as crud:
+        response = await crud.read_all_demo_resources(category_id)
     return response

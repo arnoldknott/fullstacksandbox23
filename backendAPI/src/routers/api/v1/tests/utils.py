@@ -11,10 +11,37 @@ demo_resource_test_inputs = [
         "name": "Name of Test Resource",
         "description": "Some fancy description of my test resource.",
         "language": "en-US",
+        # "category_id": 2,
     },
     {
         "name": "Another Test Resource's name",
         "description": "The description of the second test resource.",
+        "language": "en-GB",
+    },
+]
+
+demo_resource_test_inputs_with_category = [
+    {
+        "name": "Name of Test Resource",
+        "description": "Some fancy description of my test resource.",
+        "language": "en-US",
+        "category_id": 2,
+    },
+    {
+        "name": "Another Test Resource's name",
+        "description": "The description of the second test resource.",
+        "language": "en-GB",
+        "category_id": 1,
+    },
+    {
+        "name": "A second cat 2 resource",
+        "description": "category 2 is popular.",
+        "language": "es-ES",
+        "category_id": 2,
+    },
+    {
+        "name": "Test resource without category",
+        "description": "This resource is not assigned to a category.",
         "language": "en-GB",
     },
 ]

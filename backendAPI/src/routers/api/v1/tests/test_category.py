@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 from models.category import Category
+from models.demo_resource import DemoResource
 
 
 @pytest.mark.anyio
@@ -179,3 +180,27 @@ async def test_delete_category_does_not_exist(
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "Object not found"
+
+
+@pytest.mark.anyio
+async def test_get_all_demo_resources_by_category_id(
+    async_client: AsyncClient,
+    add_test_demo_resources_with_category: list[DemoResource],
+):
+    """Tests GET all demo resources by category id."""
+    resources = add_test_demo_resources_with_category
+    response = await async_client.get("/api/v1/category/2/demo_resources")
+
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+    first_content = response.json()[0]
+    assert first_content["name"] == resources[0].name
+    assert first_content["description"] == resources[0].description
+    assert first_content["language"] == resources[0].language
+    assert "id" in first_content
+
+    second_content = response.json()[1]
+    assert second_content["name"] == resources[2].name
+    assert second_content["description"] == resources[2].description
+    assert second_content["language"] == resources[2].language
+    assert "id" in second_content

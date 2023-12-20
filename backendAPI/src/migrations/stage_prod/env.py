@@ -3,7 +3,9 @@ from logging.config import fileConfig
 
 from alembic import context
 from core.config import config as app_config
-from models.demo_resource import DemoResource  # noqa: F401 'autogenerate' support
+
+# from models.demo_resource import DemoResource  # noqa: F401 'autogenerate' support
+from models import *  # noqa: F401 'autogenerate' support
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config

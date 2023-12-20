@@ -22,7 +22,9 @@ class DemoResource(DemoResourceCreate, table=True):
     # Note: so far all times are UTC!
 
     category_id: Optional[int] = Field(default=None, foreign_key="category.id")
-    category: Optional["Category"] = Relationship(back_populates="demo_resources")
+    category: Optional["Category"] = Relationship(
+        back_populates="demo_resources", sa_relationship_kwargs={"lazy": "selectin"}
+    )
 
 
 class DemoResourceUpdate(DemoResourceCreate):
