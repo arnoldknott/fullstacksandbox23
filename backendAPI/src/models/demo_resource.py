@@ -12,6 +12,8 @@ class DemoResourceCreate(SQLModel):
     description: Optional[str] = None
     language: Optional[str] = None
 
+    category_id: Optional[int] = None
+
 
 class DemoResource(DemoResourceCreate, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -25,7 +27,7 @@ class DemoResource(DemoResourceCreate, table=True):
 
 class DemoResourceUpdate(DemoResourceCreate):
     name: Optional[str] = None
-    last_updated_at: datetime = Field(default=datetime.now())
+    # last_updated_at: datetime = Field(default=datetime.now(), exclude=True)
 
     # Lots and lots of inspiration here:
     # TBD: url: str
