@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
+from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router
 from routers.api.v1.demo_resource import router as demo_resource_router
 
@@ -63,6 +64,11 @@ app.include_router(
     demo_resource_router,
     prefix=f"{global_prefix}/demo_resource",
     tags=["Demo Resource"],
+)
+app.include_router(
+    category_router,
+    prefix=f"{global_prefix}/category",
+    tags=["Category"],
 )
 
 

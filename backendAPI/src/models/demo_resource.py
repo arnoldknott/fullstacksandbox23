@@ -1,13 +1,18 @@
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from .category import Category
 
 
 class DemoResourceCreate(SQLModel):
     name: str
     description: Optional[str] = None
     language: Optional[str] = None
+
+    category_id: Optional[int] = None
 
 
 class DemoResource(DemoResourceCreate, table=True):
@@ -16,13 +21,15 @@ class DemoResource(DemoResourceCreate, table=True):
     last_updated_at: datetime = Field(default=datetime.now())
     # Note: so far all times are UTC!
 
+    category_id: Optional[int] = Field(default=None, foreign_key="category.id")
+    category: Optional["Category"] = Relationship(
+        back_populates="demo_resources", sa_relationship_kwargs={"lazy": "selectin"}
+    )
+
 
 class DemoResourceUpdate(DemoResourceCreate):
     name: Optional[str] = None
-    last_updated_at: datetime = Field(default=datetime.now())
-    # description: Optional[str] = None
-    # language: Optional[str] = None
-    # timezone: Optional[str] = None
+    # last_updated_at: datetime = Field(default=datetime.now(), exclude=True)
 
     # Lots and lots of inspiration here:
     # TBD: url: str
