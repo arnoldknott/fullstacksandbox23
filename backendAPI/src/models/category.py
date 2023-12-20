@@ -1,8 +1,9 @@
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
-# from .demo_resource import DemoResource
+if TYPE_CHECKING:
+    from .demo_resource import DemoResource
 
 
 class CategoryCreate(SQLModel):
@@ -13,10 +14,8 @@ class CategoryCreate(SQLModel):
 class Category(CategoryCreate, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    demo_resources: List["DemoResource"] = Relationship(  # noqa: F821
-        back_populates="category"
-    )
+    demo_resources: List["DemoResource"] = Relationship(back_populates="category")
 
 
 class CategoryUpdate(CategoryCreate):
-    pass
+    name: Optional[str] = None

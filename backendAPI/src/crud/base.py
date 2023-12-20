@@ -67,6 +67,10 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
     ) -> BaseModelType:
         """Updates an object."""
         session = self.session
+        print("=== old ===")
+        print(old)
+        print("=== new ===")
+        print(new)
         for key, value in vars(new).items():  # .model_dump().items():
             if value is not None:
                 setattr(old, key, value)

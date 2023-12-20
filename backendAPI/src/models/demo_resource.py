@@ -1,9 +1,10 @@
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from .category import Category
+if TYPE_CHECKING:
+    from .category import Category
 
 
 class DemoResourceCreate(SQLModel):
@@ -19,15 +20,12 @@ class DemoResource(DemoResourceCreate, table=True):
     # Note: so far all times are UTC!
 
     category_id: Optional[int] = Field(default=None, foreign_key="category.id")
-    category: Optional[Category] = Relationship(back_populates="demo_resources")
+    category: Optional["Category"] = Relationship(back_populates="demo_resources")
 
 
 class DemoResourceUpdate(DemoResourceCreate):
     name: Optional[str] = None
     last_updated_at: datetime = Field(default=datetime.now())
-    # description: Optional[str] = None
-    # language: Optional[str] = None
-    # timezone: Optional[str] = None
 
     # Lots and lots of inspiration here:
     # TBD: url: str
