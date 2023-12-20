@@ -8,7 +8,7 @@ from core.config import config as app_config
 # TBD: on the long run import the models manually
 # to keep a conscious overview of what is migrated
 # to the database.
-from models import *  # noqa: F401 'autogenerate' support
+from models import *  # noqa: F401, F403 'autogenerate' support
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
