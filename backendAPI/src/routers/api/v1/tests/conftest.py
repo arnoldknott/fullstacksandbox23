@@ -3,7 +3,7 @@ from models.category import Category
 from models.demo_resource import DemoResource
 from sqlmodel.ext.asyncio.session import AsyncSession
 from utils import (
-    demo_categories_test_inputs,
+    categories_test_inputs,
     demo_resource_test_inputs,
     demo_resource_test_inputs_with_category,
 )
@@ -30,7 +30,7 @@ async def add_test_categories(get_async_test_session: AsyncSession):
     """Adds a category to the database."""
     session = get_async_test_session
     category_instances = []
-    for category in demo_categories_test_inputs:
+    for category in categories_test_inputs:
         category_instance = Category(**category)
         session.add(category_instance)
         await session.commit()

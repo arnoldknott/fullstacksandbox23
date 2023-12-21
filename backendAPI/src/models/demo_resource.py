@@ -1,12 +1,14 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
 from .category import Category
+from .demo_resource_tag_link import DemoResourceTagLink
 
 if TYPE_CHECKING:
     from .category import Category
+    from .tag import Tag
 
 
 class DemoResourceCreate(SQLModel):
@@ -26,6 +28,12 @@ class DemoResource(DemoResourceCreate, table=True):
     category_id: Optional[int] = Field(default=None, foreign_key="category.id")
     category: Optional["Category"] = Relationship(
         back_populates="demo_resources", sa_relationship_kwargs={"lazy": "selectin"}
+    )
+
+    tags: Optional[List["Tag"]] = Relationship(
+        back_populates="demo_resources",
+        link_model=DemoResourceTagLink,
+        sa_relationship_kwargs={"lazy": "selectin"},
     )
 
 
