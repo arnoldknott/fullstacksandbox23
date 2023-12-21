@@ -87,11 +87,16 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
         # print(new.json())
         if hasattr(old, "last_updated_at"):
             old.last_updated_at = datetime.now()
-        for key, value in new.model_dump().items():
+        updated = new.model_dump(exclude_unset=True)
+        for key, value in updated.items():
             if key == "id" or key == "created_at" or key == "updated_at":
                 continue
-            if value is not None:
-                setattr(old, key, value)
+            setattr(old, key, value)
+        # for key, value in new.model_dump().items():
+        #     if key == "id" or key == "created_at" or key == "updated_at":
+        #         continue
+        #     if value is not None:
+        #         setattr(old, key, value)
         # for key, value in vars(new).items():  # .model_dump().items():
         #     if value is not None:
         #         setattr(old, key, value)
