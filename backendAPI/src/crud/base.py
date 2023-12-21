@@ -34,8 +34,9 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
     async def create(self, object: BaseSchemaTypeCreate) -> BaseModelType:
         """Creates a new object."""
         session = self.session
-        model = self.model
-        database_object = model(**object.model_dump())
+        Model = self.model
+        database_object = Model.model_validate(object)
+        # database_object = model(**object.model_dump())
         session.add(database_object)
         await session.commit()
         await session.refresh(database_object)
