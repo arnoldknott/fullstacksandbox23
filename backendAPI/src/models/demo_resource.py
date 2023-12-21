@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from .category import Category
 from .demo_resource_tag_link import DemoResourceTagLink
 
 if TYPE_CHECKING:
