@@ -46,7 +46,7 @@ demo_resource_test_inputs_with_category = [
     },
 ]
 
-demo_categories_test_inputs = [
+categories_test_inputs = [
     {
         "name": "Category 1",
         "description": "Some description for this category",
@@ -58,5 +58,20 @@ demo_categories_test_inputs = [
     {
         "name": "Lonely 3",
         "description": "Well, lonely because no demo resources are linked to it.",
+    },
+]
+
+tags_test_inputs = [
+    {
+        "name": "One",
+    },
+    {
+        "name": "Two",
+    },
+    {
+        "name": "Three",
+    },
+    {
+        "name": "FourMore",
     },
 ]

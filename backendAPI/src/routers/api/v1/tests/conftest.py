@@ -1,5 +1,4 @@
 import pytest
-from httpx import AsyncClient
 from models.category import Category
 from models.demo_resource import DemoResource
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -43,7 +42,6 @@ async def add_test_categories(get_async_test_session: AsyncSession):
 
 @pytest.fixture(scope="function")
 async def add_test_demo_resources_with_category(
-    async_client: AsyncClient,
     get_async_test_session: AsyncSession,
     add_test_categories: list[Category],
 ):
