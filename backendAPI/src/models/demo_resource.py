@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from .category import Category
+
 if TYPE_CHECKING:
     from .category import Category
 
