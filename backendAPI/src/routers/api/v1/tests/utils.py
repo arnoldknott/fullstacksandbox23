@@ -53,6 +53,10 @@ demo_categories_test_inputs = [
     },
     {
         "name": "Category 2",
-        "description": "Description of this other category",
+        "description": "Another category's description",
+    },
+    {
+        "name": "Lonely 3",
+        "description": "Well, lonely because no demo resources are linked to it.",
     },
 ]

@@ -27,6 +27,9 @@ async def test_post_demo_resource(async_client: AsyncClient):
     assert "id" in content
 
 
+# TBD: add a test, that checks if the category_is is existing in the database!
+
+
 @pytest.mark.anyio
 async def test_get_demo_resource(
     async_client: AsyncClient, add_test_demo_resources: list[DemoResource]

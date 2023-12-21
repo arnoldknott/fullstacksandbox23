@@ -34,19 +34,29 @@ async def run_migrations():
     """Runs the migrations before each test function."""
     async with postgres_async_engine.begin() as connection:
         await connection.run_sync(SQLModel.metadata.create_all)
+        # for table in SQLModel.metadata.tables.values():
+        #     await connection.execute(
+        #         f"ALTER SEQUENCE {table.name}_id_seq RESTART WITH 1"
+        #     )
 
     yield
 
     async with postgres_async_engine.begin() as connection:
         await connection.run_sync(SQLModel.metadata.drop_all)
+        # for table in SQLModel.metadata.tables.values():
+        #     await connection.execute(
+        #         f"ALTER SEQUENCE {table.name}_id_seq RESTART WITH 1"
+        #     )
         await postgres_async_engine.dispose()
 
 
 @pytest.fixture(scope="function")
 async def get_async_test_session() -> AsyncSession:
     """Returns a database session."""
+    print("=== get_async_test_session started ===")
     async_session = async_sessionmaker(
         bind=postgres_async_engine, class_=AsyncSession, expire_on_commit=False
     )
     async with async_session() as session:
         yield session
+        # await session.rollback()

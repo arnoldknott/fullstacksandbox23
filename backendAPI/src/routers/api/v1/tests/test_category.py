@@ -44,7 +44,7 @@ async def test_get_all_categories(
     response = await async_client.get("/api/v1/category/")
 
     assert response.status_code == 200
-    assert len(response.json()) == 2
+    assert len(response.json()) == 3
     content = response.json()[0]
     assert content["name"] == categories[0].name
     assert content["description"] == categories[0].description
@@ -204,3 +204,19 @@ async def test_get_all_demo_resources_by_category_id(
     assert second_content["description"] == resources[2].description
     assert second_content["language"] == resources[2].language
     assert "id" in second_content
+
+
+@pytest.mark.anyio
+async def test_get_demo_resources_for_lonely_category(
+    async_client: AsyncClient,
+    add_test_demo_resources_with_category: list[DemoResource],
+):
+    """Tests GET error for category, that has no demo resources attached."""
+    print("=== test_get_no_demo_resources_for_unlinked_category ===")
+    add_test_demo_resources_with_category
+    response = await async_client.get("/api/v1/category/3/demo_resources")
+
+    print(response.json())
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "No demo resources found"
