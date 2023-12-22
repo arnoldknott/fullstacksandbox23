@@ -185,10 +185,10 @@ async def test_delete_category_does_not_exist(
 @pytest.mark.anyio
 async def test_get_all_demo_resources_by_category_id(
     async_client: AsyncClient,
-    add_test_demo_resources_with_category: list[DemoResource],
+    add_test_demo_resources: list[DemoResource],
 ):
     """Tests GET all demo resources by category id."""
-    resources = add_test_demo_resources_with_category
+    resources = add_test_demo_resources
     response = await async_client.get("/api/v1/category/2/demo_resources")
 
     assert response.status_code == 200
@@ -209,11 +209,11 @@ async def test_get_all_demo_resources_by_category_id(
 @pytest.mark.anyio
 async def test_get_demo_resources_for_lonely_category(
     async_client: AsyncClient,
-    add_test_demo_resources_with_category: list[DemoResource],
+    add_test_demo_resources: list[DemoResource],
 ):
     """Tests GET error for category, that has no demo resources attached."""
     print("=== test_get_no_demo_resources_for_unlinked_category ===")
-    add_test_demo_resources_with_category
+    add_test_demo_resources
     response = await async_client.get("/api/v1/category/3/demo_resources")
 
     print(response.json())

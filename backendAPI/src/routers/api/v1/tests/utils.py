@@ -6,21 +6,21 @@ demo_resource_test_input = {
     "language": "en-US",
 }
 
-demo_resource_test_inputs = [
-    {
-        "name": "Name of Test Resource",
-        "description": "Some fancy description of my test resource.",
-        "language": "en-US",
-        # "category_id": 2,
-    },
-    {
-        "name": "Another Test Resource's name",
-        "description": "The description of the second test resource.",
-        "language": "en-GB",
-    },
-]
+# demo_resource_test_inputs = [
+#     {
+#         "name": "Name of Test Resource",
+#         "description": "Some fancy description of my test resource.",
+#         "language": "en-US",
+#         # "category_id": 2,
+#     },
+#     {
+#         "name": "Another Test Resource's name",
+#         "description": "The description of the second test resource.",
+#         "language": "en-GB",
+#     },
+# ]
 
-demo_resource_test_inputs_with_category = [
+demo_resource_test_inputs = [
     {
         "name": "Name of Test Resource",
         "description": "Some fancy description of my test resource.",

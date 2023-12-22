@@ -3,28 +3,22 @@ from models.category import Category
 from models.demo_resource import DemoResource
 from models.tag import Tag
 from sqlmodel.ext.asyncio.session import AsyncSession
-from utils import (
-    categories_test_inputs,
-    demo_resource_test_inputs,
-    demo_resource_test_inputs_with_category,
-    tag_test_inputs,
-)
+from utils import categories_test_inputs, demo_resource_test_inputs, tag_test_inputs
 
+# @pytest.fixture(scope="function")
+# async def add_test_demo_resources(get_async_test_session: AsyncSession):
+#     """Adds a demo resource to the database."""
+#     session = get_async_test_session
 
-@pytest.fixture(scope="function")
-async def add_test_demo_resources(get_async_test_session: AsyncSession):
-    """Adds a demo resource to the database."""
-    session = get_async_test_session
+#     demo_resource_instances = []
+#     for resource in demo_resource_test_inputs:
+#         demo_resource_instance = DemoResource(**resource)
+#         session.add(demo_resource_instance)
+#         await session.commit()
+#         await session.refresh(demo_resource_instance)
+#         demo_resource_instances.append(demo_resource_instance)
 
-    demo_resource_instances = []
-    for resource in demo_resource_test_inputs:
-        demo_resource_instance = DemoResource(**resource)
-        session.add(demo_resource_instance)
-        await session.commit()
-        await session.refresh(demo_resource_instance)
-        demo_resource_instances.append(demo_resource_instance)
-
-    yield demo_resource_instances
+#     yield demo_resource_instances
 
 
 @pytest.fixture(scope="function")
@@ -43,20 +37,20 @@ async def add_test_categories(get_async_test_session: AsyncSession):
 
 
 @pytest.fixture(scope="function")
-async def add_test_demo_resources_with_category(
+async def add_test_demo_resources(
     get_async_test_session: AsyncSession,
     add_test_categories: list[Category],
 ):
     """Adds a demo resource to the database."""
-    print("=== add_test_demo_resources_with_category started ===")
+    # print("=== add_test_demo_resources started ===")
     session = get_async_test_session
     add_test_categories
-    print("=== add_test_demo_resources_with_category after add_test_categories ===")
+    # print("=== add_test_demo_resources after add_test_categories ===")
 
     demo_resource_instances = []
-    for resource in demo_resource_test_inputs_with_category:
-        print("=== resource ===")
-        print(resource)
+    for resource in demo_resource_test_inputs:
+        # print("=== resource ===")
+        # print(resource)
         # if "category_id" in resource:
         #     category = await session.get(Category, resource["category_id"])
         #     resource["category"] = category

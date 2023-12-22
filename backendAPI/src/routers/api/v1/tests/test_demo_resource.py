@@ -42,19 +42,25 @@ async def test_get_demo_resource(
     response = await async_client.get("/api/v1/demo_resource/")
 
     assert response.status_code == 200
-    assert len(response.json()) == 2
+    assert len(response.json()) == 4
     for response_item in response.json():
         assert response_item["name"] in [
             resources[0].name,
             resources[1].name,
+            resources[2].name,
+            resources[3].name,
         ]
         assert response_item["description"] in [
             resources[0].description,
             resources[1].description,
+            resources[2].description,
+            resources[3].description,
         ]
         assert response_item["language"] in [
             resources[0].language,
             resources[1].language,
+            resources[2].language,
+            resources[3].language,
         ]
         # assert response_item["timezone"] in [
         #     resources[0].timezone,
