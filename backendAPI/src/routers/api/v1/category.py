@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from crud.category import CategoryCRUD
 from fastapi import APIRouter, HTTPException
@@ -21,7 +22,7 @@ async def post_category(
 
 
 @router.get("/", status_code=200)
-async def get_all_categories() -> list[Category]:
+async def get_all_categories() -> List[Category]:
     """Returns all categories."""
     logger.info("GET all categories")
     async with CategoryCRUD() as crud:

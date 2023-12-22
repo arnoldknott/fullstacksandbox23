@@ -6,21 +6,21 @@ demo_resource_test_input = {
     "language": "en-US",
 }
 
-demo_resource_test_inputs = [
-    {
-        "name": "Name of Test Resource",
-        "description": "Some fancy description of my test resource.",
-        "language": "en-US",
-        # "category_id": 2,
-    },
-    {
-        "name": "Another Test Resource's name",
-        "description": "The description of the second test resource.",
-        "language": "en-GB",
-    },
-]
+# demo_resource_test_inputs = [
+#     {
+#         "name": "Name of Test Resource",
+#         "description": "Some fancy description of my test resource.",
+#         "language": "en-US",
+#         # "category_id": 2,
+#     },
+#     {
+#         "name": "Another Test Resource's name",
+#         "description": "The description of the second test resource.",
+#         "language": "en-GB",
+#     },
+# ]
 
-demo_resource_test_inputs_with_category = [
+demo_resource_test_inputs = [
     {
         "name": "Name of Test Resource",
         "description": "Some fancy description of my test resource.",
@@ -46,13 +46,33 @@ demo_resource_test_inputs_with_category = [
     },
 ]
 
-demo_categories_test_inputs = [
+categories_test_inputs = [
     {
         "name": "Category 1",
         "description": "Some description for this category",
     },
     {
         "name": "Category 2",
-        "description": "Description of this other category",
+        "description": "Another category's description",
+    },
+    {
+        "name": "Lonely 3",
+        "description": "Well, lonely because no demo resources are linked to it.",
+    },
+]
+
+
+tag_test_inputs = [
+    {
+        "name": "One",
+    },
+    {
+        "name": "Two",
+    },
+    {
+        "name": "Three",
+    },
+    {
+        "name": "FourMore",
     },
 ]

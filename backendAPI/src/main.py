@@ -6,6 +6,7 @@ from fastapi.exception_handlers import http_exception_handler
 from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router
 from routers.api.v1.demo_resource import router as demo_resource_router
+from routers.api.v1.tag import router as tag_router
 
 # print("Current directory:", os.getcwd())
 # print("sys.path:", sys.path)
@@ -69,6 +70,11 @@ app.include_router(
     category_router,
     prefix=f"{global_prefix}/category",
     tags=["Category"],
+)
+app.include_router(
+    tag_router,
+    prefix=f"{global_prefix}/tag",
+    tags=["Tag"],
 )
 
 
