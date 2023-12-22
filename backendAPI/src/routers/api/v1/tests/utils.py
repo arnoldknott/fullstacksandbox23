@@ -62,7 +62,7 @@ categories_test_inputs = [
 ]
 
 
-tags_test_inputs = [
+tag_test_inputs = [
     {
         "name": "One",
     },

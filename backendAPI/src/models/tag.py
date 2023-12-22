@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from .demo_resource_tag_link import DemoResourceTagLink
-
 if TYPE_CHECKING:
     from .demo_resource import DemoResource
+# from .demo_resource import DemoResource
+from .demo_resource_tag_link import DemoResourceTagLink
 
 
 class TagCreate(SQLModel):
@@ -24,3 +24,11 @@ class Tag(TagCreate, table=True):
 
 class TagUpdate(TagCreate):
     pass
+
+
+class TagRead(TagCreate):
+    id: int
+
+
+# class TagReadWithDemoResources(Tag):
+#     demo_resources: List["DemoResource"] = []

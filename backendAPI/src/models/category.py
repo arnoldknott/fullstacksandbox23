@@ -2,6 +2,8 @@ from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
+# from .demo_resource import DemoResource
+
 if TYPE_CHECKING:
     from .demo_resource import DemoResource
 
@@ -21,3 +23,11 @@ class Category(CategoryCreate, table=True):
 
 class CategoryUpdate(CategoryCreate):
     name: Optional[str] = None
+
+
+class CategoryRead(CategoryCreate):
+    id: int
+
+
+# class CategoryReadWithDemoResources(Category):
+#     demo_resources: List[DemoResource] = []

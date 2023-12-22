@@ -1,9 +1,14 @@
 import logging
-from typing import List
+from typing import Annotated, List
 
 from crud.demo_resource import DemoResourceCRUD
-from fastapi import APIRouter, HTTPException
-from models.demo_resource import DemoResource, DemoResourceCreate, DemoResourceUpdate
+from fastapi import APIRouter, HTTPException, Query
+from models.demo_resource import (
+    DemoResource,
+    DemoResourceCreate,
+    DemoResourceRead,
+    DemoResourceUpdate,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -35,7 +40,7 @@ async def get_all_demo_resources() -> List[DemoResource]:
 
 
 @router.get("/{resource_id}")
-async def get_demo_resource_by_id(resource_id: str) -> DemoResource:
+async def get_demo_resource_by_id(resource_id: str) -> DemoResourceRead:
     """Returns a demo resource."""
     logger.info("GET demo resource")
     # crud = DemoResourceCRUD()
@@ -45,7 +50,7 @@ async def get_demo_resource_by_id(resource_id: str) -> DemoResource:
         logger.error("Resource ID is not an integer")
         raise HTTPException(status_code=400, detail="Invalid resource id")
     async with DemoResourceCRUD() as crud:
-        response = await crud.read_by_id(resource_id)
+        response = await crud.read_by_id_with_childs(resource_id)
     return response
 
 
@@ -84,4 +89,29 @@ async def delete_demo_resource(resource_id: str) -> DemoResource:
         result = await crud.delete(resource_id)
     # print("=== result ===")
     # print(result)
+    return result
+
+
+@router.post("/{resource_id}/tag/")
+async def add_tag_to_demo_resource(
+    resource_id: str,
+    tag_ids: Annotated[
+        List[int], Query()
+    ],  # TBD: move the arguments from Query to json!
+) -> DemoResourceRead:
+    """Adds a tag to a demo resource."""
+    logger.info("POST demo resource")
+    try:
+        resource_id = int(resource_id)
+    except ValueError:
+        logger.error("Resource ID is not an integer")
+        raise HTTPException(status_code=400, detail="Invalid resource id")
+    # sShould not be necessary, as FastAPI should do this automatically
+    # try:
+    #     tag_ids = int(tag_id)
+    # except ValueError:
+    #     logger.error("Tag ID is not an integer")
+    #     raise HTTPException(status_code=400, detail="Invalid tag id")
+    async with DemoResourceCRUD() as crud:
+        result = await crud.add_tag(resource_id, tag_ids)
     return result

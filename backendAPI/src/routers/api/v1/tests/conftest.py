@@ -1,11 +1,13 @@
 import pytest
 from models.category import Category
 from models.demo_resource import DemoResource
+from models.tag import Tag
 from sqlmodel.ext.asyncio.session import AsyncSession
 from utils import (
     categories_test_inputs,
     demo_resource_test_inputs,
     demo_resource_test_inputs_with_category,
+    tag_test_inputs,
 )
 
 
@@ -66,3 +68,18 @@ async def add_test_demo_resources_with_category(
         demo_resource_instances.append(demo_resource_instance)
 
     yield demo_resource_instances
+
+
+@pytest.fixture(scope="function")
+async def add_test_tags(get_async_test_session: AsyncSession):
+    """Adds a tags to the database."""
+    session = get_async_test_session
+    tag_instances = []
+    for tag in tag_test_inputs:
+        tag_instance = Tag(**tag)
+        session.add(tag_instance)
+        await session.commit()
+        await session.refresh(tag_instance)
+        tag_instances.append(tag_instance)
+
+    yield tag_instances

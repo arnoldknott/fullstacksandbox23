@@ -7,27 +7,27 @@ from models.demo_resource import DemoResource
 @pytest.mark.anyio
 async def test_post_category(async_client: AsyncClient):
     """Tests POST of a category."""
-    resource = {
+    category = {
         "name": "Test Cat",
         "description": "Some description for this category",
     }
-    response = await async_client.post("/api/v1/category/", json=resource)
+    response = await async_client.post("/api/v1/category/", json=category)
 
     assert response.status_code == 201
     content = response.json()
-    assert content["name"] == resource["name"]
-    assert content["description"] == resource["description"]
+    assert content["name"] == category["name"]
+    assert content["description"] == category["description"]
     assert "id" in content
 
 
 @pytest.mark.anyio
 async def test_post_category_name_too_long(async_client: AsyncClient):
     """Tests POST of a category."""
-    resource = {
+    category = {
         "name": "Test Category Name That Is Too Long",
         "description": "Some description for this category",
     }
-    response = await async_client.post("/api/v1/category/", json=resource)
+    response = await async_client.post("/api/v1/category/", json=category)
 
     content = response.json()
 
