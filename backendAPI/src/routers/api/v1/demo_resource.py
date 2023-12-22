@@ -1,6 +1,7 @@
 import logging
 from typing import Annotated, List
 
+from crud.category import CategoryCRUD
 from crud.demo_resource import DemoResourceCRUD
 from fastapi import APIRouter, HTTPException, Query
 from models.demo_resource import (
@@ -20,6 +21,10 @@ async def post_demo_resource(
 ) -> DemoResource:
     """Creates a new demo resource."""
     logger.info("POST demo resource")
+    print("=== demo_resource.category_id ===")
+    print(demo_resource.category_id)
+    async with CategoryCRUD() as crud:
+        await crud.read_by_id(demo_resource.category_id)
     async with DemoResourceCRUD() as crud:
         created_demo_resource = await crud.create(demo_resource)
     return created_demo_resource

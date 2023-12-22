@@ -28,6 +28,21 @@ async def test_post_demo_resource(async_client: AsyncClient):
     assert "id" in content
 
 
+@pytest.mark.anyio
+async def test_post_demo_resource_with_nonexisting_category(async_client: AsyncClient):
+    """Tests POST of a demo_resource."""
+    resource = demo_resource_test_input
+    resource["category_id"] = 100
+    print("=== resource ===")
+    print(resource)
+    # get_async_test_session
+    response = await async_client.post("/api/v1/demo_resource/", json=resource)
+
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "Object not found"
+
+
 # TBD: add a test, that checks if the category_is is existing in the database!
 
 
