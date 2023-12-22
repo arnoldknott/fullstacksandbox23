@@ -5,9 +5,7 @@ services:
         build:
             context: ./backendAPI
             target: prod
-        # TBD: consider moving into compose.override.yml - in case a build stage is involved
         volumes:
-        # TBD: consider - ./backendAPI:/app
             - ./backendAPI:/app
         # ports:
         #     - "80:80"
@@ -15,3 +13,7 @@ services:
     postgres:
         container_name: "postgres"
         image: postgres:16.1-alpine
+
+    frontend_svelte:
+        build:
+            context: ./frontend_svelte

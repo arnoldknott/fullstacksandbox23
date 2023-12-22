@@ -1,0 +1,89 @@
+name: Frontend
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'frontend_svelte/**'
+      - '.github/workflows/frontend.yml'
+  # pull_request:
+  #   paths:
+  #     - 'frontend/**'
+      
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    environment: test
+    env:
+      KEYVAULT_HEALTH: ${{ vars.KEYVAULT_HEALTH }}
+      POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+      POSTGRES_HOST: ${{ vars.POSTGRES_HOST }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      REDIS_HOST: ${{ vars.REDIS_HOST }}
+      REDIS_PORT: ${{ vars.REDIS_PORT }}
+      MONGODB_HOST: ${{ vars.MONGODB_HOST }}
+      MONGODB_PORT: ${{ vars.MONGODB_PORT }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            build
+      - name: Spin up containers
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            up -d
+      - name: Code Formating
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T frontend_svelte \
+            sh -c "npm run format"
+      - name: Linting
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T frontend_svelte \
+            sh -c "npm run lint"
+      - name: Unit testing
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T frontend_svelte \
+            sh -c "pnpm run test:unit"
+      - name: Stop containers
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            down
+
+  # dummy:
+  #   runs-on: ubuntu-22.04
+  #   environment: test
+  #   steps:
+  #   - name: Dummy
+  #     run: echo "Dummy"
+    # - uses: actions/checkout@v3
+    # - name: Build
+    #   run: |
+          # docker compose \
+          # -f compose.yml \
+          # -f compose.override.test.yml \
+          # build frontend
+    # - name: Code Formating
+    #   run: |
+        # docker compose \
+        # -f compose.yml \
+        # -f compose.override.test.yml \
+        # run --rm frontend \
+        # sh -c "npm run format"
