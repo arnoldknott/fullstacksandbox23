@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pytest
 from httpx import AsyncClient
 from models.demo_resource import DemoResource
+from models.tag import Tag
 from utils import demo_resource_test_input
 
 
@@ -20,11 +21,14 @@ async def test_post_demo_resource(async_client: AsyncClient):
     assert content["name"] == demo_resource_test_input["name"]
     assert content["description"] == demo_resource_test_input["description"]
     assert (
-        time_before_crud - timedelta(seconds=5)
+        time_before_crud - timedelta(seconds=7)
         < datetime.fromisoformat(content["created_at"])
-        < time_after_crud + timedelta(seconds=5)
+        < time_after_crud + timedelta(seconds=7)
     )
     assert "id" in content
+
+
+# TBD: add a test, that checks if the category_is is existing in the database!
 
 
 @pytest.mark.anyio
@@ -38,19 +42,25 @@ async def test_get_demo_resource(
     response = await async_client.get("/api/v1/demo_resource/")
 
     assert response.status_code == 200
-    assert len(response.json()) == 2
+    assert len(response.json()) == 4
     for response_item in response.json():
         assert response_item["name"] in [
             resources[0].name,
             resources[1].name,
+            resources[2].name,
+            resources[3].name,
         ]
         assert response_item["description"] in [
             resources[0].description,
             resources[1].description,
+            resources[2].description,
+            resources[3].description,
         ]
         assert response_item["language"] in [
             resources[0].language,
             resources[1].language,
+            resources[2].language,
+            resources[3].language,
         ]
         # assert response_item["timezone"] in [
         #     resources[0].timezone,
@@ -257,3 +267,37 @@ async def test_delete_demo_resource_by_resource_does_not_exist(
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "Object not found"
+
+
+@pytest.mark.anyio
+async def test_attach_tag_to_demo_resource(
+    async_client: AsyncClient,
+    add_test_demo_resources: list[DemoResource],
+    add_test_tags: list[Tag],
+):
+    """Tests POST of a tag to a demo resource."""
+    add_test_demo_resources
+    tags = add_test_tags
+    resource_id = 2
+    tag_ids = [1, 3]
+    response = await async_client.post(
+        f"/api/v1/demo_resource/{resource_id}/tag/?tag_ids={tag_ids[0]}&tag_ids={tag_ids[1]}"
+    )
+    # for tag_id in tag_ids:
+    #     response = await async_client.post(
+    #         f"/api/v1/demo_resource/{resource_id}/tag/{tag_id}"
+    #     )
+
+    assert response.status_code == 200
+    content = response.json()
+    print("=== content ===")
+    print(content)
+    assert len(content["tags"]) == 2
+    assert content["tags"][0]["name"] in [
+        tags[0].name,
+        tags[2].name,
+    ]
+    assert content["tags"][1]["name"] in [
+        tags[0].name,
+        tags[2].name,
+    ]

@@ -45,6 +45,7 @@ async def run_migrations():
 @pytest.fixture(scope="function")
 async def get_async_test_session() -> AsyncSession:
     """Returns a database session."""
+    print("=== get_async_test_session started ===")
     async_session = async_sessionmaker(
         bind=postgres_async_engine, class_=AsyncSession, expire_on_commit=False
     )

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Generic, Type, TypeVar
 
 from core.databases import get_async_session
@@ -33,8 +34,9 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
     async def create(self, object: BaseSchemaTypeCreate) -> BaseModelType:
         """Creates a new object."""
         session = self.session
-        model = self.model
-        database_object = model(**object.model_dump())
+        Model = self.model
+        database_object = Model.model_validate(object)
+        # database_object = model(**object.model_dump())
         session.add(database_object)
         await session.commit()
         await session.refresh(database_object)
@@ -67,9 +69,37 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
     ) -> BaseModelType:
         """Updates an object."""
         session = self.session
-        for key, value in vars(new).items():  # .model_dump().items():
-            if value is not None:
-                setattr(old, key, value)
+        # print("=== old ===")
+        # print(old)
+        # print(type(old))
+        # print(old.last_updated_at)
+        # print("=== new ===")
+        # print(new)
+        # print("=== vars(new) ===")
+        # print(vars(new))
+        # print("=== vars(new).items() ===")
+        # print(vars(new).items())
+        # print("=== new.model_dump() ===")
+        # print(new.model_dump())
+        # print("=== new.model_dump().items() ===")
+        # print(new.model_dump().items())
+        # print("=== new..json() ===")
+        # print(new.json())
+        if hasattr(old, "last_updated_at"):
+            old.last_updated_at = datetime.now()
+        updated = new.model_dump(exclude_unset=True)
+        for key, value in updated.items():
+            if key == "id" or key == "created_at" or key == "updated_at":
+                continue
+            setattr(old, key, value)
+        # for key, value in new.model_dump().items():
+        #     if key == "id" or key == "created_at" or key == "updated_at":
+        #         continue
+        #     if value is not None:
+        #         setattr(old, key, value)
+        # for key, value in vars(new).items():  # .model_dump().items():
+        #     if value is not None:
+        #         setattr(old, key, value)
         object = old
         session.add(object)
         await session.commit()
