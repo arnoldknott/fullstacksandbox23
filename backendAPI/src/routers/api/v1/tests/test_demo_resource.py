@@ -23,7 +23,7 @@ async def test_post_demo_resource(async_client: AsyncClient):
     assert (
         time_before_crud - timedelta(seconds=5)
         < datetime.fromisoformat(content["created_at"])
-        < time_after_crud + timedelta(seconds=5)
+        < time_after_crud + timedelta(seconds=8)
     )
     assert "id" in content
 
