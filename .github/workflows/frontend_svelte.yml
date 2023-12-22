@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - 'frontend_svelte/**'
-      - '.github/workflows/frontend.yml'
+      - '.github/workflows/frontend_svelte.yml'
   # pull_request:
   #   paths:
   #     - 'frontend/**'
@@ -59,7 +59,7 @@ jobs:
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T frontend_svelte \
-            sh -c "pnpm run test:unit"
+            sh -c "npm run test:unit"
       - name: Stop containers
         run: |
           docker compose \
