@@ -41,7 +41,7 @@ class DemoResource(DemoResourceCreate, table=True):
 class DemoResourceRead(DemoResourceCreate):
     id: int
     category: Optional["CategoryRead"] = None
-    tags: Optional[List["TagRead"]] = []
+    tags: Optional[List["TagRead"]] = None
 
 
 class DemoResourceUpdate(DemoResourceCreate):
