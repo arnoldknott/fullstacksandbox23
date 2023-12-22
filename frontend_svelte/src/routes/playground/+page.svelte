@@ -12,10 +12,10 @@
 			name: 'Counter',
 			url: '/counter'
 		},
-		{
-			name: 'User store',
-			url: '/userstore'
-		}
+		// {
+		// 	name: 'User store',
+		// 	url: '/userstore'
+		// }
 	];
 </script>
 
