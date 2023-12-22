@@ -37,7 +37,6 @@ async def test_post_demo_resource_with_nonexisting_category(async_client: AsyncC
     print(resource)
     # get_async_test_session
     response = await async_client.post("/api/v1/demo_resource/", json=resource)
-
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "Object not found"

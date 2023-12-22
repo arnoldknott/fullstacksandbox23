@@ -23,8 +23,9 @@ async def post_demo_resource(
     logger.info("POST demo resource")
     print("=== demo_resource.category_id ===")
     print(demo_resource.category_id)
-    async with CategoryCRUD() as crud:
-        await crud.read_by_id(demo_resource.category_id)
+    if demo_resource.category_id:
+        async with CategoryCRUD() as crud:
+            await crud.read_by_id(demo_resource.category_id)
     async with DemoResourceCRUD() as crud:
         created_demo_resource = await crud.create(demo_resource)
     return created_demo_resource
