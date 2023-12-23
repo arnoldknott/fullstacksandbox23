@@ -9,6 +9,6 @@ RUN npm run build
 FROM node:20-alpine3.17
 COPY --from=build /app/build /app/
 COPY --from=build /app/package*.json /app/
-EXPOSE 3000
+EXPOSE 80
 USER node
 CMD ["node", "/app/index.js"]
