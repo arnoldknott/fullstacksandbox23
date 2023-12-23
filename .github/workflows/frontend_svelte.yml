@@ -120,6 +120,8 @@ jobs:
       id-token: write
       packages: read
     environment: stage
+    env:
+      AZURE_IDENTITY_PROVIDER_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
     steps:
       # - name: echos github.event.after variable
       #   run: |
@@ -151,7 +153,9 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --secrets \
-              "postgres-host=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-host,identityref:$IDENTITY_REF"
+              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
+              "frontend-app-registration-client-id:keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/frontend-app-registration-client-id,identityref:$IDENTITY_REF" \
+              "azure-identity-provider-authority=${{ env.AZURE_IDENTITY_PROVIDER_AUTHORITY }}"
           sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
@@ -159,7 +163,9 @@ jobs:
             --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
             --set-env-vars \
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
-              "KEYVAULT_HEALTH=secretref:keyvault-health"
+              "KEYVAULT_HEALTH=secretref:keyvault-health" \
+              "FRONTEND_APP_REGISTRATION_CLIENT_ID=secretref:frontend-app-registration-client-id" \
+              "AZURE_IDENTITY_PROVIDER_AUTHORITY=secretref:azure-identity-provider-authority"
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
         # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
