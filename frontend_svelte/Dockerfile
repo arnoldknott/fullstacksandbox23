@@ -13,5 +13,5 @@ COPY --from=build /app/package*.json /app/
 COPY --from=build /app/node_modules ./node_modules
 EXPOSE 80
 ENV PORT=80
-USER node
+# USER node
 CMD ["node", "/app/index.js"]
