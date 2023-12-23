@@ -43,6 +43,14 @@ services:
         networks:
             - test_network
 
+    frontend_svelte:
+        build:
+            target: build
+        networks:
+            - test_network
+        command: 
+            npm run dev
+
 volumes:
     test-postgres-data:
     test-app-data:
