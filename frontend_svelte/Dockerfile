@@ -9,6 +9,9 @@ RUN npm run build
 FROM node:20-alpine3.17
 COPY --from=build /app/build /app/
 COPY --from=build /app/package*.json /app/
-EXPOSE 3000
-USER node
+# TBD: make sure to only copy dependencies and not devDependencies
+COPY --from=build /app/node_modules ./node_modules
+EXPOSE 80
+ENV PORT=80
+# USER node
 CMD ["node", "/app/index.js"]
