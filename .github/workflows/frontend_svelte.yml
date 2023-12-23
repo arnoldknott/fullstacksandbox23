@@ -10,6 +10,9 @@ on:
   #   paths:
   #     - 'frontend/**'
       
+env:
+  REGISTRY: ghcr.io
+  COMMIT_SHA: ${{ github.event.after }}
 
 jobs:
   test:
@@ -67,6 +70,106 @@ jobs:
             -f compose.override.test.yml \
             down
 
+  containerize:
+    if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
+    needs: test
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+    environment: stage
+    steps:
+      # - name: echos github.event.after variable
+      #   run: |
+      #     echo "=== Is this the correct tag: github.event.after? ==="
+      #     echo ${{ github.event.after }}
+      #     echo $CONTAINER_TAG
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }} 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build for production
+        run: |
+          docker compose -f compose.yml -f compose.prod.yml build --build-arg COMMIT_SHA=${{env.COMMIT_SHA}} frontend_svelte
+      - name: Show images
+        run: docker image list
+      - name: Tag and push with latest and commit hash
+        run: |
+          docker tag \
+            ${{github.event.repository.name}}-frontend_svelte:latest \
+            ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:latest
+          docker tag \
+            ${{github.event.repository.name}}-frontend_svelte:latest \
+            ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA
+          docker push \
+            ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:latest
+          docker push \
+              ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA
+
+  deploy_stage:
+    needs: containerize
+    if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      packages: read
+    environment: stage
+    steps:
+      # - name: echos github.event.after variable
+      #   run: |
+      #     echo "=== Is this the correct tag: github.event.after? ==="
+      #     echo ${{ github.event.after }}
+      #     echo $CONTAINER_TAG
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy to staging
+      # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
+        env:
+          IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
+        run: |
+          az containerapp revision set-mode \
+            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --mode single
+          az containerapp secret set \
+            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --secrets \
+              "postgres-host=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-host,identityref:$IDENTITY_REF" \
+          sleep 10
+          az containerapp update \
+            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
+            --set-env-vars \
+              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "KEYVAULT_HEALTH=secretref:keyvault-health" \
+        # TBD: consider deleting all existing environment variables before setting the new ones?
+        # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
+        # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
+      - name: Logout from Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
   # dummy:
   #   runs-on: ubuntu-22.04
   #   environment: test
