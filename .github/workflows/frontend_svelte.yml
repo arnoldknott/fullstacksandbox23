@@ -154,7 +154,7 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --secrets \
               "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
-              "app-reg-client-id:keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/frontend-app-registration-client-id,identityref:$IDENTITY_REF" \
+              "app-reg-client-id:keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF" \
               "azure-authority=${{ env.AZURE_IDENTITY_PROVIDER_AUTHORITY }}"
           sleep 10
           az containerapp update \
@@ -164,8 +164,8 @@ jobs:
             --set-env-vars \
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
-              "APP_REG_CLIENT_ID=secretref:frontend-app-registration-client-id" \
-              "AZURE_AUTHORITY=secretref:azure-identity-provider-authority"
+              "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
+              "AZURE_AUTHORITY=secretref:azure-authority"
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
         # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
