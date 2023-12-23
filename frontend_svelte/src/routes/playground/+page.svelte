@@ -16,6 +16,10 @@
 		// 	name: 'User store',
 		// 	url: '/userstore'
 		// }
+		{
+			name: 'Core',
+			url: '/core'
+		}
 	];
 </script>
 
