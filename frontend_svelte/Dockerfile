@@ -12,6 +12,6 @@ COPY --from=build /app/package*.json /app/
 # TBD: make sure to only copy dependencies and not devDependencies
 COPY --from=build /app/node_modules ./node_modules
 EXPOSE 80
-ENV PORT=80
-# USER node
+# ENV PORT=80
+USER node
 CMD ["node", "/app/index.js"]
