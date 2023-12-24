@@ -7,8 +7,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 console.log('process.env.BACKEND_HOST: ', process.env.BACKEND_HOST);
-// const host = `http://${process.env.BACKEND_HOST}:80`;
-const host = 'http://backend_api:80';
+const host = `http://${process.env.BACKEND_HOST}:80`;
 
 export const getBackend = async (url: string, accessToken: string = '') => {
 	const headers = {
