@@ -189,6 +189,8 @@ jobs:
       id-token: write
       packages: read
     environment: prod
+    env:
+      AZURE_IDENTITY_PROVIDER_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
     steps:
       # - name: echos github.event.after variable
       #   run: |
