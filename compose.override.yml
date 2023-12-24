@@ -43,6 +43,24 @@ services:
         networks:
             - dev_network
 
+    # TBD: add .diockerignore to frontend_svelte
+    frontend_svelte:
+        build:
+            target: build
+        env_file:
+            - ./frontend_svelte/src/.env
+        ports:
+            - "8661:80"
+        volumes:
+            - ./frontend_svelte:/app
+            #- /app/node_modules
+            - ./frontend_svelte/node_modules:/app/node_modules
+        networks:
+            - dev_network
+        command: 
+            # sh -c "/bin/sh"
+            sh -c "npm install && npm run dev"
+
 volumes:
     dev-postgres-data:
     dev-pgadmin-data:

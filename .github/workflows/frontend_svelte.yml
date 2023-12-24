@@ -1,0 +1,246 @@
+name: Frontend
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'frontend_svelte/**'
+      - '.github/workflows/frontend_svelte.yml'
+  # pull_request:
+  #   paths:
+  #     - 'frontend/**'
+      
+env:
+  REGISTRY: ghcr.io
+  COMMIT_SHA: ${{ github.event.after }}
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    environment: test
+    env:
+      KEYVAULT_HEALTH: ${{ vars.KEYVAULT_HEALTH }}
+      POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+      POSTGRES_HOST: ${{ vars.POSTGRES_HOST }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      REDIS_HOST: ${{ vars.REDIS_HOST }}
+      REDIS_PORT: ${{ vars.REDIS_PORT }}
+      MONGODB_HOST: ${{ vars.MONGODB_HOST }}
+      MONGODB_PORT: ${{ vars.MONGODB_PORT }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            build
+      - name: Spin up containers
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            up -d
+      - name: Code Formating
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T frontend_svelte \
+            sh -c "npm run format"
+      - name: Linting
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T frontend_svelte \
+            sh -c "npm run lint"
+      - name: Unit testing
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T frontend_svelte \
+            sh -c "npm run test:unit"
+      - name: Stop containers
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            down
+
+  containerize:
+    if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
+    needs: test
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+    environment: stage
+    steps:
+      # - name: echos github.event.after variable
+      #   run: |
+      #     echo "=== Is this the correct tag: github.event.after? ==="
+      #     echo ${{ github.event.after }}
+      #     echo $CONTAINER_TAG
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }} 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build for production
+        run: |
+          docker compose -f compose.yml -f compose.prod.yml build --build-arg COMMIT_SHA=${{env.COMMIT_SHA}} frontend_svelte
+      - name: Show images
+        run: docker image list
+      - name: Tag and push with latest and commit hash
+        run: |
+          docker tag \
+            ${{github.event.repository.name}}-frontend_svelte:latest \
+            ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:latest
+          docker tag \
+            ${{github.event.repository.name}}-frontend_svelte:latest \
+            ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA
+          docker push \
+            ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:latest
+          docker push \
+              ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA
+
+  deploy_stage:
+    needs: containerize
+    if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      packages: read
+    environment: stage
+    env:
+      AZURE_IDENTITY_PROVIDER_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
+    steps:
+      # - name: echos github.event.after variable
+      #   run: |
+      #     echo "=== Is this the correct tag: github.event.after? ==="
+      #     echo ${{ github.event.after }}
+      #     echo $CONTAINER_TAG
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy to staging
+      # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
+        env:
+          IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
+        run: |
+          az containerapp revision set-mode \
+            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --mode single
+          az containerapp secret set \
+            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --secrets \
+              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
+              "azure-authority=${{ env.AZURE_IDENTITY_PROVIDER_AUTHORITY }}"
+          sleep 10
+          az containerapp update \
+            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
+            --set-env-vars \
+              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "KEYVAULT_HEALTH=secretref:keyvault-health" \
+              "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
+              "AZURE_AUTHORITY=secretref:azure-authority"
+        # Set by terraform already in container: "app-reg-client-id=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF" \
+        # TBD: consider deleting all existing environment variables before setting the new ones?
+        # No: don't otherwise the ones set from Terraform get deleted!
+        # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
+        # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
+      - name: Logout from Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
+
+  deploy_prod:
+    needs: [ deploy_stage ]
+    if: ${{ github.event.ref  == 'refs/heads/main' }}
+    # as this environmnet requires a manual review:
+    # also wait on the pull request from postgres migrations to be merged
+    # if check migrations detected changes.
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      packages: read
+    environment: prod
+    steps:
+      # - name: echos github.event.after variable
+      #   run: |
+      #     echo "=== Is this the correct tag: github.event.after? ==="
+      #     echo ${{ github.event.after }}
+      #     echo $CONTAINER_TAG
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy to production
+      # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
+        env:
+          IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
+        run: |
+          az containerapp revision set-mode \
+            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --mode single
+          az containerapp secret set \
+            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --secrets \
+              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
+              "azure-authority=${{ env.AZURE_IDENTITY_PROVIDER_AUTHORITY }}"
+          sleep 10
+          az containerapp update \
+            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
+            --set-env-vars \
+              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "KEYVAULT_HEALTH=secretref:keyvault-health" \
+              "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
+              "AZURE_AUTHORITY=secretref:azure-authority"
+        # Set by terraform already in container: "app-reg-client-id=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF" \
+        # TBD: consider deleting all existing environment variables before setting the new ones?
+        # No: don't otherwise the ones set from Terraform get deleted!
+        # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
+        # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
+      - name: Logout from Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az logout
+            az cache purge
+            az account clear
