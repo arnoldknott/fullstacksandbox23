@@ -5,6 +5,9 @@ export default defineConfig({
 	plugins: [sveltekit()],
 	server: {
 		host: '0.0.0.0',
+		hmr: {
+			clientPort: 8661
+		},
 		port: 80
 	},
 	test: {
