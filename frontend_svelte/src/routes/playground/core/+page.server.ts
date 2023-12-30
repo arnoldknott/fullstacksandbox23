@@ -1,4 +1,4 @@
-import { app_config } from '$lib/config';
+import { app_config } from '$lib/server/config';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -7,6 +7,7 @@ import type { PageServerLoad } from './$types';
 	// const host = context.host;
 export const load: PageServerLoad = async ( { url } ) => {
 	const configuration =  await app_config()
+	console.log( configuration.app_reg_client_id );
 	
 	// console.log( url );// URL is needed to generate the redirect URL!
 	if (configuration === null) {

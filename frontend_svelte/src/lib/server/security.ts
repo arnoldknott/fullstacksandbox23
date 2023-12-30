@@ -1,15 +1,18 @@
 import { PublicClientApplication } from '@azure/msal-browser';
-import { app_config } from '../config';
-import { redirect } from '@sveltejs/kit';
+import { app_config } from './config';
+
+
+const configuration = await app_config();
+
 
 const msalConfig = {
   auth: {
-    clientId: app_config().app_reg_client_id,
-    authority: app_config().authority,
+    clientId: configuration.app_reg_client_id,
+    authority: configuration.authority,
   },
 };
 
-export const msalInstance = new PublicClientApplication(msalConfig);
+// export const msalInstance = new PublicClientApplication(msalConfig);
 
 export const loginRequest = async (host: string) => {
 
@@ -46,4 +49,3 @@ export const loginRequest = async (host: string) => {
 //   catch (err) {
 //     console.error(err);
 //   }
-}
