@@ -1,4 +1,4 @@
-import dotenv, { config } from 'dotenv';
+import dotenv from 'dotenv';
 dotenv.config();
 
 import { ManagedIdentityCredential } from "@azure/identity";
@@ -7,7 +7,7 @@ import type { Configuration } from 'src/types';
 
 
 export const app_config = async () => {
-	let configuration: Configuration = {
+	const configuration: Configuration = {
 		backend_host: process.env.BACKEND_HOST,
 		azure_authority: process.env.AUTHORITY,
 	}
