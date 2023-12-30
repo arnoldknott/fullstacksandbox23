@@ -3,4 +3,11 @@ export type User = {
 	password?: string;
 	name?: string;
 	loggedIn?: boolean;
+};// TBD: remove
+
+export type Configuration = {
+	azure_authority: string;
+	backend_host: string;
+	app_reg_client_id?: string;
+	keyvault_health?: string;
 };

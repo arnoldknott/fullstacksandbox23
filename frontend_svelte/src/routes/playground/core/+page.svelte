@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	export let data: PageData;
-  export let host = 'undefined'
+  export let url_client = 'undefined'
   if (typeof window !== 'undefined') {
-    host = location.hostname
+    url_client = location.href
   }
   // console.log( host );
 </script>
@@ -14,15 +14,15 @@
 	</h1>
 </div>
 
-<code><pre>{JSON.stringify(data.config, null, ' ')}</pre></code>
+<code><pre>{JSON.stringify(data.keyvaultHealth, null, ' ')}</pre></code>
 
 <div class="mx-5">
 	<h1 class="mx-5 mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
-		Host name - client side:
+		Location name - client side:
 	</h1>
 </div>
 
-<code>{ host }</code>
+<code>{ url_client }</code>
 
 <div class="mx-5">
 	<h1 class="mx-5 mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
