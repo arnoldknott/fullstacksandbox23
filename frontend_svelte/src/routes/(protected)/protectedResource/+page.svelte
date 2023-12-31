@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { PageData } from './$types';
   export let data: PageData;
-  export const fromBackend = new Promise((resolve, reject) => {});
+  export const fromBackend = new Promise( () => {});
   console.log(data);
 </script>
 

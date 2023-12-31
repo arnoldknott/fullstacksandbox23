@@ -17,11 +17,12 @@ export const signIn = async (app_reg_client_id: string, azure_authority: string,
   const initialMsalInstance = await new PublicClientApplication(msalConfig);
   await initialMsalInstance.initialize();
 
-  const msalInstanceStore = writable(initialMsalInstance)
+  //TBD: put msalInstance in Svelte store!
+  // const msalInstanceStore = writable(initialMsalInstance)
 
   // const redirectUri = `${host}/oauth/callback`;
   try {
-    const redirectUri = `${host}/oauth/callback`;
+    // const redirectUri = `${host}/oauth/callback`;
     const response = await initialMsalInstance.loginRedirect({ 
       // scopes: ["read.all"],// TBD: fix scopes to the ones registered in app registration
       // scopes: [`api://${configuration.api_scope}`],

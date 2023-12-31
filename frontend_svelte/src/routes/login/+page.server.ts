@@ -2,7 +2,7 @@ import { app_config } from '$lib/server/config';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ( { url } ) => {
+export const load: PageServerLoad = async ( ) => {
 	const configuration =  await app_config()
   console.log(configuration)
   try {

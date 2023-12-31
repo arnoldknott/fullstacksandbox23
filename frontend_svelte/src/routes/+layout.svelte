@@ -4,7 +4,7 @@
 	import '../app.css';
 	import type { LayoutData } from './$types';
 	import { user_store } from '$lib/stores';
-	import Guard from '$components/Guard.svelte';
+	// import Guard from '$components/Guard.svelte';
 
 	export let data: LayoutData;
 	if (data?.loggedIn) {
