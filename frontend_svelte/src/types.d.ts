@@ -8,6 +8,7 @@ export type User = {
 export type Configuration = {
 	azure_authority: string;
 	backend_host: string;
-	app_reg_client_id?: string;
+	app_reg_client_id: string;
+	api_scope: string;
 	keyvault_health?: string;
 };

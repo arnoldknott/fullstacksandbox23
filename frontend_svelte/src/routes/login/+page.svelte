@@ -1,4 +1,21 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { signIn } from '$lib/oauth.js';
+	import type { PageData } from './$types';
+	export let data: PageData;
+
+	let host = 'undefined'
+	if (typeof window !== 'undefined') {
+    host = location.href
+  }
+
+	onMount(() => {
+		signIn( data.client_id, data.authority, host )
+	});
+</script>
+
+
+<!-- <script lang="ts">
 	import { goto } from '$app/navigation';
 	// export const ssr = false;
 	import UserForm from '$components/UserForm.svelte';
@@ -16,4 +33,4 @@
 	});
 </script>
 
-<UserForm />
+<UserForm /> -->

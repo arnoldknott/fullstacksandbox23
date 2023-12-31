@@ -17,9 +17,10 @@
 		<div class="flex-grow space-x-4">
 			<NavButton url="/" link="Home" />
 			<NavButton url="/playground" link="Playground" />
-			<Guard redirect="/">
+			<NavButton url="/protectedResource" link="Protected" />
+			<!-- <Guard redirect="/">
 				<NavButton url="/dashboard" link="Dashboard" />
-			</Guard>
+			</Guard> -->
 		</div>
 		<div class="flex space-x-4">
 			<!-- <NavButton url="/user" link="User" /> -->
