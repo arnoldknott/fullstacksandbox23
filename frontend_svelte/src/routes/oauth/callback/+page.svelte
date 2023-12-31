@@ -1,8 +1,9 @@
 <script lang="ts">
 	// import { goto } from '$app/navigation';
-  import { redirect } from '@sveltejs/kit';
-
-  throw redirect(307, '/');
+  // import { redirect } from '@sveltejs/kit';
+  // console.log('redirecting');
+  
+  // throw redirect(307, '/');
 	// import { user_store } from '$lib/stores.js';
 	// import { onMount } from 'svelte';
 
@@ -16,6 +17,7 @@
 	// };
 </script>
 
+redirecting...
 <!-- {#if $user_store?.loggedIn}
 	<slot />
 {:else}

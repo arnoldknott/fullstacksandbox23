@@ -3,10 +3,10 @@
 
 // const host = 'http://host.docker.internal:8000';
 // const host = 'http://backend_api:80';
-import dotenv from 'dotenv';
-dotenv.config();
+// import dotenv from 'dotenv';
+// dotenv.config();
 
-console.log('process.env.BACKEND_HOST: ', process.env.BACKEND_HOST);
+// console.log('process.env.BACKEND_HOST: ', process.env.BACKEND_HOST);
 const host = `http://${process.env.BACKEND_HOST}:80`;
 
 export const getBackend = async (url: string, accessToken: string = '') => {

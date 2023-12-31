@@ -2,6 +2,7 @@
   import type { PageData } from './$types';
   export let data: PageData;
   export const fromBackend = new Promise((resolve, reject) => {});
+  console.log(data);
 </script>
 
 <div class="mx-5">

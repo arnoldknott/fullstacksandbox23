@@ -1,3 +1,5 @@
+console.log("hello from routes/+layout.server.ts");
+
 // import type { LayoutServerLoad } from './$types';
 // import { getBackend } from '$lib/backend';
 // import type { User } from 'src/types.d.ts';
