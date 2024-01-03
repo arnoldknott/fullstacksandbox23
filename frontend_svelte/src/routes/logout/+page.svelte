@@ -19,6 +19,7 @@ onMount( async () => {
 	const auth = $auth_instance_store
 	await auth.signOut( origin )
 	auth_instance_store.set(auth);
+	microsoft_account_store.set(undefined);
 });
 
 // onMount(() => {

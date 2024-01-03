@@ -1,11 +1,20 @@
 <script lang="ts">
 	import { user_store } from '$lib/stores';
+	import { microsoft_account_store } from '$lib/stores';
 	const logUserStore = () => {
 		console.log($user_store);
+	};
+	const logMicrosoftAccountStore = () => {
+		console.log($microsoft_account_store);
 	};
 </script>
 
 <button class="m-4 rounded bg-blue-400 p-2" on:click={logUserStore}
 	>Current $user_store -> console</button
 >
+<button class="m-4 rounded bg-blue-400 p-2" on:click={logMicrosoftAccountStore}
+	>Current $microsoft_account_store -> console</button
+>
 <code><pre>{JSON.stringify($user_store, null, ' ')}</pre></code>
+<br>
+<code><pre>{JSON.stringify($microsoft_account_store, null, ' ')}</pre></code>

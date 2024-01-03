@@ -37,7 +37,7 @@
 	// import { createAuthentication } from '$lib/oauth.ts';
 	import type { LayoutData } from './$types';
 	// import Guard from '$components/Guard.svelte';
-
+import { microsoft_account_store } from '$lib/stores.ts';
 
 	export let data: LayoutData;
 
@@ -52,12 +52,46 @@
 			await authInstance.initialize();
 			console.log('layout - client - created a new authInstance')
 			auth_instance_store.set(authInstance);
+			return authInstance;
+			// console.log('layout - client - auth_instance_store')
+			// console.log($auth_instance_store)
 		}
 	}
-	createAuthentication();
-	const auth = $auth_instance_store;
+	// createAuthentication();
+	// const auth = $auth_instance_store;
 	onMount( async () => {
-		auth_instance_store.set(auth);
+		// auth_instance_store.set(auth);
+		const auth = await createAuthentication();
+		// const auth = $auth_instance_store;
+		// if($auth_instance_store){
+		// 	console.log('layout - client - onMount - auth_instance_store')
+		// 	console.log($auth_instance_store)
+		// }
+
+		if( auth && auth.msalInstance ) {
+			console.log('layout - client - get microsoft account')
+			try {
+				// const user = await auth.msalInstance.getAccount();
+				// console.log('layout - client - onMount - auth.msalInstance')
+				// console.log(auth.msalInstance)
+				const user = await auth.msalInstance.controller.getAllAccounts();
+				console.log('layout - client - onMount - user')
+				console.log(user)
+				microsoft_account_store.set(user);
+				// const redirectResponse = await auth.msalInstance.handleRedirectPromise()
+				// console.log('layout - client - onMount - handleRedirectPromise')
+				// console.log(redirectResponse)
+				// microsoft_account_store.set(user);
+				// console.log('layout - client - user')
+				// console.log(user)
+			} catch (error) {
+				console.log('layout - client - error')
+				// console.log(error);
+				throw error;
+			}
+		}
+		// console.log('layout - client - onMount - end - auth')
+		// console.log(auth)
 	})
 
 	// if (data?.loggedIn) {

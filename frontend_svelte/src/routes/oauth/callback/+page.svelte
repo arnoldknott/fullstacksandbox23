@@ -26,7 +26,7 @@
 	onMount(async () => {
 		const auth = get(auth_instance_store);
 		// await auth.msalInstance.handleRedirectPromise();
-		auth_instance_store.set(auth);
+		// auth_instance_store.set(auth);
 		console.log('callback - client - auth')
 		console.log(auth);
 		goto('/');
