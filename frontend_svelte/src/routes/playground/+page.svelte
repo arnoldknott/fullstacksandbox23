@@ -5,8 +5,12 @@
 			url: '/components'
 		},
 		{
-			name: 'Backend',
-			url: '/backend'
+			name: 'Backend - Schema',
+			url: '/backend_schema'
+		},
+		{
+			name: 'Backend - Demo Resources',
+			url: '/backend_demo_resource'
 		},
 		{
 			name: 'Counter',

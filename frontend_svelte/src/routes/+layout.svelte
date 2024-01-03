@@ -70,7 +70,7 @@ import type { User } from 'src/types.d.ts';
 		// }
 
 		if( auth && auth.msalInstance ) {
-			console.log('layout - client - get microsoft account')
+			// console.log('layout - client - get microsoft account')
 			try {
 				// const user = await auth.msalInstance.getAccount();
 				// console.log('layout - client - onMount - auth.msalInstance')
@@ -78,8 +78,8 @@ import type { User } from 'src/types.d.ts';
 				// TBD: switch to using auth.getAccount()
 				// const microsoft_user = await auth.msalInstance.getAllAccounts();
 				const microsoft_user = await auth.getAccount();
-				console.log('layout - client - onMount - user')
-				console.log(microsoft_user)
+				// console.log('layout - client - onMount - user')
+				// console.log(microsoft_user)
 				if (microsoft_user){
 					microsoft_account_store.set(microsoft_user);
 					const user: User = {

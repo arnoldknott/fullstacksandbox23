@@ -9,7 +9,7 @@ export const load: LayoutServerLoad = async ( ) => {
   try {
     const azure_authority = configuration.azure_authority;
     const app_reg_client_id = configuration.app_reg_client_id;
-    return { authority: azure_authority, client_id: app_reg_client_id };
+    return { authority: azure_authority, client_id: app_reg_client_id, myLayoutVariable: "myLayoutVariable" };
   }
   catch (err) {
     console.error(err);

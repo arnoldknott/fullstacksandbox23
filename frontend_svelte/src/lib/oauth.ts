@@ -1,6 +1,6 @@
 import { PublicClientApplication, type AccountInfo, InteractionRequiredAuthError } from '@azure/msal-browser';
+import { auth_instance_store } from './stores';
 import { get } from 'svelte/store';
-import { microsoft_account_store } from './stores';
 // import { microsoft_account_store } from './stores';
 // import { auth_instance_store } from './stores';
 // import { error } from '@sveltejs/kit';
@@ -139,10 +139,10 @@ async signOut(redirectOrigin: string, redirectUri: string = "/") {
   }
 }
 
-export const getAccessToken = async () => {
-  const microsoftAccountStore = get(microsoft_account_store);
-  const tenant = microsoftAccountStore?.[0]?.tenantId;
-
+export const getAccessToken = async (scopes: string[] = []) => {
+  const auth = get(auth_instance_store);
+  const access_token = await auth?.getAccessToken(scopes);
+  return access_token;
 }
 
 export default Authentication;
