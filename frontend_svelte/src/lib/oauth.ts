@@ -1,4 +1,4 @@
-import { PublicClientApplication, type AccountInfo, InteractionRequiredAuthError, EventMessageUtils } from '@azure/msal-browser';
+import { PublicClientApplication, type AccountInfo, InteractionRequiredAuthError } from '@azure/msal-browser';
 import { get } from 'svelte/store';
 import { microsoft_account_store } from './stores';
 // import { microsoft_account_store } from './stores';
@@ -93,7 +93,6 @@ async getAccessToken( scopes: string[] = []) {
     const tokenRequest = {
       scopes: scopes,
       account: account,
-      redirectUri: `${window.location.origin}/oauth/callback`
     }
     try{
       const response = await this.msalInstance.acquireTokenSilent(tokenRequest);
@@ -107,7 +106,11 @@ async getAccessToken( scopes: string[] = []) {
           // if (myGlobalState.getInteractionStatus() !== InteractionStatus.None) {
           //   // throw a new error to be handled in the caller below
           //   throw new Error("interaction_in_progress");
-          const response = await this.msalInstance.acquireTokenRedirect(tokenRequest)
+          const tokenRequestNew = {
+            ...tokenRequest,
+            redirectUri: `${window.location.origin}/oauth/callback`,
+          }
+          await this.msalInstance.acquireTokenRedirect(tokenRequestNew)
         } else {
           console.error("oauth - GetAccessToken failed - no AuthError: ", error);
           throw error;

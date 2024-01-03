@@ -23,7 +23,7 @@
 
 <a class="h-10 w-10 py-2" href="/user">
 	{#if pictureUrl}
-		<img class="h-10 w-10 rounded-full" src={pictureUrl} alt="user picture" />
+		<img class="h-10 w-10 rounded-full" src={pictureUrl} alt="you" />
 	{:else}
 		<svg
 			viewBox="0 0 8.4666669 8.4666669"
