@@ -51,7 +51,7 @@ import type { User } from 'src/types.d.ts';
 		if ($auth_instance_store === undefined) {
 			const authInstance = new Authentication(data.client_id, data.authority);
 			await authInstance.initialize();
-			console.log('layout - client - created a new authInstance')
+			// console.log('layout - client - created a new authInstance')
 			auth_instance_store.set(authInstance);
 			return authInstance;
 			// console.log('layout - client - auth_instance_store')
@@ -125,8 +125,6 @@ import type { User } from 'src/types.d.ts';
 			</Guard> -->
 		</div>
 		<div class="flex space-x-4">
-			<!-- <NavButton url="/login" link="Login" />
-			<NavButton url="/logout" link="Logout" /> -->
 			<!-- <NavButton url="/user" link="User" /> -->
 			{#if !$user_store?.loggedIn}
 				<!-- <NavButton url="/register" link="Register" invert /> -->

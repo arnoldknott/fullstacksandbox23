@@ -1,24 +1,6 @@
-import { PublicClientApplication, type AccountInfo, InteractionRequiredAuthError } from '@azure/msal-browser';
+import { PublicClientApplication, type AccountInfo, InteractionRequiredAuthError, type AuthenticationResult } from '@azure/msal-browser';
 import { auth_instance_store } from './stores';
 import { get } from 'svelte/store';
-// import { microsoft_account_store } from './stores';
-// import { auth_instance_store } from './stores';
-// import { error } from '@sveltejs/kit';
-// import { auth_instance_store } from './stores';
-// import { app_config } from '$lib/config';
-
-
-// const configuration =  await app_config()
-
-// try {
-//   const azure_authority = configuration.azure_authority;
-//   const app_reg_client_id = configuration.app_reg_client_id;
-//   return { authority: azure_authority, client_id: app_reg_client_id };
-// }
-//   catch (err) {
-//     console.error(err);
-//     throw error(404, 'App configuration unavailable');
-//   }
 
 
 
@@ -36,48 +18,42 @@ export class Authentication {
     this.msalInstance = new PublicClientApplication(msalConfig);
   }
   
-  async initialize() {
+  async initialize(): Promise<PublicClientApplication> {
     await this.msalInstance.initialize();
     await this.msalInstance.handleRedirectPromise();
-    console.log("oauth - msalInstance initialized");
+    // console.log("oauth - msalInstance initialized");
     return this.msalInstance;
   }
     
-  async signIn(redirectOrigin: string) {
-    // if (msalInstance !== undefined) {
-      // if ( this.msalInstance?.getInProgress) {
-      //   console.log('Interaction in progress, retrieving active account');
-      //   await this.msalInstance?.getActiveAccount().setInteractionInProgress(false);
-      // }
-      try {
-        await this.msalInstance.handleRedirectPromise();
-        this.msalInstance.loginRedirect({
-        // scopes: ["read.all"],// TBD: fix scopes to the ones registered in app registration
-        // scopes: [`api://${configuration.api_scope}`],
-        scopes: [],
-        redirectUri: `${redirectOrigin}/oauth/callback`
-      }); // add scopes here?
-      const response = await this.msalInstance.handleRedirectPromise();
-      return response;
-    } catch (err) {
-      // if ( error instanceof BrowserAuthError) {
-      //   // console.log('Interaction in progress, retrieving active account');
-      //   await initialMsalInstance.getActiveAccount().setInteractionInProgress(false);
-      // } else {
-      // console.error(err);
-      console.error("oauth - Login failed: ", err);
-      throw err
-      // }
-    }
-  // }
+  // TBD: add scopes!
+  async signIn(redirectOrigin: string): Promise<AuthenticationResult | null> {
+    try {
+      await this.msalInstance.handleRedirectPromise();
+      this.msalInstance.loginRedirect({
+      // scopes: ["read.all"],// TBD: fix scopes to the ones registered in app registration
+      // scopes: [`api://${configuration.api_scope}`],
+      scopes: [],
+      redirectUri: `${redirectOrigin}/oauth/callback`
+    });
+    const response = await this.msalInstance.handleRedirectPromise();
+    return response;
+  } catch (err) {
+    // if ( error instanceof BrowserAuthError) {
+    //   // console.log('Interaction in progress, retrieving active account');
+    //   await initialMsalInstance.getActiveAccount().setInteractionInProgress(false);
+    // } else {
+    console.error("oauth - Login failed: ", err);
+    throw err
+    // }
+  }
 }
 
 async getAccount(): Promise<AccountInfo> {
   try {
     await this.msalInstance.handleRedirectPromise();
     const accounts = this.msalInstance.getAllAccounts();
-    console.log("oauth - GetAccount - accounts");
-    console.log(accounts);
+    // console.log("oauth - GetAccount - accounts");
+    // console.log(accounts);
     return accounts[0];
   } catch (err) {
     console.error("oauth - GetAccount failed: ", err);
@@ -86,7 +62,7 @@ async getAccount(): Promise<AccountInfo> {
 
 }
 
-async getAccessToken( scopes: string[] = []) {
+async getAccessToken( scopes: string[] = []): Promise<string | undefined> {
   try {
     await this.msalInstance.handleRedirectPromise();
     const account = await this.getAccount();
@@ -96,8 +72,8 @@ async getAccessToken( scopes: string[] = []) {
     }
     try{
       const response = await this.msalInstance.acquireTokenSilent(tokenRequest);
-      console.log("oauth - GetAccessToken - response");
-      console.log(response);
+      // console.log("oauth - GetAccessToken - response");
+      // console.log(response);
       return response.accessToken;
       } catch (error) {
         if( error instanceof InteractionRequiredAuthError) {
@@ -123,12 +99,13 @@ async getAccessToken( scopes: string[] = []) {
 
 }
 
-async signOut(redirectOrigin: string, redirectUri: string = "/") {
+async signOut(redirectOrigin: string, redirectUri: string = "/"): Promise<void> {
   try {
     await this.msalInstance.handleRedirectPromise();
     // console.log("oauth - signout - redirectUri");
     // console.log(`${redirectOrigin}${redirectUri}`);
     // const accounts = this.msalInstance.getAllAccounts();
+    // TBD: add account to logoutRedirect
     await this.msalInstance.logoutRedirect({
       postLogoutRedirectUri: `${redirectOrigin}${redirectUri}`
     });
@@ -139,7 +116,7 @@ async signOut(redirectOrigin: string, redirectUri: string = "/") {
   }
 }
 
-export const getAccessToken = async (scopes: string[] = []) => {
+export const getAccessToken = async (scopes: string[] = []): Promise<string | undefined> => {
   const auth = get(auth_instance_store);
   const access_token = await auth?.getAccessToken(scopes);
   return access_token;

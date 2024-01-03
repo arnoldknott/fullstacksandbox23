@@ -6,13 +6,13 @@
 	onMount(async () => {
 		try {
 			const response = await get_user_picture();
-			console.log('UserButton - get_user_picture - reponse')
-			console.log(response)
+			// console.log('UserButton - get_user_picture - reponse')
+			// console.log(response)
 			if (response.ok) {
 				const blob = await response.blob();
 				pictureUrl = URL.createObjectURL(blob);
-				console.log('UserButton - get_user_picture - pictureUrl')
-				console.log(pictureUrl)
+				// console.log('UserButton - get_user_picture - pictureUrl')
+				// console.log(pictureUrl)
 			}
 		} catch (error) {
 			console.log('UserButton - get_user_picture - error')
