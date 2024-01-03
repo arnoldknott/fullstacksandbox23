@@ -3,12 +3,15 @@
 
 	const add = () => {
 		count.update((n) => n + 1);
+		console.log('count', $count);
 	};
 	const subtract = () => {
 		count.update((n) => n - 1);
+		console.log('count', $count);
 	};
 	const reset = () => {
 		count.set(0);
+		console.log('count', $count);
 	};
 </script>
 

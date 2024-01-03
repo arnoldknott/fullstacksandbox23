@@ -29,6 +29,7 @@ export const app_config = async () => {
 		configuration.app_reg_client_id = process.env.APP_REG_CLIENT_ID;
 		configuration.api_scope = process.env.API_SCOPE;
 	};
-	console.log(configuration);
+	// console.log("config - configuration")
+	// console.log(configuration);
 return configuration;
 };
