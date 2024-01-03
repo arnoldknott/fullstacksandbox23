@@ -14,8 +14,9 @@ export const getBackend = async (url: string, accessToken: string = '') => {
 		'Content-Type': 'application/json',
 		Authorization: ''
 	};
+	// accessToken = sessionStorage.getItem('accessToken') || '';
 	if (accessToken) {
-		headers.Authorization = `Token ${accessToken}`;
+		headers.Authorization = `Bearer ${accessToken}`;
 	}
 	const response = await fetch(host + url, {
 		method: 'GET',

@@ -1,4 +1,7 @@
-import { PublicClientApplication } from '@azure/msal-browser';
+import { PublicClientApplication, type AccountInfo, InteractionRequiredAuthError, EventMessageUtils } from '@azure/msal-browser';
+import { get } from 'svelte/store';
+import { microsoft_account_store } from './stores';
+// import { microsoft_account_store } from './stores';
 // import { auth_instance_store } from './stores';
 // import { error } from '@sveltejs/kit';
 // import { auth_instance_store } from './stores';
@@ -62,26 +65,81 @@ export class Authentication {
       //   await initialMsalInstance.getActiveAccount().setInteractionInProgress(false);
       // } else {
       // console.error(err);
-      console.error("Login failed: ", err);
+      console.error("oauth - Login failed: ", err);
       throw err
       // }
     }
   // }
 }
+
+async getAccount(): Promise<AccountInfo> {
+  try {
+    await this.msalInstance.handleRedirectPromise();
+    const accounts = this.msalInstance.getAllAccounts();
+    console.log("oauth - GetAccount - accounts");
+    console.log(accounts);
+    return accounts[0];
+  } catch (err) {
+    console.error("oauth - GetAccount failed: ", err);
+    throw err
+  }
+
+}
+
+async getAccessToken( scopes: string[] = []) {
+  try {
+    await this.msalInstance.handleRedirectPromise();
+    const account = await this.getAccount();
+    const tokenRequest = {
+      scopes: scopes,
+      account: account,
+      redirectUri: `${window.location.origin}/oauth/callback`
+    }
+    try{
+      const response = await this.msalInstance.acquireTokenSilent(tokenRequest);
+      console.log("oauth - GetAccessToken - response");
+      console.log(response);
+      return response.accessToken;
+      } catch (error) {
+        if( error instanceof InteractionRequiredAuthError) {
+          // EventMessageUtils.getInteractionStatusFromEvent(TBD: find correct EventMessage here)
+          // await this.msalInstance.getInteractionStatusFromEvent() 
+          // if (myGlobalState.getInteractionStatus() !== InteractionStatus.None) {
+          //   // throw a new error to be handled in the caller below
+          //   throw new Error("interaction_in_progress");
+          const response = await this.msalInstance.acquireTokenRedirect(tokenRequest)
+        } else {
+          console.error("oauth - GetAccessToken failed - no AuthError: ", error);
+          throw error;
+        }
+      }
+  } catch (err) {
+    console.error("oauth - GetAccessToken failed: ", err);
+    throw err
+  }
+
+}
+
 async signOut(redirectOrigin: string, redirectUri: string = "/") {
   try {
     await this.msalInstance.handleRedirectPromise();
-    console.log("oauth - signout - redirectUri");
-    console.log(`${redirectOrigin}${redirectUri}`);
+    // console.log("oauth - signout - redirectUri");
+    // console.log(`${redirectOrigin}${redirectUri}`);
     // const accounts = this.msalInstance.getAllAccounts();
     await this.msalInstance.logoutRedirect({
       postLogoutRedirectUri: `${redirectOrigin}${redirectUri}`
     });
   } catch (err) {
-    console.error("Logout failed: ", err);
+    console.error("oauth - Logout failed: ", err);
     throw err// error(404, 'Logout failed')
   }
   }
+}
+
+export const getAccessToken = async () => {
+  const microsoftAccountStore = get(microsoft_account_store);
+  const tenant = microsoftAccountStore?.[0]?.tenantId;
+
 }
 
 export default Authentication;

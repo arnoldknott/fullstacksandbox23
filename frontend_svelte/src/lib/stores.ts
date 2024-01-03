@@ -8,5 +8,5 @@ import type { AccountInfo } from '@azure/msal-browser';
 // export const configuration = writable<Configuration | undefined>();
 export const auth_instance_store = writable<Authentication | undefined>(undefined);
 export const user_store = writable<User | undefined>();
-export const microsoft_account_store = writable<AccountInfo | undefined>(undefined);
+export const microsoft_account_store = writable<[AccountInfo] | undefined>(undefined);
 export const count = writable<number>(0);

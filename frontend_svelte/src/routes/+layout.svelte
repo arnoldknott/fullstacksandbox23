@@ -38,6 +38,7 @@
 	import type { LayoutData } from './$types';
 	// import Guard from '$components/Guard.svelte';
 import { microsoft_account_store } from '$lib/stores.ts';
+import type { User } from 'src/types.d.ts';
 
 	export let data: LayoutData;
 
@@ -74,10 +75,20 @@ import { microsoft_account_store } from '$lib/stores.ts';
 				// const user = await auth.msalInstance.getAccount();
 				// console.log('layout - client - onMount - auth.msalInstance')
 				// console.log(auth.msalInstance)
-				const user = await auth.msalInstance.controller.getAllAccounts();
+				// TBD: switch to using auth.getAccount()
+				// const microsoft_user = await auth.msalInstance.getAllAccounts();
+				const microsoft_user = await auth.getAccount();
 				console.log('layout - client - onMount - user')
-				console.log(user)
-				microsoft_account_store.set(user);
+				console.log(microsoft_user)
+				if (microsoft_user){
+					microsoft_account_store.set(microsoft_user);
+					const user: User = {
+						loggedIn: true,
+						email: microsoft_user.username,
+						name: microsoft_user.name
+					}
+					user_store.set(user);
+				}
 				// const redirectResponse = await auth.msalInstance.handleRedirectPromise()
 				// console.log('layout - client - onMount - handleRedirectPromise')
 				// console.log(redirectResponse)
@@ -93,6 +104,10 @@ import { microsoft_account_store } from '$lib/stores.ts';
 		// console.log('layout - client - onMount - end - auth')
 		// console.log(auth)
 	})
+
+	if ($user_store?.loggedIn) {
+		user_store.set(data.user);
+	}
 
 	// if (data?.loggedIn) {
 	// 	$user_store = data;
@@ -110,8 +125,8 @@ import { microsoft_account_store } from '$lib/stores.ts';
 			</Guard> -->
 		</div>
 		<div class="flex space-x-4">
-			<NavButton url="/login" link="Login" />
-			<NavButton url="/logout" link="Logout" />
+			<!-- <NavButton url="/login" link="Login" />
+			<NavButton url="/logout" link="Logout" /> -->
 			<!-- <NavButton url="/user" link="User" /> -->
 			{#if !$user_store?.loggedIn}
 				<!-- <NavButton url="/register" link="Register" invert /> -->
