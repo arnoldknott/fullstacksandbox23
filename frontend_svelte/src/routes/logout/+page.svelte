@@ -4,6 +4,7 @@ import { onMount } from 'svelte';
 import { auth_instance_store } from '$lib/stores.js';
 // import type { PageData } from './$types';
 // export let data: PageData;
+import { microsoft_account_store } from '$lib/stores.js';
 
 let origin = 'undefined'
 if (typeof window !== 'undefined') {
