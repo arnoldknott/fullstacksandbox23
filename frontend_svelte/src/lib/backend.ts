@@ -10,10 +10,14 @@ import { getAccessToken } from "./oauth";
 
 // console.log('process.env.BACKEND_HOST: ', process.env.BACKEND_HOST);
 const host = `http://${process.env.BACKEND_HOST}:80`;
-
+// const host = `http://backend_api:80`;
+// const host = `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}`;
+// const host = 'http://localhost:8660'
 
 export const getBackend = async (url: string) => {
-	const accessToken = await getAccessToken();
+	const accessToken = await getAccessToken(["User.Read"]);
+	// console.log("backend - getBackend - accessToken");
+	// console.log(accessToken);
 	const headers = {
 		'Content-Type': 'application/json',
 		Authorization: `Bearer ${accessToken}` 

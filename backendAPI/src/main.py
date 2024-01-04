@@ -6,6 +6,7 @@ from fastapi.exception_handlers import http_exception_handler
 from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router
 from routers.api.v1.demo_resource import router as demo_resource_router
+from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.tag import router as tag_router
 
 # print("Current directory:", os.getcwd())
@@ -65,6 +66,11 @@ app.include_router(
     demo_resource_router,
     prefix=f"{global_prefix}/demo_resource",
     tags=["Demo Resource"],
+)
+app.include_router(
+    protected_resource_router,
+    prefix=f"{global_prefix}/protected_resource",
+    tags=["Protected Resource"],
 )
 app.include_router(
     category_router,

@@ -72,8 +72,8 @@ async getAccessToken( scopes: string[] = []): Promise<string | undefined> {
     }
     try{
       const response = await this.msalInstance.acquireTokenSilent(tokenRequest);
-      // console.log("oauth - GetAccessToken - response");
-      // console.log(response);
+      // console.log("oauth - Authentication - GetAccessToken - response.accessToken");
+      // console.log(response.accessToken);
       return response.accessToken;
       } catch (error) {
         if( error instanceof InteractionRequiredAuthError) {
@@ -118,8 +118,10 @@ async signOut(redirectOrigin: string, redirectUri: string = "/"): Promise<void> 
 
 export const getAccessToken = async (scopes: string[] = []): Promise<string | undefined> => {
   const auth = get(auth_instance_store);
-  const access_token = await auth?.getAccessToken(scopes);
-  return access_token;
+  const accessToken = await auth?.getAccessToken(scopes);
+  // console.log("oauth - getAccessToken - response.accessToken");
+  // console.log(accessToken);
+  return accessToken;
 }
 
 export default Authentication;

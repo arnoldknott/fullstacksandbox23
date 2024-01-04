@@ -1,6 +1,6 @@
 import { getBackend } from '$lib/backend';
 // import { error } from '@sveltejs/kit';
-import type { PageServerLoad } from '../backend_authorization/$types';
+import type { PageServerLoad } from './$types';
 
 // TBD: add type PageServerLoad here?
 export const load: PageServerLoad = async () => {

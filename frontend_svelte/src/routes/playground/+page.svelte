@@ -13,6 +13,10 @@
 			url: '/backend_demo_resource'
 		},
 		{
+			name: 'Backend - Protected Resources',
+			url: '/backend_protected_resource'
+		},
+		{
 			name: 'Counter',
 			url: '/counter'
 		},

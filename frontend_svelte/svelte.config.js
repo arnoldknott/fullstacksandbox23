@@ -16,6 +16,11 @@ const config = {
 			$components: './src/components'
 		}
 	}
+	// vite: {
+	// 	define: {
+	// 		'process.env.BACKEND_HOST': JSON.stringify(process.env.BACKEND_HOST),
+	// 	}
+	// }
 };
 
 export default config;

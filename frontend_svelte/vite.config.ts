@@ -10,6 +10,10 @@ export default defineConfig({
 		},
 		port: 80
 	},
+  // define: {
+  //   'process.env.BACKEND_HOST': JSON.stringify(process.env.BACKEND_HOST),
+	// 	'process.env.BACKEND_PORT': JSON.stringify(process.env.BACKEND_PORT),
+  // },
 	test: {
 		environment: 'jsdom',
 		include: ['src/**/*.{test,spec}.{js,ts}']
