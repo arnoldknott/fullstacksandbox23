@@ -26,7 +26,8 @@ def validate_token(request: Request):
     # print("=== request.headers ===")
     # print(request.headers)
     try:
-        token = request.headers.get("Authorization").split("Bearer ")[1]
+        # token = request.headers.get("Authorization").split("Bearer ")[1]
+        request.headers.get("Authorization").split("Bearer ")[1]
         # print("=== token ===")
         # print(token)
     except Exception as e:
