@@ -1,5 +1,6 @@
 import { createClient } from "redis";
 // import type { RedisClientType } from "@redis/client";
+// import type { AuthenticationResult } from '@azure/msal-node';
 type RedisGetReturnType = ReturnType<typeof redisSession.json.get>;
 
 import { app_config } from "./config";
@@ -56,9 +57,9 @@ export default class Cache {
   //     await this.json.set(sessionId, '.', JSON.stringify(tokens));
   //   }, sessionId, '.', JSON.stringify(tokens));
   // }
-  async setSession(sessionId: string, path: string, tokens: any): Promise<void> {
+  async setSession(sessionId: string, path: string, authData: string): Promise<void> {
     await this.useSessionClient(async function(this: typeof redisSession) {
-      await this.json.set(sessionId, path, JSON.stringify(tokens));
+      await this.json.set(sessionId, path, JSON.stringify(authData));
     });
   }
 

@@ -7,7 +7,6 @@ class MicrosoftOauth {
   private constructor( ) { }
 
   private async init() {
-    const oauth = new MicrosoftOauth();
     const configuration = await app_config();
 
     const msalConfig = {
