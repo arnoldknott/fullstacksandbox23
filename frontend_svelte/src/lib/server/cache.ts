@@ -1,5 +1,7 @@
 import { createClient } from "redis";
 // import type { RedisClientType } from "@redis/client";
+type RedisGetReturnType = ReturnType<typeof redisSession.json.get>;
+
 import { app_config } from "./config";
 
 const configuration = await app_config()
@@ -34,19 +36,36 @@ export default class Cache {
   //   await this.redisSession.disconnect();
   // }
 
-  // WOKRS as well - Ver2?
-  // TBD: change unknonw to a RedisClientType or RedisFunction?
-  async useSessionClient(callback: (...args: unknown[]) => Promise<void>, ...args: unknown[]) {
+  // WORKS as well - Ver2?
+  // TBD: change unknown to a RedisClientType or RedisFunction?
+  async useSessionClient<T = void>(callback: (...args: unknown[]) => Promise<T>, ...args: unknown[]) {
     // Connect to the Redis session client
     await this.redisSession.connect();
 
     try {
       // Call the callback function with this.redisSession as its this value and args as its arguments
-      await callback.apply(this.redisSession, args);
+      return await callback.apply(this.redisSession, args);
     } finally {
       // Disconnect from the Redis session client
       await this.redisSession.disconnect();
     }
+  }
+
+  // async setSession( sessionId: string, path: string, tokens: any ) {
+  //   await this.useSessionClient(async function(this: typeof redisSession) {
+  //     await this.json.set(sessionId, '.', JSON.stringify(tokens));
+  //   }, sessionId, '.', JSON.stringify(tokens));
+  // }
+  async setSession(sessionId: string, path: string, tokens: any): Promise<void> {
+    await this.useSessionClient(async function(this: typeof redisSession) {
+      await this.json.set(sessionId, path, JSON.stringify(tokens));
+    });
+  }
+
+  async getSession(sessionId: string): Promise<RedisGetReturnType> {
+    return await this.useSessionClient(async function(this: typeof redisSession) {
+      return await this.json.get(sessionId);
+    });
   }
 
 }

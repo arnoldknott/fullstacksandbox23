@@ -3,10 +3,11 @@ import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ( { url } ) => {
-	const client = MicrosoftOauth.getInstance()
+  const oauth = await MicrosoftOauth.create();
+	// const client = MicrosoftOauth.getInstance()
   let loginUrl: string
   try {
-    loginUrl = await client.signIn( url.origin );
+    loginUrl = await oauth.signIn( url.origin );
     // console.log("login - server - loginUrl");
     // console.log(loginUrl);
   } catch (err) {
