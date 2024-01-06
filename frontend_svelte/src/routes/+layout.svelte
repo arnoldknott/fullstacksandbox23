@@ -131,7 +131,7 @@
 			{#if !$user_store?.loggedIn}
 				<!-- <NavButton url="/register" link="Register" invert /> -->
 				<!-- data-sveltekit-preload-data="false" -->
-				<NavButton pre-load=false url="/login" link="Login" />
+				<NavButton pre_load=false url="/login" link="Login" />
 			{:else}
 				<UserButton />
 				<!-- needs to redirect to /home and delete session information -->

@@ -9,5 +9,5 @@ export const load: PageServerLoad = async () => {
 	if (schema === null) {
 		return error(404, 'Unavailable');
 	}
-	return schema;
+	return { body: schema };
 };
