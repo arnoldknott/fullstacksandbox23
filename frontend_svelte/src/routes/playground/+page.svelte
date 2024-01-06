@@ -17,6 +17,10 @@
 			url: '/backend_protected_resource'
 		},
 		{
+			name: 'Microsoft Graph - Me',
+			url: '/ms_graph_me'
+		},
+		{
 			name: 'Counter',
 			url: '/counter'
 		},

@@ -10,6 +10,7 @@ services:
             - "8660:80"
         volumes:
             - dev-app-data:/data
+        restart: unless-stopped
         networks:
             - dev_network
 
@@ -55,16 +56,34 @@ services:
             - ./frontend_svelte:/app
             #- /app/node_modules
             - ./frontend_svelte/node_modules:/app/node_modules
+        restart: unless-stopped
         networks:
             - dev_network
         command: 
             # sh -c "/bin/sh"
             sh -c "npm install && npm run dev"
 
+    redis:
+        container_name: dev_redis
+        image: redis/redis-stack:7.2.0-v6
+        env_file:
+            - ./backendAPI/src/.env
+        volumes:
+            - dev-redis-data:/data
+        ports:
+            # redis-stack-server port:
+            # - "6379:6379"
+            # redisInsight port:
+            - "8001:8001"
+        restart: unless-stopped
+        networks:
+            - dev_network
+
 volumes:
     dev-postgres-data:
     dev-pgadmin-data:
     dev-app-data:
+    dev-redis-data:
 
 networks:
     dev_network:

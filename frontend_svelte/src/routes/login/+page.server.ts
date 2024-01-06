@@ -1,3 +1,25 @@
+import MicrosoftOauth from '$lib/server/oauth';
+import type { PageServerLoad } from './$types';
+import { redirect } from '@sveltejs/kit';
+
+export const load: PageServerLoad = async ( { url } ) => {
+	const client = MicrosoftOauth.getInstance()
+  let loginUrl: string
+  try {
+    loginUrl = await client.signIn( url.origin );
+    // console.log("login - server - loginUrl");
+    // console.log(loginUrl);
+  } catch (err) {
+    console.error("login - server - sign in redirect failed");
+    console.error(err);
+    throw err;
+  }
+  redirect(302, loginUrl);
+	// return { keyvaultHealth: configuration.keyvault_health, url: url.toString() };
+};
+
+
+
 // import { app_config } from '$lib/server/config';
 // import { error } from '@sveltejs/kit';
 // import type { PageServerLoad } from './$types';
@@ -18,7 +40,7 @@
 
 // };
 
-console.log("Hello from routes/login/+page.server.ts");
+// console.log("Hello from routes/login/+page.server.ts");
 
 // import { postBackend, getBackend } from '$lib/backend';
 // import { user_store } from '$lib/stores';

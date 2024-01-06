@@ -28,17 +28,19 @@
 
 <script lang="ts">
 	import '../app.css';
-	import { onMount } from 'svelte';
+	// import { onMount } from 'svelte';
 	import { user_store } from '$lib/stores';
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
-	import Authentication from '$lib/oauth.ts';
-	import { auth_instance_store } from '$lib/stores.ts';
+	// import Authentication from '$lib/oauth.ts';
+	// import { auth_instance_store } from '$lib/stores.ts';
 	// import { createAuthentication } from '$lib/oauth.ts';
 	import type { LayoutData } from './$types';
 	// import Guard from '$components/Guard.svelte';
-import { microsoft_account_store } from '$lib/stores.ts';
-import type { User } from 'src/types.d.ts';
+
+	// TBD: Get back to this later
+	// import { microsoft_account_store } from '$lib/stores.ts';
+	// import type { User } from 'src/types.d.ts';
 
 	export let data: LayoutData;
 
@@ -47,63 +49,63 @@ import type { User } from 'src/types.d.ts';
 	// 	createAuthentication();
 	// }
 
-	const createAuthentication = async () => {
-		if ($auth_instance_store === undefined) {
-			const authInstance = new Authentication(data.client_id, data.authority);
-			await authInstance.initialize();
-			// console.log('layout - client - created a new authInstance')
-			auth_instance_store.set(authInstance);
-			return authInstance;
-			// console.log('layout - client - auth_instance_store')
-			// console.log($auth_instance_store)
-		}
-	}
+	// const createAuthentication = async () => {
+	// 	if ($auth_instance_store === undefined) {
+	// 		// const authInstance = new Authentication(data.client_id, data.authority);
+	// 		// await authInstance.initialize();
+	// 		// console.log('layout - client - created a new authInstance')
+	// 		auth_instance_store.set(authInstance);
+	// 		return authInstance;
+	// 		// console.log('layout - client - auth_instance_store')
+	// 		// console.log($auth_instance_store)
+	// 	}
+	// }
 	// createAuthentication();
 	// const auth = $auth_instance_store;
-	onMount( async () => {
+	// onMount( async () => {
 		// auth_instance_store.set(auth);
-		const auth = await createAuthentication();
+		// const auth = await createAuthentication();
 		// const auth = $auth_instance_store;
 		// if($auth_instance_store){
 		// 	console.log('layout - client - onMount - auth_instance_store')
 		// 	console.log($auth_instance_store)
 		// }
 
-		if( auth && auth.msalInstance ) {
-			// console.log('layout - client - get microsoft account')
-			try {
-				// const user = await auth.msalInstance.getAccount();
-				// console.log('layout - client - onMount - auth.msalInstance')
-				// console.log(auth.msalInstance)
-				// TBD: switch to using auth.getAccount()
-				// const microsoft_user = await auth.msalInstance.getAllAccounts();
-				const microsoft_user = await auth.getAccount();
-				// console.log('layout - client - onMount - user')
-				// console.log(microsoft_user)
-				if (microsoft_user){
-					microsoft_account_store.set(microsoft_user);
-					const user: User = {
-						loggedIn: true,
-						email: microsoft_user.username,
-						name: microsoft_user.name
-					}
-					user_store.set(user);
-				}
-				// const redirectResponse = await auth.msalInstance.handleRedirectPromise()
-				// console.log('layout - client - onMount - handleRedirectPromise')
-				// console.log(redirectResponse)
-				// microsoft_account_store.set(user);
-				// console.log('layout - client - user')
-				// console.log(user)
-			} catch (error) {
-				console.log('layout - client - error')
-				// console.log(error);
-				throw error;
-			}
-		}
+		// if( auth && auth.msalInstance ) {
+		// 	// console.log('layout - client - get microsoft account')
+		// 	try {
+		// 		// const user = await auth.msalInstance.getAccount();
+		// 		// console.log('layout - client - onMount - auth.msalInstance')
+		// 		// console.log(auth.msalInstance)
+		// 		// TBD: switch to using auth.getAccount()
+		// 		// const microsoft_user = await auth.msalInstance.getAllAccounts();
+		// 		const microsoft_user = await auth.getAccount();
+		// 		// console.log('layout - client - onMount - user')
+		// 		// console.log(microsoft_user)
+		// 		if (microsoft_user){
+		// 			microsoft_account_store.set(microsoft_user);
+		// 			const user: User = {
+		// 				loggedIn: true,
+		// 				email: microsoft_user.username,
+		// 				name: microsoft_user.name
+		// 			}
+		// 			user_store.set(user);
+		// 		}
+		// 		// const redirectResponse = await auth.msalInstance.handleRedirectPromise()
+		// 		// console.log('layout - client - onMount - handleRedirectPromise')
+		// 		// console.log(redirectResponse)
+		// 		// microsoft_account_store.set(user);
+		// 		// console.log('layout - client - user')
+		// 		// console.log(user)
+		// 	} catch (error) {
+		// 		console.log('layout - client - error')
+		// 		// console.log(error);
+		// 		throw error;
+		// 	}
+		// }
 		// console.log('layout - client - onMount - end - auth')
 		// console.log(auth)
-	})
+	// })
 
 	if ($user_store?.loggedIn) {
 		user_store.set(data.user);
@@ -128,12 +130,14 @@ import type { User } from 'src/types.d.ts';
 			<!-- <NavButton url="/user" link="User" /> -->
 			{#if !$user_store?.loggedIn}
 				<!-- <NavButton url="/register" link="Register" invert /> -->
-				<NavButton url="/login" link="Login" />
+				<!-- data-sveltekit-preload-data="false" -->
+				<NavButton pre-load=false url="/login" link="Login" />
 			{:else}
 				<UserButton />
 				<!-- needs to redirect to /home and delete session information -->
 				<!-- TBD: write tests for logout -->
-				<NavButton url="/logout" link="Logout" />
+				<!-- data-sveltekit-preload-data="false" -->
+				<NavButton pre_load="false" url="/logout" link="Logout" />
 			{/if}
 		</div>
 	</div>

@@ -1,7 +1,7 @@
 // handle the backend API calls
 // import type { User } from 'src/types.d.ts';
 
-import { getAccessToken } from "./oauth";
+// import { getAccessToken } from "./server/oauth";
 
 // const host = 'http://host.docker.internal:8000';
 // const host = 'http://backend_api:80';
@@ -15,9 +15,10 @@ const host = `http://${process.env.BACKEND_HOST}:80`;
 // const host = 'http://localhost:8660'
 
 export const getBackend = async (url: string) => {
-	const accessToken = await getAccessToken(["User.Read"]);
+	// const accessToken = await getAccessToken(["User.Read"]);
 	// console.log("backend - getBackend - accessToken");
 	// console.log(accessToken);
+	const accessToken = null
 	const headers = {
 		'Content-Type': 'application/json',
 		Authorization: `Bearer ${accessToken}` 

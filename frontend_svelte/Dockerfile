@@ -1,8 +1,13 @@
 FROM node:20.10.0-alpine3.19 AS build
 WORKDIR /app
+ARG REDIS_HOST
+ARG REDIS_PORT
+ARG REDIS_SESSION_DB
+ARG REDIS_PASSWORD
 COPY package*.json svelte.config.js ./
 RUN npm install
 COPY . .
+# RUN printenv
 RUN npm run build
 # CMD ["sh" "-c"]
 

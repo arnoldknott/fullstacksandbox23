@@ -18,6 +18,8 @@ services:
             - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
             - REDIS_HOST=$REDIS_HOST
             - REDIS_PORT=$REDIS_PORT
+            - REDIS_SESSION_DB=$REDIS_SESSION_DB
+            - REDIS_PASSWORD=$REDIS_PASSWORD
             - MONGODB_HOST=$MONGODB_HOST
             - MONGODB_PORT=$MONGODB_PORT
         networks:
@@ -46,14 +48,42 @@ services:
     frontend_svelte:
         build:
             target: build
+            args:
+                - REDIS_HOST=$REDIS_HOST
+                - REDIS_PORT=$REDIS_PORT
+                - REDIS_SESSION_DB=$REDIS_SESSION_DB
+                - REDIS_PASSWORD=$REDIS_PASSWORD
+        environment:
+            - REDIS_HOST=$REDIS_HOST
+            - REDIS_PORT=$REDIS_PORT
+            - REDIS_SESSION_DB=$REDIS_SESSION_DB
+            - REDIS_PASSWORD=$REDIS_PASSWORD
         networks:
             - test_network
         command: 
-            npm run dev
+            sh -c "npm install && npm run dev"
+            # npm run dev
+
+    redis:
+        container_name: test_redis
+        image: redis/redis-stack:7.2.0-v6
+        environment:
+            - REDIS_ARGS=$REDIS_ARGS
+        volumes:
+            - test-redis-data:/data
+        # environment:
+            # - REDIS_HOST=$REDIS_HOST
+            # - REDIS_PORT=$REDIS_PORT
+        networks:
+            - test_network
+
+    
+        
 
 volumes:
     test-postgres-data:
     test-app-data:
+    test-redis-data:
 
 networks:
     test_network:

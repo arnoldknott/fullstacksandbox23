@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import type { User } from 'src/types.d.ts';
 // import type { PublicClientApplication } from '@azure/msal-browser';
-import type { Authentication } from './oauth';
+import type { Authentication } from './server/oauth';
 import type { AccountInfo } from '@azure/msal-browser';
 
 // TBD. consider moving app configuration here:
