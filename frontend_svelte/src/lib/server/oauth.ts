@@ -41,7 +41,7 @@ class MicrosoftOauth {
     let authCodeUrl: string
     try {
       // const authCodeUrl = await MicrosoftOauth.msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
-      console.log("oauth - Authentication - signIn - msalConfClient");
+      // console.log("oauth - Authentication - signIn - msalConfClient");
       authCodeUrl = await this.msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
     } catch (err) {
       console.error("oauth - Authentication - signIn failed");
