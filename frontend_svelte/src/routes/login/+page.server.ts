@@ -4,6 +4,8 @@ import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ( { url } ) => {
   const oauth = await MicrosoftOauth.create();
+  // console.log("login - server - oauthClientCreated");
+  // console.log(oauth);
 	// const client = MicrosoftOauth.getInstance()
   let loginUrl: string
   try {

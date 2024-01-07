@@ -17,6 +17,11 @@ class MicrosoftOauth {
       },
     }
     this.msalConfClient = new ConfidentialClientApplication(msalConfig);
+    // console.log('oauth - init - msalConfClient initialized with');
+    // console.log('oauth - init - msalConfClient - clientId');
+    // console.log(msalConfig.auth.clientId);
+    // console.log('oauth - init - msalConfClient - authority');
+    // console.log(msalConfig.auth.authority);
   }
 
   static async create() {
@@ -36,6 +41,7 @@ class MicrosoftOauth {
     let authCodeUrl: string
     try {
       // const authCodeUrl = await MicrosoftOauth.msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
+      console.log("oauth - Authentication - signIn - msalConfClient");
       authCodeUrl = await this.msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
     } catch (err) {
       console.error("oauth - Authentication - signIn failed");

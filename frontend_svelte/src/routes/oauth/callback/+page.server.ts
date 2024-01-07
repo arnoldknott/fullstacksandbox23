@@ -35,13 +35,13 @@ export const load: PageServerLoad = async ( { url, cookies } ) => {
 
       // TBD: add expiry!
       const cache = new Cache();
-      await cache.setSession(sessionId, '.', JSON.stringify(authenticationResult));
+      await cache.setSession(sessionId, '.', authenticationResult);
     
       // httpOnly and secure are true by default from sveltekit (https://kit.svelte.dev/docs/types#public-types-cookies)
       // secure is disabled for localhost, but enabled for all other domains
       // TBD: add expiry!
       // TBD: consider restricting path to /(protected)?
-      cookies.set('session_id', sessionId, {path: '/', httpOnly: true, sameSite: 'strict' });
+      cookies.set('session_id', sessionId, {path: '/', httpOnly: true, sameSite: false });//sameSite: 'strict' });
     } catch (err) {
       console.error("Callback - server - create session failed");
       console.error(err);
