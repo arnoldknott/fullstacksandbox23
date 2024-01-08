@@ -7,31 +7,15 @@ import type { AuthenticationResult } from '@azure/msal-node';
 
 
 export const load: PageServerLoad = async ( { url, cookies, request } ) => {
-  // console.log("callback - server - locals");
-  // console.log(locals);
-  // console.log("callback - server - request");
-  // console.log(request);
-
   const userAgent = request.headers.get('user-agent');
-  // console.log("callback - server - userAgent");
-  // console.log(userAgent);
-  // console.log(JSON.stringify(userAgent?.data, null, 2));
   const referer = request.headers.get('referer');
-  // console.log("callback - server - referer");
-  // console.log(referer);
   const connection = request.headers.get('connection');
-  // console.log("callback - server - connection");
-  // console.log(connection);
   try {
     // Acquire tokens with the code from Microsoft Identity Platform
     let authenticationResult: AuthenticationResult;
     try {
       const code = url.searchParams.get("code");
-      // console.log("callback - server - code");
-      // console.log(code);
       authenticationResult = await getTokens( code, url.origin );
-      // console.log("callback - server - tokens");
-      // console.log(authenticationResult);
     } catch (err) {
       console.error("Callback - server - getTokens failed");
       console.error(err);
@@ -42,10 +26,6 @@ export const load: PageServerLoad = async ( { url, cookies, request } ) => {
     // Create a session, store authenticationResult in the cache, and set the session cookie
     try {
       const sessionId = uuidv4();
-      // console.log("callback - server - sessionId");
-      // console.log(sessionId);
-      // console.log("callback - server - authenticationResult");
-      // console.log(authenticationResult);
       const account = authenticationResult.account;
       // TBD: add expiry!
       if (account){
@@ -64,7 +44,6 @@ export const load: PageServerLoad = async ( { url, cookies, request } ) => {
       // httpOnly and secure are true by default from sveltekit (https://kit.svelte.dev/docs/types#public-types-cookies)
       // secure is disabled for localhost, but enabled for all other domains
       // TBD: add expiry!
-      // TBD: consider restricting path to /(protected)?
       cookies.set('session_id', sessionId, {path: '/', httpOnly: true, sameSite: false });//sameSite: 'strict' });
     } catch (err) {
       console.error("Callback - server - create session failed");
@@ -78,8 +57,4 @@ export const load: PageServerLoad = async ( { url, cookies, request } ) => {
     throw err;
   }
   redirect(302, '/');
-	// return { keyvaultHealth: configuration.keyvault_health, url: url.toString() };
 };
-
-
-// console.log("Implement redirect to the desired page or the default page here in oauth/callback/+page.server.ts");

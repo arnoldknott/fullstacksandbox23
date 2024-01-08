@@ -12,9 +12,4 @@
 <button class="m-4 rounded bg-blue-400 p-2" on:click={logUserStore}
 	>Current $user_store -> console</button
 >
-<button class="m-4 rounded bg-blue-400 p-2" on:click={logMicrosoftAccountStore}
-	>Current $microsoft_account_store -> console</button
->
 <code><pre>{JSON.stringify($user_store, null, ' ')}</pre></code>
-<br>
-<code><pre>{JSON.stringify($microsoft_account_store, null, ' ')}</pre></code>

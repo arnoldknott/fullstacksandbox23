@@ -30,6 +30,9 @@
 	// });
 </script>
 
+Login
+
+<!-- Keep for now, as it's a good example for user input! -->
 
 <!-- <script lang="ts">
 	import { goto } from '$app/navigation';

@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 dotenv.config();
-// TBD: replace with import { API_KEY } from '$env/static/private';?
 
 
 import { ManagedIdentityCredential } from "@azure/identity";
@@ -42,7 +41,5 @@ export const app_config = async () => {
 		configuration.api_scope = process.env.API_SCOPE;
 		configuration.redis_password = process.env.REDIS_PASSWORD;
 	};
-	// console.log("config - configuration")
-	// console.log(configuration);
 return configuration;
 };
