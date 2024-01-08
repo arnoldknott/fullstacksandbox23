@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { user_store } from '$lib/stores';
-	import { microsoft_account_store } from '$lib/stores';
 	const logUserStore = () => {
 		console.log($user_store);
 	};
