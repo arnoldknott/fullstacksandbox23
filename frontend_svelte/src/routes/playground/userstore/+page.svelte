@@ -4,9 +4,6 @@
 	const logUserStore = () => {
 		console.log($user_store);
 	};
-	const logMicrosoftAccountStore = () => {
-		console.log($microsoft_account_store);
-	};
 </script>
 
 <button class="m-4 rounded bg-blue-400 p-2" on:click={logUserStore}

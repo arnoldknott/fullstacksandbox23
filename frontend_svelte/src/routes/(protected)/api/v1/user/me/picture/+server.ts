@@ -1,4 +1,4 @@
-import { error, redirect, type RequestHandler } from '@sveltejs/kit';
+import { error, type RequestHandler } from '@sveltejs/kit';
 import { getMicrosoftGraphBlob } from '$lib/server/microsoft_graph';
 
 export const GET: RequestHandler = async ({ locals, setHeaders }): Promise<Response> => { 

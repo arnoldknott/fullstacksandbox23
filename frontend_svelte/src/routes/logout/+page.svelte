@@ -3,15 +3,15 @@ import { onMount } from 'svelte';
 // import { signOut } from '$lib/oauth.js';
 // import type { PageData } from './$types';
 // export let data: PageData;
-import { microsoft_account_store } from '$lib/stores.js';
-import { user_store } from '$lib/stores.js';
+// import { microsoft_account_store } from '$lib/stores.js';
+// import { user_store } from '$lib/stores.js';
 
-let origin = 'undefined'
-if (typeof window !== 'undefined') {
-	origin = location.origin
-	// console.log('location', location)
-	// console.log('host', origin)
-}
+// let origin = 'undefined'
+// if (typeof window !== 'undefined') {
+// 	origin = location.origin
+// 	// console.log('location', location)
+// 	// console.log('host', origin)
+// }
 
 // const auth = $auth_instance_store
 // console.log('login - client - auth')

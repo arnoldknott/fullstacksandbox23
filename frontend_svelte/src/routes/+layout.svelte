@@ -9,8 +9,8 @@
 	// import type { User } from 'src/types.d.ts';
 
 	export let data: LayoutData;
-	console.log('layout - client - data')
-	console.log(data)
+	// console.log('layout - client - data')
+	// console.log(data)
 	// console.log('layout - client - $page.data')
 	// console.log($page.data)
 

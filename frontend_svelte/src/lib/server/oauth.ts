@@ -1,5 +1,5 @@
 import { app_config } from './config';
-import { ConfidentialClientApplication, type AuthenticationResult, type TokenCache, type AccountInfo } from '@azure/msal-node';
+import { ConfidentialClientApplication, type AuthenticationResult, type AccountInfo } from '@azure/msal-node';
 
 const configuration = await app_config();
 const scopes = ["User.Read"];
@@ -72,6 +72,7 @@ export const getAccessToken = async ( account: AccountInfo): Promise<string> => 
 export const signOut = async ( ): Promise<void> => {
   // TBD: implement logout
   try {
+    // implement logout
   } catch (err) {
     console.error("oauth - Logout failed: ", err);
     throw err

@@ -7,9 +7,9 @@ import type { AuthenticationResult } from '@azure/msal-node';
 
 
 export const load: PageServerLoad = async ( { url, cookies, request } ) => {
-  const userAgent = request.headers.get('user-agent');
-  const referer = request.headers.get('referer');
-  const connection = request.headers.get('connection');
+  // const userAgent = request.headers.get('user-agent');
+  // const referer = request.headers.get('referer');
+  // const connection = request.headers.get('connection');
   try {
     // Acquire tokens with the code from Microsoft Identity Platform
     let authenticationResult: AuthenticationResult;

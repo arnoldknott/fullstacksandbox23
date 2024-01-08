@@ -27,7 +27,7 @@ const useSessionClient = async <T = void>(callback: (...args: unknown[]) => Prom
 
 export const setSession = async (sessionId: string, path: string, sessionData: Session): Promise<boolean> => {
   const authDataString = JSON.stringify(sessionData);
-  let status = await useSessionClient(async function(this: typeof redisClient): Promise<string> {
+  const status = await useSessionClient(async function(this: typeof redisClient): Promise<string> {
     const result = await this.json.set(sessionId, path, authDataString);
     await this.expire(sessionId, sessionTimeOut)
     return result;
