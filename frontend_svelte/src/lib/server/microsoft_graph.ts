@@ -10,17 +10,13 @@ export const getMicrosoftGraphData = async ( account: AccountInfo, endpoint: str
       Authorization: `Bearer ${accessToken}`
     }
   });
-  // console.log("microsoft_graph - getMicrosoftGraph - response");
-  // console.log(response )
-  // console.log( response.body)
-  // return response
   const data = await response.json();
-  console.log("microsoft_graph - getMicrosoftGraph - data");
-  console.log( data );
+  // console.log("microsoft_graph - getMicrosoftGraph - data");
+  // console.log( data );
   return data
 }
 
-export const getMicrosoftGraphBlob = async ( account: AccountInfo, endpoint: string ): Promise<Blob> => {
+export const getMicrosoftGraphBlob = async ( account: AccountInfo, endpoint: string ): Promise<Response> => {
   const accessToken = await getAccessToken( account);
   const response = await fetch(`${ms_graph_api_base_uri}/${endpoint}`, {
     headers: {
@@ -31,10 +27,18 @@ export const getMicrosoftGraphBlob = async ( account: AccountInfo, endpoint: str
   // console.log(response )
   // console.log( response.body)
   // return response
-  const file = await response.blob();
-  console.log("microsoft_graph - getMicrosoftGraph - blob");
-  console.log( file );
-  return file
+  // const file = await response.blob();
+  // console.log("microsoft_graph - getMicrosoftGraph - blob");
+  // console.log( file );
+  // console.log("=> microsoft_graphBlob - getMicrosoftGraph - response");
+  // console.log(response);
+  console.log("=> microsoft_graphBlob - getMicrosoftGraph - response headers - Content-Type");
+  console.log( response.headers.get('Content-Type') );
+  console.log("=> microsoft_graphBlob - getMicrosoftGraph - response headers - Content-Length");
+  console.log( response.headers.get('Content-Length') );
+  console.log("=> microsoft_graphBlob - getMicrosoftGraph - response headers - transfer-encoding");
+  console.log( response.headers.get('transfer-encoding') );
+  return response
 }
 
 

@@ -42,6 +42,8 @@ export const handle = async ({ event, resolve }) => {
         path: "/",
         expires: new Date(0),
       });
+      console.log("hooks - server - locals after session expired");
+      console.log(event.locals);
       redirect(307, "/");
     } else {
       // console.log("hooks - server - session");
@@ -52,7 +54,7 @@ export const handle = async ({ event, resolve }) => {
   }
   // } else {
   //   console.error("hooks - server - getSession failed");
-  //   throw new Error("Sesssion not found in Cache");
+  //   throw new Error("Session not found in Cache");
   // }
 
   // console.log("hooks - server - logCache");

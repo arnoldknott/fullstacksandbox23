@@ -16,6 +16,7 @@ const msalConfig = {
     // https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-node-samples/on-behalf-of-distributed-cache
     // implementation of on-behalf-of:
     // https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-node-samples/on-behalf-of
+    // But not strictly necessary: right now the cache is in a protected network.
   },
 }
 

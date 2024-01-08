@@ -5,24 +5,23 @@ import { getMicrosoftGraphData, getMicrosoftGraphBlob } from '$lib/server/micros
 
 export const load: LayoutServerLoad = async ({ locals }) => {// TBD. add types here!
   try {
-    if (locals.sessionData){
+    if (!locals.sessionData){
+      console.error("layout - server - getMicrosoftGraph - userProfile - failed");
+      redirect(307, "/");
+    } else {
       const account = locals.sessionData.account;
       const userProfile = await getMicrosoftGraphData(account, '/me');
-      console.log("layout - server - userProfile");
-      console.log(userProfile);
-      const userPictureBlob = await getMicrosoftGraphBlob(account, '/me/photo/$value');
-      const userPicture = URL.createObjectURL(userPictureBlob);// TBD - do this on the client!!
-      console.log("layout - server - pictureUrl");
-      console.log(userPicture);
+      // console.log("layout - server - userProfile");
+      // console.log(userProfile);
       return {
         // TBD move this to another +layout.server.ts in nested layouts, because we don't need this on very response - especially the picture is a lot of data!
-        userProfile: userProfile,
-        userPictureBlob: userPicture
+        userProfile: userProfile,// this stays here - universal for all pages -> passes from server to client.
+        // userPictureBlob: userPicture// this goes to a protected endpoint from where the client can fetch it.
       };
     }
   } catch {
     console.error("layout - server - getMicrosoftGraph - userProfile - failed");
-    redirect(307, "/");
+    // throw error(500, "Getting user profile from Microsoft Graph failed")
   }
   // console.log("layout - server - locals");
   // console.log(locals);
