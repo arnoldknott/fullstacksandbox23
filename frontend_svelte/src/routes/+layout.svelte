@@ -43,7 +43,8 @@
 	// import type { User } from 'src/types.d.ts';
 
 	export let data: LayoutData;
-
+	console.log('layout - client - data')
+	console.log(data)
 
 	// if ($auth_instance_store === undefined) {
 	// 	createAuthentication();
@@ -122,6 +123,7 @@
 			<NavButton url="/" link="Home" />
 			<NavButton url="/playground" link="Playground" />
 			<NavButton url="/protectedResource" link="Protected" />
+			{ data.userProfile.displayName }
 			<!-- <Guard redirect="/">
 				<NavButton url="/dashboard" link="Dashboard" />
 			</Guard> -->

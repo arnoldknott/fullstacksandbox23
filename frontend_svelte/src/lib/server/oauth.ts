@@ -1,5 +1,5 @@
 import { app_config } from './config';
-import { ConfidentialClientApplication, type AuthenticationResult, type TokenCache } from '@azure/msal-node';
+import { ConfidentialClientApplication, type AuthenticationResult, type TokenCache, type AccountInfo } from '@azure/msal-node';
 
 const configuration = await app_config();
 const scopes = ["User.Read"];
@@ -72,6 +72,24 @@ export const getTokens = async(code: string | null, origin: string): Promise<Aut
   }
 }
 
+export const getAccessToken = async ( account: AccountInfo): Promise<string> => {
+  const response = await msalConfClient.acquireTokenSilent({
+    scopes: scopes,
+    account: account,
+  });
+  const accessToken = response.accessToken;
+  return accessToken
+}
+
+// export const getTokens = async(): Promise<void> => {
+//   try {
+//     const response = await msalConfClient.acquireTokenSilent({
+//       scopes: scopes,
+//       account: accounts[0],
+//       // });
+//   }
+// }
+
 // This logs the cache of all users to the server console
 // does not include the tokens, but gives an indication of, how many active caches there are
 // export const logCache = async (): Promise<TokenCache> => { 
@@ -84,29 +102,29 @@ export const getTokens = async(code: string | null, origin: string): Promise<Aut
 //   return tokenCache
 // }
 
-export const getTokensFromCache = async (): Promise<void> => {
-  try {
-    // const tokenCache = msalConfClient.getTokenCache();
-    // console.log("oauth - Authentication - GetTokenFromCache - tokenCache");
-    // console.log(tokenCache);
-    // const accounts = await tokenCache.getAllAccounts();
-    // console.log("oauth - Authentication - GetTokenFromCache - accounts");
-    // console.log(accounts);
-    // const response = await msalConfClient.acquireTokenSilent({
-    //   // scopes: ["User.Read"],
-    //   scopes: scopes,
-    //   // TBD: accounts are not available here! Get from Cache!!
-    //   account: accounts[0],
-    // });
-    // console.log("oauth - Authentication - TokenCache - response");
-    // console.log(response);
-    // return response;
-  } catch (err) {
-    console.error("oauth - GetAccessToken failed");
-    console.error(err);
-    throw err
-  }
-}
+// export const getTokensFromCache = async (): Promise<void> => {
+//   try {
+//     // const tokenCache = msalConfClient.getTokenCache();
+//     // console.log("oauth - Authentication - GetTokenFromCache - tokenCache");
+//     // console.log(tokenCache);
+//     // const accounts = await tokenCache.getAllAccounts();
+//     // console.log("oauth - Authentication - GetTokenFromCache - accounts");
+//     // console.log(accounts);
+//     // const response = await msalConfClient.acquireTokenSilent({
+//     //   // scopes: ["User.Read"],
+//     //   scopes: scopes,
+//     //   // TBD: accounts are not available here! Get from Cache!!
+//     //   account: accounts[0],
+//     // });
+//     // console.log("oauth - Authentication - TokenCache - response");
+//     // console.log(response);
+//     // return response;
+//   } catch (err) {
+//     console.error("oauth - GetAccessToken failed");
+//     console.error(err);
+//     throw err
+//   }
+// }
 
 export const signOut = async ( ): Promise<void> => {
   try {

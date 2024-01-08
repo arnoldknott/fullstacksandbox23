@@ -6,22 +6,22 @@ import { redirect } from '@sveltejs/kit';
 import type { AuthenticationResult } from '@azure/msal-node';
 
 
-export const load: PageServerLoad = async ( { url, cookies, locals, request } ) => {
+export const load: PageServerLoad = async ( { url, cookies, request } ) => {
   // console.log("callback - server - locals");
   // console.log(locals);
-  console.log("callback - server - request");
-  console.log(request);
+  // console.log("callback - server - request");
+  // console.log(request);
 
   const userAgent = request.headers.get('user-agent');
-  console.log("callback - server - userAgent");
-  console.log(userAgent);
+  // console.log("callback - server - userAgent");
+  // console.log(userAgent);
   // console.log(JSON.stringify(userAgent?.data, null, 2));
   const referer = request.headers.get('referer');
-  console.log("callback - server - referer");
-  console.log(referer);
+  // console.log("callback - server - referer");
+  // console.log(referer);
   const connection = request.headers.get('connection');
-  console.log("callback - server - connection");
-  console.log(connection);
+  // console.log("callback - server - connection");
+  // console.log(connection);
   try {
     // Acquire tokens with the code from Microsoft Identity Platform
     let authenticationResult: AuthenticationResult;
@@ -44,10 +44,17 @@ export const load: PageServerLoad = async ( { url, cookies, locals, request } ) 
       const sessionId = uuidv4();
       // console.log("callback - server - sessionId");
       // console.log(sessionId);
+      // console.log("callback - server - authenticationResult");
+      // console.log(authenticationResult);
       const account = authenticationResult.account;
       // TBD: add expiry!
-      if (account ){
-        await setSession(sessionId, '.', account);
+      if (account){
+        const userAgent = request.headers.get('user-agent');
+        const session = {
+        account: account,
+        userAgent: userAgent || '',
+        }
+        await setSession(sessionId, '.', session);
       } else { 
         console.error("Callback - server - Account not found");
         throw new Error("Callback - server - account is null");

@@ -1,5 +1,4 @@
 import type { AccountInfo } from '@azure/msal-node';
-import type UserAgent from 'user-agents';
 
 export type User = {
 	email: string;
@@ -22,5 +21,5 @@ export type Configuration = {
 
 export type Session = {
 	account: AccountInfo;
-	userAgent: UserAgent;
+	userAgent: string;
 }
