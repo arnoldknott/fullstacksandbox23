@@ -1,121 +1,125 @@
 import { app_config } from './config';
-import { ConfidentialClientApplication, type AuthenticationResult } from '@azure/msal-node';
+import { ConfidentialClientApplication, type AuthenticationResult, type TokenCache } from '@azure/msal-node';
 
-class MicrosoftOauth {
-  msalConfClient!: ConfidentialClientApplication
+const configuration = await app_config();
+const scopes = ["User.Read"];
 
-  private constructor( ) { }
-
-  private async init() {
-    const configuration = await app_config();
-
-    const msalConfig = {
-      auth: {
-        clientId: configuration.app_reg_client_id,
-        authority: configuration.azure_authority, 
-        clientSecret: configuration.app_client_secret,
-      },
-    }
-    this.msalConfClient = new ConfidentialClientApplication(msalConfig);
-    // console.log('oauth - init - msalConfClient initialized with');
-    // console.log('oauth - init - msalConfClient - clientId');
-    // console.log(msalConfig.auth.clientId);
-    // console.log('oauth - init - msalConfClient - authority');
-    // console.log(msalConfig.auth.authority);
-  }
-
-  static async create() {
-    const oauth = new MicrosoftOauth();
-    await oauth.init();
-    return oauth;
-  }
-
-  async signIn( origin: string): Promise<string> {
-    // if (!MicrosoftOauth.msalConfClient) {
-    //   MicrosoftOauth.msalConfClient = MicrosoftOauth.getInstance();
-    // }
-    const authCodeUrlParameters = {
-      scopes: ["User.Read"],
-      redirectUri: `${origin}/oauth/callback`
-    };
-    let authCodeUrl: string
-    try {
-      // const authCodeUrl = await MicrosoftOauth.msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
-      // console.log("oauth - Authentication - signIn - msalConfClient");
-      authCodeUrl = await this.msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
-    } catch (err) {
-      console.error("oauth - Authentication - signIn failed");
-      console.error(err);
-      throw err;
-    }
-    // console.log("oauth - Authentication - signIn - authCodeUrl");
-    // console.log(authCodeUrl);
-    return authCodeUrl;
-  }
-
-  async getTokens(code: string | null, scopes: string[] = [], origin: string): Promise<AuthenticationResult> {
-    if (!this.msalConfClient) {
-      throw new Error("oauth - GetAccessToken failed - no msalConfClient");
-    }
-    if (!code) {
-      throw new Error("oauth - GetAccessToken failed - no code");
-    }
-    try {
-      const response = await this.msalConfClient.acquireTokenByCode({
-        code: code,
-        scopes: scopes,
-        redirectUri: `${origin}/oauth/callback`,
-      });
-      // console.log("oauth - Authentication - GetAccessToken - response");
-      // console.log(response);
-      return response;
-    } catch (err) {
-      console.error("oauth - GetAccessToken failed");
-      console.error(err);
-      throw err
-    }
-  }
-  async getTokensFromCache(scopes: string[] = []): Promise<AuthenticationResult> {
-    if (!this.msalConfClient) {
-      throw new Error("oauth - GetTokenCache failed - no msalConfClient");
-    }
-    try {
-
-      const tokenCache = this.msalConfClient.getTokenCache();
-      // console.log("oauth - Authentication - GetTokenCache - tokenCache");
-      // console.log(tokenCache);
-      const accounts = await tokenCache.getAllAccounts();
-      // console.log("oauth - Authentication - GetTokenCache - accounts");
-      // console.log(accounts);
-      const response = await this.msalConfClient.acquireTokenSilent({
-        // scopes: ["User.Read"],
-        scopes: scopes,
-        // TBD: accounts are not available here! Get from Cache!!
-        account: accounts[0],
-      });
-      // console.log("oauth - Authentication - TokenCache - response");
-      // console.log(response);
-      return response;
-    } catch (err) {
-      console.error("oauth - GetAccessToken failed");
-      console.error(err);
-      throw err
-    }
-  }
-
-  async signOut( ): Promise<void> {
-    try {
-      await this.msalConfClient.clearCache();
-    } catch (err) {
-      console.error("oauth - Logout failed: ", err);
-      throw err// error(404, 'Logout failed')
-    }
-  
-  }
-  
+const msalConfig = {
+  auth: {
+    clientId: configuration.app_reg_client_id,
+    authority: configuration.azure_authority, 
+    clientSecret: configuration.app_client_secret,
+    scopes: scopes
+    // Configure persisting the cache to Redis - as soon as Redis is encrypted!
+    // https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-node/docs/caching.md#persistent-cache
+    // implementation of on-behalf-of-with-distributed-cache:
+    // https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-node-samples/on-behalf-of-distributed-cache
+    // implementation of on-behalf-of:
+    // https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-node-samples/on-behalf-of
+  },
 }
 
-export default MicrosoftOauth;
+const msalConfClient = new ConfidentialClientApplication(msalConfig);
+// console.log('oauth - init - msalConfClient initialized with');
+// console.log('oauth - init - msalConfClient - clientId');
+// console.log(msalConfig.auth.clientId);
+// console.log('oauth - init - msalConfClient - authority');
+// console.log(msalConfig.auth.authority);
+
+export const signIn = async ( origin: string): Promise<string> => {
+  const authCodeUrlParameters = {
+    scopes: ["User.Read"],
+    redirectUri: `${origin}/oauth/callback`
+  };
+  let authCodeUrl: string
+  try {
+    // const authCodeUrl = await MicrosoftOauth.msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
+    // console.log("oauth - Authentication - signIn - msalConfClient");
+    authCodeUrl = await msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
+  } catch (err) {
+    console.error("oauth - Authentication - signIn failed");
+    console.error(err);
+    throw err;
+  }
+  // console.log("oauth - Authentication - signIn - authCodeUrl");
+  // console.log(authCodeUrl);
+  return authCodeUrl;
+}
+
+export const getTokens = async(code: string | null, origin: string): Promise<AuthenticationResult> =>  {
+  if (!code) {
+    throw new Error("oauth - GetAccessToken failed - no code");
+  }
+  try {
+    const response = await msalConfClient.acquireTokenByCode({
+      code: code,
+      scopes: scopes,
+      redirectUri: `${origin}/oauth/callback`,
+    });
+    // console.log("oauth - Authentication - GetAccessToken - response");
+    // console.log(response);
+    const tokenCache = msalConfClient.getTokenCache();
+    // console.log("oauth - Authentication - GetToken - tokenCache");
+    // console.log(tokenCache);
+    const accounts = await tokenCache.getAllAccounts();
+    // console.log("oauth - Authentication - GetToken - accounts");
+    // console.log(accounts);
+    return response;
+  } catch (err) {
+    console.error("oauth - GetAccessToken failed");
+    console.error(err);
+    throw err
+  }
+}
+
+// This logs the cache of all users to the server console
+// does not include the tokens, but gives an indication of, how many active caches there are
+// export const logCache = async (): Promise<TokenCache> => { 
+//   const tokenCache = msalConfClient.getTokenCache();
+//   console.log("oauth - Authentication - logCache - tokenCache");
+//   console.log(tokenCache);
+//   const accounts = await tokenCache.getAllAccounts();
+//   console.log("oauth - Authentication - logCache - accounts");
+//   console.log(accounts);
+//   return tokenCache
+// }
+
+export const getTokensFromCache = async (): Promise<void> => {
+  try {
+    // const tokenCache = msalConfClient.getTokenCache();
+    // console.log("oauth - Authentication - GetTokenFromCache - tokenCache");
+    // console.log(tokenCache);
+    // const accounts = await tokenCache.getAllAccounts();
+    // console.log("oauth - Authentication - GetTokenFromCache - accounts");
+    // console.log(accounts);
+    // const response = await msalConfClient.acquireTokenSilent({
+    //   // scopes: ["User.Read"],
+    //   scopes: scopes,
+    //   // TBD: accounts are not available here! Get from Cache!!
+    //   account: accounts[0],
+    // });
+    // console.log("oauth - Authentication - TokenCache - response");
+    // console.log(response);
+    // return response;
+  } catch (err) {
+    console.error("oauth - GetAccessToken failed");
+    console.error(err);
+    throw err
+  }
+}
+
+export const signOut = async ( ): Promise<void> => {
+  try {
+    // await msalConfClient.clearCache();
+    // just remove this one entry - not the whole cache!
+  } catch (err) {
+    console.error("oauth - Logout failed: ", err);
+    throw err// error(404, 'Logout failed')
+  }
+
+}
+
+// export default MicrosoftOauth;
 
 // Not good: this is singleton gets stored on the server without being attached to the user
 // Bob might be able to get to Alice's version of Singleton, and therefore could access the 

@@ -31,6 +31,10 @@
 		{
 			name: 'Core',
 			url: '/core'
+		},
+		{
+			name: 'UserAgent',
+			url: '/user_agent'
 		}
 	];
 </script>

@@ -1,3 +1,6 @@
+import type { AccountInfo } from '@azure/msal-node';
+import type UserAgent from 'user-agents';
+
 export type User = {
 	email: string;
 	name?: string;
@@ -16,3 +19,8 @@ export type Configuration = {
 	redis_session_db: string;
 	redis_password: string;
 };
+
+export type Session = {
+	account: AccountInfo;
+	userAgent: UserAgent;
+}

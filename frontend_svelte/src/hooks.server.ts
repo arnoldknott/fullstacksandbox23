@@ -1,17 +1,32 @@
 /** @type {import('@sveltejs/kit').Handle} */
 // import { signIn } from '$lib/server/security';
+// import { logCache } from '$lib/server/oauth';
 import { error } from '@sveltejs/kit';
 
 export const handle = async ({ event, resolve }) => {
   // console.log(event);
   // console.log(event.url.origin);
   // console.log(event.route.id);
-  if(event.route.id?.includes("(protected)") ){
-    // signIn(event.url.origin);
-    // console.log("detected protected route");
+
+  const session = event.cookies.get("session_id");
+
+  if(!session && event.route.id?.includes("(protected)") ){
     throw error(401, "Access denied")
-    // return new Response("Access denied", { status: 401, headers: { Location: "/login" } });
-  };
+  }
+
+  // console.log("hooks - server - logCache");
+  // await logCache();
+
+  // try {
+  //   await getTokensFromCache()
+  //   // console.log("callback - server - tokens");
+  //   // console.log(tokens);
+  // } catch (err) {
+  //   console.error("hooks - server - getTokensFromCache failed");
+  //   console.error(err);
+  //   throw err;
+  // }
+
   const response = await resolve(event);
   return response;
 }
