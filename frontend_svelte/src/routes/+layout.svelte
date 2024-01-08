@@ -123,7 +123,9 @@
 			<NavButton url="/" link="Home" />
 			<NavButton url="/playground" link="Playground" />
 			<NavButton url="/protectedResource" link="Protected" />
-			{ data.userProfile.displayName }
+			{#if data?.userProfile}
+				{ data.userProfile.displayName }
+			{/if}
 			<!-- <Guard redirect="/">
 				<NavButton url="/dashboard" link="Dashboard" />
 			</Guard> -->
