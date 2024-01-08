@@ -2,6 +2,7 @@
 	// /** @type {import('./$types').PageData} */
 	import type { PageData } from './$types';
 	export let data: PageData;
+	const schema = data.body;
 </script>
 
 <div class="mx-5">
@@ -10,4 +11,4 @@
 	</h1>
 </div>
 
-<code><pre>{JSON.stringify(data, null, ' ')}</pre></code>
+<code><pre>{JSON.stringify(schema, null, ' ')}</pre></code>

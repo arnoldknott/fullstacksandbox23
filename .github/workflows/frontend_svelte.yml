@@ -28,6 +28,10 @@ jobs:
       REDIS_PORT: ${{ vars.REDIS_PORT }}
       MONGODB_HOST: ${{ vars.MONGODB_HOST }}
       MONGODB_PORT: ${{ vars.MONGODB_PORT }}
+      APP_REG_CLIENT_ID: ${{ secrets.APP_REG_CLIENT_ID }}
+      APP_CLIENT_SECRET: ${{ secrets.APP_CLIENT_SECRET }}
+      AZURE_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
+      API_SCOPE: ${{ secrets.API_SCOPE }}
     steps:
       - uses: actions/checkout@v4
       - name: Build
@@ -121,7 +125,7 @@ jobs:
       packages: read
     environment: stage
     env:
-      AZURE_IDENTITY_PROVIDER_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
+      AZURE_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
     steps:
       # - name: echos github.event.after variable
       #   run: |
@@ -155,7 +159,7 @@ jobs:
             --secrets \
               "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
               "app-reg-client-id"=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF \
-              "azure-authority=${{ env.AZURE_IDENTITY_PROVIDER_AUTHORITY }}"
+              "azure-authority=${{ env.AZURE_AUTHORITY }}"
           sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
@@ -164,6 +168,7 @@ jobs:
             --set-env-vars \
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
+              "BACKEND_HOST=${{ vars.AZURE_CONTAINERAPP_BACKEND }}" \
               "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
               "AZURE_AUTHORITY=secretref:azure-authority"
         # Set by terraform already in container: "app-reg-client-id=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF" \
@@ -191,7 +196,7 @@ jobs:
       packages: read
     environment: prod
     env:
-      AZURE_IDENTITY_PROVIDER_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
+      AZURE_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
     steps:
       # - name: echos github.event.after variable
       #   run: |
@@ -224,7 +229,8 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --secrets \
               "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
-              "azure-authority=${{ env.AZURE_IDENTITY_PROVIDER_AUTHORITY }}"
+              "app-reg-client-id"=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF \
+              "azure-authority=${{ env.AZURE_AUTHORITY }}"
           sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
@@ -233,6 +239,8 @@ jobs:
             --set-env-vars \
               "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
+              "BACKEND_HOST=${{ vars.AZURE_CONTAINERAPP_BACKEND }}" \
+              "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
               "AZURE_AUTHORITY=secretref:azure-authority"
         # Set by terraform already in container: "app-reg-client-id=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF" \
         # TBD: consider deleting all existing environment variables before setting the new ones?

@@ -2,6 +2,7 @@
 	export let url: string;
 	export let link: string;
 	export let invert: boolean = false;
+	export let pre_load: boolean = "";
 
 	const formatButton = () => {
 		if (invert) {
@@ -12,7 +13,7 @@
 	};
 </script>
 
-<a href={url}>
+<a data-sveltekit-preload-data={pre_load} href={url}>
 	<button type="button" class={formatButton()}>
 		{link}
 	</button>

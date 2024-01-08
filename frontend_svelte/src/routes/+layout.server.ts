@@ -1,37 +1,20 @@
-import { app_config } from '$lib/server/config';
-import { error } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
+import { getMicrosoftGraphData } from '$lib/server/microsoft_graph';
 
-export const load: LayoutServerLoad = async ( ) => {
-	const configuration =  await app_config()
-  // console.log("login - server - configuration");
-  // console.log(configuration)
+export const load: LayoutServerLoad = async ({ locals }) => {
   try {
-    const azure_authority = configuration.azure_authority;
-    const app_reg_client_id = configuration.app_reg_client_id;
-    return { authority: azure_authority, client_id: app_reg_client_id, myLayoutVariable: "myLayoutVariable" };
+    if (!locals.sessionData){
+      console.error("layout - server - getMicrosoftGraph - userProfile - failed");
+      redirect(307, "/");
+    } else {
+      const account = locals.sessionData.account;
+      const userProfile = await getMicrosoftGraphData(account, '/me');
+      return {
+        userProfile: userProfile
+      };
+    }
+  } catch {
+    console.error("layout - server - getMicrosoftGraph - userProfile - failed");
   }
-  catch (err) {
-    console.error(err);
-    throw error(404, 'App configuration unavailable');
-  }
-
 };
-
-// console.log("Hello from src/routes/+layout.server.ts");
-
-// import type { LayoutServerLoad } from './$types';
-// import { getBackend } from '$lib/backend';
-// import type { User } from 'src/types.d.ts';
-
-// export const load: LayoutServerLoad = async ({ cookies }) => {
-// 	let user: User = {
-// 		loggedIn: false,
-// 		email: ''
-// 	};
-// 	if (cookies.get('accessToken')) {
-// 		user = await getBackend('/api/user/me', cookies.get('accessToken'));
-// 		user.loggedIn = true;
-// 	}
-// 	return user;
-// };

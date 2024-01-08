@@ -1,24 +1,24 @@
 <script lang="ts">
-	import { get_user_picture } from '$lib/microsoft_graph';
-	import { onMount } from 'svelte';
+	// import { get_user_picture } from '$lib/microsoft_graph';
+	// import { onMount } from 'svelte';
 	let pictureUrl
 
-	onMount(async () => {
-		try {
-			const response = await get_user_picture();
-			// console.log('UserButton - get_user_picture - reponse')
-			// console.log(response)
-			if (response.ok) {
-				const blob = await response.blob();
-				pictureUrl = URL.createObjectURL(blob);
-				// console.log('UserButton - get_user_picture - pictureUrl')
-				// console.log(pictureUrl)
-			}
-		} catch (error) {
-			console.log('UserButton - get_user_picture - error')
-			console.log(error)
-		}
-	})
+	// onMount(async () => {
+	// 	try {
+	// 		// const response = await get_user_picture();
+	// 		// console.log('UserButton - get_user_picture - reponse')
+	// 		// console.log(response)
+	// 		if (response.ok) {
+	// 			const blob = await response.blob();
+	// 			pictureUrl = URL.createObjectURL(blob);
+	// 			// console.log('UserButton - get_user_picture - pictureUrl')
+	// 			// console.log(pictureUrl)
+	// 		}
+	// 	} catch (error) {
+	// 		console.log('UserButton - get_user_picture - error')
+	// 		console.log(error)
+	// 	}
+	// })
 </script>
 
 <a class="h-10 w-10 py-2" href="/user">

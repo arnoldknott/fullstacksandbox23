@@ -1,113 +1,42 @@
-<!-- <script context="module" lang="ts">
-		import Authentication from '$lib/oauth.js';
-		import { auth_instance_store } from '$lib/stores.js';
-
-	// import type { RequestHandler } from '@sveltejs/kit';
-	// import type { LayoutData } from './$types';
-	// import { auth_instance_store } from '$lib/stores.js';
-	// import { user_store } from '$lib/stores.js';
-	// import Authentication from '$lib/oauth.js';
-
-	// export const get: RequestHandler<LayoutData> = async () => {
-	// 	const authInstance = auth_instance_store.get();
-	// 	const user = user_store.get();
-	// 	console.log('layout - server - authInstance', authInstance)
-	// 	console.log('layout - server - user', user)
-	// 	return {
-	// 		body: {
-	// 			client_id: authInstance.client_id,
-	// 			authority: authInstance.authority,
-	// 			loggedIn: user.loggedIn,
-	// 			user: user.user
-	// 		}
-	// 	};
-	// };
-</script> -->
-
-
-
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { user_store } from '$lib/stores';
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
-	import Authentication from '$lib/oauth.ts';
-	import { auth_instance_store } from '$lib/stores.ts';
-	// import { createAuthentication } from '$lib/oauth.ts';
 	import type { LayoutData } from './$types';
 	// import Guard from '$components/Guard.svelte';
-import { microsoft_account_store } from '$lib/stores.ts';
-import type { User } from 'src/types.d.ts';
+	// import type { User } from 'src/types.d.ts';
 
 	export let data: LayoutData;
+	// console.log('layout - client - data')
+	// console.log(data)
+	// console.log('layout - client - $page.data')
+	// console.log($page.data)
 
-
-	// if ($auth_instance_store === undefined) {
-	// 	createAuthentication();
-	// }
-
-	const createAuthentication = async () => {
-		if ($auth_instance_store === undefined) {
-			const authInstance = new Authentication(data.client_id, data.authority);
-			await authInstance.initialize();
-			// console.log('layout - client - created a new authInstance')
-			auth_instance_store.set(authInstance);
-			return authInstance;
-			// console.log('layout - client - auth_instance_store')
-			// console.log($auth_instance_store)
-		}
-	}
-	// createAuthentication();
-	// const auth = $auth_instance_store;
-	onMount( async () => {
-		// auth_instance_store.set(auth);
-		const auth = await createAuthentication();
-		// const auth = $auth_instance_store;
-		// if($auth_instance_store){
-		// 	console.log('layout - client - onMount - auth_instance_store')
-		// 	console.log($auth_instance_store)
-		// }
-
-		if( auth && auth.msalInstance ) {
-			// console.log('layout - client - get microsoft account')
-			try {
-				// const user = await auth.msalInstance.getAccount();
-				// console.log('layout - client - onMount - auth.msalInstance')
-				// console.log(auth.msalInstance)
-				// TBD: switch to using auth.getAccount()
-				// const microsoft_user = await auth.msalInstance.getAllAccounts();
-				const microsoft_user = await auth.getAccount();
-				// console.log('layout - client - onMount - user')
-				// console.log(microsoft_user)
-				if (microsoft_user){
-					microsoft_account_store.set(microsoft_user);
-					const user: User = {
-						loggedIn: true,
-						email: microsoft_user.username,
-						name: microsoft_user.name
-					}
-					user_store.set(user);
-				}
-				// const redirectResponse = await auth.msalInstance.handleRedirectPromise()
-				// console.log('layout - client - onMount - handleRedirectPromise')
-				// console.log(redirectResponse)
-				// microsoft_account_store.set(user);
-				// console.log('layout - client - user')
-				// console.log(user)
-			} catch (error) {
-				console.log('layout - client - error')
-				// console.log(error);
-				throw error;
-			}
-		}
-		// console.log('layout - client - onMount - end - auth')
-		// console.log(auth)
-	})
-
+	// TBD use $page.data for that - that's the standard store, and user logged in information is relevant everywhere.
 	if ($user_store?.loggedIn) {
 		user_store.set(data.user);
 	}
+
+	let userPictureURL: URL = undefined;
+	onMount( async () => {
+		const response = await fetch('/api/v1/user/me/picture', {method: 'GET'});
+		if (!response.ok && response.status !== 200) {
+			console.log("layout - userPictureURL - response not ok");
+			console.log(response);
+		} else {
+			const pictureBlob = await response.blob()
+			if (pictureBlob.size === 0) {
+				console.log("layout - userPictureURL - no User picture available");
+				console.log(pictureBlob);
+			} else {
+				userPictureURL = URL.createObjectURL(pictureBlob);
+			}
+		}
+
+	})
+
 
 	// if (data?.loggedIn) {
 	// 	$user_store = data;
@@ -120,20 +49,31 @@ import type { User } from 'src/types.d.ts';
 			<NavButton url="/" link="Home" />
 			<NavButton url="/playground" link="Playground" />
 			<NavButton url="/protectedResource" link="Protected" />
+			{#if data?.userProfile}
+				{ data.userProfile.displayName }
+			{/if}
 			<!-- <Guard redirect="/">
 				<NavButton url="/dashboard" link="Dashboard" />
 			</Guard> -->
 		</div>
 		<div class="flex space-x-4">
 			<!-- <NavButton url="/user" link="User" /> -->
+			<!-- Move this to component user button -->
+			<!-- Implemnt check for user picture size and show svg instead, if no user picture available -->
+			{#if userPictureURL}
+				<img class="h-10 w-10 rounded-full" src={userPictureURL} alt="you" />
+			{/if}
+			<!-- Change this to using $page.data -> user -->
 			{#if !$user_store?.loggedIn}
 				<!-- <NavButton url="/register" link="Register" invert /> -->
-				<NavButton url="/login" link="Login" />
+				<!-- data-sveltekit-preload-data="false" -->
+				<NavButton pre_load=false url="/login" link="Login" />
 			{:else}
 				<UserButton />
 				<!-- needs to redirect to /home and delete session information -->
 				<!-- TBD: write tests for logout -->
-				<NavButton url="/logout" link="Logout" />
+				<!-- data-sveltekit-preload-data="false" -->
+				<NavButton pre_load="false" url="/logout" link="Logout" />
 			{/if}
 		</div>
 	</div>
@@ -141,4 +81,7 @@ import type { User } from 'src/types.d.ts';
 
 <main>
 	<slot />
+	{#if userPictureURL}
+		<img class="h-100 w-100" src={userPictureURL} alt="you" />
+	{/if}
 </main>
