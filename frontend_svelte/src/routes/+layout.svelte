@@ -81,7 +81,12 @@
 
 <main>
 	<slot />
+	From fetch:
 	{#if userPictureURL}
 		<img class="h-100 w-100" src={userPictureURL} alt="you" />
 	{/if}
+	Directly from API - works also without client side JavaScript:
+	<!-- {#if userPictureURL} -->
+		<img src="/api/v1/user/me/picture" alt="you" />
+	<!-- {/if} -->
 </main>
