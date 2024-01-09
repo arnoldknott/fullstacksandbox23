@@ -12,32 +12,11 @@ export const GET: RequestHandler = async ({ locals, setHeaders }): Promise<Respo
 
 
       if (response && response.status === 200) {
-        // TBD: remove all this logging - just for debugging purposes!
-        // console.log(" api - v1 - user - me - picture - server - response");
-        // console.log(response);
         const pictureBlob = await response.blob();
-        console.log(" api - v1 - user - me - picture - server - responseFile");
-        console.log(pictureBlob);
-        const pictureURL = URL.createObjectURL(pictureBlob);
-        console.log(" api - v1 - user - me - picture - server - responseURL");
-        console.log(pictureURL);
-        // remove to here!
-        // setHeaders({ 
-        //   'Content-Type': response.headers.get('Content-Type')  || 'text/plain',
-        //   'Content-Length': response.headers.get('Content-Length') || '0',
-        // });
         setHeaders(
           {'Content-Type': 'image/jpeg'},
         )
-
         return new Response(pictureBlob)
-          // {
-          //   headers: {
-          //     'Content-Type': response.headers.get('Content-Type')  || 'text/plain',
-          //     'Content-Length': response.headers.get('Content-Length') || '0',
-          //   }
-          // }
-        // return response;
       } else {
         console.error("api - v1 - user - me - picture - server - getMicrosoftGraph - userProfile - failed");
         console.log("User Picture status code: " + response.status);
