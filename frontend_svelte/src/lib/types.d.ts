@@ -7,7 +7,7 @@ export type User = {
 };// TBD: remove
 
 export type Configuration = {
-	azure_authority: string;
+	az_authority: string;
 	backend_host: string;
 	app_reg_client_id: string;
 	app_client_secret: string;
