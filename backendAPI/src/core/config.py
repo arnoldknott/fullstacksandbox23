@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 def get_variable(variable_name):
     """Returns a function that retrieves a variable from the environment."""
 
-    # note: the existence of the environment variable AZURE_KEYVAULT_URL is used to determine whether to use keyvault or not.
+    # note: the existence of the environment variable AZURE_KEYVAULT_URL (previous AZ_KEYVAULT_HOST - potentially switch back?)  is used to determine whether to use keyvault or not.
     if os.getenv("AZURE_KEYVAULT_HOST"):
         # credential = DefaultAzureCredential()
         # credential = ManagedIdentityCredential(client_id=os.getenv("AZURE_CLIENT_ID"))
