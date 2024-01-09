@@ -1,18 +1,16 @@
 <script lang="ts">
-  // /** @type {import('./$types').PageData} */
 	import type { PageData } from './$types';
+  import JsonData from '$components/JsonData.svelte';
+  import Title from '$components/Title.svelte';
 	export let data: PageData;
   const demo_resources = data.body;
-  // import { onMount } from 'svelte';
-  // import { getBackend } from '$lib/backend';
-
-  // let authVerification
-  // onMount(async () => {
-  //   authVerification = await getBackend('/api/v1/core/health');
-  //   console.log('authVerification', authVerification);
-  // });
-
-
+  console.log(data);
+  // console.log(demo_resources);
 </script>
 
-<code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code>
+<!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->
+
+{#each demo_resources as demo_resource}
+  <Title>{demo_resource.name}</Title>
+  <JsonData data={demo_resource} />
+{/each}

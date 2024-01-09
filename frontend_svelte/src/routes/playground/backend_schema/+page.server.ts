@@ -1,13 +1,16 @@
-import { getBackend } from '$lib/backend';
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { app_config} from '$lib/server/config';
+const config = await app_config();
 
-// TBD: add type PageServerLoad here?
 export const load: PageServerLoad = async () => {
-	const schema = await getBackend('/openapi.json');
-
-	if (schema === null) {
-		return error(404, 'Unavailable');
+	// TBD: consider removing the try catch block
+	try {
+		const response = await fetch(`${config.backend_origin}/openapi.json`);
+		const schema = await response.json();
+		return { body: schema };
+	} catch (err) {
+		console.error('playground - backend_schema - server - load - failed');
+		console.error(err);
+		throw err;
 	}
-	return { body: schema };
 };

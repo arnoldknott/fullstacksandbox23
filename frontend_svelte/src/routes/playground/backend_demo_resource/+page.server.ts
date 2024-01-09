@@ -1,14 +1,10 @@
-import { getBackend } from '$lib/backend';
-// import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { app_config } from '$lib/server/config';
 
-// TBD: add type PageServerLoad here?
+const config = await app_config();
+
 export const load: PageServerLoad = async () => {
-	const demo_resource = await getBackend('/api/v1/demo_resource');
-  // console.log("demo resource - server - health");
-  // console.log(health);
-	// if (health === null) {
-	// 	return error(404, 'Unavailable');
-	// }
-	return { body: demo_resource };
+	const response = await fetch(`${config.backend_origin}/api/v1/demo_resource`);
+	const demoResources = await response.json();
+	return { body: demoResources };
 };

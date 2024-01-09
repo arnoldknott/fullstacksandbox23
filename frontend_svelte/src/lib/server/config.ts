@@ -7,13 +7,25 @@ import { SecretClient } from "@azure/keyvault-secrets";
 import type { Configuration } from '$lib/types';
 
 
+// TBD: turn into a class:
+// export default class AppConfig{
+// 	constructor(){
+// 		const config = app_config()
+// 		Object.assign(this, config);
+// 	}
+// }
+
+
+
 export const app_config = async () => {
 	const configuration: Configuration = {
-		backend_host: process.env.BACKEND_HOST,
 		api_scope: '',
 		app_reg_client_id: '',
 		app_client_secret: '',
 		azure_authority: process.env.AZURE_AUTHORITY,
+		backend_host: process.env.BACKEND_HOST,
+		backend_origin: `http://${process.env.BACKEND_HOST}:80`,
+		ms_graph_base_uri: 'https://graph.microsoft.com/v1.0',
 		redis_host: process.env.REDIS_HOST,
 		redis_port: process.env.REDIS_PORT,
 		redis_session_db: process.env.REDIS_SESSION_DB,
@@ -49,3 +61,4 @@ export const app_config = async () => {
 	};
 return configuration;
 };
+
