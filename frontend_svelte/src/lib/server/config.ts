@@ -37,7 +37,7 @@ export const app_config = async () => {
 		console.log("app_config - process.env.AZ_KEYVAULT_HOST: ");
 		console.log(process.env.AZ_KEYVAULT_HOST);
 		const credential = new ManagedIdentityCredential();
-		const client = new SecretClient(process.env.AZURE_KEYVAULT_HOST, credential);
+		const client = new SecretClient(process.env.AZ_KEYVAULT_HOST, credential);
 		const keyvaultHealth = await client.getSecret('keyvault-health');
 		console.log("app_config - keyvaultHealth: ");
 		console.log(keyvaultHealth);
