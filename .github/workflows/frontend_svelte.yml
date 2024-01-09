@@ -166,7 +166,7 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
             --set-env-vars \
-              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "AZURE_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
               "BACKEND_HOST=${{ vars.AZURE_CONTAINERAPP_BACKEND }}" \
               "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
@@ -237,7 +237,7 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
             --set-env-vars \
-              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "AZURE_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
               "BACKEND_HOST=${{ vars.AZURE_CONTAINERAPP_BACKEND }}" \
               "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
