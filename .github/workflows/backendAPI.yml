@@ -225,7 +225,7 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA \
             --set-env-vars \
-              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "AZURE_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
               "POSTGRES_HOST=secretref:postgres-host" \
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
@@ -464,7 +464,7 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA \
             --set-env-vars \
-              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "AZURE_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
               "POSTGRES_HOST=secretref:postgres-host" \
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
