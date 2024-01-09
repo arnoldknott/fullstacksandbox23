@@ -166,11 +166,13 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
             --set-env-vars \
-              "AZURE_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
               "BACKEND_HOST=${{ vars.AZURE_CONTAINERAPP_BACKEND }}" \
               "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
               "AZURE_AUTHORITY=secretref:azure-authority"
+        # TBD: this is weird: here the variable is named AZ_KEYVAULT_HOST, but in the container it is named AZURE_KEYVAULT_HOST
+        # when renaming it here - conatinerapp fails to start with managed identity error - cannot get to keyvault!
         # Set by terraform already in container: "app-reg-client-id=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF" \
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # No: don't otherwise the ones set from Terraform get deleted!
@@ -237,7 +239,7 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
             --set-env-vars \
-              "AZURE_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
               "BACKEND_HOST=${{ vars.AZURE_CONTAINERAPP_BACKEND }}" \
               "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
