@@ -21,11 +21,5 @@ export const getMicrosoftGraphBlob = async ( account: AccountInfo, endpoint: str
       Authorization: `Bearer ${accessToken}`
     }
   });
-  console.log("=> microsoft_graphBlob - getMicrosoftGraph - response headers - Content-Type");
-  console.log( response.headers.get('Content-Type') );
-  console.log("=> microsoft_graphBlob - getMicrosoftGraph - response headers - Content-Length");
-  console.log( response.headers.get('Content-Length') );
-  console.log("=> microsoft_graphBlob - getMicrosoftGraph - response headers - transfer-encoding");
-  console.log( response.headers.get('transfer-encoding') );
   return response
 }

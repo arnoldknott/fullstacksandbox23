@@ -20,14 +20,19 @@ export const app_config = async () => {
 		redis_password: ''
 	}
 	if (process.env.AZURE_KEYVAULT_HOST) {
+		console.log("app_config - process.env.AZURE_KEYVAULT_HOST: ");
+		console.log(process.env.AZURE_KEYVAULT_HOST);
 		const credential = new ManagedIdentityCredential();
 		const client = new SecretClient(process.env.AZURE_KEYVAULT_HOST, credential);
 		const keyvaultHealth = await client.getSecret('keyvault-health');
+		console.log("app_config - keyvaultHealth: ");
+		console.log(keyvaultHealth);
+		console.log("app_config - keyvaultHealth.value: ");
+		console.log(keyvaultHealth.value);
 		const appRegClientId = await client.getSecret('app-reg-client-id');
 		const appClientSecret = await client.getSecret('app-client-secret');
 		const apiScope = await client.getSecret('api-scope');
 		const redisPassword = await client.getSecret('redis-password');
-
 		configuration.keyvault_health = keyvaultHealth.value;
 		configuration.app_reg_client_id = appRegClientId.value || '';
 		configuration.app_client_secret = appClientSecret.value || '';
@@ -35,6 +40,7 @@ export const app_config = async () => {
 		configuration.redis_password = redisPassword.value || '';
 	}
 	else {
+		console.log("app_config - process.env.AZURE_KEYVAULT_HOST not set");
 		configuration.keyvault_health = process.env.KEYVAULT_HEALTH;
 		configuration.app_reg_client_id = process.env.APP_REG_CLIENT_ID;
 		configuration.app_client_secret = process.env.APP_CLIENT_SECRET;

@@ -76,7 +76,7 @@ export const getTokens = async(code: string | null, origin: string): Promise<Aut
   }
 }
 
-export const getAccessToken = async ( account: AccountInfo): Promise<string> => {
+export const getAccessToken = async ( account: AccountInfo ): Promise<string> => {
   if (!msalConfClient){
     throw new Error("oauth - Authentication - signIn failed - msalConfClient not initialized");
   }
