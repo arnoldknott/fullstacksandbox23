@@ -236,7 +236,8 @@ jobs:
               "POSTGRES_PASSWORD=secretref:postgres-password"
       # TBD: remove AZ_KEYVAULT_HOST here - coming from terraform now!
       # TBD: remove KEYVAULT_HEALTH here: the point is to read it in the application!
-      # TBD: double check with POSTGRES USER & PSASSWORD - should be coming from Terraform now!
+      # TBD: double check with POSTGRES USER & PSASSWORD - should be coming from Terraform now - but not as environment variable!
+      # TBD: double check with POSTGRES HOST - should be coming from Terraform now!
       # TBD: this is weird: here the variable is named AZ_KEYVAULT_HOST, but in the container it is named AZURE_KEYVAULT_HOST
       # when renaming it here - conatinerapp fails to start with managed identity error - cannot get to keyvault!
       # TBD: this should be ready to go. Remember to put into prod as well!
