@@ -50,8 +50,15 @@ export const signIn = async ( origin: string): Promise<string> => {
   let authCodeUrl: string
   try {
     if (!msalConfClient){
-      console.error("🔥 oauth - Authentication - signIn failed - msalConfClient not initialized");
-      throw new Error("MSAL client not found");
+      try{
+        await createMsalConfClient()
+      } catch (err) {
+        console.error("🔥 oauth - signIn - msalConfClient could not created");
+        throw err;
+      }
+    }
+    if (!msalConfClient){
+      throw new Error("🔥 oauth - signIn failed - msalConfClient not initialized");
     }
     authCodeUrl = await msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
   } catch (err) {
@@ -68,7 +75,15 @@ export const getTokens = async(code: string | null, origin: string): Promise<Aut
   }
   try {
     if (!msalConfClient){
-      throw new Error("🔥 oauth - Authentication - signIn failed - msalConfClient not initialized");
+      try{
+        await createMsalConfClient()
+      } catch (err) {
+        console.error("🔥 oauth - getTokens - msalConfClient could not created");
+        throw err;
+      }
+    }
+    if (!msalConfClient){
+      throw new Error("🔥 oauth - getTokens failed - msalConfClient not initialized");
     }
     const response = await msalConfClient.acquireTokenByCode({
       code: code,
@@ -87,7 +102,15 @@ export const getTokens = async(code: string | null, origin: string): Promise<Aut
 
 export const getAccessToken = async ( sessionData: Session ): Promise<string> => {
   if (!msalConfClient){
-    throw new Error("🔥 oauth - Authentication - signIn failed - msalConfClient not initialized");
+    try{
+      await createMsalConfClient()
+    } catch (err) {
+      console.error("🔥 oauth - getAccessToken - msalConfClient could not created");
+      throw err;
+    }
+  }
+  if (!msalConfClient){
+    throw new Error("🔥 oauth - getAccessToken failed - msalConfClient not initialized");
   }
   const account = sessionData.account;
   const response = await msalConfClient.acquireTokenSilent({
@@ -102,7 +125,7 @@ export const signOut = async ( ): Promise<void> => {
   // TBD: implement logout
   try {
     if (!msalConfClient){
-      throw new Error("🔥 oauth - Authentication - signIn failed - msalConfClient not initialized");
+      throw new Error("🔥 oauth - signIn failed - msalConfClient not initialized");
     }
     // implement logout
   } catch (err) {
