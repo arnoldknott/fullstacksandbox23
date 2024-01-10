@@ -1,20 +1,20 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	export let data: PageData;
-  export let url_client = 'undefined'
+	const backendInformation = data.body;
+  export let urlClient = 'undefined'
   if (typeof window !== 'undefined') {
-    url_client = location.href
+    urlClient = location.href
   }
-  // console.log( host );
 </script>
 
 <div class="mx-5">
 	<h1 class="mx-5 mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
-		Getting health status of environment:
+		Getting health status of backendAPI connection to keyvault:
 	</h1>
 </div>
 
-<code><pre>{JSON.stringify(data.keyvaultHealth, null, ' ')}</pre></code>
+<code><pre>{JSON.stringify(backendInformation.keyvaultHealthBackend, null, ' ')}</pre></code>
 
 <div class="mx-5">
 	<h1 class="mx-5 mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
@@ -22,12 +22,12 @@
 	</h1>
 </div>
 
-<code>{ url_client }</code>
+<code>{ urlClient }</code>
 
 <div class="mx-5">
 	<h1 class="mx-5 mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
-		URL of this page - server side:
+		URL of this page - Svelte server side:
 	</h1>
 </div>
 
-<code>{JSON.stringify(data.url, null, ' ')}</code>
+<code>{JSON.stringify(backendInformation.urlServer, null, ' ')}</code>

@@ -10,7 +10,7 @@ const retrieveSession = async (sessionId: string | null): Promise<Session | void
       await updateSessionExpiry(sessionId);
       return session;
     } else {
-      console.error("hooks - server - getSession failed");
+      console.error("🎣 hooks - server - getSession failed");
     }
   }
 }
@@ -19,17 +19,17 @@ export const handle = async ({ event, resolve }) => {
   const sessionId = event.cookies.get("session_id");
 
   if(!sessionId && event.route.id?.includes("(protected)") ){
-    console.error("hooks - server - access to protected route without session_id");
+    console.error("🎣 hooks - server - access attempt to protected route without session_id");
     redirect (307, "/login");
   } else if (sessionId) {
     const session = await retrieveSession(sessionId);
     if(!session){
-      console.error("hooks - server - session expired");
+      console.error("🎣 hooks - server - session expired");
       event.cookies.delete("session_id", {
         path: "/",
         expires: new Date(0),
       });
-      console.log("hooks - server - locals after session expired");
+      console.log("🎣 hooks - server - locals after session expired");
       console.log(event.locals);
       redirect(307, "/");
     } else {

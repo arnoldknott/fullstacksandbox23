@@ -30,7 +30,7 @@ jobs:
       MONGODB_PORT: ${{ vars.MONGODB_PORT }}
       APP_REG_CLIENT_ID: ${{ secrets.APP_REG_CLIENT_ID }}
       APP_CLIENT_SECRET: ${{ secrets.APP_CLIENT_SECRET }}
-      AZURE_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
+      AZ_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       API_SCOPE: ${{ secrets.API_SCOPE }}
     steps:
       - uses: actions/checkout@v4
@@ -153,23 +153,12 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --mode single
-          az containerapp secret set \
-            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --secrets \
-              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
-              "app-reg-client-id"=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF
-          sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
             --set-env-vars \
-              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
-              "KEYVAULT_HEALTH=secretref:keyvault-health" \
-              "BACKEND_HOST=${{ vars.AZURE_CONTAINERAPP_BACKEND }}" \
-              "APP_REG_CLIENT_ID=secretref:app-reg-client-id"
-
+              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}"
         # az containerapp revision set-mode \
         #   --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
         #   --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
@@ -218,8 +207,8 @@ jobs:
       id-token: write
       packages: read
     environment: prod
-    env:
-      AZURE_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
+    # env:
+    #   AZURE_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
     steps:
       # - name: echos github.event.after variable
       #   run: |
@@ -247,24 +236,12 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --mode single
-          az containerapp secret set \
-            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --secrets \
-              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
-              "app-reg-client-id"=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF \
-              "azure-authority=${{ env.AZURE_AUTHORITY }}"
-          sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
             --set-env-vars \
               "AZURE_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
-              "KEYVAULT_HEALTH=secretref:keyvault-health" \
-              "BACKEND_HOST=${{ vars.AZURE_CONTAINERAPP_BACKEND }}" \
-              "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
-              "AZURE_AUTHORITY=secretref:azure-authority"
         # Set by terraform already in container: "app-reg-client-id=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF" \
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # No: don't otherwise the ones set from Terraform get deleted!

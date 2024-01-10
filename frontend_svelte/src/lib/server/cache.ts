@@ -1,7 +1,8 @@
 import { createClient, type RedisClientType } from "redis";
 // import {} from @types/redis
 import type { Session } from "$lib/types";
-import { app_config } from "./config";
+// import { app_config } from "./config";
+import AppConfig from './config';
 
 const sessionTimeOut = 60*5// TBD: this is 5 minutes only - set to three weeks or so for production!
 
@@ -11,17 +12,18 @@ process.on("exit", () => redisClient?.quit());
 
 const createRedisClient = async () => {
   if (!redisClient){
-    const configuration = await app_config();
+    // const configuration = await app_config();
+    const appConfig = await AppConfig.getInstance();
 
-    const connectionString = `redis://default:${configuration.redis_password}@${configuration.redis_host}:${configuration.redis_port}`;
+    const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
 
     try{
       redisClient = createClient({
-        url: `${connectionString}/${configuration.redis_session_db}`,
+        url: `${connectionString}/${appConfig.redis_session_db}`,
       });
     } catch {
-      console.error("cache - server - createRedisClient - createClient failed");
-      throw new Error("cache - server - createRedisClient - createClient failed");
+      console.error("🥞 cache - server - createRedisClient - createClient failed");
+      throw new Error("🥞 cache - server - createRedisClient - createClient failed");
     }
   }
   redisClient.connect()
@@ -61,8 +63,8 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
     await redisClient?.expire(sessionId, sessionTimeOut)
     return status === 'OK' ? true : false;
   } catch {
-    console.error("cache - server - setSession - redisClient?.json.set failed");
-    throw new Error("cache - server - setSession - redisClient?.json.set failed");
+    console.error("🥞 cache - server - setSession - redisClient?.json.set failed");
+    throw new Error("🥞 cache - server - setSession - redisClient?.json.set failed");
   }
   // const status = await useSessionClient(async function(this: RedisClientType): Promise<string> {
   //   const result = await this.json.set(sessionId, path, authDataString);
@@ -78,15 +80,15 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
     await createRedisClient();
   }
   if (!sessionId) {
-    console.error("cache - server - getSession - sessionId is null");
+    console.error("🥞 cache - server - getSession - sessionId is null");
     throw new Error('Session ID is null');
   }
   try{
     const result = await redisClient?.json.get(sessionId);
     return result ? JSON.parse(result) as Session : undefined;
   } catch {
-    console.error("cache - server - getSession - redisClient?.json.get failed");
-    throw new Error("cache - server - getSession - redisClient?.json.get failed");
+    console.error("🥞 cache - server - getSession - redisClient?.json.get failed");
+    throw new Error("🥞 cache - server - getSession - redisClient?.json.get failed");
   }
   // return await useSessionClient(async function(this: RedisClientType) {
   //   const result = await this.json.get(sessionId);
@@ -99,14 +101,14 @@ export const updateSessionExpiry = async (sessionId: string | null ): Promise<vo
     await createRedisClient();
   }
   if (!sessionId) {
-    console.error("cache - server - updateSessionExpiry - sessionId is null");
+    console.error("🥞 cache - server - updateSessionExpiry - sessionId is null");
     throw new Error('Session ID is null');
   }
   try{
     await redisClient?.expire(sessionId, sessionTimeOut);
   } catch {
-    console.error("cache - server - updateSessionExpiry - redisClient?.expire failed");
-    throw new Error("cache - server - updateSessionExpiry - redisClient?.expire failed");
+    console.error("🥞 cache - server - updateSessionExpiry - redisClient?.expire failed");
+    throw new Error("Session expiry date not updated");
   }
 
   // await useSessionClient(async function(this: RedisClientType) {

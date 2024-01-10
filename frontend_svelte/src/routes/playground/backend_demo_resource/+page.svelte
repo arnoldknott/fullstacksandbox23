@@ -4,8 +4,6 @@
   import Title from '$components/Title.svelte';
 	export let data: PageData;
   const demo_resources = data.body;
-  console.log(data);
-  // console.log(demo_resources);
 </script>
 
 <!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->

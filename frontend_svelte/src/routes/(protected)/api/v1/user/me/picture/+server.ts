@@ -1,12 +1,13 @@
 import { getAccessToken } from '$lib/server/oauth';
-import { app_config } from '$lib/server/config';
 import { error, type RequestHandler } from '@sveltejs/kit';
-const config = await app_config();
+import AppConfig from '$lib/server/config';
+
+const appConfig = await AppConfig.getInstance();
 
 export const GET: RequestHandler = async ({ locals, setHeaders }): Promise<Response> => { 
   try {
     const accessToken = await getAccessToken(locals.sessionData);
-    const response = await fetch(`${config.ms_graph_base_uri}/me/photo/$value`, {
+    const response = await fetch(`${appConfig.ms_graph_base_uri}/me/photo/$value`, {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
