@@ -28,7 +28,7 @@ def get_variable(variable_name):
     if os.getenv("AZ_KEYVAULT_HOST"):
         # credential = DefaultAzureCredential()
         # credential = ManagedIdentityCredential(client_id=os.getenv("AZURE_CLIENT_ID"))
-        credential = ManagedIdentityCredential(os.getenv("AZ_CLIENT_ID"))
+        credential = ManagedIdentityCredential(client_id=os.getenv("AZ_CLIENT_ID"))
         # Following line works, when the environment variable AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET and AZURE_AUTHORITY_HOST are set.
         # credential = EnvironmentCredential()
         logger.info("Accessing keyvault")
