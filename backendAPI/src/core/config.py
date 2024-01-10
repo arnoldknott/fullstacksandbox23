@@ -63,6 +63,12 @@ class Config(BaseSettings):
     POSTGRES_DB: str = os.getenv("POSTGRES_DB")
     POSTGRES_URL: Optional[PostgresDsn] = None  # Field(None, validate_default=True)
 
+    # TBD: set these variables in terraform!
+    REDIS_HOST: str = os.getenv("REDIS_HOST")
+    REDIS_PORT: int = int(os.getenv("REDIS_PORT"))
+    REDIS_JWKS_DB: int = int(get_variable("REDIS_JWKS_DB"))
+    REDIS_PASSWORD: str = get_variable("REDIS_PASSWORD")
+
     @field_validator("POSTGRES_URL")
     @classmethod
     def build_postgres_url(cls, url: Optional[str], values: ValidationInfo) -> Any:

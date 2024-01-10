@@ -1,3 +1,4 @@
+import redis
 from core.config import config
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -23,3 +24,11 @@ async def use_async_session() -> AsyncSession:
     async_session = get_async_session()
     async with async_session() as session:
         yield session
+
+
+redis_jwks = redis.Redis(
+    host=config.REDIS_HOST,
+    port=config.REDIS_PORT,
+    password=config.REDIS_PASSWORD,
+    db=config.REDIS_JWKS_DB,
+)
