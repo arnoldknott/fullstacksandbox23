@@ -25,6 +25,9 @@ jobs:
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       REDIS_HOST: ${{ vars.REDIS_HOST }}
       REDIS_PORT: ${{ vars.REDIS_PORT }}
+      REDIS_JWKS_DB: ${{ vars.REDIS_JWKS_DB }}
+      REDIS_SESSION_DB: ${{ vars.REDIS_SESSION_DB }}
+      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
       MONGODB_HOST: ${{ vars.MONGODB_HOST }}
       MONGODB_PORT: ${{ vars.MONGODB_PORT }}
     steps:

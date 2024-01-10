@@ -90,7 +90,7 @@ export default class AppConfig{
 				const appRegClientId = await client?.getSecret('app-reg-client-id');
 				const appClientSecret = await client?.getSecret('app-client-secret');
 				const apiScope = await client?.getSecret('api-scope');
-				const az_tenant_id = await client?.getSecret('azure_tenant_id');
+				const az_tenant_id = await client?.getSecret('azure-tenant-id');
 				const redisPassword = await client?.getSecret('redis-password');
 				this.keyvault_health = keyvaultHealth?.value;
 				this.app_reg_client_id = appRegClientId?.value || '';
