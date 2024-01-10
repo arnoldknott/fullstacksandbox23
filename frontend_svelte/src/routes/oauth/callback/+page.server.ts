@@ -37,7 +37,7 @@ export const load: PageServerLoad = async ( { url, cookies, request } ) => {
         await setSession(sessionId, '.', session);
       } else { 
         console.error("Callback - server - Account not found");
-        throw new Error("Callback - server - account is null");
+        throw new Error("No account found");
       }
 
     
