@@ -89,13 +89,13 @@ export default class AppConfig{
 				const appRegClientId = await client?.getSecret('app-reg-client-id');
 				const appClientSecret = await client?.getSecret('app-client-secret');
 				const apiScope = await client?.getSecret('api-scope');
-				const az_tenant_id = await client?.getSecret('azure-tenant-id');
+				const azTenantId = await client?.getSecret('azure-tenant-id');
 				const redisPassword = await client?.getSecret('redis-password');
 				this.keyvault_health = keyvaultHealth?.value;
 				this.app_reg_client_id = appRegClientId?.value || '';
 				this.app_client_secret = appClientSecret?.value || '';
 				this.api_scope = apiScope?.value || '';
-				this.az_authority = `https://login.microsoftonline.com/${az_tenant_id?.value}`,
+				this.az_authority = `https://login.microsoftonline.com/${azTenantId?.value}`,
 				this.redis_password = redisPassword?.value || '';
 			} catch (err) {
 				console.error("🥞 app_config - server - updateValues - failed");

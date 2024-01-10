@@ -25,7 +25,7 @@ def get_variable(variable_name):
     """Returns a function that retrieves a variable from the environment."""
 
     # note: the existence of the environment variable AZURE_KEYVAULT_URL is used to determine whether to use keyvault or not.
-    if os.getenv("AZURE_KEYVAULT_HOST"):
+    if os.getenv("AZ_KEYVAULT_HOST"):
         # credential = DefaultAzureCredential()
         # credential = ManagedIdentityCredential(client_id=os.getenv("AZURE_CLIENT_ID"))
         credential = ManagedIdentityCredential()
@@ -41,6 +41,7 @@ def get_variable(variable_name):
 
         def get_variable_inner(variable_name):
             """Returns a variable from the environment."""
+            print(f"=== Getting variable ${variable_name} from keyvault")
             variable_name = variable_name.replace("_", "-").lower()
             return client.get_secret(variable_name).value
 
@@ -67,6 +68,10 @@ class Config(BaseSettings):
     # TBD: set these variables in terraform!
     REDIS_HOST: str = os.getenv("REDIS_HOST")
     REDIS_PORT: int = int(os.getenv("REDIS_PORT"))
+    print("=== REDIS_PORT ===")
+    print(REDIS_PORT)
+    print("=== get_variable('REDIS_REDIS_JWKS_DB') ===")
+    print(get_variable("REDIS_JWKS_DB"))
     REDIS_JWKS_DB: int = int(get_variable("REDIS_JWKS_DB"))
     REDIS_PASSWORD: str = get_variable("REDIS_PASSWORD")
 

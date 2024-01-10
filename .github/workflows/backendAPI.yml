@@ -219,7 +219,6 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --secrets \
               "postgres-host=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/postgres-host,identityref:$IDENTITY_REF" \
-              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/keyvault-health,identityref:$IDENTITY_REF" \
               "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/postgres-user,identityref:$IDENTITY_REF" \
               "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/postgres-password,identityref:$IDENTITY_REF"
           sleep 10
@@ -228,14 +227,17 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA \
             --set-env-vars \
-              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
-              "KEYVAULT_HEALTH=secretref:keyvault-health" \
               "POSTGRES_HOST=secretref:postgres-host" \
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"
       # TBD: remove AZ_KEYVAULT_HOST here - coming from terraform now!
+      # REMOVED NOW: 
+      # "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
       # TBD: remove KEYVAULT_HEALTH here: the point is to read it in the application!
+      # REMOVED NOW HERE: from secret set & set-env-vars respectively:
+      # "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/keyvault-health,identityref:$IDENTITY_REF" \
+      # "KEYVAULT_HEALTH=secretref:keyvault-health" \
       # TBD: double check with POSTGRES USER & PSASSWORD - should be coming from Terraform now - but not as environment variable!
       # TBD: double check with POSTGRES HOST - should be coming from Terraform now!
       # TBD: this is weird: here the variable is named AZ_KEYVAULT_HOST, but in the container it is named AZURE_KEYVAULT_HOST
@@ -462,10 +464,10 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --secrets \
-              "postgres-host=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-host,identityref:$IDENTITY_REF" \
-              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
-              "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-user,identityref:$IDENTITY_REF" \
-              "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/postgres-password,identityref:$IDENTITY_REF"
+              "postgres-host=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/postgres-host,identityref:$IDENTITY_REF" \
+              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/keyvault-health,identityref:$IDENTITY_REF" \
+              "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/postgres-user,identityref:$IDENTITY_REF" \
+              "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/postgres-password,identityref:$IDENTITY_REF"
           sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \

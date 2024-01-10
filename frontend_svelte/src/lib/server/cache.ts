@@ -14,6 +14,12 @@ const createRedisClient = async () => {
   if (!redisClient){
     // const configuration = await app_config();
     const appConfig = await AppConfig.getInstance();
+    console.log("🥞 cache - server - createRedisClient - appConfig.redis_host: ");
+    console.log(appConfig.redis_host);
+    console.log("🥞 cache - server - createRedisClient - appConfig.redis_port: ");
+    console.log(appConfig.redis_port);
+    console.log("🥞 cache - server - createRedisClient - appConfig.redis_session_db: ");
+    console.log(appConfig.redis_session_db);
 
     const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
 
