@@ -5,7 +5,7 @@ import type { PageServerLoad } from "./$types";
 const appConfig = await AppConfig.getInstance();
 
 export const actions = {
-  default: async (event) => {
+  default: async () => {
     await appConfig.updateValues()
   }
 } satisfies Actions

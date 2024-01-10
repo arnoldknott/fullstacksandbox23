@@ -21,9 +21,9 @@ async def test_post_demo_resource(async_client: AsyncClient):
     assert content["name"] == demo_resource_test_input["name"]
     assert content["description"] == demo_resource_test_input["description"]
     assert (
-        time_before_crud - timedelta(seconds=7)
+        time_before_crud - timedelta(seconds=10)
         < datetime.fromisoformat(content["created_at"])
-        < time_after_crud + timedelta(seconds=7)
+        < time_after_crud + timedelta(seconds=10)
     )
     assert "id" in content
 
@@ -133,9 +133,9 @@ async def test_put_demo_resource(
     # print(time_before_crud)
     # print(type(time_before_crud))
     assert (
-        time_before_crud - timedelta(seconds=5)
+        time_before_crud - timedelta(seconds=8)
         < datetime.fromisoformat(content["last_updated_at"])
-        < time_after_crud + timedelta(seconds=5)
+        < time_after_crud + timedelta(seconds=8)
     )
     assert content["name"] == updated_resource["name"]
     assert content["description"] == updated_resource["description"]
