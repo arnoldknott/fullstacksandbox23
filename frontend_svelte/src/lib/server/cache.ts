@@ -27,9 +27,9 @@ const createRedisClient = async () => {
       redisClient = createClient({
         url: `${connectionString}/${appConfig.redis_session_db}`,
       });
-    } catch {
+    } catch (err) {
       console.error("🥞 cache - server - createRedisClient - createClient failed");
-      throw new Error("🥞 cache - server - createRedisClient - createClient failed");
+      throw err
     }
   }
   redisClient.connect()
@@ -68,9 +68,9 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
     const status = await redisClient?.json.set(sessionId, path, authDataString);
     await redisClient?.expire(sessionId, sessionTimeOut)
     return status === 'OK' ? true : false;
-  } catch {
+  } catch (err) {
     console.error("🥞 cache - server - setSession - redisClient?.json.set failed");
-    throw new Error("🥞 cache - server - setSession - redisClient?.json.set failed");
+    throw err
   }
   // const status = await useSessionClient(async function(this: RedisClientType): Promise<string> {
   //   const result = await this.json.set(sessionId, path, authDataString);
@@ -92,9 +92,9 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
   try{
     const result = await redisClient?.json.get(sessionId);
     return result ? JSON.parse(result) as Session : undefined;
-  } catch {
+  } catch (err) {
     console.error("🥞 cache - server - getSession - redisClient?.json.get failed");
-    throw new Error("🥞 cache - server - getSession - redisClient?.json.get failed");
+    throw err
   }
   // return await useSessionClient(async function(this: RedisClientType) {
   //   const result = await this.json.get(sessionId);
@@ -112,9 +112,9 @@ export const updateSessionExpiry = async (sessionId: string | null ): Promise<vo
   }
   try{
     await redisClient?.expire(sessionId, sessionTimeOut);
-  } catch {
+  } catch (err) {
     console.error("🥞 cache - server - updateSessionExpiry - redisClient?.expire failed");
-    throw new Error("Session expiry date not updated");
+    throw err
   }
 
   // await useSessionClient(async function(this: RedisClientType) {
