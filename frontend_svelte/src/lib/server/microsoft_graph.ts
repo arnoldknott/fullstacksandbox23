@@ -1,31 +1,30 @@
-import type { AccountInfo } from "@azure/msal-node";
-import { getAccessToken } from "./oauth";
+// import type { AccountInfo } from "@azure/msal-node";
+// import { getAccessToken } from "./oauth";
+// import type { Session } from "$lib/types"
 
-const ms_graph_api_base_uri = 'https://graph.microsoft.com/v1.0';
+// const ms_graph_api_base_uri = 'https://graph.microsoft.com/v1.0';
 
-export const getMicrosoftGraphData = async ( account: AccountInfo, endpoint: string ): Promise<string> => {
-  const accessToken = await getAccessToken( account);
-  const response = await fetch(`${ms_graph_api_base_uri}/${endpoint}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  });
-  const data = await response.json();
-  return data
-}
+console.log("Hello from totally irrelevant microsoft_graph.ts");
 
-export const getMicrosoftGraphBlob = async ( account: AccountInfo, endpoint: string ): Promise<Response> => {
-  const accessToken = await getAccessToken( account);
-  const response = await fetch(`${ms_graph_api_base_uri}/${endpoint}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  });
-  console.log("=> microsoft_graphBlob - getMicrosoftGraph - response headers - Content-Type");
-  console.log( response.headers.get('Content-Type') );
-  console.log("=> microsoft_graphBlob - getMicrosoftGraph - response headers - Content-Length");
-  console.log( response.headers.get('Content-Length') );
-  console.log("=> microsoft_graphBlob - getMicrosoftGraph - response headers - transfer-encoding");
-  console.log( response.headers.get('transfer-encoding') );
-  return response
-}
+// Another rebuild of the fetch function available in server load functions
+// Just make a worker function, that helps getting accessToken from sessionData
+// export const getMicrosoftGraphData = async ( session: Session, endpoint: string ): Promise<string> => {
+//   const accessToken = await getAccessToken( session );
+//   const response = await fetch(`${ms_graph_api_base_uri}/${endpoint}`, {
+//     headers: {
+//       Authorization: `Bearer ${accessToken}`
+//     }
+//   });
+//   const data = await response.json();
+//   return data
+// }
+
+// export const getMicrosoftGraphBlob = async ( session: Session, endpoint: string ): Promise<Response> => {
+//   const accessToken = await getAccessToken( session);
+//   const response = await fetch(`${ms_graph_api_base_uri}/${endpoint}`, {
+//     headers: {
+//       Authorization: `Bearer ${accessToken}`
+//     }
+//   });
+//   return response
+// }

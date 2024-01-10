@@ -34,7 +34,6 @@
 				userPictureURL = URL.createObjectURL(pictureBlob);
 			}
 		}
-
 	})
 
 
@@ -60,6 +59,8 @@
 			<!-- <NavButton url="/user" link="User" /> -->
 			<!-- Move this to component user button -->
 			<!-- Implemnt check for user picture size and show svg instead, if no user picture available -->
+			<img class="h-10 w-10 rounded-full" src="/api/v1/user/me/picture" alt="you" />
+			WHICH ONE IS FASTER
 			{#if userPictureURL}
 				<img class="h-10 w-10 rounded-full" src={userPictureURL} alt="you" />
 			{/if}
@@ -81,7 +82,4 @@
 
 <main>
 	<slot />
-	{#if userPictureURL}
-		<img class="h-100 w-100" src={userPictureURL} alt="you" />
-	{/if}
 </main>

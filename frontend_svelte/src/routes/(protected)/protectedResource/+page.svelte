@@ -1,8 +1,7 @@
 <script lang="ts">
   import type { PageData } from './$types';
   export let data: PageData;
-  export const fromBackend = new Promise( () => {});
-  console.log(data);
+  // console.log(data);
 </script>
 
 <div class="mx-5">
@@ -11,10 +10,12 @@
   </h1>
 </div>
 
-{#await fromBackend}
+
+{#await data}
   <p>...loading</p>
 {:then data}
-  <p>{data}</p>
+  <code><pre>{JSON.stringify(data.protectedResource, null, ' ')}</pre></code>
 {:catch error}
   <p>{error.message}</p>
 {/await}
+

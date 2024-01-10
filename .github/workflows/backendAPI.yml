@@ -225,13 +225,14 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA \
             --set-env-vars \
-              "AZURE_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
               "POSTGRES_HOST=secretref:postgres-host" \
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"
-      #
+      # TBD: this is weird: here the variable is named AZ_KEYVAULT_HOST, but in the container it is named AZURE_KEYVAULT_HOST
+      # when renaming it here - conatinerapp fails to start with managed identity error - cannot get to keyvault!
       # TBD: this should be ready to go. Remember to put into prod as well!
       - name: Upgrade database
         run: |
@@ -464,7 +465,7 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA \
             --set-env-vars \
-              "AZURE_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
               "KEYVAULT_HEALTH=secretref:keyvault-health" \
               "POSTGRES_HOST=secretref:postgres-host" \
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \

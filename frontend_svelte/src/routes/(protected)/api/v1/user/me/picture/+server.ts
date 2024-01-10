@@ -1,26 +1,33 @@
+import { getAccessToken } from '$lib/server/oauth';
+import { app_config } from '$lib/server/config';
 import { error, type RequestHandler } from '@sveltejs/kit';
-import { getMicrosoftGraphBlob } from '$lib/server/microsoft_graph';
+const config = await app_config();
 
 export const GET: RequestHandler = async ({ locals, setHeaders }): Promise<Response> => { 
   try {
-    if (!locals.sessionData) {
-      console.error("api - v1 - user - me - picture - server - no session data");
-      throw error(401, "No session data!")
-    } else {
-      const account = locals.sessionData.account;
-      const response = await getMicrosoftGraphBlob(account, '/me/photo/$value');
-
-
-      if (response && response.status === 200) {
-        const pictureBlob = await response.blob();
-        setHeaders(
-          {'Content-Type': 'image/jpeg'},
-        )
-        return new Response(pictureBlob)
-      } else {
-        console.error("api - v1 - user - me - picture - server - getMicrosoftGraph - userProfile - failed");
-        console.log("User Picture status code: " + response.status);
+    const accessToken = await getAccessToken(locals.sessionData);
+    const response = await fetch(`${config.ms_graph_base_uri}/me/photo/$value`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
       }
+    })
+
+    // if (!locals.sessionData) {
+    //   console.error("api - v1 - user - me - picture - server - no session data");
+    //   throw error(401, "No session data!")
+    // } else {
+    //   const account = locals.sessionData.account;
+    //   const response = await getMicrosoftGraphBlob(account, '/me/photo/$value');
+
+    if (response && response.status === 200 && response.headers.get('Content-Type') === 'image/jpeg') {
+      const pictureBlob = await response.blob();
+      setHeaders(
+        {'Content-Type': 'image/jpeg'},
+      )
+      return new Response(pictureBlob)
+    } else {
+      console.error("api - v1 - user - me - picture - server - failed");
+      console.log("User Picture status code: " + response.status);
     }
   } catch  {
     console.error("api - v1 - user - me - picture - server - GET - failed");

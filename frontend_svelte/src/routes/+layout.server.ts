@@ -1,20 +1,33 @@
-import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
-import { getMicrosoftGraphData } from '$lib/server/microsoft_graph';
+import { getAccessToken } from '$lib/server/oauth';
+import { app_config } from '$lib/server/config';
 
-export const load: LayoutServerLoad = async ({ locals }) => {
-  try {
-    if (!locals.sessionData){
-      console.error("layout - server - getMicrosoftGraph - userProfile - failed");
-      redirect(307, "/");
-    } else {
-      const account = locals.sessionData.account;
-      const userProfile = await getMicrosoftGraphData(account, '/me');
+const config = await app_config();
+
+export const load: LayoutServerLoad = async ({ locals, request }) => {
+  if(locals.sessionData) {
+    try {
+      const accessToken = await getAccessToken(locals.sessionData);
+      const response = await fetch(`${config.ms_graph_base_uri}/me`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
       return {
-        userProfile: userProfile
+        userProfile: await response.json(),
+        userAgent: request.headers.get('user-agent')
       };
+      // if (!locals.sessionData){
+      //   console.error("layout - server - getMicrosoftGraph - userProfile - failed");
+      //   redirect(307, "/");
+      // } else {
+      //   const account = locals.sessionData.account;
+      //   const userProfile = await getMicrosoftGraphData(account, '/me');
+      //   return {
+      //     userProfile: userProfile
+      //   };
+    } catch {
+      console.error("layout - server - getMicrosoftGraph - userProfile - failed");
     }
-  } catch {
-    console.error("layout - server - getMicrosoftGraph - userProfile - failed");
   }
 };

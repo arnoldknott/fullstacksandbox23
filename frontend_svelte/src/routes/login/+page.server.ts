@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ( { url } ) => {
 };
 
 
-// TBD: good template ofr use with other forms, e.g. chatbot.
+// TBD: good template for use with other forms, e.g. chatbot.
 // // TBD: add type PageServerLoad here?
 // export const actions = {
 // 	default: async ({ cookies, request }) => {

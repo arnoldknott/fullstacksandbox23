@@ -3,13 +3,13 @@ import logging
 from fastapi import HTTPException, Request
 
 # import httpx
-
+## Use pyjwt to decode the tokens!
 
 logger = logging.getLogger(__name__)
 
 
 def get_jwks():
-    """Fetches the JWKS from identity provider"""
+    """Fetches the JWKs from identity provider"""
     # try:
     #     jwks_url = f"https://{AUTH0_DOMAIN}/.well-known/jwks.json"
     #     jwks = httpx.get(jwks_url)
@@ -26,10 +26,13 @@ def validate_token(request: Request):
     # print("=== request.headers ===")
     # print(request.headers)
     try:
-        # token = request.headers.get("Authorization").split("Bearer ")[1]
-        request.headers.get("Authorization").split("Bearer ")[1]
-        # print("=== token ===")
-        # print(token)
+        # request.headers.get("Authorization").split("Bearer ")[1]
+        token = request.headers.get("Authorization").split("Bearer ")[1]
+        if token:
+            print("=== token exists ===")
+            # print(token)
+            # print("=== get_jwks() ===")
+            # print(get_jwks())
     except Exception as e:
         logger.error(f"Token validation failed: ${e}")
         raise HTTPException(status_code=401, detail="Invalid token")

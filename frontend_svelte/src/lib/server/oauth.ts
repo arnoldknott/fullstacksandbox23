@@ -1,5 +1,6 @@
 import { app_config } from './config';
-import { ConfidentialClientApplication, type AuthenticationResult, type AccountInfo } from '@azure/msal-node';
+import { ConfidentialClientApplication, type AuthenticationResult } from '@azure/msal-node';
+import type { Session } from '$lib/types';
 
 const scopes = ["User.Read"];
 
@@ -76,10 +77,11 @@ export const getTokens = async(code: string | null, origin: string): Promise<Aut
   }
 }
 
-export const getAccessToken = async ( account: AccountInfo): Promise<string> => {
+export const getAccessToken = async ( sessionData: Session ): Promise<string> => {
   if (!msalConfClient){
     throw new Error("oauth - Authentication - signIn failed - msalConfClient not initialized");
   }
+  const account = sessionData.account;
   const response = await msalConfClient.acquireTokenSilent({
     scopes: scopes,
     account: account,
