@@ -1,6 +1,7 @@
 import logging
 import os
 from functools import lru_cache
+from time import sleep
 from typing import Any, Optional
 
 from azure.identity import ManagedIdentityCredential
@@ -101,6 +102,24 @@ class Config(BaseSettings):
     # MONGODB_PORT: int = get_variable("MONGODB_PORT")
 
 
+def update_config(tries=0):
+    """Updates the configuration instance waits 5 seconds and retries 10 times if necessary."""
+    logger.info("Updating configuration")
+    try:
+        return Config()
+    except Exception as err:
+        tries += 1
+        if tries < 10:
+            logger.info(
+                f"Try {tries} failed to update configuration, retrying in 5 seconds."
+            )
+            sleep(5)
+            return update_config(tries)
+        else:
+            logger.error(f"Failed to update configuration after {tries} tries.")
+            raise err
+
+
 @lru_cache(maxsize=None)
 def get_config():
     """Returns the configuration instance."""
@@ -108,7 +127,8 @@ def get_config():
     logger.info("Configuration called")
     # configuration = Config()
     # print(f"POSTGRES_DB: {configuration.POSTGRES_DB}")
-    return Config()
+    # return Config()
+    return update_config()
 
 
 config = get_config()

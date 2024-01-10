@@ -81,7 +81,6 @@ export default class AppConfig{
 				const client = await this.connectKeyvault();
 				console.log("📜 app_config - client:");
 				console.log(client);
-				// TBD: delete comment:  PUT THIS BACK IN !!!
 				const keyvaultHealth = await client?.getSecret('keyvault-health');
 				console.log("📜 app_config - keyvaultHealth: ");
 				console.log(keyvaultHealth);
@@ -98,7 +97,6 @@ export default class AppConfig{
 				this.api_scope = apiScope?.value || '';
 				this.az_authority = `https://login.microsoftonline.com/${az_tenant_id?.value}`,
 				this.redis_password = redisPassword?.value || '';
-				// TBD: delete comment: UNTIL HERE
 			} catch (err) {
 				console.error("🥞 app_config - server - updateValues - failed");
 				throw err
