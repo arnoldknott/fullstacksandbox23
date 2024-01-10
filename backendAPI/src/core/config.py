@@ -32,16 +32,17 @@ def get_variable(variable_name):
         # Following line works, when the environment variable AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET and AZURE_AUTHORITY_HOST are set.
         # credential = EnvironmentCredential()
         logger.info("Accessing keyvault")
-        logger.info(f"AZURE_KEYVAULT_HOST: {os.getenv('AZURE_KEYVAULT_HOST')}")
+        print("== AZ_KEYVAULT_HOST ==")
+        print(os.getenv("AZ_KEYVAULT_HOST"))
         client = SecretClient(
             # TBD: check if we need host or URL here?
-            vault_url=os.getenv("AZURE_KEYVAULT_HOST"),
+            vault_url=os.getenv("AZ_KEYVAULT_HOST"),
             credential=credential,
         )
 
         def get_variable_inner(variable_name):
             """Returns a variable from the environment."""
-            print(f"=== Getting variable ${variable_name} from keyvault")
+            logger.info(f"Getting variable ${variable_name} from keyvault")
             variable_name = variable_name.replace("_", "-").lower()
             return client.get_secret(variable_name).value
 
