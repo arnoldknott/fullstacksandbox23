@@ -18,9 +18,14 @@ const retrieveSession = async (sessionId: string | null): Promise<Session | void
 export const handle = async ({ event, resolve }) => {
   const sessionId = event.cookies.get("session_id");
 
-  if(!sessionId && event.route.id?.includes("(protected)") ){
-    console.error("🎣 hooks - server - access attempt to protected route without session_id");
-    redirect (307, "/login");
+  if(!sessionId){
+    if(event.route.id?.includes("(admin)")){
+      console.error("🎣 hooks - server - access attempt to admin route without session_id");
+      redirect (307, "/");
+    } else if (event.route.id?.includes("(protected)")){
+      console.error("🎣 hooks - server - access attempt to protected route without session_id");
+      redirect (307, "/login");
+    }
   } else if (sessionId) {
     const session = await retrieveSession(sessionId);
     if(!session){

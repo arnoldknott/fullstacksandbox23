@@ -46,31 +46,58 @@ export default class AppConfig{
 		return AppConfig.instance;
 	}
 
+	private async connectKeyvault( tries: number = 0 ): Promise<SecretClient | void> {
+		try{
+			const credential = new ManagedIdentityCredential();
+			const client = new SecretClient(process.env.AZ_KEYVAULT_HOST, credential);
+			// throw new Error("⚡️ TEST ERROR ⚡️")// TBD for testing only!
+			return client;
+		} catch {
+			tries++;
+			if (tries > 10){
+				console.error(`🥞 app_config - server - connectKeyvault - createClient failed after ${tries} tries`);
+				throw new Error("🥞 Connecting to Keyvault finally failed");
+			}
+			console.error("🥞 app_config - server - connectKeyvault - createClient failed");
+			console.log(`Retry attempt ${tries} to connect to keyvault in 1 second`);
+			await new Promise(resolve => setTimeout(resolve, 5000));
+			await this.connectKeyvault( tries )
+		}
+	}
+
 	// TBD: make a button in the admin section, that calls this function to update the configuration values
 	public async updateValues(){
 		// It seems that containerapps don't allow env-variables starting with AZURE_
 		// Apparently that's a reserved namespace. So here AZ_ is used instead.
 		if (process.env.AZ_KEYVAULT_HOST) {
-			console.log("📜 app_config - process.env.AZ_KEYVAULT_HOST: ");
-			console.log(process.env.AZ_KEYVAULT_HOST);
-			const credential = new ManagedIdentityCredential();
-			const client = new SecretClient(process.env.AZ_KEYVAULT_HOST, credential);
-			const keyvaultHealth = await client.getSecret('keyvault-health');
-			console.log("📜 app_config - keyvaultHealth: ");
-			console.log(keyvaultHealth);
-			console.log("📜 app_config - keyvaultHealth.value: ");
-			console.log(keyvaultHealth.value);
-			const appRegClientId = await client.getSecret('app-reg-client-id');
-			const appClientSecret = await client.getSecret('app-client-secret');
-			const apiScope = await client.getSecret('api-scope');
-			const az_tenant_id = await client.getSecret('azure_tenant_id');
-			const redisPassword = await client.getSecret('redis-password');
-			this.keyvault_health = keyvaultHealth.value;
-			this.app_reg_client_id = appRegClientId.value || '';
-			this.app_client_secret = appClientSecret.value || '';
-			this.api_scope = apiScope.value || '';
-			this.az_authority = `https://login.microsoftonline.com/${az_tenant_id.value}`,
-			this.redis_password = redisPassword.value || '';
+			try{
+				console.log("📜 app_config - process.env.AZ_KEYVAULT_HOST:");
+				console.log(process.env.AZ_KEYVAULT_HOST);
+				const client = await this.connectKeyvault();
+				console.log("📜 app_config - client:");
+				console.log(client);
+				// TBD: delete comment:  PUT THIS BACK IN !!!
+				const keyvaultHealth = await client?.getSecret('keyvault-health');
+				console.log("📜 app_config - keyvaultHealth: ");
+				console.log(keyvaultHealth);
+				console.log("📜 app_config - keyvaultHealth.value: ");
+				console.log(keyvaultHealth?.value);
+				const appRegClientId = await client?.getSecret('app-reg-client-id');
+				const appClientSecret = await client?.getSecret('app-client-secret');
+				const apiScope = await client?.getSecret('api-scope');
+				const az_tenant_id = await client?.getSecret('azure_tenant_id');
+				const redisPassword = await client?.getSecret('redis-password');
+				this.keyvault_health = keyvaultHealth?.value;
+				this.app_reg_client_id = appRegClientId?.value || '';
+				this.app_client_secret = appClientSecret?.value || '';
+				this.api_scope = apiScope?.value || '';
+				this.az_authority = `https://login.microsoftonline.com/${az_tenant_id?.value}`,
+				this.redis_password = redisPassword?.value || '';
+				// TBD: delete comment: UNTIL HERE
+			} catch {
+				console.error("🥞 app_config - server - updateValues - failed");
+				throw new Error("Could not get configuration values from Keyvault");
+			}
 		}
 		else {
 			console.log("📜 app_config - process.env.AZ_KEYVAULT_HOST not set");
