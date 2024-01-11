@@ -14,14 +14,14 @@ const createRedisClient = async () => {
   if (!redisClient?.isOpen){
     // const configuration = await app_config();
     const appConfig = await AppConfig.getInstance();
-    console.log("🥞 cache - server - createRedisClient - appConfig.redis_password: ");
-    console.log(appConfig.redis_password.substring(0, 3) + "***");
-    console.log("🥞 cache - server - createRedisClient - appConfig.redis_host: ");
-    console.log(appConfig.redis_host);
-    console.log("🥞 cache - server - createRedisClient - appConfig.redis_port: ");
-    console.log(appConfig.redis_port);
-    console.log("🥞 cache - server - createRedisClient - appConfig.redis_session_db: ");
-    console.log(appConfig.redis_session_db);
+    // console.log("🥞 cache - server - createRedisClient - appConfig.redis_password: ");
+    // console.log(appConfig.redis_password.substring(0, 3) + "***");
+    // console.log("🥞 cache - server - createRedisClient - appConfig.redis_host: ");
+    // console.log(appConfig.redis_host);
+    // console.log("🥞 cache - server - createRedisClient - appConfig.redis_port: ");
+    // console.log(appConfig.redis_port);
+    // console.log("🥞 cache - server - createRedisClient - appConfig.redis_session_db: ");
+    // console.log(appConfig.redis_session_db);
 
     const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
 
@@ -32,7 +32,8 @@ const createRedisClient = async () => {
       await redisClient.connect()
     } catch (err) {
       console.error("🥞 cache - server - createRedisClient - createClient failed");
-      throw err
+      console.error(err);
+      // throw err
     }
   }
   return redisClient;
@@ -72,19 +73,29 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
     console.log("🥞 cache - server - setSession - new redisClient");
     console.log(redisClient);
     console.log("🥞 cache - server - setSession - new redisClient.isOpen");
-    console.log(redisClient.isOpen);
+    console.log(redisClient?.isOpen);
   }
+  console.log("🥞 cache - server - setSession - sessionData.account.username");
+  console.log(sessionData.account.localAccountId);
   const authDataString = JSON.stringify(sessionData);
   try{
     console.log("🥞 cache - server - setSession");
-    const status = await redisClient?.json.set(sessionId, path, authDataString);
+    const statusPromise = redisClient?.json.set(sessionId, path, authDataString);
+    statusPromise?.catch((err) => {
+      console.error("🥞 cache - server - setSession - redisClient?.json.set failed");
+      console.error(err);
+      // throw err
+    })
+    const setStatus = await statusPromise;
     console.log("🥞 cache - server - setSession - sessionId set");
     await redisClient?.expire(sessionId, sessionTimeOut)
     console.log("🥞 cache - server - setSession - sessionId expired");
-    return status === 'OK' ? true : false;
+    return setStatus === 'OK' ? true : false;
   } catch (err) {
     console.error("🥞 cache - server - setSession - redisClient?.json.set failed");
-    throw err
+    console.error(err);
+    return false;
+    // throw err
   }
   // const status = await useSessionClient(async function(this: RedisClientType): Promise<string> {
   //   const result = await this.json.set(sessionId, path, authDataString);
@@ -108,7 +119,8 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
     return result ? JSON.parse(result) as Session : undefined;
   } catch (err) {
     console.error("🥞 cache - server - getSession - redisClient?.json.get failed");
-    throw err
+    console.error(err);
+    // throw err
   }
   // return await useSessionClient(async function(this: RedisClientType) {
   //   const result = await this.json.get(sessionId);
@@ -122,16 +134,24 @@ export const updateSessionExpiry = async (sessionId: string | null ): Promise<vo
   }
   if (!sessionId) {
     console.error("🥞 cache - server - updateSessionExpiry - sessionId is null");
-    throw new Error('Session ID is null');
+    // throw new Error('Session ID is null');
   }
   try{
     await redisClient?.expire(sessionId, sessionTimeOut);
   } catch (err) {
     console.error("🥞 cache - server - updateSessionExpiry - redisClient?.expire failed");
-    throw err
+    console.error(err);
+    // throw err
   }
 
   // await useSessionClient(async function(this: RedisClientType) {
   //   await this.expire(sessionId, sessionTimeOut);
   // });
+}
+
+try {
+  await createRedisClient()
+} catch (err) {
+  console.error("🥞 cache - server - createRedisClient failed");
+  console.error(err);
 }
