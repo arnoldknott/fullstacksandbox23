@@ -1,15 +1,22 @@
-import { createClient, type RedisClientType } from "redis";
+import { createClient } from "redis";
 // import {} from @types/redis
 import type { Session } from "$lib/types";
 // import { app_config } from "./config";
 import AppConfig from './config';
 
-const sessionTimeOut = 60*5// TBD: this is 5 minutes only - set to three weeks or so for production!
+const appConfig = await AppConfig.getInstance();
 
-let redisClient: RedisClientType | null = null
+const sessionTimeOut = 60*5// TBD: this is 5 minutes only - set to three weeks or so for production!
+const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
+
+// let redisClient: RedisClientType | null = null;
+let redisClient = await createClient({url: `${connectionString}/${appConfig.redis_session_db}`})
+redisClient.connect()
 
 process.on("exit", () => redisClient?.quit());
 
+
+// TBDD: should not be necessary any more - the client should keep existing - just needs to be reconnected!
 const createRedisClient = async () => {
   if (!redisClient?.isOpen){
     // const configuration = await app_config();
@@ -75,7 +82,7 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
     console.log("🥞 cache - server - setSession - new redisClient.isOpen");
     console.log(redisClient?.isOpen);
   }
-  console.log("🥞 cache - server - setSession - sessionData.account.username");
+  console.log("🥞 cache - server - setSession - sessionData.account.localAccountId");
   console.log(sessionData.account.localAccountId);
   const authDataString = JSON.stringify(sessionData);
   try{
@@ -149,9 +156,9 @@ export const updateSessionExpiry = async (sessionId: string | null ): Promise<vo
   // });
 }
 
-try {
-  await createRedisClient()
-} catch (err) {
-  console.error("🥞 cache - server - createRedisClient failed");
-  console.error(err);
-}
+// try {
+//   await createRedisClient()
+// } catch (err) {
+//   console.error("🥞 cache - server - createRedisClient failed");
+//   console.error(err);
+// }
