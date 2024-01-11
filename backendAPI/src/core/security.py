@@ -1,11 +1,11 @@
 import logging
 
+import httpx
+import jwt
 from core.config import config
-
-# import jwt
 from fastapi import HTTPException, Request
+from jwt.algorithms import RSAAlgorithm
 
-# import httpx
 ## Use pyjwt to decode the tokens!
 
 logger = logging.getLogger(__name__)
@@ -16,6 +16,14 @@ def get_jwks():
     try:
         print("=== AZURE_OPENID_CONFIG_URL ===")
         print(config.AZURE_OPENID_CONFIG_URL)
+        oidc_config = httpx.get(config.AZURE_OPENID_CONFIG_URL).json()
+        # oidc_config.raise_for_status()
+        print("=== oidc_config ===")
+        print(oidc_config)
+        jwks = httpx.get(oidc_config["jwks_uri"]).json()
+        # print("=== jwks ===")
+        # print(jwks)
+        return jwks
     except Exception as err:
         logger.error("🔥 Failed to fetch JWKS: {e}")
         raise err
@@ -44,7 +52,6 @@ def get_jwks():
     #         rsa_key = RSAAlgorithm.from_jwk(key)
 
 
-# @get_jwks
 def validate_token(request: Request):
     """Validates the access token sent in the request header"""
     # get the token from the header:
@@ -55,6 +62,20 @@ def validate_token(request: Request):
         token = request.headers.get("Authorization").split("Bearer ")[1]
         if token:
             print("=== token exists ===")
+            jwks = get_jwks()
+            print("=== jwks ===")
+            print(jwks)
+
+            # Get the key that matches the kid:
+            kid = jwt.get_unverified_header(token)["kid"]
+            print("=== kid ===")
+            print(kid)
+            rsa_key = {}
+            for key in jwks["keys"]:
+                if key["kid"] == kid:
+                    rsa_key = RSAAlgorithm.from_jwk(key)
+                    print("=== rsa_key ===")
+                    print(rsa_key)
             # print(token)
             # print("=== get_jwks() ===")
             # print(get_jwks())
