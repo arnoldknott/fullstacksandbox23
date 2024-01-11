@@ -76,16 +76,16 @@ export default class AppConfig{
 		// Apparently that's a reserved namespace. So here AZ_ is used instead.
 		if (process.env.AZ_KEYVAULT_HOST) {
 			try{
-				console.log("📜 app_config - process.env.AZ_KEYVAULT_HOST:");
-				console.log(process.env.AZ_KEYVAULT_HOST);
+				// console.log("📜 app_config - process.env.AZ_KEYVAULT_HOST:");
+				// console.log(process.env.AZ_KEYVAULT_HOST);
 				const client = await this.connectKeyvault();
-				console.log("📜 app_config - client:");
-				console.log(client);
+				// console.log("📜 app_config - client:");
+				// console.log(client);
 				const keyvaultHealth = await client?.getSecret('keyvault-health');
-				console.log("📜 app_config - keyvaultHealth: ");
-				console.log(keyvaultHealth);
-				console.log("📜 app_config - keyvaultHealth.value: ");
-				console.log(keyvaultHealth?.value);
+				// console.log("📜 app_config - keyvaultHealth: ");
+				// console.log(keyvaultHealth);
+				// console.log("📜 app_config - keyvaultHealth.value: ");
+				// console.log(keyvaultHealth?.value);
 				const appRegClientId = await client?.getSecret('app-reg-client-id');
 				const appClientSecret = await client?.getSecret('app-client-secret');
 				const apiScope = await client?.getSecret('api-scope');

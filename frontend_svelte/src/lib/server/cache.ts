@@ -11,9 +11,11 @@ let redisClient: RedisClientType | null = null
 process.on("exit", () => redisClient?.quit());
 
 const createRedisClient = async () => {
-  if (!redisClient){
+  if (!redisClient?.isOpen){
     // const configuration = await app_config();
     const appConfig = await AppConfig.getInstance();
+    console.log("🥞 cache - server - createRedisClient - appConfig.redis_password: ");
+    console.log(appConfig.redis_password.substring(0, 3) + "***");
     console.log("🥞 cache - server - createRedisClient - appConfig.redis_host: ");
     console.log(appConfig.redis_host);
     console.log("🥞 cache - server - createRedisClient - appConfig.redis_port: ");
