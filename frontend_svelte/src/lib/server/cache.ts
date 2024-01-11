@@ -62,11 +62,19 @@ const createRedisClient = async () => {
 // }
 
 export const setSession = async (sessionId: string, path: string, sessionData: Session): Promise<boolean> => {
+  console.log("🥞 cache - server - setSession - redisClient");
+  console.log(redisClient);
+  console.log("🥞 cache - server - setSession - redisClient?.isOpen");
+  console.log(redisClient?.isOpen);
   if(!redisClient?.isOpen){
+    console.log("🥞 cache - server - setSession - redisClient?.isOpen is false");
     await createRedisClient();
+    console.log("🥞 cache - server - setSession - new redisClient");
+    console.log(redisClient);
   }
   const authDataString = JSON.stringify(sessionData);
   try{
+    console.log("🥞 cache - server - setSession");
     const status = await redisClient?.json.set(sessionId, path, authDataString);
     await redisClient?.expire(sessionId, sessionTimeOut)
     return status === 'OK' ? true : false;

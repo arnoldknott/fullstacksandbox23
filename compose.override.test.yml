@@ -21,8 +21,7 @@ services:
             - REDIS_JWKS_DB=$REDIS_JWKS_DB
             - REDIS_SESSION_DB=$REDIS_SESSION_DB
             - REDIS_PASSWORD=$REDIS_PASSWORD
-            - MONGODB_HOST=$MONGODB_HOST
-            - MONGODB_PORT=$MONGODB_PORT
+            - AZURE_TENANT_ID=$AZURE_TENANT_ID
         networks:
             - test_network
         ports: 

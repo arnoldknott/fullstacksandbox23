@@ -50,8 +50,8 @@ export default class AppConfig{
 		try{
 			// requires AZ_CLIENT_ID for keyvault access due to "working with AKS pod-identity" - see here:
       // https://learn.microsoft.com/en-us/javascript/api/@azure/identity/managedidentitycredential?view=azure-node-latest
-			console.log("📜 app_config - process.env.AZ_CLIENT_ID:");
-			console.log(process.env.AZ_CLIENT_ID);
+			// console.log("📜 app_config - process.env.AZ_CLIENT_ID:");
+			// console.log(process.env.AZ_CLIENT_ID);
 			const credential = new ManagedIdentityCredential(process.env.AZ_CLIENT_ID);
 			const client = new SecretClient(process.env.AZ_KEYVAULT_HOST, credential);
 			// throw new Error("⚡️ TEST ERROR ⚡️")// TBD for testing only!
