@@ -96,20 +96,23 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
   console.log("🥞 cache - server - setSession - sessionData.account.localAccountId");
   console.log(sessionData.account.localAccountId);
   const authDataString = JSON.stringify(sessionData);
+  console.log("🥞 cache - server - setSession - authDataString");
+  console.log(authDataString);
   try{
     console.log("🥞 cache - server - setSession");
     if (!redisClient){
       throw new Error("🥞 cache - server - setSession - redisClient not initialized");
     }
-    // const statusPromise = redisClient.json.set(sessionId, path, authDataString);
-    // TBD: move back to json.set when the redis client is fixed?
-    const statusPromise = redisClient.set(sessionId, authDataString);
-    statusPromise?.catch((err) => {
-      console.error("🥞 cache - server - setSession - redisClient?.json.set failed");
-      console.error(err);
-      // throw err
-    })
-    const setStatus = await statusPromise;
+    console.log("🥞 cache - server - setSession - path");
+    console.log(path);
+    const setStatus = await redisClient?.json.set(sessionId, ".", "teststring");
+    // const setStatus = await redisClient.json.set(sessionId, path, authDataString);
+    // statusPromise?.catch((err) => {
+    //   console.error("🥞 cache - server - setSession - redisClient?.json.set failed");
+    //   console.error(err);
+    //   // throw err
+    // })
+    // const setStatus = await statusPromise;
     console.log("🥞 cache - server - setSession - sessionId set");
     await redisClient?.expire(sessionId, sessionTimeOut)
     console.log("🥞 cache - server - setSession - sessionId expired");
@@ -138,9 +141,7 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
     throw new Error('Session ID is null');
   }
   try{
-    // TBD: move back to json.get when the redis client is fixed?
-    // const result = await redisClient?.json.get(sessionId);
-    const result = await redisClient?.get(sessionId);
+    const result = await redisClient?.json.get(sessionId);
     return result ? JSON.parse(result) as Session : undefined;
   } catch (err) {
     console.error("🥞 cache - server - getSession - redisClient?.json.get failed");
