@@ -57,7 +57,7 @@ services:
                 - REDIS_PASSWORD=$REDIS_PASSWORD
                 - APP_REG_CLIENT_ID=$APP_REG_CLIENT_ID
                 - APP_CLIENT_SECRET=$APP_CLIENT_SECRET
-                - AZ_TENANT_ID=$AZ_TENANT_ID
+                - AZURE_TENANT_ID=$AZURE_TENANT_ID
                 - API_SCOPE=$API_SCOPE
         environment:
             - REDIS_HOST=$REDIS_HOST
@@ -67,7 +67,7 @@ services:
             - REDIS_PASSWORD=$REDIS_PASSWORD
             - APP_REG_CLIENT_ID=$APP_REG_CLIENT_ID
             - APP_CLIENT_SECRET=$APP_CLIENT_SECRET
-            - AZ_TENANT_ID=$AZ_TENANT_ID
+            - AZURE_TENANT_ID=$AZURE_TENANT_ID
             - API_SCOPE=$API_SCOPE
         networks:
             - test_network
