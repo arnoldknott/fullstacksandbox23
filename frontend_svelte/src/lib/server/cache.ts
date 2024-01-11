@@ -11,10 +11,10 @@ const sessionTimeOut = 60*5// TBD: this is 5 minutes only - set to three weeks o
 const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
 
 // let redisClient: RedisClientType | null = null;
-let redisClient: RedisClientType | null = null;
+let redisClient: RedisClientType | null = null;
 if ( !building) { 
   redisClient = createClient({url: `${connectionString}/${appConfig.redis_session_db}`})
-  redisClient.connect()
+  await redisClient.connect()
 }
 
 process.on("exit", () => redisClient?.quit());
