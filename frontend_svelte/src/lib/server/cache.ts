@@ -13,8 +13,15 @@ const connectionString = `redis://default:${appConfig.redis_password}@${appConfi
 // let redisClient: RedisClientType | null = null;
 let redisClient: RedisClientType | null = null;
 if ( !building) { 
-  redisClient = createClient({url: `${connectionString}/${appConfig.redis_session_db}`})
-  await redisClient.connect()
+  try{
+    redisClient = createClient({url: `${connectionString}/${appConfig.redis_session_db}`})
+    await redisClient.connect()
+  } catch (err) {
+    console.error("🥞 cache - server - createRedisClient - createClient failed");
+    // consider let that error bubble up to the caller - in prod a failed redis connection should be fatal!
+    // the application needs to restart in its container!
+    console.error(err);
+  }
 }
 
 process.on("exit", () => redisClient?.quit());
