@@ -109,7 +109,7 @@ export default class AppConfig{
 			this.app_reg_client_id = process.env.APP_REG_CLIENT_ID;
 			this.app_client_secret = process.env.APP_CLIENT_SECRET;
 			this.api_scope = process.env.API_SCOPE;
-			this.az_authority = `https://login.microsoftonline.com/${process.env.AZ_TENANT_ID}`,
+			this.az_authority = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`,
 			this.redis_password = process.env.REDIS_PASSWORD;
 		};
 	}

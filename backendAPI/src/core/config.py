@@ -58,6 +58,15 @@ def get_variable(variable_name):
 class Config(BaseSettings):
     """Base configuration class."""
 
+    # System health check:
+    # get those variables from keyvault if keyvault URL is set, otherwise get from environment:
+    KEYVAULT_HEALTH: str = get_variable("KEYVAULT_HEALTH")
+
+    # Microsoft Azure OAuth 2.0 configuration:
+    AZURE_TENANT_ID: str = get_variable("AZURE_TENANT_ID")
+    AZURE_OPENID_CONFIG_URL: str = f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration"
+
+    # Postgres configuration:
     # always get those variables from the environment:
     # TBD: refactor:     this should no longer be necessary from the environment since database is now an Azure postgres database:
     POSTGRES_HOST: Optional[str] = os.getenv("POSTGRES_HOST")
@@ -65,16 +74,6 @@ class Config(BaseSettings):
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB")
     POSTGRES_URL: Optional[PostgresDsn] = None  # Field(None, validate_default=True)
-
-    # TBD: set these variables in terraform!
-    REDIS_HOST: str = os.getenv("REDIS_HOST")
-    REDIS_PORT: int = int(os.getenv("REDIS_PORT"))
-    print("=== REDIS_PORT ===")
-    print(REDIS_PORT)
-    print("=== get_variable('REDIS_REDIS_JWKS_DB') ===")
-    print(get_variable("REDIS_JWKS_DB"))
-    REDIS_JWKS_DB: int = int(get_variable("REDIS_JWKS_DB"))
-    REDIS_PASSWORD: str = get_variable("REDIS_PASSWORD")
 
     @field_validator("POSTGRES_URL")
     @classmethod
@@ -94,18 +93,15 @@ class Config(BaseSettings):
             path=values.data["POSTGRES_DB"] or "",
         )
 
-    # get those variables from keyvault if keyvault URL is set, otherwise get from environment:
-    KEYVAULT_HEALTH: str = get_variable("KEYVAULT_HEALTH")
-    # TEST_SECRET1: str = get_variable("TEST_SECRET1")
-    # TEST_SECRET2: str = get_variable("TEST_SECRET2")
-    # print(f"test_secret: {TEST_SECRET2}")
-
-    # not in keyvault yet:
-    # REDIS_HOST: str = get_variable("REDIS_HOST")
-    # REDIS_PORT: int = get_variable("REDIS_PORT")
-
-    # MONGODB_HOST: str = get_variable("MONGODB_HOST")
-    # MONGODB_PORT: int = get_variable("MONGODB_PORT")
+    # Redis configuration:
+    REDIS_HOST: str = os.getenv("REDIS_HOST")
+    REDIS_PORT: int = int(os.getenv("REDIS_PORT"))
+    print("=== REDIS_PORT ===")
+    print(REDIS_PORT)
+    print("=== get_variable('REDIS_REDIS_JWKS_DB') ===")
+    print(get_variable("REDIS_JWKS_DB"))
+    REDIS_JWKS_DB: int = int(get_variable("REDIS_JWKS_DB"))
+    REDIS_PASSWORD: str = get_variable("REDIS_PASSWORD")
 
 
 def update_config(tries=0):
@@ -117,12 +113,12 @@ def update_config(tries=0):
         tries += 1
         if tries < 10:
             logger.info(
-                f"Try {tries} failed to update configuration, retrying in 5 seconds."
+                f"📄 Try {tries} failed to update configuration, retrying in 5 seconds."
             )
             sleep(5)
             return update_config(tries)
         else:
-            logger.error(f"Failed to update configuration after {tries} tries.")
+            logger.error(f"📄 Failed to update configuration after {tries} tries.")
             raise err
 
 

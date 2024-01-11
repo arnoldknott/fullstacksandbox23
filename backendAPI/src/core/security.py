@@ -1,5 +1,7 @@
 import logging
 
+from core.config import config
+
 # import jwt
 from fastapi import HTTPException, Request
 
@@ -11,6 +13,12 @@ logger = logging.getLogger(__name__)
 
 def get_jwks():
     """Fetches the JWKs from identity provider"""
+    try:
+        print("=== AZURE_OPENID_CONFIG_URL ===")
+        print(config.AZURE_OPENID_CONFIG_URL)
+    except Exception as err:
+        logger.error("🔥 Failed to fetch JWKS: {e}")
+        raise err
     # try:
     #     jwks_url = f"https://{AUTH0_DOMAIN}/.well-known/jwks.json"
     #     jwks = httpx.get(jwks_url)
@@ -63,5 +71,5 @@ def validate_token(request: Request):
         #         },
         #     )
     except Exception as e:
-        logger.error(f"Token validation failed: ${e}")
+        logger.error(f"🔥 Token validation failed: ${e}")
         raise HTTPException(status_code=401, detail="Invalid token")
