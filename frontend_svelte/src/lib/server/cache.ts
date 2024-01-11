@@ -29,12 +29,12 @@ const createRedisClient = async () => {
       redisClient = createClient({
         url: `${connectionString}/${appConfig.redis_session_db}`,
       });
+      await redisClient.connect()
     } catch (err) {
       console.error("🥞 cache - server - createRedisClient - createClient failed");
       throw err
     }
   }
-  redisClient.connect()
   return redisClient;
 }
 
@@ -68,9 +68,11 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
   console.log(redisClient?.isOpen);
   if(!redisClient?.isOpen){
     console.log("🥞 cache - server - setSession - redisClient?.isOpen is false");
-    await createRedisClient();
+    redisClient = await createRedisClient();
     console.log("🥞 cache - server - setSession - new redisClient");
     console.log(redisClient);
+    console.log("🥞 cache - server - setSession - new redisClient.isOpen");
+    console.log(redisClient.isOpen);
   }
   const authDataString = JSON.stringify(sessionData);
   try{
