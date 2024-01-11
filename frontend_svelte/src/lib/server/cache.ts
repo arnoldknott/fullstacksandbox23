@@ -31,7 +31,7 @@ process.on("exit", () => redisClient?.quit());
 const createRedisClient = async () => {
   if (!redisClient?.isOpen){
     // const configuration = await app_config();
-    const appConfig = await AppConfig.getInstance();
+    // const appConfig = await AppConfig.getInstance();
     // console.log("🥞 cache - server - createRedisClient - appConfig.redis_password: ");
     // console.log(appConfig.redis_password.substring(0, 3) + "***");
     // console.log("🥞 cache - server - createRedisClient - appConfig.redis_host: ");
@@ -41,7 +41,7 @@ const createRedisClient = async () => {
     // console.log("🥞 cache - server - createRedisClient - appConfig.redis_session_db: ");
     // console.log(appConfig.redis_session_db);
 
-    const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
+    // const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
 
     try{
       redisClient = createClient({
