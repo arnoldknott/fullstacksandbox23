@@ -18,6 +18,7 @@ dependencies = [
     'pydantic>=2.5.2,<3',
     'alembic>=1.13.0,<2',
     'redis>=5.0.1,<6',
+    'PyJWT>=2.8.0,<3',
 ]
 
 [project.optional-dependencies]

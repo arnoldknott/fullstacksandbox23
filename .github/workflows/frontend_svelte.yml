@@ -146,8 +146,9 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to staging
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
-        env:
-          IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
+      # env no longer necessary: all variables coming from terraform now!
+        # env:
+        #   IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
         run: |
           az containerapp revision set-mode \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
@@ -156,10 +157,11 @@ jobs:
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
-            --set-env-vars \
-              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}"
+            --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA
         # TBD: remove AZ_KEYVAULT_HOST here - coming from terraform now!
+        # REMOVED NOW: all env variables coming from terraform now!
+        # --set-env-vars \
+        #      "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}"
         # remember also to remove from Github environment!
         # az containerapp revision set-mode \
         #   --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
@@ -231,8 +233,9 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to production
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
-        env:
-          IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
+      # env no longer necessary: all variables coming from terraform now!
+        # env:
+        #   IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
         run: |
           az containerapp revision set-mode \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
@@ -241,10 +244,11 @@ jobs:
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
-            --set-env-vars \
-              "AZURE_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+            --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA
         # TBD: remove AZ_KEYVAULT_HOST here - coming from terraform now!
+        # REMOVED NOW: all env variables coming from terraform now!
+        # --set-env-vars \
+        #      "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}"
         # remember also to remove from Github environment!
         # Set by terraform already in container: "app-reg-client-id=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF" \
         # TBD: consider deleting all existing environment variables before setting the new ones?
