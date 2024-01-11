@@ -23,6 +23,8 @@ def get_jwks():
         jwks = httpx.get(oidc_config["jwks_uri"]).json()
         # print("=== jwks ===")
         # print(jwks)
+        # TBD: add the jwk to the cache!
+        print("=== jwks needs to be cached! ===")
         return jwks
     except Exception as err:
         logger.error("🔥 Failed to fetch JWKS: {e}")
@@ -76,6 +78,8 @@ def validate_token(request: Request):
                     rsa_key = RSAAlgorithm.from_jwk(key)
                     print("=== rsa_key ===")
                     print(rsa_key)
+
+            # Try validating token first with cached keys - if no success, fetch new keys, put them in the cache and try again!
             # print(token)
             # print("=== get_jwks() ===")
             # print(get_jwks())
