@@ -96,17 +96,12 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
   console.log("🥞 cache - server - setSession - sessionData.account.localAccountId");
   console.log(sessionData.account.localAccountId);
   const authDataString = JSON.stringify(sessionData);
-  console.log("🥞 cache - server - setSession - authDataString");
-  console.log(authDataString);
   try{
     console.log("🥞 cache - server - setSession");
     if (!redisClient){
       throw new Error("🥞 cache - server - setSession - redisClient not initialized");
     }
-    console.log("🥞 cache - server - setSession - path");
-    console.log(path);
-    const setStatus = await redisClient?.json.set(sessionId, ".", "teststring");
-    // const setStatus = await redisClient.json.set(sessionId, path, authDataString);
+    const setStatus = await redisClient.json.set(sessionId, path, authDataString);
     // statusPromise?.catch((err) => {
     //   console.error("🥞 cache - server - setSession - redisClient?.json.set failed");
     //   console.error(err);
