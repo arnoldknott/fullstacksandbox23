@@ -76,7 +76,9 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
   try{
     console.log("🥞 cache - server - setSession");
     const status = await redisClient?.json.set(sessionId, path, authDataString);
+    console.log("🥞 cache - server - setSession - sessionId set");
     await redisClient?.expire(sessionId, sessionTimeOut)
+    console.log("🥞 cache - server - setSession - sessionId expired");
     return status === 'OK' ? true : false;
   } catch (err) {
     console.error("🥞 cache - server - setSession - redisClient?.json.set failed");
