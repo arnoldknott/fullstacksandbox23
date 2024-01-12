@@ -15,7 +15,7 @@ COPY . .
 RUN npm run build
 # CMD ["sh" "-c"]
 
-FROM node:20-alpine3.17
+FROM node:20.10.0-alpine3.19
 COPY --from=build /app/build /app/
 COPY --from=build /app/package*.json /app/
 # TBD: make sure to only copy dependencies and not devDependencies
