@@ -19,14 +19,16 @@ if ( !building) {
     console.log(appConfig.redis_host);
     console.log(appConfig.redis_port);
     console.log(appConfig.redis_session_db);
-    redisClient = createClient({
+    redisClient = await createClient({
       url: `${connectionString}/${appConfig.redis_session_db}`,
-    })
+    }).on('error', err => console.error('🥞 cache - server - Redis Client create error', err))
     console.log("🥞 cache - server - createRedisClient - redisClient created");
+    console.log(redisClient);
+    // await new Promise((resolve) => setTimeout(resolve, 10000))
     await redisClient.connect()
     console.log("🥞 cache - server - createRedisClient - redisClient connected");
   } catch (err) {
-    console.error("🥞 cache - server - createRedisClient - createClient failed");
+    console.error("🥞 cache - server - createRedisClient - createClient and connect failed");
     // consider let that error bubble up to the caller - in prod a failed redis connection should be fatal!
     // the application needs to restart in its container!
     console.error(err);
@@ -119,9 +121,9 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
     console.log(redisClient?.isOpen);
   }
   
-  const dummies = await getDummys();
-  console.log("🥞 cache - server - setSession - getDummies");
-  console.log(dummies);
+  // const dummies = await getDummys();
+  // console.log("🥞 cache - server - setSession - getDummies");
+  // console.log(dummies);
   // console.log("🥞 cache - server - setSession - sessionData.account.localAccountId");
   // console.log(sessionData.account.localAccountId);
   const authDataString = JSON.stringify(sessionData);
