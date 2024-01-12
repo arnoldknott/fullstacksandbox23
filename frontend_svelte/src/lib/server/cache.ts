@@ -119,11 +119,12 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
   console.log(redisClient?.isOpen);
   if(!redisClient?.isOpen){
     console.log("🥞 cache - server - setSession - redisClient?.isOpen is false");
+    await redisClient.connect()
+    console.log("🥞 cache - server - setSession - NEW connection redisClient?.isOpen");
+    console.log(redisClient?.isOpen);
   //   redisClient = await createRedisClient();
   //   console.log("🥞 cache - server - setSession - NEW redisClient");
   //   console.log(redisClient);
-  //   console.log("🥞 cache - server - setSession - NEW redisClient.isOpen");
-  //   console.log(redisClient?.isOpen);
   }
   
   // const dummies = await getDummys();
@@ -166,6 +167,9 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
   export const getSession = async (sessionId: string | null): Promise<Session | undefined > => {
   if(!redisClient?.isOpen){
     console.log("🥞 cache - server - getSession - redisClient?.isOpen is false");
+    await redisClient.connect()
+    console.log("🥞 cache - server - setSession - NEW connection redisClient?.isOpen");
+    console.log(redisClient?.isOpen);
   //   await createRedisClient();
   }
   if (!sessionId) {
@@ -189,6 +193,9 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
 export const updateSessionExpiry = async (sessionId: string | null ): Promise<void> => {
   if(!redisClient?.isOpen){
     console.log("🥞 cache - server - updateSessionExpiry - redisClient?.isOpen is false");
+    await redisClient.connect()
+    console.log("🥞 cache - server - setSession - NEW connection redisClient?.isOpen");
+    console.log(redisClient?.isOpen);
   //   await createRedisClient();
   }
   if (!sessionId) {
