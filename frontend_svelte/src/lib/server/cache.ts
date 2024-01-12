@@ -21,6 +21,11 @@ if ( !building) {
     console.log(appConfig.redis_session_db);
     redisClient = await createClient({
       url: `${connectionString}/${appConfig.redis_session_db}`,
+      socket: {
+        host: appConfig.redis_host,
+        port: appConfig.redis_port,
+        connectTimeout: 15000,
+      }
     }).on('error', err => console.error('🥞 cache - server - Redis Client create error', err))
     console.log("🥞 cache - server - createRedisClient - redisClient created");
     console.log(redisClient);
