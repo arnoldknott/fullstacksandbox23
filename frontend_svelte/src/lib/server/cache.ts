@@ -48,8 +48,8 @@ process.on("exit", () => redisClient?.quit());
 // TBDD: should not be necessary any more - the client should keep existing - just needs to be reconnected!
 const createRedisClient = async () => {
   if (!redisClient?.isOpen){
-    const configuration = await app_config();
-    const appConfig = await AppConfig.getInstance();
+    // const configuration = await app_config();
+    // const appConfig = await AppConfig.getInstance();
     console.log("🥞 cache - server - createRedisClient - appConfig.redis_password: ");
     console.log(appConfig.redis_password.substring(0, 3) + "***");
     console.log("🥞 cache - server - createRedisClient - appConfig.redis_host: ");
