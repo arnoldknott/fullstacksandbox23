@@ -19,7 +19,9 @@ if ( !building) {
     console.log(appConfig.redis_host);
     console.log(appConfig.redis_port);
     console.log(appConfig.redis_session_db);
-    redisClient = createClient({url: `${connectionString}/${appConfig.redis_session_db}`})
+    redisClient = createClient({
+      url: `${connectionString}/${appConfig.redis_session_db}`,
+    })
     console.log("🥞 cache - server - createRedisClient - redisClient created");
     await redisClient.connect()
     console.log("🥞 cache - server - createRedisClient - redisClient connected");
