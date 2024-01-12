@@ -42,7 +42,8 @@ const getDummies = async () => {
   console.log(debugDummyJson);
   return { debugDummy, debugDummyJson }
 }
-const dummies = await getDummies()
+// seems to not even allow starting the container!!
+// const dummies = await getDummies()
 console.log("🥞 cache - server - initial dummies");
 console.log(dummies);
 
