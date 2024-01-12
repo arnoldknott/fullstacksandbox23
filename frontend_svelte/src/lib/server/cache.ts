@@ -33,15 +33,15 @@ if ( !building) {
   }
 }
 
-const getDummies = async () => {
-  const debugDummy = await redisClient?.get("debugDummy");
-  console.log("🥞 cache - server - debugDummy");
-  console.log(debugDummy);
-  const debugDummyJson = await redisClient?.json.get("debugDummyJson");
-  console.log("🥞 cache - server - debugDummyJson");
-  console.log(debugDummyJson);
-  return { debugDummy, debugDummyJson }
-}
+// const getDummies = async () => {
+//   const debugDummy = await redisClient?.get("debugDummy");
+//   console.log("🥞 cache - server - debugDummy");
+//   console.log(debugDummy);
+//   const debugDummyJson = await redisClient?.json.get("debugDummyJson");
+//   console.log("🥞 cache - server - debugDummyJson");
+//   console.log(debugDummyJson);
+//   return { debugDummy, debugDummyJson }
+// }
 // seems to not even allow starting the container!!
 // const dummies = await getDummies()
 // console.log("🥞 cache - server - initial dummies");
