@@ -14,6 +14,11 @@ const connectionString = `redis://default:${appConfig.redis_password}@${appConfi
 let redisClient: RedisClientType | null = null;
 if ( !building) { 
   try{
+    console.log("🥞 cache - server - createRedisClient - redis app config");
+    console.log(appConfig.redis_password.substring(0, 3) + "***");
+    console.log(appConfig.redis_host);
+    console.log(appConfig.redis_port);
+    console.log(appConfig.redis_session_db);
     redisClient = createClient({url: `${connectionString}/${appConfig.redis_session_db}`})
     await redisClient.connect()
   } catch (err) {
@@ -24,12 +29,18 @@ if ( !building) {
   }
 }
 
-const debugDummy = await redisClient?.get("debugDummy");
-console.log("🥞 cache - server - debugDummy");
-console.log(debugDummy);
-const debugDummyJson = await redisClient?.json.get("debugDummyJson");
-console.log("🥞 cache - server - debugDummyJson");
-console.log(debugDummyJson);
+const getDummys = async () => {
+  const debugDummy = await redisClient?.get("debugDummy");
+  console.log("🥞 cache - server - debugDummy");
+  console.log(debugDummy);
+  const debugDummyJson = await redisClient?.json.get("debugDummyJson");
+  console.log("🥞 cache - server - debugDummyJson");
+  console.log(debugDummyJson);
+  return { debugDummy, debugDummyJson }
+}
+const dummies = await getDummys()
+console.log("🥞 cache - server - initial dummies");
+console.log(dummies);
 
 process.on("exit", () => redisClient?.quit());
 
@@ -37,18 +48,20 @@ process.on("exit", () => redisClient?.quit());
 // TBDD: should not be necessary any more - the client should keep existing - just needs to be reconnected!
 const createRedisClient = async () => {
   if (!redisClient?.isOpen){
-    // const configuration = await app_config();
-    // const appConfig = await AppConfig.getInstance();
-    // console.log("🥞 cache - server - createRedisClient - appConfig.redis_password: ");
-    // console.log(appConfig.redis_password.substring(0, 3) + "***");
-    // console.log("🥞 cache - server - createRedisClient - appConfig.redis_host: ");
-    // console.log(appConfig.redis_host);
-    // console.log("🥞 cache - server - createRedisClient - appConfig.redis_port: ");
-    // console.log(appConfig.redis_port);
-    // console.log("🥞 cache - server - createRedisClient - appConfig.redis_session_db: ");
-    // console.log(appConfig.redis_session_db);
+    const configuration = await app_config();
+    const appConfig = await AppConfig.getInstance();
+    console.log("🥞 cache - server - createRedisClient - appConfig.redis_password: ");
+    console.log(appConfig.redis_password.substring(0, 3) + "***");
+    console.log("🥞 cache - server - createRedisClient - appConfig.redis_host: ");
+    console.log(appConfig.redis_host);
+    console.log("🥞 cache - server - createRedisClient - appConfig.redis_port: ");
+    console.log(appConfig.redis_port);
+    console.log("🥞 cache - server - createRedisClient - appConfig.redis_session_db: ");
+    console.log(appConfig.redis_session_db);
 
-    // const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
+    const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
+    console.log("🥞 cache - server - createRedisClient - connectionString: ");
+    console.log(connectionString.substring(0, 16) + "***...***" + connectionString.substring(connectionString.length - 12));
 
     try{
       redisClient = createClient({
@@ -100,8 +113,12 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
     console.log("🥞 cache - server - setSession - NEW redisClient.isOpen");
     console.log(redisClient?.isOpen);
   }
-  console.log("🥞 cache - server - setSession - sessionData.account.localAccountId");
-  console.log(sessionData.account.localAccountId);
+  
+  const dummies = await getDummys();
+  console.log("🥞 cache - server - setSession - getDummies");
+  console.log(dummies);
+  // console.log("🥞 cache - server - setSession - sessionData.account.localAccountId");
+  // console.log(sessionData.account.localAccountId);
   const authDataString = JSON.stringify(sessionData);
   try{
     console.log("🥞 cache - server - setSession");
