@@ -40,20 +40,6 @@ if ( !building) {
   }
 }
 
-// const getDummies = async () => {
-//   const debugDummy = await redisClient?.get("debugDummy");
-//   console.log("🥞 cache - server - debugDummy");
-//   console.log(debugDummy);
-//   const debugDummyJson = await redisClient?.json.get("debugDummyJson");
-//   console.log("🥞 cache - server - debugDummyJson");
-//   console.log(debugDummyJson);
-//   return { debugDummy, debugDummyJson }
-// }
-// seems to not even allow starting the container!!
-// const dummies = await getDummies()
-// console.log("🥞 cache - server - initial dummies");
-// console.log(dummies);
-
 process.on("exit", () => redisClient?.quit());
 
 
@@ -62,14 +48,6 @@ process.on("exit", () => redisClient?.quit());
 //   if (!redisClient?.isOpen){
 //     // const configuration = await app_config();
 //     // const appConfig = await AppConfig.getInstance();
-//     console.log("🥞 cache - server - createRedisClient - appConfig.redis_password: ");
-//     console.log(appConfig.redis_password.substring(0, 3) + "***");
-//     console.log("🥞 cache - server - createRedisClient - appConfig.redis_host: ");
-//     console.log(appConfig.redis_host);
-//     console.log("🥞 cache - server - createRedisClient - appConfig.redis_port: ");
-//     console.log(appConfig.redis_port);
-//     console.log("🥞 cache - server - createRedisClient - appConfig.redis_session_db: ");
-//     console.log(appConfig.redis_session_db);
 
 //     const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
 //     console.log("🥞 cache - server - createRedisClient - connectionString: ");
@@ -123,12 +101,6 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
     console.log("🥞 cache - server - setSession - NEW connection redisClient?.isOpen");
     console.log(redisClient?.isOpen);
   }
-  
-  // const dummies = await getDummys();
-  // console.log("🥞 cache - server - setSession - getDummies");
-  // console.log(dummies);
-  // console.log("🥞 cache - server - setSession - sessionData.account.localAccountId");
-  // console.log(sessionData.account.localAccountId);
   const authDataString = JSON.stringify(sessionData);
   try{
     console.log("🥞 cache - server - setSession");
@@ -136,12 +108,6 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
       throw new Error("🥞 cache - server - setSession - redisClient not initialized");
     }
     const setStatus = await redisClient.json.set(sessionId, path, authDataString);
-    // statusPromise?.catch((err) => {
-    //   console.error("🥞 cache - server - setSession - redisClient?.json.set failed");
-    //   console.error(err);
-    //   // throw err
-    // })
-    // const setStatus = await statusPromise;
     console.log("🥞 cache - server - setSession - sessionId set");
     await redisClient?.expire(sessionId, sessionTimeOut)
     console.log("🥞 cache - server - setSession - sessionId expired");
@@ -152,13 +118,6 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
     return false;
     // throw err
   }
-  // const status = await useSessionClient(async function(this: RedisClientType): Promise<string> {
-  //   const result = await this.json.set(sessionId, path, authDataString);
-  //   await this.expire(sessionId, sessionTimeOut)
-  //   return result;
-  // });
-  // console.log("cache - server - setSession - status");
-  // console.log(status);
 }
 
   export const getSession = async (sessionId: string | null): Promise<Session | undefined > => {
@@ -204,15 +163,4 @@ export const updateSessionExpiry = async (sessionId: string | null ): Promise<vo
     console.error(err);
     // throw err
   }
-
-  // await useSessionClient(async function(this: RedisClientType) {
-  //   await this.expire(sessionId, sessionTimeOut);
-  // });
 }
-
-// try {
-//   await createRedisClient()
-// } catch (err) {
-//   console.error("🥞 cache - server - createRedisClient failed");
-//   console.error(err);
-// }
