@@ -20,7 +20,9 @@ if ( !building) {
     console.log(appConfig.redis_port);
     console.log(appConfig.redis_session_db);
     redisClient = createClient({url: `${connectionString}/${appConfig.redis_session_db}`})
+    console.log("🥞 cache - server - createRedisClient - redisClient created");
     await redisClient.connect()
+    console.log("🥞 cache - server - createRedisClient - redisClient connected");
   } catch (err) {
     console.error("🥞 cache - server - createRedisClient - createClient failed");
     // consider let that error bubble up to the caller - in prod a failed redis connection should be fatal!
@@ -29,7 +31,7 @@ if ( !building) {
   }
 }
 
-const getDummys = async () => {
+const getDummies = async () => {
   const debugDummy = await redisClient?.get("debugDummy");
   console.log("🥞 cache - server - debugDummy");
   console.log(debugDummy);
@@ -38,7 +40,7 @@ const getDummys = async () => {
   console.log(debugDummyJson);
   return { debugDummy, debugDummyJson }
 }
-const dummies = await getDummys()
+const dummies = await getDummies()
 console.log("🥞 cache - server - initial dummies");
 console.log(dummies);
 
