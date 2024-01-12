@@ -24,6 +24,13 @@ if ( !building) {
   }
 }
 
+const debugDummy = await redisClient?.get("debugDummy");
+console.log("🥞 cache - server - debugDummy");
+console.log(debugDummy);
+const debugDummyJson = await redisClient?.json.get("debugDummyJson");
+console.log("🥞 cache - server - debugDummyJson");
+console.log(debugDummyJson);
+
 process.on("exit", () => redisClient?.quit());
 
 
