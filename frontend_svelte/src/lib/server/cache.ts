@@ -24,7 +24,7 @@ if ( !building) {
       socket: {
         host: appConfig.redis_host,
         port: appConfig.redis_port,
-        connectTimeout: 15000,
+        connectTimeout: 60000,
       }
     }).on('error', err => console.error('🥞 cache - server - Redis Client create error', err))
     console.log("🥞 cache - server - createRedisClient - redisClient created");
