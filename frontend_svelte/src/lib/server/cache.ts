@@ -44,8 +44,8 @@ const getDummies = async () => {
 }
 // seems to not even allow starting the container!!
 // const dummies = await getDummies()
-console.log("🥞 cache - server - initial dummies");
-console.log(dummies);
+// console.log("🥞 cache - server - initial dummies");
+// console.log(dummies);
 
 process.on("exit", () => redisClient?.quit());
 
