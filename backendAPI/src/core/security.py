@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 def get_jwks():
     """Fetches the JWKs from identity provider"""
+    logger.info("🔑 Fetching JWKS")
     try:
         print("=== AZURE_OPENID_CONFIG_URL ===")
         print(config.AZURE_OPENID_CONFIG_URL)
@@ -27,7 +28,7 @@ def get_jwks():
         print("=== jwks needs to be cached! ===")
         return jwks
     except Exception as err:
-        logger.error("🔥 Failed to fetch JWKS: {e}")
+        logger.error("🔥 Failed to fetch JWKS.")
         raise err
     # try:
     #     jwks_url = f"https://{AUTH0_DOMAIN}/.well-known/jwks.json"
@@ -59,6 +60,7 @@ def validate_token(request: Request):
     # get the token from the header:
     # print("=== request.headers ===")
     # print(request.headers)
+    logger.info("🔑 Validating token")
     try:
         # request.headers.get("Authorization").split("Bearer ")[1]
         token = request.headers.get("Authorization").split("Bearer ")[1]

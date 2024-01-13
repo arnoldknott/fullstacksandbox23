@@ -27,11 +27,11 @@ if ( !building) {
         connectTimeout: 60000,
       }
     })
-    console.log("🥞 cache - server - createRedisClient - redisClient created");
+    console.log("👍🥞 cache - server - createRedisClient - redisClient created");
     console.log(redisClient);
     // await new Promise((resolve) => setTimeout(resolve, 10000))
     await redisClient.connect()
-    console.log("🥞 cache - server - createRedisClient - redisClient connected");
+    console.log("👍🥞 cache - server - createRedisClient - redisClient connected");
   } catch (err) {
     console.error("🥞 cache - server - createRedisClient - createClient and connect failed");
     // consider let that error bubble up to the caller - in prod a failed redis connection should be fatal!
@@ -108,9 +108,9 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
       throw new Error("🥞 cache - server - setSession - redisClient not initialized");
     }
     const setStatus = await redisClient.json.set(sessionId, path, authDataString);
-    console.log("🥞 cache - server - setSession - sessionId set");
+    console.log("👍🥞 cache - server - setSession - sessionId set");
     await redisClient?.expire(sessionId, sessionTimeOut)
-    console.log("🥞 cache - server - setSession - sessionId expired");
+    console.log("👍🥞 cache - server - setSession - sessionId expired");
     return setStatus === 'OK' ? true : false;
   } catch (err) {
     console.error("🥞 cache - server - setSession - redisClient?.json.set failed");
@@ -164,3 +164,5 @@ export const updateSessionExpiry = async (sessionId: string | null ): Promise<vo
     // throw err
   }
 }
+
+console.log("🥞 lib - server - cache.ts - end");
