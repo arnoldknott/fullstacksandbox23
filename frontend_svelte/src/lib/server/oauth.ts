@@ -11,7 +11,7 @@ const createMsalConfClient = async () => {
   if (!msalConfClient){
     // const configuration = await app_config();
     const appConfig = await AppConfig.getInstance();
-    console.log("👍🔥oauth - Authentication - MsalConfClient - created!");
+    console.log("👍 🔥oauth - Authentication - MsalConfClient - created!");
     // console.log(appConfig.keyvault_health)
 
     const msalConfig = {
@@ -136,4 +136,4 @@ export const signOut = async ( ): Promise<void> => {
 }
 
 
-console.log("👍🔥 lib - server - oauth.ts - end");
+console.log("👍 🔥 lib - server - oauth.ts - end");

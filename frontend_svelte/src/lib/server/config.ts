@@ -166,4 +166,4 @@ export default class AppConfig{
 // return configuration;
 // };
 
-console.log("👍📜 lib -server - config.ts - end ");
+console.log("👍 📜 lib -server - config.ts - end ");
