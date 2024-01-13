@@ -6,7 +6,7 @@ const appConfig = await AppConfig.getInstance();
 
 // TBD: add type PageServerLoad here?
 export const load: PageServerLoad = async ( {locals } ) => {
-	const accessToken = await getAccessToken(locals.sessionData);
+	const accessToken = await getAccessToken(locals.sessionData, ["User.Read"]);
 	const response = await fetch(`${appConfig.ms_graph_base_uri}/me`, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`

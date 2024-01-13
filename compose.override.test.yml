@@ -22,6 +22,8 @@ services:
             - REDIS_SESSION_DB=$REDIS_SESSION_DB
             - REDIS_PASSWORD=$REDIS_PASSWORD
             - AZURE_TENANT_ID=$AZURE_TENANT_ID
+            - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
+            - API_SCOPE=$API_SCOPE
         networks:
             - test_network
         ports: 

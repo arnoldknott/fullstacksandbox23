@@ -10,9 +10,11 @@ import { SecretClient } from "@azure/keyvault-secrets";
 export default class AppConfig{
 	private static instance: AppConfig;
 	public api_scope: string;
+	public api_scope_default: string;
 	public app_reg_client_id: string;
 	public app_client_secret: string;
 	public az_authority: string;
+	public az_logout_uri: string;
 	public backend_host: string;
 	public backend_origin: string;
 	public keyvault_health?: string;
@@ -24,9 +26,11 @@ export default class AppConfig{
 
 	private constructor(){
 		this.api_scope = '';
+		this.api_scope_default = '';
 		this.app_reg_client_id = '';
 		this.app_client_secret = '';
 		this.az_authority = '';
+		this.az_logout_uri = '';	
 		this.backend_host = process.env.BACKEND_HOST,
 		this.backend_origin = `http://${process.env.BACKEND_HOST}:80`,
 		this.keyvault_health = '';
@@ -95,7 +99,9 @@ export default class AppConfig{
 				this.app_reg_client_id = appRegClientId?.value || '';
 				this.app_client_secret = appClientSecret?.value || '';
 				this.api_scope = apiScope?.value || '';
+				this.api_scope_default = `api://${apiScope?.value}/.default`;
 				this.az_authority = `https://login.microsoftonline.com/${azTenantId?.value}`,
+				this.az_logout_uri = `https://login.microsoftonline.com/${azTenantId?.value}/oauth2/v2.0/logout`;
 				this.redis_password = redisPassword?.value || '';
 			} catch (err) {
 				console.error("🥞 app_config - server - updateValues - failed");
@@ -109,7 +115,9 @@ export default class AppConfig{
 			this.app_reg_client_id = process.env.APP_REG_CLIENT_ID;
 			this.app_client_secret = process.env.APP_CLIENT_SECRET;
 			this.api_scope = process.env.API_SCOPE;
+			this.api_scope_default = `api://${process.env.API_SCOPE}/.default`;
 			this.az_authority = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`,
+			this.az_logout_uri = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}/oauth2/v2.0/logout`;
 			this.redis_password = process.env.REDIS_PASSWORD;
 		};
 	}

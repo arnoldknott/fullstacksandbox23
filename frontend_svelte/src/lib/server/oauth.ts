@@ -2,16 +2,17 @@
 import AppConfig from './config';
 import { ConfidentialClientApplication, type AuthenticationResult } from '@azure/msal-node';
 import type { Session } from '$lib/types';
+import { building } from '$app/environment';
 
-const scopes = ["User.Read"];
+const appConfig = await AppConfig.getInstance();
+const scopes = [appConfig.api_scope_default]
 
 let msalConfClient: ConfidentialClientApplication | null = null;
 
 const createMsalConfClient = async () => {
   if (!msalConfClient){
     // const configuration = await app_config();
-    const appConfig = await AppConfig.getInstance();
-    console.log("👍 🔥oauth - Authentication - MsalConfClient - created!");
+    // const appConfig = await AppConfig.getInstance();
     // console.log(appConfig.keyvault_health)
 
     const msalConfig = {
@@ -33,11 +34,36 @@ const createMsalConfClient = async () => {
     }
   
     msalConfClient = new ConfidentialClientApplication(msalConfig);
+    console.log("👍 🔥oauth - Authentication - MsalConfClient - created!");
   }
   return msalConfClient;
 }
 
-export const signIn = async ( origin: string): Promise<string> => {
+if (!building){
+  try{
+    await createMsalConfClient()
+  } catch (err) {
+    console.error("🔥 oauth - getTokens - msalConfClient could not created");
+    throw err;
+  }
+}
+
+const checkMsalConfClient = async () => {
+  if (!msalConfClient){
+    try{
+      await createMsalConfClient()
+    } catch (err) {
+      console.error("🔥 oauth - getTokens - msalConfClient could not created");
+      throw err;
+    }
+  }
+  if (!msalConfClient){
+    throw new Error("🔥 oauth - getTokens failed - msalConfClient not initialized");
+  }
+  return msalConfClient
+}
+
+export const signIn = async ( origin: string, scopes: [string] = ["User.Read"] ): Promise<string> => {
   // Check if msalClient exists on very first login, if not create it.
   // const appConfig = AppConfig.getInstance();
   // console.log("oauth - Authentication - signIn - appConfig: ");
@@ -49,17 +75,7 @@ export const signIn = async ( origin: string): Promise<string> => {
   };
   let authCodeUrl: string
   try {
-    if (!msalConfClient){
-      try{
-        await createMsalConfClient()
-      } catch (err) {
-        console.error("🔥 oauth - signIn - msalConfClient could not created");
-        throw err;
-      }
-    }
-    if (!msalConfClient){
-      throw new Error("🔥 oauth - signIn failed - msalConfClient not initialized");
-    }
+    const msalConfClient = await  checkMsalConfClient()
     authCodeUrl = await msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
   } catch (err) {
     console.error("🔥 oauth - Authentication - signIn failed");
@@ -69,22 +85,12 @@ export const signIn = async ( origin: string): Promise<string> => {
   return authCodeUrl;
 }
 
-export const getTokens = async(code: string | null, origin: string): Promise<AuthenticationResult> =>  {
+export const authenticateWithCode = async(code: string | null, origin: string, scopes: [string] = ["User.Read"]): Promise<AuthenticationResult> =>  {
   if (!code) {
     throw new Error("🔥 oauth - GetAccessToken failed - no code");
   }
   try {
-    if (!msalConfClient){
-      try{
-        await createMsalConfClient()
-      } catch (err) {
-        console.error("🔥 oauth - getTokens - msalConfClient could not created");
-        throw err;
-      }
-    }
-    if (!msalConfClient){
-      throw new Error("🔥 oauth - getTokens failed - msalConfClient not initialized");
-    }
+    const msalConfClient = await  checkMsalConfClient()
     const response = await msalConfClient.acquireTokenByCode({
       code: code,
       scopes: scopes,
@@ -100,40 +106,38 @@ export const getTokens = async(code: string | null, origin: string): Promise<Aut
   }
 }
 
-export const getAccessToken = async ( sessionData: Session ): Promise<string> => {
-  if (!msalConfClient){
-    try{
-      await createMsalConfClient()
-    } catch (err) {
-      console.error("🔥 oauth - getAccessToken - msalConfClient could not created");
-      throw err;
-    }
-  }
-  if (!msalConfClient){
-    throw new Error("🔥 oauth - getAccessToken failed - msalConfClient not initialized");
-  }
+export const getAccessToken = async ( sessionData: Session, scopes: [string] = [appConfig.api_scope_default] ): Promise<string> => {
+  const msalConfClient = await  checkMsalConfClient()
   const account = sessionData.account;
-  const response = await msalConfClient.acquireTokenSilent({
+  try {
+    const response = await msalConfClient.acquireTokenSilent({
     scopes: scopes,
     account: account,
-  });
-  const accessToken = response.accessToken;
+    });
+    const accessToken = response.accessToken;
+    return accessToken
+  } catch (err) {
+    console.error("🔥 oauth - GetAccessToken failed");
+    console.error(err);
+    throw err
+  }  
+}
+
+export const getAccessTokenMsGraph = async ( sessionData: Session ): Promise<string> => {
+  const accessToken = await getAccessToken(sessionData, ["User.Read"])
   return accessToken
 }
 
-export const signOut = async ( ): Promise<void> => {
-  // TBD: implement logout
-  try {
-    if (!msalConfClient){
-      throw new Error("🔥 oauth - signIn failed - msalConfClient not initialized");
-    }
-    // implement logout
-  } catch (err) {
-    console.error("🔥 oauth - Logout failed: ", err);
-    throw err
-  }
-
-}
+// export const signOut = async ( ): Promise<void> => {
+//   // TBD: implement logout
+//   // try {
+//   //   const msalConfClient = await  checkMsalConfClient()
+//   //   // implement logout
+//   // } catch (err) {
+//   //   console.error("🔥 oauth - Logout failed: ", err);
+//   //   throw err
+//   // }
+// }
 
 
 console.log("👍 🔥 lib - server - oauth.ts - end");

@@ -6,7 +6,7 @@ const appConfig = await AppConfig.getInstance();
 
 export const GET: RequestHandler = async ({ locals, setHeaders }): Promise<Response> => { 
   try {
-    const accessToken = await getAccessToken(locals.sessionData);
+    const accessToken = await getAccessToken(locals.sessionData, ["User.Read"]);
     const response = await fetch(`${appConfig.ms_graph_base_uri}/me/photo/$value`, {
       headers: {
         Authorization: `Bearer ${accessToken}`

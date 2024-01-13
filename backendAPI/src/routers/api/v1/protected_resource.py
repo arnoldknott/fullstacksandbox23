@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-from core.security import validate_token
+from core.oauth import validate_token
 from fastapi import APIRouter, Depends
 
 logger = logging.getLogger(__name__)

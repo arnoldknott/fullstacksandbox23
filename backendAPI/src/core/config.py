@@ -65,6 +65,13 @@ class Config(BaseSettings):
     # Microsoft Azure OAuth 2.0 configuration:
     AZURE_TENANT_ID: str = get_variable("AZURE_TENANT_ID")
     AZURE_OPENID_CONFIG_URL: str = f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration"
+    AZURE_ISSUER_URL: str = f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0"
+    AZURE_CLIENT_ID: str = get_variable("AZURE_CLIENT_ID")
+    API_SCOPE: str = get_variable("API_SCOPE")
+
+    # Client ID of the frontend application registered in Azure AD:
+    # add "customer" client registrations here!
+    # APP_REG_CLIENT_ID: str = get_variable("APP_REG_CLIENT_ID")
 
     # Postgres configuration:
     # always get those variables from the environment:
@@ -96,10 +103,10 @@ class Config(BaseSettings):
     # Redis configuration:
     REDIS_HOST: str = os.getenv("REDIS_HOST")
     REDIS_PORT: int = int(os.getenv("REDIS_PORT"))
-    print("=== REDIS_PORT ===")
-    print(REDIS_PORT)
-    print("=== get_variable('REDIS_REDIS_JWKS_DB') ===")
-    print(get_variable("REDIS_JWKS_DB"))
+    # print("=== REDIS_PORT ===")
+    # print(REDIS_PORT)
+    # print("=== get_variable('REDIS_REDIS_JWKS_DB') ===")
+    # print(get_variable("REDIS_JWKS_DB"))
     REDIS_JWKS_DB: int = int(get_variable("REDIS_JWKS_DB"))
     REDIS_PASSWORD: str = get_variable("REDIS_PASSWORD")
 

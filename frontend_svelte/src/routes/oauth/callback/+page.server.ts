@@ -1,4 +1,4 @@
-import { getTokens } from '$lib/server/oauth';
+import { authenticateWithCode } from '$lib/server/oauth';
 import { setSession } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,9 +15,9 @@ export const load: PageServerLoad = async ( { url, cookies, request } ) => {
     let authenticationResult: AuthenticationResult;
     try {
       const code = url.searchParams.get("code");
-      authenticationResult = await getTokens( code, url.origin );
+      authenticationResult = await authenticateWithCode( code, url.origin );
     } catch (err) {
-      console.error("Callback - server - getTokens failed");
+      console.error("Callback - server - authenticateWithCode failed");
       console.error(err);
       throw err;
     }
