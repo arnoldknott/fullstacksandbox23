@@ -26,7 +26,7 @@ if ( !building) {
         port: appConfig.redis_port,
         connectTimeout: 60000,
       }
-    }).on('error', err => console.error('🥞 cache - server - Redis Client create error', err))
+    })
     console.log("🥞 cache - server - createRedisClient - redisClient created");
     console.log(redisClient);
     // await new Promise((resolve) => setTimeout(resolve, 10000))
@@ -97,7 +97,7 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
   console.log(redisClient?.isOpen);
   if(!redisClient?.isOpen){
     console.log("🥞 cache - server - setSession - redisClient?.isOpen is false");
-    await redisClient.connect()
+    await redisClient?.connect()
     console.log("🥞 cache - server - setSession - NEW connection redisClient?.isOpen");
     console.log(redisClient?.isOpen);
   }
@@ -123,7 +123,7 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
   export const getSession = async (sessionId: string | null): Promise<Session | undefined > => {
   if(!redisClient?.isOpen){
     console.log("🥞 cache - server - getSession - redisClient?.isOpen is false");
-    await redisClient.connect()
+    await redisClient?.connect()
     console.log("🥞 cache - server - setSession - NEW connection redisClient?.isOpen");
     console.log(redisClient?.isOpen);
   }
@@ -148,7 +148,7 @@ export const setSession = async (sessionId: string, path: string, sessionData: S
 export const updateSessionExpiry = async (sessionId: string | null ): Promise<void> => {
   if(!redisClient?.isOpen){
     console.log("🥞 cache - server - updateSessionExpiry - redisClient?.isOpen is false");
-    await redisClient.connect()
+    await redisClient?.connect()
     console.log("🥞 cache - server - setSession - NEW connection redisClient?.isOpen");
     console.log(redisClient?.isOpen);
   }
