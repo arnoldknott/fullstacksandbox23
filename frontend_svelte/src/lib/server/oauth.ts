@@ -6,7 +6,7 @@ import { building } from '$app/environment';
 
 const appConfig = await AppConfig.getInstance();
 // const scopesBackend = [appConfig.api_scope_default]
-const scopesBackend = [ `api://${process.env.API_SCOPE}/api.read`, `api://${process.env.API_SCOPE}/api.write` ]
+const scopesBackend = [ `api://${appConfig.api_scope}/api.read`, `api://${appConfig.api_scope}/api.write` ]
 const scopesMsGraph = [ "User.Read", "openid", "profile", "offline_access" ]
 
 let msalConfClient: ConfidentialClientApplication | null = null;

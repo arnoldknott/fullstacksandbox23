@@ -100,6 +100,10 @@ export default class AppConfig{
 				this.app_client_secret = appClientSecret?.value || '';
 				this.api_scope = apiScope?.value || '';
 				this.api_scope_default = `api://${apiScope?.value}/.default`;
+				// console.log("📜 app_config - keyvault - api-scope:");
+				// console.log(this.api_scope);
+				// console.log("📜 app_config - keyvault - api-scope-default:");
+				// console.log(this.api_scope_default);
 				this.az_authority = `https://login.microsoftonline.com/${azTenantId?.value}`,
 				this.az_logout_uri = `https://login.microsoftonline.com/${azTenantId?.value}/oauth2/v2.0/logout`;
 				this.redis_password = redisPassword?.value || '';
