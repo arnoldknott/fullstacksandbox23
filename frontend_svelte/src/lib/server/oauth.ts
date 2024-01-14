@@ -5,9 +5,12 @@ import type { Session } from '$lib/types';
 import { building } from '$app/environment';
 
 const appConfig = await AppConfig.getInstance();
-const scopes = [appConfig.api_scope_default]
+// const scopesBackend = [appConfig.api_scope_default]
+const scopesBackend = [ `api://${process.env.API_SCOPE}/api.read`, `api://${process.env.API_SCOPE}/api.write` ]
+const scopesMsGraph = [ "User.Read", "openid", "profile", "offline_access" ]
 
 let msalConfClient: ConfidentialClientApplication | null = null;
+
 
 const createMsalConfClient = async () => {
   if (!msalConfClient){
@@ -20,7 +23,7 @@ const createMsalConfClient = async () => {
         clientId: appConfig.app_reg_client_id,
         authority: appConfig.az_authority, 
         clientSecret: appConfig.app_client_secret,
-        scopes: scopes
+        scopes: [ ...scopesBackend, ...scopesMsGraph ],
         /***********************************************************************************************************************************
         Configure persisting the cache to Redis - as soon as Redis is encrypted!
         https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-node/docs/caching.md#persistent-cache
@@ -35,6 +38,9 @@ const createMsalConfClient = async () => {
   
     msalConfClient = new ConfidentialClientApplication(msalConfig);
     console.log("👍 🔥oauth - Authentication - MsalConfClient - created!");
+    // TBD: remove cache clearing: debugging ony
+    // msalConfClient.clearCache()
+    // console.log("💻 🔥oauth - Authentication - MsalConfClient - cacheCleared!");
   }
   return msalConfClient;
 }
@@ -63,7 +69,7 @@ const checkMsalConfClient = async () => {
   return msalConfClient
 }
 
-export const signIn = async ( origin: string, scopes: [string] = ["User.Read"] ): Promise<string> => {
+export const signIn = async ( origin: string, scopes: string[] = [ ...scopesBackend, ...scopesMsGraph ] ): Promise<string> => {
   // Check if msalClient exists on very first login, if not create it.
   // const appConfig = AppConfig.getInstance();
   // console.log("oauth - Authentication - signIn - appConfig: ");
@@ -85,12 +91,12 @@ export const signIn = async ( origin: string, scopes: [string] = ["User.Read"] )
   return authCodeUrl;
 }
 
-export const authenticateWithCode = async(code: string | null, origin: string, scopes: [string] = ["User.Read"]): Promise<AuthenticationResult> =>  {
+export const authenticateWithCode = async(code: string | null, origin: string, scopes: string[] = scopesMsGraph ): Promise<AuthenticationResult> =>  {
   if (!code) {
     throw new Error("🔥 oauth - GetAccessToken failed - no code");
   }
   try {
-    const msalConfClient = await  checkMsalConfClient()
+    const msalConfClient = await checkMsalConfClient()
     const response = await msalConfClient.acquireTokenByCode({
       code: code,
       scopes: scopes,
@@ -106,7 +112,7 @@ export const authenticateWithCode = async(code: string | null, origin: string, s
   }
 }
 
-export const getAccessToken = async ( sessionData: Session, scopes: [string] = [appConfig.api_scope_default] ): Promise<string> => {
+export const getAccessToken = async ( sessionData: Session, scopes: string[] = [appConfig.api_scope_default] ): Promise<string> => {
   const msalConfClient = await  checkMsalConfClient()
   const account = sessionData.account;
   try {
@@ -123,10 +129,10 @@ export const getAccessToken = async ( sessionData: Session, scopes: [string] = [
   }  
 }
 
-export const getAccessTokenMsGraph = async ( sessionData: Session ): Promise<string> => {
-  const accessToken = await getAccessToken(sessionData, ["User.Read"])
-  return accessToken
-}
+// export const getAccessTokenMsGraph = async ( sessionData: Session ): Promise<string> => {
+//   const accessToken = await getAccessToken(sessionData, ["User.Read"])
+//   return accessToken
+// }
 
 // export const signOut = async ( ): Promise<void> => {
 //   // TBD: implement logout

@@ -15,10 +15,10 @@ let redisClient: RedisClientType | null = null;
 if ( !building) { 
   try{
     console.log("🥞 cache - server - createRedisClient - redis app config");
-    console.log(appConfig.redis_password.substring(0, 3) + "***");
-    console.log(appConfig.redis_host);
-    console.log(appConfig.redis_port);
-    console.log(appConfig.redis_session_db);
+    // console.log(appConfig.redis_password.substring(0, 3) + "***");
+    // console.log(appConfig.redis_host);
+    // console.log(appConfig.redis_port);
+    // console.log(appConfig.redis_session_db);
     redisClient = await createClient({
       url: `${connectionString}/${appConfig.redis_session_db}`,
       socket: {
@@ -27,8 +27,8 @@ if ( !building) {
         connectTimeout: 60000,
       }
     })
-    console.log("👍 🥞 cache - server - createRedisClient - redisClient created");
-    console.log(redisClient);
+    // console.log("👍 🥞 cache - server - createRedisClient - redisClient created");
+    // console.log(redisClient);
     // await new Promise((resolve) => setTimeout(resolve, 10000))
     await redisClient.connect()
     console.log("👍 🥞 cache - server - createRedisClient - redisClient connected");
