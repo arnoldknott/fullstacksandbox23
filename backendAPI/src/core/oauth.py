@@ -92,7 +92,7 @@ def validate_token(request: Request, retries: int = 0):
             # print("=== config.AZURE_ISSUER_URL ===")
             # print(config.AZURE_ISSUER_URL)
             logger.info("Decoding token")
-            jwt.decode(
+            payload = jwt.decode(
                 token,
                 rsa_key,
                 algorithms=["RS256"],
@@ -107,8 +107,8 @@ def validate_token(request: Request, retries: int = 0):
                 },
             )
             logger.info("Token decoded successfully")
-            # print("=== payload ===")
-            # print(payload)
+            print("=== payload ===")
+            print(payload)
 
             return True
             # Try validating token first with cached keys - if no success, fetch new keys, put them in the cache and try again!
