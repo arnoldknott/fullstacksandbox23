@@ -1,7 +1,8 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from core.oauth import ScopeChecker
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router
@@ -67,10 +68,13 @@ app.include_router(
     prefix=f"{global_prefix}/demo_resource",
     tags=["Demo Resource"],
 )
+
+checked_scopes = ScopeChecker(["api.read", "api.write"])
 app.include_router(
     protected_resource_router,
     prefix=f"{global_prefix}/protected_resource",
     tags=["Protected Resource"],
+    dependencies=[Depends(checked_scopes)],
 )
 app.include_router(
     category_router,
