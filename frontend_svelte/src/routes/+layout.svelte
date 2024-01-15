@@ -79,10 +79,10 @@
 			<!-- Implemnt check for user picture size and show svg instead, if no user picture available -->
 			
 			{#if loggedIn}
-				<img class="h-10 w-10 rounded-full" src="/api/v1/user/me/picture" alt="you" />
+				<img class="h-12 w-12 rounded-full" src="/api/v1/user/me/picture" alt="you" />
 				{ session.userProfile.displayName }
 				{#if userPictureURL}
-				<img class="h-10 w-10 rounded-full" src={userPictureURL} alt="you" />
+				<img class="h-12 w-12 rounded-full" src={userPictureURL} alt="you" />
 			{/if}
 			{/if}
 			<!-- Change this to using $page.data -> user -->
