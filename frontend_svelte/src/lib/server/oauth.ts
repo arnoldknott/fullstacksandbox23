@@ -8,6 +8,7 @@ const appConfig = await AppConfig.getInstance();
 // const scopesBackend = [appConfig.api_scope_default]
 const scopesBackend = [ `api://${appConfig.api_scope}/api.read`, `api://${appConfig.api_scope}/api.write` ]
 const scopesMsGraph = [ "User.Read", "openid", "profile", "offline_access" ]
+const scoepsAzure = [ "https://management.azure.com/user_impersonation" ]// for onbehalfof workflow
 
 let msalConfClient: ConfidentialClientApplication | null = null;
 
@@ -70,7 +71,7 @@ const checkMsalConfClient = async () => {
   return msalConfClient
 }
 
-export const signIn = async ( origin: string, scopes: string[] = [ ...scopesBackend, ...scopesMsGraph ] ): Promise<string> => {
+export const signIn = async ( origin: string, scopes: string[] = [ ...scopesBackend, ...scopesMsGraph, ...scoepsAzure ] ): Promise<string> => {
   // Check if msalClient exists on very first login, if not create it.
   // const appConfig = AppConfig.getInstance();
   // console.log("oauth - Authentication - signIn - appConfig: ");

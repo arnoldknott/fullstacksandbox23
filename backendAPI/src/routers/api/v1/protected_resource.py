@@ -33,7 +33,7 @@ def get_protected_resource():
     return {"message": "Hello from a protected resource!"}
 
 
-## not working yet
+# check if working now: should be good! But mainly to be used at router level!
 checked_scopes = ScopeChecker(["api.write"])
 
 

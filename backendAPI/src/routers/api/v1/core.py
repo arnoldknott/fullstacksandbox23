@@ -71,8 +71,8 @@ async def get_onbehalfof(authorization: Annotated[str | None, Header()] = None):
         #     "api.read"
         # ],  # ["User.Read", "https://management.azure.com/user_impersonation"],
     )
-    # print("=== result ===")
-    # print(result)
+    print("=== result ===")
+    print(result)
     try:
         if "access_token" in result:
             logger.info("🔑 Getting user information on behalf of")

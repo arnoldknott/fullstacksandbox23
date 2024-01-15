@@ -7,9 +7,9 @@ const appConfig = await AppConfig.getInstance();
 export const load: PageServerLoad = async ( {locals} ) => {
 	// TBD: consider removing the try catch block
 	try {
-		const accessToken = await getAccessToken(locals.sessionData, [`${appConfig.api_scope}/api.read`]  );// ["https://management.azure.com/user_impersonation"] ["api.read"] ["User.Read"]
-		console.log("playground - on-behalf-of - server - load - accessToken");
-		console.log(accessToken);
+		const accessToken = await getAccessToken(locals.sessionData, [`${appConfig.api_scope}/api.read`] );// ["https://management.azure.com/user_impersonation"] ["api.read"]  ["User.Read"]
+		// console.log("playground - on-behalf-of - server - load - accessToken");
+		// console.log(accessToken);
 		const response = await fetch(`${appConfig.backend_origin}/api/v1/core/onbehalfof`, {
 			headers: {
 				Authorization: `Bearer ${accessToken}`
