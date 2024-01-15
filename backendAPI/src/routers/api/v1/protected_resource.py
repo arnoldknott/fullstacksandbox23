@@ -7,19 +7,6 @@ from fastapi import APIRouter, Depends
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# TBD: add OAuth2AuthorizationCodeBearer, asks for client_id and client_secret
-# needs scopes
-# primarily this is relevant for Swagger UI, API can be accessed by other tools right now, as long as
-# their callback URL is registered in the Azure AD app registration!
-# oauth2_scheme = OAuth2AuthorizationCodeBearer(
-#     authorizationUrl="https://login.microsoftonline.com/f251f123-c9ce-448e-9277-34bb285911d9/oauth2/v2.0/authorize",
-#     tokenUrl="https://login.microsoftonline.com/f251f123-c9ce-448e-9277-34bb285911d9/oauth2/token",
-#     scopes={
-#         "api://{-- put API scope here -- }/api.read": "Read API",
-#         "api://{-- put API scope here -- }/api.write": "Write API",
-#     },
-# )
-
 
 # Not necessary anymore, since the protection is moved to the router level
 # def get_protected_resource(token: Annotated[str, Depends(validate_token)]):
@@ -37,6 +24,8 @@ def get_protected_resource():
 checked_scopes = ScopeChecker(["api.write"])
 
 
+# this variable above adds another scope on top of the one, from the router level
+# to the function below
 @router.get("/scope")
 def get_scope_protected_resource(checked: Annotated[str, Depends(checked_scopes)]):
     """Returns a scope protected resource."""
