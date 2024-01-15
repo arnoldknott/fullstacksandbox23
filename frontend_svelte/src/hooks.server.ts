@@ -24,7 +24,7 @@ export const handle = async ({ event, resolve }) => {
       redirect (307, "/");
     } else if (event.route.id?.includes("(protected)")){
       console.error("🎣 hooks - server - access attempt to protected route without session_id");
-      redirect (307, "/login");
+      redirect (307, "/");
     }
   } else if (sessionId) {
     const session = await retrieveSession(sessionId);

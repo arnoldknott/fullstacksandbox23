@@ -24,4 +24,5 @@ export type User = {
 export type Session = {
 	account: AccountInfo;
 	userAgent: string;
+	loggedIn: boolean;
 }

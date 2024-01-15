@@ -4,7 +4,7 @@ import type { PageServerLoad } from './$types';
 import { v4 as uuidv4 } from 'uuid';
 import { redirect } from '@sveltejs/kit';
 import type { AuthenticationResult } from '@azure/msal-node';
-
+import { user_store } from '$lib/stores';
 
 export const load: PageServerLoad = async ( { url, cookies, request } ) => {
   // const userAgent = request.headers.get('user-agent');
@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ( { url, cookies, request } ) => {
     }
     
   
-    // Create a session, store authenticationResult in the cache, and set the session cookie
+    // Create a session, store authenticationResult in the cache, set the session cookie, and write to user store
     try {
       const sessionId = uuidv4();
       const account = authenticationResult.account;
@@ -31,10 +31,12 @@ export const load: PageServerLoad = async ( { url, cookies, request } ) => {
       if (account){
         const userAgent = request.headers.get('user-agent');
         const session = {
-        account: account,
-        userAgent: userAgent || '',
+          account: account,
+          userAgent: userAgent || '',
+          loggedIn: true
         }
         await setSession(sessionId, '.', session);
+        user_store.set(session);
       } else { 
         console.error("Callback - server - Account not found");
         throw new Error("No account found");

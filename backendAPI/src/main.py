@@ -1,9 +1,10 @@
 import logging
 from contextlib import asynccontextmanager
 
-from core.access import ScopeChecker
+from core.security import ScopeChecker
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
+from routers.api.v1.access_control import router as access_control_router
 from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router
 from routers.api.v1.demo_resource import router as demo_resource_router
@@ -61,7 +62,7 @@ app = FastAPI(
 #     """Runs when the app stops."""
 #     await postgres.disconnect()
 
-
+# TBD: no using underscores in routes - slashes instead, so nested routers. Or dashes. no uppercase letters either!
 app.include_router(core_router, prefix=f"{global_prefix}/core", tags=["Core"])
 app.include_router(
     demo_resource_router,
@@ -69,14 +70,7 @@ app.include_router(
     tags=["Demo Resource"],
 )
 
-# checked_scopes = ScopeChecker(["api.read", "api.write"])
-checked_scopes = ScopeChecker(["api.read"])
-app.include_router(
-    protected_resource_router,
-    prefix=f"{global_prefix}/protected_resource",
-    tags=["Protected Resource"],
-    dependencies=[Depends(checked_scopes)],
-)
+
 app.include_router(
     category_router,
     prefix=f"{global_prefix}/category",
@@ -86,6 +80,23 @@ app.include_router(
     tag_router,
     prefix=f"{global_prefix}/tag",
     tags=["Tag"],
+)
+# checked_scopes = ScopeChecker(["api.read", "api.write"])
+protected_scopes = ScopeChecker(["api.read"])
+app.include_router(
+    protected_resource_router,
+    prefix=f"{global_prefix}/protected_resource",
+    tags=["Protected Resource"],
+    dependencies=[Depends(protected_scopes)],
+)
+course_scopes = ScopeChecker(
+    ["api.read", "api.write"]
+)  # add artificial.read, artificial.write, mapped_account.read, mapped_account.write, ...
+app.include_router(
+    access_control_router,
+    prefix=f"{global_prefix}/access",
+    tags=["Access Control"],
+    dependencies=[Depends(course_scopes)],
 )
 
 

@@ -20,9 +20,11 @@ export const load: LayoutServerLoad = async ({ locals, request }) => {
       loggedIn = true;
       return {
         body: {
-          loggedIn: loggedIn,
-          userProfile: await response.json(),
-          userAgent: request.headers.get('user-agent')
+          sessionData: {
+            loggedIn: loggedIn,
+            userProfile: await response.json(),
+            userAgent: request.headers.get('user-agent')
+          }
         }
       };
       // if (!locals.sessionData){

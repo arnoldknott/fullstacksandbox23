@@ -2,8 +2,8 @@ import logging
 from typing import Annotated
 
 import httpx
-from core.access import get_token_from_header
 from core.config import config
+from core.security import get_token_from_header
 from fastapi import APIRouter, Header
 
 # from fastapi import APIRouter, Depends, Header, HTTPException, status

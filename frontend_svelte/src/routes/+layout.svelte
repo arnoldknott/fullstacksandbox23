@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
-	// import { user_store } from '$lib/stores';
+	import { user_store } from '$lib/stores';
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
 	import type { LayoutData } from './$types';
@@ -13,9 +13,16 @@
 	// console.log('layout - client - data')
 	// console.log(data)
 
-	$: userProfile = data?.body?.userProfile;
+	// gather these three in one session object
+	// $: userProfile = data?.body?.userProfile;
 	// $: userAgent = data?.body?.userAgent;
-	$: loggedIn = data?.body?.loggedIn || false;
+	// $: loggedIn = data?.body?.loggedIn || false;
+	const session = data?.body?.sessionData;
+	const loggedIn = session?.loggedIn || false;
+
+	if (loggedIn) {
+		user_store.set(session);
+	}
 
 	// console.log('layout - client - userProfile')
 	// console.log(userProfile)
@@ -57,8 +64,11 @@
 	<div class="flex w-full flex-wrap items-center justify-between">
 		<div class="flex-grow space-x-4">
 			<NavButton url="/" link="Home" />
-			<NavButton url="/playground" link="Playground" />
-			<NavButton url="/protectedResource" link="Protected" />
+			{#if loggedIn}
+				<NavButton url="/playground" link="Playground" />
+				<NavButton url="/protectedResource" link="Protected" />
+				<NavButton url="/dashboard" link="Dashboard" />
+			{/if}
 			<!-- <Guard redirect="/">
 				<NavButton url="/dashboard" link="Dashboard" />
 			</Guard> -->
@@ -68,9 +78,9 @@
 			<!-- Move this to component user button -->
 			<!-- Implemnt check for user picture size and show svg instead, if no user picture available -->
 			
-			{#if userProfile}
+			{#if loggedIn}
 				<img class="h-10 w-10 rounded-full" src="/api/v1/user/me/picture" alt="you" />
-				{ userProfile.displayName }
+				{ session.userProfile.displayName }
 				{#if userPictureURL}
 				<img class="h-10 w-10 rounded-full" src={userPictureURL} alt="you" />
 			{/if}
@@ -93,6 +103,6 @@
 
 <main>
 	<slot />
-	<JsonData data={ data?.body?.loggedIn }/>
+	<!-- <JsonData data={ data?.body?.loggedIn }/> -->
 	<!-- <JsonData data={ data.body }/> -->
 </main>

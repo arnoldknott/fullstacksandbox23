@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-from core.access import GroupChecker, ScopeChecker, validate_token
+from core.security import GroupChecker, ScopeChecker, validate_token
 from fastapi import APIRouter, Depends
 
 logger = logging.getLogger(__name__)
