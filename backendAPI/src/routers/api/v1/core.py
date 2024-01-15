@@ -71,12 +71,15 @@ async def get_onbehalfof(authorization: Annotated[str | None, Header()] = None):
         #     "api.read"
         # ],  # ["User.Read", "https://management.azure.com/user_impersonation"],
     )
-    print("=== result ===")
-    print(result)
-    if "access_token" in result:
-        logger.info("🔑 Getting user information on behalf of")
-        on_behalf_of_token = result["access_token"]
-        get_users_groups_ms_graph(on_behalf_of_token)
-
-    logger.info("On behalf of access to Microsoft Graph")
-    return {"Accessing Microsoft Graph on behalf of": "user"}
+    # print("=== result ===")
+    # print(result)
+    try:
+        if "access_token" in result:
+            logger.info("🔑 Getting user information on behalf of")
+            on_behalf_of_token = result["access_token"]
+            response = get_users_groups_ms_graph(on_behalf_of_token)
+            logger.info("On behalf of access to Microsoft Graph")
+            return {"body": response}
+    except Exception as err:
+        logger.error("🔑 Failed to fetch user groups from Microsoft Graph.")
+        raise err
