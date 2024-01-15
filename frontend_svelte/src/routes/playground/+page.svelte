@@ -9,6 +9,7 @@
 			url: '/backend_schema'
 		},
 		{
+			// TBD: don't do "_" in URLs, ideally just "/", but "-" is also ok.
 			name: 'Backend - Demo Resources',
 			url: '/backend_demo_resource'
 		},
@@ -31,6 +32,10 @@
 		{
 			name: 'UserAgent',
 			url: '/user_agent'
+		},
+		{
+			name: 'On behalf of user acceess',
+			url: '/onbehalfof'
 		}
 	];
 </script>

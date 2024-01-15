@@ -10,6 +10,9 @@ services:
             - "8660:80"
         volumes:
             - dev-app-data:/data
+            # TBD: mount container app to development on localhost
+            # something like that:
+            - ./backendAPI/:/app
         restart: unless-stopped
         networks:
             - dev_network

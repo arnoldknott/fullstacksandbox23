@@ -30,6 +30,8 @@ jobs:
       REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
       MONGODB_HOST: ${{ vars.MONGODB_HOST }}
       MONGODB_PORT: ${{ vars.MONGODB_PORT }}
+      BACK_CLIENT_SECRET: ${{ secrets.BACK_CLIENT_SECRET }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
     steps:
       - name: echos different variables
         env:
@@ -203,6 +205,7 @@ jobs:
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          # change to vars.AZURE_TENANT_ID
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to staging
@@ -285,6 +288,7 @@ jobs:
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          # change to vars.AZURE_TENANT_ID
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Check for migrations
@@ -349,6 +353,7 @@ jobs:
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          # change to vars.AZURE_TENANT_ID
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Create migration scripts
@@ -449,6 +454,7 @@ jobs:
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          # change to vars.AZURE_TENANT_ID
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to production

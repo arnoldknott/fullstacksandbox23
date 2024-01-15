@@ -1,6 +1,8 @@
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter
+from core.access import GroupChecker, ScopeChecker, validate_token
+from fastapi import APIRouter, Depends
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -29,6 +31,27 @@ def get_protected_resource():
     """Returns a protected resource."""
     logger.info("GET protected resource")
     return {"message": "Hello from a protected resource!"}
+
+
+## not working yet
+checked_scopes = ScopeChecker(["api.write"])
+
+
+@router.get("/scope")
+def get_scope_protected_resource(checked: Annotated[str, Depends(checked_scopes)]):
+    """Returns a scope protected resource."""
+    logger.info("GET scope protected resource")
+    return {"message": "Hello from a protected resource with scope requirement!"}
+
+
+@router.get("/group/{group}")
+def get_group_protected_resource(token: Annotated[str, Depends(validate_token)]):
+    """Returns a group protected resource."""
+    logger.info("GET group protected resource")
+    groups = GroupChecker(["-- put allowed group here --"])
+    print("=== groups ===")
+    print(groups)
+    return {"message": "Hello from a protected resource with scope requirement!"}
 
 
 # @router.get("/oauth")

@@ -11,7 +11,8 @@ const scopesMsGraph = [ "User.Read", "openid", "profile", "offline_access" ]
 
 let msalConfClient: ConfidentialClientApplication | null = null;
 
-
+// construct a user consent urL: https://login.microsoftonline.com/{tenant-id}/authorize?client_id={client-id}
+// https://login.microsoftonline.com/<tenant-id-here>/v2.0/authorize?client_id=<client-id-here>&scope=<scope-here>&redirect_uri=http%3A%2F%2Flocalhost%2Foauth%2Fcallback
 const createMsalConfClient = async () => {
   if (!msalConfClient){
     // const configuration = await app_config();

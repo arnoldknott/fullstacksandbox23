@@ -24,6 +24,7 @@ services:
             - AZURE_TENANT_ID=$AZURE_TENANT_ID
             - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
             - API_SCOPE=$API_SCOPE
+            - BACK_CLIENT_SECRET=$BACK_CLIENT_SECRET
         networks:
             - test_network
         ports: 

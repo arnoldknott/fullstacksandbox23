@@ -68,6 +68,7 @@ class Config(BaseSettings):
     AZURE_ISSUER_URL: str = f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0"
     AZURE_CLIENT_ID: str = get_variable("AZURE_CLIENT_ID")
     API_SCOPE: str = get_variable("API_SCOPE")
+    BACK_CLIENT_SECRET: str = get_variable("BACK_CLIENT_SECRET")
 
     # Client ID of the frontend application registered in Azure AD:
     # add "customer" client registrations here!
