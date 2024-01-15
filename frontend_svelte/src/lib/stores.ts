@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 import type { Session } from '$lib/types.d.ts';
 // import type { PublicClientApplication } from '@azure/msal-browser';
-import type { AccountInfo } from '@azure/msal-browser';
 
 // TBD. consider moving app configuration here:
 // export const configuration = writable<Configuration | undefined>();

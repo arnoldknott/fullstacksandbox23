@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Guard from '$components/Guard.svelte';
 	import { user_store } from '$lib/stores.js';
-	import NavButton from '$components/NavButton.svelte';
+	// import NavButton from '$components/NavButton.svelte';
 </script>
 
 <Guard>

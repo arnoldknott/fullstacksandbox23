@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { user_store } from '$lib/stores.js';
 	import { onMount } from 'svelte';
-	import type { PageData } from './$types';
 
 	export let redirect = '/login';
 

@@ -5,7 +5,7 @@
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
 	import type { LayoutData } from './$types';
-	import JsonData from '$components/JsonData.svelte';
+	// import JsonData from '$components/JsonData.svelte';
 	// import Guard from '$components/Guard.svelte';
 	// import type { User } from 'src/types.d.ts';
 
