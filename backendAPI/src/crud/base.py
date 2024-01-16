@@ -36,7 +36,6 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
         session = self.session
         Model = self.model
         database_object = Model.model_validate(object)
-        # database_object = model(**object.model_dump())
         session.add(database_object)
         await session.commit()
         await session.refresh(database_object)
@@ -69,22 +68,6 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
     ) -> BaseModelType:
         """Updates an object."""
         session = self.session
-        # print("=== old ===")
-        # print(old)
-        # print(type(old))
-        # print(old.last_updated_at)
-        # print("=== new ===")
-        # print(new)
-        # print("=== vars(new) ===")
-        # print(vars(new))
-        # print("=== vars(new).items() ===")
-        # print(vars(new).items())
-        # print("=== new.model_dump() ===")
-        # print(new.model_dump())
-        # print("=== new.model_dump().items() ===")
-        # print(new.model_dump().items())
-        # print("=== new..json() ===")
-        # print(new.json())
         if hasattr(old, "last_updated_at"):
             old.last_updated_at = datetime.now()
         updated = new.model_dump(exclude_unset=True)
@@ -92,14 +75,6 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
             if key == "id" or key == "created_at" or key == "updated_at":
                 continue
             setattr(old, key, value)
-        # for key, value in new.model_dump().items():
-        #     if key == "id" or key == "created_at" or key == "updated_at":
-        #         continue
-        #     if value is not None:
-        #         setattr(old, key, value)
-        # for key, value in vars(new).items():  # .model_dump().items():
-        #     if value is not None:
-        #         setattr(old, key, value)
         object = old
         session.add(object)
         await session.commit()

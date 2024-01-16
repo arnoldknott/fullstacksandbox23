@@ -60,7 +60,8 @@ def get_current_user(request: Request, retries: Optional[int] = 0):
         raise HTTPException(status_code=401, detail="Invalid retry attempt.")
     try:
         token = get_token_from_header(request.headers.get("Authorization"))
-
+        # print("=== token ===")
+        # print(token)
         if token:
             jwks = get_jwks()
 
@@ -87,9 +88,9 @@ def get_current_user(request: Request, retries: Optional[int] = 0):
                 },
             )
             logger.info("Token decoded successfully")
-            return payload
             # print("=== payload ===")
             # print(payload)
+            return payload
             # return True
 
     except Exception as e:
