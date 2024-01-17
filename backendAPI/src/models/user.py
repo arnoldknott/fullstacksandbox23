@@ -12,8 +12,9 @@ from .group_user_link import GroupUserLink
 class UserCreate(SQLModel):
     """Schema for creating a user."""
 
-    is_active: bool = True
-    is_admin: bool = False
+    # should be unnecessary now, ad this information is the access token via groups and roles:
+    # is_active: bool = True
+    # is_admin: bool = False
     azure_user_id: str
     # enables multi-tenancy, if None, then it's the internal tenant:
     azure_tenant_id: Optional[str] = config.AZURE_TENANT_ID
