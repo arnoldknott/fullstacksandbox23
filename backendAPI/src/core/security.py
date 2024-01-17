@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 # To get the swagger UI to work, add the OAuth2AuthorizationCodeBearer to the securitySchemes section of the openapi.json file
 # https://github.com/tiangolo/fastapi/pull/797
 # make the relevant routers dependent on it!
+# currently the redirect URI cannot be passed through Swagger UI,
+# so therefore manual token acquisition is necessary and SwaggerUI does not work with protected routes
 
 
 def get_jwks(no_cache: bool = False):
@@ -44,12 +46,6 @@ def get_jwks(no_cache: bool = False):
 
 def get_token_from_header(auth_header: str):
     """Returns the access token sent in the request header"""
-    try:
-        token = auth_header.split("Bearer ")[1]
-        return token
-    except Exception:
-        logger.error("🔑 Failed to get token from header.")
-        raise HTTPException(status_code=401, detail="Invalid authorization header.")
 
 
 # TBD: move the retries information to somewhere else - maybe add as a header?
@@ -59,7 +55,8 @@ def get_current_user(request: Request, retries: Optional[int] = 0):
     if retries > 1:
         raise HTTPException(status_code=401, detail="Invalid retry attempt.")
     try:
-        token = get_token_from_header(request.headers.get("Authorization"))
+        auth_header = request.headers.get("Authorization")
+        token = auth_header.split("Bearer ")[1]
         # print("=== token ===")
         # print(token)
         if token:
@@ -92,7 +89,6 @@ def get_current_user(request: Request, retries: Optional[int] = 0):
             # print(payload)
             return payload
             # return True
-
     except Exception as e:
         # only one retry allowed: by now the tokens should be cached!
         if retries < 1:
@@ -105,11 +101,7 @@ def get_current_user(request: Request, retries: Optional[int] = 0):
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-def get_token(request: Request):
-    """Returns the access token sent in the request header"""
-    authHeader = request.headers.get("Authorization")
-    token = authHeader.split("Bearer ")[1]
-    return token
+# remove after reafctoring:
 
 
 # Following three dependency functions can be used for restricting the access to the API:
@@ -119,8 +111,12 @@ def get_token(request: Request):
 # - validate_roles: adds checking for the required roles on top of token validation
 #   - get_required_roles: a decorator function to be used as a dependency in routers and endpoints, to pass the relevant roles
 
-# Change Depends to Security, when implementing the OAuth2 scheme for the Swagger UI:
-# https://fastapi.tiangolo.com/reference/dependencies/?h=security#security
+
+def get_token(request: Request):
+    """Returns the access token sent in the request header"""
+    authHeader = request.headers.get("Authorization")
+    token = authHeader.split("Bearer ")[1]
+    return token
 
 
 def validate_token(current_user: dict = Depends(get_current_user)):
