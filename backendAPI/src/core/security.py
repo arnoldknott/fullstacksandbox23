@@ -42,13 +42,21 @@ async def get_jwks(no_cache: bool = False):
                 raise HTTPException(
                     status_code=404, detail="Failed to fetch Open ID config."
                 )
-            jwks = httpx.get(oidc_config["jwks_uri"]).json()
-            print("=== jwks ===")
-            print(jwks)
-            if not jwks:
-                raise HTTPException(status_code=404, detail="Failed to fetch JWKS.")
-            redis_jwks_client.json().set("jwks", ".", json.dumps(jwks))
-            print("=== set the jwks in redis ===")
+            try:
+                jwks = httpx.get(oidc_config["jwks_uri"]).json()
+                print("=== jwks ===")
+                print(jwks)
+            except Exception as err:
+                raise HTTPException(
+                    status_code=404, detail=f"Failed to fetch JWKS online ${err}"
+                )
+            try:
+                redis_jwks_client.json().set("jwks", ".", json.dumps(jwks))
+                print("=== set the jwks in redis ===")
+            except Exception as err:
+                raise HTTPException(
+                    status_code=404, detail=f"Failed to set JWKS in redis: ${err}"
+                )
         return jwks
     except Exception as err:
         logger.error("🔑 Failed to get JWKS.")
