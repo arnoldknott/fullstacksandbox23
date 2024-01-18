@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.post("/", status_code=201)  # change to 201 - this is just to try the tests!
+@router.post("/", status_code=201)
 async def post_demo_resource(
     demo_resource: DemoResourceCreate,
 ) -> DemoResource:

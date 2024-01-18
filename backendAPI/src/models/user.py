@@ -12,20 +12,26 @@ from .group_user_link import GroupUserLink
 class UserCreate(SQLModel):
     """Schema for creating a user."""
 
-    # should be unnecessary now, ad this information is the access token via groups and roles:
-    # is_active: bool = True
-    # is_admin: bool = False
-    azure_user_id: str
+    azure_user_id: uuid.UUID
     # enables multi-tenancy, if None, then it's the internal tenant:
-    azure_tenant_id: Optional[str] = config.AZURE_TENANT_ID
+    azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
+    is_active: bool = True
 
 
 class User(UserCreate, table=True):
     """Schema for a user in the database."""
 
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    # dropping id for now - this is just too confusing during early stages and not needed
+    # if other sources than Azure AD are used, then this potentially needs to be re-added
+    # careful when doing that - take production database offline first!
+    # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    azure_user_id: uuid.UUID = Field(index=True, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
-    # TBD: add "last_access_at" here
+    is_active: Optional[bool] = Field(default=True)
+    # TBD: add "last_access_at" here?
+    # don't add Roles as they are coming in from the access token:
+    # single source of truth and now legacy data floating
+    # configure group membership in Azure Portal under Enterprise Applications instead.
 
     # create the relationships and back population to groups, topics,... here!
     groups: Optional[List["Group"]] = Relationship(
@@ -45,7 +51,8 @@ class User(UserCreate, table=True):
 class UserRead(UserCreate):
     """Schema for reading a user."""
 
-    id: uuid.UUID  # no longer optional - needs to exist now
+    azure_user_id: uuid.UUID
+    # id: uuid.UUID  # no longer optional - needs to exist now
 
     # add everything, that should be shown from the backpopulations here
     # but only what's realistically needed!
@@ -59,7 +66,7 @@ class UserUpdate(UserCreate):
     """Schema for updating a user."""
 
     is_active: Optional[bool] = None
-    is_admin: Optional[bool] = None
+    # is_admin: Optional[bool] = None
 
     # class BrightspaceAccount(SQLModel, table=True):
     #     """Schema for a linking a brightspace (DTU Learn) account to the database."""

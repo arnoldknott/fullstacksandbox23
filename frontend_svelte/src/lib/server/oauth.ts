@@ -116,8 +116,8 @@ export const authenticateWithCode = async(code: string | null, origin: string, s
 
 export const getAccessToken = async ( sessionData: Session, scopes: string[] = [appConfig.api_scope_default] ): Promise<string> => {
   const msalConfClient = await  checkMsalConfClient()
-  const account = sessionData.account;
   try {
+    const account = sessionData.account;
     const response = await msalConfClient.acquireTokenSilent({
     scopes: scopes,
     account: account,

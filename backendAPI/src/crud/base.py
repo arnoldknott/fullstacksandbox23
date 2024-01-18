@@ -41,6 +41,8 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
         await session.refresh(database_object)
         return database_object
 
+    # TBD: implement a create_if_not_exists method
+
     # TBD: add skip and limit
     # async def read_all(self, skip: int = 0, limit: int = 100)  -> list[BaseModelType]:
     async def read_all(self) -> list[BaseModelType]:

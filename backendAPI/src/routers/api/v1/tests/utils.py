@@ -1,4 +1,36 @@
 """Defines utility functions for testing, for example test datasets and dependencies (for example a logged in user if required)."""
+from uuid import uuid4
+
+# user_test_input = {
+#     "azure_user_id": UUID("12345678-1234-1234-1234-123456789012"),
+#     "azure_tenant_id": UUID("12345678-1234-1234-1234-123456789012"),
+# }
+
+user_test_input = {
+    "azure_user_id": "12345678-1234-1234-1234-123456789012",
+    "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
+}
+
+azure_home_tenant = str(uuid4())
+user_test_inputs = [
+    {
+        "azure_user_id": str(uuid4()),
+        "azure_tenant_id": azure_home_tenant,
+    },
+    {
+        "azure_user_id": str(uuid4()),
+        "azure_tenant_id": azure_home_tenant,
+    },
+    {
+        "azure_user_id": str(uuid4()),
+        "azure_tenant_id": str(uuid4()),  # foreign tenant here.
+    },
+]
+
+# Mocks payload to detect scope api.write:
+token_payload_scope_api_write = {
+    "scp": "api.write",
+}
 
 demo_resource_test_input = {
     "name": "Name of Test Resource",

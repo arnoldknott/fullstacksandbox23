@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 
-from core.security import ScopeChecker
+from core.security import guards
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from routers.api.v1.access_control import router as access_control_router
@@ -10,6 +10,7 @@ from routers.api.v1.core import router as core_router
 from routers.api.v1.demo_resource import router as demo_resource_router
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.tag import router as tag_router
+from routers.api.v1.user import router as user_router
 
 # print("Current directory:", os.getcwd())
 # print("sys.path:", sys.path)
@@ -82,21 +83,27 @@ app.include_router(
     tags=["Tag"],
 )
 # checked_scopes = ScopeChecker(["api.read", "api.write"])
-protected_scopes = ScopeChecker(["api.read"])
+# protected_scopes = ScopeChecker(["api.read"])
 app.include_router(
     protected_resource_router,
     prefix=f"{global_prefix}/protected_resource",
     tags=["Protected Resource"],
-    dependencies=[Depends(protected_scopes)],
+    # dependencies=[Depends(protected_scopes)],
 )
-course_scopes = ScopeChecker(
-    ["api.read", "api.write"]
-)  # add artificial.read, artificial.write, mapped_account.read, mapped_account.write, ...
+# course_scopes = ScopeChecker(
+#     ["api.read", "api.write"]
+# )  # add artificial.read, artificial.write, mapped_account.read, mapped_account.write, ...
 app.include_router(
     access_control_router,
     prefix=f"{global_prefix}/access",
     tags=["Access Control"],
-    dependencies=[Depends(course_scopes)],
+    # dependencies=[Depends(course_scopes)],
+)
+app.include_router(
+    user_router,
+    prefix=f"{global_prefix}/user",
+    tags=["User"],
+    dependencies=[Depends(guards.current_token_has_scope_api_write)],
 )
 
 

@@ -3,7 +3,8 @@ from typing import Annotated
 
 import httpx
 from core.config import config
-from core.security import get_token_from_header
+
+# from core.security import get_token_from_header
 from fastapi import APIRouter, Header
 
 # from fastapi import APIRouter, Depends, Header, HTTPException, status
@@ -113,14 +114,26 @@ async def get_keyvault():
 #     return {"access_token": token, "token_type": "bearer"}
 
 
+# previously in security - not really needed any more!
+# def get_token_from_header(auth_header: str):
+#     """Returns the access token sent in the request header"""
+#     try:
+#         token = auth_header.split("Bearer ")[1]
+#         return token
+#     except Exception:
+#         logger.error("🔑 Failed to get token from header.")
+#         raise HTTPException(status_code=401, detail="Invalid authorization header.")
+
+
 # Note: this one is protected under the scope "user_impersonization"" from https://management.azure.com
 # Cannot scopes from other audiences, like this backendAPI.
 @router.get("/onbehalfof")
 async def get_onbehalfof(authorization: Annotated[str | None, Header()] = None):
     """Access Microsoft Graph as downstream API on behalf of the user."""
-    # print("=== authorization ===")
+    # print("=== header ===")
     # print(authorization)
-    token = get_token_from_header(authorization)
+    token = authorization.split("Bearer ")[1]
+    # token = get_token_from_header(authorization)
     logger.info("🔑 Acquiring token on behalf of")
     print("=== getting token on behalf of ===")
     result = confClientApp.acquire_token_on_behalf_of(
