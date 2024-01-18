@@ -41,10 +41,6 @@ services:
             - POSTGRES_DB=$POSTGRES_DB
             - POSTGRES_USER=$POSTGRES_USER
             - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-            # - REDIS_HOST=$REDIS_HOST
-            # - REDIS_PORT=$REDIS_PORT
-            # - MONGODB_HOST=$MONGODB_HOST
-            # - MONGODB_PORT=$MONGODB_PORT
         networks:
             - test_network
 

@@ -23,6 +23,7 @@ jobs:
       POSTGRES_HOST: ${{ vars.POSTGRES_HOST }}
       POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      REDIS_ARGS: ${{ secrets.REDIS_ARGS }}
       REDIS_HOST: ${{ vars.REDIS_HOST }}
       REDIS_PORT: ${{ vars.REDIS_PORT }}
       REDIS_JWKS_DB: ${{ vars.REDIS_JWKS_DB }}
