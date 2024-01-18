@@ -53,6 +53,14 @@ jobs:
           echo $GITHUB_WORKFLOW_SHA
           echo "=== github.sha ==="
           echo ${{ github.sha }}
+          echo "=== REDIS_HOST ==="
+          echo $REDIS_HOST
+          echo "=== REDIS_PORT ==="
+          echo $REDIS_PORT
+          echo "=== REDIS_JWKS_DB ==="
+          echo $REDIS_JWKS_DB
+          echo "=== REDIS_SESSION_DB ==="
+          echo $REDIS_SESSION_DB
       - uses: actions/checkout@v4
       # - name: Build
       #   run: |
