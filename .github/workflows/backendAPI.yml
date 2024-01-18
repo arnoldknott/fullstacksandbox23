@@ -45,8 +45,6 @@ jobs:
           echo ${{ github.event.workflow_run.head_sha }}
           echo "=== github.event.workflow_run.head_branch ==="
           echo ${{ github.event.workflow_run.head_branch }}
-          echo "=== JSON deserialized github.event ==="
-          echo $GITHUB_EVENT
           echo "=== GITHUB_SHA ==="
           echo $GITHUB_SHA
           echo "=== GITHUB_WORKFLOW_SHA ==="
