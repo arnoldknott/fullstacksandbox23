@@ -3,7 +3,6 @@ import logging
 from typing import List, Optional
 
 from fastapi import HTTPException
-from models.group import GroupCreate
 from models.group_user_link import GroupUserLink
 from models.user import User, UserCreate, UserRead, UserUpdate
 from sqlmodel import select
@@ -14,7 +13,7 @@ from .group import GroupCRUD
 logger = logging.getLogger(__name__)
 
 
-class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate]):
+class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     def __init__(self):
         super().__init__(User)
 
@@ -31,7 +30,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate]):
     # Any user passed in, get's checked for existence, if not existing, it get's created!
     # no matter if the user existed or not, group membership gets checked and created if needed!
     # Note the difference between user_id and azure_user_id as well as group_id and azure_group_id!
-    async def update_user_in_db(
+    async def create_user_and_groups_if_not_exist(
         self, azure_user_id: str, azure_tenant_id: str, groups: Optional[List[str]]
     ) -> UserRead:
         """Checks if user and its groups exist, if not create and link them."""
@@ -41,47 +40,55 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate]):
         print(azure_tenant_id)
         print("=== groups ===")
         print(groups)
-        async with self.session as session:
-            try:
-                current_user = await self.read_by_id(azure_user_id)
-            except HTTPException as err:
-                if err.status_code == 404:
-                    user_create = UserCreate(
-                        azure_user_id=azure_user_id, azure_tenant_id=azure_tenant_id
-                    )
-                    logger.info("USER created in database")
-                    current_user = await self.create(user_create)
-            # if used elsewhere consider update if needed! But should also be covered already by the base.update!
-            for azure_group_id in groups:
-                # call group crud to check if group exists, if not create it!
-                async with GroupCRUD() as group_crud:
-                    try:
-                        group_crud.read_by_id(azure_group_id)
-                    except HTTPException as err:
-                        if err.status_code == 404:
-                            group_create = GroupCreate(
-                                azure_group_id=azure_group_id,
-                                azure_tenant_id=azure_tenant_id,
-                            )
-                            group_crud.create(group_create)
-                        # when using this elsewhere, consider if update is needed in else if statement
-                        # But should also be covered already by the base.update!
-                    user_group_link = await session.exec(
-                        select(GroupUserLink).where(
-                            GroupUserLink.azure_user_id == current_user.azure_user_id,
-                            GroupUserLink.azure_group_id == azure_group_id,
-                        )
-                    )
-                    if not user_group_link:
-                        user_group_link = GroupUserLink(
-                            user_id=current_user.azure_user_id,
-                            group_id=azure_group_id,
-                        )
-                        session.add(user_group_link)
-                        await session.commit()
-                        await session.refresh(user_group_link)
-            # current_user = await session.get(User, user_id)
-            return current_user
+        try:
+            current_user = await self.read_by_id(azure_user_id)
+        except HTTPException as err:
+            if err.status_code == 404:
+                user_create = UserCreate(
+                    azure_user_id=azure_user_id, azure_tenant_id=azure_tenant_id
+                )
+                current_user = await self.create(user_create)
+                logger.info("USER created in database")
+            else:
+                raise err
+        # if used elsewhere consider update if needed! But should also be covered already by the base.update!
+        for azure_group_id in groups:
+            print(
+                "=== user crud - create_user_and_groups_if_not_exist - azure_group_id ==="
+            )
+            print(azure_group_id)
+            # call group crud to check if group exists, if not create it!
+            async with GroupCRUD() as group_crud:
+                await group_crud.create_if_not_exists(azure_group_id, azure_tenant_id)
+                # try:
+                #     group_crud.read_by_id(azure_group_id)
+                # except HTTPException as err:
+                #     if err.status_code == 404:
+                #         group_create = GroupCreate(
+                #             azure_group_id=azure_group_id,
+                #             azure_tenant_id=azure_tenant_id,
+                #         )
+                #         group_crud.create(group_create)
+                # when using this elsewhere, consider if update is needed in else if statement
+                # But should also be covered already by the base.update!
+            session = self.session
+            user_group_link = await session.exec(
+                select(GroupUserLink).where(
+                    GroupUserLink.azure_user_id == current_user.azure_user_id,
+                    GroupUserLink.azure_group_id == azure_group_id,
+                )
+            )
+            if not user_group_link:
+                user_group_link = GroupUserLink(
+                    azure_user_id=current_user.azure_user_id,
+                    azure_group_id=azure_group_id,
+                )
+                session.add(user_group_link)
+                await session.commit()
+                await session.refresh(user_group_link)
+            # read again after the relationship to the groups is created:
+        current_user = await self.read_by_id(azure_user_id)
+        return current_user
 
     async def deactivate_user(self, azure_user_id: str) -> User:
         """Deactivates a user."""

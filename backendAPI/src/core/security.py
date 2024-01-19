@@ -25,34 +25,34 @@ async def get_jwks(no_cache: bool = False):
     logger.info("🔑 Fetching JWKS")
     try:
         if not no_cache:
-            print("=== no_cache ===")
-            print(no_cache)
+            # print("=== no_cache ===")
+            # print(no_cache)
             jwks = redis_jwks_client.json().get("jwks")
             if jwks:
                 return json.loads(jwks)
             else:
                 await get_jwks(no_cache=True)
         else:
-            print("=== config.AZURE_OPENID_CONFIG_URL ===")
-            print(config.AZURE_OPENID_CONFIG_URL)
+            # print("=== config.AZURE_OPENID_CONFIG_URL ===")
+            # print(config.AZURE_OPENID_CONFIG_URL)
             oidc_config = httpx.get(config.AZURE_OPENID_CONFIG_URL).json()
-            print("=== oidc_config ===")
-            print(oidc_config)
+            # print("=== oidc_config ===")
+            # print(oidc_config)
             if not oidc_config:
                 raise HTTPException(
                     status_code=404, detail="Failed to fetch Open ID config."
                 )
             try:
                 jwks = httpx.get(oidc_config["jwks_uri"]).json()
-                print("=== jwks ===")
-                print(jwks)
+                # print("=== jwks ===")
+                # print(jwks)
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to fetch JWKS online ${err}"
                 )
             try:
                 redis_jwks_client.json().set("jwks", ".", json.dumps(jwks))
-                print("=== set the jwks in redis ===")
+                # print("=== set the jwks in redis ===")
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to set JWKS in redis: ${err}"
@@ -158,9 +158,18 @@ class Guards:
         user_id = payload["oid"]
         # roles = payload["roles"]
         tenant_id = payload["tid"]
-        # TBD: decide wether to use azure_user_id as primary key or keep with the extra uuid here.
+        # This is responsible for self-sign on: if a user has a token, the user is allowed
+        # Who gets the tokens is controlled by the identity provider (Azure AD)
+        # Can be through membership in a group, which has access to the application
+        # -> in Azure portal under Enterprise applications,
+        # ->turn of filter enterprise applications and
+        # -> search for the backend application registration
+        # -> under users and groups add the users or groups:
+        # -> gives and revokes access for users and groups based on roles
         async with UserCRUD() as crud:
-            current_user = await crud.update_user_in_db(user_id, tenant_id, groups)
+            current_user = await crud.create_user_and_groups_if_not_exist(
+                user_id, tenant_id, groups
+            )
             if current_user:
                 return current_user
             else:

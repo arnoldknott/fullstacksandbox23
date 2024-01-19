@@ -1,9 +1,9 @@
 import logging
-from typing import Annotated, List
+from typing import List
 
-from core.security import Guards
+from core.security import guards
 from crud.user import UserCRUD
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from models.user import User, UserCreate, UserRead, UserUpdate
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ async def post_user(
 
 @router.get("/")
 async def get_all_users(
-    _=Depends(Guards.current_user_is_admin),
+    _=Depends(guards.current_user_is_admin),
 ) -> List[User]:
     """Returns all user."""
     logger.info("GET all user")
@@ -40,8 +40,8 @@ async def get_all_users(
 @router.get("/{user_id}")
 async def get_user_by_id(
     user_id: str,
-    calling_user=Annotated[User, Depends(Guards.current_user_in_database)],
-    calling_user_is_admin=Annotated[User, Depends(Guards.current_user_is_admin)],
+    calling_user: User = Depends(guards.current_user_in_database),
+    calling_user_is_admin: User = Depends(guards.current_user_is_admin),
 ) -> UserRead:
     """Returns a user."""
     if calling_user.azure_user_id != user_id:
@@ -62,8 +62,7 @@ async def get_user_by_id(
 @router.put("/{user_id}")
 async def update_user(
     user_id: str,
-    user: UserUpdate,
-    _=Annotated[User, Depends(Guards.current_user_in_database)],
+    user: UserUpdate = Depends(guards.current_user_in_database),
 ) -> User:
     """Updates a user."""
     logger.info("PUT user")
@@ -79,9 +78,7 @@ async def update_user(
 
 
 @router.delete("/{user_id}")
-async def delete_user(
-    user_id: str, _=Annotated[User, Depends(Guards.current_user_in_database)]
-) -> User:
+async def delete_user(user_id: str = Depends(guards.current_user_in_database)) -> User:
     """Deletes a user."""
     logger.info("DELETE user")
     try:
@@ -93,29 +90,4 @@ async def delete_user(
         result = await crud.delete(user_id)
     # print("=== result ===")
     # print(result)
-    return result
-
-
-@router.post("/{user_id}/tag/")
-async def add_user_to_group(
-    user_id: str,
-    tag_ids: Annotated[
-        List[int], Query()
-    ],  # TBD: move the arguments from Query to json!
-) -> UserRead:
-    """Adds a user to a group."""
-    logger.info("POST user")
-    try:
-        user_id = int(user_id)
-    except ValueError:
-        logger.error("User ID is not an integer")
-        raise HTTPException(status_code=400, detail="Invalid user id")
-    # sShould not be necessary, as FastAPI should do this automatically
-    # try:
-    #     tag_ids = int(tag_id)
-    # except ValueError:
-    #     logger.error("Tag ID is not an integer")
-    #     raise HTTPException(status_code=400, detail="Invalid tag id")
-    async with UserCRUD() as crud:
-        result = await crud.add_tag(user_id, tag_ids)
     return result

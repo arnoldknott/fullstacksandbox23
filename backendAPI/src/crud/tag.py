@@ -1,12 +1,12 @@
 from fastapi import HTTPException
 from models.demo_resource import DemoResource
-from models.tag import Tag, TagCreate, TagUpdate
+from models.tag import Tag, TagCreate, TagRead, TagUpdate
 from sqlmodel import select
 
 from .base import BaseCRUD
 
 
-class TagCRUD(BaseCRUD[Tag, TagCreate, TagUpdate]):
+class TagCRUD(BaseCRUD[Tag, TagCreate, TagRead, TagUpdate]):
     def __init__(self):
         super().__init__(Tag)
 

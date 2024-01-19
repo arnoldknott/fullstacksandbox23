@@ -16,7 +16,9 @@ from .base import BaseCRUD
 # from sqlalchemy.future import select
 
 
-class DemoResourceCRUD(BaseCRUD[DemoResource, DemoResourceCreate, DemoResourceUpdate]):
+class DemoResourceCRUD(
+    BaseCRUD[DemoResource, DemoResourceCreate, DemoResourceRead, DemoResourceUpdate]
+):
     def __init__(self):
         super().__init__(DemoResource)
 
