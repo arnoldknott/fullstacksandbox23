@@ -1,14 +1,14 @@
 from typing import List
 
 from fastapi import HTTPException
-from models.category import Category, CategoryCreate, CategoryUpdate
+from models.category import Category, CategoryCreate, CategoryRead, CategoryUpdate
 from models.demo_resource import DemoResource
 from sqlmodel import select
 
 from .base import BaseCRUD
 
 
-class CategoryCRUD(BaseCRUD[Category, CategoryCreate, CategoryUpdate]):
+class CategoryCRUD(BaseCRUD[Category, CategoryCreate, CategoryRead, CategoryUpdate]):
     def __init__(self):
         super().__init__(Category)
 

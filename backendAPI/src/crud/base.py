@@ -8,16 +8,21 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 BaseModelType = TypeVar("BaseModelType", bound=SQLModel)
 BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=SQLModel)
+BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=SQLModel)
 BaseSchemaTypeUpdate = TypeVar("BaseSchemaTypeUpdate", bound=SQLModel)
 
 
-class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate]):
+class BaseCRUD(
+    Generic[
+        BaseModelType,
+        BaseSchemaTypeCreate,
+        BaseSchemaTypeRead,
+        BaseSchemaTypeUpdate,
+    ]
+):
     """Base class for CRUD operations."""
 
-    def __init__(
-        self,
-        base_model: Type[BaseModelType],
-    ):
+    def __init__(self, base_model: Type[BaseModelType]):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
@@ -36,15 +41,17 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
         session = self.session
         Model = self.model
         database_object = Model.model_validate(object)
-        # database_object = model(**object.model_dump())
         session.add(database_object)
         await session.commit()
         await session.refresh(database_object)
         return database_object
 
+    # TBD: implement a create_if_not_exists method
+
     # TBD: add skip and limit
     # async def read_all(self, skip: int = 0, limit: int = 100)  -> list[BaseModelType]:
-    async def read_all(self) -> list[BaseModelType]:
+    # Changing to return BaseSchemaTypeRead instead of BaseModelType makes read_with_childs obsolete!
+    async def read_all(self) -> list[BaseSchemaTypeRead]:
         """Returns all objects."""
         session = self.session
         model = self.model
@@ -55,7 +62,8 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
             raise HTTPException(status_code=404, detail="No objects found")
         return response.all()
 
-    async def read_by_id(self, object_id: int) -> BaseModelType:
+    # Changing to return BaseSchemaTypeRead instead of BaseModelType makes read_with_childs obsolete!
+    async def read_by_id(self, object_id: int) -> BaseSchemaTypeRead:
         """Returns an object by id."""
         session = self.session
         model = self.model
@@ -69,22 +77,6 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
     ) -> BaseModelType:
         """Updates an object."""
         session = self.session
-        # print("=== old ===")
-        # print(old)
-        # print(type(old))
-        # print(old.last_updated_at)
-        # print("=== new ===")
-        # print(new)
-        # print("=== vars(new) ===")
-        # print(vars(new))
-        # print("=== vars(new).items() ===")
-        # print(vars(new).items())
-        # print("=== new.model_dump() ===")
-        # print(new.model_dump())
-        # print("=== new.model_dump().items() ===")
-        # print(new.model_dump().items())
-        # print("=== new..json() ===")
-        # print(new.json())
         if hasattr(old, "last_updated_at"):
             old.last_updated_at = datetime.now()
         updated = new.model_dump(exclude_unset=True)
@@ -92,14 +84,6 @@ class BaseCRUD(Generic[BaseModelType, BaseSchemaTypeCreate, BaseSchemaTypeUpdate
             if key == "id" or key == "created_at" or key == "updated_at":
                 continue
             setattr(old, key, value)
-        # for key, value in new.model_dump().items():
-        #     if key == "id" or key == "created_at" or key == "updated_at":
-        #         continue
-        #     if value is not None:
-        #         setattr(old, key, value)
-        # for key, value in vars(new).items():  # .model_dump().items():
-        #     if value is not None:
-        #         setattr(old, key, value)
         object = old
         session.add(object)
         await session.commit()

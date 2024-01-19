@@ -1,38 +1,303 @@
+import json
 import logging
+from typing import Optional
 
-from fastapi import HTTPException, Request
-
-# import httpx
-## Use pyjwt to decode the tokens!
+import httpx
+import jwt
+from core.cache import redis_jwks_client
+from core.config import config
+from crud.user import UserCRUD
+from fastapi import Depends, HTTPException, Request
+from jwt.algorithms import RSAAlgorithm
 
 logger = logging.getLogger(__name__)
 
+# To get the swagger UI to work, add the OAuth2AuthorizationCodeBearer to the securitySchemes section of the openapi.json file
+# https://github.com/tiangolo/fastapi/pull/797
+# make the relevant routers dependent on it!
+# currently the redirect URI cannot be passed through Swagger UI,
+# so therefore manual token acquisition is necessary and SwaggerUI does not work with protected routes
 
-def get_jwks():
+
+# Helper function for get_token_payload:
+async def get_jwks(no_cache: bool = False):
     """Fetches the JWKs from identity provider"""
-    # try:
-    #     jwks_url = f"https://{AUTH0_DOMAIN}/.well-known/jwks.json"
-    #     jwks = httpx.get(jwks_url)
-    #     jwks.raise_for_status()
-    #     return jwks.json()
-    # except Exception as e:
-    #     logger.error(f"Failed to fetch JWKS: ${e}")
-    #     raise HTTPException(status_code=500, detail="Failed to fetch JWKS")
-
-
-def validate_token(request: Request):
-    """Validates the access token sent in the request header"""
-    # get the token from the header:
-    # print("=== request.headers ===")
-    # print(request.headers)
+    logger.info("🔑 Fetching JWKS")
     try:
-        # request.headers.get("Authorization").split("Bearer ")[1]
-        token = request.headers.get("Authorization").split("Bearer ")[1]
+        if not no_cache:
+            # print("=== no_cache ===")
+            # print(no_cache)
+            jwks = redis_jwks_client.json().get("jwks")
+            if jwks:
+                return json.loads(jwks)
+            else:
+                await get_jwks(no_cache=True)
+        else:
+            # print("=== config.AZURE_OPENID_CONFIG_URL ===")
+            # print(config.AZURE_OPENID_CONFIG_URL)
+            oidc_config = httpx.get(config.AZURE_OPENID_CONFIG_URL).json()
+            # print("=== oidc_config ===")
+            # print(oidc_config)
+            if not oidc_config:
+                raise HTTPException(
+                    status_code=404, detail="Failed to fetch Open ID config."
+                )
+            try:
+                jwks = httpx.get(oidc_config["jwks_uri"]).json()
+                # print("=== jwks ===")
+                # print(jwks)
+            except Exception as err:
+                raise HTTPException(
+                    status_code=404, detail=f"Failed to fetch JWKS online ${err}"
+                )
+            try:
+                redis_jwks_client.json().set("jwks", ".", json.dumps(jwks))
+                # print("=== set the jwks in redis ===")
+            except Exception as err:
+                raise HTTPException(
+                    status_code=404, detail=f"Failed to set JWKS in redis: ${err}"
+                )
+        return jwks
+    except Exception as err:
+        logger.error("🔑 Failed to get JWKS.")
+        raise err
+
+
+# TBD: move the retries information to somewhere else - maybe add as a header?
+async def get_token_payload(request: Request, retries: Optional[int] = 0):
+    """Validates the access token sent in the request header and returns the payload if valid"""
+    logger.info("🔑 Validating token")
+    if retries > 1:
+        raise HTTPException(status_code=401, detail="Invalid retry attempt.")
+    try:
+        auth_header = request.headers.get("Authorization")
+        token = auth_header.split("Bearer ")[1]
+        # print("=== token ===")
+        # print(token)
         if token:
-            print("=== token exists ===")
-            # print(token)
-            # print("=== get_jwks() ===")
-            # print(get_jwks())
+            jwks = await get_jwks()
+
+            # Get the key that matches the kid:
+            kid = jwt.get_unverified_header(token)["kid"]
+            rsa_key = {}
+            for key in jwks["keys"]:
+                if key["kid"] == kid:
+                    rsa_key = RSAAlgorithm.from_jwk(key)
+            logger.info("Decoding token")
+            # validate the token
+            payload = jwt.decode(
+                token,
+                rsa_key,
+                algorithms=["RS256"],
+                audience=config.API_SCOPE,
+                issuer=config.AZURE_ISSUER_URL,
+                options={
+                    "validate_iss": True,
+                    "validate_aud": True,
+                    "validate_exp": True,
+                    "validate_nbf": True,
+                    "validate_iat": True,
+                },
+            )
+            logger.info("Token decoded successfully")
+            # print("=== payload ===")
+            # print(payload)
+            return payload
+            # return True
     except Exception as e:
-        logger.error(f"Token validation failed: ${e}")
+        # only one retry allowed: by now the tokens should be cached!
+        if retries < 1:
+            logger.info(
+                "🔑 Failed to validate token, fetching new JWKS and trying again."
+            )
+            await get_jwks(no_cache=True)
+            return await get_token_payload(request, retries + 1)
+        logger.error(f"🔑 Token validation failed: ${e}")
         raise HTTPException(status_code=401, detail="Invalid token")
+
+
+class Guards:
+    """Guards for protecting routes"""
+
+    def __init__(self):
+        pass
+
+    async def current_user_is_admin(self, payload: dict = Depends(get_token_payload)):
+        """Checks if the current user is admin"""
+        if "Admin" in payload["roles"]:
+            return True
+        else:
+            raise HTTPException(status_code=403, detail="Access forbidden")
+
+    # TBD: Refactor: merge api.read and api.write into one scope api.access!
+    async def current_token_has_scope_api_read(
+        self, payload: dict = Depends(get_token_payload)
+    ):
+        """Checks if the current token has the api.read scope"""
+        if "api.read" in payload["scp"].split(" "):
+            return True
+        else:
+            raise HTTPException(status_code=403, detail="Access forbidden")
+
+    async def current_token_has_scope_api_write(
+        self, payload: dict = Depends(get_token_payload)
+    ):
+        """Checks if the current token has the api.write scope"""
+        if "api.write" in payload["scp"].split(" "):
+            return True
+        else:
+            raise HTTPException(status_code=403, detail="Access forbidden")
+
+    async def current_user_in_database(
+        payload: dict = Depends(get_token_payload),
+    ):
+        """Checks checks user in database and adds or updates the group membership of the user"""
+        groups = payload["groups"]
+        # print("=== groups ===")
+        # print(groups)
+        user_id = payload["oid"]
+        # roles = payload["roles"]
+        tenant_id = payload["tid"]
+        # This is responsible for self-sign on: if a user has a token, the user is allowed
+        # Who gets the tokens is controlled by the identity provider (Azure AD)
+        # Can be through membership in a group, which has access to the application
+        # -> in Azure portal under Enterprise applications,
+        # ->turn of filter enterprise applications and
+        # -> search for the backend application registration
+        # -> under users and groups add the users or groups:
+        # -> gives and revokes access for users and groups based on roles
+        async with UserCRUD() as crud:
+            current_user = await crud.create_user_and_groups_if_not_exist(
+                user_id, tenant_id, groups
+            )
+            if current_user:
+                return current_user
+            else:
+                raise HTTPException(status_code=404, detail="404 User not found")
+
+    async def token_is_valid(self, payload: dict = Depends(get_token_payload)):
+        """Checks if the token is valid"""
+        if payload:
+            return True
+        else:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+
+guards = Guards()
+
+# remove after refactoring:
+
+
+# Following three dependency functions can be used for restricting the access to the API:
+# - validate_token: authorization check if the token is valid
+# - validate_scope: adds checking for the required scope on top of token validation
+#   - get_required_scopes: a decorator function to be used as a dependency in routers and endpoints, to pass the relevant scopes
+# - validate_roles: adds checking for the required roles on top of token validation
+#   - get_required_roles: a decorator function to be used as a dependency in routers and endpoints, to pass the relevant roles
+
+
+def get_token(request: Request):
+    """Returns the access token sent in the request header"""
+    authHeader = request.headers.get("Authorization")
+    token = authHeader.split("Bearer ")[1]
+    return token
+
+
+def validate_token(current_user: dict = Depends(get_token_payload)):
+    """Turns the existence of a validated user into a dependency (just by retuning a bool)"""
+    logger.info("🔑 User access to protected route")
+    if current_user:
+        return True
+
+
+# class ScopeChecker:
+#     """Checks if the required scope is present in the access token"""
+
+#     def __init__(self, scopes: List[str]):
+#         self.required_scopes = scopes
+
+#     def __call__(
+#         self,
+#         current_user: Annotated[str, Depends(get_token_payload)],
+#         # scopes: List[str] = ["api.read"],
+#     ):
+#         # All required scopes must be present in the access token!
+#         logger.info("🔑 User access to protected route with scope requirement")
+#         if not set(self.required_scopes).issubset(set(current_user["scp"].split(" "))):
+#             raise HTTPException(status_code=403, detail="🔑 Token misses required scope")
+
+
+# class GroupChecker:
+#     """Checks if the user is a member of one of the allowed groups"""
+
+#     def __init__(self, groups: List[str]):
+#         self.allowed_groups = groups
+
+#     def __call__(
+#         self,
+#         current_user: Annotated[str, Depends(get_token_payload)],
+#         access_token: Annotated[str, Depends(get_token)],
+#     ):
+#         # The user must be member of at least one of the allowed groups!
+#         logger.info("🔑 Accessing protected route with group requirement")
+#         try:
+#             """Search for the allowed groups in the groups the user is member of from Microsoft Graph API"""
+#             # TBD: add caching here!
+#             # TBD: use search parameter on Microsoft Graph API to reduce the number of requests
+#             response = httpx.get(
+#                 "https://graph.microsoft.com/v1.0/me/transitiveMemberOf"
+#             )
+#             groups = response.json()
+#             print("=== groups ===")
+#             print(groups)
+#             # if not set(self.allowed_groups).issubset(set(current_user["groups"])):
+#             #     raise HTTPException(status_code=403, detail="🔑 User not member of allowed groups")
+#         except Exception as err:
+#             logger.error("🔑 Failed to fetch user groups from Microsoft Graph.")
+#             raise err
+
+
+# # declaration of decorator function to be used as a dependency in routers and endpoints
+# def get_required_scopes(scopes: List[str]):
+#     """Returns a list of required scopes"""
+
+#     def _inner():
+#         return scopes
+
+#     return _inner
+
+
+# def validate_scope(
+#     required_scopes: List[str] = Depends(get_required_scopes(["api.read"])),
+#     get_token_payload: dict = Depends(validate_token),
+# ):
+#     """Validates the scope of the access token sent in the request header - minimum required scope is api.read"""
+#     if not set(required_scopes).issubset(set(get_token_payload["scp"].split(" "))):
+#         raise HTTPException(status_code=403, detail="Forbidden")
+#     pass
+
+
+# # Factory function to create a dependency
+# def require_scopes(scopes: List[str]):
+#     """Returns a dependency that checks for the required scopes"""
+#     return Depends(validate_scope(Depends(get_required_scopes(scopes))))
+
+
+# declaration of decorator function to be used as a dependency in routers and endpoints
+# def get_required_roles(roles: List[str]):
+#     """Returns a list of required scopes"""
+
+#     def _inner():
+#         return roles
+
+#     return _inner
+
+
+# def validate_roles(
+#     required_roles: List[str] = Depends(get_required_roles(["Guest Student"])),
+#     get_token_payload: dict = Depends(validate_token),
+# ):
+#     """Validates the roles of the access token sent in the request header"""
+#     if not set(required_roles).issubset(set(get_token_payload["roles"].split(" "))):
+#         raise HTTPException(status_code=403, detail="Forbidden")
+#     pass

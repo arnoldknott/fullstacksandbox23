@@ -1,15 +1,13 @@
-
-// import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { app_config } from '$lib/server/config';
+import AppConfig from '$lib/server/config';
 import { getAccessToken } from '$lib/server/oauth';
-const config = await app_config();
-// import { get_ms_graph } from '$lib/server/microsoft_graph';
+
+const appConfig = await AppConfig.getInstance();
 
 // TBD: add type PageServerLoad here?
 export const load: PageServerLoad = async ( {locals } ) => {
-	const accessToken = await getAccessToken(locals.sessionData);
-	const response = await fetch(`${config.ms_graph_base_uri}/me`, {
+	const accessToken = await getAccessToken(locals.sessionData, ["User.Read"]);
+	const response = await fetch(`${appConfig.ms_graph_base_uri}/me`, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`
 		}

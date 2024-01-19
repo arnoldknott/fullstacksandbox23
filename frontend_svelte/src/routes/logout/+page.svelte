@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount } from 'svelte';
+// import { onMount } from 'svelte';
 // import { signOut } from '$lib/oauth.js';
 // import type { PageData } from './$types';
 // export let data: PageData;
@@ -16,13 +16,13 @@ import { onMount } from 'svelte';
 // const auth = $auth_instance_store
 // console.log('login - client - auth')
 // console.log(auth)
-onMount( async () => {
-	// const auth = $auth_instance_store
-	// await auth.signOut( origin )
-	// auth_instance_store.set(auth);
-	// microsoft_account_store.set(undefined);
-	// user_store.set(undefined);
-});
+// onMount( async () => {
+// 	// const auth = $auth_instance_store
+// 	// await auth.signOut( origin )
+// 	// auth_instance_store.set(auth);
+// 	// microsoft_account_store.set(undefined);
+// 	// user_store.set(undefined);
+// });
 
 // onMount(() => {
 // 	console.log('signing out')

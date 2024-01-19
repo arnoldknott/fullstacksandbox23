@@ -1,22 +1,31 @@
-import { app_config } from '$lib/server/config';
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+// import { signOut } from '$lib/server/oauth';
+import { redirect } from '@sveltejs/kit';
+// import {redirect} from '@sveltejs/kit';
+import AppConfig from '$lib/server/config';
+import { user_store } from '$lib/stores';
+const appConfig = await AppConfig.getInstance();
 
-export const load: PageServerLoad = async ( ) => {
-	const configuration =  await app_config()
-  // console.log("login - server - configuration");
-  // console.log(configuration)
-  try {
-    const azure_authority = configuration.azure_authority;
-    const app_reg_client_id = configuration.app_reg_client_id;
-    return { authority: azure_authority, client_id: app_reg_client_id };
-  }
-  catch (err) {
-    console.error(err);
-    throw error(404, 'App configuration unavailable');
-  }
 
-};
+export const load: PageServerLoad = async ( {url, cookies} ) => {
+		// console.log("IMPLEMENT logout!");
+	cookies.delete("session_id", {
+		path: "/",
+		expires: new Date(0),
+	});
+	user_store.set(undefined)
+	// signOut();
+	redirect(307, `${appConfig.az_logout_uri}?post_logout_redirect_uri=${url.origin}/`);
+// 	// redirect(302, "/");
+// 	return {
+// 		location: "/",
+// 		body: {
+// 			loggedIn: false,
+// 			userProfile: undefined,
+// 			userAgent: undefined
+// 		}
+// };
+}
 
 // import type { PageServerLoad } from './$types';
 

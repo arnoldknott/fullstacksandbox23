@@ -2,8 +2,54 @@ import pytest
 from models.category import Category
 from models.demo_resource import DemoResource
 from models.tag import Tag
+from models.user import User
 from sqlmodel.ext.asyncio.session import AsyncSession
-from utils import categories_test_inputs, demo_resource_test_inputs, tag_test_inputs
+from utils import (
+    categories_test_inputs,
+    demo_resource_test_inputs,
+    tag_test_inputs,
+    user_test_inputs,
+)
+
+# def generate_mock_token(
+#     is_admin: bool = False,
+#     expired: bool = False,
+#     groups: Optional[List[str]] = None,
+# ) -> str:
+#     """Generate a mock JWT token for testing."""
+
+#     # Set the issued at time (iat) to the current time
+#     iat = time.time()
+
+#     # Set the not before time (nbf) to the current time
+#     nbf = iat
+
+#     # If the token should be expired, set the expiration time (exp) to a time in the past
+#     # Otherwise, set it to a time in the future
+#     exp = iat - 100 if expired else iat + 3600
+
+#     # Set the roles based on the is_admin flag
+#     roles = ["Admin"] if is_admin else ["User"]
+
+#     # Set the groups
+#     groups = groups or []
+
+#     # Create the payload
+#     payload = {
+#         "iat": iat,
+#         "nbf": nbf,
+#         "exp": exp,
+#         "roles": roles,
+#         "groups": groups,
+#     }
+
+#     # Encode the payload into a JWT token
+#     token = jwt.encode(
+#         payload, "needs to be a PEM file", algorithm="RS256", headers={"kid": "mykidstring"}
+#     )
+
+#     return token
+
 
 # @pytest.fixture(scope="function")
 # async def add_test_demo_resources(get_async_test_session: AsyncSession):
@@ -19,6 +65,50 @@ from utils import categories_test_inputs, demo_resource_test_inputs, tag_test_in
 #         demo_resource_instances.append(demo_resource_instance)
 
 #     yield demo_resource_instances
+
+# @pytest.fixture(scope="function")
+# def admin_token():
+#     """Returns a mock admin token."""
+#     return generate_mock_token(is_admin=True)
+
+
+# @pytest.fixture(scope="function")
+# def valid_user_token():
+#     """Returns a mock user token."""
+#     return generate_mock_token(is_admin=False)
+
+
+# @pytest.fixture(scope="function")
+# def valid_user_token_with_one_group():
+#     """Returns a mock user token."""
+#     return generate_mock_token(is_admin=False, groups=[uuid4()])
+
+
+# @pytest.fixture(scope="function")
+# def valid_user_token_with_groups():
+#     """Returns a mock user token."""
+#     return generate_mock_token(is_admin=False, groups=[uuid4(), uuid4(), uuid4()])
+
+
+# @pytest.fixture(scope="function")
+# def expired_token():
+#     """Returns a mock expired token."""
+#     return generate_mock_token(expired=True)
+
+
+@pytest.fixture(scope="function")
+async def add_test_users(get_async_test_session: AsyncSession):
+    """Adds a category to the database."""
+    session = get_async_test_session
+    users = []
+    for user in user_test_inputs:
+        this_user = User(**user)
+        session.add(this_user)
+        await session.commit()
+        await session.refresh(this_user)
+        users.append(this_user)
+
+    yield users
 
 
 @pytest.fixture(scope="function")

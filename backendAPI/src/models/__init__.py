@@ -5,4 +5,9 @@ due to using sqlmodel."""
 from .category import Category  # noqa F401
 from .demo_resource import DemoResource  # noqa F401
 from .demo_resource_tag_link import DemoResourceTagLink  # noqa F401
+from .group import Group  # noqa F401
+from .group_user_link import GroupUserLink  # noqa F401
 from .tag import Tag  # noqa F401
+from .user import User  # noqa F401
+
+# add BrightspaceAccount, DiscordAccount, GoogleAccount and more as imports from .user for account linking!

@@ -18,10 +18,13 @@ services:
             - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
             - REDIS_HOST=$REDIS_HOST
             - REDIS_PORT=$REDIS_PORT
+            - REDIS_JWKS_DB=$REDIS_JWKS_DB
             - REDIS_SESSION_DB=$REDIS_SESSION_DB
             - REDIS_PASSWORD=$REDIS_PASSWORD
-            - MONGODB_HOST=$MONGODB_HOST
-            - MONGODB_PORT=$MONGODB_PORT
+            - AZURE_TENANT_ID=$AZURE_TENANT_ID
+            - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
+            - API_SCOPE=$API_SCOPE
+            - BACK_CLIENT_SECRET=$BACK_CLIENT_SECRET
         networks:
             - test_network
         ports: 
@@ -38,10 +41,6 @@ services:
             - POSTGRES_DB=$POSTGRES_DB
             - POSTGRES_USER=$POSTGRES_USER
             - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-            # - REDIS_HOST=$REDIS_HOST
-            # - REDIS_PORT=$REDIS_PORT
-            # - MONGODB_HOST=$MONGODB_HOST
-            # - MONGODB_PORT=$MONGODB_PORT
         networks:
             - test_network
 
@@ -51,20 +50,22 @@ services:
             args:
                 - REDIS_HOST=$REDIS_HOST
                 - REDIS_PORT=$REDIS_PORT
+                - REDIS_JWKS_DB=$REDIS_JWKS_DB
                 - REDIS_SESSION_DB=$REDIS_SESSION_DB
                 - REDIS_PASSWORD=$REDIS_PASSWORD
                 - APP_REG_CLIENT_ID=$APP_REG_CLIENT_ID
                 - APP_CLIENT_SECRET=$APP_CLIENT_SECRET
-                - AZURE_AUTHORITY=$AZURE_AUTHORITY
+                - AZURE_TENANT_ID=$AZURE_TENANT_ID
                 - API_SCOPE=$API_SCOPE
         environment:
             - REDIS_HOST=$REDIS_HOST
             - REDIS_PORT=$REDIS_PORT
+            - REDIS_JWKS_DB=$REDIS_JWKS_DB
             - REDIS_SESSION_DB=$REDIS_SESSION_DB
             - REDIS_PASSWORD=$REDIS_PASSWORD
             - APP_REG_CLIENT_ID=$APP_REG_CLIENT_ID
             - APP_CLIENT_SECRET=$APP_CLIENT_SECRET
-            - AZURE_AUTHORITY=$AZURE_AUTHORITY
+            - AZURE_TENANT_ID=$AZURE_TENANT_ID
             - API_SCOPE=$API_SCOPE
         networks:
             - test_network

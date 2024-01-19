@@ -1,7 +1,7 @@
 from typing import AsyncGenerator, Generator
 
 import pytest
-from core.databases import postgres_async_engine
+from core.databases import postgres_async_engine  # should be SQLite here only!
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from main import app
