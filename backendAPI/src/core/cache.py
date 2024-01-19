@@ -1,7 +1,7 @@
 import redis
 from core.config import config
 
-print("=== cache.py started ===")
+# print("=== cache.py started ===")
 
 # print("=== config.REDIS_HOST ===")
 # print(config.REDIS_HOST)
@@ -17,4 +17,4 @@ redis_jwks_client = redis.Redis(
     db=config.REDIS_JWKS_DB,
 )
 
-print("=== cache.py finished ===")
+# print("=== cache.py finished ===")
