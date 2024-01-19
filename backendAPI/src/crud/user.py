@@ -74,16 +74,21 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             session = self.session
             user_group_link = await session.exec(
                 select(GroupUserLink).where(
-                    GroupUserLink.azure_user_id == current_user.azure_user_id,
+                    GroupUserLink.azure_user_id == azure_user_id,
                     GroupUserLink.azure_group_id == azure_group_id,
                 )
             )
+            user_group_link = user_group_link.first()
+            ("=== user_group_link - select ===")
+            print(user_group_link)
             if not user_group_link:
                 user_group_link = GroupUserLink(
-                    azure_user_id=current_user.azure_user_id,
+                    azure_user_id=azure_user_id,
                     azure_group_id=azure_group_id,
                 )
                 session.add(user_group_link)
+                print("=== user_group_link - add ===")
+                print(user_group_link)
                 await session.commit()
                 await session.refresh(user_group_link)
             # read again after the relationship to the groups is created:
