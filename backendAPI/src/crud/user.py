@@ -34,12 +34,12 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         self, azure_user_id: str, azure_tenant_id: str, groups: Optional[List[str]]
     ) -> UserRead:
         """Checks if user and its groups exist, if not create and link them."""
-        print("=== user_id ===")
-        print(azure_user_id)
-        print("=== tenant_id ===")
-        print(azure_tenant_id)
-        print("=== groups ===")
-        print(groups)
+        # print("=== user_id ===")
+        # print(azure_user_id)
+        # print("=== tenant_id ===")
+        # print(azure_tenant_id)
+        # print("=== groups ===")
+        # print(groups)
         try:
             current_user = await self.read_by_id(azure_user_id)
         except HTTPException as err:
@@ -79,16 +79,16 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 )
             )
             user_group_link = user_group_link.first()
-            ("=== user_group_link - select ===")
-            print(user_group_link)
+            # ("=== user_group_link - select ===")
+            # print(user_group_link)
             if not user_group_link:
                 user_group_link = GroupUserLink(
                     azure_user_id=azure_user_id,
                     azure_group_id=azure_group_id,
                 )
                 session.add(user_group_link)
-                print("=== user_group_link - add ===")
-                print(user_group_link)
+                # print("=== user_group_link - add ===")
+                # print(user_group_link)
                 await session.commit()
                 await session.refresh(user_group_link)
             # read again after the relationship to the groups is created:

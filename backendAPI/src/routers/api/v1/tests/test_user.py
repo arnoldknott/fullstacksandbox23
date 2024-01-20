@@ -59,6 +59,8 @@ async def test_post_user(async_client: AsyncClient):
 # - admin user updates a user
 # - admin user deletes a user
 # - regular user wants to delete itself
+# - users connections to groups are created in the database
+# - a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
 
 # Failing tests:
 # TBD: implement test, where regular user (not admin):
