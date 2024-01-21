@@ -42,8 +42,8 @@ async def test_post_user(async_client: AsyncClient):
         async with UserCRUD() as crud:
             db_user = await crud.read_by_id(user_test_input["azure_user_id"])
         assert db_user is not None
-        print("=== db_user ===")
-        print(db_user)
+        # print("=== db_user ===")
+        # print(db_user)
         db_user_json = jsonable_encoder(db_user)
         # print("=== db_user ===")
         # print(db_user)
@@ -58,13 +58,13 @@ async def test_post_user(async_client: AsyncClient):
 # - regular user reads itself by id
 # - admin user updates a user
 # - admin user deletes a user
-# - regular user wants to delete itself
+# - regular user deletes itself
 # - users connections to groups are created in the database
 # - a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
 
 # Failing tests:
 # TBD: implement test, where regular user (not admin):
-# - wants to create a user
+# - wants to create another user
 # - wants to read all user
 # - wants to put a user
 # - wants to read a different user by id

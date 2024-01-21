@@ -31,6 +31,13 @@ user_test_inputs = [
 token_payload_scope_api_write = {
     "scp": "api.write",
 }
+token_payload_scope_api_read_write = {
+    "scp": "api.read api.write",
+}
+token_payload_roles_user = {
+    "roles": "User",
+}
+token_payload_roles_admin = {"roles": ["User", "Admin"]}
 
 demo_resource_test_input = {
     "name": "Name of Test Resource",
