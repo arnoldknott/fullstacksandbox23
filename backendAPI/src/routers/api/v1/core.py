@@ -19,6 +19,7 @@ router = APIRouter()
 # # needs scopes
 # # primarily this is relevant for Swagger UI, API can be accessed by other tools right now, as long as
 # # their callback URL is registered in the Azure AD app registration!
+# # move this to main.py?
 # oauth2_scheme = OAuth2AuthorizationCodeBearer(
 #     authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize",
 #     tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/token",

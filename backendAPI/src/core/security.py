@@ -11,12 +11,27 @@ from fastapi import Depends, HTTPException, Request
 from jwt.algorithms import RSAAlgorithm
 
 logger = logging.getLogger(__name__)
+# router = APIRouter()
 
 # To get the swagger UI to work, add the OAuth2AuthorizationCodeBearer to the securitySchemes section of the openapi.json file
 # https://github.com/tiangolo/fastapi/pull/797
 # make the relevant routers dependent on it!
 # currently the redirect URI cannot be passed through Swagger UI,
 # so therefore manual token acquisition is necessary and SwaggerUI does not work with protected routes
+
+
+# swagger-ui per default uses /docs/oauth2-redirect
+# @router.get("/docs/oauth2-redirect")
+# async def oauth_callback(code: str):
+#     """Callback for the OAuth2 Authorization Code flow"""
+#     logger.info("OAuth2 Authorization Code flow callback")
+#     try:
+#         print("=== code ===")
+#         print(code)
+#         # TBD: implement MSAL handling of retrieving a token from the code.
+#     except Exception as err:
+#         logger.error("OAuth2 Authorization Code flow callback failed.")
+#         raise err
 
 
 # Helper function for get_token_payload:

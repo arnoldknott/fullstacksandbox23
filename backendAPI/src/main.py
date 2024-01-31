@@ -37,6 +37,32 @@ async def lifespan(app: FastAPI):
     logger.info("Application shutdown")
 
 
+# # TBD: add OAuth2AuthorizationCodeBearer, asks for client_id and client_secret
+# # needs scopes
+# # primarily this is relevant for Swagger UI, API can be accessed by other tools right now, as long as
+# # their callback URL is registered in the Azure AD app registration!
+# oauth2_scheme = OAuth2AuthorizationCodeBearer(
+#     authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize",
+#     tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/token",
+#     scopes={
+#         f"api://{config.API_SCOPE}/api.read": "Read API",
+#         f"api://{config.API_SCOPE}/api.write": "Write API",
+#     },
+#     scheme_name="OAuth2 Authorization Code",
+#     description="OAuth2 Authorization Code Bearer implementation for Swagger UI - identity provider is Microsoft Azure AD",
+# )
+
+# swagger_ui_parameters = {
+#     "oauth2RedirectUrl": "http://localhost:8000/oauth/callback",  # replace with your actual callback URL
+# }
+
+# or:
+# swagger_ui_parameters = {
+#     "network": {
+#         "oauth2RedirectUrl": "http://localhost:8000/oauth/callback",  # replace with your actual callback URL
+#     }
+# }
+
 # TBD consider moving to router?
 global_prefix = "/api/v1"
 
@@ -46,6 +72,7 @@ app = FastAPI(
     description="Playground for trying out anything freely before using in projects.",  # TBD: add the longer markdown description here
     version="0.0.1",  # TBD: read from CHANGELOG.md or environment variable or so?
     lifespan=lifespan,
+    # swagger_ui_parameters=swagger_ui_parameters,
     # TBD: add contact - also through environment variables?
 )
 
@@ -64,6 +91,7 @@ app = FastAPI(
 #     await postgres.disconnect()
 
 # TBD: no using underscores in routes - slashes instead, so nested routers. Or dashes. no uppercase letters either!
+# app.include_router(oauth_router, tags=["OAuth"])
 app.include_router(core_router, prefix=f"{global_prefix}/core", tags=["Core"])
 app.include_router(
     demo_resource_router,
@@ -88,6 +116,7 @@ app.include_router(
     protected_resource_router,
     prefix=f"{global_prefix}/protected_resource",
     tags=["Protected Resource"],
+    # dependencies=[Depends(oauth2_scheme)],
     # dependencies=[Depends(protected_scopes)],
 )
 # course_scopes = ScopeChecker(
