@@ -1,7 +1,8 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from core.security import guards
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from routers.api.v1.access_control import router as access_control_router
 from routers.api.v1.category import router as category_router
@@ -9,6 +10,7 @@ from routers.api.v1.core import router as core_router
 from routers.api.v1.demo_resource import router as demo_resource_router
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.tag import router as tag_router
+from routers.api.v1.user import router as user_router
 
 # print("Current directory:", os.getcwd())
 # print("sys.path:", sys.path)
@@ -128,12 +130,12 @@ app.include_router(
 )
 # Sign-up is handled by security - controlled by token content!
 # TBD: this can be implemented later for admin dashboard or so.
-# app.include_router(
-#     user_router,
-#     prefix=f"{global_prefix}/user",
-#     tags=["User"],
-#     dependencies=[Depends(guards.current_token_has_scope_api_write)],
-# )
+app.include_router(
+    user_router,
+    prefix=f"{global_prefix}/user",
+    tags=["User"],
+    dependencies=[Depends(guards.current_azure_token_has_scope_api_write)],
+)
 
 
 # exception handler logs exceptions before passing them to the default exception handler

@@ -5,19 +5,26 @@ from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
 from models.user import User
-from utils import token_payload_scope_api_write, user_test_input
+from utils import (
+    token_payload_roles_admin,
+    token_payload_scope_api_write,
+    user_test_input,
+)
 
 
 @pytest.mark.anyio
 async def test_post_user(async_client: AsyncClient):
     """Tests the post_user endpoint of the API."""
     with patch(
-        "core.security.get_token_payload", new_callable=AsyncMock
-    ) as mock_get_token_payload:
+        "core.security.get_azure_token_payload", new_callable=AsyncMock
+    ) as mock_get_azure_token_payload:
         # , patch(
         #     "core.security.guards.current_token_has_scope_api_write", new_callable=AsyncMock
         # ) as mock_api_write:
-        mock_get_token_payload.return_value = token_payload_scope_api_write
+        mock_get_azure_token_payload.return_value = {
+            **token_payload_scope_api_write,
+            **token_payload_roles_admin,
+        }
         # mock_api_write.return_value = True
         # apparently another instance of Guard is getting called than the patched one.
 
@@ -29,8 +36,8 @@ async def test_post_user(async_client: AsyncClient):
             json=user_test_input,
         )
 
-        print(mock_get_token_payload.call_count)
-        mock_get_token_payload.assert_called_once()
+        # print(mock_get_azure_token_payload.call_count)
+        mock_get_azure_token_payload.assert_called_once()
         # mock_api_write.assert_called_once()
 
         assert response.status_code == 201
@@ -40,7 +47,7 @@ async def test_post_user(async_client: AsyncClient):
 
         # Verify that the user was created in the database
         async with UserCRUD() as crud:
-            db_user = await crud.read_by_id(user_test_input["azure_user_id"])
+            db_user = await crud.read_by_azure_user_id(user_test_input["azure_user_id"])
         assert db_user is not None
         # print("=== db_user ===")
         # print(db_user)

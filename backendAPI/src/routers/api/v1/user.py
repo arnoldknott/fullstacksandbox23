@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from core.security import Guards, guards
+from core.security import guards
 from crud.user import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException
 from models.user import User, UserCreate, UserRead, UserUpdate
@@ -20,7 +20,8 @@ async def post_user(
     # that means, controlled by group and user membership in azure entra ad!
     # The roles assigned to users and groups decide about sign-up here.
     # This function allows admins to sign up users through API on top of that.
-    _=Depends(Guards.current_azure_user_is_admin),
+    # TBD: add admin guard!
+    _=Depends(guards.current_azure_user_is_admin),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
@@ -33,7 +34,7 @@ async def post_user(
 
 @router.get("/")
 async def get_all_users(
-    _=Depends(guards.current_user_is_admin),
+    _=Depends(guards.current_azure_user_is_admin),
 ) -> List[User]:
     """Returns all user."""
     logger.info("GET all user")
@@ -47,8 +48,8 @@ async def get_all_users(
 @router.get("/{user_id}")
 async def get_user_by_id(
     user_id: str,
-    calling_user: User = Depends(guards.current_user_in_database),
-    calling_user_is_admin: User = Depends(guards.current_user_is_admin),
+    calling_user: User = Depends(guards.current_azure_user_in_database),
+    calling_user_is_admin: User = Depends(guards.current_azure_user_is_admin),
 ) -> UserRead:
     """Returns a user."""
     if calling_user.azure_user_id != user_id:
@@ -69,7 +70,7 @@ async def get_user_by_id(
 @router.put("/{user_id}")
 async def update_user(
     user_id: str,
-    user: UserUpdate = Depends(guards.current_user_in_database),
+    user: UserUpdate = Depends(guards.current_azure_user_in_database),
 ) -> User:
     """Updates a user."""
     logger.info("PUT user")
@@ -85,7 +86,9 @@ async def update_user(
 
 
 @router.delete("/{user_id}")
-async def delete_user(user_id: str = Depends(guards.current_user_in_database)) -> User:
+async def delete_user(
+    user_id: str = Depends(guards.current_azure_user_in_database),
+) -> User:
     """Deletes a user."""
     logger.info("DELETE user")
     try:
