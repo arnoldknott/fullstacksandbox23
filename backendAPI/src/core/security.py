@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 # Helper function for get_token_payload:
-async def get_jwks(no_cache: bool = False):
+async def get_azure_jwks(no_cache: bool = False):
     """Fetches the JWKs from identity provider"""
     logger.info("🔑 Fetching JWKS")
     try:
@@ -46,7 +46,7 @@ async def get_jwks(no_cache: bool = False):
             if jwks:
                 return json.loads(jwks)
             else:
-                await get_jwks(no_cache=True)
+                await get_azure_jwks(no_cache=True)
         else:
             # print("=== config.AZURE_OPENID_CONFIG_URL ===")
             # print(config.AZURE_OPENID_CONFIG_URL)
@@ -79,7 +79,7 @@ async def get_jwks(no_cache: bool = False):
 
 
 # TBD: move the retries information to somewhere else - maybe add as a header?
-async def get_token_payload(request: Request, retries: Optional[int] = 0):
+async def get_azure_token_payload(request: Request, retries: Optional[int] = 0):
     """Validates the access token sent in the request header and returns the payload if valid"""
     logger.info("🔑 Validating token")
     if retries > 1:
@@ -90,7 +90,7 @@ async def get_token_payload(request: Request, retries: Optional[int] = 0):
         # print("=== token ===")
         # print(token)
         if token:
-            jwks = await get_jwks()
+            jwks = await get_azure_jwks()
 
             # Get the key that matches the kid:
             kid = jwt.get_unverified_header(token)["kid"]
@@ -125,8 +125,8 @@ async def get_token_payload(request: Request, retries: Optional[int] = 0):
             logger.info(
                 "🔑 Failed to validate token, fetching new JWKS and trying again."
             )
-            await get_jwks(no_cache=True)
-            return await get_token_payload(request, retries + 1)
+            await get_azure_jwks(no_cache=True)
+            return await get_azure_token_payload(request, retries + 1)
         logger.error(f"🔑 Token validation failed: ${e}")
         raise HTTPException(status_code=401, detail="Invalid token")
 
@@ -137,7 +137,9 @@ class Guards:
     def __init__(self):
         pass
 
-    async def current_user_is_admin(self, payload: dict = Depends(get_token_payload)):
+    async def current_azure_user_is_admin(
+        self, payload: dict = Depends(get_azure_token_payload)
+    ):
         """Checks if the current user is admin"""
         if "Admin" in payload["roles"]:
             return True
@@ -145,8 +147,8 @@ class Guards:
             raise HTTPException(status_code=403, detail="Access forbidden")
 
     # TBD: Refactor: merge api.read and api.write into one scope api.access!
-    async def current_token_has_scope_api_read(
-        self, payload: dict = Depends(get_token_payload)
+    async def current_azure_token_has_scope_api_read(
+        self, payload: dict = Depends(get_azure_token_payload)
     ):
         """Checks if the current token has the api.read scope"""
         if "api.read" in payload["scp"].split(" "):
@@ -154,8 +156,8 @@ class Guards:
         else:
             raise HTTPException(status_code=403, detail="Access forbidden")
 
-    async def current_token_has_scope_api_write(
-        self, payload: dict = Depends(get_token_payload)
+    async def current_azure_token_has_scope_api_write(
+        self, payload: dict = Depends(get_azure_token_payload)
     ):
         """Checks if the current token has the api.write scope"""
         if "api.write" in payload["scp"].split(" "):
@@ -163,8 +165,8 @@ class Guards:
         else:
             raise HTTPException(status_code=403, detail="Access forbidden")
 
-    async def current_user_in_database(
-        payload: dict = Depends(get_token_payload),
+    async def current_azure_user_in_database(
+        payload: dict = Depends(get_azure_token_payload),
     ):
         """Checks checks user in database and adds or updates the group membership of the user"""
         groups = payload["groups"]
@@ -182,7 +184,7 @@ class Guards:
         # -> under users and groups add the users or groups:
         # -> gives and revokes access for users and groups based on roles
         async with UserCRUD() as crud:
-            current_user = await crud.create_user_and_groups_if_not_exist(
+            current_user = await crud.create_azure_user_and_groups_if_not_exist(
                 user_id, tenant_id, groups
             )
             if current_user:
@@ -190,7 +192,9 @@ class Guards:
             else:
                 raise HTTPException(status_code=404, detail="404 User not found")
 
-    async def token_is_valid(self, payload: dict = Depends(get_token_payload)):
+    async def azure_token_is_valid(
+        self, payload: dict = Depends(get_azure_token_payload)
+    ):
         """Checks if the token is valid"""
         if payload:
             return True
@@ -218,10 +222,10 @@ def get_token(request: Request):
     return token
 
 
-def validate_token(current_user: dict = Depends(get_token_payload)):
+def validate_azure_token(current_azure_user: dict = Depends(get_azure_token_payload)):
     """Turns the existence of a validated user into a dependency (just by retuning a bool)"""
     logger.info("🔑 User access to protected route")
-    if current_user:
+    if current_azure_user:
         return True
 
 

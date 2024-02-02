@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from core.security import guards
+from core.security import Guards, guards
 from crud.user import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException
 from models.user import User, UserCreate, UserRead, UserUpdate
@@ -9,11 +9,18 @@ from models.user import User, UserCreate, UserRead, UserUpdate
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+# TBD: basically I don't need the user endpoints in the API currently,
+# as everything is handled through the tokens issued by Azure.
+
 
 @router.post("/", status_code=201)
 async def post_user(
     user: UserCreate,
-    # _=Depends(Guards.current_user_is_admin),# self-sign-up, so only protected by router scope: api.write!
+    # note: self-sign-up through security - controlled by token content,
+    # that means, controlled by group and user membership in azure entra ad!
+    # The roles assigned to users and groups decide about sign-up here.
+    # This function allows admins to sign up users through API on top of that.
+    _=Depends(Guards.current_azure_user_is_admin),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")

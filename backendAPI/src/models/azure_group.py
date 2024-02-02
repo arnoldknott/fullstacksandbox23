@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING, List, Optional
 from core.config import config
 from sqlmodel import Field, Relationship, SQLModel
 
-from .group_user_link import GroupUserLink
+from .azure_group_user_link import AzureGroupUserLink
 
 if TYPE_CHECKING:
     from .user import User
 
 
-class GroupCreate(SQLModel):
+class AzureGroupCreate(SQLModel):
     """Schema for creating a group."""
 
     azure_group_id: uuid.UUID
@@ -20,7 +20,7 @@ class GroupCreate(SQLModel):
     is_active: bool = True
 
 
-class Group(GroupCreate, table=True):
+class AzureGroup(AzureGroupCreate, table=True):
     """Schema for a group in the database."""
 
     # dropping id for now - this is just too confusing during early stages and not needed
@@ -33,26 +33,26 @@ class Group(GroupCreate, table=True):
     # last_updated_at: datetime = Field(default=datetime.now())# does not really make sense here
 
     users: Optional[List["User"]] = Relationship(
-        back_populates="groups",
-        link_model=GroupUserLink,
+        back_populates="azure_groups",
+        link_model=AzureGroupUserLink,
         sa_relationship_kwargs={"lazy": "selectin"},
     )
 
     # create the relationships and back population to users, courses... here!
 
 
-class GroupRead(GroupCreate):
+class AzureGroupRead(AzureGroupCreate):
     """Schema for reading a group."""
 
     azure_group_id: uuid.UUID
     # id: uuid.UUID  # no longer optional - needs to exist now
-    users: Optional[List["User"]] = []
+    azure_users: Optional[List["User"]] = []
 
     # add everything, that should be shown from the backpopulations here
     # but only what's realistically needed!
 
 
-class GroupUpdate(GroupCreate):
+class AzureGroupUpdate(AzureGroupCreate):
     """Schema for updating a group."""
 
     is_active: Optional[bool] = None
