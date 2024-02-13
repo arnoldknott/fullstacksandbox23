@@ -58,6 +58,7 @@ async def test_post_user(async_client: AsyncClient):
         assert db_user_json["azure_tenant_id"] == user_test_input["azure_tenant_id"]
 
 
+# TBD: consider writing tests for security instead and drop all endpoints for user and groups (for now)?
 # Passing tests:
 # - admin user creates a user
 # - admin user reads all users
@@ -66,6 +67,7 @@ async def test_post_user(async_client: AsyncClient):
 # - admin user updates a user
 # - admin user deletes a user
 # - regular user deletes itself
+# for the following: groups are not part of the user endpoints - need their own endpoints, but security is taking care of the sign-up!
 # - users connections to groups are created in the database
 # - a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
 
