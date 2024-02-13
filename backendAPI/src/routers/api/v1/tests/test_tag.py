@@ -14,7 +14,7 @@ async def test_post_tag(async_client: AsyncClient):
     assert response.status_code == 201
     content = response.json()
     assert content["name"] == tag["name"]
-    assert "id" in content
+    assert "tag_id" in content
 
 
 @pytest.mark.anyio
@@ -41,7 +41,7 @@ async def test_get_all_tags(async_client: AsyncClient, add_test_tags: list[Tag])
     assert len(response.json()) == 4
     content = response.json()[3]
     assert content["name"] == tags[3].name
-    assert "id" in content
+    assert "tag_id" in content
 
 
 @pytest.mark.anyio
@@ -53,7 +53,7 @@ async def test_get_tag_by_id(async_client: AsyncClient, add_test_tags: list[Tag]
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == tags[1].name
-    assert "id" in content
+    assert "tag_id" in content
 
 
 @pytest.mark.anyio
@@ -106,7 +106,7 @@ async def test_delete_tag(async_client: AsyncClient, add_test_tags: list[Tag]):
     # Check if tag exists before deleting:
     assert response.status_code == 200
     content = response.json()
-    assert content["id"] == id
+    assert content["tag_id"] == id
     assert content["name"] == tags[1].name
 
     # Delete tag:

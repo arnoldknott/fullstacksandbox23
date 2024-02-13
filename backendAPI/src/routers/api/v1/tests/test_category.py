@@ -17,7 +17,7 @@ async def test_post_category(async_client: AsyncClient):
     content = response.json()
     assert content["name"] == category["name"]
     assert content["description"] == category["description"]
-    assert "id" in content
+    assert "category_id" in content
 
 
 @pytest.mark.anyio
@@ -48,7 +48,7 @@ async def test_get_all_categories(
     content = response.json()[0]
     assert content["name"] == categories[0].name
     assert content["description"] == categories[0].description
-    assert "id" in content
+    assert "category_id" in content
 
 
 @pytest.mark.anyio
@@ -63,7 +63,7 @@ async def test_get_category_by_id(
     content = response.json()
     assert content["name"] == categories[1].name
     assert content["description"] == categories[1].description
-    assert "id" in content
+    assert "category_id" in content
 
 
 @pytest.mark.anyio
@@ -140,7 +140,7 @@ async def test_delete_category(
     # Check if category exists before deleting:
     assert response.status_code == 200
     content = response.json()
-    assert content["id"] == id
+    assert content["category_id"] == id
     assert content["name"] == categories[1].name
     assert content["description"] == categories[1].description
 
@@ -197,13 +197,13 @@ async def test_get_all_demo_resources_by_category_id(
     assert first_content["name"] == resources[0].name
     assert first_content["description"] == resources[0].description
     assert first_content["language"] == resources[0].language
-    assert "id" in first_content
+    assert "category_id" in first_content
 
     second_content = response.json()[1]
     assert second_content["name"] == resources[2].name
     assert second_content["description"] == resources[2].description
     assert second_content["language"] == resources[2].language
-    assert "id" in second_content
+    assert "category_id" in second_content
 
 
 @pytest.mark.anyio

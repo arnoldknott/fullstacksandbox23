@@ -39,7 +39,7 @@ class DemoResource(DemoResourceCreate, table=True):
 
 
 class DemoResourceRead(DemoResourceCreate):
-    demoresource_id: int
+    demo_resource_id: int
     category: Optional["CategoryRead"] = None
     tags: Optional[List["TagRead"]] = None
 

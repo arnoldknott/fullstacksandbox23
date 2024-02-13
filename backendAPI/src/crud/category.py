@@ -30,7 +30,7 @@ class CategoryCRUD(BaseCRUD[Category, CategoryCreate, CategoryRead, CategoryUpda
     async def read_all_demo_resources(self, category_id) -> List[DemoResource]:
         """Returns all demo resources within category."""
         session = self.session
-        statement = select(Category).where(Category.id == category_id)
+        statement = select(Category).where(Category.category_id == category_id)
         response = await session.exec(statement)
         category = response.one()
         demo_resources = category.demo_resources
