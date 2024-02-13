@@ -24,7 +24,7 @@ class User(UserCreate, table=True):
     # dropping id for now - this is just too confusing during early stages and not needed
     # if other sources than Azure AD are used, then this potentially needs to be re-added
     # careful when doing that - take production database offline first!
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     # azure_user_id: uuid.UUID = Field(index=True, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
     is_active: Optional[bool] = Field(default=True)
@@ -63,7 +63,7 @@ class UserRead(UserCreate):
     """Schema for reading a user."""
 
     # azure_user_id: uuid.UUID
-    id: uuid.UUID  # no longer optional - needs to exist now
+    user_id: uuid.UUID  # no longer optional - needs to exist now
 
     # add everything, that should be shown from the backpopulations here
     # but only what's realistically needed!

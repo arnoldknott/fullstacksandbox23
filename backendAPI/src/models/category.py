@@ -14,7 +14,7 @@ class CategoryCreate(SQLModel):
 
 
 class Category(CategoryCreate, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    category_id: Optional[int] = Field(default=None, primary_key=True)
 
     demo_resources: List["DemoResource"] = Relationship(
         back_populates="category", sa_relationship_kwargs={"lazy": "selectin"}
@@ -26,7 +26,7 @@ class CategoryUpdate(CategoryCreate):
 
 
 class CategoryRead(CategoryCreate):
-    id: int
+    category_id: int
 
 
 # class CategoryReadWithDemoResources(Category):

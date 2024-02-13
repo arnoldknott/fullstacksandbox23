@@ -1,4 +1,5 @@
 """Defines utility functions for testing, for example test datasets and dependencies (for example a logged in user if required)."""
+
 from uuid import uuid4
 
 # user_test_input = {
@@ -26,6 +27,8 @@ user_test_inputs = [
         "azure_tenant_id": str(uuid4()),  # foreign tenant here.
     },
 ]
+
+# TBD: add data for groups
 
 # Mocks payload to detect scope api.write:
 token_payload_scope_api_write = {

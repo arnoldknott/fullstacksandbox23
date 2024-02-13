@@ -14,7 +14,7 @@ class TopicCreate(SQLModel):
 class Topic(TopicCreate, table=True):
     """Schema for a group in the database."""
 
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    topic_id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
     last_updated_at: datetime = Field(default=datetime.now())
 
@@ -24,7 +24,7 @@ class Topic(TopicCreate, table=True):
 class TopicRead(TopicCreate):
     """Schema for reading a group."""
 
-    id: uuid.UUID  # no longer optional - needs to exist now
+    topic_id: uuid.UUID  # no longer optional - needs to exist now
 
     # add everything, that should be shown from the backpopulations here
     # but only what's realistically needed!

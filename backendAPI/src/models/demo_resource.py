@@ -21,12 +21,12 @@ class DemoResourceCreate(SQLModel):
 
 
 class DemoResource(DemoResourceCreate, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    demo_resource_id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
     last_updated_at: datetime = Field(default=datetime.now())
     # Note: so far all times are UTC!
 
-    category_id: Optional[int] = Field(default=None, foreign_key="category.id")
+    category_id: Optional[int] = Field(default=None, foreign_key="category.category_id")
     category: Optional["Category"] = Relationship(
         back_populates="demo_resources", sa_relationship_kwargs={"lazy": "selectin"}
     )
@@ -39,7 +39,7 @@ class DemoResource(DemoResourceCreate, table=True):
 
 
 class DemoResourceRead(DemoResourceCreate):
-    id: int
+    demoresource_id: int
     category: Optional["CategoryRead"] = None
     tags: Optional[List["TagRead"]] = None
 
