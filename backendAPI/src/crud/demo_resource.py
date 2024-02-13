@@ -36,7 +36,9 @@ class DemoResourceCRUD(
     ) -> DemoResourceRead:
         """Adds a tag to a demo resource."""
         session = self.session
-        statement = select(DemoResource).where(DemoResource.demo_resource_id == demo_resource_id)
+        statement = select(DemoResource).where(
+            DemoResource.demo_resource_id == demo_resource_id
+        )
         demo_resource = await session.exec(statement)
         demo_resource = demo_resource.one()
         if not demo_resource:
@@ -47,7 +49,9 @@ class DemoResourceCRUD(
         if not tags:
             raise HTTPException(status_code=404, detail="No tag found")
         for tag in tags:
-            link = DemoResourceTagLink(demo_resource_id=demo_resource_id, tag_id=tag.tag_id)
+            link = DemoResourceTagLink(
+                demo_resource_id=demo_resource_id, tag_id=tag.tag_id
+            )
             session.add(link)
         # demo_resource.tags.append(tag[0])
         # demo_resource.tags = tag
