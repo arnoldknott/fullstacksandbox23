@@ -47,6 +47,11 @@
 			name: 'On behalf of user acceess',
 			description: 'TBD: On behalf of user access to the Microsoft Graph API',
 			url: '/onbehalfof'
+		},
+		{
+			name: 'User interface',
+			description: 'play with elements of the user interface',
+			url: '/user_interface'
 		}
 	];
 </script>
