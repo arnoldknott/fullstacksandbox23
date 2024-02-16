@@ -5,10 +5,10 @@ from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
 from models.user import User
-from utils import (
+from tests.utils import (
     token_payload_roles_admin,
     token_payload_scope_api_write,
-    user_test_input,
+    one_test_user,
 )
 
 
@@ -32,8 +32,8 @@ async def test_post_user(async_client: AsyncClient):
         response = await async_client.post(
             "/api/v1/user/",
             headers={"Authorization": "Bearer myaccesstoken"},
-            # json={key: str(value) for key, value in user_test_input.items()},
-            json=user_test_input,
+            # json={key: str(value) for key, value in one_test_user.items()},
+            json=one_test_user,
         )
 
         # print(mock_get_azure_token_payload.call_count)
@@ -42,20 +42,20 @@ async def test_post_user(async_client: AsyncClient):
 
         assert response.status_code == 201
         created_user = User(**response.json())
-        assert created_user.azure_user_id == user_test_input["azure_user_id"]
-        assert created_user.azure_tenant_id == user_test_input["azure_tenant_id"]
+        assert created_user.azure_user_id == one_test_user["azure_user_id"]
+        assert created_user.azure_tenant_id == one_test_user["azure_tenant_id"]
 
         # Verify that the user was created in the database
         async with UserCRUD() as crud:
-            db_user = await crud.read_by_azure_user_id(user_test_input["azure_user_id"])
+            db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
         assert db_user is not None
         # print("=== db_user ===")
         # print(db_user)
         db_user_json = jsonable_encoder(db_user)
         # print("=== db_user ===")
         # print(db_user)
-        assert db_user_json["azure_user_id"] == user_test_input["azure_user_id"]
-        assert db_user_json["azure_tenant_id"] == user_test_input["azure_tenant_id"]
+        assert db_user_json["azure_user_id"] == one_test_user["azure_user_id"]
+        assert db_user_json["azure_tenant_id"] == one_test_user["azure_tenant_id"]
 
 
 # TBD: consider writing tests for security instead and drop all endpoints for user and groups (for now)?

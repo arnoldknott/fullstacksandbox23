@@ -2,18 +2,13 @@
 
 from uuid import uuid4
 
-# user_test_input = {
-#     "azure_user_id": UUID("12345678-1234-1234-1234-123456789012"),
-#     "azure_tenant_id": UUID("12345678-1234-1234-1234-123456789012"),
-# }
-
-user_test_input = {
+one_test_user = {
     "azure_user_id": "12345678-1234-1234-1234-123456789012",
     "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
 }
 
 azure_home_tenant = str(uuid4())
-user_test_inputs = [
+many_test_users = [
     {
         "azure_user_id": str(uuid4()),
         "azure_tenant_id": azure_home_tenant,
@@ -42,27 +37,14 @@ token_payload_roles_user = {
 }
 token_payload_roles_admin = {"roles": ["User", "Admin"]}
 
-demo_resource_test_input = {
+one_test_demo_resource = {
     "name": "Name of Test Resource",
     "description": "Some fancy description of my test resource.",
     "language": "en-US",
 }
 
-# demo_resource_test_inputs = [
-#     {
-#         "name": "Name of Test Resource",
-#         "description": "Some fancy description of my test resource.",
-#         "language": "en-US",
-#         # "category_id": 2,
-#     },
-#     {
-#         "name": "Another Test Resource's name",
-#         "description": "The description of the second test resource.",
-#         "language": "en-GB",
-#     },
-# ]
 
-demo_resource_test_inputs = [
+many_test_demo_resources = [
     {
         "name": "Name of Test Resource",
         "description": "Some fancy description of my test resource.",
@@ -88,7 +70,7 @@ demo_resource_test_inputs = [
     },
 ]
 
-categories_test_inputs = [
+many_test_categories = [
     {
         "name": "Category 1",
         "description": "Some description for this category",
@@ -104,7 +86,7 @@ categories_test_inputs = [
 ]
 
 
-tag_test_inputs = [
+many_test_tags = [
     {
         "name": "One",
     },

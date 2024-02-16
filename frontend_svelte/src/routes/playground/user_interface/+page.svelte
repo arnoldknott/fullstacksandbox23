@@ -83,7 +83,8 @@
     Right of topic 3: { sliders[3] }
 </div>
 
-<!-- TBD: change tro Tailwind rows and columns -->
+<!-- TBD: change to Tailwind rows and columns -->
+<!-- TBD: change to Tailwind gradients: https://tailwindcss.com/docs/gradient-color-stops#starting-color ?-->
 <div class="w-100 m-10 flex">
     <div class="w-1/3 h-20 text-2xl flex justify-center items-center" style="background: linear-gradient(to right, {colors[0]}, {colors[1]});">Topic 1</div>
     <div class="w-1/3 h-20 text-2xl flex justify-center items-center" style="background: linear-gradient(to right, {colors[1]}, {colors[2]});">Topic 2</div>

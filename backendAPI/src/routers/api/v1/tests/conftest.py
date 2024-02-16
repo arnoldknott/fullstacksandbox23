@@ -4,11 +4,11 @@ from models.demo_resource import DemoResource
 from models.tag import Tag
 from models.user import User
 from sqlmodel.ext.asyncio.session import AsyncSession
-from utils import (
-    categories_test_inputs,
-    demo_resource_test_inputs,
-    tag_test_inputs,
-    user_test_inputs,
+from tests.utils import (
+    many_test_categories,
+    many_test_demo_resources,
+    many_test_tags,
+    many_test_users,
 )
 
 # def generate_mock_token(
@@ -101,7 +101,7 @@ async def add_test_users(get_async_test_session: AsyncSession):
     """Adds a category to the database."""
     session = get_async_test_session
     users = []
-    for user in user_test_inputs:
+    for user in many_test_users:
         this_user = User(**user)
         session.add(this_user)
         await session.commit()
@@ -116,7 +116,7 @@ async def add_test_categories(get_async_test_session: AsyncSession):
     """Adds a category to the database."""
     session = get_async_test_session
     category_instances = []
-    for category in categories_test_inputs:
+    for category in many_test_categories:
         category_instance = Category(**category)
         session.add(category_instance)
         await session.commit()
@@ -138,7 +138,7 @@ async def add_test_demo_resources(
     # print("=== add_test_demo_resources after add_test_categories ===")
 
     demo_resource_instances = []
-    for resource in demo_resource_test_inputs:
+    for resource in many_test_demo_resources:
         # print("=== resource ===")
         # print(resource)
         # if "category_id" in resource:
@@ -159,7 +159,7 @@ async def add_test_tags(get_async_test_session: AsyncSession):
     """Adds a tags to the database."""
     session = get_async_test_session
     tag_instances = []
-    for tag in tag_test_inputs:
+    for tag in many_test_tags:
         tag_instance = Tag(**tag)
         session.add(tag_instance)
         await session.commit()

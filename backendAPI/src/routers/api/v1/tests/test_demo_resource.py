@@ -4,13 +4,13 @@ import pytest
 from httpx import AsyncClient
 from models.demo_resource import DemoResource
 from models.tag import Tag
-from utils import demo_resource_test_input
+from tests.utils import one_test_demo_resource
 
 
 @pytest.mark.anyio
 async def test_post_demo_resource(async_client: AsyncClient):
     """Tests POST of a demo_resource."""
-    resource = demo_resource_test_input
+    resource = one_test_demo_resource
     # get_async_test_session
     time_before_crud = datetime.now()
     response = await async_client.post("/api/v1/demo_resource/", json=resource)
@@ -18,8 +18,8 @@ async def test_post_demo_resource(async_client: AsyncClient):
 
     assert response.status_code == 201
     content = response.json()
-    assert content["name"] == demo_resource_test_input["name"]
-    assert content["description"] == demo_resource_test_input["description"]
+    assert content["name"] == one_test_demo_resource["name"]
+    assert content["description"] == one_test_demo_resource["description"]
     assert (
         time_before_crud - timedelta(seconds=12)
         < datetime.fromisoformat(content["created_at"])
@@ -31,7 +31,7 @@ async def test_post_demo_resource(async_client: AsyncClient):
 @pytest.mark.anyio
 async def test_post_demo_resource_with_nonexisting_category(async_client: AsyncClient):
     """Tests POST of a demo_resource."""
-    resource = demo_resource_test_input
+    resource = one_test_demo_resource
     resource["category_id"] = 100
     print("=== resource ===")
     print(resource)
