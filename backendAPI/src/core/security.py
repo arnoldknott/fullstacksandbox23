@@ -166,9 +166,12 @@ class Guards:
             raise HTTPException(status_code=403, detail="Access forbidden")
 
     async def current_azure_user_in_database(
+        # self,
         payload: dict = Depends(get_azure_token_payload),
     ):
         """Checks checks user in database and adds or updates the group membership of the user"""
+        print("=== payload ===")
+        print(payload)
         groups = payload["groups"]
         # print("=== groups ===")
         # print(groups)
@@ -215,18 +218,18 @@ guards = Guards()
 #   - get_required_roles: a decorator function to be used as a dependency in routers and endpoints, to pass the relevant roles
 
 
-def get_token(request: Request):
-    """Returns the access token sent in the request header"""
-    authHeader = request.headers.get("Authorization")
-    token = authHeader.split("Bearer ")[1]
-    return token
+# def get_token(request: Request):
+#     """Returns the access token sent in the request header"""
+#     authHeader = request.headers.get("Authorization")
+#     token = authHeader.split("Bearer ")[1]
+#     return token
 
 
-def validate_azure_token(current_azure_user: dict = Depends(get_azure_token_payload)):
-    """Turns the existence of a validated user into a dependency (just by retuning a bool)"""
-    logger.info("🔑 User access to protected route")
-    if current_azure_user:
-        return True
+# def validate_azure_token(current_azure_user: dict = Depends(get_azure_token_payload)):
+#     """Turns the existence of a validated user into a dependency (just by retuning a bool)"""
+#     logger.info("🔑 User access to protected route")
+#     if current_azure_user:
+#         return True
 
 
 # class ScopeChecker:
