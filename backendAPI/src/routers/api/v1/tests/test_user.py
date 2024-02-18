@@ -15,19 +15,22 @@ from tests.utils import (
     one_test_user,
 )
 
+
 # TBD: move to conftest:
 def mocked_get_azure_token_payload():
-    """ Returns a mocked token payload. """
+    """Returns a mocked token payload."""
     return {
         # TBD: configure the token in conftest and use different mocking functions.
-        'oid': one_test_user["azure_user_id"],
-        'tid': one_test_user["azure_tenant_id"],
+        "oid": one_test_user["azure_user_id"],
+        "tid": one_test_user["azure_tenant_id"],
         **token_payload_scope_api_write,
         **token_payload_roles_admin,
-        **token_payload_group
-        }
+        **token_payload_group,
+    }
+
 
 app.dependency_overrides[get_azure_token_payload] = mocked_get_azure_token_payload
+
 
 @pytest.mark.anyio
 async def test_post_user(async_client: AsyncClient):
@@ -47,8 +50,8 @@ async def test_post_user(async_client: AsyncClient):
     #         # **token_payload_scope_api_write,
     #         # **token_payload_roles_admin,
     #     }
-        # mock_api_write.return_value = True
-        # apparently another instance of Guard is getting called than the patched one.
+    # mock_api_write.return_value = True
+    # apparently another instance of Guard is getting called than the patched one.
 
     # Make a POST request to create the user
     response = await async_client.post(

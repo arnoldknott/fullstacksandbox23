@@ -15,23 +15,26 @@ from tests.utils import (
     one_test_user,
 )
 
+
 # TBD: move to conftest:
 def mocked_get_azure_token_payload():
-    """ Returns a mocked token payload. """
+    """Returns a mocked token payload."""
     return {
         # TBD: configure the token in conftest and use different mocking functions.
-        'oid': one_test_user["azure_user_id"],
-        'tid': one_test_user["azure_tenant_id"],
+        "oid": one_test_user["azure_user_id"],
+        "tid": one_test_user["azure_tenant_id"],
         **token_payload_scope_api_write,
         **token_payload_roles_user,
-        **token_payload_group
-        }
+        **token_payload_group,
+    }
+
 
 app.dependency_overrides[get_azure_token_payload] = mocked_get_azure_token_payload
 
+
 @pytest.mark.anyio
 async def test_azure_user_self_signup(async_client: AsyncClient):
-    """ Tests if a new user can sign up by themselves. """
+    """Tests if a new user can sign up by themselves."""
     # with patch(
     #     "core.security.get_azure_token_payload", new_callable=AsyncMock) as mock_get_azure_token_payload:
     # # ):
@@ -52,7 +55,6 @@ async def test_azure_user_self_signup(async_client: AsyncClient):
 
     # with patch('core.security.get_azure_token_payload', return_value={'groups': 'mocked_groups'}):# as mock_get_azure_token_payload:
 
-    
     # call the guard function, which executes self-signup for the user:
     # guards = Guards()
     # current_user = await guards.current_azure_user_in_database()
@@ -66,7 +68,7 @@ async def test_azure_user_self_signup(async_client: AsyncClient):
         print("=== current_user ===")
         print(current_user)
         return current_user
-    
+
     # app.add_api_route("/temp_endpoint", temp_endpoint)
 
     # call that temporary route:
