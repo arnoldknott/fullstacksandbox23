@@ -36,6 +36,9 @@ token_payload_roles_user = {
     "roles": "User",
 }
 token_payload_roles_admin = {"roles": ["User", "Admin"]}
+token_payload_group = {
+    "groups": ["12345678-1234-1234-1234-123456789012"],
+}
 
 one_test_demo_resource = {
     "name": "Name of Test Resource",

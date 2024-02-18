@@ -141,6 +141,8 @@ class Guards:
         self, payload: dict = Depends(get_azure_token_payload)
     ):
         """Checks if the current user is admin"""
+        # print("=== payload ===")
+        # print(payload)
         if "Admin" in payload["roles"]:
             return True
         else:
@@ -170,8 +172,8 @@ class Guards:
         payload: dict = Depends(get_azure_token_payload),
     ):
         """Checks checks user in database and adds or updates the group membership of the user"""
-        print("=== payload ===")
-        print(payload)
+        # print("=== payload ===")
+        # print(payload)
         groups = payload["groups"]
         # print("=== groups ===")
         # print(groups)
