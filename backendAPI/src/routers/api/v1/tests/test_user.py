@@ -7,6 +7,7 @@ from httpx import AsyncClient
 from main import app
 from core.security import get_azure_token_payload
 from models.user import User
+from fastapi import FastAPI
 from tests.utils import (
     token_payload_roles_admin,
     token_payload_scope_api_write,
@@ -16,24 +17,39 @@ from tests.utils import (
 )
 
 
-# TBD: move to conftest:
-def mocked_get_azure_token_payload():
-    """Returns a mocked token payload."""
-    return {
-        # TBD: configure the token in conftest and use different mocking functions.
-        "oid": one_test_user["azure_user_id"],
-        "tid": one_test_user["azure_tenant_id"],
-        **token_payload_scope_api_write,
-        **token_payload_roles_admin,
-        **token_payload_group,
-    }
+# # TBD: move to conftest:
+# def mocked_get_azure_token_payload():
+#     """Returns a mocked token payload."""
+#     return {
+#         # TBD: configure the token in conftest and use different mocking functions.
+#         "oid": one_test_user["azure_user_id"],
+#         "tid": one_test_user["azure_tenant_id"],
+#         **token_payload_scope_api_write,
+#         **token_payload_roles_admin,
+#         **token_payload_group,
+#     }
 
 
-app.dependency_overrides[get_azure_token_payload] = mocked_get_azure_token_payload
+# app.dependency_overrides[get_azure_token_payload] = mocked_get_azure_token_payload
 
 
 @pytest.mark.anyio
-async def test_post_user(async_client: AsyncClient):
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            "oid": one_test_user["azure_user_id"],
+            "tid": one_test_user["azure_tenant_id"],
+            **token_payload_scope_api_write,
+            **token_payload_roles_admin,
+            **token_payload_group,
+        }
+    ],
+    indirect=True,
+)
+async def test_post_user(
+    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+):
     """Tests the post_user endpoint of the API."""
     # with patch(
     #     "core.security.get_azure_token_payload", new_callable=AsyncMock
@@ -52,6 +68,8 @@ async def test_post_user(async_client: AsyncClient):
     #     }
     # mock_api_write.return_value = True
     # apparently another instance of Guard is getting called than the patched one.
+
+    app_override_get_azure_payload_dependency
 
     # Make a POST request to create the user
     response = await async_client.post(

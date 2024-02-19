@@ -8,6 +8,7 @@ from main import app
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
+from core.security import get_azure_token_payload
 
 
 @pytest.fixture(scope="session")
@@ -51,3 +52,33 @@ async def get_async_test_session() -> AsyncSession:
     )
     async with async_session() as session:
         yield session
+
+
+@pytest.fixture
+def mocked_get_azure_token_payload(request):
+    """Returns a mocked token payload."""
+
+    def inner():
+        return {
+            "tid": "mocked_tid",
+            "groups": "mocked_groups",
+            **request.param,
+        }
+
+    return inner
+
+
+# @pytest.fixture
+# def mocked_get_azure_token_payload(request):
+#     '''Returns an app with mocked access token payload.'''
+#     print ("=== mocked_get_azure_token_payload - request ===")
+#     print (request.param)
+#     app.dependency_overrides[get_azure_token_payload] = request.param
+#     return app
+
+
+@pytest.fixture
+def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
+    """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
+    app.dependency_overrides[get_azure_token_payload] = mocked_get_azure_token_payload
+    return app
