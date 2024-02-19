@@ -4,8 +4,6 @@ import pytest
 from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
-from main import app
-from core.security import get_azure_token_payload
 from models.user import User
 from fastapi import FastAPI
 from tests.utils import (

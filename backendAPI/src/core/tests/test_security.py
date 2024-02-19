@@ -5,9 +5,8 @@ from typing import Annotated
 from fastapi import Depends, FastAPI
 from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
-from core.security import Guards, get_azure_token_payload
+from core.security import Guards
 from httpx import AsyncClient
-from main import app
 from tests.utils import (
     # token_payload_roles_user,
     # token_payload_scope_api_write,
