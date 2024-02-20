@@ -96,6 +96,8 @@ async def test_get_demo_resource_by_id(
     assert content["name"] == resources[0].name
     assert content["description"] == resources[0].description
     assert "demo_resource_id" in content
+    assert "tags" in content
+    assert "category" in content
 
 
 @pytest.mark.anyio
