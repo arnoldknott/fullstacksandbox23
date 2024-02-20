@@ -4,7 +4,7 @@ import pytest
 from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
-from models.user import User, UserRead
+from models.user import User
 from fastapi import FastAPI
 from tests.utils import (
     token_payload_user_id,
@@ -74,7 +74,7 @@ async def test_get_user(
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_test_user: User,
 ):
-    '''Test GET one user'''
+    """Test GET one user"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
@@ -82,7 +82,7 @@ async def test_get_user(
     # adds a user to the database, which is the one to GET:
     user = add_one_test_user
 
-    response = await async_client.get(f"/api/v1/user/")
+    response = await async_client.get("/api/v1/user/")
     assert response.status_code == 200
     users = response.json()
     assert len(users) == 1
@@ -96,11 +96,12 @@ async def test_get_user_without_token(
     async_client: AsyncClient,
     add_one_test_user: User,
 ):
-    '''Test GET one user'''
-    user = add_one_test_user
+    """Test GET one user"""
+    add_one_test_user
 
-    response = await async_client.get(f"/api/v1/user/")
+    response = await async_client.get("/api/v1/user/")
     assert response.status_code == 401
+
 
 # @pytest.mark.anyio
 # async def test_get_user_by_id(

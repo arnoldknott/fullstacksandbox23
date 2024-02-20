@@ -66,9 +66,7 @@ def mocked_get_azure_token_payload(request):
         #     return request.param
         # else:
         #     return {}
-        return {
-            **request.param
-        }
+        return {**request.param}
 
     return inner
 

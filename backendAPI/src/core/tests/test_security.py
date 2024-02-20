@@ -7,15 +7,12 @@ from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from core.security import Guards
 from httpx import AsyncClient
-from models.user import User
-from crud.user import UserCRUD
 from tests.utils import (
     # token_payload_roles_user,
     # token_payload_scope_api_write,
     token_payload_user_id,
     token_payload_tenant_id,
     token_payload_one_group,
-    token_payload_many_groups,
     one_test_user,
 )
 
@@ -121,11 +118,11 @@ async def test_azure_user_self_signup(
 #     existing_user = add_one_test_user_with_groups
 #     async with UserCRUD() as crud:
 #         existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
-    
+
 #     existing_db_user_json = jsonable_encoder(existing_db_user)
 #     print("=== existing_db_user_json ===")
 #     print(existing_db_user_json)
-    
+
 #     assert len(existing_db_user_json["azure_groups"]) == 3
 
 #     app = app_override_get_azure_payload_dependency
@@ -137,7 +134,7 @@ async def test_azure_user_self_signup(
 #     ):
 #         """Returns the result of the guard."""
 #         return current_user
-    
+
 #     response = await async_client.get(
 #         "/temp_endpoint",
 #     )

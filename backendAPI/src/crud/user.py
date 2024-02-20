@@ -54,7 +54,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             user = await session.get(User, user_id)
             return user
         except Exception as err:
-        # if user is None:
+            # if user is None:
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
         # return user
