@@ -22,10 +22,18 @@ many_test_users = [
         "azure_tenant_id": str(uuid4()),  # foreign tenant here.
     },
 ]
-
 # TBD: add data for groups
 
 # Mocks payload to detect scope api.write:
+token_payload_user_id = {
+    "oid": one_test_user["azure_user_id"],
+}
+token_payload_tenant_id = {
+    "tid": one_test_user["azure_tenant_id"],
+}
+token_payload_scope_api_read = {
+    "scp": "api.read",
+}
 token_payload_scope_api_write = {
     "scp": "api.write",
 }
@@ -36,8 +44,11 @@ token_payload_roles_user = {
     "roles": "User",
 }
 token_payload_roles_admin = {"roles": ["User", "Admin"]}
-token_payload_group = {
+token_payload_one_group = {
     "groups": ["12345678-1234-1234-1234-123456789012"],
+}
+token_payload_many_groups = {
+    "groups": [str(uuid4()), str(uuid4()), str(uuid4())],
 }
 
 one_test_demo_resource = {

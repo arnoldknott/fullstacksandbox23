@@ -97,7 +97,7 @@ from tests.utils import (
 
 
 @pytest.fixture(scope="function")
-async def add_test_users(get_async_test_session: AsyncSession):
+async def add_many_test_users(get_async_test_session: AsyncSession):
     """Adds a category to the database."""
     session = get_async_test_session
     users = []

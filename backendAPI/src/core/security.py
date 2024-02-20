@@ -174,7 +174,9 @@ class Guards:
         """Checks checks user in database and adds or updates the group membership of the user"""
         # print("=== payload ===")
         # print(payload)
-        groups = payload["groups"]
+        groups = []
+        if "groups" in payload:
+            groups = payload["groups"]
         # print("=== groups ===")
         # print(groups)
         user_id = payload["oid"]

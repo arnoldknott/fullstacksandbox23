@@ -134,7 +134,7 @@ app.include_router(
     user_router,
     prefix=f"{global_prefix}/user",
     tags=["User"],
-    dependencies=[Depends(guards.current_azure_token_has_scope_api_write)],
+    dependencies=[Depends(guards.current_azure_token_has_scope_api_read)],
 )
 
 

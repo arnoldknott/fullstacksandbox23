@@ -35,6 +35,30 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         #     raise HTTPException(status_code=404, detail="User not found")
         # return user
 
+    async def read_by_azure_id_with_childs(self, azure_user_id: int) -> UserRead:
+        """Returns the user with a specific user_id and its childs."""
+        session = self.session
+        try:
+            statement = select(User).where(User.azure_user_id == azure_user_id)
+            results = await session.exec(statement)
+            user = results.one()
+            return user
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="User not found")
+
+    async def read_by_id_with_childs(self, user_id: int) -> UserRead:
+        """Returns the user with a specific user_id and its childs."""
+        session = self.session
+        try:
+            user = await session.get(User, user_id)
+            return user
+        except Exception as err:
+        # if user is None:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="User not found")
+        # return user
+
     # This allows self-sign-up, unless user has been disabled by admin!
     # Any user passed in, get's checked for existence, if not existing, it get's created!
     # no matter if the user existed or not, group membership gets checked and created if needed!
@@ -51,18 +75,18 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # print(groups)
         try:
             current_user = await self.read_by_azure_user_id(azure_user_id)
-            print("=== current_user ===")
-            print(current_user)
+            # print("=== current_user ===")
+            # print(current_user)
         except HTTPException as err:
             if err.status_code == 404:
                 user_create = UserCreate(
                     azure_user_id=azure_user_id, azure_tenant_id=azure_tenant_id
                 )
-                print("=== user_create ===")
-                print(user_create)
+                # print("=== user_create ===")
+                # print(user_create)
                 current_user = await self.create(user_create)
-                print("=== current_user ===")
-                print(current_user)
+                # print("=== current_user ===")
+                # print(current_user)
                 logger.info("USER created in database")
             else:
                 raise err
@@ -94,8 +118,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 )
             )
             azure_user_group_link = azure_user_group_link.first()
-            ("=== user_group_link - select ===")
-            print(azure_user_group_link)
+            # print("=== user_group_link - select ===")
+            # print(azure_user_group_link)
             if not azure_user_group_link:
                 azure_user_group_link = AzureGroupUserLink(
                     azure_user_id=azure_user_id,
@@ -103,7 +127,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 )
                 session.add(azure_user_group_link)
                 # print("=== user_group_link - add ===")
-                # print(user_group_link)
+                # print(azure_user_group_link)
                 await session.commit()
                 await session.refresh(azure_user_group_link)
             # read again after the relationship to the groups is created:

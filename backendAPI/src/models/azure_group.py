@@ -5,10 +5,9 @@ from typing import TYPE_CHECKING, List, Optional
 from core.config import config
 from sqlmodel import Field, Relationship, SQLModel
 
-from .azure_group_user_link import AzureGroupUserLink
-
 if TYPE_CHECKING:
     from .user import User
+from .azure_group_user_link import AzureGroupUserLink
 
 
 class AzureGroupCreate(SQLModel):

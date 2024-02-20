@@ -1,6 +1,7 @@
 import logging
 from typing import List
 
+from uuid import UUID
 from core.security import guards
 from crud.user import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException
@@ -21,12 +22,13 @@ async def post_user(
     # The roles assigned to users and groups decide about sign-up here.
     # This function allows admins to sign up users through API on top of that.
     # TBD: add admin guard!
-    _=Depends(guards.current_azure_user_is_admin),
+    _1=Depends(guards.current_azure_token_has_scope_api_write),
+    _2=Depends(guards.current_azure_user_is_admin),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
-    print("=== user ===")
-    print(user)
+    # print("=== user ===")
+    # print(user)
     async with UserCRUD() as crud:
         created_user = await crud.create(user)
     return created_user
@@ -45,25 +47,25 @@ async def get_all_users(
     return response
 
 
-@router.get("/{user_id}")
-async def get_user_by_id(
-    user_id: str,
+@router.get("/{azure_user_id}")
+async def get_user_by_azure_user_id(
+    azure_user_id: str,
     calling_user: User = Depends(guards.current_azure_user_in_database),
     calling_user_is_admin: User = Depends(guards.current_azure_user_is_admin),
 ) -> UserRead:
     """Returns a user."""
-    if calling_user.azure_user_id != user_id:
+    if calling_user.azure_user_id != azure_user_id:
         if calling_user_is_admin is True:
             raise HTTPException(status_code=403, detail="Forbidden")
     logger.info("GET user")
     # crud = UserCRUD()
     try:
-        user_id = int(user_id)
+        azure_user_id = UUID(azure_user_id)
     except ValueError:
-        logger.error("User ID is not an integer")
+        logger.error("User ID is not a UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
-        response = await crud.read_by_id_with_childs(user_id)
+        response = await crud.read_by_azure_user_id_with_childs(azure_user_id)
     return response
 
 
@@ -71,6 +73,7 @@ async def get_user_by_id(
 async def update_user(
     user_id: str,
     user: UserUpdate = Depends(guards.current_azure_user_in_database),
+    _=Depends(guards.current_azure_user_is_admin),
 ) -> User:
     """Updates a user."""
     logger.info("PUT user")

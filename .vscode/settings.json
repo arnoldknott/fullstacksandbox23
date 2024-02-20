@@ -1,3 +1,6 @@
 {
-  "python.analysis.extraPaths": ["./backendAPI/app"]
+  "python.analysis.extraPaths": [
+    "./backendAPI/app"
+  ],
+  "editor.formatOnSave": true
 }

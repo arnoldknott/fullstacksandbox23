@@ -22,13 +22,13 @@ class DemoResourceCRUD(
     def __init__(self):
         super().__init__(DemoResource)
 
-    async def read_by_id_with_childs(self, object_id: int) -> DemoResourceRead:
-        """Returns an object by id."""
+    async def read_by_id_with_childs(self, demo_resource_id: int) -> DemoResourceRead:
+        """Returns the demo resource with id and includes its childs."""
         session = self.session
-        object = await session.get(DemoResource, object_id)
-        if object is None:
+        demo_resource = await session.get(DemoResource, demo_resource_id)
+        if demo_resource is None:
             raise HTTPException(status_code=404, detail="Object not found")
-        return object
+        return demo_resource
 
     # TBD: turn into list of tag-Ids, to allow multiple tags
     async def add_tag(

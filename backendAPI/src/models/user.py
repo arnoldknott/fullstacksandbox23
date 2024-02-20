@@ -68,6 +68,7 @@ class UserRead(UserCreate):
     # add everything, that should be shown from the backpopulations here
     # but only what's realistically needed!
     # groups: Optional[List["GroupRead"]] = []
+    created_at: datetime
     azure_groups: Optional[List["AzureGroupRead"]] = []
     # brightspace_account: Optional["DiscordAccount"] = None
     # google_account: Optional["GoogleAccount"] = None
