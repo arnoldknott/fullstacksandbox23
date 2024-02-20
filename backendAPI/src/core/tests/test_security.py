@@ -7,12 +7,14 @@ from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from core.security import Guards
 from httpx import AsyncClient
+from models.user import User, UserRead
 from tests.utils import (
     # token_payload_roles_user,
     # token_payload_scope_api_write,
     token_payload_user_id,
     token_payload_tenant_id,
     token_payload_one_group,
+    token_payload_many_groups,
     one_test_user,
 )
 
@@ -103,7 +105,8 @@ async def test_azure_user_self_signup(
 #             **token_payload_tenant_id,
 #             # **token_payload_scope_api_write,
 #             # **token_payload_roles_user,
-#             "groups": token_payload_many_groups["groups"] + token_payload_one_group["groups"],
+#             "groups": token_payload_many_groups["groups"]
+#             + token_payload_one_group["groups"],
 #         }
 #     ],
 #     indirect=True,
@@ -119,11 +122,17 @@ async def test_azure_user_self_signup(
 #     async with UserCRUD() as crud:
 #         existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
 
-#     existing_db_user_json = jsonable_encoder(existing_db_user)
-#     print("=== existing_db_user_json ===")
-#     print(existing_db_user_json)
+#     existing_db_user_read = UserRead(**jsonable_encoder(existing_db_user))
+#     print("=== existing_db_user_read ===")
+#     print(existing_db_user_read)
 
-#     assert len(existing_db_user_json["azure_groups"]) == 3
+#     # existing_db_user_json = jsonable_encoder(existing_db_user)
+#     # print("=== existing_db_user_json ===")
+#     # print(existing_db_user_json)
+
+#     # existing_db_user_read = UserRead(**existing_db_user_json)
+
+#     assert len(existing_db_user_read.azure_groups) == 3
 
 #     app = app_override_get_azure_payload_dependency
 

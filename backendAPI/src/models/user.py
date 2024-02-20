@@ -69,7 +69,7 @@ class UserRead(UserCreate):
     # but only what's realistically needed!
     # groups: Optional[List["GroupRead"]] = []
     created_at: datetime
-    azure_groups: Optional[List["AzureGroupRead"]] = []
+    azure_groups: Optional[List["AzureGroupRead"]] = None
     # brightspace_account: Optional["DiscordAccount"] = None
     # google_account: Optional["GoogleAccount"] = None
     # discord_account: Optional["DiscordAccount"] = None
