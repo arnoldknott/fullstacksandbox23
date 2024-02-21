@@ -40,6 +40,7 @@ class BaseCRUD(
         """Creates a new object."""
         session = self.session
         Model = self.model
+        # TBD: refactor into try-except block and add logging
         database_object = Model.model_validate(object)
         session.add(database_object)
         await session.commit()
@@ -55,6 +56,7 @@ class BaseCRUD(
         """Returns all objects."""
         session = self.session
         model = self.model
+        # TBD: refactor into try-except block and add logging
         statement = select(model)
         # statement = select(self.model).offset(skip).limit(limit)
         response = await session.exec(statement)
@@ -77,6 +79,7 @@ class BaseCRUD(
     ) -> BaseModelType:
         """Updates an object."""
         session = self.session
+        # TBD: refactor into try-except block and add logging
         if hasattr(old, "last_updated_at"):
             old.last_updated_at = datetime.now()
         updated = new.model_dump(exclude_unset=True)
@@ -94,6 +97,7 @@ class BaseCRUD(
         """Deletes an object."""
         session = self.session
         model = self.model
+        # TBD: refactor into try-except block and add logging
         object = await session.get(model, object_id)
         if object is None:
             raise HTTPException(status_code=404, detail="Object not found")

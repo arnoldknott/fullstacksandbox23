@@ -90,7 +90,12 @@ async def test_get_demo_resource_by_id(
     """Tests GET of a demo resources."""
     resources = add_test_demo_resources
 
+    time_before_get_call = datetime.now()
     response = await async_client.get("/api/v1/demo_resource/1")
+    time_after_get_call = datetime.now()
+    print("== test_get_demo_resource_by_id - get call time ===")
+    print((time_after_get_call - time_before_get_call).total_seconds())
+    # solution with SQLModel back_population of tables: about 0.07 - 0.14 seconds
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == resources[0].name
@@ -98,6 +103,8 @@ async def test_get_demo_resource_by_id(
     assert "demo_resource_id" in content
     assert "tags" in content
     assert "category" in content
+
+    assert 1 == 2
 
 
 @pytest.mark.anyio
