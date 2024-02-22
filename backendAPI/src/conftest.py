@@ -60,21 +60,24 @@ async def get_async_test_session() -> AsyncSession:
 @pytest.fixture(scope="function")
 def mocked_get_azure_token_payload(request):
     """Returns a mocked token payload."""
+    return request.param
 
-    def inner():
-        # if request:
-        #     return request.param
-        # else:
-        #     return {}
-        return {**request.param}
+    # def inner():
+    #     # if request:
+    #     #     return request.param
+    #     # else:
+    #     #     return {}
+    #     return {**request.param}
 
-    return inner
+    # return inner
 
 
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[get_azure_token_payload] = mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 

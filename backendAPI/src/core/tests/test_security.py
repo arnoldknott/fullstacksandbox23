@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import Depends, FastAPI
 from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
-from core.security import Guards
+from core.security import guards
 from httpx import AsyncClient
 
 from tests.utils import (
@@ -42,7 +42,7 @@ async def test_azure_user_self_signup(
     # create a temporary route that uses the guard:
     @app.get("/temp_endpoint")
     def temp_endpoint(
-        current_user: Annotated[str, Depends(Guards.current_azure_user_in_database)]
+        current_user: Annotated[str, Depends(guards.current_azure_user_in_database)]
     ):
         """Returns the result of the guard."""
         return current_user
@@ -82,7 +82,7 @@ async def test_azure_user_self_signup(
 #     # create a temporary route that uses the guard:
 #     @app.get("/temp_endpoint")
 #     def temp_endpoint(
-#         current_user: Annotated[str, Depends(Guards.current_azure_user_in_database)]
+#         current_user: Annotated[str, Depends(guards.current_azure_user_in_database)]
 #     ):
 #         """Returns the result of the guard."""
 #         return current_user
@@ -138,7 +138,7 @@ async def test_azure_user_self_signup(
 #     # create a temporary route that uses the guard adn call it:
 #     @app.get("/temp_endpoint")
 #     def temp_endpoint(
-#         current_user: Annotated[str, Depends(Guards.current_azure_user_in_database)]
+#         current_user: Annotated[str, Depends(guards.current_azure_user_in_database)]
 #     ):
 #         """Returns the result of the guard."""
 #         return current_user

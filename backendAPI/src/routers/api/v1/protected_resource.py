@@ -1,5 +1,4 @@
 import logging
-from typing import Annotated
 
 from core.security import Guards
 from fastapi import APIRouter, Depends
@@ -15,11 +14,13 @@ router = APIRouter()
 # This is secure and works!
 @router.get("/")
 def get_protected_resource(
-    current_user: Annotated[str, Depends(Guards.current_azure_user_in_database)]
+    current_user=Depends(Guards.current_azure_user_in_database),
 ):
     """Returns a protected resource."""
     logger.info("GET protected resource")
-    return {"message": "Hello from a protected resource!"}
+    return {
+        "message": f"Authenticated user (user_id: {current_user.user_id}, azure_user_id: {current_user.azure_user_id}) is authorized to access protected resource!"
+    }
 
 
 # TBD: after reworking security, put the scope protection on router level

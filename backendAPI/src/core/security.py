@@ -168,7 +168,7 @@ class Guards:
             raise HTTPException(status_code=403, detail="Access forbidden")
 
     async def current_azure_user_in_database(
-        # self,
+        self,
         payload: dict = Depends(get_azure_token_payload),
     ):
         """Checks user in database, potentially adds user (self-sign-up) and adds or updates the group membership of the user"""
