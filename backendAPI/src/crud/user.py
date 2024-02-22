@@ -35,7 +35,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         #     raise HTTPException(status_code=404, detail="User not found")
         # return user
 
-    async def read_by_azure_id_with_childs(self, azure_user_id: int) -> UserRead:
+    async def read_by_azure_user_id_with_childs(self, azure_user_id: int) -> UserRead:
         """Returns the user with a specific user_id and its childs."""
         session = self.session
         try:

@@ -116,12 +116,12 @@ async def test_get_user_without_token(
     ],
     indirect=True,
 )
-async def test_get_user_by_id(
+async def test_get_user_by_azure_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_test_user_with_groups: UserRead,
 ):
-    """Test a user GETs it's own user by id"""
+    """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
@@ -134,10 +134,10 @@ async def test_get_user_by_id(
     print("=== user.user_id ===")
     print(user.user_id)
 
-    print("=== integer check og user.user_id ===")
-    print(isinstance(int(user.user_id), int))
+    print("=== type check og user.user_id ===")
+    print(isinstance(user.user_id, str))
 
-    response = await async_client.get(f"/api/v1/user/{int(user.user_id)}")
+    response = await async_client.get(f"/api/v1/user/{str(user.azure_user_id)}")
     print("=== response.text ===")
     print(response.text)
     assert response.status_code == 200
@@ -148,6 +148,53 @@ async def test_get_user_by_id(
     assert len(user["azure_groups"]) == 3
 
     assert 1 == 2
+
+
+# @pytest.mark.anyio
+# @pytest.mark.parametrize(
+#     "mocked_get_azure_token_payload",
+#     [
+#         {
+#             **token_payload_scope_api_read,
+#             **token_payload_roles_user,
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#         }
+#     ],
+#     indirect=True,
+# )
+# async def test_get_user_by_id(
+#     async_client: AsyncClient,
+#     app_override_get_azure_payload_dependency: FastAPI,
+#     add_one_test_user_with_groups: UserRead,
+# ):
+#     """Test a user GETs it's own user by id"""
+
+#     # mocks the access token:
+#     app_override_get_azure_payload_dependency
+
+#     user = add_one_test_user_with_groups
+
+#     print("=== user ===")
+#     print(user)
+
+#     print("=== user.user_id ===")
+#     print(user.user_id)
+
+#     print("=== integer check og user.user_id ===")
+#     print(isinstance(int(user.user_id), int))
+
+#     response = await async_client.get(f"/api/v1/user/{int(user.user_id)}")
+#     print("=== response.text ===")
+#     print(response.text)
+#     assert response.status_code == 200
+#     user = response.json()
+#     assert "user_id" in user
+#     assert user["azure_user_id"] == str(user.azure_user_id)
+#     assert user["azure_tenant_id"] == str(user.azure_tenant_id)
+#     assert len(user["azure_groups"]) == 3
+
+#     assert 1 == 2
 
 
 # TBD: consider writing tests for security instead and drop all endpoints for user and groups (for now)?

@@ -146,7 +146,10 @@ class Guards:
         if "Admin" in payload["roles"]:
             return True
         else:
-            raise HTTPException(status_code=403, detail="Access forbidden")
+            return False
+            # raise HTTPException(
+            #     status_code=403, detail="Access forbidden: missing admin role"
+            # )
 
     # TBD: Refactor: merge api.read and api.write into one scope api.access!
     async def current_azure_token_has_scope_api_read(
@@ -156,7 +159,9 @@ class Guards:
         if "api.read" in payload["scp"].split(" "):
             return True
         else:
-            raise HTTPException(status_code=403, detail="Access forbidden")
+            raise HTTPException(
+                status_code=403, detail="Access forbidden: missing scope api.read"
+            )
 
     async def current_azure_token_has_scope_api_write(
         self, payload: dict = Depends(get_azure_token_payload)
@@ -165,7 +170,9 @@ class Guards:
         if "api.write" in payload["scp"].split(" "):
             return True
         else:
-            raise HTTPException(status_code=403, detail="Access forbidden")
+            raise HTTPException(
+                status_code=403, detail="Access forbidden: missing scope api.write"
+            )
 
     async def current_azure_user_in_database(
         self,

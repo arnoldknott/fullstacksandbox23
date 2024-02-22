@@ -47,26 +47,30 @@ async def get_all_users(
     return response
 
 
-# @router.get("/{azure_user_id}")
-# async def get_user_by_azure_user_id(
-#     azure_user_id: str,
-#     calling_user: User = Depends(Guards.current_azure_user_in_database),
-#     calling_user_is_admin: User = Depends(Guards.current_azure_user_is_admin),
-# ) -> UserRead:
-#     """Returns a user based on its azure user id."""
-#     if calling_user.azure_user_id != azure_user_id:
-#         if calling_user_is_admin is False:
-#             raise HTTPException(status_code=403, detail="Forbidden")
-#     logger.info("GET user")
-#     # crud = UserCRUD()
-#     try:
-#         azure_user_id = UUID(azure_user_id)
-#     except ValueError:
-#         logger.error("User ID is not a UUID")
-#         raise HTTPException(status_code=400, detail="Invalid user id")
-#     async with UserCRUD() as crud:
-#         response = await crud.read_by_azure_user_id_with_childs(azure_user_id)
-#     return response
+@router.get("/{azure_user_id}")
+async def get_user_by_azure_user_id(
+    azure_user_id: str,
+    calling_user: User = Depends(guards.current_azure_user_in_database),
+    calling_user_is_admin: User = Depends(guards.current_azure_user_is_admin),
+) -> UserRead:
+    """Returns a user based on its azure user id."""
+    if str(calling_user.azure_user_id) != str(azure_user_id):
+        print("=== type of calling_user.azure_user_id ===")
+        print(type(calling_user.azure_user_id))
+        print("=== type of azure_user_id ===")
+        print(type(azure_user_id))
+        if calling_user_is_admin is False:
+            raise HTTPException(status_code=403, detail="Access forbidden")
+    logger.info("GET user")
+    # crud = UserCRUD()
+    try:
+        azure_user_id = UUID(azure_user_id)
+    except ValueError:
+        logger.error("User ID is not a UUID")
+        raise HTTPException(status_code=400, detail="Invalid user id")
+    async with UserCRUD() as crud:
+        response = await crud.read_by_azure_user_id_with_childs(azure_user_id)
+    return response
 
 
 @router.get("/{user_id}")
@@ -76,9 +80,11 @@ async def get_user_by_id(
     calling_user_is_admin=Depends(guards.current_azure_user_is_admin),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
-    if calling_user.user_id != user_id:
+    if str(calling_user.user_id) != str(user_id):
         if calling_user_is_admin is False:
-            raise HTTPException(status_code=403, detail="Forbidden")
+            raise HTTPException(
+                status_code=403, detail="Access forbidden: both guards don't match"
+            )
     logger.info("GET user")
     # crud = UserCRUD()
     try:
