@@ -78,55 +78,98 @@ async def get_azure_jwks(no_cache: bool = False):
         raise err
 
 
+async def decode_token(token: str, jwks: dict) -> dict:
+    """Decodes the token"""
+    # Get the key that matches the kid:
+    kid = jwt.get_unverified_header(token)["kid"]
+    rsa_key = {}
+    for key in jwks["keys"]:
+        if key["kid"] == kid:
+            rsa_key = RSAAlgorithm.from_jwk(key)
+    logger.info("Decoding token")
+    # validate the token
+    payload = jwt.decode(
+        token,
+        rsa_key,
+        algorithms=["RS256"],
+        audience=config.API_SCOPE,
+        issuer=config.AZURE_ISSUER_URL,
+        options={
+            "validate_iss": True,
+            "validate_aud": True,
+            "validate_exp": True,
+            "validate_nbf": True,
+            "validate_iat": True,
+        },
+    )
+    logger.info("Token decoded successfully")
+    print("=== payload ===")
+    print(payload)
+    return payload
+
+
 # TBD: move the retries information to somewhere else - maybe add as a header?
-async def get_azure_token_payload(request: Request, retries: Optional[int] = 0):
+# async def get_azure_token_payload(request: Request, retries: Optional[int] = 0) -> dict:
+async def get_azure_token_payload(request: Request) -> dict:
     """Validates the access token sent in the request header and returns the payload if valid"""
     logger.info("🔑 Validating token")
-    if retries > 1:
-        raise HTTPException(status_code=401, detail="Invalid retry attempt.")
+    # if retries > 1:
+    #     raise HTTPException(status_code=401, detail="Invalid retry attempt.")
     try:
         auth_header = request.headers.get("Authorization")
         token = auth_header.split("Bearer ")[1]
         # print("=== token ===")
         # print(token)
         if token:
-            jwks = await get_azure_jwks()
+            try:
+                jwks = await get_azure_jwks()
+                payload = await decode_token(token, jwks)
+                print("=== 🔑 Token verified in with cached jwks ===")
+                return payload
+            except Exception:
+                logger.info(
+                    "🔑 Failed to validate token, fetching new JWKS and trying again."
+                )
+                jwks = await get_azure_jwks(no_cache=True)
+                payload = await decode_token(token, jwks)
+                print("=== 🔑 Token verified after fetching and caching new JWKS ===")
+                return payload
 
-            # Get the key that matches the kid:
-            kid = jwt.get_unverified_header(token)["kid"]
-            rsa_key = {}
-            for key in jwks["keys"]:
-                if key["kid"] == kid:
-                    rsa_key = RSAAlgorithm.from_jwk(key)
-            logger.info("Decoding token")
-            # validate the token
-            payload = jwt.decode(
-                token,
-                rsa_key,
-                algorithms=["RS256"],
-                audience=config.API_SCOPE,
-                issuer=config.AZURE_ISSUER_URL,
-                options={
-                    "validate_iss": True,
-                    "validate_aud": True,
-                    "validate_exp": True,
-                    "validate_nbf": True,
-                    "validate_iat": True,
-                },
-            )
-            logger.info("Token decoded successfully")
+            # # Get the key that matches the kid:
+            # kid = jwt.get_unverified_header(token)["kid"]
+            # rsa_key = {}
+            # for key in jwks["keys"]:
+            #     if key["kid"] == kid:
+            #         rsa_key = RSAAlgorithm.from_jwk(key)
+            # logger.info("Decoding token")
+            # # validate the token
+            # payload = jwt.decode(
+            #     token,
+            #     rsa_key,
+            #     algorithms=["RS256"],
+            #     audience=config.API_SCOPE,
+            #     issuer=config.AZURE_ISSUER_URL,
+            #     options={
+            #         "validate_iss": True,
+            #         "validate_aud": True,
+            #         "validate_exp": True,
+            #         "validate_nbf": True,
+            #         "validate_iat": True,
+            #     },
+            # )
+            # logger.info("Token decoded successfully")
             # print("=== payload ===")
             # print(payload)
-            return payload
+            # return payload
             # return True
     except Exception as e:
         # only one retry allowed: by now the tokens should be cached!
-        if retries < 1:
-            logger.info(
-                "🔑 Failed to validate token, fetching new JWKS and trying again."
-            )
-            await get_azure_jwks(no_cache=True)
-            return await get_azure_token_payload(request, retries + 1)
+        # if retries < 1:
+        #     logger.info(
+        #         "🔑 Failed to validate token, fetching new JWKS and trying again."
+        #     )
+        #     await get_azure_jwks(no_cache=True)
+        #     return await get_azure_token_payload(request, retries + 1)
         logger.error(f"🔑 Token validation failed: ${e}")
         raise HTTPException(status_code=401, detail="Invalid token")
 
