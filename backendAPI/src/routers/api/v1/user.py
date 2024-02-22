@@ -47,7 +47,7 @@ async def get_all_users(
     return response
 
 
-@router.get("/{azure_user_id}")
+@router.get("/azure/{azure_user_id}")
 async def get_user_by_azure_user_id(
     azure_user_id: str,
     calling_user: User = Depends(guards.current_azure_user_in_database),

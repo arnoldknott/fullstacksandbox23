@@ -128,7 +128,9 @@ async def test_get_user_by_azure_user_id(
 
     added_user = add_one_test_user_with_groups
 
-    response = await async_client.get(f"/api/v1/user/{str(added_user.azure_user_id)}")
+    response = await async_client.get(
+        f"/api/v1/user/azure/{str(added_user.azure_user_id)}"
+    )
     assert response.status_code == 200
     response_user = response.json()
     assert "user_id" in response_user
