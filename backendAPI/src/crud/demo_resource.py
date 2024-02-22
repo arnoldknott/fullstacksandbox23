@@ -1,6 +1,7 @@
 from typing import List
-import logging
 from fastapi import HTTPException
+
+
 from models.demo_resource import (
     DemoResource,
     DemoResourceCreate,
@@ -25,16 +26,20 @@ class DemoResourceCRUD(
     async def read_by_id_with_childs(self, demo_resource_id: int) -> DemoResourceRead:
         """Returns the demo resource with id and includes its childs."""
         session = self.session
-        try:
+        # .get() returns None if not found
+        # - maybe using select instead to raise an exception?
+        # - or stick with if demo_resource is None: raise HTTPException
+        # try:
+        #     demo_resource = await session.get(DemoResource, demo_resource_id)
+        #     return demo_resource
+        # except Exception as err:
+        #     logging.error(err)
+        #     raise HTTPException(status_code=404, detail="Demo resource not found")
 
-            demo_resource = await session.get(DemoResource, demo_resource_id)
-            return demo_resource
-        except Exception as err:
-            logging.error(err)
+        demo_resource = await session.get(DemoResource, demo_resource_id)
+        if demo_resource is None:
             raise HTTPException(status_code=404, detail="Demo resource not found")
-        # if demo_resource is None:
-        #     raise HTTPException(status_code=404, detail="Object not found")
-        # return demo_resource
+        return demo_resource
 
     # TBD: turn into list of tag-Ids, to allow multiple tags
     async def add_tag(

@@ -50,14 +50,18 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     async def read_by_id_with_childs(self, user_id: int) -> UserRead:
         """Returns the user with a specific user_id and its childs."""
         session = self.session
-        try:
-            user = await session.get(User, user_id)
-            return user
-        except Exception as err:
-            # if user is None:
-            logging.error(err)
+        # TBD: get returns None if not found - maybe using select instead to raise an exception?
+        # try:
+        #     user = await session.get(User, user_id)
+        #     return user
+        # except Exception as err:
+        #     # if user is None:
+        #     logging.error(err)
+        #     raise HTTPException(status_code=404, detail="User not found")
+        user = await session.get(User, user_id)
+        if user is None:
             raise HTTPException(status_code=404, detail="User not found")
-        # return user
+        return user
 
     # This allows self-sign-up, unless user has been disabled by admin!
     # Any user passed in, get's checked for existence, if not existing, it get's created!

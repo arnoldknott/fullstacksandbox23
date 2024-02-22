@@ -171,9 +171,9 @@ class Guards:
         # self,
         payload: dict = Depends(get_azure_token_payload),
     ):
-        """Checks checks user in database and adds or updates the group membership of the user"""
-        # print("=== payload ===")
-        # print(payload)
+        """Checks user in database, potentially adds user (self-sign-up) and adds or updates the group membership of the user"""
+        print("=== payload ===")
+        print(payload)
         groups = []
         if "groups" in payload:
             groups = payload["groups"]

@@ -104,7 +104,7 @@ async def test_get_demo_resource_by_id(
     assert "tags" in content
     assert "category" in content
 
-    assert 1 == 2
+    # assert 1 == 2
 
 
 @pytest.mark.anyio
@@ -267,7 +267,7 @@ async def test_delete_demo_resource(
     response = await async_client.get(f"/api/v1/demo_resource/{id}")
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Object not found"
+    assert content["detail"] == "Demo resource not found"
 
 
 @pytest.mark.anyio

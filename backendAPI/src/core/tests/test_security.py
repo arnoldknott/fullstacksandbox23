@@ -8,14 +8,12 @@ from fastapi.encoders import jsonable_encoder
 from core.security import Guards
 from httpx import AsyncClient
 
-# from models.user import User, UserRead
 from tests.utils import (
     # token_payload_roles_user,
     # token_payload_scope_api_write,
     token_payload_user_id,
     token_payload_tenant_id,
     token_payload_one_group,
-    # token_payload_many_groups,
     one_test_user,
 )
 

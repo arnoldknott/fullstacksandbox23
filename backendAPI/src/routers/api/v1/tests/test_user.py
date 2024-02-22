@@ -13,7 +13,6 @@ from tests.utils import (
     token_payload_scope_api_read,
     token_payload_scope_api_read_write,
     token_payload_one_group,
-    # token_payload_roles_user,
     one_test_user,
 )
 
@@ -104,12 +103,31 @@ async def test_get_user_without_token(
 
 
 # @pytest.mark.anyio
+# @pytest.mark.parametrize(
+#     "mocked_get_azure_token_payload",
+#     [
+#         {
+#             **token_payload_scope_api_read,
+#             **token_payload_roles_user,
+#             **token_payload_user_id,
+#         }
+#     ],
+#     indirect=True,
+# )
 # async def test_get_user_by_id(
 #     async_client: AsyncClient,
+#     app_override_get_azure_payload_dependency: FastAPI,
 #     add_one_test_user_with_groups: UserRead,
 # ):
-#     '''Test GET one user by id'''
+#     """Test a user GETs it's own user by id"""
+
+#     # mocks the access token:
+#     app_override_get_azure_payload_dependency
+
 #     user = add_one_test_user_with_groups
+
+#     print("=== user ===")
+#     print(user)
 
 #     response = await async_client.get(f"/api/v1/user/{user.user_id}")
 #     assert response.status_code == 200
@@ -118,6 +136,9 @@ async def test_get_user_without_token(
 #     assert user["azure_user_id"] == str(user.azure_user_id)
 #     assert user["azure_tenant_id"] == str(user.azure_tenant_id)
 #     assert len(user["azure_groups"]) == 3
+
+#     assert 1 == 2
+
 
 # TBD: consider writing tests for security instead and drop all endpoints for user and groups (for now)?
 # Passing tests:
