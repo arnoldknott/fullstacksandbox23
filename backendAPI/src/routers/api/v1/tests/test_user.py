@@ -126,29 +126,17 @@ async def test_get_user_by_azure_user_id(
     # mocks the access token:
     app_override_get_azure_payload_dependency
 
-    user = add_one_test_user_with_groups
+    added_user = add_one_test_user_with_groups
 
-    print("=== user ===")
-    print(user)
-
-    print("=== user.user_id ===")
-    print(user.user_id)
-
-    print("=== type check og user.user_id ===")
-    print(isinstance(user.user_id, str))
-
-    response = await async_client.get(f"/api/v1/user/{str(user.azure_user_id)}")
-    print("=== response.text ===")
-    print(response.text)
+    response = await async_client.get(f"/api/v1/user/{str(added_user.azure_user_id)}")
     assert response.status_code == 200
-    user = response.json()
-    assert "user_id" in user
-
-    assert user["azure_user_id"] == str(user.azure_user_id)
-    assert user["azure_tenant_id"] == str(user.azure_tenant_id)
-    assert len(user["azure_groups"]) == 3
-
-    assert 1 == 2
+    response_user = response.json()
+    assert "user_id" in response_user
+    # print("=== user ===")
+    # print(user)
+    assert response_user["azure_user_id"] == str(added_user.azure_user_id)
+    assert response_user["azure_tenant_id"] == str(added_user.azure_tenant_id)
+    assert len(response_user["azure_groups"]) == 3
 
 
 # @pytest.mark.anyio
