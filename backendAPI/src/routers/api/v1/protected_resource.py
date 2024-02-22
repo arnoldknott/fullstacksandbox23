@@ -1,6 +1,6 @@
 import logging
 
-from core.security import Guards
+from core.security import guards
 from fastapi import APIRouter, Depends
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ router = APIRouter()
 # This is secure and works!
 @router.get("/")
 def get_protected_resource(
-    current_user=Depends(Guards.current_azure_user_in_database),
+    current_user=Depends(guards.current_azure_user_in_database),
 ):
     """Returns a protected resource."""
     logger.info("GET protected resource")

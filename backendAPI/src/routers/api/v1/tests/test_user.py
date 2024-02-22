@@ -143,6 +143,7 @@ async def test_get_user_by_azure_user_id(
     assert response.status_code == 200
     user = response.json()
     assert "user_id" in user
+
     assert user["azure_user_id"] == str(user.azure_user_id)
     assert user["azure_tenant_id"] == str(user.azure_tenant_id)
     assert len(user["azure_groups"]) == 3
