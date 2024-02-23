@@ -82,18 +82,16 @@ async def get_user_by_id(
     """Returns a user with a specific user_id."""
     if str(calling_user.user_id) != str(user_id):
         if calling_user_is_admin is False:
-            raise HTTPException(
-                status_code=403, detail="Access forbidden: both guards don't match"
-            )
+            raise HTTPException(status_code=403, detail="Access forbidden")
     logger.info("GET user")
     # crud = UserCRUD()
     try:
-        azure_user_id = UUID(user_id)
+        user_id = UUID(user_id)
     except ValueError:
         logger.error("User ID is not a UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
-        response = await crud.read_by_user_id_with_childs(azure_user_id)
+        response = await crud.read_by_id_with_childs(user_id)
     return response
 
 

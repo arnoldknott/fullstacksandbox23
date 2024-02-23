@@ -194,6 +194,7 @@ class Guards:
             # )
 
     # TBD: Refactor: merge api.read and api.write into one scope api.access!
+    # TBD: pass scope as argument - check if it shows up again in the docs!
     async def current_azure_token_has_scope_api_read(
         self, payload: dict = Depends(get_azure_token_payload)
     ):
