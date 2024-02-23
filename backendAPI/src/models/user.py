@@ -15,7 +15,10 @@ class UserCreate(SQLModel):
     azure_user_id: Optional[uuid.UUID]
     # # enables multi-tenancy, if None, then it's the internal tenant:
     azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
-    is_active: bool = True
+    last_accessed_at: Optional[datetime] = datetime.now()
+    is_active: bool = (
+        True  # TBD: let this be controlled by the token content, i.e. delete it here?
+    )
 
 
 class User(UserCreate, table=True):
@@ -27,6 +30,7 @@ class User(UserCreate, table=True):
     user_id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     # azure_user_id: uuid.UUID = Field(index=True, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
+    last_accessed_at: datetime = Field(default=datetime.now())
     is_active: Optional[bool] = Field(default=True)
     # TBD: add "last_access_at" here?
     # don't add Roles as they are coming in from the access token:
@@ -69,6 +73,7 @@ class UserRead(UserCreate):
     # but only what's realistically needed!
     # groups: Optional[List["GroupRead"]] = []
     created_at: datetime
+    last_accessed_at: datetime
     azure_groups: Optional[List["AzureGroupRead"]] = None
     # brightspace_account: Optional["DiscordAccount"] = None
     # google_account: Optional["GoogleAccount"] = None

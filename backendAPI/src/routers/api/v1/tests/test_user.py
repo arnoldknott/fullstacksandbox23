@@ -96,6 +96,7 @@ async def test_post_user_from_regular_user(
         db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
     assert db_user is not None
     db_user_json = jsonable_encoder(db_user)
+    assert "last_accessed_at" in db_user_json
     assert db_user_json["azure_user_id"] == one_test_user["azure_user_id"]
     assert db_user_json["azure_tenant_id"] == one_test_user["azure_tenant_id"]
 
@@ -180,16 +181,22 @@ async def test_get_user_by_azure_user_id(
 
     user_in_database = add_one_test_user_with_groups
 
+    print("=== user_in_database ===")
+    print(user_in_database)
+
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
     )
     assert response.status_code == 200
     response_user = response.json()
+    modelled_response_user = UserRead(**response_user)
     assert "user_id" in response_user
     # print("=== user ===")
     # print(user)
     assert response_user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert response_user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
+    # TBD: admin access should not change the last_accessed_at!
+    assert modelled_response_user.last_accessed_at > user_in_database.last_accessed_at
     assert len(response_user["azure_groups"]) == 3
 
 
@@ -243,9 +250,12 @@ async def test_get_user_by_id(
 
     assert response.status_code == 200
     user = response.json()
+    modelled_response_user = UserRead(**user)
     assert "user_id" in user
     assert user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
+    # TBD: admin access should not change the last_accessed_at!
+    assert modelled_response_user.last_accessed_at > user_in_database.last_accessed_at
     assert len(user["azure_groups"]) == 3
 
 
@@ -269,14 +279,16 @@ async def test_get_user_by_id_without_token(
 # ✔︎ admin user reads a user by id
 # ✔︎ regular user reads itself by azure_id
 # ✔︎ regular user reads itself by id
-# - admin user updates a user
+# - admin user updates a user -> is_active is the only thing, that can get updated
 # - admin user deletes a user
 # - regular user deletes itself
-# for the following: groups are not part of the user endpoints - need their own endpoints, but security is taking care of the sign-up!
+# - last_accessed_at is updated on every create, read and update
+# groups: groups are not part of the user endpoints - need their own endpoints, but security is taking care of the sign-up!
 # - users connections to groups are created in the database
 # - a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
 
 # Failing tests:
+# - modify the user_id
 # No token provided
 # ✔︎ read all user
 # ✔︎ read user by azure_id

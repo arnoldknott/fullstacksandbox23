@@ -1,7 +1,7 @@
 # from fastapi import HTTPException
 import logging
 from typing import List, Optional
-
+from datetime import datetime
 from fastapi import HTTPException
 from models.azure_group_user_link import AzureGroupUserLink
 from models.user import User, UserCreate, UserRead, UserUpdate
@@ -26,6 +26,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             statement = select(User).where(User.azure_user_id == azure_user_id)
             results = await session.exec(statement)
             user = results.one()
+            # TBD: this might end up in spaghetti code - rethink!
+            # updating the user with itself updates th "last_accessed_at" field
+            user = await self.update(user, user)
             return user
         except Exception as err:
             logging.error(err)
@@ -42,7 +45,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             statement = select(User).where(User.azure_user_id == azure_user_id)
             results = await session.exec(statement)
             user = results.one()
-            return user
+            # TBD: this might end up in spaghetti code - rethink!
+            # updating the user with itself updates th "last_accessed_at" field
+            updated_user = await self.update(user, user)
+            return updated_user
         except Exception as err:
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
@@ -61,6 +67,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         user = await session.get(User, user_id)
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
+        # TBD: this might end up in spaghetti code - rethink!
+        # updating the user with itself updates th "last_accessed_at" field
+        user = await self.update(user, user)
         return user
 
     # This allows self-sign-up, unless user has been disabled by admin!
@@ -84,7 +93,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         except HTTPException as err:
             if err.status_code == 404:
                 user_create = UserCreate(
-                    azure_user_id=azure_user_id, azure_tenant_id=azure_tenant_id
+                    azure_user_id=azure_user_id,
+                    azure_tenant_id=azure_tenant_id,
+                    last_accessed_at=datetime.now(),
                 )
                 # print("=== user_create ===")
                 # print(user_create)
@@ -96,10 +107,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 raise err
         # if used elsewhere consider update if needed! But should also be covered already by the base.update!
         for azure_group_id in groups:
-            print(
-                "=== user crud - create_azure_user_and_groups_if_not_exist - azure_group_id ==="
-            )
-            print(azure_group_id)
+            # print(
+            #     "=== user crud - create_azure_user_and_groups_if_not_exist - azure_group_id ==="
+            # )
+            # print(azure_group_id)
             # call group crud to check if group exists, if not create it!
             async with AzureGroupCRUD() as group_crud:
                 await group_crud.create_if_not_exists(azure_group_id, azure_tenant_id)
@@ -141,30 +152,30 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     async def deactivate_user(self, azure_user_id: str) -> User:
         """Deactivates a user."""
         session = self.session
-        async with session:
-            existing_user = await session.get(User, azure_user_id)
-            if not existing_user:
-                raise HTTPException(status_code=404, detail="User not found")
-            user_update = UserUpdate(is_active=False)
-            existing_user = await self.update(existing_user, user_update)
+        # async with session:
+        existing_user = await session.get(User, azure_user_id)
+        if not existing_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user_update = UserUpdate(is_active=False)
+        existing_user = await self.update(existing_user, user_update)
         return existing_user
 
     async def activate_user(self, azure_user_id: str) -> User:
         """Activates a user."""
         session = self.session
-        async with session:
-            existing_user = await session.get(User, azure_user_id)
-            if not existing_user:
-                raise HTTPException(status_code=404, detail="User not found")
-            user_update = UserUpdate(is_active=True)
-            existing_user = await self.update(existing_user, user_update)
+        # async with session:
+        existing_user = await session.get(User, azure_user_id)
+        if not existing_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user_update = UserUpdate(is_active=True)
+        existing_user = await self.update(existing_user, user_update)
         return existing_user
 
     async def user_is_active(self, azure_user_id: str) -> bool:
         """Checks if a user is active."""
         session = self.session
-        async with session:
-            existing_user = await session.get(User, azure_user_id)
-            if not existing_user:
-                raise HTTPException(status_code=404, detail="User not found")
-            return existing_user.is_active
+        # async with session:
+        existing_user = await session.get(User, azure_user_id)
+        if not existing_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return existing_user.is_active

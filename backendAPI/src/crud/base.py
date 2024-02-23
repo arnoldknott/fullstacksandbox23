@@ -42,6 +42,8 @@ class BaseCRUD(
         Model = self.model
         # TBD: refactor into try-except block and add logging
         database_object = Model.model_validate(object)
+        if hasattr(database_object, "last_accessed_at"):
+            database_object.last_accessed_at = datetime.now()
         session.add(database_object)
         await session.commit()
         await session.refresh(database_object)
@@ -72,6 +74,11 @@ class BaseCRUD(
         object = await session.get(model, object_id)
         if object is None:
             raise HTTPException(status_code=404, detail="Object not found")
+        if hasattr(object, "last_accessed_at"):
+            model.last_accessed_at = datetime.now()
+            session.add(object)
+            await session.commit()
+            await session.refresh(object)
         return object
 
     async def update(
@@ -82,9 +89,16 @@ class BaseCRUD(
         # TBD: refactor into try-except block and add logging
         if hasattr(old, "last_updated_at"):
             old.last_updated_at = datetime.now()
+        if hasattr(old, "last_accessed_at"):
+            old.last_accessed_at = datetime.now()
         updated = new.model_dump(exclude_unset=True)
         for key, value in updated.items():
-            if key == "id" or key == "created_at" or key == "updated_at":
+            # if key == "id" or key == "created_at" or key == "last_updated_at":
+            if (
+                key == "created_at"
+                or key == "last_updated_at"
+                or key == "last_accessed_at"
+            ):
                 continue
             setattr(old, key, value)
         object = old
