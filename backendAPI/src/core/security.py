@@ -5,6 +5,7 @@ import httpx
 import jwt
 from core.cache import redis_jwks_client
 from core.config import config
+from models.user import UserRead
 from crud.user import UserCRUD
 from fastapi import Depends, HTTPException, Request
 from jwt.algorithms import RSAAlgorithm
@@ -195,6 +196,19 @@ class Guards:
 
     # TBD: Refactor: merge api.read and api.write into one scope api.access!
     # TBD: pass scope as argument - check if it shows up again in the docs!
+    # async def current_azure_token_has_scope(
+    #     self, scope: str, payload: dict = Depends(get_azure_token_payload)
+    # ):
+    #     """Checks if the current token has the api.read scope"""
+    #     print("=== scope ===")
+    #     print(scope)
+    #     print("=== payload ===")
+    #     print(payload)
+    #     if scope in payload["scp"].split(" "):
+    #         return True
+    #     else:
+    #         raise HTTPException(status_code=403, detail="Access forbidden")
+
     async def current_azure_token_has_scope_api_read(
         self, payload: dict = Depends(get_azure_token_payload)
     ):
@@ -202,9 +216,7 @@ class Guards:
         if "api.read" in payload["scp"].split(" "):
             return True
         else:
-            raise HTTPException(
-                status_code=403, detail="Access forbidden: missing scope api.read"
-            )
+            raise HTTPException(status_code=403, detail="Access forbidden")
 
     async def current_azure_token_has_scope_api_write(
         self, payload: dict = Depends(get_azure_token_payload)
@@ -213,22 +225,16 @@ class Guards:
         if "api.write" in payload["scp"].split(" "):
             return True
         else:
-            raise HTTPException(
-                status_code=403, detail="Access forbidden: missing scope api.write"
-            )
+            raise HTTPException(status_code=403, detail="Access forbidden")
 
     async def current_azure_user_in_database(
         self,
         payload: dict = Depends(get_azure_token_payload),
-    ):
+    ) -> UserRead:
         """Checks user in database, potentially adds user (self-sign-up) and adds or updates the group membership of the user"""
-        print("=== payload ===")
-        print(payload)
         groups = []
         if "groups" in payload:
             groups = payload["groups"]
-        # print("=== groups ===")
-        # print(groups)
         user_id = payload["oid"]
         # roles = payload["roles"]
         tenant_id = payload["tid"]
@@ -236,7 +242,7 @@ class Guards:
         # Who gets the tokens is controlled by the identity provider (Azure AD)
         # Can be through membership in a group, which has access to the application
         # -> in Azure portal under Enterprise applications,
-        # ->turn of filter enterprise applications and
+        # -> turn of filter enterprise applications and
         # -> search for the backend application registration
         # -> under users and groups add the users or groups:
         # -> gives and revokes access for users and groups based on roles

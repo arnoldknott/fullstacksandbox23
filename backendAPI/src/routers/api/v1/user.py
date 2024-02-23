@@ -23,10 +23,12 @@ async def post_user(
     # This function allows admins to sign up users through API on top of that.
     # TBD: add admin guard!
     _1=Depends(guards.current_azure_token_has_scope_api_write),
+    # scope=Depends(guards.current_azure_token_has_scope("api.write")),
     _2=Depends(guards.current_azure_user_is_admin),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
+    # await scope
     # print("=== user ===")
     # print(user)
     async with UserCRUD() as crud:
@@ -50,7 +52,7 @@ async def get_all_users(
 @router.get("/azure/{azure_user_id}")
 async def get_user_by_azure_user_id(
     azure_user_id: str,
-    calling_user: User = Depends(guards.current_azure_user_in_database),
+    calling_user: UserRead = Depends(guards.current_azure_user_in_database),
     calling_user_is_admin: User = Depends(guards.current_azure_user_is_admin),
 ) -> UserRead:
     """Returns a user based on its azure user id."""
@@ -66,7 +68,7 @@ async def get_user_by_azure_user_id(
     try:
         azure_user_id = UUID(azure_user_id)
     except ValueError:
-        logger.error("User ID is not a UUID")
+        logger.error("User ID is not an UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
         response = await crud.read_by_azure_user_id_with_childs(azure_user_id)
@@ -76,7 +78,7 @@ async def get_user_by_azure_user_id(
 @router.get("/{user_id}")
 async def get_user_by_id(
     user_id: str,
-    calling_user=Depends(guards.current_azure_user_in_database),
+    calling_user: UserRead = Depends(guards.current_azure_user_in_database),
     calling_user_is_admin=Depends(guards.current_azure_user_is_admin),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
@@ -88,7 +90,7 @@ async def get_user_by_id(
     try:
         user_id = UUID(user_id)
     except ValueError:
-        logger.error("User ID is not a UUID")
+        logger.error("User ID is not an UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
         response = await crud.read_by_id_with_childs(user_id)
@@ -98,32 +100,40 @@ async def get_user_by_id(
 @router.put("/{user_id}")
 async def update_user(
     user_id: str,
-    user: UserUpdate = Depends(guards.current_azure_user_in_database),
-    _=Depends(guards.current_azure_user_is_admin),
+    calling_user: UserUpdate = Depends(guards.current_azure_user_in_database),
+    calling_user_is_admin=Depends(guards.current_azure_user_is_admin),
 ) -> User:
     """Updates a user."""
+    if str(calling_user.user_id) != str(user_id):
+        if calling_user_is_admin is False:
+            raise HTTPException(status_code=403, detail="Access forbidden")
     logger.info("PUT user")
     try:
-        user_id = int(user_id)
+        user_id = UUID(user_id)
     except ValueError:
-        logger.error("User ID is not an integer")
+        logger.error("User ID is not an UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
         old_user = await crud.read_by_id(user_id)
-        updated_user = await crud.update(old_user, user)
+        updated_user = await crud.update(old_user, calling_user)
     return updated_user
 
 
 @router.delete("/{user_id}")
 async def delete_user(
-    user_id: str = Depends(guards.current_azure_user_in_database),
+    user_id: str,
+    calling_user: UserUpdate = Depends(guards.current_azure_user_in_database),
+    calling_user_is_admin=Depends(guards.current_azure_user_is_admin),
 ) -> User:
     """Deletes a user."""
+    if str(calling_user.user_id) != str(user_id):
+        if calling_user_is_admin is False:
+            raise HTTPException(status_code=403, detail="Access forbidden")
     logger.info("DELETE user")
     try:
-        user_id = int(user_id)
+        user_id = UUID(user_id)
     except ValueError:
-        logger.error("User ID is not an integer")
+        logger.error("User ID is not an UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
         result = await crud.delete(user_id)

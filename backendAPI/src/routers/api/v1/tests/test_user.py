@@ -280,7 +280,7 @@ async def test_get_user_by_id_without_token(
 # No token provided
 # ✔︎ read all user
 # ✔︎ read user by azure_id
-# - read user by id
+# ✔︎ read user by id
 # - update user
 # - delete user
 # Regular user (not admin):
