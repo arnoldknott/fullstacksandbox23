@@ -152,7 +152,6 @@ async def test_admin_guard_with_admin_role_in_azure_mocked_token_payload(
 
     # create a temporary route that uses the guard:
     @app.get("/test_admin_guard_with_admin_role_in_azure_mocked_token_payload")
-    # def temp_endpoint(current_user: bool = Depends(guards.current_azure_user_is_admin)):
     def temp_endpoint(current_user: bool = Depends(CurrentAzureTokenHasRole("Admin"))):
         """Returns the result of the guard."""
         return current_user
@@ -188,7 +187,6 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload(
 
     # create a temporary route that uses the guard:
     @app.get("/test_admin_guard_without_admin_role_in_azure_mocked_token_payload")
-    # def temp_endpoint(current_user: bool = Depends(guards.current_azure_user_is_admin)):
     def temp_endpoint(current_user: bool = Depends(CurrentAzureTokenHasRole("Admin"))):
         """Returns the result of the guard."""
         return current_user

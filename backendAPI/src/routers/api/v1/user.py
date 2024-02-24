@@ -10,9 +10,6 @@ from models.user import User, UserCreate, UserRead, UserUpdate
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# TBD: basically I don't need the user endpoints in the API currently,
-# as everything is handled through the tokens issued by Azure.
-
 
 @router.post("/", status_code=201)
 async def post_user(
@@ -21,24 +18,11 @@ async def post_user(
     # that means, controlled by group and user membership in azure entra ad!
     # The roles assigned to users and groups decide about sign-up here.
     # This function allows admins to sign up users through API on top of that.
-    # TBD: add admin guard!
     _1=Depends(CurrentAzureTokenHasScope("api.write")),
-    # check_api_write_scope: bool = Depends(
-    #     guards.current_azure_token_has_scope_api_write
-    # ),
-    # scope=Depends(guards.current_azure_token_has_scope("api.write")),
-    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
     _2=Depends(CurrentAzureTokenHasRole("Admin")),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
-    # if check_api_write_scope is False:
-    #     raise HTTPException(status_code=403, detail="Access denied")
-    # if check_admin_role is False:
-    #     raise HTTPException(status_code=403, detail="Access denied")
-    # await scope
-    # print("=== user ===")
-    # print(user)
     async with UserCRUD() as crud:
         created_user = await crud.create(user)
     return created_user
@@ -46,17 +30,12 @@ async def post_user(
 
 @router.get("/")
 async def get_all_users(
-    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
     _=Depends(CurrentAzureTokenHasRole("Admin")),
 ) -> List[User]:
     """Returns all user."""
-    # if check_admin_role is False:
-    #     raise HTTPException(status_code=403, detail="Access denied")
     logger.info("GET all user")
     async with UserCRUD() as crud:
         response = await crud.read_all()
-    # crud = UserCRUD()
-    # response = await crud.read_all()
     return response
 
 
@@ -64,7 +43,6 @@ async def get_all_users(
 async def get_user_by_azure_user_id(
     azure_user_id: str,
     current_user: UserRead = Depends(guards.current_azure_user_in_database),
-    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
     check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> UserRead:
     """Returns a user based on its azure user id."""
@@ -95,7 +73,6 @@ async def get_user_by_azure_user_id(
 async def get_user_by_id(
     user_id: str,
     current_user: UserRead = Depends(guards.current_azure_user_in_database),
-    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
     check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
@@ -118,21 +95,16 @@ async def get_user_by_id(
     return response
 
 
+# TBD: write tests for this:
 @router.put("/{user_id}")
 async def update_user(
     user_id: str,
     user_data_update: UserUpdate,
     current_user: UserUpdate = Depends(guards.current_azure_user_in_database),
     _=Depends(CurrentAzureTokenHasScope("api.write")),
-    # check_api_write_scope: bool = Depends(
-    #     guards.current_azure_token_has_scope_api_write
-    # ),
-    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
     check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> User:
     """Updates a user."""
-    # if check_api_write_scope is False:
-    #     raise HTTPException(status_code=403, detail="Access denied")
     if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
         raise HTTPException(status_code=403, detail="Access denied")
 
@@ -153,20 +125,15 @@ async def update_user(
     return updated_user
 
 
+# TBD: write tests for this:
 @router.delete("/{user_id}")
 async def delete_user(
     user_id: str,
     current_user: UserUpdate = Depends(guards.current_azure_user_in_database),
     _=Depends(CurrentAzureTokenHasScope("api.write")),
-    # check_api_write_scope: bool = Depends(
-    #     guards.current_azure_token_has_scope_api_write
-    # ),
-    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
     check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> User:
     """Deletes a user."""
-    # if check_api_write_scope is False:
-    #     raise HTTPException(status_code=403, detail="Access denied")
     if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
         raise HTTPException(status_code=403, detail="Access denied")
 
@@ -179,6 +146,4 @@ async def delete_user(
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
         result = await crud.delete(user_id)
-    # print("=== result ===")
-    # print(result)
     return result

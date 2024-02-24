@@ -116,8 +116,13 @@ app.include_router(
     protected_resource_router,
     prefix=f"{global_prefix}/protected_resource",
     tags=["Protected Resource"],
+    # TBD: this si ready to use:
+    # dependencies=[
+    #     Depends(CurrentAzureTokenHasScope("api.read")),
+    #     Depends(CurrentAzureTokenHasScope("api.write")),
+    # ],
+    # TBD: This is not ready to use - requires the redirect URI to be passed through Swagger UI
     # dependencies=[Depends(oauth2_scheme)],
-    # dependencies=[Depends(protected_scopes)],
 )
 # course_scopes = ScopeChecker(
 #     ["api.read", "api.write"]
@@ -134,7 +139,6 @@ app.include_router(
     user_router,
     prefix=f"{global_prefix}/user",
     tags=["User"],
-    # dependencies=[Depends(Requires(guards.current_azure_token_has_scope_api_read))],
     dependencies=[Depends(CurrentAzureTokenHasScope("api.read"))],
 )
 
