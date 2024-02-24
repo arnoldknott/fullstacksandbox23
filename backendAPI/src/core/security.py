@@ -49,26 +49,26 @@ async def get_azure_jwks(no_cache: bool = False):
             else:
                 await get_azure_jwks(no_cache=True)
         else:
-            print("=== config.AZURE_OPENID_CONFIG_URL ===")
-            print(config.AZURE_OPENID_CONFIG_URL)
+            # print("=== config.AZURE_OPENID_CONFIG_URL ===")
+            # print(config.AZURE_OPENID_CONFIG_URL)
             oidc_config = httpx.get(config.AZURE_OPENID_CONFIG_URL).json()
-            print("=== oidc_config ===")
-            print(oidc_config)
+            # print("=== oidc_config ===")
+            # print(oidc_config)
             if oidc_config is False:
                 raise HTTPException(
                     status_code=404, detail="Failed to fetch Open ID config."
                 )
             try:
                 jwks = httpx.get(oidc_config["jwks_uri"]).json()
-                # print("=== jwks ===")
-                # print(jwks)
+                print("=== jwks fetched ===")
+                print(jwks["keys"][0]["kty"])
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to fetch JWKS online ${err}"
                 )
             try:
                 redis_jwks_client.json().set("jwks", ".", json.dumps(jwks))
-                # print("=== set the jwks in redis ===")
+                print("=== set the jwks in redis ===")
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to set JWKS in redis: ${err}"
