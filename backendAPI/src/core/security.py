@@ -44,10 +44,10 @@ async def get_azure_jwks(no_cache: bool = False):
             # print("=== no_cache ===")
             # print(no_cache)
             jwks = redis_jwks_client.json().get("jwks")
-            print("=== jwks ===")
-            print(jwks)
+            # print("=== jwks ===")
+            # print(jwks)
             if jwks:
-                print("=== 🔑 JWKS fetched from cache ===")
+                # print("=== 🔑 JWKS fetched from cache ===")
                 return json.loads(jwks)
             else:
                 await get_azure_jwks(no_cache=True)
@@ -71,11 +71,12 @@ async def get_azure_jwks(no_cache: bool = False):
             try:
                 redis_jwks_client.json().set("jwks", ".", json.dumps(jwks))
                 print("=== 🔑 JWKS set in cache ===")
+                return json.loads(jwks)
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to set JWKS in redis: ${err}"
                 )
-        return jwks
+        # return jwks
     except Exception as err:
         logger.error("🔑 Failed to get JWKS.")
         raise err
