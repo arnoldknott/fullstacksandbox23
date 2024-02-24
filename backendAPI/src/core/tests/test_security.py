@@ -23,12 +23,9 @@ from tests.utils import (
 
 
 @pytest.mark.anyio
-async def test_get_azure_jwks():
+async def test_get_azure_jwks_no_cache():
     """Tests the jwks endpoint."""
-    jwks = await get_azure_jwks()
-
-    print("=== jwks ===")
-    print(jwks)
+    jwks = await get_azure_jwks(no_cache=True)
 
     assert "keys" in jwks
     for key in jwks["keys"]:
@@ -43,9 +40,12 @@ async def test_get_azure_jwks():
 
 
 @pytest.mark.anyio
-async def test_get_azure_jwks_no_cache():
+async def test_get_azure_jwks():
     """Tests the jwks endpoint."""
-    jwks = await get_azure_jwks(no_cache=True)
+    jwks = await get_azure_jwks()
+
+    print("=== jwks ===")
+    print(jwks)
 
     assert "keys" in jwks
     for key in jwks["keys"]:
