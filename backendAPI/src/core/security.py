@@ -196,10 +196,14 @@ class Guards:
         # return False
         # print("=== payload[roles] ===")
         # print(payload["roles"])
-        if "Admin" in payload["roles"]:
-            return True
-        else:
-            return False
+        try:
+            if "Admin" in payload["roles"]:
+                return True
+            else:
+                return False
+        except Exception as err:
+            logger.error(f"🔑 Role not found in token: ${err}")
+            raise HTTPException(status_code=401, detail="Invalid token")
             # raise HTTPException(
             #     status_code=403, detail="Access forbidden: missing admin role"
             # )
@@ -224,19 +228,27 @@ class Guards:
         self, payload: dict = Depends(get_azure_token_payload)
     ):
         """Checks if the current token has the api.read scope"""
-        if "api.read" in payload["scp"].split(" "):
-            return True
-        else:
-            raise HTTPException(status_code=403, detail="Access forbidden")
+        try:
+            if "api.read" in payload["scp"].split(" "):
+                return True
+            else:
+                raise HTTPException(status_code=403, detail="Access forbidden")
+        except Exception as err:
+            logger.error(f"🔑 Scope not found in token: ${err}")
+            raise HTTPException(status_code=401, detail="Invalid token")
 
     async def current_azure_token_has_scope_api_write(
         self, payload: dict = Depends(get_azure_token_payload)
     ):
         """Checks if the current token has the api.write scope"""
-        if "api.write" in payload["scp"].split(" "):
-            return True
-        else:
-            raise HTTPException(status_code=403, detail="Access forbidden")
+        try:
+            if "api.write" in payload["scp"].split(" "):
+                return True
+            else:
+                raise HTTPException(status_code=403, detail="Access forbidden")
+        except Exception as err:
+            logger.error(f"🔑 Scope not found in token: ${err}")
+            raise HTTPException(status_code=401, detail="Invalid token")
 
     # TBD: write tests for this:
     async def current_azure_user_in_database(
@@ -247,30 +259,34 @@ class Guards:
         print("=== payload ===")
         print(payload)
         groups = []
-        if "groups" in payload:
-            groups = payload["groups"]
-        user_id = payload["oid"]
-        # roles = payload["roles"]
-        tenant_id = payload["tid"]
-        # This is responsible for self-sign on: if a user has a token, the user is allowed
-        # Who gets the tokens is controlled by the identity provider (Azure AD)
-        # Can be through membership in a group, which has access to the application
-        # -> in Azure portal under Enterprise applications,
-        # -> turn of filter enterprise applications and
-        # -> search for the backend application registration
-        # -> under users and groups add the users or groups:
-        # -> gives and revokes access for users and groups based on roles
-        update_last_access = True
-        if "roles" in payload and "Admin" in payload["roles"]:
-            update_last_access = False
-        async with UserCRUD() as crud:
-            current_user = await crud.create_azure_user_and_groups_if_not_exist(
-                user_id, tenant_id, groups, update_last_access
-            )
-            if current_user:
-                return current_user
-            else:
-                raise HTTPException(status_code=404, detail="404 User not found")
+        try:
+            if "groups" in payload:
+                groups = payload["groups"]
+            user_id = payload["oid"]
+            # roles = payload["roles"]
+            tenant_id = payload["tid"]
+            # This is responsible for self-sign on: if a user has a token, the user is allowed
+            # Who gets the tokens is controlled by the identity provider (Azure AD)
+            # Can be through membership in a group, which has access to the application
+            # -> in Azure portal under Enterprise applications,
+            # -> turn of filter enterprise applications and
+            # -> search for the backend application registration
+            # -> under users and groups add the users or groups:
+            # -> gives and revokes access for users and groups based on roles
+            update_last_access = True
+            if "roles" in payload and "Admin" in payload["roles"]:
+                update_last_access = False
+            async with UserCRUD() as crud:
+                current_user = await crud.create_azure_user_and_groups_if_not_exist(
+                    user_id, tenant_id, groups, update_last_access
+                )
+                if current_user:
+                    return current_user
+                else:
+                    raise HTTPException(status_code=404, detail="404 User not found")
+        except Exception as err:
+            logger.error(f"🔑 User not found in database: ${err}")
+            raise HTTPException(status_code=401, detail="Invalid token")
 
     # TBD: write tests for this:
     async def azure_token_is_valid(

@@ -176,7 +176,6 @@ async def test_user_gets_user_by_azure_user_id(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-
     user_in_database = add_one_test_user_with_groups
 
     response = await async_client.get(
@@ -215,7 +214,6 @@ async def test_admin_gets_user_by_azure_user_id(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-
     user_in_database = add_one_test_user_with_groups
 
     response = await async_client.get(
@@ -268,7 +266,6 @@ async def test_user_gets_user_by_id(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-
     user_in_database = add_one_test_user_with_groups
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.user_id)}")
@@ -331,6 +328,49 @@ async def test_get_user_by_id_without_token(
     user_in_db = add_one_test_user
 
     response = await async_client.get(f"/api/v1/user/azure/{str(user_in_db.user_id)}")
+    assert response.status_code == 401
+    assert response.text == '{"detail":"Invalid token"}'
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_roles_user,
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+        },
+        {
+            **token_payload_scope_api_read,
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+        },
+        {
+            **token_payload_scope_api_read,
+            **token_payload_roles_user,
+            **token_payload_tenant_id,
+        },
+        {
+            **token_payload_scope_api_read,
+            **token_payload_roles_user,
+            **token_payload_user_id,
+        },
+    ],
+    indirect=True,
+)
+async def test_get_user_by_id_with_missing_token_content(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_test_user_with_groups: UserRead,
+):
+    """Test a user GETs it's own user by id"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    user_in_database = add_one_test_user_with_groups
+
+    response = await async_client.get(f"/api/v1/user/{str(user_in_database.user_id)}")
     assert response.status_code == 401
     assert response.text == '{"detail":"Invalid token"}'
 
