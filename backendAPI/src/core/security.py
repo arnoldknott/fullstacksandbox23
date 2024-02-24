@@ -49,12 +49,12 @@ async def get_azure_jwks(no_cache: bool = False):
             else:
                 await get_azure_jwks(no_cache=True)
         else:
-            # print("=== config.AZURE_OPENID_CONFIG_URL ===")
-            # print(config.AZURE_OPENID_CONFIG_URL)
+            print("=== config.AZURE_OPENID_CONFIG_URL ===")
+            print(config.AZURE_OPENID_CONFIG_URL)
             oidc_config = httpx.get(config.AZURE_OPENID_CONFIG_URL).json()
-            # print("=== oidc_config ===")
-            # print(oidc_config)
-            if not oidc_config:
+            print("=== oidc_config ===")
+            print(oidc_config)
+            if oidc_config is False:
                 raise HTTPException(
                     status_code=404, detail="Failed to fetch Open ID config."
                 )
@@ -136,33 +136,6 @@ async def get_azure_token_payload(request: Request) -> dict:
                 print("=== 🔑 Token verified after fetching and caching new JWKS ===")
                 return payload
 
-            # # Get the key that matches the kid:
-            # kid = jwt.get_unverified_header(token)["kid"]
-            # rsa_key = {}
-            # for key in jwks["keys"]:
-            #     if key["kid"] == kid:
-            #         rsa_key = RSAAlgorithm.from_jwk(key)
-            # logger.info("Decoding token")
-            # # validate the token
-            # payload = jwt.decode(
-            #     token,
-            #     rsa_key,
-            #     algorithms=["RS256"],
-            #     audience=config.API_SCOPE,
-            #     issuer=config.AZURE_ISSUER_URL,
-            #     options={
-            #         "validate_iss": True,
-            #         "validate_aud": True,
-            #         "validate_exp": True,
-            #         "validate_nbf": True,
-            #         "validate_iat": True,
-            #     },
-            # )
-            # logger.info("Token decoded successfully")
-            # print("=== payload ===")
-            # print(payload)
-            # return payload
-            # return True
     except Exception as e:
         # only one retry allowed: by now the tokens should be cached!
         # if retries < 1:
