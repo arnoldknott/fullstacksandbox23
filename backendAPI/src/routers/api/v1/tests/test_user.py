@@ -10,7 +10,6 @@ from tests.utils import (
     token_payload_user_id,
     token_payload_tenant_id,
     token_payload_roles_admin,
-    token_payload_roles_user_admin,
     token_payload_roles_user,
     token_payload_scope_api_read,
     token_payload_scope_api_read_write,
