@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import Depends, FastAPI
 from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
-from core.security import guards
+from core.security import guards, get_azure_jwks
 from httpx import AsyncClient
 
 from tests.utils import (
@@ -20,6 +20,40 @@ from tests.utils import (
     token_payload_roles_user,
     one_test_user,
 )
+
+
+@pytest.mark.anyio
+async def test_get_azure_jwks():
+    """Tests the jwks endpoint."""
+    jwks = await get_azure_jwks()
+
+    assert "keys" in jwks
+    for key in jwks["keys"]:
+        assert "kid" in key
+        assert "n" in key
+        assert "e" in key
+        assert "kty" in key
+        assert "use" in key
+        assert "x5t" in key
+        assert "x5c" in key
+        assert "issuer" in key
+
+
+@pytest.mark.anyio
+async def test_get_azure_jwks_no_cache():
+    """Tests the jwks endpoint."""
+    jwks = await get_azure_jwks(no_cache=True)
+
+    assert "keys" in jwks
+    for key in jwks["keys"]:
+        assert "kid" in key
+        assert "n" in key
+        assert "e" in key
+        assert "kty" in key
+        assert "use" in key
+        assert "x5t" in key
+        assert "x5c" in key
+        assert "issuer" in key
 
 
 @pytest.mark.anyio
