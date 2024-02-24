@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # TBD: write tests for this:
 async def get_azure_jwks(no_cache: bool = False):
     """Fetches the JWKs from identity provider"""
-    logger.info("🔑 Fetching JWKS")
+    logger.info("🔑 Fetching JWKs")
     try:
         if no_cache is False:
             # print("=== no_cache ===")
@@ -54,8 +54,9 @@ async def get_azure_jwks(no_cache: bool = False):
         else:
             # print("=== config.AZURE_OPENID_CONFIG_URL ===")
             # print(config.AZURE_OPENID_CONFIG_URL)
-            print("=== 🔑 get JWKs from Azure ===")
+            logger.info("🔑 Getting JWKs from Azure")
             oidc_config = httpx.get(config.AZURE_OPENID_CONFIG_URL).json()
+            print("=== 🔑 got JWKs from Azure ===")
             # print("=== oidc_config ===")
             # print(oidc_config)
             if oidc_config is False:
@@ -69,10 +70,12 @@ async def get_azure_jwks(no_cache: bool = False):
                     status_code=404, detail=f"Failed to fetch JWKS online ${err}"
                 )
             try:
+                # TBD: for real multi-tenant applications, the cache-key should be tenant specific
                 redis_jwks_client.json().set("jwks", ".", json.dumps(jwks))
+                logger.info("🔑 Setting JWKs in cache")
                 print("=== 🔑 JWKS set in cache ===")
-                print("=== jwks ===")
-                print(jwks)
+                # print("=== jwks ===")
+                # print(jwks)
                 return jwks
             except Exception as err:
                 raise HTTPException(
