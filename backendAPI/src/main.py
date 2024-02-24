@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 
-from core.security import guards
+from core.security import CurrentAzureTokenHasScope
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from routers.api.v1.access_control import router as access_control_router
@@ -134,7 +134,8 @@ app.include_router(
     user_router,
     prefix=f"{global_prefix}/user",
     tags=["User"],
-    dependencies=[Depends(guards.current_azure_token_has_scope_api_read)],
+    # dependencies=[Depends(Requires(guards.current_azure_token_has_scope_api_read))],
+    dependencies=[Depends(CurrentAzureTokenHasScope("api.read"))],
 )
 
 

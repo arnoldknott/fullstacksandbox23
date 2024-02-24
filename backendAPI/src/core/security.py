@@ -156,6 +156,55 @@ async def get_azure_token_payload(request: Request) -> dict:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
+# async def requires(guard):
+#     """Requires a guard to be true, otherwise raises an HTTPException"""
+
+#     async def wrapper(*args, **kwargs):
+#         result = await guard(*args, **kwargs)
+#         if result is False:
+#             raise HTTPException(status_code=403, detail="Access denied")
+
+#     return wrapper
+
+
+class CurrentAzureTokenHasScope:
+    """Checks if the current token includes a specific scope"""
+
+    def __init__(self, scope, require=True) -> None:
+        self.scope = scope
+        self.require = require
+
+    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+        if ("scp" in payload) and (self.scope in payload["scp"]):
+            return True
+        else:
+            if self.require:
+                raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                return False
+
+
+class CurrentAzureTokenHasRole:
+    """Checks if the current token includes a specific role"""
+
+    def __init__(self, role, require=True) -> None:
+        self.role = role
+        self.require = require
+
+    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+        if ("roles" in payload) and (self.role in payload["roles"]):
+            print("=== self.role ===")
+            print(self.role)
+            print("=== payload ===")
+            print(payload)
+            return True
+        else:
+            if self.require:
+                raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                return False
+
+
 class Guards:
     """Guards for protecting routes"""
 
@@ -177,17 +226,23 @@ class Guards:
         # return False
         # print("=== payload[roles] ===")
         # print(payload["roles"])
-        try:
-            if "Admin" in payload["roles"]:
-                return True
-            else:
-                return False
-        except Exception as err:
-            logger.error(f"🔑 Role not found in token: ${err}")
-            raise HTTPException(status_code=401, detail="Invalid token")
-            # raise HTTPException(
-            #     status_code=403, detail="Access forbidden: missing admin role"
-            # )
+        if ("roles" in payload) and ("Admin" in payload["roles"]):
+            return True
+        else:
+            return False
+
+        # try:
+        #     if "Admin" in payload["roles"]:
+        #         return True
+        #     else:
+        #         return False
+        # except Exception as err:
+        #     logger.error(f"🔑 Role not found in token: ${err}")
+        #     raise HTTPException(status_code=401, detail="Invalid token")
+
+        # raise HTTPException(
+        #     status_code=403, detail="Access denied: missing admin role"
+        # )
 
     # TBD: Refactor: merge api.read and api.write into one scope api.access!
     # TBD: pass scope as argument - check if it shows up again in the docs!
@@ -202,34 +257,49 @@ class Guards:
     #     if scope in payload["scp"].split(" "):
     #         return True
     #     else:
-    #         raise HTTPException(status_code=403, detail="Access forbidden")
+    #         raise HTTPException(status_code=403, detail="Access denied")
+
+    # async def require(self):
+    #     result = await self.__call__()
+    #     if not result:
+    #         raise HTTPException(status_code=403, detail="Access denied")
 
     # TBD: write tests for this:
-    async def current_azure_token_has_scope_api_read(
-        self, payload: dict = Depends(get_azure_token_payload)
-    ):
-        """Checks if the current token has the api.read scope"""
-        try:
-            if "api.read" in payload["scp"].split(" "):
-                return True
-            else:
-                raise HTTPException(status_code=403, detail="Access forbidden")
-        except Exception as err:
-            logger.error(f"🔑 Scope not found in token: ${err}")
-            raise HTTPException(status_code=401, detail="Invalid token")
+    # async def current_azure_token_has_scope_api_read(
+    #     self, payload: dict = Depends(get_azure_token_payload)
+    # ):
+    #     """Checks if the current token has the api.read scope"""
+    #     if ("scp" in payload) and ("api.read" in payload["scp"]):
+    #         return True
+    #     else:
+    #         return False
 
-    async def current_azure_token_has_scope_api_write(
-        self, payload: dict = Depends(get_azure_token_payload)
-    ):
-        """Checks if the current token has the api.write scope"""
-        try:
-            if "api.write" in payload["scp"].split(" "):
-                return True
-            else:
-                raise HTTPException(status_code=403, detail="Access forbidden")
-        except Exception as err:
-            logger.error(f"🔑 Scope not found in token: ${err}")
-            raise HTTPException(status_code=401, detail="Invalid token")
+    # try:
+    #     if "api.read" in payload["scp"].split(" "):
+    #         return True
+    #     else:
+    #         raise HTTPException(status_code=403, detail="Access denied")
+    # except Exception as err:
+    #     logger.error(f"🔑 Scope not found in token: ${err}")
+    #     raise HTTPException(status_code=401, detail="Invalid token")
+
+    # async def current_azure_token_has_scope_api_write(
+    #     self, payload: dict = Depends(get_azure_token_payload)
+    # ):
+    #     """Checks if the current token has the api.write scope"""
+    #     if ("scp" in payload) and ("api.read" in payload["scp"]):
+    #         return True
+    #     else:
+    #         return False
+
+    # try:
+    #     if "api.write" in payload["scp"].split(" "):
+    #         return True
+    #     else:
+    #         raise HTTPException(status_code=403, detail="Access denied")
+    # except Exception as err:
+    #     logger.error(f"🔑 Scope not found in token: ${err}")
+    #     raise HTTPException(status_code=401, detail="Invalid token")
 
     # TBD: write tests for this:
     async def current_azure_user_in_database(
@@ -237,8 +307,8 @@ class Guards:
         payload: dict = Depends(get_azure_token_payload),
     ) -> UserRead:
         """Checks user in database, potentially adds user (self-sign-up) and adds or updates the group membership of the user"""
-        print("=== payload ===")
-        print(payload)
+        # print("=== payload ===")
+        # print(payload)
         groups = []
         try:
             if "groups" in payload:
@@ -255,7 +325,7 @@ class Guards:
             # -> under users and groups add the users or groups:
             # -> gives and revokes access for users and groups based on roles
             update_last_access = True
-            if "roles" in payload and "Admin" in payload["roles"]:
+            if ("roles" in payload) and ("Admin" in payload["roles"]):
                 update_last_access = False
             async with UserCRUD() as crud:
                 current_user = await crud.create_azure_user_and_groups_if_not_exist(
@@ -264,6 +334,7 @@ class Guards:
                 if current_user:
                     return current_user
                 else:
+                    # TBD: should be handled by CRUD?
                     raise HTTPException(status_code=404, detail="404 User not found")
         except Exception as err:
             logger.error(f"🔑 User not found in database: ${err}")

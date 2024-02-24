@@ -87,7 +87,7 @@ async def test_user_posts_user(
     )
 
     assert response.status_code == 403
-    assert response.text == '{"detail":"Access forbidden"}'
+    assert response.text == '{"detail":"Access denied"}'
 
     # this would allow other users to create users, which is not allowed - only self-sign-up!:
     # assert response.status_code == 201
@@ -337,29 +337,58 @@ async def test_get_user_by_id_without_token(
     "mocked_get_azure_token_payload",
     [
         {
+            # missing scope_api_read
             **token_payload_roles_user,
             **token_payload_user_id,
             **token_payload_tenant_id,
         },
+        # {
+        #     ## Hmmm - user does not need to have a role to read itself
+        #     # enabling this would mean that the all users need to be added in Azure Entra AD
+        #     **token_payload_scope_api_read,
+        #     # missing roles_user
+        #     **token_payload_user_id,
+        #     **token_payload_tenant_id,
+        # },
+    ],
+    indirect=True,
+)
+async def test_get_user_by_id_with_missing_scope(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_test_user_with_groups: UserRead,
+):
+    """Test a user GETs it's own user by id"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    user_in_database = add_one_test_user_with_groups
+
+    response = await async_client.get(f"/api/v1/user/{str(user_in_database.user_id)}")
+    assert response.status_code == 403
+    assert response.text == '{"detail":"Access denied"}'
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
         {
             **token_payload_scope_api_read,
-            **token_payload_user_id,
+            **token_payload_roles_user,
+            # missing user_id
             **token_payload_tenant_id,
         },
         {
             **token_payload_scope_api_read,
             **token_payload_roles_user,
-            **token_payload_tenant_id,
-        },
-        {
-            **token_payload_scope_api_read,
-            **token_payload_roles_user,
             **token_payload_user_id,
+            # missing tenant_id
         },
     ],
     indirect=True,
 )
-async def test_get_user_by_id_with_missing_token_content(
+async def test_get_user_by_id_invalid_token(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_test_user_with_groups: UserRead,

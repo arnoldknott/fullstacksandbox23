@@ -30,10 +30,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             user = results.one()
             # TBD: this might end up in spaghetti code - rethink!
             # updating the user with itself updates th "last_accessed_at" field
-            print("=== user crud - read_by_azure_user_id -> update_last_access ===")
-            print(update_last_access)
+            # print("=== user crud - read_by_azure_user_id -> update_last_access ===")
+            # print(update_last_access)
             if update_last_access is True:
-                print("=== user crud - read_by_azure_user_id -> updating... ===")
+                # print("=== user crud - read_by_azure_user_id -> updating... ===")
                 user = await self.update(user, user)
             return user
         except Exception as err:
@@ -56,9 +56,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # TBD: this might end up in spaghetti code - rethink!
             # updating the user with itself updates th "last_accessed_at" field
             if update_last_access is True:
-                print(
-                    "=== user crud - read_by_azure_user_id_with_childs -> updating... ==="
-                )
+                # print(
+                #     "=== user crud - read_by_azure_user_id_with_childs -> updating... ==="
+                # )
                 user = await self.update(user, user)
             return user
         except Exception as err:
@@ -83,10 +83,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             raise HTTPException(status_code=404, detail="User not found")
         # TBD: this might end up in spaghetti code - rethink!
         # updating the user with itself updates th "last_accessed_at" field
-        print("=== user crud - read_by_id_with_childs -> update_last_access ===")
-        print(update_last_access)
+        # print("=== user crud - read_by_id_with_childs -> update_last_access ===")
+        # print(update_last_access)
         if update_last_access is True:
-            print("=== user crud - read_by_id_with_childs -> updating... ===")
+            # print("=== user crud - read_by_id_with_childs -> updating... ===")
             user = await self.update(user, user)
         return user
 
@@ -109,10 +109,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # print("=== groups ===")
         # print(groups)
         try:
-            print(
-                "=== user crud - create_azure_user_and_groups_if_not_exist - read_by_azure_user_id -> update_last_access ==="
-            )
-            print(update_last_access)
+            # print(
+            #     "=== user crud - create_azure_user_and_groups_if_not_exist - read_by_azure_user_id -> update_last_access ==="
+            # )
+            # print(update_last_access)
             current_user = await self.read_by_azure_user_id(
                 azure_user_id, update_last_access
             )

@@ -2,7 +2,7 @@ import logging
 from typing import List
 
 from uuid import UUID
-from core.security import guards
+from core.security import CurrentAzureTokenHasScope, CurrentAzureTokenHasRole, guards
 from crud.user import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException
 from models.user import User, UserCreate, UserRead, UserUpdate
@@ -22,18 +22,20 @@ async def post_user(
     # The roles assigned to users and groups decide about sign-up here.
     # This function allows admins to sign up users through API on top of that.
     # TBD: add admin guard!
-    check_api_write_scope: bool = Depends(
-        guards.current_azure_token_has_scope_api_write
-    ),
+    _1=Depends(CurrentAzureTokenHasScope("api.write")),
+    # check_api_write_scope: bool = Depends(
+    #     guards.current_azure_token_has_scope_api_write
+    # ),
     # scope=Depends(guards.current_azure_token_has_scope("api.write")),
-    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    _2=Depends(CurrentAzureTokenHasRole("Admin")),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
-    if check_api_write_scope is False:
-        raise HTTPException(status_code=403, detail="Access forbidden")
-    if check_admin_role is False:
-        raise HTTPException(status_code=403, detail="Access forbidden")
+    # if check_api_write_scope is False:
+    #     raise HTTPException(status_code=403, detail="Access denied")
+    # if check_admin_role is False:
+    #     raise HTTPException(status_code=403, detail="Access denied")
     # await scope
     # print("=== user ===")
     # print(user)
@@ -44,11 +46,12 @@ async def post_user(
 
 @router.get("/")
 async def get_all_users(
-    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    _=Depends(CurrentAzureTokenHasRole("Admin")),
 ) -> List[User]:
     """Returns all user."""
-    if check_admin_role is False:
-        raise HTTPException(status_code=403, detail="Access forbidden")
+    # if check_admin_role is False:
+    #     raise HTTPException(status_code=403, detail="Access denied")
     logger.info("GET all user")
     async with UserCRUD() as crud:
         response = await crud.read_all()
@@ -61,13 +64,14 @@ async def get_all_users(
 async def get_user_by_azure_user_id(
     azure_user_id: str,
     current_user: UserRead = Depends(guards.current_azure_user_in_database),
-    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> UserRead:
     """Returns a user based on its azure user id."""
     if (str(current_user.azure_user_id) != str(azure_user_id)) and (
         check_admin_role is False
     ):
-        raise HTTPException(status_code=403, detail="Access forbidden")
+        raise HTTPException(status_code=403, detail="Access denied")
 
     logger.info("GET user")
 
@@ -91,11 +95,12 @@ async def get_user_by_azure_user_id(
 async def get_user_by_id(
     user_id: str,
     current_user: UserRead = Depends(guards.current_azure_user_in_database),
-    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
     if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
-        raise HTTPException(status_code=403, detail="Access forbidden")
+        raise HTTPException(status_code=403, detail="Access denied")
 
     logger.info("GET user")
 
@@ -118,16 +123,18 @@ async def update_user(
     user_id: str,
     user_data_update: UserUpdate,
     current_user: UserUpdate = Depends(guards.current_azure_user_in_database),
-    check_api_write_scope: bool = Depends(
-        guards.current_azure_token_has_scope_api_write
-    ),
-    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    _=Depends(CurrentAzureTokenHasScope("api.write")),
+    # check_api_write_scope: bool = Depends(
+    #     guards.current_azure_token_has_scope_api_write
+    # ),
+    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> User:
     """Updates a user."""
-    if check_api_write_scope is False:
-        raise HTTPException(status_code=403, detail="Access forbidden")
+    # if check_api_write_scope is False:
+    #     raise HTTPException(status_code=403, detail="Access denied")
     if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
-        raise HTTPException(status_code=403, detail="Access forbidden")
+        raise HTTPException(status_code=403, detail="Access denied")
 
     logger.info("GET user")
 
@@ -150,16 +157,18 @@ async def update_user(
 async def delete_user(
     user_id: str,
     current_user: UserUpdate = Depends(guards.current_azure_user_in_database),
-    check_api_write_scope: bool = Depends(
-        guards.current_azure_token_has_scope_api_write
-    ),
-    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    _=Depends(CurrentAzureTokenHasScope("api.write")),
+    # check_api_write_scope: bool = Depends(
+    #     guards.current_azure_token_has_scope_api_write
+    # ),
+    # check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
+    check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> User:
     """Deletes a user."""
-    if check_api_write_scope is False:
-        raise HTTPException(status_code=403, detail="Access forbidden")
+    # if check_api_write_scope is False:
+    #     raise HTTPException(status_code=403, detail="Access denied")
     if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
-        raise HTTPException(status_code=403, detail="Access forbidden")
+        raise HTTPException(status_code=403, detail="Access denied")
 
     logger.info("DELETE user")
 
