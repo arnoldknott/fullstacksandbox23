@@ -103,8 +103,6 @@ async def decode_token(token: str, jwks: dict) -> dict:
         },
     )
     logger.info("Token decoded successfully")
-    print("=== payload ===")
-    print(payload)
     return payload
 
 
@@ -118,7 +116,6 @@ async def get_azure_token_payload(request: Request) -> dict:
             try:
                 jwks = await get_azure_jwks()
                 payload = await decode_token(token, jwks)
-                print("=== 🔑 Token verified in with cached jwks ===")
                 return payload
             except Exception:
                 logger.info(
@@ -126,7 +123,6 @@ async def get_azure_token_payload(request: Request) -> dict:
                 )
                 jwks = await get_azure_jwks(no_cache=True)
                 payload = await decode_token(token, jwks)
-                print("=== 🔑 Token verified after fetching and caching new JWKS ===")
                 return payload
 
     except Exception as e:
@@ -160,10 +156,6 @@ class CurrentAzureTokenHasRole:
 
     async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
         if ("roles" in payload) and (self.role in payload["roles"]):
-            print("=== self.role ===")
-            print(self.role)
-            print("=== payload ===")
-            print(payload)
             return True
         else:
             if self.require:
