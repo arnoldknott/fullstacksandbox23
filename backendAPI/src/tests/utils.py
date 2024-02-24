@@ -41,9 +41,17 @@ token_payload_scope_api_read_write = {
     "scp": "api.read api.write",
 }
 token_payload_roles_user = {
-    "roles": "User",
+    "roles": ["User"],
 }
-token_payload_roles_admin = {"roles": ["User", "Admin"]}
+token_payload_roles_admin = {
+    "roles": ["Admin"],
+}
+token_payload_roles_admin_user = {
+    "roles": ["Admin", "User"],
+}
+token_payload_roles_user_admin = {
+    "roles": ["User", "Admin"],
+}
 token_payload_one_group = {
     "groups": ["12345678-1234-1234-1234-123456789012"],
 }

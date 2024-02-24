@@ -36,13 +36,15 @@ class BaseCRUD(
         """Closes the database session."""
         await self.session.close()
 
-    async def create(self, object: BaseSchemaTypeCreate) -> BaseModelType:
+    async def create(
+        self, object: BaseSchemaTypeCreate, update_last_access: bool = True
+    ) -> BaseModelType:
         """Creates a new object."""
         session = self.session
         Model = self.model
         # TBD: refactor into try-except block and add logging
         database_object = Model.model_validate(object)
-        if hasattr(database_object, "last_accessed_at"):
+        if hasattr(database_object, "last_accessed_at") and update_last_access is True:
             database_object.last_accessed_at = datetime.now()
         session.add(database_object)
         await session.commit()
@@ -67,14 +69,16 @@ class BaseCRUD(
         return response.all()
 
     # Changing to return BaseSchemaTypeRead instead of BaseModelType makes read_with_childs obsolete!
-    async def read_by_id(self, object_id: int) -> BaseSchemaTypeRead:
+    async def read_by_id(
+        self, object_id: int, update_last_access: bool = True
+    ) -> BaseSchemaTypeRead:
         """Returns an object by id."""
         session = self.session
         model = self.model
         object = await session.get(model, object_id)
         if object is None:
             raise HTTPException(status_code=404, detail="Object not found")
-        if hasattr(object, "last_accessed_at"):
+        if hasattr(object, "last_accessed_at") and update_last_access is True:
             model.last_accessed_at = datetime.now()
             session.add(object)
             await session.commit()
@@ -82,14 +86,19 @@ class BaseCRUD(
         return object
 
     async def update(
-        self, old: BaseModelType, new: BaseSchemaTypeUpdate
+        self,
+        old: BaseModelType,
+        new: BaseSchemaTypeUpdate,
+        update_last_access: bool = True,
     ) -> BaseModelType:
         """Updates an object."""
         session = self.session
         # TBD: refactor into try-except block and add logging
         if hasattr(old, "last_updated_at"):
             old.last_updated_at = datetime.now()
-        if hasattr(old, "last_accessed_at"):
+        print("=== base crud - update -> update_last_access ===")
+        print(update_last_access)
+        if hasattr(old, "last_accessed_at") and update_last_access is True:
             old.last_accessed_at = datetime.now()
         updated = new.model_dump(exclude_unset=True)
         for key, value in updated.items():

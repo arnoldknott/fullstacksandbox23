@@ -22,12 +22,18 @@ async def post_user(
     # The roles assigned to users and groups decide about sign-up here.
     # This function allows admins to sign up users through API on top of that.
     # TBD: add admin guard!
-    _1=Depends(guards.current_azure_token_has_scope_api_write),
+    check_api_write_scope: bool = Depends(
+        guards.current_azure_token_has_scope_api_write
+    ),
     # scope=Depends(guards.current_azure_token_has_scope("api.write")),
-    _2=Depends(guards.current_azure_user_is_admin),
+    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
+    if check_api_write_scope is False:
+        raise HTTPException(status_code=403, detail="Access forbidden")
+    if check_admin_role is False:
+        raise HTTPException(status_code=403, detail="Access forbidden")
     # await scope
     # print("=== user ===")
     # print(user)
@@ -38,9 +44,11 @@ async def post_user(
 
 @router.get("/")
 async def get_all_users(
-    _=Depends(guards.current_azure_user_is_admin),
+    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
 ) -> List[User]:
     """Returns all user."""
+    if check_admin_role is False:
+        raise HTTPException(status_code=403, detail="Access forbidden")
     logger.info("GET all user")
     async with UserCRUD() as crud:
         response = await crud.read_all()
@@ -52,62 +60,81 @@ async def get_all_users(
 @router.get("/azure/{azure_user_id}")
 async def get_user_by_azure_user_id(
     azure_user_id: str,
-    calling_user: UserRead = Depends(guards.current_azure_user_in_database),
-    calling_user_is_admin: User = Depends(guards.current_azure_user_is_admin),
+    current_user: UserRead = Depends(guards.current_azure_user_in_database),
+    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
 ) -> UserRead:
     """Returns a user based on its azure user id."""
-    if str(calling_user.azure_user_id) != str(azure_user_id):
-        print("=== type of calling_user.azure_user_id ===")
-        print(type(calling_user.azure_user_id))
-        print("=== type of azure_user_id ===")
-        print(type(azure_user_id))
-        if calling_user_is_admin is False:
-            raise HTTPException(status_code=403, detail="Access forbidden")
+    if (str(current_user.azure_user_id) != str(azure_user_id)) and (
+        check_admin_role is False
+    ):
+        raise HTTPException(status_code=403, detail="Access forbidden")
+
     logger.info("GET user")
-    # crud = UserCRUD()
+
+    update_last_access = True
+    if check_admin_role is True:
+        update_last_access = False
+
     try:
         azure_user_id = UUID(azure_user_id)
     except ValueError:
         logger.error("User ID is not an UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
-        response = await crud.read_by_azure_user_id_with_childs(azure_user_id)
+        response = await crud.read_by_azure_user_id_with_childs(
+            azure_user_id, update_last_access
+        )
     return response
 
 
 @router.get("/{user_id}")
 async def get_user_by_id(
     user_id: str,
-    calling_user: UserRead = Depends(guards.current_azure_user_in_database),
-    calling_user_is_admin=Depends(guards.current_azure_user_is_admin),
+    current_user: UserRead = Depends(guards.current_azure_user_in_database),
+    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
-    if str(calling_user.user_id) != str(user_id):
-        if calling_user_is_admin is False:
-            raise HTTPException(status_code=403, detail="Access forbidden")
+    if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
+        raise HTTPException(status_code=403, detail="Access forbidden")
+
     logger.info("GET user")
-    # crud = UserCRUD()
+
+    update_last_access = True
+    if check_admin_role is True:
+        update_last_access = False
+
     try:
         user_id = UUID(user_id)
     except ValueError:
         logger.error("User ID is not an UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
-        response = await crud.read_by_id_with_childs(user_id)
+        response = await crud.read_by_id_with_childs(user_id, update_last_access)
     return response
 
 
 @router.put("/{user_id}")
 async def update_user(
     user_id: str,
-    calling_user: UserUpdate = Depends(guards.current_azure_user_in_database),
-    calling_user_is_admin=Depends(guards.current_azure_user_is_admin),
+    user_data_update: UserUpdate,
+    current_user: UserUpdate = Depends(guards.current_azure_user_in_database),
+    check_api_write_scope: bool = Depends(
+        guards.current_azure_token_has_scope_api_write
+    ),
+    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
 ) -> User:
     """Updates a user."""
-    if str(calling_user.user_id) != str(user_id):
-        if calling_user_is_admin is False:
-            raise HTTPException(status_code=403, detail="Access forbidden")
-    logger.info("PUT user")
+    if check_api_write_scope is False:
+        raise HTTPException(status_code=403, detail="Access forbidden")
+    if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
+        raise HTTPException(status_code=403, detail="Access forbidden")
+
+    logger.info("GET user")
+
+    update_last_access = True
+    if check_admin_role is True:
+        update_last_access = False
+
     try:
         user_id = UUID(user_id)
     except ValueError:
@@ -115,21 +142,27 @@ async def update_user(
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
         old_user = await crud.read_by_id(user_id)
-        updated_user = await crud.update(old_user, calling_user)
+        updated_user = await crud.update(old_user, user_data_update, update_last_access)
     return updated_user
 
 
 @router.delete("/{user_id}")
 async def delete_user(
     user_id: str,
-    calling_user: UserUpdate = Depends(guards.current_azure_user_in_database),
-    calling_user_is_admin=Depends(guards.current_azure_user_is_admin),
+    current_user: UserUpdate = Depends(guards.current_azure_user_in_database),
+    check_api_write_scope: bool = Depends(
+        guards.current_azure_token_has_scope_api_write
+    ),
+    check_admin_role: bool = Depends(guards.current_azure_user_is_admin),
 ) -> User:
     """Deletes a user."""
-    if str(calling_user.user_id) != str(user_id):
-        if calling_user_is_admin is False:
-            raise HTTPException(status_code=403, detail="Access forbidden")
+    if check_api_write_scope is False:
+        raise HTTPException(status_code=403, detail="Access forbidden")
+    if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
+        raise HTTPException(status_code=403, detail="Access forbidden")
+
     logger.info("DELETE user")
+
     try:
         user_id = UUID(user_id)
     except ValueError:

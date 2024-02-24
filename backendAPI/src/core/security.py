@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 # Helper function for get_token_payload:
+# TBD: write tests for this:
 async def get_azure_jwks(no_cache: bool = False):
     """Fetches the JWKs from identity provider"""
     logger.info("🔑 Fetching JWKS")
@@ -180,12 +181,21 @@ class Guards:
     def __init__(self):
         pass
 
+    # TBD: write tests for this:
     async def current_azure_user_is_admin(
         self, payload: dict = Depends(get_azure_token_payload)
     ):
         """Checks if the current user is admin"""
-        # print("=== payload ===")
-        # print(payload)
+        # print(type(payload["roles"]))
+        # if isinstance(payload["roles"], list):
+        #     if "Admin" in payload["roles"]:
+        #         return True
+        # elif isinstance(payload["roles"], str):
+        #     if payload["roles"] == "Admin":
+        #         return True
+        # return False
+        # print("=== payload[roles] ===")
+        # print(payload["roles"])
         if "Admin" in payload["roles"]:
             return True
         else:
@@ -209,6 +219,7 @@ class Guards:
     #     else:
     #         raise HTTPException(status_code=403, detail="Access forbidden")
 
+    # TBD: write tests for this:
     async def current_azure_token_has_scope_api_read(
         self, payload: dict = Depends(get_azure_token_payload)
     ):
@@ -227,11 +238,14 @@ class Guards:
         else:
             raise HTTPException(status_code=403, detail="Access forbidden")
 
+    # TBD: write tests for this:
     async def current_azure_user_in_database(
         self,
         payload: dict = Depends(get_azure_token_payload),
     ) -> UserRead:
         """Checks user in database, potentially adds user (self-sign-up) and adds or updates the group membership of the user"""
+        print("=== payload ===")
+        print(payload)
         groups = []
         if "groups" in payload:
             groups = payload["groups"]
@@ -246,15 +260,19 @@ class Guards:
         # -> search for the backend application registration
         # -> under users and groups add the users or groups:
         # -> gives and revokes access for users and groups based on roles
+        update_last_access = True
+        if "roles" in payload and "Admin" in payload["roles"]:
+            update_last_access = False
         async with UserCRUD() as crud:
             current_user = await crud.create_azure_user_and_groups_if_not_exist(
-                user_id, tenant_id, groups
+                user_id, tenant_id, groups, update_last_access
             )
             if current_user:
                 return current_user
             else:
                 raise HTTPException(status_code=404, detail="404 User not found")
 
+    # TBD: write tests for this:
     async def azure_token_is_valid(
         self, payload: dict = Depends(get_azure_token_payload)
     ):

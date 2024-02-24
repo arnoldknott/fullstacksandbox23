@@ -18,7 +18,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         super().__init__(User)
 
     # Not needed any more, since azure_user_id is the primary key!
-    async def read_by_azure_user_id(self, azure_user_id: str) -> UserRead:
+    async def read_by_azure_user_id(
+        self, azure_user_id: str, update_last_access: bool = True
+    ) -> UserRead:
         """Returns a User with linked Groups from the database."""
         # async with self.session as session:
         session = self.session
@@ -28,7 +30,11 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             user = results.one()
             # TBD: this might end up in spaghetti code - rethink!
             # updating the user with itself updates th "last_accessed_at" field
-            user = await self.update(user, user)
+            print("=== user crud - read_by_azure_user_id -> update_last_access ===")
+            print(update_last_access)
+            if update_last_access == True:
+                print("=== user crud - read_by_azure_user_id -> updating... ===")
+                user = await self.update(user, user)
             return user
         except Exception as err:
             logging.error(err)
@@ -38,7 +44,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         #     raise HTTPException(status_code=404, detail="User not found")
         # return user
 
-    async def read_by_azure_user_id_with_childs(self, azure_user_id: int) -> UserRead:
+    async def read_by_azure_user_id_with_childs(
+        self, azure_user_id: int, update_last_access: bool = True
+    ) -> UserRead:
         """Returns the user with a specific user_id and its childs."""
         session = self.session
         try:
@@ -47,13 +55,19 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             user = results.one()
             # TBD: this might end up in spaghetti code - rethink!
             # updating the user with itself updates th "last_accessed_at" field
-            updated_user = await self.update(user, user)
-            return updated_user
+            if update_last_access == True:
+                print(
+                    "=== user crud - read_by_azure_user_id_with_childs -> updating... ==="
+                )
+                user = await self.update(user, user)
+            return user
         except Exception as err:
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
 
-    async def read_by_id_with_childs(self, user_id: int) -> UserRead:
+    async def read_by_id_with_childs(
+        self, user_id: int, update_last_access: bool = True
+    ) -> UserRead:
         """Returns the user with a specific user_id and its childs."""
         session = self.session
         # TBD: get returns None if not found - maybe using select instead to raise an exception?
@@ -69,7 +83,11 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             raise HTTPException(status_code=404, detail="User not found")
         # TBD: this might end up in spaghetti code - rethink!
         # updating the user with itself updates th "last_accessed_at" field
-        user = await self.update(user, user)
+        print("=== user crud - read_by_id_with_childs -> update_last_access ===")
+        print(update_last_access)
+        if update_last_access == True:
+            print("=== user crud - read_by_id_with_childs -> updating... ===")
+            user = await self.update(user, user)
         return user
 
     # This allows self-sign-up, unless user has been disabled by admin!
@@ -77,7 +95,11 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     # no matter if the user existed or not, group membership gets checked and created if needed!
     # Note the difference between user_id and azure_user_id as well as group_id and azure_group_id!
     async def create_azure_user_and_groups_if_not_exist(
-        self, azure_user_id: str, azure_tenant_id: str, groups: Optional[List[str]]
+        self,
+        azure_user_id: str,
+        azure_tenant_id: str,
+        groups: Optional[List[str]],
+        update_last_access: bool = True,
     ) -> UserRead:
         """Checks if user and its groups exist, if not create and link them."""
         # print("=== user_id ===")
@@ -87,7 +109,13 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # print("=== groups ===")
         # print(groups)
         try:
-            current_user = await self.read_by_azure_user_id(azure_user_id)
+            print(
+                "=== user crud - create_azure_user_and_groups_if_not_exist - read_by_azure_user_id -> update_last_access ==="
+            )
+            print(update_last_access)
+            current_user = await self.read_by_azure_user_id(
+                azure_user_id, update_last_access
+            )
             # print("=== current_user ===")
             # print(current_user)
         except HTTPException as err:
@@ -146,7 +174,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 await session.commit()
                 await session.refresh(azure_user_group_link)
             # read again after the relationship to the groups is created:
-        current_user = await self.read_by_azure_user_id(azure_user_id)
+        current_user = await self.read_by_azure_user_id(
+            azure_user_id, update_last_access
+        )
         return current_user
 
     async def deactivate_user(self, azure_user_id: str) -> User:
