@@ -40,10 +40,12 @@ async def get_azure_jwks(no_cache: bool = False):
     """Fetches the JWKs from identity provider"""
     logger.info("🔑 Fetching JWKS")
     try:
-        if not no_cache:
+        if no_cache is False:
             # print("=== no_cache ===")
             # print(no_cache)
             jwks = redis_jwks_client.json().get("jwks")
+            print("=== jwks ===")
+            print(jwks)
             if jwks:
                 return json.loads(jwks)
             else:
@@ -60,15 +62,12 @@ async def get_azure_jwks(no_cache: bool = False):
                 )
             try:
                 jwks = httpx.get(oidc_config["jwks_uri"]).json()
-                print("=== jwks fetched ===")
-                print(jwks["keys"][0]["kty"])
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to fetch JWKS online ${err}"
                 )
             try:
                 redis_jwks_client.json().set("jwks", ".", json.dumps(jwks))
-                print("=== set the jwks in redis ===")
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to set JWKS in redis: ${err}"

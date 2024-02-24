@@ -27,6 +27,9 @@ async def test_get_azure_jwks():
     """Tests the jwks endpoint."""
     jwks = await get_azure_jwks()
 
+    print("=== jwks ===")
+    print(jwks)
+
     assert "keys" in jwks
     for key in jwks["keys"]:
         assert "kid" in key
@@ -44,8 +47,6 @@ async def test_get_azure_jwks_no_cache():
     """Tests the jwks endpoint."""
     jwks = await get_azure_jwks(no_cache=True)
 
-    print("=== jwks ===")
-    print(jwks)
     assert "keys" in jwks
     for key in jwks["keys"]:
         assert "kid" in key
@@ -56,8 +57,6 @@ async def test_get_azure_jwks_no_cache():
         assert "x5t" in key
         assert "x5c" in key
         assert "issuer" in key
-
-    assert 1 == 2
 
 
 @pytest.mark.anyio
