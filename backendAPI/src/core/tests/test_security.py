@@ -7,9 +7,9 @@ from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from core.security import (
     get_azure_jwks,
+    CurrentAzureUserInDatabase,
     CurrentAzureTokenHasScope,
     CurrentAzureTokenHasRole,
-    guards,
 )
 from httpx import AsyncClient
 
@@ -96,9 +96,11 @@ async def test_azure_user_self_signup(
     # create a temporary route that uses the guard:
     @app.get("/test_azure_user_self_signup")
     def temp_endpoint(
-        current_user: Annotated[str, Depends(guards.current_azure_user_in_database)]
+        current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())]
     ):
         """Returns the result of the guard."""
+        print("=== current_user ===")
+        print(current_user)
         return current_user
 
     # call that temporary route:
@@ -374,7 +376,7 @@ async def test_current_azure_token_missing_scope_api_read_return_false(
 #     # create a temporary route that uses the guard:
 #     @app.get("/temp_endpoint")
 #     def temp_endpoint(
-#         current_user: Annotated[str, Depends(guards.current_azure_user_in_database)]
+#         current_user: Annotated[str, Depends(CurrentAzureUserInDatabase)]
 #     ):
 #         """Returns the result of the guard."""
 #         return current_user
@@ -430,7 +432,7 @@ async def test_current_azure_token_missing_scope_api_read_return_false(
 #     # create a temporary route that uses the guard adn call it:
 #     @app.get("/temp_endpoint")
 #     def temp_endpoint(
-#         current_user: Annotated[str, Depends(guards.current_azure_user_in_database)]
+#         current_user: Annotated[str, Depends(CurrentAzureUserInDatabase)]
 #     ):
 #         """Returns the result of the guard."""
 #         return current_user

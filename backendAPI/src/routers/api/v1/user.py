@@ -2,7 +2,11 @@ import logging
 from typing import List
 
 from uuid import UUID
-from core.security import CurrentAzureTokenHasScope, CurrentAzureTokenHasRole, guards
+from core.security import (
+    CurrentAzureUserInDatabase,
+    CurrentAzureTokenHasScope,
+    CurrentAzureTokenHasRole,
+)
 from crud.user import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException
 from models.user import User, UserCreate, UserRead, UserUpdate
@@ -42,7 +46,7 @@ async def get_all_users(
 @router.get("/azure/{azure_user_id}")
 async def get_user_by_azure_user_id(
     azure_user_id: str,
-    current_user: UserRead = Depends(guards.current_azure_user_in_database),
+    current_user: UserRead = Depends(CurrentAzureUserInDatabase()),
     check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> UserRead:
     """Returns a user based on its azure user id."""
@@ -72,7 +76,7 @@ async def get_user_by_azure_user_id(
 @router.get("/{user_id}")
 async def get_user_by_id(
     user_id: str,
-    current_user: UserRead = Depends(guards.current_azure_user_in_database),
+    current_user: UserRead = Depends(CurrentAzureUserInDatabase()),
     check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
@@ -100,7 +104,7 @@ async def get_user_by_id(
 async def update_user(
     user_id: str,
     user_data_update: UserUpdate,
-    current_user: UserUpdate = Depends(guards.current_azure_user_in_database),
+    current_user: UserUpdate = Depends(CurrentAzureUserInDatabase()),
     _=Depends(CurrentAzureTokenHasScope("api.write")),
     check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> User:
@@ -129,7 +133,7 @@ async def update_user(
 @router.delete("/{user_id}")
 async def delete_user(
     user_id: str,
-    current_user: UserUpdate = Depends(guards.current_azure_user_in_database),
+    current_user: UserUpdate = Depends(CurrentAzureUserInDatabase()),
     _=Depends(CurrentAzureTokenHasScope("api.write")),
     check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> User:

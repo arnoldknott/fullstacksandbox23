@@ -164,35 +164,29 @@ class CurrentAzureTokenHasRole:
                 return False
 
 
-class Guards:
-    """Guards for protecting routes"""
+class CurrentAzureUserInDatabase:
+    """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    # TBD: write tests for this:
-    async def current_azure_user_in_database(
-        self,
-        payload: dict = Depends(get_azure_token_payload),
+    # This is responsible for self-sign on: if a user has a token, the user is allowed
+    # Who gets the tokens is controlled by the identity provider (Azure AD)
+    # Can be through membership in a group, which has access to the application
+    # -> in Azure portal under Enterprise applications,
+    # -> turn of filter enterprise applications and
+    # -> search for the backend application registration
+    # -> under users and groups add the users or groups:
+    # -> gives and revokes access for users and groups based on roles
+    async def __call__(
+        self, payload: dict = Depends(get_azure_token_payload)
     ) -> UserRead:
-        """Checks user in database, potentially adds user (self-sign-up) and adds or updates the group membership of the user"""
-        # print("=== payload ===")
-        # print(payload)
         groups = []
         try:
             if "groups" in payload:
                 groups = payload["groups"]
             user_id = payload["oid"]
-            # roles = payload["roles"]
             tenant_id = payload["tid"]
-            # This is responsible for self-sign on: if a user has a token, the user is allowed
-            # Who gets the tokens is controlled by the identity provider (Azure AD)
-            # Can be through membership in a group, which has access to the application
-            # -> in Azure portal under Enterprise applications,
-            # -> turn of filter enterprise applications and
-            # -> search for the backend application registration
-            # -> under users and groups add the users or groups:
-            # -> gives and revokes access for users and groups based on roles
             update_last_access = True
             if ("roles" in payload) and ("Admin" in payload["roles"]):
                 update_last_access = False
@@ -203,11 +197,56 @@ class Guards:
                 if current_user:
                     return current_user
                 else:
-                    # TBD: should be handled by CRUD?
                     raise HTTPException(status_code=404, detail="404 User not found")
         except Exception as err:
             logger.error(f"🔑 User not found in database: ${err}")
             raise HTTPException(status_code=401, detail="Invalid token")
+
+
+class Guards:
+    """Guards for protecting routes"""
+
+    def __init__(self):
+        pass
+
+    # TBD: write tests for this:
+    # async def current_azure_user_in_database(
+    #     self,
+    #     payload: dict = Depends(get_azure_token_payload),
+    # ) -> UserRead:
+    #     """Checks user in database, potentially adds user (self-sign-up) and adds or updates the group membership of the user"""
+    #     # print("=== payload ===")
+    #     # print(payload)
+    #     groups = []
+    #     try:
+    #         if "groups" in payload:
+    #             groups = payload["groups"]
+    #         user_id = payload["oid"]
+    #         # roles = payload["roles"]
+    #         tenant_id = payload["tid"]
+    #         # This is responsible for self-sign on: if a user has a token, the user is allowed
+    #         # Who gets the tokens is controlled by the identity provider (Azure AD)
+    #         # Can be through membership in a group, which has access to the application
+    #         # -> in Azure portal under Enterprise applications,
+    #         # -> turn of filter enterprise applications and
+    #         # -> search for the backend application registration
+    #         # -> under users and groups add the users or groups:
+    #         # -> gives and revokes access for users and groups based on roles
+    #         update_last_access = True
+    #         if ("roles" in payload) and ("Admin" in payload["roles"]):
+    #             update_last_access = False
+    #         async with UserCRUD() as crud:
+    #             current_user = await crud.create_azure_user_and_groups_if_not_exist(
+    #                 user_id, tenant_id, groups, update_last_access
+    #             )
+    #             if current_user:
+    #                 return current_user
+    #             else:
+    #                 # TBD: should be handled by CRUD?
+    #                 raise HTTPException(status_code=404, detail="404 User not found")
+    #     except Exception as err:
+    #         logger.error(f"🔑 User not found in database: ${err}")
+    #         raise HTTPException(status_code=401, detail="Invalid token")
 
     # TBD: write tests for this - or remove?:
     async def azure_token_is_valid(
