@@ -1,6 +1,7 @@
 # from unittest.mock import AsyncMock, patch
 
 import pytest
+import uuid
 from typing import List
 from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
@@ -62,6 +63,92 @@ async def test_admin_posts_user(
     assert "last_accessed_at" != None
     assert db_user_json["azure_user_id"] == one_test_user["azure_user_id"]
     assert db_user_json["azure_tenant_id"] == one_test_user["azure_tenant_id"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+            **token_payload_one_group,
+        }
+    ],
+    indirect=True,
+)
+async def test_post_user_with_integer_user_id(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+):
+    """Tests posting a integer user_id to user_post endpoint fails"""
+    app_override_get_azure_payload_dependency
+
+    # Make a POST request to create the user
+    response = await async_client.post(
+        "/api/v1/user/",
+        json={**one_test_user, "user_id": 1},
+    )
+
+    assert response.status_code == 201
+    created_user = User(**response.json())
+    assert created_user.azure_user_id == one_test_user["azure_user_id"]
+    assert created_user.azure_tenant_id == one_test_user["azure_tenant_id"]
+
+    # Verify that the user was created in the database
+    async with UserCRUD() as crud:
+        db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
+    assert db_user is not None
+    db_user_json = jsonable_encoder(db_user)
+    assert db_user_json["user_id"] != 1
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+            **token_payload_one_group,
+        }
+    ],
+    indirect=True,
+)
+async def test_post_user_with_uuid_user_id(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_get_azure_payload_dependency
+    test_uuid = str(uuid.uuid4())
+
+    # Make a POST request to create the user
+    response = await async_client.post(
+        "/api/v1/user/",
+        json={**one_test_user, "user_id": test_uuid},
+    )
+
+    assert response.status_code == 201
+    created_user = User(**response.json())
+    assert created_user.azure_user_id == one_test_user["azure_user_id"]
+    assert created_user.azure_tenant_id == one_test_user["azure_tenant_id"]
+
+    # Verify that the user was created in the database
+    async with UserCRUD() as crud:
+        db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
+    assert db_user is not None
+    # db_user_json = jsonable_encoder(db_user)
+    db_user = db_user.model_dump()
+    assert "last_accessed_at" in db_user
+    assert "last_accessed_at" != None
+    assert db_user["azure_user_id"] == uuid.UUID(one_test_user["azure_user_id"])
+    assert db_user["azure_tenant_id"] == uuid.UUID(one_test_user["azure_tenant_id"])
+    assert db_user["user_id"] != uuid.UUID(test_uuid)
 
 
 @pytest.mark.anyio
@@ -912,7 +999,7 @@ async def test_user_deletes_another_user(
 # ✔︎ regular user deletes itself
 # ✔︎ last_accessed_at is updated on every create, read and update (unless admin access another user)
 # groups: groups are not part of the user endpoints - need their own endpoints, but security is taking care of the sign-up!
-# - users connections to groups are created in the database
+# ✔︎ users connections to groups are created in the database - checked through security tests: adding a new group to a user.
 # ✔︎ a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
 
 # Failing tests:
