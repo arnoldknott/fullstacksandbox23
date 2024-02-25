@@ -91,6 +91,20 @@ async def test_get_azure_jwks():
             # **token_payload_roles_user,
             # **token_payload_one_group,
         },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            # **token_payload_scope_api_write,
+            **token_payload_roles_user,
+            # **token_payload_one_group,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            # **token_payload_scope_api_write,
+            **token_payload_roles_admin,
+            # **token_payload_one_group,
+        },
     ],
     indirect=True,
 )
@@ -113,13 +127,10 @@ async def test_azure_user_self_signup(
     response = await async_client.get(
         "/test_azure_user_self_signup",
     )
-
     assert response.status_code == 200
     current_user = response.json()
-
     assert current_user["azure_user_id"] == one_test_user["azure_user_id"]
     assert current_user["azure_tenant_id"] == one_test_user["azure_tenant_id"]
-
     # Verify that the user was created in the database
     async with UserCRUD() as crud:
         db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
@@ -127,6 +138,12 @@ async def test_azure_user_self_signup(
     db_user_json = jsonable_encoder(db_user)
     assert db_user_json["azure_user_id"] == one_test_user["azure_user_id"]
     assert db_user_json["azure_tenant_id"] == one_test_user["azure_tenant_id"]
+    assert "created_at" in db_user_json
+    assert "last_accessed_at" in db_user_json
+    print(db_user_json["created_at"])
+    print(db_user_json["last_accessed_at"])
+    assert db_user_json["created_at"] != None
+    assert db_user_json["last_accessed_at"] >= db_user_json["created_at"]
 
 
 @pytest.mark.anyio
