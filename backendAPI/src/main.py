@@ -127,12 +127,12 @@ app.include_router(
 # course_scopes = ScopeChecker(
 #     ["api.read", "api.write"]
 # )  # add artificial.read, artificial.write, mapped_account.read, mapped_account.write, ...
-app.include_router(
-    access_control_router,
-    prefix=f"{global_prefix}/access",
-    tags=["Access Control"],
-    # dependencies=[Depends(course_scopes)],
-)
+# app.include_router(
+#     access_control_router,
+#     prefix=f"{global_prefix}/access",
+#     tags=["Access Control"],
+#     # dependencies=[Depends(course_scopes)],
+# )
 # Sign-up is handled by security - controlled by token content!
 # TBD: this can be implemented later for admin dashboard or so.
 app.include_router(
