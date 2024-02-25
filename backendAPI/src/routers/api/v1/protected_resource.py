@@ -14,7 +14,7 @@ router = APIRouter()
 # This is secure and works!
 @router.get("/")
 def get_protected_resource(
-    current_user=Depends(CurrentAzureUserInDatabase),
+    current_user=Depends(CurrentAzureUserInDatabase()),
 ):
     """Returns a protected resource."""
     logger.info("GET protected resource")

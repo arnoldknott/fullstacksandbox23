@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from models.azure_group_user_link import AzureGroupUserLink
 from models.user import User, UserCreate, UserRead, UserUpdate
 from sqlmodel import select
+from sqlalchemy.orm import selectinload
 
 from .azure_group import AzureGroupCRUD
 from .base import BaseCRUD
@@ -59,7 +60,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 # print(
                 #     "=== user crud - read_by_azure_user_id_with_childs -> updating... ==="
                 # )
-                user = await self.update(user, user)
+                await self.update(user, user)
             return user
         except Exception as err:
             logging.error(err)
@@ -71,24 +72,56 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         """Returns the user with a specific user_id and its childs."""
         session = self.session
         # TBD: get returns None if not found - maybe using select instead to raise an exception?
-        # try:
-        #     user = await session.get(User, user_id)
-        #     return user
-        # except Exception as err:
-        #     # if user is None:
-        #     logging.error(err)
-        #     raise HTTPException(status_code=404, detail="User not found")
-        user = await session.get(User, user_id)
-        if user is None:
+        try:
+            #     user = await session.get(User, user_id)
+            #     return user
+            # except Exception as err:
+            #     # if user is None:
+            #     logging.error(err)
+            #     raise HTTPException(status_code=404, detail="User not found")
+            # user = await session.get(User, user_id)
+
+            statement = (
+                select(User)
+                .where(User.user_id == user_id)
+                .options(selectinload(User.azure_groups))
+            )
+
+            # print("=== user-crud - read_by_id_with_child - statement ===")
+            # print(statement)
+            results = await session.exec(statement)
+            # print("=== user-crud - read_by_id_with_child - results ===")
+            # print(results)
+            user = results.one()
+            # print("=== user-crud - read_by_id_with_child - user ===")
+            # print(user)
+            # print("=== user-crud - read_by_id_with_child - user.azure_groups ===")
+            # print(user.azure_groups)
+            # if user:
+            if update_last_access is True:
+                # print("=== user crud - read_by_id_with_childs -> updating... ===")
+                await self.update(user, user)
+            # for group in user.azure_groups:
+            # print("=== user-crud - read_by_id_with_child - group ===")
+            # print(group)
+            user = UserRead.model_validate(user)
+            # print("=== user-crud - read_by_id_with_child - validated_user ===")
+            # print(user)
+            # if user is None:
+            return user
+        # else:
+        except Exception as err:
+            logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
         # TBD: this might end up in spaghetti code - rethink!
         # updating the user with itself updates th "last_accessed_at" field
         # print("=== user crud - read_by_id_with_childs -> update_last_access ===")
         # print(update_last_access)
-        if update_last_access is True:
-            # print("=== user crud - read_by_id_with_childs -> updating... ===")
-            user = await self.update(user, user)
-        return user
+
+        # if update_last_access is True:
+        #     # print("=== user crud - read_by_id_with_childs -> updating... ===")
+        #     await self.update(user, user)
+        # return user
 
     # This allows self-sign-up, unless user has been disabled by admin!
     # Any user passed in, get's checked for existence, if not existing, it get's created!
