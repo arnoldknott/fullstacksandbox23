@@ -96,8 +96,6 @@ class BaseCRUD(
         # TBD: refactor into try-except block and add logging
         if hasattr(old, "last_updated_at"):
             old.last_updated_at = datetime.now()
-        # print("=== base crud - update -> update_last_access ===")
-        # print(update_last_access)
         if hasattr(old, "last_accessed_at") and update_last_access is True:
             old.last_accessed_at = datetime.now()
         updated = new.model_dump(exclude_unset=True)

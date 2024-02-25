@@ -703,6 +703,202 @@ async def test_user_puts_another_user(
 
 # endregion: ## PUT tests
 
+# region: ## DELETE tests:
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
+async def test_user_deletes_itself(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_test_user: User,
+):
+    """Test user deletes itself"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    existing_user = add_one_test_user
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    existing_db_user = existing_db_user.model_dump()
+    assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
+    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["is_active"] is True
+
+    # Make a DELETE request to update the user
+    response = await async_client.delete(
+        f"/api/v1/user/{str(existing_user.user_id)}",
+    )
+    assert response.status_code == 200
+
+    # Verify that the user was deleted in the database
+    response = await async_client.get(f"/api/v1/user/{str(existing_user.user_id)}")
+    assert response.status_code == 403
+    assert response.text == '{"detail":"Access denied"}'
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+    ],
+    indirect=True,
+)
+async def test_admin_deletes_user(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_test_user: User,
+):
+    """Test admin deletes a user"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    existing_user = add_one_test_user
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    existing_db_user = existing_db_user.model_dump()
+    assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
+    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["is_active"] is True
+
+    # Make a DELETE request to update the user
+    response = await async_client.delete(
+        f"/api/v1/user/{str(existing_user.user_id)}",
+    )
+    assert response.status_code == 200
+
+    # Verify that the user was deleted in the database
+    response = await async_client.get(f"/api/v1/user/{str(existing_user.user_id)}")
+    assert response.status_code == 404
+    assert response.text == '{"detail":"User not found"}'
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+        },
+    ],
+    indirect=True,
+)
+async def test_delete_user_invalid_token(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_users: User,
+):
+    """Test deleting a user with invalid token fails"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    existing_user = add_many_test_users[2]
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    existing_db_user = existing_db_user.model_dump()
+    assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
+    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["is_active"] is True
+
+    # Make a DELETE request to update the user
+    response = await async_client.delete(
+        f"/api/v1/user/{str(existing_user.user_id)}",
+    )
+    assert response.status_code == 403
+    assert response.text == '{"detail":"Access denied"}'
+
+    # check if user is still there:
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    existing_db_user = existing_db_user.model_dump()
+    assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
+    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["is_active"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
+async def test_user_deletes_another_user(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_users_with_groups: List[User],
+):
+    """Test delete another user fails"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    existing_user = add_many_test_users_with_groups[2]
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    existing_db_user = existing_db_user.model_dump()
+    assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
+    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["is_active"] is True
+
+    # Make a DELETE request to update the user
+    response = await async_client.delete(
+        f"/api/v1/user/{str(existing_user.user_id)}",
+    )
+    assert response.status_code == 403
+    assert response.text == '{"detail":"Access denied"}'
+
+    # check if user is still there:
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    existing_db_user = existing_db_user.model_dump()
+    assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
+    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["is_active"] is True
+
+
+# endregion: ## DELETE tests
+
 # Passing tests:
 # ✔︎ admin user creates a user
 # ✔︎ admin user reads all users
@@ -712,8 +908,8 @@ async def test_user_puts_another_user(
 # ✔︎ regular user reads itself by id
 # ✔︎ regular user updates itself
 # ✔︎ admin user updates a user -> is_active is the only thing, that can get updated
-# - admin user deletes a user
-# - regular user deletes itself
+# ✔︎ admin user deletes a user
+# ✔︎ regular user deletes itself
 # ✔︎ last_accessed_at is updated on every create, read and update (unless admin access another user)
 # groups: groups are not part of the user endpoints - need their own endpoints, but security is taking care of the sign-up!
 # - users connections to groups are created in the database
@@ -726,11 +922,11 @@ async def test_user_puts_another_user(
 # ✔︎ read user by azure_id
 # ✔︎ read user by id
 # ✔︎ update user
-# - delete user
+# ✔︎ delete user
 # Regular user (not admin):
 # ✔︎ wants to create another user
 # ✔︎ wants to read all user
 # ✔︎ wants to update another user
 # ✔︎ wants to read another user by id
 # ✔︎ wants to read another user by azure id
-# - regular user wants to delete another user
+# ✔︎ regular user wants to delete another user
