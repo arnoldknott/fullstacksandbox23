@@ -212,12 +212,15 @@ class CurrentAzureUserInDatabase:
                 groups = payload["groups"]
             user_id = payload["oid"]
             tenant_id = payload["tid"]
-            update_last_access = True
-            if ("roles" in payload) and ("Admin" in payload["roles"]):
-                update_last_access = False
+            # update_last_access = True
+            # if ("roles" in payload) and ("Admin" in payload["roles"]):
+            #     update_last_access = False
             async with UserCRUD() as crud:
+                # current_user = await crud.create_azure_user_and_groups_if_not_exist(
+                #     user_id, tenant_id, groups, update_last_access
+                # )
                 current_user = await crud.create_azure_user_and_groups_if_not_exist(
-                    user_id, tenant_id, groups, update_last_access
+                    user_id, tenant_id, groups
                 )
                 if current_user:
                     return current_user

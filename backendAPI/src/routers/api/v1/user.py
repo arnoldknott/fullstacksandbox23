@@ -58,7 +58,9 @@ async def get_user_by_azure_user_id(
     logger.info("GET user")
 
     update_last_access = True
-    if check_admin_role is True:
+    if (check_admin_role is True) and (
+        str(current_user.azure_user_id) != str(azure_user_id)
+    ):
         update_last_access = False
 
     try:
@@ -86,7 +88,7 @@ async def get_user_by_id(
     logger.info("GET user")
 
     update_last_access = True
-    if check_admin_role is True:
+    if (check_admin_role is True) and (str(current_user.user_id) != str(user_id)):
         update_last_access = False
 
     try:
