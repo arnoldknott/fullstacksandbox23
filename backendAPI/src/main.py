@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 from core.security import CurrentAzureTokenHasScope
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
-from routers.api.v1.access_control import router as access_control_router
 from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router
 from routers.api.v1.demo_resource import router as demo_resource_router
