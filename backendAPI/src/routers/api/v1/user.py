@@ -106,15 +106,17 @@ async def get_user_by_id(
 async def update_user(
     user_id: str,
     user_data_update: UserUpdate,
-    current_user: UserUpdate = Depends(CurrentAzureUserInDatabase()),
+    current_user: UserRead = Depends(CurrentAzureUserInDatabase()),
     _=Depends(CurrentAzureTokenHasScope("api.write")),
     check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
 ) -> User:
     """Updates a user."""
+    print("=== check_admin_role ===")
+    print(check_admin_role)
     if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
         raise HTTPException(status_code=403, detail="Access denied")
 
-    logger.info("GET user")
+    logger.info("PUT user")
 
     update_last_access = True
     if check_admin_role is True:

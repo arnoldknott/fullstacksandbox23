@@ -13,6 +13,7 @@ from tests.utils import (
     token_payload_roles_admin,
     token_payload_roles_user,
     token_payload_scope_api_read,
+    token_payload_scope_api_write,
     token_payload_scope_api_read_write,
     token_payload_one_group,
     one_test_user,
@@ -57,6 +58,8 @@ async def test_admin_posts_user(
         db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
     assert db_user is not None
     db_user_json = jsonable_encoder(db_user)
+    assert "last_accessed_at" in db_user_json
+    assert "last_accessed_at" != None
     assert db_user_json["azure_user_id"] == one_test_user["azure_user_id"]
     assert db_user_json["azure_tenant_id"] == one_test_user["azure_tenant_id"]
 
@@ -512,6 +515,194 @@ async def test_get_user_by_id_invalid_token(
 
 # endregion: ## GET tests
 
+# region: ## PUT tests:
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+    ],
+    indirect=True,
+)
+async def test_put_user(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_test_user_with_groups: User,
+):
+    """Test a admin updates a user"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    existing_user = add_one_test_user_with_groups
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    existing_db_user = existing_db_user.model_dump()
+    assert existing_db_user["is_active"] is True
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        f"/api/v1/user/{str(existing_user.user_id)}",
+        json={"is_active": False},
+        # json={"azure_user_id": str(existing_user.azure_user_id), "is_active": False},
+    )
+    assert response.status_code == 200
+    updated_user = User(**response.json())
+    assert updated_user.is_active is False
+
+    # Verify that the user was updated in the database
+    async with UserCRUD() as crud:
+        db_user = await crud.read_by_id(existing_user.user_id)
+    assert db_user is not None
+    assert db_user.last_accessed_at > existing_db_user["last_accessed_at"]
+    assert db_user.is_active is False
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+    ],
+    indirect=True,
+)
+async def test_put_user_from_admin(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_users: List[User],
+):
+    """Test a admin updates a user"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    existing_user = add_many_test_users[2]
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    existing_db_user = existing_db_user.model_dump()
+    assert existing_db_user["is_active"] is True
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        f"/api/v1/user/{str(existing_user.user_id)}",
+        json={"is_active": False},
+        # json={"azure_user_id": str(existing_user.azure_user_id), "is_active": False},
+    )
+    assert response.status_code == 200
+    updated_user = User(**response.json())
+    assert updated_user.is_active is False
+
+    # Verify that the user was updated in the database
+    async with UserCRUD() as crud:
+        db_user = await crud.read_by_id(existing_user.user_id)
+    assert db_user is not None
+    assert db_user.last_accessed_at == existing_db_user["last_accessed_at"]
+    assert db_user.is_active is False
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+        },
+    ],
+    indirect=True,
+)
+async def test_put_user_invalid_token(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_test_user_with_groups: User,
+):
+    """Test a admin updates a user"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    existing_user = add_one_test_user_with_groups
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    existing_db_user = existing_db_user.model_dump()
+    assert existing_db_user["is_active"] is True
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        f"/api/v1/user/{str(existing_user.user_id)}",
+        json={"is_active": False},
+    )
+    assert response.status_code == 403
+    assert response.text == '{"detail":"Access denied"}'
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
+async def test_user_puts_another_user(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_users: List[User],
+):
+    """Test a admin updates a user"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    existing_user = add_many_test_users[0]
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    existing_db_user = existing_db_user.model_dump()
+    assert existing_db_user["is_active"] is True
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        f"/api/v1/user/{str(existing_user.user_id)}",
+        json={"is_active": False},
+        # json={"azure_user_id": str(existing_user.azure_user_id), "is_active": False},
+    )
+    assert response.status_code == 403
+    assert response.text == '{"detail":"Access denied"}'
+
+
+# endregion: ## PUT tests
+
 # Passing tests:
 # ✔︎ admin user creates a user
 # ✔︎ admin user reads all users
@@ -519,26 +710,27 @@ async def test_get_user_by_id_invalid_token(
 # ✔︎ admin user reads a user by id
 # ✔︎ regular user reads itself by azure_id
 # ✔︎ regular user reads itself by id
-# - admin user updates a user -> is_active is the only thing, that can get updated
+# ✔︎ regular user updates itself
+# ✔︎ admin user updates a user -> is_active is the only thing, that can get updated
 # - admin user deletes a user
 # - regular user deletes itself
-# - last_accessed_at is updated on every create, read and update
+# ✔︎ last_accessed_at is updated on every create, read and update (unless admin access another user)
 # groups: groups are not part of the user endpoints - need their own endpoints, but security is taking care of the sign-up!
 # - users connections to groups are created in the database
 # ✔︎ a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
 
 # Failing tests:
 # - modify the user_id
-# No token provided
+# No token / invalid token provided
 # ✔︎ read all user
 # ✔︎ read user by azure_id
 # ✔︎ read user by id
-# - update user
+# ✔︎ update user
 # - delete user
 # Regular user (not admin):
 # ✔︎ wants to create another user
 # ✔︎ wants to read all user
-# - wants to update a user
+# ✔︎ wants to update another user
 # ✔︎ wants to read another user by id
 # ✔︎ wants to read another user by azure id
 # - regular user wants to delete another user

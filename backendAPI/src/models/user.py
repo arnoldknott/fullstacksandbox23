@@ -12,38 +12,24 @@ from .azure_group_user_link import AzureGroupUserLink
 class UserCreate(SQLModel):
     """Schema for creating a user."""
 
-    azure_user_id: Optional[uuid.UUID]
+    azure_user_id: Optional[uuid.UUID] = None
     # # enables multi-tenancy, if None, then it's the internal tenant:
     azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
     last_accessed_at: Optional[datetime] = datetime.now()
-    is_active: bool = (
-        True  # TBD: let this be controlled by the token content, i.e. delete it here?
-    )
+    is_active: bool = True
 
 
 class User(UserCreate, table=True):
     """Schema for a user in the database."""
 
-    # dropping id for now - this is just too confusing during early stages and not needed
-    # if other sources than Azure AD are used, then this potentially needs to be re-added
-    # careful when doing that - take production database offline first!
     user_id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
-    # azure_user_id: uuid.UUID = Field(index=True, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
     # TBD: change last_accessed_at to non-optional after migration.
     last_accessed_at: Optional[datetime] = Field(default=datetime.now())
     is_active: Optional[bool] = Field(default=True)
-    # TBD: add "last_access_at" here?
-    # don't add Roles as they are coming in from the access token:
-    # single source of truth and now legacy data floating
-    # configure group membership in Azure Portal under Enterprise Applications instead.
 
     ### Foreign account: Azure AD ###
     azure_user_id: Optional[uuid.UUID] = Field(index=True, unique=True)
-    # linking to azure_user - one-to-one relationship:
-    # azure_user: Optional["AzureUser"] = Relationship(back_populates="user")
-
-    # create the relationships and back population to groups, topics,... here!
     azure_groups: Optional[List["AzureGroup"]] = Relationship(
         back_populates="users",
         link_model=AzureGroupUserLink,
@@ -67,12 +53,8 @@ class User(UserCreate, table=True):
 class UserRead(UserCreate):
     """Schema for reading a user."""
 
-    # azure_user_id: uuid.UUID
     user_id: uuid.UUID  # no longer optional - needs to exist now
 
-    # add everything, that should be shown from the backpopulations here
-    # but only what's realistically needed!
-    # groups: Optional[List["GroupRead"]] = []
     created_at: datetime
     last_accessed_at: datetime
     azure_groups: Optional[List["AzureGroupRead"]] = None
@@ -85,8 +67,8 @@ class UserUpdate(UserCreate):
     """Schema for updating a user."""
 
     is_active: Optional[bool] = None
-    # is_admin: Optional[bool] = None
 
+    # TBD: this is one-to-one relationship, so it's not an extra table. Add to user instead for reduced complexity.
     # class BrightspaceAccount(SQLModel, table=True):
     #     """Schema for a linking a brightspace (DTU Learn) account to the database."""
 
@@ -104,37 +86,6 @@ class UserUpdate(UserCreate):
     # access_token: str
     # refresh_token: str
     # user: Optional["User"] = Relationship(back_populates="brightspace_account")
-
-
-# class AzureUserCreate(SQLModel):
-#     """Schema for creating a user."""
-
-#     azure_user_id: uuid.UUID
-#     # # enables multi-tenancy, if None, then it's the internal tenant:
-#     azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
-#     # TBD: do I need the link to the user here?
-
-
-# class AzureUser(AzureUserCreate, table=True):
-#     """Schema for a linking an Azure account to the database."""
-
-#     azure_user_id: uuid.UUID = Field(index=True, primary_key=True)
-#     azure_groups: Optional[List["AzureGroup"]] = Relationship(
-#         back_populates="users",
-#         link_model=AzureGroupUserLink,
-#         sa_relationship_kwargs={"lazy": "selectin"},
-#     )
-
-#     user_id: uuid.UUID = Field(index=True)
-#     user: "User" = Relationship(back_populates="azure_user")
-
-
-# class AzureUserRead(AzureUser):
-#     pass
-
-
-# class AzureUserUpdate(AzureUserCreate):
-#     pass
 
 
 # class GoogleAccount(SQLModel, table=True):
