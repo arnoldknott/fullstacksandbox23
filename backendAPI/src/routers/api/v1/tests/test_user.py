@@ -629,7 +629,7 @@ async def test_put_user(
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_test_user_with_groups: User,
 ):
-    """Test a admin updates a user"""
+    """Tests put user endpoint"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
@@ -701,6 +701,119 @@ async def test_put_user_from_admin(
     assert db_user is not None
     assert db_user.last_accessed_at == existing_db_user["last_accessed_at"]
     assert db_user.is_active is False
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+    ],
+    indirect=True,
+)
+async def test_put_user_with_integer_user_id(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_test_user_with_groups: User,
+):
+    """Tests put user endpoint"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    existing_user = add_one_test_user_with_groups
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    # existing_db_user = existing_db_user.model_dump()
+    # assert existing_db_user["is_active"] is True
+    assert existing_db_user.is_active is True
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        f"/api/v1/user/{str(existing_user.user_id)}",
+        json={"is_active": False, "user_id": 1},
+    )
+    assert response.status_code == 200
+    updated_user = User(**response.json())
+    assert updated_user.is_active is False
+
+    # Verify that the user was updated in the database
+    async with UserCRUD() as crud:
+        db_user = await crud.read_by_id(existing_user.user_id)
+    assert db_user is not None
+    assert (
+        db_user.last_accessed_at > existing_db_user.last_accessed_at
+    )  # ["last_accessed_at"]
+    assert db_user.is_active is False
+    assert db_user.user_id != 1
+    assert db_user.user_id == existing_user.user_id
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+    ],
+    indirect=True,
+)
+async def test_put_user_with_uuid_user_id(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_test_user_with_groups: User,
+):
+    """Tests put user endpoint"""
+
+    test_uuid = str(uuid.uuid4())
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    existing_user = add_one_test_user_with_groups
+    async with UserCRUD() as crud:
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+    # existing_db_user = existing_db_user.model_dump()
+    # assert existing_db_user["is_active"] is True
+    assert existing_db_user.is_active is True
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        f"/api/v1/user/{str(existing_user.user_id)}",
+        json={"is_active": False, "user_id": test_uuid},
+    )
+    assert response.status_code == 200
+    updated_user = User(**response.json())
+    assert updated_user.is_active is False
+
+    # Verify that the user was updated in the database
+    async with UserCRUD() as crud:
+        db_user = await crud.read_by_id(existing_user.user_id)
+    assert db_user is not None
+    assert (
+        db_user.last_accessed_at > existing_db_user.last_accessed_at
+    )  # ["last_accessed_at"]
+    assert db_user.is_active is False
+    assert db_user.user_id != uuid.UUID(test_uuid)
 
 
 @pytest.mark.anyio
