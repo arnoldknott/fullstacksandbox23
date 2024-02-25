@@ -142,7 +142,7 @@ async def test_azure_user_self_signup(
     assert "last_accessed_at" in db_user_json
     print(db_user_json["created_at"])
     print(db_user_json["last_accessed_at"])
-    assert db_user_json["created_at"] != None
+    assert db_user_json["created_at"] is not None
     assert db_user_json["last_accessed_at"] >= db_user_json["created_at"]
 
 
