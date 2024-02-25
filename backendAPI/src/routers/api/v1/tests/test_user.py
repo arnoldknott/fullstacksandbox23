@@ -18,7 +18,7 @@ from tests.utils import (
     one_test_user,
 )
 
-## POST tests:
+# region: ## POST tests:
 
 
 @pytest.mark.anyio
@@ -106,7 +106,9 @@ async def test_user_posts_user(
     # assert db_user_json["azure_tenant_id"] == one_test_user["azure_tenant_id"]
 
 
-## GET tests:
+# endregion: ## POST tests
+
+# region: ## GET tests:
 
 
 @pytest.mark.anyio
@@ -140,6 +142,35 @@ async def test_admin_gets_users(
     assert "user_id" in users[0]
     assert users[0]["azure_user_id"] == str(user.azure_user_id)
     assert users[0]["azure_tenant_id"] == str(user.azure_tenant_id)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_scope_api_read,
+            **token_payload_roles_user,
+        }
+    ],
+    indirect=True,
+)
+async def test_user_gets_users(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_users: List[User],
+):
+    """Test GET all users"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+
+    # adds users to the database
+    add_many_test_users
+
+    response = await async_client.get("/api/v1/user/")
+    assert response.status_code == 403
+    assert response.text == '{"detail":"Access denied"}'
 
 
 @pytest.mark.anyio
@@ -235,6 +266,37 @@ async def test_admin_gets_user_by_azure_user_id(
     assert response_user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
     assert modelled_response_user.last_accessed_at == user_in_database.last_accessed_at
     assert len(response_user["azure_groups"]) == 3
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_scope_api_read,
+            **token_payload_roles_user,
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+        },
+    ],
+    indirect=True,
+)
+async def test_user_gets_another_user_by_azure_user_id(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_users: List[UserRead],
+):
+    """Test a user GETs it's own user id from it's linked azure user account"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    user_in_database = add_many_test_users[1]
+
+    response = await async_client.get(
+        f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
+    )
+    assert response.status_code == 403
+    assert response.text == '{"detail":"Access denied"}'
 
 
 @pytest.mark.anyio
@@ -335,6 +397,35 @@ async def test_admin_gets_user_by_id(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_scope_api_read,
+            **token_payload_roles_user,
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+        },
+    ],
+    indirect=True,
+)
+async def test_user_gets_another_user_by_user_id(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_users: List[UserRead],
+):
+    """Test a user GETs it's own user id from it's linked azure user account"""
+
+    # mocks the access token:
+    app_override_get_azure_payload_dependency
+    user_in_database = add_many_test_users[1]
+
+    response = await async_client.get(f"/api/v1/user/{str(user_in_database.user_id)}")
+    assert response.status_code == 403
+    assert response.text == '{"detail":"Access denied"}'
+
+
+@pytest.mark.anyio
 async def test_get_user_by_id_without_token(
     async_client: AsyncClient,
     add_one_test_user: User,
@@ -419,6 +510,8 @@ async def test_get_user_by_id_invalid_token(
     assert response.text == '{"detail":"Invalid token"}'
 
 
+# endregion: ## GET tests
+
 # Passing tests:
 # ✔︎ admin user creates a user
 # ✔︎ admin user reads all users
@@ -432,7 +525,7 @@ async def test_get_user_by_id_invalid_token(
 # - last_accessed_at is updated on every create, read and update
 # groups: groups are not part of the user endpoints - need their own endpoints, but security is taking care of the sign-up!
 # - users connections to groups are created in the database
-# - a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
+# ✔︎ a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
 
 # Failing tests:
 # - modify the user_id
@@ -443,8 +536,9 @@ async def test_get_user_by_id_invalid_token(
 # - update user
 # - delete user
 # Regular user (not admin):
-# - wants to create another user
-# - wants to read all user
+# ✔︎ wants to create another user
+# ✔︎ wants to read all user
 # - wants to update a user
-# - wants to read a different user by id
+# ✔︎ wants to read another user by id
+# ✔︎ wants to read another user by azure id
 # - regular user wants to delete another user
