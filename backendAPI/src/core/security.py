@@ -226,23 +226,3 @@ class CurrentAzureUserInDatabase:
         except Exception as err:
             logger.error(f"🔑 User not found in database: ${err}")
             raise HTTPException(status_code=401, detail="Invalid token")
-
-
-# class Guards:
-#     """Guards for protecting routes"""
-
-#     def __init__(self):
-#         pass
-
-#     # TBD: write tests for this - or remove?:
-#     async def azure_token_is_valid(
-#         self, payload: dict = Depends(get_azure_token_payload)
-#     ):
-#         """Checks if the token is valid"""
-#         if payload:
-#             return True
-#         else:
-#             raise HTTPException(status_code=401, detail="Invalid token")
-
-
-# guards = Guards()

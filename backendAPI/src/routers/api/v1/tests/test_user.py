@@ -1,6 +1,7 @@
 # from unittest.mock import AsyncMock, patch
 
 import pytest
+from typing import List
 from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
@@ -164,6 +165,13 @@ async def test_get_users_without_token(
             **token_payload_user_id,
             **token_payload_tenant_id,
         },
+        # here the admin get's itself => last_accessed_at should change!
+        {
+            **token_payload_scope_api_read,
+            **token_payload_roles_admin,
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+        },
     ],
     indirect=True,
 )
@@ -208,13 +216,13 @@ async def test_user_gets_user_by_azure_user_id(
 async def test_admin_gets_user_by_azure_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: UserRead,
+    add_many_test_users_with_groups: List[UserRead],
 ):
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    user_in_database = add_one_test_user_with_groups
+    user_in_database = add_many_test_users_with_groups[1]
 
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
@@ -251,6 +259,13 @@ async def test_get_user_by_azure_id_without_token(
         {
             **token_payload_scope_api_read,
             **token_payload_roles_user,
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+        },
+        # here the admin get's itself => last_accessed_at should change!
+        {
+            **token_payload_scope_api_read,
+            **token_payload_roles_admin,
             **token_payload_user_id,
             **token_payload_tenant_id,
         },
@@ -297,14 +312,14 @@ async def test_user_gets_user_by_id(
 async def test_admin_gets_user_by_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: UserRead,
+    add_many_test_users_with_groups: List[UserRead],
 ):
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
 
-    user_in_database = add_one_test_user_with_groups
+    user_in_database = add_many_test_users_with_groups[1]
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.user_id)}")
 

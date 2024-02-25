@@ -11,7 +11,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from core.security import get_azure_token_payload
 from models.user import User
 from crud.user import UserCRUD
-from tests.utils import one_test_user, token_payload_many_groups
+from tests.utils import one_test_user, many_test_users, token_payload_many_groups
 
 
 @pytest.fixture(scope="session")
@@ -75,15 +75,15 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[
-        get_azure_token_payload
-    ] = lambda: mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 
 
 @pytest.fixture(scope="function")
-async def add_one_test_user(get_async_test_session: AsyncSession):
+async def add_one_test_user(get_async_test_session: AsyncSession) -> User:
     """Adds a category to the database."""
     session = get_async_test_session
     user = User(**one_test_user)
@@ -95,7 +95,7 @@ async def add_one_test_user(get_async_test_session: AsyncSession):
 
 
 @pytest.fixture(scope="function")
-async def add_one_test_user_with_groups(get_async_test_session: AsyncSession):
+async def add_one_test_user_with_groups(get_async_test_session: AsyncSession) -> User:
     """Adds a category to the database."""
     async with UserCRUD() as crud:
         user = await crud.create_azure_user_and_groups_if_not_exist(
@@ -105,3 +105,21 @@ async def add_one_test_user_with_groups(get_async_test_session: AsyncSession):
         )
 
     yield user
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_users_with_groups(
+    get_async_test_session: AsyncSession,
+) -> list[User]:
+    """Adds a category to the database."""
+    async with UserCRUD() as crud:
+        users = []
+        for user in many_test_users:
+            added_user = await crud.create_azure_user_and_groups_if_not_exist(
+                user["azure_user_id"],
+                user["azure_tenant_id"],
+                token_payload_many_groups["groups"],
+            )
+            users.append(added_user)
+
+    yield users
