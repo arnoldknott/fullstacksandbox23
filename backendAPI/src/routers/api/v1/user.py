@@ -3,6 +3,7 @@ from typing import List
 
 from uuid import UUID
 from core.security import (
+    CurrentAzureTokenGuard,
     CurrentAzureUserInDatabase,
     CurrentAzureTokenHasScope,
     CurrentAzureTokenHasRole,
@@ -23,6 +24,7 @@ router = APIRouter()
 async def post_user(
     user: UserCreate,
     _1=Depends(CurrentAzureTokenHasScope("api.write")),
+    # _1=Depends(CurrentAzureTokenGuard()),
     _2=Depends(CurrentAzureTokenHasRole("Admin")),
 ) -> User:
     """Creates a new user."""

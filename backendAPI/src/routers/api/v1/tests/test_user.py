@@ -196,6 +196,44 @@ async def test_user_posts_user(
     # assert db_user_json["azure_tenant_id"] == one_test_user["azure_tenant_id"]
 
 
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            # **token_payload_scope_api_read_write,
+            **token_payload_scope_api_read,
+            **token_payload_roles_admin,
+        },
+        {
+            # **token_payload_scope_api_read_write,
+            **token_payload_scope_api_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_scope_api_read_write,
+            # **token_payload_roles_admin,
+        },
+        {},
+    ],
+    indirect=True,
+)
+async def test_post_user_invalid_token(
+    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_get_azure_payload_dependency
+
+    # Make a POST request to create the user
+    response = await async_client.post(
+        "/api/v1/user/",
+        json=one_test_user,
+    )
+
+    assert response.status_code == 403
+    assert response.text == '{"detail":"Access denied"}'
+
+
 # endregion: ## POST tests
 
 # region: ## GET tests:

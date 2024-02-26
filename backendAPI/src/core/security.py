@@ -229,3 +229,31 @@ class CurrentAzureUserInDatabase:
         except Exception as err:
             logger.error(f"🔑 User not found in database: ${err}")
             raise HTTPException(status_code=401, detail="Invalid token")
+
+
+class CurrentAzureTokenGuard:
+    """Base class for all guards"""
+
+    def __init__(self, require=True) -> None:
+        self.require = require
+
+    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+        """Checks if token returns a payload. If not, it raises an exception if require is True, otherwise it returns False."""
+        if payload:
+            return True
+        else:
+            if self.require:
+                raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                return False
+
+    async def has_scope(
+        self, scope: str, payload: dict = Depends(get_azure_token_payload)
+    ) -> bool:
+        if ("scp" in payload) and (scope in payload["scp"]):
+            return True
+        else:
+            if self.require:
+                raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                return False
