@@ -9,6 +9,7 @@ class BaseView:
     """Base class for all views"""
 
     def __init__(self, guards, crud):
+        self.guards = guards
         self.crud = crud
         # using private attribute to avoid direct access
         # note Python is not strict on that with _BaseView__update_last_access

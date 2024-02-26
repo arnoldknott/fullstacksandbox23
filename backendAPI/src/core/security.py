@@ -5,6 +5,9 @@ import logging
 # import asyncio
 import httpx
 import jwt
+from uuid import UUID
+from pydantic import BaseModel
+from typing import List, Optional
 from core.cache import redis_jwks_client
 from core.config import config
 from models.user import UserRead
@@ -33,6 +36,16 @@ logger = logging.getLogger(__name__)
 #     except Exception as err:
 #         logger.error("OAuth2 Authorization Code flow callback failed.")
 #         raise err
+
+
+class CurrentUserData(BaseModel):
+    """Model for the current user data - acts as interface for the request from endpoint to crud."""
+
+    user_id: UUID
+    azure_user_id: UUID
+    roles: List[str]
+    groups: List[UUID]
+    scopes: List[str]
 
 
 # Helper function for get_token_payload:
@@ -263,8 +276,9 @@ async def get_access_token_payload(
 class CurrentAccessToken:
     """class for all guards"""
 
-    def __init__(self, payload) -> None:
+    def __init__(self, payload, current_user: Optional[CurrentUserData] = None) -> None:
         self.payload = payload
+        self.current_user: Optional[CurrentUserData] = current_user
 
     async def is_valid(self, require=True):
         """Checks if the current token is valid"""
@@ -314,17 +328,25 @@ class CurrentAccessToken:
                 groups = self.payload["groups"]
             user_id = self.payload["oid"]
             tenant_id = self.payload["tid"]
+            # TBD move the crud operations to the base view class, which should have an instance of the guards class.
+            # if the user information stored in this class is already valid - no need to make another database call
+            # if the user information stored in this class is not valid: get or sign-up the user.
             async with UserCRUD() as crud:
                 current_user = await crud.create_azure_user_and_groups_if_not_exist(
                     user_id, tenant_id, groups
                 )
                 if current_user:
+                    # TBD: more impportant than returning: store the user in the class instance: attribute self.current_user
                     return current_user
                 else:
                     raise HTTPException(status_code=404, detail="404 User not found")
         except Exception as err:
             logger.error(f"🔑 User not found in database: ${err}")
             raise HTTPException(status_code=401, detail="Invalid token")
+
+    async def gets_current_user(self, require=True) -> CurrentUserData:
+        """Returns the current user"""
+        return self.current_user
 
 
 # Use those classes directly as guards, e.g.:

@@ -60,7 +60,8 @@ async def post_user(
 #     check_admin_role=Depends(CurrentAzureTokenHasRole("Admin")),
 # ) -> User:
 #     """Creates a new user."""
-#     post_view = BasePOST(UserCRUD)
+#     pass an instance of guards and the CRUD to the BasePOST instance:
+#     post_view = BasePOST(guards, UserCRUD)
 #     # executes the logic for determining the updated_last_access:
 #     # post_view.updates_last_access(check_admin_role, current_user, user.user_id)
 #     return post_view.create(user)
