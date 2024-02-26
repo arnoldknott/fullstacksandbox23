@@ -8,11 +8,12 @@ logger = logging.getLogger(__name__)
 class BaseView:
     """Base class for all views"""
 
-    def __init__(self, crud):
+    def __init__(self, guards, crud):
         self.crud = crud
         # using private attribute to avoid direct access
         # note Python is not strict on that with _BaseView__update_last_access
         # this variable can still be accessed from the outside
+        # thsi should move to either a class guard or class access control
         self.__update_last_access = True
 
     # TBD: Replace the owner_id with the model from access control table

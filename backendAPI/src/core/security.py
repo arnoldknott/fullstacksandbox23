@@ -151,96 +151,96 @@ async def get_access_token_payload(
 #     return current_user
 
 
-class CurrentAzureTokenIsValid:
-    """Checks if the current token is valid"""
+# class CurrentAzureTokenIsValid:
+#     """Checks if the current token is valid"""
 
-    def __init__(self, require=True) -> None:
-        self.require = require
+#     def __init__(self, require=True) -> None:
+#         self.require = require
 
-    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
-        if payload:
-            return True
-        else:
-            if self.require:
-                raise HTTPException(status_code=401, detail="Invalid token")
-            else:
-                return False
-
-
-class CurrentAzureTokenHasScope:
-    """Checks if the current token includes a specific scope"""
-
-    def __init__(self, scope, require=True) -> None:
-        self.scope = scope
-        self.require = require
-
-    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
-        if ("scp" in payload) and (self.scope in payload["scp"]):
-            return True
-        else:
-            if self.require:
-                raise HTTPException(status_code=403, detail="Access denied")
-            else:
-                return False
+#     async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+#         if payload:
+#             return True
+#         else:
+#             if self.require:
+#                 raise HTTPException(status_code=401, detail="Invalid token")
+#             else:
+#                 return False
 
 
-class CurrentAzureTokenHasRole:
-    """Checks if the current token includes a specific role"""
+# class CurrentAzureTokenHasScope:
+#     """Checks if the current token includes a specific scope"""
 
-    def __init__(self, role, require=True) -> None:
-        self.role = role
-        self.require = require
+#     def __init__(self, scope, require=True) -> None:
+#         self.scope = scope
+#         self.require = require
 
-    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
-        if ("roles" in payload) and (self.role in payload["roles"]):
-            return True
-        else:
-            if self.require:
-                raise HTTPException(status_code=403, detail="Access denied")
-            else:
-                return False
+#     async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+#         if ("scp" in payload) and (self.scope in payload["scp"]):
+#             return True
+#         else:
+#             if self.require:
+#                 raise HTTPException(status_code=403, detail="Access denied")
+#             else:
+#                 return False
 
 
-class CurrentAzureUserInDatabase:
-    """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
+# class CurrentAzureTokenHasRole:
+#     """Checks if the current token includes a specific role"""
 
-    def __init__(self) -> None:
-        pass
+#     def __init__(self, role, require=True) -> None:
+#         self.role = role
+#         self.require = require
 
-    # This is responsible for self-sign on: if a user has a token, the user is allowed
-    # Who gets the tokens is controlled by the identity provider (Azure AD)
-    # Can be through membership in a group, which has access to the application
-    # -> in Azure portal under Enterprise applications,
-    # -> turn of filter enterprise applications and
-    # -> search for the backend application registration
-    # -> under users and groups add the users or groups:
-    # -> gives and revokes access for users and groups based on roles
-    async def __call__(
-        self, payload: dict = Depends(get_azure_token_payload)
-    ) -> UserRead:
-        groups = []
-        try:
-            if "groups" in payload:
-                groups = payload["groups"]
-            user_id = payload["oid"]
-            tenant_id = payload["tid"]
-            # update_last_access = True
-            # if ("roles" in payload) and ("Admin" in payload["roles"]):
-            #     update_last_access = False
-            async with UserCRUD() as crud:
-                # current_user = await crud.create_azure_user_and_groups_if_not_exist(
-                #     user_id, tenant_id, groups, update_last_access
-                # )
-                current_user = await crud.create_azure_user_and_groups_if_not_exist(
-                    user_id, tenant_id, groups
-                )
-                if current_user:
-                    return current_user
-                else:
-                    raise HTTPException(status_code=404, detail="404 User not found")
-        except Exception as err:
-            logger.error(f"🔑 User not found in database: ${err}")
-            raise HTTPException(status_code=401, detail="Invalid token")
+#     async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+#         if ("roles" in payload) and (self.role in payload["roles"]):
+#             return True
+#         else:
+#             if self.require:
+#                 raise HTTPException(status_code=403, detail="Access denied")
+#             else:
+#                 return False
+
+
+# class CurrentAzureUserInDatabase:
+#     """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
+
+#     def __init__(self) -> None:
+#         pass
+
+#     # This is responsible for self-sign on: if a user has a token, the user is allowed
+#     # Who gets the tokens is controlled by the identity provider (Azure AD)
+#     # Can be through membership in a group, which has access to the application
+#     # -> in Azure portal under Enterprise applications,
+#     # -> turn of filter enterprise applications and
+#     # -> search for the backend application registration
+#     # -> under users and groups add the users or groups:
+#     # -> gives and revokes access for users and groups based on roles
+#     async def __call__(
+#         self, payload: dict = Depends(get_azure_token_payload)
+#     ) -> UserRead:
+#         groups = []
+#         try:
+#             if "groups" in payload:
+#                 groups = payload["groups"]
+#             user_id = payload["oid"]
+#             tenant_id = payload["tid"]
+#             # update_last_access = True
+#             # if ("roles" in payload) and ("Admin" in payload["roles"]):
+#             #     update_last_access = False
+#             async with UserCRUD() as crud:
+#                 # current_user = await crud.create_azure_user_and_groups_if_not_exist(
+#                 #     user_id, tenant_id, groups, update_last_access
+#                 # )
+#                 current_user = await crud.create_azure_user_and_groups_if_not_exist(
+#                     user_id, tenant_id, groups
+#                 )
+#                 if current_user:
+#                     return current_user
+#                 else:
+#                     raise HTTPException(status_code=404, detail="404 User not found")
+#         except Exception as err:
+#             logger.error(f"🔑 User not found in database: ${err}")
+#             raise HTTPException(status_code=401, detail="Invalid token")
 
 
 # refactoring:
@@ -298,6 +298,14 @@ class CurrentAccessToken:
             else:
                 return False
 
+    # This is responsible for self-sign on: if a user has a token, the user is allowed
+    # Who gets the tokens is controlled by the identity provider (Azure AD)
+    # Can be through membership in a group, which has access to the application
+    # -> in Azure portal under Enterprise applications,
+    # -> turn of filter enterprise applications and
+    # -> search for the backend application registration
+    # -> under users and groups add the users or groups:
+    # -> gives and revokes access for users and groups based on roles
     async def gets_or_signs_up_current_user(self, require=True) -> UserRead:
         """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
         groups = []
@@ -317,6 +325,72 @@ class CurrentAccessToken:
         except Exception as err:
             logger.error(f"🔑 User not found in database: ${err}")
             raise HTTPException(status_code=401, detail="Invalid token")
+
+
+# Use those classes directly as guards, e.g.:
+# @app.get("/example_endpoint")
+# def example(
+#     token: bool = Depends(CurrentAzureTokenIsValid()),
+# ):
+#     """Returns the result of the guard."""
+#     return token
+#
+#   options: require
+#            - if set to False, the guard will not raise an exception if the condition is not met but return False
+#            - if set to True, the guard will raise an exception if the condition is not met
+#            - default is True
+#
+#
+#   examples:
+#   - token_valid: bool = Depends(CurrentAzureTokenIsValid())
+
+
+class CurrentAzureTokenIsValid(CurrentAccessToken):
+    """Checks if the current token is valid"""
+
+    def __init__(self, require=True) -> None:
+        self.require = require
+
+    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+        super().__init__(payload)
+        return await self.is_valid(self.require)
+
+
+class CurrentAzureTokenHasScope(CurrentAccessToken):
+    """Checks if the current token includes a specific scope"""
+
+    def __init__(self, scope, require=True) -> None:
+        self.scope = scope
+        self.require = require
+
+    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+        super().__init__(payload)
+        return await self.has_scope(self.scope, self.require)
+
+
+class CurrentAzureTokenHasRole(CurrentAccessToken):
+    """Checks if the current token includes a specific scope"""
+
+    def __init__(self, role, require=True) -> None:
+        self.role = role
+        self.require = require
+
+    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+        super().__init__(payload)
+        return await self.has_role(self.role, self.require)
+
+
+class CurrentAzureUserInDatabase(CurrentAccessToken):
+    """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
+
+    def __init__(self) -> None:
+        pass
+
+    async def __call__(
+        self, payload: dict = Depends(get_azure_token_payload)
+    ) -> UserRead:
+        super().__init__(payload)
+        return await self.gets_or_signs_up_current_user()
 
 
 # class AzureTokenBaseGuard:

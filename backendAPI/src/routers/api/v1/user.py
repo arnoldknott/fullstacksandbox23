@@ -4,11 +4,8 @@ from typing import List
 from uuid import UUID
 from core.security import (
     get_access_token_payload,
-    # NewCurrentAzureTokenHasScope,
-    # AzureTokenBaseGuard,
     CurrentAzureUserInDatabase,
     CurrentAzureTokenHasScope,
-    # NewCurrentAzureTokenHasScope,
     CurrentAzureTokenHasRole,
     CurrentAccessToken,
 )
@@ -29,19 +26,9 @@ async def post_user(
     user: UserCreate,
     # _1=Depends(CurrentAzureTokenHasScope("api.write")),# put that one back in place if refactoring fails!
     # _2=Depends(CurrentAzureTokenHasRole("Admin")),# put that one back in place! if refactoring fails!
-    # _1=Depends(NewCurrentAzureTokenHasScope("api.write", require=False)),
-    # _1=Depends(AzureTokenBaseGuard.has_scope("api.write")),
-    # _1=Depends(AzureTokenBaseGuard.with_test()),
-    # _1=Depends(CurrentAzureTokenGuard().has_scope(scope="api.write")),
-    # _2=Depends(CurrentAzureTokenHasRole("Admin")),
     token_payload=Depends(get_access_token_payload),
 ) -> User:
     """Creates a new user."""
-    # print("=== current_user from BaseClass ===")
-    # print(_1.current_user())
-    # result = await AzureTokenBaseGuard.with_test()
-    # print("=== result from BaseClass ===")
-    # print(result)
     logger.info("POST user")
     token = CurrentAccessToken(token_payload)
     await token.has_scope("api.write")
