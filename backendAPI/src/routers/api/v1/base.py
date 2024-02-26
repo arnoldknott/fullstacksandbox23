@@ -16,6 +16,8 @@ class BaseView:
         self.__update_last_access = True
 
     # TBD: Replace the owner_id with the model from access control table
+    # TBD: this functionality should be moved to the security module
+    # TBD: and accessed in the CRUD!
     def updates_last_access(
         self, admin: bool, current_user: UserRead, owner_id: str
     ) -> None:
