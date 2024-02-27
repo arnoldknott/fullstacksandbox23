@@ -310,6 +310,10 @@ async def test_existing_user_logs_in(
 
 # region: Testing guards:
 
+# TBD: add tests for other implementation of the guards,
+#      the way the BaseView uses them
+#      might not be necessary, as those are calling the ones tested here.
+
 # region: ## Testing valid token guard:
 
 
@@ -683,4 +687,7 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload_retu
 
 
 # endregion
+
+# TBD: add tests for group guards
+
 # endregion

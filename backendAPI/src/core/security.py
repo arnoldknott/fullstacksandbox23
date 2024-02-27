@@ -5,6 +5,7 @@ import logging
 # import asyncio
 import httpx
 import jwt
+from enum import Enum
 from uuid import UUID
 from pydantic import BaseModel
 from typing import List, Optional
@@ -41,11 +42,20 @@ logger = logging.getLogger(__name__)
 class CurrentUserData(BaseModel):
     """Model for the current user data - acts as interface for the request from endpoint to crud."""
 
-    user_id: UUID
+    # user_id: UUID# not this one -> it's not in the HTTP request.
+    # Class Access needs to resolve that from database. Consider caching in Redis!
     azure_user_id: UUID
-    roles: List[str]
-    groups: List[UUID]
-    scopes: List[str]
+    roles: Optional[List[str]]
+    groups: Optional[List[UUID]]
+    # scopes: List[str]# should not be relevant for access control?
+
+
+class Action(Enum):
+    """Enum for the actions that can be performed on a resource"""
+
+    read = "read"
+    write = "write"
+    own = "own"
 
 
 # Helper function for get_token_payload:
@@ -177,9 +187,8 @@ async def get_access_token_payload(
 class CurrentAccessToken:
     """class for all guards"""
 
-    def __init__(self, payload, current_user: Optional[CurrentUserData] = None) -> None:
+    def __init__(self, payload) -> None:
         self.payload = payload
-        self.current_user: Optional[CurrentUserData] = current_user
 
     async def is_valid(self, require=True):
         """Checks if the current token is valid"""
@@ -205,7 +214,23 @@ class CurrentAccessToken:
     async def has_role(self, role: str, require=True) -> bool:
         """Checks if the current token includes a specific scope"""
         payload = self.payload
-        if ("roles" in payload) and (role in payload["roles"]):
+        # if ("roles" in payload) and (role in payload["roles"]):
+        # TBD: add the "Admin" override: if the user has the Admin role, the user has access to everything
+        if ("roles" in payload) and (
+            (role in payload["roles"]) or ("Admin" in payload["roles"])
+        ):
+            return True
+        else:
+            if require:
+                raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                return False
+
+    async def has_group(self, group: str, require=True) -> bool:
+        """Checks if the current token includes a group"""
+        print("🔥 security - CurrentToken.has_group - tests not implemented yet!")
+        payload = self.payload
+        if ("groups" in payload) and (group in payload["groups"]):
             return True
         else:
             if require:
@@ -221,6 +246,8 @@ class CurrentAccessToken:
     # -> search for the backend application registration
     # -> under users and groups add the users or groups:
     # -> gives and revokes access for users and groups based on roles
+    #
+    # TBD: make sure this one get's triggered from all guards that require a user
     async def gets_or_signs_up_current_user(self, require=True) -> UserRead:
         """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
         groups = []
@@ -245,9 +272,26 @@ class CurrentAccessToken:
             logger.error(f"🔑 User not found in database: ${err}")
             raise HTTPException(status_code=401, detail="Invalid token")
 
-    async def gets_current_user(self, require=True) -> CurrentUserData:
+    def provides_current_user(self) -> CurrentUserData:
         """Returns the current user"""
-        return self.current_user
+        roles = None
+        groups = None
+        if "roles" in self.payload:
+            roles = self.payload["roles"]
+        if "groups" in self.payload:
+            groups = self.payload["groups"]
+        current_user = {
+            "azure_user_id": self.payload["oid"],
+            "roles": roles,
+            "groups": groups,
+            # "scopes": self.payload["scp"],
+        }
+        # current_user = CurrentUserData()
+        # current_user.azure_user_id = self.payload["oid"]
+        # current_user.roles = self.payload["roles"]
+        # current_user.groups = self.payload["groups"]
+        # current_user.scopes = self.payload["scp"]
+        return CurrentUserData(**current_user)
 
 
 # endregion: Generic guard
@@ -308,6 +352,18 @@ class CurrentAccessTokenHasRole(CurrentAccessToken):
         return await self.has_role(self.role, self.require)
 
 
+class CurrentAccessTokenHasGroup(CurrentAccessToken):
+    """Checks if the current token includes a specific scope"""
+
+    def __init__(self, group, require=True) -> None:
+        self.group = group
+        self.require = require
+
+    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+        super().__init__(payload)
+        return await self.has_group(self.group, self.require)
+
+
 class CurrentAzureUserInDatabase(CurrentAccessToken):
     """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
 
@@ -327,6 +383,18 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
 
 
 # region: Access control
+
+
+class AccessControl:
+    def __init__(self) -> None:
+        pass
+
+    async def permits(user: CurrentUserData, resource_id: UUID, action: Action) -> bool:
+        """Checks if the user has permission to perform the action on the resource"""
+        pass
+
+
+# delete later:
 
 # snippet for preventing admin to change last_accessed_at:
 # TBD: remove - functionality replaced by access-log-table)

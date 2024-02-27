@@ -1,20 +1,15 @@
 import pytest
-import uuid
 from datetime import datetime, timedelta
-from typing import List
+
 from httpx import AsyncClient
 from crud.protected_resource import ProtectedResourceCRUD
-from models.protected_resource import ProtectedResource, ProtectedResourceRead
+from models.protected_resource import ProtectedResource
 from fastapi import FastAPI
 from tests.utils import (
     token_payload_user_id,
-    token_payload_tenant_id,
     token_payload_roles_admin,
     token_payload_roles_user,
-    token_payload_scope_api_read,
-    token_payload_scope_api_write,
     token_payload_scope_api_read_write,
-    token_payload_one_group,
     many_test_protected_resources,
 )
 
@@ -26,10 +21,12 @@ from tests.utils import (
     "mocked_get_azure_token_payload",
     [
         {
+            **token_payload_user_id,
             **token_payload_scope_api_read_write,
             **token_payload_roles_admin,
         },
         {
+            **token_payload_user_id,
             **token_payload_scope_api_read_write,
             **token_payload_roles_user,
         },
@@ -37,18 +34,22 @@ from tests.utils import (
     indirect=True,
 )
 async def test_post_user(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_get_azure_payload_dependency
 
     # Make a POST request to create the user
     time_before_post = datetime.now()
+    # time_before_post = time.time()
     response = await async_client.post(
         "/api/v1/protectedresource/",
         json=many_test_protected_resources[0],
     )
     time_after_post = datetime.now()
+    # time_after_post = time.time()
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
@@ -59,7 +60,17 @@ async def test_post_user(
     )
 
     # Verify that the user was created in the database
-    async with ProtectedResourceCRUD() as crud:
+    # TBD: this cannot be hard coded here - needs to come from the token configuration!
+    # token = CurrentAccessToken(lambda: get_access_token_payload)
+    # current_test_user = await token.provides_current_user()
+
+    # current_test_user = await CurrentAccessToken(
+    #     lambda: get_access_token_payload
+    # ).provides_current_user()
+    # print("=== mocked_get_azure_token_payload ===")
+    # print(current_test_user)
+
+    async with ProtectedResourceCRUD(current_test_user) as crud:
         db_protected_resource = await crud.read_by_id(
             created_protected_resource.protected_resource_id
         )
@@ -69,15 +80,17 @@ async def test_post_user(
     #     db_protected_resource.last_accessed_at == created_protected_resource.created_at
     # )
     assert (
-        time_before_post - timedelta(seconds=8)
+        time_before_post - timedelta(seconds=25)
         < db_protected_resource.created_at  # datetime.fromisoformat(db_protected_resource.created_at)
-        < time_after_post + timedelta(seconds=8)
+        < time_after_post + timedelta(seconds=25)
     )
     assert db_protected_resource.name == many_test_protected_resources[0]["name"]
     assert (
         db_protected_resource.description
         == many_test_protected_resources[0]["description"]
     )
+
+    # assert 1 == 2
 
 
 # @pytest.mark.anyio

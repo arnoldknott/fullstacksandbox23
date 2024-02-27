@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 
-from core.security import CurrentAzureTokenHasScope
+from core.security import CurrentAccessTokenHasScope
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from routers.api.v1.category import router as category_router
@@ -115,12 +115,7 @@ app.include_router(
     protected_resource_router,
     prefix=f"{global_prefix}/protectedresource",
     tags=["Protected Resource"],
-    dependencies=[Depends(CurrentAzureTokenHasScope("api.read"))],
-    # TBD: this si ready to use:
-    # dependencies=[
-    #     Depends(CurrentAzureTokenHasScope("api.read")),
-    #     Depends(CurrentAzureTokenHasScope("api.write")),
-    # ],
+    dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
     # TBD: This is not ready to use - requires the redirect URI to be passed through Swagger UI
     # dependencies=[Depends(oauth2_scheme)],
 )
@@ -139,7 +134,7 @@ app.include_router(
     user_router,
     prefix=f"{global_prefix}/user",
     tags=["User"],
-    dependencies=[Depends(CurrentAzureTokenHasScope("api.read"))],
+    dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
 

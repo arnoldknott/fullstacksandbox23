@@ -8,14 +8,13 @@ from main import app
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
-from core.security import get_azure_token_payload
+from core.security import get_azure_token_payload, CurrentAccessToken
 from models.user import User
 from crud.user import UserCRUD
 from tests.utils import (
     one_test_user,
     many_test_users,
     token_payload_many_groups,
-    many_test_protected_resources,
 )
 
 
@@ -80,11 +79,20 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[get_azure_token_payload] = (
-        lambda: mocked_get_azure_token_payload
-    )
+    app.dependency_overrides[
+        get_azure_token_payload
+    ] = lambda: mocked_get_azure_token_payload
     yield app
     app.dependency_overrides = {}
+
+
+@pytest.fixture(scope="function")
+def current_test_user(mocked_get_azure_token_payload):
+    """Returns the current test user."""
+    # print("=== conftest - mocked_get_azure_token_payload ===")
+    # print(mocked_get_azure_token_payload)
+    token = CurrentAccessToken(mocked_get_azure_token_payload)
+    return token.provides_current_user()
 
 
 @pytest.fixture(scope="function")
@@ -145,3 +153,9 @@ async def add_many_test_users_with_groups(
             users.append(added_user)
 
     yield users
+
+
+# @pytest.fixture(scope="function")
+# async def current_test_user():
+#     """Returns the current test user."""
+#     yield CurrentUserData(**)

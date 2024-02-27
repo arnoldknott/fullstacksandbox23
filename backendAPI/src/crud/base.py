@@ -1,10 +1,15 @@
 from datetime import datetime
-from typing import Generic, Type, TypeVar
+from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional
 
 from core.databases import get_async_session
 from fastapi import HTTPException
 from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
+
+if TYPE_CHECKING:
+    from core.security import CurrentUserData
+# from core.security import CurrentUserData
+
 
 BaseModelType = TypeVar("BaseModelType", bound=SQLModel)
 BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=SQLModel)
@@ -22,10 +27,15 @@ class BaseCRUD(
 ):
     """Base class for CRUD operations."""
 
-    def __init__(self, base_model: Type[BaseModelType]):
+    def __init__(
+        self,
+        base_model: Type[BaseModelType],
+        current_user: Optional["CurrentUserData"] = None,
+    ):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
+        self.current_user: Optional["CurrentUserData"] = current_user
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -39,6 +49,8 @@ class BaseCRUD(
     async def create(
         self, object: BaseSchemaTypeCreate, update_last_access: bool = True
     ) -> BaseModelType:
+        # TBD: add access control checks here:
+        # request is known from self.current_user, object and method is write here
         """Creates a new object."""
         session = self.session
         Model = self.model
@@ -57,6 +69,8 @@ class BaseCRUD(
     # async def read_all(self, skip: int = 0, limit: int = 100)  -> list[BaseModelType]:
     # Changing to return BaseSchemaTypeRead instead of BaseModelType makes read_with_childs obsolete!
     async def read_all(self) -> list[BaseSchemaTypeRead]:
+        # TBD: add access control checks here:
+        # request is known from self.current_user, object and method is read here
         """Returns all objects."""
         session = self.session
         model = self.model
@@ -72,6 +86,8 @@ class BaseCRUD(
     async def read_by_id(
         self, object_id: int, update_last_access: bool = True
     ) -> BaseSchemaTypeRead:
+        # TBD: add access control checks here:
+        # request is known from self.current_user, object and method is read here
         """Returns an object by id."""
         session = self.session
         model = self.model
@@ -91,6 +107,8 @@ class BaseCRUD(
         new: BaseSchemaTypeUpdate,
         update_last_access: bool = True,
     ) -> BaseModelType:
+        # TBD: add access control checks here:
+        # request is known from self.current_user, object and method is write here
         """Updates an object."""
         session = self.session
         # TBD: refactor into try-except block and add logging
@@ -115,6 +133,8 @@ class BaseCRUD(
         return object
 
     async def delete(self, object_id: int) -> BaseModelType:
+        # TBD: add access control checks here:
+        # request is known from self.current_user, object and method is write or delete here
         """Deletes an object."""
         session = self.session
         model = self.model
@@ -125,3 +145,5 @@ class BaseCRUD(
         await session.delete(object)
         await session.commit()
         return object
+
+    # TBD: add share / permission methods - maybe in an inherited class BaseCRUDPermissions?

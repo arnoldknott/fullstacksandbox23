@@ -7,7 +7,7 @@ from models.protected_resource import (
 
 from .base import BaseCRUD
 
-# from sqlalchemy.future import select
+from core.security import CurrentUserData
 
 
 class ProtectedResourceCRUD(
@@ -18,5 +18,5 @@ class ProtectedResourceCRUD(
         ProtectedResourceUpdate,
     ]
 ):
-    def __init__(self):
-        super().__init__(ProtectedResource)
+    def __init__(self, current_user: "CurrentUserData"):
+        super().__init__(ProtectedResource, current_user)
