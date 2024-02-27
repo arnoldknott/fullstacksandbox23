@@ -258,7 +258,7 @@ class CurrentAccessToken:
 # Use those classes directly as guards, e.g.:
 # @app.get("/example_endpoint")
 # def example(
-#     token: bool = Depends(CurrentAzureTokenIsValid()),
+#     token: bool = Depends(CurrentAccessTokenIsValid()),
 # ):
 #     """Returns the result of the guard."""
 #     return token
@@ -270,10 +270,10 @@ class CurrentAccessToken:
 #
 #
 #   examples:
-#   - token_valid: bool = Depends(CurrentAzureTokenIsValid())
+#   - token_valid: bool = Depends(CurrentAccessTokenIsValid())
 
 
-class CurrentAzureTokenIsValid(CurrentAccessToken):
+class CurrentAccessTokenIsValid(CurrentAccessToken):
     """Checks if the current token is valid"""
 
     def __init__(self, require=True) -> None:
@@ -284,7 +284,7 @@ class CurrentAzureTokenIsValid(CurrentAccessToken):
         return await self.is_valid(self.require)
 
 
-class CurrentAzureTokenHasScope(CurrentAccessToken):
+class CurrentAccessTokenHasScope(CurrentAccessToken):
     """Checks if the current token includes a specific scope"""
 
     def __init__(self, scope, require=True) -> None:
@@ -296,7 +296,7 @@ class CurrentAzureTokenHasScope(CurrentAccessToken):
         return await self.has_scope(self.scope, self.require)
 
 
-class CurrentAzureTokenHasRole(CurrentAccessToken):
+class CurrentAccessTokenHasRole(CurrentAccessToken):
     """Checks if the current token includes a specific scope"""
 
     def __init__(self, role, require=True) -> None:
@@ -327,5 +327,22 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
 
 
 # region: Access control
+
+# snippet for preventing admin to change last_accessed_at:
+# TBD: remove - functionality replaced by access-log-table)
+# TBD: this will fail some tests - so they need to be rewritten
+
+# def updates_last_access(
+# self, admin: bool, current_user: UserRead, owner_id: str
+# ) -> None:
+# logger.info("POST updated_last_access")
+# if (admin is True) and (str(current_user.user_id) != str(owner_id)):
+#     self.__update_last_access = False
+# return self.__update_last_access
+
+# snippet to allow only admins to write all and users to write their own data:
+# should be replaced by
+# if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
+#     raise HTTPException(status_code=403, detail="Access denied")
 
 # endregion: Access control

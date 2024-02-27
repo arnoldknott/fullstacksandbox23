@@ -4,8 +4,8 @@ from typing import List
 from uuid import UUID
 from core.security import (
     CurrentAzureUserInDatabase,
-    CurrentAzureTokenHasScope,
-    CurrentAzureTokenHasRole,
+    CurrentAccessTokenHasScope,
+    CurrentAccessTokenHasRole,
 )
 from crud.user import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException
@@ -23,8 +23,8 @@ router = APIRouter()
 @router.post("/", status_code=201)
 async def post_user(
     user: UserCreate,
-    _1=Depends(CurrentAzureTokenHasScope("api.write")),
-    _2=Depends(CurrentAzureTokenHasRole("Admin")),
+    _1=Depends(CurrentAccessTokenHasScope("api.write")),
+    _2=Depends(CurrentAccessTokenHasRole("Admin")),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
@@ -38,8 +38,8 @@ async def post_user(
 # @router.post("/", status_code=201)
 # async def post_user(
 #     user: UserCreate,
-#     _1=Depends(CurrentAzureTokenHasScope("api.write")),
-#     _2=Depends(CurrentAzureTokenHasRole("Admin")),
+#     _1=Depends(CurrentAccessTokenHasScope("api.write")),
+#     _2=Depends(CurrentAccessTokenHasRole("Admin")),
 # ) -> User:
 #     """Creates a new user."""
 #     # uses the default for updated_last_access:
@@ -51,8 +51,8 @@ async def post_user(
 # @router.post("/admin_prevents_updated_last_access", status_code=201)
 # async def post_user(
 #     user: UserCreate,
-#     _1=Depends(CurrentAzureTokenHasScope("api.write")),
-#     check_admin_role=Depends(CurrentAzureTokenHasRole("Admin")),
+#     _1=Depends(CurrentAccessTokenHasScope("api.write")),
+#     check_admin_role=Depends(CurrentAccessTokenHasRole("Admin")),
 # ) -> User:
 #     """Creates a new user."""
 #     pass an instance of guards and the CRUD to the BasePOST instance:
@@ -64,7 +64,7 @@ async def post_user(
 
 @router.get("/")
 async def get_all_users(
-    _=Depends(CurrentAzureTokenHasRole("Admin")),
+    _=Depends(CurrentAccessTokenHasRole("Admin")),
 ) -> List[User]:
     """Returns all user."""
     logger.info("GET all user")
@@ -77,7 +77,7 @@ async def get_all_users(
 async def get_user_by_azure_user_id(
     azure_user_id: str,
     current_user: UserRead = Depends(CurrentAzureUserInDatabase()),
-    check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
+    check_admin_role=Depends(CurrentAccessTokenHasRole("Admin", require=False)),
 ) -> UserRead:
     """Returns a user based on its azure user id."""
     if (str(current_user.azure_user_id) != str(azure_user_id)) and (
@@ -109,7 +109,7 @@ async def get_user_by_azure_user_id(
 async def get_user_by_id(
     user_id: str,
     current_user: UserRead = Depends(CurrentAzureUserInDatabase()),
-    check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
+    check_admin_role=Depends(CurrentAccessTokenHasRole("Admin", require=False)),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
     if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
@@ -136,8 +136,8 @@ async def update_user(
     user_id: str,
     user_data_update: UserUpdate,
     current_user: UserRead = Depends(CurrentAzureUserInDatabase()),
-    _=Depends(CurrentAzureTokenHasScope("api.write")),
-    check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
+    _=Depends(CurrentAccessTokenHasScope("api.write")),
+    check_admin_role=Depends(CurrentAccessTokenHasRole("Admin", require=False)),
 ) -> User:
     """Updates a user."""
     if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
@@ -164,8 +164,8 @@ async def update_user(
 async def delete_user(
     user_id: str,
     current_user: UserUpdate = Depends(CurrentAzureUserInDatabase()),
-    _=Depends(CurrentAzureTokenHasScope("api.write")),
-    check_admin_role=Depends(CurrentAzureTokenHasRole("Admin", require=False)),
+    _=Depends(CurrentAccessTokenHasScope("api.write")),
+    check_admin_role=Depends(CurrentAccessTokenHasRole("Admin", require=False)),
 ) -> User:
     """Deletes a user."""
     if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):

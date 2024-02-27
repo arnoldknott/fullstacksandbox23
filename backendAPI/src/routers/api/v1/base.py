@@ -20,13 +20,6 @@ class BaseView:
     # TBD: Replace the owner_id with the model from access control table
     # TBD: this functionality should be moved to the security module
     # TBD: and accessed in the CRUD!
-    def updates_last_access(
-        self, admin: bool, current_user: UserRead, owner_id: str
-    ) -> None:
-        logger.info("POST updated_last_access")
-        if (admin is True) and (str(current_user.user_id) != str(owner_id)):
-            self.__update_last_access = False
-        return self.__update_last_access
 
 
 # consider implementing state and/or strategy pattern with extends and implements (if available in Python)?

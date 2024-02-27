@@ -9,10 +9,10 @@ from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from core.security import (
     get_azure_jwks,
-    CurrentAzureTokenIsValid,
+    CurrentAccessTokenIsValid,
     CurrentAzureUserInDatabase,
-    CurrentAzureTokenHasScope,
-    CurrentAzureTokenHasRole,
+    CurrentAccessTokenHasScope,
+    CurrentAccessTokenHasRole,
 )
 from httpx import AsyncClient
 
@@ -375,7 +375,7 @@ async def test_valid_azure_token(
     # create a temporary route that uses the guard:
     @app.get("/test_valid_azure_token")
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAzureTokenIsValid()),
+        current_user: bool = Depends(CurrentAccessTokenIsValid()),
     ):
         """Returns the result of the guard."""
         return current_user
@@ -403,7 +403,7 @@ async def test_invalid_azure_token(
     # create a temporary route that uses the guard:
     @app.get("/test_invalid_azure_token")
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAzureTokenIsValid()),
+        current_user: bool = Depends(CurrentAccessTokenIsValid()),
     ):
         """Returns the result of the guard."""
         return current_user
@@ -430,7 +430,7 @@ async def test_invalid_azure_token_return_false(
     # create a temporary route that uses the guard:
     @app.get("/test_invalid_azure_token_return_false")
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAzureTokenIsValid(require=False)),
+        current_user: bool = Depends(CurrentAccessTokenIsValid(require=False)),
     ):
         """Returns the result of the guard."""
         return current_user
@@ -474,7 +474,7 @@ async def test_current_azure_token_has_scope_api_read(
     # create a temporary route that uses the guard:
     @app.get("/test_current_azure_token_has_scope_api_read")
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAzureTokenHasScope("api.read")),
+        current_user: bool = Depends(CurrentAccessTokenHasScope("api.read")),
     ):
         """Returns the result of the guard."""
         return current_user
@@ -511,7 +511,7 @@ async def test_current_azure_token_missing_scope_api_read(
     # create a temporary route that uses the guard:
     @app.get("/test_current_azure_token_missing_scope_api_read")
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAzureTokenHasScope("api.read")),
+        current_user: bool = Depends(CurrentAccessTokenHasScope("api.read")),
     ):
         """Returns the result of the guard."""
         return current_user
@@ -548,7 +548,7 @@ async def test_current_azure_token_missing_scope_api_read_return_false(
     @app.get("/test_current_azure_token_missing_scope_api_read_return_false")
     def temp_endpoint(
         current_user: bool = Depends(
-            CurrentAzureTokenHasScope("api.read", require=False)
+            CurrentAccessTokenHasScope("api.read", require=False)
         ),
     ):
         """Returns the result of the guard."""
@@ -595,7 +595,7 @@ async def test_admin_guard_with_admin_role_in_azure_mocked_token_payload(
 
     # create a temporary route that uses the guard:
     @app.get("/test_admin_guard_with_admin_role_in_azure_mocked_token_payload")
-    def temp_endpoint(current_user: bool = Depends(CurrentAzureTokenHasRole("Admin"))):
+    def temp_endpoint(current_user: bool = Depends(CurrentAccessTokenHasRole("Admin"))):
         """Returns the result of the guard."""
         return current_user
 
@@ -630,7 +630,7 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload(
 
     # create a temporary route that uses the guard:
     @app.get("/test_admin_guard_without_admin_role_in_azure_mocked_token_payload")
-    def temp_endpoint(current_user: bool = Depends(CurrentAzureTokenHasRole("Admin"))):
+    def temp_endpoint(current_user: bool = Depends(CurrentAccessTokenHasRole("Admin"))):
         """Returns the result of the guard."""
         return current_user
 
@@ -667,7 +667,7 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload_retu
         "/test_admin_guard_without_admin_role_in_azure_mocked_token_payload_return_false"
     )
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAzureTokenHasRole("Admin", require=False))
+        current_user: bool = Depends(CurrentAccessTokenHasRole("Admin", require=False))
     ):
         """Returns the result of the guard."""
         return current_user

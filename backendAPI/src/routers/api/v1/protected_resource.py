@@ -16,8 +16,8 @@ router = APIRouter()
 @router.post("/", status_code=201)
 async def post_user(
     user: ProtectedResourceCreate,
-    # _1=Depends(CurrentAzureTokenHasScope("api.write")),# put that one back in place if refactoring fails!
-    # _2=Depends(CurrentAzureTokenHasRole("Admin")),# put that one back in place! if refactoring fails!
+    # _1=Depends(CurrentAccessTokenHasScope("api.write")),# put that one back in place if refactoring fails!
+    # _2=Depends(CurrentAccessTokenHasRole("Admin")),# put that one back in place! if refactoring fails!
     token_payload=Depends(get_access_token_payload),
 ) -> ProtectedResource:
     """Creates a new user."""
