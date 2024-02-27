@@ -150,8 +150,6 @@ async def get_access_token_payload(
 ) -> dict:
     """General function to get the access token payload"""
     # can later be used for customizing different identity service providers
-    print("=== get_access_token_payload - payload ===")
-    print(payload)
     return payload
 
 

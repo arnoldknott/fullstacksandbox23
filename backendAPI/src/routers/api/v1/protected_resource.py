@@ -32,13 +32,15 @@ async def post_user(
 
 # This is secure and works!
 @router.get("/")
-def get_protected_resource(
+async def get_protected_resource(
     token_payload=Depends(get_access_token_payload),
     # current_user=Depends(CurrentAzureUserInDatabase()),
 ):
     """Returns a protected resource."""
     token = CurrentAccessToken(token_payload)
-    current_user = token.gets_or_signs_up_current_user()
+    current_user = await token.gets_or_signs_up_current_user()
+    print("=== protected_resource - GET - current_user ===")
+    print(current_user)
     logger.info("GET protected resource")
     return {
         "message": f"Authenticated user (user_id: {current_user.user_id}, azure_user_id: {current_user.azure_user_id}) is authorized to access protected resource!"
