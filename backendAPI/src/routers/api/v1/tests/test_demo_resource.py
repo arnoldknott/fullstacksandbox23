@@ -12,18 +12,18 @@ async def test_post_demo_resource(async_client: AsyncClient):
     """Tests POST of a demo_resource."""
     resource = one_test_demo_resource
     # get_async_test_session
-    time_before_crud = datetime.now()
+    time_before_post = datetime.now()
     response = await async_client.post("/api/v1/demo_resource/", json=resource)
-    time_after_crud = datetime.now()
+    time_after_post = datetime.now()
 
     assert response.status_code == 201
     content = response.json()
     assert content["name"] == one_test_demo_resource["name"]
     assert content["description"] == one_test_demo_resource["description"]
     assert (
-        time_before_crud - timedelta(seconds=18)
+        time_before_post - timedelta(seconds=18)
         < datetime.fromisoformat(content["created_at"])
-        < time_after_crud + timedelta(seconds=18)
+        < time_after_post + timedelta(seconds=18)
     )
     assert "demo_resource_id" in content
 

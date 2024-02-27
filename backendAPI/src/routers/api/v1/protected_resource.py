@@ -24,7 +24,7 @@ async def post_user(
     logger.info("POST user")
     token = CurrentAccessToken(token_payload)
     await token.has_scope("api.write")
-    await token.has_role("Admin")
+    await token.has_role("User")
     async with ProtectedResourceCRUD() as crud:
         created_user = await crud.create(user)
     return created_user

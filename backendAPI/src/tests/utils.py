@@ -122,3 +122,22 @@ many_test_tags = [
         "name": "FourMore",
     },
 ]
+
+many_test_protected_resources = [
+    {
+        "name": "First Protected Resource",
+        "description": "this one is secret and under access control.",
+    },
+    {
+        "name": "Number 2 Protected Resource",
+        "description": "Another secret resource - protected by access control.",
+    },
+    {
+        "name": "One more protected resource",
+        "description": "with all kinds of secret description text, that can only be accessed after passing access control.",
+    },
+    {
+        "name": "And yet another protected resource",
+        "description": "with all kinds of secret description text, that can only be accessed after passing access control.",
+    },
+]

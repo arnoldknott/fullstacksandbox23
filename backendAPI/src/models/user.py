@@ -26,6 +26,7 @@ class User(UserCreate, table=True):
     created_at: datetime = Field(default=datetime.now())
     # TBD: change last_accessed_at to non-optional after migration.
     # last_accessed_at: Optional[datetime] = Field(default=datetime.now())
+    # TBD: moce the last_updated_at and last_accessed_at to a resource access log table
     last_accessed_at: datetime = Field(default=datetime.now())
     is_active: Optional[bool] = Field(default=True)
 

@@ -23,6 +23,7 @@ class DemoResourceCreate(SQLModel):
 class DemoResource(DemoResourceCreate, table=True):
     demo_resource_id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
+    # TBD: moce the last_updated_at and last_accessed_at to a resource access log table
     last_updated_at: datetime = Field(default=datetime.now())
     # Note: so far all times are UTC!
 

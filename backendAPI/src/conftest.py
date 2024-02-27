@@ -11,7 +11,14 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from core.security import get_azure_token_payload
 from models.user import User
 from crud.user import UserCRUD
-from tests.utils import one_test_user, many_test_users, token_payload_many_groups
+from crud.protected_resource import ProtectedResourceCRUD
+from models.protected_resource import ProtectedResource
+from tests.utils import (
+    one_test_user,
+    many_test_users,
+    token_payload_many_groups,
+    many_test_protected_resources,
+)
 
 
 @pytest.fixture(scope="session")
@@ -75,9 +82,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[
-        get_azure_token_payload
-    ] = lambda: mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 
@@ -140,3 +147,17 @@ async def add_many_test_users_with_groups(
             users.append(added_user)
 
     yield users
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_protected_resources(
+    get_async_test_session: AsyncSession,
+) -> list[ProtectedResource]:
+    """Adds a category to the database."""
+    async with ProtectedResourceCRUD() as crud:
+        protected_resources = []
+        for protected_resource in many_test_protected_resources:
+            added_protected_resource = await crud.create(protected_resource)
+            protected_resources.append(added_protected_resource)
+
+    yield protected_resources
