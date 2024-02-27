@@ -3,11 +3,9 @@ from typing import List
 
 from uuid import UUID
 from core.security import (
-    get_access_token_payload,
     CurrentAzureUserInDatabase,
     CurrentAzureTokenHasScope,
     CurrentAzureTokenHasRole,
-    CurrentAccessToken,
 )
 from crud.user import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException
@@ -21,18 +19,15 @@ router = APIRouter()
 # that means, controlled by group and user membership from Azure Identity Provider!
 # The roles assigned to users and groups decide about sign-up here.
 # This function allows admins to sign up users through API on top of that.
+# TBD: make sure this route or anything else checking if the user exists get's hit by the frontend when the user logs in!
 @router.post("/", status_code=201)
 async def post_user(
     user: UserCreate,
-    # _1=Depends(CurrentAzureTokenHasScope("api.write")),# put that one back in place if refactoring fails!
-    # _2=Depends(CurrentAzureTokenHasRole("Admin")),# put that one back in place! if refactoring fails!
-    token_payload=Depends(get_access_token_payload),
+    _1=Depends(CurrentAzureTokenHasScope("api.write")),
+    _2=Depends(CurrentAzureTokenHasRole("Admin")),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
-    token = CurrentAccessToken(token_payload)
-    await token.has_scope("api.write")
-    await token.has_role("Admin")
     async with UserCRUD() as crud:
         created_user = await crud.create(user)
     return created_user

@@ -115,6 +115,7 @@ app.include_router(
     protected_resource_router,
     prefix=f"{global_prefix}/protected_resource",
     tags=["Protected Resource"],
+    dependencies=[Depends(CurrentAzureTokenHasScope("api.read"))],
     # TBD: this si ready to use:
     # dependencies=[
     #     Depends(CurrentAzureTokenHasScope("api.read")),

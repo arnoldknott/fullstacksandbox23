@@ -1,7 +1,9 @@
 import logging
 
-from core.security import CurrentAzureUserInDatabase
+from core.security import get_access_token_payload, CurrentAccessToken
 from fastapi import APIRouter, Depends
+from models.protected_resource import ProtectedResource, ProtectedResourceCreate
+from crud.protected_resource import ProtectedResourceCRUD
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -11,12 +13,32 @@ router = APIRouter()
 # def get_protected_resource(token: Annotated[str, Depends(validate_token)]):
 
 
+@router.post("/", status_code=201)
+async def post_user(
+    user: ProtectedResourceCreate,
+    # _1=Depends(CurrentAzureTokenHasScope("api.write")),# put that one back in place if refactoring fails!
+    # _2=Depends(CurrentAzureTokenHasRole("Admin")),# put that one back in place! if refactoring fails!
+    token_payload=Depends(get_access_token_payload),
+) -> ProtectedResource:
+    """Creates a new user."""
+    logger.info("POST user")
+    token = CurrentAccessToken(token_payload)
+    await token.has_scope("api.write")
+    await token.has_role("Admin")
+    async with ProtectedResourceCRUD() as crud:
+        created_user = await crud.create(user)
+    return created_user
+
+
 # This is secure and works!
 @router.get("/")
 def get_protected_resource(
-    current_user=Depends(CurrentAzureUserInDatabase()),
+    token_payload=Depends(get_access_token_payload),
+    # current_user=Depends(CurrentAzureUserInDatabase()),
 ):
     """Returns a protected resource."""
+    token = CurrentAccessToken(token_payload)
+    current_user = token.gets_or_signs_up_current_user()
     logger.info("GET protected resource")
     return {
         "message": f"Authenticated user (user_id: {current_user.user_id}, azure_user_id: {current_user.azure_user_id}) is authorized to access protected resource!"

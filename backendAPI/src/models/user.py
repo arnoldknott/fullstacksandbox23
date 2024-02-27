@@ -25,7 +25,8 @@ class User(UserCreate, table=True):
     user_id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
     # TBD: change last_accessed_at to non-optional after migration.
-    last_accessed_at: Optional[datetime] = Field(default=datetime.now())
+    # last_accessed_at: Optional[datetime] = Field(default=datetime.now())
+    last_accessed_at: datetime = Field(default=datetime.now())
     is_active: Optional[bool] = Field(default=True)
 
     ### Foreign account: Azure AD ###
