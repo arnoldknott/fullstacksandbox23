@@ -3,12 +3,15 @@ from models.category import Category
 from models.demo_resource import DemoResource
 from models.tag import Tag
 from models.user import User
+from crud.protected_resource import ProtectedResourceCRUD
+from models.protected_resource import ProtectedResource
 from sqlmodel.ext.asyncio.session import AsyncSession
 from tests.utils import (
     many_test_categories,
     many_test_demo_resources,
     many_test_tags,
     many_test_users,
+    many_test_protected_resources,
 )
 
 # def generate_mock_token(
@@ -167,3 +170,17 @@ async def add_test_tags(get_async_test_session: AsyncSession):
         tag_instances.append(tag_instance)
 
     yield tag_instances
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_protected_resources(
+    get_async_test_session: AsyncSession,
+) -> list[ProtectedResource]:
+    """Adds a category to the database."""
+    async with ProtectedResourceCRUD() as crud:
+        protected_resources = []
+        for protected_resource in many_test_protected_resources:
+            added_protected_resource = await crud.create(protected_resource)
+            protected_resources.append(added_protected_resource)
+
+    yield protected_resources

@@ -153,122 +153,25 @@ async def get_access_token_payload(
     return payload
 
 
-# Use those classes as guards, e.g.:
-# @app.get("/example_endpoint")
-# def example(
-#     current_user: bool = Depends(CurrentAzureTokenIsValid()),
-# ):
-#     """Returns the result of the guard."""
-#     return current_user
-
-
-# class CurrentAzureTokenIsValid:
-#     """Checks if the current token is valid"""
-
-#     def __init__(self, require=True) -> None:
-#         self.require = require
-
-#     async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
-#         if payload:
-#             return True
-#         else:
-#             if self.require:
-#                 raise HTTPException(status_code=401, detail="Invalid token")
-#             else:
-#                 return False
-
-
-# class CurrentAzureTokenHasScope:
-#     """Checks if the current token includes a specific scope"""
-
-#     def __init__(self, scope, require=True) -> None:
-#         self.scope = scope
-#         self.require = require
-
-#     async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
-#         if ("scp" in payload) and (self.scope in payload["scp"]):
-#             return True
-#         else:
-#             if self.require:
-#                 raise HTTPException(status_code=403, detail="Access denied")
-#             else:
-#                 return False
-
-
-# class CurrentAzureTokenHasRole:
-#     """Checks if the current token includes a specific role"""
-
-#     def __init__(self, role, require=True) -> None:
-#         self.role = role
-#         self.require = require
-
-#     async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
-#         if ("roles" in payload) and (self.role in payload["roles"]):
-#             return True
-#         else:
-#             if self.require:
-#                 raise HTTPException(status_code=403, detail="Access denied")
-#             else:
-#                 return False
-
-
-# class CurrentAzureUserInDatabase:
-#     """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
-
-#     def __init__(self) -> None:
-#         pass
-
-#     # This is responsible for self-sign on: if a user has a token, the user is allowed
-#     # Who gets the tokens is controlled by the identity provider (Azure AD)
-#     # Can be through membership in a group, which has access to the application
-#     # -> in Azure portal under Enterprise applications,
-#     # -> turn of filter enterprise applications and
-#     # -> search for the backend application registration
-#     # -> under users and groups add the users or groups:
-#     # -> gives and revokes access for users and groups based on roles
-#     async def __call__(
-#         self, payload: dict = Depends(get_azure_token_payload)
-#     ) -> UserRead:
-#         groups = []
-#         try:
-#             if "groups" in payload:
-#                 groups = payload["groups"]
-#             user_id = payload["oid"]
-#             tenant_id = payload["tid"]
-#             # update_last_access = True
-#             # if ("roles" in payload) and ("Admin" in payload["roles"]):
-#             #     update_last_access = False
-#             async with UserCRUD() as crud:
-#                 # current_user = await crud.create_azure_user_and_groups_if_not_exist(
-#                 #     user_id, tenant_id, groups, update_last_access
-#                 # )
-#                 current_user = await crud.create_azure_user_and_groups_if_not_exist(
-#                     user_id, tenant_id, groups
-#                 )
-#                 if current_user:
-#                     return current_user
-#                 else:
-#                     raise HTTPException(status_code=404, detail="404 User not found")
-#         except Exception as err:
-#             logger.error(f"🔑 User not found in database: ${err}")
-#             raise HTTPException(status_code=401, detail="Invalid token")
-
-
-# refactoring:
-
-
-# class Test:
-#     def __init__(self, number):
-#         self.number = number
-
-#     async def TestPrint(self):
-#         print(self.number)
-
-#     @classmethod
-#     async def with_print(cls, number):
-#         self = cls(number)
-#         await self.TestPrint()
-#         return self
+# region: GUARDS:
+#
+# region: Generic guard usage:
+#
+# Use those classes directly as guards, e.g.:
+#
+# @router.post("/", status_code=201)
+# async def post_user(
+#     user: ProtectedResourceCreate,
+#     token_payload=Depends(get_access_token_payload),
+# ) -> ProtectedResource:
+#     """Creates a new user."""
+#     logger.info("POST user")
+#     token = CurrentAccessToken(token_payload)
+#     await token.has_scope("api.write")
+#     await token.has_role("User")
+#     async with ProtectedResourceCRUD() as crud:
+#         created_user = await crud.create(user)
+#     return created_user
 
 
 class CurrentAccessToken:
@@ -347,6 +250,11 @@ class CurrentAccessToken:
         return self.current_user
 
 
+# endregion: Generic guard
+
+# region: Specific guards
+
+
 # Use those classes directly as guards, e.g.:
 # @app.get("/example_endpoint")
 # def example(
@@ -413,117 +321,11 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
         return await self.gets_or_signs_up_current_user()
 
 
-# class AzureTokenBaseGuard:
-#     """Base class for all guards"""
+# endregion: Specific guards
 
-#     def __init__(self, require=True) -> None:
-#         print("=== AzureTokenBaseGuard - __init__ ===")
-#         self.require = require
-#         # now we should be able to store generic attributes here in the base class,
-#         # like the payload, which is returned by the token validation,
-#         # is_admin, current_azure_user_id, roles, groups, scopes
-
-#     async def TestSomething(self):
-#         """actual logic goes here"""
-#         print("=== AzureTokenBaseGuard - TestSomething ===")
-#         print(self.require)
-
-#     @classmethod
-#     async def with_test(cls, require=True):
-#         self = cls(require)
-#         await self.TestSomething()
-#         return self
-
-# @classmethod
-# async def create(cls, require=True):
-#     self = cls()
-#     self.require = require
-#     return self
-
-# def __init__(self, require=True) -> None:
-#     print("=== AzureTokenBaseGuard - __init__ ===")
-#     self.require = require
-#     # now we should be able to store generic attributes here in the base class,
-#     # like the payload, which is returned by the token validation,
-#     # is_admin, current_azure_user_id, roles, groups, scopes
-
-# async def _init(
-#     self, require=True, payload: dict = Depends(get_azure_token_payload)
-# ):
-#     print("=== AzureTokenBaseGuard - _init ===")
-#     self.require = require
-#     self.payload = payload
-#     # now we should be able to store generic attributes here in the base class,
-#     # like the payload, which is returned by the token validation,
-#     # is_admin, current_azure_user_id, roles, groups, scopes
-
-# async def __call__(self) -> bool:
-#     """Checks if token returns a payload. If not, it raises an exception if require is True, otherwise it returns False."""
-#     # Is this ever getting called?
-#     print("=== AzureTokenBaseGuard - __call__ ===")
-#     print(self.payload)
-# keep this, if AzureTokenBaseGuard is used as a guard
-# remove this, if AzureTokenBaseGuard is only used as a base class
-# no - should not be necessary: get_azure_token_payload should raise an exception if the token is invalid
-# but this is a pure token check - not the content of the token; aas it should be here in the base class.
-# if payload:
-#     return True
-# else:
-#     if self.require:
-#         raise HTTPException(status_code=403, detail="Access denied")
-#     else:
-#         return False
-
-# async def current_user(
-#     self, scope: str, payload: dict = Depends(get_azure_token_payload)
-# ) -> bool:
-#     if ("scp" in payload) and (scope in payload["scp"]):
-#         return True
-#     else:
-#         if self.require:
-#             raise HTTPException(status_code=403, detail="Access denied")
-#         else:
-#             return False
-
-# async def has_scope(self, scope: str) -> bool:
-#     """Checks if the current token includes a specific scope"""
-#     print("=== AzureTokenBaseGuard - has_scope - scope ===")
-#     print(scope)
-#     payload = self.payload
-#     if ("scp" in payload) and (scope in payload["scp"]):
-#         print("=== AzureTokenBaseGuard - has_scope - scope ===")
-#         print(scope)
-#         print("=== AzureTokenBaseGuard - has_scope - payload[scp] ===")
-#         print(payload["scp"])
-#         return True
-#     else:
-#         if self.require:
-#             raise HTTPException(status_code=403, detail="Access denied")
-#         else:
-#             return False
+# endregion: GUARDS
 
 
-# class NewCurrentAzureTokenHasScope(AzureTokenBaseGuard):
-#     """Checks if the current token includes a specific role"""
+# region: Access control
 
-#     def __init__(self, scope) -> None:
-#         print("=== NewCurrentAzureTokenHasScope - __init__ ===")
-#         super()._init(self)
-#         self.scope = scope
-
-#     async def __call__(self) -> bool:
-#         """Checks if the current token includes a specific scope"""
-#         print("=== NewCurrentAzureTokenHasScope - __call__ ===")
-#         print(self.payload)
-#         payload = self.payload
-#         if ("scp" in payload) and (self.scope in payload["scp"]):
-#             print("=== NewCurrentAzureTokenHasScope - __call__ - self.scope ===")
-#             print(self.scope)
-#             print("=== NewCurrentAzureTokenHasScope - __call__ - payload[scp] ===")
-#             print(payload["scp"])
-#             return True
-#         else:
-#             if self.require:
-#                 raise HTTPException(status_code=403, detail="Access denied")
-#             else:
-#                 return False
+# endregion: Access control

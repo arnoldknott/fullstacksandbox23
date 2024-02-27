@@ -11,8 +11,6 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from core.security import get_azure_token_payload
 from models.user import User
 from crud.user import UserCRUD
-from crud.protected_resource import ProtectedResourceCRUD
-from models.protected_resource import ProtectedResource
 from tests.utils import (
     one_test_user,
     many_test_users,
@@ -147,17 +145,3 @@ async def add_many_test_users_with_groups(
             users.append(added_user)
 
     yield users
-
-
-@pytest.fixture(scope="function")
-async def add_many_test_protected_resources(
-    get_async_test_session: AsyncSession,
-) -> list[ProtectedResource]:
-    """Adds a category to the database."""
-    async with ProtectedResourceCRUD() as crud:
-        protected_resources = []
-        for protected_resource in many_test_protected_resources:
-            added_protected_resource = await crud.create(protected_resource)
-            protected_resources.append(added_protected_resource)
-
-    yield protected_resources
