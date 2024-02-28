@@ -79,6 +79,7 @@ async def get_protected_resource(
     current_user = await token.gets_or_signs_up_current_user()
     logger.info("GET protected resource")
     return {
+        # "message": "Hello from protected resource!"
         "message": f"Authenticated user (user_id: {current_user.user_id}, azure_user_id: {current_user.azure_user_id}) is authorized to access protected resource!"
     }
 
