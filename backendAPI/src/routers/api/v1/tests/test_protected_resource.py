@@ -70,9 +70,10 @@ async def test_post_user(
     # print("=== mocked_get_azure_token_payload ===")
     # print(current_test_user)
 
-    async with ProtectedResourceCRUD(current_test_user) as crud:
+    async with ProtectedResourceCRUD() as crud:
         db_protected_resource = await crud.read_by_id(
-            created_protected_resource.protected_resource_id
+            created_protected_resource.protected_resource_id,
+            # current_test_user# Pass user information like this
         )
     assert db_protected_resource is not None
     assert db_protected_resource.last_accessed_at is not None

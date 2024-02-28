@@ -1,13 +1,15 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional
+from typing import TYPE_CHECKING, Generic, Type, TypeVar
 
 from core.databases import get_async_session
 from fastapi import HTTPException
 from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+# from core.security import AccessControl
+
 if TYPE_CHECKING:
-    from core.security import CurrentUserData
+    pass
 # from core.security import CurrentUserData
 
 
@@ -30,12 +32,12 @@ class BaseCRUD(
     def __init__(
         self,
         base_model: Type[BaseModelType],
-        current_user: Optional["CurrentUserData"] = None,
+        # current_user: Optional["CurrentUserData"] = None,# not good: don't store user_data in the CRUD class. only pass it around.
     ):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
-        self.current_user: Optional["CurrentUserData"] = current_user
+        # self.current_user: Optional["CurrentUserData"] = current_user
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -47,11 +49,17 @@ class BaseCRUD(
         await self.session.close()
 
     async def create(
-        self, object: BaseSchemaTypeCreate, update_last_access: bool = True
+        self,
+        object: BaseSchemaTypeCreate,
+        update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
+        # Refactor into this:
+        # current_user: "CurrentUserData",
     ) -> BaseModelType:
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write here
         """Creates a new object."""
+        # print("=== BaseCRUD.create - current_user ===")
+        # print(current_user)
         session = self.session
         Model = self.model
         # TBD: refactor into try-except block and add logging
@@ -84,7 +92,11 @@ class BaseCRUD(
 
     # Changing to return BaseSchemaTypeRead instead of BaseModelType makes read_with_childs obsolete!
     async def read_by_id(
-        self, object_id: int, update_last_access: bool = True
+        self,
+        object_id: int,
+        update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
+        # Refactor into this:
+        # current_user: "CurrentUserData",
     ) -> BaseSchemaTypeRead:
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is read here
@@ -105,7 +117,9 @@ class BaseCRUD(
         self,
         old: BaseModelType,
         new: BaseSchemaTypeUpdate,
-        update_last_access: bool = True,
+        update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
+        # Refactor into this:
+        # current_user: "CurrentUserData",
     ) -> BaseModelType:
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write here

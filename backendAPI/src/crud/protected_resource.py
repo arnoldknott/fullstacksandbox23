@@ -4,10 +4,11 @@ from models.protected_resource import (
     ProtectedResourceRead,
     ProtectedResourceUpdate,
 )
-
 from .base import BaseCRUD
 
-from core.security import CurrentUserData
+# # if TYPE_CHECKING:
+# #     from core.security import CurrentUserData
+# from core.security import CurrentUserData
 
 
 class ProtectedResourceCRUD(
@@ -18,5 +19,8 @@ class ProtectedResourceCRUD(
         ProtectedResourceUpdate,
     ]
 ):
-    def __init__(self, current_user: "CurrentUserData"):
-        super().__init__(ProtectedResource, current_user)
+    # def __init__(self, current_user):
+    # def __init__(self, current_user: "CurrentUserData"):
+    #     super().__init__(ProtectedResource, current_user)
+    def __init__(self):
+        super().__init__(ProtectedResource)

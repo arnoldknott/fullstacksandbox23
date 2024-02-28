@@ -45,10 +45,12 @@ class BaseView:
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        current_user = await self.__guards(token_payload, scopes, roles, groups)
+        # current_user = await self.__guards(token_payload, scopes, roles, groups)
         logger.info("POST calls post")
-        async with self.crud(current_user) as crud:
+        async with self.crud() as crud:
             created_object = await crud.create(object)
+            # Refactor into this:
+            # created_object = await crud.create(object, current_test_user)
         return created_object
 
     async def get(
@@ -58,10 +60,12 @@ class BaseView:
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        current_user = self.__guards(token_payload, scopes, roles, groups)
+        # current_user = self.__guards(token_payload, scopes, roles, groups)
         logger.info("GETs all objects")
-        async with self.crud(current_user) as crud:
+        async with self.crud() as crud:
             objects = await crud.read()
+            # Refactor into this:
+            # objects = await crud.read(current_test_user)
         return objects
 
     async def get_by_id(
@@ -72,11 +76,15 @@ class BaseView:
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        current_user = self.__guards(token_payload, scopes, roles, groups)
+        # current_user = self.__guards(token_payload, scopes, roles, groups)
         logger.info("GET calls get")
-        async with self.crud(current_user) as crud:
+        async with self.crud() as crud:
             object = await crud.read_by_id(id)
+            # Refactor into this:
+            # object = await crud.read_by_id(id, current_test_user)
         return object
+
+    # add update and delete methods here
 
 
 # class BasePOST(BaseView):

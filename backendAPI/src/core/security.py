@@ -7,6 +7,7 @@ import httpx
 import jwt
 from enum import Enum
 from uuid import UUID
+
 from pydantic import BaseModel
 from typing import List, Optional
 from core.cache import redis_jwks_client
@@ -15,6 +16,10 @@ from models.user import UserRead
 from crud.user import UserCRUD
 from fastapi import Depends, HTTPException, Request
 from jwt.algorithms import RSAAlgorithm
+
+# from typing import List, Optional
+# from uuid import UUID
+
 
 logger = logging.getLogger(__name__)
 
@@ -291,7 +296,8 @@ class CurrentAccessToken:
         # current_user.roles = self.payload["roles"]
         # current_user.groups = self.payload["groups"]
         # current_user.scopes = self.payload["scp"]
-        return CurrentUserData(**current_user)
+        # return CurrentUserData(**current_user)
+        return current_user
 
 
 # endregion: Generic guard
@@ -385,13 +391,15 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
 # region: Access control
 
 
-class AccessControl:
-    def __init__(self) -> None:
-        pass
+# class AccessControl:
+#     def __init__(self) -> None:
+#         pass
 
-    async def permits(user: CurrentUserData, resource_id: UUID, action: Action) -> bool:
-        """Checks if the user has permission to perform the action on the resource"""
-        pass
+#     async def permits(
+#         user: "CurrentUserData", resource_id: UUID, action: Action
+#     ) -> bool:
+#         """Checks if the user has permission to perform the action on the resource"""
+#         pass
 
 
 # delete later:
