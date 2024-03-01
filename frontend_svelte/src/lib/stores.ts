@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+// TBD: move to a single types file:
 import type { Session } from '$lib/types.d.ts';
 // import type { PublicClientApplication } from '@azure/msal-browser';
 

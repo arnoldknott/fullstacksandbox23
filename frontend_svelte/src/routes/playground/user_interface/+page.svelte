@@ -13,7 +13,7 @@
     $: sliderValue = 0;
     $: color = `hsl(${(sliderValue) * 1.2}, 80%, 80%)`;
 
-    $: sliders = [0, 0, 0, 0];
+    $: sliders = [50, 50, 50, 50];
     $: colors = [
         `hsl(${(sliders[0]) * 1.2}, 80%, 80%)`,
         `hsl(${(sliders[1]) * 1.2}, 80%, 80%)`,
@@ -82,6 +82,12 @@
     class=p-10>
     Right of topic 3: { sliders[3] }
 </div>
+
+<!-- {#each colors as color, i}
+    <div class="w-100 m-10 p-10" style="background-color: {color};">
+        STATUS: {sliders[i]}
+    </div>
+{/each} -->
 
 <!-- TBD: change to Tailwind rows and columns -->
 <!-- TBD: change to Tailwind gradients: https://tailwindcss.com/docs/gradient-color-stops#starting-color ?-->
