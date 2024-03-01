@@ -13,7 +13,7 @@
     $: sliderValue = 0;
     $: color = `hsl(${(sliderValue) * 1.2}, 80%, 80%)`;
 
-    $: sliders = [50, 50, 50, 50];
+    $: sliders = [0, 0, 0, 0];
     $: colors = [
         `hsl(${(sliders[0]) * 1.2}, 80%, 80%)`,
         `hsl(${(sliders[1]) * 1.2}, 80%, 80%)`,
