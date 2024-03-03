@@ -87,11 +87,12 @@ async def get_user_by_azure_user_id(
 
     logger.info("GET user")
 
-    update_last_access = True
-    if (check_admin_role is True) and (
-        str(current_user.azure_user_id) != str(azure_user_id)
-    ):
-        update_last_access = False
+    # TBD: Refactor into access control
+    # update_last_access = True
+    # if (check_admin_role is True) and (
+    #     str(current_user.azure_user_id) != str(azure_user_id)
+    # ):
+    #     update_last_access = False
 
     try:
         azure_user_id = UUID(azure_user_id)
@@ -100,7 +101,9 @@ async def get_user_by_azure_user_id(
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
         response = await crud.read_by_azure_user_id_with_childs(
-            azure_user_id, update_last_access
+            azure_user_id
+            # TBD; Refactor into access control
+            # , update_last_access
         )
     return response
 
@@ -117,9 +120,10 @@ async def get_user_by_id(
 
     logger.info("GET user")
 
-    update_last_access = True
-    if (check_admin_role is True) and (str(current_user.user_id) != str(user_id)):
-        update_last_access = False
+    # TBD: Refactor into access control
+    # update_last_access = True
+    # if (check_admin_role is True) and (str(current_user.user_id) != str(user_id)):
+    #     update_last_access = False
 
     try:
         user_id = UUID(user_id)
@@ -127,7 +131,7 @@ async def get_user_by_id(
         logger.error("User ID is not an UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
-        response = await crud.read_by_id_with_childs(user_id, update_last_access)
+        response = await crud.read_by_id_with_childs(user_id)  # , update_last_access)
     return response
 
 
@@ -145,9 +149,10 @@ async def update_user(
 
     logger.info("PUT user")
 
-    update_last_access = True
-    if check_admin_role is True:
-        update_last_access = False
+    # TBD: Refactor into access control
+    # update_last_access = True
+    # if check_admin_role is True:
+    #     update_last_access = False
 
     try:
         user_id = UUID(user_id)
@@ -156,7 +161,9 @@ async def update_user(
         raise HTTPException(status_code=400, detail="Invalid user id")
     async with UserCRUD() as crud:
         old_user = await crud.read_by_id(user_id)
-        updated_user = await crud.update(old_user, user_data_update, update_last_access)
+        updated_user = await crud.update(
+            old_user, user_data_update
+        )  # , update_last_access)
     return updated_user
 
 

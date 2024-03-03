@@ -1,7 +1,6 @@
 # from fastapi import HTTPException
 import logging
 from typing import List, Optional
-from datetime import datetime
 from fastapi import HTTPException
 from models.azure_group_user_link import AzureGroupUserLink
 from models.user import User, UserCreate, UserRead, UserUpdate
@@ -31,11 +30,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             user = results.one()
             # TBD: this might end up in spaghetti code - rethink!
             # updating the user with itself updates th "last_accessed_at" field
-            # print("=== user crud - read_by_azure_user_id -> update_last_access ===")
-            # print(update_last_access)
-            if update_last_access is True:
-                # print("=== user crud - read_by_azure_user_id -> updating... ===")
-                user = await self.update(user, user)
+            # TBD: Refactor into access control
+            # if update_last_access is True:
+            #     # print("=== user crud - read_by_azure_user_id -> updating... ===")
+            #     user = await self.update(user, user)
             return user
         except Exception as err:
             logging.error(err)
@@ -56,11 +54,12 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             user = results.one()
             # TBD: this might end up in spaghetti code - rethink!
             # updating the user with itself updates th "last_accessed_at" field
-            if update_last_access is True:
-                # print(
-                #     "=== user crud - read_by_azure_user_id_with_childs -> updating... ==="
-                # )
-                await self.update(user, user)
+            # TBD: Refactor into access control
+            # if update_last_access is True:
+            #     # print(
+            #     #     "=== user crud - read_by_azure_user_id_with_childs -> updating... ==="
+            #     # )
+            #     await self.update(user, user)
             return user
         except Exception as err:
             logging.error(err)
@@ -147,7 +146,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # )
             # print(update_last_access)
             current_user = await self.read_by_azure_user_id(
-                azure_user_id, update_last_access
+                azure_user_id
+                # TBD: Refactor into access control
+                # , update_last_access,
             )
             # print("=== current_user ===")
             # print(current_user)
@@ -156,7 +157,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 user_create = UserCreate(
                     azure_user_id=azure_user_id,
                     azure_tenant_id=azure_tenant_id,
-                    last_accessed_at=datetime.now(),
+                    # TBD: Refactor into access control
+                    # last_accessed_at=datetime.now(),
                 )
                 # print("=== user_create ===")
                 # print(user_create)

@@ -41,6 +41,7 @@ async def post_protected_resource(
 #     """Returns a protected resource."""
 #     return protected_resource_view.get(
 #         token_payload,
+#         # TBD: id here? - no only for "get-by-id" route!
 #         # scopes=["api.read"], this is on the router already, no need to repeat it here, but it's not wrong to do so. Not the cleanest code. Hmmm...
 #         roles=["User"],
 #     )

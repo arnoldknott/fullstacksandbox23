@@ -1,5 +1,6 @@
+import logging
 from datetime import datetime
-from typing import TYPE_CHECKING, Generic, Type, TypeVar
+from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional
 
 from core.databases import get_async_session
 from fastapi import HTTPException
@@ -7,11 +8,18 @@ from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 # from core.security import AccessControl
+import core.access_control
 
 if TYPE_CHECKING:
     pass
-# from core.security import CurrentUserData
+from core.types import CurrentUserData, Action
 
+logger = logging.getLogger(__name__)
+
+access_control = core.access_control.AccessControl()
+read = Action.read
+write = Action.write
+own = Action.own
 
 BaseModelType = TypeVar("BaseModelType", bound=SQLModel)
 BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=SQLModel)
@@ -32,12 +40,10 @@ class BaseCRUD(
     def __init__(
         self,
         base_model: Type[BaseModelType],
-        # current_user: Optional["CurrentUserData"] = None,# not good: don't store user_data in the CRUD class. only pass it around.
     ):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
-        # self.current_user: Optional["CurrentUserData"] = current_user
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -51,25 +57,29 @@ class BaseCRUD(
     async def create(
         self,
         object: BaseSchemaTypeCreate,
-        update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
+        # update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
         # Refactor into this:
-        # current_user: "CurrentUserData",
+        current_user: Optional["CurrentUserData"] = None,
     ) -> BaseModelType:
+        """Creates a new object."""
+        logger.info("BaseCRUD.create")
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write here
-        """Creates a new object."""
-        # print("=== BaseCRUD.create - current_user ===")
-        # print(current_user)
-        session = self.session
-        Model = self.model
-        # TBD: refactor into try-except block and add logging
-        database_object = Model.model_validate(object)
-        if hasattr(database_object, "last_accessed_at") and update_last_access is True:
-            database_object.last_accessed_at = datetime.now()
-        session.add(database_object)
-        await session.commit()
-        await session.refresh(database_object)
-        return database_object
+        try:
+            # await access_control.allows(current_user, object, write)
+            session = self.session
+            Model = self.model
+            database_object = Model.model_validate(object)
+            # TBD: refactor into access control
+            # if hasattr(database_object, "last_accessed_at") and update_last_access is True:
+            #     database_object.last_accessed_at = datetime.now()
+            session.add(database_object)
+            await session.commit()
+            await session.refresh(database_object)
+            return database_object
+        except Exception as e:
+            logger.error(f"Error in BaseCRUD.create: {e}")
+            raise HTTPException(status_code=404, detail="Object not found")
 
     # TBD: implement a create_if_not_exists method
 
@@ -106,11 +116,12 @@ class BaseCRUD(
         object = await session.get(model, object_id)
         if object is None:
             raise HTTPException(status_code=404, detail="Object not found")
-        if hasattr(object, "last_accessed_at") and update_last_access is True:
-            model.last_accessed_at = datetime.now()
-            session.add(object)
-            await session.commit()
-            await session.refresh(object)
+        # TBD: Refactor into access control
+        # if hasattr(object, "last_accessed_at") and update_last_access is True:
+        #     model.last_accessed_at = datetime.now()
+        #     session.add(object)
+        #     await session.commit()
+        #     await session.refresh(object)
         return object
 
     async def update(
@@ -128,15 +139,16 @@ class BaseCRUD(
         # TBD: refactor into try-except block and add logging
         if hasattr(old, "last_updated_at"):
             old.last_updated_at = datetime.now()
-        if hasattr(old, "last_accessed_at") and update_last_access is True:
-            old.last_accessed_at = datetime.now()
+        # TBD: Refactor into access control
+        # if hasattr(old, "last_accessed_at") and update_last_access is True:
+        #     old.last_accessed_at = datetime.now()
         updated = new.model_dump(exclude_unset=True)
         for key, value in updated.items():
             # if key == "id" or key == "created_at" or key == "last_updated_at":
             if (
                 key == "created_at"
                 or key == "last_updated_at"
-                or key == "last_accessed_at"
+                # or key == "last_accessed_at"
             ):
                 continue
             setattr(old, key, value)
