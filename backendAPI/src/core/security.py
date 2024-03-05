@@ -255,6 +255,9 @@ class CurrentAccessToken:
                 )
                 if current_user:
                     # TBD: more impportant than returning: store the user in the class instance: attribute self.current_user
+                    # print("=== current_user ===")
+                    # print(current_user)
+                    # self.user_id = current_user.user_id
                     return current_user
                 else:
                     raise HTTPException(status_code=404, detail="404 User not found")
@@ -263,7 +266,7 @@ class CurrentAccessToken:
             raise HTTPException(status_code=401, detail="Invalid token")
 
     # TBD: call get_or_sign_up_current_user from all guards that require a user
-    def provides_current_user(self) -> CurrentUserData:
+    async def provides_current_user(self) -> CurrentUserData:
         """Returns the current user"""
         roles = None
         groups = None
@@ -271,8 +274,12 @@ class CurrentAccessToken:
             roles = self.payload["roles"]
         if "groups" in self.payload:
             groups = self.payload["groups"]
+        user_in_database = await self.gets_or_signs_up_current_user()
         current_user = {
-            "azure_user_id": self.payload["oid"],
+            # TBD: every guard needs to call the gets_or_signs_up_current_user method
+            # Then change azure_user_id to user_id here:
+            # "azure_user_id": self.payload["oid"],
+            "user_id": user_in_database.user_id,
             "roles": roles,
             "groups": groups,
             # "scopes": self.payload["scp"],

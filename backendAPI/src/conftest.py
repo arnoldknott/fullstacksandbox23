@@ -79,20 +79,20 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[get_azure_token_payload] = (
-        lambda: mocked_get_azure_token_payload
-    )
+    app.dependency_overrides[
+        get_azure_token_payload
+    ] = lambda: mocked_get_azure_token_payload
     yield app
     app.dependency_overrides = {}
 
 
 @pytest.fixture(scope="function")
-def current_test_user(mocked_get_azure_token_payload):
+async def current_test_user(mocked_get_azure_token_payload):
     """Returns the current test user."""
     # print("=== conftest - mocked_get_azure_token_payload ===")
     # print(mocked_get_azure_token_payload)
     token = CurrentAccessToken(mocked_get_azure_token_payload)
-    return token.provides_current_user()
+    return await token.provides_current_user()
 
 
 @pytest.fixture(scope="function")

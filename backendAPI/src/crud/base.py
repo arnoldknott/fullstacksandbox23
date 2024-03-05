@@ -106,7 +106,7 @@ class BaseCRUD(
     async def read_by_id(
         self,
         object_id: int,
-        update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
+        # update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
         # Refactor into this:
         # current_user: "CurrentUserData",
     ) -> BaseSchemaTypeRead:
@@ -130,7 +130,7 @@ class BaseCRUD(
         self,
         old: BaseModelType,
         new: BaseSchemaTypeUpdate,
-        update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
+        # update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
         # Refactor into this:
         # current_user: "CurrentUserData",
     ) -> BaseModelType:

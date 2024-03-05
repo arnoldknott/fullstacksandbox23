@@ -10,19 +10,19 @@ class AccessPolicy(SQLModel, table=True):
 
     identity_id: uuid.UUID = Field(primary_key=True)
     identity_type: "IdentityType" = Field(index=True)
-    resource_id: uuid.UUID = Field(primary_key=True)
+    resource_id: int = Field(primary_key=True)
     resource_type: "ResourceType" = Field(index=True)
     action: "Action" = Field()
     # TBD: not sure if this is needed:
     # override: bool = Field(default=False)
 
 
-class AccessLogging(SQLModel, table=True):
+class AccessLog(SQLModel, table=True):
     """Table for logging actual access attempts"""
 
     identity_id: uuid.UUID = Field(primary_key=True)
     identity_type: "IdentityType" = Field(index=True)
-    resource_id: uuid.UUID = Field(primary_key=True)
+    resource_id: int = Field(primary_key=True)
     resource_type: "ResourceType" = Field(index=True)
     action: "Action" = Field()
     time: datetime = Field(default=datetime.now())

@@ -61,7 +61,7 @@ async def post_protected_resource(
 #     token = CurrentAccessToken(token_payload)
 #     await token.has_scope("api.write")
 #     await token.has_role("User")
-#     current_user = token.provides_current_user()
+#     current_user = await token.provides_current_user()
 #     # print("=== protected_resource ===")
 #     # print(protected_resource)
 #     async with ProtectedResourceCRUD(current_user) as crud:

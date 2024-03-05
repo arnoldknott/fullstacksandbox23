@@ -35,7 +35,7 @@ class BaseView:
             await token.has_role(role)
         for group in groups:
             await token.has_group(group)
-        return token.provides_current_user()
+        return await token.provides_current_user()
 
     async def post(
         self,
@@ -45,8 +45,8 @@ class BaseView:
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        # current_user = await self.__guards(token_payload, scopes, roles, groups)
         logger.info("POST calls post")
+        # current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             created_object = await crud.create(object)
             # Refactor into this:
@@ -60,8 +60,8 @@ class BaseView:
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        # current_user = self.__guards(token_payload, scopes, roles, groups)
         logger.info("GETs all objects")
+        # current_user = self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             objects = await crud.read()
             # Refactor into this:
@@ -76,8 +76,8 @@ class BaseView:
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        # current_user = self.__guards(token_payload, scopes, roles, groups)
         logger.info("GET calls get")
+        # current_user = self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             object = await crud.read_by_id(id)
             # Refactor into this:

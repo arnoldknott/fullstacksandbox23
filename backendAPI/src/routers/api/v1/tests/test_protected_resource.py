@@ -7,6 +7,7 @@ from models.protected_resource import ProtectedResource
 from fastapi import FastAPI
 from tests.utils import (
     token_payload_user_id,
+    token_payload_tenant_id,
     token_payload_roles_admin,
     token_payload_roles_user,
     token_payload_scope_api_read_write,
@@ -22,11 +23,13 @@ from tests.utils import (
     [
         {
             **token_payload_user_id,
+            **token_payload_tenant_id,
             **token_payload_scope_api_read_write,
             **token_payload_roles_admin,
         },
         {
             **token_payload_user_id,
+            **token_payload_tenant_id,
             **token_payload_scope_api_read_write,
             **token_payload_roles_user,
         },

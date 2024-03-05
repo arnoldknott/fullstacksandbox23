@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from core.config import config
+from core.types import IdentityType
 
 # from core.types import IdentityType
 from sqlmodel import Field, Relationship, SQLModel
@@ -93,13 +94,16 @@ class AzureGroupUpdate(AzureGroupCreate):
 #     user: Optional["User"] = Relationship(back_populates="discord_account")
 
 
-# class IdentityHierarchy(SQLModel, table=True):
-#     """Schema for the identity hierarchy in the database."""
+# region Identity Hierarchy
 
-#     child_id: uuid.UUID = Field(primary_key=True)
-#     child_type: IdentityType = Field(index=True)
-#     parent_id: uuid.UUID = Field(primary_key=True)
-#     parent_type: IdentityType = Field(index=True)
+
+class IdentityHierarchy(SQLModel, table=True):
+    """Schema for the identity hierarchy in the database."""
+
+    child_id: uuid.UUID = Field(primary_key=True)
+    child_type: IdentityType = Field(index=True)
+    parent_id: uuid.UUID = Field(primary_key=True)
+    parent_type: IdentityType = Field(index=True)
 
 
 # endregion
