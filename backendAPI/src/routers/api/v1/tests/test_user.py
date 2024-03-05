@@ -6,7 +6,7 @@ from typing import List
 from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
-from models.user import User, UserRead
+from models.identity import User, UserRead
 from fastapi import FastAPI
 from tests.utils import (
     token_payload_user_id,

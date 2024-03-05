@@ -36,12 +36,12 @@ class ResourceType(str, Enum):
     element = "element"
 
 
-class IdentityType(UUID, Enum):
+class IdentityType(Enum):
     """Enum for the types of identities to identify which table an identity uuid belongs"""
 
-    user = "user"
+    user: UUID = "user"
     # group = "group"
-    azure_group = "azure_group"
+    azure_group: UUID = "azure_group"
     # brightspace_group = "brightspace_group"
     # discord_group = "discord_group"
     # google_group = "google_group"

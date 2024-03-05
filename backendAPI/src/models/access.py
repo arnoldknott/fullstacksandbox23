@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from tyuping import Union
+from typing import Union
 
 from sqlmodel import Field, SQLModel
 from core.types import IdentityType, ResourceType, Action
@@ -17,11 +17,16 @@ class AccessControl(SQLModel, table=True):
     override: bool = Field(default=False)
 
 
-class AccessLog(AccessControl, table=True):
+class AccessLog(SQLModel, table=True):
     """Table for logging actual access attempts"""
 
+    identity_id: uuid.UUID = Field(primary_key=True)
+    identity_type: "IdentityType" = Field(index=True)
+    resource_id: uuid.UUID = Field(primary_key=True)
+    resource_type: "ResourceType" = Field(index=True)
+    action: "Action" = Field()
     time: datetime = Field(default=datetime.now())
-    status_code: Union[int, bool] = Field()
+    status_code: int = Field()
 
 
 class ResourceHierarchy(SQLModel, table=True):

@@ -2,8 +2,9 @@
 import logging
 from typing import List, Optional
 from fastapi import HTTPException
-from models.azure_group_user_link import AzureGroupUserLink
-from models.user import User, UserCreate, UserRead, UserUpdate
+
+# from models.azure_group_user_link import AzureGroupUserLink
+from models.identity import User, UserCreate, UserRead, UserUpdate, AzureGroupUserLink
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 

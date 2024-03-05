@@ -1,6 +1,13 @@
 # from fastapi import HTTPException
 from fastapi import HTTPException
-from models.azure_group import (
+
+# from models.azure_group import (
+#     AzureGroup,
+#     AzureGroupCreate,
+#     AzureGroupRead,
+#     AzureGroupUpdate,
+# )
+from models.identity import (
     AzureGroup,
     AzureGroupCreate,
     AzureGroupRead,

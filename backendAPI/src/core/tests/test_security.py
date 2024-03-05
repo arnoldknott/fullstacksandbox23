@@ -4,7 +4,7 @@ import pytest
 import uuid
 from typing import Annotated
 from fastapi import Depends, FastAPI
-from models.user import User, UserRead
+from models.identity import User, UserRead
 from crud.user import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from core.security import (

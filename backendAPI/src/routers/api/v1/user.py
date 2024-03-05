@@ -9,7 +9,7 @@ from core.security import (
 )
 from crud.user import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException
-from models.user import User, UserCreate, UserRead, UserUpdate
+from models.identity import User, UserCreate, UserRead, UserUpdate
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

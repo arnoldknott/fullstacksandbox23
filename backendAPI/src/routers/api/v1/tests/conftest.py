@@ -2,7 +2,7 @@ import pytest
 from models.category import Category
 from models.demo_resource import DemoResource
 from models.tag import Tag
-from models.user import User
+from models.identity import User
 from crud.protected_resource import ProtectedResourceCRUD
 from models.protected_resource import ProtectedResource
 from sqlmodel.ext.asyncio.session import AsyncSession
