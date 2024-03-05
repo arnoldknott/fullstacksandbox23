@@ -4,14 +4,48 @@ from typing import List, Optional
 from fastapi import HTTPException
 
 # from models.azure_group_user_link import AzureGroupUserLink
-from models.identity import User, UserCreate, UserRead, UserUpdate, AzureGroupUserLink
+from models.identity import (
+    User,
+    UserCreate,
+    UserRead,
+    UserUpdate,
+    AzureGroupUserLink,
+    AzureGroup,
+    AzureGroupCreate,
+    AzureGroupRead,
+    AzureGroupUpdate,
+)
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 
-from .azure_group import AzureGroupCRUD
+# from .azure_group import AzureGroupCRUD
 from .base import BaseCRUD
 
 logger = logging.getLogger(__name__)
+
+
+class AzureGroupCRUD(
+    BaseCRUD[AzureGroup, AzureGroupCreate, AzureGroupRead, AzureGroupUpdate]
+):
+    def __init__(self):
+        super().__init__(AzureGroup)
+
+    async def create_if_not_exists(
+        self, azure_group_id: str, azure_tenant_id: str
+    ) -> AzureGroupRead:
+        """Creates a new group if it does not exist."""
+        try:
+            existing_group = await self.read_by_id(azure_group_id)
+        except HTTPException as err:
+            if err.status_code == 404:
+                group_create = AzureGroupCreate(
+                    azure_group_id=azure_group_id,
+                    azure_tenant_id=azure_tenant_id,
+                )
+                existing_group = await self.create(group_create)
+            else:
+                raise err
+        return existing_group
 
 
 class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):

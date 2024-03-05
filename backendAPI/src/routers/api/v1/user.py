@@ -7,7 +7,7 @@ from core.security import (
     CurrentAccessTokenHasScope,
     CurrentAccessTokenHasRole,
 )
-from crud.user import UserCRUD
+from crud.identity import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException
 from models.identity import User, UserCreate, UserRead, UserUpdate
 

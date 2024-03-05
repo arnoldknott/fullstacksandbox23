@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 from fastapi import HTTPException
 
+from crud.access import AccessPolicyCRUD
 
 if TYPE_CHECKING:
     from core.types import CurrentUserData, Action
@@ -13,27 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 class AccessControl:
+    """Class for access control"""
+
     def __init__(self) -> None:
         pass
-
-    async def __write_policy(self):
-        """Writes a permission to the database"""
-        # TBD: only owners and admins of an object can write a policy
-        # with get_async_session() as session:
-        #     pass
-
-    async def __read_policy(self):
-        """Gets the permission from the database"""
-        # TBD: everyone can read a policy
-        # with get_async_session() as session:
-        #     pass
-        return True
-
-    async def __delete_policy(self):
-        """Deletes a permission in the database"""
-        # TBD: only owners and admins of an object can delete a policy
-        # with get_async_session() as session:
-        #     pass
 
     async def allows(
         self, user: "CurrentUserData", resource_id: UUID, action: "Action"
@@ -58,4 +42,11 @@ class AccessControl:
         identity: "CurrentUserData", resource_id: UUID, action: "Action"
     ) -> bool:
         """Removes a permission for a resource"""
+        pass
+
+
+class AccessLogging:
+    """Class for access logging"""
+
+    def __init__(self) -> None:
         pass

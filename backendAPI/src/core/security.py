@@ -15,7 +15,7 @@ from core.types import CurrentUserData
 from core.cache import redis_jwks_client
 from core.config import config
 from models.identity import UserRead
-from crud.user import UserCRUD
+from crud.identity import UserCRUD
 from fastapi import Depends, HTTPException, Request
 from jwt.algorithms import RSAAlgorithm
 

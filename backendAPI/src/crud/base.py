@@ -9,7 +9,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 # from core.security import AccessControl
 # import core.access_control
-from core.access_control import AccessControl
+from core.access import AccessControl
 
 if TYPE_CHECKING:
     pass

@@ -1,12 +1,11 @@
 import uuid
 from datetime import datetime
-from typing import Union
 
 from sqlmodel import Field, SQLModel
 from core.types import IdentityType, ResourceType, Action
 
 
-class AccessControl(SQLModel, table=True):
+class AccessPolicy(SQLModel, table=True):
     """Table for access control"""
 
     identity_id: uuid.UUID = Field(primary_key=True)
@@ -14,10 +13,11 @@ class AccessControl(SQLModel, table=True):
     resource_id: uuid.UUID = Field(primary_key=True)
     resource_type: "ResourceType" = Field(index=True)
     action: "Action" = Field()
-    override: bool = Field(default=False)
+    # TBD: not sure if this is needed:
+    # override: bool = Field(default=False)
 
 
-class AccessLog(SQLModel, table=True):
+class AccessLogging(SQLModel, table=True):
     """Table for logging actual access attempts"""
 
     identity_id: uuid.UUID = Field(primary_key=True)
@@ -36,4 +36,7 @@ class ResourceHierarchy(SQLModel, table=True):
     parent_type: "ResourceType" = Field(index=True)
     child_resource_id: uuid.UUID = Field(primary_key=True)
     child_type: "ResourceType" = Field(index=True)
-    inherit: bool = Field(default=False)
+    inherit: bool = Field(
+        default=False,
+        description="Set to true, if the child inherits permissions from this parent.",
+    )

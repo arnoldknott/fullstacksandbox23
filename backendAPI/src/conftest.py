@@ -10,7 +10,7 @@ from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from core.security import get_azure_token_payload, CurrentAccessToken
 from models.identity import User
-from crud.user import UserCRUD
+from crud.identity import UserCRUD
 from tests.utils import (
     one_test_user,
     many_test_users,

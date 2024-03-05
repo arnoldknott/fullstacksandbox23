@@ -3,7 +3,7 @@
 import pytest
 import uuid
 from typing import List
-from crud.user import UserCRUD
+from crud.identity import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
 from models.identity import User, UserRead
