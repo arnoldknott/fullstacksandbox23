@@ -8,7 +8,8 @@ from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 # from core.security import AccessControl
-import core.access_control
+# import core.access_control
+from core.access_control import AccessControl
 
 if TYPE_CHECKING:
     pass
@@ -16,7 +17,8 @@ from core.types import CurrentUserData, Action
 
 logger = logging.getLogger(__name__)
 
-access_control = core.access_control.AccessControl()
+# access_control = core.access_control.AccessControl()
+access_control = AccessControl()
 read = Action.read
 write = Action.write
 own = Action.own
@@ -66,7 +68,7 @@ class BaseCRUD(
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write here
         try:
-            # await access_control.allows(current_user, object, write)
+            await access_control.allows(current_user, object, write)
             session = self.session
             Model = self.model
             database_object = Model.model_validate(object)

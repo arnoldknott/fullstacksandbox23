@@ -1,3 +1,5 @@
+# TBD: Refactor: merge all azure stuff to user.py and rename into identity.py
+
 import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional

@@ -16,19 +16,20 @@ class AccessControl:
     def __init__(self) -> None:
         pass
 
-    async def __write_policy():
+    async def __write_policy(self):
         """Writes a permission to the database"""
         # TBD: only owners and admins of an object can write a policy
         # with get_async_session() as session:
         #     pass
 
-    async def __read_policy():
+    async def __read_policy(self):
         """Gets the permission from the database"""
         # TBD: everyone can read a policy
         # with get_async_session() as session:
         #     pass
+        return True
 
-    async def __delete_policy():
+    async def __delete_policy(self):
         """Deletes a permission in the database"""
         # TBD: only owners and admins of an object can delete a policy
         # with get_async_session() as session:
@@ -40,7 +41,8 @@ class AccessControl:
         """Checks if the user has permission to perform the action on the resource"""
         # TBD: get the hierarchy and overrides for resource and user
         # TBD: get all policies for the resource, where any of the hierarchical identities and hierarchical resources match
-        policy = self.__read_policy()
+        policy = await self.__read_policy()
+        print("=== access control called ===")
         if policy:
             return True
         else:

@@ -22,3 +22,26 @@ class Action(Enum):
     read = "read"
     write = "write"
     own = "own"
+
+
+class ResourceType(str, Enum):
+    """Enum for the types of resources to identify which table a resource uuid belongs to"""
+
+    demo_resource = "demo_resource"
+    protected_resource = "protected_resource"
+    module = "module"
+    section = "section"
+    subsection = "subsection"
+    topic = "topic"
+    element = "element"
+
+
+class IdentityType(UUID, Enum):
+    """Enum for the types of identities to identify which table an identity uuid belongs"""
+
+    user = "user"
+    # group = "group"
+    azure_group = "azure_group"
+    # brightspace_group = "brightspace_group"
+    # discord_group = "discord_group"
+    # google_group = "google_group"
