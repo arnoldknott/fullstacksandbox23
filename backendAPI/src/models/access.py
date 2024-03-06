@@ -1,20 +1,47 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from sqlmodel import Field, SQLModel
 from core.types import IdentityType, ResourceType, Action
 
 
-class AccessPolicy(SQLModel, table=True):
-    """Table for access control"""
+class AccessPolicyCreate(SQLModel):
+    """Create model for access policies"""
 
-    identity_id: uuid.UUID = Field(primary_key=True)
-    identity_type: "IdentityType" = Field(index=True)
-    resource_id: int = Field(primary_key=True)
-    resource_type: "ResourceType" = Field(index=True)
-    action: "Action" = Field()
+    identity_id: uuid.UUID
+    identity_type: "IdentityType"
+    resource_id: int
+    resource_type: "ResourceType"
+    action: "Action"
     # TBD: not sure if this is needed:
     # override: bool = Field(default=False)
+
+
+class AccessPolicy(AccessPolicyCreate, table=True):
+    """Table for access control"""
+
+    policy_id: Optional[int] = Field(default=None, primary_key=True)
+    identity_id: uuid.UUID = Field(index=True)
+    identity_type: "IdentityType" = Field(index=True)
+    resource_id: int = Field(index=True)
+    resource_type: "ResourceType" = Field(index=True)
+    action: "Action" = Field()
+    # identity_id: uuid.UUID = Field(primary_key=True)
+    # identity_type: "IdentityType" = Field(index=True)
+    # resource_id: int = Field(primary_key=True)
+    # resource_type: "ResourceType" = Field(index=True)
+    # action: "Action" = Field()
+    # override: bool = Field(default=False)
+
+
+class AccessPolicyRead(AccessPolicyCreate):
+    """Read model for access policies"""
+
+    policy_id: int
+
+
+# No update model for access policies: once created, they should not be updated, only deleted to keep loggings consistent.
 
 
 class AccessLog(SQLModel, table=True):

@@ -1,11 +1,15 @@
 import logging
 from uuid import UUID
 
+from typing import List
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
 from core.databases import get_async_session
-from core.types import Action, ResourceType
+from core.types import ResourceType
 
 from fastapi import HTTPException
-from models.access import AccessPolicy, AccessLog
+from models.access import AccessPolicyCreate, AccessPolicy, AccessPolicyRead, AccessLog
 
 logger = logging.getLogger(__name__)
 
@@ -15,41 +19,64 @@ class AccessPolicyCRUD:
 
     def __init__(self):
         """Initializes the CRUD for access control policies."""
-        self
+        self.session = None
 
-    async def create(self, policy: AccessPolicy) -> AccessPolicy:
+    async def __aenter__(self) -> AsyncSession:
+        """Returns a database session."""
+        self.session = await get_async_session()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Closes the database session."""
+        await self.session.close()
+
+    async def create(self, policy: AccessPolicyCreate) -> AccessPolicyRead:
         """Creates a new access control policy."""
         try:
-            async with await get_async_session() as session:
-                print("=== AccessPolicyCRUD.create - policy ===")
-                print(policy)
-                policy = AccessPolicy(**policy)
-                print("=== AccessPolicyCRUD.create - modelled policy ===")
-                print(policy)
-                session.add(policy)
-                await session.commit()
-                await session.refresh(policy)
+            session = self.session
+            policy = AccessPolicy.model_validate(policy)
+            session.add(policy)
+            await session.commit()
+            await session.refresh(policy)
+            # await session.close()
+            # async with await get_async_session() as session:
+            #     policy = AccessPolicy(**policy)
+            #     session.add(policy)
+            #     await session.commit()
+            #     await session.refresh(policy)
             return policy
         except Exception as e:
             logger.error(f"Error in creating policy: {e}")
             raise HTTPException(status_code=404, detail="Resource not found")
 
-    async def read(
-        self, identity_id: UUID, resource_id: int, action: Action
-    ) -> AccessPolicy:
+    async def read_by_identity(self, identity_id: UUID) -> List[AccessPolicyRead]:
         """Reads an access control policy."""
+        try:
+            session = self.session
+            statement = select(AccessPolicy).where(
+                AccessPolicy.identity_id == identity_id,
+            )
+            print("=== AccessPolicyCRUD.read_by_identity - statement ===")
+            print(statement)
+            results = await session.exec(statement)
+            return results.all()
+        except Exception as e:
+            logger.error(f"Error in reading policy: {e}")
+            raise HTTPException(status_code=404, detail="Resource not found")
         # TBD:
         # - query by request parameters
         # - add inheritance (and override checks) here:
         #   - Self-join on the resource hierarchy table and
-        #   - Self join teh identity hierarchy table
+        #   - Self join the identity hierarchy table
+
+    async def read_by_resource(
+        self, resource_id: int, resource_type: ResourceType
+    ) -> List[AccessPolicy]:
+        # TBD: maybe this should just return the highest?
+        """Reads all access control policy for a given resource."""
         pass
 
-    async def update(self) -> AccessPolicy:
-        """Updates an access control policy."""
-        pass
-
-    async def delete(self) -> AccessPolicy:
+    async def delete(self) -> None:
         """Deletes an access control policy."""
         pass
 
