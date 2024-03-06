@@ -19,7 +19,20 @@ class AccessPolicyCRUD:
 
     async def create(self, policy: AccessPolicy) -> AccessPolicy:
         """Creates a new access control policy."""
-        pass
+        try:
+            async with await get_async_session() as session:
+                print("=== AccessPolicyCRUD.create - policy ===")
+                print(policy)
+                policy = AccessPolicy(**policy)
+                print("=== AccessPolicyCRUD.create - modelled policy ===")
+                print(policy)
+                session.add(policy)
+                await session.commit()
+                await session.refresh(policy)
+            return policy
+        except Exception as e:
+            logger.error(f"Error in creating policy: {e}")
+            raise HTTPException(status_code=404, detail="Resource not found")
 
     async def read(
         self, identity_id: UUID, resource_id: int, action: Action

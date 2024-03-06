@@ -11,10 +11,13 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from core.security import get_azure_token_payload, CurrentAccessToken
 from models.identity import User
 from crud.identity import UserCRUD
+from models.access import AccessPolicy
+from crud.access import AccessPolicyCRUD
 from tests.utils import (
     one_test_user,
     many_test_users,
     token_payload_many_groups,
+    many_test_policies,
 )
 
 
@@ -79,9 +82,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[
-        get_azure_token_payload
-    ] = lambda: mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 
@@ -159,3 +162,17 @@ async def add_many_test_users_with_groups(
 # async def current_test_user():
 #     """Returns the current test user."""
 #     yield CurrentUserData(**)
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_access_policies(
+    get_async_test_session: AsyncSession,
+) -> list[AccessPolicy]:
+    """Adds a category to the database."""
+    async with AccessPolicyCRUD() as crud:
+        policies = []
+        for policy in many_test_policies:
+            added_policy = await crud.create(AccessPolicy(**policy))
+            policies.append(added_policy)
+
+    yield policies

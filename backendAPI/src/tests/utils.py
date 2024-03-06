@@ -59,6 +59,54 @@ token_payload_many_groups = {
     "groups": [str(uuid4()), str(uuid4()), str(uuid4())],
 }
 
+one_test_policy = {
+    "identity_id": one_test_user["azure_user_id"],
+    "identity_type": "user",
+    "resource_id": 1,
+    "resource_type": "protected_resource",
+    "action": "read",
+}
+
+many_test_policies = [
+    {
+        "identity_id": many_test_users[1]["azure_user_id"],
+        "identity_type": "user",
+        "resource_id": 1,
+        "resource_type": "protected_resource",
+        "action": "read",
+    },
+    {
+        "identity_id": one_test_user["azure_user_id"],
+        "identity_type": "user",
+        "resource_id": 4,
+        "resource_type": "protected_resource",
+        "action": "own",
+    },
+    {
+        "identity_id": many_test_users[0]["azure_user_id"],
+        "identity_type": "user",
+        "resource_id": 4,
+        "resource_type": "protected_resource",
+        "action": "write",
+    },
+    {
+        "identity_id": many_test_users[2]["azure_user_id"],
+        "identity_type": "user",
+        "resource_id": 3,
+        "resource_type": "protected_resource",
+        "action": "own",
+    },
+    # effectively overrides the first policy with more rights (own > read)
+    {
+        "identity_id": many_test_users[1]["azure_user_id"],
+        "identity_type": "user",
+        "resource_id": 1,
+        "resource_type": "protected_resource",
+        "action": "own",
+    },
+]
+
+
 one_test_demo_resource = {
     "name": "Name of Test Resource",
     "description": "Some fancy description of my test resource.",

@@ -24,3 +24,4 @@ async def get_async_session() -> AsyncSession:
 #     async_session = get_async_session()
 #     async with async_session() as session:
 #         yield session
+#     # session.close()
