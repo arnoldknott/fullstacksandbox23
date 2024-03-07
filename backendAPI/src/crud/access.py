@@ -55,7 +55,9 @@ class AccessPolicyCRUD:
         try:
             session = self.session
             results = await session.get(AccessPolicy, policy_id)
-            return results.one()
+            if results is None:
+                raise HTTPException(status_code=404, detail="Access policy not found")
+            return results
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
             raise HTTPException(status_code=404, detail="Access policy not found")
@@ -69,8 +71,6 @@ class AccessPolicyCRUD:
             )
             response = await session.exec(statement)
             results = response.all()
-            print("=== results ===")
-            print(results)
             if len(results) == 0:
                 raise HTTPException(status_code=404, detail="Access policy not found")
             return results

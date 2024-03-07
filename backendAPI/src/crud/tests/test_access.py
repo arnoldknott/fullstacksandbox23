@@ -44,13 +44,35 @@ async def test_read_access_policy_by_policy_id(
     add_many_test_access_policies,
 ):
     """Test reading an access policy by policy_id."""
-    assert 1 == 2
+    policies = add_many_test_access_policies
+    async with AccessPolicyCRUD() as policy_crud:
+        read_policy = await policy_crud.read_by_policy_id(3)
+
+    assert read_policy.policy_id == 3
+    assert read_policy.identity_id == policies[2].identity_id
+    assert read_policy.identity_type == policies[2].identity_type
+    assert read_policy.resource_id == policies[2].resource_id
+    assert read_policy.resource_type == policies[2].resource_type
+    assert read_policy.action == policies[2].action
 
 
 @pytest.mark.anyio
-async def test_read_access_policy_for_nonexisting_policy_id():
+async def test_read_access_policy_for_nonexisting_policy_id(
+    add_many_test_access_policies,
+):
     """Test reading an access policy by policy_id."""
-    assert 1 == 2
+    add_many_test_access_policies
+    async with AccessPolicyCRUD() as policy_crud:
+        try:
+            results = await policy_crud.read_by_policy_id(1234)
+            print("=== test - try - results ===")
+            print(results)
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Access policy not found"
+        else:
+            # test above should enter the except statement and not reach this point
+            assert 1 == 2
 
 
 @pytest.mark.anyio
