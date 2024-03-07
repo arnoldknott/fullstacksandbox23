@@ -47,7 +47,7 @@ class AccessPolicyCRUD:
             return policy
         except Exception as e:
             logger.error(f"Error in creating policy: {e}")
-            raise HTTPException(status_code=404, detail="Resource not found")
+            raise HTTPException(status_code=404, detail="Access policy not found")
 
     async def read_by_policy_id(self, policy_id: int) -> AccessPolicy:
         # TBD: maybe this should just return the highest?
@@ -58,7 +58,7 @@ class AccessPolicyCRUD:
             return results.one()
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
-            raise HTTPException(status_code=404, detail="Resource not found")
+            raise HTTPException(status_code=404, detail="Access policy not found")
 
     async def read_by_identity(self, identity_id: UUID) -> List[AccessPolicyRead]:
         """Reads access control policies for a given identity."""
@@ -67,11 +67,19 @@ class AccessPolicyCRUD:
             statement = select(AccessPolicy).where(
                 AccessPolicy.identity_id == identity_id,
             )
-            results = await session.exec(statement)
-            return results.all()
+            response = await session.exec(statement)
+            results = response.all()
+            print("=== results ===")
+            print(results)
+            if len(results) == 0:
+                raise HTTPException(status_code=404, detail="Access policy not found")
+            return results
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
-            raise HTTPException(status_code=404, detail="Resource not found")
+            raise HTTPException(status_code=404, detail="Access policy not found")
+        # except Exception as e:
+        #     logger.error(f"Error in reading policy: {e}")
+        #     raise HTTPException(status_code=404, detail="Access policy not found")
         # TBD:
         # - query by request parameters
         # - add inheritance (and override checks) here:
@@ -93,7 +101,7 @@ class AccessPolicyCRUD:
             return results.all()
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
-            raise HTTPException(status_code=404, detail="Resource not found")
+            raise HTTPException(status_code=404, detail="Access policy not found")
 
     async def delete(self) -> None:
         """Deletes an access control policy."""
