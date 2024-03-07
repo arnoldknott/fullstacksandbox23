@@ -49,15 +49,24 @@ class AccessPolicyCRUD:
             logger.error(f"Error in creating policy: {e}")
             raise HTTPException(status_code=404, detail="Resource not found")
 
+    async def read_by_policy_id(self, policy_id: int) -> AccessPolicy:
+        # TBD: maybe this should just return the highest?
+        """Reads all access control policy for a given resource."""
+        try:
+            session = self.session
+            results = await session.get(AccessPolicy, policy_id)
+            return results.one()
+        except Exception as e:
+            logger.error(f"Error in reading policy: {e}")
+            raise HTTPException(status_code=404, detail="Resource not found")
+
     async def read_by_identity(self, identity_id: UUID) -> List[AccessPolicyRead]:
-        """Reads an access control policy."""
+        """Reads access control policies for a given identity."""
         try:
             session = self.session
             statement = select(AccessPolicy).where(
                 AccessPolicy.identity_id == identity_id,
             )
-            print("=== AccessPolicyCRUD.read_by_identity - statement ===")
-            print(statement)
             results = await session.exec(statement)
             return results.all()
         except Exception as e:
@@ -74,7 +83,17 @@ class AccessPolicyCRUD:
     ) -> List[AccessPolicy]:
         # TBD: maybe this should just return the highest?
         """Reads all access control policy for a given resource."""
-        pass
+        try:
+            session = self.session
+            statement = select(AccessPolicy).where(
+                AccessPolicy.resource_id == resource_id,
+                AccessPolicy.resource_type == resource_type,
+            )
+            results = await session.exec(statement)
+            return results.all()
+        except Exception as e:
+            logger.error(f"Error in reading policy: {e}")
+            raise HTTPException(status_code=404, detail="Resource not found")
 
     async def delete(self) -> None:
         """Deletes an access control policy."""
