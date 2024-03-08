@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
+from sqlalchemy import UniqueConstraint
 from core.types import IdentityType, ResourceType, Action
 
 
@@ -27,6 +28,10 @@ class AccessPolicy(AccessPolicyCreate, table=True):
     resource_id: int = Field(index=True)
     resource_type: "ResourceType" = Field(index=True)
     action: "Action" = Field()
+
+    __table_args__ = (
+        UniqueConstraint("identity_id", "resource_id", "resource_type", "action"),
+    )
     # identity_id: uuid.UUID = Field(primary_key=True)
     # identity_type: "IdentityType" = Field(index=True)
     # resource_id: int = Field(primary_key=True)

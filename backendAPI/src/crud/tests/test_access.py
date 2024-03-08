@@ -4,7 +4,12 @@ from uuid import UUID
 from crud.access import AccessPolicyCRUD
 from models.access import AccessPolicyCreate, AccessPolicy
 
-from tests.utils import one_test_policy, many_test_users, user_id_nonexistent
+from tests.utils import (
+    one_test_policy,
+    many_test_policies,
+    many_test_users,
+    user_id_nonexistent,
+)
 
 
 @pytest.mark.anyio
@@ -40,13 +45,29 @@ async def test_create_access_policy():
 
 
 @pytest.mark.anyio
+async def test_prevent_create_duplicate_access_policy(add_many_test_access_policies):
+    """Test preventing the creation of a duplicate access policy."""
+    add_many_test_access_policies
+    async with AccessPolicyCRUD() as policy_crud:
+        try:
+            await policy_crud.create(many_test_policies[2])
+        except Exception as err:
+            assert err.status_code == 403
+            assert err.detail == "Forbidden"
+        else:
+            # test above should enter the except statement and not reach this point
+            assert 1 == 2
+
+
+@pytest.mark.anyio
 async def test_read_access_policy_by_policy_id(
     add_many_test_access_policies,
 ):
     """Test reading an access policy by policy_id."""
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
-        read_policy = await policy_crud.read_by_policy_id(3)
+        # read_policy = await policy_crud.read_by_policy_id(3)
+        read_policy = await policy_crud.read(3)
 
     assert read_policy.policy_id == 3
     assert read_policy.identity_id == policies[2].identity_id
@@ -64,9 +85,8 @@ async def test_read_access_policy_for_nonexisting_policy_id(
     add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            results = await policy_crud.read_by_policy_id(1234)
-            print("=== test - try - results ===")
-            print(results)
+            # results = await policy_crud.read_by_policy_id(1234)
+            results = await policy_crud.read(1234)
         except Exception as err:
             assert err.status_code == 404
             assert err.detail == "Access policy not found"
@@ -82,7 +102,8 @@ async def test_read_access_policy_by_identity(
     """Test reading multiple access policies for a given identity."""
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
-        read_policy = await policy_crud.read_by_identity(
+        # read_policy = await policy_crud.read_by_identity(
+        read_policy = await policy_crud.read(
             identity_id=UUID(many_test_users[1]["azure_user_id"]),
         )
 
@@ -111,7 +132,8 @@ async def test_read_access_policy_for_nonexisting_identity(
     add_many_test_access_policies,
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            await policy_crud.read_by_identity(
+            # await policy_crud.read_by_identity(
+            await policy_crud.read(
                 identity_id=UUID(user_id_nonexistent),
             )
         except Exception as err:
@@ -129,7 +151,8 @@ async def test_read_access_policy_by_resource(
     """Test reading an access policy for a given resource."""
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
-        read_policy = await policy_crud.read_by_resource(
+        # read_policy = await policy_crud.read_by_resource(
+        read_policy = await policy_crud.read(
             resource_id=4,
             resource_type="protected_resource",
         )
@@ -159,7 +182,8 @@ async def test_read_access_policy_for_wrong_resource_type(
     add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            await policy_crud.read_by_resource(
+            # await policy_crud.read_by_resource(
+            await policy_crud.read(
                 resource_id=4,
                 resource_type="wrong_resource_type",
             )
@@ -179,7 +203,8 @@ async def test_read_access_policy_for_nonexisting_resource(
     add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            await policy_crud.read_by_resource(
+            # await policy_crud.read_by_resource(
+            await policy_crud.read(
                 resource_id=1234,
                 resource_type="protected_resource",
             )
@@ -189,3 +214,78 @@ async def test_read_access_policy_for_nonexisting_resource(
         else:
             # test above should enter the except statement and not reach this point
             assert 1 == 2
+
+
+@pytest.mark.anyio
+async def test_read_access_policy_by_identity_and_resource(
+    add_many_test_access_policies,
+):
+    """Test reading an access policy by identity and resource."""
+    policies = add_many_test_access_policies
+    async with AccessPolicyCRUD() as policy_crud:
+        # read_policy = await policy_crud.read_by_identity_and_resource(
+        read_policy = await policy_crud.read(
+            identity_id=policies[2].identity_id,
+            resource_id=policies[2].resource_id,
+            resource_type=policies[2].resource_type,
+        )
+
+    assert len(read_policy) == 1
+
+    assert read_policy[0].policy_id is not None
+    assert read_policy[0].identity_id == policies[2].identity_id
+    assert read_policy[0].identity_type == policies[2].identity_type
+    assert read_policy[0].resource_id == policies[2].resource_id
+    assert read_policy[0].resource_type == policies[2].resource_type
+    assert read_policy[0].action == policies[2].action
+
+
+@pytest.mark.anyio
+async def test_read_access_policy_by_identity_and_resource_and_action(
+    add_many_test_access_policies,
+):
+    """Test reading an access policy by identity and resource."""
+    policies = add_many_test_access_policies
+    async with AccessPolicyCRUD() as policy_crud:
+        # read_policy = await policy_crud.read_by_identity_and_resource_and_action(
+        read_policy = await policy_crud.read(
+            identity_id=policies[2].identity_id,
+            resource_id=policies[2].resource_id,
+            resource_type=policies[2].resource_type,
+            action=policies[2].action,
+        )
+
+    assert len(read_policy) == 1
+
+    assert read_policy[0].policy_id is not None
+    assert read_policy[0].identity_id == policies[2].identity_id
+    assert read_policy[0].identity_type == policies[2].identity_type
+    assert read_policy[0].resource_id == policies[2].resource_id
+    assert read_policy[0].resource_type == policies[2].resource_type
+    assert read_policy[0].action == policies[2].action
+
+
+@pytest.mark.anyio
+async def test_delete_access_policy(add_many_test_access_policies):
+    """Test deleting an access policy."""
+    assert 1 == 2
+    # policies = add_many_test_access_policies
+    # async with AccessPolicyCRUD() as policy_crud:
+    #     await policy_crud.read_by_identity_and_resource_and_action(
+    #         identity_id=policies[3].identity_id,
+    #         resource_id=policies[3].resource_id,
+    #         resource_type=policies[3].resource_type,
+    #         action=policies[3].action,
+    #     )
+    # async with AccessPolicyCRUD() as policy_crud:
+    #     await policy_crud.delete(policy_id=policies[3].policy_id)
+
+    # async with AccessPolicyCRUD() as policy_crud:
+    #     try:
+    #         await policy_crud.read_by_policy_id(policies[0].policy_id)
+    #     except Exception as err:
+    #         assert err.status_code == 404
+    #         assert err.detail == "Access policy not found"
+    #     else:
+    #         # test above should enter the except statement and not reach this point
+    #        assert 1 == 2
