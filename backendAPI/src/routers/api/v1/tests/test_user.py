@@ -18,6 +18,7 @@ from tests.utils import (
     token_payload_scope_api_read_write,
     token_payload_one_group,
     one_test_user,
+    many_test_users,
 )
 
 # region: ## POST tests:
@@ -46,23 +47,23 @@ async def test_admin_posts_user(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json=one_test_user,
+        json=many_test_users[0],
     )
 
     assert response.status_code == 201
     created_user = User(**response.json())
-    assert created_user.azure_user_id == one_test_user["azure_user_id"]
-    assert created_user.azure_tenant_id == one_test_user["azure_tenant_id"]
+    assert created_user.azure_user_id == many_test_users[0]["azure_user_id"]
+    assert created_user.azure_tenant_id == many_test_users[0]["azure_tenant_id"]
 
     # Verify that the user was created in the database
     async with UserCRUD() as crud:
-        db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
+        db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
     assert db_user is not None
     db_user_json = jsonable_encoder(db_user)
     assert "last_accessed_at" in db_user_json
     assert "last_accessed_at" != None
-    assert db_user_json["azure_user_id"] == one_test_user["azure_user_id"]
-    assert db_user_json["azure_tenant_id"] == one_test_user["azure_tenant_id"]
+    assert db_user_json["azure_user_id"] == many_test_users[0]["azure_user_id"]
+    assert db_user_json["azure_tenant_id"] == many_test_users[0]["azure_tenant_id"]
 
 
 @pytest.mark.anyio
@@ -89,17 +90,17 @@ async def test_post_user_with_integer_user_id(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json={**one_test_user, "user_id": 1},
+        json={**many_test_users[0], "user_id": 1},
     )
 
     assert response.status_code == 201
     created_user = User(**response.json())
-    assert created_user.azure_user_id == one_test_user["azure_user_id"]
-    assert created_user.azure_tenant_id == one_test_user["azure_tenant_id"]
+    assert created_user.azure_user_id == many_test_users[0]["azure_user_id"]
+    assert created_user.azure_tenant_id == many_test_users[0]["azure_tenant_id"]
 
     # Verify that the user was created in the database
     async with UserCRUD() as crud:
-        db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
+        db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
     assert db_user is not None
     db_user_json = jsonable_encoder(db_user)
     assert db_user_json["user_id"] != 1
@@ -130,24 +131,26 @@ async def test_post_user_with_uuid_user_id(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json={**one_test_user, "user_id": test_uuid},
+        json={**many_test_users[0], "user_id": test_uuid},
     )
 
     assert response.status_code == 201
     created_user = User(**response.json())
-    assert created_user.azure_user_id == one_test_user["azure_user_id"]
-    assert created_user.azure_tenant_id == one_test_user["azure_tenant_id"]
+    assert created_user.azure_user_id == many_test_users[0]["azure_user_id"]
+    assert created_user.azure_tenant_id == many_test_users[0]["azure_tenant_id"]
 
     # Verify that the user was created in the database
     async with UserCRUD() as crud:
-        db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
+        db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
     assert db_user is not None
     # db_user_json = jsonable_encoder(db_user)
     db_user = db_user.model_dump()
     assert "last_accessed_at" in db_user
     assert "last_accessed_at" != None
-    assert db_user["azure_user_id"] == uuid.UUID(one_test_user["azure_user_id"])
-    assert db_user["azure_tenant_id"] == uuid.UUID(one_test_user["azure_tenant_id"])
+    assert db_user["azure_user_id"] == uuid.UUID(many_test_users[0]["azure_user_id"])
+    assert db_user["azure_tenant_id"] == uuid.UUID(
+        many_test_users[0]["azure_tenant_id"]
+    )
     assert db_user["user_id"] != uuid.UUID(test_uuid)
 
 

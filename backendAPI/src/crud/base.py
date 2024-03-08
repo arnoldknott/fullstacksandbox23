@@ -75,7 +75,8 @@ class BaseCRUD(
         # request is known from self.current_user, object and method is write here
         try:
             if self.public is not True:
-                await access_control.allows(current_user, object, write)
+                if not await access_control.allows(current_user, object, write):
+                    raise HTTPException(status_code=403, detail="Access denied")
             session = self.session
             Model = self.model
             database_object = Model.model_validate(object)

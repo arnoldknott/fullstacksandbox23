@@ -42,7 +42,15 @@ class AzureGroupCRUD(
                     azure_group_id=azure_group_id,
                     azure_tenant_id=azure_tenant_id,
                 )
-                existing_group = await self.create(group_create)
+                # TBD: After refactoring into access control, the create method should cannot be used any more here.
+                # group does not exist and there is no access policy for the group to create itself.
+                # existing_group = await self.create(group_create)
+                session = self.session
+                database_group = AzureGroup.model_validate(group_create)
+                session.add(database_group)
+                await session.commit()
+                await session.refresh(database_group)
+                existing_group = database_group
             else:
                 raise err
         return existing_group
@@ -195,11 +203,21 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     # TBD: Refactor into access control
                     # last_accessed_at=datetime.now(),
                 )
-                # print("=== user_create ===")
-                # print(user_create)
-                current_user = await self.create(user_create)
-                # print("=== current_user ===")
-                # print(current_user)
+                print("=== user_create ===")
+                print(user_create)
+                # current_user = await self.create(user_create)
+                # TBD: After refactoring into access control, the create method should cannot be used any more here.
+                # user does not exist and there is no access policy for the user to create itself.
+                session = self.session
+                print("=== session ===")
+                database_user = User.model_validate(user_create)
+                session.add(database_user)
+                print("=== session.add(user_create) ===")
+                await session.commit()
+                await session.refresh(database_user)
+                current_user = database_user
+                print("=== current_user ===")
+                print(current_user)
                 logger.info("USER created in database")
             else:
                 raise err

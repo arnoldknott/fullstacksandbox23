@@ -36,7 +36,7 @@ from tests.utils import (
     ],
     indirect=True,
 )
-async def test_post_user(
+async def test_post_protected_resource(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     current_test_user,

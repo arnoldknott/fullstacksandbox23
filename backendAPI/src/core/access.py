@@ -39,38 +39,40 @@ class AccessControl:
         action: "Action",
     ) -> bool:
         """Checks if the user has permission to perform the action on the resource"""
+        # TBD: move the logging to the BaseCrud? Or keep it here together with the Access Control?
         loggingCRUD = AccessLoggingCRUD()
         # TBD: get all policies for the resource, where any of the hierarchical identities and hierarchical resources match
         # Admin override:
         print("=== core.access - AccessControl - user ===")
         print(user)
-        print("=== core.access - AccessControl - user.roles ===")
-        print(user.roles)
+        # print("=== core.access - AccessControl - user.roles ===")
+        # print(user.roles)
         print("=== core.access - AccessControl - user['roles'] ===")
         print(user["roles"])
-        # if user.roles and "Admin" in user.roles:
-        # TBD: this is not the correct place for the logging: resource type is not known here.
-        # access_log = AccessLogCreate(
-        #     identity_id=user.azure_user_id,  # TBD: change to user_id
-        #     identity_type="admin",
-        #     resource_id=resource_id,
-        #     resource_type="protected_resource",
-        #     action=action,
-        #     time=datetime.now(),
-        #     status_code=200,  # TBD: could be 201 if a new resource is created
+        # Admin override:
+        if user["roles"] and "Admin" in user["roles"]:
+            # TBD: this is not the correct place for the logging: resource type is not known here.
+            # access_log = AccessLogCreate(
+            #     identity_id=user.user_id,
+            #     identity_type="Admin",
+            #     resource_id=resource_id,
+            #     resource_type="protected_resource",
+            #     action=action,
+            #     time=datetime.now(),
+            #     status_code=200,  # TBD: could be 201 if a new resource is created
+            # )
+            # await loggingCRUD.log_access(access_log)
+            return True
+
+        # policyCRUD = AccessPolicyCRUD()
+
+        # pass
+
+        # policy = await policyCRUD.read(
+        #     resource_id=resource_id, action=action, identity_id=user.user_id
         # )
-        # await loggingCRUD.log_access(access_log)
-        # return True
-
-        policyCRUD = AccessPolicyCRUD()
-
-        pass
-
-        policy = await policyCRUD.read(
-            resource_id=resource_id, action=action, identity_id=user.user_id
-        )
-        print("=== core.access - AccessControl - policy ===")
-        print(policy)
+        # print("=== core.access - AccessControl - policy ===")
+        # print(policy)
 
         # TBD: implement the comparison of policies and request.
         if 1 == 1:

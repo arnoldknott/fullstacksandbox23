@@ -45,10 +45,10 @@ class BaseView:
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        logger.info("POST calls post")
+        # logger.info("POST calls post") # TBD: find nicer log for this!
         current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
-            created_object = await crud.create(object)
+            # created_object = await crud.create(object)
             # Refactor into this:
             created_object = await crud.create(object, current_user)
         return created_object
@@ -60,7 +60,7 @@ class BaseView:
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        logger.info("GETs all objects")
+        # logger.info("GETs all objects") # TBD: find nicer log for this!
         # current_user = self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             objects = await crud.read()
@@ -76,7 +76,7 @@ class BaseView:
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        logger.info("GET calls get")
+        # logger.info("GET calls get") # TBD: find nicer log for this!
         # current_user = self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             object = await crud.read_by_id(id)

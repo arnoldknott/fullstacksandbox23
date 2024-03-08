@@ -3,34 +3,58 @@ from typing import List
 
 from uuid import UUID
 from core.security import (
+    # TBD: Before Refactoring with Access Control:
     CurrentAzureUserInDatabase,
     CurrentAccessTokenHasScope,
     CurrentAccessTokenHasRole,
+    # TBD: Refactor version with AccessControl:
+    get_access_token_payload,
+    CurrentAccessToken,
 )
 from crud.identity import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException
 from models.identity import User, UserCreate, UserRead, UserUpdate
+from .base import BaseView
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+user_view = BaseView(UserCRUD)
 
 
 # note: self-sign-up through security - controlled by token content,
 # that means, controlled by group and user membership from Azure Identity Provider!
 # The roles assigned to users and groups decide about sign-up here.
 # This function allows admins to sign up users through API on top of that.
-# TBD: make sure this route or anything else checking if the user exists get's hit by the frontend when the user logs in!
+# TBD: make sure this route or anything else, that is checking if the user exists get's hit by the frontend when the user logs in!
+# That is solved now with the base view class!
+# @router.post("/", status_code=201)
+# async def post_user(
+#     user: UserCreate,
+#     _1=Depends(CurrentAccessTokenHasScope("api.write")),
+#     _2=Depends(CurrentAccessTokenHasRole("Admin")),
+# ) -> User:
+#     """Creates a new user."""
+#     logger.info("POST user")
+#     async with UserCRUD() as crud:
+#         created_user = await crud.create(user)
+#     return created_user
+
+
+# TBD: Refactor with AccessControl:
 @router.post("/", status_code=201)
-async def post_user(
+async def post_protected_resource(
     user: UserCreate,
-    _1=Depends(CurrentAccessTokenHasScope("api.write")),
-    _2=Depends(CurrentAccessTokenHasRole("Admin")),
+    token_payload=Depends(get_access_token_payload),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
-    async with UserCRUD() as crud:
-        created_user = await crud.create(user)
-    return created_user
+    return await user_view.post(
+        token_payload,
+        user,
+        scopes=["api.write"],
+        roles=["Admin"],
+    )
 
 
 # First experiment to work with BasePOST class inherited from BaseView
