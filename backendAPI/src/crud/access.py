@@ -97,8 +97,11 @@ class AccessPolicyCRUD:
                 AccessPolicy.resource_id == resource_id,
                 AccessPolicy.resource_type == resource_type,
             )
-            results = await session.exec(statement)
-            return results.all()
+            respoonse = await session.exec(statement)
+            results = respoonse.all()
+            if len(results) == 0:
+                raise HTTPException(status_code=404, detail="Access policy not found")
+            return results
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
             raise HTTPException(status_code=404, detail="Access policy not found")

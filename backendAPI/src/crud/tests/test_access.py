@@ -108,6 +108,7 @@ async def test_read_access_policy_for_nonexisting_identity(
     add_many_test_access_policies,
 ):
     """Test reading an access policy for an identity, that does not exist."""
+    add_many_test_access_policies,
     async with AccessPolicyCRUD() as policy_crud:
         try:
             await policy_crud.read_by_identity(
@@ -126,10 +127,65 @@ async def test_read_access_policy_by_resource(
     add_many_test_access_policies,
 ):
     """Test reading an access policy for a given resource."""
-    assert 1 == 2
+    policies = add_many_test_access_policies
+    async with AccessPolicyCRUD() as policy_crud:
+        read_policy = await policy_crud.read_by_resource(
+            resource_id=4,
+            resource_type="protected_resource",
+        )
+        assert len(read_policy) == 2
+
+        assert read_policy[0].policy_id is not None
+        assert read_policy[1].policy_id is not None
+
+        assert read_policy[0].identity_id == policies[1].identity_id
+        assert read_policy[0].identity_type == policies[1].identity_type
+        assert read_policy[0].resource_id == policies[1].resource_id
+        assert read_policy[0].resource_type == policies[1].resource_type
+        assert read_policy[0].action == policies[1].action
+
+        assert read_policy[1].identity_id == policies[2].identity_id
+        assert read_policy[1].identity_type == policies[2].identity_type
+        assert read_policy[1].resource_id == policies[2].resource_id
+        assert read_policy[1].resource_type == policies[2].resource_type
+        assert read_policy[1].action == policies[2].action
 
 
 @pytest.mark.anyio
-async def test_read_access_policy_for_nonexisting_resource():
+async def test_read_access_policy_for_wrong_resource_type(
+    add_many_test_access_policies,
+):
+    """Test reading an access policy for a given resource."""
+    add_many_test_access_policies
+    async with AccessPolicyCRUD() as policy_crud:
+        try:
+            await policy_crud.read_by_resource(
+                resource_id=4,
+                resource_type="wrong_resource_type",
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Access policy not found"
+        else:
+            # test above should enter the except statement and not reach this point
+            assert 1 == 2
+
+
+@pytest.mark.anyio
+async def test_read_access_policy_for_nonexisting_resource(
+    add_many_test_access_policies,
+):
     """Test reading an access policy by policy_id."""
-    assert 1 == 2
+    add_many_test_access_policies
+    async with AccessPolicyCRUD() as policy_crud:
+        try:
+            await policy_crud.read_by_resource(
+                resource_id=1234,
+                resource_type="protected_resource",
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Access policy not found"
+        else:
+            # test above should enter the except statement and not reach this point
+            assert 1 == 2
