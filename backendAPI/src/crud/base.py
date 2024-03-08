@@ -13,7 +13,7 @@ from core.access import AccessControl
 
 if TYPE_CHECKING:
     pass
-from core.types import CurrentUserData, Action
+from core.types import CurrentUserData, Action, ResourceType
 
 logger = logging.getLogger(__name__)
 
@@ -42,10 +42,16 @@ class BaseCRUD(
     def __init__(
         self,
         base_model: Type[BaseModelType],
+        resource_type: "ResourceType" = None,
+        # TBD: consider moving this to the access_control as an override and method specific parameter
+        # The endpoints can still be protected by token claims individually - just add UserRoles or a scope requirement to the endpoint
+        public: bool = False,
     ):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
+        self.resource_type = resource_type
+        self.public = public
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -68,7 +74,8 @@ class BaseCRUD(
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write here
         try:
-            await access_control.allows(current_user, object, write)
+            if self.public is not True:
+                await access_control.allows(current_user, object, write)
             session = self.session
             Model = self.model
             database_object = Model.model_validate(object)

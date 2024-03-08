@@ -49,16 +49,34 @@ class AccessPolicyRead(AccessPolicyCreate):
 # No update model for access policies: once created, they should not be updated, only deleted to keep loggings consistent.
 
 
-class AccessLog(SQLModel, table=True):
+class AccessLogCreate(SQLModel):
+    """Create model for access attempt logs"""
+
+    identity_id: uuid.UUID
+    identity_type: "IdentityType"
+    resource_id: int
+    resource_type: "ResourceType"
+    action: "Action"
+    status_code: int
+
+
+class AccessLog(AccessLogCreate, table=True):
     """Table for logging actual access attempts"""
 
-    identity_id: uuid.UUID = Field(primary_key=True)
+    access_attempt_id: Optional[int] = Field(default=None, primary_key=True)
+    identity_id: uuid.UUID = Field(index=True)
     identity_type: "IdentityType" = Field(index=True)
     resource_id: int = Field(primary_key=True)
     resource_type: "ResourceType" = Field(index=True)
     action: "Action" = Field()
     time: datetime = Field(default=datetime.now())
     status_code: int = Field()
+
+
+class AccessLogRead(AccessLogCreate):
+    """Read model access attempt logs"""
+
+    access_attempt_id: int
 
 
 class ResourceHierarchy(SQLModel, table=True):

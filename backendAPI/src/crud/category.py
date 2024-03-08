@@ -10,7 +10,7 @@ from .base import BaseCRUD
 
 class CategoryCRUD(BaseCRUD[Category, CategoryCreate, CategoryRead, CategoryUpdate]):
     def __init__(self):
-        super().__init__(Category)
+        super().__init__(Category, public=True)
 
     # async def read_tag_with_all_demo_resources(
     #     self, category_id

@@ -46,11 +46,11 @@ class BaseView:
         groups: List[UUID] = [],
     ):
         logger.info("POST calls post")
-        # current_user = await self.__guards(token_payload, scopes, roles, groups)
+        current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             created_object = await crud.create(object)
             # Refactor into this:
-            # created_object = await crud.create(object, current_test_user)
+            created_object = await crud.create(object, current_user)
         return created_object
 
     async def get(

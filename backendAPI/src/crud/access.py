@@ -155,7 +155,7 @@ class AccessPolicyCRUD:
             raise HTTPException(status_code=404, detail="Access policy not found")
 
 
-class AccessLogging:
+class AccessLoggingCRUD:
     """Logging access attempts to database."""
 
     def __init__(self):

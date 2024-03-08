@@ -8,7 +8,7 @@ from .base import BaseCRUD
 
 class TagCRUD(BaseCRUD[Tag, TagCreate, TagRead, TagUpdate]):
     def __init__(self):
-        super().__init__(Tag)
+        super().__init__(Tag, public=True)
 
     async def read_all_demo_resources(self, tag_id) -> list[DemoResource]:
         """Returns all demo resources within category."""
