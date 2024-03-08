@@ -116,6 +116,9 @@ async def test_read_access_policy_for_nonexisting_identity(
         except Exception as err:
             assert err.status_code == 404
             assert err.detail == "Access policy not found"
+        else:
+            # test above should enter the except statement and not reach this point
+            assert 1 == 2
 
 
 @pytest.mark.anyio
