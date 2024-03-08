@@ -86,7 +86,7 @@ async def test_read_access_policy_for_nonexisting_policy_id(
     async with AccessPolicyCRUD() as policy_crud:
         try:
             # results = await policy_crud.read_by_policy_id(1234)
-            results = await policy_crud.read(1234)
+            await policy_crud.read(1234)
         except Exception as err:
             assert err.status_code == 404
             assert err.detail == "Access policy not found"
@@ -266,26 +266,18 @@ async def test_read_access_policy_by_identity_and_resource_and_action(
 
 
 @pytest.mark.anyio
-async def test_delete_access_policy(add_many_test_access_policies):
+async def test_delete_access_policy_by_policy_id(add_many_test_access_policies):
     """Test deleting an access policy."""
-    assert 1 == 2
-    # policies = add_many_test_access_policies
-    # async with AccessPolicyCRUD() as policy_crud:
-    #     await policy_crud.read_by_identity_and_resource_and_action(
-    #         identity_id=policies[3].identity_id,
-    #         resource_id=policies[3].resource_id,
-    #         resource_type=policies[3].resource_type,
-    #         action=policies[3].action,
-    #     )
-    # async with AccessPolicyCRUD() as policy_crud:
-    #     await policy_crud.delete(policy_id=policies[3].policy_id)
+    add_many_test_access_policies
+    async with AccessPolicyCRUD() as policy_crud:
+        await policy_crud.delete(3)
 
-    # async with AccessPolicyCRUD() as policy_crud:
-    #     try:
-    #         await policy_crud.read_by_policy_id(policies[0].policy_id)
-    #     except Exception as err:
-    #         assert err.status_code == 404
-    #         assert err.detail == "Access policy not found"
-    #     else:
-    #         # test above should enter the except statement and not reach this point
-    #        assert 1 == 2
+    async with AccessPolicyCRUD() as policy_crud:
+        try:
+            await policy_crud.read(3)
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Access policy not found"
+        else:
+            # test above should enter the except statement and not reach this point
+            assert 1 == 2
