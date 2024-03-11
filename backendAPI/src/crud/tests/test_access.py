@@ -63,11 +63,12 @@ async def test_prevent_create_duplicate_access_policy(add_many_test_access_polic
 async def test_create_access_policy_for_public_resource():
     """Test preventing the creation of a duplicate access policy."""
 
-    one_test_policy.pop("identity_id")
-    one_test_policy.pop("identity_type")
+    one_public_test_policy = one_test_policy.copy()
+    one_public_test_policy.pop("identity_id")
+    one_public_test_policy.pop("identity_type")
 
     public_resource_policy = {
-        **one_test_policy,
+        **one_public_test_policy,
         "public": True,
     }
     modelled_policy = AccessPolicyCreate(**public_resource_policy)
@@ -102,8 +103,10 @@ async def test_create_access_policy_for_public_resource_with_identity_fails():
 async def test_create_access_policy_for_non_public_resource_without_identity_fails():
     """Test preventing the creation of a public access policy with specific identity."""
 
-    one_test_policy.pop("identity_id")
-    one_test_policy.pop("identity_type")
+    one_public_test_policy = one_test_policy.copy()
+
+    one_public_test_policy.pop("identity_id")
+    one_public_test_policy.pop("identity_type")
 
     one_test_policy_without_identity = one_test_policy
 
