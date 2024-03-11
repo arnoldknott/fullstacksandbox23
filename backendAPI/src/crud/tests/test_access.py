@@ -60,6 +60,62 @@ async def test_prevent_create_duplicate_access_policy(add_many_test_access_polic
 
 
 @pytest.mark.anyio
+async def test_create_access_policy_for_public_resource():
+    """Test preventing the creation of a duplicate access policy."""
+
+    one_test_policy.pop("identity_id")
+    one_test_policy.pop("identity_type")
+
+    public_resource_policy = {
+        **one_test_policy,
+        "public": True,
+    }
+    modelled_policy = AccessPolicyCreate(**public_resource_policy)
+    async with AccessPolicyCRUD() as policy_crud:
+        created_policy = await policy_crud.create(public_resource_policy)
+
+    assert created_policy.policy_id is not None
+    assert created_policy.identity_id is None
+    assert created_policy.identity_type is None
+    assert created_policy.resource_id == modelled_policy.resource_id
+    assert created_policy.resource_type == modelled_policy.resource_type
+    assert created_policy.action == modelled_policy.action
+
+
+@pytest.mark.anyio
+async def test_create_access_policy_for_public_resource_with_identity_fails():
+    """Test preventing the creation of a public access policy with specific identity."""
+    public_resource_policy_with_identity = {
+        **one_test_policy,
+        "public": True,
+    }
+
+    try:
+        async with AccessPolicyCRUD() as policy_crud:
+            await policy_crud.create(public_resource_policy_with_identity)
+    except Exception as err:
+        assert err.status_code == 403
+        assert err.detail == "Forbidden"
+
+
+@pytest.mark.anyio
+async def test_create_access_policy_for_non_public_resource_without_identity_fails():
+    """Test preventing the creation of a public access policy with specific identity."""
+
+    one_test_policy.pop("identity_id")
+    one_test_policy.pop("identity_type")
+
+    one_test_policy_without_identity = one_test_policy
+
+    try:
+        async with AccessPolicyCRUD() as policy_crud:
+            await policy_crud.create(one_test_policy_without_identity)
+    except Exception as err:
+        assert err.status_code == 403
+        assert err.detail == "Forbidden"
+
+
+@pytest.mark.anyio
 async def test_read_access_policy_by_policy_id(
     add_many_test_access_policies,
 ):

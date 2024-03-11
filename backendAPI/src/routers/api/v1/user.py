@@ -9,7 +9,6 @@ from core.security import (
     CurrentAccessTokenHasRole,
     # TBD: Refactor version with AccessControl:
     get_access_token_payload,
-    CurrentAccessToken,
 )
 from crud.identity import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException

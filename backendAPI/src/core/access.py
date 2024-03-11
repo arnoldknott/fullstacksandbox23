@@ -1,10 +1,7 @@
 import logging
 
-from uuid import UUID
 
 from core.types import CurrentUserData, Action
-from models.access import AccessLogCreate
-from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from fastapi import HTTPException
 
 
@@ -40,7 +37,7 @@ class AccessControl:
     ) -> bool:
         """Checks if the user has permission to perform the action on the resource"""
         # TBD: move the logging to the BaseCrud? Or keep it here together with the Access Control?
-        loggingCRUD = AccessLoggingCRUD()
+        # loggingCRUD = AccessLoggingCRUD()
         # TBD: get all policies for the resource, where any of the hierarchical identities and hierarchical resources match
         # Admin override:
         print("=== core.access - AccessControl - user ===")
