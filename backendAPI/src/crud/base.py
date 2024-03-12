@@ -18,7 +18,7 @@ from core.types import CurrentUserData, Action, ResourceType
 logger = logging.getLogger(__name__)
 
 # access_control = core.access_control.AccessControl()
-access_control = AccessControl()
+# access_control = AccessControl()
 read = Action.read
 write = Action.write
 own = Action.own
@@ -51,7 +51,8 @@ class BaseCRUD(
         self.session = None
         self.model = base_model
         self.resource_type = resource_type
-        self.public = public
+        self.public = public  # TBD: refactoring remove that - it's replaced by the AccessControl checking for a public override!
+        self.access_control = AccessControl(self)
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -75,7 +76,7 @@ class BaseCRUD(
         # request is known from self.current_user, object and method is write here
         try:
             if self.public is not True:
-                if not await access_control.allows(current_user, object, write):
+                if not await self.access_control.allows(current_user, object, write):
                     raise HTTPException(status_code=403, detail="Access denied")
             session = self.session
             Model = self.model

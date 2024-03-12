@@ -6,12 +6,18 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
-from core.types import ResourceType, Action
+from core.types import CurrentUserData, ResourceType, Action
+from core.access import AccessControl
 
 from fastapi import HTTPException
 from models.access import AccessPolicyCreate, AccessPolicy, AccessPolicyRead, AccessLog
 
 logger = logging.getLogger(__name__)
+
+# access_control = AccessControl()
+read = Action.read
+write = Action.write
+own = Action.own
 
 
 class AccessPolicyCRUD:
@@ -20,6 +26,7 @@ class AccessPolicyCRUD:
     def __init__(self):
         """Initializes the CRUD for access control policies."""
         self.session = None
+        self.access_control = AccessControl(self)
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -30,11 +37,25 @@ class AccessPolicyCRUD:
         """Closes the database session."""
         await self.session.close()
 
-    async def create(self, policy: AccessPolicyCreate) -> AccessPolicyRead:
+    async def create(
+        self, policy: AccessPolicyCreate, current_user: CurrentUserData
+    ) -> AccessPolicyRead:
         """Creates a new access control policy."""
         try:
             session = self.session
             policy = AccessPolicy.model_validate(policy)
+            # TBD: add access control checks here:
+            # only owners and Admins can create policies
+            # current_user = CurrentUserData(
+            #     user_id=policy.identity_id,
+            #     # how do i get the roles and groups here?
+            # )
+            await self.access_control.allows(
+                user=current_user,
+                resource_id=policy.resource_id,
+                resource_type=policy.resource_type,
+                action=write,
+            )
             session.add(policy)
             await session.commit()
             await session.refresh(policy)

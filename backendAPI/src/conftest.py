@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from core.security import get_azure_token_payload, CurrentAccessToken
+from core.types import CurrentUserData
 from models.identity import User
 from crud.identity import UserCRUD
 from models.access import AccessPolicy, AccessPolicyRead
@@ -84,9 +85,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[
-        get_azure_token_payload
-    ] = lambda: mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 
@@ -171,10 +172,14 @@ async def add_many_test_access_policies(
     get_async_test_session: AsyncSession,
 ) -> list[AccessPolicyRead]:
     """Adds a category to the database."""
+    mocked_admin_user = CurrentUserData(
+        user_id=one_test_user["azure_user_id"],
+        roles=["Admin"],
+    )
     async with AccessPolicyCRUD() as crud:
         policies = []
         for policy in many_test_policies:
-            added_policy = await crud.create(AccessPolicy(**policy))
+            added_policy = await crud.create(AccessPolicy(**policy), mocked_admin_user)
             policies.append(added_policy)
 
     yield policies

@@ -12,8 +12,8 @@ class CurrentUserData(BaseModel):
     # Class Access needs to resolve that from database. Consider caching in Redis!
     # azure_user_id: UUID
     user_id: UUID
-    roles: Optional[List[str]]
-    groups: Optional[List[UUID]]
+    roles: Optional[List[str]] = []
+    groups: Optional[List[UUID]] = []
     # scopes: List[str]# should not be relevant for access control?
 
 

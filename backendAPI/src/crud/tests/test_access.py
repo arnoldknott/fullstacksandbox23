@@ -4,7 +4,11 @@ from uuid import UUID
 from crud.access import AccessPolicyCRUD
 from models.access import AccessPolicyCreate, AccessPolicy
 
+from core.types import CurrentUserData
+
 from tests.utils import (
+    one_test_user,
+    token_payload_roles_admin,
     one_test_policy,
     many_test_policies,
     many_test_users,
@@ -13,12 +17,17 @@ from tests.utils import (
 
 
 @pytest.mark.anyio
-async def test_create_access_policy():
+async def test_admin_creates_access_policy():
     """Test creating an access policy."""
+
+    current_user = CurrentUserData(
+        user_id=UUID(one_test_user["azure_user_id"]),
+        roles=token_payload_roles_admin["roles"],
+    )
 
     async with AccessPolicyCRUD() as policy_crud:
         policy = AccessPolicy(**one_test_policy)
-        created_policy = await policy_crud.create(policy)
+        created_policy = await policy_crud.create(policy, current_user)
 
     # Using the SQLModels and comparing it's attributes:
     modelled_test_policy = AccessPolicyCreate(**one_test_policy)
@@ -42,6 +51,28 @@ async def test_create_access_policy():
     # assert policy_in_db["resource_id"] == one_test_policy["resource_id"]
     # assert policy_in_db["resource_type"] == one_test_policy["resource_type"]
     # assert policy_in_db["action"] == Action(one_test_policy["action"])
+
+
+@pytest.mark.anyio
+async def test_ownert_creates_access_policy():
+    """Test creating an access policy."""
+
+    current_user = CurrentUserData(
+        user_id=UUID(one_test_user["azure_user_id"]),
+    )
+
+    async with AccessPolicyCRUD() as policy_crud:
+        policy = AccessPolicy(**one_test_policy)
+        created_policy = await policy_crud.create(policy, current_user)
+
+    # Using the SQLModels and comparing it's attributes:
+    modelled_test_policy = AccessPolicyCreate(**one_test_policy)
+    assert created_policy.policy_id is not None
+    assert created_policy.identity_id == modelled_test_policy.identity_id
+    assert created_policy.identity_type == modelled_test_policy.identity_type
+    assert created_policy.resource_id == modelled_test_policy.resource_id
+    assert created_policy.resource_type == modelled_test_policy.resource_type
+    assert created_policy.action == modelled_test_policy.action
 
 
 @pytest.mark.anyio
@@ -95,6 +126,7 @@ async def test_create_access_policy_for_public_resource_with_identity_fails():
         async with AccessPolicyCRUD() as policy_crud:
             await policy_crud.create(public_resource_policy_with_identity)
     except Exception as err:
+        # TBD: change to 422?
         assert err.status_code == 403
         assert err.detail == "Forbidden"
 
@@ -114,6 +146,7 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
         async with AccessPolicyCRUD() as policy_crud:
             await policy_crud.create(one_test_policy_without_identity)
     except Exception as err:
+        # TBD: change to 422?
         assert err.status_code == 403
         assert err.detail == "Forbidden"
 
