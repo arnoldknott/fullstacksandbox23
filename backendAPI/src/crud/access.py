@@ -50,12 +50,13 @@ class AccessPolicyCRUD:
             #     user_id=policy.identity_id,
             #     # how do i get the roles and groups here?
             # )
-            await self.access_control.allows(
+            if not await self.access_control.allows(
                 user=current_user,
                 resource_id=policy.resource_id,
                 resource_type=policy.resource_type,
                 action=write,
-            )
+            ):
+                raise HTTPException(status_code=403, detail="Forbidden")
             session.add(policy)
             await session.commit()
             await session.refresh(policy)

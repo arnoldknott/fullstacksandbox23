@@ -2,14 +2,13 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional
 
+from crud.access import AccessPolicyCRUD
 from core.databases import get_async_session
+from core.access import AccessControl
 from fastapi import HTTPException
 from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-# from core.security import AccessControl
-# import core.access_control
-from core.access import AccessControl
 
 if TYPE_CHECKING:
     pass
@@ -52,7 +51,8 @@ class BaseCRUD(
         self.model = base_model
         self.resource_type = resource_type
         self.public = public  # TBD: refactoring remove that - it's replaced by the AccessControl checking for a public override!
-        self.access_control = AccessControl(self)
+        policy_CRUD = AccessPolicyCRUD()
+        self.access_control = AccessControl(policy_CRUD)
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -75,6 +75,8 @@ class BaseCRUD(
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write here
         try:
+            # TBD: remove the self.public completely - all handled by fine grained access control now.
+            # For public, there's a public override in the access control checks.
             if self.public is not True:
                 if not await self.access_control.allows(current_user, object, write):
                     raise HTTPException(status_code=403, detail="Access denied")

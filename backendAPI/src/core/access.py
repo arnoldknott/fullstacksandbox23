@@ -1,6 +1,6 @@
 import logging
 
-
+from typing import Optional
 from core.types import CurrentUserData, Action, ResourceType
 from fastapi import HTTPException
 
@@ -30,10 +30,10 @@ class AccessControl:
 
     async def allows(
         self,
-        user: "CurrentUserData",
         resource_id: int,
         resource_type: ResourceType,
         action: "Action",
+        user: Optional["CurrentUserData"] = None,
     ) -> bool:
         """Checks if the user has permission to perform the action on the resource"""
         # TBD: move the logging to the BaseCrud? Or keep it here together with the Access Control?
@@ -42,15 +42,25 @@ class AccessControl:
         # Don't include the identity in the query, as public resources are not assigned to any identity!
         # TBD: implement "public" override: check if the resource is public for requested action and return True if it is!
         # Admin override:
-        print("=== core.access - AccessControl - user ===")
-        print(user)
-        print("=== core.access - AccessControl - user.roles ===")
-        print(user.roles)
+        # print("=== core.access - AccessControl - user ===")
+        # print(user)
+        # print("=== core.access - AccessControl - user.roles ===")
+        # print(user.roles)
         # print("=== core.access - AccessControl - user['roles'] ===")
         # print(user["roles"])
         # Admin override:
         # if user["roles"] and "Admin" in user["roles"]:
-        if "Admin" in user.roles:
+        #
+        # check for public override:
+        if not user:
+            policies = await self.policy_crud.read(
+                resource_id=resource_id, resource_type=resource_type, action=action
+            )
+            print("=== core.access - AccessControl - policies ===")
+            print(policies)
+        #
+        # check for admin override:
+        elif "Admin" in user.roles:
             # TBD: this is not the correct place for the logging: resource type is not known here.
             # access_log = AccessLogCreate(
             #     identity_id=user.user_id,
@@ -63,16 +73,12 @@ class AccessControl:
             # )
             # await loggingCRUD.log_access(access_log)
             return True
-        # AccessCRUD would work here
-        # but if the AccessCRUD should also use this Access Control, it would be a circular dependency.
-        # What's better: double programming the CRUD or the Access Control?
-        # Seems saver to double program the CRUD, as the Access Control is more complex and has more dependencies.
-
-        policies = await self.policy_crud.read(
-            resource_id=resource_id, resource_type=resource_type, action=action
-        )
-        print("=== core.access - AccessControl - policies ===")
-        print(policies)
+        #
+        # TBD: implement the comparison of policies and request.
+        elif 1 == 1:
+            return True
+        else:
+            raise HTTPException(status_code=403, detail="Access denied")
 
         # pass
 
@@ -81,12 +87,6 @@ class AccessControl:
         # )
         # print("=== core.access - AccessControl - policy ===")
         # print(policy)
-
-        # TBD: implement the comparison of policies and request.
-        if 1 == 1:
-            return True
-        else:
-            raise HTTPException(status_code=403, detail="Access denied")
 
     # async def adds_grant(
     #     identity: "CurrentUserData", resource_id: UUID, action: "Action"

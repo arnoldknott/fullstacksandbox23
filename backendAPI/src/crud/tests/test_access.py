@@ -20,14 +20,14 @@ from tests.utils import (
 async def test_admin_creates_access_policy():
     """Test creating an access policy."""
 
-    current_user = CurrentUserData(
+    mocked_admin_user = CurrentUserData(
         user_id=UUID(one_test_user["azure_user_id"]),
         roles=token_payload_roles_admin["roles"],
     )
 
     async with AccessPolicyCRUD() as policy_crud:
         policy = AccessPolicy(**one_test_policy)
-        created_policy = await policy_crud.create(policy, current_user)
+        created_policy = await policy_crud.create(policy, mocked_admin_user)
 
     # Using the SQLModels and comparing it's attributes:
     modelled_test_policy = AccessPolicyCreate(**one_test_policy)
@@ -54,16 +54,16 @@ async def test_admin_creates_access_policy():
 
 
 @pytest.mark.anyio
-async def test_ownert_creates_access_policy():
+async def test_owner_creates_access_policy():
     """Test creating an access policy."""
 
-    current_user = CurrentUserData(
+    mocked_admin_user = CurrentUserData(
         user_id=UUID(one_test_user["azure_user_id"]),
     )
 
     async with AccessPolicyCRUD() as policy_crud:
         policy = AccessPolicy(**one_test_policy)
-        created_policy = await policy_crud.create(policy, current_user)
+        created_policy = await policy_crud.create(policy, mocked_admin_user)
 
     # Using the SQLModels and comparing it's attributes:
     modelled_test_policy = AccessPolicyCreate(**one_test_policy)
@@ -79,9 +79,14 @@ async def test_ownert_creates_access_policy():
 async def test_prevent_create_duplicate_access_policy(add_many_test_access_policies):
     """Test preventing the creation of a duplicate access policy."""
     add_many_test_access_policies
+
+    mocked_admin_user = CurrentUserData(
+        user_id=UUID(one_test_user["azure_user_id"]),
+    )
+
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            await policy_crud.create(many_test_policies[2])
+            await policy_crud.create(many_test_policies[2], mocked_admin_user)
         except Exception as err:
             assert err.status_code == 403
             assert err.detail == "Forbidden"
@@ -94,6 +99,11 @@ async def test_prevent_create_duplicate_access_policy(add_many_test_access_polic
 async def test_create_access_policy_for_public_resource():
     """Test preventing the creation of a duplicate access policy."""
 
+    mocked_admin_user = CurrentUserData(
+        user_id=UUID(one_test_user["azure_user_id"]),
+        roles=token_payload_roles_admin["roles"],
+    )
+
     one_public_test_policy = one_test_policy.copy()
     one_public_test_policy.pop("identity_id")
     one_public_test_policy.pop("identity_type")
@@ -104,7 +114,9 @@ async def test_create_access_policy_for_public_resource():
     }
     modelled_policy = AccessPolicyCreate(**public_resource_policy)
     async with AccessPolicyCRUD() as policy_crud:
-        created_policy = await policy_crud.create(public_resource_policy)
+        created_policy = await policy_crud.create(
+            public_resource_policy, mocked_admin_user
+        )
 
     assert created_policy.policy_id is not None
     assert created_policy.identity_id is None
@@ -117,6 +129,11 @@ async def test_create_access_policy_for_public_resource():
 @pytest.mark.anyio
 async def test_create_access_policy_for_public_resource_with_identity_fails():
     """Test preventing the creation of a public access policy with specific identity."""
+
+    mocked_admin_user = CurrentUserData(
+        user_id=UUID(one_test_user["azure_user_id"]),
+    )
+
     public_resource_policy_with_identity = {
         **one_test_policy,
         "public": True,
@@ -124,7 +141,9 @@ async def test_create_access_policy_for_public_resource_with_identity_fails():
 
     try:
         async with AccessPolicyCRUD() as policy_crud:
-            await policy_crud.create(public_resource_policy_with_identity)
+            await policy_crud.create(
+                public_resource_policy_with_identity, mocked_admin_user
+            )
     except Exception as err:
         # TBD: change to 422?
         assert err.status_code == 403
@@ -142,9 +161,15 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
 
     one_test_policy_without_identity = one_test_policy
 
+    mocked_admin_user = CurrentUserData(
+        user_id=UUID(one_test_user["azure_user_id"]),
+    )
+
     try:
         async with AccessPolicyCRUD() as policy_crud:
-            await policy_crud.create(one_test_policy_without_identity)
+            await policy_crud.create(
+                one_test_policy_without_identity, mocked_admin_user
+            )
     except Exception as err:
         # TBD: change to 422?
         assert err.status_code == 403
