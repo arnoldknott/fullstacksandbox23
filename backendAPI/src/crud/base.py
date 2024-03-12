@@ -77,8 +77,16 @@ class BaseCRUD(
         try:
             # TBD: remove the self.public completely - all handled by fine grained access control now.
             # For public, there's a public override in the access control checks.
+            # print("=== BaseCRUD.create - current_user ===")
+            # print(current_user)
+            # print("=== BaseCRUD.create - type(current_user) ===")
+            # print(type(current_user))
             if self.public is not True:
-                if not await self.access_control.allows(current_user, object, write):
+                if not await self.access_control.allows(
+                    user=current_user,
+                    resource_type=self.resource_type,  # That's wrong - but a resource, that is not created yet, has no id!
+                    action=write,
+                ):
                     raise HTTPException(status_code=403, detail="Access denied")
             session = self.session
             Model = self.model

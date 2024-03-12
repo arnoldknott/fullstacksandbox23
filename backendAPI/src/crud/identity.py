@@ -15,6 +15,7 @@ from models.identity import (
     AzureGroupRead,
     AzureGroupUpdate,
 )
+from core.types import IdentityType
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 
@@ -28,7 +29,7 @@ class AzureGroupCRUD(
     BaseCRUD[AzureGroup, AzureGroupCreate, AzureGroupRead, AzureGroupUpdate]
 ):
     def __init__(self):
-        super().__init__(AzureGroup)
+        super().__init__(AzureGroup, IdentityType.azure_group)
 
     async def create_if_not_exists(
         self, azure_group_id: str, azure_tenant_id: str
@@ -58,7 +59,7 @@ class AzureGroupCRUD(
 
 class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     def __init__(self):
-        super().__init__(User)
+        super().__init__(User, IdentityType.user)
 
     # Not needed any more, since azure_user_id is the primary key!
     async def read_by_azure_user_id(

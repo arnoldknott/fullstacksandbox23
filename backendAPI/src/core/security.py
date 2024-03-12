@@ -276,20 +276,20 @@ class CurrentAccessToken:
             groups = self.payload["groups"]
         user_in_database = await self.gets_or_signs_up_current_user()
         # TBD: use CurrentUserData class instead of dict for type safety!
-        # current_user = CurrentUserData(
-        #     user_id=user_in_database.user_id,
-        #     roles=roles,
-        #     groups=groups,
-        # )
-        current_user = {
-            # TBD: every guard needs to call the gets_or_signs_up_current_user method
-            # Then change azure_user_id to user_id here:
-            # "azure_user_id": self.payload["oid"],
-            "user_id": user_in_database.user_id,
-            "roles": roles,
-            "groups": groups,
-            # "scopes": self.payload["scp"],
-        }
+        current_user = CurrentUserData(
+            user_id=user_in_database.user_id,
+            roles=roles,
+            groups=groups,
+        )
+        # current_user = {
+        #     # TBD: every guard needs to call the gets_or_signs_up_current_user method
+        #     # Then change azure_user_id to user_id here:
+        #     # "azure_user_id": self.payload["oid"],
+        #     "user_id": user_in_database.user_id,
+        #     "roles": roles,
+        #     "groups": groups,
+        #     # "scopes": self.payload["scp"],
+        # }
         # current_user = CurrentUserData()
         # current_user.azure_user_id = self.payload["oid"]
         # current_user.roles = self.payload["roles"]

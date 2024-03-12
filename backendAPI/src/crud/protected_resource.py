@@ -4,6 +4,7 @@ from models.protected_resource import (
     ProtectedResourceRead,
     ProtectedResourceUpdate,
 )
+from core.types import ResourceType
 from .base import BaseCRUD
 
 # # if TYPE_CHECKING:
@@ -23,4 +24,4 @@ class ProtectedResourceCRUD(
     # def __init__(self, current_user: "CurrentUserData"):
     #     super().__init__(ProtectedResource, current_user)
     def __init__(self):
-        super().__init__(ProtectedResource)
+        super().__init__(ProtectedResource, ResourceType.protected_resource)

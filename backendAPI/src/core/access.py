@@ -1,7 +1,7 @@
 import logging
 
-from typing import Optional
-from core.types import CurrentUserData, Action, ResourceType
+from typing import Optional, Union
+from core.types import CurrentUserData, Action, ResourceType, IdentityType
 from fastapi import HTTPException
 
 
@@ -30,10 +30,10 @@ class AccessControl:
 
     async def allows(
         self,
-        resource_id: int,
-        resource_type: ResourceType,
+        resource_type: Union[ResourceType, IdentityType],
         action: "Action",
         user: Optional["CurrentUserData"] = None,
+        resource_id: Optional[int] = None,
     ) -> bool:
         """Checks if the user has permission to perform the action on the resource"""
         # TBD: move the logging to the BaseCrud? Or keep it here together with the Access Control?
@@ -42,6 +42,7 @@ class AccessControl:
         # Don't include the identity in the query, as public resources are not assigned to any identity!
         # TBD: implement "public" override: check if the resource is public for requested action and return True if it is!
         # Admin override:
+        # user = CurrentUserData(user)
         # print("=== core.access - AccessControl - user ===")
         # print(user)
         # print("=== core.access - AccessControl - user.roles ===")
@@ -53,11 +54,20 @@ class AccessControl:
         #
         # check for public override:
         if not user:
-            policies = await self.policy_crud.read(
-                resource_id=resource_id, resource_type=resource_type, action=action
-            )
-            print("=== core.access - AccessControl - policies ===")
-            print(policies)
+            async with self.policy_crud as policy_crud:
+                # print("=== core.access - AccessControl - resource_id ===")
+                # print(resource_id)
+                # print("=== core.access - AccessControl - resource_type ===")
+                # print(resource_type)
+                # print("=== core.access - AccessControl - action ===")
+                # print(action)
+                policies = await policy_crud.read(
+                    resource_id=resource_id, resource_type=resource_type, action=action
+                )
+                # TBD: implement check if this resource allows this action for public access
+                print("=== core.access - AccessControl - policies ===")
+                print(policies)
+                return True
         #
         # check for admin override:
         elif "Admin" in user.roles:

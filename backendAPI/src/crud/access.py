@@ -50,6 +50,10 @@ class AccessPolicyCRUD:
             #     user_id=policy.identity_id,
             #     # how do i get the roles and groups here?
             # )
+            # print("=== AccessPolicyCRUD.create - current_user ===")
+            # print(current_user)
+            # print("=== AccessPolicyCRUD.create - type(current_user) ===")
+            # print(type(current_user))
             if not await self.access_control.allows(
                 user=current_user,
                 resource_id=policy.resource_id,
@@ -70,6 +74,18 @@ class AccessPolicyCRUD:
         except Exception as e:
             logger.error(f"Error in creating policy: {e}")
             raise HTTPException(status_code=403, detail="Forbidden")
+
+    async def add_child(
+        self,
+        policy: AccessPolicyCreate,
+        parent_resource_id: int,
+        parent_resource_type: ResourceType,
+        current_user: CurrentUserData,
+    ):
+        """Adds a child policy to a parent policy."""
+        # TBD: make sure, that current_user has owner rights in parent_resource or is Admin
+        # put that into the access_control in core.access AccessControl.allows or so?
+        pass
 
     async def read(
         self,
@@ -112,6 +128,10 @@ class AccessPolicyCRUD:
                 if conditions:
                     query = query.where(*conditions)
 
+                print("=== AccessPolicyCRUD.read - session ===")
+                print(session)
+                print("=== AccessPolicyCRUD.read - query ===")
+                print(query)
                 response = await session.exec(query)
                 results = response.all()
 
