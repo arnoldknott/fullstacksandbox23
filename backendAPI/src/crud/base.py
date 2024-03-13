@@ -81,6 +81,10 @@ class BaseCRUD(
             # print(current_user)
             # print("=== BaseCRUD.create - type(current_user) ===")
             # print(type(current_user))
+            # Not necessary here - anybody how passed the endpoint guards can create anything!
+            # But use this protection for all read, update and delete methods!
+            # Remove the public and refactor, e.g. for the demo resource to create as public -
+            # see second session.add() comment below
             if self.public is not True:
                 if not await self.access_control.allows(
                     user=current_user,
@@ -97,6 +101,8 @@ class BaseCRUD(
             session.add(database_object)
             await session.commit()
             await session.refresh(database_object)
+            # TBD: put access policy creation here!
+            # Ideally in the same database transaction as above with another session.add() and same session.commit()
             return database_object
         except Exception as e:
             logger.error(f"Error in BaseCRUD.create: {e}")
