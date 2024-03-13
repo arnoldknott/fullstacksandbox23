@@ -21,7 +21,7 @@ class DemoResourceCRUD(
     BaseCRUD[DemoResource, DemoResourceCreate, DemoResourceRead, DemoResourceUpdate]
 ):
     def __init__(self):
-        super().__init__(DemoResource, public=True)
+        super().__init__(DemoResource)
 
     async def read_by_id_with_childs(self, demo_resource_id: int) -> DemoResourceRead:
         """Returns the demo resource with id and includes its childs."""

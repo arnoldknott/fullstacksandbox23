@@ -44,13 +44,11 @@ class BaseCRUD(
         resource_type: "ResourceType" = None,
         # TBD: consider moving this to the access_control as an override and method specific parameter
         # The endpoints can still be protected by token claims individually - just add UserRoles or a scope requirement to the endpoint
-        public: bool = False,
     ):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
         self.resource_type = resource_type
-        self.public = public  # TBD: refactoring remove that - it's replaced by the AccessControl checking for a public override!
         policy_CRUD = AccessPolicyCRUD()
         self.access_control = AccessControl(policy_CRUD)
 
@@ -85,13 +83,12 @@ class BaseCRUD(
             # But use this protection for all read, update and delete methods!
             # Remove the public and refactor, e.g. for the demo resource to create as public -
             # see second session.add() comment below
-            if self.public is not True:
-                if not await self.access_control.allows(
-                    user=current_user,
-                    resource_type=self.resource_type,  # That's wrong - but a resource, that is not created yet, has no id!
-                    action=write,
-                ):
-                    raise HTTPException(status_code=403, detail="Access denied")
+            # if not await self.access_control.allows(
+            #     user=current_user,
+            #     resource_type=self.resource_type,
+            #     action=write,
+            # ):
+            #     raise HTTPException(status_code=403, detail="Access denied")
             session = self.session
             Model = self.model
             database_object = Model.model_validate(object)
@@ -133,11 +130,17 @@ class BaseCRUD(
         object_id: int,
         # update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
         # Refactor into this:
-        # current_user: "CurrentUserData",
+        # current_user: Optional["CurrentUserData"] = None,
     ) -> BaseSchemaTypeRead:
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is read here
         """Returns an object by id."""
+        # if not await self.access_control.allows(
+        #     user=current_user,
+        #     resource_type=self.resource_type,
+        #     action=read,
+        # ):
+        #     raise HTTPException(status_code=403, detail="Access denied")
         session = self.session
         model = self.model
         object = await session.get(model, object_id)

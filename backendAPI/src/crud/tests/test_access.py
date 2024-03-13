@@ -57,6 +57,7 @@ async def test_admin_creates_access_policy():
 async def test_owner_creates_access_policy():
     """Test creating an access policy."""
 
+    # TBD: change admin to owner
     mocked_admin_user = CurrentUserData(
         user_id=UUID(one_test_user["azure_user_id"]),
     )
