@@ -115,12 +115,14 @@ class AccessPolicyCRUD:
                 conditions = []
                 if identity_id is not None:
                     conditions.append(AccessPolicy.identity_id == identity_id)
-                if resource_id is not None or resource_type is not None:
-                    if resource_id is None or resource_type is None:
+                if resource_id is not None:
+                    if resource_type is None:
                         raise ValueError(
-                            "Both resource_id and resource_type must be provided together."
+                            "'resource_type' is required in conjunction with 'resource_id'."
                         )
                     conditions.append(AccessPolicy.resource_id == resource_id)
+                    conditions.append(AccessPolicy.resource_type == resource_type)
+                elif resource_type is not None:
                     conditions.append(AccessPolicy.resource_type == resource_type)
                 if action is not None:
                     conditions.append(AccessPolicy.action == action)

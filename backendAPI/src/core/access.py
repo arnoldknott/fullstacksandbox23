@@ -30,10 +30,10 @@ class AccessControl:
 
     async def allows(
         self,
+        resource_id: int,  # TBD: for identities, this is a UUID!!
         resource_type: Union[ResourceType, IdentityType],
         action: "Action",
         user: Optional["CurrentUserData"] = None,
-        resource_id: Optional[int] = None,
     ) -> bool:
         """Checks if the user has permission to perform the action on the resource"""
         # TBD: move the logging to the BaseCrud? Or keep it here together with the Access Control?
@@ -73,7 +73,7 @@ class AccessControl:
         elif "Admin" in user.roles:
             # TBD: this is not the correct place for the logging: resource type is not known here.
             # access_log = AccessLogCreate(
-            #     identity_id=user.user_id,
+            #     identity_id=user.id,
             #     identity_type="Admin",
             #     resource_id=resource_id,
             #     resource_type="protected_resource",
@@ -93,10 +93,27 @@ class AccessControl:
         # pass
 
         # policy = await policyCRUD.read(
-        #     resource_id=resource_id, action=action, identity_id=user.user_id
+        #     resource_id=resource_id, action=action, identity_id=user.id
         # )
         # print("=== core.access - AccessControl - policy ===")
         # print(policy)
+
+    async def finds_allowed(
+        self,
+        resource_type: Union[ResourceType, IdentityType],
+        action: "Action",
+        user: Optional["CurrentUserData"] = None,
+    ):
+        """Finds all resources of a certain type and action that the user has permission to access"""
+        # TBD: implement this
+        # - find all public resources of the given type and action
+        # - find all resources of the given type and action that the user has permission to access
+        # - find all resources of the given type and action that the user has permission to access through resource inheritance
+        # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance)
+        # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance
+        # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access
+        # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access and admin override
+        pass
 
     # async def adds_grant(
     #     identity: "CurrentUserData", resource_id: UUID, action: "Action"

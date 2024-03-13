@@ -48,22 +48,18 @@ class DemoResourceCRUD(
         """Adds a tag to a demo resource."""
         session = self.session
         # TBD: refactor into try-except block and add logging
-        statement = select(DemoResource).where(
-            DemoResource.demo_resource_id == demo_resource_id
-        )
+        statement = select(DemoResource).where(DemoResource.id == demo_resource_id)
         demo_resource = await session.exec(statement)
         demo_resource = demo_resource.one()
         if not demo_resource:
             raise HTTPException(status_code=404, detail="No demo resource found")
-        statement = select(Tag).where(Tag.tag_id.in_(tag_ids))
+        statement = select(Tag).where(Tag.id.in_(tag_ids))
         tags = await session.exec(statement)
         tags = tags.all()
         if not tags:
             raise HTTPException(status_code=404, detail="No tag found")
         for tag in tags:
-            link = DemoResourceTagLink(
-                demo_resource_id=demo_resource_id, tag_id=tag.tag_id
-            )
+            link = DemoResourceTagLink(demo_resource_id=demo_resource_id, tag_id=tag.id)
             session.add(link)
         # demo_resource.tags.append(tag[0])
         # demo_resource.tags = tag

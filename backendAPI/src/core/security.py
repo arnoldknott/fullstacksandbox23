@@ -257,6 +257,7 @@ class CurrentAccessToken:
                     # TBD: more impportant than returning: store the user in the class instance: attribute self.current_user
                     # print("=== current_user ===")
                     # print(current_user)
+                    # TBD: no - don't do that - it's a security risk to store the user in the class instance!
                     # self.user_id = current_user.user_id
                     return current_user
                 else:
@@ -277,7 +278,7 @@ class CurrentAccessToken:
         user_in_database = await self.gets_or_signs_up_current_user()
         # TBD: use CurrentUserData class instead of dict for type safety!
         current_user = CurrentUserData(
-            user_id=user_in_database.user_id,
+            user_id=user_in_database.id,
             roles=roles,
             groups=groups,
         )
@@ -285,7 +286,7 @@ class CurrentAccessToken:
         #     # TBD: every guard needs to call the gets_or_signs_up_current_user method
         #     # Then change azure_user_id to user_id here:
         #     # "azure_user_id": self.payload["oid"],
-        #     "user_id": user_in_database.user_id,
+        #     "user_id": user_in_database.id,
         #     "roles": roles,
         #     "groups": groups,
         #     # "scopes": self.payload["scp"],

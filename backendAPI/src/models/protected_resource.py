@@ -11,7 +11,7 @@ class ProtectedResourceCreate(SQLModel):
 
 
 class ProtectedResource(ProtectedResourceCreate, table=True):
-    protected_resource_id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
     # TBD: moce the last_updated_at and last_accessed_at to a resource access log table
     # together with action and identity_id
@@ -24,7 +24,7 @@ class ProtectedResource(ProtectedResourceCreate, table=True):
 
 
 class ProtectedResourceRead(ProtectedResourceCreate):
-    demo_resource_id: int
+    id: int
     last_accessed_at: datetime
 
 

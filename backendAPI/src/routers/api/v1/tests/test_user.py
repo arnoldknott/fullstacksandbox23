@@ -60,6 +60,7 @@ async def test_admin_posts_user(
         db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
     assert db_user is not None
     db_user_json = jsonable_encoder(db_user)
+    assert "id" in db_user_json
     assert "last_accessed_at" in db_user_json
     assert "last_accessed_at" != None
     assert db_user_json["azure_user_id"] == many_test_users[0]["azure_user_id"]
@@ -90,7 +91,7 @@ async def test_post_user_with_integer_user_id(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json={**many_test_users[0], "user_id": 1},
+        json={**many_test_users[0], "id": 1},
     )
 
     assert response.status_code == 201
@@ -103,7 +104,7 @@ async def test_post_user_with_integer_user_id(
         db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
     assert db_user is not None
     db_user_json = jsonable_encoder(db_user)
-    assert db_user_json["user_id"] != 1
+    assert db_user_json["id"] != 1
 
 
 @pytest.mark.anyio
@@ -131,7 +132,7 @@ async def test_post_user_with_uuid_user_id(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json={**many_test_users[0], "user_id": test_uuid},
+        json={**many_test_users[0], "id": test_uuid},
     )
 
     assert response.status_code == 201
@@ -151,7 +152,7 @@ async def test_post_user_with_uuid_user_id(
     assert db_user["azure_tenant_id"] == uuid.UUID(
         many_test_users[0]["azure_tenant_id"]
     )
-    assert db_user["user_id"] != uuid.UUID(test_uuid)
+    assert db_user["id"] != uuid.UUID(test_uuid)
 
 
 @pytest.mark.anyio
@@ -270,7 +271,7 @@ async def test_admin_gets_users(
     assert response.status_code == 200
     users = response.json()
     assert len(users) == 1
-    assert "user_id" in users[0]
+    assert "id" in users[0]
     assert users[0]["azure_user_id"] == str(user.azure_user_id)
     assert users[0]["azure_tenant_id"] == str(user.azure_tenant_id)
 
@@ -354,7 +355,7 @@ async def test_user_gets_user_by_azure_user_id(
     assert response.status_code == 200
     response_user = response.json()
     modelled_response_user = UserRead(**response_user)
-    assert "user_id" in response_user
+    assert "id" in response_user
     assert response_user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert response_user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
     # TBD: admin access should not change the last_accessed_at!
@@ -392,7 +393,7 @@ async def test_admin_gets_user_by_azure_user_id(
     assert response.status_code == 200
     response_user = response.json()
     modelled_response_user = UserRead(**response_user)
-    assert "user_id" in response_user
+    assert "id" in response_user
     assert response_user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert response_user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
     assert modelled_response_user.last_accessed_at == user_in_database.last_accessed_at
@@ -476,12 +477,12 @@ async def test_user_gets_user_by_id(
     app_override_get_azure_payload_dependency
     user_in_database = add_one_test_user_with_groups
 
-    response = await async_client.get(f"/api/v1/user/{str(user_in_database.user_id)}")
+    response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
 
     assert response.status_code == 200
     user = response.json()
     modelled_response_user = UserRead(**user)
-    assert "user_id" in user
+    assert "id" in user
     assert user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
     # TBD: admin access should not change the last_accessed_at!
@@ -514,12 +515,12 @@ async def test_admin_gets_user_by_id(
 
     user_in_database = add_many_test_users_with_groups[1]
 
-    response = await async_client.get(f"/api/v1/user/{str(user_in_database.user_id)}")
+    response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
 
     assert response.status_code == 200
     user = response.json()
     modelled_response_user = UserRead(**user)
-    assert "user_id" in user
+    assert "id" in user
     assert user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
     # TBD: admin access should not change the last_accessed_at!
@@ -551,7 +552,7 @@ async def test_user_gets_another_user_by_user_id(
     app_override_get_azure_payload_dependency
     user_in_database = add_many_test_users[1]
 
-    response = await async_client.get(f"/api/v1/user/{str(user_in_database.user_id)}")
+    response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
     assert response.status_code == 403
     assert response.text == '{"detail":"Access denied"}'
 
@@ -564,7 +565,7 @@ async def test_get_user_by_id_without_token(
     """Test GET one user"""
     user_in_db = add_one_test_user
 
-    response = await async_client.get(f"/api/v1/user/azure/{str(user_in_db.user_id)}")
+    response = await async_client.get(f"/api/v1/user/azure/{str(user_in_db.id)}")
     assert response.status_code == 401
     assert response.text == '{"detail":"Invalid token"}'
 
@@ -601,7 +602,7 @@ async def test_get_user_by_id_with_missing_scope(
     app_override_get_azure_payload_dependency
     user_in_database = add_one_test_user_with_groups
 
-    response = await async_client.get(f"/api/v1/user/{str(user_in_database.user_id)}")
+    response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
     assert response.status_code == 403
     assert response.text == '{"detail":"Access denied"}'
 
@@ -636,7 +637,7 @@ async def test_get_user_by_id_invalid_token(
     app_override_get_azure_payload_dependency
     user_in_database = add_one_test_user_with_groups
 
-    response = await async_client.get(f"/api/v1/user/{str(user_in_database.user_id)}")
+    response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
     assert response.status_code == 401
     assert response.text == '{"detail":"Invalid token"}'
 
@@ -676,13 +677,13 @@ async def test_put_user(
     app_override_get_azure_payload_dependency
     existing_user = add_one_test_user_with_groups
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     existing_db_user = existing_db_user.model_dump()
     assert existing_db_user["is_active"] is True
 
     # Make a PUT request to update the user
     response = await async_client.put(
-        f"/api/v1/user/{str(existing_user.user_id)}",
+        f"/api/v1/user/{str(existing_user.id)}",
         json={"is_active": False},
         # json={"azure_user_id": str(existing_user.azure_user_id), "is_active": False},
     )
@@ -692,7 +693,7 @@ async def test_put_user(
 
     # Verify that the user was updated in the database
     async with UserCRUD() as crud:
-        db_user = await crud.read_by_id(existing_user.user_id)
+        db_user = await crud.read_by_id(existing_user.id)
     assert db_user is not None
     assert db_user.last_accessed_at > existing_db_user["last_accessed_at"]
     assert db_user.is_active is False
@@ -722,13 +723,13 @@ async def test_put_user_from_admin(
     app_override_get_azure_payload_dependency
     existing_user = add_many_test_users[2]
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     existing_db_user = existing_db_user.model_dump()
     assert existing_db_user["is_active"] is True
 
     # Make a PUT request to update the user
     response = await async_client.put(
-        f"/api/v1/user/{str(existing_user.user_id)}",
+        f"/api/v1/user/{str(existing_user.id)}",
         json={"is_active": False},
         # json={"azure_user_id": str(existing_user.azure_user_id), "is_active": False},
     )
@@ -738,7 +739,7 @@ async def test_put_user_from_admin(
 
     # Verify that the user was updated in the database
     async with UserCRUD() as crud:
-        db_user = await crud.read_by_id(existing_user.user_id)
+        db_user = await crud.read_by_id(existing_user.id)
     assert db_user is not None
     assert db_user.last_accessed_at == existing_db_user["last_accessed_at"]
     assert db_user.is_active is False
@@ -774,15 +775,15 @@ async def test_put_user_with_integer_user_id(
     app_override_get_azure_payload_dependency
     existing_user = add_one_test_user_with_groups
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     # existing_db_user = existing_db_user.model_dump()
     # assert existing_db_user["is_active"] is True
     assert existing_db_user.is_active is True
 
     # Make a PUT request to update the user
     response = await async_client.put(
-        f"/api/v1/user/{str(existing_user.user_id)}",
-        json={"is_active": False, "user_id": 1},
+        f"/api/v1/user/{str(existing_user.id)}",
+        json={"is_active": False, "id": 1},
     )
     assert response.status_code == 200
     updated_user = User(**response.json())
@@ -790,14 +791,14 @@ async def test_put_user_with_integer_user_id(
 
     # Verify that the user was updated in the database
     async with UserCRUD() as crud:
-        db_user = await crud.read_by_id(existing_user.user_id)
+        db_user = await crud.read_by_id(existing_user.id)
     assert db_user is not None
     assert (
         db_user.last_accessed_at > existing_db_user.last_accessed_at
     )  # ["last_accessed_at"]
     assert db_user.is_active is False
-    assert db_user.user_id != 1
-    assert db_user.user_id == existing_user.user_id
+    assert db_user.id != 1
+    assert db_user.id == existing_user.id
 
 
 @pytest.mark.anyio
@@ -832,15 +833,15 @@ async def test_put_user_with_uuid_user_id(
     app_override_get_azure_payload_dependency
     existing_user = add_one_test_user_with_groups
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     # existing_db_user = existing_db_user.model_dump()
     # assert existing_db_user["is_active"] is True
     assert existing_db_user.is_active is True
 
     # Make a PUT request to update the user
     response = await async_client.put(
-        f"/api/v1/user/{str(existing_user.user_id)}",
-        json={"is_active": False, "user_id": test_uuid},
+        f"/api/v1/user/{str(existing_user.id)}",
+        json={"is_active": False, "id": test_uuid},
     )
     assert response.status_code == 200
     updated_user = User(**response.json())
@@ -848,13 +849,13 @@ async def test_put_user_with_uuid_user_id(
 
     # Verify that the user was updated in the database
     async with UserCRUD() as crud:
-        db_user = await crud.read_by_id(existing_user.user_id)
+        db_user = await crud.read_by_id(existing_user.id)
     assert db_user is not None
     assert (
         db_user.last_accessed_at > existing_db_user.last_accessed_at
     )  # ["last_accessed_at"]
     assert db_user.is_active is False
-    assert db_user.user_id != uuid.UUID(test_uuid)
+    assert db_user.id != uuid.UUID(test_uuid)
 
 
 @pytest.mark.anyio
@@ -891,13 +892,13 @@ async def test_put_user_invalid_token(
     app_override_get_azure_payload_dependency
     existing_user = add_one_test_user_with_groups
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     existing_db_user = existing_db_user.model_dump()
     assert existing_db_user["is_active"] is True
 
     # Make a PUT request to update the user
     response = await async_client.put(
-        f"/api/v1/user/{str(existing_user.user_id)}",
+        f"/api/v1/user/{str(existing_user.id)}",
         json={"is_active": False},
     )
     assert response.status_code == 403
@@ -928,13 +929,13 @@ async def test_user_puts_another_user(
     app_override_get_azure_payload_dependency
     existing_user = add_many_test_users[0]
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     existing_db_user = existing_db_user.model_dump()
     assert existing_db_user["is_active"] is True
 
     # Make a PUT request to update the user
     response = await async_client.put(
-        f"/api/v1/user/{str(existing_user.user_id)}",
+        f"/api/v1/user/{str(existing_user.id)}",
         json={"is_active": False},
         # json={"azure_user_id": str(existing_user.azure_user_id), "is_active": False},
     )
@@ -971,20 +972,20 @@ async def test_user_deletes_itself(
     app_override_get_azure_payload_dependency
     existing_user = add_one_test_user
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     existing_db_user = existing_db_user.model_dump()
     assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["id"] is not None
     assert existing_db_user["is_active"] is True
 
     # Make a DELETE request to update the user
     response = await async_client.delete(
-        f"/api/v1/user/{str(existing_user.user_id)}",
+        f"/api/v1/user/{str(existing_user.id)}",
     )
     assert response.status_code == 200
 
     # Verify that the user was deleted in the database
-    response = await async_client.get(f"/api/v1/user/{str(existing_user.user_id)}")
+    response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
     assert response.status_code == 403
     assert response.text == '{"detail":"Access denied"}'
 
@@ -1013,20 +1014,20 @@ async def test_admin_deletes_user(
     app_override_get_azure_payload_dependency
     existing_user = add_one_test_user
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     existing_db_user = existing_db_user.model_dump()
     assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["id"] is not None
     assert existing_db_user["is_active"] is True
 
     # Make a DELETE request to update the user
     response = await async_client.delete(
-        f"/api/v1/user/{str(existing_user.user_id)}",
+        f"/api/v1/user/{str(existing_user.id)}",
     )
     assert response.status_code == 200
 
     # Verify that the user was deleted in the database
-    response = await async_client.get(f"/api/v1/user/{str(existing_user.user_id)}")
+    response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
     assert response.status_code == 404
     assert response.text == '{"detail":"User not found"}'
 
@@ -1070,25 +1071,25 @@ async def test_delete_user_invalid_token(
     app_override_get_azure_payload_dependency
     existing_user = add_many_test_users[2]
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     existing_db_user = existing_db_user.model_dump()
     assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["id"] is not None
     assert existing_db_user["is_active"] is True
 
     # Make a DELETE request to update the user
     response = await async_client.delete(
-        f"/api/v1/user/{str(existing_user.user_id)}",
+        f"/api/v1/user/{str(existing_user.id)}",
     )
     assert response.status_code == 403
     assert response.text == '{"detail":"Access denied"}'
 
     # check if user is still there:
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     existing_db_user = existing_db_user.model_dump()
     assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["id"] is not None
     assert existing_db_user["is_active"] is True
 
 
@@ -1116,25 +1117,25 @@ async def test_user_deletes_another_user(
     app_override_get_azure_payload_dependency
     existing_user = add_many_test_users_with_groups[2]
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     existing_db_user = existing_db_user.model_dump()
     assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["id"] is not None
     assert existing_db_user["is_active"] is True
 
     # Make a DELETE request to update the user
     response = await async_client.delete(
-        f"/api/v1/user/{str(existing_user.user_id)}",
+        f"/api/v1/user/{str(existing_user.id)}",
     )
     assert response.status_code == 403
     assert response.text == '{"detail":"Access denied"}'
 
     # check if user is still there:
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     existing_db_user = existing_db_user.model_dump()
     assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    assert existing_db_user["user_id"] is not None
+    assert existing_db_user["id"] is not None
     assert existing_db_user["is_active"] is True
 
 

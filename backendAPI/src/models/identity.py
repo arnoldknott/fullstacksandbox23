@@ -125,7 +125,7 @@ class UserCreate(SQLModel):
 class User(UserCreate, table=True):
     """Schema for a user in the database."""
 
-    user_id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
     # TBD: change last_accessed_at to non-optional after migration.
     # last_accessed_at: Optional[datetime] = Field(default=datetime.now())
@@ -158,7 +158,7 @@ class User(UserCreate, table=True):
 class UserRead(UserCreate):
     """Schema for reading a user."""
 
-    user_id: uuid.UUID  # no longer optional - needs to exist now
+    id: uuid.UUID  # no longer optional - needs to exist now
 
     created_at: datetime
     last_accessed_at: datetime

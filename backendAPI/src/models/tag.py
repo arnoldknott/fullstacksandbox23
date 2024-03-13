@@ -13,7 +13,7 @@ class TagCreate(SQLModel):
 
 
 class Tag(TagCreate, table=True):
-    tag_id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
 
     demo_resources: Optional[List["DemoResource"]] = Relationship(
         back_populates="tags",
@@ -27,7 +27,7 @@ class TagUpdate(TagCreate):
 
 
 class TagRead(TagCreate):
-    tag_id: int
+    id: int
 
 
 # class TagReadWithDemoResources(Tag):

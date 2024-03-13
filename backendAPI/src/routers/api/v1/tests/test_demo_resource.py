@@ -25,7 +25,7 @@ async def test_post_demo_resource(async_client: AsyncClient):
         < datetime.fromisoformat(content["created_at"])
         < time_after_post + timedelta(seconds=18)
     )
-    assert "demo_resource_id" in content
+    assert "id" in content
 
 
 @pytest.mark.anyio
@@ -80,7 +80,7 @@ async def test_get_demo_resource(
         #     resources[0].timezone,
         #     resources[1].timezone,
         # ]
-        assert "demo_resource_id" in response_item
+        assert "id" in response_item
 
 
 @pytest.mark.anyio
@@ -100,7 +100,7 @@ async def test_get_demo_resource_by_id(
     content = response.json()
     assert content["name"] == resources[0].name
     assert content["description"] == resources[0].description
-    assert "demo_resource_id" in content
+    assert "id" in content
     assert "tags" in content
     assert "category" in content
 
@@ -245,7 +245,7 @@ async def test_delete_demo_resource(
     # Check if resource exists before deleting:
     assert response.status_code == 200
     content = response.json()
-    assert content["demo_resource_id"] == id
+    assert content["id"] == id
     assert content["name"] == resources[0].name
     assert content["description"] == resources[0].description
     assert content["language"] == resources[0].language

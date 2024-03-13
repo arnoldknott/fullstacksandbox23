@@ -212,7 +212,7 @@ async def test_existing_azure_user_has_new_group_in_token(
     # preparing the test: adds a user to the database and ensure that this user is member of 3 groups:
     existing_user = add_one_test_user_with_groups
     async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
 
     assert len(existing_db_user.azure_groups) == 3
     app = app_override_get_azure_payload_dependency
@@ -236,7 +236,7 @@ async def test_existing_azure_user_has_new_group_in_token(
 
     # Verify that the user now has the new group in the database
     async with UserCRUD() as crud:
-        db_user = await crud.read_by_id_with_childs(existing_user.user_id)
+        db_user = await crud.read_by_id_with_childs(existing_user.id)
     assert db_user is not None
     db_user = db_user.model_dump()
     assert db_user["azure_user_id"] == uuid.UUID(one_test_user["azure_user_id"])
@@ -299,7 +299,7 @@ async def test_existing_user_logs_in(
     assert response.status_code == 200
     response_user = response.json()
     modelled_response_user = UserRead(**response_user)
-    assert "user_id" in response_user
+    assert "id" in response_user
     assert response_user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert response_user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
     # TBD: admin access should not change the last_accessed_at!

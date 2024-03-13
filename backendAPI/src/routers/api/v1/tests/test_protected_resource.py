@@ -75,7 +75,7 @@ async def test_post_protected_resource(
 
     async with ProtectedResourceCRUD() as crud:
         db_protected_resource = await crud.read_by_id(
-            created_protected_resource.protected_resource_id,
+            created_protected_resource.id,
             # current_test_user# Pass user information like this
         )
     assert db_protected_resource is not None
@@ -134,7 +134,7 @@ async def test_post_protected_resource(
 #         db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
 #     assert db_user is not None
 #     db_user_json = jsonable_encoder(db_user)
-#     assert db_user_json["user_id"] != 1
+#     assert db_user_json["id"] != 1
 
 
 # @pytest.mark.anyio

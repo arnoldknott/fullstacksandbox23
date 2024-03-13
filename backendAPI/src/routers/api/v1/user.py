@@ -138,14 +138,14 @@ async def get_user_by_id(
     check_admin_role=Depends(CurrentAccessTokenHasRole("Admin", require=False)),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
-    if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
+    if (str(current_user.id) != str(user_id)) and (check_admin_role is False):
         raise HTTPException(status_code=403, detail="Access denied")
 
     logger.info("GET user")
 
     # TBD: Refactor into access control
     # update_last_access = True
-    # if (check_admin_role is True) and (str(current_user.user_id) != str(user_id)):
+    # if (check_admin_role is True) and (str(current_user.id) != str(user_id)):
     #     update_last_access = False
 
     try:
@@ -167,7 +167,7 @@ async def update_user(
     check_admin_role=Depends(CurrentAccessTokenHasRole("Admin", require=False)),
 ) -> User:
     """Updates a user."""
-    if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
+    if (str(current_user.id) != str(user_id)) and (check_admin_role is False):
         raise HTTPException(status_code=403, detail="Access denied")
 
     logger.info("PUT user")
@@ -193,12 +193,12 @@ async def update_user(
 @router.delete("/{user_id}")
 async def delete_user(
     user_id: str,
-    current_user: UserUpdate = Depends(CurrentAzureUserInDatabase()),
+    current_user: UserRead = Depends(CurrentAzureUserInDatabase()),
     _=Depends(CurrentAccessTokenHasScope("api.write")),
     check_admin_role=Depends(CurrentAccessTokenHasRole("Admin", require=False)),
 ) -> User:
     """Deletes a user."""
-    if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
+    if (str(current_user.id) != str(user_id)) and (check_admin_role is False):
         raise HTTPException(status_code=403, detail="Access denied")
 
     logger.info("DELETE user")

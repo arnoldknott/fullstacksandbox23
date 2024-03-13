@@ -126,7 +126,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
 
             statement = (
                 select(User)
-                .where(User.user_id == user_id)
+                .where(User.id == user_id)
                 .options(selectinload(User.azure_groups))
             )
 

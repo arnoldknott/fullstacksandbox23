@@ -110,7 +110,9 @@ class BaseCRUD(
     # TBD: add skip and limit
     # async def read_all(self, skip: int = 0, limit: int = 100)  -> list[BaseModelType]:
     # Changing to return BaseSchemaTypeRead instead of BaseModelType makes read_with_childs obsolete!
-    async def read_all(self) -> list[BaseSchemaTypeRead]:
+    async def read_all(
+        self, current_user: Optional["CurrentUserData"] = None
+    ) -> list[BaseSchemaTypeRead]:
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is read here
         """Returns all objects."""
