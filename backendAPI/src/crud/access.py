@@ -85,6 +85,7 @@ class AccessPolicyCRUD:
         """Adds a child policy to a parent policy."""
         # TBD: make sure, that current_user has owner rights in parent_resource or is Admin
         # put that into the access_control in core.access AccessControl.allows or so?
+        # TBD should this be a method of AccessPolicyCRUD or AccessControl?
         pass
 
     async def read(
