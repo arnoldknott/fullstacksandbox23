@@ -1,4 +1,5 @@
 import logging
+import uuid
 from typing import List
 
 from crud.category import CategoryCRUD
@@ -35,9 +36,9 @@ async def get_category_by_id(category_id: str) -> Category:
     """Returns a category."""
     logger.info("GET category")
     try:
-        category_id = int(category_id)
+        category_id = uuid.UUID(category_id)
     except ValueError:
-        logger.error("Category ID is not an integer")
+        logger.error("Category ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid category id")
     async with CategoryCRUD() as crud:
         response = await crud.read_by_id(category_id)
@@ -52,9 +53,9 @@ async def update_category(
     """Updates a category."""
     logger.info("PUT category")
     try:
-        category_id = int(category_id)
+        category_id = uuid.UUID(category_id)
     except ValueError:
-        logger.error("Category ID is not an integer")
+        logger.error("Category ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid category id")
     async with CategoryCRUD() as crud:
         old_category = await crud.read_by_id(category_id)
@@ -67,9 +68,9 @@ async def delete_category(category_id: str) -> Category:
     """Deletes a category."""
     logger.info("DELETE category")
     try:
-        category_id = int(category_id)
+        category_id = uuid.UUID(category_id)
     except ValueError:
-        logger.error("Category ID is not an integer")
+        logger.error("Category ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid category id")
     async with CategoryCRUD() as crud:
         response = await crud.delete(category_id)
@@ -81,9 +82,9 @@ async def get_all_demo_resources_in_category(category_id: str) -> list[DemoResou
     """Returns all demo resources within category."""
     logger.info("GET all demo resources within category")
     try:
-        category_id = int(category_id)
+        category_id = uuid.UUID(category_id)
     except ValueError:
-        logger.error("Category ID is not an integer")
+        logger.error("Category ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid category id")
     async with CategoryCRUD() as crud:
         response = await crud.read_all_demo_resources(category_id)

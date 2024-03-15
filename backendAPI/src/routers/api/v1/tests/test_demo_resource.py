@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+import uuid
 import pytest
 from httpx import AsyncClient
 from models.demo_resource import DemoResource
@@ -32,7 +33,7 @@ async def test_post_demo_resource(async_client: AsyncClient):
 async def test_post_demo_resource_with_nonexisting_category(async_client: AsyncClient):
     """Tests POST of a demo_resource."""
     resource = one_test_demo_resource
-    resource["category_id"] = 100
+    resource["category_id"] = str(uuid.uuid4())
     print("=== resource ===")
     print(resource)
     # get_async_test_session
@@ -91,7 +92,7 @@ async def test_get_demo_resource_by_id(
     resources = add_test_demo_resources
 
     time_before_get_call = datetime.now()
-    response = await async_client.get("/api/v1/demo_resource/1")
+    response = await async_client.get(f"/api/v1/demo_resource/{resources[0].id}")
     time_after_get_call = datetime.now()
     print("== test_get_demo_resource_by_id - get call time ===")
     print((time_after_get_call - time_before_get_call).total_seconds())
@@ -122,7 +123,7 @@ async def test_put_demo_resource(
     async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
 ):
     """Tests PUT of a demo resource."""
-    add_test_demo_resources
+    resources = add_test_demo_resources
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -130,7 +131,9 @@ async def test_put_demo_resource(
         # "timezone": "UTC+9",
     }
     time_before_crud = datetime.now()
-    response = await async_client.put("/api/v1/demo_resource/1", json=updated_resource)
+    response = await async_client.put(
+        f"/api/v1/demo_resource/{resources[0].id}", json=updated_resource
+    )
     time_after_crud = datetime.now()
 
     assert response.status_code == 200
@@ -163,7 +166,9 @@ async def test_put_demo_resource_partial_update(
         "description": "Updated Description",
         # "timezone": "UTC+10",
     }
-    response = await async_client.put("/api/v1/demo_resource/1", json=updated_resource)
+    response = await async_client.put(
+        f"/api/v1/demo_resource/{resources[0].id}", json=updated_resource
+    )
 
     assert response.status_code == 200
     content = response.json()
@@ -209,7 +214,7 @@ async def test_put_demo_resource_by_resource_does_not_exist(
         # "timezone": "UTC+10",
     }
     response = await async_client.put(
-        "/api/v1/demo_resource/100", json=updated_resource
+        f"/api/v1/demo_resource/{str(uuid.uuid4())}", json=updated_resource
     )
 
     assert response.status_code == 404
@@ -239,20 +244,21 @@ async def test_delete_demo_resource(
 ):
     """Tests DELETE of a demo resource."""
     resources = add_test_demo_resources
-    id = 1
-    response = await async_client.get(f"/api/v1/demo_resource/{id}")
+    response = await async_client.get(f"/api/v1/demo_resource/{str(resources[0].id)}")
 
     # Check if resource exists before deleting:
     assert response.status_code == 200
     content = response.json()
-    assert content["id"] == id
+    assert content["id"] == str(resources[0].id)
     assert content["name"] == resources[0].name
     assert content["description"] == resources[0].description
     assert content["language"] == resources[0].language
     # assert content["timezone"] == resources[0].timezone
 
     # Delete resource:
-    response = await async_client.delete(f"/api/v1/demo_resource/{id}")
+    response = await async_client.delete(
+        f"/api/v1/demo_resource/{str(resources[0].id)}"
+    )
     assert response.status_code == 200
     content = response.json()
     # print("=== content ===")
@@ -264,7 +270,7 @@ async def test_delete_demo_resource(
     # assert content["timezone"] == resources[0].timezone
 
     # Check if resource exists after deleting:
-    response = await async_client.get(f"/api/v1/demo_resource/{id}")
+    response = await async_client.get(f"/api/v1/demo_resource/{str(resources[0].id)}")
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "Demo resource not found"
@@ -285,7 +291,7 @@ async def test_delete_demo_resource_by_resource_does_not_exist(
     async_client: AsyncClient,
 ):
     """Tests GET of a demo resources."""
-    response = await async_client.delete("/api/v1/demo_resource/100")
+    response = await async_client.delete(f"/api/v1/demo_resource/{str(uuid.uuid4())}")
 
     assert response.status_code == 404
     content = response.json()
@@ -299,12 +305,10 @@ async def test_attach_tag_to_demo_resource(
     add_test_tags: list[Tag],
 ):
     """Tests POST of a tag to a demo resource."""
-    add_test_demo_resources
+    resources = add_test_demo_resources
     tags = add_test_tags
-    resource_id = 2
-    tag_ids = [1, 3]
     response = await async_client.post(
-        f"/api/v1/demo_resource/{resource_id}/tag/?tag_ids={tag_ids[0]}&tag_ids={tag_ids[1]}"
+        f"/api/v1/demo_resource/{str(resources[1].id)}/tag/?tag_ids={str(tags[0].id)}&tag_ids={str(tags[2].id)}"
     )
     # for tag_id in tag_ids:
     #     response = await async_client.post(

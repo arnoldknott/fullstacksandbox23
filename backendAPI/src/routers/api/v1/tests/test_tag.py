@@ -1,4 +1,5 @@
 import pytest
+import uuid
 from httpx import AsyncClient
 from models.tag import Tag
 
@@ -48,7 +49,7 @@ async def test_get_all_tags(async_client: AsyncClient, add_test_tags: list[Tag])
 async def test_get_tag_by_id(async_client: AsyncClient, add_test_tags: list[Tag]):
     """Tests GET all tags."""
     tags = add_test_tags
-    response = await async_client.get("/api/v1/tag/2")
+    response = await async_client.get(f"/api/v1/tag/{str(tags[1].id)}")
 
     assert response.status_code == 200
     content = response.json()
@@ -69,11 +70,13 @@ async def test_get_tag_by_invalid_id(async_client: AsyncClient):
 @pytest.mark.anyio
 async def test_put_tag(async_client: AsyncClient, add_test_tags: list[Tag]):
     """Tests PUT of a ta."""
-    add_test_tags
+    tags = add_test_tags
     updated_tag = {
         "name": "NewTag",
     }
-    response = await async_client.put("/api/v1/tag/2", json=updated_tag)
+    response = await async_client.put(
+        f"/api/v1/tag/{str(tags[1].id)}", json=updated_tag
+    )
 
     assert response.status_code == 200
     content = response.json()
@@ -89,7 +92,9 @@ async def test_put_tag_does_not_exist(
     updated_tag = {
         "name": "Uptag",
     }
-    response = await async_client.put("/api/v1/tag/324", json=updated_tag)
+    response = await async_client.put(
+        f"/api/v1/tag/{str(uuid.uuid4())}", json=updated_tag
+    )
 
     assert response.status_code == 404
     content = response.json()
@@ -100,23 +105,22 @@ async def test_put_tag_does_not_exist(
 async def test_delete_tag(async_client: AsyncClient, add_test_tags: list[Tag]):
     """Tests DELETE of a tag."""
     tags = add_test_tags
-    id = 2
-    response = await async_client.get(f"/api/v1/tag/{id}")
+    response = await async_client.get(f"/api/v1/tag/{str(tags[1].id)}")
 
     # Check if tag exists before deleting:
     assert response.status_code == 200
     content = response.json()
-    assert content["id"] == id
+    assert content["id"] == str(tags[1].id)
     assert content["name"] == tags[1].name
 
     # Delete tag:
-    response = await async_client.delete(f"/api/v1/tag/{id}")
+    response = await async_client.delete(f"/api/v1/tag/{str(tags[1].id)}")
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == tags[1].name
 
     # Check if tag exists after deleting:
-    response = await async_client.get(f"/api/v1/tag/{id}")
+    response = await async_client.get(f"/api/v1/tag/{str(tags[1].id)}")
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "Object not found"
@@ -138,8 +142,7 @@ async def test_delete_tag_does_not_exist(
 ):
     """Tests DELETE of a tag."""
     add_test_tags
-    id = 5327
-    response = await async_client.delete(f"/api/v1/tag/{id}")
+    response = await async_client.delete(f"/api/v1/tag/{str(uuid.uuid4())}")
 
     assert response.status_code == 404
     content = response.json()

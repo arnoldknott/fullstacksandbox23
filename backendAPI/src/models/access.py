@@ -41,7 +41,7 @@ class AccessPolicyCreate(SQLModel):
 class AccessPolicy(AccessPolicyCreate, table=True):
     """Table for access control"""
 
-    policy_id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     identity_id: Optional[uuid.UUID] = Field(
         default=None, index=True
     )  # needs to be a foreign key / relationship for join statements?
@@ -64,7 +64,7 @@ class AccessPolicy(AccessPolicyCreate, table=True):
 class AccessPolicyRead(AccessPolicyCreate):
     """Read model for access policies"""
 
-    policy_id: uuid.UUID
+    id: uuid.UUID
 
 
 # No update model for access policies: once created, they should not be updated, only deleted to keep loggings consistent.
@@ -84,9 +84,7 @@ class AccessLogCreate(SQLModel):
 class AccessLog(AccessLogCreate, table=True):
     """Table for logging actual access attempts"""
 
-    access_attempt_id: Optional[uuid.UUID] = Field(
-        default_factory=uuid.uuid4, primary_key=True
-    )
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     identity_id: uuid.UUID = Field(index=True)
     identity_type: "IdentityType" = Field(index=True)
     resource_id: uuid.UUID = Field(primary_key=True)
@@ -99,7 +97,7 @@ class AccessLog(AccessLogCreate, table=True):
 class AccessLogRead(AccessLogCreate):
     """Read model access attempt logs"""
 
-    access_attempt_id: uuid.UUID
+    id: uuid.UUID
 
 
 class ResourceHierarchy(SQLModel, table=True):

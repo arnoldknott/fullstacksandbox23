@@ -1,4 +1,5 @@
 import pytest
+import uuid
 from httpx import AsyncClient
 from models.category import Category
 from models.demo_resource import DemoResource
@@ -57,7 +58,9 @@ async def test_get_category_by_id(
 ):
     """Tests GET all categories."""
     categories = add_test_categories
-    response = await async_client.get("/api/v1/category/2")
+    print("=== categories[1].id ===")
+    print(categories[1].id)
+    response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
 
     assert response.status_code == 200
     content = response.json()
@@ -81,12 +84,14 @@ async def test_put_category(
     async_client: AsyncClient, add_test_categories: list[Category]
 ):
     """Tests PUT of a category."""
-    add_test_categories
+    categories = add_test_categories
     updated_category = {
         "name": "Test Cat",
         "description": "A new description for this category",
     }
-    response = await async_client.put("/api/v1/category/2", json=updated_category)
+    response = await async_client.put(
+        f"/api/v1/category/{str(categories[1].id)}", json=updated_category
+    )
 
     assert response.status_code == 200
     content = response.json()
@@ -103,7 +108,9 @@ async def test_put_category_partial_update(
     updated_category = {
         "description": "An updated description for this category",
     }
-    response = await async_client.put("/api/v1/category/2", json=updated_category)
+    response = await async_client.put(
+        f"/api/v1/category/{str(categories[1].id)}", json=updated_category
+    )
 
     assert response.status_code == 200
     content = response.json()
@@ -121,7 +128,9 @@ async def test_put_category_does_not_exist(
         "name": "Test Cat",
         "description": "A new description for this category",
     }
-    response = await async_client.put("/api/v1/category/324", json=updated_category)
+    response = await async_client.put(
+        f"/api/v1/category/{str(uuid.uuid4())}", json=updated_category
+    )
 
     assert response.status_code == 404
     content = response.json()
@@ -134,25 +143,24 @@ async def test_delete_category(
 ):
     """Tests DELETE of a category."""
     categories = add_test_categories
-    id = 2
-    response = await async_client.get(f"/api/v1/category/{id}")
+    response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
 
     # Check if category exists before deleting:
     assert response.status_code == 200
     content = response.json()
-    assert content["id"] == id
+    assert content["id"] == str(categories[1].id)
     assert content["name"] == categories[1].name
     assert content["description"] == categories[1].description
 
     # Delete category:
-    response = await async_client.delete(f"/api/v1/category/{id}")
+    response = await async_client.delete(f"/api/v1/category/{str(categories[1].id)}")
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == categories[1].name
     assert content["description"] == categories[1].description
 
     # Check if category exists after deleting:
-    response = await async_client.get(f"/api/v1/category/{id}")
+    response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "Object not found"
@@ -174,8 +182,7 @@ async def test_delete_category_does_not_exist(
 ):
     """Tests DELETE of a category."""
     add_test_categories
-    id = 5327
-    response = await async_client.delete(f"/api/v1/category/{id}")
+    response = await async_client.delete(f"/api/v1/category/{str(uuid.uuid4())}")
 
     assert response.status_code == 404
     content = response.json()
@@ -189,7 +196,11 @@ async def test_get_all_demo_resources_by_category_id(
 ):
     """Tests GET all demo resources by category id."""
     resources = add_test_demo_resources
-    response = await async_client.get("/api/v1/category/2/demo_resources")
+    categories_response = await async_client.get("/api/v1/category/")
+    categories = categories_response.json()
+    response = await async_client.get(
+        f"/api/v1/category/{str(categories[1]['id'])}/demo_resources"
+    )
 
     assert response.status_code == 200
     assert len(response.json()) == 2
@@ -214,7 +225,11 @@ async def test_get_demo_resources_for_lonely_category(
     """Tests GET error for category, that has no demo resources attached."""
     print("=== test_get_no_demo_resources_for_unlinked_category ===")
     add_test_demo_resources
-    response = await async_client.get("/api/v1/category/3/demo_resources")
+    categories_response = await async_client.get("/api/v1/category/")
+    categories = categories_response.json()
+    response = await async_client.get(
+        f"/api/v1/category/{str(categories[2]['id'])}/demo_resources"
+    )
 
     print(response.json())
     assert response.status_code == 404

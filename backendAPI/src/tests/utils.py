@@ -117,26 +117,26 @@ one_test_demo_resource = {
     "language": "en-US",
 }
 
-specific_test_demo_resource_id1 = str(uuid4())
-specific_test_demo_resource_id2 = str(uuid4())
+specific_test_category_id1 = str(uuid4())
+specific_test_category_id2 = str(uuid4())
 many_test_demo_resources = [
     {
         "name": "Name of Test Resource",
         "description": "Some fancy description of my test resource.",
         "language": "en-US",
-        "category_id": specific_test_demo_resource_id2,
+        # "category_id": specific_test_category_id2,
     },
     {
         "name": "Another Test Resource's name",
         "description": "The description of the second test resource.",
         "language": "en-GB",
-        "category_id": specific_test_demo_resource_id1,
+        # "category_id": specific_test_category_id1,
     },
     {
         "name": "A second cat 2 resource",
         "description": "category 2 is popular.",
         "language": "es-ES",
-        "category_id": specific_test_demo_resource_id2,
+        # "category_id": specific_test_category_id2,
     },
     {
         "name": "Test resource without category",

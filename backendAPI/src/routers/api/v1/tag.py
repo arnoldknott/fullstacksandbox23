@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from crud.tag import TagCRUD
 from fastapi import APIRouter, HTTPException
@@ -34,9 +35,9 @@ async def get_tag_by_id(tag_id: str) -> Tag:
     """Returns a tag."""
     logger.info("GET tag")
     try:
-        tag_id = int(tag_id)
+        tag_id = uuid.UUID(tag_id)
     except ValueError:
-        logger.error("Tag ID is not an integer")
+        logger.error("Tag ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid tag id")
     async with TagCRUD() as crud:
         response = await crud.read_by_id(tag_id)
@@ -51,9 +52,9 @@ async def update_tag(
     """Updates a tag."""
     logger.info("PUT tag")
     try:
-        tag_id = int(tag_id)
+        tag_id = uuid.UUID(tag_id)
     except ValueError:
-        logger.error("Tag ID is not an integer")
+        logger.error("Tag ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid tag id")
     async with TagCRUD() as crud:
         old_tag = await crud.read_by_id(tag_id)
@@ -66,9 +67,9 @@ async def delete_tag(tag_id: str) -> Tag:
     """Deletes a tag."""
     logger.info("DELETE tag")
     try:
-        tag_id = int(tag_id)
+        tag_id = uuid.UUID(tag_id)
     except ValueError:
-        logger.error("Tag ID is not an integer")
+        logger.error("Tag ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid tag id")
     async with TagCRUD() as crud:
         response = await crud.delete(tag_id)
@@ -80,9 +81,9 @@ async def get_all_demo_resources_for_tag(tag_id: str) -> list[DemoResource]:
     """Returns all demo resources with tag."""
     logger.info("GET all demo resources with tag")
     try:
-        tag_id = int(tag_id)
+        tag_id = uuid.UUID(tag_id)
     except ValueError:
-        logger.error("Tag ID is not an integer")
+        logger.error("Tag ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid tag id")
     async with TagCRUD() as crud:
         response = await crud.read_all_demo_resources(tag_id)

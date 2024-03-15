@@ -137,8 +137,11 @@ async def add_test_demo_resources(
     """Adds a demo resource to the database."""
     # print("=== add_test_demo_resources started ===")
     session = get_async_test_session
-    add_test_categories
+    existing_test_categories = add_test_categories
     # print("=== add_test_demo_resources after add_test_categories ===")
+    many_test_demo_resources[0]["category_id"] = existing_test_categories[1].id
+    many_test_demo_resources[1]["category_id"] = existing_test_categories[0].id
+    many_test_demo_resources[2]["category_id"] = existing_test_categories[1].id
 
     demo_resource_instances = []
     for resource in many_test_demo_resources:
