@@ -136,7 +136,11 @@ class BaseCRUD(
             action=read,
             user=current_user,
         )
-        statement = select(model).join(AccessPolicy, join_conditions)
+        statement = (
+            select(model)
+            .join(AccessPolicy, model.id == AccessPolicy.resource_id)
+            .where(*join_conditions)
+        )
         # statement = select(model)
         # statement = select(self.model).offset(skip).limit(limit)
         response = await session.exec(statement)
