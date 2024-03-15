@@ -1,4 +1,5 @@
 import pytest
+from models.access import AccessPolicy
 from models.category import Category
 from models.demo_resource import DemoResource
 from models.tag import Tag
@@ -97,6 +98,46 @@ from tests.utils import (
 # def expired_token():
 #     """Returns a mock expired token."""
 #     return generate_mock_token(expired=True)
+
+
+@pytest.fixture(scope="function")
+async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
+    """Adds test policies to the database."""
+
+    async def _add_test_policies_for_resources(resources: list[dict]):
+        # print("=== add_test_policies - request ===")
+        # print(resources)
+        created_policies = []
+        for policy in resources:
+            # print("=== add_test_policies - policy ===")
+            # print(policy)
+            created_policies.append(AccessPolicy(**policy))
+
+        return created_policies
+
+    yield _add_test_policies_for_resources
+
+    # print("=== add_test_policies - request ===")
+    # print(request)
+    # created_policies = []
+    # for policy in request:
+    #     print("=== add_test_policies - policy ===")
+    #     print(policy)
+    #     created_policies.append(AccessPolicy(**policy))
+
+    # yield created_policies
+
+    # session = get_async_test_session
+
+    # policy_instances = []
+    # for policy in many_test_policies:
+    #     policy_instance = AccessPolicy(**policy)
+    #     session.add(policy_instance)
+    #     await session.commit()
+    #     await session.refresh(policy_instance)
+    #     policy_instances.append(policy_instance)
+
+    # yield policy_instances
 
 
 @pytest.fixture(scope="function")

@@ -3,9 +3,8 @@ from datetime import datetime
 from typing import List, Optional
 
 from core.config import config
-from core.types import IdentityType
 
-# from core.types import IdentityType
+from core.types import IdentityType
 from sqlmodel import Field, Relationship, SQLModel
 
 # from .azure_group import AzureGroup, AzureGroupRead

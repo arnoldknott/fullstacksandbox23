@@ -3,6 +3,8 @@ from uuid import UUID
 from pydantic import BaseModel
 from typing import List, Optional
 
+# import models
+
 
 class CurrentUserData(BaseModel):
     """Model for the current user data - acts as interface for the request from endpoint to crud."""
@@ -28,8 +30,12 @@ class Action(Enum):
 class ResourceType(str, Enum):
     """Enum for the types of resources to identify which table a resource uuid belongs to"""
 
+    # for sandbox only:
+    category = "category"  # potentially keep for production
+    tag = "tag"  # potentially keep for production
     demo_resource = "demo_resource"
     protected_resource = "protected_resource"
+    # for future use:
     module = "module"
     section = "section"
     subsection = "subsection"
@@ -41,9 +47,40 @@ class IdentityType(str, Enum):
     """Enum for the types of identities to identify which table an identity uuid belongs"""
 
     user = "user"
-    admin = "admin"
+    # admin = "admin"
     # group = "group"
     azure_group = "azure_group"
     # brightspace_group = "brightspace_group"
     # discord_group = "discord_group"
     # google_group = "google_group"
+
+
+# using models in stead of strings:
+# class ResourceType(Enum):
+#     """Enum for the types of resources to identify which table a resource uuid belongs to"""
+
+#     # for sandbox only:
+#     category = Category  # potentially keep for production
+#     tag = Tag  # potentially keep for production
+#     demo_resource = DemoResource
+#     protected_resource = ProtectedResource
+#     # for future use:
+#     # module = models.Module
+#     # section = models.Section
+#     # subsection = models.Subsection
+#     # topic = models.Topic
+#     # element = models.Element
+
+
+# class IdentityType(Enum):
+#     """Enum for the types of identities to identify which table an identity uuid belongs"""
+
+#     user = User
+#     azure_group = AzureGroup
+#     # user = "user"
+#     # # admin = "admin"
+#     # group = "group"
+#     # azure_group = "azure_group"
+#     # # brightspace_group = "brightspace_group"
+#     # # discord_group = "discord_group"
+#     # # google_group = "google_group"

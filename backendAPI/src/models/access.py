@@ -4,8 +4,34 @@ from typing import Optional
 
 from sqlmodel import Field, SQLModel
 from sqlalchemy import UniqueConstraint
-from pydantic import model_validator
-from core.types import IdentityType, ResourceType, Action
+from pydantic import model_validator  # , create_model
+
+from core.types import IdentityType, Action, ResourceType
+
+# from models import (
+#     Category,
+#     Tag,
+#     DemoResource,
+#     ProtectedResource,
+#     # Module,
+#     # Section,
+#     # Subsection,
+#     # Topic,
+#     # Element,
+# )
+
+# ResourceType = create_model(
+#     "ResourceType",
+#     category=(Category, ...),
+#     tag=(Tag, ...),
+#     demo_resource=(DemoResource, ...),
+#     protected_resource=(ProtectedResource, ...),
+#     # module=(Module, ...),
+#     # section=(Section, ...),
+#     # subsection=(Subsection, ...),
+#     # topic=(Topic, ...),
+#     # element=(Element, ...),
+# )
 
 
 class AccessPolicyCreate(SQLModel):

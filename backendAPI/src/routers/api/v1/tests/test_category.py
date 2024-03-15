@@ -1,6 +1,8 @@
 import pytest
 import uuid
 from httpx import AsyncClient
+from models.access import AccessPolicy
+from core.types import ResourceType, Action
 from models.category import Category
 from models.demo_resource import DemoResource
 
@@ -38,10 +40,61 @@ async def test_post_category_name_too_long(async_client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_get_all_categories(
-    async_client: AsyncClient, add_test_categories: list[Category]
+    async_client: AsyncClient,
+    add_test_policies_for_resources: list[AccessPolicy],
+    add_test_categories: list[Category],
 ):
     """Tests GET all categories."""
+
     categories = add_test_categories
+    # print(
+    #     "=== test-category - test_get_all_categories - type(categories[0].model_dump()) ==="
+    # )
+    # print(type(categories[0].model_dump()))
+    # print(
+    #     "=== test-category - test_get_all_categories - categories[0].model_dump() ==="
+    # )
+    # print(categories[0].model_dump())
+
+    access_policies = [
+        {
+            # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
+            # "identity_type": IdentityType.user,
+            "resource_id": categories[0].id,
+            "resource_type": ResourceType.category,
+            "action": Action.read,
+            "public": True,
+        },
+        {
+            # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
+            # "identity_type": IdentityType.user,
+            "resource_id": categories[1].id,
+            "resource_type": ResourceType.category,
+            "action": Action.read,
+            "public": True,
+        },
+        {
+            # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
+            # "identity_type": IdentityType.user,
+            "resource_id": categories[2].id,
+            "resource_type": ResourceType.category,
+            "action": Action.read,
+            "public": True,
+        },
+    ]
+    print("=== test-category - test_get_all_categories - type(ResourceType) ===")
+    print(type(ResourceType))
+    print(
+        "=== test-category - test_get_all_categories - type(ResourceType.category) ==="
+    )
+    print(type(ResourceType.category))
+    print(ResourceType.category.name)
+    print(ResourceType.category.value)
+
+    policies = await add_test_policies_for_resources(access_policies)
+    print("=== test-category - test_get_all_categories - policies ===")
+    print(policies)
+
     response = await async_client.get("/api/v1/category/")
 
     assert response.status_code == 200

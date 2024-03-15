@@ -124,7 +124,7 @@ class BaseCRUD(
         # Fetch all access policies for the current user
 
         # TBD: version before refactoring:
-        statement = select(model)
+        # statement = select(model)
         # TBD: Refactor into access control:
         # Nope:
         # accessible_object_ids = await self.access_control.finds_allowed(
@@ -134,16 +134,16 @@ class BaseCRUD(
         # )
         # statement = select(model).where(model.id.in_(accessible_object_ids))
         # Yes - this looks like the right way to do it:
-        # join_conditions = self.access_control.filters_allowed(
-        #     resource_type=self.resource_type,
-        #     action=read,
-        #     user=current_user,
-        # )
-        # statement = (
-        #     select(model)
-        #     .join(AccessPolicy, model.id == AccessPolicy.resource_id)
-        #     .where(*join_conditions)
-        # )
+        join_conditions = self.access_control.filters_allowed(
+            resource_type=self.resource_type,
+            action=read,
+            user=current_user,
+        )
+        statement = (
+            select(model)
+            .join(AccessPolicy, model.id == AccessPolicy.resource_id)
+            .where(*join_conditions)
+        )
         # statement = select(self.model).offset(skip).limit(limit)
         response = await session.exec(statement)
         if response is None:

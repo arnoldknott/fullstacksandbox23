@@ -47,7 +47,7 @@ async def test_post_demo_resource_with_nonexisting_category(async_client: AsyncC
 
 
 @pytest.mark.anyio
-async def test_get_demo_resource(
+async def test_get_all_demo_resources(
     async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
 ):
     """Tests GET all demo resources."""
