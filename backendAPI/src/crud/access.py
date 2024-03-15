@@ -95,7 +95,7 @@ class AccessPolicyCRUD:
         resource_id: Optional[int] = None,
         resource_type: Optional[ResourceType] = None,
         action: Optional[Action] = None,
-    ) -> Union[AccessPolicyRead, List[AccessPolicyRead]]:
+    ) -> Union[AccessPolicyRead, List[AccessPolicyRead]]:  # TBD: always return a list?
         """Reads access control policies based on the provided parameters."""
         try:
             session = self.session

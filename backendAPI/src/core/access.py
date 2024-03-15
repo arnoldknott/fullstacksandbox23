@@ -3,7 +3,9 @@ import logging
 from typing import Optional, Union
 from core.types import CurrentUserData, Action, ResourceType, IdentityType
 from fastapi import HTTPException
+from models.access import AccessPolicy
 
+from sqlmodel import or_
 
 # if TYPE_CHECKING:
 #     from core.types import CurrentUserData, Action
@@ -52,6 +54,7 @@ class AccessControl:
         # Admin override:
         # if user["roles"] and "Admin" in user["roles"]:
         #
+
         # check for public override:
         if not user:
             async with self.policy_crud as policy_crud:
@@ -64,9 +67,9 @@ class AccessControl:
                 policies = await policy_crud.read(
                     resource_id=resource_id, resource_type=resource_type, action=action
                 )
-                # TBD: implement check if this resource allows this action for public access
                 print("=== core.access - AccessControl - policies ===")
                 print(policies)
+                # TBD: implement check if this resource allows this action for public access
                 return True
         #
         # check for admin override:
@@ -83,6 +86,7 @@ class AccessControl:
             # )
             # await loggingCRUD.log_access(access_log)
             return True
+
         #
         # TBD: implement the comparison of policies and request.
         elif 1 == 1:
@@ -98,7 +102,7 @@ class AccessControl:
         # print("=== core.access - AccessControl - policy ===")
         # print(policy)
 
-    async def finds_allowed(
+    def filters_allowed(
         self,
         resource_type: Union[ResourceType, IdentityType],
         action: "Action",
@@ -113,7 +117,29 @@ class AccessControl:
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access and admin override
-        pass
+
+        conditions = []
+        if not user:
+            conditions.append(AccessPolicy.resource_type == resource_type)
+            conditions.append(AccessPolicy.action == action)
+            conditions.append(AccessPolicy.public)
+        elif "Admin" in user.roles:
+            conditions.append(AccessPolicy.resource_type == resource_type)
+            conditions.append(AccessPolicy.action == action)
+        else:
+            conditions.append(AccessPolicy.resource_type == resource_type)
+            conditions.append(AccessPolicy.action == action)
+            conditions.append(
+                or_(AccessPolicy.identity_id == user.id, AccessPolicy.public)
+            )  # add the self-join from identity inheritance table
+
+        return conditions
+
+        # user_policies = []
+        # # Get the IDs of the objects that the user has access to
+        # accessible_object_ids = [policy.resource_id for policy in user_policies]
+        # return accessible_object_ids
+        # pass
 
     # async def adds_grant(
     #     identity: "CurrentUserData", resource_id: UUID, action: "Action"

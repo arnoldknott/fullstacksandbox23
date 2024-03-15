@@ -42,7 +42,9 @@ class AccessPolicy(AccessPolicyCreate, table=True):
     """Table for access control"""
 
     policy_id: Optional[int] = Field(default=None, primary_key=True)
-    identity_id: Optional[uuid.UUID] = Field(default=None, index=True)
+    identity_id: Optional[uuid.UUID] = Field(
+        default=None, index=True
+    )  # needs to be a foreign key / relationship for join statements?
     identity_type: Optional["IdentityType"] = Field(default=None, index=True)
     resource_id: int = Field(index=True)
     resource_type: "ResourceType" = Field(index=True)

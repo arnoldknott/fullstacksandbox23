@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional
 
+from models.access import AccessPolicy
 from crud.access import AccessPolicyCRUD
 from core.databases import get_async_session
 from core.access import AccessControl
@@ -119,7 +120,24 @@ class BaseCRUD(
         session = self.session
         model = self.model
         # TBD: refactor into try-except block and add logging
-        statement = select(model)
+        # Fetch all access policies for the current user
+
+        # TBD: Refactor into access control:
+        # Nope:
+        # accessible_object_ids = await self.access_control.finds_allowed(
+        #     resource_type=self.resource_type,
+        #     action=read,
+        #     user=current_user,
+        # )
+        # statement = select(model).where(model.id.in_(accessible_object_ids))
+        # Yes:
+        join_conditions = self.access_control.filters_allowed(
+            resource_type=self.resource_type,
+            action=read,
+            user=current_user,
+        )
+        statement = select(model).join(AccessPolicy, join_conditions)
+        # statement = select(model)
         # statement = select(self.model).offset(skip).limit(limit)
         response = await session.exec(statement)
         if response is None:
@@ -139,6 +157,7 @@ class BaseCRUD(
         """Returns an object by id."""
         # if not await self.access_control.allows(
         #     user=current_user,
+        #     resource_id=object_id,
         #     resource_type=self.resource_type,
         #     action=read,
         # ):
