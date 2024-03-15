@@ -1,3 +1,5 @@
+import uuid
+
 from datetime import datetime
 from typing import List, Optional  # , TYPE_CHECKING
 
@@ -17,17 +19,17 @@ class DemoResourceCreate(SQLModel):
     description: Optional[str] = None
     language: Optional[str] = None
 
-    category_id: Optional[int] = None
+    category_id: Optional[uuid.UUID] = None
 
 
 class DemoResource(DemoResourceCreate, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
     # TBD: moce the last_updated_at and last_accessed_at to a resource access log table
     last_updated_at: datetime = Field(default=datetime.now())
     # Note: so far all times are UTC!
 
-    category_id: Optional[int] = Field(default=None, foreign_key="category.id")
+    category_id: Optional[uuid.UUID] = Field(default=None, foreign_key="category.id")
     category: Optional["Category"] = Relationship(
         back_populates="demo_resources", sa_relationship_kwargs={"lazy": "selectin"}
     )
@@ -40,7 +42,7 @@ class DemoResource(DemoResourceCreate, table=True):
 
 
 class DemoResourceRead(DemoResourceCreate):
-    id: int
+    id: uuid.UUID
     category: Optional["CategoryRead"] = None
     tags: Optional[List["TagRead"]] = None
 

@@ -1,3 +1,5 @@
+import uuid
+
 from datetime import datetime
 from typing import Optional  # , TYPE_CHECKING
 
@@ -11,7 +13,7 @@ class ProtectedResourceCreate(SQLModel):
 
 
 class ProtectedResource(ProtectedResourceCreate, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default=datetime.now())
     # TBD: moce the last_updated_at and last_accessed_at to a resource access log table
     # together with action and identity_id
@@ -24,7 +26,7 @@ class ProtectedResource(ProtectedResourceCreate, table=True):
 
 
 class ProtectedResourceRead(ProtectedResourceCreate):
-    id: int
+    id: uuid.UUID
     last_accessed_at: datetime
 
 

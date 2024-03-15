@@ -1,3 +1,5 @@
+import uuid
+
 from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -13,7 +15,7 @@ class TagCreate(SQLModel):
 
 
 class Tag(TagCreate, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
 
     demo_resources: Optional[List["DemoResource"]] = Relationship(
         back_populates="tags",
@@ -27,7 +29,7 @@ class TagUpdate(TagCreate):
 
 
 class TagRead(TagCreate):
-    id: int
+    id: uuid.UUID
 
 
 # class TagReadWithDemoResources(Tag):

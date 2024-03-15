@@ -13,7 +13,7 @@ class AccessPolicyCreate(SQLModel):
 
     identity_id: Optional[uuid.UUID] = None
     identity_type: Optional["IdentityType"] = None
-    resource_id: int
+    resource_id: uuid.UUID
     resource_type: "ResourceType"
     action: "Action"
     public: bool = Field(
@@ -41,12 +41,12 @@ class AccessPolicyCreate(SQLModel):
 class AccessPolicy(AccessPolicyCreate, table=True):
     """Table for access control"""
 
-    policy_id: Optional[int] = Field(default=None, primary_key=True)
+    policy_id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     identity_id: Optional[uuid.UUID] = Field(
         default=None, index=True
     )  # needs to be a foreign key / relationship for join statements?
     identity_type: Optional["IdentityType"] = Field(default=None, index=True)
-    resource_id: int = Field(index=True)
+    resource_id: uuid.UUID = Field(index=True)
     resource_type: "ResourceType" = Field(index=True)
     action: "Action" = Field()
 
@@ -55,7 +55,7 @@ class AccessPolicy(AccessPolicyCreate, table=True):
     )
     # identity_id: uuid.UUID = Field(primary_key=True)
     # identity_type: "IdentityType" = Field(index=True)
-    # resource_id: int = Field(primary_key=True)
+    # resource_id: uuid.UUID = Field(primary_key=True)
     # resource_type: "ResourceType" = Field(index=True)
     # action: "Action" = Field()
     # override: bool = Field(default=False)
@@ -64,7 +64,7 @@ class AccessPolicy(AccessPolicyCreate, table=True):
 class AccessPolicyRead(AccessPolicyCreate):
     """Read model for access policies"""
 
-    policy_id: int
+    policy_id: uuid.UUID
 
 
 # No update model for access policies: once created, they should not be updated, only deleted to keep loggings consistent.
@@ -75,7 +75,7 @@ class AccessLogCreate(SQLModel):
 
     identity_id: uuid.UUID
     identity_type: "IdentityType"
-    resource_id: int
+    resource_id: uuid.UUID
     resource_type: "ResourceType"
     action: "Action"
     status_code: int
@@ -84,10 +84,12 @@ class AccessLogCreate(SQLModel):
 class AccessLog(AccessLogCreate, table=True):
     """Table for logging actual access attempts"""
 
-    access_attempt_id: Optional[int] = Field(default=None, primary_key=True)
+    access_attempt_id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4, primary_key=True
+    )
     identity_id: uuid.UUID = Field(index=True)
     identity_type: "IdentityType" = Field(index=True)
-    resource_id: int = Field(primary_key=True)
+    resource_id: uuid.UUID = Field(primary_key=True)
     resource_type: "ResourceType" = Field(index=True)
     action: "Action" = Field()
     time: datetime = Field(default=datetime.now())
@@ -97,7 +99,7 @@ class AccessLog(AccessLogCreate, table=True):
 class AccessLogRead(AccessLogCreate):
     """Read model access attempt logs"""
 
-    access_attempt_id: int
+    access_attempt_id: uuid.UUID
 
 
 class ResourceHierarchy(SQLModel, table=True):

@@ -64,37 +64,39 @@ token_payload_many_groups = {
 one_test_policy = {
     "identity_id": one_test_user["azure_user_id"],
     "identity_type": "user",
-    "resource_id": 1,
+    "resource_id": str(uuid4()),
     "resource_type": "protected_resource",
     "action": "read",
 }
 
+specific_test_policy_id1 = str(uuid4())
+specific_test_policy_id2 = str(uuid4())
 many_test_policies = [
     {
         "identity_id": many_test_users[1]["azure_user_id"],
         "identity_type": "user",
-        "resource_id": 1,
+        "resource_id": specific_test_policy_id1,
         "resource_type": "protected_resource",
         "action": "read",
     },
     {
         "identity_id": one_test_user["azure_user_id"],
         "identity_type": "user",
-        "resource_id": 4,
+        "resource_id": specific_test_policy_id2,
         "resource_type": "protected_resource",
         "action": "own",
     },
     {
         "identity_id": many_test_users[0]["azure_user_id"],
         "identity_type": "user",
-        "resource_id": 4,
+        "resource_id": specific_test_policy_id2,
         "resource_type": "protected_resource",
         "action": "write",
     },
     {
         "identity_id": many_test_users[2]["azure_user_id"],
         "identity_type": "user",
-        "resource_id": 3,
+        "resource_id": str(uuid4()),
         "resource_type": "protected_resource",
         "action": "own",
     },
@@ -102,7 +104,7 @@ many_test_policies = [
     {
         "identity_id": many_test_users[1]["azure_user_id"],
         "identity_type": "user",
-        "resource_id": 1,
+        "resource_id": specific_test_policy_id1,
         "resource_type": "protected_resource",
         "action": "own",
     },
@@ -115,25 +117,26 @@ one_test_demo_resource = {
     "language": "en-US",
 }
 
-
+specific_test_demo_resource_id1 = str(uuid4())
+specific_test_demo_resource_id2 = str(uuid4())
 many_test_demo_resources = [
     {
         "name": "Name of Test Resource",
         "description": "Some fancy description of my test resource.",
         "language": "en-US",
-        "category_id": 2,
+        "category_id": specific_test_demo_resource_id2,
     },
     {
         "name": "Another Test Resource's name",
         "description": "The description of the second test resource.",
         "language": "en-GB",
-        "category_id": 1,
+        "category_id": specific_test_demo_resource_id1,
     },
     {
         "name": "A second cat 2 resource",
         "description": "category 2 is popular.",
         "language": "es-ES",
-        "category_id": 2,
+        "category_id": specific_test_demo_resource_id2,
     },
     {
         "name": "Test resource without category",

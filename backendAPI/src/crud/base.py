@@ -1,3 +1,4 @@
+import uuid
 import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional
@@ -151,7 +152,7 @@ class BaseCRUD(
     # Changing to return BaseSchemaTypeRead instead of BaseModelType makes read_with_childs obsolete!
     async def read_by_id(
         self,
-        object_id: int,
+        object_id: uuid.UUID,
         # update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
         # Refactor into this:
         # current_user: Optional["CurrentUserData"] = None,
@@ -213,7 +214,7 @@ class BaseCRUD(
         await session.refresh(object)
         return object
 
-    async def delete(self, object_id: int) -> BaseModelType:
+    async def delete(self, object_id: uuid.UUID) -> BaseModelType:
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write or delete here
         """Deletes an object."""

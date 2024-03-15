@@ -1,4 +1,5 @@
 import logging
+import uuid
 from typing import Annotated, List
 
 from crud.category import CategoryCRUD
@@ -49,9 +50,9 @@ async def get_demo_resource_by_id(resource_id: str) -> DemoResourceRead:
     logger.info("GET demo resource")
     # crud = DemoResourceCRUD()
     try:
-        resource_id = int(resource_id)
+        resource_id = uuid.UUID(resource_id)
     except ValueError:
-        logger.error("Resource ID is not an integer")
+        logger.error("Resource ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid resource id")
     async with DemoResourceCRUD() as crud:
         response = await crud.read_by_id_with_childs(resource_id)
@@ -69,9 +70,9 @@ async def update_demo_resource(
     # print(demo_resource)
     # crud = DemoResourceCRUD()
     try:
-        resource_id = int(resource_id)
+        resource_id = uuid.UUID(resource_id)
     except ValueError:
-        logger.error("Resource ID is not an integer")
+        logger.error("Resource ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid resource id")
     async with DemoResourceCRUD() as crud:
         old_resource = await crud.read_by_id(resource_id)
@@ -85,9 +86,9 @@ async def delete_demo_resource(resource_id: str) -> DemoResource:
     logger.info("DELETE demo resource")
     # crud = DemoResourceCRUD()
     try:
-        resource_id = int(resource_id)
+        resource_id = uuid.UUID(resource_id)
     except ValueError:
-        logger.error("Resource ID is not an integer")
+        logger.error("Resource ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid resource id")
     async with DemoResourceCRUD() as crud:
         result = await crud.delete(resource_id)
@@ -100,21 +101,21 @@ async def delete_demo_resource(resource_id: str) -> DemoResource:
 async def add_tag_to_demo_resource(
     resource_id: str,
     tag_ids: Annotated[
-        List[int], Query()
+        List[uuid.UUID], Query()
     ],  # TBD: move the arguments from Query to json!
 ) -> DemoResourceRead:
     """Adds a tag to a demo resource."""
     logger.info("POST demo resource")
     try:
-        resource_id = int(resource_id)
+        resource_id = uuid.UUID(resource_id)
     except ValueError:
-        logger.error("Resource ID is not an integer")
+        logger.error("Resource ID is not a universal unique identifier (uuid).")
         raise HTTPException(status_code=400, detail="Invalid resource id")
     # sShould not be necessary, as FastAPI should do this automatically
     # try:
-    #     tag_ids = int(tag_id)
+    #     tag_ids = uuid.UUID(tag_id)
     # except ValueError:
-    #     logger.error("Tag ID is not an integer")
+    #     logger.error("Tag ID is not a universal unique identifier (uuid).")
     #     raise HTTPException(status_code=400, detail="Invalid tag id")
     async with DemoResourceCRUD() as crud:
         result = await crud.add_tag(resource_id, tag_ids)

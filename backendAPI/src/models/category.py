@@ -1,3 +1,5 @@
+import uuid
+
 from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -14,7 +16,7 @@ class CategoryCreate(SQLModel):
 
 
 class Category(CategoryCreate, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
 
     demo_resources: List["DemoResource"] = Relationship(
         back_populates="category", sa_relationship_kwargs={"lazy": "selectin"}
@@ -26,7 +28,7 @@ class CategoryUpdate(CategoryCreate):
 
 
 class CategoryRead(CategoryCreate):
-    id: int
+    id: uuid.UUID
 
 
 # class CategoryReadWithDemoResources(Category):
