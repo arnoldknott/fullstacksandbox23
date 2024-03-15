@@ -37,7 +37,6 @@ from core.types import IdentityType, Action, ResourceType
 class AccessPolicyCreate(SQLModel):
     """Create model for access policies"""
 
-    # TBD: no: identity_id and identity_type cannot be optional: need to be logged in for creating a resource!
     identity_id: Optional[uuid.UUID] = None
     identity_type: Optional["IdentityType"] = None
     resource_id: uuid.UUID
@@ -51,6 +50,8 @@ class AccessPolicyCreate(SQLModel):
     @model_validator(mode="after")
     def either_identity_assignment_or_public(self):
         """Validates either identity is assigned or resource is public"""
+        # TBD: refactor: only when Action is read, then public is allowed and no identity is allowed
+        # TBD: refactor: when Action is anything else, then public is not allowed and identity is required
         if self.public is True:
             if (self.identity_id is not None) or (self.identity_type is not None):
                 raise ValueError("No identity can be assigned to a public resource.")

@@ -125,6 +125,7 @@ async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
 
         # TBD: use a mapping for this?
 
+        # Public vs. identity is taken care of in the create model validation through pydantic!
         # if public is not None:
         #     if len(resources) == len(identities) == len(actions) == len(public):
         #         pass
