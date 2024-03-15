@@ -1,5 +1,7 @@
 import pytest
-from models.access import AccessPolicy
+from typing import List, Optional
+from core.types import ResourceType, Action
+from models.access import AccessPolicyCreate, AccessPolicy
 from models.category import Category
 from models.demo_resource import DemoResource
 from models.tag import Tag
@@ -100,18 +102,58 @@ from tests.utils import (
 #     return generate_mock_token(expired=True)
 
 
+def create_access_policy(resource, identity, action, public) -> AccessPolicyCreate:
+    """Create an access policy."""
+    resource_id = resource["id"]
+    ResourceType(resource.__class__.__name__)
+    resource_type = resource.__class__.__name__
+    return AccessPolicyCreate()
+
+
 @pytest.fixture(scope="function")
 async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
-    """Adds test policies to the database."""
+    """Fixture for adding test policies to the database."""
 
+    # async def _add_test_policies_for_resources(
+    #     resources: list[dict],
+    #     identities: list[dict],
+    #     actions: list[str],
+    #     public: Optional[list[bool]] = None,
+    # ):
     async def _add_test_policies_for_resources(resources: list[dict]):
+        """Adds test policies to the database."""
+
+        # TBD: use a mapping for this?
+
+        # if public is not None:
+        #     if len(resources) == len(identities) == len(actions) == len(public):
+        #         pass
+        #     else:
+        #         raise Exception(
+        #             "The number of resources, identities, actions and public must be the same!"
+        #         )
+        # else:
+        #     if len(resources) == len(identities) == len(actions):
+        #         pass
+        #     else:
+        #         raise Exception(
+        #             "The number of resources, identities and actions must be the same!"
+        #         )
+
         # print("=== add_test_policies - request ===")
         # print(resources)
+        # TBD: create the policies based on the incoming resources, identity, action and overrides!
         created_policies = []
-        for policy in resources:
+        # for resource, idx in resources:
+        for resource in resources:
             # print("=== add_test_policies - policy ===")
             # print(policy)
-            created_policies.append(AccessPolicy(**policy))
+            # TBD: add the CRUD here and write to AccessPolicy table!
+            # policy = create_access_policy(
+            #     resource, identities[idx], actions[idx], public[idx]
+            # )
+            # created_policies.append(AccessPolicy(**policy))
+            created_policies.append(AccessPolicy(**resource))
 
         return created_policies
 

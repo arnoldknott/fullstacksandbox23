@@ -30,17 +30,19 @@ class Action(Enum):
 class ResourceType(str, Enum):
     """Enum for the types of resources to identify which table a resource uuid belongs to"""
 
+    # The values need to match the exact name of the model class.
+
     # for sandbox only:
-    category = "category"  # potentially keep for production
-    tag = "tag"  # potentially keep for production
-    demo_resource = "demo_resource"
-    protected_resource = "protected_resource"
+    category = "Category"  # potentially keep for production
+    tag = "Tag"  # potentially keep for production
+    demo_resource = "DemoResource"
+    protected_resource = "ProtectedResource"
     # for future use:
-    module = "module"
-    section = "section"
-    subsection = "subsection"
-    topic = "topic"
-    element = "element"
+    module = "Module"
+    section = "Section"
+    subsection = "Subsection"
+    topic = "Topic"
+    element = "Element"
 
 
 class IdentityType(str, Enum):

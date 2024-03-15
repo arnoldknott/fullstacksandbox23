@@ -88,8 +88,23 @@ async def test_get_all_categories(
         "=== test-category - test_get_all_categories - type(ResourceType.category) ==="
     )
     print(type(ResourceType.category))
+    print(ResourceType.category)
     print(ResourceType.category.name)
     print(ResourceType.category.value)
+    print("=== test-category - test_get_all_categories - category[0] ===")
+    print(categories[0])
+    print(categories[0].__class__.__name__)
+    # This is brilliant! It works:
+    print(ResourceType(categories[0].__class__.__name__))
+
+    # Now ready to pass to the fixture:
+    actions = ["read"] * len(categories)
+    public = True * len(categories)
+
+    # TBD: goal is to just call the fixture for creating the policies with
+    # - a list of resources,
+    # - a list of action and
+    # - either list of identities or public override! - rethink that one!
 
     policies = await add_test_policies_for_resources(access_policies)
     print("=== test-category - test_get_all_categories - policies ===")

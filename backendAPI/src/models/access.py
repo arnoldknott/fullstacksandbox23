@@ -37,6 +37,7 @@ from core.types import IdentityType, Action, ResourceType
 class AccessPolicyCreate(SQLModel):
     """Create model for access policies"""
 
+    # TBD: no: identity_id and identity_type cannot be optional: need to be logged in for creating a resource!
     identity_id: Optional[uuid.UUID] = None
     identity_type: Optional["IdentityType"] = None
     resource_id: uuid.UUID
