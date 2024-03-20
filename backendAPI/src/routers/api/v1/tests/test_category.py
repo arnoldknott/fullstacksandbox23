@@ -128,6 +128,7 @@ async def test_get_all_categories(
     assert content["name"] == categories[0].name
     assert content["description"] == categories[0].description
     assert "id" in content
+    # assert 1 == 2
 
 
 @pytest.mark.anyio

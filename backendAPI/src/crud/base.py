@@ -43,14 +43,16 @@ class BaseCRUD(
     def __init__(
         self,
         base_model: Type[BaseModelType],
-        resource_type: "ResourceType" = None,
+        # resource_type: "ResourceType" = None,
         # TBD: consider moving this to the access_control as an override and method specific parameter
         # The endpoints can still be protected by token claims individually - just add UserRoles or a scope requirement to the endpoint
     ):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
-        self.resource_type = resource_type
+        # print("=== BaseCRUD - base_model ===")
+        # print(base_model.__name__)
+        self.resource_type = ResourceType(base_model.__name__)
         policy_CRUD = AccessPolicyCRUD()
         self.access_control = AccessControl(policy_CRUD)
 
@@ -144,6 +146,8 @@ class BaseCRUD(
             .join(AccessPolicy, model.id == AccessPolicy.resource_id)
             .where(*join_conditions)
         )
+        print("=== BaseCRUD.read_all - statement ===")
+        print(statement)
         # statement = select(self.model).offset(skip).limit(limit)
         response = await session.exec(statement)
         if response is None:

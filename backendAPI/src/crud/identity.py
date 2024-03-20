@@ -29,7 +29,8 @@ class AzureGroupCRUD(
     BaseCRUD[AzureGroup, AzureGroupCreate, AzureGroupRead, AzureGroupUpdate]
 ):
     def __init__(self):
-        super().__init__(AzureGroup, IdentityType.azure_group)
+        # super().__init__(AzureGroup, IdentityType.azure_group)
+        super().__init__(AzureGroup)
 
     async def create_if_not_exists(
         self, azure_group_id: str, azure_tenant_id: str
@@ -59,7 +60,8 @@ class AzureGroupCRUD(
 
 class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     def __init__(self):
-        super().__init__(User, IdentityType.user)
+        # super().__init__(User, IdentityType.user)
+        super().__init__(User)
 
     # Not needed any more, since azure_user_id is the primary key!
     async def read_by_azure_user_id(
