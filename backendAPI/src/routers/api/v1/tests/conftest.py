@@ -1,6 +1,6 @@
 import pytest
 from typing import List, Optional
-from core.types import ResourceType, Action
+from core.types import ResourceType, Action, IdentityType
 from models.access import AccessPolicyCreate, AccessPolicy
 from models.category import Category
 from models.demo_resource import DemoResource
@@ -102,26 +102,36 @@ from tests.utils import (
 #     return generate_mock_token(expired=True)
 
 
-def create_access_policy(resource, identity, action, public) -> AccessPolicyCreate:
-    """Create an access policy."""
-    resource_id = resource["id"]
-    ResourceType(resource.__class__.__name__)
-    resource_type = resource.__class__.__name__
-    return AccessPolicyCreate()
+# def create_access_policy(resource, identity, action, public) -> AccessPolicyCreate:
+#     """Create an access policy."""
+#     resource_id = resource["id"]
+#     ResourceType(resource.__class__.__name__)
+#     resource_type = resource.__class__.__name__
+#     return AccessPolicyCreate()
 
 
 @pytest.fixture(scope="function")
 async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
     """Fixture for adding test policies to the database."""
+    session = get_async_test_session
 
-    # async def _add_test_policies_for_resources(
-    #     resources: list[dict],
-    #     identities: list[dict],
-    #     actions: list[str],
-    #     public: Optional[list[bool]] = None,
-    # ):
-    async def _add_test_policies_for_resources(resources: list[dict]):
+    async def _add_test_policies_for_resources(
+        resources: list[dict],
+        actions: list[str],
+        identities: Optional[list[dict]] = None,
+        publics: Optional[list[bool]] = None,
+    ):
         """Adds test policies to the database."""
+
+        if identities is None:
+            if publics is None:
+                raise Exception(
+                    "Either identities or public must be provided for the policies!"
+                )
+            else:
+                identities = [None] * len(resources)
+        # async def _add_test_policies_for_resources(resources: list[dict]):
+        #     """Adds test policies to the database."""
 
         # TBD: use a mapping for this?
 
@@ -146,7 +156,9 @@ async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
         # TBD: create the policies based on the incoming resources, identity, action and overrides!
         created_policies = []
         # for resource, idx in resources:
-        for resource in resources:
+        for resource, identity, action, public in zip(
+            resources, identities, actions, publics
+        ):
             # print("=== add_test_policies - policy ===")
             # print(policy)
             # TBD: add the CRUD here and write to AccessPolicy table!
@@ -154,8 +166,31 @@ async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
             #     resource, identities[idx], actions[idx], public[idx]
             # )
             # created_policies.append(AccessPolicy(**policy))
-            created_policies.append(AccessPolicy(**resource))
+            resource_id = resource.id
+            resource_type = ResourceType(resource.__class__.__name__)
+            if identity is not None:
+                identity_id = identity.id
+                identity_type = IdentityType(identity.__class__.__name__)
+            else:
+                identity_id = None
+                identity_type = None
+            action = Action(action)
+            public = public if public is not None else False
+            access_policy_instance = AccessPolicy(
+                resource_id=resource_id,
+                resource_type=resource_type,
+                identity_id=identity_id,
+                identity_type=identity_type,
+                action=action,
+                public=public,
+            )
+            session.add(access_policy_instance)
+            await session.commit()
+            await session.refresh(access_policy_instance)
+            created_policies.append(access_policy_instance)
 
+        # print("=== created_policies ===")
+        # print(created_policies)
         return created_policies
 
     yield _add_test_policies_for_resources

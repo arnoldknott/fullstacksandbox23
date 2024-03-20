@@ -47,6 +47,16 @@ async def test_get_all_categories(
     """Tests GET all categories."""
 
     categories = add_test_categories
+    public_policies_for_test_categories = await add_test_policies_for_resources(
+        resources=categories,
+        actions=["read"] * len(categories),
+        publics=[True] * len(categories),
+    )
+    print(
+        "=== test-category - test_get_all_categories - public_policies_for_test_categories ==="
+    )
+    print(public_policies_for_test_categories)
+
     # print(
     #     "=== test-category - test_get_all_categories - type(categories[0].model_dump()) ==="
     # )
@@ -56,59 +66,59 @@ async def test_get_all_categories(
     # )
     # print(categories[0].model_dump())
 
-    access_policies = [
-        {
-            # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
-            # "identity_type": IdentityType.user,
-            "resource_id": categories[0].id,
-            "resource_type": ResourceType.category,
-            "action": Action.read,
-            "public": True,
-        },
-        {
-            # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
-            # "identity_type": IdentityType.user,
-            "resource_id": categories[1].id,
-            "resource_type": ResourceType.category,
-            "action": Action.read,
-            "public": True,
-        },
-        {
-            # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
-            # "identity_type": IdentityType.user,
-            "resource_id": categories[2].id,
-            "resource_type": ResourceType.category,
-            "action": Action.read,
-            "public": True,
-        },
-    ]
-    print("=== test-category - test_get_all_categories - type(ResourceType) ===")
-    print(type(ResourceType))
-    print(
-        "=== test-category - test_get_all_categories - type(ResourceType.category) ==="
-    )
-    print(type(ResourceType.category))
-    print(ResourceType.category)
-    print(ResourceType.category.name)
-    print(ResourceType.category.value)
-    print("=== test-category - test_get_all_categories - category[0] ===")
-    print(categories[0])
-    print(categories[0].__class__.__name__)
-    # This is brilliant! It works:
-    print(ResourceType(categories[0].__class__.__name__))
+    # access_policies = [
+    #     {
+    #         # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
+    #         # "identity_type": IdentityType.user,
+    #         "resource_id": categories[0].id,
+    #         "resource_type": ResourceType.category,
+    #         "action": Action.read,
+    #         "public": True,
+    #     },
+    #     {
+    #         # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
+    #         # "identity_type": IdentityType.user,
+    #         "resource_id": categories[1].id,
+    #         "resource_type": ResourceType.category,
+    #         "action": Action.read,
+    #         "public": True,
+    #     },
+    #     {
+    #         # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
+    #         # "identity_type": IdentityType.user,
+    #         "resource_id": categories[2].id,
+    #         "resource_type": ResourceType.category,
+    #         "action": Action.read,
+    #         "public": True,
+    #     },
+    # ]
+    # print("=== test-category - test_get_all_categories - type(ResourceType) ===")
+    # print(type(ResourceType))
+    # print(
+    #     "=== test-category - test_get_all_categories - type(ResourceType.category) ==="
+    # )
+    # print(type(ResourceType.category))
+    # print(ResourceType.category)
+    # print(ResourceType.category.name)
+    # print(ResourceType.category.value)
+    # print("=== test-category - test_get_all_categories - category[0] ===")
+    # print(categories[0])
+    # print(categories[0].__class__.__name__)
+    # # This is brilliant! It works:
+    # print(ResourceType(categories[0].__class__.__name__))
 
-    # Now ready to pass to the fixture:
-    actions = ["read"] * len(categories)
-    public = True * len(categories)
+    # # Now ready to pass to the fixture:
+    # actions = ["read"] * len(categories)
+    # public = True * len(categories)
 
     # TBD: goal is to just call the fixture for creating the policies with
     # - a list of resources,
     # - a list of action and
     # - either list of identities or public override! - rethink that one!
 
-    policies = await add_test_policies_for_resources(access_policies)
-    print("=== test-category - test_get_all_categories - policies ===")
-    print(policies)
+    # policies = await add_test_policies_for_resources(access_policies)
+    # print("=== test-category - test_get_all_categories - policies ===")
+    # print(policies)
 
     response = await async_client.get("/api/v1/category/")
 
