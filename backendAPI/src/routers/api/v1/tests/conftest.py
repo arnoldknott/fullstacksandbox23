@@ -1,7 +1,7 @@
 import pytest
-from typing import List, Optional
+from typing import Optional
 from core.types import ResourceType, Action, IdentityType
-from models.access import AccessPolicyCreate, AccessPolicy
+from models.access import AccessPolicy
 from models.category import Category
 from models.demo_resource import DemoResource
 from models.tag import Tag

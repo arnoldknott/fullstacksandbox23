@@ -2,7 +2,6 @@ import pytest
 import uuid
 from httpx import AsyncClient
 from models.access import AccessPolicy
-from core.types import ResourceType, Action
 from models.category import Category
 from models.demo_resource import DemoResource
 
@@ -47,15 +46,15 @@ async def test_get_all_categories(
     """Tests GET all categories."""
 
     categories = add_test_categories
-    public_policies_for_test_categories = await add_test_policies_for_resources(
+    await add_test_policies_for_resources(
         resources=categories,
         actions=["read"] * len(categories),
         publics=[True] * len(categories),
     )
-    print(
-        "=== test-category - test_get_all_categories - public_policies_for_test_categories ==="
-    )
-    print(public_policies_for_test_categories)
+    # print(
+    #     "=== test-category - test_get_all_categories - public_policies_for_test_categories ==="
+    # )
+    # print(public_policies_for_test_categories)
 
     # print(
     #     "=== test-category - test_get_all_categories - type(categories[0].model_dump()) ==="

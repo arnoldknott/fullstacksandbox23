@@ -118,13 +118,13 @@ class AccessControl:
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access and admin override
 
-        print("=== core.access - AccessControl - filters_allowed ===")
-        print("== resource_type ==")
-        print(resource_type)
-        print("== action ==")
-        print(action)
-        print("== user ==")
-        print(user)
+        # print("=== core.access - AccessControl - filters_allowed ===")
+        # print("== resource_type ==")
+        # print(resource_type)
+        # print("== action ==")
+        # print(action)
+        # print("== user ==")
+        # print(user)
 
         conditions = []
         if not user:

@@ -63,7 +63,7 @@ token_payload_many_groups = {
 
 one_test_policy = {
     "identity_id": one_test_user["azure_user_id"],
-    "identity_type": "user",
+    "identity_type": "User",
     "resource_id": str(uuid4()),
     "resource_type": "ProtectedResource",
     "action": "read",
@@ -74,28 +74,28 @@ specific_test_policy_id2 = str(uuid4())
 many_test_policies = [
     {
         "identity_id": many_test_users[1]["azure_user_id"],
-        "identity_type": "user",
+        "identity_type": "User",
         "resource_id": specific_test_policy_id1,
         "resource_type": "ProtectedResource",
         "action": "read",
     },
     {
         "identity_id": one_test_user["azure_user_id"],
-        "identity_type": "user",
+        "identity_type": "User",
         "resource_id": specific_test_policy_id2,
         "resource_type": "ProtectedResource",
         "action": "own",
     },
     {
         "identity_id": many_test_users[0]["azure_user_id"],
-        "identity_type": "user",
+        "identity_type": "User",
         "resource_id": specific_test_policy_id2,
         "resource_type": "ProtectedResource",
         "action": "write",
     },
     {
         "identity_id": many_test_users[2]["azure_user_id"],
-        "identity_type": "user",
+        "identity_type": "User",
         "resource_id": str(uuid4()),
         "resource_type": "ProtectedResource",
         "action": "own",
@@ -103,7 +103,7 @@ many_test_policies = [
     # effectively overrides the first policy with more rights (own > read)
     {
         "identity_id": many_test_users[1]["azure_user_id"],
-        "identity_type": "user",
+        "identity_type": "User",
         "resource_id": specific_test_policy_id1,
         "resource_type": "ProtectedResource",
         "action": "own",

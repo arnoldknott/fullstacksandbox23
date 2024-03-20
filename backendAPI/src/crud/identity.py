@@ -15,7 +15,6 @@ from models.identity import (
     AzureGroupRead,
     AzureGroupUpdate,
 )
-from core.types import IdentityType
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 

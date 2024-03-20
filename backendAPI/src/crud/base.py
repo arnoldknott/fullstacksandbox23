@@ -14,7 +14,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 if TYPE_CHECKING:
     pass
-from core.types import CurrentUserData, Action, ResourceType
+from core.types import CurrentUserData, Action, ResourceType, IdentityType
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +50,29 @@ class BaseCRUD(
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
-        # print("=== BaseCRUD - base_model ===")
+        # print("=== BaseCRUD - ResourceType._member_names ===")
+        # print(ResourceType._member_names_)
+        # print("=== BaseCRUD - ResourceType.__members__.values ===")
+        # print(ResourceType.__members__.values())
+        # print("=== BaseCRUD - ResourceType._member_map_.values() ===")
+        # print(ResourceType._member_map_.values())
+        # print("=== BaseCRUD - IdentityType.__members__ ===")
+        # print(IdentityType.__members__)
+        # print("=== BaseCRUD -  ResourceType.list() ===")
+        # print(ResourceType.list())
+        # print("=== BaseCRUD - base_model.__name__ ===")
         # print(base_model.__name__)
-        self.resource_type = ResourceType(base_model.__name__)
+        if base_model.__name__ in ResourceType.list():
+            # print("=== BaseCRUD - ResourceType(base_model.__name__) ===")
+            # print(ResourceType(base_model.__name__))
+            self.resource_type = ResourceType(base_model.__name__)
+        elif base_model.__name__ in IdentityType.list():
+            self.resource_type = IdentityType(base_model.__name__)
+        else:
+            raise ValueError(
+                f"{base_model.__name__} is not a valid ResourceType or IdentityType"
+            )
+        # self.resource_type = ResourceType(base_model.__name__)
         policy_CRUD = AccessPolicyCRUD()
         self.access_control = AccessControl(policy_CRUD)
 
@@ -146,8 +166,8 @@ class BaseCRUD(
             .join(AccessPolicy, model.id == AccessPolicy.resource_id)
             .where(*join_conditions)
         )
-        print("=== BaseCRUD.read_all - statement ===")
-        print(statement)
+        # print("=== BaseCRUD.read_all - statement ===")
+        # print(statement)
         # statement = select(self.model).offset(skip).limit(limit)
         response = await session.exec(statement)
         if response is None:

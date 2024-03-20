@@ -44,17 +44,25 @@ class ResourceType(str, Enum):
     topic = "Topic"
     element = "Element"
 
+    @classmethod
+    def list(cls):
+        return list(map(lambda x: x.value, cls._member_map_.values()))
+
 
 class IdentityType(str, Enum):
     """Enum for the types of identities to identify which table an identity uuid belongs"""
 
-    user = "user"
+    user = "User"
     # admin = "admin"
     # group = "group"
-    azure_group = "azure_group"
+    azure_group = "AzureGroup"
     # brightspace_group = "brightspace_group"
     # discord_group = "discord_group"
     # google_group = "google_group"
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda x: x.value, cls._member_map_.values()))
 
 
 # using models in stead of strings:

@@ -24,4 +24,4 @@ class ProtectedResourceCRUD(
     # def __init__(self, current_user: "CurrentUserData"):
     #     super().__init__(ProtectedResource, current_user)
     def __init__(self):
-        super().__init__(ProtectedResource, ResourceType.protected_resource)
+        super().__init__(ProtectedResource)
