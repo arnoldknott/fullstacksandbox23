@@ -131,12 +131,16 @@ class AccessPolicyCRUD:
                 if conditions:
                     query = query.where(*conditions)
 
-                print("=== AccessPolicyCRUD.read - session ===")
-                print(session)
-                print("=== AccessPolicyCRUD.read - query ===")
-                print(query)
+                # print("=== AccessPolicyCRUD.read - session ===")
+                # print(session)
+                # print("=== AccessPolicyCRUD.read - query ===")
+                # print(query)
+                # print("=== AccessPolicyCRUD.read - query.compile().params ===")
+                # print(query.compile().params)
                 response = await session.exec(query)
                 results = response.all()
+                # print("=== AccessPolicyCRUD.read - results ===")
+                # print(results)
 
             if not results:
                 raise HTTPException(status_code=404, detail="Access policy not found")

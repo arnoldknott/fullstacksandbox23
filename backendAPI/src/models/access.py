@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from sqlmodel import Field, SQLModel
 from sqlalchemy import UniqueConstraint
@@ -40,7 +40,7 @@ class AccessPolicyCreate(SQLModel):
     identity_id: Optional[uuid.UUID] = None
     identity_type: Optional["IdentityType"] = None
     resource_id: uuid.UUID
-    resource_type: "ResourceType"
+    resource_type: Union["ResourceType", "IdentityType"] = "ResourceType"
     action: "Action"
     public: bool = Field(
         default=False,
@@ -75,7 +75,7 @@ class AccessPolicy(AccessPolicyCreate, table=True):
     )  # needs to be a foreign key / relationship for join statements?
     identity_type: Optional["IdentityType"] = Field(default=None, index=True)
     resource_id: uuid.UUID = Field(index=True)
-    resource_type: "ResourceType" = Field(index=True)
+    resource_type: str = Field(index=True)
     action: "Action" = Field()
 
     __table_args__ = (
@@ -104,7 +104,7 @@ class AccessLogCreate(SQLModel):
     identity_id: uuid.UUID
     identity_type: "IdentityType"
     resource_id: uuid.UUID
-    resource_type: "ResourceType"
+    resource_type: Union["ResourceType", "IdentityType"] = "ResourceType"
     action: "Action"
     status_code: int
 
@@ -116,7 +116,7 @@ class AccessLog(AccessLogCreate, table=True):
     identity_id: uuid.UUID = Field(index=True)
     identity_type: "IdentityType" = Field(index=True)
     resource_id: uuid.UUID = Field(primary_key=True)
-    resource_type: "ResourceType" = Field(index=True)
+    resource_type: str = Field(index=True)
     action: "Action" = Field()
     time: datetime = Field(default=datetime.now())
     status_code: int = Field()

@@ -7,6 +7,7 @@ from crud.identity import UserCRUD
 from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
 from models.identity import User, UserRead
+from models.access import AccessPolicy
 from fastapi import FastAPI
 from tests.utils import (
     token_payload_user_id,
@@ -257,6 +258,7 @@ async def test_post_user_invalid_token(
 async def test_admin_gets_users(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
+    add_test_policies_for_resources: List[AccessPolicy],
     add_one_test_user: User,
 ):
     """Test GET one user"""
@@ -266,6 +268,12 @@ async def test_admin_gets_users(
 
     # adds a user to the database, which is the one to GET:
     user = add_one_test_user
+    await add_test_policies_for_resources(
+        resources=[user],
+        actions=["read"],
+        # TBD: switch from public to admin-owned resources
+        publics=[True],
+    )
 
     response = await async_client.get("/api/v1/user/")
     assert response.status_code == 200

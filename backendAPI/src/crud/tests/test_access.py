@@ -269,7 +269,7 @@ async def test_read_access_policy_by_resource(
         # read_policy = await policy_crud.read_by_resource(
         read_policy = await policy_crud.read(
             resource_id=policies[1].resource_id,
-            resource_type="protected_resource",
+            resource_type="ProtectedResource",
         )
         assert len(read_policy) == 2
 

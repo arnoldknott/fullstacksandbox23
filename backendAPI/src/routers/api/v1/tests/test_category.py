@@ -136,8 +136,8 @@ async def test_get_category_by_id(
 ):
     """Tests GET all categories."""
     categories = add_test_categories
-    print("=== categories[1].id ===")
-    print(categories[1].id)
+    # print("=== categories[1].id ===")
+    # print(categories[1].id)
     response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
 
     assert response.status_code == 200

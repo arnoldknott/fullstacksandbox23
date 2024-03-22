@@ -4,6 +4,7 @@ import uuid
 import pytest
 from httpx import AsyncClient
 from models.demo_resource import DemoResource
+from models.access import AccessPolicy
 from models.tag import Tag
 from tests.utils import one_test_demo_resource
 
@@ -48,10 +49,17 @@ async def test_post_demo_resource_with_nonexisting_category(async_client: AsyncC
 
 @pytest.mark.anyio
 async def test_get_all_demo_resources(
-    async_client: AsyncClient, add_test_demo_resources: list[DemoResource]
+    async_client: AsyncClient,
+    add_test_demo_resources: list[DemoResource],
+    add_test_policies_for_resources: list[AccessPolicy],
 ):
     """Tests GET all demo resources."""
     resources = add_test_demo_resources
+    await add_test_policies_for_resources(
+        resources=resources,
+        actions=["read"] * len(resources),
+        publics=[True] * len(resources),
+    )
     # print("=== demo resources ===")
     # print(resources)
     response = await async_client.get("/api/v1/demo_resource/")

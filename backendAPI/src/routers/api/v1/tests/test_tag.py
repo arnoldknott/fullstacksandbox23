@@ -2,6 +2,7 @@ import pytest
 import uuid
 from httpx import AsyncClient
 from models.tag import Tag
+from models.access import AccessPolicy
 
 
 @pytest.mark.anyio
@@ -33,9 +34,18 @@ async def test_post_tag_name_too_long(async_client: AsyncClient):
 
 
 @pytest.mark.anyio
-async def test_get_all_tags(async_client: AsyncClient, add_test_tags: list[Tag]):
+async def test_get_all_tags(
+    async_client: AsyncClient,
+    add_test_tags: list[Tag],
+    add_test_policies_for_resources: list[AccessPolicy],
+):
     """Tests GET all tags."""
     tags = add_test_tags
+    await add_test_policies_for_resources(
+        resources=tags,
+        actions=["read"] * len(tags),
+        publics=[True] * len(tags),
+    )
     response = await async_client.get("/api/v1/tag/")
 
     assert response.status_code == 200

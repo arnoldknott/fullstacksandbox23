@@ -167,7 +167,15 @@ async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
             # )
             # created_policies.append(AccessPolicy(**policy))
             resource_id = resource.id
-            resource_type = ResourceType(resource.__class__.__name__)
+            if resource.__class__.__name__ in ResourceType.list():
+                resource_type = ResourceType(resource.__class__.__name__)
+            elif resource.__class__.__name__ in IdentityType.list():
+                resource_type = IdentityType(resource.__class__.__name__)
+            else:
+                raise ValueError(
+                    f"{resource.__name__} is not a valid ResourceType or IdentityType"
+                )
+            # resource_type = ResourceType(resource.__class__.__name__)
             if identity is not None:
                 identity_id = identity.id
                 identity_type = IdentityType(identity.__class__.__name__)
@@ -252,11 +260,17 @@ async def add_test_categories(get_async_test_session: AsyncSession):
 async def add_test_demo_resources(
     get_async_test_session: AsyncSession,
     add_test_categories: list[Category],
+    add_test_policies_for_resources: list[AccessPolicy],
 ):
     """Adds a demo resource to the database."""
     # print("=== add_test_demo_resources started ===")
     session = get_async_test_session
     existing_test_categories = add_test_categories
+    await add_test_policies_for_resources(
+        resources=existing_test_categories,
+        actions=["read"] * len(existing_test_categories),
+        publics=[True] * len(existing_test_categories),
+    )
     # print("=== add_test_demo_resources after add_test_categories ===")
     many_test_demo_resources[0]["category_id"] = existing_test_categories[1].id
     many_test_demo_resources[1]["category_id"] = existing_test_categories[0].id
