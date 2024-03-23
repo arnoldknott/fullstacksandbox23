@@ -4,6 +4,7 @@ from core.types import ResourceType, Action, IdentityType
 from models.access import AccessPolicy
 from models.category import Category
 from models.demo_resource import DemoResource
+from models.public_resource import PublicResource
 from models.tag import Tag
 from models.identity import User
 from crud.protected_resource import ProtectedResourceCRUD
@@ -15,6 +16,7 @@ from tests.utils import (
     many_test_tags,
     many_test_users,
     many_test_protected_resources,
+    many_test_public_resources,
 )
 
 # def generate_mock_token(
@@ -239,6 +241,21 @@ async def add_many_test_users(get_async_test_session: AsyncSession):
         users.append(this_user)
 
     yield users
+
+
+@pytest.fixture(scope="function")
+async def add_test_public_resources(get_async_test_session: AsyncSession):
+    """Adds a category to the database."""
+    session = get_async_test_session
+    public_resources_instances = []
+    for public_resource in many_test_public_resources:
+        public_resource_instance = PublicResource(**public_resource)
+        session.add(public_resource_instance)
+        await session.commit()
+        await session.refresh(public_resource_instance)
+        public_resources_instances.append(public_resource_instance)
+
+    yield public_resources_instances
 
 
 @pytest.fixture(scope="function")

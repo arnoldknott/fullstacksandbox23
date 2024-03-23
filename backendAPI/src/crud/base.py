@@ -124,6 +124,7 @@ class BaseCRUD(
             await session.refresh(database_object)
             access_policy = None
             # TBD move the choice about public resources to access_CRUD!
+            # No: this crud does not allow creation without current_user: make current_user mandatory"
             if current_user is not None:
                 access_policy = AccessPolicy(
                     resource_id=database_object.id,
@@ -141,8 +142,8 @@ class BaseCRUD(
                 )
             # print("=== BaseCRUD.create - access_policy ===")
             # print(access_policy)
-            # async with self.policy_CRUD as policy_CRUD:
-            #     await policy_CRUD.create(access_policy)
+            async with self.policy_CRUD as policy_CRUD:
+                await policy_CRUD.create(access_policy, current_user)
             # TBD: put access policy creation here!
             # Ideally in the same database transaction as above with another session.add() and same session.commit()
             # TBD: add access log here!

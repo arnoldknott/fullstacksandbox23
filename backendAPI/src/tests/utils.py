@@ -194,3 +194,19 @@ many_test_protected_resources = [
         "description": "with all kinds of secret description text, that can only be accessed after passing access control.",
     },
 ]
+
+
+many_test_public_resources = [
+    {
+        "comment": "Some random user wrote a public comment on our homepage, referring to some stuff somewhere. Nobody really knows how it was and what it was about.",
+    },
+    {
+        "comment": "Another public comment, that is not really helpful, but at least it is public. So everyone can read it and it might trigger more opinions.",
+    },
+    {
+        "comment": "A third public comment. That one is ways more helpful, as the author is actually referring to what's shown on the page..",
+    },
+    {
+        "comment": "And one more. Whatever that is about. It's public, so it's here. Somebody wrote this as some point in time. Maybe it's helpful.",
+    },
+]

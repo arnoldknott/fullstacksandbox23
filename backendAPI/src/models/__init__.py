@@ -15,3 +15,4 @@ from .identity import (
     IdentityHierarchy,  # noqa F401
 )
 from .protected_resource import ProtectedResource  # noqa F401
+from .public_resource import PublicResource  # noqa F401

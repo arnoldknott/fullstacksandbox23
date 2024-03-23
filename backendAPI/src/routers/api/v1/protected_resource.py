@@ -23,7 +23,7 @@ async def post_protected_resource(
     protected_resource: ProtectedResourceCreate,
     token_payload=Depends(get_access_token_payload),
 ) -> ProtectedResource:
-    """Creates a new protected resouce."""
+    """Creates a new protected resource."""
     return await protected_resource_view.post(
         token_payload,
         protected_resource,
