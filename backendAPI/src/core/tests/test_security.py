@@ -243,7 +243,7 @@ async def test_existing_azure_user_has_new_group_in_token(
     assert db_user["azure_tenant_id"] == uuid.UUID(one_test_user["azure_tenant_id"])
     assert len(db_user["azure_groups"]) == 4
     assert any(
-        group["azure_group_id"] == uuid.UUID(token_payload_one_group["groups"][0])
+        group["id"] == uuid.UUID(token_payload_one_group["groups"][0])
         for group in db_user["azure_groups"]
     )
 

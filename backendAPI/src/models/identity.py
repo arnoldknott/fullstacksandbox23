@@ -20,7 +20,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 class AzureGroupUserLink(SQLModel, table=True):
     azure_group_id: Optional[uuid.UUID] = Field(
-        default=None, foreign_key="azuregroup.azure_group_id", primary_key=True
+        default=None, foreign_key="azuregroup.id", primary_key=True
     )
     azure_user_id: Optional[uuid.UUID] = Field(
         default=None, foreign_key="user.azure_user_id", primary_key=True
@@ -30,7 +30,7 @@ class AzureGroupUserLink(SQLModel, table=True):
 class AzureGroupCreate(SQLModel):
     """Schema for creating a group."""
 
-    azure_group_id: uuid.UUID
+    id: uuid.UUID
     # enables multi-tenancy, if None, then it's the internal tenant:
     azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
     is_active: bool = True
@@ -39,7 +39,7 @@ class AzureGroupCreate(SQLModel):
 class AzureGroupRead(AzureGroupCreate):
     """Schema for reading a group."""
 
-    azure_group_id: uuid.UUID
+    id: uuid.UUID
     # id: uuid.UUID  # no longer optional - needs to exist now
     azure_users: Optional[List["User"]] = []
 
@@ -54,7 +54,11 @@ class AzureGroup(AzureGroupCreate, table=True):
     # if other sources than Azure AD are used, then this potentially needs to be re-added
     # careful when doing that - take production database offline first!
     #  id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
-    azure_group_id: uuid.UUID = Field(index=True, primary_key=True)
+    id: uuid.UUID = Field(
+        index=True,
+        primary_key=True,
+        description="Identical to the uuid for this group from Azure.",
+    )
     created_at: datetime = Field(default=datetime.now())
     is_active: Optional[bool] = Field(default=True)
     # last_updated_at: datetime = Field(default=datetime.now())# does not really make sense here

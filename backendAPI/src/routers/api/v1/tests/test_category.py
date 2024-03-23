@@ -132,10 +132,18 @@ async def test_get_all_categories(
 
 @pytest.mark.anyio
 async def test_get_category_by_id(
-    async_client: AsyncClient, add_test_categories: list[Category]
+    async_client: AsyncClient,
+    add_test_categories: list[Category],
+    add_test_policies_for_resources: list[AccessPolicy],
 ):
     """Tests GET all categories."""
     categories = add_test_categories
+    # TBD: consider moving this into the add_test_categories fixture with action argument on it and default public or override with optional identity
+    await add_test_policies_for_resources(
+        resources=categories,
+        actions=["read"] * len(categories),
+        publics=[True] * len(categories),
+    )
     # print("=== categories[1].id ===")
     # print(categories[1].id)
     response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")

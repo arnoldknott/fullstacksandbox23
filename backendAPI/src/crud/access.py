@@ -54,6 +54,9 @@ class AccessPolicyCRUD:
             # print(current_user)
             # print("=== AccessPolicyCRUD.create - type(current_user) ===")
             # print(type(current_user))
+            # This is where the access control should check ownership and hierarchies, to decide, wether the user can create the policy!
+            # Note, that the current user is not creating the policy for themselves, but for another user!
+            # That's the sharing ownership part of the access control.
             if not await self.access_control.allows(
                 user=current_user,
                 resource_id=policy.resource_id,
@@ -61,6 +64,8 @@ class AccessPolicyCRUD:
                 action=write,
             ):
                 raise HTTPException(status_code=403, detail="Forbidden")
+            # TBD: Everyone can create? Or does the user need to be logged in?
+            # not logged in users can only create public policies?
             session.add(policy)
             await session.commit()
             await session.refresh(policy)

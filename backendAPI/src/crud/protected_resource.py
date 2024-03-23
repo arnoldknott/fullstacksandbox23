@@ -4,7 +4,6 @@ from models.protected_resource import (
     ProtectedResourceRead,
     ProtectedResourceUpdate,
 )
-from core.types import ResourceType
 from .base import BaseCRUD
 
 # # if TYPE_CHECKING:

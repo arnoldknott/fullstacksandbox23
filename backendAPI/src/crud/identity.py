@@ -40,7 +40,7 @@ class AzureGroupCRUD(
         except HTTPException as err:
             if err.status_code == 404:
                 group_create = AzureGroupCreate(
-                    azure_group_id=azure_group_id,
+                    id=azure_group_id,
                     azure_tenant_id=azure_tenant_id,
                 )
                 # TBD: After refactoring into access control, the create method should cannot be used any more here.

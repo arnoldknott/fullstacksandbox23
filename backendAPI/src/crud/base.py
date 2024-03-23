@@ -73,8 +73,8 @@ class BaseCRUD(
                 f"{base_model.__name__} is not a valid ResourceType or IdentityType"
             )
         # self.resource_type = ResourceType(base_model.__name__)
-        policy_CRUD = AccessPolicyCRUD()
-        self.access_control = AccessControl(policy_CRUD)
+        self.policy_CRUD = AccessPolicyCRUD()
+        self.access_control = AccessControl(self.policy_CRUD)
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -122,10 +122,33 @@ class BaseCRUD(
             session.add(database_object)
             await session.commit()
             await session.refresh(database_object)
+            access_policy = None
+            # TBD move the choice about public resources to access_CRUD!
+            if current_user is not None:
+                access_policy = AccessPolicy(
+                    resource_id=database_object.id,
+                    resource_type=self.resource_type,
+                    action=own,
+                    identity_id=current_user.user_id,
+                    identity_type=IdentityType.user,
+                )
+            else:
+                access_policy = AccessPolicy(
+                    resource_id=database_object.id,
+                    resource_type=self.resource_type,
+                    action=own,
+                    public=True,
+                )
+            # print("=== BaseCRUD.create - access_policy ===")
+            # print(access_policy)
+            # async with self.policy_CRUD as policy_CRUD:
+            #     await policy_CRUD.create(access_policy)
             # TBD: put access policy creation here!
             # Ideally in the same database transaction as above with another session.add() and same session.commit()
+            # TBD: add access log here!
             return database_object
         except Exception as e:
+            # TBD: add access logging here!
             logger.error(f"Error in BaseCRUD.create: {e}")
             raise HTTPException(status_code=404, detail="Object not found")
 
@@ -171,13 +194,16 @@ class BaseCRUD(
         # statement = select(self.model).offset(skip).limit(limit)
         response = await session.exec(statement)
         if response is None:
+            # TBD: add access logging here!
             raise HTTPException(status_code=404, detail="No objects found")
+        # TBD: add access logging here!
         return response.all()
 
     # Changing to return BaseSchemaTypeRead instead of BaseModelType makes read_with_childs obsolete!
     async def read_by_id(
         self,
         object_id: uuid.UUID,
+        current_user: Optional["CurrentUserData"] = None,
         # update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
         # Refactor into this:
         # current_user: Optional["CurrentUserData"] = None,
@@ -194,8 +220,35 @@ class BaseCRUD(
         #     raise HTTPException(status_code=403, detail="Access denied")
         session = self.session
         model = self.model
-        object = await session.get(model, object_id)
-        if object is None:
+        join_conditions = self.access_control.filters_allowed(
+            resource_type=self.resource_type,
+            action=read,
+            user=current_user,
+        )
+        # generically get the primary key of a model:
+        # primary_key = next(iter(model.__table__.primary_key.columns)).name
+        # object = await session.get(model, object_id)
+        # if object is None:
+        #     # TBD: add access logging here!
+        #     raise HTTPException(status_code=404, detail="Object not found")
+        try:
+            # print("=== BaseCRUD.read_by_id - model.id ===")
+            # print(model.id)
+            # print("=== BaseCRUD.read_by_id - object_id ===")
+            # print(object_id)
+            statement = (
+                select(model).where(model.id == object_id)
+                # .join(AccessPolicy, model.id == AccessPolicy.resource_id)
+                # .where(*join_conditions)
+            )
+            response = await session.exec(statement)
+            object = response.one()
+            # statement = select(model).where(model.id == object_id)
+            # response = await session.exec(statement)
+            # object = response.one()
+        except Exception as e:
+            # TBD: add access logging here!
+            logger.error(f"Error in BaseCRUD.read_by_id: {e}")
             raise HTTPException(status_code=404, detail="Object not found")
         # TBD: Refactor into access control
         # if hasattr(object, "last_accessed_at") and update_last_access is True:
@@ -203,6 +256,7 @@ class BaseCRUD(
         #     session.add(object)
         #     await session.commit()
         #     await session.refresh(object)
+        # TBD: add access logging here!
         return object
 
     async def update(
@@ -237,6 +291,8 @@ class BaseCRUD(
         session.add(object)
         await session.commit()
         await session.refresh(object)
+        # TBD: add exception handling here!
+        # TBD: add access logging here!
         return object
 
     async def delete(self, object_id: uuid.UUID) -> BaseModelType:
@@ -251,6 +307,6 @@ class BaseCRUD(
             raise HTTPException(status_code=404, detail="Object not found")
         await session.delete(object)
         await session.commit()
-        return object
+        return object  #
 
     # TBD: add share / permission methods - maybe in an inherited class BaseCRUDPermissions?
