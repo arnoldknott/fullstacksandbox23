@@ -45,7 +45,7 @@ class BaseView:
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        # logger.info("POST calls post") # TBD: find nicer log for this!
+        logger.info("POST view calls create CRUD")
         current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             # created_object = await crud.create(object)
@@ -55,47 +55,62 @@ class BaseView:
 
     async def get(
         self,
-        token_payload,
+        # get operation does not need a token_payload, if the resource is public
+        token_payload=None,
         scopes: List[str] = [],
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        # logger.info("GETs all objects") # TBD: find nicer log for this!
-        # current_user = self.__guards(token_payload, scopes, roles, groups)
+        logger.info("GET view to retrieve all objects from read CRUD")
+        current_user = None
+        if token_payload:
+            current_user = self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
-            objects = await crud.read()
-            # Refactor into this:
-            # objects = await crud.read(current_test_user)
+            objects = await crud.read(current_user)
+
         return objects
 
     async def get_by_id(
         self,
-        token_payload,
         id,
+        token_payload=None,
         scopes: List[str] = [],
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        # logger.info("GET calls get") # TBD: find nicer log for this!
-        # current_user = self.__guards(token_payload, scopes, roles, groups)
+        logger.info("GET by id view to retrieve specific object from read CRUD")
+        current_user = None
+        if token_payload:
+            current_user = self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
-            object = await crud.read_by_id(id)
-            # Refactor into this:
-            # object = await crud.read_by_id(id, current_test_user)
+            object = await crud.read_by_id(id, current_user)
         return object
 
-    # add update and delete methods here
+    async def put(
+        self,
+        id,
+        token_payload,
+        object,
+        scopes: List[str] = [],
+        roles: List[str] = [],
+        groups: List[UUID] = [],
+    ):
+        logger.info("PUT updates a specific object through update CRUD")
+        current_user = await self.__guards(token_payload, scopes, roles, groups)
+        async with self.crud() as crud:
+            updated_object = await crud.update(id, object, current_user)
+        return updated_object
 
-
-# class BasePOST(BaseView):
-#     """Base class for POST views"""
-
-#     def __init__(self, crud):
-#         # makes the attributes of the BaseView class available:
-#         super().__init__(crud)
-
-#     async def create(self, object):
-#         logger.info("POST calls create")
-#         async with self.crud() as crud:
-#             created_object = await crud.create(object, self.__update_last_access)
-#         return created_object
+    async def delete(
+        self,
+        id,
+        token_payload,
+        scopes: List[str] = [],
+        roles: List[str] = [],
+        groups: List[UUID] = [],
+    ):
+        logger.info("DELETE removes a specific object through delete CRUD")
+        current_user = await self.__guards(token_payload, scopes, roles, groups)
+        async with self.crud() as crud:
+            deleted_object = await crud.delete(id, current_user)
+        return deleted_object

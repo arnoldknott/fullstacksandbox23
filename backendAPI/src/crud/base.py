@@ -43,28 +43,13 @@ class BaseCRUD(
     def __init__(
         self,
         base_model: Type[BaseModelType],
-        # resource_type: "ResourceType" = None,
         # TBD: consider moving this to the access_control as an override and method specific parameter
-        # The endpoints can still be protected by token claims individually - just add UserRoles or a scope requirement to the endpoint
+        # The endpoints can still be protected by token claims individually - just add roles, scope or groups requirement to the endpoint
     ):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
-        # print("=== BaseCRUD - ResourceType._member_names ===")
-        # print(ResourceType._member_names_)
-        # print("=== BaseCRUD - ResourceType.__members__.values ===")
-        # print(ResourceType.__members__.values())
-        # print("=== BaseCRUD - ResourceType._member_map_.values() ===")
-        # print(ResourceType._member_map_.values())
-        # print("=== BaseCRUD - IdentityType.__members__ ===")
-        # print(IdentityType.__members__)
-        # print("=== BaseCRUD -  ResourceType.list() ===")
-        # print(ResourceType.list())
-        # print("=== BaseCRUD - base_model.__name__ ===")
-        # print(base_model.__name__)
         if base_model.__name__ in ResourceType.list():
-            # print("=== BaseCRUD - ResourceType(base_model.__name__) ===")
-            # print(ResourceType(base_model.__name__))
             self.resource_type = ResourceType(base_model.__name__)
         elif base_model.__name__ in IdentityType.list():
             self.resource_type = IdentityType(base_model.__name__)
@@ -72,7 +57,6 @@ class BaseCRUD(
             raise ValueError(
                 f"{base_model.__name__} is not a valid ResourceType or IdentityType"
             )
-        # self.resource_type = ResourceType(base_model.__name__)
         self.policy_CRUD = AccessPolicyCRUD()
         self.access_control = AccessControl(self.policy_CRUD)
 
@@ -88,9 +72,8 @@ class BaseCRUD(
     async def create(
         self,
         object: BaseSchemaTypeCreate,
-        # update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
-        # Refactor into this:
-        current_user: Optional["CurrentUserData"] = None,
+        # Refactor into this - no longer Optional: create only allowed for authenticated users!
+        current_user: "CurrentUserData",
     ) -> BaseModelType:
         """Creates a new object."""
         logger.info("BaseCRUD.create")
@@ -122,30 +105,16 @@ class BaseCRUD(
             session.add(database_object)
             await session.commit()
             await session.refresh(database_object)
-            access_policy = None
-            # TBD move the choice about public resources to access_CRUD!
             # No: this crud does not allow creation without current_user: make current_user mandatory"
-            if current_user is not None:
-                access_policy = AccessPolicy(
-                    resource_id=database_object.id,
-                    resource_type=self.resource_type,
-                    action=own,
-                    identity_id=current_user.user_id,
-                    identity_type=IdentityType.user,
-                )
-            else:
-                access_policy = AccessPolicy(
-                    resource_id=database_object.id,
-                    resource_type=self.resource_type,
-                    action=own,
-                    public=True,
-                )
-            # print("=== BaseCRUD.create - access_policy ===")
-            # print(access_policy)
+            access_policy = AccessPolicy(
+                resource_id=database_object.id,
+                resource_type=self.resource_type,
+                action=own,
+                identity_id=current_user.user_id,
+                identity_type=IdentityType.user,
+            )
             async with self.policy_CRUD as policy_CRUD:
                 await policy_CRUD.create(access_policy, current_user)
-            # TBD: put access policy creation here!
-            # Ideally in the same database transaction as above with another session.add() and same session.commit()
             # TBD: add access log here!
             return database_object
         except Exception as e:
@@ -169,17 +138,9 @@ class BaseCRUD(
         # TBD: refactor into try-except block and add logging
         # Fetch all access policies for the current user
 
-        # TBD: version before refactoring:
+        # TBD: delete the version from before refactoring:
         # statement = select(model)
         # TBD: Refactor into access control:
-        # Nope:
-        # accessible_object_ids = await self.access_control.finds_allowed(
-        #     resource_type=self.resource_type,
-        #     action=read,
-        #     user=current_user,
-        # )
-        # statement = select(model).where(model.id.in_(accessible_object_ids))
-        # Yes - this looks like the right way to do it:
         join_conditions = self.access_control.filters_allowed(
             resource_type=self.resource_type,
             action=read,
@@ -190,8 +151,6 @@ class BaseCRUD(
             .join(AccessPolicy, model.id == AccessPolicy.resource_id)
             .where(*join_conditions)
         )
-        # print("=== BaseCRUD.read_all - statement ===")
-        # print(statement)
         # statement = select(self.model).offset(skip).limit(limit)
         response = await session.exec(statement)
         if response is None:
@@ -205,9 +164,6 @@ class BaseCRUD(
         self,
         object_id: uuid.UUID,
         current_user: Optional["CurrentUserData"] = None,
-        # update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
-        # Refactor into this:
-        # current_user: Optional["CurrentUserData"] = None,
     ) -> BaseSchemaTypeRead:
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is read here
@@ -228,15 +184,18 @@ class BaseCRUD(
         )
         # generically get the primary key of a model:
         # primary_key = next(iter(model.__table__.primary_key.columns)).name
+
+        # TBD: delete version before refactoring:
         # object = await session.get(model, object_id)
         # if object is None:
         #     # TBD: add access logging here!
         #     raise HTTPException(status_code=404, detail="Object not found")
+        # if hasattr(object, "last_accessed_at") and update_last_access is True:
+        #     model.last_accessed_at = datetime.now()
+        #     session.add(object)
+        #     await session.commit()
+        #     await session.refresh(object)
         try:
-            # print("=== BaseCRUD.read_by_id - model.id ===")
-            # print(model.id)
-            # print("=== BaseCRUD.read_by_id - object_id ===")
-            # print(object_id)
             statement = (
                 select(model).where(model.id == object_id)
                 # .join(AccessPolicy, model.id == AccessPolicy.resource_id)
@@ -244,19 +203,10 @@ class BaseCRUD(
             )
             response = await session.exec(statement)
             object = response.one()
-            # statement = select(model).where(model.id == object_id)
-            # response = await session.exec(statement)
-            # object = response.one()
         except Exception as e:
             # TBD: add access logging here!
             logger.error(f"Error in BaseCRUD.read_by_id: {e}")
             raise HTTPException(status_code=404, detail="Object not found")
-        # TBD: Refactor into access control
-        # if hasattr(object, "last_accessed_at") and update_last_access is True:
-        #     model.last_accessed_at = datetime.now()
-        #     session.add(object)
-        #     await session.commit()
-        #     await session.refresh(object)
         # TBD: add access logging here!
         return object
 
@@ -264,7 +214,6 @@ class BaseCRUD(
         self,
         old: BaseModelType,
         new: BaseSchemaTypeUpdate,
-        # update_last_access: bool = True,  # Refactor: remove this parameter and make it part of the access control checks, as well as the access_logs_table
         # Refactor into this:
         # current_user: "CurrentUserData",
     ) -> BaseModelType:
