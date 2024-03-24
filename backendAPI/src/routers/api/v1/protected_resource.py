@@ -1,10 +1,12 @@
 import logging
 
-from core.security import get_access_token_payload, CurrentAccessToken
 from fastapi import APIRouter, Depends
+
+from core.security import get_access_token_payload
+from .base import BaseView
 from models.protected_resource import ProtectedResource, ProtectedResourceCreate
 from crud.protected_resource import ProtectedResourceCRUD
-from .base import BaseView
+
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -17,7 +19,6 @@ router = APIRouter()
 protected_resource_view = BaseView(ProtectedResourceCRUD)
 
 
-# TBD: write more tests for this:
 @router.post("/", status_code=201)
 async def post_protected_resource(
     protected_resource: ProtectedResourceCreate,
@@ -32,6 +33,7 @@ async def post_protected_resource(
     )
 
 
+# TBD: write more tests for this:
 @router.get("/", status_code=200)
 async def get_protected_resources(
     token_payload=Depends(get_access_token_payload),
@@ -43,6 +45,7 @@ async def get_protected_resources(
     )
 
 
+# TBD: write more tests for this:
 @router.get("/{resource_id}", status_code=200)
 async def get_protected_resource_by_id(
     resource_id: str,
@@ -56,6 +59,7 @@ async def get_protected_resource_by_id(
     )
 
 
+# TBD: write more tests for this:
 @router.put("/{resource_id}", status_code=200)
 async def put_protected_resource(
     resource_id: str,
@@ -72,6 +76,7 @@ async def put_protected_resource(
     )
 
 
+# TBD: write more tests for this:
 @router.delete("/{resource_id}", status_code=200)
 async def delete_protected_resource(
     resource_id: str,

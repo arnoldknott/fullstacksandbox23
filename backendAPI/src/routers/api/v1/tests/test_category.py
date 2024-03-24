@@ -1,14 +1,47 @@
 import pytest
 import uuid
 from httpx import AsyncClient
+from fastapi import FastAPI
 from models.access import AccessPolicy
 from models.category import Category
 from models.demo_resource import DemoResource
+from tests.utils import (
+    token_payload_user_id,
+    token_payload_tenant_id,
+    token_payload_roles_admin,
+    token_payload_roles_user,
+    token_payload_scope_api_read_write,
+    token_payload_scope_api_read,
+)
 
 
 @pytest.mark.anyio
-async def test_post_category(async_client: AsyncClient):
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
+async def test_post_category(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+):
     """Tests POST of a category."""
+
+    app_override_get_azure_payload_dependency
+
     category = {
         "name": "Test Cat",
         "description": "Some description for this category",
@@ -23,8 +56,32 @@ async def test_post_category(async_client: AsyncClient):
 
 
 @pytest.mark.anyio
-async def test_post_category_name_too_long(async_client: AsyncClient):
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
+@pytest.mark.anyio
+async def test_post_category_name_too_long(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+):
     """Tests POST of a category."""
+    app_override_get_azure_payload_dependency
+
     category = {
         "name": "Test Category Name That Is Too Long",
         "description": "Some description for this category",
@@ -38,13 +95,45 @@ async def test_post_category_name_too_long(async_client: AsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            # **token_payload_scope_api_read,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
 async def test_get_all_categories(
     async_client: AsyncClient,
     add_test_policies_for_resources: list[AccessPolicy],
     add_test_categories: list[Category],
+    app_override_get_azure_payload_dependency: FastAPI,
 ):
     """Tests GET all categories."""
 
+    app_override_get_azure_payload_dependency
     categories = add_test_categories
     await add_test_policies_for_resources(
         resources=categories,
@@ -131,12 +220,45 @@ async def test_get_all_categories(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            # **token_payload_scope_api_read,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
 async def test_get_category_by_id(
     async_client: AsyncClient,
     add_test_categories: list[Category],
     add_test_policies_for_resources: list[AccessPolicy],
+    app_override_get_azure_payload_dependency: FastAPI,
 ):
     """Tests GET all categories."""
+
+    app_override_get_azure_payload_dependency
     categories = add_test_categories
     # TBD: consider moving this into the add_test_categories fixture with action argument on it and default public or override with optional identity
     await add_test_policies_for_resources(
@@ -144,8 +266,8 @@ async def test_get_category_by_id(
         actions=["read"] * len(categories),
         publics=[True] * len(categories),
     )
-    # print("=== categories[1].id ===")
-    # print(categories[1].id)
+    print("=== categories[1].id ===")
+    print(categories[1].id)
     response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
 
     assert response.status_code == 200
@@ -156,9 +278,42 @@ async def test_get_category_by_id(
 
 
 @pytest.mark.anyio
-async def test_get_category_by_invalid_id(async_client: AsyncClient):
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            # **token_payload_scope_api_read,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
+async def test_get_category_by_invalid_id(
+    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+):
     """Tests GET of a category with invalid id."""
 
+    app_override_get_azure_payload_dependency
     response = await async_client.get("/api/v1/category/invalid_id")
     assert response.status_code == 400
     content = response.json()
@@ -224,10 +379,32 @@ async def test_put_category_does_not_exist(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
 async def test_delete_category(
-    async_client: AsyncClient, add_test_categories: list[Category]
+    async_client: AsyncClient,
+    add_test_categories: list[Category],
+    app_override_get_azure_payload_dependency: FastAPI,
 ):
     """Tests DELETE of a category."""
+
+    app_override_get_azure_payload_dependency
     categories = add_test_categories
     response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
 
@@ -253,8 +430,30 @@ async def test_delete_category(
 
 
 @pytest.mark.anyio
-async def test_delete_category_by_invalid_id(async_client: AsyncClient):
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
+async def test_delete_category_by_invalid_id(
+    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+):
     """Tests DELETE of a category with invalid id."""
+
+    app_override_get_azure_payload_dependency
     response = await async_client.delete("/api/v1/category/invalid_id")
 
     assert response.status_code == 400
@@ -263,10 +462,32 @@ async def test_delete_category_by_invalid_id(async_client: AsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
 async def test_delete_category_does_not_exist(
-    async_client: AsyncClient, add_test_categories: list[Category]
+    async_client: AsyncClient,
+    add_test_categories: list[Category],
+    app_override_get_azure_payload_dependency: FastAPI,
 ):
     """Tests DELETE of a category."""
+
+    app_override_get_azure_payload_dependency
     add_test_categories
     response = await async_client.delete(f"/api/v1/category/{str(uuid.uuid4())}")
 
@@ -276,11 +497,44 @@ async def test_delete_category_does_not_exist(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            # **token_payload_scope_api_read,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
 async def test_get_all_demo_resources_by_category_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
+    app_override_get_azure_payload_dependency: FastAPI,
 ):
     """Tests GET all demo resources by category id."""
+
+    app_override_get_azure_payload_dependency
     resources = add_test_demo_resources
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()
@@ -304,12 +558,45 @@ async def test_get_all_demo_resources_by_category_id(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            # **token_payload_scope_api_read,
+            **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read,
+            **token_payload_roles_user,
+        },
+    ],
+    indirect=True,
+)
 async def test_get_demo_resources_for_lonely_category(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
+    app_override_get_azure_payload_dependency: FastAPI,
 ):
     """Tests GET error for category, that has no demo resources attached."""
-    print("=== test_get_no_demo_resources_for_unlinked_category ===")
+
+    app_override_get_azure_payload_dependency
+
     add_test_demo_resources
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()
@@ -317,7 +604,6 @@ async def test_get_demo_resources_for_lonely_category(
         f"/api/v1/category/{str(categories[2]['id'])}/demo_resources"
     )
 
-    print(response.json())
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "No demo resources found"

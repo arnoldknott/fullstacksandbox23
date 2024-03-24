@@ -138,7 +138,7 @@ class AccessControl:
             conditions.append(AccessPolicy.resource_type == resource_type)
             conditions.append(AccessPolicy.action == action)
             conditions.append(
-                or_(AccessPolicy.identity_id == user.id, AccessPolicy.public)
+                or_(AccessPolicy.identity_id == user.user_id, AccessPolicy.public)
             )  # add the self-join from identity inheritance table
 
         return conditions

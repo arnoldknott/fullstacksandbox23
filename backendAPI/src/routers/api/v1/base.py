@@ -64,7 +64,7 @@ class BaseView:
         logger.info("GET view to retrieve all objects from read CRUD")
         current_user = None
         if token_payload:
-            current_user = self.__guards(token_payload, scopes, roles, groups)
+            current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             objects = await crud.read(current_user)
 
@@ -81,7 +81,7 @@ class BaseView:
         logger.info("GET by id view to retrieve specific object from read CRUD")
         current_user = None
         if token_payload:
-            current_user = self.__guards(token_payload, scopes, roles, groups)
+            current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             object = await crud.read_by_id(id, current_user)
         return object

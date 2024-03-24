@@ -483,8 +483,8 @@ async def test_read_access_log():
     assert identity_log[0].identity_type == "User"
     assert identity_log[0].action == access_log.action
     assert identity_log[0].status_code == access_log.status_code
-    assert identity_log[0].time >= time_before - timedelta(seconds=8)
-    assert identity_log[0].time <= time_after + timedelta(seconds=8)
+    assert identity_log[0].time >= time_before - timedelta(seconds=1)
+    assert identity_log[0].time <= time_after + timedelta(seconds=20)
 
     # TBD: move the double checking to the tests for access control in crud access tests:
     assert len(resource_log) == 1

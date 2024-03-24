@@ -115,6 +115,8 @@ async def test_post_protected_resource(
     assert resource_log[0].time <= time_after_post + timedelta(seconds=4)
 
 
+# TBD: add tests for get, get_by_id, put, delete endpoints of the protected resource API!
+
 # @pytest.mark.anyio
 # @pytest.mark.parametrize(
 #     "mocked_get_azure_token_payload",
