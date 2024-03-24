@@ -10,7 +10,14 @@ from core.types import CurrentUserData, ResourceType, Action
 from core.access import AccessControl
 
 from fastapi import HTTPException
-from models.access import AccessPolicyCreate, AccessPolicy, AccessPolicyRead, AccessLog
+from models.access import (
+    AccessPolicyCreate,
+    AccessPolicy,
+    AccessPolicyRead,
+    AccessLogCreate,
+    AccessLog,
+    AccessLogRead,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -50,10 +57,6 @@ class AccessPolicyCRUD:
             #     user_id=policy.identity_id,
             #     # how do i get the roles and groups here?
             # )
-            # print("=== AccessPolicyCRUD.create - current_user ===")
-            # print(current_user)
-            # print("=== AccessPolicyCRUD.create - type(current_user) ===")
-            # print(type(current_user))
             # This is where the access control should check ownership and hierarchies, to decide, wether the user can create the policy!
             # Note, that the current user is not creating the policy for themselves, but for another user!
             # That's the sharing ownership part of the access control.
@@ -64,17 +67,9 @@ class AccessPolicyCRUD:
                 action=write,
             ):
                 raise HTTPException(status_code=403, detail="Forbidden")
-            # TBD: Everyone can create? Or does the user need to be logged in?
-            # not logged in users can only create public policies?
             session.add(policy)
             await session.commit()
             await session.refresh(policy)
-            # await session.close()
-            # async with await get_async_session() as session:
-            #     policy = AccessPolicy(**policy)
-            #     session.add(policy)
-            #     await session.commit()
-            #     await session.refresh(policy)
             return policy
         except Exception as e:
             logger.error(f"Error in creating policy: {e}")
@@ -215,18 +210,28 @@ class AccessLoggingCRUD:
     def __init__(self):
         self
 
+    async def __aenter__(self) -> AsyncSession:
+        """Returns a database session."""
+        self.session = await get_async_session()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Closes the database session."""
+        await self.session.close()
+
     async def log_access(
         self,
-        access_log: AccessLog,
+        access_log: AccessLogCreate,
     ) -> AccessLog:
         """Logs an access attempt to the database."""
-        logger.info("AccessLogging.log_access")
+        logger.info("Writing an access log to the database.")
+        access_log = AccessLog.model_validate(access_log)
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write here
         try:
-            with get_async_session() as session:
-                session.add(access_log)
-                await session.commit()
+            session = self.session
+            session.add(access_log)
+            await session.commit()
         except Exception as e:
             logger.error(f"Error in logging: {e}")
             raise HTTPException(status_code=400, detail="Bad request: logging failed")
@@ -234,12 +239,38 @@ class AccessLoggingCRUD:
             await self.session.close()
         return access_log
 
-    async def read_log_by_identity_id(self, identity_id: UUID) -> list[AccessLog]:
+    # Do we need current_user here?
+    async def read_log_by_identity_id(self, identity_id: UUID) -> list[AccessLogRead]:
         """Reads access logs by identity id."""
-        pass
+        logger.info("Reading identity access logs from the database.")
+        try:
+            session = self.session
+            query = select(AccessLog).where(
+                AccessLog.identity_id == identity_id,
+            )
+            response = await session.exec(query)
+            results = response.all()
+        except Exception as e:
+            logger.error(f"Error in reading log: {e}")
+            raise HTTPException(status_code=404, detail="Log not found")
+        return results
 
+    # Do we need current_user here?
+    # TBD: type might not be necessary any more as input since we've switched to UUID.
     async def read_log_by_resource(
         self, resource_id: int, resource_type: ResourceType
-    ) -> list[AccessLog]:
-        """Reads access logs by identity id."""
-        pass
+    ) -> list[AccessLogRead]:
+        """Reads access logs by resource id and type."""
+        logger.info("Reading resource access logs from the database.")
+        try:
+            session = self.session
+            query = select(AccessLog).where(
+                AccessLog.resource_id == resource_id,
+                AccessLog.resource_type == resource_type,
+            )
+            response = await session.exec(query)
+            results = response.all()
+        except Exception as e:
+            logger.error(f"Error in reading log: {e}")
+            raise HTTPException(status_code=404, detail="Log not found")
+        return results

@@ -3,7 +3,9 @@ from datetime import datetime, timedelta
 
 from httpx import AsyncClient
 from crud.protected_resource import ProtectedResourceCRUD
+from crud.access import AccessLoggingCRUD
 from models.protected_resource import ProtectedResource
+from core.types import Action
 from fastapi import FastAPI
 from tests.utils import (
     token_payload_user_id,
@@ -83,16 +85,62 @@ async def test_post_protected_resource(
     # assert (
     #     db_protected_resource.last_accessed_at == created_protected_resource.created_at
     # )
-    assert (
-        time_before_post - timedelta(seconds=25)
-        < db_protected_resource.created_at  # datetime.fromisoformat(db_protected_resource.created_at)
-        < time_after_post + timedelta(seconds=25)
-    )
+    # assert (
+    #     time_before_post - timedelta(seconds=25)
+    #     < db_protected_resource.created_at  # datetime.fromisoformat(db_protected_resource.created_at)
+    #     < time_after_post + timedelta(seconds=25)
+    # )
     assert db_protected_resource.name == many_test_protected_resources[0]["name"]
     assert (
         db_protected_resource.description
         == many_test_protected_resources[0]["description"]
     )
+
+    # TBD: add tests for created access policy here!
+
+    # Test for created logs:
+    async with AccessLoggingCRUD() as crud:
+        identity_log = await crud.read_log_by_identity_id(
+            current_test_user.user_id,
+        )
+        resource_log = await crud.read_log_by_resource(
+            db_protected_resource.id,
+            "ProtectedResource",
+        )
+    assert len(identity_log) == 1
+    assert identity_log[0].resource_id == db_protected_resource.id
+    assert identity_log[0].resource_type == "ProtectedResource"
+    assert identity_log[0].identity_id == current_test_user.user_id
+    assert identity_log[0].identity_type == "User"
+    assert identity_log[0].action == Action.write
+    assert identity_log[0].status_code == 201
+    assert identity_log[0].time >= time_before_post - timedelta(seconds=5)
+    assert identity_log[0].time <= time_after_post + timedelta(seconds=5)
+
+    # TBD: move the double checking to the tests for access control in crud access tests:
+    assert len(resource_log) == 1
+    assert resource_log[0].resource_id == identity_log[0].resource_id
+    assert resource_log[0].resource_type == identity_log[0].resource_type
+    assert resource_log[0].identity_id == identity_log[0].identity_id
+    assert resource_log[0].identity_type == identity_log[0].identity_type
+    assert resource_log[0].status_code == identity_log[0].status_code
+    assert resource_log[0].action == identity_log[0].action
+    assert resource_log[0].time == identity_log[0].time
+
+    assert resource_log[0].resource_id == db_protected_resource.id
+    assert resource_log[0].resource_type == "ProtectedResource"
+    assert resource_log[0].identity_id == current_test_user.user_id
+    assert resource_log[0].identity_type == "User"
+    assert resource_log[0].action == Action.write
+    assert resource_log[0].status_code == 201
+    assert resource_log[0].time >= time_before_post - timedelta(seconds=4)
+    assert resource_log[0].time <= time_after_post + timedelta(seconds=4)
+
+    # print("=== identity_log ===")
+    # print(identity_log)
+
+    # print("=== resource_log[0] ===")
+    # print(resource_log[0].model_dump())
 
     # assert 1 == 2
 

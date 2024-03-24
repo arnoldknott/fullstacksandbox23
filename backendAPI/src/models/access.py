@@ -117,7 +117,6 @@ class AccessLog(AccessLogCreate, table=True):
     identity_type: "IdentityType" = Field(index=True)
     resource_id: uuid.UUID = Field(primary_key=True)
     resource_type: str = Field(index=True)
-    action: "Action" = Field()
     time: datetime = Field(default=datetime.now())
     status_code: int = Field()
 
@@ -126,6 +125,7 @@ class AccessLogRead(AccessLogCreate):
     """Read model access attempt logs"""
 
     id: uuid.UUID
+    time: datetime
 
 
 class ResourceHierarchy(SQLModel, table=True):

@@ -3,8 +3,8 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional
 
-from models.access import AccessPolicy
-from crud.access import AccessPolicyCRUD
+from models.access import AccessPolicy, AccessLogCreate
+from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from core.databases import get_async_session
 from core.access import AccessControl
 from fastapi import HTTPException
@@ -59,6 +59,7 @@ class BaseCRUD(
             )
         self.policy_CRUD = AccessPolicyCRUD()
         self.access_control = AccessControl(self.policy_CRUD)
+        self.logging_CRUD = AccessLoggingCRUD()
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -68,6 +69,31 @@ class BaseCRUD(
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes the database session."""
         await self.session.close()
+
+    async def __write_log(
+        self,
+        object_id: uuid.UUID,
+        action: Action,
+        current_user: "CurrentUserData",
+        status_code: int,
+    ):
+        """Creates an access log entry."""
+        access_log = AccessLogCreate(
+            resource_id=object_id,
+            resource_type=self.resource_type,
+            action=action,
+            identity_id=current_user.user_id,
+            identity_type=IdentityType.user,
+            status_code=status_code,
+        )
+        # "resource_id= object_id,
+        # "resource_type": self.resource_type,
+        # "action": action,
+        # "identity_id": current_user.user_id,
+        # "identity_type": IdentityType.user,
+        # "status_code": status_code,
+        async with self.logging_CRUD as logging_CRUD:
+            await logging_CRUD.log_access(access_log)
 
     async def create(
         self,
@@ -115,10 +141,10 @@ class BaseCRUD(
             )
             async with self.policy_CRUD as policy_CRUD:
                 await policy_CRUD.create(access_policy, current_user)
-            # TBD: add access log here!
+            await self.__write_log(database_object.id, write, current_user, 201)
             return database_object
         except Exception as e:
-            # TBD: add access logging here!
+            await self.__write_log(database_object.id, write, current_user, 404)
             logger.error(f"Error in BaseCRUD.create: {e}")
             raise HTTPException(status_code=404, detail="Object not found")
 
