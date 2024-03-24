@@ -32,6 +32,57 @@ async def post_protected_resource(
     )
 
 
+@router.get("/", status_code=200)
+async def get_protected_resources(
+    token_payload=Depends(get_access_token_payload),
+) -> list[ProtectedResource]:
+    """Returns all protected resources."""
+    return await protected_resource_view.get(
+        token_payload,
+        roles=["User"],
+    )
+
+
+@router.get("/{resource_id}", status_code=200)
+async def get_protected_resource_by_id(
+    resource_id: str,
+    token_payload=Depends(get_access_token_payload),
+) -> ProtectedResource:
+    """Returns a protected resource."""
+    return await protected_resource_view.get_by_id(
+        token_payload,
+        resource_id,
+        roles=["User"],
+    )
+
+
+@router.put("/{resource_id}", status_code=200)
+async def put_protected_resource(
+    resource_id: str,
+    protected_resource: ProtectedResourceCreate,
+    token_payload=Depends(get_access_token_payload),
+) -> ProtectedResource:
+    """Updates a protected resource."""
+    return await protected_resource_view.put(
+        token_payload,
+        resource_id,
+        protected_resource,
+        roles=["User"],
+        scopes=["api.write"],
+    )
+
+
+@router.delete("/{resource_id}", status_code=200)
+async def delete_protected_resource(
+    resource_id: str,
+    token_payload=Depends(get_access_token_payload),
+) -> ProtectedResource:
+    """Deletes a protected resource."""
+    return await protected_resource_view.delete(
+        token_payload, resource_id, roles=["User"], scopes=["api.write"]
+    )
+
+
 # # TBD: implement tests for this:
 # this should be ready to go - just not tested yet and this one get's called by frontend - so for now it's important to return something.
 # @router.get("/", status_code=200)
@@ -70,19 +121,18 @@ async def post_protected_resource(
 
 
 # This is secure and works!
-@router.get("/")
-async def get_protected_resource(
-    token_payload=Depends(get_access_token_payload),
-    # current_user=Depends(CurrentAzureUserInDatabase()),
-):
-    """Returns a protected resource."""
-    token = CurrentAccessToken(token_payload)
-    current_user = await token.gets_or_signs_up_current_user()
-    logger.info("GET protected resource")
-    return {
-        # "message": "Hello from protected resource!"
-        "message": f"Authenticated user (user_id: {current_user.id}, azure_user_id: {current_user.azure_user_id}) is authorized to access protected resource!"
-    }
-
-
-#
+# old version - remove after refactoring to BaseView is done!
+# note - this is the path called by the frontend!
+# @router.get("/")
+# async def get_protected_resource(
+#     token_payload=Depends(get_access_token_payload),
+#     # current_user=Depends(CurrentAzureUserInDatabase()),
+# ):
+#     """Returns a protected resource."""
+#     token = CurrentAccessToken(token_payload)
+#     current_user = await token.gets_or_signs_up_current_user()
+#     logger.info("GET protected resource")
+#     return {
+#         # "message": "Hello from protected resource!"
+#         "message": f"Authenticated user (user_id: {current_user.id}, azure_user_id: {current_user.azure_user_id}) is authorized to access protected resource!"
+#     }

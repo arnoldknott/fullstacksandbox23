@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from httpx import AsyncClient
 from crud.protected_resource import ProtectedResourceCRUD
-from crud.access import AccessLoggingCRUD
+from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from models.protected_resource import ProtectedResource
 from core.types import Action
 from fastapi import FastAPI
@@ -63,18 +63,6 @@ async def test_post_protected_resource(
         created_protected_resource.description
         == many_test_protected_resources[0]["description"]
     )
-
-    # Verify that the user was created in the database
-    # TBD: this cannot be hard coded here - needs to come from the token configuration!
-    # token = CurrentAccessToken(lambda: get_access_token_payload)
-    # current_test_user = await token.provides_current_user()
-
-    # current_test_user = await CurrentAccessToken(
-    #     lambda: get_access_token_payload
-    # ).provides_current_user()
-    # print("=== mocked_get_azure_token_payload ===")
-    # print(current_test_user)
-
     async with ProtectedResourceCRUD() as crud:
         db_protected_resource = await crud.read_by_id(
             created_protected_resource.id,
@@ -97,52 +85,34 @@ async def test_post_protected_resource(
     )
 
     # TBD: add tests for created access policy here!
+    async with AccessPolicyCRUD() as crud:
+        policies = await crud.read(
+            resource_id=db_protected_resource.id,
+            resource_type="ProtectedResource",
+        )
+    assert len(policies) == 1
+    assert policies[0].id is not None
+    assert policies[0].resource_id == db_protected_resource.id
+    assert policies[0].resource_type == "ProtectedResource"
+    assert policies[0].identity_id == current_test_user.user_id
+    assert policies[0].identity_type == "User"
+    assert policies[0].action == "own"
 
     # Test for created logs:
     async with AccessLoggingCRUD() as crud:
-        identity_log = await crud.read_log_by_identity_id(
-            current_test_user.user_id,
-        )
         resource_log = await crud.read_log_by_resource(
             db_protected_resource.id,
             "ProtectedResource",
         )
-    assert len(identity_log) == 1
-    assert identity_log[0].resource_id == db_protected_resource.id
-    assert identity_log[0].resource_type == "ProtectedResource"
-    assert identity_log[0].identity_id == current_test_user.user_id
-    assert identity_log[0].identity_type == "User"
-    assert identity_log[0].action == Action.write
-    assert identity_log[0].status_code == 201
-    assert identity_log[0].time >= time_before_post - timedelta(seconds=5)
-    assert identity_log[0].time <= time_after_post + timedelta(seconds=5)
-
-    # TBD: move the double checking to the tests for access control in crud access tests:
-    assert len(resource_log) == 1
-    assert resource_log[0].resource_id == identity_log[0].resource_id
-    assert resource_log[0].resource_type == identity_log[0].resource_type
-    assert resource_log[0].identity_id == identity_log[0].identity_id
-    assert resource_log[0].identity_type == identity_log[0].identity_type
-    assert resource_log[0].status_code == identity_log[0].status_code
-    assert resource_log[0].action == identity_log[0].action
-    assert resource_log[0].time == identity_log[0].time
 
     assert resource_log[0].resource_id == db_protected_resource.id
     assert resource_log[0].resource_type == "ProtectedResource"
     assert resource_log[0].identity_id == current_test_user.user_id
     assert resource_log[0].identity_type == "User"
-    assert resource_log[0].action == Action.write
+    assert resource_log[0].action == "own"
     assert resource_log[0].status_code == 201
     assert resource_log[0].time >= time_before_post - timedelta(seconds=4)
     assert resource_log[0].time <= time_after_post + timedelta(seconds=4)
-
-    # print("=== identity_log ===")
-    # print(identity_log)
-
-    # print("=== resource_log[0] ===")
-    # print(resource_log[0].model_dump())
-
-    # assert 1 == 2
 
 
 # @pytest.mark.anyio

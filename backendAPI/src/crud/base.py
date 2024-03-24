@@ -81,7 +81,7 @@ class BaseCRUD(
         access_log = AccessLogCreate(
             resource_id=object_id,
             resource_type=self.resource_type,
-            action=action,
+            action=action.value,
             identity_id=current_user.user_id,
             identity_type=IdentityType.user,
             status_code=status_code,
@@ -93,7 +93,7 @@ class BaseCRUD(
         # "identity_type": IdentityType.user,
         # "status_code": status_code,
         async with self.logging_CRUD as logging_CRUD:
-            await logging_CRUD.log_access(access_log)
+            policy = await logging_CRUD.log_access(access_log)
 
     async def create(
         self,
@@ -141,10 +141,10 @@ class BaseCRUD(
             )
             async with self.policy_CRUD as policy_CRUD:
                 await policy_CRUD.create(access_policy, current_user)
-            await self.__write_log(database_object.id, write, current_user, 201)
+            await self.__write_log(database_object.id, own, current_user, 201)
             return database_object
         except Exception as e:
-            await self.__write_log(database_object.id, write, current_user, 404)
+            await self.__write_log(database_object.id, own, current_user, 404)
             logger.error(f"Error in BaseCRUD.create: {e}")
             raise HTTPException(status_code=404, detail="Object not found")
 
