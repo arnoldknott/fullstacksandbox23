@@ -19,7 +19,7 @@ class CurrentUserData(BaseModel):
     # scopes: List[str]# should not be relevant for access control?
 
 
-class Action(Enum):
+class Action(str, Enum):
     """Enum for the actions that can be performed on a resource"""
 
     read = "read"

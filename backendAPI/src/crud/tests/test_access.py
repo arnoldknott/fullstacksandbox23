@@ -1,8 +1,10 @@
 import pytest
 import uuid
+from datetime import datetime, timedelta
 
-from crud.access import AccessPolicyCRUD
-from models.access import AccessPolicyCreate, AccessPolicy
+
+from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
+from models.access import AccessPolicyCreate, AccessPolicy, AccessLog
 
 from core.types import CurrentUserData
 
@@ -14,6 +16,8 @@ from tests.utils import (
     many_test_users,
     user_id_nonexistent,
 )
+
+# region AccessPolicy CRUD tests
 
 
 @pytest.mark.anyio
@@ -412,3 +416,86 @@ async def test_delete_access_policy_by_id(add_many_test_access_policies):
             assert err.detail == "Access policy not found"
         else:
             pytest.fail("No HTTPexception raised!")
+
+
+# endregion AccessPolicy CRUD tests
+
+# region AccessLogging CRUD tests
+
+
+@pytest.mark.anyio
+async def test_create_access_log():
+    """Test creating an access log."""
+    access_log = AccessLog(
+        identity_id=uuid.UUID(one_test_user["azure_user_id"]),
+        identity_type="User",
+        resource_id=uuid.uuid4(),
+        resource_type="ProtectedResource",
+        action="read",
+        status_code=200,
+    )
+
+    async with AccessLoggingCRUD() as logging_crud:
+        created_log = await logging_crud.log_access(access_log)
+
+    assert created_log.id is not None
+    assert created_log.identity_id == access_log.identity_id
+    assert created_log.identity_type == access_log.identity_type
+    assert created_log.resource_id == access_log.resource_id
+    assert created_log.resource_type == access_log.resource_type
+    assert created_log.action == access_log.action
+    assert created_log.status_code == access_log.status_code
+
+
+@pytest.mark.anyio
+async def test_read_access_log():
+    """Test creating an access log."""
+
+    resource_id = uuid.uuid4()
+
+    access_log = AccessLog(
+        identity_id=uuid.UUID(one_test_user["azure_user_id"]),
+        identity_type="User",
+        resource_id=resource_id,
+        resource_type="ProtectedResource",
+        action="read",
+        status_code=200,
+    )
+
+    time_before = datetime.now()
+    async with AccessLoggingCRUD() as logging_crud:
+        await logging_crud.log_access(access_log)
+    time_after = datetime.now()
+
+    async with AccessLoggingCRUD() as crud:
+        identity_log = await crud.read_log_by_identity_id(
+            one_test_user["azure_user_id"]
+        )
+        resource_log = await crud.read_log_by_resource(
+            resource_id,
+            "ProtectedResource",
+        )
+    assert len(identity_log) == 1
+    assert identity_log[0].id is not None
+    assert identity_log[0].resource_id == access_log.resource_id
+    assert identity_log[0].resource_type == access_log.resource_type
+    assert identity_log[0].identity_id == uuid.UUID(one_test_user["azure_user_id"])
+    assert identity_log[0].identity_type == "User"
+    assert identity_log[0].action == access_log.action
+    assert identity_log[0].status_code == access_log.status_code
+    assert identity_log[0].time >= time_before - timedelta(seconds=8)
+    assert identity_log[0].time <= time_after + timedelta(seconds=8)
+
+    # TBD: move the double checking to the tests for access control in crud access tests:
+    assert len(resource_log) == 1
+    assert resource_log[0].id == identity_log[0].id
+    assert resource_log[0].resource_id == identity_log[0].resource_id
+    assert resource_log[0].resource_type == identity_log[0].resource_type
+    assert resource_log[0].identity_id == identity_log[0].identity_id
+    assert resource_log[0].identity_type == identity_log[0].identity_type
+    assert resource_log[0].status_code == identity_log[0].status_code
+    assert resource_log[0].action == identity_log[0].action
+    assert resource_log[0].time == identity_log[0].time
+
+
+# endregion AccessLogging CRUD tests
