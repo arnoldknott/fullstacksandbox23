@@ -704,7 +704,7 @@ async def test_get_all_demo_resources_by_category_id(
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()
     response = await async_client.get(
-        f"/api/v1/category/{str(categories[1]['id'])}/demo_resources"
+        f"/api/v1/category/{str(categories[1]['id'])}/demoresources"
     )
 
     assert response.status_code == 200
@@ -766,7 +766,7 @@ async def test_get_demo_resources_for_lonely_category(
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()
     response = await async_client.get(
-        f"/api/v1/category/{str(categories[2]['id'])}/demo_resources"
+        f"/api/v1/category/{str(categories[2]['id'])}/demoresources"
     )
 
     assert response.status_code == 404

@@ -76,7 +76,8 @@ async def delete_tag(tag_id: str) -> Tag:
     return response
 
 
-@router.get("/{tag_id}/demo_resources")
+# TBD: missing tests for this endpoint?
+@router.get("/{tag_id}/demoresources")
 async def get_all_demo_resources_for_tag(tag_id: str) -> list[DemoResource]:
     """Returns all demo resources with tag."""
     logger.info("GET all demo resources with tag")

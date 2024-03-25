@@ -151,7 +151,7 @@ async def delete_category(
 
 
 # TBD: refactor to updated access protection
-@router.get("/{category_id}/demo_resources")
+@router.get("/{category_id}/demoresources")
 async def get_all_demo_resources_in_category(category_id: str) -> list[DemoResource]:
     """Returns all demo resources within category."""
     logger.info("GET all demo resources within category")

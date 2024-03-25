@@ -166,7 +166,7 @@ async def test_delete_tag_does_not_exist(
 # ):
 #     """Tests GET all demo resources by category id."""
 #     resources = add_test_demo_resources_with_category
-#     response = await async_client.get("/api/v1/category/2/demo_resources")
+#     response = await async_client.get("/api/v1/category/2/demoresources")
 
 #     assert response.status_code == 200
 #     assert len(response.json()) == 2
@@ -191,7 +191,7 @@ async def test_delete_tag_does_not_exist(
 #     """Tests GET error for category, that has no demo resources attached."""
 #     print("=== test_get_no_demo_resources_for_unlinked_category ===")
 #     add_test_demo_resources_with_category
-#     response = await async_client.get("/api/v1/category/3/demo_resources")
+#     response = await async_client.get("/api/v1/category/3/demoresources")
 
 #     print(response.json())
 #     assert response.status_code == 404

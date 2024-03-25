@@ -49,7 +49,7 @@ async def test_post_demo_resource(
     resource = one_test_demo_resource
     # get_async_test_session
     time_before_post = datetime.now()
-    response = await async_client.post("/api/v1/demo_resource/", json=resource)
+    response = await async_client.post("/api/v1/demoresource/", json=resource)
     time_after_post = datetime.now()
 
     assert response.status_code == 201
@@ -98,7 +98,7 @@ async def test_post_demo_resource_with_nonexisting_category(
     print("=== resource ===")
     print(resource)
     # get_async_test_session
-    response = await async_client.post("/api/v1/demo_resource/", json=resource)
+    response = await async_client.post("/api/v1/demoresource/", json=resource)
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "Object not found"
@@ -122,7 +122,7 @@ async def test_get_all_demo_resources(
     )
     # print("=== demo resources ===")
     # print(resources)
-    response = await async_client.get("/api/v1/demo_resource/")
+    response = await async_client.get("/api/v1/demoresource/")
 
     assert response.status_code == 200
     assert len(response.json()) == 4
@@ -167,7 +167,7 @@ async def test_get_demo_resource_by_id(
     )
 
     # time_before_get_call = datetime.now()
-    response = await async_client.get(f"/api/v1/demo_resource/{resources[0].id}")
+    response = await async_client.get(f"/api/v1/demoresource/{resources[0].id}")
     # time_after_get_call = datetime.now()
     # print("== test_get_demo_resource_by_id - get call time ===")
     # print((time_after_get_call - time_before_get_call).total_seconds())
@@ -187,7 +187,7 @@ async def test_get_demo_resource_by_id(
 async def test_get_demo_resource_by_invalid_id_type(async_client: AsyncClient):
     """Tests GET of a demo resources with invalid id."""
 
-    response = await async_client.get("/api/v1/demo_resource/invalid_id")
+    response = await async_client.get("/api/v1/demoresource/invalid_id")
     assert response.status_code == 400
     content = response.json()
     assert content["detail"] == "Invalid id."
@@ -197,7 +197,7 @@ async def test_get_demo_resource_by_invalid_id_type(async_client: AsyncClient):
 async def test_get_demo_resource_by_nonexisting_uuid(async_client: AsyncClient):
     """Tests GET of a demo resources with invalid id."""
 
-    response = await async_client.get(f"/api/v1/demo_resource/{str(uuid.uuid4())}")
+    response = await async_client.get(f"/api/v1/demoresource/{str(uuid.uuid4())}")
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "No DemoResource found."
@@ -240,7 +240,7 @@ async def test_put_demo_resource(
     }
     time_before_crud = datetime.now()
     response = await async_client.put(
-        f"/api/v1/demo_resource/{resources[0].id}", json=updated_resource
+        f"/api/v1/demoresource/{resources[0].id}", json=updated_resource
     )
     time_after_crud = datetime.now()
 
@@ -307,7 +307,7 @@ async def test_put_demo_resource_partial_update(
         # identity_types=["user"] * len(categories),
     )
     response = await async_client.put(
-        f"/api/v1/demo_resource/{resources[0].id}", json=updated_resource
+        f"/api/v1/demoresource/{resources[0].id}", json=updated_resource
     )
 
     assert response.status_code == 200
@@ -366,7 +366,7 @@ async def test_put_demo_resource_by_invalid_id(
         # identity_types=["user"] * len(categories),
     )
     response = await async_client.put(
-        "/api/v1/demo_resource/not_an_integer", json=updated_resource
+        "/api/v1/demoresource/not_an_integer", json=updated_resource
     )
 
     assert response.status_code == 400
@@ -418,7 +418,7 @@ async def test_put_demo_resource_by_resource_does_not_exist(
         # identity_types=["user"] * len(categories),
     )
     response = await async_client.put(
-        f"/api/v1/demo_resource/{str(uuid.uuid4())}", json=updated_resource
+        f"/api/v1/demoresource/{str(uuid.uuid4())}", json=updated_resource
     )
 
     assert response.status_code == 404
@@ -437,7 +437,7 @@ async def test_put_demo_resource_by_resource_does_not_exist(
 #         "title": "Some title",
 #         "category": 42,
 #     }
-#     response = await async_client.put("/api/v1/demo_resource/1", json=updated_resource)
+#     response = await async_client.put("/api/v1/demoresource/1", json=updated_resource)
 
 #     assert response.status_code == 400
 
@@ -480,7 +480,7 @@ async def test_delete_demo_resource(
         # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
         # identity_types=["user"] * len(categories),
     )
-    response = await async_client.get(f"/api/v1/demo_resource/{str(resources[0].id)}")
+    response = await async_client.get(f"/api/v1/demoresource/{str(resources[0].id)}")
 
     # Check if resource exists before deleting:
     assert response.status_code == 200
@@ -492,9 +492,7 @@ async def test_delete_demo_resource(
     # assert content["timezone"] == resources[0].timezone
 
     # Delete resource:
-    response = await async_client.delete(
-        f"/api/v1/demo_resource/{str(resources[0].id)}"
-    )
+    response = await async_client.delete(f"/api/v1/demoresource/{str(resources[0].id)}")
     assert response.status_code == 200
     content = response.json()
     # print("=== content ===")
@@ -506,7 +504,7 @@ async def test_delete_demo_resource(
     # assert content["timezone"] == resources[0].timezone
 
     # Check if resource exists after deleting:
-    response = await async_client.get(f"/api/v1/demo_resource/{str(resources[0].id)}")
+    response = await async_client.get(f"/api/v1/demoresource/{str(resources[0].id)}")
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "No DemoResource found."
@@ -538,7 +536,7 @@ async def test_delete_demo_resource_by_invalid_id(
 
     app_override_get_azure_payload_dependency
 
-    response = await async_client.delete("/api/v1/demo_resource/invalid_id")
+    response = await async_client.delete("/api/v1/demoresource/invalid_id")
 
     assert response.status_code == 400
     content = response.json()
@@ -572,7 +570,7 @@ async def test_delete_demo_resource_by_resource_does_not_exist(
 
     app_override_get_azure_payload_dependency
 
-    response = await async_client.delete(f"/api/v1/demo_resource/{str(uuid.uuid4())}")
+    response = await async_client.delete(f"/api/v1/demoresource/{str(uuid.uuid4())}")
 
     assert response.status_code == 404
     content = response.json()
@@ -589,11 +587,11 @@ async def test_attach_tag_to_demo_resource(
     resources = add_test_demo_resources
     tags = add_test_tags
     response = await async_client.post(
-        f"/api/v1/demo_resource/{str(resources[1].id)}/tag/?tag_ids={str(tags[0].id)}&tag_ids={str(tags[2].id)}"
+        f"/api/v1/demoresource/{str(resources[1].id)}/tag/?tag_ids={str(tags[0].id)}&tag_ids={str(tags[2].id)}"
     )
     # for tag_id in tag_ids:
     #     response = await async_client.post(
-    #         f"/api/v1/demo_resource/{resource_id}/tag/{tag_id}"
+    #         f"/api/v1/demoresource/{resource_id}/tag/{tag_id}"
     #     )
 
     assert response.status_code == 200

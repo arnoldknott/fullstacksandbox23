@@ -101,7 +101,7 @@ app.include_router(
 
 app.include_router(
     demo_resource_router,
-    prefix=f"{global_prefix}/demo_resource",
+    prefix=f"{global_prefix}/demoresource",
     tags=["Demo Resource"],
 )
 
