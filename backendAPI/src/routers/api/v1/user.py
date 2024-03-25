@@ -18,7 +18,7 @@ from .base import BaseView
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-user_view = BaseView(UserCRUD)
+user_view = BaseView(UserCRUD, User)
 
 
 # note: self-sign-up through security - controlled by token content,
@@ -42,15 +42,15 @@ user_view = BaseView(UserCRUD)
 
 # TBD: Refactor with AccessControl:
 @router.post("/", status_code=201)
-async def post_protected_resource(
+async def post_user(
     user: UserCreate,
     token_payload=Depends(get_access_token_payload),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
     return await user_view.post(
-        token_payload,
         user,
+        token_payload,
         scopes=["api.write"],
         roles=["Admin"],
     )

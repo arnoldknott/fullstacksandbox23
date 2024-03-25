@@ -205,21 +205,21 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     # TBD: Refactor into access control
                     # last_accessed_at=datetime.now(),
                 )
-                print("=== user_create ===")
-                print(user_create)
+                # print("=== user_create ===")
+                # print(user_create)
                 # current_user = await self.create(user_create)
                 # TBD: After refactoring into access control, the create method should cannot be used any more here.
                 # user does not exist and there is no access policy for the user to create itself.
                 session = self.session
-                print("=== session ===")
+                # print("=== session ===")
                 database_user = User.model_validate(user_create)
                 session.add(database_user)
-                print("=== session.add(user_create) ===")
+                # print("=== session.add(user_create) ===")
                 await session.commit()
                 await session.refresh(database_user)
                 current_user = database_user
-                print("=== current_user ===")
-                print(current_user)
+                # print("=== current_user ===")
+                # print(current_user)
                 logger.info("USER created in database")
             else:
                 raise err

@@ -24,9 +24,9 @@ class DemoResourceCreate(SQLModel):
 
 class DemoResource(DemoResourceCreate, table=True):
     id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
-    created_at: datetime = Field(default=datetime.now())
-    # TBD: moce the last_updated_at and last_accessed_at to a resource access log table
-    last_updated_at: datetime = Field(default=datetime.now())
+    # created_at: datetime = Field(default=datetime.now())
+    # TBD: move the last_updated_at and last_accessed_at to a resource access log table
+    # last_updated_at: datetime = Field(default=datetime.now())
     # Note: so far all times are UTC!
 
     category_id: Optional[uuid.UUID] = Field(default=None, foreign_key="category.id")

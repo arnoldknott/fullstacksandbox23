@@ -5,7 +5,6 @@ from httpx import AsyncClient
 from crud.protected_resource import ProtectedResourceCRUD
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from models.protected_resource import ProtectedResource
-from core.types import Action
 from fastapi import FastAPI
 from tests.utils import (
     token_payload_user_id,

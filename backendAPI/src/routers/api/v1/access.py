@@ -6,8 +6,16 @@
 # router = APIRouter()
 
 
-# @router.get("/{subject}")
-# def get_course(subject: str):
-#     """Returns a subject."""
-#     logger.info("GET a course")
-#     return {"message": f"Hello from course {subject}!"}
+# implement protected routes for:
+# AccessPolicies:
+# - create (share with identity, i.e. user, group)
+# - create (public share)
+# - make a generic for the above two!
+# - read (check who has access)
+# - delete (unshare)
+# - hierarchy (inheritance)?
+# AccessLogs:
+# - read (check who accessed what)
+# - read first "own": corresponds to create
+# - read last access
+# - read access count

@@ -8,7 +8,6 @@ from models.public_resource import (
     PublicResourceRead,
 )
 from crud.public_resource import PublicResourceCRUD
-from .base import BaseView
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

@@ -16,7 +16,7 @@ router = APIRouter()
 # def get_protected_resource(token: Annotated[str, Depends(validate_token)]):
 
 
-protected_resource_view = BaseView(ProtectedResourceCRUD)
+protected_resource_view = BaseView(ProtectedResourceCRUD, ProtectedResource)
 
 
 @router.post("/", status_code=201)
@@ -26,8 +26,8 @@ async def post_protected_resource(
 ) -> ProtectedResource:
     """Creates a new protected resource."""
     return await protected_resource_view.post(
-        token_payload,
         protected_resource,
+        token_payload,
         scopes=["api.write"],
         roles=["User"],
     )
@@ -68,9 +68,9 @@ async def put_protected_resource(
 ) -> ProtectedResource:
     """Updates a protected resource."""
     return await protected_resource_view.put(
-        token_payload,
         resource_id,
         protected_resource,
+        token_payload,
         roles=["User"],
         scopes=["api.write"],
     )

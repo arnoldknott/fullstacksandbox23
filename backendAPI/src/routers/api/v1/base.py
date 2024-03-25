@@ -2,6 +2,7 @@ import logging
 from core.security import CurrentAccessToken
 from typing import List
 from uuid import UUID
+from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +19,9 @@ logger = logging.getLogger(__name__)
 class BaseView:
     """Base class for all views"""
 
-    def __init__(self, crud):
+    def __init__(self, crud, model):
         self.crud = crud
+        self.model = model
 
     # note: in python private methods are not really private: name mangling!
     async def __guards(self, token_payload, scopes, roles, groups):
@@ -39,8 +41,8 @@ class BaseView:
 
     async def post(
         self,
-        token_payload,
         object,
+        token_payload,
         scopes: List[str] = [],
         roles: List[str] = [],
         groups: List[UUID] = [],
@@ -79,23 +81,34 @@ class BaseView:
         groups: List[UUID] = [],
     ):
         logger.info("GET by id view to retrieve specific object from read CRUD")
+        try:
+            UUID(id)
+        except ValueError:
+            logger.error("ID is not a universal unique identifier (uuid).")
+            raise HTTPException(status_code=400, detail="Invalid id.")
         current_user = None
         if token_payload:
             current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
-            object = await crud.read_by_id(id, current_user)
-        return object
+            # object = await crud.read_by_id(id, current_user)
+            object = await crud.read(current_user, filters=[self.model.id == id])
+        return object[0]
 
     async def put(
         self,
         id,
-        token_payload,
         object,
+        token_payload,
         scopes: List[str] = [],
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
         logger.info("PUT updates a specific object through update CRUD")
+        try:
+            UUID(id)
+        except ValueError:
+            logger.error("ID is not a universal unique identifier (uuid).")
+            raise HTTPException(status_code=400, detail="Invalid id.")
         current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             updated_object = await crud.update(id, object, current_user)
@@ -110,6 +123,11 @@ class BaseView:
         groups: List[UUID] = [],
     ):
         logger.info("DELETE removes a specific object through delete CRUD")
+        try:
+            UUID(id)
+        except ValueError:
+            logger.error("ID is not a universal unique identifier (uuid).")
+            raise HTTPException(status_code=400, detail="Invalid id.")
         current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             deleted_object = await crud.delete(id, current_user)

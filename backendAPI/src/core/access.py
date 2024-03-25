@@ -126,17 +126,32 @@ class AccessControl:
         # print("== user ==")
         # print(user)
 
+        # TBD define the action overrides somewhere: own includes write and read
+        # own = ["read", "write"]
+        # write includes read
+        # write = ["read"]
+
+        if action == Action.read:
+            action = ["own", "write", "read"]
+        elif action == Action.write:
+            action = ["own", "write"]
+        elif action == Action.own:
+            action = ["own"]
+
         conditions = []
         if not user:
             conditions.append(AccessPolicy.resource_type == resource_type)
-            conditions.append(AccessPolicy.action == action)
+            # conditions.append(AccessPolicy.action == action)
+            conditions.append(AccessPolicy.action.in_(action))
             conditions.append(AccessPolicy.public)
         elif "Admin" in user.roles:
             conditions.append(AccessPolicy.resource_type == resource_type)
-            conditions.append(AccessPolicy.action == action)
+            # conditions.append(AccessPolicy.action == action)
+            conditions.append(AccessPolicy.action.in_(action))
         else:
             conditions.append(AccessPolicy.resource_type == resource_type)
-            conditions.append(AccessPolicy.action == action)
+            # conditions.append(AccessPolicy.action == action)
+            conditions.append(AccessPolicy.action.in_(action))
             conditions.append(
                 or_(AccessPolicy.identity_id == user.user_id, AccessPolicy.public)
             )  # add the self-join from identity inheritance table
@@ -148,24 +163,3 @@ class AccessControl:
         # accessible_object_ids = [policy.resource_id for policy in user_policies]
         # return accessible_object_ids
         # pass
-
-    # async def adds_grant(
-    #     identity: "CurrentUserData", resource_id: UUID, action: "Action"
-    # ) -> bool:
-    #     """Grants a new permission to for a resource"""
-    #     # TBD: this could go directly to the CRUD - just make sure it's also protected, as the accessCRUD is not using the BaseCrud (yet)!
-    #     pass
-
-    # async def removes_grant(
-    #     identity: "CurrentUserData", resource_id: UUID, action: "Action"
-    # ) -> bool:
-    #     """Removes a permission for a resource"""
-    #     # TBD: this could go directly to the CRUD - just make sure it's also protected, as the accessCRUD is not using the BaseCrud (yet)!
-    #     pass
-
-
-# class AccessLogging:
-#     """Class for access logging"""
-
-#     def __init__(self) -> None:
-#         pass

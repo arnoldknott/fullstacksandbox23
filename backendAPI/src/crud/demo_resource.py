@@ -23,6 +23,7 @@ class DemoResourceCRUD(
     def __init__(self):
         super().__init__(DemoResource)
 
+    # This should no longer be needed, as the base class now returns the read model
     async def read_by_id_with_childs(self, demo_resource_id: int) -> DemoResourceRead:
         """Returns the demo resource with id and includes its childs."""
         session = self.session
