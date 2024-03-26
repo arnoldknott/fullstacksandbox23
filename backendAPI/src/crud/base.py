@@ -82,8 +82,9 @@ class BaseCRUD(
             resource_id=object_id,
             resource_type=self.resource_type,
             action=action.value,
-            identity_id=current_user.user_id,
-            identity_type=IdentityType.user,
+            # if public access, current_user is None
+            identity_id=current_user.user_id if current_user else None,
+            identity_type=IdentityType.user if current_user else None,
             status_code=status_code,
         )
         async with self.logging_CRUD as logging_CRUD:

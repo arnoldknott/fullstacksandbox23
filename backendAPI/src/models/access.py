@@ -98,8 +98,8 @@ class AccessPolicyRead(AccessPolicyCreate):
 class AccessLogCreate(SQLModel):
     """Create model for access attempt logs"""
 
-    identity_id: uuid.UUID
-    identity_type: "IdentityType"
+    identity_id: Optional[uuid.UUID] = None
+    identity_type: Optional["IdentityType"] = None
     resource_id: uuid.UUID
     resource_type: Union["ResourceType", "IdentityType"] = "ResourceType"
     action: "Action"
@@ -110,8 +110,8 @@ class AccessLog(AccessLogCreate, table=True):
     """Table for logging actual access attempts"""
 
     id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
-    identity_id: uuid.UUID = Field(index=True)
-    identity_type: "IdentityType" = Field(index=True)
+    identity_id: Optional[uuid.UUID] = Field(default=None, index=True)
+    identity_type: Optional["IdentityType"] = Field(default=None, index=True)
     resource_id: uuid.UUID = Field(primary_key=True)
     resource_type: str = Field(index=True)
     time: datetime = Field(default=datetime.now())
