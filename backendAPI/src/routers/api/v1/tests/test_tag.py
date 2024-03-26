@@ -234,7 +234,7 @@ async def test_put_tag_does_not_exist(
 
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Object not found"
+    assert content["detail"] == "Object not updated."
 
 
 @pytest.mark.anyio

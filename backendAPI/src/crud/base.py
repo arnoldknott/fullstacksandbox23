@@ -326,36 +326,40 @@ class BaseCRUD(
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write here
 
-        ### This should be ready to go:
-        # access_conditions = self.access_control.filters_allowed(
-        #     resource_type=self.resource_type,
-        #     action=write,
-        #     user=current_user,
-        # )
-        # statement = (
-        #     select(self.model)
-        #     .where(self.model.id == object_id)
-        #     .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
-        #     .where(*access_conditions)
-        # )
-        # old = await session.exec(statement).one()
-        # if old is None:
-        #     logger.info(f"Object with id {object_id} not found")
-        #     raise HTTPException(status_code=404, detail="Object not found")
-        ####
-
-        old = await session.get(self.model, object_id)
-        if old is None:
-            logger.info(f"Object with id {object_id} not found")
-            raise HTTPException(status_code=404, detail="Object not found")
-
-        # TBD: remove and add logging instead:
-        if hasattr(old, "last_updated_at"):
-            old.last_updated_at = datetime.now()
-        # TBD: Refactor into access control
-        # if hasattr(old, "last_accessed_at") and update_last_access is True:
-        #     old.last_accessed_at = datetime.now()
         try:
+            ### This should be ready to go:
+            access_conditions = self.access_control.filters_allowed(
+                resource_type=self.resource_type,
+                action=write,
+                user=current_user,
+            )
+            statement = (
+                select(self.model)
+                .where(self.model.id == object_id)
+                .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
+                .where(*access_conditions)
+            )
+            response = await session.exec(statement)
+            old = response.one()
+            if old is None:
+                logger.info(f"Object with id {object_id} not found")
+                raise HTTPException(status_code=404, detail="Object not found.")
+            ####
+
+            ### TBD delete old version from before refactoring:
+            # old = await session.get(self.model, object_id)
+            # if old is None:
+            #     logger.info(f"Object with id {object_id} not found")
+            #     raise HTTPException(status_code=404, detail="Object not found")
+            ###
+
+            # TBD: remove and add logging instead:
+            if hasattr(old, "last_updated_at"):
+                old.last_updated_at = datetime.now()
+            # TBD: Refactor into access control
+            # if hasattr(old, "last_accessed_at") and update_last_access is True:
+            #     old.last_accessed_at = datetime.now()
+
             updated = new.model_dump(exclude_unset=True)
             for key, value in updated.items():
                 # if key == "id" or key == "created_at" or key == "last_updated_at":
@@ -377,7 +381,7 @@ class BaseCRUD(
         except Exception as e:
             await self.__write_log(object_id, write, current_user, 404)
             logger.error(f"Error in BaseCRUD.update: {e}")
-            raise HTTPException(status_code=404, detail="Object not updated")
+            raise HTTPException(status_code=404, detail="Object not updated.")
 
     async def delete(
         self,
@@ -391,31 +395,36 @@ class BaseCRUD(
         model = self.model
         try:
             ### This should be ready to go:
-            # access_conditions = self.access_control.filters_allowed(
-            #     resource_type=self.resource_type,
-            #     action=write,
-            #     user=current_user,
-            # )
-            # statement = (
-            #     select(self.model)
-            #     .where(self.model.id == object_id)
-            #     .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
-            #     .where(*access_conditions)
-            # )
-            # object = await session.exec(statement).one()
-            # if object is None:
-            #     logger.info(f"Object with id {object_id} not found")
-            #     raise HTTPException(status_code=404, detail="Object not found.")
+            access_conditions = self.access_control.filters_allowed(
+                resource_type=self.resource_type,
+                action=write,
+                user=current_user,
+            )
+            statement = (
+                select(model)
+                .where(model.id == object_id)
+                .join(AccessPolicy, model.id == AccessPolicy.resource_id)
+                .where(*access_conditions)
+            )
+            response = await session.exec(statement)
+            object = response.one()
+            if object is None:
+                logger.info(f"Object with id {object_id} not found")
+                raise HTTPException(status_code=404, detail="Object not found.")
             ####
 
             # TBD: refactor into try-except block and add logging
-            object = await session.get(model, object_id)
-            if object is None:
-                raise HTTPException(status_code=404, detail="Object not found")
+            ### TBD delete old version from before refactoring:
+            # object = await session.get(model, object_id)
+            # if object is None:
+            #     raise HTTPException(status_code=404, detail="Object not found")
+            ###
             await session.delete(object)
             await session.commit()
+            await self.__write_log(object_id, own, current_user, 200)
             return object
         except Exception as e:
+            await self.__write_log(object_id, write, current_user, 404)
             logger.error(f"Error in BaseCRUD.delete: {e}")
             raise HTTPException(status_code=404, detail="Object not deleted.")
 

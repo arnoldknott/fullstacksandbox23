@@ -377,6 +377,10 @@ async def test_read_access_policy_by_identity_and_resource_and_action(
     assert read_policy[0].action == policies[2].action
 
 
+# TBD: add tests for update
+
+
+# TBD: add tests for missing own policies
 @pytest.mark.anyio
 async def test_delete_access_policy_by_id(add_many_test_access_policies):
     """Test deleting an access policy."""
