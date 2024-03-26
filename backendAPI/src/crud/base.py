@@ -86,12 +86,6 @@ class BaseCRUD(
             identity_type=IdentityType.user,
             status_code=status_code,
         )
-        # "resource_id= object_id,
-        # "resource_type": self.resource_type,
-        # "action": action,
-        # "identity_id": current_user.user_id,
-        # "identity_type": IdentityType.user,
-        # "status_code": status_code,
         async with self.logging_CRUD as logging_CRUD:
             await logging_CRUD.log_access(access_log)
 
@@ -204,6 +198,8 @@ class BaseCRUD(
 
         response = await self.session.exec(statement)
         results = response.all()
+        for result in results:
+            await self.__write_log(result.id, own, current_user, 200)
 
         if not results:
             print("=== self.model.__name__ ===")
@@ -211,6 +207,8 @@ class BaseCRUD(
             print("=== self.resource_type ===")
             print(self.resource_type)
             logger.info(f"No objects found for {self.model.__name__}")
+            for result in results:
+                await self.__write_log(result.id, own, current_user, 404)
             raise HTTPException(
                 status_code=404, detail=f"No {self.model.__name__} found."
             )

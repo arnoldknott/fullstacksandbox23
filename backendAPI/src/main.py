@@ -11,6 +11,7 @@ from routers.api.v1.protected_resource import router as protected_resource_route
 from routers.api.v1.public_resource import router as public_resource_router
 from routers.api.v1.tag import router as tag_router
 from routers.api.v1.user import router as user_router
+from routers.api.v1.access import router as access_router
 
 # print("Current directory:", os.getcwd())
 # print("sys.path:", sys.path)
@@ -94,6 +95,18 @@ app = FastAPI(
 # app.include_router(oauth_router, tags=["OAuth"])
 app.include_router(core_router, prefix=f"{global_prefix}/core", tags=["Core"])
 app.include_router(
+    user_router,
+    prefix=f"{global_prefix}/user",
+    tags=["User"],
+    dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
+)
+app.include_router(
+    access_router,
+    prefix=f"{global_prefix}/access",
+    tags=["Access"],
+    dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
+)
+app.include_router(
     public_resource_router,
     prefix=f"{global_prefix}/publicresource",
     tags=["Public Resource"],
@@ -137,12 +150,6 @@ app.include_router(
 # )
 # Sign-up is handled by security - controlled by token content!
 # TBD: this can be implemented later for admin dashboard or so.
-app.include_router(
-    user_router,
-    prefix=f"{global_prefix}/user",
-    tags=["User"],
-    dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
-)
 
 
 # exception handler logs exceptions before passing them to the default exception handler

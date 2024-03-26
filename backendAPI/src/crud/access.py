@@ -57,21 +57,31 @@ class AccessPolicyCRUD:
             #     user_id=policy.identity_id,
             #     # how do i get the roles and groups here?
             # )
-            # This is where the access control should check ownership and hierarchies, to decide, wether the user can create the policy!
-            # Note, that the current user is not creating the policy for themselves, but for another user!
-            # That's the sharing ownership part of the access control.
+            # Current user creates a policy for another identity.
+            # Current user needs to own the resource to grant others access (share) it.
             if not await self.access_control.allows(
                 user=current_user,
                 resource_id=policy.resource_id,
                 resource_type=policy.resource_type,
-                action=write,
+                action=own,
             ):
                 raise HTTPException(status_code=403, detail="Forbidden")
             session.add(policy)
             await session.commit()
             await session.refresh(policy)
+            # TBD: write sharing to Access Control Log?
             return policy
         except Exception as e:
+            # TBD: write sharing attempt to Access Control Log?
+            # access_log = AccessLogCreate(
+            #     identity_id=current_user.user_id,
+            #     identity_type="User"
+            #     resource_id=policy.resource_id if policy.resource_id else None,
+            #     resource_type=policy.resource_type if policy.resource_type else None,
+            #     action=own,
+            #     status_code=403,  # TBD: could be 201 if a new resource is created
+            # )
+            # await loggingCRUD.log_access(access_log)
             logger.error(f"Error in creating policy: {e}")
             raise HTTPException(status_code=403, detail="Forbidden")
 
@@ -95,7 +105,7 @@ class AccessPolicyCRUD:
         resource_id: Optional[int] = None,
         resource_type: Optional[ResourceType] = None,
         action: Optional[Action] = None,
-    ) -> Union[AccessPolicyRead, List[AccessPolicyRead]]:  # TBD: always return a list?
+    ) -> List[AccessPolicyRead]:
         """Reads access control policies based on the provided parameters."""
         try:
             session = self.session
@@ -131,12 +141,6 @@ class AccessPolicyCRUD:
                 if conditions:
                     query = query.where(*conditions)
 
-                # print("=== AccessPolicyCRUD.read - session ===")
-                # print(session)
-                # print("=== AccessPolicyCRUD.read - query ===")
-                # print(query)
-                # print("=== AccessPolicyCRUD.read - query.compile().params ===")
-                # print(query.compile().params)
                 response = await session.exec(query)
                 results = response.all()
                 # print("=== AccessPolicyCRUD.read - results ===")
@@ -258,7 +262,7 @@ class AccessLoggingCRUD:
     # Do we need current_user here?
     # TBD: type might not be necessary any more as input since we've switched to UUID.
     async def read_log_by_resource(
-        self, resource_id: int, resource_type: ResourceType
+        self, resource_id: UUID, resource_type: ResourceType
     ) -> list[AccessLogRead]:
         """Reads access logs by resource id and type."""
         logger.info("Reading resource access logs from the database.")

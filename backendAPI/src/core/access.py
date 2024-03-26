@@ -37,7 +37,7 @@ class AccessControl:
         action: "Action",
         user: Optional["CurrentUserData"] = None,
     ) -> bool:
-        """Checks if the user has permission to perform the action on the resource"""
+        """Checks if the user has permission including inheritance to perform the action on the resource"""
         # TBD: move the logging to the BaseCrud? Or keep it here together with the Access Control?
         # loggingCRUD = AccessLoggingCRUD()
         # TBD: get all policies for the resource, where any of the hierarchical identities and hierarchical resources match
@@ -53,54 +53,42 @@ class AccessControl:
         # print(user["roles"])
         # Admin override:
         # if user["roles"] and "Admin" in user["roles"]:
-        #
 
         # check for public override:
         if not user:
-            async with self.policy_crud as policy_crud:
-                # print("=== core.access - AccessControl - resource_id ===")
-                # print(resource_id)
-                # print("=== core.access - AccessControl - resource_type ===")
-                # print(resource_type)
-                # print("=== core.access - AccessControl - action ===")
-                # print(action)
-                policies = await policy_crud.read(
-                    resource_id=resource_id, resource_type=resource_type, action=action
-                )
-                print("=== core.access - AccessControl - policies ===")
-                print(policies)
-                # TBD: implement check if this resource allows this action for public access
-                return True
-        #
+            # async with self.policy_crud as policy_crud:
+            policy_crud = self.policy_crud
+            # add join with inheritance table
+            policies = await policy_crud.read(
+                resource_id=resource_id, resource_type=resource_type, action=action
+            )
+            for policy in policies:
+                if policy.public:
+                    return True
+                else:
+                    logger.error(
+                        "Error accessing resource without user information."
+                    )
+                    raise HTTPException(status_code=403, detail="Access denied")
         # check for admin override:
-        elif "Admin" in user.roles:
-            # TBD: this is not the correct place for the logging: resource type is not known here.
-            # access_log = AccessLogCreate(
-            #     identity_id=user.id,
-            #     identity_type="Admin",
-            #     resource_id=resource_id,
-            #     resource_type="protected_resource",
-            #     action=action,
-            #     time=datetime.now(),
-            #     status_code=200,  # TBD: could be 201 if a new resource is created
-            # )
-            # await loggingCRUD.log_access(access_log)
+        elif user.roles and "Admin" in user.roles:
             return True
-
-        #
         # TBD: implement the comparison of policies and request.
-        elif 1 == 1:
-            return True
         else:
-            raise HTTPException(status_code=403, detail="Access denied")
-
-        # pass
-
-        # policy = await policyCRUD.read(
-        #     resource_id=resource_id, action=action, identity_id=user.id
-        # )
-        # print("=== core.access - AccessControl - policy ===")
-        # print(policy)
+            policy_crud = self.policy_crud
+            # async with self.policy_crud as policy_crud:
+            # add join with inheritance table for both resource and identity
+            policies = await policy_crud.read(
+                resource_id=resource_id,
+                resource_type=resource_type,
+                action=action,
+                identity_id=user.user_id,
+            )
+            if policies is not None:
+                return True
+            else:
+                logger.error("Error accessing resource.")
+                raise HTTPException(status_code=403, detail="Access denied")
 
     def filters_allowed(
         self,
@@ -110,27 +98,17 @@ class AccessControl:
     ):
         """Finds all resources of a certain type and action that the user has permission to access"""
         # TBD: implement this
-        # - find all public resources of the given type and action
-        # - find all resources of the given type and action that the user has permission to access
+        # ✔︎ find all public resources of the given type and action
+        # ✔︎ find all resources of the given type and action that the user has permission to access
         # - find all resources of the given type and action that the user has permission to access through resource inheritance
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance)
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access and admin override
 
-        # print("=== core.access - AccessControl - filters_allowed ===")
-        # print("== resource_type ==")
-        # print(resource_type)
-        # print("== action ==")
-        # print(action)
-        # print("== user ==")
-        # print(user)
-
-        # TBD define the action overrides somewhere: own includes write and read
-        # own = ["read", "write"]
+        # Permisssion overrides:
+        # own includes write and read
         # write includes read
-        # write = ["read"]
-
         if action == Action.read:
             action = ["own", "write", "read"]
         elif action == Action.write:

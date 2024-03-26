@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Generator
+from typing import AsyncGenerator, Generator, List
 
 import pytest
 from core.databases import postgres_async_engine  # should be SQLite here only!
@@ -56,7 +56,7 @@ async def run_migrations():
 
 @pytest.fixture(scope="function")
 async def get_async_test_session() -> AsyncSession:
-    """Returns a database session."""
+    """Provides a database session."""
     print("=== get_async_test_session started ===")
     async_session = async_sessionmaker(
         bind=postgres_async_engine, class_=AsyncSession, expire_on_commit=False
@@ -85,9 +85,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[
-        get_azure_token_payload
-    ] = lambda: mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 
@@ -163,6 +163,33 @@ async def add_many_test_users_with_groups(
 # async def current_test_user():
 #     """Returns the current test user."""
 #     yield CurrentUserData(**)
+
+
+# TBD: refactor add_test_policies_for_resources from endpoint conftest file into this:
+# also consider using the post functions for the actual creation of resources!
+@pytest.fixture(scope="function")
+async def add_test_access_policies():
+    """Fixture for adding test policies."""
+
+    async def _add_test_access_policies(access_policies: List[AccessPolicy]):
+        """Adds test policies to the database."""
+
+        policies = []
+        async with AccessPolicyCRUD() as crud:
+            mocked_admin_user = CurrentUserData(
+                user_id=one_test_user["azure_user_id"],
+                roles=["Admin"],
+            )
+            for policy in access_policies:
+                policy = await crud.create(AccessPolicy(**policy), mocked_admin_user)
+                # session.add(policy)
+                # await session.commit()
+                # await session.refresh(policy)
+                policies.append(policy)
+            # await session.close()
+        return policies
+
+    yield _add_test_access_policies
 
 
 @pytest.fixture(scope="function")

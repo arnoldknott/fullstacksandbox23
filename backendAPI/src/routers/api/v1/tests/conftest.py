@@ -1,5 +1,5 @@
 import pytest
-from typing import Optional
+from typing import Optional, List
 from core.types import ResourceType, Action, IdentityType
 from models.access import AccessPolicy
 from models.category import Category
@@ -114,7 +114,7 @@ from tests.utils import (
 
 @pytest.fixture(scope="function")
 async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
-    """Fixture for adding test policies to the database."""
+    """Fixture for adding test policies for specific resources to the database."""
     session = get_async_test_session
 
     async def _add_test_policies_for_resources(
@@ -125,6 +125,7 @@ async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
     ):
         """Adds test policies to the database."""
 
+        # Unnecessary, as the validation is done in the create model!
         if identities is None:
             if publics is None:
                 raise Exception(

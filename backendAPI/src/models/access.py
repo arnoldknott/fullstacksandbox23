@@ -62,9 +62,6 @@ class AccessPolicyCreate(SQLModel):
                 )
         return self
 
-    # TBD: not sure if this is needed:
-    # override: bool = Field(default=False)
-
 
 class AccessPolicy(AccessPolicyCreate, table=True):
     """Table for access control"""

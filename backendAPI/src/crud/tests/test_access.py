@@ -11,7 +11,11 @@ from core.types import CurrentUserData
 from tests.utils import (
     one_test_user,
     token_payload_roles_admin,
-    one_test_policy,
+    one_test_policy_read,
+    one_test_policy_write,
+    one_test_policy_own,
+    one_test_policy_share,
+    one_test_policy_public_read,
     many_test_policies,
     many_test_users,
     user_id_nonexistent,
@@ -30,17 +34,10 @@ async def test_admin_creates_access_policy():
     )
 
     async with AccessPolicyCRUD() as policy_crud:
-        policy = AccessPolicy(**one_test_policy)
+        policy = AccessPolicy(**one_test_policy_read)
         created_policy = await policy_crud.create(policy, mocked_admin_user)
 
-    # Using the SQLModels and comparing it's attributes:
-    modelled_test_policy = AccessPolicyCreate(**one_test_policy)
-    # print("=== test_create_access_policy - policy ===")
-    # print(policy)
-    # print("=== test_create_access_policy - modelled_test_policy ===")
-    # print(modelled_test_policy)
-    # print("=== test_create_access_policy - created_policy ===")
-    # print(created_policy)
+    modelled_test_policy = AccessPolicyCreate(**one_test_policy_read)
     assert created_policy.id is not None
     assert created_policy.identity_id == modelled_test_policy.identity_id
     assert created_policy.identity_type == modelled_test_policy.identity_type
@@ -48,30 +45,22 @@ async def test_admin_creates_access_policy():
     assert created_policy.resource_type == modelled_test_policy.resource_type
     assert created_policy.action == modelled_test_policy.action
 
-    # # Without using the SQLModels, i.e. basically comparing the Python dictionaries:
-    # policy_in_db = created_policy.model_dump()
-    # assert policy_in_db["identity_id"] == uuid.UUID(one_test_policy["identity_id"])
-    # assert policy_in_db["identity_type"] == one_test_policy["identity_type"]
-    # assert policy_in_db["resource_id"] == one_test_policy["resource_id"]
-    # assert policy_in_db["resource_type"] == one_test_policy["resource_type"]
-    # assert policy_in_db["action"] == Action(one_test_policy["action"])
-
 
 @pytest.mark.anyio
-async def test_owner_creates_access_policy():
+async def test_owner_creates_access_policy(add_test_access_policies):
     """Test creating an access policy."""
 
-    # TBD: change admin to owner
-    mocked_admin_user = CurrentUserData(
+    await add_test_access_policies([one_test_policy_own])
+
+    mocked_user = CurrentUserData(
         user_id=uuid.UUID(one_test_user["azure_user_id"]),
     )
 
     async with AccessPolicyCRUD() as policy_crud:
-        policy = AccessPolicy(**one_test_policy)
-        created_policy = await policy_crud.create(policy, mocked_admin_user)
+        policy = AccessPolicy(**one_test_policy_share)
+        created_policy = await policy_crud.create(policy, mocked_user)
 
-    # Using the SQLModels and comparing it's attributes:
-    modelled_test_policy = AccessPolicyCreate(**one_test_policy)
+    modelled_test_policy = AccessPolicyCreate(**one_test_policy_share)
     assert created_policy.id is not None
     assert created_policy.identity_id == modelled_test_policy.identity_id
     assert created_policy.identity_type == modelled_test_policy.identity_type
@@ -81,9 +70,8 @@ async def test_owner_creates_access_policy():
 
 
 @pytest.mark.anyio
-async def test_prevent_create_duplicate_access_policy(add_many_test_access_policies):
+async def test_prevent_create_duplicate_access_policy():
     """Test preventing the creation of a duplicate access policy."""
-    add_many_test_access_policies
 
     mocked_admin_user = CurrentUserData(
         user_id=uuid.UUID(one_test_user["azure_user_id"]),
@@ -108,9 +96,7 @@ async def test_create_access_policy_for_public_resource():
         roles=token_payload_roles_admin["roles"],
     )
 
-    one_public_test_policy = one_test_policy.copy()
-    one_public_test_policy.pop("identity_id")
-    one_public_test_policy.pop("identity_type")
+    one_public_test_policy = one_test_policy_public_read
 
     public_resource_policy = {
         **one_public_test_policy,
@@ -138,16 +124,9 @@ async def test_create_access_policy_for_public_resource_with_identity_fails():
         user_id=uuid.UUID(one_test_user["azure_user_id"]),
     )
 
-    public_resource_policy_with_identity = {
-        **one_test_policy,
-        "public": True,
-    }
-
     try:
         async with AccessPolicyCRUD() as policy_crud:
-            await policy_crud.create(
-                public_resource_policy_with_identity, mocked_admin_user
-            )
+            await policy_crud.create(one_test_policy_public_read, mocked_admin_user)
     except Exception as err:
         # TBD: change to 422?
         assert err.status_code == 403
@@ -158,12 +137,11 @@ async def test_create_access_policy_for_public_resource_with_identity_fails():
 async def test_create_access_policy_for_non_public_resource_without_identity_fails():
     """Test preventing the creation of a public access policy with specific identity."""
 
-    one_public_test_policy = one_test_policy.copy()
-
-    one_public_test_policy.pop("identity_id")
-    one_public_test_policy.pop("identity_type")
-
-    one_test_policy_without_identity = one_test_policy
+    invalid_policy = {
+        "resource_id": str(uuid.uuid4()),
+        "resource_type": "ProtectedResource",
+        "action": "read",
+    }
 
     mocked_admin_user = CurrentUserData(
         user_id=uuid.UUID(one_test_user["azure_user_id"]),
@@ -171,9 +149,7 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
 
     try:
         async with AccessPolicyCRUD() as policy_crud:
-            await policy_crud.create(
-                one_test_policy_without_identity, mocked_admin_user
-            )
+            await policy_crud.create(invalid_policy, mocked_admin_user)
     except Exception as err:
         # TBD: change to 422?
         assert err.status_code == 403

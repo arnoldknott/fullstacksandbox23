@@ -61,35 +61,99 @@ token_payload_many_groups = {
     "groups": [str(uuid4()), str(uuid4()), str(uuid4())],
 }
 
-one_test_policy = {
+group_id1 = str(uuid4())
+group_id2 = str(uuid4())
+group_id3 = str(uuid4())
+test_current_user = {
+    "user_id": one_test_user["azure_user_id"],
+    "roles": ["User"],
+}
+
+test_current_user_admin = {
+    "user_id": one_test_user["azure_user_id"],
+    "roles": ["Admin"],
+}
+
+test_current_user_admin_user = {
+    "user_id": one_test_user["azure_user_id"],
+    "roles": ["Admin", "User"],
+}
+
+test_current_user_with_one_group = {
+    "user_id": one_test_user["azure_user_id"],
+    "roles": ["User"],
+    "groups": [group_id1],
+}
+
+test_current_user_with_many_groups = {
+    "user_id": one_test_user["azure_user_id"],
+    "roles": ["User"],
+    "groups": [group_id1, group_id2, group_id3],
+}
+
+resource_id1 = str(uuid4())
+resource_id2 = str(uuid4())
+resource_id3 = str(uuid4())
+resource_id4 = str(uuid4())
+one_test_policy_read = {
     "identity_id": one_test_user["azure_user_id"],
     "identity_type": "User",
-    "resource_id": str(uuid4()),
+    "resource_id": resource_id1,
     "resource_type": "ProtectedResource",
     "action": "read",
 }
 
-specific_test_policy_id1 = str(uuid4())
-specific_test_policy_id2 = str(uuid4())
+one_test_policy_write = {
+    "identity_id": one_test_user["azure_user_id"],
+    "identity_type": "User",
+    "resource_id": resource_id1,
+    "resource_type": "ProtectedResource",
+    "action": "write",
+}
+
+one_test_policy_own = {
+    "identity_id": one_test_user["azure_user_id"],
+    "identity_type": "User",
+    "resource_id": resource_id1,
+    "resource_type": "ProtectedResource",
+    "action": "own",
+}
+
+# same as one_test_policy_own, but with different identity_id
+one_test_policy_share = {
+    "identity_id": str(uuid4()),
+    "identity_type": "User",
+    "resource_id": resource_id1,
+    "resource_type": "ProtectedResource",
+    "action": "own",
+}
+
+one_test_policy_public_read = {
+    "resource_id": resource_id1,
+    "resource_type": "ProtectedResource",
+    "action": "read",
+    "public": True,
+}
+
 many_test_policies = [
     {
         "identity_id": many_test_users[1]["azure_user_id"],
         "identity_type": "User",
-        "resource_id": specific_test_policy_id1,
+        "resource_id": resource_id1,
         "resource_type": "ProtectedResource",
         "action": "read",
     },
     {
         "identity_id": one_test_user["azure_user_id"],
         "identity_type": "User",
-        "resource_id": specific_test_policy_id2,
+        "resource_id": resource_id2,
         "resource_type": "ProtectedResource",
         "action": "own",
     },
     {
         "identity_id": many_test_users[0]["azure_user_id"],
         "identity_type": "User",
-        "resource_id": specific_test_policy_id2,
+        "resource_id": resource_id2,
         "resource_type": "ProtectedResource",
         "action": "write",
     },
@@ -104,7 +168,7 @@ many_test_policies = [
     {
         "identity_id": many_test_users[1]["azure_user_id"],
         "identity_type": "User",
-        "resource_id": specific_test_policy_id1,
+        "resource_id": resource_id1,
         "resource_type": "ProtectedResource",
         "action": "own",
     },
