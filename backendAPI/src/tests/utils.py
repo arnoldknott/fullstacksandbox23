@@ -61,35 +61,35 @@ token_payload_many_groups = {
     "groups": [str(uuid4()), str(uuid4()), str(uuid4())],
 }
 
-group_id1 = str(uuid4())
-group_id2 = str(uuid4())
-group_id3 = str(uuid4())
-test_current_user = {
-    "user_id": one_test_user["azure_user_id"],
-    "roles": ["User"],
-}
+# group_id1 = str(uuid4())
+# group_id2 = str(uuid4())
+# group_id3 = str(uuid4())
+# test_current_user = {
+#     "user_id": one_test_user["azure_user_id"],
+#     "roles": ["User"],
+# }
 
-test_current_user_admin = {
-    "user_id": one_test_user["azure_user_id"],
-    "roles": ["Admin"],
-}
+# test_current_user_admin = {
+#     "user_id": one_test_user["azure_user_id"],
+#     "roles": ["Admin"],
+# }
 
-test_current_user_admin_user = {
-    "user_id": one_test_user["azure_user_id"],
-    "roles": ["Admin", "User"],
-}
+# test_current_user_admin_user = {
+#     "user_id": one_test_user["azure_user_id"],
+#     "roles": ["Admin", "User"],
+# }
 
-test_current_user_with_one_group = {
-    "user_id": one_test_user["azure_user_id"],
-    "roles": ["User"],
-    "groups": [group_id1],
-}
+# test_current_user_with_one_group = {
+#     "user_id": one_test_user["azure_user_id"],
+#     "roles": ["User"],
+#     "groups": [group_id1],
+# }
 
-test_current_user_with_many_groups = {
-    "user_id": one_test_user["azure_user_id"],
-    "roles": ["User"],
-    "groups": [group_id1, group_id2, group_id3],
-}
+# test_current_user_with_many_groups = {
+#     "user_id": one_test_user["azure_user_id"],
+#     "roles": ["User"],
+#     "groups": [group_id1, group_id2, group_id3],
+# }
 
 resource_id1 = str(uuid4())
 resource_id2 = str(uuid4())
@@ -172,6 +172,11 @@ many_test_policies = [
         "resource_type": "ProtectedResource",
         "action": "own",
     },
+    one_test_policy_write,
+    one_test_policy_read,
+    one_test_policy_own,
+    one_test_policy_share,
+    one_test_policy_public_read,
 ]
 
 

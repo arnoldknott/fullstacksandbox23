@@ -82,7 +82,7 @@ async def test_prevent_create_duplicate_access_policy():
             await policy_crud.create(many_test_policies[2], mocked_admin_user)
         except Exception as err:
             assert err.status_code == 403
-            assert err.detail == "Forbidden"
+            assert err.detail == "Forbidden."
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -130,7 +130,7 @@ async def test_create_access_policy_for_public_resource_with_identity_fails():
     except Exception as err:
         # TBD: change to 422?
         assert err.status_code == 403
-        assert err.detail == "Forbidden"
+        assert err.detail == "Forbidden."
 
 
 @pytest.mark.anyio
@@ -153,7 +153,7 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
     except Exception as err:
         # TBD: change to 422?
         assert err.status_code == 403
-        assert err.detail == "Forbidden"
+        assert err.detail == "Forbidden."
 
 
 @pytest.mark.anyio

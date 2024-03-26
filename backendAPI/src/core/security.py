@@ -238,7 +238,7 @@ class CurrentAccessToken:
     # -> gives and revokes access for users and groups based on roles
     #
     # TBD: make sure this one get's triggered from all guards that require a user
-    async def gets_or_signs_up_current_user(self, require=True) -> UserRead:
+    async def gets_or_signs_up_current_user(self) -> UserRead:
         """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
         groups = []
         try:

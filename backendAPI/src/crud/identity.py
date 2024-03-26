@@ -63,9 +63,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         super().__init__(User)
 
     # Not needed any more, since azure_user_id is the primary key!
-    async def read_by_azure_user_id(
-        self, azure_user_id: str, update_last_access: bool = True
-    ) -> UserRead:
+    async def read_by_azure_user_id(self, azure_user_id: str) -> UserRead:
         """Returns a User with linked Groups from the database."""
         # async with self.session as session:
         session = self.session
@@ -88,9 +86,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         #     raise HTTPException(status_code=404, detail="User not found")
         # return user
 
-    async def read_by_azure_user_id_with_childs(
-        self, azure_user_id: int, update_last_access: bool = True
-    ) -> UserRead:
+    async def read_by_azure_user_id_with_childs(self, azure_user_id: int) -> UserRead:
         """Returns the user with a specific user_id and its childs."""
         session = self.session
         try:
@@ -189,7 +185,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # print(
             #     "=== user crud - create_azure_user_and_groups_if_not_exist - read_by_azure_user_id -> update_last_access ==="
             # )
-            # print(update_last_access)
             current_user = await self.read_by_azure_user_id(
                 azure_user_id
                 # TBD: Refactor into access control
@@ -265,7 +260,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 await session.refresh(azure_user_group_link)
             # read again after the relationship to the groups is created:
         current_user = await self.read_by_azure_user_id(
-            azure_user_id, update_last_access
+            azure_user_id  # , update_last_access
         )
         return current_user
 

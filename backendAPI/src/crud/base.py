@@ -134,6 +134,9 @@ class BaseCRUD(
                 identity_id=current_user.user_id,
                 identity_type=IdentityType.user,
             )
+            # requires hierarchy checks to be in place: otherwise a user can never create a resource
+            # as the AccessPolicy CRUD create checks, if the user is owner of the resource (that's not created yet)
+            # needs to be fixed in the core access control by implementing a hierarchy check
             async with self.policy_CRUD as policy_CRUD:
                 await policy_CRUD.create(access_policy, current_user)
             await self.__write_log(database_object.id, own, current_user, 201)

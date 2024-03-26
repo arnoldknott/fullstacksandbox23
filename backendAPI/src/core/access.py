@@ -66,9 +66,7 @@ class AccessControl:
                 if policy.public:
                     return True
                 else:
-                    logger.error(
-                        "Error accessing resource without user information."
-                    )
+                    logger.error("Error accessing resource without user information.")
                     raise HTTPException(status_code=403, detail="Access denied")
         # check for admin override:
         elif user.roles and "Admin" in user.roles:

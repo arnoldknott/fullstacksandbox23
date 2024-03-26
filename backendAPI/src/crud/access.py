@@ -57,18 +57,23 @@ class AccessPolicyCRUD:
             #     user_id=policy.identity_id,
             #     # how do i get the roles and groups here?
             # )
-            # Current user creates a policy for another identity.
-            # Current user needs to own the resource to grant others access (share) it.
-            if not await self.access_control.allows(
-                user=current_user,
-                resource_id=policy.resource_id,
-                resource_type=policy.resource_type,
-                action=own,
-            ):
-                raise HTTPException(status_code=403, detail="Forbidden")
+
+            # Every user can create a policy for themselves:
+            if policy.identity_id != current_user.user_id:
+                # Current user creates a policy for another identity.
+                # Current user needs to own the resource to grant others access (share) it.
+                if not await self.access_control.allows(
+                    user=current_user,
+                    resource_id=policy.resource_id,
+                    resource_type=policy.resource_type,
+                    action=own,
+                ):
+                    raise HTTPException(status_code=403, detail="Forbidden.")
             session.add(policy)
             await session.commit()
             await session.refresh(policy)
+            print("=== AccessPolicyCRUD.create - policy ===")
+            print(policy)
             # TBD: write sharing to Access Control Log?
             return policy
         except Exception as e:
@@ -83,7 +88,7 @@ class AccessPolicyCRUD:
             # )
             # await loggingCRUD.log_access(access_log)
             logger.error(f"Error in creating policy: {e}")
-            raise HTTPException(status_code=403, detail="Forbidden")
+            raise HTTPException(status_code=403, detail="Forbidden.")
 
     async def add_child(
         self,
@@ -140,6 +145,13 @@ class AccessPolicyCRUD:
 
                 if conditions:
                     query = query.where(*conditions)
+
+                # print("=== AccessPolicyCRUD.read - query ===")
+                # print(query)
+                # print("=== AccessPolicyCRUD.read - query.compile().params ===")
+                # print(query.compile().params)
+
+                # query = select(AccessPolicy)
 
                 response = await session.exec(query)
                 results = response.all()

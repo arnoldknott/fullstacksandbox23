@@ -125,14 +125,45 @@ class AccessLogRead(AccessLogCreate):
     time: datetime
 
 
+class ResourceHierarchyCreate(SQLModel):
+    """Create model for resource hierarchy"""
+
+    parent_id: uuid.UUID
+    parent_type: "ResourceType"
+    child_id: uuid.UUID
+    child_type: "ResourceType"
+    inherit: bool = Field(
+        default=False,
+        description="Set to true, if the child inherits permissions from this parent.",
+    )
+
+    @model_validator(mode="after")
+    def either_inherit_or_not(self):
+        """Validates either inherit is set or not"""
+        if self.inherit is True:
+            if (self.parent_id == self.child_resource_id) and (
+                self.parent_type == self.child_type
+            ):
+                raise ValueError("A resource cannot inherit from itself.")
+        return self
+
+
 class ResourceHierarchy(SQLModel, table=True):
     """Table for resource hierarchy"""
 
     parent_id: uuid.UUID = Field(primary_key=True)
     parent_type: "ResourceType" = Field(index=True)
-    child_resource_id: uuid.UUID = Field(primary_key=True)
+    child_id: uuid.UUID = Field(primary_key=True)
     child_type: "ResourceType" = Field(index=True)
     inherit: bool = Field(
         default=False,
         description="Set to true, if the child inherits permissions from this parent.",
     )
+
+    __table_args__ = (UniqueConstraint("parent_id", "child_id"),)
+
+
+class ResourceHierarchyRead(ResourceHierarchyCreate):
+    """Read model for resource hierarchy"""
+
+    pass
