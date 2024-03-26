@@ -206,10 +206,10 @@ class BaseCRUD(
             await self.__write_log(result.id, own, current_user, 200)
 
         if not results:
-            print("=== self.model.__name__ ===")
-            print(self.model.__name__)
-            print("=== self.resource_type ===")
-            print(self.resource_type)
+            # print("=== self.model.__name__ ===")
+            # print(self.model.__name__)
+            # print("=== self.resource_type ===")
+            # print(self.resource_type)
             logger.info(f"No objects found for {self.model.__name__}")
             for result in results:
                 await self.__write_log(result.id, own, current_user, 404)
@@ -320,37 +320,64 @@ class BaseCRUD(
         # Refactor into this:
         current_user: "CurrentUserData",
     ) -> BaseModelType:
-        # TBD: add access control checks here:
-        # request is known from self.current_user, object and method is write here
         """Updates an object."""
         session = self.session
         # TBD: refactor into try-except block and add logging
+        # TBD: add access control checks here:
+        # request is known from self.current_user, object and method is write here
+
+        ### This should be ready to go:
+        # access_conditions = self.access_control.filters_allowed(
+        #     resource_type=self.resource_type,
+        #     action=write,
+        #     user=current_user,
+        # )
+        # statement = (
+        #     select(self.model)
+        #     .where(self.model.id == object_id)
+        #     .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
+        #     .where(*access_conditions)
+        # )
+        # old = await session.exec(statement).one()
+        # if old is None:
+        #     logger.info(f"Object with id {object_id} not found")
+        #     raise HTTPException(status_code=404, detail="Object not found")
+        ####
+
         old = await session.get(self.model, object_id)
         if old is None:
             logger.info(f"Object with id {object_id} not found")
             raise HTTPException(status_code=404, detail="Object not found")
+
+        # TBD: remove and add logging instead:
         if hasattr(old, "last_updated_at"):
             old.last_updated_at = datetime.now()
         # TBD: Refactor into access control
         # if hasattr(old, "last_accessed_at") and update_last_access is True:
         #     old.last_accessed_at = datetime.now()
-        updated = new.model_dump(exclude_unset=True)
-        for key, value in updated.items():
-            # if key == "id" or key == "created_at" or key == "last_updated_at":
-            # if (
-            #     key == "created_at"
-            #     or key == "last_updated_at"
-            #     # or key == "last_accessed_at"
-            # ):
-            # continue
-            setattr(old, key, value)
-        object = old
-        session.add(object)
-        await session.commit()
-        await session.refresh(object)
-        # TBD: add exception handling here!
-        # TBD: add access logging here!
-        return object
+        try:
+            updated = new.model_dump(exclude_unset=True)
+            for key, value in updated.items():
+                # if key == "id" or key == "created_at" or key == "last_updated_at":
+                # if (
+                #     key == "created_at"
+                #     or key == "last_updated_at"
+                #     # or key == "last_accessed_at"
+                # ):
+                # continue
+                setattr(old, key, value)
+            object = old
+            session.add(object)
+            await session.commit()
+            await session.refresh(object)
+            # TBD: add exception handling here!
+            # TBD: add access logging here!
+            await self.__write_log(object_id, write, current_user, 200)
+            return object
+        except Exception as e:
+            await self.__write_log(object_id, write, current_user, 404)
+            logger.error(f"Error in BaseCRUD.update: {e}")
+            raise HTTPException(status_code=404, detail="Object not updated")
 
     async def delete(
         self,
@@ -362,12 +389,34 @@ class BaseCRUD(
         """Deletes an object."""
         session = self.session
         model = self.model
-        # TBD: refactor into try-except block and add logging
-        object = await session.get(model, object_id)
-        if object is None:
-            raise HTTPException(status_code=404, detail="Object not found")
-        await session.delete(object)
-        await session.commit()
-        return object  #
+        try:
+            ### This should be ready to go:
+            # access_conditions = self.access_control.filters_allowed(
+            #     resource_type=self.resource_type,
+            #     action=write,
+            #     user=current_user,
+            # )
+            # statement = (
+            #     select(self.model)
+            #     .where(self.model.id == object_id)
+            #     .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
+            #     .where(*access_conditions)
+            # )
+            # object = await session.exec(statement).one()
+            # if object is None:
+            #     logger.info(f"Object with id {object_id} not found")
+            #     raise HTTPException(status_code=404, detail="Object not found.")
+            ####
+
+            # TBD: refactor into try-except block and add logging
+            object = await session.get(model, object_id)
+            if object is None:
+                raise HTTPException(status_code=404, detail="Object not found")
+            await session.delete(object)
+            await session.commit()
+            return object
+        except Exception as e:
+            logger.error(f"Error in BaseCRUD.delete: {e}")
+            raise HTTPException(status_code=404, detail="Object not deleted.")
 
     # TBD: add share / permission methods - maybe in an inherited class BaseCRUDPermissions?

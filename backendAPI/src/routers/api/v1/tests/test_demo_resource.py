@@ -474,7 +474,7 @@ async def test_delete_demo_resource(
     resources = add_test_demo_resources
     await add_test_policies_for_resources(
         resources=resources,
-        actions=["write"] * len(resources),
+        actions=["own"] * len(resources),
         publics=[True] * len(resources),
         # TBD: implement tests with identity_ids and identity_types!
         # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
@@ -596,8 +596,8 @@ async def test_attach_tag_to_demo_resource(
 
     assert response.status_code == 200
     content = response.json()
-    print("=== content ===")
-    print(content)
+    # print("=== content ===")
+    # print(content)
     assert len(content["tags"]) == 2
     assert content["tags"][0]["name"] in [
         tags[0].name,

@@ -17,7 +17,7 @@ router = APIRouter()
 
 category_view = BaseView(CategoryCRUD, Category)
 
-# # TBD delete before refactoring:
+# # TBD delete version before refactoring:
 # @router.post("/", status_code=201)
 # async def post_category(
 #     category: CategoryCreate,
@@ -43,7 +43,7 @@ async def post_category(
     )
 
 
-# # TBD delete before refactoring:
+# # TBD delete version before refactoring:
 # @router.get("/", status_code=200)
 # async def get_all_categories() -> List[Category]:
 #     """Returns all categories."""
@@ -90,7 +90,7 @@ async def get_category_by_id(
     )
 
 
-# # TBD delete before refactoring:
+# # TBD delete version before refactoring:
 # @router.put("/{category_id}")
 # async def update_category(
 #     category_id: str,

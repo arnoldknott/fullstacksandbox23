@@ -10,6 +10,8 @@ class TagCRUD(BaseCRUD[Tag, TagCreate, TagRead, TagUpdate]):
     def __init__(self):
         super().__init__(Tag)
 
+    # TBD: add access control and access logging for this!
+    # Move to DemoResourceCRUD?
     async def read_all_demo_resources(self, tag_id) -> list[DemoResource]:
         """Returns all demo resources within category."""
         session = self.session
