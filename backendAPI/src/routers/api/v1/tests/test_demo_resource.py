@@ -225,6 +225,7 @@ async def test_get_demo_resource_by_nonexisting_uuid(async_client: AsyncClient):
 async def test_put_demo_resource(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
+    add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
 ):
     """Tests PUT of a demo resource."""
@@ -232,6 +233,14 @@ async def test_put_demo_resource(
     app_override_get_azure_payload_dependency
 
     resources = add_test_demo_resources
+    await add_test_policies_for_resources(
+        resources=resources,
+        actions=["write"] * len(resources),
+        publics=[True] * len(resources),
+        # TBD: implement tests with identity_ids and identity_types!
+        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
+        # identity_types=["user"] * len(categories),
+    )
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -352,6 +361,11 @@ async def test_put_demo_resource_by_invalid_id(
     app_override_get_azure_payload_dependency
 
     resources = add_test_demo_resources
+    await add_test_policies_for_resources(
+        resources=resources,
+        actions=["write"] * len(resources),
+        publics=[True] * len(resources),
+    )
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -404,6 +418,11 @@ async def test_put_demo_resource_by_resource_does_not_exist(
     app_override_get_azure_payload_dependency
 
     resources = add_test_demo_resources
+    await add_test_policies_for_resources(
+        resources=resources,
+        actions=["write"] * len(resources),
+        publics=[True] * len(resources),
+    )
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -423,7 +442,7 @@ async def test_put_demo_resource_by_resource_does_not_exist(
 
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Object not found"
+    assert content["detail"] == "Object not updated."
 
 
 # TBD: This is not checked - up to the user for now, to get the input correct. Wrong input does not change anything.
@@ -574,7 +593,7 @@ async def test_delete_demo_resource_by_resource_does_not_exist(
 
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Object not found"
+    assert content["detail"] == "Object not deleted."
 
 
 @pytest.mark.anyio

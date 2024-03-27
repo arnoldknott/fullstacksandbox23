@@ -103,7 +103,7 @@ class BaseView:
         # group_by: List[str] = None,
         # having: List[str] = None,
         # limit: int = None,
-        # offset: int = None,
+        # offset: int = None
         token_payload=None,
         scopes: List[str] = [],
         roles: List[str] = [],
@@ -115,6 +115,9 @@ class BaseView:
         if token_payload:
             current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
+            print("=== filters ===")
+            print(filters)
+
             object = await crud.read(
                 current_user,
                 select_args=select_args,
@@ -141,7 +144,7 @@ class BaseView:
             raise HTTPException(status_code=400, detail="Invalid id.")
         current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
-            updated_object = await crud.update(id, object, current_user)
+            updated_object = await crud.update(current_user, id, object)
         return updated_object
 
     async def delete(
@@ -160,5 +163,5 @@ class BaseView:
             raise HTTPException(status_code=400, detail="Invalid id.")
         current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
-            deleted_object = await crud.delete(id, current_user)
+            deleted_object = await crud.delete(current_user, id)
         return deleted_object

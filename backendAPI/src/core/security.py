@@ -7,7 +7,7 @@ import httpx
 import jwt
 
 # from enum import Enum
-# from uuid import UUID
+from uuid import UUID
 
 # from pydantic import BaseModel
 # from typing import List, Optional
@@ -216,9 +216,9 @@ class CurrentAccessToken:
             else:
                 return False
 
+    # TBD: implement tests for this:
     async def has_group(self, group: str, require=True) -> bool:
         """Checks if the current token includes a group"""
-        print("🔥 security - CurrentToken.has_group - tests not implemented yet!")
         payload = self.payload
         if ("groups" in payload) and (group in payload["groups"]):
             return True
@@ -298,6 +298,36 @@ class CurrentAccessToken:
         # current_user.scopes = self.payload["scp"]
         # return CurrentUserData(**current_user)
         return current_user
+
+    # TBD: implement tests for this:
+    async def azure_self_or_admin(self, azure_user_id: UUID, require=True) -> bool:
+        """Checks if the current user is the user_id or an admin"""
+        payload = self.payload
+        user_has_admin_role = await self.has_role("Admin", require=False)
+        if user_has_admin_role:
+            return True
+        elif payload["oid"] == azure_user_id:
+            return True
+        else:
+            if require:
+                raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                return False
+
+    # TBD: implement tests for this:
+    async def self_or_admin(self, user_id: UUID, require=True) -> bool:
+        """Checks if the current user is the user_id or an admin"""
+        user_has_admin_role = await self.has_role("Admin", require=False)
+        current_user = await self.provides_current_user()
+        if user_has_admin_role:
+            return True
+        elif current_user.user_id == user_id:
+            return True
+        else:
+            if require:
+                raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                return False
 
 
 # endregion: Generic guard

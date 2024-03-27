@@ -35,10 +35,13 @@ class AzureGroupCRUD(
         self, azure_group_id: str, azure_tenant_id: str
     ) -> AzureGroupRead:
         """Creates a new group if it does not exist."""
-        try:
-            existing_group = await self.read_by_id(azure_group_id)
-        except HTTPException as err:
-            if err.status_code == 404:
+        # try:
+        #     existing_group = await self.read_by_id(azure_group_id)
+        # except HTTPException as err:
+        #     if err.status_code == 404:
+        existing_group = await self.session.get(AzureGroup, azure_group_id)
+        if existing_group is None:
+            try:
                 group_create = AzureGroupCreate(
                     id=azure_group_id,
                     azure_tenant_id=azure_tenant_id,
@@ -52,8 +55,11 @@ class AzureGroupCRUD(
                 await session.commit()
                 await session.refresh(database_group)
                 existing_group = database_group
-            else:
-                raise err
+            except Exception as err:
+                logging.error(err)
+                raise HTTPException(status_code=404, detail="Group not found.")
+            # else:
+            #     raise err
         return existing_group
 
 
@@ -106,6 +112,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
 
+    # TBD: Refactor into access control
     async def read_by_id_with_childs(
         self, user_id: int, update_last_access: bool = True
     ) -> UserRead:
@@ -138,13 +145,13 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # print("=== user-crud - read_by_id_with_child - user.azure_groups ===")
             # print(user.azure_groups)
             # if user:
-            if update_last_access is True:
-                # print("=== user crud - read_by_id_with_childs -> updating... ===")
-                await self.update(user, user)
+            # if update_last_access is True:
+            #     # print("=== user crud - read_by_id_with_childs -> updating... ===")
+            #     await self.update(user, user)
             # for group in user.azure_groups:
             # print("=== user-crud - read_by_id_with_child - group ===")
             # print(group)
-            user = UserRead.model_validate(user)
+            # user = UserRead.model_validate(user)
             # print("=== user-crud - read_by_id_with_child - validated_user ===")
             # print(user)
             # if user is None:

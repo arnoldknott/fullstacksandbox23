@@ -121,7 +121,7 @@ class UserCreate(SQLModel):
     azure_user_id: Optional[uuid.UUID] = None
     # # enables multi-tenancy, if None, then it's the internal tenant:
     azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
-    last_accessed_at: Optional[datetime] = datetime.now()
+    # last_accessed_at: Optional[datetime] = datetime.now()
     is_active: bool = True
 
 
@@ -133,7 +133,7 @@ class User(UserCreate, table=True):
     # TBD: change last_accessed_at to non-optional after migration.
     # last_accessed_at: Optional[datetime] = Field(default=datetime.now())
     # TBD: moce the last_updated_at and last_accessed_at to a resource access log table
-    last_accessed_at: datetime = Field(default=datetime.now())
+    # last_accessed_at: datetime = Field(default=datetime.now())
     is_active: Optional[bool] = Field(default=True)
 
     ### Foreign account: Azure AD ###
@@ -164,7 +164,7 @@ class UserRead(UserCreate):
     id: uuid.UUID  # no longer optional - needs to exist now
 
     created_at: datetime
-    last_accessed_at: datetime
+    # last_accessed_at: datetime
     azure_groups: Optional[List["AzureGroupRead"]] = None
     # brightspace_account: Optional["DiscordAccount"] = None
     # google_account: Optional["GoogleAccount"] = None

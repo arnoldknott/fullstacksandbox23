@@ -70,7 +70,7 @@ async def post_category(
 async def get_categories(
     token_payload=Depends(get_access_token_payload),
 ) -> list[CategoryRead]:
-    """Returns all protected resources."""
+    """Returns all category."""
     return await category_view.get(
         token_payload,
         roles=["User"],
@@ -82,7 +82,7 @@ async def get_category_by_id(
     category_id: str,
     token_payload=Depends(get_access_token_payload),
 ) -> CategoryRead:
-    """Returns a protected resource."""
+    """Returns a category."""
     return await category_view.get_by_id(
         category_id,
         token_payload,
@@ -144,7 +144,7 @@ async def delete_category(
     category_id: str,
     token_payload=Depends(get_access_token_payload),
 ) -> Category:
-    """Deletes a protected resource."""
+    """Deletes a category."""
     return await category_view.delete(
         category_id, token_payload, roles=["User"], scopes=["api.write"]
     )

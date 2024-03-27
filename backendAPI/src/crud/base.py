@@ -314,11 +314,11 @@ class BaseCRUD(
 
     async def update(
         self,
+        # Refactor into this:
+        current_user: "CurrentUserData",
         # old: BaseModelType,
         object_id: uuid.UUID,
         new: BaseSchemaTypeUpdate,
-        # Refactor into this:
-        current_user: "CurrentUserData",
     ) -> BaseModelType:
         """Updates an object."""
         session = self.session
@@ -385,8 +385,8 @@ class BaseCRUD(
 
     async def delete(
         self,
-        object_id: uuid.UUID,
         current_user: "CurrentUserData",
+        object_id: uuid.UUID,
     ) -> BaseModelType:
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write or delete here
