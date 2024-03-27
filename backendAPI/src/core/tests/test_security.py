@@ -221,7 +221,7 @@ async def test_existing_azure_user_has_new_group_in_token(
     @app.get("/test_existing_azure_user_has_new_group_in_token")
     def temp_endpoint(
         current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())]
-    ):
+    ) -> UserRead:
         """Returns the result of the guard."""
         return current_user
 
