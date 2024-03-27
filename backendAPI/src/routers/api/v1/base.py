@@ -115,8 +115,8 @@ class BaseView:
         if token_payload:
             current_user = await self.__guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
-            print("=== filters ===")
-            print(filters)
+            # print("=== filters ===")
+            # print(filters)
 
             object = await crud.read(
                 current_user,
@@ -125,7 +125,7 @@ class BaseView:
                 joins=joins,
                 order_by=order_by,
             )
-        return object[0]
+        return object
 
     async def put(
         self,

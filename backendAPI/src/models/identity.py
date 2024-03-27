@@ -129,7 +129,7 @@ class User(UserCreate, table=True):
     """Schema for a user in the database."""
 
     id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
-    created_at: datetime = Field(default=datetime.now())
+    # created_at: datetime = Field(default=datetime.now())
     # TBD: change last_accessed_at to non-optional after migration.
     # last_accessed_at: Optional[datetime] = Field(default=datetime.now())
     # TBD: moce the last_updated_at and last_accessed_at to a resource access log table
@@ -163,7 +163,7 @@ class UserRead(UserCreate):
 
     id: uuid.UUID  # no longer optional - needs to exist now
 
-    created_at: datetime
+    # created_at: datetime
     # last_accessed_at: datetime
     azure_groups: Optional[List["AzureGroupRead"]] = None
     # brightspace_account: Optional["DiscordAccount"] = None

@@ -260,7 +260,7 @@ async def test_post_user_invalid_token(
 async def test_admin_gets_users(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_test_policies_for_resources: List[AccessPolicy],
+    # add_test_policies_for_resources: List[AccessPolicy],
     add_one_test_user: User,
 ):
     """Test GET one user"""
@@ -271,12 +271,12 @@ async def test_admin_gets_users(
     # adds a user to the database, which is the one to GET:
     user = add_one_test_user
     # TBD: should not be necessary - misses the point of admin can read everything!
-    await add_test_policies_for_resources(
-        resources=[user],
-        actions=["read"],
-        # TBD: switch from public to admin-owned resources
-        publics=[True],
-    )
+    # await add_test_policies_for_resources(
+    #     resources=[user],
+    #     actions=["read"],
+    #     # TBD: switch from public to admin-owned resources
+    #     publics=[True],
+    # )
 
     response = await async_client.get("/api/v1/user/")
     assert response.status_code == 200
@@ -1133,7 +1133,8 @@ async def test_admin_deletes_user(
     # Verify that the user was deleted in the database
     response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
     assert response.status_code == 404
-    assert response.text == '{"detail":"User not found"}'
+    content = response.json()
+    assert content["detail"] == "No User found."
 
 
 @pytest.mark.anyio

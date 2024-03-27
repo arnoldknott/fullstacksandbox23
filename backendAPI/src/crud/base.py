@@ -170,11 +170,14 @@ class BaseCRUD(
             action=read,
             user=current_user,
         )
-        statement = (
-            select(self.model if not select_args else select_args)
-            .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
-            .where(*access_conditions)
-        )
+        if not access_conditions:
+            statement = select(self.model if not select_args else select_args)
+        else:
+            statement = (
+                select(self.model if not select_args else select_args)
+                .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
+                .where(*access_conditions)
+            )
 
         if joins:
             for join in joins:
@@ -199,6 +202,9 @@ class BaseCRUD(
 
         if offset:
             statement = statement.offset(offset)
+
+        # print("=== statement ===")
+        # print(statement)
 
         response = await self.session.exec(statement)
         results = response.all()
@@ -333,12 +339,15 @@ class BaseCRUD(
                 action=write,
                 user=current_user,
             )
-            statement = (
-                select(self.model)
-                .where(self.model.id == object_id)
-                .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
-                .where(*access_conditions)
-            )
+            if not access_conditions:
+                statement = select(self.model).where(self.model.id == object_id)
+            else:
+                statement = (
+                    select(self.model)
+                    .where(self.model.id == object_id)
+                    .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
+                    .where(*access_conditions)
+                )
             response = await session.exec(statement)
             old = response.one()
             if old is None:
@@ -400,12 +409,15 @@ class BaseCRUD(
                 action=write,
                 user=current_user,
             )
-            statement = (
-                select(model)
-                .where(model.id == object_id)
-                .join(AccessPolicy, model.id == AccessPolicy.resource_id)
-                .where(*access_conditions)
-            )
+            if not access_conditions:
+                statement = select(model).where(self.model.id == object_id)
+            else:
+                statement = (
+                    select(model)
+                    .where(model.id == object_id)
+                    .join(AccessPolicy, model.id == AccessPolicy.resource_id)
+                    .where(*access_conditions)
+                )
             response = await session.exec(statement)
             object = response.one()
             if object is None:

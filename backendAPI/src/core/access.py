@@ -117,16 +117,14 @@ class AccessControl:
         conditions = []
         if not user:
             conditions.append(AccessPolicy.resource_type == resource_type)
-            # conditions.append(AccessPolicy.action == action)
             conditions.append(AccessPolicy.action.in_(action))
             conditions.append(AccessPolicy.public)
         elif "Admin" in user.roles:
-            conditions.append(AccessPolicy.resource_type == resource_type)
-            # conditions.append(AccessPolicy.action == action)
-            conditions.append(AccessPolicy.action.in_(action))
+            pass
+            # conditions.append(AccessPolicy.resource_type == resource_type)
+            # conditions.append(AccessPolicy.action.in_(action))
         else:
             conditions.append(AccessPolicy.resource_type == resource_type)
-            # conditions.append(AccessPolicy.action == action)
             conditions.append(AccessPolicy.action.in_(action))
             conditions.append(
                 or_(AccessPolicy.identity_id == user.user_id, AccessPolicy.public)

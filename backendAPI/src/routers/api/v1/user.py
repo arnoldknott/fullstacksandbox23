@@ -150,7 +150,7 @@ async def get_all_users(
 async def get_user_by_azure_user_id(
     azure_user_id: str,
     token_payload=Depends(get_access_token_payload),
-) -> list[UserRead]:
+) -> UserRead:
     """Returns a user based on its azure user id."""
     token = CurrentAccessToken(token_payload)
     await token.azure_self_or_admin(azure_user_id)
@@ -166,11 +166,12 @@ async def get_user_by_azure_user_id(
         logger.error("User ID is not an UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
     filters = [User.azure_user_id == azure_user_id]
-    return await user_view.get_with_query_options(
+    user = await user_view.get_with_query_options(
         filters=filters,
         token_payload=token_payload,
         roles=["User"],
     )
+    return user[0]
 
 
 # # TBD: Delete old version after refactoring with BaseView:
