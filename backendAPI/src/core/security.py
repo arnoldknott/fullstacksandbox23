@@ -206,10 +206,6 @@ class CurrentAccessToken:
         payload = self.payload
         # if ("roles" in payload) and (role in payload["roles"]):
         # TBD: add the "Admin" override: if the user has the Admin role, the user has access to everything
-        print("=== payload ===")
-        print(payload)
-        print("=== role ===")
-        print(role)
         if ("roles" in payload) and (
             (role in payload["roles"]) or ("Admin" in payload["roles"])
         ):

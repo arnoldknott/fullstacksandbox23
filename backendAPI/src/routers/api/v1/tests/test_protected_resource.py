@@ -63,9 +63,13 @@ async def test_post_protected_resource(
         == many_test_protected_resources[0]["description"]
     )
     async with ProtectedResourceCRUD() as crud:
+        # db_protected_resource = await crud.read(
+        #     created_protected_resource.id,
+        #     current_user=current_test_user,  # Pass user information like this
+        # )
         db_protected_resource = await crud.read(
-            created_protected_resource.id,
-            # current_user=current_test_user,  # Pass user information like this
+            current_test_user,
+            filters=[ProtectedResource.id == created_protected_resource.id],
         )
     assert db_protected_resource is not None
     assert db_protected_resource.last_accessed_at is not None

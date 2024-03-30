@@ -72,8 +72,8 @@ class AccessPolicyCRUD:
             session.add(policy)
             await session.commit()
             await session.refresh(policy)
-            print("=== AccessPolicyCRUD.create - policy ===")
-            print(policy)
+            # print("=== AccessPolicyCRUD.create - policy ===")
+            # print(policy)
             # TBD: write sharing to Access Control Log?
             return policy
         except Exception as e:
