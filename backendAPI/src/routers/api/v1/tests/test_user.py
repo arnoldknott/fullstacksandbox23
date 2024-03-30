@@ -708,12 +708,13 @@ async def test_get_user_by_id_invalid_token(
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
+        # refactored into: updating a user needs Admin roles
+        # {
+        #     **token_payload_user_id,
+        #     **token_payload_tenant_id,
+        #     **token_payload_scope_api_read_write,
+        #     **token_payload_roles_user,
+        # },
         {
             **token_payload_user_id,
             **token_payload_tenant_id,
@@ -820,12 +821,13 @@ async def test_put_user_from_admin(
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
+        # refactored into: updating a user needs Admin roles
+        # {
+        #     **token_payload_user_id,
+        #     **token_payload_tenant_id,
+        #     **token_payload_scope_api_read_write,
+        #     **token_payload_roles_user,
+        # },
         {
             **token_payload_user_id,
             **token_payload_tenant_id,
@@ -885,12 +887,13 @@ async def test_put_user_with_integer_user_id(
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
+        # refactored into: updating a user needs Admin roles
+        # {
+        #     **token_payload_user_id,
+        #     **token_payload_tenant_id,
+        #     **token_payload_scope_api_read_write,
+        #     **token_payload_roles_user,
+        # },
         {
             **token_payload_user_id,
             **token_payload_tenant_id,
@@ -962,6 +965,12 @@ async def test_put_user_with_uuid_user_id(
             **token_payload_tenant_id,
             **token_payload_scope_api_read,
             **token_payload_roles_admin,
+        },
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read_write,
+            **token_payload_roles_user,
         },
         {
             **token_payload_user_id,

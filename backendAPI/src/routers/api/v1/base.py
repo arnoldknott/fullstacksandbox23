@@ -82,7 +82,7 @@ class BaseView:
     ):
         logger.info("GET by id view to retrieve specific object from read CRUD")
         try:
-            UUID(id)
+            id = UUID(id)
         except ValueError:
             logger.error("ID is not a universal unique identifier (uuid).")
             raise HTTPException(status_code=400, detail="Invalid id.")
@@ -138,7 +138,7 @@ class BaseView:
     ):
         logger.info("PUT updates a specific object through update CRUD")
         try:
-            UUID(id)
+            id = UUID(id)
         except ValueError:
             logger.error("ID is not a universal unique identifier (uuid).")
             raise HTTPException(status_code=400, detail="Invalid id.")
@@ -157,7 +157,7 @@ class BaseView:
     ):
         logger.info("DELETE removes a specific object through delete CRUD")
         try:
-            UUID(id)
+            id = UUID(id)
         except ValueError:
             logger.error("ID is not a universal unique identifier (uuid).")
             raise HTTPException(status_code=400, detail="Invalid id.")

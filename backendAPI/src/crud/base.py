@@ -185,11 +185,7 @@ class BaseCRUD(
 
         if filters:
             for filter in filters:
-                print("=== filter ===")
-                print(filter)
                 statement = statement.where(filter)
-                print("=== statement.compile().params ===")
-                print(statement.compile().params)
 
         if order_by:
             for order in order_by:
