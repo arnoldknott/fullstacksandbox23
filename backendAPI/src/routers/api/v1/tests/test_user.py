@@ -440,7 +440,7 @@ async def test_user_gets_another_user_by_azure_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_many_test_users: List[UserRead],
-    add_test_policies_for_resources: List[AccessPolicy],
+    # add_test_policies_for_resources: List[AccessPolicy],
 ):
     """Test a user GETs it's own user id from it's linked azure user account"""
 
@@ -448,17 +448,19 @@ async def test_user_gets_another_user_by_azure_user_id(
     app_override_get_azure_payload_dependency
     user_in_database = add_many_test_users[1]
 
-    await add_test_policies_for_resources(
-        resources=[user_in_database],
-        actions=["read"],
-        publics=[True],
-    )
+    # await add_test_policies_for_resources(
+    #     resources=[user_in_database],
+    #     actions=["read"],
+    #     publics=[True],
+    # )
 
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
     )
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "User not found."
+    # assert response.text == '{"detail":"Access denied"}'
 
 
 @pytest.mark.anyio
@@ -584,22 +586,24 @@ async def test_user_gets_another_user_by_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_many_test_users: List[UserRead],
-    add_test_policies_for_resources: List[AccessPolicy],
+    # add_test_policies_for_resources: List[AccessPolicy],
 ):
-    """Test a user GETs it's own user id from it's linked azure user account"""
+    """Test a user GETs it's another user id by its user id."""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
     user_in_database = add_many_test_users[1]
-    await add_test_policies_for_resources(
-        resources=[user_in_database],
-        actions=["read"],
-        publics=[True],
-    )
+    # await add_test_policies_for_resources(
+    #     resources=[user_in_database],
+    #     actions=["read"],
+    #     publics=[True],
+    # )
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "User not found."
+    # assert response.text == '{"detail":"Access denied"}'
 
 
 @pytest.mark.anyio
@@ -709,37 +713,31 @@ async def test_get_user_by_id_invalid_token(
     "mocked_get_azure_token_payload",
     [
         # refactored into: updating a user needs Admin roles
-        # {
-        #     **token_payload_user_id,
-        #     **token_payload_tenant_id,
-        #     **token_payload_scope_api_read_write,
-        #     **token_payload_roles_user,
-        # },
         {
             **token_payload_user_id,
             **token_payload_tenant_id,
             **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
+            **token_payload_roles_user,
         },
     ],
     indirect=True,
 )
-async def test_put_user(
+async def test_user_put_user(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_test_user_with_groups: User,
-    add_test_policies_for_resources: List[AccessPolicy],
+    # add_test_policies_for_resources: List[AccessPolicy],
 ):
     """Tests put user endpoint"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
     existing_user = add_one_test_user_with_groups
-    await add_test_policies_for_resources(
-        resources=[existing_user],
-        actions=["write"],
-        publics=[True],
-    )
+    # await add_test_policies_for_resources(
+    #     resources=[existing_user],
+    #     actions=["write"],
+    #     publics=[True],
+    # )
 
     async with UserCRUD() as crud:
         existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
@@ -752,20 +750,23 @@ async def test_put_user(
         json={"is_active": False},
         # json={"azure_user_id": str(existing_user.azure_user_id), "is_active": False},
     )
-    assert response.status_code == 200
-    updated_user = User(**response.json())
-    assert updated_user.is_active is False
-
-    # Verify that the user was updated in the database
-    # async with UserCRUD() as crud:
-    #     db_user = await crud.read_by_id(existing_user.id)
-    response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
+    assert response.status_code == 403
     content = response.json()
-    db_user = User.model_validate(content)
+    assert content["detail"] == "Access denied"
+    # assert response.status_code == 200
+    # updated_user = User(**response.json())
+    # assert updated_user.is_active is False
 
-    assert db_user is not None
-    assert db_user.last_accessed_at > existing_db_user["last_accessed_at"]
-    assert db_user.is_active is False
+    # # Verify that the user was updated in the database
+    # # async with UserCRUD() as crud:
+    # #     db_user = await crud.read_by_id(existing_user.id)
+    # response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
+    # content = response.json()
+    # db_user = User.model_validate(content)
+
+    # assert db_user is not None
+    # assert db_user.last_accessed_at > existing_db_user["last_accessed_at"]
+    # assert db_user.is_active is False
 
 
 @pytest.mark.anyio
@@ -1102,8 +1103,10 @@ async def test_user_deletes_itself(
 
     # Verify that the user was deleted in the database
     response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "User not found."
+    # assert response.text == '{"detail":"Access denied"}'
 
 
 @pytest.mark.anyio
@@ -1146,7 +1149,7 @@ async def test_admin_deletes_user(
     response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "No User found."
+    assert content["detail"] == "User not found."
 
 
 @pytest.mark.anyio

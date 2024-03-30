@@ -582,7 +582,7 @@ async def test_delete_category(
     response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "No Category found."
+    assert content["detail"] == "Category not found."
 
 
 @pytest.mark.anyio

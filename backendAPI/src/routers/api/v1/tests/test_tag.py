@@ -291,7 +291,7 @@ async def test_delete_tag(
     response = await async_client.get(f"/api/v1/tag/{str(tags[1].id)}")
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "No Tag found."
+    assert content["detail"] == "Tag not found."
 
 
 @pytest.mark.anyio

@@ -115,7 +115,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
 
     # TBD: Refactor into access control!
     async def read_by_id_with_childs(
-        self, user_id: int, update_last_access: bool = True
+        self, user_id: int  # , update_last_access: bool = True
     ) -> UserRead:
         """Returns the user with a specific user_id and its childs."""
         session = self.session
@@ -130,9 +130,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # user = await session.get(User, user_id)
 
             statement = (
-                select(User)
-                .where(User.id == user_id)
-                .options(selectinload(User.azure_groups))
+                select(User).where(User.id == user_id)
+                # .options(selectinload(User.azure_groups))
             )
 
             # print("=== user-crud - read_by_id_with_child - statement ===")
@@ -141,6 +140,15 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # print("=== user-crud - read_by_id_with_child - results ===")
             # print(results)
             user = results.one()
+            # print("=== user-crud - read_by_id_with_child - user ===")
+            # print(user)
+            # users_azure_groups = select(AzureGroupUserLink).where(
+            #     AzureGroupUserLink.azure_user_id == user.id
+            # )
+            # results = await session.exec(users_azure_groups)
+            # azure_groups = results.all()
+            # print("=== user-crud - read_by_id_with_child - azure_groups ===")
+            # print(azure_groups)
             # print("=== user-crud - read_by_id_with_child - user ===")
             # print(user)
             # print("=== user-crud - read_by_id_with_child - user.azure_groups ===")

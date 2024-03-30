@@ -200,7 +200,7 @@ async def test_get_demo_resource_by_nonexisting_uuid(async_client: AsyncClient):
     response = await async_client.get(f"/api/v1/demoresource/{str(uuid.uuid4())}")
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "No DemoResource found."
+    assert content["detail"] == "DemoResource not found."
 
 
 @pytest.mark.anyio
@@ -526,7 +526,7 @@ async def test_delete_demo_resource(
     response = await async_client.get(f"/api/v1/demoresource/{str(resources[0].id)}")
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "No DemoResource found."
+    assert content["detail"] == "DemoResource not found."
 
 
 @pytest.mark.anyio

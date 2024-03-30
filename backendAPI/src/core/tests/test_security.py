@@ -142,8 +142,8 @@ async def test_azure_user_self_signup(
     assert db_user_json["azure_tenant_id"] == one_test_user["azure_tenant_id"]
     assert "created_at" in db_user_json
     assert "last_accessed_at" in db_user_json
-    print(db_user_json["created_at"])
-    print(db_user_json["last_accessed_at"])
+    # print(db_user_json["created_at"])
+    # print(db_user_json["last_accessed_at"])
     assert db_user_json["created_at"] is not None
     assert db_user_json["last_accessed_at"] >= db_user_json["created_at"]
 
@@ -208,7 +208,7 @@ async def test_existing_azure_user_has_new_group_in_token(
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_test_user_with_groups: User,
 ):
-    """Tests if a new user can sign up by themselves."""
+    """Tests if an user that got added to a new azure group also gets added the new azure group in the database."""
     # preparing the test: adds a user to the database and ensure that this user is member of 3 groups:
     existing_user = add_one_test_user_with_groups
     async with UserCRUD() as crud:
@@ -238,14 +238,28 @@ async def test_existing_azure_user_has_new_group_in_token(
     async with UserCRUD() as crud:
         db_user = await crud.read_by_id_with_childs(existing_user.id)
     assert db_user is not None
-    db_user = db_user.model_dump()
-    assert db_user["azure_user_id"] == uuid.UUID(one_test_user["azure_user_id"])
-    assert db_user["azure_tenant_id"] == uuid.UUID(one_test_user["azure_tenant_id"])
-    assert len(db_user["azure_groups"]) == 4
+    assert db_user.azure_user_id == uuid.UUID(one_test_user["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(one_test_user["azure_tenant_id"])
+    assert len(db_user.azure_groups) == 4
+    azure_groups = db_user.azure_groups
+
     assert any(
-        group["id"] == uuid.UUID(token_payload_one_group["groups"][0])
-        for group in db_user["azure_groups"]
+        group.id == uuid.UUID(token_payload_many_groups["groups"][0])
+        for group in azure_groups
     )
+
+    # db_user_json_encoded = jsonable_encoder(db_user)
+    # print("=== db_user_json_encoded ===")
+    # print(db_user_json_encoded)
+
+    # db_user = db_user.model_dump()
+    # assert db_user["azure_user_id"] == uuid.UUID(one_test_user["azure_user_id"])
+    # assert db_user["azure_tenant_id"] == uuid.UUID(one_test_user["azure_tenant_id"])
+    # assert len(db_user["azure_groups"]) == 4
+    # assert any(
+    #     group["id"] == uuid.UUID(token_payload_one_group["groups"][0])
+    #     for group in db_user["azure_groups"]
+    # )
 
 
 # endregion

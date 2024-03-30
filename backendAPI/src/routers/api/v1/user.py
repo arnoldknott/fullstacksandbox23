@@ -152,14 +152,6 @@ async def get_user_by_azure_user_id(
     token_payload=Depends(get_access_token_payload),
 ) -> UserRead:
     """Returns a user based on its azure user id."""
-    token = CurrentAccessToken(token_payload)
-    await token.azure_self_or_admin(azure_user_id)
-    # if not token_payload.has_role("Admin", require=False):
-    #     if token_payload["oid"] != azure_user_id:
-    #         raise HTTPException(
-    #             status_code=403,
-    #             detail="Access denied.",
-    #         )
     try:
         azure_user_id = UUID(azure_user_id)
     except ValueError:
@@ -208,8 +200,8 @@ async def get_user_by_id(
     token_payload=Depends(get_access_token_payload),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
-    token = CurrentAccessToken(token_payload)
-    await token.self_or_admin(user_id)
+    # token = CurrentAccessToken(token_payload)
+    # await token.self_or_admin(user_id)
     return await user_view.get_by_id(
         user_id,
         token_payload,
@@ -257,6 +249,8 @@ async def put_user(
     token_payload=Depends(get_access_token_payload),
 ) -> User:
     """Updates a user."""
+    token = CurrentAccessToken(token_payload)
+    await token.azure_self_or_admin(user_id)
     return await user_view.put(
         user_id,
         user,

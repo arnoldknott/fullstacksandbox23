@@ -220,7 +220,7 @@ class BaseCRUD(
             for result in results:
                 await self.__write_log(result.id, own, current_user, 404)
             raise HTTPException(
-                status_code=404, detail=f"No {self.model.__name__} found."
+                status_code=404, detail=f"{self.model.__name__} not found."
             )
 
         return results
