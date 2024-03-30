@@ -513,6 +513,9 @@ async def test_user_gets_user_by_id(
         publics=[True],
     )
 
+    print("=== user_in_database.id ===")
+    print(user_in_database.id)
+
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
 
     assert response.status_code == 200

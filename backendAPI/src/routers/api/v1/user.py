@@ -208,6 +208,8 @@ async def get_user_by_id(
     token_payload=Depends(get_access_token_payload),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
+    print("=== token_payload ===")
+    print(token_payload)
     token = CurrentAccessToken(token_payload)
     await token.self_or_admin(user_id)
     return await user_view.get_by_id(

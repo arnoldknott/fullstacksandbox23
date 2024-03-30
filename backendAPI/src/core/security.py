@@ -206,9 +206,26 @@ class CurrentAccessToken:
         payload = self.payload
         # if ("roles" in payload) and (role in payload["roles"]):
         # TBD: add the "Admin" override: if the user has the Admin role, the user has access to everything
+        print("=== payload ===")
+        print(payload)
+        if "roles" in payload:
+            print("=== payload['roles'] ===")
+            print(payload["roles"])
+            print("=== role ===")
+            print(role)
+            if role in payload["roles"]:
+                print("=== role ===")
+                print(role)
+                print("=== payload[roles] ===")
+                print(payload["roles"])
+            if "Admin" in payload["roles"]:
+                print("=== Admin ===")
+                print("Admin")
         if ("roles" in payload) and (
             (role in payload["roles"]) or ("Admin" in payload["roles"])
         ):
+            print("=== role ===")
+            print(role)
             return True
         else:
             if require:
@@ -254,11 +271,15 @@ class CurrentAccessToken:
                     user_id, tenant_id, groups
                 )
                 if current_user:
-                    # TBD: more impportant than returning: store the user in the class instance: attribute self.current_user
+                    # TBD: more important than returning: store the user in the class instance: attribute self.current_user
                     # print("=== current_user ===")
                     # print(current_user)
                     # TBD: no - don't do that - it's a security risk to store the user in the class instance!
                     # self.user_id = current_user.user_id
+                    print("=== type(current_user) ===")
+                    print(type(current_user))
+                    print("=== type(current_user.id) ===")
+                    print(type(current_user.id))
                     return current_user
                 else:
                     raise HTTPException(status_code=404, detail="404 User not found")
@@ -304,6 +325,11 @@ class CurrentAccessToken:
         """Checks if the current user is the user_id or an admin"""
         payload = self.payload
         user_has_admin_role = await self.has_role("Admin", require=False)
+        try:
+            azure_user_id = UUID(azure_user_id)
+        except ValueError:
+            logger.error("ID is not a universal unique identifier (uuid).")
+            raise HTTPException(status_code=400, detail="Invalid id.")
         if user_has_admin_role:
             return True
         elif payload["oid"] == azure_user_id:
@@ -317,13 +343,28 @@ class CurrentAccessToken:
     # TBD: implement tests for this:
     async def self_or_admin(self, user_id: UUID, require=True) -> bool:
         """Checks if the current user is the user_id or an admin"""
+        try:
+            user_id = UUID(user_id)
+        except ValueError:
+            logger.error("ID is not a universal unique identifier (uuid).")
+            raise HTTPException(status_code=400, detail="Invalid id.")
         user_has_admin_role = await self.has_role("Admin", require=False)
         current_user = await self.provides_current_user()
+        print("=== current_user.user_id ===")
+        print(current_user.user_id)
+        print("=== type(current_user.user_id) ===")
+        print(type(current_user.user_id))
+        print("=== user_id ===")
+        print(user_id)
+        print("=== type(user_id) ===")
+        print(type(user_id))
         if user_has_admin_role:
             return True
         elif current_user.user_id == user_id:
+            print("=== True ===")
             return True
         else:
+            print("=== False ===")
             if require:
                 raise HTTPException(status_code=403, detail="Access denied")
             else:
