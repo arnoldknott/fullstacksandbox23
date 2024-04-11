@@ -249,8 +249,8 @@ async def put_user(
     token_payload=Depends(get_access_token_payload),
 ) -> User:
     """Updates a user."""
-    token = CurrentAccessToken(token_payload)
-    await token.azure_self_or_admin(user_id)
+    # token = CurrentAccessToken(token_payload)
+    # await token.azure_self_or_admin(user_id)
     return await user_view.put(
         user_id,
         user,
@@ -290,8 +290,8 @@ async def delete_user(
     token_payload=Depends(get_access_token_payload),
 ) -> User:
     """Deletes a user."""
-    token = CurrentAccessToken(token_payload)
-    await token.self_or_admin(user_id)
+    # token = CurrentAccessToken(token_payload)
+    # await token.self_or_admin(user_id)
     return await user_view.delete(
         user_id, token_payload, roles=["User"], scopes=["api.write"]
     )

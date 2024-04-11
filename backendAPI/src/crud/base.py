@@ -390,7 +390,9 @@ class BaseCRUD(
         except Exception as e:
             await self.__write_log(object_id, write, current_user, 404)
             logger.error(f"Error in BaseCRUD.update: {e}")
-            raise HTTPException(status_code=404, detail="Object not updated.")
+            raise HTTPException(
+                status_code=404, detail=f"{self.model.__name__} not updated."
+            )
 
     async def delete(
         self,
@@ -422,7 +424,9 @@ class BaseCRUD(
             object = response.one()
             if object is None:
                 logger.info(f"Object with id {object_id} not found")
-                raise HTTPException(status_code=404, detail="Object not found.")
+                raise HTTPException(
+                    status_code=404, detail=f"{self.model.__name__} not found."
+                )
             ####
 
             # TBD: refactor into try-except block and add logging
@@ -438,6 +442,8 @@ class BaseCRUD(
         except Exception as e:
             await self.__write_log(object_id, write, current_user, 404)
             logger.error(f"Error in BaseCRUD.delete: {e}")
-            raise HTTPException(status_code=404, detail="Object not deleted.")
+            raise HTTPException(
+                status_code=404, detail=f"{self.model.__name__} not deleted."
+            )
 
     # TBD: add share / permission methods - maybe in an inherited class BaseCRUDPermissions?

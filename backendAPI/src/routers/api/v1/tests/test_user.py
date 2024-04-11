@@ -1243,11 +1243,11 @@ async def test_user_deletes_another_user(
     # mocks the access token:
     app_override_get_azure_payload_dependency
     existing_user = add_many_test_users_with_groups[2]
-    await add_test_policies_for_resources(
-        resources=[existing_user],
-        actions=["own"],
-        publics=[True],
-    )
+    # await add_test_policies_for_resources(
+    #     resources=[existing_user],
+    #     actions=["own"],
+    #     publics=[True],
+    # )
     async with UserCRUD() as crud:
         existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
     existing_db_user = existing_db_user.model_dump()
@@ -1259,8 +1259,8 @@ async def test_user_deletes_another_user(
     response = await async_client.delete(
         f"/api/v1/user/{str(existing_user.id)}",
     )
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 404
+    assert response.text == '{"detail":"User not deleted."}'
 
     # check if user is still there:
     async with UserCRUD() as crud:

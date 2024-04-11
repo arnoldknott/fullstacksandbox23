@@ -465,7 +465,7 @@ async def test_put_category_does_not_exist(
 
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Object not updated."
+    assert content["detail"] == "Category not updated."
 
 
 @pytest.mark.anyio
@@ -658,7 +658,7 @@ async def test_delete_category_does_not_exist(
 
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Object not deleted."
+    assert content["detail"] == "Category not deleted."
 
 
 @pytest.mark.anyio

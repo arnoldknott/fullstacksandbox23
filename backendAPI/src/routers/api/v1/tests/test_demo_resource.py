@@ -95,13 +95,13 @@ async def test_post_demo_resource_with_nonexisting_category(
 
     resource = one_test_demo_resource
     resource["category_id"] = str(uuid.uuid4())
-    print("=== resource ===")
-    print(resource)
+    # print("=== resource ===")
+    # print(resource)
     # get_async_test_session
     response = await async_client.post("/api/v1/demoresource/", json=resource)
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Object not found"
+    assert content["detail"] == "DemoResource not found"
 
 
 # TBD: add a test, that checks if the category_is is existing in the database!
@@ -442,7 +442,7 @@ async def test_put_demo_resource_by_resource_does_not_exist(
 
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Object not updated."
+    assert content["detail"] == "DemoResource not updated."
 
 
 # TBD: This is not checked - up to the user for now, to get the input correct. Wrong input does not change anything.
@@ -593,7 +593,7 @@ async def test_delete_demo_resource_by_resource_does_not_exist(
 
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Object not deleted."
+    assert content["detail"] == "DemoResource not deleted."
 
 
 @pytest.mark.anyio
