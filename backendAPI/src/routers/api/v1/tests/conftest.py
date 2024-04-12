@@ -1,6 +1,8 @@
 import pytest
-from typing import Optional, List
+
+from typing import Optional
 from core.types import ResourceType, Action, IdentityType
+from core.security import CurrentAccessToken
 from models.access import AccessPolicy
 from models.category import Category
 from models.demo_resource import DemoResource
@@ -8,6 +10,7 @@ from models.public_resource import PublicResource
 from models.tag import Tag
 from models.identity import User
 from crud.protected_resource import ProtectedResourceCRUD
+from crud.category import CategoryCRUD
 from models.protected_resource import ProtectedResource
 from sqlmodel.ext.asyncio.session import AsyncSession
 from tests.utils import (
@@ -262,7 +265,7 @@ async def add_test_public_resources(get_async_test_session: AsyncSession):
 @pytest.fixture(scope="function")
 async def add_test_categories(get_async_test_session: AsyncSession):
     """Adds a category to the database."""
-    session = get_async_test_session
+    # session = get_async_test_session
     category_instances = []
 
     async def _add_test_categories(mocked_token_payload: dict = None):
@@ -270,11 +273,22 @@ async def add_test_categories(get_async_test_session: AsyncSession):
         print(mocked_token_payload)
         # TBD: refactor to use the post endpoint - the token should be mocked already here!
         for category in many_test_categories:
-            category_instance = Category(**category)
-            session.add(category_instance)
-            await session.commit()
-            await session.refresh(category_instance)
+            print("=== category ===")
+            print(category)
+            token = CurrentAccessToken(mocked_token_payload)
+            current_user = await token.provides_current_user()
+            async with CategoryCRUD() as crud:
+                category_instance = await crud.create(category, current_user)
+            # response = await async_client.post("/api/v1/category/", json=category)
+            # category_instance = response.json()
+            print("=== category_instance ===")
+            print(category_instance)
             category_instances.append(category_instance)
+            # category_instance = Category(**category)
+            # session.add(category_instance)
+            # await session.commit()
+            # await session.refresh(category_instance)
+            # category_instances.append(category_instance)
 
         return category_instances
 

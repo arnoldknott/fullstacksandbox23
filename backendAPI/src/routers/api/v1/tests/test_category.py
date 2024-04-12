@@ -127,7 +127,7 @@ async def test_post_category_name_too_long(
 )
 async def test_get_all_categories(
     async_client: AsyncClient,
-    add_test_policies_for_resources: list[AccessPolicy],
+    # add_test_policies_for_resources: list[AccessPolicy],
     add_test_categories: list[Category],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
@@ -139,12 +139,16 @@ async def test_get_all_categories(
     print(mocked_get_azure_token_payload)
     # print("=== test-category - request ===")
     # print(request)
+    # OK, this is working, but I need to pass the token_payload to the fixture!
+    # In case a different user is supposed to be the owner
+    # compared to the mocked token_payload from the paramterization,
+    # just add a different token mocking as a parameter to the fixture!
     categories = await add_test_categories(mocked_get_azure_token_payload)
-    await add_test_policies_for_resources(
-        resources=categories,
-        actions=["read"] * len(categories),
-        publics=[True] * len(categories),
-    )
+    # await add_test_policies_for_resources(
+    #     resources=categories,
+    #     actions=["read"] * len(categories),
+    #     publics=[True] * len(categories),
+    # )
     # print(
     #     "=== test-category - test_get_all_categories - public_policies_for_test_categories ==="
     # )
@@ -221,7 +225,7 @@ async def test_get_all_categories(
     assert content["name"] == categories[0].name
     assert content["description"] == categories[0].description
     assert "id" in content
-    assert 0
+    # assert 0
 
 
 @pytest.mark.anyio
