@@ -5,7 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from core.types import ResourceType, IdentityType
 from .base import BaseView
 from core.security import get_access_token_payload, CurrentAccessToken
-from models.access import AccessPolicy, AccessPolicyCreate, AccessPolicyRead
+from models.access import (
+    AccessPolicy,
+    AccessPolicyCreate,
+    AccessPolicyRead,
+    AccessLog,
+    AccessLogRead,
+)
 from crud.access import AccessPolicyCRUD
 
 logger = logging.getLogger(__name__)
@@ -124,6 +130,23 @@ access_log_view = BaseView(AccessPolicyCRUD, AccessPolicy)
 # ✔︎ implemented
 # X missing tests
 # - not implemented
+
+
+@router.get("/log/created/{resource_id}", status_code=200)
+async def get_creation_information_for_resource(
+    resource_id: str,
+    token_payload=Depends(get_access_token_payload),
+) -> list[AccessLogRead]:
+    """Returns creation information for a resource."""
+    return await access_log_view.get_with_query_options(
+        token_payload,
+        roles=["user"],
+        filters=[AccessLog.resource_id == resource_id],
+        order_by=AccessLog.time,
+        # TBD: ascending or descending?
+        limit=1,
+    )
+
 
 # AccessLogs:
 # - read (check who accessed what)

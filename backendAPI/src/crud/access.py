@@ -235,6 +235,7 @@ class AccessLoggingCRUD:
         """Closes the database session."""
         await self.session.close()
 
+    # TBD: is that
     async def log_access(
         self,
         access_log: AccessLogCreate,
@@ -248,14 +249,16 @@ class AccessLoggingCRUD:
             session = self.session
             session.add(access_log)
             await session.commit()
+            await session.refresh(access_log)
+            return access_log
         except Exception as e:
             logger.error(f"Error in logging: {e}")
             raise HTTPException(status_code=400, detail="Bad request: logging failed")
-        finally:
-            await self.session.close()
-        return access_log
+        # finally:
+        #     await self.session.close()
 
     # Do we need current_user here?
+    # TBD: delete and use base class with method read_with_query_options instead?
     async def read_log_by_identity_id(self, identity_id: UUID) -> list[AccessLogRead]:
         """Reads access logs by identity id."""
         logger.info("Reading identity access logs from the database.")
@@ -266,13 +269,14 @@ class AccessLoggingCRUD:
             )
             response = await session.exec(query)
             results = response.all()
+            return results
         except Exception as e:
             logger.error(f"Error in reading log: {e}")
             raise HTTPException(status_code=404, detail="Log not found")
-        return results
 
     # Do we need current_user here?
     # TBD: type might not be necessary any more as input since we've switched to UUID.
+    # TBD: delete and use base class with method read_with_query_options instead?
     async def read_log_by_resource(
         self, resource_id: UUID, resource_type: ResourceType
     ) -> list[AccessLogRead]:
@@ -286,7 +290,31 @@ class AccessLoggingCRUD:
             )
             response = await session.exec(query)
             results = response.all()
+            return results
         except Exception as e:
             logger.error(f"Error in reading log: {e}")
             raise HTTPException(status_code=404, detail="Log not found")
-        return results
+
+    # TBD: delete and use base class with method read_with_query_options instead?
+    async def read_log_created(
+        self, resource_id: UUID, resource_type: ResourceType
+    ) -> AccessLogRead:
+        """Reads first access log with action "Own" for resource id and type - corresponds to create."""
+        logger.info("Reading create information from access logs in database.")
+        try:
+            session = self.session
+            query = (
+                select(AccessLog)
+                .where(
+                    AccessLog.resource_id == resource_id,
+                    AccessLog.resource_type == resource_type,
+                )
+                .order_by(AccessLog.time)
+                .limit(1)
+            )
+            response = await session.exec(query)
+            result = response.one()
+            return result
+        except Exception as e:
+            logger.error(f"Error in reading log: {e}")
+            raise HTTPException(status_code=404, detail="Log not found")

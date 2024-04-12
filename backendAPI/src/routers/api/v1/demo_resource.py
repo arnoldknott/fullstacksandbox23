@@ -45,7 +45,7 @@ async def post_category(
     demo_resource: DemoResourceCreate,
     token_payload=Depends(get_access_token_payload),
 ) -> DemoResource:
-    """Creates a new category."""
+    """Creates a new demo resource."""
     demo_resource_db = await demo_resource_view.post(
         demo_resource,
         token_payload,
@@ -99,11 +99,11 @@ async def get_categories(
 
 
 @router.get("/{demo_resource_id}", status_code=200)
-async def get_category_by_id(
+async def get_demo_resource_by_id(
     demo_resource_id: str,
     # token_payload=Depends(get_access_token_payload),
 ) -> DemoResourceRead:
-    """Returns a protected resource."""
+    """Returns a demo resource."""
     return await demo_resource_view.get_by_id(
         demo_resource_id,
         # token_payload,

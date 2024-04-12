@@ -144,7 +144,9 @@ class BaseCRUD(
         except Exception as e:
             await self.__write_log(database_object.id, own, current_user, 404)
             logger.error(f"Error in BaseCRUD.create: {e}")
-            raise HTTPException(status_code=404, detail="Object not found")
+            raise HTTPException(
+                status_code=404, detail=f"{self.model.__name__} not found"
+            )
 
     # TBD: implement a create_if_not_exists method
 
@@ -352,7 +354,9 @@ class BaseCRUD(
             old = response.one()
             if old is None:
                 logger.info(f"Object with id {object_id} not found")
-                raise HTTPException(status_code=404, detail="Object not found.")
+                raise HTTPException(
+                    status_code=404, detail=f"{self.model.__name__} not found."
+                )
             ####
 
             ### TBD delete old version from before refactoring:
