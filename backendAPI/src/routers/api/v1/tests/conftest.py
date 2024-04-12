@@ -264,14 +264,35 @@ async def add_test_categories(get_async_test_session: AsyncSession):
     """Adds a category to the database."""
     session = get_async_test_session
     category_instances = []
-    for category in many_test_categories:
-        category_instance = Category(**category)
-        session.add(category_instance)
-        await session.commit()
-        await session.refresh(category_instance)
-        category_instances.append(category_instance)
 
-    yield category_instances
+    async def _add_test_categories(mocked_token_payload: dict = None):
+        print("=== _add_test_categories - mocked_token_payload ===")
+        print(mocked_token_payload)
+        # TBD: refactor to use the post endpoint - the token should be mocked already here!
+        for category in many_test_categories:
+            category_instance = Category(**category)
+            session.add(category_instance)
+            await session.commit()
+            await session.refresh(category_instance)
+            category_instances.append(category_instance)
+
+        return category_instances
+
+    yield _add_test_categories
+    # print("=== add_test_categories - request.param ===")
+    # print(request.param)
+    # print("=== add_test_categories - request - all attributes ===")
+    # for attr in dir(request):
+    #     print(f"=== {attr} ==")
+    #     print(getattr(request, attr))
+    # for category in many_test_categories:
+    #     category_instance = Category(**category)
+    #     session.add(category_instance)
+    #     await session.commit()
+    #     await session.refresh(category_instance)
+    #     category_instances.append(category_instance)
+
+    # yield category_instances
 
 
 @pytest.fixture(scope="function")

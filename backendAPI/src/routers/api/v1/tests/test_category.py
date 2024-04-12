@@ -130,11 +130,16 @@ async def test_get_all_categories(
     add_test_policies_for_resources: list[AccessPolicy],
     add_test_categories: list[Category],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests GET all categories."""
 
     app_override_get_azure_payload_dependency
-    categories = add_test_categories
+    print("=== test-category - mocked_get_azure_token_payload ===")
+    print(mocked_get_azure_token_payload)
+    # print("=== test-category - request ===")
+    # print(request)
+    categories = await add_test_categories(mocked_get_azure_token_payload)
     await add_test_policies_for_resources(
         resources=categories,
         actions=["read"] * len(categories),
@@ -216,7 +221,7 @@ async def test_get_all_categories(
     assert content["name"] == categories[0].name
     assert content["description"] == categories[0].description
     assert "id" in content
-    # assert 1 == 2
+    assert 0
 
 
 @pytest.mark.anyio
