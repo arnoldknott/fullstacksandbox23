@@ -143,6 +143,7 @@ async def test_get_all_categories(
     # In case a different user is supposed to be the owner
     # compared to the mocked token_payload from the paramterization,
     # just add a different token mocking as a parameter to the fixture!
+    # This is so much more pretty than the previous solution with the fixture!
     categories = await add_test_categories(mocked_get_azure_token_payload)
     # await add_test_policies_for_resources(
     #     resources=categories,

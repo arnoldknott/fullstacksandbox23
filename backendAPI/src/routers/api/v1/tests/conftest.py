@@ -268,6 +268,10 @@ async def add_test_categories(get_async_test_session: AsyncSession):
     # session = get_async_test_session
     category_instances = []
 
+    # TBD: add checks if token payload is not provided!
+    # could be a public resource then?
+    # maybe just using the add_test_policies_for_resources fixture?
+    # or just failing?
     async def _add_test_categories(mocked_token_payload: dict = None):
         print("=== _add_test_categories - mocked_token_payload ===")
         print(mocked_token_payload)
