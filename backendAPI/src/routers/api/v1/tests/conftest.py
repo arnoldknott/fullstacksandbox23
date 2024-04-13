@@ -269,7 +269,7 @@ async def add_test_policy_for_resource(mock_current_user: User):
 
 @pytest.fixture(scope="function")
 async def add_many_test_users(get_async_test_session: AsyncSession):
-    """Adds a category to the database."""
+    """Adds test users to the database."""
     session = get_async_test_session
     users = []
     for user in many_test_users:
@@ -284,7 +284,7 @@ async def add_many_test_users(get_async_test_session: AsyncSession):
 
 @pytest.fixture(scope="function")
 async def add_test_public_resources(get_async_test_session: AsyncSession):
-    """Adds a category to the database."""
+    """Adds public resources to the database."""
     session = get_async_test_session
     public_resources_instances = []
     for public_resource in many_test_public_resources:
@@ -301,7 +301,7 @@ async def add_test_public_resources(get_async_test_session: AsyncSession):
 async def add_test_categories(
     mock_current_user: User,
 ):  # get_async_test_session: AsyncSession):
-    """Adds a category through CRUD to the database."""
+    """Adds test categories through CRUD to the database."""
     # session = get_async_test_session
 
     # TBD: add checks if token payload is not provided!
@@ -358,7 +358,7 @@ async def add_test_demo_resources(
     add_test_categories: list[Category],
     # add_test_policies_for_resources: list[AccessPolicy],
 ):
-    """Adds a demo resource to the database."""
+    """Adds demo resources to the database."""
     # print("=== add_test_demo_resources started ===")
     # session = get_async_test_session
     # TBD, when refactoring add_test_demo_resources, the mocked token should be available here and
@@ -408,7 +408,7 @@ async def add_test_demo_resources(
 async def add_test_tags(
     mock_current_user: User,
 ):  # (get_async_test_session: AsyncSession):
-    """Adds a tags to the database."""
+    """Adds tags to the database."""
     # session = get_async_test_session
     # tag_instances = []
     # for tag in many_test_tags:
@@ -435,13 +435,28 @@ async def add_test_tags(
 
 @pytest.fixture(scope="function")
 async def add_many_test_protected_resources(
-    get_async_test_session: AsyncSession,
-) -> list[ProtectedResource]:
-    """Adds a category to the database."""
-    async with ProtectedResourceCRUD() as crud:
+    mocked_current_user: User,
+):
+    """Adds test protected resources to the database."""
+
+    async def _add_many_test_protected_resources(token_payload: dict = None):
         protected_resources = []
         for protected_resource in many_test_protected_resources:
-            added_protected_resource = await crud.create(protected_resource)
+            current_user = await mocked_current_user(token_payload)
+            async with ProtectedResourceCRUD() as crud:
+                added_protected_resource = await crud.create(
+                    protected_resource, current_user
+                )
             protected_resources.append(added_protected_resource)
 
-    yield protected_resources
+        return protected_resources
+
+    yield _add_many_test_protected_resources
+
+    # async with ProtectedResourceCRUD() as crud:
+    #     protected_resources = []
+    #     for protected_resource in many_test_protected_resources:
+    #         added_protected_resource = await crud.create(protected_resource)
+    #         protected_resources.append(added_protected_resource)
+
+    # yield protected_resources
