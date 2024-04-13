@@ -1,6 +1,7 @@
 import pytest
 
 from typing import Optional
+from sqlmodel.ext.asyncio.session import AsyncSession
 from core.types import ResourceType, Action, IdentityType
 from core.security import CurrentAccessToken
 from models.access import AccessPolicy
@@ -13,8 +14,9 @@ from crud.protected_resource import ProtectedResourceCRUD
 from crud.category import CategoryCRUD
 from crud.demo_resource import DemoResourceCRUD
 from models.protected_resource import ProtectedResource
-from sqlmodel.ext.asyncio.session import AsyncSession
+
 from tests.utils import (
+    token_admin,
     many_test_categories,
     many_test_demo_resources,
     many_test_tags,
@@ -114,6 +116,21 @@ from tests.utils import (
 #     ResourceType(resource.__class__.__name__)
 #     resource_type = resource.__class__.__name__
 #     return AccessPolicyCreate()
+
+
+@pytest.fixture(scope="function")
+async def mock_current_user():
+    """Returns a mock current user based on provided payload or admin."""
+
+    async def _mock_current_user(token_payload: dict = None) -> User:
+        current_user = None
+        if token_payload is None:
+            token_payload = token_admin
+        token = CurrentAccessToken(token_payload)
+        current_user = await token.provides_current_user()
+        return current_user
+
+    yield _mock_current_user
 
 
 @pytest.fixture(scope="function")
@@ -264,7 +281,9 @@ async def add_test_public_resources(get_async_test_session: AsyncSession):
 
 
 @pytest.fixture(scope="function")
-async def add_test_categories():  # get_async_test_session: AsyncSession):
+async def add_test_categories(
+    mock_current_user: User,
+):  # get_async_test_session: AsyncSession):
     """Adds a category through CRUD to the database."""
     # session = get_async_test_session
 
@@ -280,8 +299,9 @@ async def add_test_categories():  # get_async_test_session: AsyncSession):
         for category in many_test_categories:
             # print("=== category ===")
             # print(category)
-            token = CurrentAccessToken(token_payload)
-            current_user = await token.provides_current_user()
+            # token = CurrentAccessToken(token_payload)
+            # current_user = await token.provides_current_user()
+            current_user = await mock_current_user(token_payload)
             async with CategoryCRUD() as crud:
                 category_instance = await crud.create(category, current_user)
             # response = await async_client.post("/api/v1/category/", json=category)
@@ -317,8 +337,9 @@ async def add_test_categories():  # get_async_test_session: AsyncSession):
 @pytest.fixture(scope="function")
 async def add_test_demo_resources(
     # get_async_test_session: AsyncSession,
+    mock_current_user: User,
     add_test_categories: list[Category],
-    add_test_policies_for_resources: list[AccessPolicy],
+    # add_test_policies_for_resources: list[AccessPolicy],
 ):
     """Adds a demo resource to the database."""
     # print("=== add_test_demo_resources started ===")
@@ -351,8 +372,9 @@ async def add_test_demo_resources(
             # await session.commit()
             # await session.refresh(demo_resource_instance)
             async with DemoResourceCRUD() as crud:
-                token = CurrentAccessToken(token_payload)
-                current_user = await token.provides_current_user()
+                current_user = await mock_current_user(token_payload)
+                # token = CurrentAccessToken(token_payload)
+                # current_user = await token.provides_current_user()
                 demo_resource_instance = await crud.create(resource, current_user)
             demo_resource_instances.append(demo_resource_instance)
 

@@ -11,11 +11,15 @@ from models.tag import Tag
 # from crud.access import AccessLoggingCRUD
 from tests.utils import (
     one_test_demo_resource,
-    token_payload_user_id,
-    token_payload_tenant_id,
-    token_payload_roles_admin,
-    token_payload_roles_user,
-    token_payload_scope_api_read_write,
+    token_user1_read,
+    token_user1_read_write,
+    token_admin,
+    token_admin_read_write,
+    # token_payload_user_id,
+    # token_payload_tenant_id,
+    # token_payload_roles_admin,
+    # token_payload_roles_user,
+    # token_payload_scope_api_read_write,
     # token_payload_scope_api_read,
 )
 
@@ -23,20 +27,7 @@ from tests.utils import (
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_post_demo_resource(
@@ -70,20 +61,7 @@ async def test_post_demo_resource(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_post_demo_resource_with_nonexisting_category(
@@ -104,7 +82,7 @@ async def test_post_demo_resource_with_nonexisting_category(
     assert content["detail"] == "DemoResource not found"
 
 
-# TBD: add a test, that checks if the category_is is existing in the database!
+# TBD: add a test, that checks if the category_id is existing in the database!
 
 
 @pytest.mark.anyio
