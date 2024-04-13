@@ -273,20 +273,20 @@ async def add_test_categories(get_async_test_session: AsyncSession):
     # maybe just using the add_test_policies_for_resources fixture?
     # or just failing?
     async def _add_test_categories(mocked_token_payload: dict = None):
-        print("=== _add_test_categories - mocked_token_payload ===")
-        print(mocked_token_payload)
+        # print("=== _add_test_categories - mocked_token_payload ===")
+        # print(mocked_token_payload)
         # TBD: refactor to use the post endpoint - the token should be mocked already here!
         for category in many_test_categories:
-            print("=== category ===")
-            print(category)
+            # print("=== category ===")
+            # print(category)
             token = CurrentAccessToken(mocked_token_payload)
             current_user = await token.provides_current_user()
             async with CategoryCRUD() as crud:
                 category_instance = await crud.create(category, current_user)
             # response = await async_client.post("/api/v1/category/", json=category)
             # category_instance = response.json()
-            print("=== category_instance ===")
-            print(category_instance)
+            # print("=== category_instance ===")
+            # print(category_instance)
             category_instances.append(category_instance)
             # category_instance = Category(**category)
             # session.add(category_instance)
@@ -322,6 +322,8 @@ async def add_test_demo_resources(
     """Adds a demo resource to the database."""
     # print("=== add_test_demo_resources started ===")
     session = get_async_test_session
+    # TBD, when refactoring add_test_demo_resources, the mocked token should be available here and
+    # needs to be provided to to add_test_categories as well!
     existing_test_categories = add_test_categories
     await add_test_policies_for_resources(
         resources=existing_test_categories,

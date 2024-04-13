@@ -6,34 +6,41 @@ from models.access import AccessPolicy
 from models.category import Category
 from models.demo_resource import DemoResource
 from tests.utils import (
-    token_payload_user_id,
-    token_payload_tenant_id,
-    token_payload_roles_admin,
-    token_payload_roles_user,
-    token_payload_scope_api_read_write,
-    token_payload_scope_api_read,
+    token_user1_read,
+    token_user1_read_write,
+    token_admin,
+    token_admin_read_write,
+    # token_payload_user_id,
+    # token_payload_tenant_id,
+    # token_payload_roles_admin,
+    # token_payload_roles_user,
+    # token_payload_scope_api_read_write,
+    # token_payload_scope_api_read,
 )
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_post_category(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
@@ -58,22 +65,25 @@ async def test_post_category(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 @pytest.mark.anyio
 async def test_post_category_name_too_long(
     async_client: AsyncClient,
@@ -98,33 +108,41 @@ async def test_post_category_name_too_long(
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            # **token_payload_scope_api_read,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read,
-            **token_payload_roles_user,
-        },
+        token_admin,
+        token_admin_read_write,
+        token_user1_read,
+        token_user1_read_write,
     ],
     indirect=True,
 )
+
+#     {
+#         **token_payload_user_id,
+#         **token_payload_tenant_id,
+#         **token_payload_scope_api_read_write,
+#         **token_payload_roles_admin,
+#     },
+#     {
+#         **token_payload_user_id,
+#         **token_payload_tenant_id,
+#         **token_payload_scope_api_read_write,
+#         **token_payload_roles_user,
+#     },
+#     {
+#         **token_payload_user_id,
+#         **token_payload_tenant_id,
+#         # **token_payload_scope_api_read,
+#         **token_payload_roles_admin,
+#     },
+#     {
+#         **token_payload_user_id,
+#         **token_payload_tenant_id,
+#         **token_payload_scope_api_read,
+#         **token_payload_roles_user,
+#     },
+# ],
+# indirect=True,
+# )
 async def test_get_all_categories(
     async_client: AsyncClient,
     # add_test_policies_for_resources: list[AccessPolicy],
@@ -135,8 +153,8 @@ async def test_get_all_categories(
     """Tests GET all categories."""
 
     app_override_get_azure_payload_dependency
-    print("=== test-category - mocked_get_azure_token_payload ===")
-    print(mocked_get_azure_token_payload)
+    # print("=== test-category - mocked_get_azure_token_payload ===")
+    # print(mocked_get_azure_token_payload)
     # print("=== test-category - request ===")
     # print(request)
     # OK, this is working, but I need to pass the token_payload to the fixture!
@@ -232,50 +250,54 @@ async def test_get_all_categories(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            # **token_payload_scope_api_read,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin, token_admin_read_write, token_user1_read, token_user1_read_write],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             # **token_payload_scope_api_read,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_get_category_by_id(
     async_client: AsyncClient,
     add_test_categories: list[Category],
     add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests GET all categories."""
 
     app_override_get_azure_payload_dependency
-    categories = add_test_categories
+    categories = await add_test_categories(mocked_get_azure_token_payload)
     # TBD: consider moving this into the add_test_categories fixture with action argument on it and default public or override with optional identity
-    await add_test_policies_for_resources(
-        resources=categories,
-        actions=["read"] * len(categories),
-        publics=[True] * len(categories),
-    )
+    # await add_test_policies_for_resources(
+    #     resources=categories,
+    #     actions=["read"] * len(categories),
+    #     publics=[True] * len(categories),
+    # )
     response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
 
     assert response.status_code == 200
@@ -288,34 +310,37 @@ async def test_get_category_by_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            # **token_payload_scope_api_read,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin, token_admin_read_write, token_user1_read, token_user1_read_write],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             # **token_payload_scope_api_read,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_get_category_by_invalid_id(
     async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
 ):
@@ -331,40 +356,45 @@ async def test_get_category_by_invalid_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_put_category(
     async_client: AsyncClient,
     add_test_categories: list[Category],
-    add_test_policies_for_resources: list[AccessPolicy],
+    # add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests PUT of a category."""
 
     app_override_get_azure_payload_dependency
     categories = add_test_categories
-    await add_test_policies_for_resources(
-        resources=categories,
-        actions=["write"] * len(categories),
-        publics=[True] * len(categories),
-        # TBD: implement tests with identity_ids and identity_types!
-        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-        # identity_types=["user"] * len(categories),
-    )
+    categories = await add_test_categories(mocked_get_azure_token_payload)
+    # await add_test_policies_for_resources(
+    #     resources=categories,
+    #     actions=["write"] * len(categories),
+    #     publics=[True] * len(categories),
+    # TBD: implement tests with identity_ids and identity_types!
+    # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
+    # identity_types=["user"] * len(categories),
+    # )
     updated_category = {
         "name": "Test Cat",
         "description": "A new description for this category",
@@ -382,40 +412,44 @@ async def test_put_category(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_put_category_partial_update(
     async_client: AsyncClient,
     add_test_categories: list[Category],
     add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests PUT of a category."""
 
     app_override_get_azure_payload_dependency
-    categories = add_test_categories
-    await add_test_policies_for_resources(
-        resources=categories,
-        actions=["write"] * len(categories),
-        publics=[True] * len(categories),
-        # TBD: implement tests with identity_ids and identity_types!
-        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-        # identity_types=["user"] * len(categories),
-    )
+    categories = await add_test_categories(mocked_get_azure_token_payload)
+    # await add_test_policies_for_resources(
+    #     resources=categories,
+    #     actions=["write"] * len(categories),
+    #     publics=[True] * len(categories),
+    #     # TBD: implement tests with identity_ids and identity_types!
+    #     # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
+    #     # identity_types=["user"] * len(categories),
+    # )
     updated_category = {
         "description": "An updated description for this category",
     }
@@ -431,40 +465,44 @@ async def test_put_category_partial_update(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_put_category_does_not_exist(
     async_client: AsyncClient,
     add_test_categories: list[Category],
     add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests PUT of a category."""
 
     app_override_get_azure_payload_dependency
-    categories = add_test_categories
-    await add_test_policies_for_resources(
-        resources=categories,
-        actions=["write"] * len(categories),
-        publics=[True] * len(categories),
-        # TBD: implement tests with identity_ids and identity_types!
-        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-        # identity_types=["user"] * len(categories),
-    )
+    categories = await add_test_categories(mocked_get_azure_token_payload)
+    # await add_test_policies_for_resources(
+    #     resources=categories,
+    #     actions=["write"] * len(categories),
+    #     publics=[True] * len(categories),
+    #     # TBD: implement tests with identity_ids and identity_types!
+    #     # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
+    #     # identity_types=["user"] * len(categories),
+    # )
     updated_category = {
         "name": "Test Cat",
         "description": "A new description for this category",
@@ -481,40 +519,44 @@ async def test_put_category_does_not_exist(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_put_category_wrong_data(
     async_client: AsyncClient,
     add_test_categories: list[Category],
     add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests PUT of a category."""
 
     app_override_get_azure_payload_dependency
-    categories = add_test_categories
-    await add_test_policies_for_resources(
-        resources=categories,
-        actions=["write"] * len(categories),
-        publics=[True] * len(categories),
-        # TBD: implement tests with identity_ids and identity_types!
-        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-        # identity_types=["user"] * len(categories),
-    )
+    categories = await add_test_categories(mocked_get_azure_token_payload)
+    # await add_test_policies_for_resources(
+    #     resources=categories,
+    #     actions=["write"] * len(categories),
+    #     publics=[True] * len(categories),
+    #     # TBD: implement tests with identity_ids and identity_types!
+    #     # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
+    #     # identity_types=["user"] * len(categories),
+    # )
     wrong_category_data = {
         "comments": "There is no field comments in category",
         "emoji": "❌",
@@ -537,40 +579,44 @@ async def test_put_category_wrong_data(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_delete_category(
     async_client: AsyncClient,
     add_test_categories: list[Category],
     add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests DELETE of a category."""
 
     app_override_get_azure_payload_dependency
-    categories = add_test_categories
-    await add_test_policies_for_resources(
-        resources=categories,
-        actions=["own"] * len(categories),
-        publics=[True] * len(categories),
-        # TBD: implement tests with identity_ids and identity_types!
-        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-        # identity_types=["user"] * len(categories),
-    )
+    categories = await add_test_categories(mocked_get_azure_token_payload)
+    # await add_test_policies_for_resources(
+    #     resources=categories,
+    #     actions=["own"] * len(categories),
+    #     publics=[True] * len(categories),
+    #     # TBD: implement tests with identity_ids and identity_types!
+    #     # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
+    #     # identity_types=["user"] * len(categories),
+    # )
     response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
 
     # Check if category exists before deleting:
@@ -598,22 +644,25 @@ async def test_delete_category(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_delete_category_by_invalid_id(
     async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
 ):
@@ -630,40 +679,44 @@ async def test_delete_category_by_invalid_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_delete_category_does_not_exist(
     async_client: AsyncClient,
     add_test_categories: list[Category],
     add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests DELETE of a category."""
 
     app_override_get_azure_payload_dependency
-    categories = add_test_categories
-    await add_test_policies_for_resources(
-        resources=categories,
-        actions=["own"] * len(categories),
-        publics=[True] * len(categories),
-        # TBD: implement tests with identity_ids and identity_types!
-        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-        # identity_types=["user"] * len(categories),
-    )
+    categories = await add_test_categories(mocked_get_azure_token_payload)
+    # await add_test_policies_for_resources(
+    #     resources=categories,
+    #     actions=["own"] * len(categories),
+    #     publics=[True] * len(categories),
+    #     # TBD: implement tests with identity_ids and identity_types!
+    #     # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
+    #     # identity_types=["user"] * len(categories),
+    # )
     response = await async_client.delete(f"/api/v1/category/{str(uuid.uuid4())}")
 
     assert response.status_code == 404
@@ -674,43 +727,49 @@ async def test_delete_category_does_not_exist(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            # **token_payload_scope_api_read,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             # **token_payload_scope_api_read,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_get_all_demo_resources_by_category_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
     app_override_get_azure_payload_dependency: FastAPI,
+    # mocked_get_azure_token_payload,
 ):
     """Tests GET all demo resources by category id."""
 
     app_override_get_azure_payload_dependency
     resources = add_test_demo_resources
+    # TBD: refactor also demo resources into this:
+    # resources = await add_test_demo_resources(mocked_get_azure_token_payload)
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()
     response = await async_client.get(
@@ -735,43 +794,49 @@ async def test_get_all_demo_resources_by_category_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            # **token_payload_scope_api_read,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
     indirect=True,
 )
+#     [
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read_write,
+#             **token_payload_roles_user,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             # **token_payload_scope_api_read,
+#             **token_payload_roles_admin,
+#         },
+#         {
+#             **token_payload_user_id,
+#             **token_payload_tenant_id,
+#             **token_payload_scope_api_read,
+#             **token_payload_roles_user,
+#         },
+#     ],
+#     indirect=True,
+# )
 async def test_get_demo_resources_for_lonely_category(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
     app_override_get_azure_payload_dependency: FastAPI,
+    # mocked_get_azure_token_payload,
 ):
     """Tests GET error for category, that has no demo resources attached."""
 
     app_override_get_azure_payload_dependency
 
+    # TBD: refactor also demo resources into this:
+    # await add_test_demo_resources(mocked_get_azure_token_payload)
     add_test_demo_resources
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()

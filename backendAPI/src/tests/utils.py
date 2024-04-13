@@ -8,6 +8,10 @@ one_test_user = {
     "azure_user_id": "12345678-1234-1234-1234-123456789012",
     "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
 }
+another_test_user = {
+    "azure_user_id": "1b2b3c4d-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+    "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
+}
 
 azure_home_tenant = str(uuid4())
 many_test_users = [
@@ -29,6 +33,9 @@ many_test_users = [
 # Mocks payload to detect scope api.write:
 token_payload_user_id = {
     "oid": one_test_user["azure_user_id"],
+}
+token_payload_another_user_id = {
+    "oid": another_test_user["azure_user_id"],
 }
 token_payload_tenant_id = {
     "tid": one_test_user["azure_tenant_id"],
@@ -60,6 +67,76 @@ token_payload_one_group = {
 token_payload_many_groups = {
     "groups": [str(uuid4()), str(uuid4()), str(uuid4())],
 }
+
+token_user1_read = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read,
+    **token_payload_roles_user,
+}
+
+token_user1_write = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_write,
+    **token_payload_roles_user,
+}
+
+token_user1_read_write = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read_write,
+    **token_payload_roles_user,
+}
+
+token_user2_read = {
+    **token_payload_another_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read,
+    **token_payload_roles_user,
+}
+
+token_user2_write = {
+    **token_payload_another_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_write,
+    **token_payload_roles_user,
+}
+
+token_user2_read_write = {
+    **token_payload_another_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read_write,
+    **token_payload_roles_user,
+}
+
+token_admin = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_roles_admin,
+}
+
+token_admin_read = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read,
+    **token_payload_roles_admin,
+}
+
+token_admin_write = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_write,
+    **token_payload_roles_admin,
+}
+
+token_admin_read_write = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read_write,
+    **token_payload_roles_admin,
+}
+
 
 # group_id1 = str(uuid4())
 # group_id2 = str(uuid4())
