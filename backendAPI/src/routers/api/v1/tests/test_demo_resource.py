@@ -14,6 +14,7 @@ from tests.utils import (
     token_user1_read,
     token_user1_read_write,
     token_admin,
+    token_admin_read,
     token_admin_read_write,
     # token_payload_user_id,
     # token_payload_tenant_id,
@@ -86,12 +87,74 @@ async def test_post_demo_resource_with_nonexisting_category(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        token_user1_read,
+        token_user1_read_write,
+        token_admin,
+        token_admin_read,
+        token_admin_read_write,
+    ],
+    indirect=True,
+)
 async def test_get_all_demo_resources(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
+):
+    """Tests GET all demo resources."""
+    app_override_get_azure_payload_dependency
+    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+    response = await async_client.get("/api/v1/demoresource/")
+
+    assert response.status_code == 200
+    assert len(response.json()) == 4
+    for response_item in response.json():
+        assert response_item["name"] in [
+            resources[0].name,
+            resources[1].name,
+            resources[2].name,
+            resources[3].name,
+        ]
+        assert response_item["description"] in [
+            resources[0].description,
+            resources[1].description,
+            resources[2].description,
+            resources[3].description,
+        ]
+        assert response_item["language"] in [
+            resources[0].language,
+            resources[1].language,
+            resources[2].language,
+            resources[3].language,
+        ]
+        # assert response_item["timezone"] in [
+        #     resources[0].timezone,
+        #     resources[1].timezone,
+        # ]
+        assert "id" in response_item
+
+    # assert 0
+
+
+@pytest.mark.anyio
+async def test_get_all_public_demo_resources(
+    async_client: AsyncClient,
+    add_test_demo_resources: list[DemoResource],
+    add_test_policy_for_resource: AccessPolicy,
 ):
     """Tests GET all demo resources."""
     resources = await add_test_demo_resources()
+    for resource in resources:
+        policy = {
+            "resource_id": resource.id,
+            "resource_type": "DemoResource",
+            "action": "read",
+            "public": True,
+        }
+        await add_test_policy_for_resource(policy)
     response = await async_client.get("/api/v1/demoresource/")
 
     assert response.status_code == 200
@@ -123,12 +186,53 @@ async def test_get_all_demo_resources(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_user1_read, token_user1_read_write, token_admin, token_admin_read],
+    indirect=True,
+)
 async def test_get_demo_resource_by_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
+):
+    """Tests GET of a demo resources."""
+    app_override_get_azure_payload_dependency
+    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+
+    # time_before_get_call = datetime.now()
+    response = await async_client.get(f"/api/v1/demoresource/{resources[0].id}")
+    # time_after_get_call = datetime.now()
+    # print("== test_get_demo_resource_by_id - get call time ===")
+    # print((time_after_get_call - time_before_get_call).total_seconds())
+    # solution with SQLModel back_population of tables: about 0.07 - 0.14 seconds
+    assert response.status_code == 200
+    content = response.json()
+    assert content["name"] == resources[0].name
+    assert content["description"] == resources[0].description
+    assert "id" in content
+    assert "tags" in content
+    assert "category" in content
+
+    # assert 0
+
+
+@pytest.mark.anyio
+async def test_get_public_demo_resource_by_id(
+    async_client: AsyncClient,
+    add_test_demo_resources: list[DemoResource],
+    add_test_policy_for_resource: AccessPolicy,
 ):
     """Tests GET of a demo resources."""
     resources = await add_test_demo_resources()
+    policy = {
+        "resource_id": resources[0].id,
+        "resource_type": "DemoResource",
+        "action": "read",
+        "public": True,
+    }
+    await add_test_policy_for_resource(policy)
 
     # time_before_get_call = datetime.now()
     response = await async_client.get(f"/api/v1/demoresource/{resources[0].id}")

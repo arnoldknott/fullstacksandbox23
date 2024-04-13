@@ -289,7 +289,7 @@ async def test_put_category_does_not_exist(
 async def test_put_category_wrong_data(
     async_client: AsyncClient,
     add_test_categories: list[Category],
-    add_test_policies_for_resources: list[AccessPolicy],
+    # add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
 ):

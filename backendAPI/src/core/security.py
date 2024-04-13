@@ -10,7 +10,7 @@ import jwt
 from uuid import UUID
 
 # from pydantic import BaseModel
-# from typing import List, Optional
+from typing import Optional
 from core.types import CurrentUserData
 from core.cache import redis_jwks_client
 from core.config import config
@@ -121,7 +121,7 @@ async def decode_token(token: str, jwks: dict) -> dict:
     return payload
 
 
-async def get_azure_token_payload(request: Request) -> dict:
+async def get_azure_token_payload(request: Request) -> Optional[dict]:
     """Validates the Azure access token sent in the request header and returns the payload if valid"""
     logger.info("🔑 Validating token")
     try:
@@ -142,15 +142,44 @@ async def get_azure_token_payload(request: Request) -> dict:
 
     except Exception as e:
         logger.error(f"🔑 Token validation failed: ${e}")
-        raise HTTPException(status_code=401, detail="Invalid token")
+        return None
+        # raise HTTPException(status_code=401, detail="Invalid token")
+
+
+# TBD: implement tests for this:
+async def optional_get_access_token_payload(
+    payload=Depends(get_azure_token_payload),
+) -> Optional[dict]:
+    """General function to get the access token payload optionally"""
+    # can later be used for customizing different identity service providers
+    return payload
+    # try:
+    #     return await get_azure_token_payload(request)
+    # except HTTPException as err:
+    #     if err.status_code == 401:
+    #         return None
+    #     else:
+    #         raise err
 
 
 async def get_access_token_payload(
-    payload: dict = Depends(get_azure_token_payload),
+    payload: dict = Depends(optional_get_access_token_payload),
 ) -> dict:
     """General function to get the access token payload"""
     # can later be used for customizing different identity service providers
+    print("=== payload ===")
+    print(payload)
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
     return payload
+
+
+# async def get_access_token_payload(
+#     payload: dict = Depends(get_azure_token_payload),
+# ) -> dict:
+#     """General function to get the access token payload"""
+#     # can later be used for customizing different identity service providers
+#     return payload
 
 
 # region: GUARDS:
@@ -371,7 +400,7 @@ class CurrentAccessTokenIsValid(CurrentAccessToken):
     def __init__(self, require=True) -> None:
         self.require = require
 
-    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
         super().__init__(payload)
         return await self.is_valid(self.require)
 
@@ -383,7 +412,7 @@ class CurrentAccessTokenHasScope(CurrentAccessToken):
         self.scope = scope
         self.require = require
 
-    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
         super().__init__(payload)
         return await self.has_scope(self.scope, self.require)
 
@@ -395,7 +424,7 @@ class CurrentAccessTokenHasRole(CurrentAccessToken):
         self.role = role
         self.require = require
 
-    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
         super().__init__(payload)
         return await self.has_role(self.role, self.require)
 
@@ -407,7 +436,7 @@ class CurrentAccessTokenHasGroup(CurrentAccessToken):
         self.group = group
         self.require = require
 
-    async def __call__(self, payload: dict = Depends(get_azure_token_payload)) -> bool:
+    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
         super().__init__(payload)
         return await self.has_group(self.group, self.require)
 

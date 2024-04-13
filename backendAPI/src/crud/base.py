@@ -205,9 +205,6 @@ class BaseCRUD(
         if offset:
             statement = statement.offset(offset)
 
-        # print("=== statement ===")
-        # print(statement)
-
         response = await self.session.exec(statement)
         results = response.all()
         for result in results:

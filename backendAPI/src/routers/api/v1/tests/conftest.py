@@ -6,12 +6,14 @@ from core.types import ResourceType, Action, IdentityType
 from core.security import CurrentAccessToken
 from models.access import AccessPolicy
 from models.category import Category
-from models.demo_resource import DemoResource
+
+# from models.demo_resource import DemoResource
 from models.public_resource import PublicResource
 from models.tag import Tag
 from models.identity import User
 from crud.protected_resource import ProtectedResourceCRUD
 from crud.category import CategoryCRUD
+from crud.access import AccessPolicyCRUD
 from crud.demo_resource import DemoResourceCRUD
 from models.protected_resource import ProtectedResource
 
@@ -251,6 +253,20 @@ async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
 
 
 @pytest.fixture(scope="function")
+async def add_test_policy_for_resource(mock_current_user: User):
+    """Adds a policy for a resource through CRUD to the database."""
+
+    async def _add_test_policy_for_resource(policy, token_payload: dict = None):
+        current_user = await mock_current_user(token_payload)
+        async with AccessPolicyCRUD() as crud:
+            added_policy = await crud.create(policy, current_user)
+
+        return added_policy
+
+    yield _add_test_policy_for_resource
+
+
+@pytest.fixture(scope="function")
 async def add_many_test_users(get_async_test_session: AsyncSession):
     """Adds a category to the database."""
     session = get_async_test_session
@@ -379,6 +395,9 @@ async def add_test_demo_resources(
             demo_resource_instances.append(demo_resource_instance)
 
         # yield demo_resource_instances
+        # for demo_resource_instance in demo_resource_instances:
+        #     print("=== add_test_demo_resources - demo_resource_instance ===")
+        #     print(demo_resource_instance)
         return demo_resource_instances
 
     yield _add_test_demo_resources
