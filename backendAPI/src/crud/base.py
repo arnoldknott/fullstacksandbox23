@@ -93,7 +93,6 @@ class BaseCRUD(
     async def create(
         self,
         object: BaseSchemaTypeCreate,
-        # Refactor into this - no longer Optional: create only allowed for authenticated users!
         current_user: "CurrentUserData",
     ) -> BaseModelType:
         """Creates a new object."""
@@ -147,6 +146,25 @@ class BaseCRUD(
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not found"
             )
+
+    async def create_public(
+        self,
+        object: BaseSchemaTypeCreate,
+        current_user: "CurrentUserData",
+    ) -> BaseModelType:
+        """Creates a new object with public access."""
+        database_object = await self.create(object, current_user)
+
+        public_access_policy = AccessPolicy(
+            resource_id=database_object.id,
+            resource_type=self.resource_type,
+            action=read,
+            public=True,
+        )
+        async with self.policy_CRUD as policy_CRUD:
+            await policy_CRUD.create(public_access_policy, current_user)
+
+        return database_object
 
     # TBD: implement a create_if_not_exists method
 

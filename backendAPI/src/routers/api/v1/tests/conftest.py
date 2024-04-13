@@ -15,6 +15,7 @@ from crud.protected_resource import ProtectedResourceCRUD
 from crud.category import CategoryCRUD
 from crud.access import AccessPolicyCRUD
 from crud.demo_resource import DemoResourceCRUD
+from crud.tag import TagCRUD
 from models.protected_resource import ProtectedResource
 
 from tests.utils import (
@@ -404,18 +405,32 @@ async def add_test_demo_resources(
 
 
 @pytest.fixture(scope="function")
-async def add_test_tags(get_async_test_session: AsyncSession):
+async def add_test_tags(
+    mock_current_user: User,
+):  # (get_async_test_session: AsyncSession):
     """Adds a tags to the database."""
-    session = get_async_test_session
-    tag_instances = []
-    for tag in many_test_tags:
-        tag_instance = Tag(**tag)
-        session.add(tag_instance)
-        await session.commit()
-        await session.refresh(tag_instance)
-        tag_instances.append(tag_instance)
+    # session = get_async_test_session
+    # tag_instances = []
+    # for tag in many_test_tags:
+    #     tag_instance = Tag(**tag)
+    #     session.add(tag_instance)
+    #     await session.commit()
+    #     await session.refresh(tag_instance)
+    #     tag_instances.append(tag_instance)
 
-    yield tag_instances
+    # yield tag_instances
+
+    async def _add_test_tags(token_payload: dict = None):
+        tag_instances = []
+        for tag in many_test_tags:
+            current_user = await mock_current_user(token_payload)
+            async with TagCRUD() as crud:
+                tag_instance = await crud.create_public(tag, current_user)
+            tag_instances.append(tag_instance)
+
+        return tag_instances
+
+    yield _add_test_tags
 
 
 @pytest.fixture(scope="function")

@@ -55,6 +55,20 @@ class BaseView:
             created_object = await crud.create(object, current_user)
         return created_object
 
+    async def post_with_public_access(
+        self,
+        object,
+        token_payload,
+        scopes: List[str] = [],
+        roles: List[str] = [],
+        groups: List[UUID] = [],
+    ):
+        logger.info("POST view for public access calls create_public CRUD")
+        current_user = await self.__guards(token_payload, scopes, roles, groups)
+        async with self.crud() as crud:
+            created_object = await crud.create_public(object, current_user)
+        return created_object
+
     async def get(
         self,
         # get operation does not need a token_payload, if the resource is public

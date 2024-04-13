@@ -5,11 +5,16 @@ from fastapi import FastAPI
 from models.tag import Tag
 from models.access import AccessPolicy
 from tests.utils import (
-    token_payload_user_id,
-    token_payload_tenant_id,
-    token_payload_roles_admin,
-    token_payload_roles_user,
-    token_payload_scope_api_read_write,
+    token_user1_read,
+    token_user1_write,
+    token_user1_read_write,
+    token_user2_read,
+    token_user2_write,
+    token_user2_read_write,
+    token_admin,
+    token_admin_read,
+    token_admin_write,
+    token_admin_read_write,
 )
 
 
@@ -17,18 +22,12 @@ from tests.utils import (
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
+        token_user1_write,
+        token_user1_read_write,
+        token_user2_write,
+        token_user2_read_write,
+        token_admin_write,
+        token_admin_read_write,
     ],
     indirect=True,
 )
@@ -54,18 +53,12 @@ async def test_post_tag(
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
+        token_user1_write,
+        token_user1_read_write,
+        token_user2_write,
+        token_user2_read_write,
+        token_admin_write,
+        token_admin_read_write,
     ],
     indirect=True,
 )
@@ -88,18 +81,27 @@ async def test_post_tag_name_too_long(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        token_user1_read,
+        token_user1_read_write,
+        token_user2_read,
+        token_user2_read_write,
+        token_admin,
+        token_admin_read,
+    ],
+    indirect=True,
+)
 async def test_get_all_tags(
     async_client: AsyncClient,
     add_test_tags: list[Tag],
-    add_test_policies_for_resources: list[AccessPolicy],
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload: dict,
 ):
     """Tests GET all tags."""
-    tags = add_test_tags
-    await add_test_policies_for_resources(
-        resources=tags,
-        actions=["read"] * len(tags),
-        publics=[True] * len(tags),
-    )
+    app_override_get_azure_payload_dependency
+    tags = await add_test_tags(mocked_get_azure_token_payload)
     response = await async_client.get("/api/v1/tag/")
 
     assert response.status_code == 200
@@ -110,18 +112,27 @@ async def test_get_all_tags(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        token_user1_read,
+        token_user1_read_write,
+        token_user2_read,
+        token_user2_read_write,
+        token_admin,
+        token_admin_read,
+    ],
+    indirect=True,
+)
 async def test_get_tag_by_id(
     async_client: AsyncClient,
     add_test_tags: list[Tag],
-    add_test_policies_for_resources: list[AccessPolicy],
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload: dict,
 ):
     """Tests GET all tags."""
-    tags = add_test_tags
-    await add_test_policies_for_resources(
-        resources=tags,
-        actions=["read"] * len(tags),
-        publics=[True] * len(tags),
-    )
+    app_override_get_azure_payload_dependency
+    tags = await add_test_tags(mocked_get_azure_token_payload)
 
     response = await async_client.get(f"/api/v1/tag/{str(tags[1].id)}")
 
@@ -132,9 +143,23 @@ async def test_get_tag_by_id(
 
 
 @pytest.mark.anyio
-async def test_get_tag_by_invalid_id(async_client: AsyncClient):
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        token_user1_read,
+        token_user1_read_write,
+        token_user2_read,
+        token_user2_read_write,
+        token_admin,
+        token_admin_read,
+    ],
+    indirect=True,
+)
+async def test_get_tag_by_invalid_id(
+    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+):
     """Tests GET of a tag with invalid id."""
-
+    app_override_get_azure_payload_dependency
     response = await async_client.get("/api/v1/tag/invalid_id")
     assert response.status_code == 400
     content = response.json()
@@ -145,18 +170,12 @@ async def test_get_tag_by_invalid_id(async_client: AsyncClient):
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
+        token_user1_write,
+        token_user1_read_write,
+        token_user2_write,
+        token_user2_read_write,
+        token_admin_write,
+        token_admin_read_write,
     ],
     indirect=True,
 )
@@ -164,19 +183,14 @@ async def test_put_tag(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_test_tags: list[Tag],
-    add_test_policies_for_resources: list[AccessPolicy],
+    mocked_get_azure_token_payload: dict,
 ):
     """Tests PUT of a tag."""
 
     app_override_get_azure_payload_dependency
 
-    tags = add_test_tags
+    tags = await add_test_tags(mocked_get_azure_token_payload)
 
-    await add_test_policies_for_resources(
-        resources=tags,
-        actions=["write"] * len(tags),
-        publics=[True] * len(tags),
-    )
     updated_tag = {
         "name": "NewTag",
     }
@@ -193,37 +207,26 @@ async def test_put_tag(
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
+        token_user1_write,
+        token_user1_read_write,
+        token_user2_write,
+        token_user2_read_write,
+        token_admin_write,
+        token_admin_read_write,
     ],
     indirect=True,
 )
 async def test_put_tag_does_not_exist(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
     add_test_tags: list[Tag],
-    add_test_policies_for_resources: list[AccessPolicy],
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload: dict,
 ):
     """Tests PUT of a tag."""
 
     app_override_get_azure_payload_dependency
 
-    tags = add_test_tags
-    await add_test_policies_for_resources(
-        resources=tags,
-        actions=["write"] * len(tags),
-        publics=[True] * len(tags),
-    )
+    await add_test_tags(mocked_get_azure_token_payload)
 
     updated_tag = {
         "name": "Uptag",
@@ -241,38 +244,40 @@ async def test_put_tag_does_not_exist(
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
+        token_user1_write,
+        token_user1_read_write,
+        token_user2_write,
+        token_user2_read_write,
+        token_admin_write,
+        token_admin_read_write,
     ],
     indirect=True,
 )
 async def test_delete_tag(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
     add_test_tags: list[Tag],
-    add_test_policies_for_resources: list[AccessPolicy],
+    # add_test_policy_for_resource: AccessPolicy,
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload: dict,
 ):
     """Tests DELETE of a tag."""
 
     app_override_get_azure_payload_dependency
 
-    tags = add_test_tags
-
-    await add_test_policies_for_resources(
-        resources=tags,
-        actions=["own"] * len(tags),
-        publics=[True] * len(tags),
-    )
+    tags = await add_test_tags(mocked_get_azure_token_payload)
+    # the get endpoints are public, so no current user is passed -
+    # that means all tags need a public access policy in the fine grained access control!
+    # TBD: should this be solved in the tags_CRUD, create method;
+    # potentially implement a create_public method, which calls the create method
+    # and adds the public access policy
+    # for tag in tags:
+    #     policy = {
+    #         "resource_id": tag.id,
+    #         "resource_type": "Tag",
+    #         "action": "read",
+    #         "public": True,
+    #     }
+    #     await add_test_policy_for_resource(policy)
     response = await async_client.get(f"/api/v1/tag/{str(tags[1].id)}")
 
     # Check if tag exists before deleting:
@@ -298,18 +303,12 @@ async def test_delete_tag(
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
+        token_user1_write,
+        token_user1_read_write,
+        token_user2_write,
+        token_user2_read_write,
+        token_admin_write,
+        token_admin_read_write,
     ],
     indirect=True,
 )
@@ -331,37 +330,26 @@ async def test_delete_tag_by_invalid_id(
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
+        token_user1_write,
+        token_user1_read_write,
+        token_user2_write,
+        token_user2_read_write,
+        token_admin_write,
+        token_admin_read_write,
     ],
     indirect=True,
 )
 async def test_delete_tag_does_not_exist(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
     add_test_tags: list[Tag],
-    add_test_policies_for_resources: list[AccessPolicy],
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload: dict,
 ):
     """Tests DELETE of a tag."""
 
     app_override_get_azure_payload_dependency
 
-    tags = add_test_tags
-    await add_test_policies_for_resources(
-        resources=tags,
-        actions=["own"] * len(tags),
-        publics=[True] * len(tags),
-    )
+    await add_test_tags(mocked_get_azure_token_payload)
     response = await async_client.delete(f"/api/v1/tag/{str(uuid.uuid4())}")
 
     assert response.status_code == 404

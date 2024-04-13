@@ -31,7 +31,7 @@ async def post_tag(
     token_payload=Depends(get_access_token_payload),
 ) -> Tag:
     """Creates a new tag."""
-    return await tag_view.post(
+    return await tag_view.post_with_public_access(
         category,
         token_payload,
         scopes=["api.write"],

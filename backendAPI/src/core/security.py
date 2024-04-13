@@ -167,8 +167,6 @@ async def get_access_token_payload(
 ) -> dict:
     """General function to get the access token payload"""
     # can later be used for customizing different identity service providers
-    print("=== payload ===")
-    print(payload)
     if payload is None:
         raise HTTPException(status_code=401, detail="Invalid token")
     return payload
