@@ -89,17 +89,9 @@ async def test_post_demo_resource_with_nonexisting_category(
 async def test_get_all_demo_resources(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    add_test_policies_for_resources: list[AccessPolicy],
 ):
     """Tests GET all demo resources."""
-    resources = add_test_demo_resources
-    await add_test_policies_for_resources(
-        resources=resources,
-        actions=["read"] * len(resources),
-        publics=[True] * len(resources),
-    )
-    # print("=== demo resources ===")
-    # print(resources)
+    resources = await add_test_demo_resources()
     response = await async_client.get("/api/v1/demoresource/")
 
     assert response.status_code == 200
@@ -134,15 +126,9 @@ async def test_get_all_demo_resources(
 async def test_get_demo_resource_by_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    add_test_policies_for_resources: list[AccessPolicy],
 ):
     """Tests GET of a demo resources."""
-    resources = add_test_demo_resources
-    await add_test_policies_for_resources(
-        resources=resources,
-        actions=["read"] * len(resources),
-        publics=[True] * len(resources),
-    )
+    resources = await add_test_demo_resources()
 
     # time_before_get_call = datetime.now()
     response = await async_client.get(f"/api/v1/demoresource/{resources[0].id}")
@@ -158,7 +144,7 @@ async def test_get_demo_resource_by_id(
     assert "tags" in content
     assert "category" in content
 
-    # assert 1 == 2
+    # assert 0
 
 
 @pytest.mark.anyio
@@ -184,41 +170,20 @@ async def test_get_demo_resource_by_nonexisting_uuid(async_client: AsyncClient):
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_put_demo_resource(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests PUT of a demo resource."""
 
     app_override_get_azure_payload_dependency
 
-    resources = add_test_demo_resources
-    await add_test_policies_for_resources(
-        resources=resources,
-        actions=["write"] * len(resources),
-        publics=[True] * len(resources),
-        # TBD: implement tests with identity_ids and identity_types!
-        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-        # identity_types=["user"] * len(categories),
-    )
+    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -253,46 +218,25 @@ async def test_put_demo_resource(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_put_demo_resource_partial_update(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests PUT of a demo resource, where not all fields are updated."""
 
     app_override_get_azure_payload_dependency
 
-    resources = add_test_demo_resources
+    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
         # "timezone": "UTC+10",
     }
-    await add_test_policies_for_resources(
-        resources=resources,
-        actions=["write"] * len(resources),
-        publics=[True] * len(resources),
-        # TBD: implement tests with identity_ids and identity_types!
-        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-        # identity_types=["user"] * len(categories),
-    )
     response = await async_client.put(
         f"/api/v1/demoresource/{resources[0].id}", json=updated_resource
     )
@@ -312,51 +256,25 @@ async def test_put_demo_resource_partial_update(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_put_demo_resource_by_invalid_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests PUT of a demo resources with invalid id."""
 
     app_override_get_azure_payload_dependency
 
-    resources = add_test_demo_resources
-    await add_test_policies_for_resources(
-        resources=resources,
-        actions=["write"] * len(resources),
-        publics=[True] * len(resources),
-    )
+    await add_test_demo_resources(mocked_get_azure_token_payload)
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
         # "timezone": "UTC+10",
     }
-    await add_test_policies_for_resources(
-        resources=resources,
-        actions=["write"] * len(resources),
-        publics=[True] * len(resources),
-        # TBD: implement tests with identity_ids and identity_types!
-        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-        # identity_types=["user"] * len(categories),
-    )
     response = await async_client.put(
         "/api/v1/demoresource/not_an_integer", json=updated_resource
     )
@@ -369,51 +287,25 @@ async def test_put_demo_resource_by_invalid_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_put_demo_resource_by_resource_does_not_exist(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests PUT of nonexisting demo resources."""
 
     app_override_get_azure_payload_dependency
 
-    resources = add_test_demo_resources
-    await add_test_policies_for_resources(
-        resources=resources,
-        actions=["write"] * len(resources),
-        publics=[True] * len(resources),
-    )
+    await add_test_demo_resources(mocked_get_azure_token_payload)
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
         # "timezone": "UTC+10",
     }
-    await add_test_policies_for_resources(
-        resources=resources,
-        actions=["write"] * len(resources),
-        publics=[True] * len(resources),
-        # TBD: implement tests with identity_ids and identity_types!
-        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-        # identity_types=["user"] * len(categories),
-    )
     response = await async_client.put(
         f"/api/v1/demoresource/{str(uuid.uuid4())}", json=updated_resource
     )
@@ -442,41 +334,22 @@ async def test_put_demo_resource_by_resource_does_not_exist(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_delete_demo_resource(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests DELETE of a demo resource."""
 
     app_override_get_azure_payload_dependency
 
-    resources = add_test_demo_resources
-    await add_test_policies_for_resources(
-        resources=resources,
-        actions=["own"] * len(resources),
-        publics=[True] * len(resources),
-        # TBD: implement tests with identity_ids and identity_types!
-        # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-        # identity_types=["user"] * len(categories),
-    )
+    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+    print("=== resources[0].id ===")
+    print(resources[0].id)
     response = await async_client.get(f"/api/v1/demoresource/{str(resources[0].id)}")
 
     # Check if resource exists before deleting:
@@ -486,19 +359,15 @@ async def test_delete_demo_resource(
     assert content["name"] == resources[0].name
     assert content["description"] == resources[0].description
     assert content["language"] == resources[0].language
-    # assert content["timezone"] == resources[0].timezone
 
     # Delete resource:
     response = await async_client.delete(f"/api/v1/demoresource/{str(resources[0].id)}")
     assert response.status_code == 200
     content = response.json()
-    # print("=== content ===")
-    # print(content)
     # assert "Deleted resource ${id}." in content["detail"]
     assert content["name"] == resources[0].name
     assert content["description"] == resources[0].description
     assert content["language"] == resources[0].language
-    # assert content["timezone"] == resources[0].timezone
 
     # Check if resource exists after deleting:
     response = await async_client.get(f"/api/v1/demoresource/{str(resources[0].id)}")
@@ -510,20 +379,7 @@ async def test_delete_demo_resource(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_delete_demo_resource_by_invalid_id(
@@ -543,20 +399,7 @@ async def test_delete_demo_resource_by_invalid_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_delete_demo_resource_by_resource_does_not_exist(
@@ -581,7 +424,7 @@ async def test_attach_tag_to_demo_resource(
     add_test_tags: list[Tag],
 ):
     """Tests POST of a tag to a demo resource."""
-    resources = add_test_demo_resources
+    resources = await add_test_demo_resources()
     tags = add_test_tags
     response = await async_client.post(
         f"/api/v1/demoresource/{str(resources[1].id)}/tag/?tag_ids={str(tags[0].id)}&tag_ids={str(tags[2].id)}"

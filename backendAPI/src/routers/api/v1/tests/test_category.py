@@ -10,12 +10,6 @@ from tests.utils import (
     token_user1_read_write,
     token_admin,
     token_admin_read_write,
-    # token_payload_user_id,
-    # token_payload_tenant_id,
-    # token_payload_roles_admin,
-    # token_payload_roles_user,
-    # token_payload_scope_api_read_write,
-    # token_payload_scope_api_read,
 )
 
 
@@ -25,22 +19,6 @@ from tests.utils import (
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_post_category(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
@@ -68,22 +46,6 @@ async def test_post_category(
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 @pytest.mark.anyio
 async def test_post_category_name_too_long(
     async_client: AsyncClient,
@@ -115,34 +77,6 @@ async def test_post_category_name_too_long(
     ],
     indirect=True,
 )
-
-#     {
-#         **token_payload_user_id,
-#         **token_payload_tenant_id,
-#         **token_payload_scope_api_read_write,
-#         **token_payload_roles_admin,
-#     },
-#     {
-#         **token_payload_user_id,
-#         **token_payload_tenant_id,
-#         **token_payload_scope_api_read_write,
-#         **token_payload_roles_user,
-#     },
-#     {
-#         **token_payload_user_id,
-#         **token_payload_tenant_id,
-#         # **token_payload_scope_api_read,
-#         **token_payload_roles_admin,
-#     },
-#     {
-#         **token_payload_user_id,
-#         **token_payload_tenant_id,
-#         **token_payload_scope_api_read,
-#         **token_payload_roles_user,
-#     },
-# ],
-# indirect=True,
-# )
 async def test_get_all_categories(
     async_client: AsyncClient,
     # add_test_policies_for_resources: list[AccessPolicy],
@@ -153,10 +87,6 @@ async def test_get_all_categories(
     """Tests GET all categories."""
 
     app_override_get_azure_payload_dependency
-    # print("=== test-category - mocked_get_azure_token_payload ===")
-    # print(mocked_get_azure_token_payload)
-    # print("=== test-category - request ===")
-    # print(request)
     # OK, this is working, but I need to pass the token_payload to the fixture!
     # In case a different user is supposed to be the owner
     # compared to the mocked token_payload from the paramterization,
@@ -168,73 +98,11 @@ async def test_get_all_categories(
     #     actions=["read"] * len(categories),
     #     publics=[True] * len(categories),
     # )
-    # print(
-    #     "=== test-category - test_get_all_categories - public_policies_for_test_categories ==="
-    # )
-    # print(public_policies_for_test_categories)
-
-    # print(
-    #     "=== test-category - test_get_all_categories - type(categories[0].model_dump()) ==="
-    # )
-    # print(type(categories[0].model_dump()))
-    # print(
-    #     "=== test-category - test_get_all_categories - categories[0].model_dump() ==="
-    # )
-    # print(categories[0].model_dump())
-
-    # access_policies = [
-    #     {
-    #         # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
-    #         # "identity_type": IdentityType.user,
-    #         "resource_id": categories[0].id,
-    #         "resource_type": ResourceType.category,
-    #         "action": Action.read,
-    #         "public": True,
-    #     },
-    #     {
-    #         # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
-    #         # "identity_type": IdentityType.user,
-    #         "resource_id": categories[1].id,
-    #         "resource_type": ResourceType.category,
-    #         "action": Action.read,
-    #         "public": True,
-    #     },
-    #     {
-    #         # "identity_id": str(uuid.uuid4()),# needs to be from the user, that is mocked in the test - for successful tests
-    #         # "identity_type": IdentityType.user,
-    #         "resource_id": categories[2].id,
-    #         "resource_type": ResourceType.category,
-    #         "action": Action.read,
-    #         "public": True,
-    #     },
-    # ]
-    # print("=== test-category - test_get_all_categories - type(ResourceType) ===")
-    # print(type(ResourceType))
-    # print(
-    #     "=== test-category - test_get_all_categories - type(ResourceType.category) ==="
-    # )
-    # print(type(ResourceType.category))
-    # print(ResourceType.category)
-    # print(ResourceType.category.name)
-    # print(ResourceType.category.value)
-    # print("=== test-category - test_get_all_categories - category[0] ===")
-    # print(categories[0])
-    # print(categories[0].__class__.__name__)
-    # # This is brilliant! It works:
-    # print(ResourceType(categories[0].__class__.__name__))
-
-    # # Now ready to pass to the fixture:
-    # actions = ["read"] * len(categories)
-    # public = True * len(categories)
 
     # TBD: goal is to just call the fixture for creating the policies with
     # - a list of resources,
     # - a list of action and
     # - either list of identities or public override! - rethink that one!
-
-    # policies = await add_test_policies_for_resources(access_policies)
-    # print("=== test-category - test_get_all_categories - policies ===")
-    # print(policies)
 
     response = await async_client.get("/api/v1/category/")
 
@@ -253,34 +121,6 @@ async def test_get_all_categories(
     [token_admin, token_admin_read_write, token_user1_read, token_user1_read_write],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             # **token_payload_scope_api_read,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_get_category_by_id(
     async_client: AsyncClient,
     add_test_categories: list[Category],
@@ -313,34 +153,6 @@ async def test_get_category_by_id(
     [token_admin, token_admin_read_write, token_user1_read, token_user1_read_write],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             # **token_payload_scope_api_read,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_get_category_by_invalid_id(
     async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
 ):
@@ -359,22 +171,6 @@ async def test_get_category_by_invalid_id(
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_put_category(
     async_client: AsyncClient,
     add_test_categories: list[Category],
@@ -415,22 +211,6 @@ async def test_put_category(
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_put_category_partial_update(
     async_client: AsyncClient,
     add_test_categories: list[Category],
@@ -468,22 +248,6 @@ async def test_put_category_partial_update(
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_put_category_does_not_exist(
     async_client: AsyncClient,
     add_test_categories: list[Category],
@@ -522,22 +286,6 @@ async def test_put_category_does_not_exist(
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_put_category_wrong_data(
     async_client: AsyncClient,
     add_test_categories: list[Category],
@@ -582,22 +330,6 @@ async def test_put_category_wrong_data(
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_delete_category(
     async_client: AsyncClient,
     add_test_categories: list[Category],
@@ -647,22 +379,6 @@ async def test_delete_category(
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_delete_category_by_invalid_id(
     async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
 ):
@@ -682,22 +398,6 @@ async def test_delete_category_by_invalid_id(
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_delete_category_does_not_exist(
     async_client: AsyncClient,
     add_test_categories: list[Category],
@@ -730,34 +430,6 @@ async def test_delete_category_does_not_exist(
     [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             # **token_payload_scope_api_read,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_get_all_demo_resources_by_category_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
@@ -796,34 +468,6 @@ async def test_get_all_demo_resources_by_category_id(
     [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
     indirect=True,
 )
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             # **token_payload_scope_api_read,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read,
-#             **token_payload_roles_user,
-#         },
-#     ],
-#     indirect=True,
-# )
 async def test_get_demo_resources_for_lonely_category(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],

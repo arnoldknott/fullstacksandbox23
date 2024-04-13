@@ -89,11 +89,11 @@ async def post_category(
 # The default create only grants "own" access to the user, how creates it!
 @router.get("/", status_code=200)
 async def get_categories(
-    # token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_access_token_payload),
 ) -> list[DemoResourceRead]:
     """Returns all protected resources."""
     return await demo_resource_view.get(
-        # token_payload,
+        token_payload,
         # roles=["User"],
     )
 
@@ -101,12 +101,12 @@ async def get_categories(
 @router.get("/{demo_resource_id}", status_code=200)
 async def get_demo_resource_by_id(
     demo_resource_id: str,
-    # token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_access_token_payload),
 ) -> DemoResourceRead:
     """Returns a demo resource."""
     return await demo_resource_view.get_by_id(
         demo_resource_id,
-        # token_payload,
+        token_payload,
         # roles=["User"],
     )
 
