@@ -762,14 +762,13 @@ async def test_get_all_demo_resources_by_category_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
     app_override_get_azure_payload_dependency: FastAPI,
-    # mocked_get_azure_token_payload,
+    mocked_get_azure_token_payload,
 ):
     """Tests GET all demo resources by category id."""
 
     app_override_get_azure_payload_dependency
-    resources = add_test_demo_resources
-    # TBD: refactor also demo resources into this:
-    # resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+    # resources = add_test_demo_resources
+    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()
     response = await async_client.get(
@@ -829,15 +828,14 @@ async def test_get_demo_resources_for_lonely_category(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
     app_override_get_azure_payload_dependency: FastAPI,
-    # mocked_get_azure_token_payload,
+    mocked_get_azure_token_payload,
 ):
     """Tests GET error for category, that has no demo resources attached."""
 
     app_override_get_azure_payload_dependency
 
-    # TBD: refactor also demo resources into this:
-    # await add_test_demo_resources(mocked_get_azure_token_payload)
-    add_test_demo_resources
+    await add_test_demo_resources(mocked_get_azure_token_payload)
+    # add_test_demo_resources
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()
     response = await async_client.get(

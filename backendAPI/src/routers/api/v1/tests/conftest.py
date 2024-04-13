@@ -11,6 +11,7 @@ from models.tag import Tag
 from models.identity import User
 from crud.protected_resource import ProtectedResourceCRUD
 from crud.category import CategoryCRUD
+from crud.demo_resource import DemoResourceCRUD
 from models.protected_resource import ProtectedResource
 from sqlmodel.ext.asyncio.session import AsyncSession
 from tests.utils import (
@@ -263,23 +264,23 @@ async def add_test_public_resources(get_async_test_session: AsyncSession):
 
 
 @pytest.fixture(scope="function")
-async def add_test_categories(get_async_test_session: AsyncSession):
-    """Adds a category to the database."""
+async def add_test_categories():  # get_async_test_session: AsyncSession):
+    """Adds a category through CRUD to the database."""
     # session = get_async_test_session
-    category_instances = []
 
     # TBD: add checks if token payload is not provided!
     # could be a public resource then?
     # maybe just using the add_test_policies_for_resources fixture?
     # or just failing?
-    async def _add_test_categories(mocked_token_payload: dict = None):
+    async def _add_test_categories(token_payload: dict = None):
+        category_instances = []
         # print("=== _add_test_categories - mocked_token_payload ===")
         # print(mocked_token_payload)
         # TBD: refactor to use the post endpoint - the token should be mocked already here!
         for category in many_test_categories:
             # print("=== category ===")
             # print(category)
-            token = CurrentAccessToken(mocked_token_payload)
+            token = CurrentAccessToken(token_payload)
             current_user = await token.provides_current_user()
             async with CategoryCRUD() as crud:
                 category_instance = await crud.create(category, current_user)
@@ -315,41 +316,50 @@ async def add_test_categories(get_async_test_session: AsyncSession):
 
 @pytest.fixture(scope="function")
 async def add_test_demo_resources(
-    get_async_test_session: AsyncSession,
+    # get_async_test_session: AsyncSession,
     add_test_categories: list[Category],
     add_test_policies_for_resources: list[AccessPolicy],
 ):
     """Adds a demo resource to the database."""
     # print("=== add_test_demo_resources started ===")
-    session = get_async_test_session
+    # session = get_async_test_session
     # TBD, when refactoring add_test_demo_resources, the mocked token should be available here and
     # needs to be provided to to add_test_categories as well!
-    existing_test_categories = add_test_categories
-    await add_test_policies_for_resources(
-        resources=existing_test_categories,
-        actions=["read"] * len(existing_test_categories),
-        publics=[True] * len(existing_test_categories),
-    )
-    # print("=== add_test_demo_resources after add_test_categories ===")
-    many_test_demo_resources[0]["category_id"] = existing_test_categories[1].id
-    many_test_demo_resources[1]["category_id"] = existing_test_categories[0].id
-    many_test_demo_resources[2]["category_id"] = existing_test_categories[1].id
 
-    demo_resource_instances = []
-    for resource in many_test_demo_resources:
-        # print("=== resource ===")
-        # print(resource)
-        # if "category_id" in resource:
-        #     category = await session.get(Category, resource["category_id"])
-        #     resource["category"] = category
-        #     del resource["category_id"]
-        demo_resource_instance = DemoResource(**resource)
-        session.add(demo_resource_instance)
-        await session.commit()
-        await session.refresh(demo_resource_instance)
-        demo_resource_instances.append(demo_resource_instance)
+    async def _add_test_demo_resources(token_payload: dict = None):
+        existing_test_categories = await add_test_categories(token_payload)
+        # await add_test_policies_for_resources(
+        #     resources=existing_test_categories,
+        #     actions=["read"] * len(existing_test_categories),
+        #     publics=[True] * len(existing_test_categories),
+        # )
+        # print("=== add_test_demo_resources after add_test_categories ===")
+        many_test_demo_resources[0]["category_id"] = existing_test_categories[1].id
+        many_test_demo_resources[1]["category_id"] = existing_test_categories[0].id
+        many_test_demo_resources[2]["category_id"] = existing_test_categories[1].id
 
-    yield demo_resource_instances
+        demo_resource_instances = []
+        for resource in many_test_demo_resources:
+            # print("=== resource ===")
+            # print(resource)
+            # if "category_id" in resource:
+            #     category = await session.get(Category, resource["category_id"])
+            #     resource["category"] = category
+            #     del resource["category_id"]
+            # demo_resource_instance = DemoResource(**resource)
+            # session.add(demo_resource_instance)
+            # await session.commit()
+            # await session.refresh(demo_resource_instance)
+            async with DemoResourceCRUD() as crud:
+                token = CurrentAccessToken(token_payload)
+                current_user = await token.provides_current_user()
+                demo_resource_instance = await crud.create(resource, current_user)
+            demo_resource_instances.append(demo_resource_instance)
+
+        # yield demo_resource_instances
+        return demo_resource_instances
+
+    yield _add_test_demo_resources
 
 
 @pytest.fixture(scope="function")
