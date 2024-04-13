@@ -8,7 +8,6 @@ from models.demo_resource import DemoResource
 from models.access import AccessPolicy
 from models.tag import Tag
 
-# from crud.access import AccessLoggingCRUD
 from tests.utils import (
     one_test_demo_resource,
     token_user1_read,
@@ -16,12 +15,6 @@ from tests.utils import (
     token_admin,
     token_admin_read,
     token_admin_read_write,
-    # token_payload_user_id,
-    # token_payload_tenant_id,
-    # token_payload_roles_admin,
-    # token_payload_roles_user,
-    # token_payload_scope_api_read_write,
-    # token_payload_scope_api_read,
 )
 
 
@@ -39,7 +32,6 @@ async def test_post_demo_resource(
     app_override_get_azure_payload_dependency
 
     resource = one_test_demo_resource
-    # get_async_test_session
     time_before_post = datetime.now()
     response = await async_client.post("/api/v1/demoresource/", json=resource)
     time_after_post = datetime.now()
@@ -178,10 +170,6 @@ async def test_get_all_public_demo_resources(
             resources[2].language,
             resources[3].language,
         ]
-        # assert response_item["timezone"] in [
-        #     resources[0].timezone,
-        #     resources[1].timezone,
-        # ]
         assert "id" in response_item
 
 
@@ -316,7 +304,6 @@ async def test_put_demo_resource(
     assert content["name"] == updated_resource["name"]
     assert content["description"] == updated_resource["description"]
     assert content["language"] == updated_resource["language"]
-    # assert content["timezone"] == updated_resource["timezone"]
 
 
 @pytest.mark.anyio
@@ -353,8 +340,7 @@ async def test_put_demo_resource_partial_update(
     # print(resources[0].language)
     # print("=== content['language'] ===")
     # print(content["language"])
-    assert content["language"] == resources[0].language  # this one is not updatged!
-    # assert content["timezone"] == updated_resource["timezone"]
+    assert content["language"] == resources[0].language  # this one is not updated!
 
 
 @pytest.mark.anyio
@@ -540,8 +526,6 @@ async def test_attach_tag_to_demo_resource(
 
     assert response.status_code == 200
     content = response.json()
-    # print("=== content ===")
-    # print(content)
     assert len(content["tags"]) == 2
     assert content["tags"][0]["name"] in [
         tags[0].name,

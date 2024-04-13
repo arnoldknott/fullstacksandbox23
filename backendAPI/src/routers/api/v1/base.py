@@ -94,6 +94,7 @@ class BaseView:
             object = await crud.read(current_user, filters=[self.model.id == id])
         return object[0]
 
+    # TBD: consider moving this to CRUD and don't parts of SQL queries in the views
     async def get_with_query_options(
         self,
         select_args: List[str] = None,
