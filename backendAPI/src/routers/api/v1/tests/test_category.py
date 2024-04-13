@@ -79,7 +79,6 @@ async def test_post_category_name_too_long(
 )
 async def test_get_all_categories(
     async_client: AsyncClient,
-    # add_test_policies_for_resources: list[AccessPolicy],
     add_test_categories: list[Category],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
@@ -89,20 +88,10 @@ async def test_get_all_categories(
     app_override_get_azure_payload_dependency
     # OK, this is working, but I need to pass the token_payload to the fixture!
     # In case a different user is supposed to be the owner
-    # compared to the mocked token_payload from the paramterization,
+    # compared to the mocked token_payload from the parameterization,
     # just add a different token mocking as a parameter to the fixture!
     # This is so much more pretty than the previous solution with the fixture!
     categories = await add_test_categories(mocked_get_azure_token_payload)
-    # await add_test_policies_for_resources(
-    #     resources=categories,
-    #     actions=["read"] * len(categories),
-    #     publics=[True] * len(categories),
-    # )
-
-    # TBD: goal is to just call the fixture for creating the policies with
-    # - a list of resources,
-    # - a list of action and
-    # - either list of identities or public override! - rethink that one!
 
     response = await async_client.get("/api/v1/category/")
 
@@ -124,7 +113,6 @@ async def test_get_all_categories(
 async def test_get_category_by_id(
     async_client: AsyncClient,
     add_test_categories: list[Category],
-    add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
 ):
@@ -132,12 +120,6 @@ async def test_get_category_by_id(
 
     app_override_get_azure_payload_dependency
     categories = await add_test_categories(mocked_get_azure_token_payload)
-    # TBD: consider moving this into the add_test_categories fixture with action argument on it and default public or override with optional identity
-    # await add_test_policies_for_resources(
-    #     resources=categories,
-    #     actions=["read"] * len(categories),
-    #     publics=[True] * len(categories),
-    # )
     response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
 
     assert response.status_code == 200
@@ -174,7 +156,6 @@ async def test_get_category_by_invalid_id(
 async def test_put_category(
     async_client: AsyncClient,
     add_test_categories: list[Category],
-    # add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
 ):
@@ -183,14 +164,6 @@ async def test_put_category(
     app_override_get_azure_payload_dependency
     categories = add_test_categories
     categories = await add_test_categories(mocked_get_azure_token_payload)
-    # await add_test_policies_for_resources(
-    #     resources=categories,
-    #     actions=["write"] * len(categories),
-    #     publics=[True] * len(categories),
-    # TBD: implement tests with identity_ids and identity_types!
-    # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-    # identity_types=["user"] * len(categories),
-    # )
     updated_category = {
         "name": "Test Cat",
         "description": "A new description for this category",
@@ -214,7 +187,6 @@ async def test_put_category(
 async def test_put_category_partial_update(
     async_client: AsyncClient,
     add_test_categories: list[Category],
-    add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
 ):
@@ -222,14 +194,6 @@ async def test_put_category_partial_update(
 
     app_override_get_azure_payload_dependency
     categories = await add_test_categories(mocked_get_azure_token_payload)
-    # await add_test_policies_for_resources(
-    #     resources=categories,
-    #     actions=["write"] * len(categories),
-    #     publics=[True] * len(categories),
-    #     # TBD: implement tests with identity_ids and identity_types!
-    #     # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-    #     # identity_types=["user"] * len(categories),
-    # )
     updated_category = {
         "description": "An updated description for this category",
     }
@@ -251,22 +215,13 @@ async def test_put_category_partial_update(
 async def test_put_category_does_not_exist(
     async_client: AsyncClient,
     add_test_categories: list[Category],
-    add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
 ):
     """Tests PUT of a category."""
 
     app_override_get_azure_payload_dependency
-    categories = await add_test_categories(mocked_get_azure_token_payload)
-    # await add_test_policies_for_resources(
-    #     resources=categories,
-    #     actions=["write"] * len(categories),
-    #     publics=[True] * len(categories),
-    #     # TBD: implement tests with identity_ids and identity_types!
-    #     # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-    #     # identity_types=["user"] * len(categories),
-    # )
+    await add_test_categories(mocked_get_azure_token_payload)
     updated_category = {
         "name": "Test Cat",
         "description": "A new description for this category",
@@ -289,7 +244,6 @@ async def test_put_category_does_not_exist(
 async def test_put_category_wrong_data(
     async_client: AsyncClient,
     add_test_categories: list[Category],
-    # add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
 ):
@@ -297,14 +251,6 @@ async def test_put_category_wrong_data(
 
     app_override_get_azure_payload_dependency
     categories = await add_test_categories(mocked_get_azure_token_payload)
-    # await add_test_policies_for_resources(
-    #     resources=categories,
-    #     actions=["write"] * len(categories),
-    #     publics=[True] * len(categories),
-    #     # TBD: implement tests with identity_ids and identity_types!
-    #     # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-    #     # identity_types=["user"] * len(categories),
-    # )
     wrong_category_data = {
         "comments": "There is no field comments in category",
         "emoji": "❌",
@@ -333,7 +279,6 @@ async def test_put_category_wrong_data(
 async def test_delete_category(
     async_client: AsyncClient,
     add_test_categories: list[Category],
-    add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
 ):
@@ -341,14 +286,6 @@ async def test_delete_category(
 
     app_override_get_azure_payload_dependency
     categories = await add_test_categories(mocked_get_azure_token_payload)
-    # await add_test_policies_for_resources(
-    #     resources=categories,
-    #     actions=["own"] * len(categories),
-    #     publics=[True] * len(categories),
-    #     # TBD: implement tests with identity_ids and identity_types!
-    #     # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-    #     # identity_types=["user"] * len(categories),
-    # )
     response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
 
     # Check if category exists before deleting:
@@ -401,22 +338,13 @@ async def test_delete_category_by_invalid_id(
 async def test_delete_category_does_not_exist(
     async_client: AsyncClient,
     add_test_categories: list[Category],
-    add_test_policies_for_resources: list[AccessPolicy],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
 ):
     """Tests DELETE of a category."""
 
     app_override_get_azure_payload_dependency
-    categories = await add_test_categories(mocked_get_azure_token_payload)
-    # await add_test_policies_for_resources(
-    #     resources=categories,
-    #     actions=["own"] * len(categories),
-    #     publics=[True] * len(categories),
-    #     # TBD: implement tests with identity_ids and identity_types!
-    #     # identity_ids=[token_payload_user_id["user_id"]] * len(categories),
-    #     # identity_types=["user"] * len(categories),
-    # )
+    await add_test_categories(mocked_get_azure_token_payload)
     response = await async_client.delete(f"/api/v1/category/{str(uuid.uuid4())}")
 
     assert response.status_code == 404
@@ -439,7 +367,6 @@ async def test_get_all_demo_resources_by_category_id(
     """Tests GET all demo resources by category id."""
 
     app_override_get_azure_payload_dependency
-    # resources = add_test_demo_resources
     resources = await add_test_demo_resources(mocked_get_azure_token_payload)
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()

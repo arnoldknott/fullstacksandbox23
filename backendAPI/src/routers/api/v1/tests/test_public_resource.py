@@ -39,7 +39,6 @@ async def test_post_public_resource_comment_too_long(async_client: AsyncClient):
 async def test_get_all_public_resources(
     async_client: AsyncClient,
     add_test_public_resources: list[PublicResource],
-    add_test_policies_for_resources: list[AccessPolicy],
 ):
     """Tests GET all public_resources."""
     public_resources = add_test_public_resources

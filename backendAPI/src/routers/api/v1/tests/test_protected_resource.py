@@ -88,6 +88,7 @@ async def test_post_protected_resource(
     )
 
     # TBD: add tests for created access policy here!
+    # move this to access policies tests!
     async with AccessPolicyCRUD() as crud:
         policies = await crud.read(
             resource_id=db_protected_resource.id,
@@ -102,6 +103,7 @@ async def test_post_protected_resource(
     assert policies[0].action == "own"
 
     # Test for created logs:
+    # move this to access log tests!
     async with AccessLoggingCRUD() as crud:
         resource_log = await crud.read_log_by_resource(
             db_protected_resource.id,
