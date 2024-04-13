@@ -515,7 +515,7 @@ async def test_attach_tag_to_demo_resource(
 ):
     """Tests POST of a tag to a demo resource."""
     resources = await add_test_demo_resources()
-    tags = add_test_tags
+    tags = await add_test_tags()
     response = await async_client.post(
         f"/api/v1/demoresource/{str(resources[1].id)}/tag/?tag_ids={str(tags[0].id)}&tag_ids={str(tags[2].id)}"
     )
