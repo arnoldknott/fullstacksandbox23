@@ -17,7 +17,8 @@ from models.identity import (
     AzureGroupUpdate,
 )
 from sqlmodel import select
-from sqlalchemy.orm import selectinload
+
+# from sqlalchemy.orm import selectinload
 
 # from .azure_group import AzureGroupCRUD
 from .base import BaseCRUD
@@ -32,6 +33,7 @@ class AzureGroupCRUD(
         # super().__init__(AzureGroup, IdentityType.azure_group)
         super().__init__(AzureGroup)
 
+    # TBD: refactor into access control and just call self.create() with current_user!
     async def create_if_not_exists(
         self, azure_group_id: str, azure_tenant_id: str
     ) -> AzureGroupRead:
@@ -71,117 +73,17 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # super().__init__(User, IdentityType.user)
         super().__init__(User)
 
-    # Not needed any more, since azure_user_id is the primary key!
     async def read_by_azure_user_id(
         self, azure_user_id: str, current_user: CurrentUserData
     ) -> UserRead:
         """Returns a User with linked Groups from the database."""
-        # async with self.session as session:
-        # session = self.session
         try:
-            # TBD: refactor into using the read_with_query_options method from the base class
             filters = [User.azure_user_id == azure_user_id]
             user = await self.read(current_user, filters=filters)
-            # self.read(current_user)
-            # statement = select(User).where(User.azure_user_id == azure_user_id)
-            # results = await session.exec(statement)
-            # user = results.one()
-            # TBD: this might end up in spaghetti code - rethink!
-            # updating the user with itself updates th "last_accessed_at" field
-            # TBD: Refactor into access control
-            # if update_last_access is True:
-            #     # print("=== user crud - read_by_azure_user_id -> updating... ===")
-            #     user = await self.update(user, user)
             return user[0]
         except Exception as err:
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
-        # user = await session.get(User, azure_user_id)# .get() only works with primary key!
-        # if user is None:
-        #     raise HTTPException(status_code=404, detail="User not found")
-        # return user
-
-    # TBD: Refactor into access control!
-    # async def read_by_azure_user_id_with_childs(self, azure_user_id: int) -> UserRead:
-    #     """Returns the user with a specific user_id and its childs."""
-    #     session = self.session
-    #     try:
-    #         # TBD: refactor into using the read_with_query_options method from the base class
-    #         statement = select(User).where(User.azure_user_id == azure_user_id)
-    #         results = await session.exec(statement)
-    #         user = results.one()
-    #         # TBD: this might end up in spaghetti code - rethink!
-    #         # updating the user with itself updates th "last_accessed_at" field
-    #         # TBD: Refactor into access control
-    #         return user
-    #     except Exception as err:
-    #         logging.error(err)
-    #         raise HTTPException(status_code=404, detail="User not found")
-
-    # TBD: Refactor into access control!
-    # Even better: this is not needed any more - base class provides this functionality now.
-    # async def read_by_id_with_childs(
-    #     self, user_id: int  # , update_last_access: bool = True
-    # ) -> UserRead:
-    #     """Returns the user with a specific user_id and its childs."""
-    #     # session = self.session
-
-    #     # TBD: get returns None if not found - maybe using select instead to raise an exception?
-    #     try:
-    #         #     user = await session.get(User, user_id)
-    #         #     return user
-    #         # except Exception as err:
-    #         #     # if user is None:
-    #         #     logging.error(err)
-    #         #     raise HTTPException(status_code=404, detail="User not found")
-    #         # user = await session.get(User, user_id)
-
-    #         # TBD: use read from the base class to ensure access control is applied!
-    #         # statement = (
-    #         #     select(User).where(User.id == user_id)
-    #         #     # .options(selectinload(User.azure_groups))
-    #         # )
-    #         # results = await session.exec(statement)
-    #         # user = results.one()
-
-    #         user = await self.read_by_id(user_id)
-
-    #         # users_azure_groups = select(AzureGroupUserLink).where(
-    #         #     AzureGroupUserLink.azure_user_id == user.id
-    #         # )
-    #         # results = await session.exec(users_azure_groups)
-    #         # azure_groups = results.all()
-    #         # print("=== user-crud - read_by_id_with_child - azure_groups ===")
-    #         # print(azure_groups)
-    #         # print("=== user-crud - read_by_id_with_child - user ===")
-    #         # print(user)
-    #         # print("=== user-crud - read_by_id_with_child - user.azure_groups ===")
-    #         # print(user.azure_groups)
-    #         # if user:
-    #         # if update_last_access is True:
-    #         #     # print("=== user crud - read_by_id_with_childs -> updating... ===")
-    #         #     await self.update(user, user)
-    #         # for group in user.azure_groups:
-    #         # print("=== user-crud - read_by_id_with_child - group ===")
-    #         # print(group)
-    #         # user = UserRead.model_validate(user)
-    #         # print("=== user-crud - read_by_id_with_child - validated_user ===")
-    #         # print(user)
-    #         # if user is None:
-    #         return user
-    #     # else:
-    #     except Exception as err:
-    #         logging.error(err)
-    #         raise HTTPException(status_code=404, detail="User not found")
-    #     # TBD: this might end up in spaghetti code - rethink!
-    #     # updating the user with itself updates th "last_accessed_at" field
-    #     # print("=== user crud - read_by_id_with_childs -> update_last_access ===")
-    #     # print(update_last_access)
-
-    #     # if update_last_access is True:
-    #     #     # print("=== user crud - read_by_id_with_childs -> updating... ===")
-    #     #     await self.update(user, user)
-    #     # return user
 
     # This allows self-sign-up, unless user has been disabled by admin!
     # Any user passed in, get's checked for existence, if not existing, it get's created!
@@ -196,30 +98,14 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         groups: Optional[List[str]],
     ) -> UserRead:
         """Checks if user and its groups exist, if not create and link them."""
-        # print("=== user_id ===")
-        # print(azure_user_id)
-        # print("=== tenant_id ===")
-        # print(azure_tenant_id)
-        # print("=== groups ===")
-        # print(groups)
         session = self.session
         try:
-            # print(
-            #     "=== user crud - create_azure_user_and_groups_if_not_exist - read_by_azure_user_id -> update_last_access ==="
-            # )
             # Note: current_user is not available here during self-sign-up! So no access control here!
             statement = select(User).where(User.azure_user_id == azure_user_id)
             results = await session.exec(statement)
             current_user = results.first()
             if current_user is None:
                 raise HTTPException(status_code=404, detail="User not found")
-            # current_user = await self.read_by_azure_user_id(
-            #     azure_user_id
-            # TBD: Refactor into access control
-            # , update_last_access,
-            # )
-            # print("=== current_user ===")
-            # print(current_user)
         except HTTPException as err:
             if err.status_code == 404:
                 user_create = UserCreate(
@@ -228,20 +114,13 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     # TBD: Refactor into access control
                     # last_accessed_at=datetime.now(),
                 )
-                # print("=== user_create ===")
-                # print(user_create)
-                # current_user = await self.create(user_create)
-                # TBD: After refactoring into access control, the create method should cannot be used any more here.
-                # user does not exist and there is no access policy for the user to create itself.
-                # print("=== session ===")
+                # TBD: call the access policies and the access logs - just like in the create method!
+
                 database_user = User.model_validate(user_create)
                 session.add(database_user)
-                # print("=== session.add(user_create) ===")
                 await session.commit()
                 await session.refresh(database_user)
                 current_user = database_user
-                # print("=== current_user ===")
-                # print(current_user)
                 logger.info("USER created in database")
             else:
                 raise err
@@ -253,7 +132,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # print(azure_group_id)
             # call group crud to check if group exists, if not create it!
             # TBD: refactor into using the access controlled protected methods:
-            # Now the user actually exists and security can provide the
+            # Now the user actually exists and security can provide the CurrentUserData!
             async with AzureGroupCRUD() as group_crud:
                 await group_crud.create_if_not_exists(azure_group_id, azure_tenant_id)
                 # try:
@@ -294,36 +173,37 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # )
         return current_user
 
-    # TBD: Refactor into access control: just call self.update()
-    async def deactivate_user(self, azure_user_id: str) -> User:
-        """Deactivates a user."""
-        session = self.session
-        # async with session:
-        existing_user = await session.get(User, azure_user_id)
-        if not existing_user:
-            raise HTTPException(status_code=404, detail="User not found")
-        user_update = UserUpdate(is_active=False)
-        existing_user = await self.update(existing_user, user_update)
-        return existing_user
+    # Hose are not even used anywhere yet - so no priority to update them!
+    # # TBD: Refactor into access control: just call self.update()
+    # async def deactivate_user(self, azure_user_id: str) -> User:
+    #     """Deactivates a user."""
+    #     session = self.session
+    #     # async with session:
+    #     existing_user = await session.get(User, azure_user_id)
+    #     if not existing_user:
+    #         raise HTTPException(status_code=404, detail="User not found")
+    #     user_update = UserUpdate(is_active=False)
+    #     existing_user = await self.update(existing_user, user_update)
+    #     return existing_user
 
-    # TBD: Refactor into access control: just call self.update()
-    async def activate_user(self, azure_user_id: str) -> User:
-        """Activates a user."""
-        session = self.session
-        # async with session:
-        existing_user = await session.get(User, azure_user_id)
-        if not existing_user:
-            raise HTTPException(status_code=404, detail="User not found")
-        user_update = UserUpdate(is_active=True)
-        existing_user = await self.update(existing_user, user_update)
-        return existing_user
+    # # TBD: Refactor into access control: just call self.update()
+    # async def activate_user(self, azure_user_id: str) -> User:
+    #     """Activates a user."""
+    #     session = self.session
+    #     # async with session:
+    #     existing_user = await session.get(User, azure_user_id)
+    #     if not existing_user:
+    #         raise HTTPException(status_code=404, detail="User not found")
+    #     user_update = UserUpdate(is_active=True)
+    #     existing_user = await self.update(existing_user, user_update)
+    #     return existing_user
 
-    # TBD: Refactor into access control: just call self.read() and return the is_active field!
-    async def user_is_active(self, azure_user_id: str) -> bool:
-        """Checks if a user is active."""
-        session = self.session
-        # async with session:
-        existing_user = await session.get(User, azure_user_id)
-        if not existing_user:
-            raise HTTPException(status_code=404, detail="User not found")
-        return existing_user.is_active
+    # # TBD: Refactor into access control: just call self.read() and return the is_active field!
+    # async def user_is_active(self, azure_user_id: str) -> bool:
+    #     """Checks if a user is active."""
+    #     session = self.session
+    #     # async with session:
+    #     existing_user = await session.get(User, azure_user_id)
+    #     if not existing_user:
+    #         raise HTTPException(status_code=404, detail="User not found")
+    #     return existing_user.is_active

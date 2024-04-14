@@ -2,15 +2,7 @@ import logging
 from typing import List
 
 from uuid import UUID
-from core.security import (
-    # TBD: Before Refactoring with Access Control:
-    CurrentAccessToken,
-    CurrentAzureUserInDatabase,
-    CurrentAccessTokenHasScope,
-    CurrentAccessTokenHasRole,
-    # TBD: Refactor version with AccessControl:
-    get_access_token_payload,
-)
+from core.security import get_access_token_payload
 from crud.identity import UserCRUD
 from fastapi import APIRouter, Depends, HTTPException
 from models.identity import User, UserCreate, UserRead, UserUpdate
@@ -34,6 +26,7 @@ class UserView(BaseView):
         roles: List[str] = [],
         groups: List[UUID] = [],
     ) -> UserRead:
+        """GET view to retrieve user by azure_user_id."""
         logger.info("GET user by azure_user_id")
         current_user = await self._guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:

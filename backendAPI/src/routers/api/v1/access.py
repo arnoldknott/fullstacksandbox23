@@ -1,5 +1,6 @@
 import logging
 
+from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from core.types import ResourceType, IdentityType
@@ -17,7 +18,35 @@ from crud.access import AccessPolicyCRUD
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-access_policy_view = BaseView(AccessPolicyCRUD, AccessPolicy)
+# access_policy_view = BaseView(AccessPolicyCRUD, AccessPolicy)
+
+
+class AccessPolicyView(BaseView):
+    def __init__(self):
+        super().__init__(AccessPolicyCRUD, AccessPolicy)
+
+    # TBD: rethink: this gets ways to complicated
+    # this method is only used once - so no need to make the role-based access control generic!
+    async def get_access_policies_for_resource(
+        self,
+        resource_id: UUID,
+        resource_type: ResourceType,
+        token_payload=None,
+        scopes: List[str] = [],
+        roles: List[str] = [],
+        groups: List[UUID] = [],
+    ) -> List[AccessPolicyRead]:
+        """ " GET view for access policies for a resource"""
+        logger.info("GET user by azure_user_id")
+        current_user = await self._guards(token_payload, scopes, roles, groups)
+        async with self.crud() as crud:
+            access_policies = await crud.read_access_policies_for_resource(
+                resource_id, resource_type, current_user
+            )
+        return access_policies
+
+
+access_policy_view = AccessPolicyView()
 
 
 @router.post("/policy", status_code=201)
@@ -60,15 +89,21 @@ async def get_access_policies_for_resource(
         raise ValueError("Resource ID is not a universal unique identifier (uuid).")
     if resource_type not in ResourceType.list():
         raise ValueError("Resource type is not valid.")
-    filters = [
-        AccessPolicy.resource_id == resource_id,
-        AccessPolicy.resource_type == resource_type,
-    ]
-    return await access_policy_view.get_with_filters(
-        filters,
+    return await access_policy_view.get_access_policies_for_resource(
+        resource_id,
+        resource_type,
         token_payload,
         roles=["User"],
     )
+    # filters = [
+    #     AccessPolicy.resource_id == resource_id,
+    #     AccessPolicy.resource_type == resource_type,
+    # ]
+    # return await access_policy_view.get_with_query_options(
+    #     filters,
+    #     token_payload,
+    #     roles=["User"],
+    # )
 
 
 # TBD: write tests for this:

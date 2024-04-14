@@ -166,6 +166,24 @@ class AccessPolicyCRUD:
             logger.error(f"Error in reading policy: {e}")
             raise HTTPException(status_code=404, detail="Access policy not found")
 
+    async def read_access_policies_for_resource(
+        self,
+        resource_id: str,
+        resource_type: ResourceType,
+        current_user: CurrentUserData,
+    ):
+        """Returns a User with linked Groups from the database."""
+        try:
+            filters = [
+                AccessPolicy.resource_id == resource_id,
+                AccessPolicy.resource_type == resource_type,
+            ]
+            access_policies = await self.read(current_user, filters=filters)
+            return access_policies
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="AccessPolicies not found")
+
     async def delete(
         self,
         policy_id: Optional[int] = None,
