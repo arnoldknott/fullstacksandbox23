@@ -460,7 +460,7 @@ async def test_user_gets_another_user_by_azure_user_id(
     )
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "User not found."
+    assert content["detail"] == "User not found"
     # assert response.text == '{"detail":"Access denied"}'
 
 
