@@ -64,6 +64,7 @@ async def test_admin_posts_user(
     assert created_user.azure_tenant_id == many_test_users[0]["azure_tenant_id"]
 
     # Verify that the user was created in the database
+    # TBD: don't use the CRUD, but the API to get the user!
     async with UserCRUD() as crud:
         db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
     assert db_user is not None

@@ -277,6 +277,7 @@ class CurrentAccessToken:
             # if the user information stored in this class is already valid - no need to make another database call
             # if the user information stored in this class is not valid: get or sign-up the user.
             async with UserCRUD() as crud:
+                # TBD: this varialbe is misleading. The current_user here is not CurrentUserData, but a UserRead object!
                 current_user = await crud.create_azure_user_and_groups_if_not_exist(
                     user_id, tenant_id, groups
                 )
@@ -294,6 +295,7 @@ class CurrentAccessToken:
             raise HTTPException(status_code=401, detail="Invalid token")
 
     # TBD: call get_or_sign_up_current_user from all guards that require a user
+    # TBD: merge with gets_or_signs_up_current_user?
     async def provides_current_user(self) -> CurrentUserData:
         """Returns the current user"""
         roles = None

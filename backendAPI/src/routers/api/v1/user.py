@@ -19,7 +19,33 @@ from .base import BaseView
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-user_view = BaseView(UserCRUD, User)
+# user_view = BaseView(UserCRUD, User)
+
+
+class UserView(BaseView):
+    def __init__(self):
+        super().__init__(UserCRUD, User)
+
+    async def get_by_azure_user_id(
+        self,
+        azure_user_id: UUID,
+        token_payload=None,
+        scopes: List[str] = [],
+        roles: List[str] = [],
+        groups: List[UUID] = [],
+    ) -> UserRead:
+        logger.info("GET user by azure_user_id")
+        current_user = await self._guards(token_payload, scopes, roles, groups)
+        async with self.crud() as crud:
+            user = await crud.read_by_azure_user_id(azure_user_id, current_user)
+        return user
+
+
+user_view = UserView()
+
+# this filter definition needs to move to the specific CRUD:
+# filters = [User.azure_user_id == azure_user_id]
+# return await self.(filters=filters, token_payload=token_payload, roles=roles)
 
 
 # note: self-sign-up through security - controlled by token content,
@@ -157,13 +183,16 @@ async def get_user_by_azure_user_id(
     except ValueError:
         logger.error("User ID is not an UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
-    filters = [User.azure_user_id == azure_user_id]
-    user = await user_view.get_with_query_options(
-        filters=filters,
-        token_payload=token_payload,
-        roles=["User"],
+    return await user_view.get_by_azure_user_id(
+        azure_user_id, token_payload, roles=["User"]
     )
-    return user[0]
+    # filters = [User.azure_user_id == azure_user_id]
+    # user = await user_view.get_with_query_options(
+    #     filters=filters,
+    #     token_payload=token_payload,
+    #     roles=["User"],
+    # )
+    # return user[0]
 
 
 # # TBD: Delete old version after refactoring with BaseView:

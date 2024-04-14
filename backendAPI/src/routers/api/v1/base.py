@@ -23,8 +23,7 @@ class BaseView:
         self.crud = crud
         self.model = model
 
-    # note: in python private methods are not really private: name mangling!
-    async def __guards(self, token_payload, scopes, roles, groups):
+    async def _guards(self, token_payload, scopes, roles, groups):
         """Executes the guards to check if token has required scopes, roles and groups."""
         token = CurrentAccessToken(token_payload)
         for scope in scopes:
@@ -48,7 +47,7 @@ class BaseView:
         groups: List[UUID] = [],
     ):
         logger.info("POST view calls create CRUD")
-        current_user = await self.__guards(token_payload, scopes, roles, groups)
+        current_user = await self._guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             # created_object = await crud.create(object)
             # Refactor into this:
@@ -64,7 +63,7 @@ class BaseView:
         groups: List[UUID] = [],
     ):
         logger.info("POST view for public access calls create_public CRUD")
-        current_user = await self.__guards(token_payload, scopes, roles, groups)
+        current_user = await self._guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             created_object = await crud.create_public(object, current_user)
         return created_object
@@ -80,7 +79,7 @@ class BaseView:
         logger.info("GET view to retrieve all objects from read CRUD")
         current_user = None
         if token_payload:
-            current_user = await self.__guards(token_payload, scopes, roles, groups)
+            current_user = await self._guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             objects = await crud.read(current_user)
 
@@ -102,9 +101,12 @@ class BaseView:
             raise HTTPException(status_code=400, detail="Invalid id.")
         current_user = None
         if token_payload:
-            current_user = await self.__guards(token_payload, scopes, roles, groups)
+            current_user = await self._guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             # object = await crud.read_by_id(id, current_user)
+            # TBD: go back to version above: keeps the interface clean and
+            # puts all the database/model interaction in the CRUD class
+            # endpoints should only interact with the CRUD class - but not with the model/database
             object = await crud.read(current_user, filters=[self.model.id == id])
         return object[0]
 
@@ -124,11 +126,11 @@ class BaseView:
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        logger.info("GET by id view to retrieve specific object from read CRUD")
+        logger.info("GET with various query options from read CRUD")
         # This is more generic than the get_by_id and filter data needs to happen in inheriting classes
         current_user = None
         if token_payload:
-            current_user = await self.__guards(token_payload, scopes, roles, groups)
+            current_user = await self._guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             # print("=== filters ===")
             # print(filters)
@@ -157,7 +159,7 @@ class BaseView:
         except ValueError:
             logger.error("ID is not a universal unique identifier (uuid).")
             raise HTTPException(status_code=400, detail="Invalid id.")
-        current_user = await self.__guards(token_payload, scopes, roles, groups)
+        current_user = await self._guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             updated_object = await crud.update(current_user, id, object)
         return updated_object
@@ -176,7 +178,7 @@ class BaseView:
         except ValueError:
             logger.error("ID is not a universal unique identifier (uuid).")
             raise HTTPException(status_code=400, detail="Invalid id.")
-        current_user = await self.__guards(token_payload, scopes, roles, groups)
+        current_user = await self._guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             deleted_object = await crud.delete(current_user, id)
         return deleted_object
