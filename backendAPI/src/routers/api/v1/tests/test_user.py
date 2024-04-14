@@ -10,6 +10,13 @@ from models.identity import User, UserRead
 from models.access import AccessPolicy
 from fastapi import FastAPI
 from tests.utils import (
+    token_user1_read,
+    token_user1_write,
+    token_user1_read_write,
+    token_admin,
+    token_admin_read,
+    token_admin_write,
+    token_admin_read_write,
     token_payload_user_id,
     token_payload_tenant_id,
     token_payload_roles_admin,
@@ -247,21 +254,14 @@ async def test_post_user_invalid_token(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read,
-            **token_payload_roles_admin,
-        }
-    ],
+    [token_admin_read],
     indirect=True,
 )
 async def test_admin_gets_users(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     # add_test_policies_for_resources: List[AccessPolicy],
-    add_one_test_user: User,
+    add_many_test_users: List[User],
 ):
     """Test GET one user"""
 
@@ -269,7 +269,7 @@ async def test_admin_gets_users(
     app_override_get_azure_payload_dependency
 
     # adds a user to the database, which is the one to GET:
-    user = add_one_test_user
+    users = add_many_test_users
     # TBD: should not be necessary - misses the point of admin can read everything!
     # await add_test_policies_for_resources(
     #     resources=[user],
@@ -280,11 +280,12 @@ async def test_admin_gets_users(
 
     response = await async_client.get("/api/v1/user/")
     assert response.status_code == 200
-    users = response.json()
-    assert len(users) == 1
-    assert "id" in users[0]
-    assert users[0]["azure_user_id"] == str(user.azure_user_id)
-    assert users[0]["azure_tenant_id"] == str(user.azure_tenant_id)
+    database_users = response.json()
+    assert len(users) == 3
+    for database_user, user in zip(database_users, users):
+        assert "id" in database_user
+        assert database_user["azure_user_id"] == str(user.azure_user_id)
+        assert database_user["azure_tenant_id"] == str(user.azure_tenant_id)
 
 
 @pytest.mark.anyio
@@ -338,21 +339,8 @@ async def test_get_users_without_token(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_scope_api_read,
-            **token_payload_roles_user,
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-        },
-        # here the admin get's itself => last_accessed_at should change!
-        {
-            **token_payload_scope_api_read,
-            **token_payload_roles_admin,
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-        },
-    ],
+    [token_user1_read, token_admin_read],
+    # here the admin get's itself => last_accessed_at should change!
     indirect=True,
 )
 async def test_user_gets_user_by_azure_user_id(
@@ -389,14 +377,7 @@ async def test_user_gets_user_by_azure_user_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_scope_api_read,
-            **token_payload_roles_admin,
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-        },
-    ],
+    [token_admin_read],
     indirect=True,
 )
 async def test_admin_gets_user_by_azure_user_id(
@@ -426,14 +407,7 @@ async def test_admin_gets_user_by_azure_user_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_scope_api_read,
-            **token_payload_roles_user,
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-        },
-    ],
+    [token_user1_read],
     indirect=True,
 )
 async def test_user_gets_another_user_by_azure_user_id(
@@ -481,21 +455,8 @@ async def test_get_user_by_azure_id_without_token(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_scope_api_read,
-            **token_payload_roles_user,
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-        },
-        # here the admin get's itself => last_accessed_at should change!
-        {
-            **token_payload_scope_api_read,
-            **token_payload_roles_admin,
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-        },
-    ],
+    [token_user1_read, token_admin_read],
+    # here the admin get's itself => last_accessed_at should change!
     indirect=True,
 )
 async def test_user_gets_user_by_id(
@@ -534,14 +495,7 @@ async def test_user_gets_user_by_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_scope_api_read,
-            **token_payload_roles_admin,
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-        },
-    ],
+    [token_admin_read],
     indirect=True,
 )
 async def test_admin_gets_user_by_id(
@@ -572,14 +526,7 @@ async def test_admin_gets_user_by_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_scope_api_read,
-            **token_payload_roles_user,
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-        },
-    ],
+    [token_user1_read],
     indirect=True,
 )
 async def test_user_gets_another_user_by_user_id(
@@ -711,15 +658,7 @@ async def test_get_user_by_id_invalid_token(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        # refactored into: updating a user needs Admin roles
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write],
     indirect=True,
 )
 async def test_user_put_user(
@@ -772,14 +711,7 @@ async def test_user_put_user(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-    ],
+    [token_admin_read_write],
     indirect=True,
 )
 async def test_put_user_from_admin(
@@ -821,21 +753,8 @@ async def test_put_user_from_admin(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        # refactored into: updating a user needs Admin roles
-        # {
-        #     **token_payload_user_id,
-        #     **token_payload_tenant_id,
-        #     **token_payload_scope_api_read_write,
-        #     **token_payload_roles_user,
-        # },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-    ],
+    [token_admin_read_write],
+    # refactored into: updating a user needs Admin roles
     indirect=True,
 )
 async def test_put_user_with_integer_user_id(
@@ -887,21 +806,8 @@ async def test_put_user_with_integer_user_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        # refactored into: updating a user needs Admin roles
-        # {
-        #     **token_payload_user_id,
-        #     **token_payload_tenant_id,
-        #     **token_payload_scope_api_read_write,
-        #     **token_payload_roles_user,
-        # },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-    ],
+    [token_admin_read_write],
+    # refactored into: updating a user needs Admin roles
     indirect=True,
 )
 async def test_put_user_with_uuid_user_id(
@@ -1013,14 +919,7 @@ async def test_put_user_invalid_token(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write],
     indirect=True,
 )
 async def test_user_puts_another_user(
@@ -1062,14 +961,7 @@ async def test_user_puts_another_user(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_user1_read_write],
     indirect=True,
 )
 async def test_user_deletes_itself(
@@ -1112,14 +1004,7 @@ async def test_user_deletes_itself(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-    ],
+    [token_admin_read_write],
     indirect=True,
 )
 async def test_admin_deletes_user(
@@ -1222,21 +1107,15 @@ async def test_delete_user_invalid_token(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    # TBD: use user2 here somewhere?
+    [token_user1_read_write],
     indirect=True,
 )
 async def test_user_deletes_another_user(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_many_test_users_with_groups: List[User],
-    add_test_policies_for_resources: List[AccessPolicy],
+    # add_test_policies_for_resources: List[AccessPolicy],
 ):
     """Test delete another user fails"""
 

@@ -125,9 +125,7 @@ async def add_one_test_user_with_groups(get_async_test_session: AsyncSession) ->
 
 
 @pytest.fixture(scope="function")
-async def add_many_test_users(
-    get_async_test_session: AsyncSession,
-) -> list[User]:
+async def add_many_test_users() -> list[User]:
     """Adds a category to the database."""
     async with UserCRUD() as crud:
         users = []
@@ -142,9 +140,7 @@ async def add_many_test_users(
 
 
 @pytest.fixture(scope="function")
-async def add_many_test_users_with_groups(
-    get_async_test_session: AsyncSession,
-) -> list[User]:
+async def add_many_test_users_with_groups() -> list[User]:
     """Adds a category to the database."""
     async with UserCRUD() as crud:
         users = []
@@ -193,9 +189,7 @@ async def add_test_access_policies():
 
 
 @pytest.fixture(scope="function")
-async def add_many_test_access_policies(
-    get_async_test_session: AsyncSession,
-) -> list[AccessPolicyRead]:
+async def add_many_test_access_policies() -> list[AccessPolicyRead]:
     """Adds a category to the database."""
     mocked_admin_user = CurrentUserData(
         user_id=one_test_user["azure_user_id"],

@@ -42,12 +42,14 @@ class AzureGroupCRUD(
         existing_group = await self.session.get(AzureGroup, azure_group_id)
         if existing_group is None:
             try:
+                # TBD: refactor to use create from base class!
                 group_create = AzureGroupCreate(
                     id=azure_group_id,
                     azure_tenant_id=azure_tenant_id,
                 )
                 # TBD: After refactoring into access control, the create method should cannot be used any more here.
                 # group does not exist and there is no access policy for the group to create itself.
+                # Do we need the current user here? Make sure not to run into a circular dependency!
                 # existing_group = await self.create(group_create)
                 session = self.session
                 database_group = AzureGroup.model_validate(group_create)
@@ -74,6 +76,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # async with self.session as session:
         session = self.session
         try:
+            # TBD: refactor into using the read_with_query_options method from the base class
             statement = select(User).where(User.azure_user_id == azure_user_id)
             results = await session.exec(statement)
             user = results.one()
@@ -97,6 +100,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         """Returns the user with a specific user_id and its childs."""
         session = self.session
         try:
+            # TBD: refactor into using the read_with_query_options method from the base class
             statement = select(User).where(User.azure_user_id == azure_user_id)
             results = await session.exec(statement)
             user = results.one()
@@ -188,7 +192,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         azure_user_id: str,
         azure_tenant_id: str,
         groups: Optional[List[str]],
-        update_last_access: bool = True,
     ) -> UserRead:
         """Checks if user and its groups exist, if not create and link them."""
         # print("=== user_id ===")
