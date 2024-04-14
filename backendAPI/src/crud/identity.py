@@ -123,7 +123,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         self, user_id: int  # , update_last_access: bool = True
     ) -> UserRead:
         """Returns the user with a specific user_id and its childs."""
-        session = self.session
+        # session = self.session
+
         # TBD: get returns None if not found - maybe using select instead to raise an exception?
         try:
             #     user = await session.get(User, user_id)
@@ -133,20 +134,17 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             #     logging.error(err)
             #     raise HTTPException(status_code=404, detail="User not found")
             # user = await session.get(User, user_id)
-            # TBD: use read from the base class to ensure access control is applied!
-            statement = (
-                select(User).where(User.id == user_id)
-                # .options(selectinload(User.azure_groups))
-            )
 
-            # print("=== user-crud - read_by_id_with_child - statement ===")
-            # print(statement)
-            results = await session.exec(statement)
-            # print("=== user-crud - read_by_id_with_child - results ===")
-            # print(results)
-            user = results.one()
-            # print("=== user-crud - read_by_id_with_child - user ===")
-            # print(user)
+            # TBD: use read from the base class to ensure access control is applied!
+            # statement = (
+            #     select(User).where(User.id == user_id)
+            #     # .options(selectinload(User.azure_groups))
+            # )
+            # results = await session.exec(statement)
+            # user = results.one()
+
+            user = await self.read_by_id(user_id)
+
             # users_azure_groups = select(AzureGroupUserLink).where(
             #     AzureGroupUserLink.azure_user_id == user.id
             # )

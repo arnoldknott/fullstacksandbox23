@@ -107,8 +107,10 @@ class BaseView:
             # TBD: go back to version above: keeps the interface clean and
             # puts all the database/model interaction in the CRUD class
             # endpoints should only interact with the CRUD class - but not with the model/database
-            object = await crud.read(current_user, filters=[self.model.id == id])
-        return object[0]
+            # object = await crud.read(current_user, filters=[self.model.id == id])
+            # return object[0]
+            object = await crud.read_by_id(id, current_user)
+        return object
 
     # TBD: consider moving this to CRUD and don't parts of SQL queries in the views
     async def get_with_query_options(

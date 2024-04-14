@@ -242,6 +242,18 @@ class BaseCRUD(
 
         return results
 
+    async def read_by_id(
+        self,
+        id: uuid.UUID,
+        current_user: Optional["CurrentUserData"] = None,
+    ):
+        """Reads an object by id."""
+        object = await self.read(
+            current_user=current_user,
+            filters=[self.model.id == id],
+        )
+        return object[0]
+
     # TBD: add skip and limit
     # async def read_all(self, skip: int = 0, limit: int = 100)  -> list[BaseModelType]:
     # Changing to return BaseSchemaTypeRead instead of BaseModelType makes read_with_childs obsolete!

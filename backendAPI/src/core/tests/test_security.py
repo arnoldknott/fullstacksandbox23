@@ -225,8 +225,9 @@ async def test_existing_azure_user_has_new_group_in_token(
     # preparing the test: adds a user to the database and ensure that this user is member of 3 groups:
     # TBD: refactor to call the endpoint methods with admin access:
     existing_user = add_one_test_user_with_groups
-    async with UserCRUD() as crud:
-        existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
+    # async with UserCRUD() as crud:
+    #     existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
+    existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
 
     assert len(existing_db_user.azure_groups) == 3
     app = app_override_get_azure_payload_dependency
@@ -249,8 +250,9 @@ async def test_existing_azure_user_has_new_group_in_token(
     assert updated_user["azure_tenant_id"] == one_test_user["azure_tenant_id"]
 
     # Verify that the user now has the new group in the database
-    async with UserCRUD() as crud:
-        db_user = await crud.read_by_id_with_childs(existing_user.id)
+    # async with UserCRUD() as crud:
+    #     db_user = await crud.read_by_id_with_childs(existing_user.id)
+    db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
     assert db_user is not None
     assert db_user.azure_user_id == uuid.UUID(one_test_user["azure_user_id"])
     assert db_user.azure_tenant_id == uuid.UUID(one_test_user["azure_tenant_id"])
