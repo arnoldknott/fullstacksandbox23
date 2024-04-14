@@ -28,6 +28,7 @@ from tests.utils import (
     one_test_user,
     many_test_users,
 )
+from routers.api.v1.user import get_user_by_id
 
 # region: ## POST tests:
 
@@ -47,7 +48,9 @@ from tests.utils import (
     indirect=True,
 )
 async def test_admin_posts_user(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_get_azure_payload_dependency
@@ -65,15 +68,21 @@ async def test_admin_posts_user(
 
     # Verify that the user was created in the database
     # TBD: don't use the CRUD, but the API to get the user!
-    async with UserCRUD() as crud:
-        db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
+    db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
+    # async with UserCRUD() as crud:
+    #     db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
     assert db_user is not None
-    db_user_json = jsonable_encoder(db_user)
-    assert "id" in db_user_json
-    assert "last_accessed_at" in db_user_json
-    assert "last_accessed_at" != None
-    assert db_user_json["azure_user_id"] == many_test_users[0]["azure_user_id"]
-    assert db_user_json["azure_tenant_id"] == many_test_users[0]["azure_tenant_id"]
+    assert db_user.id is not None
+    assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
+    assert db_user.last_accessed_at is not None
+
+    # db_user_json = jsonable_encoder(db_user)
+    # assert "id" in db_user_json
+    # assert "last_accessed_at" in db_user_json
+    # assert "last_accessed_at" != None
+    # assert db_user_json["azure_user_id"] == many_test_users[0]["azure_user_id"]
+    # assert db_user_json["azure_tenant_id"] == many_test_users[0]["azure_tenant_id"]
 
 
 @pytest.mark.anyio
@@ -93,6 +102,7 @@ async def test_admin_posts_user(
 async def test_post_user_with_integer_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests posting a integer user_id to user_post endpoint fails"""
     app_override_get_azure_payload_dependency
@@ -109,11 +119,18 @@ async def test_post_user_with_integer_user_id(
     assert created_user.azure_tenant_id == many_test_users[0]["azure_tenant_id"]
 
     # Verify that the user was created in the database
-    async with UserCRUD() as crud:
-        db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
-    assert db_user is not None
-    db_user_json = jsonable_encoder(db_user)
-    assert db_user_json["id"] != 1
+    db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
+    assert db_user.id == uuid.UUID(created_user.id)
+    assert db_user.id != 1
+    assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
+    assert db_user.last_accessed_at is not None
+
+    # async with UserCRUD() as crud:
+    #     db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
+    # assert db_user is not None
+    # db_user_json = jsonable_encoder(db_user)
+    # assert db_user_json["id"] != 1
 
 
 @pytest.mark.anyio
@@ -133,6 +150,7 @@ async def test_post_user_with_integer_user_id(
 async def test_post_user_with_uuid_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_get_azure_payload_dependency
@@ -150,18 +168,26 @@ async def test_post_user_with_uuid_user_id(
     assert created_user.azure_tenant_id == many_test_users[0]["azure_tenant_id"]
 
     # Verify that the user was created in the database
-    async with UserCRUD() as crud:
-        db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
-    assert db_user is not None
-    # db_user_json = jsonable_encoder(db_user)
-    db_user = db_user.model_dump()
-    assert "last_accessed_at" in db_user
-    assert "last_accessed_at" != None
-    assert db_user["azure_user_id"] == uuid.UUID(many_test_users[0]["azure_user_id"])
-    assert db_user["azure_tenant_id"] == uuid.UUID(
-        many_test_users[0]["azure_tenant_id"]
-    )
-    assert db_user["id"] != uuid.UUID(test_uuid)
+    # async with UserCRUD() as crud:
+    #     db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
+    # assert db_user is not None
+    # # db_user_json = jsonable_encoder(db_user)
+    # db_user = db_user.model_dump()
+    # assert "last_accessed_at" in db_user
+    # assert "last_accessed_at" != None
+    # assert db_user["azure_user_id"] == uuid.UUID(many_test_users[0]["azure_user_id"])
+    # assert db_user["azure_tenant_id"] == uuid.UUID(
+    #     many_test_users[0]["azure_tenant_id"]
+    # )
+    # assert db_user["id"] != uuid.UUID(test_uuid)
+
+    # Verify that the user was created in the database
+    db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
+    assert db_user.id == uuid.UUID(created_user.id)
+    assert db_user.id != uuid.UUID(test_uuid)
+    assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
+    assert db_user.last_accessed_at is not None
 
 
 @pytest.mark.anyio

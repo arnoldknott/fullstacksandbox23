@@ -133,7 +133,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             #     logging.error(err)
             #     raise HTTPException(status_code=404, detail="User not found")
             # user = await session.get(User, user_id)
-
+            # TBD: use read from the base class to ensure access control is applied!
             statement = (
                 select(User).where(User.id == user_id)
                 # .options(selectinload(User.azure_groups))

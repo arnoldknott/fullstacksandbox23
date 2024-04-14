@@ -1,5 +1,3 @@
-from unittest.mock import patch, AsyncMock
-
 import pytest
 import uuid
 from typing import Annotated
@@ -137,21 +135,7 @@ async def test_azure_user_self_signup(
     current_user = response.json()
     assert current_user["azure_user_id"] == one_test_user["azure_user_id"]
     assert current_user["azure_tenant_id"] == one_test_user["azure_tenant_id"]
-    # Verify that the user was created in the database
-    # mocked_get_azure_token_payload = token_admin_read
-    # app_override_get_azure_payload_dependency
-    # with patch(
-    #     "core.security.get_access_token_payload", new_callable=AsyncMock
-    # ) as mock_get_token:
 
-    # with patch("routers.api.v1.user.get_user_by_id") as endpoint:
-    #     endpoint.return_value = {"blabla": "blabla"}
-    #     # mock_get_token.return_value = token_admin_read
-    #     response = await async_client.get(f"/api/v1/user/{current_user['id']}")
-    #     endpoint.assert_called_once()
-    #     # mock_get_token.assert_called_once()
-    #     # response = await async_client.get(f"/api/v1/user/{current_user['id']}")
-    # assert response.status_code == 200
     # To verify that the user is in the database, calling the endpoint to get the user by id with admin token:
     db_user = await get_user_by_id(current_user["id"], token_admin_read)
     assert db_user is not None
@@ -239,6 +223,7 @@ async def test_existing_azure_user_has_new_group_in_token(
 ):
     """Tests if an user that got added to a new azure group also gets added the new azure group in the database."""
     # preparing the test: adds a user to the database and ensure that this user is member of 3 groups:
+    # TBD: refactor to call the endpoint methods with admin access:
     existing_user = add_one_test_user_with_groups
     async with UserCRUD() as crud:
         existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
