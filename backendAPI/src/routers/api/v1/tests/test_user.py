@@ -3,8 +3,6 @@
 import pytest
 import uuid
 from typing import List
-from crud.identity import UserCRUD
-from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
 from models.identity import User, UserRead
 from models.access import AccessPolicy
@@ -67,22 +65,12 @@ async def test_admin_posts_user(
     assert created_user.azure_tenant_id == many_test_users[0]["azure_tenant_id"]
 
     # Verify that the user was created in the database
-    # TBD: don't use the CRUD, but the API to get the user!
     db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
-    # async with UserCRUD() as crud:
-    #     db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
     assert db_user is not None
     assert db_user.id is not None
     assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
     assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
     assert db_user.last_accessed_at is not None
-
-    # db_user_json = jsonable_encoder(db_user)
-    # assert "id" in db_user_json
-    # assert "last_accessed_at" in db_user_json
-    # assert "last_accessed_at" != None
-    # assert db_user_json["azure_user_id"] == many_test_users[0]["azure_user_id"]
-    # assert db_user_json["azure_tenant_id"] == many_test_users[0]["azure_tenant_id"]
 
 
 @pytest.mark.anyio
@@ -126,12 +114,6 @@ async def test_post_user_with_integer_user_id(
     assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
     assert db_user.last_accessed_at is not None
 
-    # async with UserCRUD() as crud:
-    #     db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
-    # assert db_user is not None
-    # db_user_json = jsonable_encoder(db_user)
-    # assert db_user_json["id"] != 1
-
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -166,20 +148,6 @@ async def test_post_user_with_uuid_user_id(
     created_user = User(**response.json())
     assert created_user.azure_user_id == many_test_users[0]["azure_user_id"]
     assert created_user.azure_tenant_id == many_test_users[0]["azure_tenant_id"]
-
-    # Verify that the user was created in the database
-    # async with UserCRUD() as crud:
-    #     db_user = await crud.read_by_azure_user_id(many_test_users[0]["azure_user_id"])
-    # assert db_user is not None
-    # # db_user_json = jsonable_encoder(db_user)
-    # db_user = db_user.model_dump()
-    # assert "last_accessed_at" in db_user
-    # assert "last_accessed_at" != None
-    # assert db_user["azure_user_id"] == uuid.UUID(many_test_users[0]["azure_user_id"])
-    # assert db_user["azure_tenant_id"] == uuid.UUID(
-    #     many_test_users[0]["azure_tenant_id"]
-    # )
-    # assert db_user["id"] != uuid.UUID(test_uuid)
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
@@ -224,15 +192,6 @@ async def test_user_posts_user(
     # created_user = User(**response.json())
     # assert created_user.azure_user_id == one_test_user["azure_user_id"]
     # assert created_user.azure_tenant_id == one_test_user["azure_tenant_id"]
-
-    # # Verify that the user was created in the database
-    # async with UserCRUD() as crud:
-    #     db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
-    # assert db_user is not None
-    # db_user_json = jsonable_encoder(db_user)
-    # assert "last_accessed_at" in db_user_json
-    # assert db_user_json["azure_user_id"] == one_test_user["azure_user_id"]
-    # assert db_user_json["azure_tenant_id"] == one_test_user["azure_tenant_id"]
 
 
 @pytest.mark.anyio
@@ -715,25 +674,10 @@ async def test_user_put_user(
     response = await async_client.put(
         f"/api/v1/user/{str(existing_user.id)}",
         json={"is_active": False},
-        # json={"azure_user_id": str(existing_user.azure_user_id), "is_active": False},
     )
     assert response.status_code == 403
     content = response.json()
     assert content["detail"] == "Access denied"
-    # assert response.status_code == 200
-    # updated_user = User(**response.json())
-    # assert updated_user.is_active is False
-
-    # # Verify that the user was updated in the database
-    # # async with UserCRUD() as crud:
-    # #     db_user = await crud.read_by_id(existing_user.id)
-    # response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
-    # content = response.json()
-    # db_user = User.model_validate(content)
-
-    # assert db_user is not None
-    # assert db_user.last_accessed_at > existing_db_user["last_accessed_at"]
-    # assert db_user.is_active is False
 
 
 @pytest.mark.anyio
@@ -763,15 +707,12 @@ async def test_put_user_from_admin(
     response = await async_client.put(
         f"/api/v1/user/{str(existing_user.id)}",
         json={"is_active": False},
-        # json={"azure_user_id": str(existing_user.azure_user_id), "is_active": False},
     )
     assert response.status_code == 200
     updated_user = User(**response.json())
     assert updated_user.is_active is False
 
     # Verify that the user was updated in the database
-    # async with UserCRUD() as crud:
-    #     db_user = await crud.read_by_id(existing_user.id)
     response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
     content = response.json()
     db_user = User.model_validate(content)
@@ -804,11 +745,6 @@ async def test_put_user_with_integer_user_id(
         actions=["write"],
         publics=[True],
     )
-    # async with UserCRUD() as crud:
-    #     existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
-    # # existing_db_user = existing_db_user.model_dump()
-    # # assert existing_db_user["is_active"] is True
-    # assert existing_db_user.is_active is True
     existing_db_user = await get_user_by_id(
         str(existing_user.id), mocked_get_azure_token_payload
     )
@@ -824,18 +760,14 @@ async def test_put_user_with_integer_user_id(
     assert updated_user.is_active is False
 
     # Verify that the user was updated in the database
-    # async with UserCRUD() as crud:
-    #     db_user = await crud.read_by_id(existing_user.id)
     response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
     content = response.json()
     db_user = User.model_validate(content)
     assert db_user is not None
-    assert (
-        db_user.last_accessed_at > existing_db_user.last_accessed_at
-    )  # ["last_accessed_at"]
     assert db_user.is_active is False
     assert db_user.id != 1
     assert db_user.id == existing_user.id
+    assert db_user.last_accessed_at > existing_db_user.last_accessed_at
 
 
 @pytest.mark.anyio
@@ -864,11 +796,6 @@ async def test_put_user_with_uuid_user_id(
         actions=["write"],
         publics=[True],
     )
-    # async with UserCRUD() as crud:
-    #     existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
-    # # existing_db_user = existing_db_user.model_dump()
-    # # assert existing_db_user["is_active"] is True
-    # assert existing_db_user.is_active is True
     existing_db_user = await get_user_by_id(
         str(existing_user.id), mocked_get_azure_token_payload
     )
@@ -884,17 +811,13 @@ async def test_put_user_with_uuid_user_id(
     assert updated_user.is_active is False
 
     # Verify that the user was updated in the database
-    # async with UserCRUD() as crud:
-    #     db_user = await crud.read_by_id(existing_user.id)
     response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
     content = response.json()
     db_user = User.model_validate(content)
     assert db_user is not None
-    assert (
-        db_user.last_accessed_at > existing_db_user.last_accessed_at
-    )  # ["last_accessed_at"]
     assert db_user.is_active is False
     assert db_user.id != uuid.UUID(test_uuid)
+    assert db_user.last_accessed_at > existing_db_user.last_accessed_at
 
 
 @pytest.mark.anyio
@@ -943,10 +866,6 @@ async def test_put_user_invalid_token(
         actions=["write"],
         publics=[True],
     )
-    # async with UserCRUD() as crud:
-    #     existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
-    # existing_db_user = existing_db_user.model_dump()
-    # assert existing_db_user["is_active"] is True
     existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
@@ -984,10 +903,6 @@ async def test_user_puts_another_user(
         actions=["write"],
         publics=[True],
     )
-    # async with UserCRUD() as crud:
-    #     existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
-    # existing_db_user = existing_db_user.model_dump()
-    # assert existing_db_user["is_active"] is True
     existing_db_user = await get_user_by_id(
         str(existing_user.id), mocked_get_azure_token_payload
     )
@@ -1031,12 +946,6 @@ async def test_user_deletes_itself(
         actions=["own"],
         publics=[True],
     )
-    # async with UserCRUD() as crud:
-    #     existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
-    # existing_db_user = existing_db_user.model_dump()
-    # assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    # assert existing_db_user["id"] is not None
-    # assert existing_db_user["is_active"] is True
     existing_db_user = await get_user_by_id(
         str(existing_user.id), mocked_get_azure_token_payload
     )
@@ -1076,12 +985,6 @@ async def test_admin_deletes_user(
     app_override_get_azure_payload_dependency
     existing_user = add_one_test_user
 
-    # async with UserCRUD() as crud:
-    #     existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
-    # existing_db_user = existing_db_user.model_dump()
-    # assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    # assert existing_db_user["id"] is not None
-    # assert existing_db_user["is_active"] is True
     existing_db_user = await get_user_by_id(
         str(existing_user.id), mocked_get_azure_token_payload
     )
@@ -1147,12 +1050,6 @@ async def test_delete_user_invalid_token(
         actions=["own"],
         publics=[True],
     )
-    # async with UserCRUD() as crud:
-    #     existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
-    # existing_db_user = existing_db_user.model_dump()
-    # assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    # assert existing_db_user["id"] is not None
-    # assert existing_db_user["is_active"] is True
     existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
@@ -1170,13 +1067,6 @@ async def test_delete_user_invalid_token(
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
     assert existing_db_user.is_active is True
-
-    # async with UserCRUD() as crud:
-    #     existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
-    # existing_db_user = existing_db_user.model_dump()
-    # assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    # assert existing_db_user["id"] is not None
-    # assert existing_db_user["is_active"] is True
 
 
 @pytest.mark.anyio
@@ -1203,12 +1093,6 @@ async def test_user_deletes_another_user(
     #     actions=["own"],
     #     publics=[True],
     # )
-    # async with UserCRUD() as crud:
-    #     existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
-    # existing_db_user = existing_db_user.model_dump()
-    # assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    # assert existing_db_user["id"] is not None
-    # assert existing_db_user["is_active"] is True
     existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
@@ -1226,13 +1110,6 @@ async def test_user_deletes_another_user(
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
     assert existing_db_user.is_active is True
-
-    # async with UserCRUD() as crud:
-    #     existing_db_user = await crud.read_by_id_with_childs(existing_user.id)
-    # existing_db_user = existing_db_user.model_dump()
-    # assert existing_db_user["azure_user_id"] == existing_user.azure_user_id
-    # assert existing_db_user["id"] is not None
-    # assert existing_db_user["is_active"] is True
 
 
 # endregion: ## DELETE tests
