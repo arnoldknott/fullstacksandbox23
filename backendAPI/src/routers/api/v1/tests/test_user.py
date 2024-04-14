@@ -23,7 +23,6 @@ from tests.utils import (
     token_payload_scope_api_write,
     token_payload_scope_api_read_write,
     token_payload_one_group,
-    one_test_user,
     many_test_users,
 )
 from routers.api.v1.user import get_user_by_id
@@ -56,20 +55,20 @@ async def test_admin_posts_user(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json=many_test_users[0],
+        json=many_test_users[2],
     )
 
     assert response.status_code == 201
     created_user = User(**response.json())
-    assert created_user.azure_user_id == many_test_users[0]["azure_user_id"]
-    assert created_user.azure_tenant_id == many_test_users[0]["azure_tenant_id"]
+    assert created_user.azure_user_id == many_test_users[2]["azure_user_id"]
+    assert created_user.azure_tenant_id == many_test_users[2]["azure_tenant_id"]
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
     assert db_user is not None
     assert db_user.id is not None
-    assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
-    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
+    assert db_user.azure_user_id == uuid.UUID(many_test_users[2]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[2]["azure_tenant_id"])
     assert db_user.last_accessed_at is not None
 
 
@@ -98,20 +97,20 @@ async def test_post_user_with_integer_user_id(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json={**many_test_users[0], "id": 1},
+        json={**many_test_users[2], "id": 1},
     )
 
     assert response.status_code == 201
     created_user = User(**response.json())
-    assert created_user.azure_user_id == many_test_users[0]["azure_user_id"]
-    assert created_user.azure_tenant_id == many_test_users[0]["azure_tenant_id"]
+    assert created_user.azure_user_id == many_test_users[2]["azure_user_id"]
+    assert created_user.azure_tenant_id == many_test_users[2]["azure_tenant_id"]
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
     assert db_user.id == uuid.UUID(created_user.id)
     assert db_user.id != 1
-    assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
-    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
+    assert db_user.azure_user_id == uuid.UUID(many_test_users[2]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[2]["azure_tenant_id"])
     assert db_user.last_accessed_at is not None
 
 
@@ -141,20 +140,20 @@ async def test_post_user_with_uuid_user_id(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json={**many_test_users[0], "id": test_uuid},
+        json={**many_test_users[2], "id": test_uuid},
     )
 
     assert response.status_code == 201
     created_user = User(**response.json())
-    assert created_user.azure_user_id == many_test_users[0]["azure_user_id"]
-    assert created_user.azure_tenant_id == many_test_users[0]["azure_tenant_id"]
+    assert created_user.azure_user_id == many_test_users[2]["azure_user_id"]
+    assert created_user.azure_tenant_id == many_test_users[2]["azure_tenant_id"]
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
     assert db_user.id == uuid.UUID(created_user.id)
     assert db_user.id != uuid.UUID(test_uuid)
-    assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
-    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
+    assert db_user.azure_user_id == uuid.UUID(many_test_users[2]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[2]["azure_tenant_id"])
     assert db_user.last_accessed_at is not None
 
 
@@ -181,7 +180,7 @@ async def test_user_posts_user(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json=one_test_user,
+        json=many_test_users[0],
     )
 
     assert response.status_code == 403
@@ -225,7 +224,7 @@ async def test_post_user_invalid_token(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json=one_test_user,
+        json=many_test_users[0],
     )
 
     assert response.status_code == 403
@@ -267,7 +266,7 @@ async def test_admin_gets_users(
     response = await async_client.get("/api/v1/user/")
     assert response.status_code == 200
     database_users = response.json()
-    assert len(users) == 3
+    assert len(users) == 5
     for database_user, user in zip(database_users, users):
         assert "id" in database_user
         assert database_user["azure_user_id"] == str(user.azure_user_id)
@@ -312,10 +311,10 @@ async def test_user_gets_users(
 @pytest.mark.anyio
 async def test_get_users_without_token(
     async_client: AsyncClient,
-    add_one_test_user: User,
+    add_many_test_users: List[User],
 ):
     """Test GET one user"""
-    add_one_test_user
+    add_many_test_users
 
     response = await async_client.get("/api/v1/user/")
     assert response.status_code == 401
@@ -332,14 +331,14 @@ async def test_get_users_without_token(
 async def test_user_gets_user_by_azure_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: UserRead,
+    add_many_test_users: List[User],
     add_test_policies_for_resources: List[AccessPolicy],
 ):
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    user_in_database = add_one_test_user_with_groups
+    user_in_database = add_many_test_users[0]
     await add_test_policies_for_resources(
         resources=[user_in_database],
         actions=["read"],
@@ -369,13 +368,13 @@ async def test_user_gets_user_by_azure_user_id(
 async def test_admin_gets_user_by_azure_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_many_test_users_with_groups: List[UserRead],
+    add_many_test_users: List[UserRead],
 ):
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    user_in_database = add_many_test_users_with_groups[1]
+    user_in_database = add_many_test_users[1]
 
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
@@ -426,10 +425,10 @@ async def test_user_gets_another_user_by_azure_user_id(
 @pytest.mark.anyio
 async def test_get_user_by_azure_id_without_token(
     async_client: AsyncClient,
-    add_one_test_user: User,
+    add_many_test_users: List[User],
 ):
     """Test GET one user"""
-    user_in_db = add_one_test_user
+    user_in_db = add_many_test_users[0]
 
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_db.azure_user_id)}"
@@ -448,14 +447,14 @@ async def test_get_user_by_azure_id_without_token(
 async def test_user_gets_user_by_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: UserRead,
+    add_many_test_users: List[User],
     add_test_policies_for_resources: List[AccessPolicy],
 ):
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    user_in_database = add_one_test_user_with_groups
+    user_in_database = add_many_test_users[0]
     await add_test_policies_for_resources(
         resources=[user_in_database],
         actions=["read"],
@@ -487,14 +486,14 @@ async def test_user_gets_user_by_id(
 async def test_admin_gets_user_by_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_many_test_users_with_groups: List[UserRead],
+    add_many_test_users: List[UserRead],
 ):
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
 
-    user_in_database = add_many_test_users_with_groups[1]
+    user_in_database = add_many_test_users[1]
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
 
@@ -542,10 +541,10 @@ async def test_user_gets_another_user_by_user_id(
 @pytest.mark.anyio
 async def test_get_user_by_id_without_token(
     async_client: AsyncClient,
-    add_one_test_user: User,
+    add_many_test_users: List[User],
 ):
     """Test GET one user"""
-    user_in_db = add_one_test_user
+    user_in_db = add_many_test_users[0]
 
     response = await async_client.get(f"/api/v1/user/azure/{str(user_in_db.id)}")
     assert response.status_code == 401
@@ -576,14 +575,14 @@ async def test_get_user_by_id_without_token(
 async def test_get_user_by_id_with_missing_scope(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: UserRead,
+    add_many_test_users: List[User],
     add_test_policies_for_resources: List[AccessPolicy],
 ):
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    user_in_database = add_one_test_user_with_groups
+    user_in_database = add_many_test_users[0]
     await add_test_policies_for_resources(
         resources=[user_in_database],
         actions=["read"],
@@ -617,14 +616,14 @@ async def test_get_user_by_id_with_missing_scope(
 async def test_get_user_by_id_invalid_token(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: UserRead,
+    add_many_test_users: List[User],
     add_test_policies_for_resources: List[AccessPolicy],
 ):
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    user_in_database = add_one_test_user_with_groups
+    user_in_database = add_many_test_users[0]
     await add_test_policies_for_resources(
         resources=[user_in_database],
         actions=["read"],
@@ -650,7 +649,7 @@ async def test_get_user_by_id_invalid_token(
 async def test_user_put_user(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: User,
+    add_many_test_users: List[User],
     mocked_get_azure_token_payload,
     add_test_policies_for_resources: List[AccessPolicy],
 ):
@@ -658,7 +657,7 @@ async def test_user_put_user(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    existing_user = add_one_test_user_with_groups
+    existing_user = add_many_test_users[0]
     await add_test_policies_for_resources(
         resources=[existing_user],
         actions=["write"],
@@ -731,7 +730,7 @@ async def test_put_user_from_admin(
 async def test_put_user_with_integer_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: User,
+    add_many_test_users: List[User],
     add_test_policies_for_resources: List[AccessPolicy],
     mocked_get_azure_token_payload,
 ):
@@ -739,7 +738,7 @@ async def test_put_user_with_integer_user_id(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    existing_user = add_one_test_user_with_groups
+    existing_user = add_many_test_users[0]
     await add_test_policies_for_resources(
         resources=[existing_user],
         actions=["write"],
@@ -780,7 +779,7 @@ async def test_put_user_with_integer_user_id(
 async def test_put_user_with_uuid_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: User,
+    add_many_test_users: List[User],
     add_test_policies_for_resources: List[AccessPolicy],
     mocked_get_azure_token_payload,
 ):
@@ -790,7 +789,7 @@ async def test_put_user_with_uuid_user_id(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    existing_user = add_one_test_user_with_groups
+    existing_user = add_many_test_users[0]
     await add_test_policies_for_resources(
         resources=[existing_user],
         actions=["write"],
@@ -852,7 +851,7 @@ async def test_put_user_with_uuid_user_id(
 async def test_put_user_invalid_token(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: User,
+    add_many_test_users: List[User],
     add_test_policies_for_resources: List[AccessPolicy],
     mocked_get_azure_token_payload,
 ):
@@ -860,7 +859,7 @@ async def test_put_user_invalid_token(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    existing_user = add_one_test_user_with_groups
+    existing_user = add_many_test_users[0]
     await add_test_policies_for_resources(
         resources=[existing_user],
         actions=["write"],
@@ -932,7 +931,7 @@ async def test_user_puts_another_user(
 async def test_user_deletes_itself(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user: User,
+    add_many_test_users: List[User],
     add_test_policies_for_resources: List[AccessPolicy],
     mocked_get_azure_token_payload,
 ):
@@ -940,7 +939,7 @@ async def test_user_deletes_itself(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    existing_user = add_one_test_user
+    existing_user = add_many_test_users[0]
     await add_test_policies_for_resources(
         resources=[existing_user],
         actions=["own"],
@@ -976,14 +975,14 @@ async def test_user_deletes_itself(
 async def test_admin_deletes_user(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user: User,
+    add_many_test_users: List[User],
     mocked_get_azure_token_payload,
 ):
     """Test admin deletes a user"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    existing_user = add_one_test_user
+    existing_user = add_many_test_users[0]
 
     existing_db_user = await get_user_by_id(
         str(existing_user.id), mocked_get_azure_token_payload
@@ -1079,7 +1078,7 @@ async def test_delete_user_invalid_token(
 async def test_user_deletes_another_user(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_many_test_users_with_groups: List[User],
+    add_many_test_users: List[User],
     # add_test_policies_for_resources: List[AccessPolicy],
     mocked_get_azure_token_payload,
 ):
@@ -1087,7 +1086,7 @@ async def test_user_deletes_another_user(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    existing_user = add_many_test_users_with_groups[2]
+    existing_user = add_many_test_users[2]
     # await add_test_policies_for_resources(
     #     resources=[existing_user],
     #     actions=["own"],

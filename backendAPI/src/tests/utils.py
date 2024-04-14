@@ -4,17 +4,25 @@ from uuid import uuid4
 
 user_id = "12345678-1234-1234-1234-123456789012"
 user_id_nonexistent = "87654321-4321-4321-4321-210987654321"
-one_test_user = {
-    "azure_user_id": "12345678-1234-1234-1234-123456789012",
-    "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
-}
-another_test_user = {
-    "azure_user_id": "1b2b3c4d-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
-    "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
-}
+# one_test_user = {
+#     "azure_user_id": "12345678-1234-1234-1234-123456789012",
+#     "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
+# }
+# another_test_user = {
+#     "azure_user_id": "1b2b3c4d-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+#     "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
+# }
 
 azure_home_tenant = str(uuid4())
 many_test_users = [
+    {
+        "azure_user_id": "12345678-1234-1234-1234-123456789012",
+        "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
+    },
+    {
+        "azure_user_id": "1b2b3c4d-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+        "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
+    },
     {
         "azure_user_id": str(uuid4()),
         "azure_tenant_id": azure_home_tenant,
@@ -32,13 +40,13 @@ many_test_users = [
 
 # Mocks payload to detect scope api.write:
 token_payload_user_id = {
-    "oid": one_test_user["azure_user_id"],
+    "oid": many_test_users[0]["azure_user_id"],
 }
 token_payload_another_user_id = {
-    "oid": another_test_user["azure_user_id"],
+    "oid": many_test_users[1]["azure_user_id"],
 }
 token_payload_tenant_id = {
-    "tid": one_test_user["azure_tenant_id"],
+    "tid": many_test_users[0]["azure_tenant_id"],
 }
 token_payload_scope_api_read = {
     "scp": "api.read",
@@ -142,28 +150,28 @@ token_admin_read_write = {
 # group_id2 = str(uuid4())
 # group_id3 = str(uuid4())
 # test_current_user = {
-#     "user_id": one_test_user["azure_user_id"],
+#     "user_id": many_test_users[0]["azure_user_id"],
 #     "roles": ["User"],
 # }
 
 # test_current_user_admin = {
-#     "user_id": one_test_user["azure_user_id"],
+#     "user_id": many_test_users[0]["azure_user_id"],
 #     "roles": ["Admin"],
 # }
 
 # test_current_user_admin_user = {
-#     "user_id": one_test_user["azure_user_id"],
+#     "user_id": many_test_users[0]["azure_user_id"],
 #     "roles": ["Admin", "User"],
 # }
 
 # test_current_user_with_one_group = {
-#     "user_id": one_test_user["azure_user_id"],
+#     "user_id": many_test_users[0]["azure_user_id"],
 #     "roles": ["User"],
 #     "groups": [group_id1],
 # }
 
 # test_current_user_with_many_groups = {
-#     "user_id": one_test_user["azure_user_id"],
+#     "user_id": many_test_users[0]["azure_user_id"],
 #     "roles": ["User"],
 #     "groups": [group_id1, group_id2, group_id3],
 # }
@@ -173,7 +181,7 @@ resource_id2 = str(uuid4())
 resource_id3 = str(uuid4())
 resource_id4 = str(uuid4())
 one_test_policy_read = {
-    "identity_id": one_test_user["azure_user_id"],
+    "identity_id": many_test_users[0]["azure_user_id"],
     "identity_type": "User",
     "resource_id": resource_id1,
     "resource_type": "ProtectedResource",
@@ -181,7 +189,7 @@ one_test_policy_read = {
 }
 
 one_test_policy_write = {
-    "identity_id": one_test_user["azure_user_id"],
+    "identity_id": many_test_users[0]["azure_user_id"],
     "identity_type": "User",
     "resource_id": resource_id1,
     "resource_type": "ProtectedResource",
@@ -189,7 +197,7 @@ one_test_policy_write = {
 }
 
 one_test_policy_own = {
-    "identity_id": one_test_user["azure_user_id"],
+    "identity_id": many_test_users[0]["azure_user_id"],
     "identity_type": "User",
     "resource_id": resource_id1,
     "resource_type": "ProtectedResource",
@@ -221,14 +229,14 @@ many_test_policies = [
         "action": "read",
     },
     {
-        "identity_id": one_test_user["azure_user_id"],
+        "identity_id": many_test_users[0]["azure_user_id"],
         "identity_type": "User",
         "resource_id": resource_id2,
         "resource_type": "ProtectedResource",
         "action": "own",
     },
     {
-        "identity_id": many_test_users[0]["azure_user_id"],
+        "identity_id": many_test_users[2]["azure_user_id"],
         "identity_type": "User",
         "resource_id": resource_id2,
         "resource_type": "ProtectedResource",

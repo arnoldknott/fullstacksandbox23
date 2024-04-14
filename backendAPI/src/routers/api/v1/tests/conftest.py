@@ -267,19 +267,19 @@ async def add_test_policy_for_resource(mock_current_user: User):
     yield _add_test_policy_for_resource
 
 
-@pytest.fixture(scope="function")
-async def add_many_test_users(get_async_test_session: AsyncSession):
-    """Adds test users to the database."""
-    session = get_async_test_session
-    users = []
-    for user in many_test_users:
-        this_user = User(**user)
-        session.add(this_user)
-        await session.commit()
-        await session.refresh(this_user)
-        users.append(this_user)
+# @pytest.fixture(scope="function")
+# async def add_many_test_users(get_async_test_session: AsyncSession):
+#     """Adds test users to the database."""
+#     session = get_async_test_session
+#     users = []
+#     for user in many_test_users:
+#         this_user = User(**user)
+#         session.add(this_user)
+#         await session.commit()
+#         await session.refresh(this_user)
+#         users.append(this_user)
 
-    yield users
+#     yield users
 
 
 @pytest.fixture(scope="function")

@@ -15,7 +15,6 @@ from crud.identity import UserCRUD
 from models.access import AccessPolicy, AccessPolicyRead
 from crud.access import AccessPolicyCRUD
 from tests.utils import (
-    one_test_user,
     many_test_users,
     token_payload_many_groups,
     many_test_policies,
@@ -99,49 +98,34 @@ async def current_test_user(mocked_get_azure_token_payload):
     return await token.provides_current_user()
 
 
-@pytest.fixture(scope="function")
-async def add_one_test_user(get_async_test_session: AsyncSession) -> User:
-    """Adds a category to the database."""
-    session = get_async_test_session
-    user = User(**one_test_user)
-    session.add(user)
-    await session.commit()
-    await session.refresh(user)
+# @pytest.fixture(scope="function")
+# async def add_one_test_user(get_async_test_session: AsyncSession) -> User:
+#     """Adds a test user to the database."""
+#     session = get_async_test_session
+#     user = User(**many_test_users[0])
+#     session.add(user)
+#     await session.commit()
+#     await session.refresh(user)
 
-    yield user
-
-
-@pytest.fixture(scope="function")
-async def add_one_test_user_with_groups(get_async_test_session: AsyncSession) -> User:
-    """Adds a category to the database."""
-    async with UserCRUD() as crud:
-        user = await crud.create_azure_user_and_groups_if_not_exist(
-            one_test_user["azure_user_id"],
-            one_test_user["azure_tenant_id"],
-            token_payload_many_groups["groups"],
-        )
-
-    yield user
+#     yield user
 
 
-@pytest.fixture(scope="function")
-async def add_many_test_users() -> list[User]:
-    """Adds a category to the database."""
-    async with UserCRUD() as crud:
-        users = []
-        for user in many_test_users:
-            added_user = await crud.create_azure_user_and_groups_if_not_exist(
-                user["azure_user_id"],
-                user["azure_tenant_id"],
-            )
-            users.append(added_user)
+# @pytest.fixture(scope="function")
+# async def add_one_test_user_with_groups(get_async_test_session: AsyncSession) -> User:
+#     """Adds a tst user with group membership to the database."""
+#     async with UserCRUD() as crud:
+#         user = await crud.create_azure_user_and_groups_if_not_exist(
+#             many_test_users[0]["azure_user_id"],
+#             many_test_users[0]["azure_tenant_id"],
+#             token_payload_many_groups["groups"],
+#         )
 
-    yield users
+#     yield user
 
 
 @pytest.fixture(scope="function")
-async def add_many_test_users_with_groups() -> list[User]:
-    """Adds a category to the database."""
+async def add_many_test_users():
+    """Adds many test users to the database."""
     async with UserCRUD() as crud:
         users = []
         for user in many_test_users:
@@ -153,6 +137,37 @@ async def add_many_test_users_with_groups() -> list[User]:
             users.append(added_user)
 
     yield users
+
+
+# @pytest.fixture(scope="function")
+# async def add_many_test_users(get_async_test_session: AsyncSession):
+#     """Adds test users to the database."""
+#     session = get_async_test_session
+#     users = []
+#     for user in many_test_users:
+#         this_user = User(**user)
+#         session.add(this_user)
+#         await session.commit()
+#         await session.refresh(this_user)
+#         users.append(this_user)
+
+#     yield users
+
+
+# @pytest.fixture(scope="function")
+# async def add_many_test_users_with_groups() -> list[User]:
+#     """Adds many test users with group membership to the database."""
+#     async with UserCRUD() as crud:
+#         users = []
+#         for user in many_test_users:
+#             added_user = await crud.create_azure_user_and_groups_if_not_exist(
+#                 user["azure_user_id"],
+#                 user["azure_tenant_id"],
+#                 token_payload_many_groups["groups"],
+#             )
+#             users.append(added_user)
+
+#     yield users
 
 
 # @pytest.fixture(scope="function")
@@ -173,7 +188,7 @@ async def add_test_access_policies():
         policies = []
         async with AccessPolicyCRUD() as crud:
             mocked_admin_user = CurrentUserData(
-                user_id=one_test_user["azure_user_id"],
+                user_id=many_test_users[0]["azure_user_id"],
                 roles=["Admin"],
             )
             for policy in access_policies:
@@ -192,7 +207,7 @@ async def add_test_access_policies():
 async def add_many_test_access_policies() -> list[AccessPolicyRead]:
     """Adds a category to the database."""
     mocked_admin_user = CurrentUserData(
-        user_id=one_test_user["azure_user_id"],
+        user_id=many_test_users[0]["azure_user_id"],
         roles=["Admin"],
     )
     async with AccessPolicyCRUD() as crud:

@@ -1,6 +1,6 @@
 import pytest
 import uuid
-from typing import Annotated
+from typing import Annotated, List
 from fastapi import Depends, FastAPI
 from httpx import AsyncClient
 
@@ -30,7 +30,7 @@ from tests.utils import (
     token_payload_scope_api_read,
     token_payload_scope_api_write,
     token_payload_scope_api_read_write,
-    one_test_user,
+    many_test_users,
 )
 
 # region: Testing token validation:
@@ -131,14 +131,14 @@ async def test_azure_user_self_signup(
     )
     assert response.status_code == 200
     current_user = response.json()
-    assert current_user["azure_user_id"] == one_test_user["azure_user_id"]
-    assert current_user["azure_tenant_id"] == one_test_user["azure_tenant_id"]
+    assert current_user["azure_user_id"] == many_test_users[0]["azure_user_id"]
+    assert current_user["azure_tenant_id"] == many_test_users[0]["azure_tenant_id"]
 
     # To verify that the user is in the database, calling the endpoint to get the user by id with admin token:
     db_user = await get_user_by_id(current_user["id"], token_admin_read)
     assert db_user is not None
-    assert db_user.azure_user_id == uuid.UUID(one_test_user["azure_user_id"])
-    assert db_user.azure_tenant_id == uuid.UUID(one_test_user["azure_tenant_id"])
+    assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
     assert db_user.created_at is not None
     assert db_user.last_accessed_at is not None
     assert db_user.created_at is not None
@@ -203,11 +203,11 @@ async def test_azure_user_self_signup_invalid_token(
 async def test_existing_azure_user_has_new_group_in_token(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: User,
+    add_many_test_users: List[User],
 ):
     """Tests if an user that got added to a new azure group also gets added the new azure group in the database."""
     # preparing the test: adds a user to the database and ensure that this user is member of 3 groups:
-    existing_user = add_one_test_user_with_groups
+    existing_user = add_many_test_users[0]
     existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
 
     assert len(existing_db_user.azure_groups) == 3
@@ -227,14 +227,14 @@ async def test_existing_azure_user_has_new_group_in_token(
 
     updated_user = response.json()
 
-    assert updated_user["azure_user_id"] == one_test_user["azure_user_id"]
-    assert updated_user["azure_tenant_id"] == one_test_user["azure_tenant_id"]
+    assert updated_user["azure_user_id"] == many_test_users[0]["azure_user_id"]
+    assert updated_user["azure_tenant_id"] == many_test_users[0]["azure_tenant_id"]
 
     # Verify that the user now has the new group in the database
     db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
     assert db_user is not None
-    assert db_user.azure_user_id == uuid.UUID(one_test_user["azure_user_id"])
-    assert db_user.azure_tenant_id == uuid.UUID(one_test_user["azure_tenant_id"])
+    assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
     assert len(db_user.azure_groups) == 4
     azure_groups = db_user.azure_groups
 
@@ -248,8 +248,8 @@ async def test_existing_azure_user_has_new_group_in_token(
     # print(db_user_json_encoded)
 
     # db_user = db_user.model_dump()
-    # assert db_user["azure_user_id"] == uuid.UUID(one_test_user["azure_user_id"])
-    # assert db_user["azure_tenant_id"] == uuid.UUID(one_test_user["azure_tenant_id"])
+    # assert db_user["azure_user_id"] == uuid.UUID(many_test_users[0]["azure_user_id"])
+    # assert db_user["azure_tenant_id"] == uuid.UUID(many_test_users[0]["azure_tenant_id"])
     # assert len(db_user["azure_groups"]) == 4
     # assert any(
     #     group["id"] == uuid.UUID(token_payload_one_group["groups"][0])
@@ -284,13 +284,13 @@ async def test_existing_azure_user_has_new_group_in_token(
 async def test_existing_user_logs_in(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_one_test_user_with_groups: UserRead,
+    add_many_test_users: List[UserRead],
 ):
     """Test an existing user logs in successfully"""
 
     # mocks the access token:
     app = app_override_get_azure_payload_dependency
-    user_in_database = add_one_test_user_with_groups
+    user_in_database = add_many_test_users[0]
 
     # create a temporary route that uses the guard:
     @app.get("/test_existing_user_logs_in")
