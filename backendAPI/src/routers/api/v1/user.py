@@ -231,6 +231,7 @@ async def get_user_by_id(
     """Returns a user with a specific user_id."""
     # token = CurrentAccessToken(token_payload)
     # await token.self_or_admin(user_id)
+    print("user_id", user_id)
     return await user_view.get_by_id(
         user_id,
         token_payload,

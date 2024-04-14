@@ -224,6 +224,7 @@ class CurrentAccessToken:
             return True
         else:
             if require:
+                print("=== 403 ===")
                 raise HTTPException(status_code=403, detail="Access denied")
             else:
                 return False
