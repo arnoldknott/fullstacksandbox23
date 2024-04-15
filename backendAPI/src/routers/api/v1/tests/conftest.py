@@ -1,22 +1,15 @@
 import pytest
 
-from typing import Optional
 from sqlmodel.ext.asyncio.session import AsyncSession
-from core.types import ResourceType, Action, IdentityType
-from core.security import CurrentAccessToken
-from models.access import AccessPolicy
 from models.category import Category
 
-# from models.demo_resource import DemoResource
 from models.public_resource import PublicResource
-from models.tag import Tag
 from models.identity import User
 from crud.protected_resource import ProtectedResourceCRUD
 from crud.category import CategoryCRUD
 from crud.access import AccessPolicyCRUD
 from crud.demo_resource import DemoResourceCRUD
 from crud.tag import TagCRUD
-from models.protected_resource import ProtectedResource
 
 from tests.utils import (
     many_test_categories,

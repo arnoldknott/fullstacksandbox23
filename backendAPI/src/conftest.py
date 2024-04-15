@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Generator, List
+from typing import AsyncGenerator, Generator, List, Optional
 
 import pytest
 from core.databases import postgres_async_engine  # should be SQLite here only!
@@ -8,7 +8,7 @@ from main import app
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
-from core.security import get_azure_token_payload, CurrentAccessToken
+from core.security import get_azure_token_payload, CurrentAccessToken, Guards
 from core.types import CurrentUserData
 from models.identity import User, UserRead
 from crud.identity import UserCRUD
@@ -97,6 +97,20 @@ async def current_test_user(mocked_get_azure_token_payload):
     """Returns the current test user."""
     token = CurrentAccessToken(mocked_get_azure_token_payload)
     return await token.provides_current_user()
+
+
+@pytest.fixture(scope="function")
+def mock_guards():
+    """Mocks the guards for the routes."""
+
+    def _mock_guards(
+        scopes: Optional[list[str]] = [],
+        roles: Optional[list[str]] = [],
+        groups: Optional[list[str]] = [],
+    ):
+        return Guards(scopes=scopes, roles=roles, groups=groups)
+
+    yield _mock_guards
 
 
 # @pytest.fixture(scope="function")

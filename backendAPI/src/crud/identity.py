@@ -153,6 +153,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # Now the user actually exists and security can provide the CurrentUserData!
             # use current_user_data for this!
             async with AzureGroupCRUD() as group_crud:
+                # TBD: add access control:
+                # members of groups need to have read access to the group -
+                # even if it exists already!
                 await group_crud.create_if_not_exists(azure_group_id, azure_tenant_id)
                 # try:
                 #     group_crud.read_by_id(azure_group_id)
@@ -165,6 +168,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 #         group_crud.create(group_create)
                 # when using this elsewhere, consider if update is needed in else if statement
                 # But should also be covered already by the base.update!
+            # TBD: is the link table enough? no need to write a policy for groups?
             session = self.session
             azure_user_group_link = await session.exec(
                 select(AzureGroupUserLink).where(

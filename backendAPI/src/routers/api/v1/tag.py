@@ -3,7 +3,8 @@ import uuid
 
 from crud.tag import TagCRUD
 from fastapi import APIRouter, Depends, HTTPException
-from core.security import get_access_token_payload
+from core.security import get_access_token_payload, Guards
+from core.types import GuardTypes
 from .base import BaseView
 from models.demo_resource import DemoResource
 from models.tag import Tag, TagCreate, TagRead, TagUpdate
@@ -29,13 +30,15 @@ tag_view = BaseView(TagCRUD, Tag)
 async def post_tag(
     category: TagCreate,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Tag:
     """Creates a new tag."""
     return await tag_view.post_with_public_access(
         category,
         token_payload,
-        scopes=["api.write"],
-        roles=["User"],
+        guards,
+        # scopes=["api.write"],
+        # roles=["User"],
     )
 
 
@@ -100,14 +103,16 @@ async def put_tag(
     tag_id: str,
     tag: TagUpdate,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Tag:
     """Updates a tag."""
     return await tag_view.put(
         tag_id,
         tag,
         token_payload,
-        roles=["User"],
-        scopes=["api.write"],
+        guards,
+        # roles=["User"],
+        # scopes=["api.write"],
     )
 
 
@@ -130,10 +135,11 @@ async def put_tag(
 async def delete_tag(
     tag_id: str,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Tag:
     """Deletes a tag."""
     return await tag_view.delete(
-        tag_id, token_payload, roles=["User"], scopes=["api.write"]
+        tag_id, token_payload, guards  # roles=["User"], scopes=["api.write"]
     )
 
 

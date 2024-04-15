@@ -6,6 +6,14 @@ from typing import List, Optional
 # import models
 
 
+class GuardTypes(BaseModel):
+    """Protectors for the routes"""
+
+    scopes: Optional[List[str]] = []
+    roles: Optional[List[str]] = []
+    groups: Optional[List[UUID]] = []
+
+
 class CurrentUserData(BaseModel):
     """Model for the current user data - acts as interface for the request from endpoint to crud."""
 

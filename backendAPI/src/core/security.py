@@ -9,9 +9,8 @@ import jwt
 # from enum import Enum
 from uuid import UUID
 
-# from pydantic import BaseModel
-from typing import Optional
-from core.types import CurrentUserData
+from typing import Optional, List
+from core.types import CurrentUserData, GuardTypes
 from core.cache import redis_jwks_client
 from core.config import config
 from models.identity import UserRead
@@ -180,11 +179,35 @@ async def get_access_token_payload(
 #     return payload
 
 
-# region: GUARDS:
+# region: GUARDS
+
+
+class Guards:
+    """Decorator to protect the routes with scopes, roles and groups."""
+
+    def __init__(
+        self, scopes: List[str] = [], roles: List[str] = [], groups: List[UUID] = []
+    ):
+        """Initializes the guards for the routes."""
+        self.scopes = scopes
+        self.roles = roles
+        self.groups = groups
+
+    def __call__(self):
+        """Returns the guards for the routes."""
+        protectors = GuardTypes(
+            scopes=self.scopes, roles=self.roles, groups=self.groups
+        )
+        return protectors
+
+
+# endregion: GUARDS
+
+# region: CHECKS:
 #
-# region: Generic guard usage:
+# region: Generic check usage:
 #
-# Use those classes directly as guards, e.g.:
+# Use those classes directly as checks, e.g.:
 #
 # @router.post("/", status_code=201)
 # async def post_user(
@@ -202,7 +225,7 @@ async def get_access_token_payload(
 
 
 class CurrentAccessToken:
-    """class for all guards"""
+    """class for all checks related to the current access token"""
 
     def __init__(self, payload) -> None:
         self.payload = payload
@@ -264,7 +287,7 @@ class CurrentAccessToken:
     # -> under users and groups add the users or groups:
     # -> gives and revokes access for users and groups based on roles
     #
-    # TBD: make sure this one get's triggered from all guards that require a user
+    # TBD: make sure this one get's triggered from all checks that require a user
     async def gets_or_signs_up_current_user(self) -> UserRead:
         """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
         groups = []
@@ -273,7 +296,7 @@ class CurrentAccessToken:
                 groups = self.payload["groups"]
             user_id = self.payload["oid"]
             tenant_id = self.payload["tid"]
-            # TBD move the crud operations to the base view class, which should have an instance of the guards class.
+            # TBD move the crud operations to the base view class, which should have an instance of the checks class.
             # if the user information stored in this class is already valid - no need to make another database call
             # if the user information stored in this class is not valid: get or sign-up the user.
             async with UserCRUD() as crud:
@@ -294,7 +317,7 @@ class CurrentAccessToken:
             logger.error(f"🔑 User not found in database: ${err}")
             raise HTTPException(status_code=401, detail="Invalid token")
 
-    # TBD: call get_or_sign_up_current_user from all guards that require a user
+    # TBD: call get_or_sign_up_current_user from all checks that require a user
     # TBD: merge with gets_or_signs_up_current_user?
     async def provides_current_user(self) -> CurrentUserData:
         """Returns the current user"""
@@ -312,7 +335,7 @@ class CurrentAccessToken:
             groups=groups,
         )
         # current_user = {
-        #     # TBD: every guard needs to call the gets_or_signs_up_current_user method
+        #     # TBD: every check needs to call the gets_or_signs_up_current_user method
         #     # Then change azure_user_id to user_id here:
         #     # "azure_user_id": self.payload["oid"],
         #     "user_id": user_in_database.id,
@@ -371,22 +394,22 @@ class CurrentAccessToken:
     #             return False
 
 
-# endregion: Generic guard
+# endregion: Generic check
 
-# region: Specific guards
+# region: Specific checks
 
 
-# Use those classes directly as guards, e.g.:
+# Use those classes directly as checks, e.g.:
 # @app.get("/example_endpoint")
 # def example(
 #     token: bool = Depends(CurrentAccessTokenIsValid()),
 # ):
-#     """Returns the result of the guard."""
+#     """Returns the result of the check."""
 #     return token
 #
 #   options: require
-#            - if set to False, the guard will not raise an exception if the condition is not met but return False
-#            - if set to True, the guard will raise an exception if the condition is not met
+#            - if set to False, the check will not raise an exception if the condition is not met but return False
+#            - if set to True, the check will raise an exception if the condition is not met
 #            - default is True
 #
 #
@@ -454,9 +477,9 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
         return await self.gets_or_signs_up_current_user()
 
 
-# endregion: Specific guards
+# endregion: Specific checks
 
-# endregion: GUARDS
+# endregion: CHECKS
 
 
 # region: Access control

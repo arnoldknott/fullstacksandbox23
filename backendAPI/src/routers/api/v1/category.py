@@ -4,7 +4,8 @@ import uuid
 # from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 
-from core.security import get_access_token_payload
+from core.security import get_access_token_payload, Guards
+from core.types import GuardTypes
 from .base import BaseView
 
 from crud.category import CategoryCRUD
@@ -33,13 +34,15 @@ category_view = BaseView(CategoryCRUD, Category)
 async def post_category(
     category: CategoryCreate,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Category:
     """Creates a new category."""
     return await category_view.post(
         category,
         token_payload,
-        scopes=["api.write"],
-        roles=["User"],
+        guards,
+        # scopes=["api.write"],
+        # roles=["User"],
     )
 
 
@@ -69,11 +72,13 @@ async def post_category(
 @router.get("/", status_code=200)
 async def get_categories(
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[CategoryRead]:
     """Returns all category."""
     return await category_view.get(
         token_payload,
-        roles=["User"],
+        guards,
+        # roles=["User"],
     )
 
 
@@ -81,12 +86,14 @@ async def get_categories(
 async def get_category_by_id(
     category_id: str,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> CategoryRead:
     """Returns a category."""
     return await category_view.get_by_id(
         category_id,
         token_payload,
-        roles=["User"],
+        guards,
+        # roles=["User"],
     )
 
 
@@ -114,14 +121,16 @@ async def put_category(
     category_id: str,
     category: CategoryUpdate,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Category:
     """Updates a category."""
     return await category_view.put(
         category_id,
         category,
         token_payload,
-        roles=["User"],
-        scopes=["api.write"],
+        guards,
+        # roles=["User"],
+        # scopes=["api.write"],
     )
 
 
@@ -143,10 +152,11 @@ async def put_category(
 async def delete_category(
     category_id: str,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Category:
     """Deletes a category."""
     return await category_view.delete(
-        category_id, token_payload, roles=["User"], scopes=["api.write"]
+        category_id, token_payload, guards  # roles=["User"], scopes=["api.write"]
     )
 
 

@@ -49,6 +49,7 @@ async def test_admin_posts_user(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
+    mock_guards,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_get_azure_payload_dependency
@@ -65,7 +66,9 @@ async def test_admin_posts_user(
     assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
 
     # Verify that the user was created in the database
-    db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
+    db_user = await get_user_by_id(
+        created_user.id, mocked_get_azure_token_payload, mock_guards(roles=["User"])
+    )
     assert db_user is not None
     assert db_user.id is not None
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[2]["azure_user_id"])
@@ -93,6 +96,7 @@ async def test_post_user_with_integer_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
+    mock_guards,
 ):
     """Tests posting a integer user_id to user_post endpoint fails"""
     app_override_get_azure_payload_dependency
@@ -109,7 +113,9 @@ async def test_post_user_with_integer_user_id(
     assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
 
     # Verify that the user was created in the database
-    db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
+    db_user = await get_user_by_id(
+        created_user.id, mocked_get_azure_token_payload, mock_guards(roles=["User"])
+    )
     assert db_user.id == uuid.UUID(created_user.id)
     assert db_user.id != 1
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[2]["azure_user_id"])
@@ -137,6 +143,7 @@ async def test_post_user_with_uuid_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
+    mock_guards,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_get_azure_payload_dependency
@@ -154,7 +161,9 @@ async def test_post_user_with_uuid_user_id(
     assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
 
     # Verify that the user was created in the database
-    db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
+    db_user = await get_user_by_id(
+        created_user.id, mocked_get_azure_token_payload, mock_guards(roles=["User"])
+    )
     assert db_user.id == uuid.UUID(created_user.id)
     assert db_user.id != uuid.UUID(test_uuid)
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[2]["azure_user_id"])
@@ -513,8 +522,7 @@ async def test_user_gets_another_user_by_user_id(
 
 @pytest.mark.anyio
 async def test_get_user_by_id_without_token(
-    async_client: AsyncClient,
-    add_one_azure_test_user: List[User],
+    async_client: AsyncClient, add_one_azure_test_user: List[User], mock_guards
 ):
     """Test GET one user"""
     user_in_db = await add_one_azure_test_user(0)
@@ -611,6 +619,7 @@ async def test_user_put_user(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
+    mock_guards,
 ):
     """Tests put user endpoint"""
 
@@ -618,7 +627,9 @@ async def test_user_put_user(
     app_override_get_azure_payload_dependency
     existing_user = await add_one_azure_test_user(0)
 
-    existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
+    existing_db_user = await get_user_by_id(
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+    )
     assert existing_db_user.is_active is True
 
     # Make a PUT request to update the user
@@ -642,6 +653,7 @@ async def test_put_user_from_admin(
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
     mocked_get_azure_token_payload,
+    mock_guards,
 ):
     """Test a admin updates a user"""
 
@@ -650,7 +662,9 @@ async def test_put_user_from_admin(
     existing_user = await add_one_azure_test_user(2)
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), mocked_get_azure_token_payload
+        str(existing_user.id),
+        mocked_get_azure_token_payload,
+        mock_guards(roles=["User"]),
     )
     assert existing_db_user.is_active is True
 
@@ -684,6 +698,7 @@ async def test_put_user_with_integer_user_id(
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
     mocked_get_azure_token_payload,
+    mock_guards,
 ):
     """Tests put user endpoint"""
 
@@ -696,7 +711,9 @@ async def test_put_user_with_integer_user_id(
     #     publics=[True],
     # )
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), mocked_get_azure_token_payload
+        str(existing_user.id),
+        mocked_get_azure_token_payload,
+        mock_guards(roles=["User"]),
     )
     assert existing_db_user.is_active is True
 
@@ -732,6 +749,7 @@ async def test_admin_put_user_with_uuid_user_id(
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
     mocked_get_azure_token_payload,
+    mock_guards,
 ):
     """Tests put user endpoint"""
 
@@ -742,7 +760,9 @@ async def test_admin_put_user_with_uuid_user_id(
     existing_user = await add_one_azure_test_user(0)
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), mocked_get_azure_token_payload
+        str(existing_user.id),
+        mocked_get_azure_token_payload,
+        mock_guards(roles=["User"]),
     )
     assert existing_db_user.is_active is True
 
@@ -798,6 +818,7 @@ async def test_put_user_invalid_token(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
+    mock_guards,
 ):
     """Test a admin updates a user"""
 
@@ -805,7 +826,9 @@ async def test_put_user_invalid_token(
     app_override_get_azure_payload_dependency
     existing_user = await add_one_azure_test_user(0)
 
-    existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
+    existing_db_user = await get_user_by_id(
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+    )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
     assert existing_db_user.is_active is True
@@ -829,6 +852,7 @@ async def test_user_puts_another_user(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
+    mock_guards,
 ):
     """Test a admin updates a user"""
 
@@ -836,7 +860,9 @@ async def test_user_puts_another_user(
     app_override_get_azure_payload_dependency
     existing_user = await add_one_azure_test_user(0)
 
-    existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
+    existing_db_user = await get_user_by_id(
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+    )
     assert existing_db_user.is_active is True
 
     # Make a PUT request to update the user
@@ -864,13 +890,16 @@ async def test_user_deletes_itself(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
+    mock_guards,
 ):
     """Test user deletes itself"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
     existing_user = await add_one_azure_test_user(0)
-    existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
+    existing_db_user = await get_user_by_id(
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+    )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
     assert existing_db_user.is_active is True
@@ -900,6 +929,7 @@ async def test_admin_deletes_user(
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
     mocked_get_azure_token_payload,
+    mock_guards,
 ):
     """Test admin deletes a user"""
 
@@ -908,7 +938,9 @@ async def test_admin_deletes_user(
     existing_user = await add_one_azure_test_user(0)
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), mocked_get_azure_token_payload
+        str(existing_user.id),
+        mocked_get_azure_token_payload,
+        mock_guards(roles=["User"]),
     )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
@@ -959,8 +991,7 @@ async def test_delete_user_invalid_token(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: User,
-    # add_test_policies_for_resources: List[AccessPolicy],
-    # mocked_get_azure_token_payload,
+    mock_guards,
 ):
     """Test deleting a user with invalid token fails"""
 
@@ -968,7 +999,11 @@ async def test_delete_user_invalid_token(
     app_override_get_azure_payload_dependency
     existing_user = await add_one_azure_test_user(2)
 
-    existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
+    existing_db_user = await get_user_by_id(
+        str(existing_user.id),
+        token_admin_read,
+        mock_guards(roles=["User"]),
+    )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
     assert existing_db_user.is_active is True
@@ -981,7 +1016,11 @@ async def test_delete_user_invalid_token(
     assert response.text == '{"detail":"Access denied"}'
 
     # check if user is still there:
-    existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
+    existing_db_user = await get_user_by_id(
+        str(existing_user.id),
+        token_admin_read,
+        mock_guards(roles=["User"]),
+    )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
     assert existing_db_user.is_active is True
@@ -998,8 +1037,7 @@ async def test_user_deletes_another_user(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
-    # add_test_policies_for_resources: List[AccessPolicy],
-    # mocked_get_azure_token_payload,
+    mock_guards,
 ):
     """Test delete another user fails"""
 
@@ -1007,7 +1045,9 @@ async def test_user_deletes_another_user(
     app_override_get_azure_payload_dependency
     existing_user = await add_one_azure_test_user(2)
 
-    existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
+    existing_db_user = await get_user_by_id(
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+    )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
     assert existing_db_user.is_active is True
@@ -1020,7 +1060,9 @@ async def test_user_deletes_another_user(
     assert response.text == '{"detail":"User not deleted."}'
 
     # check if user is still there:
-    existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
+    existing_db_user = await get_user_by_id(
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+    )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
     assert existing_db_user.is_active is True

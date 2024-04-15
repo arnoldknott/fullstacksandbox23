@@ -438,8 +438,6 @@ async def test_delete_demo_resource(
     app_override_get_azure_payload_dependency
 
     resources = await add_test_demo_resources(mocked_get_azure_token_payload)
-    print("=== resources[0].id ===")
-    print(resources[0].id)
     response = await async_client.get(f"/api/v1/demoresource/{str(resources[0].id)}")
 
     # Check if resource exists before deleting:

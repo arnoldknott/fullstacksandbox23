@@ -112,7 +112,9 @@ async def test_get_azure_jwks():
     indirect=True,
 )
 async def test_azure_user_self_signup(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    mock_guards,
 ):
     """Tests if a new user can sign up by themselves."""
 
@@ -138,7 +140,9 @@ async def test_azure_user_self_signup(
     )
 
     # To verify that the user is in the database, calling the endpoint to get the user by id with admin token:
-    db_user = await get_user_by_id(current_user["id"], token_admin_read)
+    db_user = await get_user_by_id(
+        current_user["id"], token_admin_read, mock_guards(roles=["User"])
+    )
     assert db_user is not None
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[0]["azure_user_id"])
     assert db_user.azure_tenant_id == uuid.UUID(
@@ -209,12 +213,15 @@ async def test_existing_azure_user_has_new_group_in_token(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
+    mock_guards,
 ):
     """Tests if an user that got added to a new azure group also gets added the new azure group in the database."""
     # preparing the test: adds a user to the database and ensure that this user is member of 3 groups:
     existing_user = await add_one_azure_test_user(0)
     # existing_user = existing_users[0]
-    existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
+    existing_db_user = await get_user_by_id(
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+    )
 
     assert len(existing_db_user.azure_groups) == 3
     app = app_override_get_azure_payload_dependency
@@ -239,7 +246,9 @@ async def test_existing_azure_user_has_new_group_in_token(
     )
 
     # Verify that the user now has the new group in the database
-    db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
+    db_user = await get_user_by_id(
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+    )
     assert db_user is not None
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[0]["azure_user_id"])
     assert db_user.azure_tenant_id == uuid.UUID(

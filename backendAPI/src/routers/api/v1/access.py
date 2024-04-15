@@ -5,7 +5,14 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from core.types import ResourceType, IdentityType
 from .base import BaseView
-from core.security import get_access_token_payload, CurrentAccessToken
+from core.security import (
+    get_access_token_payload,
+    CurrentAccessToken,
+    Guards,
+    GuardTypes,
+)
+
+# from core.types import GuardTypes
 from models.access import (
     AccessPolicy,
     AccessPolicyCreate,
@@ -32,13 +39,15 @@ class AccessPolicyView(BaseView):
         resource_id: UUID,
         resource_type: ResourceType,
         token_payload=None,
-        scopes: List[str] = [],
-        roles: List[str] = [],
-        groups: List[UUID] = [],
+        guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+        # scopes: List[str] = [],
+        # roles: List[str] = [],
+        # groups: List[UUID] = [],
     ) -> List[AccessPolicyRead]:
-        """ " GET view for access policies for a resource"""
+        """GET view for access policies for a resource"""
         logger.info("GET user by azure_user_id")
-        current_user = await self._guards(token_payload, scopes, roles, groups)
+        current_user = await self._check_token_against_guards(token_payload, guards)
+        # current_user = await self._guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             access_policies = await crud.read_access_policies_for_resource(
                 resource_id, resource_type, current_user
@@ -53,25 +62,36 @@ access_policy_view = AccessPolicyView()
 async def post_access_policy(
     access_policy: AccessPolicyCreate,
     token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> AccessPolicy:
     """Creates a new access policy."""
     return await access_policy_view.post(
         access_policy,
         token_payload,
-        scopes=["api.write"],
-        roles=["User"],
+        guards=guards,
+        # guards=Depends(
+        #     access_policy_view.ProtectWith(scopes=["api.write"], roles=["User"])
+        # ),
     )
+    # return await access_policy_view.post(
+    #     access_policy,
+    #     token_payload,
+    #     scopes=["api.write"],
+    #     roles=["User"],
+    # )
 
 
 # TBD: write tests for this
 @router.get("/policies", status_code=200)
 async def get_access_policies(
     token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(roles=["Admin"])),
 ) -> list[AccessPolicyRead]:
-    """Returns all protected resources."""
+    """Returns all access policies."""
     return await access_policy_view.get(
         token_payload,
-        roles=["Admin"],
+        guards=guards,
+        # roles=["Admin"],
     )
 
 
@@ -81,8 +101,9 @@ async def get_access_policies_for_resource(
     resource_id: str,
     resource_type: str,
     token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
-    """Returns all protected resources."""
+    """Returns all access policies for requested resource."""
     if not resource_id or not resource_type:
         raise ValueError("Resource ID and type must be provided.")
     if not UUID(resource_id):
@@ -93,7 +114,8 @@ async def get_access_policies_for_resource(
         resource_id,
         resource_type,
         token_payload,
-        roles=["User"],
+        guards=guards,
+        # roles=["User"],
     )
     # filters = [
     #     AccessPolicy.resource_id == resource_id,
@@ -112,6 +134,7 @@ async def get_access_policies_for_identity(
     identity_id: str,
     identity_type: str,
     token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
     """Returns all protected resources."""
     if not identity_id:
@@ -137,7 +160,8 @@ async def get_access_policies_for_identity(
     return await access_policy_view.get_with_query_options(
         filters=filters,
         token_payload=token_payload,
-        roles=["User"],
+        guards=guards,
+        # roles=["User"],
     )
 
 

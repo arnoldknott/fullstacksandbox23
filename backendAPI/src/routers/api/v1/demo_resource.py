@@ -1,10 +1,15 @@
 import logging
 import uuid
-from typing import Annotated, List, Union
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 
-from core.security import get_access_token_payload, optional_get_access_token_payload
+from core.security import (
+    get_access_token_payload,
+    optional_get_access_token_payload,
+    Guards,
+)
 from .base import BaseView
+from core.types import GuardTypes
 
 from .category import get_category_by_id
 from crud.demo_resource import DemoResourceCRUD
@@ -44,13 +49,11 @@ demo_resource_view = BaseView(DemoResourceCRUD, DemoResource)
 async def post_category(
     demo_resource: DemoResourceCreate,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResource:
     """Creates a new demo resource."""
     demo_resource_db = await demo_resource_view.post(
-        demo_resource,
-        token_payload,
-        scopes=["api.write"],
-        roles=["User"],
+        demo_resource, token_payload, guards
     )
     if demo_resource_db.category_id:
         await get_category_by_id(demo_resource_db.category_id, token_payload)
@@ -142,14 +145,16 @@ async def put_category(
     demo_resource_id: str,
     demo_resource: DemoResourceUpdate,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResource:
     """Updates a category."""
     return await demo_resource_view.put(
         demo_resource_id,
         demo_resource,
         token_payload,
-        roles=["User"],
-        scopes=["api.write"],
+        guards,
+        # roles=["User"],
+        # scopes=["api.write"],
     )
 
 
@@ -175,10 +180,11 @@ async def put_category(
 async def delete_demo_resource(
     demo_resource_id: str,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResource:
     """Deletes a protected resource."""
     return await demo_resource_view.delete(
-        demo_resource_id, token_payload, roles=["User"], scopes=["api.write"]
+        demo_resource_id, token_payload, guards  # roles=["User"], scopes=["api.write"]
     )
 
 

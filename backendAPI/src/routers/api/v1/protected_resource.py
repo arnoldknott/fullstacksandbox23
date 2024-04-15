@@ -2,7 +2,8 @@ import logging
 
 from fastapi import APIRouter, Depends
 
-from core.security import get_access_token_payload
+from core.security import get_access_token_payload, Guards
+from core.types import GuardTypes
 from .base import BaseView
 from models.protected_resource import ProtectedResource, ProtectedResourceCreate
 from crud.protected_resource import ProtectedResourceCRUD
@@ -23,13 +24,15 @@ protected_resource_view = BaseView(ProtectedResourceCRUD, ProtectedResource)
 async def post_protected_resource(
     protected_resource: ProtectedResourceCreate,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedResource:
     """Creates a new protected resource."""
     return await protected_resource_view.post(
         protected_resource,
         token_payload,
-        scopes=["api.write"],
-        roles=["User"],
+        guards,
+        # scopes=["api.write"],
+        # roles=["User"],
     )
 
 
@@ -37,11 +40,13 @@ async def post_protected_resource(
 @router.get("/", status_code=200)
 async def get_protected_resources(
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[ProtectedResource]:
     """Returns all protected resources."""
     return await protected_resource_view.get(
         token_payload,
-        roles=["User"],
+        guards,
+        # roles=["User"],
     )
 
 
@@ -50,12 +55,14 @@ async def get_protected_resources(
 async def get_protected_resource_by_id(
     resource_id: str,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> ProtectedResource:
     """Returns a protected resource."""
     return await protected_resource_view.get_by_id(
         token_payload,
         resource_id,
-        roles=["User"],
+        guards,
+        # roles=["User"],
     )
 
 
@@ -65,14 +72,16 @@ async def put_protected_resource(
     resource_id: str,
     protected_resource: ProtectedResourceCreate,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedResource:
     """Updates a protected resource."""
     return await protected_resource_view.put(
         resource_id,
         protected_resource,
         token_payload,
-        roles=["User"],
-        scopes=["api.write"],
+        guards,
+        # roles=["User"],
+        # scopes=["api.write"],
     )
 
 
@@ -81,10 +90,11 @@ async def put_protected_resource(
 async def delete_protected_resource(
     resource_id: str,
     token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedResource:
     """Deletes a protected resource."""
     return await protected_resource_view.delete(
-        token_payload, resource_id, roles=["User"], scopes=["api.write"]
+        token_payload, resource_id, guards  # roles=["User"], scopes=["api.write"]
     )
 
 
