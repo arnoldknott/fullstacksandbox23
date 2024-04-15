@@ -237,7 +237,7 @@ async def test_existing_azure_user_has_new_group_in_token(
     assert db_user is not None
     assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
     assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
-    assert len(db_user.azure_groups) == 6
+    assert len(db_user.azure_groups) == 7
 
     azure_groups = db_user.azure_groups
     assert any(

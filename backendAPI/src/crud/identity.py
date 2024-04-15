@@ -4,6 +4,7 @@ from typing import List, Optional
 from fastapi import HTTPException
 
 # from models.azure_group_user_link import AzureGroupUserLink
+from core.types import Action
 from core.types import CurrentUserData
 from models.identity import (
     User,
@@ -17,6 +18,7 @@ from models.identity import (
     AzureGroupUpdate,
 )
 from sqlmodel import select
+
 
 # from sqlalchemy.orm import selectinload
 
@@ -99,6 +101,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     ) -> UserRead:
         """Checks if user and its groups exist, if not create and link them."""
         session = self.session
+        current_user_data = None
         try:
             # Note: current_user is not available here during self-sign-up! So no access control here!
             statement = select(User).where(User.azure_user_id == azure_user_id)
@@ -108,20 +111,35 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 raise HTTPException(status_code=404, detail="User not found")
         except HTTPException as err:
             if err.status_code == 404:
-                user_create = UserCreate(
-                    azure_user_id=azure_user_id,
-                    azure_tenant_id=azure_tenant_id,
-                    # TBD: Refactor into access control
-                    # last_accessed_at=datetime.now(),
-                )
-                # TBD: call the access policies and the access logs - just like in the create method!
+                try:
+                    user_create = UserCreate(
+                        azure_user_id=azure_user_id,
+                        azure_tenant_id=azure_tenant_id,
+                    )
 
-                database_user = User.model_validate(user_create)
-                session.add(database_user)
-                await session.commit()
-                await session.refresh(database_user)
-                current_user = database_user
-                logger.info("USER created in database")
+                    database_user = User.model_validate(user_create)
+                    session.add(database_user)
+                    await session.commit()
+                    await session.refresh(database_user)
+                    current_user = database_user
+                    current_user_data = CurrentUserData(
+                        user_id=current_user.id,
+                        roles=[],  # Roles are coming from the token - but this information is not available here!
+                        groups=groups,
+                    )
+                    await self._write_policy(
+                        current_user.id, Action.own, current_user_data
+                    )
+                    await self._write_log(
+                        current_user.id, Action.own, current_user_data, 201
+                    )
+                    logger.info("USER created in database")
+                except Exception as err:
+                    await self._write_log(
+                        current_user.id, Action.own, current_user_data, 404
+                    )
+                    logger.error(f"Error in BaseCRUD.create: {err}")
+                    raise HTTPException(status_code=404, detail="User not found")
             else:
                 raise err
         # if used elsewhere consider update if needed! But should also be covered already by the base.update!
@@ -133,6 +151,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # call group crud to check if group exists, if not create it!
             # TBD: refactor into using the access controlled protected methods:
             # Now the user actually exists and security can provide the CurrentUserData!
+            # use current_user_data for this!
             async with AzureGroupCRUD() as group_crud:
                 await group_crud.create_if_not_exists(azure_group_id, azure_tenant_id)
                 # try:

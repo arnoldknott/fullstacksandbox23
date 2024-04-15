@@ -70,7 +70,24 @@ class BaseCRUD(
         """Closes the database session."""
         await self.session.close()
 
-    async def __write_log(
+    async def _write_policy(
+        self,
+        resource_id: uuid.UUID,
+        action: Action,
+        current_user: "CurrentUserData",
+    ):
+        """Creates an access policy entry."""
+        access_policy = AccessPolicy(
+            resource_id=resource_id,
+            resource_type=self.resource_type,
+            action=action,
+            identity_id=current_user.user_id,
+            identity_type=IdentityType.user,
+        )
+        async with self.policy_CRUD as policy_CRUD:
+            await policy_CRUD.create(access_policy, current_user)
+
+    async def _write_log(
         self,
         object_id: uuid.UUID,
         action: Action,
@@ -97,51 +114,22 @@ class BaseCRUD(
     ) -> BaseModelType:
         """Creates a new object."""
         logger.info("BaseCRUD.create")
-        # TBD: add access control checks here:
-        # request is known from self.current_user, object and method is write here
         try:
-            # TBD: remove the self.public completely - all handled by fine grained access control now.
-            # For public, there's a public override in the access control checks.
-            # print("=== BaseCRUD.create - current_user ===")
-            # print(current_user)
-            # print("=== BaseCRUD.create - type(current_user) ===")
-            # print(type(current_user))
-            # Not necessary here - anybody how passed the endpoint guards can create anything!
-            # But use this protection for all read, update and delete methods!
-            # Remove the public and refactor, e.g. for the demo resource to create as public -
-            # see second session.add() comment below
-            # if not await self.access_control.allows(
-            #     user=current_user,
-            #     resource_type=self.resource_type,
-            #     action=write,
-            # ):
-            #     raise HTTPException(status_code=403, detail="Access denied")
-            session = self.session
-            Model = self.model
-            database_object = Model.model_validate(object)
-            # TBD: refactor into access control
-            # if hasattr(database_object, "last_accessed_at") and update_last_access is True:
-            #     database_object.last_accessed_at = datetime.now()
-            session.add(database_object)
-            await session.commit()
-            await session.refresh(database_object)
-            # No: this crud does not allow creation without current_user: make current_user mandatory"
-            access_policy = AccessPolicy(
-                resource_id=database_object.id,
-                resource_type=self.resource_type,
-                action=own,
-                identity_id=current_user.user_id,
-                identity_type=IdentityType.user,
-            )
+            # TBD: refactor into hierarchy check
             # requires hierarchy checks to be in place: otherwise a user can never create a resource
             # as the AccessPolicy CRUD create checks, if the user is owner of the resource (that's not created yet)
             # needs to be fixed in the core access control by implementing a hierarchy check
-            async with self.policy_CRUD as policy_CRUD:
-                await policy_CRUD.create(access_policy, current_user)
-            await self.__write_log(database_object.id, own, current_user, 201)
+            session = self.session
+            Model = self.model
+            database_object = Model.model_validate(object)
+            session.add(database_object)
+            await session.commit()
+            await session.refresh(database_object)
+            await self._write_policy(database_object.id, own, current_user)
+            await self._write_log(database_object.id, own, current_user, 201)
             return database_object
         except Exception as e:
-            await self.__write_log(database_object.id, own, current_user, 404)
+            await self._write_log(database_object.id, own, current_user, 404)
             logger.error(f"Error in BaseCRUD.create: {e}")
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not found"
@@ -226,7 +214,7 @@ class BaseCRUD(
         response = await self.session.exec(statement)
         results = response.all()
         for result in results:
-            await self.__write_log(result.id, own, current_user, 200)
+            await self._write_log(result.id, own, current_user, 200)
 
         if not results:
             # print("=== self.model.__name__ ===")
@@ -235,7 +223,7 @@ class BaseCRUD(
             # print(self.resource_type)
             logger.info(f"No objects found for {self.model.__name__}")
             for result in results:
-                await self.__write_log(result.id, own, current_user, 404)
+                await self._write_log(result.id, own, current_user, 404)
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not found."
             )
@@ -416,10 +404,10 @@ class BaseCRUD(
             await session.refresh(object)
             # TBD: add exception handling here!
             # TBD: add access logging here!
-            await self.__write_log(object_id, write, current_user, 200)
+            await self._write_log(object_id, write, current_user, 200)
             return object
         except Exception as e:
-            await self.__write_log(object_id, write, current_user, 404)
+            await self._write_log(object_id, write, current_user, 404)
             logger.error(f"Error in BaseCRUD.update: {e}")
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not updated."
@@ -468,10 +456,10 @@ class BaseCRUD(
             ###
             await session.delete(object)
             await session.commit()
-            await self.__write_log(object_id, own, current_user, 200)
+            await self._write_log(object_id, own, current_user, 200)
             return object
         except Exception as e:
-            await self.__write_log(object_id, write, current_user, 404)
+            await self._write_log(object_id, write, current_user, 404)
             logger.error(f"Error in BaseCRUD.delete: {e}")
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not deleted."
