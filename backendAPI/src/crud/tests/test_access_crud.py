@@ -9,7 +9,7 @@ from models.access import AccessPolicyCreate, AccessPolicy, AccessLog
 from core.types import CurrentUserData
 
 from tests.utils import (
-    many_test_users,
+    many_test_azure_users,
     token_payload_roles_admin,
     one_test_policy_read,
     one_test_policy_write,
@@ -17,7 +17,7 @@ from tests.utils import (
     one_test_policy_share,
     one_test_policy_public_read,
     many_test_policies,
-    many_test_users,
+    many_test_azure_users,
     user_id_nonexistent,
 )
 
@@ -29,7 +29,7 @@ async def test_admin_creates_access_policy():
     """Test creating an access policy."""
 
     mocked_admin_user = CurrentUserData(
-        user_id=uuid.UUID(many_test_users[0]["azure_user_id"]),
+        user_id=uuid.UUID(many_test_azure_users[0]["azure_user_id"]),
         roles=token_payload_roles_admin["roles"],
     )
 
@@ -53,7 +53,7 @@ async def test_owner_creates_access_policy(add_test_access_policies):
     await add_test_access_policies([one_test_policy_own])
 
     mocked_user = CurrentUserData(
-        user_id=uuid.UUID(many_test_users[0]["azure_user_id"]),
+        user_id=uuid.UUID(many_test_azure_users[0]["azure_user_id"]),
     )
 
     async with AccessPolicyCRUD() as policy_crud:
@@ -74,7 +74,7 @@ async def test_prevent_create_duplicate_access_policy():
     """Test preventing the creation of a duplicate access policy."""
 
     mocked_admin_user = CurrentUserData(
-        user_id=uuid.UUID(many_test_users[0]["azure_user_id"]),
+        user_id=uuid.UUID(many_test_azure_users[0]["azure_user_id"]),
     )
 
     async with AccessPolicyCRUD() as policy_crud:
@@ -93,7 +93,7 @@ async def test_create_access_policy_for_public_resource():
     """Test preventing the creation of a duplicate access policy."""
 
     mocked_admin_user = CurrentUserData(
-        user_id=uuid.UUID(many_test_users[0]["azure_user_id"]),
+        user_id=uuid.UUID(many_test_azure_users[0]["azure_user_id"]),
         roles=token_payload_roles_admin["roles"],
     )
 
@@ -122,7 +122,7 @@ async def test_create_access_policy_for_public_resource_with_identity_fails():
     """Test preventing the creation of a public access policy with specific identity."""
 
     mocked_admin_user = CurrentUserData(
-        user_id=uuid.UUID(many_test_users[0]["azure_user_id"]),
+        user_id=uuid.UUID(many_test_azure_users[0]["azure_user_id"]),
     )
 
     try:
@@ -145,7 +145,7 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
     }
 
     mocked_admin_user = CurrentUserData(
-        user_id=uuid.UUID(many_test_users[0]["azure_user_id"]),
+        user_id=uuid.UUID(many_test_azure_users[0]["azure_user_id"]),
     )
 
     try:
@@ -201,7 +201,7 @@ async def test_read_access_policy_by_identity(
     async with AccessPolicyCRUD() as policy_crud:
         # read_policy = await policy_crud.read_by_identity(
         read_policy = await policy_crud.read(
-            identity_id=uuid.UUID(many_test_users[1]["azure_user_id"]),
+            identity_id=uuid.UUID(many_test_azure_users[1]["azure_user_id"]),
         )
 
     assert len(read_policy) == 2
@@ -408,7 +408,7 @@ async def test_delete_access_policy_by_id(add_many_test_access_policies):
 async def test_create_access_log():
     """Test creating an access log."""
     access_log = AccessLog(
-        identity_id=uuid.UUID(many_test_users[0]["azure_user_id"]),
+        identity_id=uuid.UUID(many_test_azure_users[0]["azure_user_id"]),
         identity_type="User",
         resource_id=uuid.uuid4(),
         resource_type="ProtectedResource",
@@ -435,7 +435,7 @@ async def test_read_access_log():
     resource_id = uuid.uuid4()
 
     access_log = AccessLog(
-        identity_id=uuid.UUID(many_test_users[0]["azure_user_id"]),
+        identity_id=uuid.UUID(many_test_azure_users[0]["azure_user_id"]),
         identity_type="User",
         resource_id=resource_id,
         resource_type="ProtectedResource",
@@ -450,7 +450,7 @@ async def test_read_access_log():
 
     async with AccessLoggingCRUD() as crud:
         identity_log = await crud.read_log_by_identity_id(
-            many_test_users[0]["azure_user_id"]
+            many_test_azure_users[0]["azure_user_id"]
         )
         resource_log = await crud.read_log_by_resource(
             resource_id,
@@ -460,7 +460,9 @@ async def test_read_access_log():
     assert identity_log[0].id is not None
     assert identity_log[0].resource_id == access_log.resource_id
     assert identity_log[0].resource_type == access_log.resource_type
-    assert identity_log[0].identity_id == uuid.UUID(many_test_users[0]["azure_user_id"])
+    assert identity_log[0].identity_id == uuid.UUID(
+        many_test_azure_users[0]["azure_user_id"]
+    )
     assert identity_log[0].identity_type == "User"
     assert identity_log[0].action == access_log.action
     assert identity_log[0].status_code == access_log.status_code

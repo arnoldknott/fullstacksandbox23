@@ -31,7 +31,7 @@ from tests.utils import (
     token_payload_scope_api_read,
     token_payload_scope_api_write,
     token_payload_scope_api_read_write,
-    many_test_users,
+    many_test_azure_users,
 )
 
 # region: Testing token validation:
@@ -132,14 +132,18 @@ async def test_azure_user_self_signup(
     )
     assert response.status_code == 200
     current_user = response.json()
-    assert current_user["azure_user_id"] == many_test_users[0]["azure_user_id"]
-    assert current_user["azure_tenant_id"] == many_test_users[0]["azure_tenant_id"]
+    assert current_user["azure_user_id"] == many_test_azure_users[0]["azure_user_id"]
+    assert (
+        current_user["azure_tenant_id"] == many_test_azure_users[0]["azure_tenant_id"]
+    )
 
     # To verify that the user is in the database, calling the endpoint to get the user by id with admin token:
     db_user = await get_user_by_id(current_user["id"], token_admin_read)
     assert db_user is not None
-    assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
-    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
+    assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[0]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(
+        many_test_azure_users[0]["azure_tenant_id"]
+    )
     assert db_user.created_at is not None
     assert db_user.last_accessed_at is not None
     assert db_user.created_at is not None
@@ -229,14 +233,18 @@ async def test_existing_azure_user_has_new_group_in_token(
 
     updated_user = response.json()
 
-    assert updated_user["azure_user_id"] == many_test_users[0]["azure_user_id"]
-    assert updated_user["azure_tenant_id"] == many_test_users[0]["azure_tenant_id"]
+    assert updated_user["azure_user_id"] == many_test_azure_users[0]["azure_user_id"]
+    assert (
+        updated_user["azure_tenant_id"] == many_test_azure_users[0]["azure_tenant_id"]
+    )
 
     # Verify that the user now has the new group in the database
     db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
     assert db_user is not None
-    assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
-    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
+    assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[0]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(
+        many_test_azure_users[0]["azure_tenant_id"]
+    )
     assert len(db_user.azure_groups) == 7
 
     azure_groups = db_user.azure_groups
@@ -250,8 +258,8 @@ async def test_existing_azure_user_has_new_group_in_token(
     # print(db_user_json_encoded)
 
     # db_user = db_user.model_dump()
-    # assert db_user["azure_user_id"] == uuid.UUID(many_test_users[0]["azure_user_id"])
-    # assert db_user["azure_tenant_id"] == uuid.UUID(many_test_users[0]["azure_tenant_id"])
+    # assert db_user["azure_user_id"] == uuid.UUID(many_test_azure_users[0]["azure_user_id"])
+    # assert db_user["azure_tenant_id"] == uuid.UUID(many_test_azure_users[0]["azure_tenant_id"])
     # assert len(db_user["azure_groups"]) == 4
     # assert any(
     #     group["id"] == uuid.UUID(token_payload_one_group["groups"][0])

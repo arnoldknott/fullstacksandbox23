@@ -19,53 +19,12 @@ from crud.tag import TagCRUD
 from models.protected_resource import ProtectedResource
 
 from tests.utils import (
-    token_admin,
     many_test_categories,
     many_test_demo_resources,
     many_test_tags,
-    many_test_users,
     many_test_protected_resources,
     many_test_public_resources,
 )
-
-# def generate_mock_token(
-#     is_admin: bool = False,
-#     expired: bool = False,
-#     groups: Optional[List[str]] = None,
-# ) -> str:
-#     """Generate a mock JWT token for testing."""
-
-#     # Set the issued at time (iat) to the current time
-#     iat = time.time()
-
-#     # Set the not before time (nbf) to the current time
-#     nbf = iat
-
-#     # If the token should be expired, set the expiration time (exp) to a time in the past
-#     # Otherwise, set it to a time in the future
-#     exp = iat - 100 if expired else iat + 3600
-
-#     # Set the roles based on the is_admin flag
-#     roles = ["Admin"] if is_admin else ["User"]
-
-#     # Set the groups
-#     groups = groups or []
-
-#     # Create the payload
-#     payload = {
-#         "iat": iat,
-#         "nbf": nbf,
-#         "exp": exp,
-#         "roles": roles,
-#         "groups": groups,
-#     }
-
-#     # Encode the payload into a JWT token
-#     token = jwt.encode(
-#         payload, "needs to be a PEM file", algorithm="RS256", headers={"kid": "mykidstring"}
-#     )
-
-#     return token
 
 
 # @pytest.fixture(scope="function")
@@ -113,131 +72,6 @@ from tests.utils import (
 #     return generate_mock_token(expired=True)
 
 
-# def create_access_policy(resource, identity, action, public) -> AccessPolicyCreate:
-#     """Create an access policy."""
-#     resource_id = resource["id"]
-#     ResourceType(resource.__class__.__name__)
-#     resource_type = resource.__class__.__name__
-#     return AccessPolicyCreate()
-
-
-# @pytest.fixture(scope="function")
-# async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
-#     """Fixture for adding test policies for specific resources to the database."""
-#     session = get_async_test_session
-
-#     async def _add_test_policies_for_resources(
-#         resources: list[dict],
-#         actions: list[str],
-#         identities: Optional[list[dict]] = None,
-#         publics: Optional[list[bool]] = None,
-#     ):
-#         """Adds test policies to the database."""
-
-#         # Unnecessary, as the validation is done in the create model!
-#         if identities is None:
-#             if publics is None:
-#                 raise Exception(
-#                     "Either identities or public must be provided for the policies!"
-#                 )
-#             else:
-#                 identities = [None] * len(resources)
-#         # async def _add_test_policies_for_resources(resources: list[dict]):
-#         #     """Adds test policies to the database."""
-
-#         # TBD: use a mapping for this?
-
-#         # Public vs. identity is taken care of in the create model validation through pydantic!
-#         # if public is not None:
-#         #     if len(resources) == len(identities) == len(actions) == len(public):
-#         #         pass
-#         #     else:
-#         #         raise Exception(
-#         #             "The number of resources, identities, actions and public must be the same!"
-#         #         )
-#         # else:
-#         #     if len(resources) == len(identities) == len(actions):
-#         #         pass
-#         #     else:
-#         #         raise Exception(
-#         #             "The number of resources, identities and actions must be the same!"
-#         #         )
-
-#         # print("=== add_test_policies - request ===")
-#         # print(resources)
-#         # TBD: create the policies based on the incoming resources, identity, action and overrides!
-#         created_policies = []
-#         # for resource, idx in resources:
-#         for resource, identity, action, public in zip(
-#             resources, identities, actions, publics
-#         ):
-#             # print("=== add_test_policies - policy ===")
-#             # print(policy)
-#             # TBD: add the CRUD here and write to AccessPolicy table!
-#             # policy = create_access_policy(
-#             #     resource, identities[idx], actions[idx], public[idx]
-#             # )
-#             # created_policies.append(AccessPolicy(**policy))
-#             resource_id = resource.id
-#             if resource.__class__.__name__ in ResourceType.list():
-#                 resource_type = ResourceType(resource.__class__.__name__)
-#             elif resource.__class__.__name__ in IdentityType.list():
-#                 resource_type = IdentityType(resource.__class__.__name__)
-#             else:
-#                 raise ValueError(
-#                     f"{resource.__name__} is not a valid ResourceType or IdentityType"
-#                 )
-#             # resource_type = ResourceType(resource.__class__.__name__)
-#             if identity is not None:
-#                 identity_id = identity.id
-#                 identity_type = IdentityType(identity.__class__.__name__)
-#             else:
-#                 identity_id = None
-#                 identity_type = None
-#             action = Action(action)
-#             public = public if public is not None else False
-#             access_policy_instance = AccessPolicy(
-#                 resource_id=resource_id,
-#                 resource_type=resource_type,
-#                 identity_id=identity_id,
-#                 identity_type=identity_type,
-#                 action=action,
-#                 public=public,
-#             )
-#             session.add(access_policy_instance)
-#             await session.commit()
-#             await session.refresh(access_policy_instance)
-#             created_policies.append(access_policy_instance)
-
-#         # print("=== created_policies ===")
-#         # print(created_policies)
-#         return created_policies
-
-#     yield _add_test_policies_for_resources
-
-#     # print("=== add_test_policies - request ===")
-#     # print(request)
-#     # created_policies = []
-#     # for policy in request:
-#     #     print("=== add_test_policies - policy ===")
-#     #     print(policy)
-#     #     created_policies.append(AccessPolicy(**policy))
-
-#     # yield created_policies
-
-#     # session = get_async_test_session
-
-#     # policy_instances = []
-#     # for policy in many_test_policies:
-#     #     policy_instance = AccessPolicy(**policy)
-#     #     session.add(policy_instance)
-#     #     await session.commit()
-#     #     await session.refresh(policy_instance)
-#     #     policy_instances.append(policy_instance)
-
-#     # yield policy_instances
-
-
 @pytest.fixture(scope="function")
 async def add_test_policy_for_resource(mock_current_user: User):
     """Adds a policy for a resource through CRUD to the database."""
@@ -253,11 +87,11 @@ async def add_test_policy_for_resource(mock_current_user: User):
 
 
 # @pytest.fixture(scope="function")
-# async def add_many_test_users(get_async_test_session: AsyncSession):
+# async def add_many_test_azure_users(get_async_test_session: AsyncSession):
 #     """Adds test users to the database."""
 #     session = get_async_test_session
 #     users = []
-#     for user in many_test_users:
+#     for user in many_test_azure_users:
 #         this_user = User(**user)
 #         session.add(this_user)
 #         await session.commit()

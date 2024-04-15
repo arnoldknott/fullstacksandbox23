@@ -24,7 +24,7 @@ from tests.utils import (
     token_payload_scope_api_write,
     token_payload_scope_api_read_write,
     token_payload_one_group,
-    many_test_users,
+    many_test_azure_users,
 )
 from routers.api.v1.user import get_user_by_id
 
@@ -56,20 +56,22 @@ async def test_admin_posts_user(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json=many_test_users[2],
+        json=many_test_azure_users[2],
     )
 
     assert response.status_code == 201
     created_user = User(**response.json())
-    assert created_user.azure_user_id == many_test_users[2]["azure_user_id"]
-    assert created_user.azure_tenant_id == many_test_users[2]["azure_tenant_id"]
+    assert created_user.azure_user_id == many_test_azure_users[2]["azure_user_id"]
+    assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
     assert db_user is not None
     assert db_user.id is not None
-    assert db_user.azure_user_id == uuid.UUID(many_test_users[2]["azure_user_id"])
-    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[2]["azure_tenant_id"])
+    assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[2]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(
+        many_test_azure_users[2]["azure_tenant_id"]
+    )
     assert db_user.last_accessed_at is not None
 
 
@@ -98,20 +100,22 @@ async def test_post_user_with_integer_user_id(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json={**many_test_users[2], "id": 1},
+        json={**many_test_azure_users[2], "id": 1},
     )
 
     assert response.status_code == 201
     created_user = User(**response.json())
-    assert created_user.azure_user_id == many_test_users[2]["azure_user_id"]
-    assert created_user.azure_tenant_id == many_test_users[2]["azure_tenant_id"]
+    assert created_user.azure_user_id == many_test_azure_users[2]["azure_user_id"]
+    assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
     assert db_user.id == uuid.UUID(created_user.id)
     assert db_user.id != 1
-    assert db_user.azure_user_id == uuid.UUID(many_test_users[2]["azure_user_id"])
-    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[2]["azure_tenant_id"])
+    assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[2]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(
+        many_test_azure_users[2]["azure_tenant_id"]
+    )
     assert db_user.last_accessed_at is not None
 
 
@@ -141,20 +145,22 @@ async def test_post_user_with_uuid_user_id(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json={**many_test_users[2], "id": test_uuid},
+        json={**many_test_azure_users[2], "id": test_uuid},
     )
 
     assert response.status_code == 201
     created_user = User(**response.json())
-    assert created_user.azure_user_id == many_test_users[2]["azure_user_id"]
-    assert created_user.azure_tenant_id == many_test_users[2]["azure_tenant_id"]
+    assert created_user.azure_user_id == many_test_azure_users[2]["azure_user_id"]
+    assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(created_user.id, mocked_get_azure_token_payload)
     assert db_user.id == uuid.UUID(created_user.id)
     assert db_user.id != uuid.UUID(test_uuid)
-    assert db_user.azure_user_id == uuid.UUID(many_test_users[2]["azure_user_id"])
-    assert db_user.azure_tenant_id == uuid.UUID(many_test_users[2]["azure_tenant_id"])
+    assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[2]["azure_user_id"])
+    assert db_user.azure_tenant_id == uuid.UUID(
+        many_test_azure_users[2]["azure_tenant_id"]
+    )
     assert db_user.last_accessed_at is not None
 
 
@@ -181,7 +187,7 @@ async def test_user_posts_user(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json=many_test_users[0],
+        json=many_test_azure_users[0],
     )
 
     assert response.status_code == 403
@@ -225,7 +231,7 @@ async def test_post_user_invalid_token(
     # Make a POST request to create the user
     response = await async_client.post(
         "/api/v1/user/",
-        json=many_test_users[0],
+        json=many_test_azure_users[0],
     )
 
     assert response.status_code == 403
