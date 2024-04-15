@@ -18,22 +18,31 @@ many_test_users = [
     {
         "azure_user_id": "12345678-1234-1234-1234-123456789012",
         "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
+        "groups": [
+            "12345678-1234-1234-1234-123456789012",
+            "12a34b56-12ab-34cd-56ef-78ab90cd12ef",
+            str(uuid4()),
+        ],
     },
     {
         "azure_user_id": "1b2b3c4d-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
         "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
+        "groups": [
+            "12345678-1234-1234-1234-123456789012",
+            str(uuid4()),
+            "12a34b56-12ab-34cd-56ef-78ab90cd12ef",
+        ],
     },
     {
         "azure_user_id": str(uuid4()),
         "azure_tenant_id": azure_home_tenant,
+        "groups": [str(uuid4()), str(uuid4())],
     },
-    {
-        "azure_user_id": str(uuid4()),
-        "azure_tenant_id": azure_home_tenant,
-    },
+    {"azure_user_id": str(uuid4()), "azure_tenant_id": azure_home_tenant, "groups": []},
     {
         "azure_user_id": str(uuid4()),
         "azure_tenant_id": str(uuid4()),  # foreign tenant here.
+        "groups": [str(uuid4()), "12345678-1234-1234-1234-123456789012", str(uuid4())],
     },
 ]
 # TBD: add data for groups
@@ -44,6 +53,9 @@ token_payload_user_id = {
 }
 token_payload_another_user_id = {
     "oid": many_test_users[1]["azure_user_id"],
+}
+token_payload_random_user_id = {
+    "oid": many_test_users[2]["azure_user_id"],
 }
 token_payload_tenant_id = {
     "tid": many_test_users[0]["azure_tenant_id"],
@@ -71,6 +83,9 @@ token_payload_roles_user_admin = {
 }
 token_payload_one_group = {
     "groups": ["12345678-1234-1234-1234-123456789012"],
+}
+token_payload_one_random_group = {
+    "groups": [str(uuid4())],
 }
 token_payload_many_groups = {
     "groups": [str(uuid4()), str(uuid4()), str(uuid4())],
@@ -119,27 +134,27 @@ token_user2_read_write = {
 }
 
 token_admin = {
-    **token_payload_user_id,
+    **token_payload_random_user_id,
     **token_payload_tenant_id,
     **token_payload_roles_admin,
 }
 
 token_admin_read = {
-    **token_payload_user_id,
+    **token_payload_random_user_id,
     **token_payload_tenant_id,
     **token_payload_scope_api_read,
     **token_payload_roles_admin,
 }
 
 token_admin_write = {
-    **token_payload_user_id,
+    **token_payload_random_user_id,
     **token_payload_tenant_id,
     **token_payload_scope_api_write,
     **token_payload_roles_admin,
 }
 
 token_admin_read_write = {
-    **token_payload_user_id,
+    **token_payload_random_user_id,
     **token_payload_tenant_id,
     **token_payload_scope_api_read_write,
     **token_payload_roles_admin,

@@ -22,6 +22,7 @@ from tests.utils import (
     token_payload_user_id,
     token_payload_tenant_id,
     token_payload_one_group,
+    token_payload_one_random_group,
     token_payload_many_groups,
     token_payload_roles_user_admin,
     token_payload_roles_admin_user,
@@ -195,7 +196,7 @@ async def test_azure_user_self_signup_invalid_token(
             **token_payload_scope_api_read,
             # **token_payload_roles_user,
             "groups": token_payload_many_groups["groups"]
-            + token_payload_one_group["groups"],
+            + token_payload_one_random_group["groups"],
         }
     ],
     indirect=True,
@@ -203,11 +204,12 @@ async def test_azure_user_self_signup_invalid_token(
 async def test_existing_azure_user_has_new_group_in_token(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_many_test_users: List[User],
+    add_one_azure_test_user: List[User],
 ):
     """Tests if an user that got added to a new azure group also gets added the new azure group in the database."""
     # preparing the test: adds a user to the database and ensure that this user is member of 3 groups:
-    existing_user = add_many_test_users[0]
+    existing_user = await add_one_azure_test_user(0)
+    # existing_user = existing_users[0]
     existing_db_user = await get_user_by_id(str(existing_user.id), token_admin_read)
 
     assert len(existing_db_user.azure_groups) == 3
@@ -235,11 +237,11 @@ async def test_existing_azure_user_has_new_group_in_token(
     assert db_user is not None
     assert db_user.azure_user_id == uuid.UUID(many_test_users[0]["azure_user_id"])
     assert db_user.azure_tenant_id == uuid.UUID(many_test_users[0]["azure_tenant_id"])
-    assert len(db_user.azure_groups) == 4
-    azure_groups = db_user.azure_groups
+    assert len(db_user.azure_groups) == 6
 
+    azure_groups = db_user.azure_groups
     assert any(
-        group.id == uuid.UUID(token_payload_many_groups["groups"][0])
+        group.id == uuid.UUID(token_payload_one_random_group["groups"][0])
         for group in azure_groups
     )
 
@@ -284,13 +286,14 @@ async def test_existing_azure_user_has_new_group_in_token(
 async def test_existing_user_logs_in(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    add_many_test_users: List[UserRead],
+    add_one_azure_test_user: List[UserRead],
 ):
     """Test an existing user logs in successfully"""
 
     # mocks the access token:
     app = app_override_get_azure_payload_dependency
-    user_in_database = add_many_test_users[0]
+    user_in_database = await add_one_azure_test_user(0)
+    # user_in_database = existing_users[0]
 
     # create a temporary route that uses the guard:
     @app.get("/test_existing_user_logs_in")

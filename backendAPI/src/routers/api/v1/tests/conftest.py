@@ -122,21 +122,6 @@ from tests.utils import (
 
 
 @pytest.fixture(scope="function")
-async def mock_current_user():
-    """Returns a mock current user based on provided payload or admin."""
-
-    async def _mock_current_user(token_payload: dict = None) -> User:
-        current_user = None
-        if token_payload is None:
-            token_payload = token_admin
-        token = CurrentAccessToken(token_payload)
-        current_user = await token.provides_current_user()
-        return current_user
-
-    yield _mock_current_user
-
-
-@pytest.fixture(scope="function")
 async def add_test_policies_for_resources(get_async_test_session: AsyncSession):
     """Fixture for adding test policies for specific resources to the database."""
     session = get_async_test_session
@@ -310,6 +295,7 @@ async def add_test_categories(
     # or just failing?
     async def _add_test_categories(token_payload: dict = None):
         category_instances = []
+        current_user = await mock_current_user(token_payload)
         # print("=== _add_test_categories - mocked_token_payload ===")
         # print(mocked_token_payload)
         # TBD: refactor to use the post endpoint - the token should be mocked already here!
@@ -318,7 +304,6 @@ async def add_test_categories(
             # print(category)
             # token = CurrentAccessToken(token_payload)
             # current_user = await token.provides_current_user()
-            current_user = await mock_current_user(token_payload)
             async with CategoryCRUD() as crud:
                 category_instance = await crud.create(category, current_user)
             # response = await async_client.post("/api/v1/category/", json=category)
@@ -377,6 +362,7 @@ async def add_test_demo_resources(
         many_test_demo_resources[2]["category_id"] = existing_test_categories[1].id
 
         demo_resource_instances = []
+        current_user = await mock_current_user(token_payload)
         for resource in many_test_demo_resources:
             # print("=== resource ===")
             # print(resource)
@@ -389,7 +375,6 @@ async def add_test_demo_resources(
             # await session.commit()
             # await session.refresh(demo_resource_instance)
             async with DemoResourceCRUD() as crud:
-                current_user = await mock_current_user(token_payload)
                 # token = CurrentAccessToken(token_payload)
                 # current_user = await token.provides_current_user()
                 demo_resource_instance = await crud.create(resource, current_user)
@@ -422,8 +407,8 @@ async def add_test_tags(
 
     async def _add_test_tags(token_payload: dict = None):
         tag_instances = []
+        current_user = await mock_current_user(token_payload)
         for tag in many_test_tags:
-            current_user = await mock_current_user(token_payload)
             async with TagCRUD() as crud:
                 tag_instance = await crud.create_public(tag, current_user)
             tag_instances.append(tag_instance)

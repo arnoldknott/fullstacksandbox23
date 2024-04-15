@@ -10,13 +10,14 @@ from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from core.security import get_azure_token_payload, CurrentAccessToken
 from core.types import CurrentUserData
-from models.identity import User
+from models.identity import User, UserRead
 from crud.identity import UserCRUD
 from models.access import AccessPolicy, AccessPolicyRead
 from crud.access import AccessPolicyCRUD
 from tests.utils import (
     many_test_users,
     token_payload_many_groups,
+    token_admin,
     many_test_policies,
 )
 
@@ -124,20 +125,81 @@ async def current_test_user(mocked_get_azure_token_payload):
 
 
 @pytest.fixture(scope="function")
-async def add_many_test_users():
+async def mock_current_user():
+    """Returns a mock current user based on provided payload or admin."""
+
+    async def _mock_current_user(token_payload: dict = None) -> User:
+        current_user = None
+        if token_payload is None:
+            token_payload = token_admin
+        token = CurrentAccessToken(token_payload)
+        current_user = await token.provides_current_user()
+        return current_user
+
+    yield _mock_current_user
+
+
+@pytest.fixture(scope="function")
+# async def add_one_azure_test_user(mock_current_user: User):
+async def add_one_azure_test_user(mock_current_user: User):
     """Adds many test users to the database."""
-    async with UserCRUD() as crud:
+
+    # async def _add_one_azure_test_user(
+    #     user_number: int = None, token_payload: dict = None
+    # ) -> UserRead:
+    async def _add_one_azure_test_user(user_number: int = None) -> UserRead:
+        # current_user = await mock_current_user(token_payload)
+        async with UserCRUD() as crud:
+            user = await crud.create_azure_user_and_groups_if_not_exist(
+                **many_test_users[user_number]
+            )
+        return user
+
+    yield _add_one_azure_test_user
+
+
+@pytest.fixture(scope="function")
+async def add_many_azure_test_users():
+    """Adds many test users to the database."""
+
+    async def _add_many_azure_test_users() -> List[UserRead]:
         users = []
         for user in many_test_users:
-            added_user = await crud.create_azure_user_and_groups_if_not_exist(
-                user["azure_user_id"],
-                user["azure_tenant_id"],
-                token_payload_many_groups["groups"],
-            )
-            users.append(added_user)
+            async with UserCRUD() as crud:
+                user = await crud.create_azure_user_and_groups_if_not_exist(**user)
+            users.append(user)
+        return users
 
-    yield users
+    yield _add_many_azure_test_users
 
+
+# @pytest.fixture(scope="function")
+# async def add_test_tags(
+#     mock_current_user: User,
+# ):  # (get_async_test_session: AsyncSession):
+#     """Adds tags to the database."""
+#     # session = get_async_test_session
+#     # tag_instances = []
+#     # for tag in many_test_tags:
+#     #     tag_instance = Tag(**tag)
+#     #     session.add(tag_instance)
+#     #     await session.commit()
+#     #     await session.refresh(tag_instance)
+#     #     tag_instances.append(tag_instance)
+
+#     # yield tag_instances
+
+#     async def _add_test_tags(token_payload: dict = None):
+#         tag_instances = []
+#         for tag in many_test_tags:
+#             current_user = await mock_current_user(token_payload)
+#             async with TagCRUD() as crud:
+#                 tag_instance = await crud.create_public(tag, current_user)
+#             tag_instances.append(tag_instance)
+
+#         return tag_instances
+
+#     yield _add_test_tags
 
 # @pytest.fixture(scope="function")
 # async def add_many_test_users(get_async_test_session: AsyncSession):
