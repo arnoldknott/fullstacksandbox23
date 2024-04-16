@@ -29,6 +29,8 @@ router = APIRouter()
 
 
 class AccessPolicyView(BaseView):
+    """Extends base view with access policy specific methods."""
+
     def __init__(self):
         super().__init__(AccessPolicyCRUD, AccessPolicy)
 

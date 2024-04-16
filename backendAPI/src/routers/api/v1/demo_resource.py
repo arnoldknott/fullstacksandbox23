@@ -24,7 +24,21 @@ from models.demo_resource import (
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-demo_resource_view = BaseView(DemoResourceCRUD, DemoResource)
+
+class DemoResourceView(BaseView):
+    """Extends base view with demo resource specific methods."""
+
+    def __init__(self):
+        super().__init__(DemoResourceCRUD, DemoResource)
+
+    async def add_tag(self, resource_id: uuid.UUID, tag_ids: List[uuid.UUID]):
+        """Adds a tag to a demo resource."""
+        async with self.crud() as crud:
+            return await crud.add_tag(resource_id, tag_ids)
+
+
+# demo_resource_view = BaseView(DemoResourceCRUD, DemoResource)
+demo_resource_view = DemoResourceView()
 
 # TBD: remove old version from before refactoring:
 # @router.post("/", status_code=201)
@@ -50,14 +64,16 @@ async def post_category(
     demo_resource: DemoResourceCreate,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> DemoResource:
+) -> DemoResourceRead:
     """Creates a new demo resource."""
     demo_resource_db = await demo_resource_view.post(
         demo_resource, token_payload, guards
     )
-    if demo_resource_db.category_id:
-        await get_category_by_id(demo_resource_db.category_id, token_payload)
     return demo_resource_db
+    # TBD: remove this! That should be the return value of the post method!
+    # if demo_resource_db.category_id:
+    #     await get_category_by_id(demo_resource_db.category_id, token_payload)
+    # return demo_resource_db
 
 
 # TBD: remove old version from before refactoring:
@@ -96,10 +112,7 @@ async def get_all_demo_resources(
     token_payload=Depends(optional_get_access_token_payload),
 ) -> list[DemoResourceRead]:
     """Returns all demo resources resources."""
-    return await demo_resource_view.get(
-        token_payload,
-        # roles=["User"],
-    )
+    return await demo_resource_view.get(token_payload)
 
 
 @router.get("/{demo_resource_id}", status_code=200)
@@ -111,11 +124,7 @@ async def get_demo_resource_by_id(
     token_payload=Depends(optional_get_access_token_payload),
 ) -> DemoResourceRead:
     """Returns a demo resource by id."""
-    return await demo_resource_view.get_by_id(
-        demo_resource_id,
-        token_payload,
-        # roles=["User"],
-    )
+    return await demo_resource_view.get_by_id(demo_resource_id, token_payload)
 
 
 # TBD: remove the old version after refactoring:
@@ -149,12 +158,7 @@ async def put_category(
 ) -> DemoResource:
     """Updates a category."""
     return await demo_resource_view.put(
-        demo_resource_id,
-        demo_resource,
-        token_payload,
-        guards,
-        # roles=["User"],
-        # scopes=["api.write"],
+        demo_resource_id, demo_resource, token_payload, guards
     )
 
 
@@ -183,9 +187,7 @@ async def delete_demo_resource(
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResource:
     """Deletes a protected resource."""
-    return await demo_resource_view.delete(
-        demo_resource_id, token_payload, guards  # roles=["User"], scopes=["api.write"]
-    )
+    return await demo_resource_view.delete(demo_resource_id, token_payload, guards)
 
 
 # TBD: refactor into using the new BaseView - but this is a link table,
@@ -194,24 +196,21 @@ async def delete_demo_resource(
 # like sharing, tagging, creating hierarchies etc.
 @router.post("/{resource_id}/tag/")
 async def add_tag_to_demo_resource(
-    resource_id: str,
-    tag_ids: Annotated[
-        List[uuid.UUID], Query()
-    ],  # TBD: move the arguments from Query to json!
+    resource_id: str,  # TBD consider using Annotated for the id checks!
+    tag_ids: Annotated[List[uuid.UUID], Query()],
+    # TBD: move the arguments from Query to json!
+    # as the tags are queries, no body is required. This could be a GET request!!
 ) -> DemoResourceRead:
     """Adds a tag to a demo resource."""
     logger.info("POST demo resource")
     try:
         resource_id = uuid.UUID(resource_id)
+        # for tag_id in tag_ids:
+        #     uuid.UUID(tag_id)
     except ValueError:
-        logger.error("Resource ID is not a universal unique identifier (uuid).")
-        raise HTTPException(status_code=400, detail="Invalid resource id")
-    # sShould not be necessary, as FastAPI should do this automatically
-    # try:
-    #     tag_ids = uuid.UUID(tag_id)
-    # except ValueError:
-    #     logger.error("Tag ID is not a universal unique identifier (uuid).")
-    #     raise HTTPException(status_code=400, detail="Invalid tag id")
-    async with DemoResourceCRUD() as crud:
-        result = await crud.add_tag(resource_id, tag_ids)
-    return result
+        logger.error("ID's must by a universal unique identifier (uuid).")
+        raise HTTPException(status_code=400, detail="Invalid id")
+    return await demo_resource_view.add_tag(resource_id, tag_ids)
+    # async with DemoResourceCRUD() as crud:
+    #     result = await crud.add_tag(resource_id, tag_ids)
+    # return result

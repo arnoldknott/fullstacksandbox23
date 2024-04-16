@@ -66,7 +66,7 @@ class BaseView:
         self,
         object,
         token_payload,
-        guards: GuardTypes,
+        guards,
     ):
         logger.info("POST view calls create CRUD")
         current_user = await self._check_token_against_guards(token_payload, guards)
@@ -90,7 +90,7 @@ class BaseView:
         self,
         # get operation does not need a token_payload, if the resource is public
         token_payload=None,
-        guards: GuardTypes = None,
+        guards=None,
     ):
         logger.info("GET view to retrieve all objects from read CRUD")
         current_user = None
@@ -105,9 +105,10 @@ class BaseView:
         self,
         id,
         token_payload=None,
-        guards: GuardTypes = None,
+        guards=None,
     ):
         logger.info("GET by id view to retrieve specific object from read CRUD")
+        # TBD: move validation to implementation of endpoint - using FastAPI's Annotated?
         try:
             id = UUID(id)
         except ValueError:
@@ -154,7 +155,7 @@ class BaseView:
         id,
         object,
         token_payload,
-        guards: GuardTypes,
+        guards,
     ):
         logger.info("PUT updates a specific object through update CRUD")
         try:
@@ -171,7 +172,7 @@ class BaseView:
         self,
         id,
         token_payload,
-        guards: GuardTypes,
+        guards,
     ):
         logger.info("DELETE removes a specific object through delete CRUD")
         try:

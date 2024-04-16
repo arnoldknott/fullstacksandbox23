@@ -25,13 +25,14 @@ class DemoResourceCRUD(
 
     # TBD: turn into list of tag-Ids, to allow multiple tags
     # TBD: refactor into access control - this might include the hierarchy of the resources!
-    async def add_tag(
-        self, demo_resource_id: int, tag_ids: List[int]
-    ) -> DemoResourceRead:
+    async def add_tag(self, demo_resource_id, tag_ids) -> DemoResourceRead:
         """Adds a tag to a demo resource."""
         session = self.session
         # TBD: refactor into try-except block and add logging
         statement = select(DemoResource).where(DemoResource.id == demo_resource_id)
+        print("=== statement ===")
+        print(statement.compile())
+        print(statement.compile().params)
         demo_resource = await session.exec(statement)
         demo_resource = demo_resource.one()
         if not demo_resource:
