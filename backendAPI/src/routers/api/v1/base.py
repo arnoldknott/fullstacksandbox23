@@ -121,33 +121,33 @@ class BaseView:
         return object
 
     # TBD: consider moving this to CRUD and don't parts of SQL queries in the views
-    async def get_with_query_options(
-        self,
-        select_args: List[str] = None,
-        filters: List[str] = None,
-        joins: List[str] = None,
-        order_by: List[str] = None,
-        # group_by: List[str] = None,
-        # having: List[str] = None,
-        # limit: int = None,
-        # offset: int = None
-        token_payload=None,
-        guards: GuardTypes = None,
-    ):
-        logger.info("GET with various query options from read CRUD")
-        # This is more generic than the get_by_id and filter data needs to happen in inheriting classes
-        current_user = None
-        if token_payload:
-            current_user = await self._check_token_against_guards(token_payload, guards)
-        async with self.crud() as crud:
-            object = await crud.read(
-                current_user,
-                select_args=select_args,
-                filters=filters,
-                joins=joins,
-                order_by=order_by,
-            )
-        return object
+    # async def get_with_query_options(
+    #     self,
+    #     select_args: List[str] = None,
+    #     filters: List[str] = None,
+    #     joins: List[str] = None,
+    #     order_by: List[str] = None,
+    #     # group_by: List[str] = None,
+    #     # having: List[str] = None,
+    #     # limit: int = None,
+    #     # offset: int = None
+    #     token_payload=None,
+    #     guards: GuardTypes = None,
+    # ):
+    #     logger.info("GET with various query options from read CRUD")
+    #     # This is more generic than the get_by_id and filter data needs to happen in inheriting classes
+    #     current_user = None
+    #     if token_payload:
+    #         current_user = await self._check_token_against_guards(token_payload, guards)
+    #     async with self.crud() as crud:
+    #         object = await crud.read(
+    #             current_user,
+    #             select_args=select_args,
+    #             filters=filters,
+    #             joins=joins,
+    #             order_by=order_by,
+    #         )
+    #     return object
 
     async def put(
         self,

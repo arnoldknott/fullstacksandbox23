@@ -199,8 +199,8 @@ async def test_user_posts_user(
         json=many_test_azure_users[0],
     )
 
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid token."}
 
     # this would allow other users to create users, which is not allowed - only self-sign-up!:
     # assert response.status_code == 201
@@ -243,8 +243,8 @@ async def test_post_user_invalid_token(
         json=many_test_azure_users[0],
     )
 
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid token."}
 
 
 # endregion: ## POST tests
@@ -306,8 +306,8 @@ async def test_user_gets_users(
     await add_many_azure_test_users()
 
     response = await async_client.get("/api/v1/user/")
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid token."}
 
 
 @pytest.mark.anyio
@@ -320,7 +320,7 @@ async def test_get_users_without_token(
 
     response = await async_client.get("/api/v1/user/")
     assert response.status_code == 401
-    assert response.text == '{"detail":"Invalid token"}'
+    assert response.json() == {"detail": "Invalid token."}
 
 
 @pytest.mark.anyio
@@ -429,7 +429,7 @@ async def test_get_user_by_azure_id_without_token(
         f"/api/v1/user/azure/{str(user_in_db.azure_user_id)}"
     )
     assert response.status_code == 401
-    assert response.text == '{"detail":"Invalid token"}'
+    assert response.json() == {"detail": "Invalid token."}
 
 
 @pytest.mark.anyio
@@ -529,7 +529,7 @@ async def test_get_user_by_id_without_token(
 
     response = await async_client.get(f"/api/v1/user/azure/{str(user_in_db.id)}")
     assert response.status_code == 401
-    assert response.text == '{"detail":"Invalid token"}'
+    assert response.json() == {"detail": "Invalid token."}
 
 
 @pytest.mark.anyio
@@ -565,8 +565,8 @@ async def test_get_user_by_id_with_missing_scope(
     user_in_database = await add_one_azure_test_user(0)
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid token."}
 
 
 @pytest.mark.anyio
@@ -601,7 +601,7 @@ async def test_get_user_by_id_invalid_token(
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
     assert response.status_code == 401
-    assert response.text == '{"detail":"Invalid token"}'
+    assert response.json() == {"detail": "Invalid token."}
 
 
 # endregion: ## GET tests
@@ -637,9 +637,8 @@ async def test_user_put_user(
         f"/api/v1/user/{str(existing_user.id)}",
         json={"is_active": False},
     )
-    assert response.status_code == 403
-    content = response.json()
-    assert content["detail"] == "Access denied"
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid token."}
 
 
 @pytest.mark.anyio
@@ -838,8 +837,8 @@ async def test_put_user_invalid_token(
         f"/api/v1/user/{str(existing_user.id)}",
         json={"is_active": False},
     )
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid token."}
 
 
 @pytest.mark.anyio
@@ -871,8 +870,8 @@ async def test_user_puts_another_user(
         json={"is_active": False},
         # json={"azure_user_id": str(existing_user.azure_user_id), "is_active": False},
     )
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid token."}
 
 
 # endregion: ## PUT tests
@@ -1012,8 +1011,8 @@ async def test_delete_user_invalid_token(
     response = await async_client.delete(
         f"/api/v1/user/{str(existing_user.id)}",
     )
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid token."}
 
     # check if user is still there:
     existing_db_user = await get_user_by_id(

@@ -167,7 +167,7 @@ async def get_access_token_payload(
     """General function to get the access token payload"""
     # can later be used for customizing different identity service providers
     if payload is None:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="Invalid token.")
     return payload
 
 
@@ -236,7 +236,7 @@ class CurrentAccessToken:
             return True
         else:
             if require:
-                raise HTTPException(status_code=401, detail="Invalid token")
+                raise HTTPException(status_code=401, detail="Invalid token.")
             else:
                 return False
 
@@ -247,7 +247,8 @@ class CurrentAccessToken:
             return True
         else:
             if require:
-                raise HTTPException(status_code=403, detail="Access denied")
+                raise HTTPException(status_code=401, detail="Invalid token.")
+                # raise HTTPException(status_code=403, detail="Access denied")
             else:
                 return False
 
@@ -262,7 +263,8 @@ class CurrentAccessToken:
             return True
         else:
             if require:
-                raise HTTPException(status_code=403, detail="Access denied")
+                raise HTTPException(status_code=401, detail="Invalid token.")
+                # raise HTTPException(status_code=403, detail="Access denied")
             else:
                 return False
 
@@ -274,7 +276,8 @@ class CurrentAccessToken:
             return True
         else:
             if require:
-                raise HTTPException(status_code=403, detail="Access denied")
+                raise HTTPException(status_code=401, detail="Invalid token.")
+                # raise HTTPException(status_code=403, detail="Access denied")
             else:
                 return False
 
@@ -315,7 +318,7 @@ class CurrentAccessToken:
                     raise HTTPException(status_code=404, detail="404 User not found")
         except Exception as err:
             logger.error(f"🔑 User not found in database: ${err}")
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=401, detail="Invalid token.")
 
     # TBD: call get_or_sign_up_current_user from all checks that require a user
     # TBD: merge with gets_or_signs_up_current_user?

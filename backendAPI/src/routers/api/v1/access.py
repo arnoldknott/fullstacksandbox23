@@ -33,11 +33,10 @@ class AccessPolicyView(BaseView):
         super().__init__(AccessPolicyCRUD, AccessPolicy)
 
     # TBD: rethink: this gets ways to complicated
-    # this method is only used once - so no need to make the role-based access control generic!
     async def get_access_policies_for_resource(
         self,
         resource_id: UUID,
-        resource_type: ResourceType,
+        resource_type: ResourceType,  # TBD: remove and let CRUD figure it out?
         token_payload=None,
         guards=None,  #: GuardTypes = Depends(Guards(roles=["User"])),
     ) -> List[AccessPolicyRead]:
@@ -51,6 +50,23 @@ class AccessPolicyView(BaseView):
             )
         return access_policies
 
+    async def get_access_policies_for_identity(
+        self,
+        identity_id: UUID,
+        identity_type: IdentityType,  # TBD: remove and let CRUD figure it out?
+        token_payload=None,
+        guards=None,  #: GuardTypes = Depends(Guards(roles=["User"])),
+    ) -> List[AccessPolicyRead]:
+        """GET view for access policies for a resource"""
+        logger.info("GET user by azure_user_id")
+        current_user = await self._check_token_against_guards(token_payload, guards)
+        # current_user = await self._guards(token_payload, scopes, roles, groups)
+        async with self.crud() as crud:
+            access_policies = await crud.read_access_policies_for_identity(
+                identity_id, identity_type, current_user
+            )
+        return access_policies
+
 
 access_policy_view = AccessPolicyView()
 
@@ -59,7 +75,7 @@ access_policy_view = AccessPolicyView()
 async def post_access_policy(
     access_policy: AccessPolicyCreate,
     token_payload=Depends(get_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> AccessPolicy:
     """Creates a new access policy."""
     return await access_policy_view.post(
@@ -82,7 +98,7 @@ async def post_access_policy(
 @router.get("/policies", status_code=200)
 async def get_access_policies(
     token_payload=Depends(get_access_token_payload),
-    guards=Depends(Guards(roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies."""
     return await access_policy_view.get(token_payload, guards)
@@ -92,9 +108,9 @@ async def get_access_policies(
 @router.get("/policy/resource/{resource_id}", status_code=200)
 async def get_access_policies_for_resource(
     resource_id: str,
-    resource_type: str,
+    resource_type: str,  # TBD: remove and let CRUD figure it out?
     token_payload=Depends(get_access_token_payload),
-    guards=Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for requested resource."""
     if not resource_id or not resource_type:
@@ -125,9 +141,9 @@ async def get_access_policies_for_resource(
 @router.get("/policy/identity/{identity_id}", status_code=200)
 async def get_access_policies_for_identity(
     identity_id: str,
-    identity_type: str,
+    identity_type: str,  # TBD: default to user? or remove and let CRUD figure it out?
     token_payload=Depends(get_access_token_payload),
-    guards=Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
     """Returns all protected resources."""
     if not identity_id:
@@ -146,16 +162,22 @@ async def get_access_policies_for_identity(
                 status_code=403,
                 detail="Forbidden.",
             )
-    filters = [
-        AccessPolicy.identity_id == identity_id,
-        AccessPolicy.identity_type == identity_type,
-    ]
-    return await access_policy_view.get_with_query_options(
-        filters=filters,
-        token_payload=token_payload,
+    return await access_policy_view.get_access_policies_for_identity(
+        identity_id,
+        identity_type,
+        token_payload,
         guards=guards,
-        # roles=["User"],
     )
+    # filters = [
+    #     AccessPolicy.identity_id == identity_id,
+    #     AccessPolicy.identity_type == identity_type,
+    # ]
+    # return await access_policy_view.get_with_query_options(
+    #     filters=filters,
+    #     token_payload=token_payload,
+    #     guards=guards,
+    #     # roles=["User"],
+    # )
 
 
 # Nomenclature:
@@ -183,21 +205,21 @@ access_log_view = BaseView(AccessPolicyCRUD, AccessPolicy)
 # X missing tests
 # - not implemented
 
-
-@router.get("/log/created/{resource_id}", status_code=200)
-async def get_creation_information_for_resource(
-    resource_id: str,
-    token_payload=Depends(get_access_token_payload),
-) -> list[AccessLogRead]:
-    """Returns creation information for a resource."""
-    return await access_log_view.get_with_query_options(
-        token_payload,
-        roles=["user"],
-        filters=[AccessLog.resource_id == resource_id],
-        order_by=AccessLog.time,
-        # TBD: ascending or descending?
-        limit=1,
-    )
+# TBD: write tests for this
+# @router.get("/log/created/{resource_id}", status_code=200)
+# async def get_creation_information_for_resource(
+#     resource_id: str,
+#     token_payload=Depends(get_access_token_payload),
+# ) -> list[AccessLogRead]:
+#     """Returns creation information for a resource."""
+#     return await access_log_view.get_with_query_options(
+#         token_payload,
+#         roles=["user"],
+#         filters=[AccessLog.resource_id == resource_id],
+#         order_by=AccessLog.time,
+#         # TBD: ascending or descending?
+#         limit=1,
+#     )
 
 
 # AccessLogs:

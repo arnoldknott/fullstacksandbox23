@@ -113,6 +113,12 @@ class AccessPolicyCRUD:
         action: Optional[Action] = None,
     ) -> List[AccessPolicyRead]:
         """Reads access control policies based on the provided parameters."""
+
+        # TBD: add some access checks here:
+        # if current_user is Admin: allow all.
+        # otherwise: identity_id must be either current_user.id or a group the current_user is member of.
+        # if no identity id, the resource needs to be public
+
         try:
             session = self.session
             query = select(AccessPolicy)
@@ -175,7 +181,7 @@ class AccessPolicyCRUD:
     async def read_access_policies_for_resource(
         self,
         resource_id: str,
-        resource_type: ResourceType,
+        resource_type: ResourceType,  # TBD: remove and read from database in read method?
         current_user: CurrentUserData,
     ):
         """Returns a User with linked Groups from the database."""
@@ -188,11 +194,29 @@ class AccessPolicyCRUD:
             return access_policies
         except Exception as err:
             logging.error(err)
+            raise HTTPException(status_code=404, detail="Access policies not found")
+
+    async def read_access_policies_for_identity(
+        self,
+        identity_id: str,
+        identity_type: ResourceType,  # TBD: remove and read from database in read method?
+        current_user: CurrentUserData,
+    ):
+        """Returns a User with linked Groups from the database."""
+        try:
+            filters = [
+                AccessPolicy.identity_id == identity_id,
+                AccessPolicy.identity_type == identity_type,
+            ]
+            access_policies = await self.read(current_user, filters=filters)
+            return access_policies
+        except Exception as err:
+            logging.error(err)
             raise HTTPException(status_code=404, detail="AccessPolicies not found")
 
     async def delete(
         self,
-        current_user: Optional["CurrentUserData"]=None,
+        current_user: Optional["CurrentUserData"] = None,
         policy_id: Optional[int] = None,
         identity_id: Optional[UUID] = None,
         resource_id: Optional[int] = None,
@@ -200,6 +224,13 @@ class AccessPolicyCRUD:
         action: Optional[Action] = None,
     ) -> None:
         """Deletes an access control policy."""
+
+        # TBD: add some access checks here:
+        # if current_user is Admin: allow all.
+        # otherwise: identity_id must be either current_user.id or a group the current_user is member of.
+        # if no identity id, the resource needs to be public
+        # current_user must have own rights on the resource to delete a policy
+
         try:
             session = self.session
 

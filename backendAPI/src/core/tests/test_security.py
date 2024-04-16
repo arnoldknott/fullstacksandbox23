@@ -191,7 +191,8 @@ async def test_azure_user_self_signup_invalid_token(
     )
 
     assert response.status_code == 401
-    assert response.text == '{"detail":"Invalid token"}'
+    assert response.json() == {"detail": "Invalid token."}
+    # assert response.text == '{"detail":"Invalid token."}'
 
 
 @pytest.mark.anyio
@@ -447,7 +448,8 @@ async def test_invalid_azure_token(
     )
 
     assert response.status_code == 401
-    assert response.text == '{"detail":"Invalid token"}'
+    assert response.json() == {"detail": "Invalid token."}
+    # assert response.text == '{"detail":"Invalid token"}'
 
 
 @pytest.mark.anyio
@@ -554,8 +556,8 @@ async def test_current_azure_token_missing_scope_api_read(
         "/test_current_azure_token_missing_scope_api_read",
     )
 
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid token."}
 
 
 @pytest.mark.anyio
@@ -672,8 +674,8 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload(
         "/test_admin_guard_without_admin_role_in_azure_mocked_token_payload",
     )
 
-    assert response.status_code == 403
-    assert response.text == '{"detail":"Access denied"}'
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid token."}
 
 
 @pytest.mark.anyio
