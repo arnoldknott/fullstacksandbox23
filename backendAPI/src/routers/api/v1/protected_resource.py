@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
@@ -53,7 +54,7 @@ async def get_protected_resources(
 # TBD: write more tests for this:
 @router.get("/{resource_id}", status_code=200)
 async def get_protected_resource_by_id(
-    resource_id: str,
+    resource_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> ProtectedResource:
@@ -69,7 +70,7 @@ async def get_protected_resource_by_id(
 # TBD: write more tests for this:
 @router.put("/{resource_id}", status_code=200)
 async def put_protected_resource(
-    resource_id: str,
+    resource_id: UUID,
     protected_resource: ProtectedResourceCreate,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
@@ -88,7 +89,7 @@ async def put_protected_resource(
 # TBD: write more tests for this:
 @router.delete("/{resource_id}", status_code=200)
 async def delete_protected_resource(
-    resource_id: str,
+    resource_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedResource:

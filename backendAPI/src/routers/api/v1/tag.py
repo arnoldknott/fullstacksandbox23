@@ -1,5 +1,5 @@
 import logging
-import uuid
+from uuid import UUID
 
 from crud.tag import TagCRUD
 from fastapi import APIRouter, Depends, HTTPException
@@ -52,7 +52,7 @@ async def post_tag(
 #     return response
 
 # @router.get("/{tag_id}")
-# async def get_tag_by_id(tag_id: str) -> Tag:
+# async def get_tag_by_id(tag_id: UUID) -> Tag:
 #     """Returns a tag."""
 #     logger.info("GET tag")
 #     try:
@@ -73,7 +73,7 @@ async def get_tags() -> list[TagRead]:
 
 @router.get("/{tag_id}", status_code=200)
 async def get_tag_by_id(
-    tag_id: str,
+    tag_id: UUID,
 ) -> TagRead:
     """Returns a tag."""
     return await tag_view.get_by_id(tag_id)
@@ -82,7 +82,7 @@ async def get_tag_by_id(
 # # TBD delete version before refactoring:
 # @router.put("/{tag_id}")
 # async def update_tag(
-#     tag_id: str,
+#     tag_id: UUID,
 #     tag: TagUpdate,
 # ) -> Tag:
 #     """Updates a tag."""
@@ -100,7 +100,7 @@ async def get_tag_by_id(
 
 @router.put("/{tag_id}", status_code=200)
 async def put_tag(
-    tag_id: str,
+    tag_id: UUID,
     tag: TagUpdate,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
@@ -118,7 +118,7 @@ async def put_tag(
 
 # # TBD delete version before refactoring:
 # @router.delete("/{tag_id}")
-# async def delete_tag(tag_id: str) -> Tag:
+# async def delete_tag(tag_id: UUID) -> Tag:
 #     """Deletes a tag."""
 #     logger.info("DELETE tag")
 #     try:
@@ -133,7 +133,7 @@ async def put_tag(
 
 @router.delete("/{tag_id}", status_code=200)
 async def delete_tag(
-    tag_id: str,
+    tag_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Tag:
@@ -146,14 +146,9 @@ async def delete_tag(
 # TBD: missing tests for this endpoint?
 # TBD: refactor to updated access protection
 @router.get("/{tag_id}/demoresources")
-async def get_all_demo_resources_for_tag(tag_id: str) -> list[DemoResource]:
+async def get_all_demo_resources_for_tag(tag_id: UUID) -> list[DemoResource]:
     """Returns all demo resources with tag."""
     logger.info("GET all demo resources with tag")
-    try:
-        tag_id = uuid.UUID(tag_id)
-    except ValueError:
-        logger.error("Tag ID is not a universal unique identifier (uuid).")
-        raise HTTPException(status_code=400, detail="Invalid tag id")
     async with TagCRUD() as crud:
         response = await crud.read_all_demo_resources(tag_id)
     return response

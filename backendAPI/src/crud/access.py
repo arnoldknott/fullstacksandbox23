@@ -180,7 +180,7 @@ class AccessPolicyCRUD:
 
     async def read_access_policies_for_resource(
         self,
-        resource_id: str,
+        resource_id: UUID,
         resource_type: ResourceType,  # TBD: remove and read from database in read method?
         current_user: CurrentUserData,
     ):
@@ -198,7 +198,7 @@ class AccessPolicyCRUD:
 
     async def read_access_policies_for_identity(
         self,
-        identity_id: str,
+        identity_id: UUID,
         identity_type: ResourceType,  # TBD: remove and read from database in read method?
         current_user: CurrentUserData,
     ):

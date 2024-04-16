@@ -109,11 +109,11 @@ class BaseView:
     ):
         logger.info("GET by id view to retrieve specific object from read CRUD")
         # TBD: move validation to implementation of endpoint - using FastAPI's Annotated?
-        try:
-            id = UUID(id)
-        except ValueError:
-            logger.error("ID is not a universal unique identifier (uuid).")
-            raise HTTPException(status_code=400, detail="Invalid id.")
+        # try:
+        #     id = UUID(id)
+        # except ValueError:
+        #     logger.error("ID is not a universal unique identifier (uuid).")
+        #     raise HTTPException(status_code=400, detail="Invalid id.")
         current_user = None
         if token_payload:
             current_user = await self._check_token_against_guards(token_payload, guards)
@@ -158,11 +158,11 @@ class BaseView:
         guards,
     ):
         logger.info("PUT updates a specific object through update CRUD")
-        try:
-            id = UUID(id)
-        except ValueError:
-            logger.error("ID is not a universal unique identifier (uuid).")
-            raise HTTPException(status_code=400, detail="Invalid id.")
+        # try:
+        #     id = UUID(id)
+        # except ValueError:
+        #     logger.error("ID is not a universal unique identifier (uuid).")
+        #     raise HTTPException(status_code=400, detail="Invalid id.")
         current_user = await self._check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
             updated_object = await crud.update(current_user, id, object)
@@ -175,11 +175,11 @@ class BaseView:
         guards,
     ):
         logger.info("DELETE removes a specific object through delete CRUD")
-        try:
-            id = UUID(id)
-        except ValueError:
-            logger.error("ID is not a universal unique identifier (uuid).")
-            raise HTTPException(status_code=400, detail="Invalid id.")
+        # try:
+        #     id = UUID(id)
+        # except ValueError:
+        #     logger.error("ID is not a universal unique identifier (uuid).")
+        #     raise HTTPException(status_code=400, detail="Invalid id.")
         current_user = await self._check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
             deleted_object = await crud.delete(current_user, id)

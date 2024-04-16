@@ -443,16 +443,12 @@ async def test_user_gets_user_by_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
-    mocked_get_azure_token_payload,
 ):
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
     user_in_database = await add_one_azure_test_user(0)
-
-    print("=== user_in_database.id ===")
-    print(user_in_database.id)
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
 
@@ -481,7 +477,6 @@ async def test_admin_gets_user_by_id(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-
     user_in_database = await add_one_azure_test_user(1)
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")

@@ -2,6 +2,7 @@
 import logging
 from typing import List, Optional
 from fastapi import HTTPException
+from uuid import UUID
 
 # from models.azure_group_user_link import AzureGroupUserLink
 from core.types import Action
@@ -37,7 +38,7 @@ class AzureGroupCRUD(
 
     # TBD: refactor into access control and just call self.create() with current_user!
     async def create_if_not_exists(
-        self, azure_group_id: str, azure_tenant_id: str
+        self, azure_group_id: UUID, azure_tenant_id: UUID
     ) -> AzureGroupRead:
         """Creates a new group if it does not exist."""
         # try:
@@ -76,7 +77,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         super().__init__(User)
 
     async def read_by_azure_user_id(
-        self, azure_user_id: str, current_user: CurrentUserData
+        self, azure_user_id: UUID, current_user: CurrentUserData
     ) -> UserRead:
         """Returns a User with linked Groups from the database."""
         try:
@@ -94,8 +95,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     # TBD: rename into azure_user_self_sign_up()!
     async def create_azure_user_and_groups_if_not_exist(
         self,
-        azure_user_id: str,
-        azure_tenant_id: str,
+        azure_user_id: UUID,
+        azure_tenant_id: UUID,
         # TBD add the roles to be able to create CurrentUserData here - needed for "access controlled" creation of the groups.
         groups: Optional[List[str]],
     ) -> UserRead:
@@ -198,7 +199,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
 
     # Hose are not even used anywhere yet - so no priority to update them!
     # # TBD: Refactor into access control: just call self.update()
-    # async def deactivate_user(self, azure_user_id: str) -> User:
+    # async def deactivate_user(self, azure_user_id: UUID) -> User:
     #     """Deactivates a user."""
     #     session = self.session
     #     # async with session:
@@ -210,7 +211,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     #     return existing_user
 
     # # TBD: Refactor into access control: just call self.update()
-    # async def activate_user(self, azure_user_id: str) -> User:
+    # async def activate_user(self, azure_user_id: UUID) -> User:
     #     """Activates a user."""
     #     session = self.session
     #     # async with session:
@@ -222,7 +223,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     #     return existing_user
 
     # # TBD: Refactor into access control: just call self.read() and return the is_active field!
-    # async def user_is_active(self, azure_user_id: str) -> bool:
+    # async def user_is_active(self, azure_user_id: UUID) -> bool:
     #     """Checks if a user is active."""
     #     session = self.session
     #     # async with session:

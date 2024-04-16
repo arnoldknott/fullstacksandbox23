@@ -1,5 +1,5 @@
 import logging
-import uuid
+from uuid import UUID
 
 # from typing import List
 from fastapi import APIRouter, Depends, HTTPException
@@ -56,7 +56,7 @@ async def post_category(
 #     return response
 
 # @router.get("/{category_id}")
-# async def get_category_by_id(category_id: str) -> Category:
+# async def get_category_by_id(category_id: UUID) -> Category:
 #     """Returns a category."""
 #     logger.info("GET category")
 #     try:
@@ -84,7 +84,7 @@ async def get_categories(
 
 @router.get("/{category_id}", status_code=200)
 async def get_category_by_id(
-    category_id: str,
+    category_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> CategoryRead:
@@ -100,7 +100,7 @@ async def get_category_by_id(
 # # TBD delete version before refactoring:
 # @router.put("/{category_id}")
 # async def update_category(
-#     category_id: str,
+#     category_id: UUID,
 #     category: CategoryUpdate,
 # ) -> Category:
 #     """Updates a category."""
@@ -118,7 +118,7 @@ async def get_category_by_id(
 
 @router.put("/{category_id}", status_code=200)
 async def put_category(
-    category_id: str,
+    category_id: UUID,
     category: CategoryUpdate,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
@@ -135,11 +135,11 @@ async def put_category(
 
 
 # @router.delete("/{category_id}")
-# async def delete_category(category_id: str) -> Category:
+# async def delete_category(category_id: UUID) -> Category:
 #     """Deletes a category."""
 #     logger.info("DELETE category")
 #     try:
-#         category_id = uuid.UUID(category_id)
+#         category_id = UUID(category_id)
 #     except ValueError:
 #         logger.error("Category ID is not a universal unique identifier (uuid).")
 #         raise HTTPException(status_code=400, detail="Invalid category id")
@@ -150,7 +150,7 @@ async def put_category(
 
 @router.delete("/{category_id}", status_code=200)
 async def delete_category(
-    category_id: str,
+    category_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Category:
@@ -162,14 +162,14 @@ async def delete_category(
 
 # TBD: refactor to updated access protection
 @router.get("/{category_id}/demoresources")
-async def get_all_demo_resources_in_category(category_id: str) -> list[DemoResource]:
+async def get_all_demo_resources_in_category(category_id: UUID) -> list[DemoResource]:
     """Returns all demo resources within category."""
     logger.info("GET all demo resources within category")
-    try:
-        category_id = uuid.UUID(category_id)
-    except ValueError:
-        logger.error("Category ID is not a universal unique identifier (uuid).")
-        raise HTTPException(status_code=400, detail="Invalid category id")
+    # try:
+    #     category_id = UUID(category_id)
+    # except ValueError:
+    #     logger.error("Category ID is not a universal unique identifier (uuid).")
+    #     raise HTTPException(status_code=400, detail="Invalid category id")
     async with CategoryCRUD() as crud:
         response = await crud.read_all_demo_resources(category_id)
     return response

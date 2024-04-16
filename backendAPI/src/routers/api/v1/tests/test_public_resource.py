@@ -72,9 +72,7 @@ async def test_get_public_resource_by_invalid_id(async_client: AsyncClient):
     """Tests GET of a public_resource with invalid id."""
 
     response = await async_client.get("/api/v1/publicresource/invalid_id")
-    assert response.status_code == 400
-    content = response.json()
-    assert content["detail"] == "Invalid public_resource id"
+    assert response.status_code == 422
 
 
 @pytest.mark.anyio
@@ -152,9 +150,7 @@ async def test_delete_public_resource_by_invalid_id(async_client: AsyncClient):
     """Tests DELETE of a public_resource with invalid id."""
     response = await async_client.delete("/api/v1/publicresource/invalid_id")
 
-    assert response.status_code == 400
-    content = response.json()
-    assert content["detail"] == "Invalid public_resource id"
+    assert response.status_code == 422
 
 
 @pytest.mark.anyio

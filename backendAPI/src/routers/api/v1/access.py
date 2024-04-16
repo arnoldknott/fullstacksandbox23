@@ -109,7 +109,7 @@ async def get_access_policies(
 # TBD: write tests for this:
 @router.get("/policy/resource/{resource_id}", status_code=200)
 async def get_access_policies_for_resource(
-    resource_id: str,
+    resource_id: UUID,
     resource_type: str,  # TBD: remove and let CRUD figure it out?
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
@@ -142,7 +142,7 @@ async def get_access_policies_for_resource(
 # TBD: write tests for this:
 @router.get("/policy/identity/{identity_id}", status_code=200)
 async def get_access_policies_for_identity(
-    identity_id: str,
+    identity_id: UUID,
     identity_type: str,  # TBD: default to user? or remove and let CRUD figure it out?
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
@@ -210,7 +210,7 @@ access_log_view = BaseView(AccessPolicyCRUD, AccessPolicy)
 # TBD: write tests for this
 # @router.get("/log/created/{resource_id}", status_code=200)
 # async def get_creation_information_for_resource(
-#     resource_id: str,
+#     resource_id: UUID,
 #     token_payload=Depends(get_access_token_payload),
 # ) -> list[AccessLogRead]:
 #     """Returns creation information for a resource."""

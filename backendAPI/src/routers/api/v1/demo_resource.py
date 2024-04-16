@@ -1,5 +1,5 @@
 import logging
-import uuid
+from uuid import UUID
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -31,7 +31,7 @@ class DemoResourceView(BaseView):
     def __init__(self):
         super().__init__(DemoResourceCRUD, DemoResource)
 
-    async def add_tag(self, resource_id: uuid.UUID, tag_ids: List[uuid.UUID]):
+    async def add_tag(self, resource_id: UUID, tag_ids: List[UUID]):
         """Adds a tag to a demo resource."""
         async with self.crud() as crud:
             return await crud.add_tag(resource_id, tag_ids)
@@ -89,12 +89,12 @@ async def post_category(
 
 
 # @router.get("/{resource_id}")
-# async def get_demo_resource_by_id(resource_id: str) -> DemoResourceRead:
+# async def get_demo_resource_by_id(resource_id: UUID) -> DemoResourceRead:
 #     """Returns a demo resource."""
 #     logger.info("GET demo resource")
 #     # crud = DemoResourceCRUD()
 #     try:
-#         resource_id = uuid.UUID(resource_id)
+#         resource_id = UUID(resource_id)
 #     except ValueError:
 #         logger.error("Resource ID is not a universal unique identifier (uuid).")
 #         raise HTTPException(status_code=400, detail="Invalid resource id")
@@ -117,7 +117,7 @@ async def get_all_demo_resources(
 
 @router.get("/{demo_resource_id}", status_code=200)
 async def get_demo_resource_by_id(
-    demo_resource_id: str,
+    demo_resource_id: UUID,
     # note: optional allows public access to those resources
     # where a public access policy is set
     # Fine grained access control handles this in the CRUD.
@@ -130,7 +130,7 @@ async def get_demo_resource_by_id(
 # TBD: remove the old version after refactoring:
 # @router.put("/{resource_id}")
 # async def update_demo_resource(
-#     resource_id: str,
+#     resource_id: UUID,
 #     demo_resource: DemoResourceUpdate,
 # ) -> DemoResource:
 #     """Updates a demo resource."""
@@ -139,7 +139,7 @@ async def get_demo_resource_by_id(
 #     # print(demo_resource)
 #     # crud = DemoResourceCRUD()
 #     try:
-#         resource_id = uuid.UUID(resource_id)
+#         resource_id = UUID(resource_id)
 #     except ValueError:
 #         logger.error("Resource ID is not a universal unique identifier (uuid).")
 #         raise HTTPException(status_code=400, detail="Invalid resource id")
@@ -151,7 +151,7 @@ async def get_demo_resource_by_id(
 
 @router.put("/{demo_resource_id}", status_code=200)
 async def put_category(
-    demo_resource_id: str,
+    demo_resource_id: UUID,
     demo_resource: DemoResourceUpdate,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
@@ -164,12 +164,12 @@ async def put_category(
 
 # # TBD: remove the old version after refactoring:
 # @router.delete("/{resource_id}")
-# async def delete_demo_resource(resource_id: str) -> DemoResource:
+# async def delete_demo_resource(resource_id: UUID) -> DemoResource:
 #     """Deletes a demo resource."""
 #     logger.info("DELETE demo resource")
 #     # crud = DemoResourceCRUD()
 #     try:
-#         resource_id = uuid.UUID(resource_id)
+#         resource_id = UUID(resource_id)
 #     except ValueError:
 #         logger.error("Resource ID is not a universal unique identifier (uuid).")
 #         raise HTTPException(status_code=400, detail="Invalid resource id")
@@ -182,7 +182,7 @@ async def put_category(
 
 @router.delete("/{demo_resource_id}", status_code=200)
 async def delete_demo_resource(
-    demo_resource_id: str,
+    demo_resource_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResource:
@@ -196,20 +196,20 @@ async def delete_demo_resource(
 # like sharing, tagging, creating hierarchies etc.
 @router.post("/{resource_id}/tag/")
 async def add_tag_to_demo_resource(
-    resource_id: str,  # TBD consider using Annotated for the id checks!
-    tag_ids: Annotated[List[uuid.UUID], Query()],
+    resource_id: UUID,  # TBD consider using Annotated for the id checks!
+    tag_ids: Annotated[List[UUID], Query()],
     # TBD: move the arguments from Query to json!
     # as the tags are queries, no body is required. This could be a GET request!!
 ) -> DemoResourceRead:
     """Adds a tag to a demo resource."""
     logger.info("POST demo resource")
-    try:
-        resource_id = uuid.UUID(resource_id)
-        # for tag_id in tag_ids:
-        #     uuid.UUID(tag_id)
-    except ValueError:
-        logger.error("ID's must by a universal unique identifier (uuid).")
-        raise HTTPException(status_code=400, detail="Invalid id")
+    # try:
+    #     resource_id = uuid.UUID(resource_id)
+    #     # for tag_id in tag_ids:
+    #     #     uuid.UUID(tag_id)
+    # except ValueError:
+    #     logger.error("ID's must by a universal unique identifier (uuid).")
+    #     raise HTTPException(status_code=400, detail="Invalid id")
     return await demo_resource_view.add_tag(resource_id, tag_ids)
     # async with DemoResourceCRUD() as crud:
     #     result = await crud.add_tag(resource_id, tag_ids)

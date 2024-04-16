@@ -244,9 +244,7 @@ async def test_get_demo_resource_by_invalid_id_type(async_client: AsyncClient):
     """Tests GET of a demo resources with invalid id."""
 
     response = await async_client.get("/api/v1/demoresource/invalid_id")
-    assert response.status_code == 400
-    content = response.json()
-    assert content["detail"] == "Invalid id."
+    assert response.status_code == 422
 
 
 @pytest.mark.anyio
@@ -369,9 +367,7 @@ async def test_put_demo_resource_by_invalid_id(
         "/api/v1/demoresource/not_an_integer", json=updated_resource
     )
 
-    assert response.status_code == 400
-    content = response.json()
-    assert content["detail"] == "Invalid id."
+    assert response.status_code == 422
 
 
 @pytest.mark.anyio
@@ -418,7 +414,7 @@ async def test_put_demo_resource_by_resource_does_not_exist(
 #     }
 #     response = await async_client.put("/api/v1/demoresource/1", json=updated_resource)
 
-#     assert response.status_code == 400
+#     assert response.status_code == 422
 
 
 @pytest.mark.anyio
@@ -479,9 +475,7 @@ async def test_delete_demo_resource_by_invalid_id(
 
     response = await async_client.delete("/api/v1/demoresource/invalid_id")
 
-    assert response.status_code == 400
-    content = response.json()
-    assert content["detail"] == "Invalid id."
+    assert response.status_code == 422
 
 
 @pytest.mark.anyio

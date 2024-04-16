@@ -1,5 +1,5 @@
 import logging
-import uuid
+from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from models.public_resource import (
     PublicResource,
@@ -35,14 +35,9 @@ async def get_all_public_resources() -> list[PublicResourceRead]:
 
 
 @router.get("/{public_resource_id}", status_code=200)
-async def get_public_resource_by_id(public_resource_id: str) -> PublicResourceRead:
+async def get_public_resource_by_id(public_resource_id: UUID) -> PublicResourceRead:
     """Returns a public_resource."""
     logger.info("GET public_resource")
-    try:
-        public_resource_id = uuid.UUID(public_resource_id)
-    except ValueError:
-        logger.error("PublicResource ID is not a universal unique identifier (uuid).")
-        raise HTTPException(status_code=400, detail="Invalid public_resource id")
     async with PublicResourceCRUD() as crud:
         response = await crud.read_by_id(public_resource_id)
     return response
@@ -50,16 +45,11 @@ async def get_public_resource_by_id(public_resource_id: str) -> PublicResourceRe
 
 @router.put("/{public_resource_id}")
 async def update_public_resource(
-    public_resource_id: str,
+    public_resource_id: UUID,
     public_resource: PublicResourceUpdate,
 ) -> PublicResource:
     """Updates a public_resource."""
     logger.info("PUT public_resource")
-    try:
-        public_resource_id = uuid.UUID(public_resource_id)
-    except ValueError:
-        logger.error("PublicResource ID is not a universal unique identifier (uuid).")
-        raise HTTPException(status_code=400, detail="Invalid public_resource id")
     async with PublicResourceCRUD() as crud:
         old_public_resource = await crud.read_by_id(public_resource_id)
         response = await crud.update(old_public_resource, public_resource)
@@ -67,14 +57,9 @@ async def update_public_resource(
 
 
 @router.delete("/{public_resource_id}")
-async def delete_public_resource(public_resource_id: str) -> PublicResource:
+async def delete_public_resource(public_resource_id: UUID) -> PublicResource:
     """Deletes a public_resource."""
     logger.info("DELETE public_resource")
-    try:
-        public_resource_id = uuid.UUID(public_resource_id)
-    except ValueError:
-        logger.error("PublicResource ID is not a universal unique identifier (uuid).")
-        raise HTTPException(status_code=400, detail="Invalid public_resource id")
     async with PublicResourceCRUD() as crud:
         response = await crud.delete(public_resource_id)
     return response

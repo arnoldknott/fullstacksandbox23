@@ -64,7 +64,7 @@ user_view = UserView()
 async def post_user(
     user: UserCreate,
     token_payload=Depends(get_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
@@ -119,7 +119,7 @@ async def post_user(
 @router.get("/", status_code=200)
 async def get_all_users(
     token_payload=Depends(get_access_token_payload),
-    guards=Depends(Guards(roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
 ) -> list[UserRead]:
     """Returns all users."""
     return await user_view.get(
@@ -131,7 +131,7 @@ async def get_all_users(
 # # TBD: Delete old version after refactoring with BaseView:
 # @router.get("/azure/{azure_user_id}")
 # async def get_user_by_azure_user_id(
-#     azure_user_id: str,
+#     azure_user_id: UUID,
 #     current_user: UserRead = Depends(CurrentAzureUserInDatabase()),
 #     check_admin_role=Depends(CurrentAccessTokenHasRole("Admin", require=False)),
 # ) -> UserRead:
@@ -167,23 +167,18 @@ async def get_all_users(
 ### TBD: Should be ready to go:
 @router.get("/azure/{azure_user_id}", status_code=200)
 async def get_user_by_azure_user_id(
-    azure_user_id: str,
+    azure_user_id: UUID,
     token_payload=Depends(get_access_token_payload),
-    guards=Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> UserRead:
     """Returns a user based on its azure user id."""
-    try:
-        azure_user_id = UUID(azure_user_id)
-    except ValueError:
-        logger.error("User ID is not an UUID")
-        raise HTTPException(status_code=400, detail="Invalid user id")
     return await user_view.get_by_azure_user_id(azure_user_id, token_payload, guards)
 
 
 # # TBD: Delete old version after refactoring with BaseView:
 # @router.get("/{user_id}")
 # async def get_user_by_id(
-#     user_id: str,
+#     user_id: UUID,
 #     current_user: UserRead = Depends(CurrentAzureUserInDatabase()),
 #     check_admin_role=Depends(CurrentAccessTokenHasRole("Admin", require=False)),
 # ) -> UserRead:
@@ -210,7 +205,7 @@ async def get_user_by_azure_user_id(
 
 @router.get("/{user_id}", status_code=200)
 async def get_user_by_id(
-    user_id: str,
+    user_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards=Depends(Guards(roles=["User"])),
 ) -> UserRead:
@@ -225,7 +220,7 @@ async def get_user_by_id(
 # # TBD: Delete old version after refactoring with BaseView:
 # @router.put("/{user_id}")
 # async def update_user(
-#     user_id: str,
+#     user_id: UUID,
 #     user_data_update: UserUpdate,
 #     current_user: UserRead = Depends(CurrentAzureUserInDatabase()),
 #     _=Depends(CurrentAccessTokenHasScope("api.write")),
@@ -257,7 +252,7 @@ async def get_user_by_id(
 
 @router.put("/{user_id}", status_code=200)
 async def put_user(
-    user_id: str,
+    user_id: UUID,
     user: UserUpdate,
     token_payload=Depends(get_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
@@ -274,7 +269,7 @@ async def put_user(
 # # TBD: Delete old version after refactoring with BaseView:
 # @router.delete("/{user_id}")
 # async def delete_user(
-#     user_id: str,
+#     user_id: UUID,
 #     current_user: UserRead = Depends(CurrentAzureUserInDatabase()),
 #     _=Depends(CurrentAccessTokenHasScope("api.write")),
 #     check_admin_role=Depends(CurrentAccessTokenHasRole("Admin", require=False)),
@@ -297,7 +292,7 @@ async def put_user(
 
 @router.delete("/{user_id}", status_code=200)
 async def delete_user(
-    user_id: str,
+    user_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> User:

@@ -506,7 +506,7 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
 # TBD: this will fail some tests - so they need to be rewritten
 
 # def updates_last_access(
-# self, admin: bool, current_user: UserRead, owner_id: str
+# self, admin: bool, current_user: UserRead, owner_id: UUID
 # ) -> None:
 # logger.info("POST updated_last_access")
 # if (admin is True) and (str(current_user.user_id) != str(owner_id)):
