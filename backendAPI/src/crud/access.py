@@ -192,6 +192,7 @@ class AccessPolicyCRUD:
 
     async def delete(
         self,
+        current_user: Optional["CurrentUserData"]=None,
         policy_id: Optional[int] = None,
         identity_id: Optional[UUID] = None,
         resource_id: Optional[int] = None,

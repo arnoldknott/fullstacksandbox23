@@ -165,7 +165,7 @@ async def test_read_access_policy_by_id(
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         # read_policy = await policy_crud.read_by_id(3)
-        read_policy = await policy_crud.read(policies[2].id)
+        read_policy = await policy_crud.read(policy_id=policies[2].id)
 
     assert read_policy.id == policies[2].id
     assert read_policy.identity_id == policies[2].identity_id
@@ -184,7 +184,7 @@ async def test_read_access_policy_for_nonexisting_id(
     async with AccessPolicyCRUD() as policy_crud:
         try:
             # results = await policy_crud.read_by_id(1234)
-            await policy_crud.read(uuid.uuid4())
+            await policy_crud.read(policy_id=uuid.uuid4())
         except Exception as err:
             assert err.status_code == 404
             assert err.detail == "Access policy not found"
@@ -387,11 +387,11 @@ async def test_delete_access_policy_by_id(add_many_test_access_policies):
     """Test deleting an access policy."""
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
-        await policy_crud.delete(policies[2].id)
+        await policy_crud.delete(policy_id=policies[2].id)
 
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            await policy_crud.read(policies[2].id)
+            await policy_crud.read(policy_id=policies[2].id)
         except Exception as err:
             assert err.status_code == 404
             assert err.detail == "Access policy not found"
