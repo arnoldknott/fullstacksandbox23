@@ -1,39 +1,38 @@
 import logging
-from typing import List
 
 from uuid import UUID
 from core.security import get_access_token_payload, Guards
 from core.types import GuardTypes
 from crud.identity import UserCRUD
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from models.identity import User, UserCreate, UserRead, UserUpdate
 from .base import BaseView
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# user_view = BaseView(UserCRUD, User)
+user_view = BaseView(UserCRUD, User)
 
 
-class UserView(BaseView):
-    def __init__(self):
-        super().__init__(UserCRUD, User)
+# class UserView(BaseView):
+#     def __init__(self):
+#         super().__init__(UserCRUD, User)
 
-    async def get_by_azure_user_id(
-        self,
-        azure_user_id: UUID,
-        token_payload=None,
-        guards=None,  #: GuardTypes = Depends(Guards(roles=["User"])),
-    ) -> UserRead:
-        """GET view to retrieve user by azure_user_id."""
-        logger.info("GET user by azure_user_id")
-        current_user = await self._check_token_against_guards(token_payload, guards)
-        async with self.crud() as crud:
-            user = await crud.read_by_azure_user_id(azure_user_id, current_user)
-        return user
+#     async def get_by_azure_user_id(
+#         self,
+#         azure_user_id: UUID,
+#         token_payload=None,
+#         guards=None,  #: GuardTypes = Depends(Guards(roles=["User"])),
+#     ) -> UserRead:
+#         """GET view to retrieve user by azure_user_id."""
+#         logger.info("GET user by azure_user_id")
+#         current_user = await self._check_token_against_guards(token_payload, guards)
+#         async with self.crud() as crud:
+#             user = await crud.read_by_azure_user_id(azure_user_id, current_user)
+#         return user
 
 
-user_view = UserView()
+# user_view = UserView()
 
 # this filter definition needs to move to the specific CRUD:
 # filters = [User.azure_user_id == azure_user_id]
@@ -172,7 +171,12 @@ async def get_user_by_azure_user_id(
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> UserRead:
     """Returns a user based on its azure user id."""
-    return await user_view.get_by_azure_user_id(azure_user_id, token_payload, guards)
+    logger.info("GET user by azure_user_id")
+    current_user = await user_view._check_token_against_guards(token_payload, guards)
+    async with user_view.crud() as crud:
+        user = await crud.read_by_azure_user_id(azure_user_id, current_user)
+    return user
+    # return await user_view.get_by_azure_user_id(azure_user_id, token_payload, guards)
 
 
 # # TBD: Delete old version after refactoring with BaseView:

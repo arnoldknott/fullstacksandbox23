@@ -2,9 +2,6 @@ import logging
 from core.security import CurrentAccessToken
 from core.types import GuardTypes
 from core.types import GuardTypes
-from typing import List
-from uuid import UUID
-from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 

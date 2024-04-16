@@ -1,7 +1,7 @@
 import logging
 from uuid import UUID
 from typing import Annotated, List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Query
 
 from core.security import (
     get_access_token_payload,
@@ -13,7 +13,6 @@ from core.types import GuardTypes
 
 from .category import get_category_by_id
 from crud.demo_resource import DemoResourceCRUD
-from fastapi import APIRouter, HTTPException, Query
 from models.demo_resource import (
     DemoResource,
     DemoResourceCreate,
@@ -25,20 +24,20 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-class DemoResourceView(BaseView):
-    """Extends base view with demo resource specific methods."""
+# class DemoResourceView(BaseView):
+#     """Extends base view with demo resource specific methods."""
 
-    def __init__(self):
-        super().__init__(DemoResourceCRUD, DemoResource)
+#     def __init__(self):
+#         super().__init__(DemoResourceCRUD, DemoResource)
 
-    async def add_tag(self, resource_id: UUID, tag_ids: List[UUID]):
-        """Adds a tag to a demo resource."""
-        async with self.crud() as crud:
-            return await crud.add_tag(resource_id, tag_ids)
+#     async def add_tag(self, resource_id: UUID, tag_ids: List[UUID]):
+#         """Adds a tag to a demo resource."""
+#         async with self.crud() as crud:
+#             return await crud.add_tag(resource_id, tag_ids)
 
 
-# demo_resource_view = BaseView(DemoResourceCRUD, DemoResource)
-demo_resource_view = DemoResourceView()
+demo_resource_view = BaseView(DemoResourceCRUD, DemoResource)
+# demo_resource_view = DemoResourceView()
 
 # TBD: remove old version from before refactoring:
 # @router.post("/", status_code=201)
@@ -202,15 +201,17 @@ async def add_tag_to_demo_resource(
     # as the tags are queries, no body is required. This could be a GET request!!
 ) -> DemoResourceRead:
     """Adds a tag to a demo resource."""
-    logger.info("POST demo resource")
-    # try:
-    #     resource_id = uuid.UUID(resource_id)
-    #     # for tag_id in tag_ids:
-    #     #     uuid.UUID(tag_id)
-    # except ValueError:
-    #     logger.error("ID's must by a universal unique identifier (uuid).")
-    #     raise HTTPException(status_code=400, detail="Invalid id")
-    return await demo_resource_view.add_tag(resource_id, tag_ids)
-    # async with DemoResourceCRUD() as crud:
-    #     result = await crud.add_tag(resource_id, tag_ids)
-    # return result
+    async with demo_resource_view.crud() as crud:
+        return await crud.add_tag(resource_id, tag_ids)
+    # # logger.info("POST demo resource")
+    # # try:
+    # #     resource_id = uuid.UUID(resource_id)
+    # #     # for tag_id in tag_ids:
+    # #     #     uuid.UUID(tag_id)
+    # # except ValueError:
+    # #     logger.error("ID's must by a universal unique identifier (uuid).")
+    # #     raise HTTPException(status_code=400, detail="Invalid id")
+    # return await demo_resource_view.add_tag(resource_id, tag_ids)
+    # # async with DemoResourceCRUD() as crud:
+    # #     result = await crud.add_tag(resource_id, tag_ids)
+    # # return result
