@@ -105,6 +105,7 @@ class AccessPolicyCRUD:
 
     async def read(
         self,
+        current_user: Optional["CurrentUserData"] = None,
         policy_id: Optional[int] = None,
         identity_id: Optional[UUID] = None,
         resource_id: Optional[int] = None,
@@ -115,6 +116,11 @@ class AccessPolicyCRUD:
         try:
             session = self.session
             query = select(AccessPolicy)
+
+            # print("=== AccessPolicyCRUD.read - query ===")
+            # print(query)
+            # TBD: consider access control checks here:
+            # not using the allows - here it's just about building the query to get the policies!
 
             if policy_id is not None:
                 if (

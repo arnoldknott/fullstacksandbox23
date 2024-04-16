@@ -407,7 +407,7 @@ async def test_user_gets_another_user_by_azure_user_id(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
-    user_in_database = await add_one_azure_test_user(1)
+    user_in_database = await add_one_azure_test_user(2)
 
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"

@@ -112,9 +112,8 @@ async def add_test_public_resources(get_async_test_session: AsyncSession):
 @pytest.fixture(scope="function")
 async def add_test_categories(
     mock_current_user: User,
-):  # get_async_test_session: AsyncSession):
+):
     """Adds test categories through CRUD to the database."""
-    # session = get_async_test_session
 
     # TBD: add checks if token payload is not provided!
     # could be a public resource then?
@@ -123,44 +122,19 @@ async def add_test_categories(
     async def _add_test_categories(token_payload: dict = None):
         category_instances = []
         current_user = await mock_current_user(token_payload)
-        # print("=== _add_test_categories - mocked_token_payload ===")
-        # print(mocked_token_payload)
         # TBD: refactor to use the post endpoint - the token should be mocked already here!
         for category in many_test_categories:
-            # print("=== category ===")
-            # print(category)
-            # token = CurrentAccessToken(token_payload)
-            # current_user = await token.provides_current_user()
             async with CategoryCRUD() as crud:
                 category_instance = await crud.create(category, current_user)
-            # response = await async_client.post("/api/v1/category/", json=category)
-            # category_instance = response.json()
-            # print("=== category_instance ===")
-            # print(category_instance)
+                # response = await async_client.post("/api/v1/category/", json=category)
+                # category_instance = response.json()
+                # print("=== category_instance ===")
+                # print(category_instance)
             category_instances.append(category_instance)
-            # category_instance = Category(**category)
-            # session.add(category_instance)
-            # await session.commit()
-            # await session.refresh(category_instance)
-            # category_instances.append(category_instance)
 
         return category_instances
 
     yield _add_test_categories
-    # print("=== add_test_categories - request.param ===")
-    # print(request.param)
-    # print("=== add_test_categories - request - all attributes ===")
-    # for attr in dir(request):
-    #     print(f"=== {attr} ==")
-    #     print(getattr(request, attr))
-    # for category in many_test_categories:
-    #     category_instance = Category(**category)
-    #     session.add(category_instance)
-    #     await session.commit()
-    #     await session.refresh(category_instance)
-    #     category_instances.append(category_instance)
-
-    # yield category_instances
 
 
 @pytest.fixture(scope="function")

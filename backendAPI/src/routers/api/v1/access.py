@@ -39,10 +39,7 @@ class AccessPolicyView(BaseView):
         resource_id: UUID,
         resource_type: ResourceType,
         token_payload=None,
-        guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-        # scopes: List[str] = [],
-        # roles: List[str] = [],
-        # groups: List[UUID] = [],
+        guards=None,  #: GuardTypes = Depends(Guards(roles=["User"])),
     ) -> List[AccessPolicyRead]:
         """GET view for access policies for a resource"""
         logger.info("GET user by azure_user_id")
@@ -88,11 +85,7 @@ async def get_access_policies(
     guards=Depends(Guards(roles=["Admin"])),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies."""
-    return await access_policy_view.get(
-        token_payload,
-        guards=guards,
-        # roles=["Admin"],
-    )
+    return await access_policy_view.get(token_payload, guards)
 
 
 # TBD: write tests for this:

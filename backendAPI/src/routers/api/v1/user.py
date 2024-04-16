@@ -23,15 +23,11 @@ class UserView(BaseView):
         self,
         azure_user_id: UUID,
         token_payload=None,
-        guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-        # scopes: List[str] = [],
-        # roles: List[str] = [],
-        # groups: List[UUID] = [],
+        guards=None,  #: GuardTypes = Depends(Guards(roles=["User"])),
     ) -> UserRead:
         """GET view to retrieve user by azure_user_id."""
         logger.info("GET user by azure_user_id")
         current_user = await self._check_token_against_guards(token_payload, guards)
-        # current_user = await self._guards(token_payload, scopes, roles, groups)
         async with self.crud() as crud:
             user = await crud.read_by_azure_user_id(azure_user_id, current_user)
         return user
@@ -76,8 +72,6 @@ async def post_user(
         user,
         token_payload,
         guards,
-        # scopes=["api.write"],
-        # roles=["Admin"],
     )
 
 
@@ -131,7 +125,6 @@ async def get_all_users(
     return await user_view.get(
         token_payload,
         guards,
-        # roles=["Admin"],
     )
 
 
@@ -184,16 +177,7 @@ async def get_user_by_azure_user_id(
     except ValueError:
         logger.error("User ID is not an UUID")
         raise HTTPException(status_code=400, detail="Invalid user id")
-    return await user_view.get_by_azure_user_id(
-        azure_user_id, token_payload, guards  # , roles=["User"]
-    )
-    # filters = [User.azure_user_id == azure_user_id]
-    # user = await user_view.get_with_query_options(
-    #     filters=filters,
-    #     token_payload=token_payload,
-    #     roles=["User"],
-    # )
-    # return user[0]
+    return await user_view.get_by_azure_user_id(azure_user_id, token_payload, guards)
 
 
 # # TBD: Delete old version after refactoring with BaseView:
@@ -231,13 +215,10 @@ async def get_user_by_id(
     guards=Depends(Guards(roles=["User"])),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
-    # token = CurrentAccessToken(token_payload)
-    # await token.self_or_admin(user_id)
     return await user_view.get_by_id(
         user_id,
         token_payload,
         guards,
-        # roles=["User"],
     )
 
 
@@ -282,15 +263,11 @@ async def put_user(
     guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> User:
     """Updates a user."""
-    # token = CurrentAccessToken(token_payload)
-    # await token.azure_self_or_admin(user_id)
     return await user_view.put(
         user_id,
         user,
         token_payload,
         guards,
-        # roles=["Admin"],
-        # scopes=["api.write"],
     )
 
 
@@ -325,8 +302,4 @@ async def delete_user(
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> User:
     """Deletes a user."""
-    # token = CurrentAccessToken(token_payload)
-    # await token.self_or_admin(user_id)
-    return await user_view.delete(
-        user_id, token_payload, guards  # roles=["User"], scopes=["api.write"]
-    )
+    return await user_view.delete(user_id, token_payload, guards)

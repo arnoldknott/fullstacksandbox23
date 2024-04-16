@@ -47,10 +47,10 @@ async def test_admin_creates_access_policy():
 
 
 @pytest.mark.anyio
-async def test_owner_creates_access_policy(add_test_access_policies):
+async def test_owner_creates_access_policy(add_test_access_policy):
     """Test creating an access policy."""
 
-    await add_test_access_policies([one_test_policy_own])
+    await add_test_access_policy([one_test_policy_own])
 
     mocked_user = CurrentUserData(
         user_id=uuid.UUID(many_test_azure_users[0]["azure_user_id"]),

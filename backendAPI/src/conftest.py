@@ -255,10 +255,10 @@ async def add_many_azure_test_users():
 # TBD: refactor add_test_policies_for_resources from endpoint conftest file into this:
 # also consider using the post functions for the actual creation of resources!
 @pytest.fixture(scope="function")
-async def add_test_access_policies():
+async def add_test_access_policy():
     """Fixture for adding test policies."""
 
-    async def _add_test_access_policies(access_policies: List[AccessPolicy]):
+    async def _add_test_access_policy(access_policies: List[AccessPolicy]):
         """Adds test policies to the database."""
 
         policies = []
@@ -276,7 +276,7 @@ async def add_test_access_policies():
             # await session.close()
         return policies
 
-    yield _add_test_access_policies
+    yield _add_test_access_policy
 
 
 @pytest.fixture(scope="function")
