@@ -1,7 +1,8 @@
 from typing import List
 from fastapi import HTTPException
+from uuid import UUID
 
-
+from core.types import CurrentUserData
 from models.demo_resource import (
     DemoResource,
     DemoResourceCreate,
@@ -25,6 +26,10 @@ class DemoResourceCRUD(
 
     # TBD: turn into list of tag-Ids, to allow multiple tags
     # TBD: refactor into access control - this might include the hierarchy of the resources!
+    # TBD: This is a link table,
+    # so probably base crud need a new method for linking.
+    # This method should then be reusable for all link tables:
+    # like sharing, tagging, creating hierarchies etc.
     async def add_tag(self, demo_resource_id, tag_ids) -> DemoResourceRead:
         """Adds a tag to a demo resource."""
         session = self.session
@@ -50,3 +55,31 @@ class DemoResourceCRUD(
         await session.commit()
         await session.refresh(demo_resource)
         return demo_resource
+
+    async def read_by_category_id(
+        self, current_user: CurrentUserData, category_id: UUID
+    ) -> List[DemoResource]:
+        """Returns all demo resources within category."""
+
+        # demo_resources = await self.read(
+        #     current_user, filters=[DemoResource.category_id == category_id]
+        # )
+        return await self.read(
+            current_user, filters=[DemoResource.category_id == category_id]
+        )
+        # print("=== response ===")
+        # print(response)
+        # demo_resources = response.
+
+        # print("=== demo_resources ===")
+        # print(demo_resources)
+
+        # session = self.session
+        # statement = select(DemoResource).where(DemoResource.category_id == category_id)
+        # response = await session.exec(statement)
+
+        # demo_resources = response.all()
+        # TBD: delete? as this gets handled by the read method?
+        # if not demo_resources:
+        #     raise HTTPException(status_code=404, detail="No demo resources found")
+        # return demo_resources

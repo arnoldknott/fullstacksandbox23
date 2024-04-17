@@ -178,14 +178,20 @@ class BaseCRUD(
             action=read,
             user=current_user,
         )
-        if not access_conditions:
-            statement = select(self.model if not select_args else select_args)
-        else:
-            statement = (
-                select(self.model if not select_args else select_args)
-                .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
-                .where(*access_conditions)
-            )
+        # statement = select(self.model if not select_args else *select_args)
+        # TBD: select_args are not compatible with the return type of the method!
+        statement = select(*select_args) if select_args else select(self.model)
+        # if not access_conditions:
+        #     statement = select(self.model if not select_args else select_args)
+        if access_conditions:
+            statement = statement.join(
+                AccessPolicy, self.model.id == AccessPolicy.resource_id
+            ).where(*access_conditions)
+            # statement = (
+            #     select(self.model if not select_args else select_args)
+            #     .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
+            #     .where(*access_conditions)
+            # )
 
         if joins:
             for join in joins:
@@ -214,7 +220,7 @@ class BaseCRUD(
         response = await self.session.exec(statement)
         results = response.all()
         for result in results:
-            await self._write_log(result.id, own, current_user, 200)
+            await self._write_log(result.id, read, current_user, 200)
 
         if not results:
             # print("=== self.model.__name__ ===")
@@ -223,7 +229,7 @@ class BaseCRUD(
             # print(self.resource_type)
             logger.info(f"No objects found for {self.model.__name__}")
             for result in results:
-                await self._write_log(result.id, own, current_user, 404)
+                await self._write_log(result.id, read, current_user, 404)
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not found."
             )
@@ -466,3 +472,7 @@ class BaseCRUD(
             )
 
     # TBD: add share / permission methods - maybe in an inherited class BaseCRUDPermissions?
+    # TBD: for the hierarchies, do we need more methods here or just a new method in the BaseCRUD?
+    # like sharing, tagging, creating hierarchies etc.
+    # or just a number of endpoints for doing the hierarchy: add child, remove child, ...?
+    # share with different permissions - like actions?

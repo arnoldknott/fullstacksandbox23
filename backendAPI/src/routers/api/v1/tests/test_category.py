@@ -361,6 +361,7 @@ async def test_delete_category_does_not_exist(
 async def test_get_all_demo_resources_by_category_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
+    add_test_categories: list[Category],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
 ):
@@ -368,8 +369,10 @@ async def test_get_all_demo_resources_by_category_id(
 
     app_override_get_azure_payload_dependency
     resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()
+
     response = await async_client.get(
         f"/api/v1/category/{str(categories[1]['id'])}/demoresources"
     )

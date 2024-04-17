@@ -3,7 +3,11 @@ from uuid import UUID
 
 from crud.tag import TagCRUD
 from fastapi import APIRouter, Depends, HTTPException
-from core.security import get_access_token_payload, Guards
+from core.security import (
+    get_access_token_payload,
+    optional_get_access_token_payload,
+    Guards,
+)
 from core.types import GuardTypes
 from .base import BaseView
 from models.demo_resource import DemoResource
@@ -143,12 +147,24 @@ async def delete_tag(
     )
 
 
+# # TBD: refactor to updated access protection
+# @router.get("/{tag_id}/demoresources")
+# async def get_all_demo_resources_for_tag(tag_id: UUID) -> list[DemoResource]:
+#     """Returns all demo resources with tag."""
+#     logger.info("GET all demo resources with tag")
+#     async with TagCRUD() as crud:
+#         response = await crud.read_all_demo_resources(tag_id)
+#     return response
+
+
 # TBD: missing tests for this endpoint?
-# TBD: refactor to updated access protection
+# TBD: Should this maybe be part of the demo_resource router and crud?
+# This endpoint doesn't make too much sense: the get_tag_by_id contains the same information?
 @router.get("/{tag_id}/demoresources")
-async def get_all_demo_resources_for_tag(tag_id: UUID) -> list[DemoResource]:
-    """Returns all demo resources with tag."""
-    logger.info("GET all demo resources with tag")
-    async with TagCRUD() as crud:
-        response = await crud.read_all_demo_resources(tag_id)
-    return response
+async def get_all_demo_resources_for_tag(
+    tag_id: UUID,
+    token_payload=Depends(optional_get_access_token_payload),
+) -> list[DemoResource]:
+    """Gets all demo resources with specific tag."""
+    async with tag_view.crud() as crud:
+        return await crud.read_all_demo_resources(tag_id, token_payload)

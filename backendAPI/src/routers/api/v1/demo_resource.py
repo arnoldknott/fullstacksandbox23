@@ -85,10 +85,6 @@ async def delete_demo_resource(
     return await demo_resource_view.delete(demo_resource_id, token_payload, guards)
 
 
-# TBD: refactor into using the new BaseView - but this is a link table,
-# so probably base view and base crud need a new method for linking.
-# This method should then be reusable for all link tables:
-# like sharing, tagging, creating hierarchies etc.
 @router.post("/{resource_id}/tag/")
 async def add_tag_to_demo_resource(
     resource_id: UUID,
@@ -97,3 +93,17 @@ async def add_tag_to_demo_resource(
     """Adds a tag to a demo resource."""
     async with demo_resource_view.crud() as crud:
         return await crud.add_tag(resource_id, tag_ids)
+
+
+@router.get("/category/{category_id}")
+async def get_all_in_category(
+    category_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[DemoResource]:
+    """Gets all demo resources that belong to specific category."""
+    current_user = await demo_resource_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with demo_resource_view.crud() as crud:
+        return await crud.read_by_category_id(current_user, category_id)
