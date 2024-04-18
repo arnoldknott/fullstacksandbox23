@@ -3,13 +3,14 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional, List
 
-from models.access import IdentifierTypeLink, AccessPolicy, AccessLogCreate
+from models.access import AccessPolicy, AccessLogCreate
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from core.databases import get_async_session
 from core.access import AccessControl
 from fastapi import HTTPException
 from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.sql import distinct
 
 
 if TYPE_CHECKING:
@@ -391,7 +392,8 @@ class BaseCRUD(
             #     )
 
             # After refactoring to pass the statement:
-            statement = select(self.model).where(self.model.id == object_id)
+            # statement = select(self.model).where(self.model.id == object_id)
+            statement = select(self.model).distinct().where(self.model.id == object_id)
             statement = statement.join(
                 AccessPolicy, self.model.id == AccessPolicy.resource_id
             )
@@ -403,9 +405,10 @@ class BaseCRUD(
                 current_user=current_user,
             )
 
-            print("=== CRUD - base - update - statement ===")
-            print(statement.compile())
-            print(statement.compile().params)
+            # statement = select(self.model).where(self.model.id == object_id)
+            # print("=== CRUD - base - update - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
 
             response = await session.exec(statement)
 
@@ -414,8 +417,8 @@ class BaseCRUD(
 
             old = response.one()
 
-            print("=== CRUD - base - update - old ===")
-            print(old)
+            # print("=== CRUD - base - update - old ===")
+            # print(old)
 
             if old is None:
                 logger.info(f"Object with id {object_id} not found")
@@ -491,7 +494,7 @@ class BaseCRUD(
             #     )
 
             # After refactoring to pass the statement:
-            statement = select(self.model).where(self.model.id == object_id)
+            statement = select(self.model).distinct().where(self.model.id == object_id)
             statement = statement.join(
                 AccessPolicy, self.model.id == AccessPolicy.resource_id
             )
