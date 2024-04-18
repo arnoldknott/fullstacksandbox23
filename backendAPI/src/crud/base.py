@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional, List
 
-from models.access import AccessPolicy, AccessLogCreate
+from models.access import IdentifierTypeLink, AccessPolicy, AccessLogCreate
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from core.databases import get_async_session
 from core.access import AccessControl
@@ -79,10 +79,10 @@ class BaseCRUD(
         """Creates an access policy entry."""
         access_policy = AccessPolicy(
             resource_id=resource_id,
-            resource_type=self.resource_type,
+            # resource_type=self.resource_type,
             action=action,
             identity_id=current_user.user_id,
-            identity_type=IdentityType.user,
+            # identity_type=IdentityType.user,
         )
         async with self.policy_CRUD as policy_CRUD:
             await policy_CRUD.create(access_policy, current_user)
@@ -97,11 +97,11 @@ class BaseCRUD(
         """Creates an access log entry."""
         access_log = AccessLogCreate(
             resource_id=object_id,
-            resource_type=self.resource_type,
+            # resource_type=self.resource_type,
             action=action.value,
             # if public access, current_user is None
             identity_id=current_user.user_id if current_user else None,
-            identity_type=IdentityType.user if current_user else None,
+            # identity_type=IdentityType.user if current_user else None,
             status_code=status_code,
         )
         async with self.logging_CRUD as logging_CRUD:
@@ -123,6 +123,11 @@ class BaseCRUD(
             Model = self.model
             database_object = Model.model_validate(object)
             session.add(database_object)
+            # TBD: merge the sessions for creating the policy and the log
+            # maybe ven together creating the object
+            # but we need the id of the object for the policy and the log
+            # TBD: add creating the IdentifierTypeLink entry with object_id and self.resource_type
+            # this should be doable in the same database call as the access policy and the access log creation.
             await session.commit()
             await session.refresh(database_object)
             await self._write_policy(database_object.id, own, current_user)
@@ -145,7 +150,7 @@ class BaseCRUD(
 
         public_access_policy = AccessPolicy(
             resource_id=database_object.id,
-            resource_type=self.resource_type,
+            # resource_type=self.resource_type,
             action=read,
             public=True,
         )
@@ -174,25 +179,33 @@ class BaseCRUD(
         # TBD: consider allowing any return value - that might enable more flexibility, especially for select_args and functions!
         """Generic read method with optional parameters for select_args, filters, joins, order_by, group_by, limit and offset."""
 
-        access_conditions = self.access_control.filters_allowed(
-            resource_type=self.resource_type,
-            action=read,
-            user=current_user,
-        )
         # statement = select(self.model if not select_args else *select_args)
         # TBD: select_args are not compatible with the return type of the method!
         statement = select(*select_args) if select_args else select(self.model)
+        statement = statement.join(
+            AccessPolicy, self.model.id == AccessPolicy.resource_id
+        )
+        # statement = statement.join(
+        #     IdentifierTypeLink, self.model.id == IdentifierTypeLink.resource_id
+        # )
+        statement = self.access_control.filters_allowed(
+            statement=statement,
+            model=self.model,
+            # resource_type=self.resource_type,
+            action=read,
+            current_user=current_user,
+        )
         # if not access_conditions:
         #     statement = select(self.model if not select_args else select_args)
-        if access_conditions:
-            statement = statement.join(
-                AccessPolicy, self.model.id == AccessPolicy.resource_id
-            ).where(*access_conditions)
-            # statement = (
-            #     select(self.model if not select_args else select_args)
-            #     .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
-            #     .where(*access_conditions)
-            # )
+        # if access_conditions:
+        #     statement = statement.join(
+        #         AccessPolicy, self.model.id == AccessPolicy.resource_id
+        #     ).where(*access_conditions)
+        #     # statement = (
+        #     #     select(self.model if not select_args else select_args)
+        #     #     .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
+        #     #     .where(*access_conditions)
+        #     # )
 
         if joins:
             for join in joins:
@@ -218,7 +231,7 @@ class BaseCRUD(
         if offset:
             statement = statement.offset(offset)
 
-        # print("=== statement ===")
+        # print("=== CRUD - base - read - statement ===")
         # print(statement.compile())
         # print(statement.compile().params)
 
@@ -303,7 +316,7 @@ class BaseCRUD(
     #     # request is known from self.current_user, object and method is read here
     #     """Returns an object by id."""
     #     # if not await self.access_control.allows(
-    #     #     user=current_user,
+    #     #     current_user=current_user,
     #     #     resource_id=object_id,
     #     #     resource_type=self.resource_type,
     #     #     action=read,
@@ -362,22 +375,48 @@ class BaseCRUD(
 
         try:
             ### This should be ready to go:
-            access_conditions = self.access_control.filters_allowed(
-                resource_type=self.resource_type,
-                action=write,
-                user=current_user,
+            # access_conditions = self.access_control.filters_allowed(
+            #     resource_type=self.resource_type,
+            #     action=write,
+            #     user=current_user,
+            # )
+            # if not access_conditions:
+            #     statement = select(self.model).where(self.model.id == object_id)
+            # else:
+            #     statement = (
+            #         select(self.model)
+            #         .where(self.model.id == object_id)
+            #         .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
+            #         .where(*access_conditions)
+            #     )
+
+            # After refactoring to pass the statement:
+            statement = select(self.model).where(self.model.id == object_id)
+            statement = statement.join(
+                AccessPolicy, self.model.id == AccessPolicy.resource_id
             )
-            if not access_conditions:
-                statement = select(self.model).where(self.model.id == object_id)
-            else:
-                statement = (
-                    select(self.model)
-                    .where(self.model.id == object_id)
-                    .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
-                    .where(*access_conditions)
-                )
+            statement = self.access_control.filters_allowed(
+                statement=statement,
+                model=self.model,
+                # resource_type=self.resource_type,
+                action=write,
+                current_user=current_user,
+            )
+
+            print("=== CRUD - base - update - statement ===")
+            print(statement.compile())
+            print(statement.compile().params)
+
             response = await session.exec(statement)
+
+            # print("=== CRUD - base - update - response.all() ===")
+            # print(response.all())
+
             old = response.one()
+
+            print("=== CRUD - base - update - old ===")
+            print(old)
+
             if old is None:
                 logger.info(f"Object with id {object_id} not found")
                 raise HTTPException(
@@ -432,25 +471,39 @@ class BaseCRUD(
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write or delete here
         """Deletes an object."""
-        session = self.session
-        model = self.model
+        # session = self.session
+        # model = self.model
         try:
-            ### This should be ready to go:
-            access_conditions = self.access_control.filters_allowed(
-                resource_type=self.resource_type,
-                action=write,
-                user=current_user,
+            # ### This should be ready to go:
+            # access_conditions = self.access_control.filters_allowed(
+            #     resource_type=self.resource_type,
+            #     action=write,
+            #     user=current_user,
+            # )
+            # if not access_conditions:
+            #     statement = select(model).where(self.model.id == object_id)
+            # else:
+            #     statement = (
+            #         select(model)
+            #         .where(model.id == object_id)
+            #         .join(AccessPolicy, model.id == AccessPolicy.resource_id)
+            #         .where(*access_conditions)
+            #     )
+
+            # After refactoring to pass the statement:
+            statement = select(self.model).where(self.model.id == object_id)
+            statement = statement.join(
+                AccessPolicy, self.model.id == AccessPolicy.resource_id
             )
-            if not access_conditions:
-                statement = select(model).where(self.model.id == object_id)
-            else:
-                statement = (
-                    select(model)
-                    .where(model.id == object_id)
-                    .join(AccessPolicy, model.id == AccessPolicy.resource_id)
-                    .where(*access_conditions)
-                )
-            response = await session.exec(statement)
+            statement = self.access_control.filters_allowed(
+                statement=statement,
+                model=self.model,
+                # resource_type=self.resource_type,
+                action=write,
+                current_user=current_user,
+            )
+
+            response = await self.session.exec(statement)
             object = response.one()
             if object is None:
                 logger.info(f"Object with id {object_id} not found")
@@ -465,8 +518,8 @@ class BaseCRUD(
             # if object is None:
             #     raise HTTPException(status_code=404, detail="Object not found")
             ###
-            await session.delete(object)
-            await session.commit()
+            await self.session.delete(object)
+            await self.session.commit()
             await self._write_log(object_id, own, current_user, 200)
             return object
         except Exception as e:

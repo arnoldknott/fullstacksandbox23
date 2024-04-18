@@ -39,9 +39,9 @@ async def test_admin_creates_access_policy():
     modelled_test_policy = AccessPolicyCreate(**one_test_policy_read)
     assert created_policy.id is not None
     assert created_policy.identity_id == modelled_test_policy.identity_id
-    assert created_policy.identity_type == modelled_test_policy.identity_type
+    # assert created_policy.identity_type == modelled_test_policy.identity_type
     assert created_policy.resource_id == modelled_test_policy.resource_id
-    assert created_policy.resource_type == modelled_test_policy.resource_type
+    # assert created_policy.resource_type == modelled_test_policy.resource_type
     assert created_policy.action == modelled_test_policy.action
 
 
@@ -62,9 +62,9 @@ async def test_owner_creates_access_policy(add_test_access_policy):
     modelled_test_policy = AccessPolicyCreate(**one_test_policy_share)
     assert created_policy.id is not None
     assert created_policy.identity_id == modelled_test_policy.identity_id
-    assert created_policy.identity_type == modelled_test_policy.identity_type
+    # assert created_policy.identity_type == modelled_test_policy.identity_type
     assert created_policy.resource_id == modelled_test_policy.resource_id
-    assert created_policy.resource_type == modelled_test_policy.resource_type
+    # assert created_policy.resource_type == modelled_test_policy.resource_type
     assert created_policy.action == modelled_test_policy.action
 
 
@@ -110,9 +110,9 @@ async def test_create_access_policy_for_public_resource():
 
     assert created_policy.id is not None
     assert created_policy.identity_id is None
-    assert created_policy.identity_type is None
+    # assert created_policy.identity_type is None
     assert created_policy.resource_id == modelled_policy.resource_id
-    assert created_policy.resource_type == modelled_policy.resource_type
+    # assert created_policy.resource_type == modelled_policy.resource_type
     assert created_policy.action == modelled_policy.action
 
 
@@ -139,7 +139,7 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
 
     invalid_policy = {
         "resource_id": str(uuid.uuid4()),
-        "resource_type": "ProtectedResource",
+        # "resource_type": "ProtectedResource",
         "action": "read",
     }
 
@@ -168,9 +168,9 @@ async def test_read_access_policy_by_id(
 
     assert read_policy.id == policies[2].id
     assert read_policy.identity_id == policies[2].identity_id
-    assert read_policy.identity_type == policies[2].identity_type
+    # assert read_policy.identity_type == policies[2].identity_type
     assert read_policy.resource_id == policies[2].resource_id
-    assert read_policy.resource_type == policies[2].resource_type
+    # assert read_policy.resource_type == policies[2].resource_type
     assert read_policy.action == policies[2].action
 
 
@@ -208,15 +208,15 @@ async def test_read_access_policy_by_identity(
     assert read_policy[1].id is not None
 
     assert read_policy[0].identity_id == policies[0].identity_id
-    assert read_policy[0].identity_type == policies[0].identity_type
+    # assert read_policy[0].identity_type == policies[0].identity_type
     assert read_policy[0].resource_id == policies[0].resource_id
-    assert read_policy[0].resource_type == policies[0].resource_type
+    # assert read_policy[0].resource_type == policies[0].resource_type
     assert read_policy[0].action == policies[0].action
 
     assert read_policy[1].identity_id == policies[4].identity_id
-    assert read_policy[1].identity_type == policies[4].identity_type
+    # assert read_policy[1].identity_type == policies[4].identity_type
     assert read_policy[1].resource_id == policies[4].resource_id
-    assert read_policy[1].resource_type == policies[4].resource_type
+    # assert read_policy[1].resource_type == policies[4].resource_type
     assert read_policy[1].action == policies[4].action
 
 
@@ -249,7 +249,7 @@ async def test_read_access_policy_by_resource(
         # read_policy = await policy_crud.read_by_resource(
         read_policy = await policy_crud.read(
             resource_id=policies[1].resource_id,
-            resource_type="ProtectedResource",
+            # resource_type="ProtectedResource",
         )
         assert len(read_policy) == 2
 
@@ -257,15 +257,15 @@ async def test_read_access_policy_by_resource(
         assert read_policy[1].id is not None
 
         assert read_policy[0].identity_id == policies[1].identity_id
-        assert read_policy[0].identity_type == policies[1].identity_type
+        # assert read_policy[0].identity_type == policies[1].identity_type
         assert read_policy[0].resource_id == policies[1].resource_id
-        assert read_policy[0].resource_type == policies[1].resource_type
+        # assert read_policy[0].resource_type == policies[1].resource_type
         assert read_policy[0].action == policies[1].action
 
         assert read_policy[1].identity_id == policies[2].identity_id
-        assert read_policy[1].identity_type == policies[2].identity_type
+        # assert read_policy[1].identity_type == policies[2].identity_type
         assert read_policy[1].resource_id == policies[2].resource_id
-        assert read_policy[1].resource_type == policies[2].resource_type
+        # assert read_policy[1].resource_type == policies[2].resource_type
         assert read_policy[1].action == policies[2].action
 
 
@@ -319,7 +319,7 @@ async def test_read_access_policy_for_nonexisting_resource(
             # await policy_crud.read_by_resource(
             await policy_crud.read(
                 resource_id=uuid.uuid4(),
-                resource_type="protected_resource",
+                # resource_type="protected_resource",
             )
         except Exception as err:
             assert err.status_code == 404
@@ -339,16 +339,16 @@ async def test_read_access_policy_by_identity_and_resource(
         read_policy = await policy_crud.read(
             identity_id=policies[2].identity_id,
             resource_id=policies[2].resource_id,
-            resource_type=policies[2].resource_type,
+            # resource_type=policies[2].resource_type,
         )
 
     assert len(read_policy) == 1
 
     assert read_policy[0].id is not None
     assert read_policy[0].identity_id == policies[2].identity_id
-    assert read_policy[0].identity_type == policies[2].identity_type
+    # assert read_policy[0].identity_type == policies[2].identity_type
     assert read_policy[0].resource_id == policies[2].resource_id
-    assert read_policy[0].resource_type == policies[2].resource_type
+    # assert read_policy[0].resource_type == policies[2].resource_type
     assert read_policy[0].action == policies[2].action
 
 
@@ -371,9 +371,9 @@ async def test_read_access_policy_by_identity_and_resource_and_action(
 
     assert read_policy[0].id is not None
     assert read_policy[0].identity_id == policies[2].identity_id
-    assert read_policy[0].identity_type == policies[2].identity_type
+    # assert read_policy[0].identity_type == policies[2].identity_type
     assert read_policy[0].resource_id == policies[2].resource_id
-    assert read_policy[0].resource_type == policies[2].resource_type
+    # assert read_policy[0].resource_type == policies[2].resource_type
     assert read_policy[0].action == policies[2].action
 
 
@@ -420,24 +420,24 @@ async def test_create_access_log():
 
     assert created_log.id is not None
     assert created_log.identity_id == access_log.identity_id
-    assert created_log.identity_type == access_log.identity_type
+    # assert created_log.identity_type == access_log.identity_type
     assert created_log.resource_id == access_log.resource_id
-    assert created_log.resource_type == access_log.resource_type
+    # assert created_log.resource_type == access_log.resource_type
     assert created_log.action == access_log.action
     assert created_log.status_code == access_log.status_code
 
 
 @pytest.mark.anyio
-async def test_read_access_log():
-    """Test creating an access log."""
+async def test_read_access_log_for_resource():
+    """Test reading an access log for resource."""
 
     resource_id = uuid.uuid4()
 
     access_log = AccessLog(
         identity_id=uuid.UUID(many_test_azure_users[0]["azure_user_id"]),
-        identity_type="User",
+        # identity_type="User",
         resource_id=resource_id,
-        resource_type="ProtectedResource",
+        # resource_type="ProtectedResource",
         action="read",
         status_code=200,
     )
@@ -458,11 +458,11 @@ async def test_read_access_log():
     assert len(identity_log) == 1
     assert identity_log[0].id is not None
     assert identity_log[0].resource_id == access_log.resource_id
-    assert identity_log[0].resource_type == access_log.resource_type
+    # assert identity_log[0].resource_type == access_log.resource_type
     assert identity_log[0].identity_id == uuid.UUID(
         many_test_azure_users[0]["azure_user_id"]
     )
-    assert identity_log[0].identity_type == "User"
+    # assert identity_log[0].identity_type == "User"
     assert identity_log[0].action == access_log.action
     assert identity_log[0].status_code == access_log.status_code
     assert identity_log[0].time >= time_before - timedelta(seconds=25)
@@ -472,9 +472,9 @@ async def test_read_access_log():
     assert len(resource_log) == 1
     assert resource_log[0].id == identity_log[0].id
     assert resource_log[0].resource_id == identity_log[0].resource_id
-    assert resource_log[0].resource_type == identity_log[0].resource_type
+    # assert resource_log[0].resource_type == identity_log[0].resource_type
     assert resource_log[0].identity_id == identity_log[0].identity_id
-    assert resource_log[0].identity_type == identity_log[0].identity_type
+    # assert resource_log[0].identity_type == identity_log[0].identity_type
     assert resource_log[0].status_code == identity_log[0].status_code
     assert resource_log[0].action == identity_log[0].action
     assert resource_log[0].time == identity_log[0].time

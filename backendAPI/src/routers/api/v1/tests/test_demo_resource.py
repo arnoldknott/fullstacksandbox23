@@ -216,7 +216,7 @@ async def test_get_public_demo_resource_by_id(
     resources = await add_test_demo_resources()
     policy = {
         "resource_id": resources[0].id,
-        "resource_type": "DemoResource",
+        # "resource_type": "DemoResource",
         "action": "read",
         "public": True,
     }

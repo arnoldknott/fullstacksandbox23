@@ -3,9 +3,9 @@ import logging
 from typing import Optional, Union
 from core.types import CurrentUserData, Action, ResourceType, IdentityType
 from fastapi import HTTPException
-from models.access import AccessPolicy
+from models.access import AccessPolicy, IdentifierTypeLink
 
-from sqlmodel import or_
+from sqlmodel import select, or_, SQLModel
 
 # if TYPE_CHECKING:
 #     from core.types import CurrentUserData, Action
@@ -33,9 +33,9 @@ class AccessControl:
     async def allows(
         self,
         resource_id: int,  # TBD: for identities, this is a UUID!!
-        resource_type: Union[ResourceType, IdentityType],
+        # resource_type: Union[ResourceType, IdentityType],
         action: "Action",
-        user: Optional["CurrentUserData"] = None,
+        current_user: Optional["CurrentUserData"] = None,
     ) -> bool:
         """Checks if the user has permission including inheritance to perform the action on the resource"""
         # TBD: move the logging to the BaseCrud? Or keep it here together with the Access Control?
@@ -55,13 +55,14 @@ class AccessControl:
         # if user["roles"] and "Admin" in user["roles"]:
 
         # check for public override:
-        if not user:
+        if not current_user:
             # async with self.policy_crud as policy_crud:
             policy_crud = self.policy_crud
             # add join with inheritance table
-            policies = await policy_crud.read(
-                resource_id=resource_id, resource_type=resource_type, action=action
-            )
+            # policies = await policy_crud.read(
+            #     resource_id=resource_id, resource_type=resource_type, action=action
+            # )
+            policies = await policy_crud.read(resource_id=resource_id, action=action)
             for policy in policies:
                 if policy.public:
                     return True
@@ -69,7 +70,7 @@ class AccessControl:
                     logger.error("Error accessing resource without user information.")
                     raise HTTPException(status_code=403, detail="Access denied")
         # check for admin override:
-        elif user.roles and "Admin" in user.roles:
+        elif current_user.roles and "Admin" in current_user.roles:
             return True
         # TBD: implement the comparison of policies and request.
         else:
@@ -78,9 +79,9 @@ class AccessControl:
             # add join with inheritance table for both resource and identity
             policies = await policy_crud.read(
                 resource_id=resource_id,
-                resource_type=resource_type,
+                # resource_type=resource_type,
                 action=action,
-                identity_id=user.user_id,
+                identity_id=current_user.user_id,
             )
             if policies is not None:
                 return True
@@ -90,9 +91,11 @@ class AccessControl:
 
     def filters_allowed(
         self,
-        resource_type: Union[ResourceType, IdentityType],
+        statement: select,
+        model: SQLModel,
+        # resource_type: Union[ResourceType, IdentityType],
         action: "Action",
-        user: Optional["CurrentUserData"] = None,
+        current_user: Optional["CurrentUserData"] = None,
     ):
         """Finds all resources of a certain type and action that the user has permission to access"""
         # TBD: implement this
@@ -104,7 +107,7 @@ class AccessControl:
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access and admin override
 
-        # Permisssion overrides:
+        # Permission overrides:
         # own includes write and read
         # write includes read
         if action == Action.read:
@@ -114,23 +117,52 @@ class AccessControl:
         elif action == Action.own:
             action = ["own"]
 
-        conditions = []
-        if not user:
-            conditions.append(AccessPolicy.resource_type == resource_type)
-            conditions.append(AccessPolicy.action.in_(action))
-            conditions.append(AccessPolicy.public)
-        elif "Admin" in user.roles:
-            pass
-            # conditions.append(AccessPolicy.resource_type == resource_type)
-            # conditions.append(AccessPolicy.action.in_(action))
-        else:
-            conditions.append(AccessPolicy.resource_type == resource_type)
-            conditions.append(AccessPolicy.action.in_(action))
-            conditions.append(
-                or_(AccessPolicy.identity_id == user.user_id, AccessPolicy.public)
-            )  # add the self-join from identity inheritance table
+        # TBD: refactor into adding conditions to the statement:
+        # conditions = []
+        # if not current_user:
+        #     conditions.append(AccessPolicy.resource_type == resource_type)
+        #     conditions.append(AccessPolicy.action.in_(action))
+        #     conditions.append(AccessPolicy.public)
+        # elif "Admin" in current_user.roles:
+        #     pass
+        #     # conditions.append(AccessPolicy.resource_type == resource_type)
+        #     # conditions.append(AccessPolicy.action.in_(action))
+        # else:
+        #     conditions.append(AccessPolicy.resource_type == resource_type)
+        #     conditions.append(AccessPolicy.action.in_(action))
+        #     conditions.append(
+        #         or_(
+        #             AccessPolicy.identity_id == current_user.user_id,
+        #             AccessPolicy.public,
+        #         )
+        #     )  # add the self-join from identity inheritance table
 
-        return conditions
+        # return conditions
+
+        if not current_user:
+            # statement = statement.where(IdentifierTypeLink.type == resource_type)
+            statement = statement.where(AccessPolicy.resource_id == model.id)
+            statement = statement.where(AccessPolicy.action.in_(action))
+            statement = statement.where(AccessPolicy.public)
+        elif "Admin" in current_user.roles:
+            pass
+        else:
+            # statement = statement.join(IdentifierTypeLink)
+            # statement = statement.where(IdentifierTypeLink.type == resource_type)
+            statement = statement.where(AccessPolicy.resource_id == model.id)
+            # statement = statement.where(AccessPolicy.resource_type == resource_type)
+            statement = statement.where(AccessPolicy.action.in_(action))
+            statement = statement.where(
+                or_(
+                    AccessPolicy.identity_id == current_user.user_id,
+                    AccessPolicy.public,
+                )
+            )
+
+        # print("=== core.access - AccessControl - statement ===")
+        # print(statement)
+
+        return statement
 
         # user_policies = []
         # # Get the IDs of the objects that the user has access to

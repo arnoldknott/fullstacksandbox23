@@ -35,11 +35,25 @@ class Action(str, Enum):
     own = "own"
 
 
-class ResourceType(str, Enum):
+class BaseType(str, Enum):
+    """Base enum for types of entities in the database"""
+
+    # The values need to match the exact name of the model class.
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda x: x.value, cls._member_map_.values()))
+
+    def __str__(self):
+        return self.name
+
+
+class ResourceType(BaseType):
     """Enum for the types of resources to identify which table a resource uuid belongs to"""
 
     # The values need to match the exact name of the model class.
 
+    # TBD: consider getting those values programmatically?
     # for sandbox only:
     category = "Category"  # potentially keep for production
     tag = "Tag"  # potentially keep for production
@@ -52,14 +66,11 @@ class ResourceType(str, Enum):
     topic = "Topic"
     element = "Element"
 
-    @classmethod
-    def list(cls):
-        return list(map(lambda x: x.value, cls._member_map_.values()))
 
-
-class IdentityType(str, Enum):
+class IdentityType(BaseType):
     """Enum for the types of identities to identify which table an identity uuid belongs"""
 
+    # TBD: consider getting those values programmatically?
     user = "User"
     # admin = "admin"
     # group = "group"
@@ -67,10 +78,6 @@ class IdentityType(str, Enum):
     # brightspace_group = "brightspace_group"
     # discord_group = "discord_group"
     # google_group = "google_group"
-
-    @classmethod
-    def list(cls):
-        return list(map(lambda x: x.value, cls._member_map_.values()))
 
 
 # using models in stead of strings:

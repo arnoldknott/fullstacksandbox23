@@ -50,6 +50,7 @@ class AccessPolicyCRUD:
         """Creates a new access control policy."""
         try:
             session = self.session
+            # TBD: remove this, as it's already done through typing the arguments of the method?
             policy = AccessPolicy.model_validate(policy)
             # TBD: add access control checks here:
             # only owners and Admins can create policies
@@ -63,9 +64,9 @@ class AccessPolicyCRUD:
                 # Current user creates a policy for another identity.
                 # Current user needs to own the resource to grant others access (share) it.
                 if not await self.access_control.allows(
-                    user=current_user,
+                    current_user=current_user,
                     resource_id=policy.resource_id,
-                    resource_type=policy.resource_type,
+                    # resource_type=policy.resource_type,
                     action=own,
                 ):
                     raise HTTPException(status_code=403, detail="Forbidden.")
@@ -94,7 +95,7 @@ class AccessPolicyCRUD:
         self,
         policy: AccessPolicyCreate,
         parent_resource_id: int,
-        parent_resource_type: ResourceType,
+        # parent_resource_type: ResourceType,  # TBD: remove and read from database instead?
         current_user: CurrentUserData,
     ):
         """Adds a child policy to a parent policy."""
@@ -109,7 +110,7 @@ class AccessPolicyCRUD:
         policy_id: Optional[int] = None,
         identity_id: Optional[UUID] = None,
         resource_id: Optional[int] = None,
-        resource_type: Optional[ResourceType] = None,
+        # resource_type: Optional[ResourceType] = None,
         action: Optional[Action] = None,
     ) -> List[AccessPolicyRead]:
         """Reads access control policies based on the provided parameters."""
@@ -132,7 +133,7 @@ class AccessPolicyCRUD:
                 if (
                     identity_id is not None
                     or resource_id is not None
-                    or resource_type is not None
+                    # or resource_type is not None
                     or action is not None
                 ):
                     raise ValueError(
@@ -144,14 +145,15 @@ class AccessPolicyCRUD:
                 if identity_id is not None:
                     conditions.append(AccessPolicy.identity_id == identity_id)
                 if resource_id is not None:
-                    if resource_type is None:
-                        raise ValueError(
-                            "'resource_type' is required in conjunction with 'resource_id'."
-                        )
+                    # TBD: should be covered by type validations in the model!
+                    # if resource_type is None:
+                    #     raise ValueError(
+                    #         "'resource_type' is required in conjunction with 'resource_id'."
+                    #     )
                     conditions.append(AccessPolicy.resource_id == resource_id)
-                    conditions.append(AccessPolicy.resource_type == resource_type)
-                elif resource_type is not None:
-                    conditions.append(AccessPolicy.resource_type == resource_type)
+                    # conditions.append(AccessPolicy.resource_type == resource_type)
+                # elif resource_type is not None:
+                #     conditions.append(AccessPolicy.resource_type == resource_type)
                 if action is not None:
                     conditions.append(AccessPolicy.action == action)
 
@@ -181,16 +183,17 @@ class AccessPolicyCRUD:
     async def read_access_policies_for_resource(
         self,
         resource_id: UUID,
-        resource_type: ResourceType,  # TBD: remove and read from database in read method?
+        # resource_type: ResourceType,  # TBD: remove and read from database in read method?
         current_user: CurrentUserData,
     ):
-        """Returns a User with linked Groups from the database."""
+        """Returns all access policies by resource id."""
         try:
             filters = [
                 AccessPolicy.resource_id == resource_id,
-                AccessPolicy.resource_type == resource_type,
+                # AccessPolicy.resource_type == resource_type,
             ]
-            access_policies = await self.read(current_user, filters=filters)
+            # access_policies = await self.read(current_user, filters=filters)
+            access_policies = await self.read(current_user, resource_id=resource_id)
             return access_policies
         except Exception as err:
             logging.error(err)
@@ -199,14 +202,14 @@ class AccessPolicyCRUD:
     async def read_access_policies_for_identity(
         self,
         identity_id: UUID,
-        identity_type: ResourceType,  # TBD: remove and read from database in read method?
+        # identity_type: IdentityType,  # TBD: remove and read from database in read method?
         current_user: CurrentUserData,
     ):
         """Returns a User with linked Groups from the database."""
         try:
             filters = [
                 AccessPolicy.identity_id == identity_id,
-                AccessPolicy.identity_type == identity_type,
+                # AccessPolicy.identity_type == identity_type,
             ]
             access_policies = await self.read(current_user, filters=filters)
             return access_policies
@@ -220,7 +223,7 @@ class AccessPolicyCRUD:
         policy_id: Optional[int] = None,
         identity_id: Optional[UUID] = None,
         resource_id: Optional[int] = None,
-        resource_type: Optional[ResourceType] = None,
+        # resource_type: Optional[ResourceType] = None,
         action: Optional[Action] = None,
     ) -> None:
         """Deletes an access control policy."""
@@ -238,7 +241,7 @@ class AccessPolicyCRUD:
                 if (
                     identity_id is not None
                     or resource_id is not None
-                    or resource_type is not None
+                    # or resource_type is not None
                     or action is not None
                 ):
                     raise ValueError(
@@ -257,7 +260,7 @@ class AccessPolicyCRUD:
                 policies = await self.read(
                     identity_id=identity_id,
                     resource_id=resource_id,
-                    resource_type=resource_type,
+                    # resource_type=resource_type,
                     action=action,
                 )
                 for policy in policies:
@@ -291,7 +294,6 @@ class AccessLoggingCRUD:
         """Closes the database session."""
         await self.session.close()
 
-    # TBD: is that
     async def log_access(
         self,
         access_log: AccessLogCreate,
@@ -314,7 +316,8 @@ class AccessLoggingCRUD:
         #     await self.session.close()
 
     # Do we need current_user here?
-    # TBD: delete and use base class with method read_with_query_options instead?
+    # TBD: create a generic read method and use it here.
+    # TBD implement crud tests for this?
     async def read_log_by_identity_id(self, identity_id: UUID) -> list[AccessLogRead]:
         """Reads access logs by identity id."""
         logger.info("Reading identity access logs from the database.")
@@ -331,10 +334,10 @@ class AccessLoggingCRUD:
             raise HTTPException(status_code=404, detail="Log not found")
 
     # Do we need current_user here?
-    # TBD: type might not be necessary any more as input since we've switched to UUID.
-    # TBD: delete and use base class with method read_with_query_options instead?
+    # TBD: create a generic read method and use it here.
+    # TBD: implement more crud tests for this?
     async def read_log_by_resource(
-        self, resource_id: UUID, resource_type: ResourceType
+        self, resource_id: UUID  # ,   resource_type: ResourceType
     ) -> list[AccessLogRead]:
         """Reads access logs by resource id and type."""
         logger.info("Reading resource access logs from the database.")
@@ -342,7 +345,7 @@ class AccessLoggingCRUD:
             session = self.session
             query = select(AccessLog).where(
                 AccessLog.resource_id == resource_id,
-                AccessLog.resource_type == resource_type,
+                # AccessLog.resource_type == resource_type,
             )
             response = await session.exec(query)
             results = response.all()
@@ -351,9 +354,9 @@ class AccessLoggingCRUD:
             logger.error(f"Error in reading log: {e}")
             raise HTTPException(status_code=404, detail="Log not found")
 
-    # TBD: delete and use base class with method read_with_query_options instead?
+    # TBD: create a generic read method and use it here.
     async def read_log_created(
-        self, resource_id: UUID, resource_type: ResourceType
+        self, resource_id: UUID  # , resource_type: ResourceType
     ) -> AccessLogRead:
         """Reads first access log with action "Own" for resource id and type - corresponds to create."""
         logger.info("Reading create information from access logs in database.")
@@ -363,7 +366,7 @@ class AccessLoggingCRUD:
                 select(AccessLog)
                 .where(
                     AccessLog.resource_id == resource_id,
-                    AccessLog.resource_type == resource_type,
+                    # AccessLog.resource_type == resource_type,
                 )
                 .order_by(AccessLog.time)
                 .limit(1)

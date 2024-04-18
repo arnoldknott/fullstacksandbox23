@@ -77,23 +77,9 @@ async def post_access_policy(
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> AccessPolicy:
     """Creates a new access policy."""
-    return await access_policy_view.post(
-        access_policy,
-        token_payload,
-        guards=guards,
-        # guards=Depends(
-        #     access_policy_view.ProtectWith(scopes=["api.write"], roles=["User"])
-        # ),
-    )
-    # return await access_policy_view.post(
-    #     access_policy,
-    #     token_payload,
-    #     scopes=["api.write"],
-    #     roles=["User"],
-    # )
+    return await access_policy_view.post(access_policy, token_payload, guards=guards)
 
 
-# TBD: write more tests for this
 @router.get("/policies", status_code=200)
 async def get_access_policies(
     token_payload=Depends(get_access_token_payload),
@@ -107,15 +93,13 @@ async def get_access_policies(
 @router.get("/policy/resource/{resource_id}", status_code=200)
 async def get_access_policies_for_resource(
     resource_id: UUID,
-    resource_type: ResourceType,  # TBD: remove and let CRUD figure it out?
+    # resource_type: ResourceType,  # TBD: remove and let CRUD figure it out?
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for requested resource."""
     # if not resource_id or not resource_type:
     #     raise ValueError("Resource ID and type must be provided.")
-    # if not UUID(resource_id):
-    #     raise ValueError("Resource ID is not a universal unique identifier (uuid).")
     # if resource_type not in ResourceType.list():
     #     raise ValueError("Resource type is not valid.")
     logger.info("GET user by azure_user_id")
@@ -124,7 +108,7 @@ async def get_access_policies_for_resource(
     )
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_for_resource(
-            resource_id, resource_type, current_user
+            resource_id, current_user
         )
     return access_policies
     # return await access_policy_view.get_access_policies_for_resource(
@@ -149,7 +133,7 @@ async def get_access_policies_for_resource(
 @router.get("/policy/identity/{identity_id}", status_code=200)
 async def get_access_policies_for_identity(
     identity_id: UUID,
-    identity_type: IdentityType = IdentityType.user,  # TBD: remove and let CRUD figure it out?
+    # identity_type: IdentityType = IdentityType.user,  # TBD: remove and let CRUD figure it out?
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
@@ -178,7 +162,7 @@ async def get_access_policies_for_identity(
     )
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_for_identity(
-            identity_id, identity_type, current_user
+            identity_id, current_user
         )
     return access_policies
     # return await access_policy_view.get_access_policies_for_identity(
