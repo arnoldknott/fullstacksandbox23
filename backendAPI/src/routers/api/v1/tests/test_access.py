@@ -4,7 +4,6 @@ from fastapi import FastAPI
 
 # from models.access import AccessPolicy
 from tests.utils import (
-    token_admin,
     token_admin_read,
     token_admin_read_write,
     token_user1_read,
@@ -125,8 +124,7 @@ async def test_users_get_all_access_policies_fails(
 ):
     """Tests GET access policies, i.e. share."""
     app_override_get_azure_payload_dependency
-
-    policies_in_database = add_many_test_access_policies
+    add_many_test_access_policies
 
     response = await async_client.get("/api/v1/access/policies")
 

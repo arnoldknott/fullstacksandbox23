@@ -2,7 +2,6 @@ import pytest
 import uuid
 from httpx import AsyncClient
 from fastapi import FastAPI
-from models.access import AccessPolicy
 from models.category import Category
 from models.demo_resource import DemoResource
 from tests.utils import (

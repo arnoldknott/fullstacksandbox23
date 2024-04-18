@@ -3,7 +3,6 @@ import uuid
 from httpx import AsyncClient
 from fastapi import FastAPI
 from models.tag import Tag
-from models.access import AccessPolicy
 from tests.utils import (
     token_user1_read,
     token_user1_write,

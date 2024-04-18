@@ -12,7 +12,6 @@ from tests.utils import (
     many_test_azure_users,
     token_payload_roles_admin,
     one_test_policy_read,
-    one_test_policy_write,
     one_test_policy_own,
     one_test_policy_share,
     one_test_policy_public_read,

@@ -1,7 +1,7 @@
 import logging
 from uuid import UUID
 
-from typing import List, Union, Optional
+from typing import List, Optional
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 

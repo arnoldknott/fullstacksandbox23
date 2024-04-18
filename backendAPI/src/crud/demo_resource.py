@@ -35,9 +35,9 @@ class DemoResourceCRUD(
         session = self.session
         # TBD: refactor into try-except block and add logging
         statement = select(DemoResource).where(DemoResource.id == demo_resource_id)
-        print("=== statement ===")
-        print(statement.compile())
-        print(statement.compile().params)
+        # print("=== statement ===")
+        # print(statement.compile())
+        # print(statement.compile().params)
         demo_resource = await session.exec(statement)
         demo_resource = demo_resource.one()
         if not demo_resource:
@@ -83,3 +83,12 @@ class DemoResourceCRUD(
         # if not demo_resources:
         #     raise HTTPException(status_code=404, detail="No demo resources found")
         # return demo_resources
+
+    async def read_by_tag_id(
+        self, current_user: CurrentUserData, tag_id: UUID
+    ) -> List[DemoResourceRead]:
+        """Returns all demo resources with tag."""
+        return await self.read(
+            current_user, joins=[DemoResourceTagLink, Tag], filters=[Tag.id == tag_id]
+        )
+        # await self.read(current_user, having=[DemoResource.tags.id == tag_id])

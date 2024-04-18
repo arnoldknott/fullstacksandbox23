@@ -3,7 +3,6 @@ import secrets
 import uuid
 from httpx import AsyncClient
 from models.public_resource import PublicResource
-from models.access import AccessPolicy
 
 
 @pytest.mark.anyio

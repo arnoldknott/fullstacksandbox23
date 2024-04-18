@@ -4,7 +4,7 @@ import uuid
 import pytest
 from httpx import AsyncClient
 from fastapi import FastAPI
-from models.demo_resource import DemoResource
+from models.demo_resource import DemoResource, DemoResourceRead
 from models.access import AccessPolicy
 from models.tag import Tag
 
@@ -595,3 +595,78 @@ async def test_get_demo_resources_for_lonely_category(
     assert response.status_code == 404
     content = response.json()
     assert content["detail"] == "DemoResource not found."
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
+    indirect=True,
+)
+async def test_get_all_demo_resources_by_tag_id(
+    async_client: AsyncClient,
+    add_test_demo_resources: list[DemoResource],
+    add_test_tags: list[Tag],
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
+):
+    """Tests GET all demo resources by category id."""
+
+    app_override_get_azure_payload_dependency
+    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+    tags = await add_test_tags()
+    await async_client.post(
+        f"/api/v1/demoresource/{str(resources[0].id)}/tag/?&tag_ids={str(tags[1].id)}"
+    )
+    await async_client.post(
+        f"/api/v1/demoresource/{str(resources[1].id)}/tag/?tag_ids={str(tags[0].id)}&tag_ids={str(tags[2].id)}"
+    )
+    await async_client.post(
+        f"/api/v1/demoresource/{str(resources[3].id)}/tag/?&tag_ids={str(tags[2].id)}"
+    )
+
+    response = await async_client.get(f"/api/v1/demoresource/tag/{str(tags[2].id)}")
+
+    assert response.status_code == 200
+    content = response.json()
+
+    # print("=== content ===")
+    # print(content[0])
+
+    assert len(content) == 2
+    first_content = content[0]
+    demo_resource_1 = DemoResourceRead.model_validate(first_content)
+    assert demo_resource_1.name == resources[1].name
+    assert demo_resource_1.description == resources[1].description
+    assert demo_resource_1.language == resources[1].language
+    assert "category_id" in first_content
+    # print("=== first_content['tags'][0] ===")
+    # print(first_content["tags"][0])
+    # print("=== tags[0] ===")
+    # print(tags[0])
+    # # Print the tags of demo_resource_1 before the assertions
+    # print()
+    # print("=== demo_resource_1 ===")
+    # print(demo_resource_1)
+    # print([tag.name for tag in demo_resource_1.tags])
+    demo_resource_1_tag_names = [tag.name for tag in demo_resource_1.tags]
+    assert tags[0].name in demo_resource_1_tag_names
+    assert tags[1].name not in demo_resource_1_tag_names
+    assert tags[2].name in demo_resource_1_tag_names
+    # assert tags[0].name in demo_resource_1.tags.name  # [0]["name"]
+    # assert tags[1].name not in demo_resource_1.tags.name  # [0]["name"]
+    # assert tags[2].name in demo_resource_1.tags.name  # [0]["name"]
+    # assert tags[0].name in first_content["tags"][]  # [0]["name"]
+    # assert tags[1].name not in first_content["tags"]  # [0]["name"]
+    # assert tags[2].name in first_content["tags"]  # [0]["name"]
+
+    second_content = content[1]
+    demo_resource_3 = DemoResourceRead.model_validate(second_content)
+    assert demo_resource_3.name == resources[3].name
+    assert demo_resource_3.description == resources[3].description
+    assert demo_resource_3.language == resources[3].language
+    assert "category_id" in second_content
+    demo_resource_3_tag_names = [tag.name for tag in demo_resource_3.tags]
+    assert tags[0].name not in demo_resource_3_tag_names
+    assert tags[1].name not in demo_resource_3_tag_names
+    assert tags[2].name in demo_resource_3_tag_names

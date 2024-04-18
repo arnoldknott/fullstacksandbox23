@@ -11,7 +11,6 @@ from core.security import (
 from .base import BaseView
 from core.types import GuardTypes
 
-from .category import get_category_by_id
 from crud.demo_resource import DemoResourceCRUD
 from models.demo_resource import (
     DemoResource,
@@ -107,3 +106,17 @@ async def get_all_in_category(
     )
     async with demo_resource_view.crud() as crud:
         return await crud.read_by_category_id(current_user, category_id)
+
+
+@router.get("/tag/{tag_id}")
+async def get_all_with_tag(
+    tag_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[DemoResourceRead]:
+    """Gets all demo resources that belong to specific tag."""
+    current_user = await demo_resource_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with demo_resource_view.crud() as crud:
+        return await crud.read_by_tag_id(current_user, tag_id)

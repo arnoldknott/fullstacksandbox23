@@ -171,6 +171,7 @@ class BaseCRUD(
         limit: Optional[int] = None,
         offset: Optional[int] = None,
     ) -> list[BaseSchemaTypeRead]:
+        # TBD: consider allowing any return value - that might enable more flexibility, especially for select_args and functions!
         """Generic read method with optional parameters for select_args, filters, joins, order_by, group_by, limit and offset."""
 
         access_conditions = self.access_control.filters_allowed(
@@ -216,6 +217,10 @@ class BaseCRUD(
 
         if offset:
             statement = statement.offset(offset)
+
+        # print("=== statement ===")
+        # print(statement.compile())
+        # print(statement.compile().params)
 
         response = await self.session.exec(statement)
         results = response.all()

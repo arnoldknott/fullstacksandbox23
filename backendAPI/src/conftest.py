@@ -16,7 +16,6 @@ from models.access import AccessPolicy, AccessPolicyRead
 from crud.access import AccessPolicyCRUD
 from tests.utils import (
     many_test_azure_users,
-    token_payload_many_groups,
     token_admin,
     many_test_policies,
 )
@@ -85,9 +84,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[get_azure_token_payload] = (
-        lambda: mocked_get_azure_token_payload
-    )
+    app.dependency_overrides[
+        get_azure_token_payload
+    ] = lambda: mocked_get_azure_token_payload
     yield app
     app.dependency_overrides = {}
 

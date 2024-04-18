@@ -1,6 +1,6 @@
 import logging
 from uuid import UUID
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from models.public_resource import (
     PublicResource,
     PublicResourceCreate,

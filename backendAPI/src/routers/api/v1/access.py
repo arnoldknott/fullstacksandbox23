@@ -1,6 +1,5 @@
 import logging
 
-from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from core.types import ResourceType, IdentityType
@@ -17,8 +16,6 @@ from models.access import (
     AccessPolicy,
     AccessPolicyCreate,
     AccessPolicyRead,
-    AccessLog,
-    AccessLogRead,
 )
 from crud.access import AccessPolicyCRUD
 
@@ -96,7 +93,7 @@ async def post_access_policy(
     # )
 
 
-# TBD: write tests for this
+# TBD: write more tests for this
 @router.get("/policies", status_code=200)
 async def get_access_policies(
     token_payload=Depends(get_access_token_payload),
@@ -176,7 +173,9 @@ async def get_access_policies_for_identity(
                 detail="Forbidden.",
             )
     logger.info("GET user by azure_user_id")
-    current_user = await access_policy_view._check_token_against_guards(token_payload, guards)
+    current_user = await access_policy_view._check_token_against_guards(
+        token_payload, guards
+    )
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_for_identity(
             identity_id, identity_type, current_user

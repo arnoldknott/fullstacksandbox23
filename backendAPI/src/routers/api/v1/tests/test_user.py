@@ -5,16 +5,11 @@ import uuid
 from typing import List
 from httpx import AsyncClient
 from models.identity import User, UserRead
-from models.access import AccessPolicy
 from fastapi import FastAPI
 from tests.utils import (
     token_user1_read,
-    token_user1_write,
     token_user1_read_write,
-    token_user2_read_write,
-    token_admin,
     token_admin_read,
-    token_admin_write,
     token_admin_read_write,
     token_payload_user_id,
     token_payload_tenant_id,
