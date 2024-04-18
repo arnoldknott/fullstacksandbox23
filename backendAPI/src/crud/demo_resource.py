@@ -91,4 +91,3 @@ class DemoResourceCRUD(
         return await self.read(
             current_user, joins=[DemoResourceTagLink, Tag], filters=[Tag.id == tag_id]
         )
-        # await self.read(current_user, having=[DemoResource.tags.id == tag_id])

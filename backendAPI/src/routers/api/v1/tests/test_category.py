@@ -351,70 +351,70 @@ async def test_delete_category_does_not_exist(
     assert content["detail"] == "Category not deleted."
 
 
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
-    [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
-    indirect=True,
-)
-async def test_get_all_demo_resources_by_category_id(
-    async_client: AsyncClient,
-    add_test_demo_resources: list[DemoResource],
-    add_test_categories: list[Category],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
-):
-    """Tests GET all demo resources by category id."""
+# Moved to test_demo_resource.py
+# @pytest.mark.anyio
+# @pytest.mark.parametrize(
+#     "mocked_get_azure_token_payload",
+#     [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
+#     indirect=True,
+# )
+# async def test_get_all_demo_resources_by_category_id(
+#     async_client: AsyncClient,
+#     add_test_demo_resources: list[DemoResource],
+#     app_override_get_azure_payload_dependency: FastAPI,
+#     mocked_get_azure_token_payload,
+# ):
+#     """Tests GET all demo resources by category id."""
 
-    app_override_get_azure_payload_dependency
-    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+#     app_override_get_azure_payload_dependency
+#     resources = await add_test_demo_resources(mocked_get_azure_token_payload)
 
-    categories_response = await async_client.get("/api/v1/category/")
-    categories = categories_response.json()
+#     categories_response = await async_client.get("/api/v1/category/")
+#     categories = categories_response.json()
 
-    response = await async_client.get(
-        f"/api/v1/category/{str(categories[1]['id'])}/demoresources"
-    )
+#     response = await async_client.get(
+#         f"/api/v1/category/{str(categories[1]['id'])}/demoresources"
+#     )
 
-    assert response.status_code == 200
-    assert len(response.json()) == 2
-    first_content = response.json()[0]
-    assert first_content["name"] == resources[0].name
-    assert first_content["description"] == resources[0].description
-    assert first_content["language"] == resources[0].language
-    assert "category_id" in first_content
+#     assert response.status_code == 200
+#     assert len(response.json()) == 2
+#     first_content = response.json()[0]
+#     assert first_content["name"] == resources[0].name
+#     assert first_content["description"] == resources[0].description
+#     assert first_content["language"] == resources[0].language
+#     assert "category_id" in first_content
 
-    second_content = response.json()[1]
-    assert second_content["name"] == resources[2].name
-    assert second_content["description"] == resources[2].description
-    assert second_content["language"] == resources[2].language
-    assert "category_id" in second_content
+#     second_content = response.json()[1]
+#     assert second_content["name"] == resources[2].name
+#     assert second_content["description"] == resources[2].description
+#     assert second_content["language"] == resources[2].language
+#     assert "category_id" in second_content
 
 
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
-    [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
-    indirect=True,
-)
-async def test_get_demo_resources_for_lonely_category(
-    async_client: AsyncClient,
-    add_test_demo_resources: list[DemoResource],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
-):
-    """Tests GET error for category, that has no demo resources attached."""
+# @pytest.mark.anyio
+# @pytest.mark.parametrize(
+#     "mocked_get_azure_token_payload",
+#     [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
+#     indirect=True,
+# )
+# async def test_get_demo_resources_for_lonely_category(
+#     async_client: AsyncClient,
+#     add_test_demo_resources: list[DemoResource],
+#     app_override_get_azure_payload_dependency: FastAPI,
+#     mocked_get_azure_token_payload,
+# ):
+#     """Tests GET error for category, that has no demo resources attached."""
 
-    app_override_get_azure_payload_dependency
+#     app_override_get_azure_payload_dependency
 
-    await add_test_demo_resources(mocked_get_azure_token_payload)
-    # add_test_demo_resources
-    categories_response = await async_client.get("/api/v1/category/")
-    categories = categories_response.json()
-    response = await async_client.get(
-        f"/api/v1/category/{str(categories[2]['id'])}/demoresources"
-    )
+#     await add_test_demo_resources(mocked_get_azure_token_payload)
+#     # add_test_demo_resources
+#     categories_response = await async_client.get("/api/v1/category/")
+#     categories = categories_response.json()
+#     response = await async_client.get(
+#         f"/api/v1/category/{str(categories[2]['id'])}/demoresources"
+#     )
 
-    assert response.status_code == 404
-    content = response.json()
-    assert content["detail"] == "No demo resources found"
+#     assert response.status_code == 404
+#     content = response.json()
+#     assert content["detail"] == "No demo resources found"

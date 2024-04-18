@@ -146,6 +146,7 @@ async def delete_category(
     return await category_view.delete(category_id, token_payload, guards)
 
 
+# Moved to demo_resource enpdoints
 # # TBD: refactor to updated access protection
 # @router.get("/{category_id}/demoresources")
 # async def get_all_demo_resources_in_category(category_id: UUID) -> list[DemoResource]:
@@ -161,19 +162,19 @@ async def delete_category(
 #     return response
 
 
-# TBD: delete, as this information is already returned by get_by_category_id endpoint?
-# TBD: or just call the get_all_demo_resources_in_category method from the demo_resource_router?
-# Note the guards and token_payload: FastAPI dependencies don't get resolved when calling a method directly"
-@router.get("/{category_id}/demoresources")
-async def get_all_demo_resources_in_category(
-    category_id: UUID,
-    token_payload=Depends(get_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
-) -> list[DemoResource]:
-    """Gets all demo resources that belong to specific category."""
-    # current_user = await category_view._check_token_against_guards(
-    #     token_payload, guards
-    # )
-    async with category_view.crud() as crud:
-        # return await crud.read_all_demo_resources(current_user, category_id)
-        return await crud.read_all_demo_resources(category_id)
+# # TBD: delete, as this information is already returned by get_by_category_id endpoint?
+# # TBD: or just call the get_all_demo_resources_in_category method from the demo_resource_router?
+# # Note the guards and token_payload: FastAPI dependencies don't get resolved when calling a method directly"
+# @router.get("/{category_id}/demoresources")
+# async def get_all_demo_resources_in_category(
+#     category_id: UUID,
+#     token_payload=Depends(get_access_token_payload),
+#     guards: GuardTypes = Depends(Guards(roles=["User"])),
+# ) -> list[DemoResource]:
+#     """Gets all demo resources that belong to specific category."""
+#     # current_user = await category_view._check_token_against_guards(
+#     #     token_payload, guards
+#     # )
+#     async with category_view.crud() as crud:
+#         # return await crud.read_all_demo_resources(current_user, category_id)
+#         return await crud.read_all_demo_resources(category_id)
