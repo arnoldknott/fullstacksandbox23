@@ -173,6 +173,23 @@ async def test_read_access_policy_by_id(
     assert read_policy[0].action == policies[2].action
 
 
+# TBD: add tests for other users than admin? Or is this covered by test_access?
+@pytest.mark.anyio
+async def test_read_access_policy_by_id_without_permission(
+    add_many_test_access_policies,
+):
+    """Test reading an access policy by id."""
+    policies = add_many_test_access_policies
+    try:
+        async with AccessPolicyCRUD() as policy_crud:
+            await policy_crud.read(policy_id=policies[2].id)
+    except Exception as err:
+        assert err.status_code == 404
+        assert err.detail == "Access policy not found."
+    else:
+        pytest.fail("No HTTPexception raised!")
+
+
 @pytest.mark.anyio
 async def test_read_access_policy_for_nonexisting_id(
     add_many_test_access_policies, mock_current_user_data_admin
