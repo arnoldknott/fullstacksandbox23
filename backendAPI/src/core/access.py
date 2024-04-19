@@ -1,5 +1,6 @@
 import logging
 
+from uuid import UUID
 from typing import Optional, Union
 from core.types import CurrentUserData, Action, ResourceType, IdentityType
 from fastapi import HTTPException
@@ -54,6 +55,7 @@ class AccessControl:
         # Admin override:
         # if user["roles"] and "Admin" in user["roles"]:
 
+        # TBD: call the filters_allowed method and execute the statement here.
         # check for public override:
         if not current_user:
             # async with self.policy_crud as policy_crud:
@@ -117,8 +119,8 @@ class AccessControl:
         elif action == Action.own:
             action = ["own"]
 
-        print("=== core.access - AccessControl - filters_allowed - action ===")
-        print(action)
+        # print("=== core.access - AccessControl - filters_allowed - action ===")
+        # print(action)
 
         # TBD: refactor into adding conditions to the statement:
         # conditions = []
@@ -143,6 +145,9 @@ class AccessControl:
         # return conditions
 
         if not current_user:
+            statement = statement.join(
+                AccessPolicy, model.id == AccessPolicy.resource_id
+            )
             # statement = statement.where(IdentifierTypeLink.type == resource_type)
             statement = statement.where(AccessPolicy.resource_id == model.id)
             statement = statement.where(AccessPolicy.action.in_(action))
@@ -150,6 +155,9 @@ class AccessControl:
         elif "Admin" in current_user.roles:
             pass
         else:
+            statement = statement.join(
+                AccessPolicy, model.id == AccessPolicy.resource_id
+            )
             # statement = statement.join(IdentifierTypeLink)
             # statement = statement.where(IdentifierTypeLink.type == resource_type)
             statement = statement.where(AccessPolicy.resource_id == model.id)

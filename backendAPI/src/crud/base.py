@@ -184,9 +184,9 @@ class BaseCRUD(
         # statement = select(self.model if not select_args else *select_args)
         # TBD: select_args are not compatible with the return type of the method!
         statement = select(*select_args) if select_args else select(self.model)
-        statement = statement.join(
-            AccessPolicy, self.model.id == AccessPolicy.resource_id
-        )
+        # statement = statement.join(
+        #     AccessPolicy, self.model.id == AccessPolicy.resource_id
+        # )
         # statement = statement.join(
         #     IdentifierTypeLink, self.model.id == IdentifierTypeLink.resource_id
         # )
@@ -396,10 +396,9 @@ class BaseCRUD(
             # statement = select(self.model, AccessPolicy).where(
             #     self.model.id == object_id
             # )
-            statement = select(self.model).distinct().where(self.model.id == object_id)
-            statement = statement.join(
-                AccessPolicy, self.model.id == AccessPolicy.resource_id
-            )
+            # statement = select(self.model).distinct().where(self.model.id == object_id)
+            statement = select(self.model).where(self.model.id == object_id)
+
             statement = self.access_control.filters_allowed(
                 statement=statement,
                 model=self.model,
@@ -409,9 +408,9 @@ class BaseCRUD(
             )
 
             # statement = select(self.model).where(self.model.id == object_id)
-            # print("=== CRUD - base - update - statement ===")
-            # print(statement.compile())
-            # print(statement.compile().params)
+            print("=== CRUD - base - update - statement ===")
+            print(statement.compile())
+            print(statement.compile().params)
 
             response = await session.exec(statement)
 
@@ -498,9 +497,9 @@ class BaseCRUD(
 
             # After refactoring to pass the statement:
             statement = select(self.model).distinct().where(self.model.id == object_id)
-            statement = statement.join(
-                AccessPolicy, self.model.id == AccessPolicy.resource_id
-            )
+            # statement = statement.join(
+            #     AccessPolicy, self.model.id == AccessPolicy.resource_id
+            # )
             statement = self.access_control.filters_allowed(
                 statement=statement,
                 model=self.model,
