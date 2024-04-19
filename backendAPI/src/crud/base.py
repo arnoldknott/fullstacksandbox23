@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional, List
 
-from models.access import AccessPolicy, AccessLogCreate
+from models.access import AccessPolicy, AccessLogCreate, IdentifierTypeLink
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from core.databases import get_async_session
 
@@ -80,10 +80,8 @@ class BaseCRUD(
         """Creates an access policy entry."""
         access_policy = AccessPolicy(
             resource_id=resource_id,
-            # resource_type=self.resource_type,
             action=action,
             identity_id=current_user.user_id,
-            # identity_type=IdentityType.user,
         )
         async with self.policy_CRUD as policy_CRUD:
             await policy_CRUD.create(access_policy, current_user)
@@ -98,15 +96,27 @@ class BaseCRUD(
         """Creates an access log entry."""
         access_log = AccessLogCreate(
             resource_id=object_id,
-            # resource_type=self.resource_type,
             action=action.value,
             # if public access, current_user is None
             identity_id=current_user.user_id if current_user else None,
-            # identity_type=IdentityType.user if current_user else None,
             status_code=status_code,
         )
         async with self.logging_CRUD as logging_CRUD:
             await logging_CRUD.log_access(access_log)
+
+    async def _write_identifier_type_link(
+        self,
+        object_id: uuid.UUID,
+    ):
+        """Creates an identifier type link entry."""
+        identifier_type_link = IdentifierTypeLink(
+            resource_id=object_id,
+            resource_type=self.resource_type,
+        )
+        self.session.add(identifier_type_link)
+        await self.session.commit()
+        await self.session.refresh(identifier_type_link)
+        return identifier_type_link
 
     async def create(
         self,

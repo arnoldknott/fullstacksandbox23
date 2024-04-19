@@ -17,6 +17,7 @@ from models.access import AccessPolicy, AccessPolicyRead
 from crud.access import AccessPolicyCRUD
 from tests.utils import (
     many_test_azure_users,
+    current_user_data_admin,
     token_admin,
     many_test_policies,
 )
@@ -151,6 +152,13 @@ async def mock_current_user():
         return current_user
 
     yield _mock_current_user
+
+
+@pytest.fixture(scope="function")
+def mock_current_user_data_admin():
+    """Returns a mock current user based on provided payload."""
+
+    yield CurrentUserData(**current_user_data_admin)
 
 
 @pytest.fixture(scope="function")

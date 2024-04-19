@@ -283,8 +283,8 @@ class AccessPolicyCRUD:
             # session = self.session
             query = select(AccessPolicy)
 
-            print("=== AccessPolicyCRUD.read - current_user ===")
-            pprint(current_user)
+            # print("=== AccessPolicyCRUD.read - current_user ===")
+            # pprint(current_user)
             # print("=== AccessPolicyCRUD.read - query ===")
             # print(query)
             # TBD: consider access control checks here:

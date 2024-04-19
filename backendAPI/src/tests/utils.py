@@ -161,6 +161,11 @@ token_admin_read_write = {
 }
 
 
+current_user_data_admin = {
+    "user_id": many_test_azure_users[0]["azure_user_id"],
+    "roles": ["Admin"],
+}
+
 # group_id1 = str(uuid4())
 # group_id2 = str(uuid4())
 # group_id3 = str(uuid4())
