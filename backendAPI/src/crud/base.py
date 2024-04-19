@@ -10,7 +10,8 @@ from core.access import AccessControl
 from fastapi import HTTPException
 from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.sql import distinct
+
+# from sqlalchemy.sql import distinct
 
 
 if TYPE_CHECKING:
@@ -392,7 +393,9 @@ class BaseCRUD(
             #     )
 
             # After refactoring to pass the statement:
-            # statement = select(self.model).where(self.model.id == object_id)
+            # statement = select(self.model, AccessPolicy).where(
+            #     self.model.id == object_id
+            # )
             statement = select(self.model).distinct().where(self.model.id == object_id)
             statement = statement.join(
                 AccessPolicy, self.model.id == AccessPolicy.resource_id

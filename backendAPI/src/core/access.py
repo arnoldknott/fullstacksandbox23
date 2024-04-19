@@ -117,6 +117,9 @@ class AccessControl:
         elif action == Action.own:
             action = ["own"]
 
+        print("=== core.access - AccessControl - filters_allowed - action ===")
+        print(action)
+
         # TBD: refactor into adding conditions to the statement:
         # conditions = []
         # if not current_user:
