@@ -1,13 +1,16 @@
 import logging
 from uuid import UUID
 
+from pprint import pprint
+
 from typing import List, Optional
-from sqlmodel import select
+from sqlmodel import select, or_, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
-from core.types import CurrentUserData, ResourceType, Action
-from core.access import AccessControl
+from core.types import CurrentUserData, Action
+
+# from core.access import AccessControl
 
 from fastapi import HTTPException
 from models.access import (
@@ -21,7 +24,6 @@ from models.access import (
 
 logger = logging.getLogger(__name__)
 
-# access_control = AccessControl()
 read = Action.read
 write = Action.write
 own = Action.own
@@ -33,7 +35,7 @@ class AccessPolicyCRUD:
     def __init__(self):
         """Initializes the CRUD for access control policies."""
         self.session = None
-        self.access_control = AccessControl(self)
+        # self.access_control = AccessControl(self)
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -43,6 +45,159 @@ class AccessPolicyCRUD:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes the database session."""
         await self.session.close()
+
+    async def __check_resource_inheritance(self):
+        """Checks if the resource inherits permissions from a parent resource"""
+        # TBD: check the inheritance flag in the resource hierarchy table and stop, if not inherited!
+        pass
+
+    async def __check_identity_inheritance(self):
+        """Checks if the resource inherits permissions from a parent resource"""
+        # TBD: check if the identity inherits permissions from a parent identity (aka group)
+        pass
+
+    def filters_allowed(
+        self,
+        statement: select,
+        action: "Action",
+        model: SQLModel = AccessPolicy,
+        current_user: Optional["CurrentUserData"] = None,
+    ):
+        """Finds all resources of a certain type and action that the user has permission to access"""
+        # TBD: implement this
+        # ✔︎ find all public resources of the given type and action
+        # ✔︎ find all resources of the given type and action that the user has permission to access
+        # - find all resources of the given type and action that the user has permission to access through resource inheritance
+        # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance)
+        # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance
+        # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access
+        # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access and admin override
+
+        # Permission overrides:
+        # own includes write and read
+        # write includes read
+        if action == Action.read:
+            action = ["own", "write", "read"]
+        elif action == Action.write:
+            action = ["own", "write"]
+        elif action == Action.own:
+            action = ["own"]
+
+        # print("=== core.access - AccessCRUD - filters_allowed - model ===")
+        # print(model)
+        # print("=== core.access - AccessCRUD - filters_allowed - current_user ===")
+        # pprint(current_user)
+        # print("=== core.access - AccessCRUD - filters_allowed - statement ===")
+        # pprint(statement.compile())
+        # pprint(statement.compile().params)
+        # print("=== core.access - AccessCRUD - filters_allowed - action ===")
+        # print(action)
+
+        # print("=== core.access - AccessCRUD - filters_allowed - action ===")
+        # print(action)
+
+        if not current_user:
+            if model != AccessPolicy:
+                statement = statement.join(
+                    AccessPolicy, model.id == AccessPolicy.resource_id
+                )
+                statement = statement.where(AccessPolicy.resource_id == model.id)
+            statement = statement.where(AccessPolicy.action.in_(action))
+            statement = statement.where(AccessPolicy.public)
+        elif "Admin" in current_user.roles:
+            pass
+        else:
+            if model != AccessPolicy:
+                statement = statement.join(
+                    AccessPolicy, model.id == AccessPolicy.resource_id
+                )
+                statement = statement.where(AccessPolicy.resource_id == model.id)
+            statement = statement.where(AccessPolicy.action.in_(action))
+            statement = statement.where(
+                or_(
+                    AccessPolicy.identity_id == current_user.user_id,
+                    AccessPolicy.public,
+                )
+            )
+
+        # print("=== core.access - AccessControl - statement ===")
+        # print(statement)
+
+        return statement
+
+    async def allows(
+        self,
+        resource_id: UUID,
+        action: "Action",
+        current_user: Optional["CurrentUserData"] = None,
+    ) -> bool:
+        """Checks if the user has permission including inheritance to perform the action on the resource"""
+        # TBD: move the logging to the BaseCrud? Or keep it here together with the Access Control?
+        # loggingCRUD = AccessLoggingCRUD()
+        # TBD: get all policies for the resource, where any of the hierarchical identities and hierarchical resources match
+        # Don't include the identity in the query, as public resources are not assigned to any identity!
+        # TBD: implement "public" override: check if the resource is public for requested action and return True if it is!
+
+        # # TBD: call the filters_allowed method and execute the statement here.
+        # # check for public override:
+        # if not current_user:
+        #     # async with self.policy_crud as policy_crud:
+        #     policy_crud = self.policy_crud
+        #     # add join with inheritance table
+        #     # policies = await policy_crud.read(
+        #     #     resource_id=resource_id, resource_type=resource_type, action=action
+        #     # )
+        #     policies = await policy_crud.read(resource_id=resource_id, action=action)
+        #     for policy in policies:
+        #         if policy.public:
+        #             return True
+        #         else:
+        #             logger.error("Error accessing resource without user information.")
+        #             raise HTTPException(status_code=403, detail="Access denied")
+        # # check for admin override:
+        # elif current_user.roles and "Admin" in current_user.roles:
+        #     return True
+        # # TBD: implement the comparison of policies and request.
+        # else:
+        #     policy_crud = self.policy_crud
+        #     # async with self.policy_crud as policy_crud:
+        #     # add join with inheritance table for both resource and identity
+        #     policies = await policy_crud.read(
+        #         resource_id=resource_id,
+        #         action=action,
+        #         identity_id=current_user.user_id,
+        #     )
+        #     if policies is not None:
+        #         return True
+        #     else:
+        #         logger.error("Error accessing resource.")
+        #         raise HTTPException(status_code=403, detail="Access denied")
+
+        # Necessary as otherwise an empty database could never get data into it.
+        if current_user and current_user.roles and "Admin" in current_user.roles:
+            return True
+
+        try:
+            query = select(AccessPolicy).where(
+                AccessPolicy.resource_id == resource_id,
+            )
+
+            query = self.filters_allowed(query, action, current_user=current_user)
+            # print("=== AccessPolicyCRUD.allows - query ===")
+            # print(query.compile())
+            # print(query.compile().params)
+
+            # Only one policy per resource - action - identity combination is allowed!
+            response = await self.session.exec(query)
+            results = response.one()
+
+            if results.resource_id == resource_id and results.action == action:
+                return True
+        except Exception as e:
+            logger.error(f"Error in reading policy: {e}")
+            raise HTTPException(status_code=404, detail="Access policy not found")
+
+        return False
 
     async def create(
         self, policy: AccessPolicyCreate, current_user: CurrentUserData
@@ -59,11 +214,17 @@ class AccessPolicyCRUD:
             #     # how do i get the roles and groups here?
             # )
 
+            # TBD: take Action hierarchy into account:
+            # if a user can own, they can also write and read
+            # if a user can write, they can also read
+            # If a user gets upgraded here - delete the lower level policies?
+            # Only have the highest access level in the database?
+
             # Every user can create a policy for themselves:
             if policy.identity_id != current_user.user_id:
                 # Current user creates a policy for another identity.
                 # Current user needs to own the resource to grant others access (share) it.
-                if not await self.access_control.allows(
+                if not await self.allows(
                     current_user=current_user,
                     resource_id=policy.resource_id,
                     # resource_type=policy.resource_type,
@@ -95,7 +256,6 @@ class AccessPolicyCRUD:
         self,
         policy: AccessPolicyCreate,
         parent_resource_id: int,
-        # parent_resource_type: ResourceType,  # TBD: remove and read from database instead?
         current_user: CurrentUserData,
     ):
         """Adds a child policy to a parent policy."""
@@ -110,7 +270,6 @@ class AccessPolicyCRUD:
         policy_id: Optional[int] = None,
         identity_id: Optional[UUID] = None,
         resource_id: Optional[int] = None,
-        # resource_type: Optional[ResourceType] = None,
         action: Optional[Action] = None,
     ) -> List[AccessPolicyRead]:
         """Reads access control policies based on the provided parameters."""
@@ -121,101 +280,106 @@ class AccessPolicyCRUD:
         # if no identity id, the resource needs to be public
 
         try:
-            session = self.session
+            # session = self.session
             query = select(AccessPolicy)
 
+            print("=== AccessPolicyCRUD.read - current_user ===")
+            pprint(current_user)
             # print("=== AccessPolicyCRUD.read - query ===")
             # print(query)
             # TBD: consider access control checks here:
             # not using the allows - here it's just about building the query to get the policies!
 
+            # TBD: can a method from core - access control be used here?
+            # if not current_user:
+            #     # The difference to access from core is the missing join here
+            #     # otherwise it would be a self join and .resource_id needs to be equal to .id
+            #     query = query.where(AccessPolicy.action == own)
+            #     query = query.where(AccessPolicy.public)
+            # elif "Admin" in current_user.roles:
+            #     pass
+            # else:
+            #     # The difference to access from core is the missing join here
+            #     # otherwise it would be a self join and .resource_id needs to be equal to .id
+            #     # TBD: write test for this: needs to ensure,
+            #     # that only resources get returned, where the current_user is owner or
+            #     # the resource is publicly owned
+            #     query = query.where(AccessPolicy.action == own)
+            #     query = query.where(
+            #         or_(
+            #             AccessPolicy.identity_id == current_user.user_id,
+            #             AccessPolicy.public,
+            #         )
+            #     )
+
+            await self.allows(resource_id, own, current_user)
+
             if policy_id is not None:
                 if (
                     identity_id is not None
                     or resource_id is not None
-                    # or resource_type is not None
                     or action is not None
                 ):
                     raise ValueError(
                         "Policy ID cannot be provided with other parameters."
                     )
-                results = await session.get(AccessPolicy, policy_id)
+                query = query.where(AccessPolicy.id == policy_id)
             else:
-                conditions = []
                 if identity_id is not None:
-                    conditions.append(AccessPolicy.identity_id == identity_id)
+                    query = query.where(AccessPolicy.identity_id == identity_id)
                 if resource_id is not None:
-                    # TBD: should be covered by type validations in the model!
-                    # if resource_type is None:
-                    #     raise ValueError(
-                    #         "'resource_type' is required in conjunction with 'resource_id'."
-                    #     )
-                    conditions.append(AccessPolicy.resource_id == resource_id)
-                    # conditions.append(AccessPolicy.resource_type == resource_type)
-                # elif resource_type is not None:
-                #     conditions.append(AccessPolicy.resource_type == resource_type)
+                    query = query.where(AccessPolicy.resource_id == resource_id)
                 if action is not None:
-                    conditions.append(AccessPolicy.action == action)
+                    query = query.where(AccessPolicy.action == action)
 
-                if conditions:
-                    query = query.where(*conditions)
+            # query = select(AccessPolicy)
 
-                # print("=== AccessPolicyCRUD.read - query ===")
-                # print(query)
-                # print("=== AccessPolicyCRUD.read - query.compile().params ===")
-                # print(query.compile().params)
+            # print("=== AccessPolicyCRUD.read - query ===")
+            # print(query.compile())
+            # print(query.compile().params)
 
-                # query = select(AccessPolicy)
+            response = await self.session.exec(query)
+            results = response.all()
 
-                response = await session.exec(query)
-                results = response.all()
-                # print("=== AccessPolicyCRUD.read - results ===")
-                # print(results)
+            # print("=== AccessPolicyCRUD.read - results ===")
+            # pprint(results)
 
             if not results:
-                raise HTTPException(status_code=404, detail="Access policy not found")
+                raise HTTPException(status_code=404, detail="Access policy not found.")
 
             return results
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
-            raise HTTPException(status_code=404, detail="Access policy not found")
+            raise HTTPException(status_code=404, detail="Access policy not found.")
 
     async def read_access_policies_for_resource(
         self,
         resource_id: UUID,
-        # resource_type: ResourceType,  # TBD: remove and read from database in read method?
         current_user: CurrentUserData,
     ):
         """Returns all access policies by resource id."""
         try:
-            filters = [
-                AccessPolicy.resource_id == resource_id,
-                # AccessPolicy.resource_type == resource_type,
-            ]
-            # access_policies = await self.read(current_user, filters=filters)
             access_policies = await self.read(current_user, resource_id=resource_id)
             return access_policies
         except Exception as err:
             logging.error(err)
-            raise HTTPException(status_code=404, detail="Access policies not found")
+            raise HTTPException(status_code=404, detail="Access policies not found.")
 
     async def read_access_policies_for_identity(
         self,
         identity_id: UUID,
-        # identity_type: IdentityType,  # TBD: remove and read from database in read method?
         current_user: CurrentUserData,
     ):
         """Returns a User with linked Groups from the database."""
         try:
             filters = [
                 AccessPolicy.identity_id == identity_id,
-                # AccessPolicy.identity_type == identity_type,
             ]
             access_policies = await self.read(current_user, filters=filters)
             return access_policies
         except Exception as err:
             logging.error(err)
-            raise HTTPException(status_code=404, detail="AccessPolicies not found")
+            raise HTTPException(status_code=404, detail="AccessPolicies not found.")
 
     async def delete(
         self,
@@ -223,7 +387,6 @@ class AccessPolicyCRUD:
         policy_id: Optional[int] = None,
         identity_id: Optional[UUID] = None,
         resource_id: Optional[int] = None,
-        # resource_type: Optional[ResourceType] = None,
         action: Optional[Action] = None,
     ) -> None:
         """Deletes an access control policy."""
@@ -241,7 +404,6 @@ class AccessPolicyCRUD:
                 if (
                     identity_id is not None
                     or resource_id is not None
-                    # or resource_type is not None
                     or action is not None
                 ):
                     raise ValueError(
@@ -260,7 +422,6 @@ class AccessPolicyCRUD:
                 policies = await self.read(
                     identity_id=identity_id,
                     resource_id=resource_id,
-                    # resource_type=resource_type,
                     action=action,
                 )
                 for policy in policies:
@@ -345,7 +506,6 @@ class AccessLoggingCRUD:
             session = self.session
             query = select(AccessLog).where(
                 AccessLog.resource_id == resource_id,
-                # AccessLog.resource_type == resource_type,
             )
             response = await session.exec(query)
             results = response.all()
@@ -355,9 +515,7 @@ class AccessLoggingCRUD:
             raise HTTPException(status_code=404, detail="Log not found")
 
     # TBD: create a generic read method and use it here.
-    async def read_log_created(
-        self, resource_id: UUID  # , resource_type: ResourceType
-    ) -> AccessLogRead:
+    async def read_log_created(self, resource_id: UUID) -> AccessLogRead:
         """Reads first access log with action "Own" for resource id and type - corresponds to create."""
         logger.info("Reading create information from access logs in database.")
         try:
@@ -366,7 +524,6 @@ class AccessLoggingCRUD:
                 select(AccessLog)
                 .where(
                     AccessLog.resource_id == resource_id,
-                    # AccessLog.resource_type == resource_type,
                 )
                 .order_by(AccessLog.time)
                 .limit(1)

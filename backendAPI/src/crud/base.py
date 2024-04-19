@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional, List
 from models.access import AccessPolicy, AccessLogCreate
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from core.databases import get_async_session
-from core.access import AccessControl
+
+# from core.access import AccessControl
 from fastapi import HTTPException
 from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -20,8 +21,6 @@ from core.types import CurrentUserData, Action, ResourceType, IdentityType
 
 logger = logging.getLogger(__name__)
 
-# access_control = core.access_control.AccessControl()
-# access_control = AccessControl()
 read = Action.read
 write = Action.write
 own = Action.own
@@ -60,7 +59,7 @@ class BaseCRUD(
                 f"{base_model.__name__} is not a valid ResourceType or IdentityType"
             )
         self.policy_CRUD = AccessPolicyCRUD()
-        self.access_control = AccessControl(self.policy_CRUD)
+        # self.access_control = AccessControl(self.policy_CRUD)
         self.logging_CRUD = AccessLoggingCRUD()
 
     async def __aenter__(self) -> AsyncSession:
@@ -190,11 +189,10 @@ class BaseCRUD(
         # statement = statement.join(
         #     IdentifierTypeLink, self.model.id == IdentifierTypeLink.resource_id
         # )
-        statement = self.access_control.filters_allowed(
+        statement = self.policy_CRUD.filters_allowed(
             statement=statement,
-            model=self.model,
-            # resource_type=self.resource_type,
             action=read,
+            model=self.model,
             current_user=current_user,
         )
         # if not access_conditions:
@@ -287,7 +285,7 @@ class BaseCRUD(
     #     # TBD: delete the version from before refactoring:
     #     # statement = select(model)
     #     # TBD: Refactor into access control:
-    #     join_conditions = self.access_control.filters_allowed(
+    #     join_conditions = self.policy_CRUD.filters_allowed(
     #         resource_type=self.resource_type,
     #         action=read,
     #         user=current_user,
@@ -317,7 +315,7 @@ class BaseCRUD(
     #     # TBD: add access control checks here:
     #     # request is known from self.current_user, object and method is read here
     #     """Returns an object by id."""
-    #     # if not await self.access_control.allows(
+    #     # if not await self.policy_CRUD.allows(
     #     #     current_user=current_user,
     #     #     resource_id=object_id,
     #     #     resource_type=self.resource_type,
@@ -326,7 +324,7 @@ class BaseCRUD(
     #     #     raise HTTPException(status_code=403, detail="Access denied")
     #     session = self.session
     #     model = self.model
-    #     join_conditions = self.access_control.filters_allowed(
+    #     join_conditions = self.policy_CRUD.filters_allowed(
     #         resource_type=self.resource_type,
     #         action=read,
     #         user=current_user,
@@ -377,7 +375,7 @@ class BaseCRUD(
 
         try:
             ### This should be ready to go:
-            # access_conditions = self.access_control.filters_allowed(
+            # access_conditions = self.policy_CRUD.filters_allowed(
             #     resource_type=self.resource_type,
             #     action=write,
             #     user=current_user,
@@ -399,11 +397,10 @@ class BaseCRUD(
             # statement = select(self.model).distinct().where(self.model.id == object_id)
             statement = select(self.model).where(self.model.id == object_id)
 
-            statement = self.access_control.filters_allowed(
+            statement = self.policy_CRUD.filters_allowed(
                 statement=statement,
-                model=self.model,
-                # resource_type=self.resource_type,
                 action=write,
+                model=self.model,
                 current_user=current_user,
             )
 
@@ -480,7 +477,7 @@ class BaseCRUD(
         # model = self.model
         try:
             # ### This should be ready to go:
-            # access_conditions = self.access_control.filters_allowed(
+            # access_conditions = self.policy_CRUD.filters_allowed(
             #     resource_type=self.resource_type,
             #     action=write,
             #     user=current_user,
@@ -500,11 +497,10 @@ class BaseCRUD(
             # statement = statement.join(
             #     AccessPolicy, self.model.id == AccessPolicy.resource_id
             # )
-            statement = self.access_control.filters_allowed(
+            statement = self.policy_CRUD.filters_allowed(
                 statement=statement,
-                model=self.model,
-                # resource_type=self.resource_type,
                 action=write,
+                model=self.model,
                 current_user=current_user,
             )
 

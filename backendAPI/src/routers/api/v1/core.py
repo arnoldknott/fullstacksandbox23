@@ -55,6 +55,8 @@ confClientApp = ConfidentialClientApplication(
 #     return token
 
 
+# TBD: refactor to use dependency injection
+# might require a working on-behalf-of workflow?
 def get_users_groups_ms_graph(access_token: str):
     """Dummy function to try if access token works from backend"""
     # response = httpx.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
@@ -139,7 +141,7 @@ async def get_onbehalfof(authorization: Annotated[str | None, Header()] = None):
     print("=== getting token on behalf of ===")
     result = confClientApp.acquire_token_on_behalf_of(
         token,
-        scopes=["User.Read"]
+        scopes=["User.Read"],
         # scopes=[
         #     "api.read"
         # ],  # ["User.Read", "https://management.azure.com/user_impersonation"],

@@ -103,9 +103,11 @@ async def get_access_policies_for_resource(
     # if resource_type not in ResourceType.list():
     #     raise ValueError("Resource type is not valid.")
     logger.info("GET user by azure_user_id")
+
     current_user = await access_policy_view._check_token_against_guards(
         token_payload, guards
     )
+
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_for_resource(
             resource_id, current_user

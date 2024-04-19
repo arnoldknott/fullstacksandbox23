@@ -8,6 +8,7 @@ from main import app
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
+from pprint import pprint
 from core.security import get_azure_token_payload, CurrentAccessToken, Guards
 from core.types import CurrentUserData
 from models.identity import User, UserRead
@@ -84,9 +85,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[
-        get_azure_token_payload
-    ] = lambda: mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 
@@ -139,9 +140,9 @@ def mock_guards():
 
 @pytest.fixture(scope="function")
 async def mock_current_user():
-    """Returns a mock current user based on provided payload or admin."""
+    """Returns a mock current user based on provided payload."""
 
-    async def _mock_current_user(token_payload: dict = None) -> User:
+    async def _mock_current_user(token_payload: dict = None) -> CurrentUserData:
         current_user = None
         if token_payload is None:
             token_payload = token_admin
@@ -257,17 +258,20 @@ async def add_many_azure_test_users():
 async def add_test_access_policy():
     """Fixture for adding test policies."""
 
-    async def _add_test_access_policy(access_policies: List[AccessPolicy]):
+    async def _add_test_access_policy(
+        access_policies: List[AccessPolicy], current_user: CurrentUserData = None
+    ):
         """Adds test policies to the database."""
 
         policies = []
         async with AccessPolicyCRUD() as crud:
-            mocked_admin_user = CurrentUserData(
-                user_id=many_test_azure_users[0]["azure_user_id"],
-                roles=["Admin"],
-            )
+            if current_user is None:
+                current_user = CurrentUserData(
+                    user_id=many_test_azure_users[0]["azure_user_id"],
+                    roles=["Admin"],
+                )
             for policy in access_policies:
-                policy = await crud.create(AccessPolicy(**policy), mocked_admin_user)
+                policy = await crud.create(AccessPolicy(**policy), current_user)
                 # session.add(policy)
                 # await session.commit()
                 # await session.refresh(policy)

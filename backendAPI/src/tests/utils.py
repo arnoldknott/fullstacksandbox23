@@ -230,7 +230,7 @@ one_test_policy_share = {
 
 one_test_policy_public_read = {
     "resource_id": resource_id1,
-    "resource_type": "ProtectedResource",
+    # "resource_type": "ProtectedResource",
     "action": "read",
     "public": True,
 }
