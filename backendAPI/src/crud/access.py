@@ -138,41 +138,6 @@ class AccessPolicyCRUD:
         # Don't include the identity in the query, as public resources are not assigned to any identity!
         # TBD: implement "public" override: check if the resource is public for requested action and return True if it is!
 
-        # # TBD: call the filters_allowed method and execute the statement here.
-        # # check for public override:
-        # if not current_user:
-        #     # async with self.policy_crud as policy_crud:
-        #     policy_crud = self.policy_crud
-        #     # add join with inheritance table
-        #     # policies = await policy_crud.read(
-        #     #     resource_id=resource_id, resource_type=resource_type, action=action
-        #     # )
-        #     policies = await policy_crud.read(resource_id=resource_id, action=action)
-        #     for policy in policies:
-        #         if policy.public:
-        #             return True
-        #         else:
-        #             logger.error("Error accessing resource without user information.")
-        #             raise HTTPException(status_code=403, detail="Access denied")
-        # # check for admin override:
-        # elif current_user.roles and "Admin" in current_user.roles:
-        #     return True
-        # # TBD: implement the comparison of policies and request.
-        # else:
-        #     policy_crud = self.policy_crud
-        #     # async with self.policy_crud as policy_crud:
-        #     # add join with inheritance table for both resource and identity
-        #     policies = await policy_crud.read(
-        #         resource_id=resource_id,
-        #         action=action,
-        #         identity_id=current_user.user_id,
-        #     )
-        #     if policies is not None:
-        #         return True
-        #     else:
-        #         logger.error("Error accessing resource.")
-        #         raise HTTPException(status_code=403, detail="Access denied")
-
         # Necessary as otherwise an empty database could never get data into it.
         if current_user and current_user.roles and "Admin" in current_user.roles:
             return True
@@ -203,6 +168,8 @@ class AccessPolicyCRUD:
         self, policy: AccessPolicyCreate, current_user: CurrentUserData
     ) -> AccessPolicyRead:
         """Creates a new access control policy."""
+        print("=== AccessPolicyCRUD.create - current_user ===")
+        pprint(current_user)
         try:
             session = self.session
             # TBD: remove this, as it's already done through typing the arguments of the method?

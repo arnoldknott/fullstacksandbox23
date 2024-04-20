@@ -274,10 +274,7 @@ async def add_test_access_policy():
         policies = []
         async with AccessPolicyCRUD() as crud:
             if current_user is None:
-                current_user = CurrentUserData(
-                    user_id=many_test_azure_users[0]["azure_user_id"],
-                    roles=["Admin"],
-                )
+                current_user = CurrentUserData(**current_user_data_admin)
             for policy in access_policies:
                 policy = await crud.create(AccessPolicy(**policy), current_user)
                 # session.add(policy)
@@ -293,10 +290,7 @@ async def add_test_access_policy():
 @pytest.fixture(scope="function")
 async def add_many_test_access_policies() -> list[AccessPolicyRead]:
     """Adds a category to the database."""
-    mocked_admin_user = CurrentUserData(
-        user_id=many_test_azure_users[0]["azure_user_id"],
-        roles=["Admin"],
-    )
+    mocked_admin_user = CurrentUserData(**current_user_data_admin)
     async with AccessPolicyCRUD() as crud:
         policies = []
         for policy in many_test_policies:
