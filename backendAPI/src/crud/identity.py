@@ -6,7 +6,8 @@ from uuid import UUID
 
 # from models.azure_group_user_link import AzureGroupUserLink
 from core.types import Action
-from core.types import CurrentUserData
+from core.types import CurrentUserData, IdentityType
+from models.access import IdentityTypeLink
 from models.identity import (
     User,
     UserCreate,
@@ -76,6 +77,12 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # super().__init__(User, IdentityType.user)
         super().__init__(User)
 
+    def _add_identity_type_link_to_session(self, user_id: UUID):
+        session = self.session
+        identity_type_link = IdentityTypeLink(id=user_id, type=IdentityType.user)
+        session.add(identity_type_link)
+        # session.add(IdentityTypeLink(user_id, IdentityType.user))
+
     async def read_by_azure_user_id(
         self, azure_user_id: UUID, current_user: CurrentUserData
     ) -> UserRead:
@@ -117,8 +124,19 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                         azure_user_id=azure_user_id,
                         azure_tenant_id=azure_tenant_id,
                     )
-
+                    # print(
+                    #     "=== user crud - create_azure_user_and_groups_if_not_exist - user_create ==="
+                    # )
+                    # print(user_create)
+                    # The model-validation adds the default values (id) to the user_create object!
+                    # Can be used for linked tables: avoids multiple round trips to database
                     database_user = User.model_validate(user_create)
+                    # print(
+                    #     "=== user crud - create_azure_user_and_groups_if_not_exist - database_user ==="
+                    # )
+                    # print(database_user)
+                    self._add_identity_type_link_to_session(database_user.id)
+                    # session.add(IdentityTypeLink(database_user.id, IdentityType.user))
                     session.add(database_user)
                     await session.commit()
                     await session.refresh(database_user)
@@ -128,12 +146,12 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                         roles=[],  # Roles are coming from the token - but this information is not available here!
                         groups=groups,
                     )
-                    await self._write_policy(
-                        current_user.id, Action.own, current_user_data
-                    )
-                    await self._write_log(
-                        current_user.id, Action.own, current_user_data, 201
-                    )
+                    # await self._write_policy(
+                    #     current_user.id, Action.own, current_user_data
+                    # )
+                    # await self._write_log(
+                    #     current_user.id, Action.own, current_user_data, 201
+                    # )
                     logger.info("USER created in database")
                 except Exception as err:
                     await self._write_log(

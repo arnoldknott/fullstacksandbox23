@@ -1,12 +1,13 @@
 import uuid
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional, TYPE_CHECKING
 
-from sqlmodel import Field, SQLModel, Enum, Column
+from sqlmodel import Field, SQLModel
 from sqlalchemy import UniqueConstraint
-from pydantic import model_validator  # , create_model
+from pydantic import model_validator, BaseModel  # , create_model
 
-from core.types import Action, BaseType, IdentityType, ResourceType
+# if TYPE_CHECKING:
+from core.types import Action, IdentityType, ResourceType, CurrentUserData
 
 # from models import (
 #     Category,
@@ -37,7 +38,27 @@ from core.types import Action, BaseType, IdentityType, ResourceType
 # but don't bother the API user with it. All the endpoints need to know is the UUID of the resource or identity.
 
 
-class IdentifierTypeLink(SQLModel, table=True):
+# class IdentifierTypeLink(SQLModel, table=True):
+#     """Model for resource types"""
+
+#     id: uuid.UUID = Field(primary_key=True)
+#     # type: Union[ResourceType, IdentityType] = Field(index=True)
+#     # type: BaseType = Field(
+#     #     sa_column=Column(Union(Enum(IdentityType), Enum(ResourceType)))
+#     # )
+#     type: str = Field(index=True)
+
+#     # TBD: is there another way to define the type of the column?
+#     @model_validator(mode="after")
+#     def validate_type(self):
+#         if (self.type not in IdentityType.list()) and (
+#             self.type not in ResourceType.list()
+#         ):
+#             raise ValueError("Invalid type")
+#         return self
+
+
+class ResourceTypeLink(SQLModel, table=True):
     """Model for resource types"""
 
     id: uuid.UUID = Field(primary_key=True)
@@ -45,16 +66,21 @@ class IdentifierTypeLink(SQLModel, table=True):
     # type: BaseType = Field(
     #     sa_column=Column(Union(Enum(IdentityType), Enum(ResourceType)))
     # )
-    type: str = Field(index=True)
+    type: ResourceType = Field(index=True)
 
     # TBD: is there another way to define the type of the column?
-    @model_validator(mode="after")
-    def validate_type(self):
-        if (self.type not in IdentityType.list()) and (
-            self.type not in ResourceType.list()
-        ):
-            raise ValueError("Invalid type")
-        return self
+    # @model_validator(mode="after")
+    # def validate_type(self):
+    #     if self.type not in ResourceType.list():
+    #         raise ValueError("Invalid Resource type")
+    #     return self
+
+
+class IdentityTypeLink(SQLModel, table=True):
+    """Model for identity types"""
+
+    id: uuid.UUID = Field(primary_key=True)
+    type: IdentityType = Field(index=True)
 
 
 class AccessPolicyCreate(SQLModel):
@@ -91,13 +117,28 @@ class AccessPolicyCreate(SQLModel):
 class AccessPolicy(AccessPolicyCreate, table=True):
     """Table for access control"""
 
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    # TBD: consider totally removing the id here and
+    # use the combination of identity_id, resource_id, and action
+    # as composite primary key?
+    # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     identity_id: Optional[uuid.UUID] = Field(
-        default=None, index=True
-    )  # needs to be a foreign key / relationship for join statements?
+        foreign_key="identitytypelink.id", index=True
+    )
+    # identity_id: Optional[uuid.UUID] = Field(
+    #     default=None, primary_key=True, nullable=True
+    # )
+    # identity_id: Optional[uuid.UUID] = Field(
+    #     primary_key=True, default=None, index=True
+    # )  # needs to be a foreign key / relationship for join statements?
     # identity_type: Optional["IdentityType"] = Field(default=None, index=True)
-    resource_id: uuid.UUID = Field(index=True)
+    # resource_id: uuid.UUID = Field(primary_key=True)  # , index=True)
+    resource_id: uuid.UUID = Field(foreign_key="resourcetypelink.id", index=True)
     # resource_type: str = Field(index=True)
+    # action: "Action" = Field()  # not using primary_key=True here means,
+    # that the other two (identity_id & resource_id need to be unique) are the primary key
+    # That is, only one level of Action (should be the highest) is stored in the database!
+    # allows multiple levels of Action to be stored in the database:
     action: "Action" = Field()
 
     __table_args__ = (UniqueConstraint("identity_id", "resource_id", "action"),)
@@ -112,19 +153,27 @@ class AccessPolicy(AccessPolicyCreate, table=True):
 class AccessPolicyRead(AccessPolicyCreate):
     """Read model for access policies"""
 
-    id: uuid.UUID
+    id: int
+
+
+class AccessRequest(BaseModel):
+    """Model for the access request"""
+
+    current_user: CurrentUserData
+    resource_id: uuid.UUID
+    action: Action
 
 
 # No update model for access policies: once created, they should not be updated, only deleted to keep loggings consistent.
+
+# Maybe the logs should just be derived from the AccessRequests and add the status code?
 
 
 class AccessLogCreate(SQLModel):
     """Create model for access attempt logs"""
 
     identity_id: Optional[uuid.UUID] = None
-    # identity_type: Optional["IdentityType"] = None
     resource_id: uuid.UUID
-    # resource_type: Union["ResourceType", "IdentityType"] = "ResourceType"
     action: "Action"
     status_code: int
 
@@ -132,19 +181,21 @@ class AccessLogCreate(SQLModel):
 class AccessLog(AccessLogCreate, table=True):
     """Table for logging actual access attempts"""
 
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
-    identity_id: Optional[uuid.UUID] = Field(default=None, index=True)
-    # identity_type: Optional["IdentityType"] = Field(default=None, index=True)
-    resource_id: uuid.UUID = Field(primary_key=True)
-    # resource_type: str = Field(index=True)
-    time: datetime = Field(default=datetime.now())
+    id: Optional[int] = Field(default=None, primary_key=True)
+    # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    # identity_id: Optional[uuid.UUID] = Field(default=None, index=True)
+    identity_id: Optional[uuid.UUID] = Field(
+        foreign_key="identitytypelink.id", index=True
+    )
+    resource_id: uuid.UUID = Field(foreign_key="resourcetypelink.id", index=True)
+    time: datetime = Field(default=datetime.now(), index=True)
     status_code: int = Field()
 
 
 class AccessLogRead(AccessLogCreate):
     """Read model access attempt logs"""
 
-    id: uuid.UUID
+    id: int
     time: datetime
 
 

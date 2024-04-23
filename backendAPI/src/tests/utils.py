@@ -177,10 +177,17 @@ current_user_data_user2 = {
     "roles": ["User"],
 }
 current_user_data_user3 = {
-    "user_id": user_id_user2,
+    "user_id": user_id_user3,
     "roles": ["User"],
     "groups": [str(uuid4()), str(uuid4())],
 }
+
+many_current_users_data = [
+    current_user_data_admin,
+    current_user_data_user1,
+    current_user_data_user2,
+    current_user_data_user3,
+]
 # group_id1 = str(uuid4())
 # group_id2 = str(uuid4())
 # group_id3 = str(uuid4())
@@ -215,6 +222,7 @@ resource_id1 = str(uuid4())
 resource_id2 = str(uuid4())
 resource_id3 = str(uuid4())
 resource_id4 = str(uuid4())
+many_resource_ids = [resource_id1, resource_id2, resource_id3, resource_id4]
 # Note: it's not the azure_user_id that get's stored in the database, but the user_id!
 one_test_policy_read = {
     "identity_id": user_id_user1,
@@ -242,16 +250,13 @@ one_test_policy_own = {
 
 # same as one_test_policy_own, but with different identity_id
 one_test_policy_share = {
-    "identity_id": str(uuid4()),
-    # "identity_type": "User",
+    "identity_id": user_id_user3,
     "resource_id": resource_id1,
-    # "resource_type": "ProtectedResource",
     "action": "own",
 }
 
 one_test_policy_public_read = {
     "resource_id": resource_id1,
-    # "resource_type": "ProtectedResource",
     "action": "read",
     "public": True,
 }
@@ -259,38 +264,28 @@ one_test_policy_public_read = {
 many_test_policies = [
     {
         "identity_id": user_id_user2,
-        # "identity_type": "User",
         "resource_id": resource_id1,
-        # "resource_type": "ProtectedResource",
         "action": "read",
     },
     {
         "identity_id": user_id_user1,
-        # "identity_type": "User",
         "resource_id": resource_id2,
-        # "resource_type": "ProtectedResource",
         "action": "own",
     },
     {
         "identity_id": user_id_user3,
-        # "identity_type": "User",
         "resource_id": resource_id2,
-        # "resource_type": "ProtectedResource",
         "action": "write",
     },
     {
         "identity_id": user_id_user3,
-        # "identity_type": "User",
-        "resource_id": str(uuid4()),
-        # "resource_type": "ProtectedResource",
+        "resource_id": resource_id3,
         "action": "own",
     },
     # effectively overrides the first policy with more rights (own > read)
     {
         "identity_id": user_id_user2,
-        # "identity_type": "User",
         "resource_id": resource_id1,
-        # "resource_type": "ProtectedResource",
         "action": "own",
     },
     one_test_policy_write,

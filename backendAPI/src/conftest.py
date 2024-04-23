@@ -1,5 +1,6 @@
 from typing import AsyncGenerator, Generator, List, Optional
 
+from uuid import UUID
 import pytest
 from core.databases import postgres_async_engine  # should be SQLite here only!
 from fastapi.testclient import TestClient
@@ -10,14 +11,23 @@ from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from pprint import pprint
 from core.security import get_azure_token_payload, CurrentAccessToken, Guards
-from core.types import CurrentUserData
+from core.types import CurrentUserData, ResourceType
 from models.identity import User, UserRead
+from models.protected_resource import ProtectedResource
 from crud.identity import UserCRUD
-from models.access import AccessPolicy, AccessPolicyRead
+from crud.base import BaseCRUD
+from models.access import (
+    AccessPolicyCreate,
+    AccessPolicy,
+    AccessPolicyRead,
+    IdentityTypeLink,
+)
 from crud.access import AccessPolicyCRUD
 from tests.utils import (
     many_test_azure_users,
     current_user_data_admin,
+    many_current_users_data,
+    many_resource_ids,
     token_admin,
     many_test_policies,
 )
@@ -71,6 +81,8 @@ async def get_async_test_session() -> AsyncSession:
 @pytest.fixture(scope="function")
 def mocked_get_azure_token_payload(request):
     """Returns a mocked token payload."""
+    # print("=== conftest - mocked_get_azure_token_payload - request ===")
+    # pprint(request.param)
     return request.param
 
     # def inner():
@@ -139,11 +151,14 @@ def mock_guards():
 #     yield user
 
 
+# Converts from the identity provider (azure) to current_user in application and adds user to database
 @pytest.fixture(scope="function")
-async def mock_current_user():
-    """Returns a mock current user based on provided payload."""
+async def current_user_from_azure_token():
+    """Returns a mock current user based on provided payload and adds to user database."""
 
-    async def _mock_current_user(token_payload: dict = None) -> CurrentUserData:
+    async def _current_user_from_azure_token(
+        token_payload: dict = None,
+    ) -> CurrentUserData:
         current_user = None
         if token_payload is None:
             token_payload = token_admin
@@ -151,26 +166,180 @@ async def mock_current_user():
         current_user = await token.provides_current_user()
         return current_user
 
-    yield _mock_current_user
+    yield _current_user_from_azure_token
+
+
+async def register_current_users_to_identity_link_table(
+    current_users_data: List[CurrentUserData],
+):
+    """Registers the current user to the identity link table."""
+    async with UserCRUD() as crud:
+        for current_user_data in current_users_data:
+            crud._add_identity_type_link_to_session(current_user_data.user_id)
+        await crud.session.commit()
+
+    return
+
+
+# mocks the current user and registers in identity link table
+@pytest.fixture(scope="function")
+async def register_current_user():
+    """Returns a mock current user and registers in identity link table."""
+
+    async def _register_current_user(current_user_data: dict = None) -> CurrentUserData:
+
+        current_user_data = CurrentUserData(**current_user_data)
+        await register_current_users_to_identity_link_table([current_user_data])
+        # async with UserCRUD() as crud:
+        #     crud._add_identity_type_link_to_session(current_user_data.user_id)
+        #     await crud.session.commit()
+        #     # identity_link = await crud.session.get(
+        #     #     IdentityTypeLink, current_user_data.user_id
+        #     # )
+        #     # print("=== conftest - register_current_user - identity_link ===")
+        #     # pprint(identity_link)
+        return current_user_data
+
+    yield _register_current_user
+
+
+# # mocks the admin user and registers in identity link table
+# @pytest.fixture(scope="function")
+# async def register_current_admin_user():
+#     """Returns the mocked admin current user and registers in identity link table."""
+
+#     current_user_data = CurrentUserData(**current_user_data_admin)
+#     register_current_users_to_identity_link_table([current_user_data])
+#     # async with UserCRUD() as crud:
+#     #     crud._add_identity_type_link_to_session(current_user_data.user_id)
+#     #     await crud.session.commit()
+#     #     # identity_link = await crud.session.get(
+#     #     #     IdentityTypeLink, current_user_data.user_id
+#     #     # )
+#     #     # print("=== conftest - register_current_admin_user - identity_link ===")
+#     #     # pprint(identity_link)
+#     #     # await crud.session.refresh()
+#     #     yield current_user_data
+
+
+# mocks the current user and registers in identity link table
+@pytest.fixture(scope="function")
+async def register_many_current_users():
+    """Returns a mock current user and registers in identity link table."""
+
+    # print("=== conftest - register_many_current_users - many_current_users_data ===")
+    # pprint(many_current_users_data)
+
+    current_users = []
+    for current_user_data in many_current_users_data:
+        current_user_data = CurrentUserData(**current_user_data)
+        await register_current_users_to_identity_link_table([current_user_data])
+        current_users.append(current_user_data)
+
+    # print("=== conftest - register_many_current_users - current_users ===")
+    # pprint(current_users)
+
+    yield current_users
+
+    # async def _register_many_current_users(
+    #     current_user_data: dict = None,
+    # ) -> CurrentUserData:
+
+    #     current_user_data = CurrentUserData(**current_user_data)
+    #     async with UserCRUD() as crud:
+    #         crud._add_identity_type_link_to_session(current_user_data.user_id)
+    #         await crud.session.commit()
+    #         # identity_link = await crud.session.get(
+    #         #     IdentityTypeLink, current_user_data.user_id
+    #         # )
+    #         # print("=== conftest - register_current_user - identity_link ===")
+    #         # pprint(identity_link)
+    #     return current_user_data
+
+    # yield _register_many_current_users
+
+
+async def register_resource_to_resource_link_table(
+    resource_id: UUID, model: ResourceType = ProtectedResource
+):
+    """Registers the resources to the resource link table."""
+    async with BaseCRUD(model) as crud:
+        statement = crud._add_resource_type_link_to_session(resource_id)
+        await crud.session.exec(statement)
+        await crud.session.commit()
+
+    return
 
 
 @pytest.fixture(scope="function")
-def mock_current_user_data_admin():
-    """Returns a mock current user based on provided payload."""
+async def register_one_resource():
+    """Registers a resource id and its type in the database."""
 
-    yield CurrentUserData(**current_user_data_admin)
+    async def _register_one_resource(
+        resource_id: UUID, model: ResourceType = ProtectedResource
+    ):
+        """Registers a resource id and its type in the database."""
+        print("=== conftest - register_one_resource - type(resource_id) ===")
+        print(type(resource_id))
+        await register_resource_to_resource_link_table(resource_id, model)
+        return resource_id
+
+        # async with BaseCRUD(model) as crud:
+        #     crud._add_resource_type_link_to_session(resource_id)
+        #     await crud.session.commit()
+        #     # resource_link = await crud.session.get(
+        #     #     IdentityTypeLink, resource_id
+        #     # )
+        #     # print("=== conftest - register_one_resource - resource_link ===")
+        #     # pprint(resource_link)
+        # return resource_id
+
+    yield _register_one_resource
 
 
 @pytest.fixture(scope="function")
-# async def add_one_azure_test_user(mock_current_user: User):
-async def add_one_azure_test_user(mock_current_user: User):
+async def register_many_protected_resources():
+    """Registers many resources with id and its type in the database."""
+
+    for resource_id in many_resource_ids:
+        await register_resource_to_resource_link_table(resource_id, ProtectedResource)
+
+    yield many_resource_ids
+
+    # async def _register_many_resources(model: ResourceType = ProtectedResource):
+    #     for resource_id in many_resource_ids:
+    #         await register_resource_to_resource_link_table(resource_id, model)
+    #     # for resource in resource_id:
+    #     #     await register_resource_to_resource_link_table(resource, model)
+    #     print("=== conftest - register_many_resources - resource_id ===")
+    #     pprint(resource_id)
+    #     return resource_id
+
+    #     # async with BaseCRUD(model) as crud:
+
+    #     #     crud._add_resource_type_link_to_session(resource_id)
+    #     #     await crud.session.commit()
+    #     #     # resource_link = await crud.session.get(
+    #     #     #     IdentityTypeLink, resource_id
+    #     #     # )
+    #     #     # print("=== conftest - register_one_resource - resource_link ===")
+    #     #     # pprint(resource_link)
+    #     # return resource_id
+
+    # yield _register_many_resources
+
+
+# Adds a test user based on identity provider token payload to database and returns the user
+@pytest.fixture(scope="function")
+# async def add_one_azure_test_user(current_user_from_azure_token: User):
+async def add_one_azure_test_user(current_user_from_azure_token: User):
     """Adds many test users to the database."""
 
     # async def _add_one_azure_test_user(
     #     user_number: int = None, token_payload: dict = None
     # ) -> UserRead:
     async def _add_one_azure_test_user(user_number: int = None) -> UserRead:
-        # current_user = await mock_current_user(token_payload)
+        # current_user = await current_user_from_azure_token(token_payload)
         async with UserCRUD() as crud:
             user = await crud.create_azure_user_and_groups_if_not_exist(
                 **many_test_azure_users[user_number]
@@ -180,6 +349,7 @@ async def add_one_azure_test_user(mock_current_user: User):
     yield _add_one_azure_test_user
 
 
+# Adds many test users based on identity provider token payloads to database and returns the users
 @pytest.fixture(scope="function")
 async def add_many_azure_test_users():
     """Adds many test users to the database."""
@@ -267,34 +437,47 @@ async def add_test_access_policy():
     """Fixture for adding test policies."""
 
     async def _add_test_access_policy(
-        access_policies: List[AccessPolicy], current_user: CurrentUserData = None
+        policy: dict, current_user: CurrentUserData = None
     ):
         """Adds test policies to the database."""
 
-        policies = []
+        # policies = []
         async with AccessPolicyCRUD() as crud:
             if current_user is None:
                 current_user = CurrentUserData(**current_user_data_admin)
-            for policy in access_policies:
-                policy = await crud.create(AccessPolicy(**policy), current_user)
-                # session.add(policy)
-                # await session.commit()
-                # await session.refresh(policy)
-                policies.append(policy)
+            # for policy in access_policies:
+            print("=== conftest - add_test_access_policy - policy ===")
+            pprint(policy)
+            await register_resource_to_resource_link_table(
+                policy["resource_id"], ProtectedResource
+            )
+            policy = await crud.create(AccessPolicyCreate(**policy), current_user)
+            # session.add(policy)
+            # await session.commit()
+            # await session.refresh(policy)
+            # policies.append(policy)
             # await session.close()
-        return policies
+            # return policies
+            return policy
 
     yield _add_test_access_policy
 
 
 @pytest.fixture(scope="function")
-async def add_many_test_access_policies() -> list[AccessPolicyRead]:
+async def add_many_test_access_policies(
+    register_many_current_users,
+    register_many_protected_resources,
+) -> list[AccessPolicyRead]:
     """Adds a category to the database."""
     mocked_admin_user = CurrentUserData(**current_user_data_admin)
     async with AccessPolicyCRUD() as crud:
         policies = []
         for policy in many_test_policies:
-            added_policy = await crud.create(AccessPolicy(**policy), mocked_admin_user)
+            added_policy = await crud.create(
+                AccessPolicyCreate(**policy), mocked_admin_user
+            )
+            # print("=== conftest - add_many_test_access_policies - added_policy ===")
+            # pprint(added_policy)
             policies.append(added_policy)
 
     yield policies

@@ -66,11 +66,11 @@ from tests.utils import (
 
 
 @pytest.fixture(scope="function")
-async def add_test_policy_for_resource(mock_current_user: User):
+async def add_test_policy_for_resource(current_user_from_azure_token: User):
     """Adds a policy for a resource through CRUD to the database."""
 
     async def _add_test_policy_for_resource(policy, token_payload: dict = None):
-        current_user = await mock_current_user(token_payload)
+        current_user = await current_user_from_azure_token(token_payload)
         async with AccessPolicyCRUD() as crud:
             added_policy = await crud.create(policy, current_user)
 
@@ -111,7 +111,7 @@ async def add_test_public_resources(get_async_test_session: AsyncSession):
 
 @pytest.fixture(scope="function")
 async def add_test_categories(
-    mock_current_user: User,
+    current_user_from_azure_token: User,
 ):
     """Adds test categories through CRUD to the database."""
 
@@ -121,7 +121,7 @@ async def add_test_categories(
     # or just failing?
     async def _add_test_categories(token_payload: dict = None):
         category_instances = []
-        current_user = await mock_current_user(token_payload)
+        current_user = await current_user_from_azure_token(token_payload)
         # TBD: refactor to use the post endpoint - the token should be mocked already here!
         for category in many_test_categories:
             async with CategoryCRUD() as crud:
@@ -140,7 +140,7 @@ async def add_test_categories(
 @pytest.fixture(scope="function")
 async def add_test_demo_resources(
     # get_async_test_session: AsyncSession,
-    mock_current_user: User,
+    current_user_from_azure_token: User,
     add_test_categories: list[Category],
     # add_test_policies_for_resources: list[AccessPolicy],
 ):
@@ -163,7 +163,7 @@ async def add_test_demo_resources(
         many_test_demo_resources[2]["category_id"] = existing_test_categories[1].id
 
         demo_resource_instances = []
-        current_user = await mock_current_user(token_payload)
+        current_user = await current_user_from_azure_token(token_payload)
         for resource in many_test_demo_resources:
             # print("=== resource ===")
             # print(resource)
@@ -192,7 +192,7 @@ async def add_test_demo_resources(
 
 @pytest.fixture(scope="function")
 async def add_test_tags(
-    mock_current_user: User,
+    current_user_from_azure_token: User,
 ):  # (get_async_test_session: AsyncSession):
     """Adds tags to the database."""
     # session = get_async_test_session
@@ -208,7 +208,7 @@ async def add_test_tags(
 
     async def _add_test_tags(token_payload: dict = None):
         tag_instances = []
-        current_user = await mock_current_user(token_payload)
+        current_user = await current_user_from_azure_token(token_payload)
         for tag in many_test_tags:
             async with TagCRUD() as crud:
                 tag_instance = await crud.create_public(tag, current_user)

@@ -151,3 +151,62 @@
 
 
 #     return False
+
+
+# USED AS SCRATCH:
+
+
+# @pytest.fixture(scope="function")
+# async def register_one_resource():
+#     """Registers a resource id and its type in the database."""
+
+#     async def _register_one_resource(
+#         resource_id: str, model: ResourceType = ProtectedResource
+#     ):
+#         """Registers a resource id and its type in the database."""
+#         await register_resource_to_resource_link_table(resource_id, model)
+#         return resource_id
+
+#         # async with BaseCRUD(model) as crud:
+#         #     crud._add_resource_type_link_to_session(resource_id)
+#         #     await crud.session.commit()
+#         #     # resource_link = await crud.session.get(
+#         #     #     IdentityTypeLink, resource_id
+#         #     # )
+#         #     # print("=== conftest - register_one_resource - resource_link ===")
+#         #     # pprint(resource_link)
+#         # return resource_id
+
+#     yield _register_one_resource
+
+
+# @pytest.fixture(scope="function")
+# async def register_many_protected_resources():
+#     """Registers many resources with id and its type in the database."""
+
+#     for resource_id in many_resource_ids:
+#         await register_resource_to_resource_link_table(resource_id, ProtectedResource)
+
+#     yield many_resource_ids
+
+#     # async def _register_many_resources(model: ResourceType = ProtectedResource):
+#     #     for resource_id in many_resource_ids:
+#     #         await register_resource_to_resource_link_table(resource_id, model)
+#     #     # for resource in resource_id:
+#     #     #     await register_resource_to_resource_link_table(resource, model)
+#     #     print("=== conftest - register_many_resources - resource_id ===")
+#     #     pprint(resource_id)
+#     #     return resource_id
+
+#     #     # async with BaseCRUD(model) as crud:
+
+#     #     #     crud._add_resource_type_link_to_session(resource_id)
+#     #     #     await crud.session.commit()
+#     #     #     # resource_link = await crud.session.get(
+#     #     #     #     IdentityTypeLink, resource_id
+#     #     #     # )
+#     #     #     # print("=== conftest - register_one_resource - resource_link ===")
+#     #     #     # pprint(resource_link)
+#     #     # return resource_id
+
+#     # yield _register_many_resources

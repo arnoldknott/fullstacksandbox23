@@ -1,15 +1,17 @@
 import uuid
 import logging
+from pprint import pprint
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional, List
 
-from models.access import AccessPolicy, AccessLogCreate, IdentifierTypeLink
+from models.access import AccessPolicy, AccessLog, ResourceTypeLink
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from core.databases import get_async_session
 
 # from core.access import AccessControl
 from fastapi import HTTPException
 from sqlmodel import SQLModel, select
+from sqlalchemy.dialects.postgresql import insert
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 # from sqlalchemy.sql import distinct
@@ -71,6 +73,7 @@ class BaseCRUD(
         """Closes the database session."""
         await self.session.close()
 
+    # move to AccessPolicyCRUD?
     async def _write_policy(
         self,
         resource_id: uuid.UUID,
@@ -83,8 +86,35 @@ class BaseCRUD(
             action=action,
             identity_id=current_user.user_id,
         )
+        # This needs a round-trip to database, as the policy-CRUD takes care of access control
         async with self.policy_CRUD as policy_CRUD:
             await policy_CRUD.create(access_policy, current_user)
+
+    # move to AccessLoggingCRUD?
+    def _add_log_to_session(
+        self,
+        object_id: uuid.UUID,
+        action: Action,
+        current_user: "CurrentUserData",
+        status_code: int,
+    ):
+        """Creates an access log entry."""
+        # print("=== CRUD - base - _add_log_to_session ===")
+        # print("=== CRUD - base - _add_log_to_session - object_id ===")
+        # pprint(object_id)
+        # print("=== CRUD - base - _add_log_to_session - action ===")
+        # pprint(action)
+        # print("=== CRUD - base - _add_log_to_session - current_user ===")
+        # pprint(current_user)
+        # print("=== CRUD - base - _add_log_to_session - status_code ===")
+        # pprint(status_code)
+        # access_log = AccessLog(
+        #     resource_id=object_id,
+        #     action=action,
+        #     identity_id=current_user.user_id,
+        #     status_code=status_code,
+        # )
+        # self.session.add(access_log)
 
     async def _write_log(
         self,
@@ -94,29 +124,50 @@ class BaseCRUD(
         status_code: int,
     ):
         """Creates an access log entry."""
-        access_log = AccessLogCreate(
-            resource_id=object_id,
-            action=action.value,
-            # if public access, current_user is None
-            identity_id=current_user.user_id if current_user else None,
-            status_code=status_code,
-        )
-        async with self.logging_CRUD as logging_CRUD:
-            await logging_CRUD.log_access(access_log)
+        # access_log = AccessLogCreate(
+        #     resource_id=object_id,
+        #     action=action.value,
+        #     # if public access, current_user is None
+        #     identity_id=current_user.user_id if current_user else None,
+        #     status_code=status_code,
+        # )
+        self._add_log_to_session(object_id, action, current_user, status_code)
+        await self.session.commit()
 
-    async def _write_identifier_type_link(
+        # TBD: fix primary key error in logging_CRUD
+        # async with self.logging_CRUD as logging_CRUD:
+        #     await logging_CRUD.log_access(access_log)
+
+    def _add_resource_type_link_to_session(
         self,
         object_id: uuid.UUID,
     ):
-        """Creates an identifier type link entry."""
-        identifier_type_link = IdentifierTypeLink(
-            resource_id=object_id,
-            resource_type=self.resource_type,
+        """Adds resource type link entry to session."""
+        resource_type_link = ResourceTypeLink(
+            id=object_id,
+            type=self.resource_type,
         )
-        self.session.add(identifier_type_link)
+        # statement = insert(ResourceTypeLink).values(
+        #     id=object_id,
+        #     type=self.resource_type,
+        # )
+        statement = insert(ResourceTypeLink).values(resource_type_link.model_dump())
+        statement = statement.on_conflict_do_nothing(index_elements=["id"])
+        return statement
+        # await self.session.exec(inde)
+        # self.session.add(resource_type_link)
+        # await self.session.commit()
+        # await self.session.refresh(resource_type_link)
+        # return resource_type_link
+
+    async def _write_resource_type_link(
+        self,
+        object_id: uuid.UUID,
+    ):
+        """Creates an resource type link entry."""
+        statement = self._add_resource_type_link_to_session(object_id)
+        await self.session.exec(statement)
         await self.session.commit()
-        await self.session.refresh(identifier_type_link)
-        return identifier_type_link
 
     async def create(
         self,
@@ -133,14 +184,18 @@ class BaseCRUD(
             session = self.session
             Model = self.model
             database_object = Model.model_validate(object)
+            # self._add_resource_type_link_to_session(database_object.id)
+            # self._add_log_to_session(database_object.id, own, current_user, 201)
             session.add(database_object)
             # TBD: merge the sessions for creating the policy and the log
             # maybe ven together creating the object
             # but we need the id of the object for the policy and the log
-            # TBD: add creating the IdentifierTypeLink entry with object_id and self.resource_type
+            # TBD: add creating the ResourceTypeLink entry with object_id and self.resource_type
             # this should be doable in the same database call as the access policy and the access log creation.
             await session.commit()
             await session.refresh(database_object)
+            # TBD: create the statements in the methods, but execute together - less round-trips to database
+            await self._write_resource_type_link(database_object.id)
             await self._write_policy(database_object.id, own, current_user)
             await self._write_log(database_object.id, own, current_user, 201)
             return database_object
@@ -148,7 +203,8 @@ class BaseCRUD(
             await self._write_log(database_object.id, own, current_user, 404)
             logger.error(f"Error in BaseCRUD.create: {e}")
             raise HTTPException(
-                status_code=404, detail=f"{self.model.__name__} not found"
+                status_code=404,
+                detail=f"{self.model.__name__} not found",  # Or "Forbidden." here?
             )
 
     async def create_public(
@@ -197,7 +253,7 @@ class BaseCRUD(
         #     AccessPolicy, self.model.id == AccessPolicy.resource_id
         # )
         # statement = statement.join(
-        #     IdentifierTypeLink, self.model.id == IdentifierTypeLink.resource_id
+        #     ResourceTypeLink, self.model.id == ResourceTypeLink.resource_id
         # )
         statement = self.policy_CRUD.filters_allowed(
             statement=statement,
@@ -244,11 +300,16 @@ class BaseCRUD(
         # print("=== CRUD - base - read - statement ===")
         # print(statement.compile())
         # print(statement.compile().params)
-
         response = await self.session.exec(statement)
         results = response.all()
+        # print("=== CRUD - base - read - results ===")
+        # pprint(results)
         for result in results:
             await self._write_log(result.id, read, current_user, 200)
+            # logs = await self.session.get(AccessLog, result.id)
+            # log_results = logs.all()
+            # print("=== CRUD - base - read - log_results ===")
+            # pprint(log_results)
 
         if not results:
             # print("=== self.model.__name__ ===")
@@ -415,9 +476,9 @@ class BaseCRUD(
             )
 
             # statement = select(self.model).where(self.model.id == object_id)
-            print("=== CRUD - base - update - statement ===")
-            print(statement.compile())
-            print(statement.compile().params)
+            # print("=== CRUD - base - update - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
 
             response = await session.exec(statement)
 
@@ -462,11 +523,12 @@ class BaseCRUD(
                 setattr(old, key, value)
             object = old
             session.add(object)
+            self._add_log_to_session(object_id, write, current_user, 200)
             await session.commit()
             await session.refresh(object)
             # TBD: add exception handling here!
             # TBD: add access logging here!
-            await self._write_log(object_id, write, current_user, 200)
+            # await self._write_log(object_id, write, current_user, 200)
             return object
         except Exception as e:
             await self._write_log(object_id, write, current_user, 404)
@@ -530,11 +592,12 @@ class BaseCRUD(
             #     raise HTTPException(status_code=404, detail="Object not found")
             ###
             await self.session.delete(object)
+            self._add_log_to_session(object_id, own, current_user, 200)
             await self.session.commit()
-            await self._write_log(object_id, own, current_user, 200)
+            # await self._write_log(object_id, own, current_user, 200)
             return object
         except Exception as e:
-            await self._write_log(object_id, write, current_user, 404)
+            await self._write_log(object_id, own, current_user, 404)
             logger.error(f"Error in BaseCRUD.delete: {e}")
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not deleted."

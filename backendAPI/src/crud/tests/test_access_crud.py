@@ -1,17 +1,24 @@
 import pytest
 import uuid
 from datetime import datetime, timedelta
+from pprint import pprint
 
-
+from core.types import CurrentUserData, Action
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
-from models.access import AccessPolicyCreate, AccessPolicy, AccessLog
+from models.protected_resource import ProtectedResource
+from models.access import (
+    AccessPolicyCreate,
+    AccessPolicy,
+    AccessRequest,
+    AccessLogCreate,
+)
 
-from core.types import CurrentUserData
 
 from tests.utils import (
     current_user_data_admin,
     current_user_data_user1,
     current_user_data_user2,
+    current_user_data_user3,
     one_test_policy_read,
     one_test_policy_own,
     one_test_policy_share,
@@ -24,51 +31,80 @@ from tests.utils import (
 
 
 @pytest.mark.anyio
-async def test_admin_creates_access_policy():
+async def test_admin_creates_access_policy(
+    register_current_user, register_one_resource
+):
     """Test creating an access policy."""
 
-    mocked_admin_user = CurrentUserData(**current_user_data_admin)
+    # mocked_admin_user = CurrentUserData(**current_user_data_admin)
+    current_admin_user = await register_current_user(current_user_data_admin)
+
+    policy = AccessPolicy(**one_test_policy_read)
+    await register_one_resource(policy.resource_id, ProtectedResource)
 
     async with AccessPolicyCRUD() as policy_crud:
-        policy = AccessPolicy(**one_test_policy_read)
-        created_policy = await policy_crud.create(policy, mocked_admin_user)
+        await register_current_user(current_user_data_user1)
+        created_policy = await policy_crud.create(policy, current_admin_user)
 
     modelled_test_policy = AccessPolicyCreate(**one_test_policy_read)
-    assert created_policy.id is not None
+    assert int(created_policy.id)
     assert created_policy.identity_id == modelled_test_policy.identity_id
     assert created_policy.resource_id == modelled_test_policy.resource_id
     assert created_policy.action == modelled_test_policy.action
 
 
 @pytest.mark.anyio
-async def test_owner_creates_access_policy(add_test_access_policy):
+async def test_owner_creates_access_policy(
+    register_current_user,
+    register_one_resource,
+    add_test_access_policy,
+):
     """Test creating an access policy."""
 
-    await add_test_access_policy([one_test_policy_own])
+    # users need to be registered for the policies to be created:
+    sharing_user = await register_current_user(current_user_data_user1)
+    await register_current_user(current_user_data_user3)
 
-    mocked_user = CurrentUserData(**current_user_data_user1)
+    # resources need to be registered for the policies to be created:
+    policy = AccessPolicy(**one_test_policy_own)
+    # await register_one_resource(policy.resource_id, ProtectedResource)
 
+    # Admin needs to register the first resource - owned by user 1:
+    current_admin_user = await register_current_user(current_user_data_admin)
+    await add_test_access_policy(one_test_policy_own, current_admin_user)
+
+    # User 1 shares with user 3:
     async with AccessPolicyCRUD() as policy_crud:
         policy = AccessPolicy(**one_test_policy_share)
-        created_policy = await policy_crud.create(policy, mocked_user)
+        created_policy = await policy_crud.create(policy, sharing_user)
 
     modelled_test_policy = AccessPolicyCreate(**one_test_policy_share)
-    assert created_policy.id is not None
+    assert int(created_policy.id)
     assert created_policy.identity_id == modelled_test_policy.identity_id
     assert created_policy.resource_id == modelled_test_policy.resource_id
     assert created_policy.action == modelled_test_policy.action
 
 
 @pytest.mark.anyio
-async def test_prevent_create_duplicate_access_policy(add_many_test_access_policies):
+async def test_prevent_create_duplicate_access_policy(
+    register_many_current_users,
+    register_many_protected_resources,
+    add_many_test_access_policies,
+):
     """Test preventing the creation of a duplicate access policy."""
 
+    # mocked_admin_user = await register_current_user(current_user_data_admin)
+    current_users = register_many_current_users
+    # print("=== current_users ===")
+    # pprint(current_users)
+    register_many_protected_resources
+
     add_many_test_access_policies
-    mocked_admin_user = CurrentUserData(**current_user_data_admin)
+    # mocked_admin_user = CurrentUserData(**current_user_data_admin)
 
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            policy = await policy_crud.create(many_test_policies[2], mocked_admin_user)
+            policy = await policy_crud.create(many_test_policies[2], current_users[0])
             print(policy)
         except Exception as err:
             assert err.status_code == 403
@@ -78,40 +114,42 @@ async def test_prevent_create_duplicate_access_policy(add_many_test_access_polic
 
 
 @pytest.mark.anyio
-async def test_create_access_policy_for_public_resource():
+async def test_create_access_policy_for_public_resource(
+    register_current_user, register_many_protected_resources
+):
     """Test preventing the creation of a duplicate access policy."""
 
-    mocked_admin_user = CurrentUserData(**current_user_data_admin)
+    # mocked_admin_user = CurrentUserData(**current_user_data_admin)
+    current_admin_user = await register_current_user(current_user_data_admin)
+    register_many_protected_resources
 
-    one_public_test_policy = one_test_policy_public_read
-
-    public_resource_policy = {
-        **one_public_test_policy,
-        "public": True,
-    }
-    modelled_policy = AccessPolicyCreate(**public_resource_policy)
+    modelled_policy = AccessPolicy(**one_test_policy_public_read)
     async with AccessPolicyCRUD() as policy_crud:
-        created_policy = await policy_crud.create(
-            public_resource_policy, mocked_admin_user
-        )
+        created_policy = await policy_crud.create(modelled_policy, current_admin_user)
 
-    assert created_policy.id is not None
+    assert created_policy.resource_id == uuid.UUID(modelled_policy.resource_id)
     assert created_policy.identity_id is None
-    # assert created_policy.identity_type is None
-    assert created_policy.resource_id == modelled_policy.resource_id
-    # assert created_policy.resource_type == modelled_policy.resource_type
     assert created_policy.action == modelled_policy.action
 
 
 @pytest.mark.anyio
-async def test_create_access_policy_for_public_resource_with_identity_fails():
+async def test_create_access_policy_for_public_resource_with_identity_fails(
+    register_current_user,
+):
     """Test preventing the creation of a public access policy with specific identity."""
 
-    mocked_user = CurrentUserData(**current_user_data_user1)
+    # mocked_user = CurrentUserData(**current_user_data_user1)
+    current_admin_user = await register_current_user(current_user_data_admin)
+
+    public_resource_policy_with_identity = {
+        **one_test_policy_public_read,
+        "identity_id": str(uuid.uuid4()),
+    }
+    modelled_policy = AccessPolicy(**public_resource_policy_with_identity)
 
     try:
         async with AccessPolicyCRUD() as policy_crud:
-            await policy_crud.create(one_test_policy_public_read, mocked_user)
+            await policy_crud.create(modelled_policy, current_admin_user)
     except Exception as err:
         # TBD: change to 422?
         assert err.status_code == 403
@@ -119,53 +157,127 @@ async def test_create_access_policy_for_public_resource_with_identity_fails():
 
 
 @pytest.mark.anyio
-async def test_create_access_policy_for_non_public_resource_without_identity_fails():
+async def test_create_access_policy_for_non_public_resource_without_identity_fails(
+    register_current_user,
+):
     """Test preventing the creation of a public access policy with specific identity."""
 
     invalid_policy = {
         "resource_id": str(uuid.uuid4()),
-        # "resource_type": "ProtectedResource",
         "action": "read",
     }
 
-    mocked_user = CurrentUserData(**current_user_data_user1)
+    # mocked_user = CurrentUserData(**current_user_data_user1)
+    current_admin_user = await register_current_user(current_user_data_admin)
 
     try:
         async with AccessPolicyCRUD() as policy_crud:
-            await policy_crud.create(invalid_policy, mocked_user)
+            await policy_crud.create(invalid_policy, current_admin_user)
     except Exception as err:
         # TBD: change to 422?
         assert err.status_code == 403
         assert err.detail == "Forbidden."
 
 
+# TBD: implement tests for filters_allowed and allowed methods - or leave this to the read / delete?
+
+
+# @pytest.mark.anyio
+# async def test_admin_read_access_policy_by_resource_id(
+#     add_many_test_access_policies, register_current_user
+# ):
+#     """Test admin reading an access policy by id."""
+#     policies = add_many_test_access_policies
+#     async with AccessPolicyCRUD() as policy_crud:
+#         read_policy = await policy_crud.read(
+#             resource_id=policies[2].resource_id,
+#             current_user=register_current_user(current_user_data_admin),
+#         )
+
+#     print("=== current_user_data_user1 ===")
+#     pprint(current_user_data_user1)
+
+#     print("=== current_user_data_user2 ===")
+#     pprint(current_user_data_user2)
+
+#     print("=== current_user_data_user3 ===")
+#     pprint(current_user_data_user3)
+
+#     print("=== read_policy ===")
+#     pprint(read_policy)
+
+#     assert read_policy[0].identity_id == policies[2].identity_id
+#     assert read_policy[0].resource_id == policies[2].resource_id
+#     assert read_policy[0].action == policies[2].action
+
+
 @pytest.mark.anyio
-async def test_admin_read_access_policy_by_id(
-    add_many_test_access_policies, mock_current_user_data_admin
+async def test_admin_read_access_policy_by_resource(
+    register_many_current_users,
+    register_many_protected_resources,
+    add_many_test_access_policies,
 ):
-    """Test admin reading an access policy by id."""
+    """Test reading an access policy for a given resource."""
+    current_admin_user = register_many_current_users[0]
+    register_many_protected_resources
+
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
+        # read_policy = await policy_crud.read_by_resource(
         read_policy = await policy_crud.read(
-            policy_id=policies[2].id, current_user=mock_current_user_data_admin
+            resource_id=policies[1].resource_id,
+            current_user=current_admin_user,
+        )
+        assert len(read_policy) == 2
+
+        assert int(read_policy[0].id)
+        assert read_policy[0].identity_id == policies[1].identity_id
+        assert read_policy[0].resource_id == policies[1].resource_id
+        assert read_policy[0].action == policies[1].action
+
+        assert int(read_policy[1].id)
+        assert read_policy[1].identity_id == policies[2].identity_id
+        assert read_policy[1].resource_id == policies[2].resource_id
+        assert read_policy[1].action == policies[2].action
+
+
+@pytest.mark.anyio
+async def test_user_read_access_policy_by_resource_id(
+    register_many_current_users,
+    register_many_protected_resources,
+    add_many_test_access_policies,
+):
+    """Test user reading an access policy by id."""
+
+    register_many_protected_resources,
+    policies = add_many_test_access_policies
+    current_user1 = register_many_current_users[1]
+
+    async with AccessPolicyCRUD() as policy_crud:
+        read_policy = await policy_crud.read(
+            resource_id=policies[1].resource_id, current_user=current_user1
         )
 
-    assert read_policy[0].id == policies[2].id
-    assert read_policy[0].identity_id == policies[2].identity_id
-    assert read_policy[0].resource_id == policies[2].resource_id
-    assert read_policy[0].action == policies[2].action
+    assert int(read_policy[0].id)
+    assert read_policy[0].identity_id == policies[1].identity_id
+    assert read_policy[0].resource_id == policies[1].resource_id
+    assert read_policy[0].action == policies[1].action
 
 
-# TBD: add tests for other users than admin? Or is this covered by test_access?
+# TBD: change to resource_id / identity_id or delete?
 @pytest.mark.anyio
 async def test_read_access_policy_by_id_without_permission(
+    register_many_current_users,
+    register_many_protected_resources,
     add_many_test_access_policies,
 ):
     """Test reading an access policy by id without permission."""
+    register_many_current_users,
+    register_many_protected_resources
     policies = add_many_test_access_policies
     try:
         async with AccessPolicyCRUD() as policy_crud:
-            await policy_crud.read(policy_id=policies[2].id)
+            await policy_crud.read(resource_id=policies[2].resource_id)
     except Exception as err:
         assert err.status_code == 404
         assert err.detail == "Access policy not found."
@@ -174,20 +286,21 @@ async def test_read_access_policy_by_id_without_permission(
 
 
 # @pytest.mark.anyio
-# async def test_user_read_access_policy_by_id(
+# async def test_user_read_access_policy_by_id_no_access(
 #     add_many_test_access_policies,
 # ):
-# """Test reading an access policy by id."""
-# policies = add_many_test_access_policies
-# async with AccessPolicyCRUD() as policy_crud:
-#     read_policy = await policy_crud.read(
-#         policy_id=policies[2].id, current_user=mock_current_user_data_admin
-#     )
+#     """Test user reading an access policy by id."""
+#     policies = add_many_test_access_policies
+#     current_user2 = CurrentUserData(**current_user_data_user2)
 
-# assert read_policy[0].id == policies[2].id
-# assert read_policy[0].identity_id == policies[2].identity_id
-# assert read_policy[0].resource_id == policies[2].resource_id
-# assert read_policy[0].action == policies[2].action
+#     async with AccessPolicyCRUD() as policy_crud:
+#         try:
+#             # results = await policy_crud.read_by_id(1234)
+#             await policy_crud.read(policy_id=policies[1].id, current_user=current_user2)
+#         except Exception as err:
+#             assert err.status_code == 404
+#             assert err.detail == "Access policy not found."
+
 
 # TBD: implement tests for filters_allowed logic:
 # - user reads policies for an owned resource
@@ -196,16 +309,21 @@ async def test_read_access_policy_by_id_without_permission(
 
 
 @pytest.mark.anyio
-async def test_read_access_policy_for_nonexisting_id(
-    add_many_test_access_policies, mock_current_user_data_admin
+async def test_read_access_policy_for_nonexisting_resource_id(
+    register_many_protected_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
 ):
     """Test reading an access policy by id."""
+    register_many_protected_resources
+    current_admin_user = register_many_current_users[0]
     add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         try:
             # results = await policy_crud.read_by_id(1234)
             await policy_crud.read(
-                policy_id=uuid.uuid4(), current_user=mock_current_user_data_admin
+                resource_id=uuid.uuid4(),
+                current_user=current_admin_user,
             )
         except Exception as err:
             assert err.status_code == 404
@@ -216,24 +334,28 @@ async def test_read_access_policy_for_nonexisting_id(
 
 @pytest.mark.anyio
 async def test_read_access_policy_by_identity(
-    add_many_test_access_policies, mock_current_user_data_admin
+    register_many_protected_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
 ):
     """Test reading multiple access policies for a given identity."""
+    register_many_protected_resources
+    current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         read_policy = await policy_crud.read(
             identity_id=current_user_data_user2["user_id"],
-            current_user=mock_current_user_data_admin,
+            current_user=current_admin_user,
         )
 
     assert len(read_policy) == 2
-    assert read_policy[0].id is not None
-    assert read_policy[1].id is not None
 
+    assert int(read_policy[0].id)
     assert read_policy[0].identity_id == policies[0].identity_id
     assert read_policy[0].resource_id == policies[0].resource_id
     assert read_policy[0].action == policies[0].action
 
+    assert int(read_policy[1].id)
     assert read_policy[1].identity_id == policies[4].identity_id
     assert read_policy[1].resource_id == policies[4].resource_id
     assert read_policy[1].action == policies[4].action
@@ -241,15 +363,19 @@ async def test_read_access_policy_by_identity(
 
 @pytest.mark.anyio
 async def test_read_access_policy_for_nonexisting_identity(
-    add_many_test_access_policies, mock_current_user_data_admin
+    register_many_protected_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
 ):
     """Test reading an access policy for an identity, that does not exist."""
+    register_many_protected_resources,
+    current_admin_user = register_many_current_users[0]
     add_many_test_access_policies,
     async with AccessPolicyCRUD() as policy_crud:
         try:
             await policy_crud.read(
                 identity_id=uuid.UUID(user_id_nonexistent),
-                current_user=mock_current_user_data_admin,
+                current_user=current_admin_user,
             )
         except Exception as err:
             assert err.status_code == 404
@@ -258,43 +384,23 @@ async def test_read_access_policy_for_nonexisting_identity(
             pytest.fail("No HTTPexception raised!")
 
 
-@pytest.mark.anyio
-async def test_read_access_policy_by_resource(
-    add_many_test_access_policies, mock_current_user_data_admin
-):
-    """Test reading an access policy for a given resource."""
-    policies = add_many_test_access_policies
-    async with AccessPolicyCRUD() as policy_crud:
-        # read_policy = await policy_crud.read_by_resource(
-        read_policy = await policy_crud.read(
-            resource_id=policies[1].resource_id,
-            current_user=mock_current_user_data_admin,
-        )
-        assert len(read_policy) == 2
-
-        assert read_policy[0].id is not None
-        assert read_policy[1].id is not None
-
-        assert read_policy[0].identity_id == policies[1].identity_id
-        assert read_policy[0].resource_id == policies[1].resource_id
-        assert read_policy[0].action == policies[1].action
-
-        assert read_policy[1].identity_id == policies[2].identity_id
-        assert read_policy[1].resource_id == policies[2].resource_id
-        assert read_policy[1].action == policies[2].action
-
-
+# TBD: replace with a CRUD, that queries the type from the IdentifierTypeLink table
 @pytest.mark.anyio
 async def test_read_access_policy_by_resource_missing_resource_type(
+    register_many_protected_resources,
+    register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test reading an access policy for a given resource."""
+    register_many_protected_resources
+    current_admin_user = register_many_current_users
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         try:
             # await policy_crud.read_by_resource(
             await policy_crud.read(
                 resource_id=policies[1].resource_id,
+                current_user=current_admin_user,
             )
         except Exception as err:
             assert err.status_code == 404
@@ -303,11 +409,17 @@ async def test_read_access_policy_by_resource_missing_resource_type(
             pytest.fail("No HTTPexception raised!")
 
 
+# TBD: replace with a CRUD, that queries the type from the IdentifierTypeLink table
+# basically just delete - this is only a reminder to implement the the IdentifierTypeLink CRUD
 @pytest.mark.anyio
 async def test_read_access_policy_for_wrong_resource_type(
+    register_many_protected_resources,
+    register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test reading an access policy for a given resource."""
+    register_many_protected_resources,
+    current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         try:
@@ -315,24 +427,7 @@ async def test_read_access_policy_for_wrong_resource_type(
             await policy_crud.read(
                 resource_id=policies[1].resource_id,
                 resource_type="wrong_resource_type",
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
-
-
-@pytest.mark.anyio
-async def test_read_access_policy_for_nonexisting_resource(
-    add_many_test_access_policies, mock_current_user_data_admin
-):
-    """Test reading an access policy by id."""
-    add_many_test_access_policies
-    async with AccessPolicyCRUD() as policy_crud:
-        try:
-            await policy_crud.read(
-                resource_id=uuid.uuid4(), current_user=mock_current_user_data_admin
+                current_user=current_admin_user,
             )
         except Exception as err:
             assert err.status_code == 404
@@ -343,21 +438,25 @@ async def test_read_access_policy_for_nonexisting_resource(
 
 @pytest.mark.anyio
 async def test_read_access_policy_by_identity_and_resource(
-    add_many_test_access_policies, mock_current_user_data_admin
+    register_many_protected_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
 ):
     """Test reading an access policy by identity and resource."""
+    register_many_protected_resources,
+    current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         # read_policy = await policy_crud.read_by_identity_and_resource(
         read_policy = await policy_crud.read(
             identity_id=policies[2].identity_id,
             resource_id=policies[2].resource_id,
-            current_user=mock_current_user_data_admin,
+            current_user=current_admin_user,
         )
 
     assert len(read_policy) == 1
 
-    assert read_policy[0].id is not None
+    assert int(read_policy[0].id)
     assert read_policy[0].identity_id == policies[2].identity_id
     assert read_policy[0].resource_id == policies[2].resource_id
     assert read_policy[0].action == policies[2].action
@@ -365,45 +464,72 @@ async def test_read_access_policy_by_identity_and_resource(
 
 @pytest.mark.anyio
 async def test_read_access_policy_by_identity_and_resource_and_action(
-    add_many_test_access_policies, mock_current_user_data_admin
+    register_many_protected_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
 ):
     """Test reading an access policy by identity and resource."""
+    register_many_protected_resources
+    current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         read_policy = await policy_crud.read(
             identity_id=policies[2].identity_id,
             resource_id=policies[2].resource_id,
             action=policies[2].action,
-            current_user=mock_current_user_data_admin,
+            current_user=current_admin_user,
         )
 
     assert len(read_policy) == 1
 
-    assert read_policy[0].id is not None
+    assert int(read_policy[0].id)
     assert read_policy[0].identity_id == policies[2].identity_id
     assert read_policy[0].resource_id == policies[2].resource_id
     assert read_policy[0].action == policies[2].action
 
 
-# TBD: add tests for update
-
-
 # TBD: add tests for missing own policies
 @pytest.mark.anyio
-async def test_delete_access_policy_by_id(add_many_test_access_policies):
+async def test_admin_deletes_access_policy(
+    register_many_protected_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
+):
     """Test deleting an access policy."""
+    register_many_protected_resources
+    current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
+    # TBD: this should only be possible for admin or owner
+
     async with AccessPolicyCRUD() as policy_crud:
-        await policy_crud.delete(policy_id=policies[2].id)
+        all_policies_before_deletion = await policy_crud.read(
+            current_user=current_admin_user
+        )
+
+    assert len(all_policies_before_deletion) == len(policies)
+
+    delete_policy = policies[2]
+    async with AccessPolicyCRUD() as policy_crud:
+        await policy_crud.delete(
+            access_policy=delete_policy,
+            current_user=current_admin_user,
+        )
 
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            await policy_crud.read(policy_id=policies[2].id)
+            await policy_crud.read(resource_id=policies[2].resource_id)
         except Exception as err:
             assert err.status_code == 404
             assert err.detail == "Access policy not found."
         else:
             pytest.fail("No HTTPexception raised!")
+
+    async with AccessPolicyCRUD() as policy_crud:
+        all_policies_after_deletion = await policy_crud.read(
+            current_user=current_admin_user
+        )
+
+    assert len(all_policies_after_deletion) == len(policies) - 1
 
 
 # endregion AccessPolicy CRUD tests
@@ -412,21 +538,25 @@ async def test_delete_access_policy_by_id(add_many_test_access_policies):
 
 
 @pytest.mark.anyio
-async def test_create_access_log():
+async def test_create_access_log(
+    register_many_current_users, register_many_protected_resources
+):
     """Test creating an access log."""
-    access_log = AccessLog(
-        identity_id=uuid.UUID(current_user_data_user1["user_id"]),
-        identity_type="User",
-        resource_id=uuid.uuid4(),
-        resource_type="ProtectedResource",
-        action="read",
+    current_user = register_many_current_users[1]
+    resource2_id = register_many_protected_resources[1]
+    # TBD: add test logs to utils
+    access_log = AccessLogCreate(
+        identity_id=str(current_user.user_id),
+        resource_id=resource2_id,
+        action=Action.read,
         status_code=200,
     )
 
     async with AccessLoggingCRUD() as logging_crud:
         created_log = await logging_crud.log_access(access_log)
 
-    assert created_log.id is not None
+    # assert created_log.id is not None
+    assert int(created_log.id)
     assert created_log.identity_id == access_log.identity_id
     assert created_log.resource_id == access_log.resource_id
     assert created_log.action == access_log.action
@@ -434,15 +564,17 @@ async def test_create_access_log():
 
 
 @pytest.mark.anyio
-async def test_read_access_log_for_resource_type():
+async def test_read_access_log_for_resource_type(
+    register_many_current_users, register_many_protected_resources
+):
     """Test reading an access log for resource."""
+    current_user = register_many_current_users[1]
+    resource_id3 = register_many_protected_resources[3]
 
-    resource_id = uuid.uuid4()
-
-    access_log = AccessLog(
-        identity_id=uuid.UUID(current_user_data_user1["user_id"]),
-        resource_id=resource_id,
-        action="read",
+    access_log = AccessLogCreate(
+        identity_id=str(current_user.user_id),
+        resource_id=resource_id3,
+        action=Action.read,
         status_code=200,
     )
 
@@ -456,11 +588,11 @@ async def test_read_access_log_for_resource_type():
             current_user_data_user1["user_id"]
         )
         resource_log = await crud.read_log_by_resource(
-            resource_id,
+            resource_id3,
             "ProtectedResource",
         )
     assert len(identity_log) == 1
-    assert identity_log[0].id is not None
+    assert int(identity_log.id)
     assert identity_log[0].resource_id == access_log.resource_id
     assert identity_log[0].identity_id == uuid.UUID(current_user_data_user1["user_id"])
     assert identity_log[0].action == access_log.action
@@ -469,7 +601,6 @@ async def test_read_access_log_for_resource_type():
     assert identity_log[0].time <= time_after + timedelta(seconds=25)
 
     # TBD: move the double checking to the tests for access control in crud access tests:
-    assert len(resource_log) == 1
     assert resource_log[0].id == identity_log[0].id
     assert resource_log[0].resource_id == identity_log[0].resource_id
     assert resource_log[0].identity_id == identity_log[0].identity_id
