@@ -4,6 +4,8 @@ from fastapi import FastAPI
 
 import uuid
 
+# import warnings
+
 from pprint import pprint
 
 from core.types import Action
@@ -210,6 +212,8 @@ async def test_user_get_access_policies_for_resource(
     add_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
+    # with warnings.catch_warnings(record=True) as warn:
+
     app_override_get_azure_payload_dependency
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
@@ -281,24 +285,29 @@ async def test_user_get_access_policies_for_resource(
     )
     payload = response.json()
 
+    # print("=== WARNINGS ===")
+    # print(warn)
+    # print(f" warning in file {warn[-1].filename} at line {warn[-1].lineno}")
+
     assert response.status_code == 200
 
     assert len(payload) == len(target_policies)
 
     for policy, target in zip(payload, existing_policies_in_db):
-        received_policy = AccessPolicy.model_validate(policy)
-        target_policy = AccessPolicy.model_validate(target)
+        # received_policy = AccessPolicy.model_validate(policy)
+        # target_policy = AccessPolicy.model_validate(target)
         # print("=== received_policy ===")
         # pprint(received_policy.model_dump())
         # print("\n")
         # print("=== target_policy ===")
         # pprint(target_policy.model_dump())
         # print("\n")
-        assert received_policy.id == target_policy.id
-        assert received_policy.resource_id == target_policy.resource_id
-        assert received_policy.identity_id == target_policy.identity_id
-        assert received_policy.action == target_policy.action
-        assert received_policy.public == target_policy.public
+        assert 0
+        # assert received_policy.id == target_policy.id
+        # assert received_policy.resource_id == target_policy.resource_id
+        # assert received_policy.identity_id == target_policy.identity_id
+        # assert received_policy.action == target_policy.action
+        # assert received_policy.public == target_policy.public
 
 
 @pytest.mark.anyio

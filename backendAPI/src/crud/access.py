@@ -247,6 +247,11 @@ class AccessPolicyCRUD:
 
             # Hmmm - How could there ever get a policy created for a newly created resource?
             # Does this only come to life after hierarchies are implemented?
+            # Yes - should definitely check if user has write access on the parent resource!
+            # All endpoints that utilize the inheritance should then call the
+            # create_as_child(object, parent) -> where the parent access gets checked.
+            # Furthermore the instantiation of BaseCRUD needs
+            # to get all possible parent models as List[SQLModel]
             # access_request = AccessRequest(
             #     resource_id=policy.resource_id,
             #     action=own,

@@ -6,8 +6,7 @@ from uuid import UUID
 
 # from models.azure_group_user_link import AzureGroupUserLink
 from core.types import Action
-from core.types import CurrentUserData, IdentityType
-from models.access import IdentityTypeLink
+from core.types import CurrentUserData
 from models.identity import (
     User,
     UserCreate,
@@ -34,7 +33,6 @@ class AzureGroupCRUD(
     BaseCRUD[AzureGroup, AzureGroupCreate, AzureGroupRead, AzureGroupUpdate]
 ):
     def __init__(self):
-        # super().__init__(AzureGroup, IdentityType.azure_group)
         super().__init__(AzureGroup)
 
     # TBD: refactor into access control and just call self.create() with current_user!
@@ -77,11 +75,11 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # super().__init__(User, IdentityType.user)
         super().__init__(User)
 
-    def _add_identity_type_link_to_session(self, user_id: UUID):
-        session = self.session
-        identity_type_link = IdentityTypeLink(id=user_id, type=IdentityType.user)
-        session.add(identity_type_link)
-        # session.add(IdentityTypeLink(user_id, IdentityType.user))
+    # def _add_identity_type_link_to_session(self, user_id: UUID):
+    #     session = self.session
+    #     identity_type_link = IdentityTypeLink(id=user_id, type=IdentityType.user)
+    #     session.add(identity_type_link)
+    #     # session.add(IdentityTypeLink(user_id, IdentityType.user))
 
     async def read_by_azure_user_id(
         self, azure_user_id: UUID, current_user: CurrentUserData
@@ -135,7 +133,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     #     "=== user crud - create_azure_user_and_groups_if_not_exist - database_user ==="
                     # )
                     # print(database_user)
-                    self._add_identity_type_link_to_session(database_user.id)
+                    self._add_identifier_type_link_to_session(database_user.id)
                     # session.add(IdentityTypeLink(database_user.id, IdentityType.user))
                     session.add(database_user)
                     await session.commit()

@@ -4,7 +4,7 @@ from pprint import pprint
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional, List
 
-from models.access import AccessPolicy, AccessLog, ResourceTypeLink
+from models.access import AccessPolicy, AccessLog, IdentifierTypeLink
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from core.databases import get_async_session
 
@@ -53,9 +53,9 @@ class BaseCRUD(
         self.session = None
         self.model = base_model
         if base_model.__name__ in ResourceType.list():
-            self.resource_type = ResourceType(base_model.__name__)
+            self.entity_type = ResourceType(base_model.__name__)
         elif base_model.__name__ in IdentityType.list():
-            self.resource_type = IdentityType(base_model.__name__)
+            self.entity_type = IdentityType(base_model.__name__)
         else:
             raise ValueError(
                 f"{base_model.__name__} is not a valid ResourceType or IdentityType"
@@ -138,34 +138,34 @@ class BaseCRUD(
         # async with self.logging_CRUD as logging_CRUD:
         #     await logging_CRUD.log_access(access_log)
 
-    def _add_resource_type_link_to_session(
+    def _add_identifier_type_link_to_session(
         self,
         object_id: uuid.UUID,
     ):
         """Adds resource type link entry to session."""
-        resource_type_link = ResourceTypeLink(
+        identifier_type_link = IdentifierTypeLink(
             id=object_id,
-            type=self.resource_type,
+            type=self.entity_type,
         )
         # statement = insert(ResourceTypeLink).values(
         #     id=object_id,
-        #     type=self.resource_type,
+        #     type=self.entity_type,
         # )
-        statement = insert(ResourceTypeLink).values(resource_type_link.model_dump())
+        statement = insert(IdentifierTypeLink).values(identifier_type_link.model_dump())
         statement = statement.on_conflict_do_nothing(index_elements=["id"])
         return statement
         # await self.session.exec(inde)
-        # self.session.add(resource_type_link)
+        # self.session.add(identifier_type_link)
         # await self.session.commit()
-        # await self.session.refresh(resource_type_link)
-        # return resource_type_link
+        # await self.session.refresh(identifier_type_link)
+        # return identifier_type_link
 
-    async def _write_resource_type_link(
+    async def _write_identifier_type_link(
         self,
         object_id: uuid.UUID,
     ):
         """Creates an resource type link entry."""
-        statement = self._add_resource_type_link_to_session(object_id)
+        statement = self._add_identifier_type_link_to_session(object_id)
         await self.session.exec(statement)
         await self.session.commit()
 
@@ -184,18 +184,18 @@ class BaseCRUD(
             session = self.session
             Model = self.model
             database_object = Model.model_validate(object)
-            # self._add_resource_type_link_to_session(database_object.id)
+            # self._add_identifier_type_link_to_session(database_object.id)
             # self._add_log_to_session(database_object.id, own, current_user, 201)
             session.add(database_object)
             # TBD: merge the sessions for creating the policy and the log
             # maybe ven together creating the object
             # but we need the id of the object for the policy and the log
-            # TBD: add creating the ResourceTypeLink entry with object_id and self.resource_type
+            # TBD: add creating the ResourceTypeLink entry with object_id and self.entity_type
             # this should be doable in the same database call as the access policy and the access log creation.
             await session.commit()
             await session.refresh(database_object)
             # TBD: create the statements in the methods, but execute together - less round-trips to database
-            await self._write_resource_type_link(database_object.id)
+            await self._write_identifier_type_link(database_object.id)
             await self._write_policy(database_object.id, own, current_user)
             await self._write_log(database_object.id, own, current_user, 201)
             return database_object
@@ -217,7 +217,7 @@ class BaseCRUD(
 
         public_access_policy = AccessPolicy(
             resource_id=database_object.id,
-            # resource_type=self.resource_type,
+            # entity_type=self.entity_type,
             action=read,
             public=True,
         )
@@ -314,8 +314,8 @@ class BaseCRUD(
         if not results:
             # print("=== self.model.__name__ ===")
             # print(self.model.__name__)
-            # print("=== self.resource_type ===")
-            # print(self.resource_type)
+            # print("=== self.entity_type ===")
+            # print(self.entity_type)
             logger.info(f"No objects found for {self.model.__name__}")
             for result in results:
                 await self._write_log(result.id, read, current_user, 404)
@@ -357,7 +357,7 @@ class BaseCRUD(
     #     # statement = select(model)
     #     # TBD: Refactor into access control:
     #     join_conditions = self.policy_CRUD.filters_allowed(
-    #         resource_type=self.resource_type,
+    #         entity_type=self.entity_type,
     #         action=read,
     #         user=current_user,
     #     )
@@ -389,14 +389,14 @@ class BaseCRUD(
     #     # if not await self.policy_CRUD.allows(
     #     #     current_user=current_user,
     #     #     resource_id=object_id,
-    #     #     resource_type=self.resource_type,
+    #     #     entity_type=self.entity_type,
     #     #     action=read,
     #     # ):
     #     #     raise HTTPException(status_code=403, detail="Access denied")
     #     session = self.session
     #     model = self.model
     #     join_conditions = self.policy_CRUD.filters_allowed(
-    #         resource_type=self.resource_type,
+    #         entity_type=self.entity_type,
     #         action=read,
     #         user=current_user,
     #     )
@@ -447,7 +447,7 @@ class BaseCRUD(
         try:
             ### This should be ready to go:
             # access_conditions = self.policy_CRUD.filters_allowed(
-            #     resource_type=self.resource_type,
+            #     entity_type=self.entity_type,
             #     action=write,
             #     user=current_user,
             # )
@@ -550,7 +550,7 @@ class BaseCRUD(
         try:
             # ### This should be ready to go:
             # access_conditions = self.policy_CRUD.filters_allowed(
-            #     resource_type=self.resource_type,
+            #     entity_type=self.entity_type,
             #     action=write,
             #     user=current_user,
             # )
