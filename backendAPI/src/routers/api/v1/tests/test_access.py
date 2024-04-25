@@ -222,44 +222,44 @@ async def test_user_get_access_policies_for_resource(
 
     # Access policies for the querying user - which is owner of resource:
     own_test_access_policy_for_current_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": current_user.user_id,
         "action": Action.own,
     }
     write_test_access_policy_for_current_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": current_user.user_id,
         "action": Action.write,
     }
     read_test_access_policy_for_current_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": str(current_user.user_id),
         "action": Action.read,
     }
 
     # Access policies for queried resource for other users:
     own_test_access_policy_for_random_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": user_id_user2,
         "action": Action.own,
     }
     write_test_access_policy_for_random_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": user_id_user2,
         "action": Action.write,
     }
     read1_test_access_policy_for_random_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": user_id_user2,
         "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": user_id_user3,
         "action": Action.read,
     }
     read_public_test_access_policy = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "action": Action.read,
         "public": True,
     }
@@ -334,39 +334,39 @@ async def test_user_get_access_policies_for_resource_without_being_owner(
 
     # Access policies for the querying user - which is missing owner rights of resource:
     write_test_access_policy_for_current_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": current_user.user_id,
         "action": Action.write,
     }
     read_test_access_policy_for_current_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": current_user.user_id,
         "action": Action.read,
     }
 
     # Access policies for queried resource for other users:
     own_test_access_policy_for_random_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": user_id_user2,
         "action": Action.own,
     }
     write_test_access_policy_for_random_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": user_id_user2,
         "action": Action.write,
     }
     read1_test_access_policy_for_random_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": user_id_user2,
         "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "identity_id": user_id_user3,
         "action": Action.read,
     }
     read_public_test_access_policy = {
-        "resource_id": uuid.UUID(resource_id_for_query),
+        "resource_id": resource_id_for_query,
         "action": Action.read,
         "public": True,
     }

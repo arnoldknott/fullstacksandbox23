@@ -355,7 +355,7 @@ async def add_test_access_policy():
             if current_user is None:
                 current_user = CurrentUserData(**current_user_data_admin)
             await register_entity_to_identity_type_link_table(
-                policy["resource_id"], ProtectedResource
+                UUID(policy["resource_id"]), ProtectedResource
             )
             policy = await crud.create(AccessPolicyCreate(**policy), current_user)
             return policy

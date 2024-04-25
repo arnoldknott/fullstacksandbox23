@@ -40,7 +40,7 @@ async def test_admin_creates_access_policy(
     current_admin_user = await register_current_user(current_user_data_admin)
 
     policy = AccessPolicy(**one_test_policy_read)
-    await register_one_resource(policy.resource_id, ProtectedResource)
+    await register_one_resource(uuid.UUID(policy.resource_id), ProtectedResource)
 
     async with AccessPolicyCRUD() as policy_crud:
         await register_current_user(current_user_data_user1)
