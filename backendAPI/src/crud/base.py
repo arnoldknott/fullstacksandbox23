@@ -114,7 +114,7 @@ class BaseCRUD(
         access_log = AccessLog(
             resource_id=object_id,
             action=action,
-            identity_id=current_user.user_id,
+            identity_id=current_user.user_id if current_user else None,
             status_code=status_code,
         )
         self.session.add(access_log)
