@@ -112,6 +112,7 @@ async def get_access_policies_for_resource(
         access_policies = await crud.read_access_policies_for_resource(
             resource_id, current_user
         )
+
     return access_policies
     # return await access_policy_view.get_access_policies_for_resource(
     #     resource_id,

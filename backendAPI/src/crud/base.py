@@ -108,13 +108,16 @@ class BaseCRUD(
         # pprint(current_user)
         # print("=== CRUD - base - _add_log_to_session - status_code ===")
         # pprint(status_code)
-        # access_log = AccessLog(
-        #     resource_id=object_id,
-        #     action=action,
-        #     identity_id=current_user.user_id,
-        #     status_code=status_code,
-        # )
-        # self.session.add(access_log)
+        # This code makes trouble with separate resource and identity link tables
+        # as the logs are also written, when the resource id is actually an identity id
+        # but models cannot be defined with a union of two foreign keys for resource_id
+        access_log = AccessLog(
+            resource_id=object_id,
+            action=action,
+            identity_id=current_user.user_id,
+            status_code=status_code,
+        )
+        self.session.add(access_log)
 
     async def _write_log(
         self,
@@ -151,6 +154,14 @@ class BaseCRUD(
         #     id=object_id,
         #     type=self.entity_type,
         # )
+        # print(
+        #     "=== CRUD - base - _add_identifier_type_link_to_session - identifier_type_link ==="
+        # )
+        # pprint(identifier_type_link)
+        # print(
+        #     "=== CRUD - base - _add_identifier_type_link_to_session - identifier_type_link.model_dump() ==="
+        # )
+        # pprint(identifier_type_link.model_dump())
         statement = insert(IdentifierTypeLink).values(identifier_type_link.model_dump())
         statement = statement.on_conflict_do_nothing(index_elements=["id"])
         return statement

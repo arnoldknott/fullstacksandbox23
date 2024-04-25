@@ -312,7 +312,7 @@ class AccessPolicyCRUD:
         # and what actions for the above?
         # access_policy: Optional[AccessPolicy] = None,
         identity_id: Optional[UUID] = None,
-        resource_id: Optional[int] = None,
+        resource_id: Optional[UUID] = None,
         action: Optional[Action] = None,
         public: Optional[bool] = None,
     ) -> List[AccessPolicyRead]:
@@ -333,7 +333,6 @@ class AccessPolicyCRUD:
 
         try:
             # session = self.session
-            query = select(AccessPolicy)
 
             # print("=== AccessPolicyCRUD.read - current_user ===")
             # pprint(current_user)
@@ -367,16 +366,27 @@ class AccessPolicyCRUD:
             # TBD: consider moving validation to the parameters of the method?
             # current user needs to be owner of the resource / admin to read the policies for it
             # to create a new policy for it - or admin. Inheritance is handled inside the allows method.
-            # access_request = AccessRequest(
-            #     resource_id=resource_id,
-            #     action=own,
-            #     current_user=current_user,
-            # )
-            # await self.allows(access_request)
+            # but not filtering here - as other users access policies should be returned as well!
+            # special case with access_policies: the access policies are queried AND
+            # one of them is the protection for the query!
+
+            # for admin access, resource_id and action can be None!
+            # feels dangerous to have resource_id and action to be optional
+            # but might be the right thing to do!
+            access_request = AccessRequest(
+                resource_id=resource_id,
+                action=own,
+                current_user=current_user,
+            )
+            # print("=== AccessPolicyCRUD.read - access_request ===")
+            # pprint(access_request)
+            await self.allows(access_request)
+            # print("=== AccessPolicyCRUD.read - permission ===")
+            # pprint(permission)
 
             # await self.allows(resource_id, own, current_user)
 
-            query = self.filters_allowed(query, read, current_user=current_user)
+            # query = self.filters_allowed(query, own, current_user=current_user)
 
             # # Don't read by policy_id at all? Only by identity_id, resource_id and action?
             # if policy_id is not None:
@@ -390,6 +400,8 @@ class AccessPolicyCRUD:
             #         )
             #     query = query.where(AccessPolicy.id == policy_id)
             # else:
+
+            query = select(AccessPolicy)
             if identity_id is not None:
                 query = query.where(AccessPolicy.identity_id == identity_id)
             if resource_id is not None:
@@ -423,7 +435,7 @@ class AccessPolicyCRUD:
         self,
         resource_id: UUID,
         current_user: CurrentUserData,
-    ):
+    ) -> List[AccessPolicyRead]:
         """Returns all access policies by resource id."""
         try:
             access_policies = await self.read(current_user, resource_id=resource_id)
@@ -436,7 +448,7 @@ class AccessPolicyCRUD:
         self,
         identity_id: UUID,
         current_user: CurrentUserData,
-    ):
+    ) -> List[AccessPolicyRead]:
         """Returns a User with linked Groups from the database."""
         try:
             filters = [

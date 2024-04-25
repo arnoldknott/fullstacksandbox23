@@ -159,9 +159,10 @@ class AccessPolicyRead(AccessPolicyCreate):
 class AccessRequest(BaseModel):
     """Model for the access request"""
 
+    # for admin access resource_id and action can be None!
     current_user: CurrentUserData
-    resource_id: uuid.UUID
-    action: Action
+    resource_id: Optional[uuid.UUID]
+    action: Optional[Action]
 
 
 # No update model for access policies: once created, they should not be updated, only deleted to keep loggings consistent.

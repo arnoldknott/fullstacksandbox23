@@ -232,7 +232,7 @@ async def register_many_protected_resources():
 
     for resource_id in many_resource_ids:
         await register_entity_to_identity_type_link_table(
-            resource_id, ProtectedResource
+            UUID(resource_id), ProtectedResource
         )
 
     yield many_resource_ids

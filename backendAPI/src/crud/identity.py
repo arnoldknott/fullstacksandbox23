@@ -133,7 +133,14 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     #     "=== user crud - create_azure_user_and_groups_if_not_exist - database_user ==="
                     # )
                     # print(database_user)
-                    self._add_identifier_type_link_to_session(database_user.id)
+                    print(
+                        "=== user crud - create_azure_user_and_groups_if_not_exist - database_user ==="
+                    )
+                    print(database_user)
+                    # TBD: refactor into using _add_write_identifier_type_link_to_session()
+                    # to avoid round-trips to database
+                    # self._add_identifier_type_link_to_session(database_user.id)
+                    await self._write_identifier_type_link(database_user.id)
                     # session.add(IdentityTypeLink(database_user.id, IdentityType.user))
                     session.add(database_user)
                     await session.commit()
