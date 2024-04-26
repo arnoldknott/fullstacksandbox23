@@ -50,6 +50,8 @@ class BaseCRUD(
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
+        print("=== BaseCRUD - base_model ===")
+        print(base_model)
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(base_model.__name__)
         elif base_model.__name__ in IdentityType.list():

@@ -170,6 +170,8 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
         assert err.detail == "Forbidden."
 
 
+# TBD: add tests for creating policies for non-existing resource and identity types
+
 # TBD: implement tests for filters_allowed and allowed methods - or leave this to the read / delete?
 
 
@@ -400,8 +402,6 @@ async def test_read_access_policy_by_resource_missing_resource_type(
             pytest.fail("No HTTPexception raised!")
 
 
-# TBD: replace with a CRUD, that queries the type from the IdentifierTypeLink table
-# basically just delete - this is only a reminder to implement the the IdentifierTypeLink CRUD
 @pytest.mark.anyio
 async def test_read_access_policy_for_wrong_resource_type(
     register_many_protected_resources,

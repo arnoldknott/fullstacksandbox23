@@ -1,10 +1,8 @@
-# from fastapi import HTTPException
 import logging
 from typing import List, Optional
 from fastapi import HTTPException
 from uuid import UUID
 
-# from models.azure_group_user_link import AzureGroupUserLink
 from core.types import Action, CurrentUserData
 from models.identity import (
     User,

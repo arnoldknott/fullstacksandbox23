@@ -1,12 +1,9 @@
-# from unittest.mock import AsyncMock, patch
-
 import pytest
 import uuid
 from typing import List
 from httpx import AsyncClient
 from core.types import Action
 from models.identity import User, UserRead
-from models.access import AccessPolicy
 from fastapi import FastAPI
 from tests.utils import (
     token_user1_read,
@@ -26,6 +23,40 @@ from tests.utils import (
     many_test_azure_users,
 )
 from routers.api.v1.user import get_user_by_id
+
+
+# Passing tests:
+# ✔︎ admin user creates a user
+# ✔︎ admin user reads all users
+# ✔︎ admin user reads a user by azure id
+# ✔︎ admin user reads a user by id
+# ✔︎ regular user reads itself by azure_id
+# ✔︎ regular user reads itself by id
+# ✔︎ regular user updates itself
+# ✔︎ admin user updates a user -> is_active is the only thing, that can get updated
+# ✔︎ admin user deletes a user
+# ✔︎ regular user deletes itself
+# ✔︎ last_accessed_at is updated on every create, read and update (unless admin access another user)
+# groups: groups are not part of the user endpoints - need their own endpoints, but security is taking care of the sign-up!
+# ✔︎ users connections to groups are created in the database - checked through security tests: adding a new group to a user.
+# ✔︎ a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
+
+# Failing tests:
+# - modify the user_id
+# No token / invalid token provided
+# ✔︎ read all user
+# ✔︎ read user by azure_id
+# ✔︎ read user by id
+# ✔︎ update user
+# ✔︎ delete user
+# Regular user (not admin):
+# ✔︎ wants to create another user
+# ✔︎ wants to read all user
+# ✔︎ wants to update another user
+# ✔︎ wants to read another user by id
+# ✔︎ wants to read another user by azure id
+# ✔︎ regular user wants to delete another user
+
 
 # region: ## POST tests:
 
@@ -1087,35 +1118,3 @@ async def test_user_deletes_another_user(
 
 
 # endregion: ## DELETE tests
-
-# Passing tests:
-# ✔︎ admin user creates a user
-# ✔︎ admin user reads all users
-# ✔︎ admin user reads a user by azure id
-# ✔︎ admin user reads a user by id
-# ✔︎ regular user reads itself by azure_id
-# ✔︎ regular user reads itself by id
-# ✔︎ regular user updates itself
-# ✔︎ admin user updates a user -> is_active is the only thing, that can get updated
-# ✔︎ admin user deletes a user
-# ✔︎ regular user deletes itself
-# ✔︎ last_accessed_at is updated on every create, read and update (unless admin access another user)
-# groups: groups are not part of the user endpoints - need their own endpoints, but security is taking care of the sign-up!
-# ✔︎ users connections to groups are created in the database - checked through security tests: adding a new group to a user.
-# ✔︎ a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
-
-# Failing tests:
-# - modify the user_id
-# No token / invalid token provided
-# ✔︎ read all user
-# ✔︎ read user by azure_id
-# ✔︎ read user by id
-# ✔︎ update user
-# ✔︎ delete user
-# Regular user (not admin):
-# ✔︎ wants to create another user
-# ✔︎ wants to read all user
-# ✔︎ wants to update another user
-# ✔︎ wants to read another user by id
-# ✔︎ wants to read another user by azure id
-# ✔︎ regular user wants to delete another user

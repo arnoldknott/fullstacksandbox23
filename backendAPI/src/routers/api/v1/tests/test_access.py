@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 import uuid
 
-from core.types import Action
+from core.types import Action, ResourceType, IdentityType
 from models.access import AccessPolicy
 from tests.utils import (
     token_admin,
@@ -20,6 +20,9 @@ from tests.utils import (
     many_test_policies,
     user_id_user2,
     user_id_user3,
+    resource_id1,
+    resource_id2,
+    resource_id9,
 )
 
 
@@ -480,6 +483,55 @@ async def test_get_access_policies_for_resource_missing_read_scope(
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Invalid token."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        token_user1_read,
+    ],
+    indirect=True,
+)
+async def test_user_get_access_policies_for_resource_type(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    register_many_entities,
+    current_user_from_azure_token,
+    mocked_get_azure_token_payload,
+    add_test_access_policy,
+):
+    """Tests GET access policies, i.e. share."""
+
+    app_override_get_azure_payload_dependency
+
+    entities = await register_many_entities
+
+    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    for entity in entities:
+        policy = {
+            "resource_id": entity.id,
+            "identity_id": current_user.user_id,
+            "action": Action.read,
+        }
+        await add_test_access_policy(policy)
+
+    response = await async_client.get(
+        "/api/v1/access/policy/resource/type/DemoResource"
+    )
+    payload = response.json()
+
+    assert response.status_code == 200
+
+    assert len(payload) == 3
+
+    payload[0]["resource_id"] = str(resource_id1)
+    payload[1]["resource_id"] = str(resource_id2)
+    payload[8]["resource_id"] = str(resource_id9)
+
+    for policy in payload:
+        policy["type"] = ResourceType.DemoResource
 
 
 # endregion: ## GET tests

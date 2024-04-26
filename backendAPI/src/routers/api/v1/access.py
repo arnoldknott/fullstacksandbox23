@@ -44,7 +44,7 @@ access_policy_view = BaseView(AccessPolicyCRUD, AccessPolicy)
 #         current_user = await self._check_token_against_guards(token_payload, guards)
 #         # current_user = await self._guards(token_payload, scopes, roles, groups)
 #         async with self.crud() as crud:
-#             access_policies = await crud.read_access_policies_for_resource(
+#             access_policies = await crud.read_access_policies_by_resource_id(
 #                 resource_id, resource_type, current_user
 #             )
 #         return access_policies
@@ -89,7 +89,6 @@ async def get_access_policies(
     return await access_policy_view.get(token_payload, guards)
 
 
-# TBD: write tests for this:
 @router.get("/policy/resource/{resource_id}", status_code=200)
 async def get_access_policies_for_resource(
     resource_id: UUID,
@@ -97,22 +96,20 @@ async def get_access_policies_for_resource(
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
-    """Returns all access policies for requested resource."""
+    """Returns all access policies for requested resource_id."""
     # if not resource_id or not resource_type:
     #     raise ValueError("Resource ID and type must be provided.")
     # if resource_type not in ResourceType.list():
     #     raise ValueError("Resource type is not valid.")
-    logger.info("GET user by azure_user_id")
+    logger.info("GET access policies for resource_id")
 
     current_user = await access_policy_view._check_token_against_guards(
         token_payload, guards
     )
-
     async with access_policy_view.crud() as crud:
-        access_policies = await crud.read_access_policies_for_resource(
+        access_policies = await crud.read_access_policies_by_resource_id(
             resource_id, current_user
         )
-
     return access_policies
     # return await access_policy_view.get_access_policies_for_resource(
     #     resource_id,
@@ -130,6 +127,25 @@ async def get_access_policies_for_resource(
     #     token_payload,
     #     roles=["User"],
     # )
+
+
+@router.get("/policy/resource/type/{resource_type}", status_code=200)
+async def get_access_policies_by_resource_type(
+    resource_type: ResourceType,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[AccessPolicyRead]:
+    """Returns all access policies for requested resource_type."""
+    logger.info("GET access_policies for resource_type")
+
+    current_user = await access_policy_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with access_policy_view.crud() as crud:
+        access_policies = await crud.read_access_policies_by_resource_type(
+            resource_type, current_user
+        )
+    return access_policies
 
 
 # TBD: write tests for this:

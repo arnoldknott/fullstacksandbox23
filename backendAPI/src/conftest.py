@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Generator, List, Optional, Union
+from typing import AsyncGenerator, Generator, List, Optional, Union, Type
 
 from uuid import UUID
 import pytest
@@ -27,6 +27,7 @@ from tests.utils import (
     current_user_data_admin,
     many_current_users_data,
     many_resource_ids,
+    many_entity_type_links,
     token_admin,
     many_test_policies,
 )
@@ -236,6 +237,22 @@ async def register_many_protected_resources():
         )
 
     yield many_resource_ids
+
+
+@pytest.fixture(scope="function")
+async def register_many_entities():
+    """Registers many protected resources with id and its type in the database."""
+
+    # def get_model(resource_type: ResourceType) -> Type[SQLModel]:
+    #     """Returns the model based on the model enum."""
+    #     return models[model_enum.value]
+
+    for entity in many_entity_type_links:
+        await register_entity_to_identity_type_link_table(
+            UUID(entity["id"]), entity["type"]
+        )
+
+    yield many_entity_type_links
 
 
 # Adds a test user based on identity provider token payload to database and returns the user

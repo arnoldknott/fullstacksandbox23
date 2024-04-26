@@ -164,6 +164,26 @@ user_id_admin = str(uuid4())
 user_id_user1 = str(uuid4())
 user_id_user2 = str(uuid4())
 user_id_user3 = str(uuid4())
+
+many_identity_ids = [
+    user_id_admin,
+    user_id_user1,
+    user_id_user2,
+    user_id_user3,
+]
+
+azure_group_id1 = str(uuid4())
+azure_group_id2 = str(uuid4())
+azure_group_id3 = str(uuid4())
+azure_group_id4 = str(uuid4())
+
+many_azure_group_ids = [
+    azure_group_id1,
+    azure_group_id2,
+    azure_group_id3,
+    azure_group_id4,
+]
+
 current_user_data_admin = {
     "user_id": user_id_admin,
     "roles": ["Admin"],
@@ -222,29 +242,47 @@ resource_id1 = str(uuid4())
 resource_id2 = str(uuid4())
 resource_id3 = str(uuid4())
 resource_id4 = str(uuid4())
-many_resource_ids = [resource_id1, resource_id2, resource_id3, resource_id4]
+resource_id5 = str(uuid4())
+resource_id6 = str(uuid4())
+resource_id7 = str(uuid4())
+resource_id8 = str(uuid4())
+resource_id9 = str(uuid4())
+resource_id10 = str(uuid4())
+
+
+many_resource_ids = [
+    resource_id1,
+    resource_id2,
+    resource_id3,
+    resource_id4,
+    resource_id5,
+    resource_id6,
+    resource_id7,
+    resource_id8,
+    resource_id9,
+    resource_id10,
+]
+
+
+many_entity_ids = many_resource_ids + many_identity_ids + many_azure_group_ids
+
+
 # Note: it's not the azure_user_id that get's stored in the database, but the user_id!
 one_test_policy_read = {
     "identity_id": user_id_user1,
-    # "identity_type": "User",
     "resource_id": resource_id1,
-    # "resource_type": "ProtectedResource",
     "action": "read",
 }
 
 one_test_policy_write = {
     "identity_id": user_id_user1,
-    # "identity_type": "User",
     "resource_id": resource_id1,
-    # "resource_type": "ProtectedResource",
     "action": "write",
 }
 
 one_test_policy_own = {
     "identity_id": user_id_user1,
-    # "identity_type": "User",
     "resource_id": resource_id1,
-    # "resource_type": "ProtectedResource",
     "action": "own",
 }
 
@@ -260,6 +298,77 @@ one_test_policy_public_read = {
     "action": "read",
     "public": True,
 }
+
+many_entity_type_links = [
+    {
+        "id": resource_id1,
+        "type": "DemoResource",
+    },
+    {
+        "id": resource_id2,
+        "type": "DemoResource",
+    },
+    {
+        "id": resource_id3,
+        "type": "ProtectedResource",
+    },
+    {
+        "id": resource_id4,
+        "type": "Category",
+    },
+    {
+        "id": resource_id5,
+        "type": "Category",
+    },
+    {
+        "id": resource_id6,
+        "type": "Tag",
+    },
+    {
+        "id": resource_id7,
+        "type": "Tag",
+    },
+    {
+        "id": resource_id8,
+        "type": "ProtectedResource",
+    },
+    {
+        "id": resource_id9,
+        "type": "DemoResource",
+    },
+    {
+        "id": resource_id10,
+        "type": "Tag",
+    },
+    {
+        "id": user_id_user1,
+        "type": "User",
+    },
+    {
+        "id": user_id_user2,
+        "type": "User",
+    },
+    {
+        "id": user_id_user3,
+        "type": "User",
+    },
+    {
+        "id": azure_group_id1,
+        "type": "AzureGroup",
+    },
+    {
+        "id": azure_group_id2,
+        "type": "AzureGroup",
+    },
+    {
+        "id": azure_group_id3,
+        "type": "AzureGroup",
+    },
+    {
+        "id": azure_group_id4,
+        "type": "AzureGroup",
+    },
+]
 
 many_test_policies = [
     {

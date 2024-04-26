@@ -8,7 +8,7 @@ from sqlmodel import select, delete, or_, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
-from core.types import CurrentUserData, Action
+from core.types import CurrentUserData, Action, ResourceType, IdentityType
 
 # from core.access import AccessControl
 
@@ -18,6 +18,7 @@ from models.access import (
     AccessPolicy,
     AccessPolicyRead,
     AccessRequest,
+    IdentifierTypeLink,
     AccessLogCreate,
     AccessLog,
     AccessLogRead,
@@ -242,7 +243,9 @@ class AccessPolicyCRUD:
         # Or what resources haas another user with identity_id access to?
         # and what actions for the above?
         identity_id: Optional[UUID] = None,
+        identity_type: Optional[IdentityType] = None,
         resource_id: Optional[UUID] = None,
+        resource_type: Optional[ResourceType] = None,
         action: Optional[Action] = None,
         public: Optional[bool] = None,
     ) -> List[AccessPolicyRead]:
@@ -263,8 +266,19 @@ class AccessPolicyCRUD:
             query = select(AccessPolicy)
             if identity_id is not None:
                 query = query.where(AccessPolicy.identity_id == identity_id)
+            if identity_type is not None:
+                query = query.join(
+                    IdentifierTypeLink,
+                    IdentifierTypeLink.id == access_request.resource_id,
+                    # note: the queried identity is a the resource_id in the AccessRequest!
+                ).where(IdentifierTypeLink.type == identity_type)
             if resource_id is not None:
                 query = query.where(AccessPolicy.resource_id == resource_id)
+            if resource_type is not None:
+                query = query.join(
+                    IdentifierTypeLink,
+                    IdentifierTypeLink.id == access_request.resource_id,
+                ).where(IdentifierTypeLink.type == resource_type)
             if action is not None:
                 query = query.where(AccessPolicy.action == action)
             if public is True:
@@ -288,7 +302,7 @@ class AccessPolicyCRUD:
             logger.error(f"Error in reading policy: {e}")
             raise HTTPException(status_code=404, detail="Access policy not found.")
 
-    async def read_access_policies_for_resource(
+    async def read_access_policies_by_resource_id(
         self,
         resource_id: UUID,
         current_user: CurrentUserData,
@@ -296,6 +310,19 @@ class AccessPolicyCRUD:
         """Returns all access policies by resource id."""
         try:
             access_policies = await self.read(current_user, resource_id=resource_id)
+            return access_policies
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="Access policies not found.")
+
+    async def read_access_policies_by_resource_type(
+        self,
+        resource_type: ResourceType,
+        current_user: CurrentUserData,
+    ) -> List[AccessPolicyRead]:
+        """Returns all access policies by resource type."""
+        try:
+            access_policies = await self.read(current_user, resource_type=resource_type)
             return access_policies
         except Exception as err:
             logging.error(err)
