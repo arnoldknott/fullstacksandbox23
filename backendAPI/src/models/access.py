@@ -96,6 +96,7 @@ class AccessPolicyCreate(SQLModel):
         description="Set to true, if the resource is public and does not require any access control.",
     )
 
+    # TBD: should this move to AccessPolicy just below?
     @model_validator(mode="after")
     def either_identity_assignment_or_public(self):
         """Validates either identity is assigned or resource is public"""

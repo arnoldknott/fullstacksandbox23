@@ -274,7 +274,7 @@ class AccessPolicyCRUD:
             # print(policy)
             # TBD: write sharing to Access Control Log?
             return policy
-        except Exception as e:
+        except Exception as err:
             # TBD: write sharing attempt to Access Control Log?
             # access_log = AccessLogCreate(
             #     identity_id=current_user.user_id,
@@ -285,7 +285,8 @@ class AccessPolicyCRUD:
             #     status_code=403,  # TBD: could be 201 if a new resource is created
             # )
             # await loggingCRUD.log_access(access_log)
-            logger.error(f"Error in creating policy: {e}")
+            logger.error(f"Error in creating policy: {err}")
+            print(err)
             raise HTTPException(status_code=403, detail="Forbidden.")
 
     async def add_child(

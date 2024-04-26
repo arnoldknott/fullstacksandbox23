@@ -87,8 +87,8 @@ async def test_admin_posts_access_policies_for_non_existing_resources(
     for policy in many_test_policies:
         response = await async_client.post("/api/v1/access/policy", json=policy)
 
-        assert response.status_code == 201
-        # TBD: turn into a fail! because the resource does not exist
+        assert response.status_code == 403
+        assert response.json() == {"detail": "Forbidden."}
 
 
 @pytest.mark.anyio
@@ -100,19 +100,49 @@ async def test_admin_posts_access_policies_for_non_existing_resources(
 async def test_admin_posts_non_public_access_policies_for_non_existing_identities(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    register_many_current_users,
     register_many_protected_resources,
 ):
     """Tests POST access policies, i.e. share."""
     app_override_get_azure_payload_dependency
     register_many_protected_resources
 
-    for policy in many_test_policies:
+    private_test_policies = many_test_policies[0:9].copy()
+
+    for policy in private_test_policies:
         response = await async_client.post("/api/v1/access/policy", json=policy)
 
-        assert response.status_code == 201
+        assert response.status_code == 403
+        assert response.json() == {"detail": "Forbidden."}
         # TBD: turn into a fail! because the resource does not exist
         # The last one might succeed, because it's public!
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_posts_public_access_policies_for_non_existing_identities(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    register_many_protected_resources,
+):
+    """Tests POST access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
+    register_many_protected_resources
+
+    public_test_policy = many_test_policies[9].copy()
+
+    response = await async_client.post("/api/v1/access/policy", json=public_test_policy)
+
+    assert response.status_code == 201
+    content = response.json()
+    assert int(content["id"])
+    assert content["resource_id"] == public_test_policy["resource_id"]
+    assert content["identity_id"] is None
+    assert content["action"] == public_test_policy["action"]
+    assert content["public"] is True
 
 
 @pytest.mark.anyio
@@ -163,8 +193,8 @@ async def test_admin_gets_access_policies(
 
     assert response.status_code == 200
     content = response.json()
-    assert len(content) == len(many_test_policies)
-    # +1 for the user policy created, when the user accesses endpoint - not any more?
+    assert len(content) == len(many_test_policies) + 1
+    # +1  for the user policy created, when the user accesses endpoint - not any more?
     for content, policy in zip(content, policies_in_database):
         # TBD: add model verification of results and compare the verified model?
         assert content["id"] == policy.id
