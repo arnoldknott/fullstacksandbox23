@@ -120,7 +120,7 @@ class AccessPolicy(AccessPolicyCreate, table=True):
 
     # TBD: consider totally removing the id here and
     # use the combination of identity_id, resource_id, and action
-    # as composite primary key?
+    # as composite primary key? => Not a good idea, as identity_id is optional - due to public resources
     # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     id: Optional[int] = Field(default=None, primary_key=True)
     identity_id: Optional[uuid.UUID] = Field(

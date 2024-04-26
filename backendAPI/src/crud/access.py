@@ -74,15 +74,6 @@ class AccessPolicyCRUD:
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access and admin override
 
-        # action, current_user, resrouce_id = (
-        #     access_request.action,
-        #     access_request.current_user,
-        #     access_request.resource_id,
-        # )
-
-        # print("=== core.access - AccessCRUD - filters_allowed - action ===")
-        # pprint(action)
-
         # Permission overrides:
         # own includes write and read
         # write includes read
@@ -93,26 +84,10 @@ class AccessPolicyCRUD:
         elif action == own:
             action = ["own"]
         else:
-            # TBD: write test for this: if pydantic works on varying action types,
+            # TBD: write test for this: if pydantic works on verifying action types,
             # a 422 or type error should be raised before this line!
             logger.error("Invalid action provided.")
             raise HTTPException(status_code=400, detail="Bad request: invalid action.")
-
-        # print("=== core.access - AccessCRUD - filters_allowed - model ===")
-        # print(model)
-        # print("=== core.access - AccessCRUD - filters_allowed - current_user ===")
-        # pprint(current_user)
-        # print("=== core.access - AccessCRUD - filters_allowed - statement ===")
-        # pprint(statement.compile())
-        # pprint(statement.compile().params)
-        # print("=== core.access - AccessCRUD - filters_allowed - action ===")
-        # print(action)
-
-        # print("=== core.access - AccessCRUD - filters_allowed - action ===")
-        # print(action)
-
-        # print("=== core.access - AccessControl - filters_allowed - current_user ===")
-        # pprint(current_user)
 
         if not current_user:
             if model != AccessPolicy:
@@ -138,34 +113,16 @@ class AccessPolicyCRUD:
                 )
             )
 
-        # print("=== core.access - AccessControl - statement ===")
-        # print(statement)
-
         return statement
 
     async def allows(
         self,
-        # resource_id: UUID,
-        # action: "Action",
-        # current_user: Optional["CurrentUserData"] = None,
         access_request: AccessRequest,
     ) -> bool:
         """Checks if the user has permission including inheritance to perform the action on the resource"""
         resource_id = access_request.resource_id
         action = access_request.action
         current_user = access_request.current_user
-
-        # TBD: move the logging to the BaseCrud? Or keep it here together with the Access Control?
-        # loggingCRUD = AccessLoggingCRUD()
-        # TBD: get all policies for the resource, where any of the hierarchical identities and hierarchical resources match
-        # Don't include the identity in the query, as public resources are not assigned to any identity!
-        # TBD: implement "public" override: check if the resource is public for requested action and return True if it is!
-
-        # print("=== AccessPolicyCRUD.allows - resource_id ===")
-        # pprint(resource_id)
-
-        # print("=== AccessPolicyCRUD.allows - current_user ===")
-        # pprint(current_user)
 
         # Necessary as otherwise an empty database could never get data into it.
         if current_user and current_user.roles and "Admin" in current_user.roles:
@@ -206,12 +163,7 @@ class AccessPolicyCRUD:
     ) -> AccessPolicyRead:
         """Creates a new access control policy."""
         # Note: the current_user is the one who creates the policy for the identity_id in the policy!
-        # print("=== AccessPolicyCRUD.create - current_user ===")
-        # pprint(current_user)
-        # print("=== AccessPolicyCRUD.create - policy ===")
-        # pprint(policy)
         try:
-            # session = self.session
             # TBD: remove this, as it's already done through typing the arguments of the method?
             policy = AccessPolicy.model_validate(policy)
 
@@ -221,12 +173,6 @@ class AccessPolicyCRUD:
             #     user_id=policy.identity_id,
             #     # how do i get the roles and groups here?
             # )
-
-            # TBD: take Action hierarchy into account:
-            # if a user can own, they can also write and read
-            # if a user can write, they can also read
-            # If a user gets upgraded here - delete the lower level policies?
-            # Only have the highest access level in the database?
 
             # Every user can create a policy for themselves:
             # Really? That means everyone can give itself owner rights -
@@ -265,26 +211,11 @@ class AccessPolicyCRUD:
             #     logger.error(f"Error in creating policy: {e}")
             #     raise HTTPException(status_code=403, detail="Forbidden.")
 
-            # print("=== AccessPolicyCRUD.create - policy ===")
-            # pprint(policy)
             self.session.add(policy)
             await self.session.commit()
             await self.session.refresh(policy)
-            # print("=== AccessPolicyCRUD.create - policy ===")
-            # print(policy)
-            # TBD: write sharing to Access Control Log?
             return policy
         except Exception as err:
-            # TBD: write sharing attempt to Access Control Log?
-            # access_log = AccessLogCreate(
-            #     identity_id=current_user.user_id,
-            #     identity_type="User"
-            #     resource_id=policy.resource_id if policy.resource_id else None,
-            #     resource_type=policy.resource_type if policy.resource_type else None,
-            #     action=own,
-            #     status_code=403,  # TBD: could be 201 if a new resource is created
-            # )
-            # await loggingCRUD.log_access(access_log)
             logger.error(f"Error in creating policy: {err}")
             print(err)
             raise HTTPException(status_code=403, detail="Forbidden.")
@@ -305,73 +236,20 @@ class AccessPolicyCRUD:
     async def read(
         self,
         # Who is requesting the policies?
-        # access_request: AccessRequest,
         current_user: Optional["CurrentUserData"] = None,
-        # policy_id: Optional[int] = None,
         # What policy is requested? (The identity can be another user!)
         # For example look at who else has access to the resource with resource_id?
         # Or what resources haas another user with identity_id access to?
         # and what actions for the above?
-        # access_policy: Optional[AccessPolicy] = None,
         identity_id: Optional[UUID] = None,
         resource_id: Optional[UUID] = None,
         action: Optional[Action] = None,
         public: Optional[bool] = None,
     ) -> List[AccessPolicyRead]:
         """Reads access control policies based on the provided parameters."""
-        # TBD: current_user is the one who reads the policies for the identity_id in the policy!
-
-        # identity_id, resource_id, action, public = (
-        #     access_policy.identity_id,
-        #     access_policy.resource_id,
-        #     access_policy.action,
-        #     access_policy.public,
-        # )
-
-        # TBD: add some access checks here:
-        # if current_user is Admin: allow all.
-        # otherwise: identity_id must be either current_user.id or a group the current_user is member of.
-        # if no identity id, the resource needs to be public
 
         try:
-            # session = self.session
-
-            # print("=== AccessPolicyCRUD.read - current_user ===")
-            # pprint(current_user)
-            # print("=== AccessPolicyCRUD.read - query ===")
-            # print(query)
-            # TBD: consider access control checks here:
-            # not using the allows - here it's just about building the query to get the policies!
-
-            # TBD: can a method from core - access control be used here?
-            # if not current_user:
-            #     # The difference to access from core is the missing join here
-            #     # otherwise it would be a self join and .resource_id needs to be equal to .id
-            #     query = query.where(AccessPolicy.action == own)
-            #     query = query.where(AccessPolicy.public)
-            # elif "Admin" in current_user.roles:
-            #     pass
-            # else:
-            #     # The difference to access from core is the missing join here
-            #     # otherwise it would be a self join and .resource_id needs to be equal to .id
-            #     # TBD: write test for this: needs to ensure,
-            #     # that only resources get returned, where the current_user is owner or
-            #     # the resource is publicly owned
-            #     query = query.where(AccessPolicy.action == own)
-            #     query = query.where(
-            #         or_(
-            #             AccessPolicy.identity_id == current_user.user_id,
-            #             AccessPolicy.public,
-            #         )
-            #     )
-
-            # TBD: consider moving validation to the parameters of the method?
-            # current user needs to be owner of the resource / admin to read the policies for it
-            # to create a new policy for it - or admin. Inheritance is handled inside the allows method.
-            # but not filtering here - as other users access policies should be returned as well!
-            # special case with access_policies: the access policies are queried AND
-            # one of them is the protection for the query!
-
+            # TBD: write tests for admin case?
             # for admin access, resource_id and action can be None!
             # feels dangerous to have resource_id and action to be optional
             # but might be the right thing to do!
@@ -380,28 +258,7 @@ class AccessPolicyCRUD:
                 action=own,
                 current_user=current_user,
             )
-            # print("=== AccessPolicyCRUD.read - access_request ===")
-            # pprint(access_request)
             await self.allows(access_request)
-            # print("=== AccessPolicyCRUD.read - permission ===")
-            # pprint(permission)
-
-            # await self.allows(resource_id, own, current_user)
-
-            # query = self.filters_allowed(query, own, current_user=current_user)
-
-            # # Don't read by policy_id at all? Only by identity_id, resource_id and action?
-            # if policy_id is not None:
-            #     if (
-            #         identity_id is not None
-            #         or resource_id is not None
-            #         or action is not None
-            #     ):
-            #         raise ValueError(
-            #             "Policy ID cannot be provided with other parameters."
-            #         )
-            #     query = query.where(AccessPolicy.id == policy_id)
-            # else:
 
             query = select(AccessPolicy)
             if identity_id is not None:
@@ -412,8 +269,6 @@ class AccessPolicyCRUD:
                 query = query.where(AccessPolicy.action == action)
             if public is True:
                 query = query.where(AccessPolicy.public)
-
-            # query = select(AccessPolicy)
 
             # print("=== AccessPolicyCRUD.read - query ===")
             # print(query.compile())
@@ -465,12 +320,7 @@ class AccessPolicyCRUD:
     async def delete(
         self,
         current_user: Optional["CurrentUserData"],
-        # policy_id: Optional[int] = None,
         access_policy: AccessPolicy,
-        # access_request: AccessRequest,
-        # identity_id: Optional[UUID] = None,
-        # resource_id: Optional[int] = None,
-        # action: Optional[Action] = None,
     ) -> None:
         """Deletes an access control policy."""
 
@@ -515,35 +365,7 @@ class AccessPolicyCRUD:
                 access_policy.public,
             )
 
-            # access_request = AccessRequest(
-            #     resource_id=resource_id,
-            #     action=own,
-            #     current_user=current_user,
-            # )
-            # await self.allows(access_request)
-
-            # policies = await self.read(
-            #     identity_id=identity_id,
-            #     resource_id=resource_id,
-            #     action=action,
-            # )
-            # for policy in policies:
-            #     policy = await self.session.get(AccessPolicy, policy_id)
-            #     if policy is None:
-            #         logger.error(
-            #             f"Error in deleting policy: policy {policy_id} not found"
-            #         )
-            #         raise HTTPException(
-            #             status_code=404, detail="Access policy not found"
-            #         )
-            #     await self.session.delete(policy)
-
             # TBD: make sure to write tests for this - especially that nothing undesired gets deleted!
-            # access_request = AccessRequest(
-            #     resource_id=access_policy.resource_id,
-            #     action=own,
-            #     current_user=current_user,
-            # )
 
             # # This where is extremely important to only delete the requested policy!
             # TBD: write tests, where one or more of those parameters are None/not provided!

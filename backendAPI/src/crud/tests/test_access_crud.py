@@ -3,13 +3,12 @@ import uuid
 from datetime import datetime, timedelta
 from pprint import pprint
 
-from core.types import CurrentUserData, Action
+from core.types import Action
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from models.protected_resource import ProtectedResource
 from models.access import (
     AccessPolicyCreate,
     AccessPolicy,
-    AccessRequest,
     AccessLogCreate,
 )
 
@@ -67,7 +66,6 @@ async def test_owner_creates_access_policy(
 
     # resources need to be registered for the policies to be created:
     policy = AccessPolicy(**one_test_policy_own)
-    # await register_one_resource(policy.resource_id, ProtectedResource)
 
     # Admin needs to register the first resource - owned by user 1:
     current_admin_user = await register_current_user(current_user_data_admin)
@@ -93,14 +91,10 @@ async def test_prevent_create_duplicate_access_policy(
 ):
     """Test preventing the creation of a duplicate access policy."""
 
-    # mocked_admin_user = await register_current_user(current_user_data_admin)
     current_users = register_many_current_users
-    # print("=== current_users ===")
-    # pprint(current_users)
     register_many_protected_resources
 
     add_many_test_access_policies
-    # mocked_admin_user = CurrentUserData(**current_user_data_admin)
 
     async with AccessPolicyCRUD() as policy_crud:
         try:
@@ -119,7 +113,6 @@ async def test_create_access_policy_for_public_resource(
 ):
     """Test preventing the creation of a duplicate access policy."""
 
-    # mocked_admin_user = CurrentUserData(**current_user_data_admin)
     current_admin_user = await register_current_user(current_user_data_admin)
     register_many_protected_resources
 
@@ -138,7 +131,6 @@ async def test_create_access_policy_for_public_resource_with_identity_fails(
 ):
     """Test preventing the creation of a public access policy with specific identity."""
 
-    # mocked_user = CurrentUserData(**current_user_data_user1)
     current_admin_user = await register_current_user(current_user_data_admin)
 
     public_resource_policy_with_identity = {
@@ -167,7 +159,6 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
         "action": "read",
     }
 
-    # mocked_user = CurrentUserData(**current_user_data_user1)
     current_admin_user = await register_current_user(current_user_data_admin)
 
     try:

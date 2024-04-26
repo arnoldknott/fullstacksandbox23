@@ -4,10 +4,6 @@ from fastapi import FastAPI
 
 import uuid
 
-import warnings
-
-from pprint import pprint
-
 from core.types import Action
 from models.access import AccessPolicy
 from tests.utils import (
@@ -27,6 +23,9 @@ from tests.utils import (
 )
 
 
+# region: ## POST tests:
+
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
@@ -44,13 +43,6 @@ async def test_admin_posts_access_policies(
     register_many_current_users
     register_many_protected_resources
 
-    # await register_current_user(current_user_data_admin)
-    # print("=== current_user_data_admin ===")
-    # print(current_user_data_admin)
-
-    # print("=== token_admin_read_write ===")
-    # print(token_admin_read_write)
-
     for policy in many_test_policies:
         response = await async_client.post("/api/v1/access/policy", json=policy)
 
@@ -67,7 +59,6 @@ async def test_admin_posts_access_policies(
             assert content["public"] is False
 
 
-# TBD: write a test, where admin tries to post access policies for non existing policies: fails!
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
@@ -113,8 +104,6 @@ async def test_admin_posts_non_public_access_policies_for_non_existing_identitie
 
         assert response.status_code == 403
         assert response.json() == {"detail": "Forbidden."}
-        # TBD: turn into a fail! because the resource does not exist
-        # The last one might succeed, because it's public!
 
 
 @pytest.mark.anyio
@@ -169,8 +158,9 @@ async def test_user_posts_access_policies(
         assert response.json() == {"detail": "Forbidden."}
 
 
-# TBD. add tests creating access policy for non-existing identity fails.
-# TBD. add tests creating access policy for non-existing resource fails.
+# endregion: ## POST tests
+
+# region: ## GET tests:
 
 
 @pytest.mark.anyio
@@ -239,10 +229,6 @@ async def test_users_get_all_access_policies_fails(
     [
         token_admin_read_write,
         token_admin_read,
-        # token_user1_read,
-        # token_user2_read_write,
-        # token_user2_read,
-        # token_user2_read_write,
     ],
     indirect=True,
 )
@@ -250,17 +236,10 @@ async def test_admin_get_access_policies_for_resource(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_many_test_access_policies,
-    mocked_get_azure_token_payload,
 ):
     """Tests GET access policies, i.e. share."""
     app_override_get_azure_payload_dependency
     existing_policies = add_many_test_access_policies
-
-    # print("=== mocked_get_azure_token_payload ===")
-    # pprint(mocked_get_azure_token_payload)
-
-    # print("=== existing_policies ===")
-    # pprint([policy.model_dump() for policy in existing_policies])
 
     response = await async_client.get(
         f"/api/v1/access/policy/resource/{str(existing_policies[2].resource_id)}"
@@ -274,11 +253,9 @@ async def test_admin_get_access_policies_for_resource(
     for policy, existing_policy in zip(payload[:2], existing_policies[1:3]):
         modelled_policy = AccessPolicy.model_validate(policy)
         assert modelled_policy.resource_id == existing_policy.resource_id
-        # assert modelled_policy.resource_type == existing_policy.resource_type
         assert modelled_policy.identity_id == (
             existing_policy.identity_id if existing_policy.identity_id else None
         )
-        # assert modelled_policy.identity_type == existing_policy.identity_type
         assert modelled_policy.action == existing_policy.action
         assert modelled_policy.public == existing_policy.public
 
@@ -301,7 +278,6 @@ async def test_user_get_access_policies_for_resource(
     add_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
-    # with warnings.catch_warnings(record=True) as warn:
 
     app_override_get_azure_payload_dependency
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
@@ -381,13 +357,6 @@ async def test_user_get_access_policies_for_resource(
     for policy, target in zip(payload, existing_policies_in_db):
         received_policy = AccessPolicy.model_validate(policy)
         target_policy = AccessPolicy.model_validate(target)
-        # print("=== received_policy ===")
-        # pprint(received_policy.model_dump())
-        # print("\n")
-        # print("=== target_policy ===")
-        # pprint(target_policy.model_dump())
-        # print("\n")
-        # assert 0
         assert received_policy.id == target_policy.id
         assert received_policy.resource_id == target_policy.resource_id
         assert received_policy.identity_id == target_policy.identity_id
@@ -470,7 +439,6 @@ async def test_user_get_access_policies_for_resource_without_being_owner(
         read_public_test_access_policy,
     ]
 
-    # await add_test_access_policy(target_policies)
     existing_policies_in_db = []
     for policy in target_policies:
         created_policy = await add_test_access_policy(policy)
@@ -497,7 +465,7 @@ async def test_user_get_access_policies_for_resource_without_being_owner(
     ],
     indirect=True,
 )
-async def test_access_policies_for_resource_missing_read_scope(
+async def test_get_access_policies_for_resource_missing_read_scope(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_many_test_access_policies,
@@ -512,3 +480,12 @@ async def test_access_policies_for_resource_missing_read_scope(
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Invalid token."}
+
+
+# endregion: ## GET tests
+
+# region: ## DELETE tests:
+
+# TBD: implement delete tests
+
+# endregion: ## DELETE tests

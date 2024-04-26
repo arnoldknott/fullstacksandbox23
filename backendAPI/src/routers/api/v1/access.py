@@ -196,9 +196,11 @@ async def get_access_policies_for_identity(
 # ✔︎ create (share with identity, i.e. user, group)
 # ✔︎ create (public share)
 # ✔︎ make a generic for the above two - checks are handled in model AccessPolicyCreate!
-# X read all (check who has access)
-# X read by resource - use filter
+# ✔︎ read all (check who has access)
+# ✔︎ read by resource_id - use filter
+# - read by resource_type - use filter - join with IdentifierTypeTable
 # X read by identity - use filter
+# - read by identity_type - use filter - join with IdentifierTypeTable
 # - change access Action (own, write, read) -> use delete and create
 # - delete (unshare)
 # - hierarchy (inheritance)?
