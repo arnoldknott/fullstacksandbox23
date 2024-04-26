@@ -214,8 +214,9 @@ class AccessPolicyCRUD:
             # session = self.session
             # TBD: remove this, as it's already done through typing the arguments of the method?
             policy = AccessPolicy.model_validate(policy)
+
             # TBD: add access control checks here:
-            # only owners and Admins can create policies
+            # only owners of parent resources and Admins can create policies
             # current_user = CurrentUserData(
             #     user_id=policy.identity_id,
             #     # how do i get the roles and groups here?

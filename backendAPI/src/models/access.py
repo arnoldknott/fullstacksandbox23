@@ -123,7 +123,7 @@ class AccessPolicy(AccessPolicyCreate, table=True):
     # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     id: Optional[int] = Field(default=None, primary_key=True)
     identity_id: Optional[uuid.UUID] = Field(
-        foreign_key="identifiertypelink.id", index=True
+        default=None, foreign_key="identifiertypelink.id", index=True
     )
     # identity_id: Optional[uuid.UUID] = Field(
     #     default=None, primary_key=True, nullable=True
