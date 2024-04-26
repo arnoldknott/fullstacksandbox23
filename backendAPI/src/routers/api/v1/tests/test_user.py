@@ -4,11 +4,15 @@ import pytest
 import uuid
 from typing import List
 from httpx import AsyncClient
+from core.types import Action
 from models.identity import User, UserRead
+from models.access import AccessPolicy
 from fastapi import FastAPI
 from tests.utils import (
     token_user1_read,
     token_user1_read_write,
+    token_user2_read,
+    token_user2_read_write,
     token_admin_read,
     token_admin_read_write,
     token_payload_user_id,
@@ -321,7 +325,12 @@ async def test_get_users_without_token(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [token_user1_read, token_admin_read],
+    [
+        token_user1_read,
+        token_user1_read_write,
+        token_user2_read,
+        token_user2_read_write,
+    ],
     # here the admin get's itself => last_accessed_at should change!
     indirect=True,
 )
@@ -329,19 +338,25 @@ async def test_user_gets_user_by_azure_user_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
-    # add_test_policies_for_resources: List[AccessPolicy],
+    mocked_get_azure_token_payload,
+    current_user_from_azure_token,
+    add_test_access_policy,
 ):
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
+    # the target user:
     user_in_database = await add_one_azure_test_user(0)
-    # user_in_database = existing_users[0]
-    # await add_test_policies_for_resources(
-    #     resources=[user_in_database],
-    #     actions=["read"],
-    #     publics=[True],
-    # )
+    # the accessing user:
+    accessing_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    policy = {
+        "resource_id": str(user_in_database.id),
+        "identity_id": str(accessing_user.user_id),
+        "action": Action.read,
+    }
+    await add_test_access_policy(policy)
 
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
@@ -402,6 +417,7 @@ async def test_user_gets_another_user_by_azure_user_id(
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
+    # the target user:
     user_in_database = await add_one_azure_test_user(2)
 
     response = await async_client.get(
@@ -438,12 +454,25 @@ async def test_user_gets_user_by_id(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
+    mocked_get_azure_token_payload,
+    current_user_from_azure_token,
+    add_test_access_policy,
 ):
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
     app_override_get_azure_payload_dependency
+    # the target user:
     user_in_database = await add_one_azure_test_user(0)
+    # the accessing user:
+    accessing_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    policy = {
+        "resource_id": str(user_in_database.id),
+        "identity_id": str(accessing_user.user_id),
+        "action": Action.read,
+    }
+    await add_test_access_policy(policy)
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
 

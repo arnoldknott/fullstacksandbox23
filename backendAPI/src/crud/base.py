@@ -267,7 +267,8 @@ class BaseCRUD(
         # TBD: consider allowing any return value - that might enable more flexibility, especially for select_args and functions!
         """Generic read method with optional parameters for select_args, filters, joins, order_by, group_by, limit and offset."""
         try:
-
+            # print("=== CRUD - base - read - current_user ===")
+            # print(current_user)
             # statement = select(self.model if not select_args else *select_args)
             # TBD: select_args are not compatible with the return type of the method!
             statement = select(*select_args) if select_args else select(self.model)
@@ -277,12 +278,15 @@ class BaseCRUD(
             # statement = statement.join(
             #     ResourceTypeLink, self.model.id == ResourceTypeLink.resource_id
             # )
+
+            # That's the one that works:
             statement = self.policy_CRUD.filters_allowed(
                 statement=statement,
                 action=read,
                 model=self.model,
                 current_user=current_user,
             )
+
             # if not access_conditions:
             #     statement = select(self.model if not select_args else select_args)
             # if access_conditions:
@@ -322,6 +326,7 @@ class BaseCRUD(
             # print("=== CRUD - base - read - statement ===")
             # print(statement.compile())
             # print(statement.compile().params)
+
             response = await self.session.exec(statement)
             results = response.all()
             # print("=== CRUD - base - read - results ===")
@@ -670,6 +675,8 @@ class BaseCRUD(
                     status_code=404, detail=f"{self.model.__name__} not found."
                 )
             ####
+            print("=== CRUD - base - delete - object ===")
+            pprint(object)
 
             # TBD: refactor into try-except block and add logging
             ### TBD delete old version from before refactoring:

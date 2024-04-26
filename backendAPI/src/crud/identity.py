@@ -5,8 +5,7 @@ from fastapi import HTTPException
 from uuid import UUID
 
 # from models.azure_group_user_link import AzureGroupUserLink
-from core.types import Action
-from core.types import CurrentUserData
+from core.types import Action, CurrentUserData
 from models.identity import (
     User,
     UserCreate,
@@ -129,18 +128,15 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     # The model-validation adds the default values (id) to the user_create object!
                     # Can be used for linked tables: avoids multiple round trips to database
                     database_user = User.model_validate(user_create)
-                    # print(
-                    #     "=== user crud - create_azure_user_and_groups_if_not_exist - database_user ==="
-                    # )
-                    # print(database_user)
-                    # print(
-                    #     "=== user crud - create_azure_user_and_groups_if_not_exist - database_user ==="
-                    # )
-                    # print(database_user)
+                    print(
+                        "=== user crud - create_azure_user_and_groups_if_not_exist - database_user ==="
+                    )
+                    print(database_user)
                     # TBD: refactor into using _add_write_identifier_type_link_to_session()
                     # to avoid round-trips to database
                     # self._add_identifier_type_link_to_session(database_user.id)
                     await self._write_identifier_type_link(database_user.id)
+
                     # session.add(IdentityTypeLink(database_user.id, IdentityType.user))
                     session.add(database_user)
                     await session.commit()
@@ -150,6 +146,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                         user_id=current_user.id,
                         roles=[],  # Roles are coming from the token - but this information is not available here!
                         groups=groups,
+                    )
+                    # User is owner of itself:
+                    await self._write_policy(
+                        database_user.id, Action.own, current_user_data
                     )
                     # await self._write_policy(
                     #     current_user.id, Action.own, current_user_data

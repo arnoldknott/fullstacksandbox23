@@ -36,9 +36,20 @@ from tests.utils import (
 async def test_admin_posts_access_policies(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
+    register_many_current_users,
+    register_many_protected_resources,
 ):
     """Tests POST access policies, i.e. share."""
     app_override_get_azure_payload_dependency
+    register_many_current_users
+    register_many_protected_resources
+
+    # await register_current_user(current_user_data_admin)
+    # print("=== current_user_data_admin ===")
+    # print(current_user_data_admin)
+
+    # print("=== token_admin_read_write ===")
+    # print(token_admin_read_write)
 
     for policy in many_test_policies:
         response = await async_client.post("/api/v1/access/policy", json=policy)
@@ -53,7 +64,55 @@ async def test_admin_posts_access_policies(
         if "public" in policy:
             assert content["public"] == policy["public"]
         else:
-            assert content["public"] is not False
+            assert content["public"] is False
+
+
+# TBD: write a test, where admin tries to post access policies for non existing policies: fails!
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_posts_access_policies_for_non_existing_resources(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    register_many_current_users,
+    # register_many_protected_resources,
+):
+    """Tests POST access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
+    register_many_current_users
+
+    for policy in many_test_policies:
+        response = await async_client.post("/api/v1/access/policy", json=policy)
+
+        assert response.status_code == 201
+        # TBD: turn into a fail! because the resource does not exist
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_posts_non_public_access_policies_for_non_existing_identities(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    register_many_current_users,
+    register_many_protected_resources,
+):
+    """Tests POST access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
+    register_many_protected_resources
+
+    for policy in many_test_policies:
+        response = await async_client.post("/api/v1/access/policy", json=policy)
+
+        assert response.status_code == 201
+        # TBD: turn into a fail! because the resource does not exist
+        # The last one might succeed, because it's public!
 
 
 @pytest.mark.anyio
