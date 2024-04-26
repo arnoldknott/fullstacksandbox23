@@ -188,6 +188,7 @@ class BaseCRUD(
         """Creates a new object."""
         logger.info("BaseCRUD.create")
         try:
+
             # TBD: refactor into hierarchy check
             # requires hierarchy checks to be in place: otherwise a user can never create a resource
             # as the AccessPolicy CRUD create checks, if the user is owner of the resource (that's not created yet)
@@ -209,9 +210,18 @@ class BaseCRUD(
             await self._write_identifier_type_link(database_object.id)
             await self._write_policy(database_object.id, own, current_user)
             await self._write_log(database_object.id, own, current_user, 201)
+
+            # print("=== CRUD - base - create - database_object ===")
+            # pprint(database_object)
             return database_object
+
         except Exception as e:
-            await self._write_log(database_object.id, own, current_user, 404)
+            try:
+                await self._write_log(database_object.id, own, current_user, 404)
+            except Exception as log_error:
+                logger.error(
+                    f"Error in BaseCRUD.create of an object of type {self.model}, action: {own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
+                )
             logger.error(f"Error in BaseCRUD.create: {e}")
             raise HTTPException(
                 status_code=404,
@@ -256,85 +266,145 @@ class BaseCRUD(
     ) -> list[BaseSchemaTypeRead]:
         # TBD: consider allowing any return value - that might enable more flexibility, especially for select_args and functions!
         """Generic read method with optional parameters for select_args, filters, joins, order_by, group_by, limit and offset."""
+        try:
 
-        # statement = select(self.model if not select_args else *select_args)
-        # TBD: select_args are not compatible with the return type of the method!
-        statement = select(*select_args) if select_args else select(self.model)
-        # statement = statement.join(
-        #     AccessPolicy, self.model.id == AccessPolicy.resource_id
-        # )
-        # statement = statement.join(
-        #     ResourceTypeLink, self.model.id == ResourceTypeLink.resource_id
-        # )
-        statement = self.policy_CRUD.filters_allowed(
-            statement=statement,
-            action=read,
-            model=self.model,
-            current_user=current_user,
-        )
-        # if not access_conditions:
-        #     statement = select(self.model if not select_args else select_args)
-        # if access_conditions:
-        #     statement = statement.join(
-        #         AccessPolicy, self.model.id == AccessPolicy.resource_id
-        #     ).where(*access_conditions)
-        #     # statement = (
-        #     #     select(self.model if not select_args else select_args)
-        #     #     .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
-        #     #     .where(*access_conditions)
-        #     # )
-
-        if joins:
-            for join in joins:
-                statement = statement.join(join)
-
-        if filters:
-            for filter in filters:
-                statement = statement.where(filter)
-
-        if order_by:
-            for order in order_by:
-                statement = statement.order_by(order)
-
-        if group_by:
-            statement = statement.group_by(*group_by)
-
-        if having:
-            statement = statement.having(*having)
-
-        if limit:
-            statement = statement.limit(limit)
-
-        if offset:
-            statement = statement.offset(offset)
-
-        # print("=== CRUD - base - read - statement ===")
-        # print(statement.compile())
-        # print(statement.compile().params)
-        response = await self.session.exec(statement)
-        results = response.all()
-        # print("=== CRUD - base - read - results ===")
-        # pprint(results)
-        for result in results:
-            await self._write_log(result.id, read, current_user, 200)
-            # logs = await self.session.get(AccessLog, result.id)
-            # log_results = logs.all()
-            # print("=== CRUD - base - read - log_results ===")
-            # pprint(log_results)
-
-        if not results:
-            # print("=== self.model.__name__ ===")
-            # print(self.model.__name__)
-            # print("=== self.entity_type ===")
-            # print(self.entity_type)
-            logger.info(f"No objects found for {self.model.__name__}")
-            for result in results:
-                await self._write_log(result.id, read, current_user, 404)
-            raise HTTPException(
-                status_code=404, detail=f"{self.model.__name__} not found."
+            # statement = select(self.model if not select_args else *select_args)
+            # TBD: select_args are not compatible with the return type of the method!
+            statement = select(*select_args) if select_args else select(self.model)
+            # statement = statement.join(
+            #     AccessPolicy, self.model.id == AccessPolicy.resource_id
+            # )
+            # statement = statement.join(
+            #     ResourceTypeLink, self.model.id == ResourceTypeLink.resource_id
+            # )
+            statement = self.policy_CRUD.filters_allowed(
+                statement=statement,
+                action=read,
+                model=self.model,
+                current_user=current_user,
             )
+            # if not access_conditions:
+            #     statement = select(self.model if not select_args else select_args)
+            # if access_conditions:
+            #     statement = statement.join(
+            #         AccessPolicy, self.model.id == AccessPolicy.resource_id
+            #     ).where(*access_conditions)
+            #     # statement = (
+            #     #     select(self.model if not select_args else select_args)
+            #     #     .join(AccessPolicy, self.model.id == AccessPolicy.resource_id)
+            #     #     .where(*access_conditions)
+            #     # )
 
-        return results
+            if joins:
+                for join in joins:
+                    statement = statement.join(join)
+
+            if filters:
+                for filter in filters:
+                    statement = statement.where(filter)
+
+            if order_by:
+                for order in order_by:
+                    statement = statement.order_by(order)
+
+            if group_by:
+                statement = statement.group_by(*group_by)
+
+            if having:
+                statement = statement.having(*having)
+
+            if limit:
+                statement = statement.limit(limit)
+
+            if offset:
+                statement = statement.offset(offset)
+
+            # print("=== CRUD - base - read - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
+            response = await self.session.exec(statement)
+            results = response.all()
+            # print("=== CRUD - base - read - results ===")
+            # pprint(results)
+            for result in results:
+                await self._write_log(result.id, read, current_user, 200)
+                # logs = await self.session.get(AccessLog, result.id)
+                # log_results = logs.all()
+                # print("=== CRUD - base - read - log_results ===")
+                # pprint(log_results)
+
+            if not results:
+                logger.info(f"No objects found for {self.model.__name__}")
+                raise HTTPException(
+                    status_code=404, detail=f"{self.model.__name__} not found."
+                )
+
+            return results
+
+        except Exception as e:
+            # if not results:
+            try:
+                await self._write_log(result.id, read, current_user, 404)
+            except Exception as log_error:
+                logger.error(
+                    (
+                        f"Error in BaseCRUD.read with parameters:"
+                        f"select_args: {select_args},"
+                        f"filters: {filters},"
+                        f"joins: {joins},"
+                        f"order_by: {order_by},"
+                        f"group_by: {group_by},"
+                        f"having: {having},"
+                        f"limit: {limit},"
+                        f"offset: {offset},"
+                        f"action: {read},"
+                        f"current_user: {current_user},"
+                        f"status_code: {404}"
+                        f"results in {log_error}"
+                    )
+                )
+                logger.error(
+                    f"Error in BaseCRUD.read for model {self.model.__name__}: {e}"
+                    # f"Error in BaseCRUD.read for model {self.model.__name__}"
+                )
+
+                raise HTTPException(
+                    status_code=404, detail=f"{self.model.__name__} not found."
+                )
+        # print("=== self.model.__name__ ===")
+        # print(self.model.__name__)
+        # print("=== self.entity_type ===")
+        # print(self.entity_type)
+
+        # return results
+
+        # except Exception as e:
+        #     try:
+        #         await self._write_log(result.id, read, current_user, 404)
+        #     except Exception as log_error:
+        #         logger.error(
+        #             (
+        #                 f"Error in BaseCRUD.read with parameters:"
+        #                 f"select_args: {select_args},"
+        #                 f"filters: {filters},"
+        #                 f"joins: {joins},"
+        #                 f"order_by: {order_by},"
+        #                 f"group_by: {group_by},"
+        #                 f"having: {having},"
+        #                 f"limit: {limit},"
+        #                 f"offset: {offset},"
+        #                 f"action: {read},"
+        #                 f"current_user: {current_user},"
+        #                 f"status_code: {404}"
+        #                 f"results in {log_error}"
+        #             )
+        #         )
+        #     # logger.info(f"No objects found for {self.model.__name__}")
+        #     logger.error(f"Error in BaseCRUD.read for model {self.model.__name__}: {e}")
+
+        #     raise HTTPException(
+        #         status_code=404, detail=f"{self.model.__name__} not found."
+        #     )
 
     async def read_by_id(
         self,
@@ -542,7 +612,12 @@ class BaseCRUD(
             # await self._write_log(object_id, write, current_user, 200)
             return object
         except Exception as e:
-            await self._write_log(object_id, write, current_user, 404)
+            try:
+                await self._write_log(object_id, write, current_user, 404)
+            except Exception as log_error:
+                logger.error(
+                    f"Error in BaseCRUD.update with parameters object_id: {object_id}, action: {write}, current_user: {current_user}, status_code: {404} results in  {log_error}"
+                )
             logger.error(f"Error in BaseCRUD.update: {e}")
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not updated."
@@ -608,7 +683,12 @@ class BaseCRUD(
             # await self._write_log(object_id, own, current_user, 200)
             return object
         except Exception as e:
-            await self._write_log(object_id, own, current_user, 404)
+            try:
+                await self._write_log(object_id, own, current_user, 404)
+            except Exception as log_error:
+                logger.error(
+                    f"Error in BaseCRUD.delete with parameters object_id: {object_id}, action: {own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
+                )
             logger.error(f"Error in BaseCRUD.delete: {e}")
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not deleted."

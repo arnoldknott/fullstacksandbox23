@@ -175,7 +175,7 @@ class AccessLogCreate(SQLModel):
 
     identity_id: Optional[uuid.UUID] = None
     resource_id: uuid.UUID
-    action: "Action"
+    action: Action
     status_code: int
 
 
