@@ -6,7 +6,6 @@ from core.types import ResourceType, IdentityType
 from .base import BaseView
 from core.security import (
     get_access_token_payload,
-    CurrentAccessToken,
     Guards,
     GuardTypes,
 )
@@ -15,6 +14,7 @@ from core.security import (
 from models.access import (
     AccessPolicy,
     AccessPolicyCreate,
+    AccessPolicyUpdate,
     AccessPolicyRead,
 )
 from crud.access import AccessPolicyCRUD
@@ -23,51 +23,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 access_policy_view = BaseView(AccessPolicyCRUD, AccessPolicy)
-
-
-# class AccessPolicyView(BaseView):
-#     """Extends base view with access policy specific methods."""
-
-#     def __init__(self):
-#         super().__init__(AccessPolicyCRUD, AccessPolicy)
-
-#     # TBD: rethink: this gets ways to complicated
-#     async def get_access_policies_for_resource(
-#         self,
-#         resource_id: UUID,
-#         resource_type: ResourceType,  # TBD: remove and let CRUD figure it out?
-#         token_payload=None,
-#         guards=None,  #: GuardTypes = Depends(Guards(roles=["User"])),
-#     ) -> List[AccessPolicyRead]:
-#         """GET view for access policies for a resource"""
-#         logger.info("GET user by azure_user_id")
-#         current_user = await self._check_token_against_guards(token_payload, guards)
-#         # current_user = await self._guards(token_payload, scopes, roles, groups)
-#         async with self.crud() as crud:
-#             access_policies = await crud.read_access_policies_by_resource_id(
-#                 resource_id, resource_type, current_user
-#             )
-#         return access_policies
-
-#     async def get_access_policies_for_identity(
-#         self,
-#         identity_id: UUID,
-#         identity_type: IdentityType,  # TBD: remove and let CRUD figure it out?
-#         token_payload=None,
-#         guards=None,  #: GuardTypes = Depends(Guards(roles=["User"])),
-#     ) -> List[AccessPolicyRead]:
-#         """GET view for access policies for a identity"""
-#         logger.info("GET user by azure_user_id")
-#         current_user = await self._check_token_against_guards(token_payload, guards)
-#         # current_user = await self._guards(token_payload, scopes, roles, groups)
-#         async with self.crud() as crud:
-#             access_policies = await crud.read_access_policies_for_identity(
-#                 identity_id, identity_type, current_user
-#             )
-#         return access_policies
-
-
-# access_policy_view = AccessPolicyView()
 
 
 @router.post("/policy", status_code=201)
@@ -107,22 +62,6 @@ async def get_access_policies_for_resource(
             resource_id, current_user
         )
     return access_policies
-    # return await access_policy_view.get_access_policies_for_resource(
-    #     resource_id,
-    #     resource_type,
-    #     token_payload,
-    #     guards=guards,
-    #     # roles=["User"],
-    # )
-    # filters = [
-    #     AccessPolicy.resource_id == resource_id,
-    #     AccessPolicy.resource_type == resource_type,
-    # ]
-    # return await access_policy_view.get_with_query_options(
-    #     filters,
-    #     token_payload,
-    #     roles=["User"],
-    # )
 
 
 @router.get("/policy/resource/type/{resource_type}", status_code=200)
@@ -144,13 +83,11 @@ async def get_access_policies_by_resource_type(
     return access_policies
 
 
-# TBD: write tests for this:
 # - Admin can query any user-id
-# - User can only query their own user-id
+# - User can only query the access policies with other user-id's, of which user is owner
 @router.get("/policy/identity/{identity_id}", status_code=200)
 async def get_access_policies_for_identity(
     identity_id: UUID,
-    # identity_type: IdentityType = IdentityType.user,  # TBD: remove and let CRUD figure it out?
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
@@ -185,6 +122,38 @@ async def get_access_policies_by_identity_type(
     return access_policies
 
 
+# TBD: write tests for this
+@router.put("/policy", status_code=200)
+async def put_access_policy(
+    access_policy: AccessPolicyUpdate,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> AccessPolicy:
+    """Deletes an old access policy and creates a new instead."""
+    logger.info("PUT access policy")
+    current_user = await access_policy_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with access_policy_view.crud() as crud:
+        return await crud.change(access_policy, current_user)
+
+
+# TBD: write tests for this
+@router.delete("/policy", status_code=200)
+async def delete_access_policy(
+    access_policy: AccessPolicy,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> AccessPolicy:
+    """Deletes an access policy."""
+    logger.info("DELETE access policy")
+    current_user = await access_policy_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with access_policy_view.crud() as crud:
+        return await crud.delete(access_policy, current_user)
+
+
 # Nomenclature:
 # ✔︎ implemented
 # X missing tests
@@ -200,8 +169,8 @@ async def get_access_policies_by_identity_type(
 # ✔︎ read by resource_type - use filter - join with IdentifierTypeTable
 # ✔︎ read by identity - use filter
 # ✔︎ read by identity_type - use filter - join with IdentifierTypeTable (can wait)
-# - change access Action (own, write, read) -> use delete and create
-# - delete (unshare)
+# X change access Action (own, write, read) -> use delete first and then create; but update model can be used: derive from Create and add new action!
+# X delete (unshare)
 # - hierarchy (inheritance)?
 
 
@@ -230,6 +199,7 @@ access_log_view = BaseView(AccessPolicyCRUD, AccessPolicy)
 
 
 # AccessLogs:
+# only read operations for log - no create, update, delete!
 # - read (check who accessed what)
 # - read resource first "own": corresponds to create
 # - read resource last access - use order_by

@@ -4,7 +4,7 @@ from uuid import UUID
 from pprint import pprint
 
 from typing import List, Optional
-from sqlmodel import select, delete, or_, exists, and_, SQLModel
+from sqlmodel import select, delete, or_, and_, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
@@ -17,6 +17,7 @@ from models.access import (
     AccessPolicyCreate,
     AccessPolicy,
     AccessPolicyRead,
+    AccessPolicyUpdate,
     AccessRequest,
     IdentifierTypeLink,
     AccessLogCreate,
@@ -371,6 +372,38 @@ class AccessPolicyCRUD:
             logging.error(err)
             raise HTTPException(status_code=404, detail="Access policies not found.")
 
+    # similar to update - but deletes old and creates a new policy
+    async def change(
+        self,
+        access_policy: AccessPolicyUpdate,
+        current_user: Optional["CurrentUserData"],
+    ) -> AccessPolicyRead:
+        """Updates an access control policy."""
+        # reuses delete and create methods
+
+        try:
+            # TBD: should public be a part of the update?
+            # => yes, needs to, because it's a mandatory part of the AccessPolicyCreate,
+            # which AccessPolicyUpdate inherits from!
+            old_policy = AccessPolicy(
+                resource_id=access_policy.resource_id,
+                identity_id=access_policy.identity_id,
+                action=access_policy.action,
+                public=access_policy.public,
+            )
+            await self.delete(current_user, old_policy)
+            new_policy = AccessPolicyCreate(
+                resource_id=access_policy.resource_id,
+                identity_id=access_policy.identity_id,
+                action=access_policy.new_action,
+                public=access_policy.public,
+            )
+            return await self.create(new_policy, current_user)
+
+        except Exception as e:
+            logger.error(f"Error in updating policy: {e}")
+            raise HTTPException(status_code=404, detail="Access policy not found")
+
     async def delete(
         self,
         current_user: Optional["CurrentUserData"],
@@ -381,27 +414,6 @@ class AccessPolicyCRUD:
         # To delete a policy, current user needs to be owner of the resource or Admin!
 
         try:
-
-            # if policy_id is not None:
-            #     if (
-            #         identity_id is not None
-            #         or resource_id is not None
-            #         or action is not None
-            #     ):
-            #         raise ValueError(
-            #             "Policy ID cannot be provided with other parameters."
-            #         )
-            #     policy = await session.get(AccessPolicy, policy_id)
-            #     if policy is None:
-            #         logger.error(
-            #             f"Error in deleting policy: policy {policy_id} not found"
-            #         )
-            #         raise HTTPException(
-            #             status_code=404, detail="Access policy not found"
-            #         )
-            #     await session.delete(policy)
-            # else:
-
             resource_id, identity_id, action, public = (
                 access_policy.resource_id,
                 access_policy.identity_id,
@@ -462,8 +474,6 @@ class AccessLoggingCRUD:
         except Exception as e:
             logger.error(f"Error in logging: {e}")
             raise HTTPException(status_code=400, detail="Bad request: logging failed")
-        # finally:
-        #     await self.session.close()
 
     # Do we need current_user here?
     # TBD: create a generic read method and use it here.
@@ -486,7 +496,7 @@ class AccessLoggingCRUD:
     # Do we need current_user here?
     # TBD: create a generic read method and use it here.
     # TBD: implement more crud tests for this?
-    async def read_log_by_resource(
+    async def read_log_by_resource_id(
         self, resource_id: UUID  # ,   resource_type: ResourceType
     ) -> list[AccessLogRead]:
         """Reads access logs by resource id and type."""

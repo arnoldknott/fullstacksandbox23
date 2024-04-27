@@ -87,27 +87,22 @@ class AccessPolicyCreate(SQLModel):
     """Create model for access policies"""
 
     identity_id: Optional[uuid.UUID] = None
-    # identity_type: Optional["IdentityType"] = None
     resource_id: uuid.UUID
-    # resource_type: Union["ResourceType", "IdentityType"] = "ResourceType"
-    action: "Action"
+    action: Action
     public: bool = Field(
         default=False,
         description="Set to true, if the resource is public and does not require any access control.",
     )
 
-    # TBD: should this move to AccessPolicy just below?
     @model_validator(mode="after")
     def either_identity_assignment_or_public(self):
         """Validates either identity is assigned or resource is public"""
-        # TBD: refactor: only when Action is read, then public is allowed and no identity is allowed
-        # TBD: refactor: when Action is anything else, then public is not allowed and identity is required
+        # TBD: refactor: only when Action is read, then public is allowed and no identity is allowed? => No, not really
+        # TBD: refactor: when Action is anything else, then public is not allowed and identity is required? => No, not really
         if self.public is True:
-            # if (self.identity_id is not None) or (self.identity_type is not None):
             if self.identity_id is not None:
                 raise ValueError("No identity can be assigned to a public resource.")
         else:
-            # if (self.identity_id is None) or (self.identity_type is None):
             if self.identity_id is None:
                 raise ValueError(
                     "An identity must be assigned to a non-public resource."
@@ -118,37 +113,20 @@ class AccessPolicyCreate(SQLModel):
 class AccessPolicy(AccessPolicyCreate, table=True):
     """Table for access control"""
 
-    # TBD: consider totally removing the id here and
-    # use the combination of identity_id, resource_id, and action
-    # as composite primary key? => Not a good idea, as identity_id is optional - due to public resources
-    # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     id: Optional[int] = Field(default=None, primary_key=True)
     identity_id: Optional[uuid.UUID] = Field(
         default=None, foreign_key="identifiertypelink.id", index=True
     )
-    # identity_id: Optional[uuid.UUID] = Field(
-    #     default=None, primary_key=True, nullable=True
-    # )
-    # identity_id: Optional[uuid.UUID] = Field(
-    #     primary_key=True, default=None, index=True
-    # )  # needs to be a foreign key / relationship for join statements?
-    # identity_type: Optional["IdentityType"] = Field(default=None, index=True)
-    # resource_id: uuid.UUID = Field(primary_key=True)  # , index=True)
     resource_id: uuid.UUID = Field(foreign_key="identifiertypelink.id", index=True)
-    # resource_type: str = Field(index=True)
-    # action: "Action" = Field()  # not using primary_key=True here means,
-    # that the other two (identity_id & resource_id need to be unique) are the primary key
-    # That is, only one level of Action (should be the highest) is stored in the database!
-    # allows multiple levels of Action to be stored in the database:
     action: "Action" = Field()
 
     __table_args__ = (UniqueConstraint("identity_id", "resource_id", "action"),)
-    # identity_id: uuid.UUID = Field(primary_key=True)
-    # identity_type: "IdentityType" = Field(index=True)
-    # resource_id: uuid.UUID = Field(primary_key=True)
-    # resource_type: "ResourceType" = Field(index=True)
-    # action: "Action" = Field()
-    # override: bool = Field(default=False)
+
+
+class AccessPolicyUpdate(AccessPolicyCreate):
+    """Update model for access policies"""
+
+    new_action: Action
 
 
 class AccessPolicyRead(AccessPolicyCreate):
