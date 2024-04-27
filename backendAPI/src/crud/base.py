@@ -50,8 +50,6 @@ class BaseCRUD(
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
-        print("=== BaseCRUD - base_model ===")
-        print(base_model)
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(base_model.__name__)
         elif base_model.__name__ in IdentityType.list():
@@ -242,6 +240,7 @@ class BaseCRUD(
                 for filter in filters:
                     statement = statement.where(filter)
 
+            # TBD. implement a default order_by:
             if order_by:
                 for order in order_by:
                     statement = statement.order_by(order)

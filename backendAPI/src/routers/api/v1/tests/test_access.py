@@ -3,9 +3,13 @@ from httpx import AsyncClient
 from fastapi import FastAPI
 
 import uuid
+from pprint import pprint
 
-from core.types import Action, ResourceType, IdentityType
+from core.types import Action, ResourceType, IdentityType, CurrentUserData
 from models.access import AccessPolicy
+from models.demo_resource import DemoResource
+from models.protected_resource import ProtectedResource
+from crud.access import AccessPolicyCRUD
 from tests.utils import (
     token_admin,
     token_admin_read,
@@ -23,6 +27,7 @@ from tests.utils import (
     resource_id1,
     resource_id2,
     resource_id9,
+    current_user_data_admin,
 )
 
 
@@ -499,23 +504,86 @@ async def test_user_get_access_policies_for_resource_type(
     register_many_entities,
     current_user_from_azure_token,
     mocked_get_azure_token_payload,
+    register_one_resource,
     add_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
     app_override_get_azure_payload_dependency
 
-    entities = await register_many_entities
+    entities = register_many_entities
 
     current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
 
     for entity in entities:
         policy = {
-            "resource_id": entity.id,
-            "identity_id": current_user.user_id,
-            "action": Action.read,
+            "resource_id": str(entity.id),
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,  # user needs to own a resource for being allowed to read all access_policies
         }
+        policy = await add_test_access_policy(policy)
+
+    admin_only_resources = [
+        {
+            "id": uuid.uuid4(),
+            "type": DemoResource,
+        },
+        {
+            "id": uuid.uuid4(),
+            "type": ProtectedResource,
+        },
+        {
+            "id": uuid.uuid4(),
+            "type": DemoResource,
+        },
+        {
+            "id": uuid.uuid4(),
+            "type": DemoResource,
+        },
+    ]
+
+    for resource in admin_only_resources:
+        await register_one_resource(resource["id"], resource["type"])
+
+    admin_only_policies = [
+        {
+            "resource_id": str(admin_only_resources[0]["id"]),
+            "identity_id": str(current_user.user_id),
+            "action": Action.write,  # access user but write only
+        },
+        {
+            "resource_id": str(admin_only_resources[1]["id"]),
+            "action": Action.read,
+            "public": True,
+        },
+        {
+            "resource_id": str(admin_only_resources[2]["id"]),
+            "identity_id": str(current_user.user_id),
+            "action": Action.read,  # access user but read only
+        },
+        {
+            "resource_id": str(admin_only_resources[3]["id"]),
+            "identity_id": str(user_id_user2),
+            "action": Action.own,  # another user owns the target resource
+        },
+    ]
+
+    for policy in admin_only_policies:
         await add_test_access_policy(policy)
+
+    access_policy_crud = AccessPolicyCRUD()
+    async with access_policy_crud as crud:
+        admin_response = await crud.read_access_policies_by_resource_type(
+            ResourceType.demo_resource, CurrentUserData(**current_user_data_admin)
+        )
+        assert len(admin_response) == 6
+        assert admin_response[0].resource_id == uuid.UUID(resource_id1)
+        assert admin_response[1].resource_id == uuid.UUID(resource_id2)
+        assert admin_response[2].resource_id == uuid.UUID(resource_id9)
+        assert admin_response[3].resource_id == admin_only_resources[0]["id"]
+        assert admin_response[4].resource_id == admin_only_resources[2]["id"]
+        assert admin_response[5].resource_id == admin_only_resources[3]["id"]
+        # TBD: check for the specific policies
 
     response = await async_client.get(
         "/api/v1/access/policy/resource/type/DemoResource"
@@ -526,12 +594,14 @@ async def test_user_get_access_policies_for_resource_type(
 
     assert len(payload) == 3
 
-    payload[0]["resource_id"] = str(resource_id1)
-    payload[1]["resource_id"] = str(resource_id2)
-    payload[8]["resource_id"] = str(resource_id9)
+    expected_results = [str(resource_id1), str(resource_id2), str(resource_id9)]
 
-    for policy in payload:
-        policy["type"] = ResourceType.DemoResource
+    for read_policy in payload:
+        assert read_policy["resource_id"] in expected_results
+        policy["type"] = ResourceType.demo_resource
+    # assert payload[0]["resource_id"] in expected_results
+    # assert payload[1]["resource_id"] in expected_results
+    # assert payload[2]["resource_id"] in expected_results
 
 
 # endregion: ## GET tests

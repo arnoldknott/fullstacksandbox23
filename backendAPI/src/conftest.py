@@ -12,6 +12,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from pprint import pprint
 from core.security import get_azure_token_payload, CurrentAccessToken, Guards
 from core.types import CurrentUserData, ResourceType, IdentityType
+from models.access import IdentifierTypeLink
 from models.identity import User, UserRead
 from models.protected_resource import ProtectedResource
 from crud.identity import UserCRUD
@@ -213,6 +214,7 @@ async def register_many_current_users():
     yield current_users
 
 
+# TBD: turn input into dict? But what about the model?
 @pytest.fixture(scope="function")
 async def register_one_resource():
     """Registers a resource id and its type in the database."""
@@ -240,19 +242,30 @@ async def register_many_protected_resources():
 
 
 @pytest.fixture(scope="function")
-async def register_many_entities():
+async def register_many_entities(get_async_test_session: AsyncSession):
     """Registers many protected resources with id and its type in the database."""
 
+    session = get_async_test_session
+
+    identity_type_links = []
+    for entity in many_entity_type_links:
+        entity_instance = IdentifierTypeLink(**entity)
+        session.add(entity_instance)
+        await session.commit()
+        await session.refresh(entity_instance)
+        identity_type_links.append(entity_instance)
+
+    yield identity_type_links
     # def get_model(resource_type: ResourceType) -> Type[SQLModel]:
     #     """Returns the model based on the model enum."""
     #     return models[model_enum.value]
 
-    for entity in many_entity_type_links:
-        await register_entity_to_identity_type_link_table(
-            UUID(entity["id"]), entity["type"]
-        )
+    # for entity in many_entity_type_links:
+    #     await register_entity_to_identity_type_link_table(
+    #         UUID(entity["id"]), entity["type"]
+    #     )
 
-    yield many_entity_type_links
+    # yield many_entity_type_links
 
 
 # Adds a test user based on identity provider token payload to database and returns the user

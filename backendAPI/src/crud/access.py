@@ -4,7 +4,7 @@ from uuid import UUID
 from pprint import pprint
 
 from typing import List, Optional
-from sqlmodel import select, delete, or_, SQLModel
+from sqlmodel import select, delete, or_, exists, and_, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
@@ -101,18 +101,28 @@ class AccessPolicyCRUD:
         elif "Admin" in current_user.roles:
             pass
         else:
+            # this is becoming two different functions - one for resources and one for policies
+            # consider splitting this into two functions
             if model != AccessPolicy:
                 statement = statement.join(
                     AccessPolicy, model.id == AccessPolicy.resource_id
                 )
                 statement = statement.where(AccessPolicy.resource_id == model.id)
-            statement = statement.where(AccessPolicy.action.in_(action))
-            statement = statement.where(
-                or_(
-                    AccessPolicy.identity_id == current_user.user_id,
-                    AccessPolicy.public,
+                statement = statement.where(AccessPolicy.action.in_(action))
+                statement = statement.where(
+                    or_(
+                        AccessPolicy.identity_id == current_user.user_id,
+                        AccessPolicy.public,
+                    )
                 )
-            )
+            else:
+                subquery = select(AccessPolicy.resource_id).where(
+                    and_(
+                        AccessPolicy.identity_id == current_user.user_id,
+                        AccessPolicy.action == own,
+                    )
+                )
+                statement = statement.filter(AccessPolicy.resource_id.in_(subquery))
 
         return statement
 
@@ -130,10 +140,11 @@ class AccessPolicyCRUD:
             return True
 
         try:
-            query = select(AccessPolicy).where(
-                AccessPolicy.resource_id == resource_id,
-            )
+            query = select(AccessPolicy)  # .where(
+            # AccessPolicy.resource_id == resource_id,
+            # )
             if resource_id:
+                print("=== AccessPolicyCRUD.allows - add resource_id ===")
                 query = query.where(
                     AccessPolicy.resource_id == resource_id,
                 )
@@ -221,6 +232,7 @@ class AccessPolicyCRUD:
             print(err)
             raise HTTPException(status_code=403, detail="Forbidden.")
 
+    # other way around: add to parent - in create_as_child
     async def add_child(
         self,
         policy: AccessPolicyCreate,
@@ -252,24 +264,32 @@ class AccessPolicyCRUD:
         """Reads access control policies based on the provided parameters."""
 
         try:
+            query = select(AccessPolicy)
+            query = self.filters_allowed(query, own, current_user=current_user)
+
             # TBD: write tests for admin case?
             # for admin access, resource_id and action can be None!
             # feels dangerous to have resource_id and action to be optional
             # but might be the right thing to do!
-            access_request = AccessRequest(
-                resource_id=resource_id,
-                action=own,
-                current_user=current_user,
-            )
-            await self.allows(access_request)
 
-            query = select(AccessPolicy)
+            print("=== AccessPolicyCRUD.read - resource_id ===")
+            pprint(resource_id)
+
+            # access_request = AccessRequest(
+            #     resource_id=resource_id,
+            #     action=own,
+            #     current_user=current_user,
+            # )
+            # await self.allows(access_request)
+
+            # query = select(AccessPolicy)
+
             if identity_id is not None:
                 query = query.where(AccessPolicy.identity_id == identity_id)
             if identity_type is not None:
                 query = query.join(
                     IdentifierTypeLink,
-                    IdentifierTypeLink.id == access_request.resource_id,
+                    IdentifierTypeLink.id == AccessPolicy.resource_id,
                     # note: the queried identity is a the resource_id in the AccessRequest!
                 ).where(IdentifierTypeLink.type == identity_type)
             if resource_id is not None:
@@ -277,22 +297,22 @@ class AccessPolicyCRUD:
             if resource_type is not None:
                 query = query.join(
                     IdentifierTypeLink,
-                    IdentifierTypeLink.id == access_request.resource_id,
+                    IdentifierTypeLink.id == AccessPolicy.resource_id,
                 ).where(IdentifierTypeLink.type == resource_type)
             if action is not None:
                 query = query.where(AccessPolicy.action == action)
             if public is True:
                 query = query.where(AccessPolicy.public)
 
-            # print("=== AccessPolicyCRUD.read - query ===")
-            # print(query.compile())
-            # print(query.compile().params)
+            print("=== AccessPolicyCRUD.read - query ===")
+            print(query.compile())
+            print(query.compile().params)
 
             response = await self.session.exec(query)
             results = response.all()
 
-            # print("=== AccessPolicyCRUD.read - results ===")
-            # pprint(results)
+            print("=== AccessPolicyCRUD.read - results ===")
+            pprint(results)
 
             if not results:
                 raise HTTPException(status_code=404, detail="Access policy not found.")
@@ -322,6 +342,10 @@ class AccessPolicyCRUD:
     ) -> List[AccessPolicyRead]:
         """Returns all access policies by resource type."""
         try:
+            print(
+                "=== AccessPolicyCRUD.read_access_policies_by_resource_type - current_user ==="
+            )
+            print(current_user)
             access_policies = await self.read(current_user, resource_type=resource_type)
             return access_policies
         except Exception as err:
