@@ -359,14 +359,11 @@ class AccessPolicyCRUD:
     ) -> List[AccessPolicyRead]:
         """Returns a User with linked Groups from the database."""
         try:
-            filters = [
-                AccessPolicy.identity_id == identity_id,
-            ]
-            access_policies = await self.read(current_user, filters=filters)
+            access_policies = await self.read(current_user, identity_id=identity_id)
             return access_policies
         except Exception as err:
             logging.error(err)
-            raise HTTPException(status_code=404, detail="AccessPolicies not found.")
+            raise HTTPException(status_code=404, detail="Access policies not found.")
 
     async def delete(
         self,
