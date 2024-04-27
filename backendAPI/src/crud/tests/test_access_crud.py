@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timedelta
 from pprint import pprint
 
-from core.types import Action
+from core.types import Action, CurrentUserData
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from models.protected_resource import ProtectedResource
 from models.access import (
@@ -175,35 +175,6 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
 # TBD: implement tests for filters_allowed and allowed methods - or leave this to the read / delete?
 
 
-# @pytest.mark.anyio
-# async def test_admin_read_access_policy_by_resource_id(
-#     add_many_test_access_policies, register_current_user
-# ):
-#     """Test admin reading an access policy by id."""
-#     policies = add_many_test_access_policies
-#     async with AccessPolicyCRUD() as policy_crud:
-#         read_policy = await policy_crud.read(
-#             resource_id=policies[2].resource_id,
-#             current_user=register_current_user(current_user_data_admin),
-#         )
-
-#     print("=== current_user_data_user1 ===")
-#     pprint(current_user_data_user1)
-
-#     print("=== current_user_data_user2 ===")
-#     pprint(current_user_data_user2)
-
-#     print("=== current_user_data_user3 ===")
-#     pprint(current_user_data_user3)
-
-#     print("=== read_policy ===")
-#     pprint(read_policy)
-
-#     assert read_policy[0].identity_id == policies[2].identity_id
-#     assert read_policy[0].resource_id == policies[2].resource_id
-#     assert read_policy[0].action == policies[2].action
-
-
 @pytest.mark.anyio
 async def test_admin_read_access_policy_by_resource(
     register_many_current_users,
@@ -278,26 +249,7 @@ async def test_read_access_policy_by_id_without_permission(
         pytest.fail("No HTTPexception raised!")
 
 
-# @pytest.mark.anyio
-# async def test_user_read_access_policy_by_id_no_access(
-#     add_many_test_access_policies,
-# ):
-#     """Test user reading an access policy by id."""
-#     policies = add_many_test_access_policies
-#     current_user2 = CurrentUserData(**current_user_data_user2)
-
-#     async with AccessPolicyCRUD() as policy_crud:
-#         try:
-#             # results = await policy_crud.read_by_id(1234)
-#             await policy_crud.read(policy_id=policies[1].id, current_user=current_user2)
-#         except Exception as err:
-#             assert err.status_code == 404
-#             assert err.detail == "Access policy not found."
-
-
 # TBD: implement tests for filters_allowed logic:
-# - user reads policies for an owned resource
-# - user reads policies for a resource, where user only has write access or read access or no access - fails
 # - public resource
 
 
@@ -377,7 +329,6 @@ async def test_read_access_policy_for_nonexisting_identity(
             pytest.fail("No HTTPexception raised!")
 
 
-# TBD: replace with a CRUD, that queries the type from the IdentifierTypeLink table
 @pytest.mark.anyio
 async def test_read_access_policy_by_resource_missing_resource_type(
     register_many_protected_resources,
@@ -479,7 +430,6 @@ async def test_read_access_policy_by_identity_and_resource_and_action(
     assert read_policy[0].action == policies[2].action
 
 
-# TBD: add tests for missing own policies
 @pytest.mark.anyio
 async def test_admin_deletes_access_policy(
     register_many_protected_resources,
@@ -508,7 +458,12 @@ async def test_admin_deletes_access_policy(
 
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            await policy_crud.read(resource_id=policies[2].resource_id)
+            await policy_crud.read(
+                resource_id=policies[2].resource_id,
+                identity_id=policies[2].identity_id,
+                action=policies[2].action,
+                current_user=current_admin_user,
+            )
         except Exception as err:
             assert err.status_code == 404
             assert err.detail == "Access policy not found."
@@ -521,6 +476,103 @@ async def test_admin_deletes_access_policy(
         )
 
     assert len(all_policies_after_deletion) == len(policies) - 1
+
+
+@pytest.mark.anyio
+async def test_user_deletes_access_policy_with_owner_rights(
+    register_many_protected_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
+):
+    """Test deleting an access policy."""
+    register_many_protected_resources
+    current_admin_user = register_many_current_users[0]
+    policies = add_many_test_access_policies
+    # TBD: this should only be possible for admin or owner
+
+    async with AccessPolicyCRUD() as policy_crud:
+        all_policies_before_deletion = await policy_crud.read(
+            current_user=current_admin_user
+        )
+
+    assert len(all_policies_before_deletion) == len(policies)
+
+    delete_policy = policies[2]  # write access for user3 to resource2
+    async with AccessPolicyCRUD() as policy_crud:
+        await policy_crud.delete(
+            access_policy=delete_policy,
+            current_user=CurrentUserData(
+                **current_user_data_user1
+            ),  # policy2 gives user1 own access to resource2
+        )
+
+    async with AccessPolicyCRUD() as policy_crud:
+        try:
+            await policy_crud.read(
+                resource_id=policies[2].resource_id,
+                identity_id=policies[2].identity_id,
+                action=policies[2].action,
+                current_user=current_admin_user,
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Access policy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+    async with AccessPolicyCRUD() as policy_crud:
+        all_policies_after_deletion = await policy_crud.read(
+            current_user=current_admin_user
+        )
+
+    assert len(all_policies_after_deletion) == len(policies) - 1
+
+
+@pytest.mark.anyio
+async def test_user_deletes_access_policy_without_owner_rights(
+    register_many_protected_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
+):
+    """Test deleting an access policy."""
+    register_many_protected_resources
+    current_admin_user = register_many_current_users[0]
+    policies = add_many_test_access_policies
+    # TBD: this should only be possible for admin or owner
+
+    async with AccessPolicyCRUD() as policy_crud:
+        all_policies_before_deletion = await policy_crud.read(
+            current_user=current_admin_user
+        )
+
+    assert len(all_policies_before_deletion) == len(policies)
+
+    delete_policy = policies[2]  # write access for user3 to resource2
+    async with AccessPolicyCRUD() as policy_crud:
+        await policy_crud.delete(
+            access_policy=delete_policy,
+            current_user=CurrentUserData(
+                **current_user_data_user2
+            ),  # no policy gives user2 own access to resource2
+        )
+
+    # read the specific policy to check if it still exists
+    async with AccessPolicyCRUD() as policy_crud:
+        policy2_still_exists = await policy_crud.read(
+            resource_id=policies[2].resource_id,
+            identity_id=policies[2].identity_id,
+            action=policies[2].action,
+            current_user=current_admin_user,
+        )
+        assert policy2_still_exists[0] == policies[2]
+
+    # read all policies to check if the number of policies is still the same
+    async with AccessPolicyCRUD() as policy_crud:
+        all_policies_after_deletion = await policy_crud.read(
+            current_user=current_admin_user
+        )
+
+    assert len(all_policies_after_deletion) == len(policies)
 
 
 # endregion AccessPolicy CRUD tests

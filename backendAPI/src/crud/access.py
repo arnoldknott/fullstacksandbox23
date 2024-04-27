@@ -98,7 +98,7 @@ class AccessPolicyCRUD:
                 statement = statement.where(AccessPolicy.resource_id == model.id)
             statement = statement.where(AccessPolicy.action.in_(action))
             statement = statement.where(AccessPolicy.public)
-        elif "Admin" in current_user.roles:
+        elif current_user.roles and "Admin" in current_user.roles:
             pass
         else:
             # this is becoming two different functions - one for resources and one for policies
@@ -272,9 +272,6 @@ class AccessPolicyCRUD:
             # feels dangerous to have resource_id and action to be optional
             # but might be the right thing to do!
 
-            print("=== AccessPolicyCRUD.read - resource_id ===")
-            pprint(resource_id)
-
             # access_request = AccessRequest(
             #     resource_id=resource_id,
             #     action=own,
@@ -342,10 +339,6 @@ class AccessPolicyCRUD:
     ) -> List[AccessPolicyRead]:
         """Returns all access policies by resource type."""
         try:
-            print(
-                "=== AccessPolicyCRUD.read_access_policies_by_resource_type - current_user ==="
-            )
-            print(current_user)
             access_policies = await self.read(current_user, resource_type=resource_type)
             return access_policies
         except Exception as err:
@@ -365,6 +358,19 @@ class AccessPolicyCRUD:
             logging.error(err)
             raise HTTPException(status_code=404, detail="Access policies not found.")
 
+    async def read_access_policies_by_identity_type(
+        self,
+        identity_type: IdentityType,
+        current_user: CurrentUserData,
+    ) -> List[AccessPolicyRead]:
+        """Returns all access policies by resource type."""
+        try:
+            access_policies = await self.read(current_user, identity_type=identity_type)
+            return access_policies
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="Access policies not found.")
+
     async def delete(
         self,
         current_user: Optional["CurrentUserData"],
@@ -372,19 +378,9 @@ class AccessPolicyCRUD:
     ) -> None:
         """Deletes an access control policy."""
 
-        # TBD: add some access checks here:
-        # if current_user is Admin: allow all.
-        # otherwise: identity_id must be either current_user.id or a group the current_user is member of.
-        # if no identity id, the resource needs to be public
-        # current_user must have own rights on the resource to delete a policy
-
-        # TBD: leave the access control for delete to the read method here
-        # or make another allows method call here?
-
         # To delete a policy, current user needs to be owner of the resource or Admin!
 
         try:
-            # session = self.session
 
             # if policy_id is not None:
             #     if (
@@ -412,8 +408,6 @@ class AccessPolicyCRUD:
                 access_policy.action,
                 access_policy.public,
             )
-
-            # TBD: make sure to write tests for this - especially that nothing undesired gets deleted!
 
             # # This where is extremely important to only delete the requested policy!
             # TBD: write tests, where one or more of those parameters are None/not provided!

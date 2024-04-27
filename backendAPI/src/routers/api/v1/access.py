@@ -166,6 +166,25 @@ async def get_access_policies_for_identity(
     return access_policies
 
 
+@router.get("/policy/identity/type/{identity_type}", status_code=200)
+async def get_access_policies_by_identity_type(
+    identity_type: IdentityType,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[AccessPolicyRead]:
+    """Returns all access policies for requested resource_type."""
+    logger.info("GET access_policies for resource_type")
+
+    current_user = await access_policy_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with access_policy_view.crud() as crud:
+        access_policies = await crud.read_access_policies_by_identity_type(
+            identity_type, current_user
+        )
+    return access_policies
+
+
 # Nomenclature:
 # ✔︎ implemented
 # X missing tests
@@ -180,7 +199,7 @@ async def get_access_policies_for_identity(
 # ✔︎ read by resource_id - use filter
 # ✔︎ read by resource_type - use filter - join with IdentifierTypeTable
 # ✔︎ read by identity - use filter
-# - read by identity_type - use filter - join with IdentifierTypeTable (can wait)
+# ✔︎ read by identity_type - use filter - join with IdentifierTypeTable (can wait)
 # - change access Action (own, write, read) -> use delete and create
 # - delete (unshare)
 # - hierarchy (inheritance)?
