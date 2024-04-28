@@ -382,9 +382,12 @@ class AccessPolicyCRUD:
         # reuses delete and create methods
 
         try:
-            # TBD: should public be a part of the update?
+            # TBD: should the attribute public be a part of the update?
             # => yes, needs to, because it's a mandatory part of the AccessPolicyCreate,
             # which AccessPolicyUpdate inherits from!
+            # TBD: add business logic: can last owner delete it's owner rights?
+            # => yes, but only if there is another owner left!
+            # TBD: what about downgrading from own to write or read? Permission inheritance?
             old_policy = AccessPolicy(
                 resource_id=access_policy.resource_id,
                 identity_id=access_policy.identity_id,

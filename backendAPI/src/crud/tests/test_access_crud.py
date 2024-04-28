@@ -430,6 +430,9 @@ async def test_read_access_policy_by_identity_and_resource_and_action(
     assert read_policy[0].action == policies[2].action
 
 
+# TBD: implement tests for change method
+
+
 @pytest.mark.anyio
 async def test_admin_deletes_access_policy(
     register_many_protected_resources,

@@ -277,6 +277,58 @@ async def test_admin_get_access_policies_for_resource(
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
+        token_admin_read_write,
+        token_admin_read,
+    ],
+    indirect=True,
+)
+async def test_admin_get_access_policies_with_string_resource_id(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_policies,
+):
+    """Tests GET access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
+    add_many_test_access_policies
+
+    response = await async_client.get("/api/v1/access/policy/resource/wrong-format")
+    payload = response.json()
+
+    assert response.status_code == 422
+    assert "Input should be a valid UUID" in payload["detail"][0]["msg"]
+    assert payload["detail"][0]["type"] == "uuid_parsing"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        token_admin_read_write,
+        token_admin_read,
+    ],
+    indirect=True,
+)
+async def test_admin_get_access_policies_with_integer_resource_id(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_policies,
+):
+    """Tests GET access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
+    add_many_test_access_policies
+
+    response = await async_client.get("/api/v1/access/policy/resource/45392874598")
+    payload = response.json()
+
+    assert response.status_code == 422
+    assert "Input should be a valid UUID" in payload["detail"][0]["msg"]
+    assert payload["detail"][0]["type"] == "uuid_parsing"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
         token_user1_read,
         token_user2_read,
     ],
@@ -831,8 +883,11 @@ async def test_user_get_access_policies_for_non_existing_resource_type(
     app_override_get_azure_payload_dependency
 
     response = await async_client.get("/api/v1/access/policy/resource/type/blablabla")
+    payload = response.json()
 
     assert response.status_code == 422
+    assert "Input should be" in payload["detail"][0]["msg"]
+    assert payload["detail"][0]["type"] == "enum"
 
 
 @pytest.mark.anyio
@@ -1493,11 +1548,20 @@ async def test_user_get_access_policies_for_non_existing_identity_type(
     app_override_get_azure_payload_dependency
 
     response = await async_client.get("/api/v1/access/policy/identity/type/blablabla")
+    payload = response.json()
 
     assert response.status_code == 422
+    assert "Input should be" in payload["detail"][0]["msg"]
+    assert payload["detail"][0]["type"] == "enum"
 
 
 # endregion: ## GET tests
+
+# region: ## PUT tests:
+
+# TBD: implement put tests
+
+# endregion: ## PUT tests
 
 # region: ## DELETE tests:
 
