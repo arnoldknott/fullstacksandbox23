@@ -267,38 +267,6 @@ many_resource_ids = [
 many_entity_ids = many_resource_ids + many_identity_ids + many_azure_group_ids
 
 
-# Note: it's not the azure_user_id that get's stored in the database, but the user_id!
-one_test_policy_read = {
-    "identity_id": user_id_user1,
-    "resource_id": resource_id1,
-    "action": "read",
-}
-
-one_test_policy_write = {
-    "identity_id": user_id_user1,
-    "resource_id": resource_id1,
-    "action": "write",
-}
-
-one_test_policy_own = {
-    "identity_id": user_id_user1,
-    "resource_id": resource_id1,
-    "action": "own",
-}
-
-# same as one_test_policy_own, but with different identity_id
-one_test_policy_share = {
-    "identity_id": user_id_user3,
-    "resource_id": resource_id1,
-    "action": "own",
-}
-
-one_test_policy_public_read = {
-    "resource_id": resource_id1,
-    "action": "read",
-    "public": True,
-}
-
 many_entity_type_links = [
     {
         "id": resource_id1,
@@ -369,6 +337,38 @@ many_entity_type_links = [
         "type": "AzureGroup",
     },
 ]
+
+# Note: it's not the azure_user_id that get's stored in the database, but the user_id!
+one_test_policy_read = {
+    "identity_id": user_id_user1,
+    "resource_id": resource_id1,
+    "action": "read",
+}
+
+one_test_policy_write = {
+    "identity_id": user_id_user1,
+    "resource_id": resource_id1,
+    "action": "write",
+}
+
+one_test_policy_own = {
+    "identity_id": user_id_user1,
+    "resource_id": resource_id1,
+    "action": "own",
+}
+
+# same as one_test_policy_own, but with different identity_id
+one_test_policy_share = {
+    "identity_id": user_id_user3,
+    "resource_id": resource_id1,
+    "action": "own",
+}
+
+one_test_policy_public_read = {
+    "resource_id": resource_id1,
+    "action": "read",
+    "public": True,
+}
 
 many_test_policies = [
     {

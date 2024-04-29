@@ -408,6 +408,8 @@ class BaseCRUD(
             # print("=== CRUD - base - delete - object ===")
             # pprint(object)
 
+            # TBD: deleting a resource also needs to delete the according access policies!
+
             await self.session.delete(object)
             self._add_log_to_session(object_id, own, current_user, 200)
             await self.session.commit()

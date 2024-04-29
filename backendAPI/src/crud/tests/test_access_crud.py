@@ -9,6 +9,7 @@ from models.protected_resource import ProtectedResource
 from models.access import (
     AccessPolicyCreate,
     AccessPolicy,
+    AccessPolicyUpdate,
     AccessLogCreate,
 )
 
@@ -434,6 +435,145 @@ async def test_read_access_policy_by_identity_and_resource_and_action(
 
 
 @pytest.mark.anyio
+async def test_admin_changes_access_policy_from_write_to_own(
+    register_many_protected_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
+):
+    """Test updating an access policy."""
+    register_many_protected_resources
+    current_admin_user = register_many_current_users[0]
+    policies = add_many_test_access_policies
+    update_policy = AccessPolicyUpdate(
+        **policies[2].model_dump(), new_action=Action.own
+    )
+    async with AccessPolicyCRUD() as policy_crud:
+        updated_policy = await policy_crud.change(
+            access_policy=update_policy,
+            current_user=current_admin_user,
+        )
+
+    assert int(updated_policy.id)
+    assert int(updated_policy.id) != policies[2].id
+    assert updated_policy.identity_id == policies[2].identity_id
+    assert updated_policy.resource_id == policies[2].resource_id
+    assert updated_policy.action == Action.own
+
+    async with AccessPolicyCRUD() as policy_crud:
+        try:
+            await policy_crud.read(
+                identity_id=policies[2].identity_id,
+                resource_id=policies[2].resource_id,
+                action=Action.write,
+                current_user=current_admin_user,
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Access policy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+    async with AccessPolicyCRUD() as policy_crud:
+        read_policy = await policy_crud.read(
+            identity_id=policies[2].identity_id,
+            resource_id=policies[2].resource_id,
+            action=Action.own,
+            current_user=current_admin_user,
+        )
+
+    assert updated_policy == read_policy[0]
+
+
+@pytest.mark.anyio
+async def test_owner_user_changes_access_policy_from_write_to_own(
+    register_many_protected_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
+):
+    """Test updating an access policy."""
+    register_many_protected_resources
+    current_admin_user = register_many_current_users[0]
+    policies = add_many_test_access_policies
+    update_policy = AccessPolicyUpdate(
+        **policies[2].model_dump(), new_action=Action.own
+    )
+    async with AccessPolicyCRUD() as policy_crud:
+        updated_policy = await policy_crud.change(
+            access_policy=update_policy,
+            current_user=CurrentUserData(**current_user_data_user1),
+        )
+
+    assert int(updated_policy.id)
+    assert int(updated_policy.id) != policies[2].id
+    assert updated_policy.identity_id == policies[2].identity_id
+    assert updated_policy.resource_id == policies[2].resource_id
+    assert updated_policy.action == Action.own
+
+    async with AccessPolicyCRUD() as policy_crud:
+        try:
+            await policy_crud.read(
+                identity_id=policies[2].identity_id,
+                resource_id=policies[2].resource_id,
+                action=Action.write,
+                current_user=current_admin_user,
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Access policy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+    async with AccessPolicyCRUD() as policy_crud:
+        read_policy = await policy_crud.read(
+            identity_id=policies[2].identity_id,
+            resource_id=policies[2].resource_id,
+            action=Action.own,
+            current_user=current_admin_user,
+        )
+
+    assert updated_policy == read_policy[0]
+
+
+@pytest.mark.anyio
+async def test_non_owner_user_tries_to_change_access_policy_from_write_to_own(
+    register_many_protected_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
+):
+    """Test updating an access policy."""
+    register_many_protected_resources
+    current_admin_user = register_many_current_users[0]
+    policies = add_many_test_access_policies
+    update_policy = AccessPolicyUpdate(
+        **policies[2].model_dump(), new_action=Action.own
+    )
+    async with AccessPolicyCRUD() as policy_crud:
+        try:
+            await policy_crud.change(
+                access_policy=update_policy,
+                current_user=CurrentUserData(**current_user_data_user2),
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Access policy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+    async with AccessPolicyCRUD() as policy_crud:
+        old_policy_still_in_place = await policy_crud.read(
+            identity_id=policies[2].identity_id,
+            resource_id=policies[2].resource_id,
+            action=Action.write,
+            current_user=current_admin_user,
+        )
+
+    assert int(old_policy_still_in_place[0].id) == int(policies[2].id)
+    assert old_policy_still_in_place[0].identity_id == policies[2].identity_id
+    assert old_policy_still_in_place[0].resource_id == policies[2].resource_id
+    assert old_policy_still_in_place[0].action == policies[2].action
+
+
+@pytest.mark.anyio
 async def test_admin_deletes_access_policy(
     register_many_protected_resources,
     register_many_current_users,
@@ -552,12 +692,18 @@ async def test_user_deletes_access_policy_without_owner_rights(
 
     delete_policy = policies[2]  # write access for user3 to resource2
     async with AccessPolicyCRUD() as policy_crud:
-        await policy_crud.delete(
-            access_policy=delete_policy,
-            current_user=CurrentUserData(
-                **current_user_data_user2
-            ),  # no policy gives user2 own access to resource2
-        )
+        try:
+            await policy_crud.delete(
+                access_policy=delete_policy,
+                current_user=CurrentUserData(
+                    **current_user_data_user2
+                ),  # no policy gives user2 own access to resource2
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Access policy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
 
     # read the specific policy to check if it still exists
     async with AccessPolicyCRUD() as policy_crud:

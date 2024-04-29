@@ -386,7 +386,7 @@ class AccessPolicyCRUD:
             # => yes, needs to, because it's a mandatory part of the AccessPolicyCreate,
             # which AccessPolicyUpdate inherits from!
             # TBD: add business logic: can last owner delete it's owner rights?
-            # => yes, but only if there is another owner left!
+            # => yes, but only if there is another owner left - should be handled in delete!
             # TBD: what about downgrading from own to write or read? Permission inheritance?
             old_policy = AccessPolicy(
                 resource_id=access_policy.resource_id,
@@ -405,7 +405,7 @@ class AccessPolicyCRUD:
 
         except Exception as e:
             logger.error(f"Error in updating policy: {e}")
-            raise HTTPException(status_code=404, detail="Access policy not found")
+            raise HTTPException(status_code=404, detail="Access policy not found.")
 
     async def delete(
         self,
@@ -437,11 +437,20 @@ class AccessPolicyCRUD:
             if public is not None:
                 statement.where(AccessPolicy.public == public)
 
-            await self.session.exec(statement)
+            # TBD: at least one owner needs to be left!
+
+            response = await self.session.exec(statement)
+            # print("=== AccessPolicyCRUD.delete - response ===")
+            # pprint(response.rowcount)
             await self.session.commit()
+            # results = response.all()
+            # print("=== AccessPolicyCRUD.delete - results ===")
+            # pprint(results)
+            if response.rowcount == 0:
+                raise HTTPException(status_code=404, detail="Access policy not found.")
         except Exception as e:
             logger.error(f"Error in deleting policy: {e}")
-            raise HTTPException(status_code=404, detail="Access policy not found")
+            raise HTTPException(status_code=404, detail="Access policy not found.")
 
 
 class AccessLoggingCRUD:
