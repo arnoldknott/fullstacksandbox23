@@ -7,7 +7,7 @@ from pprint import pprint
 
 from core.types import Action, ResourceType, IdentityType, CurrentUserData
 from models.identity import AzureGroup, User
-from models.access import AccessPolicy, AccessPolicyUpdate
+from models.access import AccessPolicy, AccessPolicyRead
 from models.demo_resource import DemoResource
 from models.protected_resource import ProtectedResource
 from crud.access import AccessPolicyCRUD
@@ -1739,20 +1739,12 @@ async def test_admin_deletes_access_policy(
 
     policies_in_database = add_many_test_access_policies
 
-    for policy in policies_in_database:
-        print("=== policy in database ===")
-        pprint(policy)
-
     assert len(policies_in_database) == 10
 
     # should delete policies 0 and 4
     response = await async_client.delete(
         f"/api/v1/access/policy?resource_id={resource_id1}&identity_id={user_id_user2}"
     )
-    payload = response.json()
-
-    print("=== payload ===")
-    pprint(payload)
 
     assert response.status_code == 200
 
@@ -1761,6 +1753,31 @@ async def test_admin_deletes_access_policy(
 
     assert len(read_payload) == 9
     # 2 deleted, but 1 created, when accessing the endpoint
+
+    assert AccessPolicyRead(**read_payload[0]) == AccessPolicyRead(
+        **policies_in_database[1].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[1]) == AccessPolicyRead(
+        **policies_in_database[2].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[2]) == AccessPolicyRead(
+        **policies_in_database[3].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[3]) == AccessPolicyRead(
+        **policies_in_database[5].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[4]) == AccessPolicyRead(
+        **policies_in_database[6].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[5]) == AccessPolicyRead(
+        **policies_in_database[7].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[6]) == AccessPolicyRead(
+        **policies_in_database[8].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[7]) == AccessPolicyRead(
+        **policies_in_database[9].model_dump()
+    )
 
 
 # TBD: implement delete tests
