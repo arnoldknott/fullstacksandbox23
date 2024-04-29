@@ -1722,6 +1722,37 @@ async def test_user_without_owner_rights_puts_access_policy(
 
 # region: ## DELETE tests:
 
+
+# @pytest.mark.anyio
+# @pytest.mark.parametrize(
+#     "mocked_get_azure_token_payload",
+#     [token_admin_read_write],
+#     indirect=True,
+# )
+# async def test_admin_deletes_access_policy(
+#     async_client: AsyncClient,
+#     app_override_get_azure_payload_dependency: FastAPI,
+#     add_many_test_access_policies,
+# ):
+#     """Tests GET access policies, i.e. share."""
+#     app_override_get_azure_payload_dependency
+
+#     policies_in_database = add_many_test_access_policies
+
+#     response = await async_client.put("/api/v1/access/policy", json=update_policy)
+#     payload = response.json()
+
+#     assert response.status_code == 200
+
+#     assert payload["id"] != policies_in_database[2].id
+#     assert payload["resource_id"] == update_policy["resource_id"]
+#     assert payload["resource_id"] == many_test_policies[2]["resource_id"]
+#     assert payload["identity_id"] == update_policy["identity_id"]
+#     assert payload["identity_id"] == many_test_policies[2]["identity_id"]
+#     assert payload["action"] == update_policy["new_action"]
+#     assert payload["action"] != many_test_policies[2]["action"]
+
+
 # TBD: implement delete tests
 
 # endregion: ## DELETE tests

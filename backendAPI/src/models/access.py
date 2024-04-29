@@ -97,8 +97,6 @@ class AccessPolicyCreate(SQLModel):
     @model_validator(mode="after")
     def either_identity_assignment_or_public(self):
         """Validates either identity is assigned or resource is public"""
-        # TBD: refactor: only when Action is read, then public is allowed and no identity is allowed? => No, not really
-        # TBD: refactor: when Action is anything else, then public is not allowed and identity is required? => No, not really
         if self.public is True:
             if self.identity_id is not None:
                 raise ValueError("No identity can be assigned to a public resource.")
@@ -133,6 +131,31 @@ class AccessPolicyRead(AccessPolicyCreate):
     """Read model for access policies"""
 
     id: int
+
+
+class AccessPolicyDelete(AccessPolicyCreate):
+    """Delete model for access policies"""
+
+    identity_id: Optional[uuid.UUID] = None
+    resource_id: Optional[uuid.UUID] = None
+    action: Optional[Action] = None
+    public: Optional[bool] = None
+
+    @model_validator(mode="after")
+    def if_public_resource_id_required(self):
+        """Validates either identity is assigned or resource is public"""
+        if self.public is True and self.resource_id is None:
+            raise ValueError("Only one public resource can be deleted at a time.")
+        return self
+
+    @model_validator(mode="after")
+    def either_resource_id_or_identity_id_required(self):
+        """Validates either identity is assigned or resource is public"""
+        if self.resource_id is None and self.identity_id is None:
+            raise ValueError(
+                "Either resource_id or identity_id required when deleting policies."
+            )
+        return self
 
 
 class AccessRequest(BaseModel):

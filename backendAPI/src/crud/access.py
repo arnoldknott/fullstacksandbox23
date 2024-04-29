@@ -18,6 +18,7 @@ from models.access import (
     AccessPolicy,
     AccessPolicyRead,
     AccessPolicyUpdate,
+    AccessPolicyDelete,
     AccessRequest,
     IdentifierTypeLink,
     AccessLogCreate,
@@ -409,10 +410,15 @@ class AccessPolicyCRUD:
             logger.error(f"Error in updating policy: {e}")
             raise HTTPException(status_code=404, detail="Access policy not found.")
 
+    # TBD: enable delete all policies for a resource / for an identity
     async def delete(
         self,
         current_user: Optional["CurrentUserData"],
-        access_policy: AccessPolicy,
+        access_policy: AccessPolicyDelete,
+        # resource_id: Optional[UUID] = None,
+        # identity_id: Optional[UUID] = None,
+        # action: Optional[Action] = None,
+        # public: Optional[bool] = None,
     ) -> None:
         """Deletes an access control policy."""
 
@@ -436,6 +442,9 @@ class AccessPolicyCRUD:
                 statement = statement.where(AccessPolicy.identity_id == identity_id)
             if action:
                 statement = statement.where(AccessPolicy.action == action)
+            # TBD: check here if identity_id is not None and public is not None: either one needs to be left!
+            # or create a AccessPolicyDelete model, that has all fields optional,
+            # but uses the same validation as AccessPolicyCreate
             if public is not None:
                 statement.where(AccessPolicy.public == public)
 

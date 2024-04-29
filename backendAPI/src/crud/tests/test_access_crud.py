@@ -631,7 +631,7 @@ async def test_user_deletes_access_policy_with_owner_rights(
     register_many_protected_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
-    # TBD: this should only be possible for admin or owner
+    # this should only be possible for admin or owner
 
     async with AccessPolicyCRUD() as policy_crud:
         all_policies_before_deletion = await policy_crud.read(
@@ -681,7 +681,6 @@ async def test_user_deletes_access_policy_without_owner_rights(
     register_many_protected_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
-    # TBD: this should only be possible for admin or owner
 
     async with AccessPolicyCRUD() as policy_crud:
         all_policies_before_deletion = await policy_crud.read(
@@ -723,6 +722,12 @@ async def test_user_deletes_access_policy_without_owner_rights(
 
     assert len(all_policies_after_deletion) == len(policies)
 
+
+# TBD: write tests for deleting all access policies for
+# - a resource
+# - an identity
+# - a public resource specified by resource_id
+# - all public resources fails
 
 # endregion AccessPolicy CRUD tests
 

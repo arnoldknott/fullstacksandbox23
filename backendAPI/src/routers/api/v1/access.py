@@ -16,6 +16,7 @@ from models.access import (
     AccessPolicyCreate,
     AccessPolicyUpdate,
     AccessPolicyRead,
+    AccessPolicyDelete,
 )
 from crud.access import AccessPolicyCRUD
 
@@ -144,10 +145,10 @@ async def put_access_policy(
 # TBD: write tests for this
 @router.delete("/policy", status_code=200)
 async def delete_access_policy(
-    access_policy: AccessPolicy,
+    access_policy: AccessPolicyDelete,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> AccessPolicy:
+) -> None:
     """Deletes an access policy."""
     logger.info("DELETE access policy")
     current_user = await access_policy_view._check_token_against_guards(
