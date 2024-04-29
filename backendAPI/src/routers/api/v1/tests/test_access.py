@@ -7,7 +7,7 @@ from pprint import pprint
 
 from core.types import Action, ResourceType, IdentityType, CurrentUserData
 from models.identity import AzureGroup, User
-from models.access import AccessPolicy
+from models.access import AccessPolicy, AccessPolicyUpdate
 from models.demo_resource import DemoResource
 from models.protected_resource import ProtectedResource
 from crud.access import AccessPolicyCRUD
@@ -1559,7 +1559,164 @@ async def test_user_get_access_policies_for_non_existing_identity_type(
 
 # region: ## PUT tests:
 
-# TBD: implement put tests
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_puts_access_policy(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_policies,
+):
+    """Tests GET access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
+
+    policies_in_database = add_many_test_access_policies
+
+    update_policy = {
+        **many_test_policies[2],
+        "new_action": Action.own,
+    }
+
+    response = await async_client.put("/api/v1/access/policy", json=update_policy)
+    payload = response.json()
+
+    assert response.status_code == 200
+
+    assert payload["id"] != policies_in_database[2].id
+    assert payload["resource_id"] == update_policy["resource_id"]
+    assert payload["resource_id"] == many_test_policies[2]["resource_id"]
+    assert payload["identity_id"] == update_policy["identity_id"]
+    assert payload["identity_id"] == many_test_policies[2]["identity_id"]
+    assert payload["action"] == update_policy["new_action"]
+    assert payload["action"] != many_test_policies[2]["action"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_with_owner_rights_puts_access_policy(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_get_azure_token_payload,
+    add_test_access_policy,
+):
+    """Tests GET access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
+
+    policies_in_database = add_many_test_access_policies
+
+    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    # Give current user owner rights for the tested resource
+    await add_test_access_policy(
+        {
+            "resource_id": many_test_policies[2]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        }
+    )
+
+    update_policy = {
+        **many_test_policies[2],
+        "new_action": Action.own,
+    }
+
+    response = await async_client.put("/api/v1/access/policy", json=update_policy)
+    payload = response.json()
+
+    assert response.status_code == 200
+
+    assert payload["id"] != policies_in_database[2].id
+    assert payload["resource_id"] == update_policy["resource_id"]
+    assert payload["resource_id"] == many_test_policies[2]["resource_id"]
+    assert payload["identity_id"] == update_policy["identity_id"]
+    assert payload["identity_id"] == many_test_policies[2]["identity_id"]
+    assert payload["action"] == update_policy["new_action"]
+    assert payload["action"] != many_test_policies[2]["action"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_with_owner_rights_puts_wrong_access_policy(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_get_azure_token_payload,
+    add_test_access_policy,
+):
+    """Tests GET access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
+
+    policies_in_database = add_many_test_access_policies
+
+    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    # Give current user owner rights for the tested resource
+    await add_test_access_policy(
+        {
+            "resource_id": many_test_policies[2]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        }
+    )
+
+    update_policy = {
+        **many_test_policies[2],
+        "action": Action.own,  # should be "new_action" instead of "action"
+    }
+
+    response = await async_client.put("/api/v1/access/policy", json=update_policy)
+    payload = response.json()
+
+    print(payload)
+
+    assert response.status_code == 422
+    assert "Field required" in payload["detail"][0]["msg"]
+    assert "missing" in payload["detail"][0]["type"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_without_owner_rights_puts_access_policy(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_policies,
+):
+    """Tests GET access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
+
+    add_many_test_access_policies
+
+    update_policy = {
+        **many_test_policies[2],
+        "new_action": Action.own,
+    }
+
+    response = await async_client.put("/api/v1/access/policy", json=update_policy)
+    payload = response.json()
+
+    assert response.status_code == 404
+
+    assert payload == {"detail": "Access policy not found."}
+
 
 # endregion: ## PUT tests
 

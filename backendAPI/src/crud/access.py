@@ -401,6 +401,8 @@ class AccessPolicyCRUD:
                 action=access_policy.new_action,
                 public=access_policy.public,
             )
+            print("=== AccessPolicyCRUD.change - new_policy ===")
+            pprint(new_policy)
             return await self.create(new_policy, current_user)
 
         except Exception as e:

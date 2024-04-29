@@ -128,14 +128,17 @@ async def put_access_policy(
     access_policy: AccessPolicyUpdate,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> AccessPolicy:
+) -> AccessPolicyRead:
     """Deletes an old access policy and creates a new instead."""
     logger.info("PUT access policy")
     current_user = await access_policy_view._check_token_against_guards(
         token_payload, guards
     )
     async with access_policy_view.crud() as crud:
-        return await crud.change(access_policy, current_user)
+        new_policy_in_database = await crud.change(access_policy, current_user)
+        print("=== new_policy_in_database ===")
+        print(new_policy_in_database)
+        return new_policy_in_database
 
 
 # TBD: write tests for this
@@ -169,7 +172,7 @@ async def delete_access_policy(
 # ✔︎ read by resource_type - use filter - join with IdentifierTypeTable
 # ✔︎ read by identity - use filter
 # ✔︎ read by identity_type - use filter - join with IdentifierTypeTable (can wait)
-# X change access Action (own, write, read) -> use delete first and then create; but update model can be used: derive from Create and add new action!
+# ✔︎ change access Action (own, write, read) -> use delete first and then create; but update model can be used: derive from Create and add new action!
 # X delete (unshare)
 # - hierarchy (inheritance)?
 
