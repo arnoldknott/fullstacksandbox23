@@ -1,8 +1,9 @@
 import logging
 
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException
-from core.types import ResourceType, IdentityType
+from typing import Annotated, Optional
+from fastapi import APIRouter, Depends, Query
+from core.types import ResourceType, IdentityType, Action
 from .base import BaseView
 from core.security import (
     get_access_token_payload,
@@ -60,7 +61,7 @@ async def get_access_policies_for_resource(
     )
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_by_resource_id(
-            resource_id, current_user
+            current_user, resource_id
         )
     return access_policies
 
@@ -79,7 +80,7 @@ async def get_access_policies_by_resource_type(
     )
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_by_resource_type(
-            resource_type, current_user
+            current_user, resource_type
         )
     return access_policies
 
@@ -99,7 +100,7 @@ async def get_access_policies_for_identity(
     )
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_for_identity(
-            identity_id, current_user
+            current_user, identity_id
         )
     return access_policies
 
@@ -118,12 +119,11 @@ async def get_access_policies_by_identity_type(
     )
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_by_identity_type(
-            identity_type, current_user
+            current_user, identity_type
         )
     return access_policies
 
 
-# TBD: write tests for this
 @router.put("/policy", status_code=200)
 async def put_access_policy(
     access_policy: AccessPolicyUpdate,
@@ -136,7 +136,7 @@ async def put_access_policy(
         token_payload, guards
     )
     async with access_policy_view.crud() as crud:
-        new_policy_in_database = await crud.change(access_policy, current_user)
+        new_policy_in_database = await crud.change(current_user, access_policy)
         print("=== new_policy_in_database ===")
         print(new_policy_in_database)
         return new_policy_in_database
@@ -145,7 +145,11 @@ async def put_access_policy(
 # TBD: write tests for this
 @router.delete("/policy", status_code=200)
 async def delete_access_policy(
-    access_policy: AccessPolicyDelete,
+    # access_policy: AccessPolicyDelete,
+    resource_id: Annotated[UUID | None, Query()] = None,
+    identity_id: Annotated[UUID | None, Query()] = None,
+    action: Annotated[Action | None, Query()] = None,
+    public: Annotated[bool | None, Query()] = None,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
@@ -154,8 +158,16 @@ async def delete_access_policy(
     current_user = await access_policy_view._check_token_against_guards(
         token_payload, guards
     )
+    access_policy = AccessPolicyDelete(
+        resource_id=resource_id,
+        identity_id=identity_id,
+        action=action,
+        public=public,
+    )
+    print("=== access_policy ===")
+    print(access_policy)
     async with access_policy_view.crud() as crud:
-        return await crud.delete(access_policy, current_user)
+        return await crud.delete(current_user, access_policy)
 
 
 # Nomenclature:

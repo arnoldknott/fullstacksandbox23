@@ -631,7 +631,7 @@ async def test_user_get_access_policies_for_resource_type(
     access_policy_crud = AccessPolicyCRUD()
     async with access_policy_crud as crud:
         admin_response = await crud.read_access_policies_by_resource_type(
-            ResourceType.demo_resource, CurrentUserData(**current_user_data_admin)
+            CurrentUserData(**current_user_data_admin), ResourceType.demo_resource
         )
         assert len(admin_response) == 6
         assert admin_response[0].resource_id == uuid.UUID(resource_id1)
@@ -742,7 +742,7 @@ async def test_user_get_access_policies_for_resource_type_with_write_rights_only
     access_policy_crud = AccessPolicyCRUD()
     async with access_policy_crud as crud:
         admin_response = await crud.read_access_policies_by_resource_type(
-            ResourceType.demo_resource, CurrentUserData(**current_user_data_admin)
+            CurrentUserData(**current_user_data_admin), ResourceType.demo_resource
         )
         assert len(admin_response) == 6
         assert admin_response[0].resource_id == uuid.UUID(resource_id1)
@@ -847,7 +847,7 @@ async def test_user_get_access_policies_for_resource_type_with_read_rights_only(
     access_policy_crud = AccessPolicyCRUD()
     async with access_policy_crud as crud:
         admin_response = await crud.read_access_policies_by_resource_type(
-            ResourceType.demo_resource, CurrentUserData(**current_user_data_admin)
+            CurrentUserData(**current_user_data_admin), ResourceType.demo_resource
         )
         assert len(admin_response) == 6
         assert admin_response[0].resource_id == uuid.UUID(resource_id1)
@@ -1400,7 +1400,7 @@ async def test_user_get_access_policies_for_identity_type(
     access_policy_crud = AccessPolicyCRUD()
     async with access_policy_crud as crud:
         admin_response = await crud.read_access_policies_by_identity_type(
-            IdentityType.azure_group, CurrentUserData(**current_user_data_admin)
+            CurrentUserData(**current_user_data_admin), IdentityType.azure_group
         )
         assert len(admin_response) == 6
         assert admin_response[0].resource_id == uuid.UUID(azure_group_id1)
@@ -1514,7 +1514,7 @@ async def test_user_get_access_policies_for_identity_type_missing_owner_rights(
     access_policy_crud = AccessPolicyCRUD()
     async with access_policy_crud as crud:
         admin_response = await crud.read_access_policies_by_identity_type(
-            IdentityType.azure_group, CurrentUserData(**current_user_data_admin)
+            CurrentUserData(**current_user_data_admin), IdentityType.azure_group
         )
         assert len(admin_response) == 6
         assert admin_response[0].resource_id == uuid.UUID(azure_group_id1)
@@ -1661,7 +1661,7 @@ async def test_user_with_owner_rights_puts_wrong_access_policy(
     """Tests GET access policies, i.e. share."""
     app_override_get_azure_payload_dependency
 
-    policies_in_database = add_many_test_access_policies
+    add_many_test_access_policies
 
     current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
 
@@ -1723,34 +1723,44 @@ async def test_user_without_owner_rights_puts_access_policy(
 # region: ## DELETE tests:
 
 
-# @pytest.mark.anyio
-# @pytest.mark.parametrize(
-#     "mocked_get_azure_token_payload",
-#     [token_admin_read_write],
-#     indirect=True,
-# )
-# async def test_admin_deletes_access_policy(
-#     async_client: AsyncClient,
-#     app_override_get_azure_payload_dependency: FastAPI,
-#     add_many_test_access_policies,
-# ):
-#     """Tests GET access policies, i.e. share."""
-#     app_override_get_azure_payload_dependency
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_deletes_access_policy(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_policies,
+):
+    """Tests GET access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
 
-#     policies_in_database = add_many_test_access_policies
+    policies_in_database = add_many_test_access_policies
 
-#     response = await async_client.put("/api/v1/access/policy", json=update_policy)
-#     payload = response.json()
+    for policy in policies_in_database:
+        print("=== policy in database ===")
+        pprint(policy)
 
-#     assert response.status_code == 200
+    assert len(policies_in_database) == 10
 
-#     assert payload["id"] != policies_in_database[2].id
-#     assert payload["resource_id"] == update_policy["resource_id"]
-#     assert payload["resource_id"] == many_test_policies[2]["resource_id"]
-#     assert payload["identity_id"] == update_policy["identity_id"]
-#     assert payload["identity_id"] == many_test_policies[2]["identity_id"]
-#     assert payload["action"] == update_policy["new_action"]
-#     assert payload["action"] != many_test_policies[2]["action"]
+    # should delete policies 0 and 4
+    response = await async_client.delete(
+        f"/api/v1/access/policy?resource_id={resource_id1}&identity_id={user_id_user2}"
+    )
+    payload = response.json()
+
+    print("=== payload ===")
+    pprint(payload)
+
+    assert response.status_code == 200
+
+    read_response = await async_client.get("/api/v1/access/policies")
+    read_payload = read_response.json()
+
+    assert len(read_payload) == 9
+    # 2 deleted, but 1 created, when accessing the endpoint
 
 
 # TBD: implement delete tests

@@ -133,7 +133,7 @@ class AccessPolicyRead(AccessPolicyCreate):
     id: int
 
 
-class AccessPolicyDelete(AccessPolicyCreate):
+class AccessPolicyDelete(SQLModel):
     """Delete model for access policies"""
 
     identity_id: Optional[uuid.UUID] = None

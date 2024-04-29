@@ -237,9 +237,9 @@ class AccessPolicyCRUD:
     # other way around: add to parent - in create_as_child
     async def add_child(
         self,
+        current_user: CurrentUserData,
         policy: AccessPolicyCreate,
         parent_resource_id: int,
-        current_user: CurrentUserData,
     ):
         """Adds a child policy to a parent policy."""
         # TBD: make sure, that current_user has owner rights in parent_resource or is Admin
@@ -323,8 +323,8 @@ class AccessPolicyCRUD:
 
     async def read_access_policies_by_resource_id(
         self,
-        resource_id: UUID,
         current_user: CurrentUserData,
+        resource_id: UUID,
     ) -> List[AccessPolicyRead]:
         """Returns all access policies by resource id."""
         try:
@@ -336,8 +336,8 @@ class AccessPolicyCRUD:
 
     async def read_access_policies_by_resource_type(
         self,
-        resource_type: ResourceType,
         current_user: CurrentUserData,
+        resource_type: ResourceType,
     ) -> List[AccessPolicyRead]:
         """Returns all access policies by resource type."""
         try:
@@ -349,8 +349,8 @@ class AccessPolicyCRUD:
 
     async def read_access_policies_for_identity(
         self,
-        identity_id: UUID,
         current_user: CurrentUserData,
+        identity_id: UUID,
     ) -> List[AccessPolicyRead]:
         """Returns a User with linked Groups from the database."""
         try:
@@ -362,8 +362,8 @@ class AccessPolicyCRUD:
 
     async def read_access_policies_by_identity_type(
         self,
-        identity_type: IdentityType,
         current_user: CurrentUserData,
+        identity_type: IdentityType,
     ) -> List[AccessPolicyRead]:
         """Returns all access policies by resource type."""
         try:
@@ -376,8 +376,8 @@ class AccessPolicyCRUD:
     # similar to update - but deletes old and creates a new policy
     async def change(
         self,
-        access_policy: AccessPolicyUpdate,
         current_user: Optional["CurrentUserData"],
+        access_policy: AccessPolicyUpdate,
     ) -> AccessPolicyRead:
         """Updates an access control policy."""
         # reuses delete and create methods
@@ -449,6 +449,10 @@ class AccessPolicyCRUD:
                 statement.where(AccessPolicy.public == public)
 
             # TBD: at least one owner needs to be left!
+
+            print("=== AccessPolicyCRUD.delete - statement ===")
+            print(statement.compile())
+            print(statement.compile().params)
 
             response = await self.session.exec(statement)
             # print("=== AccessPolicyCRUD.delete - response ===")
