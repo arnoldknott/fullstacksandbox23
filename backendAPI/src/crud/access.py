@@ -303,15 +303,15 @@ class AccessPolicyCRUD:
             if public is True:
                 query = query.where(AccessPolicy.public)
 
-            print("=== AccessPolicyCRUD.read - query ===")
-            print(query.compile())
-            print(query.compile().params)
+            # print("=== AccessPolicyCRUD.read - query ===")
+            # print(query.compile())
+            # print(query.compile().params)
 
             response = await self.session.exec(query)
             results = response.all()
 
-            print("=== AccessPolicyCRUD.read - results ===")
-            pprint(results)
+            # print("=== AccessPolicyCRUD.read - results ===")
+            # pprint(results)
 
             if not results:
                 raise HTTPException(status_code=404, detail="Access policy not found.")
@@ -473,6 +473,7 @@ class AccessLoggingCRUD:
 
     def __init__(self):
         self
+        self.policy_crud = AccessPolicyCRUD()
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -492,6 +493,7 @@ class AccessLoggingCRUD:
         access_log = AccessLog.model_validate(access_log)
         # TBD: add access control checks here:
         # request is known from self.current_user, object and method is write here
+        # No - this is logging - no need for access control here!
         try:
             session = self.session
             session.add(access_log)
@@ -502,61 +504,178 @@ class AccessLoggingCRUD:
             logger.error(f"Error in logging: {e}")
             raise HTTPException(status_code=400, detail="Bad request: logging failed")
 
-    # Do we need current_user here?
-    # TBD: create a generic read method and use it here.
-    # TBD implement crud tests for this?
-    async def read_log_by_identity_id(self, identity_id: UUID) -> list[AccessLogRead]:
-        """Reads access logs by identity id."""
-        logger.info("Reading identity access logs from the database.")
+    async def read(
+        self,
+        current_user: Optional["CurrentUserData"] = None,
+        resource_id: Optional[UUID] = None,
+        identity_id: Optional[UUID] = None,
+        action: Optional[Action] = None,
+        ascending_order_by: Optional[str] = None,
+        descending_order_by: Optional[str] = None,
+        limit: Optional[int] = None,
+        status_code: Optional[int] = 200,
+        required_action: Optional[Action] = Action.own,
+    ):
+        """Reads access logs based on the provided parameters."""
         try:
             session = self.session
-            query = select(AccessLog).where(
-                AccessLog.identity_id == identity_id,
+            statement = select(AccessLog)
+            statement = self.policy_crud.filters_allowed(
+                statement, required_action, current_user=current_user
             )
-            response = await session.exec(query)
+            statement = statement.where(AccessLog.status_code == status_code)
+            if resource_id:
+                statement = statement.where(AccessLog.resource_id == resource_id)
+            if identity_id:
+                statement = statement.where(AccessLog.identity_id == identity_id)
+            if action:
+                statement = statement.where(AccessLog.action == action)
+            if ascending_order_by:
+                statement = statement.order_by(ascending_order_by.asc())
+            if descending_order_by:
+                statement = statement.order_by(descending_order_by.desc())
+            if limit:
+                statement = statement.limit(limit)
+
+            print("=== AccessLoggingCRUD.read - statement ===")
+            print(statement.compile())
+            print(statement.compile().params)
+
+            response = await session.exec(statement)
             results = response.all()
+
+            print("=== AccessLoggingCRUD.read - results ===")
+            pprint(results)
+
+            if not results:
+                raise HTTPException(status_code=404, detail="Access logs not found.")
+
             return results
         except Exception as e:
             logger.error(f"Error in reading log: {e}")
-            raise HTTPException(status_code=404, detail="Log not found")
+            raise HTTPException(status_code=404, detail="Access logs not found.")
 
-    # Do we need current_user here?
-    # TBD: create a generic read method and use it here.
-    # TBD: implement more crud tests for this?
-    async def read_log_by_resource_id(
-        self, resource_id: UUID  # ,   resource_type: ResourceType
-    ) -> list[AccessLogRead]:
-        """Reads access logs by resource id and type."""
-        logger.info("Reading resource access logs from the database.")
+    async def read_access_logs_by_resource_id_and_identity_id(
+        self,
+        current_user: CurrentUserData,
+        resource_id: Optional[UUID] = None,
+        identity_id: Optional[UUID] = None,
+    ) -> List[AccessLogRead]:
+        """Returns all access logs by resource id."""
         try:
-            session = self.session
-            query = select(AccessLog).where(
-                AccessLog.resource_id == resource_id,
+            access_logs = await self.read(
+                current_user, resource_id=resource_id, identity_id=identity_id
             )
-            response = await session.exec(query)
-            results = response.all()
-            return results
-        except Exception as e:
-            logger.error(f"Error in reading log: {e}")
-            raise HTTPException(status_code=404, detail="Log not found")
+            return access_logs
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="Access logs not found.")
 
-    # TBD: create a generic read method and use it here.
-    async def read_log_created(self, resource_id: UUID) -> AccessLogRead:
-        """Reads first access log with action "Own" for resource id and type - corresponds to create."""
-        logger.info("Reading create information from access logs in database.")
+    async def read_resource_created_at(
+        self,
+        current_user: CurrentUserData,
+        resource_id: UUID,
+    ):
+        """Reads the first access log with action "Own" for a resource id - corresponds to create."""
         try:
-            session = self.session
-            query = (
-                select(AccessLog)
-                .where(
-                    AccessLog.resource_id == resource_id,
-                )
-                .order_by(AccessLog.time)
-                .limit(1)
+            first_own_entry = self.read(
+                current_user,
+                resource_id,
+                status_code=201,
+                action=Action.own,
+                ascending_order_by="time",
+                limit=1,
             )
-            response = await session.exec(query)
-            result = response.one()
-            return result
-        except Exception as e:
-            logger.error(f"Error in reading log: {e}")
-            raise HTTPException(status_code=404, detail="Log not found")
+            return first_own_entry.time
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="Access logs not found.")
+
+    async def read_last_accessed_at(
+        self,
+        current_user: CurrentUserData,
+        resource_id: UUID,
+    ):
+        """Reads the last access log for a resource id."""
+        try:
+            last_accessed_entry = self.read(
+                current_user, resource_id, descending_order_by="time", limit=1
+            )
+            return last_accessed_entry.time
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="Access logs not found.")
+
+    async def read_access_count(
+        self,
+        current_user: CurrentUserData,
+        resource_id: UUID,
+    ):
+        """Reads the number of access logs for a resource id."""
+        try:
+            access_count = self.read(
+                current_user, resource_id, required_action=Action.read
+            )
+            return len(access_count)
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="Access logs not found.")
+
+    # # Do we need current_user here?
+    # # TBD: create a generic read method and use it here.
+    # # TBD implement crud tests for this?
+    # async def read_log_by_identity_id(self, identity_id: UUID) -> list[AccessLogRead]:
+    #     """Reads access logs by identity id."""
+    #     logger.info("Reading identity access logs from the database.")
+    #     try:
+    #         session = self.session
+    #         query = select(AccessLog).where(
+    #             AccessLog.identity_id == identity_id,
+    #         )
+    #         response = await session.exec(query)
+    #         results = response.all()
+    #         return results
+    #     except Exception as e:
+    #         logger.error(f"Error in reading log: {e}")
+    #         raise HTTPException(status_code=404, detail="Log not found")
+
+    # # Do we need current_user here?
+    # # TBD: create a generic read method and use it here.
+    # # TBD: implement more crud tests for this?
+    # async def read_log_by_resource_id(
+    #     self, resource_id: UUID  # ,   resource_type: ResourceType
+    # ) -> list[AccessLogRead]:
+    #     """Reads access logs by resource id and type."""
+    #     logger.info("Reading resource access logs from the database.")
+    #     try:
+    #         session = self.session
+    #         query = select(AccessLog).where(
+    #             AccessLog.resource_id == resource_id,
+    #         )
+    #         response = await session.exec(query)
+    #         results = response.all()
+    #         return results
+    #     except Exception as e:
+    #         logger.error(f"Error in reading log: {e}")
+    #         raise HTTPException(status_code=404, detail="Log not found")
+
+    # # TBD: create a generic read method and use it here.
+    # async def read_log_created(self, resource_id: UUID) -> AccessLogRead:
+    #     """Reads first access log with action "Own" for resource id and type - corresponds to create."""
+    #     logger.info("Reading create information from access logs in database.")
+    #     try:
+    #         session = self.session
+    #         query = (
+    #             select(AccessLog)
+    #             .where(
+    #                 AccessLog.resource_id == resource_id,
+    #             )
+    #             .order_by(AccessLog.time)
+    #             .limit(1)
+    #         )
+    #         response = await session.exec(query)
+    #         result = response.one()
+    #         return result
+    #     except Exception as e:
+    #         logger.error(f"Error in reading log: {e}")
+    #         raise HTTPException(status_code=404, detail="Log not found")

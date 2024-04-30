@@ -4,10 +4,10 @@ from fastapi import FastAPI
 
 import uuid
 from pprint import pprint
-
+from datetime import datetime, timedelta
 from core.types import Action, ResourceType, IdentityType, CurrentUserData
 from models.identity import AzureGroup, User
-from models.access import AccessPolicy, AccessPolicyRead
+from models.access import AccessPolicy, AccessPolicyRead, AccessLogRead
 from models.demo_resource import DemoResource
 from models.protected_resource import ProtectedResource
 from crud.access import AccessPolicyCRUD
@@ -35,6 +35,7 @@ from tests.utils import (
     current_user_data_admin,
 )
 
+# region ## AccessPolicy tests:
 
 # region: ## POST tests:
 
@@ -1837,6 +1838,79 @@ async def test_admin_tries_to_delete_all_access_policy_wit_owner_rights(
         pytest.fail("No Value error raised!")
 
 
-# TBD: implement delete tests
-
 # endregion: ## DELETE tests
+
+# endregion: ## AccessPolicy tests
+
+# region: ## AccessLog tests
+
+# Note the write log tests are in test_access_crud, as access logs only get written from inside the app.
+
+# region: ## GET tests:
+
+# TBD: write tests for the access log get endpoints
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read],
+    indirect=True,
+)
+async def test_admin_gets_access_logs(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+):
+    """Tests GET access logs."""
+    app_override_get_azure_payload_dependency
+
+    # No logs in the database
+    # other than the ones created when the user logs in
+    # But those have status_code 201!
+    response = await async_client.get("/api/v1/access/logs")
+    payload = response.json()
+
+    assert response.status_code == 404
+
+    assert payload == {"detail": "Access logs not found."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read],
+    indirect=True,
+)
+async def test_admin_gets_created_access_logs(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_user_from_azure_token,
+    mocked_get_azure_token_payload,
+):
+    """Tests GET access logs."""
+    app_override_get_azure_payload_dependency
+
+    # getting the one, that's created due to admin accessing the endpoint
+    before_time = datetime.now()
+    response = await async_client.get("/api/v1/access/logs?status_code=201")
+    after_time = datetime.now()
+    payload = response.json()
+
+    assert response.status_code == 200
+
+    current_admin_user = await current_user_from_azure_token(
+        mocked_get_azure_token_payload
+    )
+    modelled_access_log = AccessLogRead(**payload[0])
+
+    assert modelled_access_log.resource_id == current_admin_user.user_id
+    assert modelled_access_log.identity_id == current_admin_user.user_id
+    assert modelled_access_log.action == Action.own
+    assert modelled_access_log.status_code == 201
+    assert modelled_access_log.time >= before_time - timedelta(seconds=5)
+    assert modelled_access_log.time <= after_time + timedelta(seconds=10)
+
+
+# endregion: ## GET tests
+
+# endregion: ## AccessLog tests

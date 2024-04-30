@@ -1,8 +1,9 @@
 import logging
 
 from uuid import UUID
-from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, Query
+from datetime import datetime
+from typing import Annotated
+from fastapi import APIRouter, Depends, Query, HTTPException
 from core.types import ResourceType, IdentityType, Action
 from .base import BaseView
 from core.security import (
@@ -10,16 +11,16 @@ from core.security import (
     Guards,
     GuardTypes,
 )
-
-# from core.types import GuardTypes
 from models.access import (
     AccessPolicy,
     AccessPolicyCreate,
     AccessPolicyUpdate,
     AccessPolicyRead,
     AccessPolicyDelete,
+    AccessLog,
+    AccessLogRead,
 )
-from crud.access import AccessPolicyCRUD
+from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -143,7 +144,6 @@ async def put_access_policy(
         return new_policy_in_database
 
 
-# TBD: write tests for this
 @router.delete("/policy", status_code=200)
 async def delete_access_policy(
     # access_policy: AccessPolicyDelete,
@@ -165,8 +165,6 @@ async def delete_access_policy(
         action=action,
         public=public,
     )
-    print("=== access_policy ===")
-    print(access_policy)
     async with access_policy_view.crud() as crud:
         return await crud.delete(current_user, access_policy)
 
@@ -191,35 +189,120 @@ async def delete_access_policy(
 # - hierarchy (inheritance)?
 
 
-access_log_view = BaseView(AccessPolicyCRUD, AccessPolicy)
+access_log_view = BaseView(AccessLoggingCRUD, AccessLog)
 
 # Nomenclature:
 # ✔︎ implemented
 # X missing tests
 # - not implemented
 
+
 # TBD: write tests for this
-# @router.get("/log/created/{resource_id}", status_code=200)
-# async def get_creation_information_for_resource(
-#     resource_id: UUID,
-#     token_payload=Depends(get_access_token_payload),
-# ) -> list[AccessLogRead]:
-#     """Returns creation information for a resource."""
-#     return await access_log_view.get_with_query_options(
-#         token_payload,
-#         roles=["user"],
-#         filters=[AccessLog.resource_id == resource_id],
-#         order_by=AccessLog.time,
-#         # TBD: ascending or descending?
-#         limit=1,
-#     )
+
+
+@router.get("/logs", status_code=200)
+async def get_access_logs(
+    resource_id: Annotated[UUID | None, Query()] = None,
+    identity_id: Annotated[UUID | None, Query()] = None,
+    action: Annotated[Action | None, Query()] = None,
+    status_code: Annotated[int | None, Query()] = 200,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+) -> list[AccessLogRead]:
+    """Returns all access logs."""
+    logger.info("GET access logs")
+    current_user = await access_log_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with access_log_view.crud() as crud:
+        return await crud.read(
+            current_user, resource_id, identity_id, action, status_code=status_code
+        )
+
+
+@router.get("/log/{resource_id}", status_code=200)
+async def get_access_logs_for_resource(
+    resource_id: UUID,
+    identity_id: Annotated[UUID | None, Query()] = None,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[AccessLogRead]:
+    """Returns creation information for a resource."""
+    logger.info("GET access log information for resource")
+    current_user = await access_log_view._check_token_against_guards(
+        token_payload, guards
+    )
+    if resource_id is None and identity_id is None:
+        raise HTTPException(
+            status_code=422,
+            detail="At least one of the parameters resource_id or identity_id must be provided.",
+        )
+    async with access_log_view.crud() as crud:
+        return await crud.read_access_logs_by_resource_id_and_identity_id(
+            current_user, resource_id=resource_id, identity_id=identity_id
+        )
+
+
+@router.get("/log/{resource_id}/created", status_code=200)
+async def get_creation_date_for_resource(
+    resource_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> datetime:
+    """Returns creation information for a resource."""
+    logger.info("GET access log information for resource")
+    current_user = await access_log_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with access_log_view.crud() as crud:
+        return await crud.read_created_at(
+            current_user,
+            resource_id=resource_id,
+        )
+
+
+@router.get("/log/{resource_id}/last-accessed", status_code=200)
+async def get_last_accessed_for_resource(
+    resource_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[AccessLogRead]:
+    """Returns creation information for a resource."""
+    logger.info("GET access log information for resource")
+    current_user = await access_log_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with access_log_view.crud() as crud:
+        return await crud.read_last_acceessed_at(
+            current_user,
+            resource_id=resource_id,
+        )
+
+
+@router.get("/log/{resource_id}/count", status_code=200)
+async def get_access_count_for_resource(
+    resource_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> int:
+    """Returns creation information for a resource."""
+    logger.info("GET access log information for resource")
+    current_user = await access_log_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with access_log_view.crud() as crud:
+        return await crud.read_access_count(
+            current_user,
+            resource_id=resource_id,
+        )
 
 
 # AccessLogs:
 # only read operations for log - no create, update, delete!
-# - read (check who accessed what)
-# - read resource first "own": corresponds to create
-# - read resource last access - use order_by
-# - read access count - use func.count
-# - read access by identity - use filter
-# - read access by resource - use filter
+# implement as query parameters, wherever it makes sense?
+# X read (check who accessed what)
+# X read resources first "own" log: corresponds to create
+# X read resource last access - use order_by
+# X read access count - use func.count/len
+# X read access by identity
+# X read access by resource

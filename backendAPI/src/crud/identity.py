@@ -152,9 +152,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     # await self._write_policy(
                     #     current_user.id, Action.own, current_user_data
                     # )
-                    # await self._write_log(
-                    #     current_user.id, Action.own, current_user_data, 201
-                    # )
+                    await self._write_log(
+                        current_user.id, Action.own, current_user_data, 201
+                    )
                     logger.info("USER created in database")
                 except Exception as err:
                     await self._write_log(

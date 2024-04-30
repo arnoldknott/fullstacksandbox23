@@ -1146,6 +1146,7 @@ async def test_create_access_log(
     assert created_log.status_code == access_log.status_code
 
 
+# TBD: delete the read tests here and leave to test_access for the endpoint tests?
 @pytest.mark.anyio
 async def test_read_access_log_for_resource_type(
     register_many_current_users, register_many_protected_resources
