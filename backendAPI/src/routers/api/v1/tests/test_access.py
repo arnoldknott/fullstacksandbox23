@@ -1780,6 +1780,63 @@ async def test_admin_deletes_access_policy(
     )
 
 
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_tries_to_delete_public_access_policy_without_resource_id(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_policies,
+):
+    """Tests GET access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
+
+    policies_in_database = add_many_test_access_policies
+
+    assert len(policies_in_database) == 10
+
+    try:
+        await async_client.delete("/api/v1/access/policy?public=True")
+    except Exception as err:
+        assert "Value error, Only one public resource can be deleted at a time." in str(
+            err
+        )
+    else:
+        pytest.fail("No Value error raised!")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_tries_to_delete_all_access_policy_wit_owner_rights(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_policies,
+):
+    """Tests GET access policies, i.e. share."""
+    app_override_get_azure_payload_dependency
+
+    policies_in_database = add_many_test_access_policies
+
+    assert len(policies_in_database) == 10
+
+    try:
+        await async_client.delete("/api/v1/access/policy?Action=own")
+    except Exception as err:
+        assert (
+            "Either resource_id or identity_id required when deleting policies."
+            in str(err)
+        )
+    else:
+        pytest.fail("No Value error raised!")
+
+
 # TBD: implement delete tests
 
 # endregion: ## DELETE tests

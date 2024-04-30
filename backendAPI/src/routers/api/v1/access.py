@@ -49,7 +49,8 @@ async def get_access_policies(
 @router.get("/policy/resource/{resource_id}", status_code=200)
 async def get_access_policies_for_resource(
     resource_id: UUID,
-    # resource_type: ResourceType,  # TBD: remove and let CRUD figure it out?
+    # TBD: add a query parameter for action
+    # TBD: add a query parameter for exclude current_user in the result
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
@@ -186,7 +187,7 @@ async def delete_access_policy(
 # ✔︎ read by identity - use filter
 # ✔︎ read by identity_type - use filter - join with IdentifierTypeTable (can wait)
 # ✔︎ change access Action (own, write, read) -> use delete first and then create; but update model can be used: derive from Create and add new action!
-# X delete (unshare)
+# ✔︎ delete (unshare)
 # - hierarchy (inheritance)?
 
 

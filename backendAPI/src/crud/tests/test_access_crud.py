@@ -826,8 +826,6 @@ async def test_admin_tries_to_delete_all_public_access_policies(
                 current_user=current_admin_user,
             )
         except Exception as err:
-            print("=== error ===")
-            pprint(err)
             assert (
                 "Value error, Only one public resource can be deleted at a time."
                 in str(err)
