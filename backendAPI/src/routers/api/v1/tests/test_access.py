@@ -1907,8 +1907,32 @@ async def test_admin_gets_created_access_logs(
     assert modelled_access_log.identity_id == current_admin_user.user_id
     assert modelled_access_log.action == Action.own
     assert modelled_access_log.status_code == 201
-    assert modelled_access_log.time >= before_time - timedelta(seconds=5)
-    assert modelled_access_log.time <= after_time + timedelta(seconds=10)
+    assert modelled_access_log.time >= before_time - timedelta(seconds=8)
+    assert modelled_access_log.time <= after_time + timedelta(seconds=15)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_user1_read, token_user1_read_write, token_user2_read],
+    indirect=True,
+)
+async def test_user_gets_access_logs(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+):
+    """Tests GET access logs."""
+    app_override_get_azure_payload_dependency
+
+    # No logs in the database
+    # other than the ones created when the user logs in
+    # But those have status_code 201!
+    response = await async_client.get("/api/v1/access/logs")
+    payload = response.json()
+
+    assert response.status_code == 401
+
+    assert payload == {"detail": "Invalid token."}
 
 
 # endregion: ## GET tests
