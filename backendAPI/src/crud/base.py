@@ -157,16 +157,18 @@ class BaseCRUD(
             session = self.session
             Model = self.model
             database_object = Model.model_validate(object)
+            await self._write_identifier_type_link(database_object.id)
             session.add(database_object)
             # TBD: merge the sessions for creating the policy and the log
             # maybe ven together creating the object
             # but we need the id of the object for the policy and the log
             # TBD: add creating the ResourceTypeLink entry with object_id and self.entity_type
             # this should be doable in the same database call as the access policy and the access log creation.
+            # self._add_identifier_type_link_to_session(database_object.id)
             await session.commit()
             await session.refresh(database_object)
             # TBD: create the statements in the methods, but execute together - less round-trips to database
-            await self._write_identifier_type_link(database_object.id)
+            # await self._write_identifier_type_link(database_object.id)
             await self._write_policy(database_object.id, own, current_user)
             await self._write_log(database_object.id, own, current_user, 201)
             return database_object

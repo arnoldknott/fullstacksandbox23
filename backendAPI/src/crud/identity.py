@@ -55,6 +55,7 @@ class AzureGroupCRUD(
                 # existing_group = await self.create(group_create)
                 session = self.session
                 database_group = AzureGroup.model_validate(group_create)
+                await self._write_identifier_type_link(database_group.id)
                 session.add(database_group)
                 await session.commit()
                 await session.refresh(database_group)

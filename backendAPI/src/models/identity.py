@@ -57,6 +57,7 @@ class AzureGroup(AzureGroupCreate, table=True):
     id: uuid.UUID = Field(
         index=True,
         primary_key=True,
+        foreign_key="identifiertypelink.id",
         description="Identical to the uuid for this group from Azure.",
     )
     created_at: datetime = Field(default=datetime.now())
@@ -128,7 +129,11 @@ class UserCreate(SQLModel):
 class User(UserCreate, table=True):
     """Schema for a user in the database."""
 
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
     # created_at: datetime = Field(default=datetime.now())
     # TBD: change last_accessed_at to non-optional after migration.
     # last_accessed_at: Optional[datetime] = Field(default=datetime.now())

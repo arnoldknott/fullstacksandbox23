@@ -14,7 +14,11 @@ class TopicCreate(SQLModel):
 class Topic(TopicCreate, table=True):
     """Schema for a group in the database."""
 
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
     created_at: datetime = Field(default=datetime.now())
     last_updated_at: datetime = Field(default=datetime.now())
 

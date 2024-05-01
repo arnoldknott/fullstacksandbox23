@@ -2,7 +2,7 @@ import uuid
 
 from typing import TYPE_CHECKING, List, Optional
 
-from models.access import IdentifierTypeLink
+# from models.access import IdentifierTypeLink
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -18,10 +18,15 @@ class CategoryCreate(SQLModel):
 
 
 class Category(CategoryCreate, table=True):
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     # id: Optional[uuid.UUID] = Field(
-    #     default=None, foreign_key="IdentifierTypeLink.id", primary_key=True
+    #     default=None, foreign_key="identifiertypelink.id", primary_key=True
     # )
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
 
     demo_resources: List["DemoResource"] = Relationship(
         back_populates="category", sa_relationship_kwargs={"lazy": "selectin"}

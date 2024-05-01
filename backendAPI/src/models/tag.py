@@ -15,7 +15,11 @@ class TagCreate(SQLModel):
 
 
 class Tag(TagCreate, table=True):
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
 
     demo_resources: Optional[List["DemoResource"]] = Relationship(
         back_populates="tags",

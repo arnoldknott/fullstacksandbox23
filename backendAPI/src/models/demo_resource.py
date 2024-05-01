@@ -22,7 +22,12 @@ class DemoResourceCreate(SQLModel):
 
 
 class DemoResource(DemoResourceCreate, table=True):
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
     # created_at: datetime = Field(default=datetime.now())
     # TBD: move the last_updated_at and last_accessed_at to a resource access log table
     # last_updated_at: datetime = Field(default=datetime.now())
