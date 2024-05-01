@@ -8,9 +8,12 @@ from models.public_resource import (
     PublicResourceUpdate,
 )
 from core.databases import get_async_session
+from models.access import IdentifierTypeLink
+from core.types import ResourceType
 import uuid
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.dialects.postgresql import insert
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +46,16 @@ class PublicResourceCRUD:
         try:
             session = self.session
             database_public_resource = PublicResource.model_validate(public_resource)
-
+            identifier_type_link = IdentifierTypeLink(
+                id=database_public_resource.id,
+                type=ResourceType.public_resource,
+            )
+            statement = insert(IdentifierTypeLink).values(
+                identifier_type_link.model_dump()
+            )
+            statement = statement.on_conflict_do_nothing(index_elements=["id"])
+            await session.exec(statement)
+            await session.commit()
             session.add(database_public_resource)
             await session.commit()
             await session.refresh(database_public_resource)

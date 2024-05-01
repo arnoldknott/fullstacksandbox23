@@ -59,6 +59,7 @@ class ResourceType(BaseType):
     tag = "Tag"  # potentially keep for production
     demo_resource = "DemoResource"
     protected_resource = "ProtectedResource"
+    public_resource = "PublicResource"
     # for future use:
     module = "Module"
     section = "Section"

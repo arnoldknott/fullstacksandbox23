@@ -5,6 +5,7 @@ from models.category import Category
 
 from models.public_resource import PublicResource
 from models.identity import User
+from crud.public_resource import PublicResourceCRUD
 from crud.protected_resource import ProtectedResourceCRUD
 from crud.category import CategoryCRUD
 from crud.access import AccessPolicyCRUD
@@ -95,15 +96,12 @@ async def add_test_policy_for_resource(current_user_from_azure_token: User):
 
 
 @pytest.fixture(scope="function")
-async def add_test_public_resources(get_async_test_session: AsyncSession):
+async def add_test_public_resources():
     """Adds public resources to the database."""
-    session = get_async_test_session
     public_resources_instances = []
     for public_resource in many_test_public_resources:
-        public_resource_instance = PublicResource(**public_resource)
-        session.add(public_resource_instance)
-        await session.commit()
-        await session.refresh(public_resource_instance)
+        async with PublicResourceCRUD() as crud:
+            public_resource_instance = await crud.create(public_resource)
         public_resources_instances.append(public_resource_instance)
 
     yield public_resources_instances
