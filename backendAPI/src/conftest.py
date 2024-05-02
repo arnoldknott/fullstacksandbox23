@@ -19,10 +19,11 @@ from crud.identity import UserCRUD
 from crud.base import BaseCRUD
 from models.access import (
     AccessPolicyCreate,
-    AccessPolicy,
     AccessPolicyRead,
+    AccessLogCreate,
+    AccessLogRead,
 )
-from crud.access import AccessPolicyCRUD
+from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from tests.utils import (
     many_test_azure_users,
     current_user_data_admin,
@@ -31,6 +32,7 @@ from tests.utils import (
     many_entity_type_links,
     token_admin,
     many_test_policies,
+    many_test_access_logs,
 )
 
 
@@ -372,15 +374,14 @@ async def add_many_azure_test_users():
 # TBD: refactor add_test_policies_for_resources from endpoint conftest file into this:
 # also consider using the post functions for the actual creation of resources!
 @pytest.fixture(scope="function")
-async def add_test_access_policy():
+async def add_one_test_access_policy():
     """Fixture for adding test policies."""
 
-    async def _add_test_access_policy(
+    async def _add_one_test_access_policy(
         policy: dict, current_user: CurrentUserData = None
     ):
         """Adds test policies to the database."""
 
-        # policies = []
         async with AccessPolicyCRUD() as crud:
             if current_user is None:
                 current_user = CurrentUserData(**current_user_data_admin)
@@ -390,7 +391,7 @@ async def add_test_access_policy():
             policy = await crud.create(AccessPolicyCreate(**policy), current_user)
             return policy
 
-    yield _add_test_access_policy
+    yield _add_one_test_access_policy
 
 
 @pytest.fixture(scope="function")
@@ -410,6 +411,42 @@ async def add_many_test_access_policies(
             policies.append(added_policy)
 
     yield policies
+
+
+async def add_test_access_log(access_log: dict) -> AccessLogRead:
+    """Adds a test access log to the database."""
+    async with AccessLoggingCRUD() as crud:
+        access_log_instance = AccessLogCreate(**access_log)
+        await crud.create(access_log_instance)
+        return access_log_instance
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_access_log():
+    """Adds a test access log to the database."""
+
+    async def _add_one_test_access_log(access_log: dict) -> AccessLogRead:
+        access_log_instance = await add_test_access_log(access_log)
+        return access_log_instance
+
+    yield _add_one_test_access_log
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_access_logs(
+    register_many_current_users,
+    register_many_protected_resources,
+) -> list[AccessLogRead]:
+    """Adds many test access logs to the database."""
+
+    access_logs = []
+    for access_log in many_test_access_logs:
+        access_log_instance = await add_test_access_log(access_log)
+        access_logs.append(access_log_instance)
+        # print("=== add_many_test_access_logs - access_log_instance ===")
+        # pprint(access_log_instance)
+
+    yield access_logs
 
 
 # TBD: add one test access log

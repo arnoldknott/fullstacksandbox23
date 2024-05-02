@@ -1,6 +1,7 @@
 """Defines utility functions for testing, for example test datasets and dependencies (for example a logged in user if required)."""
 
 from uuid import uuid4
+from datetime import datetime, timedelta
 
 user_id = "12345678-1234-1234-1234-123456789012"
 user_id_nonexistent = "87654321-4321-4321-4321-210987654321"
@@ -404,6 +405,91 @@ many_test_policies = [
     one_test_policy_public_read,
 ]
 
+many_test_access_logs = [
+    {
+        "identity_id": user_id_user1,
+        "resource_id": resource_id1,
+        "time": str(datetime.now() - timedelta(hours=10)),
+        "action": "own",
+        "status_code": 201,
+    },
+    {
+        "identity_id": user_id_user1,
+        "resource_id": resource_id2,
+        "time": str(datetime.now() - timedelta(hours=9, minutes=30)),
+        "action": "own",
+        "status_code": 201,
+    },
+    {
+        "identity_id": user_id_user1,
+        "resource_id": resource_id1,
+        "time": str(datetime.now() - timedelta(hours=9)),
+        "action": "read",
+        "status_code": 200,
+    },
+    {
+        "identity_id": user_id_user3,
+        "resource_id": resource_id2,
+        "time": str(datetime.now() - timedelta(hours=8)),
+        "action": "read",
+        "status_code": 200,
+    },
+    {
+        "identity_id": user_id_user3,
+        "resource_id": resource_id3,
+        "time": str(datetime.now() - timedelta(hours=7, minutes=55)),
+        "action": "own",
+        "status_code": 201,
+    },
+    {
+        "identity_id": user_id_user3,
+        "resource_id": resource_id3,
+        "time": str(datetime.now() - timedelta(hours=7, minutes=45)),
+        "action": "read",
+        "status_code": 200,
+    },
+    {
+        "identity_id": user_id_user3,
+        "resource_id": resource_id2,
+        "time": str(datetime.now() - timedelta(hours=7, minutes=30)),
+        "action": "read",
+        "status_code": 200,
+    },
+    {
+        "identity_id": user_id_user3,
+        "resource_id": resource_id2,
+        "time": str(datetime.now() - timedelta(hours=7, minutes=15)),
+        "action": "read",
+        "status_code": 200,
+    },
+    {  # admin write access
+        "identity_id": user_id_admin,
+        "resource_id": resource_id3,
+        "time": str(datetime.now() - timedelta(hours=7, minutes=5)),
+        "action": "write",
+        "status_code": 200,
+    },
+    {  # public read access
+        "resource_id": resource_id1,
+        "time": str(datetime.now() - timedelta(hours=7)),
+        "action": "read",
+        "status_code": 200,
+    },
+    {
+        "identity_id": user_id_user1,
+        "resource_id": resource_id2,
+        "time": str(datetime.now() - timedelta(hours=6, minutes=55)),
+        "action": "read",
+        "status_code": 200,
+    },
+    {
+        "identity_id": user_id_user3,
+        "resource_id": resource_id3,
+        "time": str(datetime.now() - timedelta(hours=6, minutes=52)),
+        "action": "read",
+        "status_code": 200,
+    },
+]
 
 one_test_demo_resource = {
     "name": "Name of Test Resource",

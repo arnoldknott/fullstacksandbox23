@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pprint import pprint
 
-from typing import List, Optional
+from typing import List, Optional, Union
 from sqlmodel import select, delete, or_, and_, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -180,6 +180,7 @@ class AccessPolicyCRUD:
         try:
             # TBD: remove this, as it's already done through typing the arguments of the method?
             policy = AccessPolicy.model_validate(policy)
+            # policy = AccessPolicy(**policy.model_dump())
 
             # TBD: add access control checks here:
             # only owners of parent resources and Admins can create policies
@@ -224,7 +225,6 @@ class AccessPolicyCRUD:
             # except Exception as e:
             #     logger.error(f"Error in creating policy: {e}")
             #     raise HTTPException(status_code=403, detail="Forbidden.")
-
             self.session.add(policy)
             await self.session.commit()
             await self.session.refresh(policy)
@@ -402,8 +402,8 @@ class AccessPolicyCRUD:
                 action=access_policy.new_action,
                 public=access_policy.public,
             )
-            print("=== AccessPolicyCRUD.change - new_policy ===")
-            pprint(new_policy)
+            # print("=== AccessPolicyCRUD.change - new_policy ===")
+            # pprint(new_policy)
             return await self.create(new_policy, current_user)
 
         except Exception as e:
@@ -450,9 +450,9 @@ class AccessPolicyCRUD:
 
             # TBD: at least one owner needs to be left!
 
-            print("=== AccessPolicyCRUD.delete - statement ===")
-            print(statement.compile())
-            print(statement.compile().params)
+            # print("=== AccessPolicyCRUD.delete - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
 
             response = await self.session.exec(statement)
             # print("=== AccessPolicyCRUD.delete - response ===")
@@ -484,25 +484,51 @@ class AccessLoggingCRUD:
         """Closes the database session."""
         await self.session.close()
 
-    async def log_access(
-        self,
-        access_log: AccessLogCreate,
-    ) -> AccessLog:
-        """Logs an access attempt to the database."""
-        logger.info("Writing an access log to the database.")
-        access_log = AccessLog.model_validate(access_log)
-        # TBD: add access control checks here:
-        # request is known from self.current_user, object and method is write here
-        # No - this is logging - no need for access control here!
+    # def add_log_to_session(
+    #     self,
+    #     access_log: AccessLogCreate,
+    #     session: AsyncSession,
+    # ) -> AsyncSession:
+    #     """Adds creation of access log to existing session."""
+    #     try:
+    #         access_log = AccessLog.model_validate(access_log)
+    #         session.add(access_log)
+    #         return session
+    #     except Exception as e:
+    #         logger.error(f"Error in adding log to session: {e}")
+    #         raise HTTPException(status_code=400, detail="Bad request: logging failed.")
+
+    async def create(self, access_log: AccessLogCreate) -> AccessLog:
+        """Creates an access log entry."""
         try:
-            session = self.session
-            session.add(access_log)
-            await session.commit()
-            await session.refresh(access_log)
+            access_log = AccessLog.model_validate(access_log)
+            self.session.add(access_log)
+            await self.session.commit()
+            await self.session.refresh(access_log)
             return access_log
         except Exception as e:
-            logger.error(f"Error in logging: {e}")
-            raise HTTPException(status_code=400, detail="Bad request: logging failed")
+            logger.error(f"Error in creating log: {e}")
+            raise HTTPException(status_code=400, detail="Bad request: logging failed.")
+
+    # async def log_access(
+    #     self,
+    #     access_log: AccessLogCreate,
+    # ) -> AccessLog:
+    #     """Logs an access attempt to the database."""
+    #     logger.info("Writing an access log to the database.")
+    #     access_log = AccessLog.model_validate(access_log)
+    #     # TBD: add access control checks here:
+    #     # request is known from self.current_user, object and method is write here
+    #     # No - this is logging - no need for access control here!
+    #     try:
+    #         session = self.session
+    #         session.add(access_log)
+    #         await session.commit()
+    #         await session.refresh(access_log)
+    #         return access_log
+    #     except Exception as e:
+    #         logger.error(f"Error in logging: {e}")
+    #         raise HTTPException(status_code=400, detail="Bad request: logging failed")
 
     async def read(
         self,
@@ -513,9 +539,9 @@ class AccessLoggingCRUD:
         ascending_order_by: Optional[str] = None,
         descending_order_by: Optional[str] = None,
         limit: Optional[int] = None,
-        status_code: Optional[int] = 200,
+        status_code: Optional[int | None] = 200,
         required_action: Optional[Action] = Action.own,
-    ):
+    ) -> List[AccessLogRead]:
         """Reads access logs based on the provided parameters."""
         try:
             session = self.session
@@ -523,13 +549,14 @@ class AccessLoggingCRUD:
             statement = self.policy_crud.filters_allowed(
                 statement, required_action, current_user=current_user
             )
-            statement = statement.where(AccessLog.status_code == status_code)
             if resource_id:
                 statement = statement.where(AccessLog.resource_id == resource_id)
             if identity_id:
                 statement = statement.where(AccessLog.identity_id == identity_id)
             if action:
                 statement = statement.where(AccessLog.action == action)
+            if status_code:
+                statement = statement.where(AccessLog.status_code == status_code)
             if ascending_order_by:
                 statement = statement.order_by(ascending_order_by.asc())
             if descending_order_by:
@@ -564,7 +591,10 @@ class AccessLoggingCRUD:
         """Returns all access logs by resource id."""
         try:
             access_logs = await self.read(
-                current_user, resource_id=resource_id, identity_id=identity_id
+                current_user,
+                resource_id=resource_id,
+                identity_id=identity_id,
+                status_code=None,
             )
             return access_logs
         except Exception as err:

@@ -371,7 +371,7 @@ async def test_user_gets_user_by_azure_user_id(
     add_one_azure_test_user: List[User],
     mocked_get_azure_token_payload,
     current_user_from_azure_token,
-    add_test_access_policy,
+    add_one_test_access_policy,
 ):
     """Test a user GETs it's own user id from it's linked azure user account"""
 
@@ -387,7 +387,7 @@ async def test_user_gets_user_by_azure_user_id(
         "identity_id": str(accessing_user.user_id),
         "action": Action.read,
     }
-    await add_test_access_policy(policy)
+    await add_one_test_access_policy(policy)
 
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
@@ -487,7 +487,7 @@ async def test_user_gets_user_by_id(
     add_one_azure_test_user: List[User],
     mocked_get_azure_token_payload,
     current_user_from_azure_token,
-    add_test_access_policy,
+    add_one_test_access_policy,
 ):
     """Test a user GETs it's own user by id"""
 
@@ -503,7 +503,7 @@ async def test_user_gets_user_by_id(
         "identity_id": str(accessing_user.user_id),
         "action": Action.read,
     }
-    await add_test_access_policy(policy)
+    await add_one_test_access_policy(policy)
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
 

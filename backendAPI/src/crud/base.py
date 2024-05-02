@@ -4,7 +4,11 @@ from pprint import pprint
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional, List
 
-from models.access import AccessPolicy, AccessLog, IdentifierTypeLink
+from models.access import (
+    AccessPolicyCreate,
+    AccessLogCreate,
+    IdentifierTypeLink,
+)
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from core.databases import get_async_session
 
@@ -70,53 +74,49 @@ class BaseCRUD(
         """Closes the database session."""
         await self.session.close()
 
-    async def _write_policy(
-        self,
-        resource_id: uuid.UUID,
-        action: Action,
-        current_user: "CurrentUserData",
-    ):
-        """Creates an access policy entry."""
-        access_policy = AccessPolicy(
-            resource_id=resource_id,
-            action=action,
-            identity_id=current_user.user_id,
-        )
-        # This needs a round-trip to database, as the policy-CRUD takes care of access control
-        async with self.policy_CRUD as policy_CRUD:
-            await policy_CRUD.create(access_policy, current_user)
+    # async def _write_policy(
+    #     self,
+    #     resource_id: uuid.UUID,
+    #     action: Action,
+    #     current_user: "CurrentUserData",
+    # ):
+    #     """Creates an access policy entry."""
+    #     access_policy = AccessPolicy(
+    #         resource_id=resource_id,
+    #         action=action,
+    #         identity_id=current_user.user_id,
+    #     )
+    #     # This needs a round-trip to database, as the policy-CRUD takes care of access control
+    #     async with self.policy_CRUD as policy_CRUD:
+    #         await policy_CRUD.create(access_policy, current_user)
 
-    # move to AccessLoggingCRUD?
-    def _add_log_to_session(
-        self,
-        object_id: uuid.UUID,
-        action: Action,
-        current_user: "CurrentUserData",
-        status_code: int,
-    ):
-        """Creates an access log entry."""
-        access_log = AccessLog(
-            resource_id=object_id,
-            action=action,
-            identity_id=current_user.user_id if current_user else None,
-            status_code=status_code,
-        )
-        self.session.add(access_log)
+    # move to AccessLoggingCRUD or use/rewrite the on log_access from there?
+    # def _add_log_to_session(
+    #     self,
+    #     object_id: uuid.UUID,
+    #     action: Action,
+    #     current_user: "CurrentUserData",
+    #     status_code: int,
+    # ):
+    #     """Creates an access log entry."""
+    #     access_log = AccessLog(
+    #         resource_id=object_id,
+    #         action=action,
+    #         identity_id=current_user.user_id if current_user else None,
+    #         status_code=status_code,
+    #     )
+    #     self.session.add(access_log)
 
-    async def _write_log(
-        self,
-        object_id: uuid.UUID,
-        action: Action,
-        current_user: "CurrentUserData",
-        status_code: int,
-    ):
-        """Creates an access log entry."""
-        self._add_log_to_session(object_id, action, current_user, status_code)
-        await self.session.commit()
-
-        # TBD: fix primary key error in logging_CRUD
-        # async with self.logging_CRUD as logging_CRUD:
-        #     await logging_CRUD.log_access(access_log)
+    # async def _write_log(
+    #     self,
+    #     object_id: uuid.UUID,
+    #     action: Action,
+    #     current_user: "CurrentUserData",
+    #     status_code: int,
+    # ):
+    #     """Creates an access log entry."""
+    #     self._add_log_to_session(object_id, action, current_user, status_code)
+    #     await self.session.commit()
 
     def _add_identifier_type_link_to_session(
         self,
@@ -154,28 +154,57 @@ class BaseCRUD(
             # requires hierarchy checks to be in place: otherwise a user can never create a resource
             # as the AccessPolicy CRUD create checks, if the user is owner of the resource (that's not created yet)
             # needs to be fixed in the core access control by implementing a hierarchy check
-            session = self.session
             Model = self.model
             database_object = Model.model_validate(object)
             await self._write_identifier_type_link(database_object.id)
-            session.add(database_object)
+            self.session.add(database_object)
+            # await self.session.commit()
+            # await self.session.refresh(database_object)
+            access_log = AccessLogCreate(
+                resource_id=database_object.id,
+                action=own,
+                identity_id=current_user.user_id,
+                status_code=201,
+            )
+            async with self.logging_CRUD as logging_CRUD:
+                await logging_CRUD.create(access_log)
+            # self.session = self.logging_CRUD.add_log_to_session(
+            #     access_log, self.session
+            # )
+            # await self._add_log_to_session(database_object.id, own, current_user, 201)
+
             # TBD: merge the sessions for creating the policy and the log
             # maybe ven together creating the object
             # but we need the id of the object for the policy and the log
             # TBD: add creating the ResourceTypeLink entry with object_id and self.entity_type
             # this should be doable in the same database call as the access policy and the access log creation.
             # self._add_identifier_type_link_to_session(database_object.id)
-            await session.commit()
-            await session.refresh(database_object)
+            await self.session.commit()
+            await self.session.refresh(database_object)
             # TBD: create the statements in the methods, but execute together - less round-trips to database
             # await self._write_identifier_type_link(database_object.id)
-            await self._write_policy(database_object.id, own, current_user)
-            await self._write_log(database_object.id, own, current_user, 201)
+            # await self._write_policy(database_object.id, own, current_user)
+            access_policy = AccessPolicyCreate(
+                resource_id=database_object.id,
+                action=own,
+                identity_id=current_user.user_id,
+            )
+            async with self.policy_CRUD as policy_CRUD:
+                await policy_CRUD.create(access_policy, current_user)
+            # await self._write_log(database_object.id, own, current_user, 201)
             return database_object
 
         except Exception as e:
             try:
-                await self._write_log(database_object.id, own, current_user, 404)
+                access_log = AccessLogCreate(
+                    resource_id=database_object.id,
+                    action=own,
+                    identity_id=current_user.user_id,
+                    status_code=404,
+                )
+                async with self.logging_CRUD as logging_CRUD:
+                    await logging_CRUD.create(access_log)
+                # await self._write_log(database_object.id, own, current_user, 404)
             except Exception as log_error:
                 logger.error(
                     f"Error in BaseCRUD.create of an object of type {self.model}, action: {own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
@@ -190,17 +219,20 @@ class BaseCRUD(
         self,
         object: BaseSchemaTypeCreate,
         current_user: "CurrentUserData",
+        action: Action = read,
     ) -> BaseModelType:
         """Creates a new object with public access."""
         database_object = await self.create(object, current_user)
 
-        public_access_policy = AccessPolicy(
+        public_access_policy = AccessPolicyCreate(
             resource_id=database_object.id,
             action=read,
             public=True,
         )
         async with self.policy_CRUD as policy_CRUD:
             await policy_CRUD.create(public_access_policy, current_user)
+        # async with self.policy_CRUD as policy_CRUD:
+        #     await policy_CRUD.create(database_object.id, action, public=True)
 
         return database_object
 
@@ -227,6 +259,7 @@ class BaseCRUD(
         try:
             # TBD: select_args are not compatible with the return type of the method!
             statement = select(*select_args) if select_args else select(self.model)
+
             statement = self.policy_CRUD.filters_allowed(
                 statement=statement,
                 action=read,
@@ -265,11 +298,20 @@ class BaseCRUD(
 
             response = await self.session.exec(statement)
             results = response.all()
+
             # print("=== CRUD - base - read - results ===")
             # pprint(results)
-            for result in results:
-                await self._write_log(result.id, read, current_user, 200)
 
+            for result in results:
+                access_log = AccessLogCreate(
+                    resource_id=result.id,
+                    action=read,
+                    identity_id=current_user.user_id if current_user else None,
+                    status_code=200,
+                )
+                async with self.logging_CRUD as logging_CRUD:
+                    await logging_CRUD.create(access_log)
+                # await self._write_log(result.id, read, current_user, 200)
             if not results:
                 logger.info(f"No objects found for {self.model.__name__}")
                 raise HTTPException(
@@ -277,10 +319,17 @@ class BaseCRUD(
                 )
 
             return results
-
         except Exception as err:
             try:
-                await self._write_log(result.id, read, current_user, 404)
+                access_log = AccessLogCreate(
+                    resource_id=result.id,
+                    action=read,
+                    identity_id=current_user.user_id if current_user else None,
+                    status_code=404,
+                )
+                async with self.logging_CRUD as logging_CRUD:
+                    await logging_CRUD.create(access_log)
+                # await self._write_log(result.id, read, current_user, 404)
             except Exception as log_error:
                 logger.error(
                     (
@@ -369,13 +418,32 @@ class BaseCRUD(
                 setattr(old, key, value)
             object = old
             session.add(object)
-            self._add_log_to_session(object_id, write, current_user, 200)
+            access_log = AccessLogCreate(
+                resource_id=object.id,
+                action=write,
+                identity_id=current_user.user_id,
+                status_code=200,
+            )
+            async with self.logging_CRUD as logging_CRUD:
+                await logging_CRUD.create(access_log)
+            # self.session = self.logging_CRUD.add_log_to_session(
+            #     access_log, self.session
+            # )
+            # self._add_log_to_session(object_id, write, current_user, 200)
             await session.commit()
             await session.refresh(object)
             return object
         except Exception as e:
             try:
-                await self._write_log(object_id, write, current_user, 404)
+                access_log = AccessLogCreate(
+                    resource_id=object.id,
+                    action=write,
+                    identity_id=current_user.user_id,
+                    status_code=404,
+                )
+                async with self.logging_CRUD as logging_CRUD:
+                    await logging_CRUD.create(access_log)
+                # await self._write_log(object_id, write, current_user, 404)
             except Exception as log_error:
                 logger.error(
                     f"Error in BaseCRUD.update with parameters object_id: {object_id}, action: {write}, current_user: {current_user}, status_code: {404} results in  {log_error}"
@@ -413,12 +481,31 @@ class BaseCRUD(
             # TBD: deleting a resource also needs to delete the according access policies!
 
             await self.session.delete(object)
-            self._add_log_to_session(object_id, own, current_user, 200)
+            access_log = AccessLogCreate(
+                resource_id=object.id,
+                action=own,
+                identity_id=current_user.user_id,
+                status_code=200,
+            )
+            async with self.logging_CRUD as logging_CRUD:
+                await logging_CRUD.create(access_log)
+            # self.session = self.logging_CRUD.add_log_to_session(
+            #     access_log, self.session
+            # )
+            # self._add_log_to_session(object_id, own, current_user, 200)
             await self.session.commit()
             return object
         except Exception as e:
             try:
-                await self._write_log(object_id, own, current_user, 404)
+                access_log = AccessLogCreate(
+                    resource_id=object_id,
+                    action=own,
+                    identity_id=current_user.user_id,
+                    status_code=404,
+                )
+                async with self.logging_CRUD as logging_CRUD:
+                    await logging_CRUD.create(access_log)
+                # await self._write_log(object_id, own, current_user, 404)
             except Exception as log_error:
                 logger.error(
                     f"Error in BaseCRUD.delete with parameters object_id: {object_id}, action: {own}, current_user: {current_user}, status_code: {404} results in  {log_error}"

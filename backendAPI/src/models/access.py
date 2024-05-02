@@ -188,9 +188,10 @@ class AccessLog(AccessLogCreate, table=True):
     # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     # identity_id: Optional[uuid.UUID] = Field(default=None, index=True)
     identity_id: Optional[uuid.UUID] = Field(
-        foreign_key="identifiertypelink.id", index=True
+        default=None, foreign_key="identifiertypelink.id", index=True
     )
     resource_id: uuid.UUID = Field(foreign_key="identifiertypelink.id", index=True)
+    action: "Action" = Field(index=True)
     time: datetime = Field(default=datetime.now(), index=True)
     status_code: int = Field()
 

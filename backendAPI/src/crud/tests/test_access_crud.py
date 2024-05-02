@@ -60,7 +60,7 @@ async def test_admin_creates_access_policy(
 async def test_owner_creates_access_policy(
     register_current_user,
     register_one_resource,
-    add_test_access_policy,
+    add_one_test_access_policy,
 ):
     """Test creating an access policy."""
 
@@ -73,7 +73,7 @@ async def test_owner_creates_access_policy(
 
     # Admin needs to register the first resource - owned by user 1:
     current_admin_user = await register_current_user(current_user_data_admin)
-    await add_test_access_policy(one_test_policy_own, current_admin_user)
+    await add_one_test_access_policy(one_test_policy_own, current_admin_user)
 
     # User 1 shares with user 3:
     async with AccessPolicyCRUD() as policy_crud:
@@ -1136,7 +1136,7 @@ async def test_create_access_log(
     )
 
     async with AccessLoggingCRUD() as logging_crud:
-        created_log = await logging_crud.log_access(access_log)
+        created_log = await logging_crud.create(access_log)
 
     # assert created_log.id is not None
     assert int(created_log.id)
@@ -1162,19 +1162,23 @@ async def test_read_access_log_for_resource_type(
         status_code=200,
     )
 
-    time_before = datetime.now()
     async with AccessLoggingCRUD() as logging_crud:
-        await logging_crud.log_access(access_log)
-    time_after = datetime.now()
+        time_before = datetime.now()
+        await logging_crud.create(access_log)
+        time_after = datetime.now()
 
-    async with AccessLoggingCRUD() as crud:
-        identity_log = await crud.read_log_by_identity_id(
-            current_user_data_user1["user_id"]
+        identity_log = (
+            await logging_crud.read_access_logs_by_resource_id_and_identity_id(
+                identity_id=current_user_data_user1["user_id"]
+            )
         )
-        resource_log = await crud.read_log_by_resource(
-            resource_id3,
-            "ProtectedResource",
+        resource_log = (
+            await logging_crud.read_access_logs_by_resource_id_and_identity_id(
+                resource_id=resource_id3,
+                resource_type="ProtectedResource",
+            )
         )
+
     assert len(identity_log) == 1
     assert int(identity_log.id)
     assert identity_log[0].resource_id == access_log.resource_id

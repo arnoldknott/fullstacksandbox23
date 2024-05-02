@@ -15,6 +15,7 @@ from models.identity import (
     AzureGroupRead,
     AzureGroupUpdate,
 )
+from models.access import AccessPolicyCreate, AccessLogCreate
 from sqlmodel import select
 
 
@@ -147,20 +148,40 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                         groups=groups,
                     )
                     # User is owner of itself:
-                    await self._write_policy(
-                        database_user.id, Action.own, current_user_data
+                    access_policy = AccessPolicyCreate(
+                        resource_id=database_user.id,
+                        action=Action.own,
+                        identity_id=current_user_data.user_id,
                     )
+                    async with self.policy_CRUD as policy_CRUD:
+                        await policy_CRUD.create(access_policy, current_user_data)
                     # await self._write_policy(
                     #     current_user.id, Action.own, current_user_data
                     # )
-                    await self._write_log(
-                        current_user.id, Action.own, current_user_data, 201
+                    access_log = AccessLogCreate(
+                        resource_id=current_user.id,
+                        action=Action.own,
+                        identity_id=current_user_data.user_id,
+                        status_code=201,
                     )
+                    async with self.logging_CRUD as log_CRUD:
+                        await log_CRUD.create(access_log)
+                    # await self._write_log(
+                    #     current_user.id, Action.own, current_user_data, 201
+                    # )
                     logger.info("USER created in database")
                 except Exception as err:
-                    await self._write_log(
-                        current_user.id, Action.own, current_user_data, 404
+                    access_log = AccessLogCreate(
+                        resource_id=current_user.id,
+                        action=Action.own,
+                        identity_id=current_user_data.user_id,
+                        status_code=404,
                     )
+                    async with self.logging_CRUD as log_CRUD:
+                        await log_CRUD.create(access_log)
+                    # await self._write_log(
+                    #     current_user.id, Action.own, current_user_data, 404
+                    # )
                     logger.error(f"Error in BaseCRUD.create: {err}")
                     raise HTTPException(status_code=404, detail="User not found")
             else:

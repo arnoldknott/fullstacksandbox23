@@ -197,9 +197,6 @@ access_log_view = BaseView(AccessLoggingCRUD, AccessLog)
 # - not implemented
 
 
-# TBD: write tests for this
-
-
 @router.get("/logs", status_code=200)
 async def get_access_logs(
     resource_id: Annotated[UUID | None, Query()] = None,
@@ -220,6 +217,7 @@ async def get_access_logs(
         )
 
 
+# TBD: write tests for this
 @router.get("/log/{resource_id}", status_code=200)
 async def get_access_logs_for_resource(
     resource_id: UUID,
@@ -243,6 +241,7 @@ async def get_access_logs_for_resource(
         )
 
 
+# TBD: write tests for this
 @router.get("/log/{resource_id}/created", status_code=200)
 async def get_creation_date_for_resource(
     resource_id: UUID,
@@ -261,6 +260,7 @@ async def get_creation_date_for_resource(
         )
 
 
+# TBD: write tests for this
 @router.get("/log/{resource_id}/last-accessed", status_code=200)
 async def get_last_accessed_for_resource(
     resource_id: UUID,
@@ -279,6 +279,7 @@ async def get_last_accessed_for_resource(
         )
 
 
+# TBD: write tests for this
 @router.get("/log/{resource_id}/count", status_code=200)
 async def get_access_count_for_resource(
     resource_id: UUID,
@@ -300,7 +301,8 @@ async def get_access_count_for_resource(
 # AccessLogs:
 # only read operations for log - no create, update, delete!
 # implement as query parameters, wherever it makes sense?
-# X read (check who accessed what)
+# ✔︎ read all logs - admin only
+# X read logs by resource_id
 # X read resources first "own" log: corresponds to create
 # X read resource last access - use order_by
 # X read access count - use func.count/len
