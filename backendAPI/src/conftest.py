@@ -417,8 +417,8 @@ async def add_test_access_log(access_log: dict) -> AccessLogRead:
     """Adds a test access log to the database."""
     async with AccessLoggingCRUD() as crud:
         access_log_instance = AccessLogCreate(**access_log)
-        await crud.create(access_log_instance)
-        return access_log_instance
+        created_access_log = await crud.create(access_log_instance)
+        return created_access_log
 
 
 @pytest.fixture(scope="function")

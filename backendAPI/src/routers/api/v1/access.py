@@ -217,7 +217,6 @@ async def get_access_logs(
         )
 
 
-# TBD: write tests for this
 @router.get("/log/{resource_id}", status_code=200)
 async def get_access_logs_for_resource(
     resource_id: UUID,
@@ -241,7 +240,6 @@ async def get_access_logs_for_resource(
         )
 
 
-# TBD: write tests for this
 @router.get("/log/{resource_id}/created", status_code=200)
 async def get_creation_date_for_resource(
     resource_id: UUID,
@@ -254,32 +252,30 @@ async def get_creation_date_for_resource(
         token_payload, guards
     )
     async with access_log_view.crud() as crud:
-        return await crud.read_created_at(
+        return await crud.read_resource_created_at(
             current_user,
             resource_id=resource_id,
         )
 
 
-# TBD: write tests for this
 @router.get("/log/{resource_id}/last-accessed", status_code=200)
 async def get_last_accessed_for_resource(
     resource_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
-) -> list[AccessLogRead]:
+) -> AccessLogRead:
     """Returns creation information for a resource."""
     logger.info("GET access log information for resource")
     current_user = await access_log_view._check_token_against_guards(
         token_payload, guards
     )
     async with access_log_view.crud() as crud:
-        return await crud.read_last_acceessed_at(
+        return await crud.read_resource_last_accessed_at(
             current_user,
             resource_id=resource_id,
         )
 
 
-# TBD: write tests for this
 @router.get("/log/{resource_id}/count", status_code=200)
 async def get_access_count_for_resource(
     resource_id: UUID,
@@ -292,7 +288,7 @@ async def get_access_count_for_resource(
         token_payload, guards
     )
     async with access_log_view.crud() as crud:
-        return await crud.read_access_count(
+        return await crud.read_resource_access_count(
             current_user,
             resource_id=resource_id,
         )

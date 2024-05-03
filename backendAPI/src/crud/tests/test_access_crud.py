@@ -59,7 +59,6 @@ async def test_admin_creates_access_policy(
 @pytest.mark.anyio
 async def test_owner_creates_access_policy(
     register_current_user,
-    register_one_resource,
     add_one_test_access_policy,
 ):
     """Test creating an access policy."""

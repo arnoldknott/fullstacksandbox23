@@ -606,15 +606,15 @@ class AccessLoggingCRUD:
             if limit:
                 statement = statement.limit(limit)
 
-            # print("=== AccessLoggingCRUD.read - statement ===")
-            # print(statement.compile())
-            # print(statement.compile().params)
+            print("=== AccessLoggingCRUD.read - statement ===")
+            print(statement.compile())
+            print(statement.compile().params)
 
             response = await session.exec(statement)
             results = response.all()
 
-            # print("=== AccessLoggingCRUD.read - results ===")
-            # pprint(results)
+            print("=== AccessLoggingCRUD.read - results ===")
+            pprint(results)
 
             if not results:
                 raise HTTPException(status_code=404, detail="Access logs not found.")
@@ -650,43 +650,43 @@ class AccessLoggingCRUD:
     ):
         """Reads the first access log with action "Own" for a resource id - corresponds to create."""
         try:
-            first_own_entry = self.read(
+            first_owner_entry = await self.read(
                 current_user,
                 resource_id,
                 status_code=201,
                 action=Action.own,
-                ascending_order_by="time",
+                ascending_order_by=AccessLog.time,
                 limit=1,
             )
-            return first_own_entry.time
+            return first_owner_entry[0].time
         except Exception as err:
             logging.error(err)
             raise HTTPException(status_code=404, detail="Access logs not found.")
 
-    async def read_last_accessed_at(
+    async def read_resource_last_accessed_at(
         self,
         current_user: CurrentUserData,
         resource_id: UUID,
-    ):
+    ) -> AccessLogRead:
         """Reads the last access log for a resource id."""
         try:
-            last_accessed_entry = self.read(
-                current_user, resource_id, descending_order_by="time", limit=1
+            last_accessed_entry = await self.read(
+                current_user, resource_id, descending_order_by=AccessLog.time, limit=1
             )
-            return last_accessed_entry.time
+            return last_accessed_entry[0]
         except Exception as err:
             logging.error(err)
             raise HTTPException(status_code=404, detail="Access logs not found.")
 
-    async def read_access_count(
+    async def read_resource_access_count(
         self,
         current_user: CurrentUserData,
         resource_id: UUID,
     ):
         """Reads the number of access logs for a resource id."""
         try:
-            access_count = self.read(
-                current_user, resource_id, required_action=Action.read
+            access_count = await self.read(
+                current_user, resource_id, required_action=Action.read, status_code=None
             )
             return len(access_count)
         except Exception as err:
