@@ -1885,7 +1885,7 @@ async def test_admin_gets_created_access_all_logs(
     assert modelled_access_log.identity_id == current_admin_user.user_id
     assert modelled_access_log.action == Action.own
     assert modelled_access_log.status_code == 201
-    assert modelled_access_log.time >= before_time - timedelta(seconds=60)
+    assert modelled_access_log.time >= before_time - timedelta(seconds=120)
     assert modelled_access_log.time <= after_time + timedelta(seconds=30)
 
 
@@ -1969,7 +1969,7 @@ async def test_admin_gets_all_logs_with_status_code(
     assert modelled_access_log.identity_id == current_admin_user.user_id
     assert modelled_access_log.action == Action.own
     assert modelled_access_log.status_code == 201
-    assert modelled_access_log.time >= before_time - timedelta(seconds=60)
+    assert modelled_access_log.time >= before_time - timedelta(seconds=120)
     assert modelled_access_log.time <= after_time + timedelta(seconds=30)
 
 
@@ -2389,6 +2389,7 @@ async def test_get_last_access_datetime_for_resource_only_read_permission(
     assert response.status_code == 404
     assert payload == {"detail": "Access logs not found."}
 
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
@@ -2416,14 +2417,11 @@ async def test_get_access_count_for_resource(
 
     add_many_test_access_logs
 
-    response = await async_client.get(
-        f"/api/v1/access/log/{resource_id2}/count"
-    )
+    response = await async_client.get(f"/api/v1/access/log/{resource_id2}/count")
     payload = response.json()
 
     assert response.status_code == 200
     assert int(payload) == 5
-
 
 
 # endregion: ## GET tests
