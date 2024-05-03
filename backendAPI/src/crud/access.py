@@ -105,7 +105,57 @@ class AccessPolicyCRUD:
         else:
             # this is becoming two different functions - one for resources and one for policies
             # consider splitting this into two functions
-            if model != AccessPolicy:
+            if model == AccessPolicy:
+                subquery = select(AccessPolicy.resource_id).where(
+                    and_(
+                        AccessPolicy.identity_id == current_user.user_id,
+                        AccessPolicy.action == own,
+                    )
+                )
+                statement = statement.filter(AccessPolicy.resource_id.in_(subquery))
+            elif model == AccessLog:
+                subquery = select(AccessPolicy.resource_id)
+                subquery = subquery.where(AccessPolicy.action.in_(action))
+                subquery = subquery.where(
+                    or_(
+                        AccessPolicy.identity_id == current_user.user_id,
+                        AccessPolicy.public,
+                    )
+                )
+                #     .where(
+                #     and_(
+                #         AccessPolicy.identity_id == current_user.user_id,
+                #         AccessPolicy.action == own,
+                #     )
+                # )
+                # print("=== AccessPolicyCRUD.filters_allowed - subquery ===")
+                # print(subquery.compile())
+                # print(subquery.compile().params)
+
+                # return subquery
+
+                # subquery_results = self.session.exec(subquery)
+                # subquery_results = subquery_results.all()
+
+                # print("=== AccessPolicyCRUD.filters_allowed - subquery_results ===")
+                # for result in subquery_results:
+                #     pprint(result)
+
+                statement = statement.filter(AccessLog.resource_id.in_(subquery))
+                # statement = statement.join(
+                #     AccessPolicy, AccessLog.resource_id == AccessPolicy.resource_id
+                # )
+                # statement = statement.where(
+                #     AccessPolicy.resource_id == AccessLog.resource_id
+                # )
+                # statement = statement.where(AccessPolicy.action.in_(action))
+                # statement = statement.where(
+                #     or_(
+                #         AccessPolicy.identity_id == current_user.user_id,
+                #         AccessPolicy.public,
+                #     )
+                # )
+            else:
                 statement = statement.join(
                     AccessPolicy, model.id == AccessPolicy.resource_id
                 )
@@ -117,14 +167,6 @@ class AccessPolicyCRUD:
                         AccessPolicy.public,
                     )
                 )
-            else:
-                subquery = select(AccessPolicy.resource_id).where(
-                    and_(
-                        AccessPolicy.identity_id == current_user.user_id,
-                        AccessPolicy.action == own,
-                    )
-                )
-                statement = statement.filter(AccessPolicy.resource_id.in_(subquery))
 
         return statement
 
@@ -547,7 +589,7 @@ class AccessLoggingCRUD:
             session = self.session
             statement = select(AccessLog)
             statement = self.policy_crud.filters_allowed(
-                statement, required_action, current_user=current_user
+                statement, required_action, AccessLog, current_user
             )
             if resource_id:
                 statement = statement.where(AccessLog.resource_id == resource_id)
@@ -564,15 +606,15 @@ class AccessLoggingCRUD:
             if limit:
                 statement = statement.limit(limit)
 
-            print("=== AccessLoggingCRUD.read - statement ===")
-            print(statement.compile())
-            print(statement.compile().params)
+            # print("=== AccessLoggingCRUD.read - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
 
             response = await session.exec(statement)
             results = response.all()
 
-            print("=== AccessLoggingCRUD.read - results ===")
-            pprint(results)
+            # print("=== AccessLoggingCRUD.read - results ===")
+            # pprint(results)
 
             if not results:
                 raise HTTPException(status_code=404, detail="Access logs not found.")

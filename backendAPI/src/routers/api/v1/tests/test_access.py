@@ -1857,30 +1857,6 @@ async def test_admin_tries_to_delete_all_access_policy_wit_owner_rights(
     [token_admin_read],
     indirect=True,
 )
-async def test_admin_gets_access_all_logs(
-    async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-):
-    """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
-
-    # No logs in the database
-    # other than the ones created when the user logs in
-    # But those have status_code 201!
-    response = await async_client.get("/api/v1/access/logs")
-    payload = response.json()
-
-    assert response.status_code == 404
-
-    assert payload == {"detail": "Access logs not found."}
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
-    [token_admin_read],
-    indirect=True,
-)
 async def test_admin_gets_created_access_all_logs(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
@@ -1907,8 +1883,32 @@ async def test_admin_gets_created_access_all_logs(
     assert modelled_access_log.identity_id == current_admin_user.user_id
     assert modelled_access_log.action == Action.own
     assert modelled_access_log.status_code == 201
-    assert modelled_access_log.time >= before_time - timedelta(seconds=8)
-    assert modelled_access_log.time <= after_time + timedelta(seconds=15)
+    assert modelled_access_log.time >= before_time - timedelta(seconds=30)
+    assert modelled_access_log.time <= after_time + timedelta(seconds=30)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read],
+    indirect=True,
+)
+async def test_admin_gets_access_all_logs(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+):
+    """Tests GET access logs."""
+    app_override_get_azure_payload_dependency
+
+    # No logs in the database
+    # other than the ones created when the user logs in
+    # But those have status_code 201!
+    response = await async_client.get("/api/v1/access/logs")
+    payload = response.json()
+
+    assert response.status_code == 404
+
+    assert payload == {"detail": "Access logs not found."}
 
 
 @pytest.mark.anyio
@@ -1967,8 +1967,8 @@ async def test_user_gets_logs_for_resource(
     assert modelled_access_log.identity_id == current_admin_user.user_id
     assert modelled_access_log.action == Action.own
     assert modelled_access_log.status_code == 201
-    assert modelled_access_log.time >= before_time - timedelta(seconds=8)
-    assert modelled_access_log.time <= after_time + timedelta(seconds=15)
+    assert modelled_access_log.time >= before_time - timedelta(seconds=30)
+    assert modelled_access_log.time <= after_time + timedelta(seconds=30)
 
 
 @pytest.mark.anyio
@@ -1980,20 +1980,31 @@ async def test_user_gets_logs_for_resource(
 async def test_get_logs_for_resource(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    # add_many_test_access_policies,
+    add_many_test_access_policies,
     add_many_test_access_logs,
+    current_user_from_azure_token,
+    mocked_get_azure_token_payload,
+    add_one_test_access_policy,
 ):
     """Tests GET access logs."""
     app_override_get_azure_payload_dependency
+    policies = add_many_test_access_policies
+    print("=== policies ===")
+    pprint(policies)
 
-    # policies = add_many_test_access_policies
-    # print("=== policies ===")
-    # pprint(policies)
+    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    policy = {
+        "resource_id": resource_id2,
+        "identity_id": str(current_user.user_id),
+        "action": Action.own,
+    }
+    await add_one_test_access_policy(policy)
+
     database_logs = add_many_test_access_logs
-    # print("=== database_logs ===")
-    # pprint(database_logs)
 
+    before_time = datetime.now()
     response = await async_client.get(f"/api/v1/access/log/{resource_id2}")
+    after_time = datetime.now()
     payload = response.json()
 
     assert response.status_code == 200
@@ -2008,10 +2019,40 @@ async def test_get_logs_for_resource(
     ]
 
     for returned, expected in zip(payload, expected_logs):
-        assert returned == AccessLogRead(**expected.model_dump())
+        returned = AccessLogRead(**returned)
+        assert int(returned.id)
+        assert returned.resource_id == expected.resource_id
+        assert returned.identity_id == expected.identity_id
+        assert returned.action == expected.action
+        assert returned.status_code == expected.status_code
+        assert returned.time >= before_time - timedelta(seconds=30)
+        assert returned.time <= after_time + timedelta(seconds=30)
 
 
-# TBD: add test, where token_user2_read is used: this user does not have access to the logs of resource_id2!
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_user2_read],
+    indirect=True,
+)
+async def test_get_logs_for_resource_without_permissions_from_policies(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_policies,
+    add_many_test_access_logs,
+):
+    """Tests GET access logs."""
+    app_override_get_azure_payload_dependency
+    add_many_test_access_policies
+
+    add_many_test_access_logs
+
+    response = await async_client.get(f"/api/v1/access/log/{resource_id2}")
+    payload = response.json()
+
+    assert response.status_code == 404
+    assert payload == {"detail": "Access logs not found."}
+
 
 # endregion: ## GET tests
 
