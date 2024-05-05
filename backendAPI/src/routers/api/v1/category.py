@@ -11,7 +11,6 @@ from .base import BaseView
 from crud.category import CategoryCRUD
 
 from models.category import Category, CategoryCreate, CategoryUpdate, CategoryRead
-from models.demo_resource import DemoResource
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

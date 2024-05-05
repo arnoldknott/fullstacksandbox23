@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pprint import pprint
 
-from typing import List, Optional, Union
+from typing import List, Optional
 from sqlmodel import select, delete, or_, and_, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 

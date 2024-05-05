@@ -1,6 +1,5 @@
 import uuid
 import logging
-from pprint import pprint
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional, List
 
@@ -149,7 +148,6 @@ class BaseCRUD(
         """Creates a new object."""
         logger.info("BaseCRUD.create")
         try:
-
             # TBD: refactor into hierarchy check
             # requires hierarchy checks to be in place: otherwise a user can never create a resource
             # as the AccessPolicy CRUD create checks, if the user is owner of the resource (that's not created yet)

@@ -1,9 +1,7 @@
 import pytest
 
-from sqlmodel.ext.asyncio.session import AsyncSession
 from models.category import Category
 
-from models.public_resource import PublicResource
 from models.identity import User
 from crud.public_resource import PublicResourceCRUD
 from crud.protected_resource import ProtectedResourceCRUD

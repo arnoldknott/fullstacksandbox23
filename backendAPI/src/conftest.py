@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Generator, List, Optional, Union, Type
+from typing import AsyncGenerator, Generator, List, Optional, Union
 
 from uuid import UUID
 import pytest
@@ -9,7 +9,6 @@ from main import app
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
-from pprint import pprint
 from core.security import get_azure_token_payload, CurrentAccessToken, Guards
 from core.types import CurrentUserData, ResourceType, IdentityType
 from models.access import IdentifierTypeLink
@@ -101,9 +100,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[get_azure_token_payload] = (
-        lambda: mocked_get_azure_token_payload
-    )
+    app.dependency_overrides[
+        get_azure_token_payload
+    ] = lambda: mocked_get_azure_token_payload
     yield app
     app.dependency_overrides = {}
 
@@ -190,7 +189,6 @@ async def register_current_user():
     """Returns a mock current user and registers in identity link table."""
 
     async def _register_current_user(current_user_data: dict = None) -> CurrentUserData:
-
         current_user_data = CurrentUserData(**current_user_data)
         await register_entity_to_identity_type_link_table(
             current_user_data.user_id, User
@@ -404,7 +402,6 @@ async def add_many_test_access_policies(
     async with AccessPolicyCRUD() as crud:
         policies = []
         for policy in many_test_policies:
-
             added_policy = await crud.create(
                 AccessPolicyCreate(**policy), mocked_admin_user
             )
@@ -443,8 +440,6 @@ async def add_many_test_access_logs(
     for access_log in many_test_access_logs:
         access_log_instance = await add_test_access_log(access_log)
         access_logs.append(access_log_instance)
-        # print("=== add_many_test_access_logs - access_log_instance ===")
-        # pprint(access_log_instance)
 
     yield access_logs
 

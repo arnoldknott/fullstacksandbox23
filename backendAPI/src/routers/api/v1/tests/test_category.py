@@ -3,7 +3,6 @@ import uuid
 from httpx import AsyncClient
 from fastapi import FastAPI
 from models.category import Category
-from models.demo_resource import DemoResource
 from tests.utils import (
     token_user1_read,
     token_user1_read_write,

@@ -1126,7 +1126,6 @@ async def test_create_access_log(
     """Test creating an access log."""
     current_user = register_many_current_users[1]
     resource2_id = register_many_protected_resources[1]
-    # TBD: add test logs to utils
     access_log = AccessLogCreate(
         identity_id=str(current_user.user_id),
         resource_id=resource2_id,
@@ -1137,7 +1136,6 @@ async def test_create_access_log(
     async with AccessLoggingCRUD() as logging_crud:
         created_log = await logging_crud.create(access_log)
 
-    # assert created_log.id is not None
     assert int(created_log.id)
     assert created_log.identity_id == access_log.identity_id
     assert created_log.resource_id == access_log.resource_id
@@ -1148,11 +1146,21 @@ async def test_create_access_log(
 # TBD: delete the read tests here and leave to test_access for the endpoint tests?
 @pytest.mark.anyio
 async def test_read_access_log_for_resource_type(
-    register_many_current_users, register_many_protected_resources
+    register_many_current_users,
+    register_many_protected_resources,
+    add_one_test_access_policy,
 ):
     """Test reading an access log for resource."""
     current_user = register_many_current_users[1]
     resource_id3 = register_many_protected_resources[3]
+
+    access_policy = {
+        "identity_id": current_user.user_id,
+        "resource_id": resource_id3,
+        "action": Action.own,
+    }
+
+    await add_one_test_access_policy(access_policy)
 
     access_log = AccessLogCreate(
         identity_id=str(current_user.user_id),
@@ -1168,11 +1176,12 @@ async def test_read_access_log_for_resource_type(
 
         identity_log = (
             await logging_crud.read_access_logs_by_resource_id_and_identity_id(
-                identity_id=current_user_data_user1["user_id"]
+                current_user, identity_id=current_user_data_user1["user_id"]
             )
         )
         resource_log = (
             await logging_crud.read_access_logs_by_resource_id_and_identity_id(
+                current_user,
                 resource_id=resource_id3,
                 resource_type="ProtectedResource",
             )

@@ -3,7 +3,6 @@ from httpx import AsyncClient
 from fastapi import FastAPI
 
 import uuid
-from pprint import pprint
 from datetime import datetime, timedelta
 from core.types import Action, ResourceType, IdentityType, CurrentUserData
 from models.identity import AzureGroup, User
@@ -1862,31 +1861,26 @@ async def test_admin_tries_to_delete_all_access_policy_wit_owner_rights(
 async def test_admin_gets_created_access_all_logs(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    add_many_test_access_logs,
 ):
     """Tests GET access logs."""
     app_override_get_azure_payload_dependency
 
-    # getting the one, that's created due to admin accessing the endpoint
-    before_time = datetime.now()
-    response = await async_client.get("/api/v1/access/logs?status_code=201")
-    after_time = datetime.now()
+    database_logs = add_many_test_access_logs
+
+    response = await async_client.get("/api/v1/access/logs")
     payload = response.json()
 
     assert response.status_code == 200
 
-    current_admin_user = await current_user_from_azure_token(
-        mocked_get_azure_token_payload
-    )
-    modelled_access_log = AccessLogRead(**payload[0])
-
-    assert modelled_access_log.resource_id == current_admin_user.user_id
-    assert modelled_access_log.identity_id == current_admin_user.user_id
-    assert modelled_access_log.action == Action.own
-    assert modelled_access_log.status_code == 201
-    assert modelled_access_log.time >= before_time - timedelta(seconds=120)
-    assert modelled_access_log.time <= after_time + timedelta(seconds=30)
+    for returned, expected in zip(payload, database_logs):
+        returned = AccessLogRead(**returned)
+        assert int(returned.id)
+        assert returned.resource_id == expected.resource_id
+        assert returned.identity_id == expected.identity_id
+        assert returned.action == expected.action
+        assert returned.status_code == expected.status_code
+        assert returned.time == expected.time
 
 
 @pytest.mark.anyio
@@ -1895,7 +1889,7 @@ async def test_admin_gets_created_access_all_logs(
     [token_admin_read],
     indirect=True,
 )
-async def test_admin_gets_access_all_logs(
+async def test_admin_gets_access_all_logs_with_non_existing_status_code(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
 ):
@@ -1905,7 +1899,7 @@ async def test_admin_gets_access_all_logs(
     # No logs in the database
     # other than the ones created when the user logs in
     # But those have status_code 201!
-    response = await async_client.get("/api/v1/access/logs")
+    response = await async_client.get("/api/v1/access/logs?status_code=200")
     payload = response.json()
 
     assert response.status_code == 404
@@ -2073,6 +2067,54 @@ async def test_get_logs_for_resource_and_identity(
         assert returned.time == expected.time
         # assert returned.time >= before_time - timedelta(seconds=30)
         # assert returned.time <= after_time + timedelta(seconds=30)
+
+
+# TBD: add tests for identity endpoint
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read],
+    indirect=True,
+)
+async def test_get_logs_for_identity(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_logs,
+    # current_user_from_azure_token,
+    # mocked_get_azure_token_payload,
+):
+    """Tests GET access logs."""
+    app_override_get_azure_payload_dependency
+
+    # current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    database_logs = add_many_test_access_logs
+
+    response = await async_client.get(
+        f"/api/v1/access/log/identity/{str(user_id_user3)}"
+    )
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert len(payload) == 6
+
+    expected_logs = [
+        database_logs[3],
+        database_logs[4],
+        database_logs[5],
+        database_logs[6],
+        database_logs[7],
+        database_logs[11],
+    ]
+
+    for returned, expected in zip(payload, expected_logs):
+        returned = AccessLogRead(**returned)
+        assert int(returned.id)
+        assert returned.resource_id == expected.resource_id
+        assert returned.identity_id == expected.identity_id
+        assert returned.action == expected.action
+        assert returned.status_code == expected.status_code
+        assert returned.time == expected.time
 
 
 @pytest.mark.anyio

@@ -1,13 +1,7 @@
-from typing import List
 
-from fastapi import HTTPException
-from uuid import UUID
 
-from core.types import CurrentUserData
 from models.category import Category, CategoryCreate, CategoryRead, CategoryUpdate
-from models.demo_resource import DemoResource
 
-from sqlmodel import select
 
 from .base import BaseCRUD
 

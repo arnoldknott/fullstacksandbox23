@@ -3,7 +3,7 @@ import logging
 from uuid import UUID
 from datetime import datetime
 from typing import Annotated
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query
 from core.types import ResourceType, IdentityType, Action
 from .base import BaseView
 from core.security import (
@@ -202,7 +202,7 @@ async def get_access_logs(
     resource_id: Annotated[UUID | None, Query()] = None,
     identity_id: Annotated[UUID | None, Query()] = None,
     action: Annotated[Action | None, Query()] = None,
-    status_code: Annotated[int | None, Query()] = 200,
+    status_code: Annotated[int | None, Query()] = None,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["Admin"])),
 ) -> list[AccessLogRead]:
@@ -229,14 +229,33 @@ async def get_access_logs_for_resource(
     current_user = await access_log_view._check_token_against_guards(
         token_payload, guards
     )
-    if resource_id is None and identity_id is None:
-        raise HTTPException(
-            status_code=422,
-            detail="At least one of the parameters resource_id or identity_id must be provided.",
-        )
+    # TBD: should be removed now: resource_id is always mandatory now and identity_id is optional - FastAPI should take care of it.
+    # if resource_id is None and identity_id is None:
+    #     raise HTTPException(
+    #         status_code=422,
+    #         detail="At least one of the parameters resource_id or identity_id must be provided.",
+    #     )
     async with access_log_view.crud() as crud:
         return await crud.read_access_logs_by_resource_id_and_identity_id(
             current_user, resource_id=resource_id, identity_id=identity_id
+        )
+
+
+# TBD: implement a route for identity_id only, so user can see everything the user has access to - filter by own, write, read as query parameter
+@router.get("/log/identity/{identity_id}", status_code=200)
+async def get_access_logs_for_identity(
+    identity_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[AccessLogRead]:
+    """Returns creation information for a resource."""
+    logger.info("GET access log information for identity")
+    current_user = await access_log_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with access_log_view.crud() as crud:
+        return await crud.read_access_logs_by_resource_id_and_identity_id(
+            current_user, identity_id=identity_id
         )
 
 

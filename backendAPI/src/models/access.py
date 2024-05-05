@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 from sqlmodel import Field, SQLModel
 from sqlalchemy import UniqueConstraint
