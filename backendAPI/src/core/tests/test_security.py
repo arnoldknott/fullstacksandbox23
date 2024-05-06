@@ -13,6 +13,11 @@ from core.security import (
     CurrentAccessTokenHasRole,
 )
 from routers.api.v1.user import get_user_by_id
+from models.access import AccessLogRead
+from datetime import datetime, timedelta
+from crud.access import AccessLoggingCRUD
+from core.types import CurrentUserData, Action
+from tests.utils import current_user_data_admin
 
 
 from tests.utils import (
@@ -129,9 +134,11 @@ async def test_azure_user_self_signup(
         return current_user
 
     # call that temporary route:
+    before_time = datetime.now()
     response = await async_client.get(
         "/test_azure_user_self_signup",
     )
+    after_time = datetime.now()
     assert response.status_code == 200
     current_user = response.json()
     assert current_user["azure_user_id"] == many_test_azure_users[0]["azure_user_id"]
@@ -148,10 +155,18 @@ async def test_azure_user_self_signup(
     assert db_user.azure_tenant_id == uuid.UUID(
         many_test_azure_users[0]["azure_tenant_id"]
     )
-    assert db_user.created_at is not None
-    assert db_user.last_accessed_at is not None
-    assert db_user.created_at is not None
-    assert db_user.last_accessed_at >= db_user.created_at
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin), resource_id=db_user.id
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin), resource_id=db_user.id
+        )
+
+    assert created_at > before_time - timedelta(seconds=10)
+    assert created_at < after_time + timedelta(seconds=10)
+    assert last_accessed_at.time == created_at
 
 
 @pytest.mark.anyio
@@ -290,12 +305,13 @@ async def test_existing_azure_user_has_new_group_in_token(
         {
             **token_payload_user_id,
             **token_payload_tenant_id,
+            **token_payload_scope_api_read,
             **token_payload_roles_user,
         },
-        # note: admin is logging in self - so last_accessed_at should change!
         {
             **token_payload_user_id,
             **token_payload_tenant_id,
+            **token_payload_scope_api_read,
             **token_payload_roles_admin,
         },
     ],
@@ -311,7 +327,6 @@ async def test_existing_user_logs_in(
     # mocks the access token:
     app = app_override_get_azure_payload_dependency
     user_in_database = await add_one_azure_test_user(0)
-    # user_in_database = existing_users[0]
 
     # create a temporary route that uses the guard:
     @app.get("/test_existing_user_logs_in")
@@ -322,9 +337,11 @@ async def test_existing_user_logs_in(
         return current_user
 
     # call that temporary route:
+    before_time = datetime.now()
     response = await async_client.get(
         "/test_existing_user_logs_in",
     )
+    after_time = datetime.now()
 
     assert response.status_code == 200
     response_user = response.json()
@@ -332,8 +349,20 @@ async def test_existing_user_logs_in(
     assert "id" in response_user
     assert response_user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert response_user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
-    # TBD: admin access should not change the last_accessed_at!
-    assert modelled_response_user.last_accessed_at > user_in_database.last_accessed_at
+
+    # current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    access_log_response = await async_client.get(
+        f"/api/v1/access/log/{response_user['id']}/last-accessed"
+    )
+
+    assert access_log_response.status_code == 200
+    last_accessed_at = AccessLogRead(**access_log_response.json())
+
+    assert last_accessed_at.time > before_time - timedelta(seconds=10)
+    assert last_accessed_at.time < after_time + timedelta(seconds=10)
+    assert last_accessed_at.identity_id == uuid.UUID(response_user["id"])
+    assert last_accessed_at.resource_id == uuid.UUID(response_user["id"])
+    assert last_accessed_at.action == Action.read
 
 
 # endregion

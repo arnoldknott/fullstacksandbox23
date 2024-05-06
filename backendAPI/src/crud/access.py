@@ -606,15 +606,15 @@ class AccessLoggingCRUD:
             if limit:
                 statement = statement.limit(limit)
 
-            print("=== AccessLoggingCRUD.read - statement ===")
-            print(statement.compile())
-            print(statement.compile().params)
+            # print("=== AccessLoggingCRUD.read - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
 
             response = await session.exec(statement)
             results = response.all()
 
-            print("=== AccessLoggingCRUD.read - results ===")
-            pprint(results)
+            # print("=== AccessLoggingCRUD.read - results ===")
+            # pprint(results)
 
             if not results:
                 raise HTTPException(status_code=404, detail="Access logs not found.")

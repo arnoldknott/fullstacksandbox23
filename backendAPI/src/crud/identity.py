@@ -114,6 +114,15 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             current_user = results.first()
             if current_user is None:
                 raise HTTPException(status_code=404, detail="User not found")
+            else:
+                access_log = AccessLogCreate(
+                    resource_id=current_user.id,
+                    action=Action.read,
+                    identity_id=current_user.id,
+                    status_code=200,
+                )
+                async with self.logging_CRUD as log_CRUD:
+                    await log_CRUD.create(access_log)
         except HTTPException as err:
             if err.status_code == 404:
                 try:
