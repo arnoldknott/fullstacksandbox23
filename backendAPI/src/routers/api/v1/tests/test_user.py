@@ -252,7 +252,6 @@ async def test_post_user_with_uuid_user_id(
     assert db_user.azure_tenant_id == uuid.UUID(
         many_test_azure_users[2]["azure_tenant_id"]
     )
-    assert db_user.last_accessed_at is not None
 
 
 @pytest.mark.anyio
@@ -466,7 +465,6 @@ async def test_user_gets_user_by_azure_user_id(
             resource_id=modelled_response_user.id,
         )
 
-    # TBD: add status code to last_accessed assertion?
     assert created_at > before_time - timedelta(seconds=1)
     assert created_at < after_time + timedelta(seconds=1)
     assert last_accessed_at.time > created_at
@@ -490,9 +488,11 @@ async def test_admin_gets_user_by_azure_user_id(
     app_override_get_azure_payload_dependency
     user_in_database = await add_one_azure_test_user(1)
 
+    before_time = datetime.now()
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
     )
+    after_time = datetime.now()
     assert response.status_code == 200
     response_user = response.json()
     modelled_response_user = UserRead(**response_user)
@@ -500,7 +500,21 @@ async def test_admin_gets_user_by_azure_user_id(
     assert response_user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert response_user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
     assert len(response_user["azure_groups"]) == 3
-    assert modelled_response_user.last_accessed_at == user_in_database.last_accessed_at
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time > created_at
+    assert last_accessed_at.status_code == 200
 
 
 @pytest.mark.anyio
@@ -575,7 +589,9 @@ async def test_user_gets_user_by_id(
     }
     await add_one_test_access_policy(policy)
 
+    before_time = datetime.now()
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
+    after_time = datetime.now()
 
     assert response.status_code == 200
     user = response.json()
@@ -583,8 +599,22 @@ async def test_user_gets_user_by_id(
     assert "id" in user
     assert user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
-    assert modelled_response_user.last_accessed_at > user_in_database.last_accessed_at
     assert len(user["azure_groups"]) == 3
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time > created_at
+    assert last_accessed_at.status_code == 200
 
 
 @pytest.mark.anyio
@@ -604,7 +634,9 @@ async def test_admin_gets_user_by_id(
     app_override_get_azure_payload_dependency
     user_in_database = await add_one_azure_test_user(1)
 
+    before_time = datetime.now()
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
+    after_time = datetime.now()
 
     assert response.status_code == 200
     user = response.json()
@@ -613,7 +645,21 @@ async def test_admin_gets_user_by_id(
     assert user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
     assert len(user["azure_groups"]) == 3
-    assert modelled_response_user.last_accessed_at == user_in_database.last_accessed_at
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time > created_at
+    assert last_accessed_at.status_code == 200
 
 
 @pytest.mark.anyio
@@ -797,12 +843,28 @@ async def test_put_user_from_admin(
     assert updated_user.is_active is False
 
     # Verify that the user was updated in the database
+    before_time = datetime.now()
     response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
+    after_time = datetime.now()
     content = response.json()
     db_user = User.model_validate(content)
     assert db_user is not None
     assert db_user.is_active is False
-    assert db_user.last_accessed_at == existing_db_user["last_accessed_at"]
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=db_user.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=db_user.id,
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time > created_at
+    assert last_accessed_at.status_code == 200
 
 
 @pytest.mark.anyio
@@ -824,11 +886,6 @@ async def test_put_user_with_integer_user_id(
     # mocks the access token:
     app_override_get_azure_payload_dependency
     existing_user = await add_one_azure_test_user(0)
-    # await add_test_policies_for_resources(
-    #     resources=[existing_user],
-    #     actions=["write"],
-    #     publics=[True],
-    # )
     existing_db_user = await get_user_by_id(
         str(existing_user.id),
         mocked_get_azure_token_payload,
@@ -837,10 +894,12 @@ async def test_put_user_with_integer_user_id(
     assert existing_db_user.is_active is True
 
     # Make a PUT request to update the user
+    before_time = datetime.now()
     response = await async_client.put(
         f"/api/v1/user/{str(existing_user.id)}",
         json={"is_active": False, "id": 1},
     )
+    after_time = datetime.now()
     assert response.status_code == 200
     updated_user = User(**response.json())
     assert updated_user.is_active is False
@@ -853,7 +912,21 @@ async def test_put_user_with_integer_user_id(
     assert db_user.is_active is False
     assert db_user.id != 1
     assert db_user.id == existing_user.id
-    assert db_user.last_accessed_at > existing_db_user.last_accessed_at
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=db_user.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=db_user.id,
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time > created_at
+    assert last_accessed_at.status_code == 200
 
 
 @pytest.mark.anyio
@@ -895,13 +968,29 @@ async def test_admin_put_user_with_uuid_user_id(
     assert updated_user.is_active is False
 
     # Verify that the user was updated in the database
+    before_time = datetime.now()
     response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
+    after_time = datetime.now()
     content = response.json()
     db_user = User.model_validate(content)
     assert db_user is not None
     assert db_user.is_active is False
     assert db_user.id != uuid.UUID(test_uuid)
-    assert db_user.last_accessed_at > existing_db_user.last_accessed_at
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=db_user.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=db_user.id,
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time > created_at
+    assert last_accessed_at.status_code == 200
 
 
 @pytest.mark.anyio
