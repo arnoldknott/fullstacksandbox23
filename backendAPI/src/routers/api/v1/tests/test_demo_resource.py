@@ -5,9 +5,10 @@ import pytest
 from httpx import AsyncClient
 from fastapi import FastAPI
 from models.demo_resource import DemoResource, DemoResourceRead
-from models.access import AccessPolicy
+from models.access import AccessPolicy, AccessLogRead
 from models.tag import Tag
-
+from core.types import Action
+from crud.access import AccessLoggingCRUD
 from tests.utils import (
     one_test_demo_resource,
     token_user1_read,
@@ -25,30 +26,40 @@ from tests.utils import (
     indirect=True,
 )
 async def test_post_demo_resource(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_user_from_azure_token,
+    mocked_get_azure_token_payload,
 ):
     """Tests POST of a demo_resource."""
 
     app_override_get_azure_payload_dependency
 
     resource = one_test_demo_resource
-    time_before_post = datetime.now()
+    before_time = datetime.now()
     response = await async_client.post("/api/v1/demoresource/", json=resource)
-    time_after_post = datetime.now()
+    after_time = datetime.now()
 
     assert response.status_code == 201
     content = response.json()
+    assert uuid.UUID(content["id"])
     assert content["name"] == one_test_demo_resource["name"]
     assert content["description"] == one_test_demo_resource["description"]
-    # TBD: implement an AccessLog view,
-    # to check if the access was logged correctly
-    # and remove this!
-    assert (
-        time_before_post - timedelta(seconds=25)
-        < datetime.fromisoformat(content["created_at"])
-        < time_after_post + timedelta(seconds=25)
+
+    access_log_response = await async_client.get(
+        f"/api/v1/access/log/{content['id']}/last-accessed"
     )
-    assert "id" in content
+
+    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    assert access_log_response.status_code == 200
+    last_accessed_at = AccessLogRead(**access_log_response.json())
+
+    assert last_accessed_at.time > before_time - timedelta(seconds=1)
+    assert last_accessed_at.time < after_time + timedelta(seconds=1)
+    assert last_accessed_at.resource_id == uuid.UUID(content["id"])
+    assert last_accessed_at.identity_id == current_user.user_id
+    assert last_accessed_at.action == Action.own
 
 
 @pytest.mark.anyio
@@ -268,6 +279,7 @@ async def test_put_demo_resource(
     add_test_demo_resources: list[DemoResource],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
+    current_user_from_azure_token,
 ):
     """Tests PUT of a demo resource."""
 
@@ -288,16 +300,19 @@ async def test_put_demo_resource(
 
     assert response.status_code == 200
     content = response.json()
-    # print("=== last_updated_at ===")
-    # print(datetime.fromisoformat(content["last_updated_at"]))
+
+    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            current_user, resource_id=content["id"]
+        )
+
     # print(type(datetime.fromisoformat(content["last_updated_at"])))
-    # print("=== time_before_crud ===")
-    # print(time_before_crud)
-    # print(type(time_before_crud))
     assert (
-        time_before_crud - timedelta(seconds=8)
-        < datetime.fromisoformat(content["last_updated_at"])
-        < time_after_crud + timedelta(seconds=8)
+        time_before_crud - timedelta(seconds=1)
+        < created_at
+        < time_after_crud + timedelta(seconds=1)
     )
     assert content["name"] == updated_resource["name"]
     assert content["description"] == updated_resource["description"]

@@ -1684,8 +1684,6 @@ async def test_user_with_owner_rights_puts_wrong_access_policy(
     response = await async_client.put("/api/v1/access/policy", json=update_policy)
     payload = response.json()
 
-    print(payload)
-
     assert response.status_code == 422
     assert "Field required" in payload["detail"][0]["msg"]
     assert "missing" in payload["detail"][0]["type"]
@@ -1963,8 +1961,8 @@ async def test_admin_gets_all_logs_with_status_code(
     assert modelled_access_log.identity_id == current_admin_user.user_id
     assert modelled_access_log.action == Action.own
     assert modelled_access_log.status_code == 201
-    assert modelled_access_log.time >= before_time - timedelta(seconds=120)
-    assert modelled_access_log.time <= after_time + timedelta(seconds=30)
+    assert modelled_access_log.time >= before_time - timedelta(seconds=1)
+    assert modelled_access_log.time <= after_time + timedelta(seconds=1)
 
 
 @pytest.mark.anyio
@@ -2021,8 +2019,6 @@ async def test_get_logs_for_resource(
         # probably wrong, because AccessLogCreate is used to place the test logs
         # and AccessLogCreate ignores the time attribute
         assert returned.time == expected.time
-        # assert returned.time >= before_time - timedelta(seconds=30)
-        # assert returned.time <= after_time + timedelta(seconds=30)
 
 
 @pytest.mark.anyio
@@ -2065,8 +2061,6 @@ async def test_get_logs_for_resource_and_identity(
         assert returned.status_code == expected.status_code
         # TBD: debug time offset
         assert returned.time == expected.time
-        # assert returned.time >= before_time - timedelta(seconds=30)
-        # assert returned.time <= after_time + timedelta(seconds=30)
 
 
 # TBD: add tests for identity endpoint

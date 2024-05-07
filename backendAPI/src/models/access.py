@@ -192,7 +192,7 @@ class AccessLog(AccessLogCreate, table=True):
     )
     resource_id: uuid.UUID = Field(foreign_key="identifiertypelink.id", index=True)
     action: "Action" = Field(index=True)
-    time: datetime = Field(default=datetime.now(), index=True)
+    time: datetime = Field(default_factory=datetime.now, index=True)
     status_code: int = Field()
 
 

@@ -116,8 +116,8 @@ async def test_post_protected_resource(
     assert resource_log[0].identity_type == "User"
     assert resource_log[0].action == "own"
     assert resource_log[0].status_code == 201
-    assert resource_log[0].time >= time_before_post - timedelta(seconds=4)
-    assert resource_log[0].time <= time_after_post + timedelta(seconds=4)
+    assert resource_log[0].time >= time_before_post - timedelta(seconds=1)
+    assert resource_log[0].time <= time_after_post + timedelta(seconds=1)
 
 
 # TBD: add tests for get, get_by_id, put, delete endpoints of the protected resource API!

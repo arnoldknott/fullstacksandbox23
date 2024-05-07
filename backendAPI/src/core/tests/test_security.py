@@ -146,6 +146,18 @@ async def test_azure_user_self_signup(
         current_user["azure_tenant_id"] == many_test_azure_users[0]["azure_tenant_id"]
     )
 
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin), resource_id=current_user["id"]
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin), resource_id=current_user["id"]
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time == created_at
+
     # To verify that the user is in the database, calling the endpoint to get the user by id with admin token:
     db_user = await get_user_by_id(
         current_user["id"], token_admin_read, mock_guards(roles=["User"])
@@ -155,18 +167,6 @@ async def test_azure_user_self_signup(
     assert db_user.azure_tenant_id == uuid.UUID(
         many_test_azure_users[0]["azure_tenant_id"]
     )
-
-    async with AccessLoggingCRUD() as crud:
-        created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin), resource_id=db_user.id
-        )
-        last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin), resource_id=db_user.id
-        )
-
-    assert created_at > before_time - timedelta(seconds=10)
-    assert created_at < after_time + timedelta(seconds=10)
-    assert last_accessed_at.time == created_at
 
 
 @pytest.mark.anyio
@@ -345,12 +345,11 @@ async def test_existing_user_logs_in(
 
     assert response.status_code == 200
     response_user = response.json()
-    modelled_response_user = UserRead(**response_user)
+    # modelled_response_user = UserRead(**response_user)
     assert "id" in response_user
     assert response_user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert response_user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
 
-    # current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
     access_log_response = await async_client.get(
         f"/api/v1/access/log/{response_user['id']}/last-accessed"
     )
@@ -358,8 +357,8 @@ async def test_existing_user_logs_in(
     assert access_log_response.status_code == 200
     last_accessed_at = AccessLogRead(**access_log_response.json())
 
-    assert last_accessed_at.time > before_time - timedelta(seconds=10)
-    assert last_accessed_at.time < after_time + timedelta(seconds=10)
+    assert last_accessed_at.time > before_time - timedelta(seconds=1)
+    assert last_accessed_at.time < after_time + timedelta(seconds=1)
     assert last_accessed_at.identity_id == uuid.UUID(response_user["id"])
     assert last_accessed_at.resource_id == uuid.UUID(response_user["id"])
     assert last_accessed_at.action == Action.read

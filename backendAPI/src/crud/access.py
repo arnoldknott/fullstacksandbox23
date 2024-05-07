@@ -547,6 +547,10 @@ class AccessLoggingCRUD:
             self.session.add(access_log)
             await self.session.commit()
             await self.session.refresh(access_log)
+
+            # print("=== AccessLoggingCRUD.create - access_log ===")
+            # pprint(access_log)
+
             return access_log
         except Exception as e:
             logger.error(f"Error in creating log: {e}")
@@ -671,7 +675,11 @@ class AccessLoggingCRUD:
         """Reads the last access log for a resource id."""
         try:
             last_accessed_entry = await self.read(
-                current_user, resource_id, descending_order_by=AccessLog.time, limit=1
+                current_user,
+                resource_id,
+                descending_order_by=AccessLog.time,
+                limit=1,
+                status_code=None,
             )
             return last_accessed_entry[0]
         except Exception as err:

@@ -1,9 +1,11 @@
 import pytest
 import uuid
+from datetime import datetime, timedelta
 from typing import List
 from httpx import AsyncClient
-from core.types import Action
+from core.types import Action, CurrentUserData
 from models.identity import User, UserRead
+from crud.access import AccessLoggingCRUD
 from fastapi import FastAPI
 from tests.utils import (
     token_user1_read,
@@ -20,6 +22,7 @@ from tests.utils import (
     token_payload_scope_api_write,
     token_payload_scope_api_read_write,
     token_payload_one_group,
+    current_user_data_admin,
     many_test_azure_users,
 )
 from routers.api.v1.user import get_user_by_id
@@ -80,20 +83,37 @@ async def test_admin_posts_user(
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
     mock_guards,
+    current_user_from_azure_token,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_get_azure_payload_dependency
 
     # Make a POST request to create the user
+    before_time = datetime.now()
     response = await async_client.post(
         "/api/v1/user/",
         json=many_test_azure_users[2],
     )
+    after_time = datetime.now()
 
     assert response.status_code == 201
     created_user = User(**response.json())
     assert created_user.azure_user_id == many_test_azure_users[2]["azure_user_id"]
     assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
+
+    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            current_user, resource_id=created_user.id
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            current_user, resource_id=created_user.id
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time == created_at
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
@@ -105,7 +125,6 @@ async def test_admin_posts_user(
     assert db_user.azure_tenant_id == uuid.UUID(
         many_test_azure_users[2]["azure_tenant_id"]
     )
-    assert db_user.last_accessed_at is not None
 
 
 @pytest.mark.anyio
@@ -127,20 +146,37 @@ async def test_post_user_with_integer_user_id(
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
     mock_guards,
+    current_user_from_azure_token,
 ):
     """Tests posting a integer user_id to user_post endpoint fails"""
     app_override_get_azure_payload_dependency
 
     # Make a POST request to create the user
+    before_time = datetime.now()
     response = await async_client.post(
         "/api/v1/user/",
         json={**many_test_azure_users[2], "id": 1},
     )
+    after_time = datetime.now()
 
     assert response.status_code == 201
     created_user = User(**response.json())
     assert created_user.azure_user_id == many_test_azure_users[2]["azure_user_id"]
     assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
+
+    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            current_user, resource_id=created_user.id
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            current_user, resource_id=created_user.id
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time == created_at
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
@@ -152,7 +188,6 @@ async def test_post_user_with_integer_user_id(
     assert db_user.azure_tenant_id == uuid.UUID(
         many_test_azure_users[2]["azure_tenant_id"]
     )
-    assert db_user.last_accessed_at is not None
 
 
 @pytest.mark.anyio
@@ -174,21 +209,38 @@ async def test_post_user_with_uuid_user_id(
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
     mock_guards,
+    current_user_from_azure_token,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_get_azure_payload_dependency
     test_uuid = str(uuid.uuid4())
 
     # Make a POST request to create the user
+    before_time = datetime.now()
     response = await async_client.post(
         "/api/v1/user/",
         json={**many_test_azure_users[2], "id": test_uuid},
     )
+    after_time = datetime.now()
 
     assert response.status_code == 201
     created_user = User(**response.json())
     assert created_user.azure_user_id == many_test_azure_users[2]["azure_user_id"]
     assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
+
+    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            current_user, resource_id=created_user.id
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            current_user, resource_id=created_user.id
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time == created_at
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
@@ -389,18 +441,36 @@ async def test_user_gets_user_by_azure_user_id(
     }
     await add_one_test_access_policy(policy)
 
+    before_time = datetime.now()
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
     )
+    after_time = datetime.now()
     assert response.status_code == 200
     response_user = response.json()
+
     modelled_response_user = UserRead(**response_user)
-    assert "id" in response_user
-    assert response_user["azure_user_id"] == str(user_in_database.azure_user_id)
-    assert response_user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
-    # TBD: admin access should not change the last_accessed_at!
-    assert len(response_user["azure_groups"]) == 3
-    assert modelled_response_user.last_accessed_at > user_in_database.last_accessed_at
+
+    assert modelled_response_user.id is not None
+    assert modelled_response_user.azure_user_id == user_in_database.azure_user_id
+    assert modelled_response_user.azure_tenant_id == user_in_database.azure_tenant_id
+    assert len(modelled_response_user.azure_groups) == 3
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+
+    # TBD: add status code to last_accessed assertion?
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time > created_at
+    assert last_accessed_at.status_code == 200
 
 
 @pytest.mark.anyio
