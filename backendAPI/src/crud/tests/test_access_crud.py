@@ -3,8 +3,8 @@ from pprint import pprint
 
 import pytest
 
-from core.types import Action, CurrentUserData
-from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
+from core.types import Action, CurrentUserData, ResourceType
+from crud.access import AccessLoggingCRUD, AccessPolicyCRUD, ResourceHierarchyCRUD
 from models.access import (
     AccessLogCreate,
     AccessPolicy,
@@ -1142,3 +1142,151 @@ async def test_create_access_log(
 
 
 # endregion AccessLogging CRUD tests
+
+# region ResourceHierarchy CRUD tests
+
+
+@pytest.mark.anyio
+async def test_admin_create_resource_hierarchy(
+    register_many_protected_resources,
+    register_current_user,
+):
+    """Test creating a resource hierarchy."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    resources = register_many_protected_resources
+    new_child_id = uuid.uuid4()
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        created_hierarchy = await hierarchy_crud.create(
+            current_user=current_admin_user,
+            parent_id=resources[0],
+            child_type=ResourceType.protected_child,
+            child_id=new_child_id,
+        )
+
+    assert created_hierarchy.parent_id == uuid.UUID(resources[0])
+    assert created_hierarchy.child_id == new_child_id
+    assert created_hierarchy.inherit is False
+
+
+@pytest.mark.anyio
+async def test_admin_create_resource_hierarchy_with_inheritance(
+    register_many_protected_resources,
+    register_current_user,
+):
+    """Test creating a resource hierarchy."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    resources = register_many_protected_resources
+    new_child_id = uuid.uuid4()
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        created_hierarchy = await hierarchy_crud.create(
+            current_user=current_admin_user,
+            parent_id=resources[0],
+            child_type=ResourceType.protected_child,
+            child_id=new_child_id,
+            inherit=True,
+        )
+
+    assert created_hierarchy.parent_id == uuid.UUID(resources[0])
+    assert created_hierarchy.child_id == new_child_id
+    assert created_hierarchy.inherit is True
+
+
+@pytest.mark.anyio
+async def test_admin_create_resource_hierarchy_with_not_allowed_child_type(
+    register_many_protected_resources,
+    register_current_user,
+):
+    """Test creating a resource hierarchy."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    resources = register_many_protected_resources
+    new_child_id = uuid.uuid4()
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.create(
+                current_user=current_admin_user,
+                parent_id=resources[0],
+                child_type=ResourceType.demo_resource,
+                child_id=new_child_id,
+            )
+        except Exception as err:
+            assert err.status_code == 403
+            assert err.detail == "Forbidden."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_admin_create_resource_hierarchy_with_nonexisting_parent(
+    register_many_protected_resources,
+    register_current_user,
+):
+    """Test creating a resource hierarchy."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    register_many_protected_resources
+    new_child_id = uuid.uuid4()
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.create(
+                current_user=current_admin_user,
+                parent_id=uuid.uuid4(),
+                child_type=ResourceType.protected_child,
+                child_id=new_child_id,
+            )
+        except Exception as err:
+            assert err.status_code == 403
+            assert err.detail == "Forbidden."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_admin_read_all_children_of_a_parent(
+    add_one_parent_child_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    new_child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_relationship(new_child_id)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read_children(
+            current_user=current_admin_user,
+            parent_id=relationship.parent_id,
+        )
+
+    assert len(read_relation) == 1
+    assert read_relation[0].child_id == new_child_id
+    assert read_relation[0].parent_id == relationship.parent_id
+    assert read_relation[0].inherit == relationship.inherit
+
+
+# Nomenclature:
+# ✔︎ implemented
+# X missing tests
+# - not implemented
+
+# Passing tests:
+# ✔︎ admin creates adds a new child to existing parent
+# ✔︎ admin creates adds a new child to existing parent with inheritance
+# ✔︎ admin creates tries to add a new child with a resource_type that is not allowed as child for the parent
+# ✔ admin creates tries to add a child to non-existing parent
+# X user creates adds a new child to existing parent with access
+# X user creates tries to add a child without owner access to existing parent
+# ✔ admin reads one child of one parent
+# X admin reads all children of one parent
+# X user reads all children of a parent with read access to parent
+# X user tries to read all children of a parent without read access to parent
+# X admin reads all parents of a child
+# X user reads all parents of a child with read access to child
+# X user tries to read all parents of a child without read access to child
+# - admin deletes a child
+# - user deletes a child with owner access to child
+# - user tries to delete a child without owner access to child
+# - inheritance of access rights
+
+# endregion ResourceHierarchy CRUD tests

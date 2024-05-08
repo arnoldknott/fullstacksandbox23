@@ -54,19 +54,57 @@ class ResourceType(BaseType):
 
     # The values need to match the exact name of the model class.
 
-    # TBD: consider getting those values programmatically?
-    # for sandbox only:
-    category = "Category"  # potentially keep for production
-    tag = "Tag"  # potentially keep for production
+    # TBD: consider getting those values programmatically from models?
+    category = "Category"
+    tag = "Tag"
     demo_resource = "DemoResource"
     protected_resource = "ProtectedResource"
+    protected_child = "ProtectedChild"
+    protected_grand_child = "ProtectedGrandChild"
     public_resource = "PublicResource"
-    # for future use:
     module = "Module"
     section = "Section"
     subsection = "Subsection"
     topic = "Topic"
     element = "Element"
+
+
+class BaseHierarchy:
+    """Class to define the hierarchy of the entities"""
+
+    _children = {}
+
+    @classmethod
+    def get_allowed_children(cls, entity_type: str) -> List[str]:
+        return cls._children.get(entity_type, [])
+
+
+class ResourceHierarchy(BaseHierarchy):
+    """Class to define the hierarchy of the resources"""
+
+    _children = {
+        ResourceType.category: [
+            ResourceType.demo_resource,
+            ResourceType.protected_resource,
+            ResourceType.public_resource,
+        ],
+        ResourceType.protected_resource: [
+            ResourceType.protected_child,
+            ResourceType.protected_grand_child,
+        ],
+        ResourceType.module: [
+            ResourceType.section,
+            ResourceType.topic,
+            ResourceType.element,
+        ],
+        ResourceType.section: [
+            ResourceType.subsection,
+            ResourceType.topic,
+            ResourceType.element,
+        ],
+        ResourceType.subsection: [ResourceType.topic, ResourceType.element],
+        ResourceType.topic: [ResourceType.element],
+    }
 
 
 class IdentityType(BaseType):
@@ -76,10 +114,35 @@ class IdentityType(BaseType):
     user = "User"
     # admin = "admin"
     # group = "group"
+    ueber_group = "UeberGroup"
+    group = "Group"
+    sub_group = "SubGroup"
+    sub_sub_group = "SubSubGroup"
     azure_group = "AzureGroup"
     # brightspace_group = "brightspace_group"
     # discord_group = "discord_group"
     # google_group = "google_group"
+
+
+class IdentityHierarchy(BaseHierarchy):
+    """Class to define the hierarchy of the identities"""
+
+    _children = {
+        IdentityType.azure_group: [IdentityType.user],
+        IdentityType.ueber_group: [
+            IdentityType.group,
+            IdentityType.sub_group,
+            IdentityType.sub_sub_group,
+            IdentityType.user,
+        ],
+        IdentityType.group: [
+            IdentityType.sub_group,
+            IdentityType.sub_sub_group,
+            IdentityType.user,
+        ],
+        IdentityType.sub_group: [IdentityType.sub_sub_group, IdentityType.user],
+        IdentityType.sub_sub_group: [IdentityType.user],
+    }
 
 
 # using models in stead of strings:

@@ -9,34 +9,6 @@ from sqlmodel import Field, SQLModel
 # if TYPE_CHECKING:
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
 
-# from models import (
-#     Category,
-#     Tag,
-#     DemoResource,
-#     ProtectedResource,
-#     # Module,
-#     # Section,
-#     # Subsection,
-#     # Topic,
-#     # Element,
-# )
-
-# ResourceType = create_model(
-#     "ResourceType",
-#     category=(Category, ...),
-#     tag=(Tag, ...),
-#     demo_resource=(DemoResource, ...),
-#     protected_resource=(ProtectedResource, ...),
-#     # module=(Module, ...),
-#     # section=(Section, ...),
-#     # subsection=(Subsection, ...),
-#     # topic=(Topic, ...),
-#     # element=(Element, ...),
-# )
-
-# TBD: Retrieve resource_types and identity_types from the database from either link or hierarchy tables
-# but don't bother the API user with it. All the endpoints need to know is the UUID of the resource or identity.
-
 
 class IdentifierTypeLink(SQLModel, table=True):
     """Model for resource types"""
@@ -207,9 +179,7 @@ class ResourceHierarchyCreate(SQLModel):
     """Create model for resource hierarchy"""
 
     parent_id: uuid.UUID
-    # parent_type: "ResourceType"
     child_id: uuid.UUID
-    # child_type: "ResourceType"
     inherit: bool = Field(
         default=False,
         description="Set to true, if the child inherits permissions from this parent.",
@@ -218,11 +188,8 @@ class ResourceHierarchyCreate(SQLModel):
     @model_validator(mode="after")
     def either_inherit_or_not(self):
         """Validates either inherit is set or not"""
-        if self.inherit is True:
-            if (self.parent_id == self.child_resource_id) and (
-                self.parent_type == self.child_type
-            ):
-                raise ValueError("A resource cannot inherit from itself.")
+        if self.parent_id == self.child_resource_id:
+            raise ValueError("A resource cannot be its own child.")
         return self
 
 
@@ -230,9 +197,7 @@ class ResourceHierarchy(SQLModel, table=True):
     """Table for resource hierarchy"""
 
     parent_id: uuid.UUID = Field(primary_key=True)
-    # parent_type: "ResourceType" = Field(index=True)
     child_id: uuid.UUID = Field(primary_key=True)
-    # child_type: "ResourceType" = Field(index=True)
     inherit: bool = Field(
         default=False,
         description="Set to true, if the child inherits permissions from this parent.",

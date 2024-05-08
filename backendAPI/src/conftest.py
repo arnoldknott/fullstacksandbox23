@@ -11,7 +11,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from core.databases import postgres_async_engine  # should be SQLite here only!
 from core.security import CurrentAccessToken, Guards, get_azure_token_payload
 from core.types import CurrentUserData, IdentityType, ResourceType
-from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
+from crud.access import AccessLoggingCRUD, AccessPolicyCRUD, ResourceHierarchyCRUD
 from crud.base import BaseCRUD
 from crud.identity import UserCRUD
 from main import app
@@ -101,9 +101,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[
-        get_azure_token_payload
-    ] = lambda: mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 
@@ -443,6 +443,40 @@ async def add_many_test_access_logs(
         access_logs.append(access_log_instance)
 
     yield access_logs
+
+
+async def add_parent_child_relationship(
+    parent_id: UUID,
+    child_id: UUID,
+    child_type: ResourceType = ResourceType.protected_child,
+):
+    """Adds a parent-child relationship to the resource hierarchy table."""
+    async with ResourceHierarchyCRUD() as crud:
+        created_relationship = await crud.create(
+            current_user=CurrentUserData(**current_user_data_admin),
+            parent_id=parent_id,
+            child_type=child_type,
+            child_id=child_id,
+        )
+    return created_relationship
+
+
+@pytest.fixture(scope="function")
+async def add_one_parent_child_relationship(
+    register_many_protected_resources: list[UUID],
+):
+    """Adds a parent-child relationship to the database."""
+
+    registered_resources = register_many_protected_resources
+
+    async def _add_one_parent_child_relationship(
+        child_id: UUID, type: ResourceType = ResourceType.protected_child
+    ):
+        """Adds a parent-child relationship to the database."""
+        parent_id = registered_resources[0]
+        return await add_parent_child_relationship(parent_id, child_id, type)
+
+    yield _add_one_parent_child_relationship
 
 
 # TBD: add one test access log

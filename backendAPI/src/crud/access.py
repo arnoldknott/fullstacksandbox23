@@ -1,13 +1,21 @@
 import logging
-from typing import List, Optional
+from typing import List, Optional, Generic, Type, TypeVar
 from uuid import UUID
 
 from fastapi import HTTPException
 from sqlmodel import SQLModel, and_, delete, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.orm import aliased
 
 from core.databases import get_async_session
-from core.types import Action, CurrentUserData, IdentityType, ResourceType
+from core.types import (
+    Action,
+    CurrentUserData,
+    IdentityType,
+    ResourceType,
+    ResourceHierarchy,
+    BaseHierarchy,
+)
 from models.access import (
     AccessLog,
     AccessLogCreate,
@@ -19,6 +27,9 @@ from models.access import (
     AccessPolicyUpdate,
     AccessRequest,
     IdentifierTypeLink,
+    ResourceHierarchyCreate,
+    ResourceHierarchy as ResourceHierarchyTable,
+    ResourceHierarchyRead,
 )
 
 # from core.access import AccessControl
@@ -37,7 +48,6 @@ class AccessPolicyCRUD:
     def __init__(self):
         """Initializes the CRUD for access control policies."""
         self.session = None
-        # self.access_control = AccessControl(self)
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -90,6 +100,7 @@ class AccessPolicyCRUD:
             logger.error("Invalid action provided.")
             raise HTTPException(status_code=400, detail="Bad request: invalid action.")
 
+        # only public resources can be accessed without a user:
         if not current_user:
             if model != AccessPolicy:
                 statement = statement.join(
@@ -98,8 +109,10 @@ class AccessPolicyCRUD:
                 statement = statement.where(AccessPolicy.resource_id == model.id)
             statement = statement.where(AccessPolicy.action.in_(action))
             statement = statement.where(AccessPolicy.public)
+        # Admins can access everything:
         elif current_user.roles and "Admin" in current_user.roles:
             pass
+        # Users can access the resources, they have permission for including public resources:
         else:
             # this is becoming two different functions - one for resources and one for policies
             # consider splitting this into two functions
@@ -757,3 +770,191 @@ class AccessLoggingCRUD:
     #     except Exception as e:
     #         logger.error(f"Error in reading log: {e}")
     #         raise HTTPException(status_code=404, detail="Log not found")
+
+
+BaseHierarchyModel = TypeVar("BaseHierarchyModel", bound=SQLModel)
+BaseHierarchyModelCreate = TypeVar("BaseHierarchyModelCreate", bound=SQLModel)
+BaseHierarchyModelRead = TypeVar("BaseHierarchyModelRead", bound=SQLModel)
+
+
+class BaseHierarchyCRUD(
+    Generic[
+        BaseHierarchyModel,
+        BaseHierarchyModelCreate,
+        BaseHierarchyModelRead,
+    ]
+):
+    """Base CRUD for hierarchies."""
+
+    def __init__(self, hierarchy: BaseHierarchy, base_model: Type[BaseHierarchyModel]):
+        self.session = None
+        self.hierarchy = hierarchy
+        self.model = base_model
+        self.policy_crud = AccessPolicyCRUD()
+
+    async def __aenter__(self) -> AsyncSession:
+        """Returns a database session."""
+        self.session = await get_async_session()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Closes the database session."""
+        await self.session.close()
+
+    async def create(
+        self,
+        current_user: CurrentUserData,
+        parent_id: UUID,
+        child_type: ResourceType,
+        child_id: UUID,
+        inherit: Optional[bool] = False,
+    ) -> BaseHierarchyModelRead:
+        """Checks access and type matching and potentially creates parent-child relationship."""
+        try:
+            statement = select(IdentifierTypeLink.type)
+            # only selects, the IdentifierTypeLinks, that the user has access to.
+            statement = self.policy_crud.filters_allowed(
+                statement, Action.own, IdentifierTypeLink, current_user
+            )
+            statement = statement.where(IdentifierTypeLink.id == parent_id)
+            result = await self.session.exec(
+                select(IdentifierTypeLink.type).where(
+                    IdentifierTypeLink.id == parent_id
+                )
+            )
+            parent_type = result.one()
+            allowed_children = self.hierarchy.get_allowed_children(parent_type)
+            if child_type in allowed_children:
+                relation = self.model(
+                    parent_id=parent_id,
+                    child_id=child_id,
+                    inherit=inherit,
+                )
+                self.session.add(relation)
+                await self.session.commit()
+                await self.session.refresh(relation)
+                return relation
+            else:
+                logger.error("Bad request: child type not allowed for parent.")
+                raise HTTPException(
+                    status_code=403,
+                    detail="Bad request: child type not allowed for parent.",
+                )
+            pass
+        except Exception as e:
+            logger.error(f"Error in creating hierarchy: {e}")
+            raise HTTPException(status_code=403, detail="Forbidden.")
+
+    async def read_children(
+        self,
+        current_user: CurrentUserData,
+        parent_id: UUID,
+    ) -> List[BaseHierarchyModelRead]:
+        """Reads all child resources of a parent resource."""
+        try:
+            statement = (
+                select(self.model)
+                .where(
+                    self.model.parent_id == parent_id,
+                )
+                .join(
+                    IdentifierTypeLink,
+                    IdentifierTypeLink.id == self.model.parent_id,
+                )
+            )
+
+            statement = self.policy_crud.filters_allowed(
+                statement, Action.read, IdentifierTypeLink, current_user
+            )
+
+            # print("=== BaseHierarchyCRUD.read_children - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
+
+            response = await self.session.exec(statement)
+            results = response.all()
+
+            # print("=== BaseHierarchyCRUD.read_children - results ===")
+            # print(results)
+
+            return results
+        except Exception as e:
+            logger.error(f"Error in reading hierarchy: {e}")
+            raise HTTPException(status_code=404, detail="Hierarchy not found.")
+
+    # TBD: consider merging with read_children?
+    async def read_parents(
+        self,
+        current_user: CurrentUserData,
+        child_id: UUID,
+    ) -> List[BaseHierarchyModelRead]:
+        """Reads all parent resources of a child resource."""
+        try:
+            statement = (
+                select(self.hierarchy)
+                .where(
+                    self.hierarchy.child_id == child_id,
+                )
+                .join(
+                    IdentifierTypeLink,
+                    IdentifierTypeLink.id == self.hierarchy.child_id,
+                )
+            )
+            statement = self.policy_crud.filters_allowed(
+                statement, Action.read, IdentifierTypeLink, current_user
+            )
+            response = await self.session.exec(statement)
+            results = response.all()
+            return results
+        except Exception as e:
+            logger.error(f"Error in reading hierarchy: {e}")
+            raise HTTPException(status_code=404, detail="Hierarchy not found.")
+
+    async def delete(
+        self,
+        parent_id: UUID,
+        child_id: UUID,
+        current_user: CurrentUserData,
+    ) -> None:
+        """Deletes a parent-child relationship."""
+        try:
+            statement = (
+                delete(self.hierarchy)
+                .where(
+                    and_(
+                        self.hierarchy.parent_id == parent_id,
+                        self.hierarchy.child_id == child_id,
+                    )
+                )
+                .join(
+                    IdentifierTypeLink,
+                    IdentifierTypeLink.id == self.hierarchy.child_id,
+                )
+            )
+            statement = self.policy_crud.filters_allowed(
+                statement, Action.own, IdentifierTypeLink, current_user
+            )
+            response = await self.session.exec(statement)
+            await self.session.commit()
+            if response.rowcount == 0:
+                raise HTTPException(status_code=404, detail="Hierarchy not found.")
+        except Exception as e:
+            logger.error(f"Error in deleting hierarchy: {e}")
+            raise HTTPException(status_code=404, detail="Hierarchy not found.")
+
+
+class ResourceHierarchyCRUD(
+    BaseHierarchyCRUD[
+        ResourceHierarchyCreate, ResourceHierarchyTable, ResourceHierarchyRead
+    ]
+):
+    """CRUD for resource hierarchies."""
+
+    def __init__(self):
+        super().__init__(ResourceHierarchy, ResourceHierarchyTable)
+
+
+# class IdentityHierarchyCRUD(BaseHierarchyCRUD):
+#     """CRUD for identity hierarchies."""
+
+#     pass
