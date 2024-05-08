@@ -1,32 +1,33 @@
-import pytest
 import uuid
 from datetime import datetime, timedelta
 from typing import List
-from httpx import AsyncClient
-from core.types import Action, CurrentUserData
-from models.identity import User, UserRead
-from crud.access import AccessLoggingCRUD
+
+import pytest
 from fastapi import FastAPI
+from httpx import AsyncClient
+
+from core.types import Action, CurrentUserData
+from crud.access import AccessLoggingCRUD
+from models.identity import User, UserRead
+from routers.api.v1.user import get_user_by_id
 from tests.utils import (
+    current_user_data_admin,
+    many_test_azure_users,
+    token_admin_read,
+    token_admin_read_write,
+    token_payload_one_group,
+    token_payload_roles_admin,
+    token_payload_roles_user,
+    token_payload_scope_api_read,
+    token_payload_scope_api_read_write,
+    token_payload_scope_api_write,
+    token_payload_tenant_id,
+    token_payload_user_id,
     token_user1_read,
     token_user1_read_write,
     token_user2_read,
     token_user2_read_write,
-    token_admin_read,
-    token_admin_read_write,
-    token_payload_user_id,
-    token_payload_tenant_id,
-    token_payload_roles_admin,
-    token_payload_roles_user,
-    token_payload_scope_api_read,
-    token_payload_scope_api_write,
-    token_payload_scope_api_read_write,
-    token_payload_one_group,
-    current_user_data_admin,
-    many_test_azure_users,
 )
-from routers.api.v1.user import get_user_by_id
-
 
 # Passing tests:
 # ✔︎ admin user creates a user

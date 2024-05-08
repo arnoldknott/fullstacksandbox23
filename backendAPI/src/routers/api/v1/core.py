@@ -2,7 +2,6 @@ import logging
 from typing import Annotated
 
 import httpx
-from core.config import config
 
 # from core.security import get_token_from_header
 from fastapi import APIRouter, Header
@@ -10,6 +9,8 @@ from fastapi import APIRouter, Header
 # from fastapi import APIRouter, Depends, Header, HTTPException, status
 # from fastapi.security import OAuth2AuthorizationCodeBearer
 from msal import ConfidentialClientApplication
+
+from core.config import config
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

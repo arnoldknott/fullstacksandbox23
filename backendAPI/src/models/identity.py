@@ -2,10 +2,10 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from core.config import config
-
-from core.types import IdentityType
 from sqlmodel import Field, Relationship, SQLModel
+
+from core.config import config
+from core.types import IdentityType
 
 # from .azure_group import AzureGroup, AzureGroupRead
 

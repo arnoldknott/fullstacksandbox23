@@ -1,6 +1,6 @@
 import logging
+
 from core.security import CurrentAccessToken
-from core.types import GuardTypes
 from core.types import GuardTypes
 
 logger = logging.getLogger(__name__)

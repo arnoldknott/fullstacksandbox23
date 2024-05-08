@@ -1,23 +1,20 @@
 import pytest
 
-from models.category import Category
-
-from models.identity import User
-from crud.public_resource import PublicResourceCRUD
-from crud.protected_resource import ProtectedResourceCRUD
-from crud.category import CategoryCRUD
 from crud.access import AccessPolicyCRUD
+from crud.category import CategoryCRUD
 from crud.demo_resource import DemoResourceCRUD
+from crud.protected_resource import ProtectedResourceCRUD
+from crud.public_resource import PublicResourceCRUD
 from crud.tag import TagCRUD
-
+from models.category import Category
+from models.identity import User
 from tests.utils import (
     many_test_categories,
     many_test_demo_resources,
-    many_test_tags,
     many_test_protected_resources,
     many_test_public_resources,
+    many_test_tags,
 )
-
 
 # @pytest.fixture(scope="function")
 # async def add_test_demo_resources(get_async_test_session: AsyncSession):

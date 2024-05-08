@@ -1,16 +1,15 @@
 import logging
-from uuid import UUID
 from typing import Annotated, List
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, Query
 
 from core.security import (
+    Guards,
     get_access_token_payload,
     optional_get_access_token_payload,
-    Guards,
 )
-from .base import BaseView
 from core.types import GuardTypes
-
 from crud.demo_resource import DemoResourceCRUD
 from models.demo_resource import (
     DemoResource,
@@ -18,6 +17,8 @@ from models.demo_resource import (
     DemoResourceRead,
     DemoResourceUpdate,
 )
+
+from .base import BaseView
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

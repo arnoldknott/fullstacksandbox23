@@ -1,19 +1,21 @@
-import pytest
 import uuid
-from httpx import AsyncClient
+
+import pytest
 from fastapi import FastAPI
+from httpx import AsyncClient
+
 from models.tag import Tag
 from tests.utils import (
-    token_user1_read,
-    token_user1_write,
-    token_user1_read_write,
-    token_user2_read,
-    token_user2_write,
-    token_user2_read_write,
     token_admin,
     token_admin_read,
-    token_admin_write,
     token_admin_read_write,
+    token_admin_write,
+    token_user1_read,
+    token_user1_read_write,
+    token_user1_write,
+    token_user2_read,
+    token_user2_read_write,
+    token_user2_write,
 )
 
 

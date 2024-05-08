@@ -1,42 +1,39 @@
-import pytest
 import uuid
+from datetime import datetime, timedelta
 from typing import Annotated, List
+
+import pytest
 from fastapi import Depends, FastAPI
 from httpx import AsyncClient
 
-from models.identity import User, UserRead
 from core.security import (
-    get_azure_jwks,
+    CurrentAccessTokenHasRole,
+    CurrentAccessTokenHasScope,
     CurrentAccessTokenIsValid,
     CurrentAzureUserInDatabase,
-    CurrentAccessTokenHasScope,
-    CurrentAccessTokenHasRole,
+    get_azure_jwks,
 )
-from routers.api.v1.user import get_user_by_id
-from models.access import AccessLogRead
-from datetime import datetime, timedelta
+from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD
-from core.types import CurrentUserData, Action
-from tests.utils import current_user_data_admin
-
-
-from tests.utils import (
-    # token_payload_roles_user,
-    # token_payload_scope_api_write,
+from models.access import AccessLogRead
+from models.identity import User, UserRead
+from routers.api.v1.user import get_user_by_id
+from tests.utils import (  # token_payload_roles_user,; token_payload_scope_api_write,
+    current_user_data_admin,
+    many_test_azure_users,
     token_admin_read,
-    token_payload_user_id,
-    token_payload_tenant_id,
+    token_payload_many_groups,
     token_payload_one_group,
     token_payload_one_random_group,
-    token_payload_many_groups,
-    token_payload_roles_user_admin,
-    token_payload_roles_admin_user,
     token_payload_roles_admin,
+    token_payload_roles_admin_user,
     token_payload_roles_user,
+    token_payload_roles_user_admin,
     token_payload_scope_api_read,
-    token_payload_scope_api_write,
     token_payload_scope_api_read_write,
-    many_test_azure_users,
+    token_payload_scope_api_write,
+    token_payload_tenant_id,
+    token_payload_user_id,
 )
 
 # region: Testing token validation:

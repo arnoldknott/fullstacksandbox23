@@ -1,9 +1,11 @@
 import logging
 from contextlib import asynccontextmanager
 
-from core.security import CurrentAccessTokenHasScope
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
+
+from core.security import CurrentAccessTokenHasScope
+from routers.api.v1.access import router as access_router
 from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router
 from routers.api.v1.demo_resource import router as demo_resource_router
@@ -11,7 +13,6 @@ from routers.api.v1.protected_resource import router as protected_resource_route
 from routers.api.v1.public_resource import router as public_resource_router
 from routers.api.v1.tag import router as tag_router
 from routers.api.v1.user import router as user_router
-from routers.api.v1.access import router as access_router
 
 # print("Current directory:", os.getcwd())
 # print("sys.path:", sys.path)

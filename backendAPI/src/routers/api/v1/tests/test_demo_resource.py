@@ -1,21 +1,22 @@
+import uuid
 from datetime import datetime, timedelta
 
-import uuid
 import pytest
-from httpx import AsyncClient
 from fastapi import FastAPI
-from models.demo_resource import DemoResource, DemoResourceRead
-from models.access import AccessPolicy, AccessLogRead
-from models.tag import Tag
+from httpx import AsyncClient
+
 from core.types import Action
 from crud.access import AccessLoggingCRUD
+from models.access import AccessLogRead, AccessPolicy
+from models.demo_resource import DemoResource, DemoResourceRead
+from models.tag import Tag
 from tests.utils import (
     one_test_demo_resource,
-    token_user1_read,
-    token_user1_read_write,
     token_admin,
     token_admin_read,
     token_admin_read_write,
+    token_user1_read,
+    token_user1_read_write,
 )
 
 

@@ -2,9 +2,9 @@
 # from models.demo_resource import DemoResource
 from models.tag import Tag, TagCreate, TagRead, TagUpdate
 
-# from sqlmodel import select
-
 from .base import BaseCRUD
+
+# from sqlmodel import select
 
 
 class TagCRUD(BaseCRUD[Tag, TagCreate, TagRead, TagUpdate]):

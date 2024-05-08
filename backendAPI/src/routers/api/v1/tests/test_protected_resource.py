@@ -1,21 +1,22 @@
-import pytest
 from datetime import datetime, timedelta
-
 from uuid import UUID
-from httpx import AsyncClient
-from crud.protected_resource import ProtectedResourceCRUD
-from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
-from models.protected_resource import ProtectedResource
-from core.types import CurrentUserData, Action
+
+import pytest
 from fastapi import FastAPI
+from httpx import AsyncClient
+
+from core.types import Action, CurrentUserData
+from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
+from crud.protected_resource import ProtectedResourceCRUD
+from models.protected_resource import ProtectedResource
 from tests.utils import (
-    token_payload_user_id,
-    token_payload_tenant_id,
+    current_user_data_admin,
+    many_test_protected_resources,
     token_payload_roles_admin,
     token_payload_roles_user,
     token_payload_scope_api_read_write,
-    current_user_data_admin,
-    many_test_protected_resources,
+    token_payload_tenant_id,
+    token_payload_user_id,
 )
 
 # region: ## POST tests:

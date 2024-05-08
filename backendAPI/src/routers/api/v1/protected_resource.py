@@ -3,12 +3,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from core.security import get_access_token_payload, Guards
+from core.security import Guards, get_access_token_payload
 from core.types import GuardTypes
-from .base import BaseView
-from models.protected_resource import ProtectedResource, ProtectedResourceCreate
 from crud.protected_resource import ProtectedResourceCRUD
+from models.protected_resource import ProtectedResource, ProtectedResourceCreate
 
+from .base import BaseView
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

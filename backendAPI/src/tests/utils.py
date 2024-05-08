@@ -1,7 +1,7 @@
 """Defines utility functions for testing, for example test datasets and dependencies (for example a logged in user if required)."""
 
-from uuid import uuid4
 from datetime import datetime, timedelta
+from uuid import uuid4
 
 user_id = "12345678-1234-1234-1234-123456789012"
 user_id_nonexistent = "87654321-4321-4321-4321-210987654321"

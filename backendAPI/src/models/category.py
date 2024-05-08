@@ -1,10 +1,10 @@
 import uuid
-
 from typing import TYPE_CHECKING, List, Optional
+
+from sqlmodel import Field, Relationship, SQLModel
 
 # from models.access import IdentifierTypeLink
 
-from sqlmodel import Field, Relationship, SQLModel
 
 # from .demo_resource import DemoResource
 

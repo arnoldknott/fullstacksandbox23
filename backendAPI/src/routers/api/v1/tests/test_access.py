@@ -1,39 +1,40 @@
-import pytest
-from httpx import AsyncClient
-from fastapi import FastAPI
-
 import uuid
 from datetime import datetime, timedelta
-from core.types import Action, ResourceType, IdentityType, CurrentUserData
-from models.identity import AzureGroup, User
-from models.access import AccessPolicy, AccessPolicyRead, AccessLogRead
-from models.demo_resource import DemoResource
-from models.protected_resource import ProtectedResource
+
+import pytest
+from fastapi import FastAPI
+from httpx import AsyncClient
+
+from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import AccessPolicyCRUD
+from models.access import AccessLogRead, AccessPolicy, AccessPolicyRead
+from models.demo_resource import DemoResource
+from models.identity import AzureGroup, User
+from models.protected_resource import ProtectedResource
 from tests.utils import (
-    token_admin,
-    token_admin_read,
-    token_admin_write,
-    token_admin_read_write,
-    token_user1_read,
-    token_user1_write,
-    token_user1_read_write,
-    token_user2_read,
-    token_user2_write,
-    token_user2_read_write,
-    many_test_policies,
-    user_id_user1,
-    user_id_user2,
-    user_id_user3,
-    resource_id1,
-    resource_id2,
-    resource_id3,
-    resource_id9,
     azure_group_id1,
     azure_group_id2,
     azure_group_id3,
     azure_group_id4,
     current_user_data_admin,
+    many_test_policies,
+    resource_id1,
+    resource_id2,
+    resource_id3,
+    resource_id9,
+    token_admin,
+    token_admin_read,
+    token_admin_read_write,
+    token_admin_write,
+    token_user1_read,
+    token_user1_read_write,
+    token_user1_write,
+    token_user2_read,
+    token_user2_read_write,
+    token_user2_write,
+    user_id_user1,
+    user_id_user2,
+    user_id_user3,
 )
 
 # region ## AccessPolicy tests:

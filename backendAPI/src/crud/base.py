@@ -1,28 +1,24 @@
-import uuid
 import logging
+import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING, Generic, Type, TypeVar, Optional, List
-
-from models.access import (
-    AccessPolicyCreate,
-    AccessLogCreate,
-    IdentifierTypeLink,
-)
-from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
-from core.databases import get_async_session
+from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
 
 # from core.access import AccessControl
 from fastapi import HTTPException
-from sqlmodel import SQLModel, select
 from sqlalchemy.dialects.postgresql import insert
+from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
+
+from core.databases import get_async_session
+from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
+from models.access import AccessLogCreate, AccessPolicyCreate, IdentifierTypeLink
 
 # from sqlalchemy.sql import distinct
 
 
 if TYPE_CHECKING:
     pass
-from core.types import CurrentUserData, Action, ResourceType, IdentityType
+from core.types import Action, CurrentUserData, IdentityType, ResourceType
 
 logger = logging.getLogger(__name__)
 

@@ -1,13 +1,15 @@
 import logging
 from uuid import UUID
+
 from fastapi import APIRouter
+
+from crud.public_resource import PublicResourceCRUD
 from models.public_resource import (
     PublicResource,
     PublicResourceCreate,
-    PublicResourceUpdate,
     PublicResourceRead,
+    PublicResourceUpdate,
 )
-from crud.public_resource import PublicResourceCRUD
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

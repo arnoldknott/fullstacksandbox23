@@ -1,37 +1,38 @@
 from typing import AsyncGenerator, Generator, List, Optional, Union
-
 from uuid import UUID
+
 import pytest
-from core.databases import postgres_async_engine  # should be SQLite here only!
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
-from main import app
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
-from core.security import get_azure_token_payload, CurrentAccessToken, Guards
-from core.types import CurrentUserData, ResourceType, IdentityType
-from models.access import IdentifierTypeLink
-from models.identity import User, UserRead
-from models.protected_resource import ProtectedResource
-from crud.identity import UserCRUD
+
+from core.databases import postgres_async_engine  # should be SQLite here only!
+from core.security import CurrentAccessToken, Guards, get_azure_token_payload
+from core.types import CurrentUserData, IdentityType, ResourceType
+from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 from crud.base import BaseCRUD
+from crud.identity import UserCRUD
+from main import app
 from models.access import (
-    AccessPolicyCreate,
-    AccessPolicyRead,
     AccessLogCreate,
     AccessLogRead,
+    AccessPolicyCreate,
+    AccessPolicyRead,
+    IdentifierTypeLink,
 )
-from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
+from models.identity import User, UserRead
+from models.protected_resource import ProtectedResource
 from tests.utils import (
-    many_test_azure_users,
     current_user_data_admin,
     many_current_users_data,
-    many_resource_ids,
     many_entity_type_links,
-    token_admin,
-    many_test_policies,
+    many_resource_ids,
     many_test_access_logs,
+    many_test_azure_users,
+    many_test_policies,
+    token_admin,
 )
 
 
@@ -100,9 +101,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[get_azure_token_payload] = (
-        lambda: mocked_get_azure_token_payload
-    )
+    app.dependency_overrides[
+        get_azure_token_payload
+    ] = lambda: mocked_get_azure_token_payload
     yield app
     app.dependency_overrides = {}
 

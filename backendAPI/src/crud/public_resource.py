@@ -1,19 +1,20 @@
 import logging
+import uuid
 
 from fastapi import HTTPException
+from sqlalchemy.dialects.postgresql import insert
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from core.databases import get_async_session
+from core.types import ResourceType
+from models.access import IdentifierTypeLink
 from models.public_resource import (
     PublicResource,
     PublicResourceCreate,
     PublicResourceRead,
     PublicResourceUpdate,
 )
-from core.databases import get_async_session
-from models.access import IdentifierTypeLink
-from core.types import ResourceType
-import uuid
-from sqlmodel import select
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.dialects.postgresql import insert
 
 logger = logging.getLogger(__name__)
 

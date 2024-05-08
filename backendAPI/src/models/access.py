@@ -2,12 +2,12 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlmodel import Field, SQLModel
+from pydantic import BaseModel, model_validator  # , create_model
 from sqlalchemy import UniqueConstraint
-from pydantic import model_validator, BaseModel  # , create_model
+from sqlmodel import Field, SQLModel
 
 # if TYPE_CHECKING:
-from core.types import Action, IdentityType, ResourceType, CurrentUserData
+from core.types import Action, CurrentUserData, IdentityType, ResourceType
 
 # from models import (
 #     Category,

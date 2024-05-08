@@ -1,11 +1,13 @@
 import logging
-
 from uuid import UUID
-from core.security import get_access_token_payload, Guards
+
+from fastapi import APIRouter, Depends
+
+from core.security import Guards, get_access_token_payload
 from core.types import GuardTypes
 from crud.identity import UserCRUD
-from fastapi import APIRouter, Depends
 from models.identity import User, UserCreate, UserRead, UserUpdate
+
 from .base import BaseView
 
 logger = logging.getLogger(__name__)

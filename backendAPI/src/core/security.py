@@ -1,22 +1,21 @@
 import json
 import logging
-
-
-# import asyncio
-import httpx
-import jwt
+from typing import List, Optional
 
 # from enum import Enum
 from uuid import UUID
 
-from typing import Optional, List
-from core.types import CurrentUserData, GuardTypes
-from core.cache import redis_jwks_client
-from core.config import config
-from models.identity import UserRead
-from crud.identity import UserCRUD
+# import asyncio
+import httpx
+import jwt
 from fastapi import Depends, HTTPException, Request
 from jwt.algorithms import RSAAlgorithm
+
+from core.cache import redis_jwks_client
+from core.config import config
+from core.types import CurrentUserData, GuardTypes
+from crud.identity import UserCRUD
+from models.identity import UserRead
 
 # from typing import List, Optional
 # from uuid import UUID

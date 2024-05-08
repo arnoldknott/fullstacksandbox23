@@ -1,28 +1,29 @@
 import logging
 from typing import List, Optional
-from fastapi import HTTPException
 from uuid import UUID
 
+from fastapi import HTTPException
+from sqlmodel import select
+
 from core.types import Action, CurrentUserData
+from models.access import AccessLogCreate, AccessPolicyCreate
 from models.identity import (
-    User,
-    UserCreate,
-    UserRead,
-    UserUpdate,
-    AzureGroupUserLink,
     AzureGroup,
     AzureGroupCreate,
     AzureGroupRead,
     AzureGroupUpdate,
+    AzureGroupUserLink,
+    User,
+    UserCreate,
+    UserRead,
+    UserUpdate,
 )
-from models.access import AccessPolicyCreate, AccessLogCreate
-from sqlmodel import select
-
-
-# from sqlalchemy.orm import selectinload
 
 # from .azure_group import AzureGroupCRUD
 from .base import BaseCRUD
+
+# from sqlalchemy.orm import selectinload
+
 
 logger = logging.getLogger(__name__)
 

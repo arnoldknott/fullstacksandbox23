@@ -1,30 +1,28 @@
 import logging
+from typing import List, Optional
 from uuid import UUID
 
-from pprint import pprint
-
-from typing import List, Optional
-from sqlmodel import select, delete, or_, and_, SQLModel
+from fastapi import HTTPException
+from sqlmodel import SQLModel, and_, delete, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
-from core.types import CurrentUserData, Action, ResourceType, IdentityType
+from core.types import Action, CurrentUserData, IdentityType, ResourceType
+from models.access import (
+    AccessLog,
+    AccessLogCreate,
+    AccessLogRead,
+    AccessPolicy,
+    AccessPolicyCreate,
+    AccessPolicyDelete,
+    AccessPolicyRead,
+    AccessPolicyUpdate,
+    AccessRequest,
+    IdentifierTypeLink,
+)
 
 # from core.access import AccessControl
 
-from fastapi import HTTPException
-from models.access import (
-    AccessPolicyCreate,
-    AccessPolicy,
-    AccessPolicyRead,
-    AccessPolicyUpdate,
-    AccessPolicyDelete,
-    AccessRequest,
-    IdentifierTypeLink,
-    AccessLogCreate,
-    AccessLog,
-    AccessLogRead,
-)
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,4 @@
-
-
 from models.category import Category, CategoryCreate, CategoryRead, CategoryUpdate
-
 
 from .base import BaseCRUD
 

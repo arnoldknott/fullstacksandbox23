@@ -1,26 +1,24 @@
 import logging
-
-from uuid import UUID
 from datetime import datetime
 from typing import Annotated
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, Query
-from core.types import ResourceType, IdentityType, Action
-from .base import BaseView
-from core.security import (
-    get_access_token_payload,
-    Guards,
-    GuardTypes,
-)
+
+from core.security import Guards, GuardTypes, get_access_token_payload
+from core.types import Action, IdentityType, ResourceType
+from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 from models.access import (
-    AccessPolicy,
-    AccessPolicyCreate,
-    AccessPolicyUpdate,
-    AccessPolicyRead,
-    AccessPolicyDelete,
     AccessLog,
     AccessLogRead,
+    AccessPolicy,
+    AccessPolicyCreate,
+    AccessPolicyDelete,
+    AccessPolicyRead,
+    AccessPolicyUpdate,
 )
-from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
+
+from .base import BaseView
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
