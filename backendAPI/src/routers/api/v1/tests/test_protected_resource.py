@@ -1,10 +1,12 @@
 import pytest
 from datetime import datetime, timedelta
 
+from uuid import UUID
 from httpx import AsyncClient
 from crud.protected_resource import ProtectedResourceCRUD
 from crud.access import AccessPolicyCRUD, AccessLoggingCRUD
 from models.protected_resource import ProtectedResource
+from core.types import CurrentUserData, Action
 from fastapi import FastAPI
 from tests.utils import (
     token_payload_user_id,
@@ -12,6 +14,7 @@ from tests.utils import (
     token_payload_roles_admin,
     token_payload_roles_user,
     token_payload_scope_api_read_write,
+    current_user_data_admin,
     many_test_protected_resources,
 )
 
@@ -46,14 +49,12 @@ async def test_post_protected_resource(
     app_override_get_azure_payload_dependency
 
     # Make a POST request to create the user
-    time_before_post = datetime.now()
-    # time_before_post = time.time()
+    before_time = datetime.now()
     response = await async_client.post(
         "/api/v1/protectedresource/",
         json=many_test_protected_resources[0],
     )
-    time_after_post = datetime.now()
-    # time_after_post = time.time()
+    after_time = datetime.now()
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
@@ -62,62 +63,49 @@ async def test_post_protected_resource(
         created_protected_resource.description
         == many_test_protected_resources[0]["description"]
     )
+
+    # Test for created logs:
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=created_protected_resource.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=created_protected_resource.id,
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.resource_id == UUID(created_protected_resource.id)
+    assert last_accessed_at.identity_id == current_test_user.user_id
+    assert last_accessed_at.action == Action.own
+    assert last_accessed_at.time == created_at
+    assert last_accessed_at.status_code == 201
+
     async with ProtectedResourceCRUD() as crud:
-        # db_protected_resource = await crud.read(
-        #     created_protected_resource.id,
-        #     current_user=current_test_user,  # Pass user information like this
-        # )
         db_protected_resource = await crud.read(
             current_test_user,
             filters=[ProtectedResource.id == created_protected_resource.id],
         )
-    assert db_protected_resource is not None
-    assert db_protected_resource.last_accessed_at is not None
-    # assert (
-    #     db_protected_resource.last_accessed_at == created_protected_resource.created_at
-    # )
-    # assert (
-    #     time_before_post - timedelta(seconds=25)
-    #     < db_protected_resource.created_at  # datetime.fromisoformat(db_protected_resource.created_at)
-    #     < time_after_post + timedelta(seconds=25)
-    # )
-    assert db_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert len(db_protected_resource) == 1
+    assert db_protected_resource[0].name == many_test_protected_resources[0]["name"]
     assert (
-        db_protected_resource.description
+        db_protected_resource[0].description
         == many_test_protected_resources[0]["description"]
     )
 
-    # TBD: add tests for created access policy here!
-    # move this to access policies tests!
+    # Test for created access policies:
     async with AccessPolicyCRUD() as crud:
         policies = await crud.read(
-            resource_id=db_protected_resource.id,
-            resource_type="ProtectedResource",
+            current_test_user,
+            resource_id=db_protected_resource[0].id,
         )
     assert len(policies) == 1
     assert policies[0].id is not None
-    assert policies[0].resource_id == db_protected_resource.id
-    assert policies[0].resource_type == "ProtectedResource"
+    assert policies[0].resource_id == db_protected_resource[0].id
     assert policies[0].identity_id == current_test_user.user_id
-    assert policies[0].identity_type == "User"
-    assert policies[0].action == "own"
-
-    # Test for created logs:
-    # move this to access log tests!
-    async with AccessLoggingCRUD() as crud:
-        resource_log = await crud.read_log_by_resource(
-            db_protected_resource.id,
-            "ProtectedResource",
-        )
-
-    assert resource_log[0].resource_id == db_protected_resource.id
-    assert resource_log[0].resource_type == "ProtectedResource"
-    assert resource_log[0].identity_id == current_test_user.user_id
-    assert resource_log[0].identity_type == "User"
-    assert resource_log[0].action == "own"
-    assert resource_log[0].status_code == 201
-    assert resource_log[0].time >= time_before_post - timedelta(seconds=1)
-    assert resource_log[0].time <= time_after_post + timedelta(seconds=1)
+    assert policies[0].action == Action.own
 
 
 # TBD: add tests for get, get_by_id, put, delete endpoints of the protected resource API!
