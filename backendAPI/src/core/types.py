@@ -92,6 +92,9 @@ class ResourceHierarchy(BaseHierarchy):
             ResourceType.protected_child,
             ResourceType.protected_grand_child,
         ],
+        ResourceType.protected_child: [
+            ResourceType.protected_grand_child,
+        ],
         ResourceType.module: [
             ResourceType.section,
             ResourceType.topic,

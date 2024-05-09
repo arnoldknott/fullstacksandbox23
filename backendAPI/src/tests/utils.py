@@ -575,6 +575,60 @@ many_test_protected_resources = [
     },
 ]
 
+child_resource_id1 = str(uuid4())
+child_resource_id2 = str(uuid4())
+child_resource_id3 = str(uuid4())
+child_resource_id4 = str(uuid4())
+child_resource_id5 = str(uuid4())
+child_resource_id6 = str(uuid4())
+child_resource_id7 = str(uuid4())
+child_resource_id8 = str(uuid4())
+child_resource_id9 = str(uuid4())
+child_resource_id10 = str(uuid4())
+
+many_test_child_resources = [
+    {
+        "id": child_resource_id1,
+        "type": "ProtectedChild",
+    },
+    {
+        "id": child_resource_id2,
+        "type": "ProtectedChild",
+    },
+    {
+        "id": child_resource_id3,
+        "type": "ProtectedGrandChild",
+    },
+    {
+        "id": child_resource_id4,
+        "type": "ProtectedGrandChild",
+    },
+    {
+        "id": child_resource_id5,
+        "type": "ProtectedGrandChild",
+    },
+    {
+        "id": child_resource_id6,
+        "type": "ProtectedChild",
+    },
+    {
+        "id": child_resource_id7,
+        "type": "ProtectedChild",
+    },
+    {
+        "id": child_resource_id8,
+        "type": "ProtectedGrandChild",
+    },
+    {
+        "id": child_resource_id9,
+        "type": "ProtectedChild",
+    },
+    {
+        "id": child_resource_id10,
+        "type": "ProtectedGrandChild",
+    },
+]
+
 
 many_test_public_resources = [
     {

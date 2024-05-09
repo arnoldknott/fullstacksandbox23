@@ -1,20 +1,19 @@
 import logging
-from typing import List, Optional, Generic, Type, TypeVar
+from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
-
+from pprint import pprint
 from fastapi import HTTPException
 from sqlmodel import SQLModel, and_, delete, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.orm import aliased
 
 from core.databases import get_async_session
 from core.types import (
     Action,
+    BaseHierarchy,
     CurrentUserData,
     IdentityType,
-    ResourceType,
     ResourceHierarchy,
-    BaseHierarchy,
+    ResourceType,
 )
 from models.access import (
     AccessLog,
@@ -27,10 +26,9 @@ from models.access import (
     AccessPolicyUpdate,
     AccessRequest,
     IdentifierTypeLink,
-    ResourceHierarchyCreate,
-    ResourceHierarchy as ResourceHierarchyTable,
-    ResourceHierarchyRead,
 )
+from models.access import ResourceHierarchy as ResourceHierarchyTable
+from models.access import ResourceHierarchyCreate, ResourceHierarchyRead
 
 # from core.access import AccessControl
 
@@ -102,6 +100,8 @@ class AccessPolicyCRUD:
 
         # only public resources can be accessed without a user:
         if not current_user:
+            # TBD: for consistency this could be refactored into a subquery;
+            # but there might be slight performance advantages in using a join instead.
             if model != AccessPolicy:
                 statement = statement.join(
                     AccessPolicy, model.id == AccessPolicy.resource_id
@@ -114,70 +114,91 @@ class AccessPolicyCRUD:
             pass
         # Users can access the resources, they have permission for including public resources:
         else:
-            # this is becoming two different functions - one for resources and one for policies
-            # consider splitting this into two functions
-            if model == AccessPolicy:
-                subquery = select(AccessPolicy.resource_id).where(
-                    and_(
-                        AccessPolicy.identity_id == current_user.user_id,
-                        AccessPolicy.action == own,
-                    )
-                )
-                statement = statement.filter(AccessPolicy.resource_id.in_(subquery))
-            elif model == AccessLog:
-                subquery = select(AccessPolicy.resource_id)
-                subquery = subquery.where(AccessPolicy.action.in_(action))
-                subquery = subquery.where(
+            subquery = (
+                select(AccessPolicy.resource_id)
+                .where(AccessPolicy.action.in_(action))
+                .where(
                     or_(
                         AccessPolicy.identity_id == current_user.user_id,
                         AccessPolicy.public,
                     )
                 )
-                #     .where(
-                #     and_(
-                #         AccessPolicy.identity_id == current_user.user_id,
-                #         AccessPolicy.action == own,
-                #     )
-                # )
-                # print("=== AccessPolicyCRUD.filters_allowed - subquery ===")
-                # print(subquery.compile())
-                # print(subquery.compile().params)
+            )
 
-                # return subquery
-
-                # subquery_results = self.session.exec(subquery)
-                # subquery_results = subquery_results.all()
-
-                # print("=== AccessPolicyCRUD.filters_allowed - subquery_results ===")
-                # for result in subquery_results:
-                #     pprint(result)
-
-                statement = statement.filter(AccessLog.resource_id.in_(subquery))
-                # statement = statement.join(
-                #     AccessPolicy, AccessLog.resource_id == AccessPolicy.resource_id
-                # )
-                # statement = statement.where(
-                #     AccessPolicy.resource_id == AccessLog.resource_id
-                # )
-                # statement = statement.where(AccessPolicy.action.in_(action))
-                # statement = statement.where(
-                #     or_(
-                #         AccessPolicy.identity_id == current_user.user_id,
-                #         AccessPolicy.public,
-                #     )
-                # )
+            if (model == AccessPolicy) or (model == AccessLog):
+                # statement = statement.filter(model.resource_id.in_(subquery))
+                statement = statement.where(model.resource_id.in_(subquery))
             else:
-                statement = statement.join(
-                    AccessPolicy, model.id == AccessPolicy.resource_id
-                )
-                statement = statement.where(AccessPolicy.resource_id == model.id)
-                statement = statement.where(AccessPolicy.action.in_(action))
-                statement = statement.where(
-                    or_(
-                        AccessPolicy.identity_id == current_user.user_id,
-                        AccessPolicy.public,
-                    )
-                )
+                # statement = statement.filter(model.id.in_(subquery))
+                statement = statement.where(model.id.in_(subquery))
+
+            # ###### Refactor this into a subquery and filter the results for the  the main query statement #####
+            # # this is becoming two different functions - one for resources and one for policies
+            # # consider splitting this into two functions
+            # if model == AccessPolicy:
+            #     subquery = select(AccessPolicy.resource_id).where(
+            #         and_(
+            #             AccessPolicy.identity_id == current_user.user_id,
+            #             AccessPolicy.action
+            #             == own,  # why is the AccessPolicy retrieval limited to owners only here - this should be done in the AccessPolicyCRUD (create, read, update, delete methods!)
+            #         )
+            #     )
+            #     statement = statement.filter(AccessPolicy.resource_id.in_(subquery))
+            # elif model == AccessLog:
+            #     subquery = select(AccessPolicy.resource_id)
+            #     subquery = subquery.where(AccessPolicy.action.in_(action))
+            #     subquery = subquery.where(
+            #         or_(
+            #             AccessPolicy.identity_id == current_user.user_id,
+            #             AccessPolicy.public,
+            #         )
+            #     )
+            #     #     .where(
+            #     #     and_(
+            #     #         AccessPolicy.identity_id == current_user.user_id,
+            #     #         AccessPolicy.action == own,
+            #     #     )
+            #     # )
+            #     # print("=== AccessPolicyCRUD.filters_allowed - subquery ===")
+            #     # print(subquery.compile())
+            #     # print(subquery.compile().params)
+
+            #     # return subquery
+
+            #     # subquery_results = self.session.exec(subquery)
+            #     # subquery_results = subquery_results.all()
+
+            #     # print("=== AccessPolicyCRUD.filters_allowed - subquery_results ===")
+            #     # for result in subquery_results:
+            #     #     pprint(result)
+
+            #     statement = statement.filter(AccessLog.resource_id.in_(subquery))
+            #     # statement = statement.join(
+            #     #     AccessPolicy, AccessLog.resource_id == AccessPolicy.resource_id
+            #     # )
+            #     # statement = statement.where(
+            #     #     AccessPolicy.resource_id == AccessLog.resource_id
+            #     # )
+            #     # statement = statement.where(AccessPolicy.action.in_(action))
+            #     # statement = statement.where(
+            #     #     or_(
+            #     #         AccessPolicy.identity_id == current_user.user_id,
+            #     #         AccessPolicy.public,
+            #     #     )
+            #     # )
+            # else:
+            #     statement = statement.join(
+            #         AccessPolicy, model.id == AccessPolicy.resource_id
+            #     )
+            #     statement = statement.where(AccessPolicy.resource_id == model.id)
+            #     statement = statement.where(AccessPolicy.action.in_(action))
+            #     statement = statement.where(
+            #         or_(
+            #             AccessPolicy.identity_id == current_user.user_id,
+            #             AccessPolicy.public,
+            #         )
+            #     )
+            # #################################
 
         return statement
 
@@ -811,17 +832,40 @@ class BaseHierarchyCRUD(
     ) -> BaseHierarchyModelRead:
         """Checks access and type matching and potentially creates parent-child relationship."""
         try:
+            all_policies = await self.session.exec(select(AccessPolicy))
+            print("=== BaseHierarchyCRUD.create - all_policies ===")
+            pprint(all_policies.all())
+
+            filter_allowed_by_user = select(IdentifierTypeLink)
+            filter_allowed_by_user = self.policy_crud.filters_allowed(
+                filter_allowed_by_user, Action.own, IdentifierTypeLink, current_user
+            )
+            allowed_identifier_type_links = await self.session.exec(
+                filter_allowed_by_user
+            )
+            print("=== BaseHierarchyCRUD.create - allowed_identifier_type_links ===")
+            pprint(allowed_identifier_type_links.all())
+
             statement = select(IdentifierTypeLink.type)
             # only selects, the IdentifierTypeLinks, that the user has access to.
             statement = self.policy_crud.filters_allowed(
                 statement, Action.own, IdentifierTypeLink, current_user
             )
             statement = statement.where(IdentifierTypeLink.id == parent_id)
+
+            print("=== BaseHierarchyCRUD.create - statement ===")
+            print(statement.compile())
+            print(statement.compile().params)
+
             result = await self.session.exec(
                 select(IdentifierTypeLink.type).where(
                     IdentifierTypeLink.id == parent_id
                 )
             )
+
+            # print("=== BaseHierarchyCRUD.create - result ===")
+            # print(result.all())
+
             parent_type = result.one()
             allowed_children = self.hierarchy.get_allowed_children(parent_type)
             if child_type in allowed_children:
@@ -840,7 +884,6 @@ class BaseHierarchyCRUD(
                     status_code=403,
                     detail="Bad request: child type not allowed for parent.",
                 )
-            pass
         except Exception as e:
             logger.error(f"Error in creating hierarchy: {e}")
             raise HTTPException(status_code=403, detail="Forbidden.")

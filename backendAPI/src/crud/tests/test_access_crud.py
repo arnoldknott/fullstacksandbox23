@@ -25,6 +25,7 @@ from tests.utils import (
     one_test_policy_share,
     resource_id1,
     resource_id2,
+    resource_id3,
     user_id_nonexistent,
     user_id_user1,
 )
@@ -219,6 +220,9 @@ async def test_user_read_access_policy_by_resource_id(
         read_policy = await policy_crud.read(
             resource_id=policies[1].resource_id, current_user=current_user1
         )
+
+    print("=== read_policy ===")
+    pprint(read_policy)
 
     assert int(read_policy[0].id)
     assert read_policy[0].identity_id == policies[1].identity_id
@@ -1241,6 +1245,62 @@ async def test_admin_create_resource_hierarchy_with_nonexisting_parent(
             assert err.detail == "Forbidden."
         else:
             pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_create_resource_hierarchy(
+    register_current_user, add_many_test_access_policies
+):
+    """Test creating a resource hierarchy."""
+    current_user_data = await register_current_user(current_user_data_user1)
+    access_policies = add_many_test_access_policies
+
+    new_child_id = uuid.uuid4()
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        created_hierarchy = await hierarchy_crud.create(
+            current_user=current_user_data,
+            parent_id=uuid.UUID(resource_id1),
+            child_type=ResourceType.protected_child,
+            child_id=new_child_id,
+        )
+
+    assert created_hierarchy.parent_id == access_policies[7].resource_id
+    assert created_hierarchy.child_id == new_child_id
+    assert created_hierarchy.inherit is False
+
+
+@pytest.mark.anyio
+async def test_user_create_resource_hierarchy_without_access(
+    register_current_user, add_many_test_access_policies
+):
+    """Test creating a resource hierarchy."""
+    current_user_data = await register_current_user(current_user_data_user1)
+    # current_user_data = await register_current_user(current_user_data_user2)
+    print("=== current_user_data ===")
+    pprint(current_user_data)
+    # add_many_test_access_policies
+
+    new_child_id = uuid.uuid4()
+
+    print("=== resource_id3 ===")
+    pprint(resource_id3)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        created_hierarchy = await hierarchy_crud.create(
+            current_user=current_user_data,
+            parent_id=uuid.UUID(resource_id3),
+            child_type=ResourceType.protected_child,
+            child_id=new_child_id,
+        )
+
+    # TBD: this should fail with 404 here!
+
+    assert created_hierarchy.parent_id == uuid.UUID(resource_id3)
+    assert created_hierarchy.child_id == new_child_id
+    assert created_hierarchy.inherit is False
+
+    assert 0
 
 
 @pytest.mark.anyio

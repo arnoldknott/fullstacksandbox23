@@ -33,6 +33,7 @@ from tests.utils import (
     many_test_azure_users,
     many_test_policies,
     token_admin,
+    many_test_child_resources,
 )
 
 
@@ -479,5 +480,19 @@ async def add_one_parent_child_relationship(
     yield _add_one_parent_child_relationship
 
 
-# TBD: add one test access log
-# TBD: add many test access logs
+@pytest.fixture(scope="function")
+async def add_many_parent_child_relationships(
+    register_many_protected_resources: list[UUID],
+):
+    """Adds many parent-child relationships to the resource hierarchy table."""
+
+    registered_resources = register_many_protected_resources
+
+    parent_id = registered_resources[5]
+    relationships = []
+    for child in many_test_child_resources:
+        relationship = await add_parent_child_relationship(
+            parent_id, child["id"], child["type"]
+        )
+        relationships.append(relationship)
+    return relationships
