@@ -75,7 +75,7 @@ class BaseHierarchy:
     _children = {}
 
     @classmethod
-    def get_allowed_children(cls, entity_type: str) -> List[str]:
+    def get_allowed_children_types(cls, entity_type: str) -> List[str]:
         return cls._children.get(entity_type, [])
 
 

@@ -5,7 +5,7 @@ from pprint import pprint
 from fastapi import HTTPException
 from sqlmodel import SQLModel, and_, delete, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
-
+from sqlalchemy.orm import aliased
 from core.databases import get_async_session
 from core.types import (
     Action,
@@ -223,14 +223,14 @@ class AccessPolicyCRUD:
             query = self.filters_allowed(query, action, current_user=current_user)
             # print("=== AccessPolicyCRUD.allows - query ===")
             # print(query.compile())
-            # print(query.compile().params)
+            # pprint(query.compile().params)
 
             # Only one policy per resource - action - identity combination is allowed!
             response = await self.session.exec(query)
             results = response.one()
 
             # print("=== AccessPolicyCRUD.allows - results ===")
-            # print(results)
+            # pprint(results)
 
             if results.resource_id == resource_id and results.action == action:
                 return True
@@ -844,7 +844,7 @@ class BaseHierarchyCRUD(
 
             parent_type = result.one()
 
-            allowed_children = self.hierarchy.get_allowed_children(parent_type)
+            allowed_children = self.hierarchy.get_allowed_children_types(parent_type)
             if child_type in allowed_children:
                 relation = self.model(
                     parent_id=parent_id,
@@ -872,6 +872,7 @@ class BaseHierarchyCRUD(
     ) -> List[BaseHierarchyModelRead]:
         """Reads all child resources of a parent resource."""
         try:
+            identifier_type_link_child = aliased(IdentifierTypeLink)
             statement = (
                 select(self.model)
                 .where(
@@ -881,21 +882,28 @@ class BaseHierarchyCRUD(
                     IdentifierTypeLink,
                     IdentifierTypeLink.id == self.model.parent_id,
                 )
+                .join(
+                    identifier_type_link_child,
+                    identifier_type_link_child.id == self.model.child_id,
+                )
             )
-            # TBD: how does that return only the childrend, that the user has access to?
+            # TBD: how does that return only the children, that the user has access to?
             statement = self.policy_crud.filters_allowed(
                 statement, Action.read, IdentifierTypeLink, current_user
+            )
+            statement = self.policy_crud.filters_allowed(
+                statement, Action.read, identifier_type_link_child, current_user
             )
 
             # print("=== BaseHierarchyCRUD.read_children - statement ===")
             # print(statement.compile())
-            # print(statement.compile().params)
+            # pprint(statement.compile().params)
 
             response = await self.session.exec(statement)
             results = response.all()
 
             # print("=== BaseHierarchyCRUD.read_children - results ===")
-            # print(results)
+            # pprint(results)
 
             if not results:
                 raise HTTPException(status_code=404, detail="No children not found.")
@@ -913,6 +921,7 @@ class BaseHierarchyCRUD(
     ) -> List[BaseHierarchyModelRead]:
         """Reads all parent resources of a child resource."""
         try:
+            identifier_type_link_parent = aliased(IdentifierTypeLink)
             statement = (
                 select(self.hierarchy)
                 .where(
@@ -922,9 +931,16 @@ class BaseHierarchyCRUD(
                     IdentifierTypeLink,
                     IdentifierTypeLink.id == self.hierarchy.child_id,
                 )
+                .join(
+                    identifier_type_link_parent,
+                    identifier_type_link_parent.id == self.model.child_id,
+                )
             )
             statement = self.policy_crud.filters_allowed(
                 statement, Action.read, IdentifierTypeLink, current_user
+            )
+            statement = self.policy_crud.filters_allowed(
+                statement, Action.read, identifier_type_link_parent, current_user
             )
             response = await self.session.exec(statement)
             results = response.all()

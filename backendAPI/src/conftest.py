@@ -453,6 +453,11 @@ async def add_parent_child_relationship(
     child_type: ResourceType = ResourceType.protected_child,
 ):
     """Adds a parent-child relationship to the resource hierarchy table."""
+    print("=== add_parent_child_relationship - child_id ===")
+    print(child_id)
+    await register_entity_to_identity_type_link_table(
+        child_id
+    )  # TBD: pass the model here - or refactor register_entity_to_identity_type_link_table() to use type
     async with ResourceHierarchyCRUD() as crud:
         created_relationship = await crud.create(
             current_user=CurrentUserData(**current_user_data_admin),
@@ -491,7 +496,7 @@ async def add_many_parent_child_relationships(
     relationships = []
     for child in many_test_child_resources:
         relationship = await add_parent_child_relationship(
-            parent_id, child["id"], child["type"]
+            parent_id, UUID(child["id"]), child["type"]
         )
         relationships.append(relationship)
     yield relationships

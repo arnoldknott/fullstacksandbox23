@@ -29,6 +29,12 @@ from tests.utils import (
     user_id_nonexistent,
     user_id_user1,
     many_test_child_resources,
+    child_resource_id1,
+    child_resource_id2,
+    child_resource_id4,
+    child_resource_id7,
+    child_resource_id8,
+    child_resource_id10,
 )
 
 # region AccessPolicy CRUD tests
@@ -1335,28 +1341,55 @@ async def test_admin_reads_multiple_children_of_a_parent(
 
 
 @pytest.mark.anyio
-async def test_user_reads_all_children_of_a_parent(
+async def test_user_reads_all_allowed_children_of_a_parent(
     add_many_parent_child_relationships,
     register_current_user,
     add_many_test_access_policies,
+    add_one_test_access_policy,
 ):
     """Test reading all children of a parent resource."""
-    current_user_data = await register_current_user(current_user_data_user3)
+    current_user = await register_current_user(current_user_data_user3)
+
+    access_to_children_ids = [
+        child_resource_id1,
+        child_resource_id2,
+        child_resource_id4,
+        child_resource_id7,
+        child_resource_id8,
+        child_resource_id10,
+    ]
+    for child_id in access_to_children_ids:
+        await add_one_test_access_policy(
+            {
+                "identity_id": current_user.user_id,
+                "resource_id": child_id,
+                "action": Action.read,
+            },
+            current_user=current_user,
+        )
+
+    # async with AccessPolicyCRUD() as policy_crud:
+    #     policies = await policy_crud.read(
+    #         current_user=CurrentUserData(**current_user_data_admin),
+    #         # current_user=current_user,
+    #     )
+    #     print("=== policies ===")
+    #     pprint(policies)
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         read_relation = await hierarchy_crud.read_children(
-            current_user=current_user_data, parent_id=resource_id3
+            current_user=current_user, parent_id=resource_id3
         )
 
-    assert len(read_relation) == 10
-    for relation, expected in zip(read_relation, many_test_child_resources):
+    assert len(read_relation) == 6
+    for relation, expected_child_id in zip(read_relation, access_to_children_ids):
         assert relation.parent_id == uuid.UUID(resource_id3)
-        assert relation.child_id == uuid.UUID(expected["id"])
+        assert relation.child_id == uuid.UUID(expected_child_id)
         assert relation.inherit is False
 
 
 @pytest.mark.anyio
-async def test_user_reads_all_children_of_a_parent_without_access(
+async def test_user_reads_all_children_of_a_parent_without_parent_access(
     add_many_parent_child_relationships,
     register_current_user,
     add_many_test_access_policies,
@@ -1390,12 +1423,10 @@ async def test_user_reads_all_children_of_a_parent_without_access(
 # ✔ user creates tries to add a child without owner access to existing parent
 # ✔ admin reads single child of one parent
 # ✔ admin reads all children of one parent
-# ✔ user reads all children of a parent with read access to parent
-# X user reads only allowed children of a parent with read access to parent
+# ✔ user read returns only allowed children of a parent with read access to parent
 # ✔ user tries to read all children of a parent without read access to parent
 # X admin reads all parents of a child
-# X user reads all parents of a child with read access to child
-# X user reads only allowed parents of a child with read access to child
+# X user read returns only allowed parents of a child with read access to child
 # X user tries to read all parents of a child without read access to child
 # - admin deletes a child
 # - user deletes a child with owner access to child
