@@ -28,6 +28,7 @@ from tests.utils import (
     resource_id3,
     user_id_nonexistent,
     user_id_user1,
+    many_test_child_resources,
 )
 
 # region AccessPolicy CRUD tests
@@ -88,13 +89,13 @@ async def test_owner_creates_access_policy(
 @pytest.mark.anyio
 async def test_prevent_create_duplicate_access_policy(
     register_many_current_users,
-    register_many_protected_resources,
+    register_many_resources,
     add_many_test_access_policies,
 ):
     """Test preventing the creation of a duplicate access policy."""
 
     current_users = register_many_current_users
-    register_many_protected_resources
+    register_many_resources
 
     add_many_test_access_policies
 
@@ -111,12 +112,12 @@ async def test_prevent_create_duplicate_access_policy(
 
 @pytest.mark.anyio
 async def test_create_access_policy_for_public_resource(
-    register_current_user, register_many_protected_resources
+    register_current_user, register_many_resources
 ):
     """Test preventing the creation of a duplicate access policy."""
 
     current_admin_user = await register_current_user(current_user_data_admin)
-    register_many_protected_resources
+    register_many_resources
 
     modelled_policy = AccessPolicy(**one_test_policy_public_read)
     async with AccessPolicyCRUD() as policy_crud:
@@ -177,12 +178,12 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
 @pytest.mark.anyio
 async def test_admin_read_access_policy_by_resource(
     register_many_current_users,
-    register_many_protected_resources,
+    register_many_resources,
     add_many_test_access_policies,
 ):
     """Test reading an access policy for a given resource."""
     current_admin_user = register_many_current_users[0]
-    register_many_protected_resources
+    register_many_resources
 
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -207,12 +208,12 @@ async def test_admin_read_access_policy_by_resource(
 @pytest.mark.anyio
 async def test_user_read_access_policy_by_resource_id(
     register_many_current_users,
-    register_many_protected_resources,
+    register_many_resources,
     add_many_test_access_policies,
 ):
     """Test user reading an access policy by id."""
 
-    register_many_protected_resources,
+    register_many_resources,
     policies = add_many_test_access_policies
     current_user1 = register_many_current_users[1]
 
@@ -234,12 +235,12 @@ async def test_user_read_access_policy_by_resource_id(
 @pytest.mark.anyio
 async def test_read_access_policy_by_id_without_permission(
     register_many_current_users,
-    register_many_protected_resources,
+    register_many_resources,
     add_many_test_access_policies,
 ):
     """Test reading an access policy by id without permission."""
     register_many_current_users,
-    register_many_protected_resources
+    register_many_resources
     policies = add_many_test_access_policies
     try:
         async with AccessPolicyCRUD() as policy_crud:
@@ -257,12 +258,12 @@ async def test_read_access_policy_by_id_without_permission(
 
 @pytest.mark.anyio
 async def test_read_access_policy_for_nonexisting_resource_id(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test reading an access policy by id."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -281,12 +282,12 @@ async def test_read_access_policy_for_nonexisting_resource_id(
 
 @pytest.mark.anyio
 async def test_read_access_policy_by_identity(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test reading multiple access policies for a given identity."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -310,12 +311,12 @@ async def test_read_access_policy_by_identity(
 
 @pytest.mark.anyio
 async def test_read_access_policy_for_nonexisting_identity(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test reading an access policy for an identity, that does not exist."""
-    register_many_protected_resources,
+    register_many_resources,
     current_admin_user = register_many_current_users[0]
     add_many_test_access_policies,
     async with AccessPolicyCRUD() as policy_crud:
@@ -333,12 +334,12 @@ async def test_read_access_policy_for_nonexisting_identity(
 
 @pytest.mark.anyio
 async def test_read_access_policy_by_resource_missing_resource_type(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test reading an access policy for a given resource."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -357,12 +358,12 @@ async def test_read_access_policy_by_resource_missing_resource_type(
 
 @pytest.mark.anyio
 async def test_read_access_policy_for_wrong_resource_type(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test reading an access policy for a given resource."""
-    register_many_protected_resources,
+    register_many_resources,
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -382,12 +383,12 @@ async def test_read_access_policy_for_wrong_resource_type(
 
 @pytest.mark.anyio
 async def test_read_access_policy_by_identity_and_resource(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test reading an access policy by identity and resource."""
-    register_many_protected_resources,
+    register_many_resources,
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -408,12 +409,12 @@ async def test_read_access_policy_by_identity_and_resource(
 
 @pytest.mark.anyio
 async def test_read_access_policy_by_identity_and_resource_and_action(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test reading an access policy by identity and resource."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -434,12 +435,12 @@ async def test_read_access_policy_by_identity_and_resource_and_action(
 
 @pytest.mark.anyio
 async def test_admin_changes_access_policy_from_write_to_own(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test updating an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     update_policy = AccessPolicyUpdate(
@@ -484,12 +485,12 @@ async def test_admin_changes_access_policy_from_write_to_own(
 
 @pytest.mark.anyio
 async def test_owner_user_changes_access_policy_from_write_to_own(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test updating an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     update_policy = AccessPolicyUpdate(
@@ -534,12 +535,12 @@ async def test_owner_user_changes_access_policy_from_write_to_own(
 
 @pytest.mark.anyio
 async def test_non_owner_user_tries_to_change_access_policy_from_write_to_own(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test updating an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     update_policy = AccessPolicyUpdate(
@@ -573,12 +574,12 @@ async def test_non_owner_user_tries_to_change_access_policy_from_write_to_own(
 
 @pytest.mark.anyio
 async def test_admin_deletes_access_policy(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -620,12 +621,12 @@ async def test_admin_deletes_access_policy(
 
 @pytest.mark.anyio
 async def test_admin_deletes_all_access_policies_for_a_resource(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -681,12 +682,12 @@ async def test_admin_deletes_all_access_policies_for_a_resource(
 
 @pytest.mark.anyio
 async def test_admin_deletes_all_access_policies_for_an_identity(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -742,12 +743,12 @@ async def test_admin_deletes_all_access_policies_for_an_identity(
 
 @pytest.mark.anyio
 async def test_user_deletes_all_access_policies_for_a_resource_with_owner_rights(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -803,12 +804,12 @@ async def test_user_deletes_all_access_policies_for_a_resource_with_owner_rights
 
 @pytest.mark.anyio
 async def test_admin_tries_to_delete_all_public_access_policies(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -845,12 +846,12 @@ async def test_admin_tries_to_delete_all_public_access_policies(
 
 @pytest.mark.anyio
 async def test_admin_tries_to_delete_all_own_access_policies(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -889,12 +890,12 @@ async def test_admin_tries_to_delete_all_own_access_policies(
 
 @pytest.mark.anyio
 async def test_admin_tries_to_delete_all_write_access_policies(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -933,12 +934,12 @@ async def test_admin_tries_to_delete_all_write_access_policies(
 
 @pytest.mark.anyio
 async def test_admin_tries_to_delete_all_read_access_policies(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -977,12 +978,12 @@ async def test_admin_tries_to_delete_all_read_access_policies(
 
 @pytest.mark.anyio
 async def test_user_deletes_all_access_policies_for_a_resource_without_owner_rights(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -1017,12 +1018,12 @@ async def test_user_deletes_all_access_policies_for_a_resource_without_owner_rig
 
 @pytest.mark.anyio
 async def test_user_deletes_access_policy_with_owner_rights(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -1066,12 +1067,12 @@ async def test_user_deletes_access_policy_with_owner_rights(
 
 @pytest.mark.anyio
 async def test_user_deletes_access_policy_without_owner_rights(
-    register_many_protected_resources,
+    register_many_resources,
     register_many_current_users,
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_protected_resources
+    register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -1122,12 +1123,10 @@ async def test_user_deletes_access_policy_without_owner_rights(
 
 
 @pytest.mark.anyio
-async def test_create_access_log(
-    register_many_current_users, register_many_protected_resources
-):
+async def test_create_access_log(register_many_current_users, register_many_resources):
     """Test creating an access log."""
     current_user = register_many_current_users[1]
-    resource2_id = register_many_protected_resources[1]
+    resource2_id = register_many_resources[1]
     access_log = AccessLogCreate(
         identity_id=str(current_user.user_id),
         resource_id=resource2_id,
@@ -1152,12 +1151,12 @@ async def test_create_access_log(
 
 @pytest.mark.anyio
 async def test_admin_create_resource_hierarchy(
-    register_many_protected_resources,
+    register_many_resources,
     register_current_user,
 ):
     """Test creating a resource hierarchy."""
     current_admin_user = await register_current_user(current_user_data_admin)
-    resources = register_many_protected_resources
+    resources = register_many_resources
     new_child_id = uuid.uuid4()
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
@@ -1175,12 +1174,12 @@ async def test_admin_create_resource_hierarchy(
 
 @pytest.mark.anyio
 async def test_admin_create_resource_hierarchy_with_inheritance(
-    register_many_protected_resources,
+    register_many_resources,
     register_current_user,
 ):
     """Test creating a resource hierarchy."""
     current_admin_user = await register_current_user(current_user_data_admin)
-    resources = register_many_protected_resources
+    resources = register_many_resources
     new_child_id = uuid.uuid4()
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
@@ -1199,12 +1198,12 @@ async def test_admin_create_resource_hierarchy_with_inheritance(
 
 @pytest.mark.anyio
 async def test_admin_create_resource_hierarchy_with_not_allowed_child_type(
-    register_many_protected_resources,
+    register_many_resources,
     register_current_user,
 ):
     """Test creating a resource hierarchy."""
     current_admin_user = await register_current_user(current_user_data_admin)
-    resources = register_many_protected_resources
+    resources = register_many_resources
     new_child_id = uuid.uuid4()
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
@@ -1224,12 +1223,12 @@ async def test_admin_create_resource_hierarchy_with_not_allowed_child_type(
 
 @pytest.mark.anyio
 async def test_admin_create_resource_hierarchy_with_nonexisting_parent(
-    register_many_protected_resources,
+    register_many_resources,
     register_current_user,
 ):
     """Test creating a resource hierarchy."""
     current_admin_user = await register_current_user(current_user_data_admin)
-    register_many_protected_resources
+    register_many_resources
     new_child_id = uuid.uuid4()
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
@@ -1276,35 +1275,25 @@ async def test_user_create_resource_hierarchy_without_access(
 ):
     """Test creating a resource hierarchy."""
     current_user_data = await register_current_user(current_user_data_user1)
-    # current_user_data = await register_current_user(current_user_data_user2)
-    print("=== current_user_data ===")
-    pprint(current_user_data)
-    # add_many_test_access_policies
-
     new_child_id = uuid.uuid4()
 
-    print("=== resource_id3 ===")
-    pprint(resource_id3)
-
     async with ResourceHierarchyCRUD() as hierarchy_crud:
-        created_hierarchy = await hierarchy_crud.create(
-            current_user=current_user_data,
-            parent_id=uuid.UUID(resource_id3),
-            child_type=ResourceType.protected_child,
-            child_id=new_child_id,
-        )
-
-    # TBD: this should fail with 404 here!
-
-    assert created_hierarchy.parent_id == uuid.UUID(resource_id3)
-    assert created_hierarchy.child_id == new_child_id
-    assert created_hierarchy.inherit is False
-
-    assert 0
+        try:
+            await hierarchy_crud.create(
+                current_user=current_user_data,
+                parent_id=uuid.UUID(resource_id3),
+                child_type=ResourceType.protected_child,
+                child_id=new_child_id,
+            )
+        except Exception as err:
+            assert err.status_code == 403
+            assert err.detail == "Forbidden."
+        else:
+            pytest.fail("No HTTPexception raised!")
 
 
 @pytest.mark.anyio
-async def test_admin_read_all_children_of_a_parent(
+async def test_admin_reads_single_child_of_a_parent(
     add_one_parent_child_relationship,
     register_current_user,
 ):
@@ -1325,6 +1314,68 @@ async def test_admin_read_all_children_of_a_parent(
     assert read_relation[0].inherit == relationship.inherit
 
 
+@pytest.mark.anyio
+async def test_admin_reads_multiple_children_of_a_parent(
+    add_many_parent_child_relationships,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read_children(
+            current_user=current_admin_user, parent_id=resource_id3
+        )
+
+    assert len(read_relation) == 10
+    for relation, expected in zip(read_relation, many_test_child_resources):
+        assert relation.parent_id == uuid.UUID(resource_id3)
+        assert relation.child_id == uuid.UUID(expected["id"])
+        assert relation.inherit is False
+
+
+@pytest.mark.anyio
+async def test_user_reads_all_children_of_a_parent(
+    add_many_parent_child_relationships,
+    register_current_user,
+    add_many_test_access_policies,
+):
+    """Test reading all children of a parent resource."""
+    current_user_data = await register_current_user(current_user_data_user3)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read_children(
+            current_user=current_user_data, parent_id=resource_id3
+        )
+
+    assert len(read_relation) == 10
+    for relation, expected in zip(read_relation, many_test_child_resources):
+        assert relation.parent_id == uuid.UUID(resource_id3)
+        assert relation.child_id == uuid.UUID(expected["id"])
+        assert relation.inherit is False
+
+
+@pytest.mark.anyio
+async def test_user_reads_all_children_of_a_parent_without_access(
+    add_many_parent_child_relationships,
+    register_current_user,
+    add_many_test_access_policies,
+):
+    """Test reading all children of a parent resource."""
+    current_user_data = await register_current_user(current_user_data_user2)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.read_children(
+                current_user=current_user_data, parent_id=resource_id3
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
 # Nomenclature:
 # ✔︎ implemented
 # X missing tests
@@ -1335,14 +1386,16 @@ async def test_admin_read_all_children_of_a_parent(
 # ✔︎ admin creates adds a new child to existing parent with inheritance
 # ✔︎ admin creates tries to add a new child with a resource_type that is not allowed as child for the parent
 # ✔ admin creates tries to add a child to non-existing parent
-# X user creates adds a new child to existing parent with access
-# X user creates tries to add a child without owner access to existing parent
-# ✔ admin reads one child of one parent
-# X admin reads all children of one parent
-# X user reads all children of a parent with read access to parent
-# X user tries to read all children of a parent without read access to parent
+# ✔ user creates adds a new child to existing parent with access
+# ✔ user creates tries to add a child without owner access to existing parent
+# ✔ admin reads single child of one parent
+# ✔ admin reads all children of one parent
+# ✔ user reads all children of a parent with read access to parent
+# X user reads only allowed children of a parent with read access to parent
+# ✔ user tries to read all children of a parent without read access to parent
 # X admin reads all parents of a child
 # X user reads all parents of a child with read access to child
+# X user reads only allowed parents of a child with read access to child
 # X user tries to read all parents of a child without read access to child
 # - admin deletes a child
 # - user deletes a child with owner access to child

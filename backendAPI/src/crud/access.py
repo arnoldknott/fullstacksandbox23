@@ -126,10 +126,8 @@ class AccessPolicyCRUD:
             )
 
             if (model == AccessPolicy) or (model == AccessLog):
-                # statement = statement.filter(model.resource_id.in_(subquery))
                 statement = statement.where(model.resource_id.in_(subquery))
             else:
-                # statement = statement.filter(model.id.in_(subquery))
                 statement = statement.where(model.id.in_(subquery))
 
             # ###### Refactor this into a subquery and filter the results for the  the main query statement #####
@@ -216,17 +214,13 @@ class AccessPolicyCRUD:
             return True
 
         try:
-            query = select(AccessPolicy)  # .where(
-            # AccessPolicy.resource_id == resource_id,
-            # )
+            query = select(AccessPolicy)
             if resource_id:
-                print("=== AccessPolicyCRUD.allows - add resource_id ===")
                 query = query.where(
                     AccessPolicy.resource_id == resource_id,
                 )
 
             query = self.filters_allowed(query, action, current_user=current_user)
-            # query = self.filters_allowed(query, access_request)
             # print("=== AccessPolicyCRUD.allows - query ===")
             # print(query.compile())
             # print(query.compile().params)
@@ -832,20 +826,6 @@ class BaseHierarchyCRUD(
     ) -> BaseHierarchyModelRead:
         """Checks access and type matching and potentially creates parent-child relationship."""
         try:
-            all_policies = await self.session.exec(select(AccessPolicy))
-            print("=== BaseHierarchyCRUD.create - all_policies ===")
-            pprint(all_policies.all())
-
-            filter_allowed_by_user = select(IdentifierTypeLink)
-            filter_allowed_by_user = self.policy_crud.filters_allowed(
-                filter_allowed_by_user, Action.own, IdentifierTypeLink, current_user
-            )
-            allowed_identifier_type_links = await self.session.exec(
-                filter_allowed_by_user
-            )
-            print("=== BaseHierarchyCRUD.create - allowed_identifier_type_links ===")
-            pprint(allowed_identifier_type_links.all())
-
             statement = select(IdentifierTypeLink.type)
             # only selects, the IdentifierTypeLinks, that the user has access to.
             statement = self.policy_crud.filters_allowed(
@@ -853,20 +833,17 @@ class BaseHierarchyCRUD(
             )
             statement = statement.where(IdentifierTypeLink.id == parent_id)
 
-            print("=== BaseHierarchyCRUD.create - statement ===")
-            print(statement.compile())
-            print(statement.compile().params)
+            # print("=== BaseHierarchyCRUD.create - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
 
-            result = await self.session.exec(
-                select(IdentifierTypeLink.type).where(
-                    IdentifierTypeLink.id == parent_id
-                )
-            )
+            result = await self.session.exec(statement)
 
             # print("=== BaseHierarchyCRUD.create - result ===")
             # print(result.all())
 
             parent_type = result.one()
+
             allowed_children = self.hierarchy.get_allowed_children(parent_type)
             if child_type in allowed_children:
                 relation = self.model(
@@ -905,7 +882,7 @@ class BaseHierarchyCRUD(
                     IdentifierTypeLink.id == self.model.parent_id,
                 )
             )
-
+            # TBD: how does that return only the childrend, that the user has access to?
             statement = self.policy_crud.filters_allowed(
                 statement, Action.read, IdentifierTypeLink, current_user
             )
@@ -919,6 +896,9 @@ class BaseHierarchyCRUD(
 
             # print("=== BaseHierarchyCRUD.read_children - results ===")
             # print(results)
+
+            if not results:
+                raise HTTPException(status_code=404, detail="No children not found.")
 
             return results
         except Exception as e:
@@ -948,6 +928,10 @@ class BaseHierarchyCRUD(
             )
             response = await self.session.exec(statement)
             results = response.all()
+
+            if not results:
+                raise HTTPException(status_code=404, detail="No parents not found.")
+
             return results
         except Exception as e:
             logger.error(f"Error in reading hierarchy: {e}")

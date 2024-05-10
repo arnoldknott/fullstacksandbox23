@@ -52,12 +52,12 @@ async def test_admin_posts_access_policies(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     register_many_current_users,
-    register_many_protected_resources,
+    register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
     app_override_get_azure_payload_dependency
     register_many_current_users
-    register_many_protected_resources
+    register_many_resources
 
     for policy in many_test_policies:
         response = await async_client.post("/api/v1/access/policy", json=policy)
@@ -85,7 +85,7 @@ async def test_admin_posts_access_policies_for_non_existing_resources(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     register_many_current_users,
-    # register_many_protected_resources,
+    # register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
     app_override_get_azure_payload_dependency
@@ -107,11 +107,11 @@ async def test_admin_posts_access_policies_for_non_existing_resources(
 async def test_admin_posts_non_public_access_policies_for_non_existing_identities(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    register_many_protected_resources,
+    register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
     app_override_get_azure_payload_dependency
-    register_many_protected_resources
+    register_many_resources
 
     private_test_policies = many_test_policies[0:9].copy()
 
@@ -131,11 +131,11 @@ async def test_admin_posts_non_public_access_policies_for_non_existing_identitie
 async def test_admin_posts_public_access_policies_for_non_existing_identities(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
-    register_many_protected_resources,
+    register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
     app_override_get_azure_payload_dependency
-    register_many_protected_resources
+    register_many_resources
 
     public_test_policy = many_test_policies[9].copy()
 

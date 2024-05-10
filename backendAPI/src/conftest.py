@@ -1,6 +1,6 @@
 from typing import AsyncGenerator, Generator, List, Optional, Union
 from uuid import UUID
-
+from pprint import pprint
 import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
@@ -34,6 +34,7 @@ from tests.utils import (
     many_test_policies,
     token_admin,
     many_test_child_resources,
+    resource_id3,
 )
 
 
@@ -232,7 +233,7 @@ async def register_one_resource():
 
 
 @pytest.fixture(scope="function")
-async def register_many_protected_resources():
+async def register_many_resources():
     """Registers many protected resources with id and its type in the database."""
 
     for resource_id in many_resource_ids:
@@ -397,7 +398,7 @@ async def add_one_test_access_policy():
 @pytest.fixture(scope="function")
 async def add_many_test_access_policies(
     register_many_current_users,
-    register_many_protected_resources,
+    register_many_resources,
 ) -> list[AccessPolicyRead]:
     """Adds a category to the database."""
     mocked_admin_user = CurrentUserData(**current_user_data_admin)
@@ -434,7 +435,7 @@ async def add_one_test_access_log():
 @pytest.fixture(scope="function")
 async def add_many_test_access_logs(
     register_many_current_users,
-    register_many_protected_resources,
+    register_many_resources,
 ) -> list[AccessLogRead]:
     """Adds many test access logs to the database."""
 
@@ -464,11 +465,11 @@ async def add_parent_child_relationship(
 
 @pytest.fixture(scope="function")
 async def add_one_parent_child_relationship(
-    register_many_protected_resources: list[UUID],
+    register_many_resources: list[UUID],
 ):
     """Adds a parent-child relationship to the database."""
 
-    registered_resources = register_many_protected_resources
+    registered_resources = register_many_resources
 
     async def _add_one_parent_child_relationship(
         child_id: UUID, type: ResourceType = ResourceType.protected_child
@@ -482,17 +483,15 @@ async def add_one_parent_child_relationship(
 
 @pytest.fixture(scope="function")
 async def add_many_parent_child_relationships(
-    register_many_protected_resources: list[UUID],
+    register_many_resources: list[UUID],
 ):
     """Adds many parent-child relationships to the resource hierarchy table."""
 
-    registered_resources = register_many_protected_resources
-
-    parent_id = registered_resources[5]
+    parent_id = resource_id3
     relationships = []
     for child in many_test_child_resources:
         relationship = await add_parent_child_relationship(
             parent_id, child["id"], child["type"]
         )
         relationships.append(relationship)
-    return relationships
+    yield relationships
