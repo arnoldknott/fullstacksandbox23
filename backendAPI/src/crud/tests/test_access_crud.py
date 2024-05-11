@@ -14,10 +14,17 @@ from models.access import (
 )
 from models.protected_resource import ProtectedResource
 from tests.utils import (
+    child_resource_id1,
+    child_resource_id2,
+    child_resource_id4,
+    child_resource_id7,
+    child_resource_id8,
+    child_resource_id10,
     current_user_data_admin,
     current_user_data_user1,
     current_user_data_user2,
     current_user_data_user3,
+    many_test_child_resources,
     many_test_policies,
     one_test_policy_own,
     one_test_policy_public_read,
@@ -28,13 +35,6 @@ from tests.utils import (
     resource_id3,
     user_id_nonexistent,
     user_id_user1,
-    many_test_child_resources,
-    child_resource_id1,
-    child_resource_id2,
-    child_resource_id4,
-    child_resource_id7,
-    child_resource_id8,
-    child_resource_id10,
 )
 
 # region AccessPolicy CRUD tests

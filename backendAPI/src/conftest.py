@@ -1,6 +1,6 @@
 from typing import AsyncGenerator, Generator, List, Optional, Union
 from uuid import UUID
-from pprint import pprint
+
 import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
@@ -31,10 +31,10 @@ from tests.utils import (
     many_resource_ids,
     many_test_access_logs,
     many_test_azure_users,
-    many_test_policies,
-    token_admin,
     many_test_child_resources,
+    many_test_policies,
     resource_id3,
+    token_admin,
 )
 
 
@@ -103,9 +103,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[get_azure_token_payload] = (
-        lambda: mocked_get_azure_token_payload
-    )
+    app.dependency_overrides[
+        get_azure_token_payload
+    ] = lambda: mocked_get_azure_token_payload
     yield app
     app.dependency_overrides = {}
 
