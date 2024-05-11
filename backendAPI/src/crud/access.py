@@ -865,13 +865,20 @@ class BaseHierarchyCRUD(
             logger.error(f"Error in creating hierarchy: {e}")
             raise HTTPException(status_code=403, detail="Forbidden.")
 
-    async def read_children(
+    async def read(
         self,
         current_user: CurrentUserData,
-        parent_id: UUID,
+        parent_id: Optional[UUID] = None,
+        child_id: Optional[UUID] = None,
     ) -> List[BaseHierarchyModelRead]:
-        """Reads all child resources of a parent resource."""
+        """Reads all parent-child relationships."""
         try:
+            if parent_id is None and child_id is None:
+                raise HTTPException(
+                    status_code=400, detail="Bad request: no id provided."
+                )
+
+            identifier_type_link_parent = aliased(IdentifierTypeLink)
             identifier_type_link_child = aliased(IdentifierTypeLink)
             statement = (
                 select(self.model)
@@ -879,17 +886,16 @@ class BaseHierarchyCRUD(
                     self.model.parent_id == parent_id,
                 )
                 .join(
-                    IdentifierTypeLink,
-                    IdentifierTypeLink.id == self.model.parent_id,
+                    identifier_type_link_parent,
+                    identifier_type_link_parent.id == self.model.parent_id,
                 )
                 .join(
                     identifier_type_link_child,
                     identifier_type_link_child.id == self.model.child_id,
                 )
             )
-            # TBD: how does that return only the children, that the user has access to?
             statement = self.policy_crud.filters_allowed(
-                statement, Action.read, IdentifierTypeLink, current_user
+                statement, Action.read, identifier_type_link_parent, current_user
             )
             statement = self.policy_crud.filters_allowed(
                 statement, Action.read, identifier_type_link_child, current_user
@@ -913,45 +919,94 @@ class BaseHierarchyCRUD(
             logger.error(f"Error in reading hierarchy: {e}")
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
 
-    # TBD: consider merging with read_children?
-    async def read_parents(
-        self,
-        current_user: CurrentUserData,
-        child_id: UUID,
-    ) -> List[BaseHierarchyModelRead]:
-        """Reads all parent resources of a child resource."""
-        try:
-            identifier_type_link_parent = aliased(IdentifierTypeLink)
-            statement = (
-                select(self.hierarchy)
-                .where(
-                    self.hierarchy.child_id == child_id,
-                )
-                .join(
-                    IdentifierTypeLink,
-                    IdentifierTypeLink.id == self.hierarchy.child_id,
-                )
-                .join(
-                    identifier_type_link_parent,
-                    identifier_type_link_parent.id == self.model.child_id,
-                )
-            )
-            statement = self.policy_crud.filters_allowed(
-                statement, Action.read, IdentifierTypeLink, current_user
-            )
-            statement = self.policy_crud.filters_allowed(
-                statement, Action.read, identifier_type_link_parent, current_user
-            )
-            response = await self.session.exec(statement)
-            results = response.all()
+    # async def read_children(
+    #     self,
+    #     current_user: CurrentUserData,
+    #     parent_id: UUID,
+    # ) -> List[BaseHierarchyModelRead]:
+    #     """Reads all child resources of a parent resource."""
+    #     return await self.read(current_user, parent_id=parent_id)
+    # try:
+    #     identifier_type_link_child = aliased(IdentifierTypeLink)
+    #     statement = (
+    #         select(self.model)
+    #         .where(
+    #             self.model.parent_id == parent_id,
+    #         )
+    #         .join(
+    #             IdentifierTypeLink,
+    #             IdentifierTypeLink.id == self.model.parent_id,
+    #         )
+    #         .join(
+    #             identifier_type_link_child,
+    #             identifier_type_link_child.id == self.model.child_id,
+    #         )
+    #     )
+    #     statement = self.policy_crud.filters_allowed(
+    #         statement, Action.read, IdentifierTypeLink, current_user
+    #     )
+    #     statement = self.policy_crud.filters_allowed(
+    #         statement, Action.read, identifier_type_link_child, current_user
+    #     )
 
-            if not results:
-                raise HTTPException(status_code=404, detail="No parents not found.")
+    #     # print("=== BaseHierarchyCRUD.read_children - statement ===")
+    #     # print(statement.compile())
+    #     # pprint(statement.compile().params)
 
-            return results
-        except Exception as e:
-            logger.error(f"Error in reading hierarchy: {e}")
-            raise HTTPException(status_code=404, detail="Hierarchy not found.")
+    #     response = await self.session.exec(statement)
+    #     results = response.all()
+
+    #     # print("=== BaseHierarchyCRUD.read_children - results ===")
+    #     # pprint(results)
+
+    #     if not results:
+    #         raise HTTPException(status_code=404, detail="No children not found.")
+
+    #     return results
+    # except Exception as e:
+    #     logger.error(f"Error in reading hierarchy: {e}")
+    #     raise HTTPException(status_code=404, detail="Hierarchy not found.")
+
+    # # TBD: consider merging with read_children?
+    # async def read_parents(
+    #     self,
+    #     current_user: CurrentUserData,
+    #     child_id: UUID,
+    # ) -> List[BaseHierarchyModelRead]:
+    #     """Reads all parent resources of a child resource."""
+    #     return await self.read(current_user, child_id=child_id)
+    # try:
+    #     identifier_type_link_parent = aliased(IdentifierTypeLink)
+    #     statement = (
+    #         select(self.hierarchy)
+    #         .where(
+    #             self.hierarchy.child_id == child_id,
+    #         )
+    #         .join(
+    #             IdentifierTypeLink,
+    #             IdentifierTypeLink.id == self.hierarchy.child_id,
+    #         )
+    #         .join(
+    #             identifier_type_link_parent,
+    #             identifier_type_link_parent.id == self.model.child_id,
+    #         )
+    #     )
+    #     statement = self.policy_crud.filters_allowed(
+    #         statement, Action.read, IdentifierTypeLink, current_user
+    #     )
+    #     statement = self.policy_crud.filters_allowed(
+    #         statement, Action.read, identifier_type_link_parent, current_user
+    #     )
+    #     response = await self.session.exec(statement)
+    #     results = response.all()
+
+    #     if not results:
+    #         raise HTTPException(status_code=404, detail="No parents not found.")
+
+    #     return results
+    # except Exception as e:
+    #     logger.error(f"Error in reading hierarchy: {e}")
+    #     raise HTTPException(status_code=404, detail="Hierarchy not found.")
 
     async def delete(
         self,

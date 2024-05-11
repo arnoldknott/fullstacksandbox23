@@ -453,8 +453,6 @@ async def add_parent_child_relationship(
     child_type: ResourceType = ResourceType.protected_child,
 ):
     """Adds a parent-child relationship to the resource hierarchy table."""
-    print("=== add_parent_child_relationship - child_id ===")
-    print(child_id)
     await register_entity_to_identity_type_link_table(
         child_id
     )  # TBD: pass the model here - or refactor register_entity_to_identity_type_link_table() to use type
