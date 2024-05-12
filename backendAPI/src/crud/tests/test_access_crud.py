@@ -33,6 +33,9 @@ from tests.utils import (
     resource_id1,
     resource_id2,
     resource_id3,
+    resource_id7,
+    resource_id9,
+    resource_id10,
     user_id_nonexistent,
     user_id_user1,
     many_resource_ids,
@@ -1473,6 +1476,124 @@ async def test_admin_reads_multiple_parents_of_a_child(
         assert relation.inherit is False
 
 
+@pytest.mark.anyio
+async def test_user_reads_all_allowed_parents_of_a_child(
+    add_one_test_access_policy,
+    add_one_parent_child_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_user = await register_current_user(current_user_data_user3)
+    child_id = uuid.uuid4()
+    access_to_parent_ids = [
+        resource_id3,
+        resource_id7,
+        resource_id9,
+        resource_id10,
+    ]
+
+    for parent_id in access_to_parent_ids:
+        await add_one_test_access_policy(
+            {
+                "identity_id": current_user.user_id,
+                "resource_id": parent_id,
+                "action": Action.read,
+            },
+            current_user=current_user,
+        )
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user.user_id,
+            "resource_id": str(child_id),
+            "action": Action.read,
+        },
+        current_user=current_user,
+    )
+    for parent in many_resource_ids:
+        await add_one_parent_child_relationship(child_id, parent_id=uuid.UUID(parent))
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read(
+            current_user=current_user, child_id=child_id
+        )
+
+    assert len(read_relation) == 4
+    for relation, expected_parent_id in zip(read_relation, access_to_parent_ids):
+        assert relation.parent_id == uuid.UUID(expected_parent_id)
+        assert relation.child_id == child_id
+        assert relation.inherit is False
+
+
+@pytest.mark.anyio
+async def test_user_reads_all_allowed_parents_without_access_to_child(
+    add_one_test_access_policy,
+    add_one_parent_child_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_user = await register_current_user(current_user_data_user3)
+    child_id = uuid.uuid4()
+    access_to_parent_ids = [
+        resource_id3,
+        resource_id7,
+        resource_id9,
+        resource_id10,
+    ]
+
+    for parent_id in access_to_parent_ids:
+        await add_one_test_access_policy(
+            {
+                "identity_id": current_user.user_id,
+                "resource_id": parent_id,
+                "action": Action.read,
+            },
+            current_user=current_user,
+        )
+    for parent in many_resource_ids:
+        await add_one_parent_child_relationship(child_id, parent_id=uuid.UUID(parent))
+
+    try:
+        async with ResourceHierarchyCRUD() as hierarchy_crud:
+            await hierarchy_crud.read(current_user=current_user, child_id=child_id)
+    except Exception as err:
+        assert err.status_code == 404
+        assert err.detail == "Hierarchy not found."
+    else:
+        pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_reads_all_allowed_parents_without_access_to_parents(
+    add_one_test_access_policy,
+    add_one_parent_child_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_user = await register_current_user(current_user_data_user3)
+    child_id = uuid.uuid4()
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user.user_id,
+            "resource_id": str(child_id),
+            "action": Action.read,
+        },
+        current_user=current_user,
+    )
+    for parent in many_resource_ids:
+        await add_one_parent_child_relationship(child_id, parent_id=uuid.UUID(parent))
+
+    try:
+        async with ResourceHierarchyCRUD() as hierarchy_crud:
+            await hierarchy_crud.read(current_user=current_user, child_id=child_id)
+    except Exception as err:
+        assert err.status_code == 404
+        assert err.detail == "Hierarchy not found."
+    else:
+        pytest.fail("No HTTPexception raised!")
+
+
 # Nomenclature:
 # ✔︎ implemented
 # X missing tests
@@ -1491,12 +1612,13 @@ async def test_admin_reads_multiple_parents_of_a_child(
 # ✔ user tries to read all children of a parent without read access to parent
 # ✔ admin reads all relationships (without giving parent_id or child_id) fails
 # ✔ admin reads single parent of a child
-# X admin reads all parents of a child
-# X user read returns only allowed parents of a child with read access to child
-# X user tries to read all parents of a child without read access to child
-# - admin deletes a child
-# - user deletes a child with owner access to child
-# - user tries to delete a child without owner access to child
+# ✔ admin reads all parents of a child
+# ✔ user read returns only allowed parents of a child with read access to child
+# ✔ user tries to read all parents of a child without read access to child
+# ✔ user tries to read all parents of a child without read access to parents
+# X admin deletes a child
+# X user deletes a child with owner access to child
+# X user tries to delete a child without owner access to child
 # - inheritance of access rights
 
 # endregion ResourceHierarchy CRUD tests
