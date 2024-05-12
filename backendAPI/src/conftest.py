@@ -103,9 +103,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[
-        get_azure_token_payload
-    ] = lambda: mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 
@@ -475,10 +475,11 @@ async def add_one_parent_child_relationship(
     registered_resources = register_many_resources
 
     async def _add_one_parent_child_relationship(
-        child_id: UUID, type: ResourceType = ResourceType.protected_child
+        child_id: UUID,
+        parent_id: UUID = registered_resources[0],
+        type: ResourceType = ResourceType.protected_child,
     ):
         """Adds a parent-child relationship to the database."""
-        parent_id = registered_resources[0]
         return await add_parent_child_relationship(parent_id, child_id, type)
 
     yield _add_one_parent_child_relationship

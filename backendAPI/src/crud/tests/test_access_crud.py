@@ -35,6 +35,7 @@ from tests.utils import (
     resource_id3,
     user_id_nonexistent,
     user_id_user1,
+    many_resource_ids,
 )
 
 # region AccessPolicy CRUD tests
@@ -1427,6 +1428,51 @@ async def test_admin_reads_all_relationships(
             pytest.fail("No HTTPexception raised!")
 
 
+@pytest.mark.anyio
+async def test_admin_reads_single_parent_of_child(
+    add_one_parent_child_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_relationship(child_id)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read(
+            current_user=current_admin_user,
+            child_id=relationship.child_id,
+        )
+
+    assert len(read_relation) == 1
+    assert read_relation[0].child_id == child_id
+    assert read_relation[0].parent_id == relationship.parent_id
+    assert read_relation[0].inherit == relationship.inherit
+
+
+@pytest.mark.anyio
+async def test_admin_reads_multiple_parents_of_a_child(
+    add_one_parent_child_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    child_id = uuid.uuid4()
+    for parent in many_resource_ids:
+        await add_one_parent_child_relationship(child_id, parent_id=uuid.UUID(parent))
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read(
+            current_user=current_admin_user, child_id=child_id
+        )
+
+    assert len(read_relation) == 10
+    for relation, expected_parent_id in zip(read_relation, many_resource_ids):
+        assert relation.parent_id == uuid.UUID(expected_parent_id)
+        assert relation.child_id == child_id
+        assert relation.inherit is False
+
+
 # Nomenclature:
 # ✔︎ implemented
 # X missing tests
@@ -1444,6 +1490,7 @@ async def test_admin_reads_all_relationships(
 # ✔ user read returns only allowed children of a parent with read access to parent
 # ✔ user tries to read all children of a parent without read access to parent
 # ✔ admin reads all relationships (without giving parent_id or child_id) fails
+# ✔ admin reads single parent of a child
 # X admin reads all parents of a child
 # X user read returns only allowed parents of a child with read access to child
 # X user tries to read all parents of a child without read access to child

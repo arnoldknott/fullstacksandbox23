@@ -1,7 +1,7 @@
 import logging
 from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
-
+from pprint import pprint
 from fastapi import HTTPException
 from sqlalchemy.orm import aliased
 from sqlmodel import SQLModel, and_, delete, or_, select
@@ -883,9 +883,6 @@ class BaseHierarchyCRUD(
             identifier_type_link_child = aliased(IdentifierTypeLink)
             statement = (
                 select(self.model)
-                .where(
-                    self.model.parent_id == parent_id,
-                )
                 .join(
                     identifier_type_link_parent,
                     identifier_type_link_parent.id == self.model.parent_id,
@@ -901,16 +898,20 @@ class BaseHierarchyCRUD(
             statement = self.policy_crud.filters_allowed(
                 statement, Action.read, identifier_type_link_child, current_user
             )
+            if parent_id:
+                statement = statement.where(self.model.parent_id == parent_id)
+            if child_id:
+                statement = statement.where(self.model.child_id == child_id)
 
-            # print("=== BaseHierarchyCRUD.read_children - statement ===")
-            # print(statement.compile())
-            # pprint(statement.compile().params)
+            print("=== BaseHierarchyCRUD.read_children - statement ===")
+            print(statement.compile())
+            pprint(statement.compile().params)
 
             response = await self.session.exec(statement)
             results = response.all()
 
-            # print("=== BaseHierarchyCRUD.read_children - results ===")
-            # pprint(results)
+            print("=== BaseHierarchyCRUD.read_children - results ===")
+            pprint(results)
 
             if not results:
                 raise HTTPException(status_code=404, detail="No children not found.")
