@@ -137,7 +137,7 @@ async def delete_tag(
     tag_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> Tag:
+) -> None:  # Tag:
     """Deletes a tag."""
     return await tag_view.delete(
         tag_id, token_payload, guards  # roles=["User"], scopes=["api.write"]

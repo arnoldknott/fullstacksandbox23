@@ -139,7 +139,7 @@ async def delete_category(
     category_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> Category:
+) -> None:  # Category:
     """Deletes a category."""
     return await category_view.delete(category_id, token_payload, guards)
 

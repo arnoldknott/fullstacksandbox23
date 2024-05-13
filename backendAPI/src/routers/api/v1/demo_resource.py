@@ -80,7 +80,7 @@ async def delete_demo_resource(
     demo_resource_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> DemoResource:
+) -> None:  # DemoResource:
     """Deletes a protected resource."""
     return await demo_resource_view.delete(demo_resource_id, token_payload, guards)
 

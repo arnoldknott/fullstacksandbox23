@@ -1594,6 +1594,56 @@ async def test_user_reads_all_allowed_parents_without_access_to_parents(
         pytest.fail("No HTTPexception raised!")
 
 
+@pytest.mark.anyio
+async def test_user_reads_all_parents_of_a_child_without_access(
+    add_one_parent_child_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_user_data = await register_current_user(current_user_data_user2)
+    child_id = uuid.uuid4()
+    for parent in many_resource_ids:
+        await add_one_parent_child_relationship(child_id, parent_id=uuid.UUID(parent))
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.read(current_user=current_user_data, child_id=child_id)
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_admin_deletes_child(
+    add_one_parent_child_relationship,
+    register_current_user,
+):
+    """Test deleting a child."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_relationship(child_id)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        await hierarchy_crud.delete(
+            current_user=current_admin_user,
+            parent_id=relationship.parent_id,
+            child_id=relationship.child_id,
+        )
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.read(
+                current_user=current_admin_user, child_id=child_id
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
 # Nomenclature:
 # ✔︎ implemented
 # X missing tests

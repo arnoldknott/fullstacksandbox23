@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
 # from core.access import AccessControl
 from fastapi import HTTPException
 from sqlalchemy.dialects.postgresql import insert
-from sqlmodel import SQLModel, select
+from sqlmodel import SQLModel, select, delete
+from sqlalchemy.orm import aliased
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
@@ -451,32 +452,69 @@ class BaseCRUD(
         self,
         current_user: "CurrentUserData",
         object_id: uuid.UUID,
-    ) -> BaseModelType:
+    ) -> None:  # BaseModelType:
         """Deletes an object."""
         try:
-            statement = select(self.model).distinct().where(self.model.id == object_id)
-            statement = self.policy_CRUD.filters_allowed(
-                statement=statement,
+            # statement = select(self.model).distinct().where(self.model.id == object_id)
+            # statement = self.policy_CRUD.filters_allowed(
+            #     statement=statement,
+            #     action=own,
+            #     model=self.model,
+            #     current_user=current_user,
+            # )
+
+            # response = await self.session.exec(statement)
+            # object = response.one()
+            # if object is None:
+            #     logger.info(f"Object with id {object_id} not found")
+            #     raise HTTPException(
+            #         status_code=404, detail=f"{self.model.__name__} not found."
+            #     )
+            # # print("=== CRUD - base - delete - object ===")
+            # # pprint(object)
+
+            # # TBD: deleting a resource also needs to delete the according access policies!
+
+            # await self.session.delete(object)
+
+            # access_log = AccessLogCreate(
+            #     resource_id=object.id,
+            #     action=own,
+            #     identity_id=current_user.user_id,
+            #     status_code=200,
+            # )
+            # async with self.logging_CRUD as logging_CRUD:
+            #     await logging_CRUD.create(access_log)
+            # # self.session = self.logging_CRUD.add_log_to_session(
+            # #     access_log, self.session
+            # # )
+            # # self._add_log_to_session(object_id, own, current_user, 200)
+            # await self.session.commit()
+            # return object
+
+            #### Refactored into subquery:
+            model_alias = aliased(self.model)
+            subquery = (
+                select(model_alias.id).distinct().where(model_alias.id == object_id)
+            )
+            subquery = self.policy_CRUD.filters_allowed(
+                statement=subquery,
                 action=own,
-                model=self.model,
+                model=model_alias,
                 current_user=current_user,
             )
 
-            response = await self.session.exec(statement)
-            object = response.one()
-            if object is None:
+            statement = delete(self.model).where(self.model.id.in_(subquery))
+            result = await self.session.exec(statement)
+
+            if result.rowcount == 0:
                 logger.info(f"Object with id {object_id} not found")
                 raise HTTPException(
                     status_code=404, detail=f"{self.model.__name__} not found."
                 )
-            # print("=== CRUD - base - delete - object ===")
-            # pprint(object)
 
-            # TBD: deleting a resource also needs to delete the according access policies!
-
-            await self.session.delete(object)
             access_log = AccessLogCreate(
-                resource_id=object.id,
+                resource_id=object_id,
                 action=own,
                 identity_id=current_user.user_id,
                 status_code=200,
@@ -488,7 +526,8 @@ class BaseCRUD(
             # )
             # self._add_log_to_session(object_id, own, current_user, 200)
             await self.session.commit()
-            return object
+            return None
+
         except Exception as e:
             try:
                 access_log = AccessLogCreate(

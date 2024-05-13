@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import Column, ForeignKey, Uuid
 
 from core.config import config
 from core.types import IdentityType
@@ -23,7 +24,16 @@ class AzureGroupUserLink(SQLModel, table=True):
         default=None, foreign_key="azuregroup.id", primary_key=True
     )
     azure_user_id: Optional[uuid.UUID] = Field(
-        default=None, foreign_key="user.azure_user_id", primary_key=True
+        default=None,
+        # foreign_key="user.azure_user_id",
+        # primary_key=True,
+        # TBD: add ondelete="CASCADE" to avoid orphans - write tests for this!
+        sa_column=Column(
+            "uuid_data",
+            Uuid,
+            ForeignKey("user.azure_user_id", ondelete="CASCADE"),
+            primary_key=True,
+        ),
     )
 
 
@@ -68,6 +78,7 @@ class AzureGroup(AzureGroupCreate, table=True):
         back_populates="azure_groups",
         link_model=AzureGroupUserLink,
         sa_relationship_kwargs={"lazy": "selectin"},
+        # sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete"},
     )
 
     # create the relationships and back population to users, courses... here!
@@ -146,7 +157,8 @@ class User(UserCreate, table=True):
     azure_groups: Optional[List["AzureGroup"]] = Relationship(
         back_populates="users",
         link_model=AzureGroupUserLink,
-        sa_relationship_kwargs={"lazy": "selectin"},
+        # sa_relationship_kwargs={"lazy": "selectin"},
+        sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete"},
     )
 
     ### Foreign Account: DTU Learn (Brightspace) ###

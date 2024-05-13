@@ -125,11 +125,18 @@ class AccessPolicyCRUD:
                     )
                 )
             )
+            # print("=== AccessPolicyCRUD.filters_allowed - subquery ===")
+            # print(subquery.compile())
+            # print(subquery.compile().params)
 
             if (model == AccessPolicy) or (model == AccessLog):
                 statement = statement.where(model.resource_id.in_(subquery))
             else:
                 statement = statement.where(model.id.in_(subquery))
+
+            # print("=== AccessPolicyCRUD.filters_allowed - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
 
             # ###### Refactor this into a subquery and filter the results for the  the main query statement #####
             # # this is becoming two different functions - one for resources and one for policies
@@ -903,15 +910,15 @@ class BaseHierarchyCRUD(
             if child_id:
                 statement = statement.where(self.model.child_id == child_id)
 
-            print("=== BaseHierarchyCRUD.read_children - statement ===")
-            print(statement.compile())
-            pprint(statement.compile().params)
+            # print("=== BaseHierarchyCRUD.read_children - statement ===")
+            # print(statement.compile())
+            # pprint(statement.compile().params)
 
             response = await self.session.exec(statement)
             results = response.all()
 
-            print("=== BaseHierarchyCRUD.read_children - results ===")
-            pprint(results)
+            # print("=== BaseHierarchyCRUD.read_children - results ===")
+            # pprint(results)
 
             if not results:
                 raise HTTPException(status_code=404, detail="No children not found.")
@@ -921,95 +928,6 @@ class BaseHierarchyCRUD(
             logger.error(f"Error in reading hierarchy: {e}")
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
 
-    # async def read_children(
-    #     self,
-    #     current_user: CurrentUserData,
-    #     parent_id: UUID,
-    # ) -> List[BaseHierarchyModelRead]:
-    #     """Reads all child resources of a parent resource."""
-    #     return await self.read(current_user, parent_id=parent_id)
-    # try:
-    #     identifier_type_link_child = aliased(IdentifierTypeLink)
-    #     statement = (
-    #         select(self.model)
-    #         .where(
-    #             self.model.parent_id == parent_id,
-    #         )
-    #         .join(
-    #             IdentifierTypeLink,
-    #             IdentifierTypeLink.id == self.model.parent_id,
-    #         )
-    #         .join(
-    #             identifier_type_link_child,
-    #             identifier_type_link_child.id == self.model.child_id,
-    #         )
-    #     )
-    #     statement = self.policy_crud.filters_allowed(
-    #         statement, Action.read, IdentifierTypeLink, current_user
-    #     )
-    #     statement = self.policy_crud.filters_allowed(
-    #         statement, Action.read, identifier_type_link_child, current_user
-    #     )
-
-    #     # print("=== BaseHierarchyCRUD.read_children - statement ===")
-    #     # print(statement.compile())
-    #     # pprint(statement.compile().params)
-
-    #     response = await self.session.exec(statement)
-    #     results = response.all()
-
-    #     # print("=== BaseHierarchyCRUD.read_children - results ===")
-    #     # pprint(results)
-
-    #     if not results:
-    #         raise HTTPException(status_code=404, detail="No children not found.")
-
-    #     return results
-    # except Exception as e:
-    #     logger.error(f"Error in reading hierarchy: {e}")
-    #     raise HTTPException(status_code=404, detail="Hierarchy not found.")
-
-    # # TBD: consider merging with read_children?
-    # async def read_parents(
-    #     self,
-    #     current_user: CurrentUserData,
-    #     child_id: UUID,
-    # ) -> List[BaseHierarchyModelRead]:
-    #     """Reads all parent resources of a child resource."""
-    #     return await self.read(current_user, child_id=child_id)
-    # try:
-    #     identifier_type_link_parent = aliased(IdentifierTypeLink)
-    #     statement = (
-    #         select(self.hierarchy)
-    #         .where(
-    #             self.hierarchy.child_id == child_id,
-    #         )
-    #         .join(
-    #             IdentifierTypeLink,
-    #             IdentifierTypeLink.id == self.hierarchy.child_id,
-    #         )
-    #         .join(
-    #             identifier_type_link_parent,
-    #             identifier_type_link_parent.id == self.model.child_id,
-    #         )
-    #     )
-    #     statement = self.policy_crud.filters_allowed(
-    #         statement, Action.read, IdentifierTypeLink, current_user
-    #     )
-    #     statement = self.policy_crud.filters_allowed(
-    #         statement, Action.read, identifier_type_link_parent, current_user
-    #     )
-    #     response = await self.session.exec(statement)
-    #     results = response.all()
-
-    #     if not results:
-    #         raise HTTPException(status_code=404, detail="No parents not found.")
-
-    #     return results
-    # except Exception as e:
-    #     logger.error(f"Error in reading hierarchy: {e}")
-    #     raise HTTPException(status_code=404, detail="Hierarchy not found.")
-
     async def delete(
         self,
         parent_id: UUID,
@@ -1018,22 +936,45 @@ class BaseHierarchyCRUD(
     ) -> None:
         """Deletes a parent-child relationship."""
         try:
-            statement = (
-                delete(self.hierarchy)
+            model_alias = aliased(self.model)
+            subquery = (
+                select(model_alias.child_id)
                 .where(
                     and_(
-                        self.hierarchy.parent_id == parent_id,
-                        self.hierarchy.child_id == child_id,
+                        model_alias.parent_id == parent_id,
+                        model_alias.child_id == child_id,
                     )
                 )
                 .join(
                     IdentifierTypeLink,
-                    IdentifierTypeLink.id == self.hierarchy.child_id,
+                    IdentifierTypeLink.id == model_alias.child_id,
                 )
             )
-            statement = self.policy_crud.filters_allowed(
-                statement, Action.own, IdentifierTypeLink, current_user
+            subquery = self.policy_crud.filters_allowed(
+                subquery, Action.own, IdentifierTypeLink, current_user
             )
+            statement = delete(self.model).where(self.model.child_id.in_(subquery))
+            # statement = (
+            #     delete(self.model)
+            #     .where(
+            #         and_(
+            #             self.model.parent_id == parent_id,
+            #             self.model.child_id == child_id,
+            #         )
+            #     )
+            #     .join(
+            #         IdentifierTypeLink,
+            #         IdentifierTypeLink.id == self.model.child_id,
+            #     )
+            # )
+            # statement = self.policy_crud.filters_allowed(
+            #     statement, Action.own, IdentifierTypeLink, current_user
+            # )
+
+            # print("=== BaseHierarchyCRUD.read_children - statement ===")
+            # print(statement.compile())
+            # pprint(statement.compile().params)
+
             response = await self.session.exec(statement)
             await self.session.commit()
             if response.rowcount == 0:

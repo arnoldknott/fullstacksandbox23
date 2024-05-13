@@ -108,6 +108,6 @@ async def delete_user(
     user_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> User:
+) -> None:  # User:
     """Deletes a user."""
     return await user_view.delete(user_id, token_payload, guards)
