@@ -1177,7 +1177,7 @@ async def test_admin_create_resource_hierarchy(
             child_id=new_child_id,
         )
 
-    assert created_hierarchy.parent_id == uuid.UUID(resources[0])
+    assert created_hierarchy.parent_id == resources[0]
     assert created_hierarchy.child_id == new_child_id
     assert created_hierarchy.inherit is False
 
@@ -1201,7 +1201,7 @@ async def test_admin_create_resource_hierarchy_with_inheritance(
             inherit=True,
         )
 
-    assert created_hierarchy.parent_id == uuid.UUID(resources[0])
+    assert created_hierarchy.parent_id == resources[0]
     assert created_hierarchy.child_id == new_child_id
     assert created_hierarchy.inherit is True
 
@@ -1229,6 +1229,28 @@ async def test_admin_create_resource_hierarchy_with_not_allowed_child_type(
             assert err.detail == "Forbidden."
         else:
             pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_admin_create_resource_hierarchy_parent_is_child_to_itself(
+    register_many_resources,
+    register_current_user,
+):
+    """Test creating a resource hierarchy."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    resources = register_many_resources
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.create(
+                current_user=current_admin_user,
+                parent_id=resources[0],
+                child_type=ResourceType.protected_child,
+                child_id=resources[0],
+            )
+        except Exception as err:
+            assert err.status_code == 403
+            assert err.detail == "Forbidden."
 
 
 @pytest.mark.anyio
@@ -1320,7 +1342,7 @@ async def test_admin_reads_single_child_of_a_parent(
 
     assert len(read_relation) == 1
     assert read_relation[0].child_id == new_child_id
-    assert read_relation[0].parent_id == relationship.parent_id
+    assert read_relation[0].parent_id == uuid.UUID(relationship.parent_id)
     assert read_relation[0].inherit == relationship.inherit
 
 
@@ -1449,7 +1471,7 @@ async def test_admin_reads_single_parent_of_child(
 
     assert len(read_relation) == 1
     assert read_relation[0].child_id == child_id
-    assert read_relation[0].parent_id == relationship.parent_id
+    assert read_relation[0].parent_id == uuid.UUID(relationship.parent_id)
     assert read_relation[0].inherit == relationship.inherit
 
 

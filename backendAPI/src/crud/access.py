@@ -28,8 +28,12 @@ from models.access import (
     AccessRequest,
     IdentifierTypeLink,
 )
-from models.access import ResourceHierarchy as ResourceHierarchyTable
-from models.access import ResourceHierarchyCreate, ResourceHierarchyRead
+
+from models.access import (
+    ResourceHierarchy as ResourceHierarchyTable,
+    ResourceHierarchyCreate,
+    ResourceHierarchyRead,
+)
 
 # from core.access import AccessControl
 
@@ -859,9 +863,10 @@ class BaseHierarchyCRUD(
                     child_id=child_id,
                     inherit=inherit,
                 )
-                self.session.add(relation)
+                database_relation = self.model.model_validate(relation)
+                self.session.add(database_relation)
                 await self.session.commit()
-                await self.session.refresh(relation)
+                await self.session.refresh(database_relation)
                 return relation
             else:
                 logger.error("Bad request: child type not allowed for parent.")

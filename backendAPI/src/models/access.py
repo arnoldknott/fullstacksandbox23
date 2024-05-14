@@ -7,7 +7,13 @@ from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, SQLModel
 
 # if TYPE_CHECKING:
-from core.types import Action, CurrentUserData, IdentityType, ResourceType
+from core.types import (
+    Action,
+    CurrentUserData,
+    IdentityType,
+    ResourceType,
+    ResourceHierarchy as ResourceHierarchyType,
+)
 
 
 class IdentifierTypeLink(SQLModel, table=True):
@@ -186,22 +192,18 @@ class ResourceHierarchyCreate(SQLModel):
     )
 
     @model_validator(mode="after")
-    def either_inherit_or_not(self):
-        """Validates either inherit is set or not"""
-        if self.parent_id == self.child_resource_id:
+    def not_child_to_self(self):
+        """Validates that the parent is not child to itself"""
+        if self.parent_id == self.child_id:
             raise ValueError("A resource cannot be its own child.")
         return self
 
 
-class ResourceHierarchy(SQLModel, table=True):
+class ResourceHierarchy(ResourceHierarchyCreate, table=True):
     """Table for resource hierarchy"""
 
     parent_id: uuid.UUID = Field(primary_key=True)
     child_id: uuid.UUID = Field(primary_key=True)
-    inherit: bool = Field(
-        default=False,
-        description="Set to true, if the child inherits permissions from this parent.",
-    )
 
     __table_args__ = (UniqueConstraint("parent_id", "child_id"),)
 
