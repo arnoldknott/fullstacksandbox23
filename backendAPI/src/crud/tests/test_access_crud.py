@@ -1666,6 +1666,68 @@ async def test_admin_deletes_child(
             pytest.fail("No HTTPexception raised!")
 
 
+@pytest.mark.anyio
+async def test_user_deletes_child_with(
+    add_many_parent_child_relationships,
+    register_current_user,
+    add_one_test_access_policy,
+):
+    """Test deleting a child."""
+    current_user = await register_current_user(current_user_data_user1)
+    add_many_parent_child_relationships
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user.user_id,
+            "resource_id": child_resource_id8,
+            "action": Action.own,
+        },
+        current_user=current_user,
+    )
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        await hierarchy_crud.delete(
+            current_user=current_user,
+            parent_id=resource_id3,
+            child_id=child_resource_id8,
+        )
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.read(
+                current_user=current_user, child_id=child_resource_id8
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_deletes_child_without_owner_rights(
+    add_many_parent_child_relationships,
+    register_current_user,
+    add_one_test_access_policy,
+):
+    """Test deleting a child."""
+    current_user = await register_current_user(current_user_data_user1)
+    add_many_parent_child_relationships
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.delete(
+                current_user=current_user,
+                parent_id=resource_id3,
+                child_id=child_resource_id8,
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
 # Nomenclature:
 # ✔︎ implemented
 # X missing tests
@@ -1688,9 +1750,9 @@ async def test_admin_deletes_child(
 # ✔ user read returns only allowed parents of a child with read access to child
 # ✔ user tries to read all parents of a child without read access to child
 # ✔ user tries to read all parents of a child without read access to parents
-# X admin deletes a child
-# X user deletes a child with owner access to child
-# X user tries to delete a child without owner access to child
+# ✔ admin deletes a child
+# ✔ user deletes a child with owner access to child
+# ✔ user tries to delete a child without owner access to child
 # - inheritance of access rights
 
 # endregion ResourceHierarchy CRUD tests
