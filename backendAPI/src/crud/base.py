@@ -141,6 +141,7 @@ class BaseCRUD(
         self,
         object: BaseSchemaTypeCreate,
         current_user: "CurrentUserData",
+        # parent_id: Optional[uuid.UUID] = None,
     ) -> BaseModelType:
         """Creates a new object."""
         logger.info("BaseCRUD.create")

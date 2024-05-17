@@ -3,8 +3,13 @@ from pprint import pprint
 
 import pytest
 
-from core.types import Action, CurrentUserData, ResourceType
-from crud.access import AccessLoggingCRUD, AccessPolicyCRUD, ResourceHierarchyCRUD
+from core.types import Action, CurrentUserData, ResourceType, IdentityType
+from crud.access import (
+    AccessLoggingCRUD,
+    AccessPolicyCRUD,
+    ResourceHierarchyCRUD,
+    IdentityHierarchyCRUD,
+)
 from models.access import (
     AccessLogCreate,
     AccessPolicy,
@@ -25,6 +30,9 @@ from tests.utils import (
     current_user_data_user2,
     current_user_data_user3,
     many_test_child_resources,
+    identity_id_group3,
+    identity_id_group2,
+    many_test_child_identities,
     many_test_policies,
     one_test_policy_own,
     one_test_policy_public_read,
@@ -36,9 +44,19 @@ from tests.utils import (
     resource_id7,
     resource_id9,
     resource_id10,
+    many_identity_ids,
+    child_identity_id1,
+    child_identity_id4,
+    child_identity_id5,
+    child_identity_id6,
+    child_identity_id9,
     user_id_nonexistent,
-    user_id_user1,
+    identity_id_user1,
     many_resource_ids,
+    identity_id_group1,
+    identity_id_subgroup2,
+    identity_id_subsubgroup4,
+    identity_id_subsubgroup5,
 )
 
 # region AccessPolicy CRUD tests
@@ -708,7 +726,7 @@ async def test_admin_deletes_all_access_policies_for_an_identity(
 
     assert len(all_policies_before_deletion) == len(policies)
 
-    delete_policies = AccessPolicyDelete(identity_id=user_id_user1)
+    delete_policies = AccessPolicyDelete(identity_id=identity_id_user1)
     async with AccessPolicyCRUD() as policy_crud:
         await policy_crud.delete(
             access_policy=delete_policies,
@@ -1325,14 +1343,14 @@ async def test_user_create_resource_hierarchy_without_access(
 
 
 @pytest.mark.anyio
-async def test_admin_reads_single_child_of_a_parent(
-    add_one_parent_child_relationship,
+async def test_admin_reads_resource_hierarchy_single_child_of_a_parent(
+    add_one_parent_child_resource_relationship,
     register_current_user,
 ):
     """Test reading all children of a parent resource."""
     current_admin_user = await register_current_user(current_user_data_admin)
     new_child_id = uuid.uuid4()
-    relationship = await add_one_parent_child_relationship(new_child_id)
+    relationship = await add_one_parent_child_resource_relationship(new_child_id)
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         read_relation = await hierarchy_crud.read(
@@ -1347,8 +1365,8 @@ async def test_admin_reads_single_child_of_a_parent(
 
 
 @pytest.mark.anyio
-async def test_admin_reads_multiple_children_of_a_parent(
-    add_many_parent_child_relationships,
+async def test_admin_reads_resource_hierarchy_multiple_children_of_a_parent(
+    add_many_parent_child_resource_relationships,
     register_current_user,
 ):
     """Test reading all children of a parent resource."""
@@ -1367,8 +1385,8 @@ async def test_admin_reads_multiple_children_of_a_parent(
 
 
 @pytest.mark.anyio
-async def test_user_reads_all_allowed_children_of_a_parent(
-    add_many_parent_child_relationships,
+async def test_user_reads_resource_hierarchy_all_allowed_children_of_a_parent(
+    add_many_parent_child_resource_relationships,
     register_current_user,
     add_many_test_access_policies,
     add_one_test_access_policy,
@@ -1415,8 +1433,8 @@ async def test_user_reads_all_allowed_children_of_a_parent(
 
 
 @pytest.mark.anyio
-async def test_user_reads_all_children_of_a_parent_without_parent_access(
-    add_many_parent_child_relationships,
+async def test_user_reads_resource_hierarchy_all_children_of_a_parent_without_parent_access(
+    add_many_parent_child_resource_relationships,
     register_current_user,
     add_many_test_access_policies,
 ):
@@ -1436,8 +1454,8 @@ async def test_user_reads_all_children_of_a_parent_without_parent_access(
 
 
 @pytest.mark.anyio
-async def test_admin_reads_all_relationships(
-    add_many_parent_child_relationships,
+async def test_admin_reads_resource_hierarchy_all_relationships(
+    add_many_parent_child_resource_relationships,
     register_current_user,
 ):
     """Test reading all children of a parent resource."""
@@ -1454,14 +1472,14 @@ async def test_admin_reads_all_relationships(
 
 
 @pytest.mark.anyio
-async def test_admin_reads_single_parent_of_child(
-    add_one_parent_child_relationship,
+async def test_admin_reads_resource_hierarchy_single_parent_of_child(
+    add_one_parent_child_resource_relationship,
     register_current_user,
 ):
     """Test reading all children of a parent resource."""
     current_admin_user = await register_current_user(current_user_data_admin)
     child_id = uuid.uuid4()
-    relationship = await add_one_parent_child_relationship(child_id)
+    relationship = await add_one_parent_child_resource_relationship(child_id)
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         read_relation = await hierarchy_crud.read(
@@ -1476,15 +1494,17 @@ async def test_admin_reads_single_parent_of_child(
 
 
 @pytest.mark.anyio
-async def test_admin_reads_multiple_parents_of_a_child(
-    add_one_parent_child_relationship,
+async def test_admin_reads_resource_hierarchy_multiple_parents_of_a_child(
+    add_one_parent_child_resource_relationship,
     register_current_user,
 ):
     """Test reading all children of a parent resource."""
     current_admin_user = await register_current_user(current_user_data_admin)
     child_id = uuid.uuid4()
     for parent in many_resource_ids:
-        await add_one_parent_child_relationship(child_id, parent_id=uuid.UUID(parent))
+        await add_one_parent_child_resource_relationship(
+            child_id, parent_id=uuid.UUID(parent)
+        )
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         read_relation = await hierarchy_crud.read(
@@ -1499,9 +1519,9 @@ async def test_admin_reads_multiple_parents_of_a_child(
 
 
 @pytest.mark.anyio
-async def test_user_reads_all_allowed_parents_of_a_child(
+async def test_user_reads_resource_hierarchy_all_allowed_parents_of_a_child(
     add_one_test_access_policy,
-    add_one_parent_child_relationship,
+    add_one_parent_child_resource_relationship,
     register_current_user,
 ):
     """Test reading all children of a parent resource."""
@@ -1533,7 +1553,9 @@ async def test_user_reads_all_allowed_parents_of_a_child(
         current_user=current_user,
     )
     for parent in many_resource_ids:
-        await add_one_parent_child_relationship(child_id, parent_id=uuid.UUID(parent))
+        await add_one_parent_child_resource_relationship(
+            child_id, parent_id=uuid.UUID(parent)
+        )
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         read_relation = await hierarchy_crud.read(
@@ -1548,9 +1570,9 @@ async def test_user_reads_all_allowed_parents_of_a_child(
 
 
 @pytest.mark.anyio
-async def test_user_reads_all_allowed_parents_without_access_to_child(
+async def test_user_reads_resource_hierarchy_all_allowed_parents_without_access_to_child(
     add_one_test_access_policy,
-    add_one_parent_child_relationship,
+    add_one_parent_child_resource_relationship,
     register_current_user,
 ):
     """Test reading all children of a parent resource."""
@@ -1573,7 +1595,9 @@ async def test_user_reads_all_allowed_parents_without_access_to_child(
             current_user=current_user,
         )
     for parent in many_resource_ids:
-        await add_one_parent_child_relationship(child_id, parent_id=uuid.UUID(parent))
+        await add_one_parent_child_resource_relationship(
+            child_id, parent_id=uuid.UUID(parent)
+        )
 
     try:
         async with ResourceHierarchyCRUD() as hierarchy_crud:
@@ -1586,9 +1610,9 @@ async def test_user_reads_all_allowed_parents_without_access_to_child(
 
 
 @pytest.mark.anyio
-async def test_user_reads_all_allowed_parents_without_access_to_parents(
+async def test_user_reads_resource_hierarchy_all_allowed_parents_without_access_to_parents(
     add_one_test_access_policy,
-    add_one_parent_child_relationship,
+    add_one_parent_child_resource_relationship,
     register_current_user,
 ):
     """Test reading all children of a parent resource."""
@@ -1604,7 +1628,9 @@ async def test_user_reads_all_allowed_parents_without_access_to_parents(
         current_user=current_user,
     )
     for parent in many_resource_ids:
-        await add_one_parent_child_relationship(child_id, parent_id=uuid.UUID(parent))
+        await add_one_parent_child_resource_relationship(
+            child_id, parent_id=uuid.UUID(parent)
+        )
 
     try:
         async with ResourceHierarchyCRUD() as hierarchy_crud:
@@ -1617,15 +1643,17 @@ async def test_user_reads_all_allowed_parents_without_access_to_parents(
 
 
 @pytest.mark.anyio
-async def test_user_reads_all_parents_of_a_child_without_access(
-    add_one_parent_child_relationship,
+async def test_user_reads_resource_hierarchy_all_parents_of_a_child_without_access(
+    add_one_parent_child_resource_relationship,
     register_current_user,
 ):
     """Test reading all children of a parent resource."""
     current_user_data = await register_current_user(current_user_data_user2)
     child_id = uuid.uuid4()
     for parent in many_resource_ids:
-        await add_one_parent_child_relationship(child_id, parent_id=uuid.UUID(parent))
+        await add_one_parent_child_resource_relationship(
+            child_id, parent_id=uuid.UUID(parent)
+        )
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         try:
@@ -1638,14 +1666,14 @@ async def test_user_reads_all_parents_of_a_child_without_access(
 
 
 @pytest.mark.anyio
-async def test_admin_deletes_child(
-    add_one_parent_child_relationship,
+async def test_admin_deletes_resource_hierarchy_child(
+    add_one_parent_child_resource_relationship,
     register_current_user,
 ):
     """Test deleting a child."""
     current_admin_user = await register_current_user(current_user_data_admin)
     child_id = uuid.uuid4()
-    relationship = await add_one_parent_child_relationship(child_id)
+    relationship = await add_one_parent_child_resource_relationship(child_id)
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         await hierarchy_crud.delete(
@@ -1667,14 +1695,14 @@ async def test_admin_deletes_child(
 
 
 @pytest.mark.anyio
-async def test_user_deletes_child_with(
-    add_many_parent_child_relationships,
+async def test_user_deletes_resource_hierarchy_child_with_owner_rights(
+    add_many_parent_child_resource_relationships,
     register_current_user,
     add_one_test_access_policy,
 ):
     """Test deleting a child."""
     current_user = await register_current_user(current_user_data_user1)
-    add_many_parent_child_relationships
+    add_many_parent_child_resource_relationships
 
     await add_one_test_access_policy(
         {
@@ -1705,14 +1733,14 @@ async def test_user_deletes_child_with(
 
 
 @pytest.mark.anyio
-async def test_user_deletes_child_without_owner_rights(
-    add_many_parent_child_relationships,
+async def test_user_deletes_resource_hierarchy_child_without_owner_rights(
+    add_many_parent_child_resource_relationships,
     register_current_user,
     add_one_test_access_policy,
 ):
     """Test deleting a child."""
     current_user = await register_current_user(current_user_data_user1)
-    add_many_parent_child_relationships
+    add_many_parent_child_resource_relationships
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         try:
@@ -1756,3 +1784,622 @@ async def test_user_deletes_child_without_owner_rights(
 # - inheritance of access rights
 
 # endregion ResourceHierarchy CRUD tests
+
+# region IdentityHierarchy CRUD tests
+
+
+@pytest.mark.anyio
+async def test_admin_create_identity_hierarchy(
+    register_many_entities,
+    register_current_user,
+):
+    """Test creating a identity hierarchy."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    identities = register_many_entities[10:]
+    parent_id = identities[1].id
+    new_child_id = uuid.uuid4()
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        created_hierarchy = await hierarchy_crud.create(
+            current_user=current_admin_user,
+            parent_id=parent_id,
+            child_type=IdentityType.sub_group,
+            child_id=new_child_id,
+        )
+
+    assert created_hierarchy.parent_id == parent_id
+    assert created_hierarchy.child_id == new_child_id
+    assert created_hierarchy.inherit is False
+
+
+@pytest.mark.anyio
+async def test_admin_create_identity_hierarchy_with_inheritance(
+    register_many_entities,
+    register_current_user,
+):
+    """Test creating a resource hierarchy."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    identities = register_many_entities[10:]
+    parent_id = identities[1].id
+    new_child_id = uuid.uuid4()
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        created_hierarchy = await hierarchy_crud.create(
+            current_user=current_admin_user,
+            parent_id=parent_id,
+            child_type=IdentityType.sub_group,
+            child_id=new_child_id,
+            inherit=True,
+        )
+
+    assert created_hierarchy.parent_id == parent_id
+    assert created_hierarchy.child_id == new_child_id
+    assert created_hierarchy.inherit is True
+
+
+@pytest.mark.anyio
+async def test_admin_create_identity_hierarchy_with_not_allowed_child_type(
+    register_many_entities,
+    register_current_user,
+):
+    """Test creating a resource hierarchy."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    identities = register_many_entities[10:]
+    parent_id = identities[1].id
+    new_child_id = uuid.uuid4()
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.create(
+                current_user=current_admin_user,
+                parent_id=parent_id,
+                child_type=IdentityType.sub_sub_group,
+                child_id=new_child_id,
+            )
+        except Exception as err:
+            assert err.status_code == 403
+            assert err.detail == "Forbidden."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_admin_create_identity_hierarchy_parent_is_child_to_itself(
+    register_many_entities,
+    register_current_user,
+):
+    """Test creating a resource hierarchy."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    identities = register_many_entities[10:]
+    parent_id = identities[1].id
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.create(
+                current_user=current_admin_user,
+                parent_id=parent_id,
+                child_type=IdentityType.sub_group,
+                child_id=parent_id,
+            )
+        except Exception as err:
+            assert err.status_code == 403
+            assert err.detail == "Forbidden."
+
+
+@pytest.mark.anyio
+async def test_admin_create_identity_hierarchy_with_nonexisting_parent(
+    register_many_entities,
+    register_current_user,
+):
+    """Test creating a resource hierarchy."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    register_many_entities[10:]
+    new_child_id = uuid.uuid4()
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.create(
+                current_user=current_admin_user,
+                parent_id=uuid.uuid4(),
+                child_type=IdentityType.sub_group,
+                child_id=new_child_id,
+            )
+        except Exception as err:
+            assert err.status_code == 403
+            assert err.detail == "Forbidden."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_create_identity_hierarchy(
+    register_current_user, register_many_entities, add_one_test_access_policy
+):
+    """Test creating a resource hierarchy."""
+    current_user_data = await register_current_user(current_user_data_user1)
+    parent_identity = register_many_entities[11]
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": str(current_user_data.user_id),
+            "resource_id": str(parent_identity.id),
+            "action": Action.own,
+        },
+        current_user=current_user_data,
+    )
+
+    new_child_id = uuid.uuid4()
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        created_hierarchy = await hierarchy_crud.create(
+            current_user=current_user_data,
+            parent_id=parent_identity.id,
+            child_type=IdentityType.sub_group,
+            child_id=new_child_id,
+        )
+
+    assert created_hierarchy.parent_id == parent_identity.id
+    assert created_hierarchy.child_id == new_child_id
+    assert created_hierarchy.inherit is False
+
+
+@pytest.mark.anyio
+async def test_user_create_identity_hierarchy_without_access(
+    register_current_user, register_many_entities
+):
+    """Test creating a resource hierarchy."""
+    current_user_data = await register_current_user(current_user_data_user1)
+    parent_identity = register_many_entities[11]
+    new_child_id = uuid.uuid4()
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.create(
+                current_user=current_user_data,
+                parent_id=parent_identity.id,
+                child_type=IdentityType.sub_group,
+                child_id=new_child_id,
+            )
+        except Exception as err:
+            assert err.status_code == 403
+            assert err.detail == "Forbidden."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_admin_reads_identity_hierarchy_single_child_of_a_parent(
+    add_one_parent_child_identity_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent identity."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    new_child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_identity_relationship(new_child_id)
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read(
+            current_user=current_admin_user,
+            parent_id=relationship.parent_id,
+        )
+
+    assert len(read_relation) == 1
+    assert read_relation[0].child_id == new_child_id
+    assert read_relation[0].parent_id == relationship.parent_id
+    assert read_relation[0].inherit == relationship.inherit
+
+
+@pytest.mark.anyio
+async def test_admin_reads_identity_hierarchy_multiple_children_of_a_parent(
+    add_many_parent_child_identity_relationships,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read(
+            current_user=current_admin_user, parent_id=identity_id_group2
+        )
+
+    expected_children = [
+        many_test_child_identities[0],
+        many_test_child_identities[3],
+        many_test_child_identities[4],
+        many_test_child_identities[8],
+    ]
+
+    assert len(read_relation) == 4
+    for relation, expected in zip(read_relation, expected_children):
+        assert relation.parent_id == uuid.UUID(identity_id_group2)
+        assert relation.child_id == uuid.UUID(expected["id"])
+        assert relation.inherit is False
+
+
+@pytest.mark.anyio
+async def test_user_reads_identity_hierarchy_all_allowed_children_of_a_parent(
+    add_many_parent_child_identity_relationships,
+    register_current_user,
+    add_one_test_access_policy,
+):
+    """Test reading all children of a parent identity."""
+    current_user = await register_current_user(current_user_data_user3)
+
+    access_to_children_ids = [
+        child_identity_id1,
+        child_identity_id4,
+        child_identity_id5,
+        child_identity_id9,
+    ]
+    for child_id in access_to_children_ids:
+        await add_one_test_access_policy(
+            {
+                "identity_id": current_user.user_id,
+                "resource_id": child_id,
+                "action": Action.read,
+            },
+            current_user=current_user,
+        )
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user.user_id,
+            "resource_id": identity_id_group2,
+            "action": Action.read,
+        },
+        current_user=current_user,
+    )
+
+    async with AccessPolicyCRUD() as policy_crud:
+        await policy_crud.read(
+            current_user=CurrentUserData(**current_user_data_admin),
+            # current_user=current_user,
+        )
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read(
+            current_user=current_user, parent_id=identity_id_group2
+        )
+
+    assert len(read_relation) == 4
+    for relation, expected_child_id in zip(read_relation, access_to_children_ids):
+        assert relation.parent_id == uuid.UUID(identity_id_group2)
+        assert relation.child_id == uuid.UUID(expected_child_id)
+        assert relation.inherit is False
+
+
+@pytest.mark.anyio
+async def test_user_reads_identity_hierarchy_all_children_of_a_parent_without_parent_access(
+    add_many_parent_child_identity_relationships,
+    register_current_user,
+    add_many_test_access_policies,
+):
+    """Test reading all children of a parent resource."""
+    current_user_data = await register_current_user(current_user_data_user2)
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.read(
+                current_user=current_user_data, parent_id=identity_id_group2
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_admin_reads_identity_hierarchy_all_relationships(
+    add_many_parent_child_identity_relationships,
+    register_current_user,
+):
+    """Test reading all children of a parent identity."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.read(current_user=current_admin_user)
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_admin_reads_identity_hierarchy_single_parent_of_child(
+    add_one_parent_child_identity_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent identity."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_identity_relationship(child_id)
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read(
+            current_user=current_admin_user,
+            child_id=relationship.child_id,
+        )
+
+    assert len(read_relation) == 1
+    assert read_relation[0].child_id == child_id
+    assert read_relation[0].parent_id == relationship.parent_id
+    assert read_relation[0].inherit == relationship.inherit
+
+
+@pytest.mark.anyio
+async def test_admin_reads_identity_hierarchy_multiple_parents_of_a_child(
+    add_one_parent_child_identity_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    child_id = uuid.uuid4()
+    group_ids = [
+        identity_id_group1,
+        identity_id_group2,
+        identity_id_group3,
+    ]
+    for parent in group_ids:
+        await add_one_parent_child_identity_relationship(
+            child_id, parent_id=uuid.UUID(parent)
+        )
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read(
+            current_user=current_admin_user, child_id=child_id
+        )
+
+    assert len(read_relation) == 3
+    for relation, expected_parent_id in zip(read_relation, group_ids):
+
+        assert relation.parent_id == uuid.UUID(expected_parent_id)
+        assert relation.child_id == child_id
+        assert relation.inherit is False
+
+
+@pytest.mark.anyio
+async def test_user_reads_identity_hierarchy_all_allowed_parents_of_a_child(
+    add_one_test_access_policy,
+    add_one_parent_child_identity_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_user = await register_current_user(current_user_data_user3)
+    child_id = uuid.uuid4()
+    access_to_parent_ids = [
+        identity_id_group1,
+        identity_id_group3,
+    ]
+
+    for parent_id in access_to_parent_ids:
+        await add_one_test_access_policy(
+            {
+                "identity_id": current_user.user_id,
+                "resource_id": parent_id,
+                "action": Action.read,
+            },
+            current_user=current_user,
+        )
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user.user_id,
+            "resource_id": str(child_id),
+            "action": Action.read,
+        },
+        current_user=current_user,
+    )
+    for parent in access_to_parent_ids:
+        await add_one_parent_child_identity_relationship(
+            child_id, parent_id=uuid.UUID(parent)
+        )
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        read_relation = await hierarchy_crud.read(
+            current_user=current_user, child_id=child_id
+        )
+
+    assert len(read_relation) == 2
+    for relation, expected_parent_id in zip(read_relation, access_to_parent_ids):
+        assert relation.parent_id == uuid.UUID(expected_parent_id)
+        assert relation.child_id == child_id
+        assert relation.inherit is False
+
+
+@pytest.mark.anyio
+async def test_user_reads_identity_hierarchy_all_allowed_parents_without_access_to_child(
+    add_one_test_access_policy,
+    add_one_parent_child_identity_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_user = await register_current_user(current_user_data_user3)
+    child_id = uuid.uuid4()
+    access_to_parent_ids = [
+        identity_id_group1,
+        identity_id_group3,
+    ]
+
+    for parent_id in access_to_parent_ids:
+        await add_one_test_access_policy(
+            {
+                "identity_id": current_user.user_id,
+                "resource_id": parent_id,
+                "action": Action.read,
+            },
+            current_user=current_user,
+        )
+    for parent in access_to_parent_ids:
+        await add_one_parent_child_identity_relationship(
+            child_id, parent_id=uuid.UUID(parent)
+        )
+
+    try:
+        async with IdentityHierarchyCRUD() as hierarchy_crud:
+            await hierarchy_crud.read(current_user=current_user, child_id=child_id)
+    except Exception as err:
+        assert err.status_code == 404
+        assert err.detail == "Hierarchy not found."
+    else:
+        pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_reads_identity_hierarchy_all_allowed_parents_without_access_to_parents(
+    add_one_test_access_policy,
+    add_one_parent_child_identity_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_user = await register_current_user(current_user_data_user3)
+    child_id = uuid.uuid4()
+    parent_ids = [
+        identity_id_group1,
+        identity_id_group3,
+    ]
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user.user_id,
+            "resource_id": str(child_id),
+            "action": Action.read,
+        },
+        current_user=current_user,
+    )
+    for parent in parent_ids:
+        await add_one_parent_child_identity_relationship(
+            child_id, parent_id=uuid.UUID(parent)
+        )
+
+    try:
+        async with IdentityHierarchyCRUD() as hierarchy_crud:
+            await hierarchy_crud.read(current_user=current_user, child_id=child_id)
+    except Exception as err:
+        assert err.status_code == 404
+        assert err.detail == "Hierarchy not found."
+    else:
+        pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_reads_identity_hierarchy_all_parents_of_a_child_without_access(
+    add_one_parent_child_identity_relationship,
+    register_current_user,
+):
+    """Test reading all children of a parent resource."""
+    current_user_data = await register_current_user(current_user_data_user2)
+    child_id = uuid.uuid4()
+    parent_ids = [
+        identity_id_group1,
+        identity_id_group3,
+    ]
+
+    for parent in parent_ids:
+        await add_one_parent_child_identity_relationship(
+            child_id, parent_id=uuid.UUID(parent)
+        )
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.read(current_user=current_user_data, child_id=child_id)
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_admin_deletes_identity_hierarchy_child(
+    add_one_parent_child_identity_relationship,
+    register_current_user,
+):
+    """Test deleting a child."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_identity_relationship(child_id)
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        await hierarchy_crud.delete(
+            current_user=current_admin_user,
+            parent_id=relationship.parent_id,
+            child_id=relationship.child_id,
+        )
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.read(
+                current_user=current_admin_user, child_id=child_id
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_deletes_identity_hierarchy_child_with_owner_rights(
+    add_many_parent_child_identity_relationships,
+    register_current_user,
+    add_one_test_access_policy,
+):
+    """Test deleting a child."""
+    current_user = await register_current_user(current_user_data_user1)
+    add_many_parent_child_identity_relationships
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user.user_id,
+            "resource_id": child_identity_id5,
+            "action": Action.own,
+        },
+        current_user=current_user,
+    )
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        await hierarchy_crud.delete(
+            current_user=current_user,
+            parent_id=identity_id_group2,
+            child_id=child_identity_id5,
+        )
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.read(
+                current_user=current_user, child_id=child_identity_id5
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_deletes_identity_hierarchy_child_without_owner_rights(
+    add_many_parent_child_identity_relationships,
+    register_current_user,
+    add_one_test_access_policy,
+):
+    """Test deleting a child."""
+    current_user = await register_current_user(current_user_data_user1)
+    add_many_parent_child_identity_relationships
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.delete(
+                current_user=current_user,
+                parent_id=identity_id_group2,
+                child_id=child_identity_id5,
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+# endregion IdentityHierarchy CRUD tests

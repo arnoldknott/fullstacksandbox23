@@ -90,7 +90,9 @@ class AzureGroupUpdate(AzureGroupCreate):
     is_active: Optional[bool] = None
 
 
-# endregion
+# endregion AzureGroup
+
+# endregion account linking
 
 
 # class GoogleAccount(SQLModel, table=True):
@@ -107,21 +109,6 @@ class AzureGroupUpdate(AzureGroupCreate):
 #     # access_token: str
 #     # refresh_token: str
 #     user: Optional["User"] = Relationship(back_populates="discord_account")
-
-
-# region Identity Hierarchy
-
-
-class IdentityHierarchy(SQLModel, table=True):
-    """Schema for the identity hierarchy in the database."""
-
-    child_id: uuid.UUID = Field(primary_key=True)
-    child_type: IdentityType = Field(index=True)
-    parent_id: uuid.UUID = Field(primary_key=True)
-    parent_type: IdentityType = Field(index=True)
-
-
-# endregion
 
 
 # region User
@@ -213,4 +200,121 @@ class UserUpdate(UserCreate):
     # user: Optional["User"] = Relationship(back_populates="brightspace_account")
 
 
-# endregion
+# endregion User
+
+# TBD: check if it makes sense to use relationships between groups and group-users;
+# but consider the access filters_allowed!
+# region UeberGroup
+
+
+class UeberGroupCreate(SQLModel):
+    """Schema for creating a user."""
+
+    name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+    description: Optional[str] = Field(None, max_length=500)
+
+
+class UeberGroup(UeberGroupCreate, table=True):
+    """Schema for a user in the database."""
+
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
+
+
+class UeberGroupRead(UeberGroupCreate):
+    """Schema for reading a user."""
+
+    id: uuid.UUID  # no longer optional - needs to exist now
+
+
+# endregion SubGroup
+
+
+# region Group
+
+
+class GroupCreate(SQLModel):
+    """Schema for creating a user."""
+
+    name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+    description: Optional[str] = Field(None, max_length=500)
+
+
+class Group(GroupCreate, table=True):
+    """Schema for a user in the database."""
+
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
+
+
+class GroupRead(GroupCreate):
+    """Schema for reading a user."""
+
+    id: uuid.UUID  # no longer optional - needs to exist now
+
+
+# endregion Group
+
+
+# region SubGroup
+
+
+class SubGroupCreate(SQLModel):
+    """Schema for creating a user."""
+
+    name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+    description: Optional[str] = Field(None, max_length=500)
+
+
+class SubGroup(SubGroupCreate, table=True):
+    """Schema for a user in the database."""
+
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
+
+
+class SubGroupRead(SubGroupCreate):
+    """Schema for reading a user."""
+
+    id: uuid.UUID  # no longer optional - needs to exist now
+
+
+# endregion SubGroup
+
+
+# region SubSubGroup
+
+
+class SubSubGroupCreate(SQLModel):
+    """Schema for creating a user."""
+
+    name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+    description: Optional[str] = Field(None, max_length=500)
+
+
+class SubSubGroup(SubSubGroupCreate, table=True):
+    """Schema for a user in the database."""
+
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
+
+
+class SubSubGroupRead(SubSubGroupCreate):
+    """Schema for reading a user."""
+
+    id: uuid.UUID  # no longer optional - needs to exist now
+
+
+# endregion SubSubGroup

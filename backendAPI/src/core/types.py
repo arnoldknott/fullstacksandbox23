@@ -1,10 +1,21 @@
 from enum import Enum
+from sqlmodel import SQLModel
 from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
 
 # import models
+
+
+def get_all_models(SQLModel=SQLModel):
+    all_models = []
+
+    for subclass in SQLModel.__subclasses__():
+        all_models.append(subclass)
+        all_models.extend(get_all_models(subclass))
+
+    return all_models
 
 
 class GuardTypes(BaseModel):
@@ -44,6 +55,37 @@ class BaseType(str, Enum):
     @classmethod
     def list(cls):
         return list(map(lambda x: x.value, cls._member_map_.values()))
+
+    @classmethod
+    def get_model(cls, entity_type: str):
+        # print("=== metadata.tables ===")
+        # pprint(metadata.tables)
+        # for table_name, table in metadata.tables.items():
+        #     print("=== table_name ===")
+        #     print(table_name)
+        #     print("=== table ===")
+        #     print(table)
+        # print("=== SQLModel ===")
+        # pprint(dir(SQLModel))
+        # print("=== SQLModel subclasses ===")
+        # for subclass in SQLModel.__subclasses__():
+        #     print(subclass)
+        # print("=== all models ===")
+        all_models = get_all_models()
+        # for model in all_models:
+        #     pprint(model)
+        # print("=== metadata.tables ===")
+        # pprint(SQLModel.metadata.info)
+        # table = metadata.tables.get(entity_type)
+        # print("=== table ===")
+        # print(table)
+        model = next(filter(lambda m: m.__name__ == entity_type, all_models), None)
+        if model is None:
+            raise ValueError(f"Table {entity_type} not found.")
+        else:
+            # print("=== model ===")
+            # pprint(model)
+            return model
 
     def __str__(self):
         return self.name
@@ -115,8 +157,6 @@ class IdentityType(BaseType):
 
     # TBD: consider getting those values programmatically?
     user = "User"
-    # admin = "admin"
-    # group = "group"
     ueber_group = "UeberGroup"
     group = "Group"
     sub_group = "SubGroup"
@@ -132,17 +172,8 @@ class IdentityHierarchy(BaseHierarchy):
 
     _children = {
         IdentityType.azure_group: [IdentityType.user],
-        IdentityType.ueber_group: [
-            IdentityType.group,
-            IdentityType.sub_group,
-            IdentityType.sub_sub_group,
-            IdentityType.user,
-        ],
-        IdentityType.group: [
-            IdentityType.sub_group,
-            IdentityType.sub_sub_group,
-            IdentityType.user,
-        ],
+        IdentityType.ueber_group: [IdentityType.group, IdentityType.user],
+        IdentityType.group: [IdentityType.sub_group, IdentityType.user],
         IdentityType.sub_group: [IdentityType.sub_sub_group, IdentityType.user],
         IdentityType.sub_sub_group: [IdentityType.user],
     }

@@ -11,7 +11,12 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from core.databases import postgres_async_engine  # should be SQLite here only!
 from core.security import CurrentAccessToken, Guards, get_azure_token_payload
 from core.types import CurrentUserData, IdentityType, ResourceType
-from crud.access import AccessLoggingCRUD, AccessPolicyCRUD, ResourceHierarchyCRUD
+from crud.access import (
+    AccessLoggingCRUD,
+    AccessPolicyCRUD,
+    ResourceHierarchyCRUD,
+    IdentityHierarchyCRUD,
+)
 from crud.base import BaseCRUD
 from crud.identity import UserCRUD
 from main import app
@@ -22,16 +27,19 @@ from models.access import (
     AccessPolicyRead,
     IdentifierTypeLink,
 )
-from models.identity import User, UserRead
+from models.identity import User, UserRead, Group
 from models.protected_resource import ProtectedResource
 from tests.utils import (
     current_user_data_admin,
     many_current_users_data,
     many_entity_type_links,
     many_resource_ids,
+    many_identity_ids,
     many_test_access_logs,
     many_test_azure_users,
     many_test_child_resources,
+    identity_id_group2,
+    many_test_child_identities,
     many_test_policies,
     resource_id3,
     token_admin,
@@ -175,15 +183,28 @@ async def current_user_from_azure_token():
 
 
 async def register_entity_to_identity_type_link_table(
-    resource_id: UUID, model: Union["ResourceType", "IdentityType"] = ProtectedResource
+    entity_id: UUID, model: Union["ResourceType", "IdentityType"] = ProtectedResource
 ):
-    """Registers the resources to the resource link table."""
+    """Registers an identity to the identifier link table."""
     async with BaseCRUD(model) as crud:
-        statement = crud._add_identifier_type_link_to_session(resource_id)
+        statement = crud._add_identifier_type_link_to_session(entity_id)
         await crud.session.exec(statement)
         await crud.session.commit()
 
     return
+
+
+# @pytest.fixture(scope="function")
+# async def register_many_entities():
+#     """Registers many entities (resources and identities) with id and their type in the database."""
+
+#     print("=== register_many_entities - many_entity_type_links ===")
+#     pprint(many_entity_type_links)
+
+#     for entity_id, entity_type in many_entity_type_links:
+#         await register_entity_to_identity_type_link_table(UUID(entity_id), entity_type)
+
+#     yield many_entity_type_links
 
 
 # mocks the current user and registers in identity link table
@@ -244,6 +265,33 @@ async def register_many_resources():
     yield many_resource_ids
 
 
+# TBD: turn input into dict?
+@pytest.fixture(scope="function")
+async def register_one_identity():
+    """Registers a resource id and its type in the database."""
+
+    async def _register_one_identity(identity_id: UUID, model: IdentityType = Group):
+        """Registers a resource id and its type in the database."""
+        await register_entity_to_identity_type_link_table(identity_id, model)
+        return identity_id
+
+    yield _register_one_identity
+
+
+# @pytest.fixture(scope="function")
+# async def register_many_identities():
+#     """Registers many protected resources with id and its type in the database."""
+
+#     many_registered_identity_ids = []
+#     for identity in many_identity_ids:
+#         await register_entity_to_identity_type_link_table(
+#             UUID(identity["id"]), IdentityType.get_model(identity["type"])
+#         )
+#         many_registered_identity_ids.append(UUID(identity["id"]))
+
+#     yield many_registered_identity_ids
+
+
 @pytest.fixture(scope="function")
 async def register_many_entities(get_async_test_session: AsyncSession):
     """Registers many protected resources with id and its type in the database."""
@@ -259,16 +307,19 @@ async def register_many_entities(get_async_test_session: AsyncSession):
         identity_type_links.append(entity_instance)
 
     yield identity_type_links
-    # def get_model(resource_type: ResourceType) -> Type[SQLModel]:
-    #     """Returns the model based on the model enum."""
-    #     return models[model_enum.value]
 
-    # for entity in many_entity_type_links:
-    #     await register_entity_to_identity_type_link_table(
-    #         UUID(entity["id"]), entity["type"]
-    #     )
 
-    # yield many_entity_type_links
+# def get_model(resource_type: ResourceType) -> Type[SQLModel]:
+#     """Returns the model based on the model enum."""
+#     return models[model_enum.value]
+
+
+# for entity in many_entity_type_links:
+#     await register_entity_to_identity_type_link_table(
+#         UUID(entity["id"]), entity["type"]
+#     )
+
+# yield many_entity_type_links
 
 
 # Adds a test user based on identity provider token payload to database and returns the user
@@ -447,7 +498,7 @@ async def add_many_test_access_logs(
     yield access_logs
 
 
-async def add_parent_child_relationship(
+async def add_parent_child_resource_relationship(
     parent_id: UUID,
     child_id: UUID,
     child_type: ResourceType = ResourceType.protected_child,
@@ -467,26 +518,26 @@ async def add_parent_child_relationship(
 
 
 @pytest.fixture(scope="function")
-async def add_one_parent_child_relationship(
+async def add_one_parent_child_resource_relationship(
     register_many_resources: list[UUID],
 ):
-    """Adds a parent-child relationship to the database."""
+    """Adds a parent-child resource relationship to the database."""
 
     registered_resources = register_many_resources
 
-    async def _add_one_parent_child_relationship(
+    async def _add_one_parent_child_resource_relationship(
         child_id: UUID,
         parent_id: UUID = registered_resources[0],
         type: ResourceType = ResourceType.protected_child,
     ):
         """Adds a parent-child relationship to the database."""
-        return await add_parent_child_relationship(parent_id, child_id, type)
+        return await add_parent_child_resource_relationship(parent_id, child_id, type)
 
-    yield _add_one_parent_child_relationship
+    yield _add_one_parent_child_resource_relationship
 
 
 @pytest.fixture(scope="function")
-async def add_many_parent_child_relationships(
+async def add_many_parent_child_resource_relationships(
     register_many_resources: list[UUID],
 ):
     """Adds many parent-child relationships to the resource hierarchy table."""
@@ -494,8 +545,71 @@ async def add_many_parent_child_relationships(
     parent_id = resource_id3
     relationships = []
     for child in many_test_child_resources:
-        relationship = await add_parent_child_relationship(
+        relationship = await add_parent_child_resource_relationship(
             parent_id, UUID(child["id"]), child["type"]
         )
         relationships.append(relationship)
+    yield relationships
+
+
+async def add_parent_child_identity_relationship(
+    parent_id: UUID,
+    child_id: UUID,
+    child_type: IdentityType = IdentityType.sub_group,
+):
+    """Adds a parent-child relationship to the identity hierarchy table."""
+    await register_entity_to_identity_type_link_table(
+        child_id, IdentityType.get_model(child_type)
+    )
+
+    async with IdentityHierarchyCRUD() as crud:
+        created_relationship = await crud.create(
+            current_user=CurrentUserData(**current_user_data_admin),
+            parent_id=parent_id,
+            child_type=child_type,
+            child_id=child_id,
+        )
+    return created_relationship
+
+
+@pytest.fixture(scope="function")
+async def add_one_parent_child_identity_relationship(
+    register_many_entities: list[{UUID, str}],
+):
+    """Adds a parent-child identity relationship to the database."""
+
+    registered_identities = register_many_entities[10:]
+    parent_id = registered_identities[1].id
+
+    async def _add_one_parent_child_identity_relationship(
+        child_id: UUID,
+        parent_id: UUID = parent_id,
+        type: IdentityType = IdentityType.sub_group,
+    ):
+        """Adds a parent-child relationship to the database."""
+        return await add_parent_child_identity_relationship(parent_id, child_id, type)
+
+    yield _add_one_parent_child_identity_relationship
+
+
+@pytest.fixture(scope="function")
+async def add_many_parent_child_identity_relationships(
+    register_many_entities: list[{UUID, str}],
+):
+    """Adds many parent-child relationships to the identity hierarchy table."""
+
+    parent_id = identity_id_group2
+    relationships = []
+    children_for_group = [
+        many_test_child_identities[0],
+        many_test_child_identities[3],
+        many_test_child_identities[4],
+        many_test_child_identities[8],
+    ]
+    for child in children_for_group:
+        relationship = await add_parent_child_identity_relationship(
+            parent_id, UUID(child["id"]), child["type"]
+        )
+        relationships.append(relationship)
+    # TBD: add more hierarchy levels!
     yield relationships

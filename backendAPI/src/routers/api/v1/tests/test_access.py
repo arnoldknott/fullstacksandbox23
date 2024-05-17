@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
-
+from pprint import pprint
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -32,9 +32,9 @@ from tests.utils import (
     token_user2_read,
     token_user2_read_write,
     token_user2_write,
-    user_id_user1,
-    user_id_user2,
-    user_id_user3,
+    identity_id_user1,
+    identity_id_user2,
+    identity_id_user3,
 )
 
 # region ## AccessPolicy tests:
@@ -373,22 +373,22 @@ async def test_user_get_access_policies_for_resource(
     # Access policies for queried resource for other users:
     own_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.own,
     }
     write_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.write,
     }
     read1_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
-        "identity_id": user_id_user3,
+        "identity_id": identity_id_user3,
         "action": Action.read,
     }
     read_public_test_access_policy = {
@@ -473,22 +473,22 @@ async def test_user_get_access_policies_for_resource_without_being_owner(
     # Access policies for queried resource for other users:
     own_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.own,
     }
     write_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.write,
     }
     read1_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
-        "identity_id": user_id_user3,
+        "identity_id": identity_id_user3,
         "action": Action.read,
     }
     read_public_test_access_policy = {
@@ -565,6 +565,7 @@ async def test_user_get_access_policies_for_resource_type(
     current_user_from_azure_token,
     mocked_get_azure_token_payload,
     register_one_resource,
+    register_one_identity,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
@@ -605,6 +606,8 @@ async def test_user_get_access_policies_for_resource_type(
     for resource in admin_only_resources:
         await register_one_resource(resource["id"], resource["type"])
 
+    await register_one_identity(uuid.UUID(identity_id_user2), User)
+
     admin_only_policies = [
         {
             "resource_id": str(admin_only_resources[0]["id"]),
@@ -623,7 +626,7 @@ async def test_user_get_access_policies_for_resource_type(
         },
         {
             "resource_id": str(admin_only_resources[3]["id"]),
-            "identity_id": str(user_id_user2),
+            "identity_id": str(identity_id_user2),
             "action": Action.own,  # another user owns the target resource
         },
     ]
@@ -676,6 +679,7 @@ async def test_user_get_access_policies_for_resource_type_with_write_rights_only
     current_user_from_azure_token,
     mocked_get_azure_token_payload,
     register_one_resource,
+    register_one_identity,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
@@ -716,6 +720,8 @@ async def test_user_get_access_policies_for_resource_type_with_write_rights_only
     for resource in admin_only_resources:
         await register_one_resource(resource["id"], resource["type"])
 
+    await register_one_identity(uuid.UUID(identity_id_user2), User)
+
     admin_only_policies = [
         {
             "resource_id": str(admin_only_resources[0]["id"]),
@@ -734,7 +740,7 @@ async def test_user_get_access_policies_for_resource_type_with_write_rights_only
         },
         {
             "resource_id": str(admin_only_resources[3]["id"]),
-            "identity_id": str(user_id_user2),
+            "identity_id": str(identity_id_user2),
             "action": Action.own,  # another user owns the target resource
         },
     ]
@@ -781,6 +787,7 @@ async def test_user_get_access_policies_for_resource_type_with_read_rights_only(
     current_user_from_azure_token,
     mocked_get_azure_token_payload,
     register_one_resource,
+    register_one_identity,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
@@ -821,6 +828,8 @@ async def test_user_get_access_policies_for_resource_type_with_read_rights_only(
     for resource in admin_only_resources:
         await register_one_resource(resource["id"], resource["type"])
 
+    await register_one_identity(uuid.UUID(identity_id_user2), User)
+
     admin_only_policies = [
         {
             "resource_id": str(admin_only_resources[0]["id"]),
@@ -839,7 +848,7 @@ async def test_user_get_access_policies_for_resource_type_with_read_rights_only(
         },
         {
             "resource_id": str(admin_only_resources[3]["id"]),
-            "identity_id": str(user_id_user2),
+            "identity_id": str(identity_id_user2),
             "action": Action.own,  # another user owns the target resource
         },
     ]
@@ -938,22 +947,22 @@ async def test_user_get_access_policies_for_identity(
     # # Access policies for resource for other users:
     own_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.own,
     }
     write_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.write,
     }
     read1_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user3,
+        "identity_id": identity_id_user3,
         "action": Action.read,
     }
     read_public_test_access_policy = {
@@ -1052,22 +1061,22 @@ async def test_admin_get_access_policies_for_identity(
     # # Access policies for resource for other users:
     own_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.own,
     }
     write_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.write,
     }
     read1_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user3,
+        "identity_id": identity_id_user3,
         "action": Action.read,
     }
     read_public_test_access_policy = {
@@ -1167,22 +1176,22 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
     # # Access policies for resource for other users:
     own_test_access_policy_for_queried_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.own,
     }
     write_test_access_policy_for_queried_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.write,
     }
     read1_test_access_policy_for_queried_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user3,
+        "identity_id": identity_id_user3,
         "action": Action.read,
     }
     read_public_test_access_policy = {
@@ -1208,7 +1217,7 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
         existing_policies_in_db.append(created_policy)
 
     response = await async_client.get(
-        f"/api/v1/access/policy/identity/{str(user_id_user2)}"
+        f"/api/v1/access/policy/identity/{str(identity_id_user2)}"
     )
     payload = response.json()
 
@@ -1226,7 +1235,7 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
         assert read_policy["resource_id"] in [
             result["resource_id"] for result in expected_results
         ]
-        assert read_policy["identity_id"] == str(user_id_user2)
+        assert read_policy["identity_id"] == str(identity_id_user2)
 
 
 @pytest.mark.anyio
@@ -1269,22 +1278,22 @@ async def test_user_get_access_policies_for_another_users_identity_without_owner
     # # Access policies for resource for other users:
     own_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.own,
     }
     write_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.write,
     }
     read1_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user2,
+        "identity_id": identity_id_user2,
         "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id,
-        "identity_id": user_id_user3,
+        "identity_id": identity_id_user3,
         "action": Action.read,
     }
     read_public_test_access_policy = {
@@ -1310,7 +1319,7 @@ async def test_user_get_access_policies_for_another_users_identity_without_owner
         existing_policies_in_db.append(created_policy)
 
     response = await async_client.get(
-        f"/api/v1/access/policy/identity/{str(user_id_user2)}"
+        f"/api/v1/access/policy/identity/{str(identity_id_user2)}"
     )
     payload = response.json()
 
@@ -1334,6 +1343,7 @@ async def test_user_get_access_policies_for_identity_type(
     current_user_from_azure_token,
     mocked_get_azure_token_payload,
     register_one_resource,
+    register_one_identity,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
@@ -1374,6 +1384,8 @@ async def test_user_get_access_policies_for_identity_type(
     for resource in admin_only_resources:
         await register_one_resource(resource["id"], resource["type"])
 
+    await register_one_identity(uuid.UUID(identity_id_user2), User)
+
     admin_only_policies = [
         {
             "resource_id": str(admin_only_resources[0]["id"]),
@@ -1392,7 +1404,7 @@ async def test_user_get_access_policies_for_identity_type(
         },
         {
             "resource_id": str(admin_only_resources[3]["id"]),
-            "identity_id": str(user_id_user2),
+            "identity_id": str(identity_id_user2),
             "action": Action.own,  # another user owns the target resource
         },
     ]
@@ -1448,6 +1460,7 @@ async def test_user_get_access_policies_for_identity_type_missing_owner_rights(
     current_user_from_azure_token,
     mocked_get_azure_token_payload,
     register_one_resource,
+    register_one_identity,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
@@ -1488,6 +1501,8 @@ async def test_user_get_access_policies_for_identity_type_missing_owner_rights(
     for resource in admin_only_resources:
         await register_one_resource(resource["id"], resource["type"])
 
+    await register_one_identity(uuid.UUID(identity_id_user2), User)
+
     admin_only_policies = [
         {
             "resource_id": str(admin_only_resources[0]["id"]),
@@ -1506,7 +1521,7 @@ async def test_user_get_access_policies_for_identity_type_missing_owner_rights(
         },
         {
             "resource_id": str(admin_only_resources[3]["id"]),
-            "identity_id": str(user_id_user2),
+            "identity_id": str(identity_id_user2),
             "action": Action.own,  # another user owns the target resource
         },
     ]
@@ -1744,7 +1759,7 @@ async def test_admin_deletes_access_policy(
 
     # should delete policies 0 and 4
     response = await async_client.delete(
-        f"/api/v1/access/policy?resource_id={resource_id1}&identity_id={user_id_user2}"
+        f"/api/v1/access/policy?resource_id={resource_id1}&identity_id={identity_id_user2}"
     )
 
     assert response.status_code == 200
@@ -2041,7 +2056,7 @@ async def test_get_logs_for_resource_and_identity(
     database_logs = add_many_test_access_logs
 
     response = await async_client.get(
-        f"/api/v1/access/log/{resource_id2}?identity_id={str(user_id_user1)}"
+        f"/api/v1/access/log/{resource_id2}?identity_id={str(identity_id_user1)}"
     )
     payload = response.json()
 
@@ -2086,7 +2101,7 @@ async def test_get_logs_for_identity(
     database_logs = add_many_test_access_logs
 
     response = await async_client.get(
-        f"/api/v1/access/log/identity/{str(user_id_user3)}"
+        f"/api/v1/access/log/identity/{str(identity_id_user3)}"
     )
     payload = response.json()
 

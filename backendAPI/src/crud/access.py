@@ -12,9 +12,10 @@ from core.types import (
     Action,
     BaseHierarchy,
     CurrentUserData,
-    IdentityType,
-    ResourceHierarchy,
     ResourceType,
+    ResourceHierarchy,
+    IdentityType,
+    IdentityHierarchy,
 )
 from models.access import (
     AccessLog,
@@ -33,6 +34,9 @@ from models.access import (
     ResourceHierarchy as ResourceHierarchyTable,
     ResourceHierarchyCreate,
     ResourceHierarchyRead,
+    IdentityHierarchy as IdentityHierarchyTable,
+    IdentityHierarchyCreate,
+    IdentityHierarchyRead,
 )
 
 # from core.access import AccessControl
@@ -856,6 +860,12 @@ class BaseHierarchyCRUD(
 
             parent_type = result.one()
 
+            # print("=== BaseHierarchyCRUD.create - parent_type ===")
+            # print(parent_type)
+
+            # print("=== BaseHierarchyCRUD.create - child_type ===")
+            # print(child_type)
+
             allowed_children = self.hierarchy.get_allowed_children_types(parent_type)
             if child_type in allowed_children:
                 relation = self.model(
@@ -998,6 +1008,17 @@ class ResourceHierarchyCRUD(
 
     def __init__(self):
         super().__init__(ResourceHierarchy, ResourceHierarchyTable)
+
+
+class IdentityHierarchyCRUD(
+    BaseHierarchyCRUD[
+        IdentityHierarchyCreate, IdentityHierarchyTable, IdentityHierarchyRead
+    ]
+):
+    """CRUD for resource hierarchies."""
+
+    def __init__(self):
+        super().__init__(IdentityHierarchy, IdentityHierarchyTable)
 
 
 # class IdentityHierarchyCRUD(BaseHierarchyCRUD):

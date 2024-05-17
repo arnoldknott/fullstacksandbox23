@@ -212,3 +212,36 @@ class ResourceHierarchyRead(ResourceHierarchyCreate):
     """Read model for resource hierarchy"""
 
     pass
+
+
+class IdentityHierarchyCreate(SQLModel):
+    """Create model for identity hierarchy"""
+
+    parent_id: uuid.UUID
+    child_id: uuid.UUID
+    inherit: bool = Field(
+        default=False,
+        description="Set to true, if the child inherits permissions from this parent.",
+    )
+
+    @model_validator(mode="after")
+    def not_child_to_self(self):
+        """Validates that the parent is not child to itself"""
+        if self.parent_id == self.child_id:
+            raise ValueError("An identity cannot be its own child.")
+        return self
+
+
+class IdentityHierarchy(IdentityHierarchyCreate, table=True):
+    """Table for identity hierarchy"""
+
+    parent_id: uuid.UUID = Field(primary_key=True)
+    child_id: uuid.UUID = Field(primary_key=True)
+
+    __table_args__ = (UniqueConstraint("parent_id", "child_id"),)
+
+
+class IdentityHierarchyRead(IdentityHierarchyCreate):
+    """Read model for identity hierarchy"""
+
+    pass
