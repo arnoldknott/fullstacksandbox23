@@ -1781,7 +1781,7 @@ async def test_user_deletes_resource_hierarchy_child_without_owner_rights(
 # ✔ admin deletes a child
 # ✔ user deletes a child with owner access to child
 # ✔ user tries to delete a child without owner access to child
-# - inheritance of access rights
+# - inheritance of access rights => base CRUD!
 
 # endregion ResourceHierarchy CRUD tests
 

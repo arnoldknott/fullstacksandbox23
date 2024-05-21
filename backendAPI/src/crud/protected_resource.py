@@ -3,13 +3,17 @@ from models.protected_resource import (
     ProtectedResourceCreate,
     ProtectedResourceRead,
     ProtectedResourceUpdate,
+    ProtectedChild,
+    ProtectedChildCreate,
+    ProtectedChildRead,
+    ProtectedChildUpdate,
+    ProtectedGrandChild,
+    ProtectedGrandChildCreate,
+    ProtectedGrandChildRead,
+    ProtectedGrandChildUpdate,
 )
 
 from .base import BaseCRUD
-
-# # if TYPE_CHECKING:
-# #     from core.security import CurrentUserData
-# from core.security import CurrentUserData
 
 
 class ProtectedResourceCRUD(
@@ -20,8 +24,29 @@ class ProtectedResourceCRUD(
         ProtectedResourceUpdate,
     ]
 ):
-    # def __init__(self, current_user):
-    # def __init__(self, current_user: "CurrentUserData"):
-    #     super().__init__(ProtectedResource, current_user)
     def __init__(self):
         super().__init__(ProtectedResource)
+
+
+class ProtectedChildCRUD(
+    BaseCRUD[
+        ProtectedChild,
+        ProtectedChildCreate,
+        ProtectedChildRead,
+        ProtectedChildUpdate,
+    ]
+):
+    def __init__(self):
+        super().__init__(ProtectedChild)
+
+
+class ProtectedGrandChildCRUD(
+    BaseCRUD[
+        ProtectedGrandChild,
+        ProtectedGrandChildCreate,
+        ProtectedGrandChildRead,
+        ProtectedGrandChildUpdate,
+    ]
+):
+    def __init__(self):
+        super().__init__(ProtectedGrandChild)

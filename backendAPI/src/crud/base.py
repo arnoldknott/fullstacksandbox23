@@ -1,5 +1,6 @@
 import logging
 import uuid
+from pprint import pprint
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
 
@@ -141,7 +142,7 @@ class BaseCRUD(
         self,
         object: BaseSchemaTypeCreate,
         current_user: "CurrentUserData",
-        # parent_id: Optional[uuid.UUID] = None,
+        parent_id: Optional[uuid.UUID] = None,
     ) -> BaseModelType:
         """Creates a new object."""
         logger.info("BaseCRUD.create")
@@ -152,6 +153,8 @@ class BaseCRUD(
             # needs to be fixed in the core access control by implementing a hierarchy check
             Model = self.model
             database_object = Model.model_validate(object)
+            # print("=== CRUD - base - create - database_object ===")
+            # pprint(database_object)
             await self._write_identifier_type_link(database_object.id)
             self.session.add(database_object)
             # await self.session.commit()
@@ -170,8 +173,9 @@ class BaseCRUD(
             # await self._add_log_to_session(database_object.id, own, current_user, 201)
 
             # TBD: merge the sessions for creating the policy and the log
-            # maybe ven together creating the object
+            # maybe together with creating the object
             # but we need the id of the object for the policy and the log
+            # The id is already available after model_validate!
             # TBD: add creating the ResourceTypeLink entry with object_id and self.entity_type
             # this should be doable in the same database call as the access policy and the access log creation.
             # self._add_identifier_type_link_to_session(database_object.id)

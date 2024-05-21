@@ -646,7 +646,6 @@ async def test_user_get_access_policies_for_resource_type(
         assert admin_response[3].resource_id == admin_only_resources[0]["id"]
         assert admin_response[4].resource_id == admin_only_resources[2]["id"]
         assert admin_response[5].resource_id == admin_only_resources[3]["id"]
-        # TBD: check for the specific policies
 
     response = await async_client.get(
         "/api/v1/access/policy/resource/type/DemoResource"
@@ -760,7 +759,6 @@ async def test_user_get_access_policies_for_resource_type_with_write_rights_only
         assert admin_response[3].resource_id == admin_only_resources[0]["id"]
         assert admin_response[4].resource_id == admin_only_resources[2]["id"]
         assert admin_response[5].resource_id == admin_only_resources[3]["id"]
-        # TBD: check for the specific policies
 
     response = await async_client.get(
         "/api/v1/access/policy/resource/type/DemoResource"
@@ -868,7 +866,6 @@ async def test_user_get_access_policies_for_resource_type_with_read_rights_only(
         assert admin_response[3].resource_id == admin_only_resources[0]["id"]
         assert admin_response[4].resource_id == admin_only_resources[2]["id"]
         assert admin_response[5].resource_id == admin_only_resources[3]["id"]
-        # TBD: check for the specific policies
 
     response = await async_client.get(
         "/api/v1/access/policy/resource/type/DemoResource"
@@ -1424,7 +1421,6 @@ async def test_user_get_access_policies_for_identity_type(
         assert admin_response[3].resource_id == uuid.UUID(azure_group_id4)
         assert admin_response[4].resource_id == admin_only_resources[0]["id"]
         assert admin_response[5].resource_id == admin_only_resources[2]["id"]
-        # TBD: check for the specific policies
 
     response = await async_client.get("/api/v1/access/policy/identity/type/AzureGroup")
     payload = response.json()
@@ -1541,7 +1537,6 @@ async def test_user_get_access_policies_for_identity_type_missing_owner_rights(
         assert admin_response[3].resource_id == uuid.UUID(azure_group_id4)
         assert admin_response[4].resource_id == admin_only_resources[0]["id"]
         assert admin_response[5].resource_id == admin_only_resources[2]["id"]
-        # TBD: check for the specific policies
 
     response = await async_client.get("/api/v1/access/policy/identity/type/AzureGroup")
     payload = response.json()
@@ -1863,7 +1858,6 @@ async def test_admin_tries_to_delete_all_access_policy_wit_owner_rights(
 
 # region: ## GET tests:
 
-# TBD: write tests for the access log get endpoints
 
 
 @pytest.mark.anyio

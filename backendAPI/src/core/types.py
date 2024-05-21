@@ -58,33 +58,11 @@ class BaseType(str, Enum):
 
     @classmethod
     def get_model(cls, entity_type: str):
-        # print("=== metadata.tables ===")
-        # pprint(metadata.tables)
-        # for table_name, table in metadata.tables.items():
-        #     print("=== table_name ===")
-        #     print(table_name)
-        #     print("=== table ===")
-        #     print(table)
-        # print("=== SQLModel ===")
-        # pprint(dir(SQLModel))
-        # print("=== SQLModel subclasses ===")
-        # for subclass in SQLModel.__subclasses__():
-        #     print(subclass)
-        # print("=== all models ===")
         all_models = get_all_models()
-        # for model in all_models:
-        #     pprint(model)
-        # print("=== metadata.tables ===")
-        # pprint(SQLModel.metadata.info)
-        # table = metadata.tables.get(entity_type)
-        # print("=== table ===")
-        # print(table)
         model = next(filter(lambda m: m.__name__ == entity_type, all_models), None)
         if model is None:
             raise ValueError(f"Table {entity_type} not found.")
         else:
-            # print("=== model ===")
-            # pprint(model)
             return model
 
     def __str__(self):
