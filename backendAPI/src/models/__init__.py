@@ -11,6 +11,10 @@ from .identity import AzureGroupUserLink  # noqa F401
 from .identity import User  # noqa F401
 from .access import IdentityHierarchy  # noqa F401
 from .access import ResourceHierarchy  # noqa F401
-from .protected_resource import ProtectedResource  # noqa F401
+from .protected_resource import (
+    ProtectedResource,
+    ProtectedChild,
+    ProtectedGrandChild,
+)  # noqa F401
 from .public_resource import PublicResource  # noqa F401
 from .tag import Tag  # noqa F401

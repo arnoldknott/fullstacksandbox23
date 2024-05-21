@@ -1,26 +1,35 @@
 import logging
 from uuid import UUID
-
-from fastapi import APIRouter, Depends
+from typing import Annotated
+from fastapi import APIRouter, Depends, Query
 
 from core.security import Guards, get_access_token_payload
 from core.types import GuardTypes
-from crud.protected_resource import ProtectedResourceCRUD
-from models.protected_resource import ProtectedResource, ProtectedResourceCreate
+from crud.protected_resource import (
+    ProtectedResourceCRUD,
+    ProtectedChildCRUD,
+    ProtectedGrandChildCRUD,
+)
+from models.protected_resource import (
+    ProtectedResource,
+    ProtectedResourceCreate,
+    ProtectedChild,
+    ProtectedChildCreate,
+    ProtectedGrandChild,
+    ProtectedGrandChildCreate,
+)
 
 from .base import BaseView
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-
-# Not necessary anymore, since the protection is moved to the router level
-# def get_protected_resource(token: Annotated[str, Depends(validate_token)]):
-
+# region ProtectedResource
 
 protected_resource_view = BaseView(ProtectedResourceCRUD, ProtectedResource)
 
 
+# TBD: write more tests for this:
 @router.post("/", status_code=201)
 async def post_protected_resource(
     protected_resource: ProtectedResourceCreate,
@@ -28,30 +37,20 @@ async def post_protected_resource(
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedResource:
     """Creates a new protected resource."""
-    return await protected_resource_view.post(
-        protected_resource,
-        token_payload,
-        guards,
-        # scopes=["api.write"],
-        # roles=["User"],
-    )
+    return await protected_resource_view.post(protected_resource, token_payload, guards)
 
 
-# TBD: write more tests for this:
+# TBD: write tests for this:
 @router.get("/", status_code=200)
 async def get_protected_resources(
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[ProtectedResource]:
     """Returns all protected resources."""
-    return await protected_resource_view.get(
-        token_payload,
-        guards,
-        # roles=["User"],
-    )
+    return await protected_resource_view.get(token_payload, guards)
 
 
-# TBD: write more tests for this:
+# TBD: write tests for this:
 @router.get("/{resource_id}", status_code=200)
 async def get_protected_resource_by_id(
     resource_id: UUID,
@@ -59,15 +58,10 @@ async def get_protected_resource_by_id(
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> ProtectedResource:
     """Returns a protected resource."""
-    return await protected_resource_view.get_by_id(
-        token_payload,
-        resource_id,
-        guards,
-        # roles=["User"],
-    )
+    return await protected_resource_view.get_by_id(token_payload, resource_id, guards)
 
 
-# TBD: write more tests for this:
+# TBD: write tests for this:
 @router.put("/{resource_id}", status_code=200)
 async def put_protected_resource(
     resource_id: UUID,
@@ -77,12 +71,7 @@ async def put_protected_resource(
 ) -> ProtectedResource:
     """Updates a protected resource."""
     return await protected_resource_view.put(
-        resource_id,
-        protected_resource,
-        token_payload,
-        guards,
-        # roles=["User"],
-        # scopes=["api.write"],
+        resource_id, protected_resource, token_payload, guards
     )
 
 
@@ -94,9 +83,31 @@ async def delete_protected_resource(
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedResource:
     """Deletes a protected resource."""
-    return await protected_resource_view.delete(
-        token_payload, resource_id, guards  # roles=["User"], scopes=["api.write"]
+    return await protected_resource_view.delete(token_payload, resource_id, guards)
+
+
+# endregion ProtectedResource
+
+# region ProtectedChild
+
+protected_child_view = BaseView(ProtectedChildCRUD, ProtectedChild)
+
+
+# TBD: write tests for this:
+@router.post("/", status_code=201)
+async def post_protected_child(
+    protected_resource: ProtectedChildCreate,
+    parent_id: Annotated[UUID | None, Query()] = None,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> ProtectedResource:
+    """Creates a new protected resource."""
+    return await protected_resource_view.post(
+        protected_resource, token_payload, guards, parent_id
     )
+
+
+# endregion ProtectedChild
 
 
 # # TBD: implement tests for this:

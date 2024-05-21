@@ -12,7 +12,7 @@ from sqlalchemy.orm import aliased
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
-from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
+from crud.access import AccessLoggingCRUD, AccessPolicyCRUD, ResourceHierarchyCRUD
 from models.access import AccessLogCreate, AccessPolicyCreate, IdentifierTypeLink
 
 # from sqlalchemy.sql import distinct
@@ -61,6 +61,7 @@ class BaseCRUD(
             )
         self.policy_CRUD = AccessPolicyCRUD()
         self.logging_CRUD = AccessLoggingCRUD()
+        self.hierarchy_CRUD = ResourceHierarchyCRUD()
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -192,6 +193,15 @@ class BaseCRUD(
             async with self.policy_CRUD as policy_CRUD:
                 await policy_CRUD.create(access_policy, current_user)
             # await self._write_log(database_object.id, own, current_user, 201)
+            if parent_id:
+                async with self.hierarchy_CRUD as hierarchy_CRUD:
+                    await hierarchy_CRUD.create(
+                        current_user=current_user,
+                        parent_id=parent_id,
+                        child_type=self.entity_type,
+                        child_id=database_object.id,
+                    )
+
             return database_object
 
         except Exception as e:
@@ -219,14 +229,18 @@ class BaseCRUD(
         self,
         object: BaseSchemaTypeCreate,
         current_user: "CurrentUserData",
+        parent_id: Optional[uuid.UUID] = None,
         action: Action = read,
     ) -> BaseModelType:
         """Creates a new object with public access."""
-        database_object = await self.create(object, current_user)
+        database_object = await self.create(object, current_user, parent_id)
+
+        print("=== CRUD - base - create_public - action ===")
+        print(action)
 
         public_access_policy = AccessPolicyCreate(
             resource_id=database_object.id,
-            action=read,
+            action=action,
             public=True,
         )
         async with self.policy_CRUD as policy_CRUD:

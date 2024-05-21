@@ -257,7 +257,7 @@ class AccessPolicyCRUD:
         return False
 
     async def create(
-        self, policy: AccessPolicyCreate, current_user: CurrentUserData
+        self, policy: AccessPolicyCreate, current_user: CurrentUserData, *args
     ) -> AccessPolicyRead:
         """Creates a new access control policy."""
         # Note: the current_user is the one who creates the policy for the identity_id in the policy!

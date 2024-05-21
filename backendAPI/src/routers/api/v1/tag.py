@@ -29,13 +29,13 @@ tag_view = BaseView(TagCRUD, Tag)
 
 @router.post("/", status_code=201)
 async def post_tag(
-    category: TagCreate,
+    tag: TagCreate,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Tag:
     """Creates a new tag."""
     return await tag_view.post_with_public_access(
-        category,
+        tag,
         token_payload,
         guards,
         # scopes=["api.write"],
