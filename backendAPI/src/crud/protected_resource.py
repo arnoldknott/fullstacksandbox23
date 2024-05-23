@@ -15,6 +15,11 @@ from models.protected_resource import (
 
 from .base import BaseCRUD
 
+# CRUD's for family of protected resources with parent-child relationships in three generations:
+# - protected resource
+#   - protected child
+#     - protected grand child
+
 
 class ProtectedResourceCRUD(
     BaseCRUD[

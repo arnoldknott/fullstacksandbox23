@@ -599,6 +599,22 @@ many_test_tags = [
     },
 ]
 
+
+many_test_public_resources = [
+    {
+        "comment": "Some random user wrote a public comment on our homepage, referring to some stuff somewhere. Nobody really knows how it was and what it was about.",
+    },
+    {
+        "comment": "Another public comment, that is not really helpful, but at least it is public. So everyone can read it and it might trigger more opinions.",
+    },
+    {
+        "comment": "A third public comment. That one is ways more helpful, as the author is actually referring to what's shown on the page..",
+    },
+    {
+        "comment": "And one more. Whatever that is about. It's public, so it's here. Somebody wrote this as some point in time. Maybe it's helpful.",
+    },
+]
+
 many_test_protected_resources = [
     {
         "name": "First Protected Resource",
@@ -629,7 +645,7 @@ child_resource_id8 = str(uuid4())
 child_resource_id9 = str(uuid4())
 child_resource_id10 = str(uuid4())
 
-many_test_child_resources = [
+many_test_child_resource_entities = [
     {
         "id": child_resource_id1,
         "type": "ProtectedChild",
@@ -722,18 +738,48 @@ many_test_child_identities = [
     },
 ]
 
+many_test_protected_child_resources = [
+    {
+        "title": "First Protected Child",
+    },
+    {
+        "title": "Number 2 Protected Child",
+    },
+    {
+        "title": "One more protected child",
+    },
+    {
+        "title": "And yet another protected child",
+    },
+    {
+        "title": "For the fun of it: one more protected child",
+    },
+    {"title": "As we are on it - let's add another child.s"},
+]
 
-many_test_public_resources = [
+many_test_protected_grand_child_resources = [
     {
-        "comment": "Some random user wrote a public comment on our homepage, referring to some stuff somewhere. Nobody really knows how it was and what it was about.",
+        "text": "First Protected Grand Child",
     },
     {
-        "comment": "Another public comment, that is not really helpful, but at least it is public. So everyone can read it and it might trigger more opinions.",
+        "text": "Number 2 Protected Grand Child",
     },
     {
-        "comment": "A third public comment. That one is ways more helpful, as the author is actually referring to what's shown on the page..",
+        "text": "One more protected grand child",
     },
     {
-        "comment": "And one more. Whatever that is about. It's public, so it's here. Somebody wrote this as some point in time. Maybe it's helpful.",
+        "text": "And yet another protected grand child",
+    },
+    {
+        "text": "For the fun of it: one more protected grand child",
+    },
+    {
+        "text": "As we are on it - let's add another grand child.",
+    },
+    {
+        "text": "And another one Grand Child protected Resource.",
+    },
+    {
+        "text": "And one more protected grand child - juhuuu 92304u2342.",
     },
 ]

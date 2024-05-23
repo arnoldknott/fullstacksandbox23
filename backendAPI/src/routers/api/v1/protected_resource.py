@@ -24,6 +24,12 @@ from .base import BaseView
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+# Endpoints for family of protected resources with parent-child relationships in three generations:
+# - protected resource
+#   - protected child
+#     - protected grand child
+
+
 # region ProtectedResource
 
 protected_resource_view = BaseView(ProtectedResourceCRUD, ProtectedResource)
@@ -94,16 +100,17 @@ protected_child_view = BaseView(ProtectedChildCRUD, ProtectedChild)
 
 
 # TBD: write tests for this:
-@router.post("/child", status_code=201)
+@router.post("/child/", status_code=201)
 async def post_protected_child(
-    protected_resource: ProtectedChildCreate,
+    protected_child: ProtectedChildCreate,
     parent_id: Annotated[UUID | None, Query()] = None,
+    inherit: Annotated[bool, Query()] = False,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> ProtectedResource:
-    """Creates a new protected resource."""
-    return await protected_resource_view.post(
-        protected_resource, token_payload, guards, parent_id
+) -> ProtectedChild:
+    """Creates a new protected child."""
+    return await protected_child_view.post(
+        protected_child, token_payload, guards, parent_id, inherit
     )
 
 

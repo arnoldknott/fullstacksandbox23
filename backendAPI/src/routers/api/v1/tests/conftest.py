@@ -214,14 +214,14 @@ async def add_test_tags(
 
 @pytest.fixture(scope="function")
 async def add_many_test_protected_resources(
-    mocked_current_user: User,
+    current_user_from_azure_token: User,
 ):
     """Adds test protected resources to the database."""
 
     async def _add_many_test_protected_resources(token_payload: dict = None):
         protected_resources = []
         for protected_resource in many_test_protected_resources:
-            current_user = await mocked_current_user(token_payload)
+            current_user = await current_user_from_azure_token(token_payload)
             async with ProtectedResourceCRUD() as crud:
                 added_protected_resource = await crud.create(
                     protected_resource, current_user

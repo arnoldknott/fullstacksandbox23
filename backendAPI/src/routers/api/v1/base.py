@@ -55,17 +55,11 @@ class BaseView:
         # )
         # return current_user
 
-    async def post(
-        self,
-        object,
-        token_payload,
-        guards,
-        parent_id=None,
-    ):
+    async def post(self, object, token_payload, guards, parent_id=None, inherit=False):
         logger.info("POST view calls create CRUD")
         current_user = await self._check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
-            created_object = await crud.create(object, current_user, parent_id)
+            created_object = await crud.create(object, current_user, parent_id, inherit)
             # if parent_id is not None:
             #     created_object = await crud.create(object, current_user, parent_id)
             # else:
@@ -78,11 +72,14 @@ class BaseView:
         token_payload,
         guards: GuardTypes,
         parent_id=None,
+        inherit=False,
     ):
         logger.info("POST view for public access calls create_public CRUD")
         current_user = await self._check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
-            created_object = await crud.create_public(object, current_user, parent_id)
+            created_object = await crud.create_public(
+                object, current_user, parent_id, inherit
+            )
         return created_object
 
     async def get(

@@ -29,7 +29,7 @@ from tests.utils import (
     current_user_data_user1,
     current_user_data_user2,
     current_user_data_user3,
-    many_test_child_resources,
+    many_test_child_resource_entities,
     identity_id_group3,
     identity_id_group2,
     many_test_child_identities,
@@ -1378,7 +1378,7 @@ async def test_admin_reads_resource_hierarchy_multiple_children_of_a_parent(
         )
 
     assert len(read_relation) == 10
-    for relation, expected in zip(read_relation, many_test_child_resources):
+    for relation, expected in zip(read_relation, many_test_child_resource_entities):
         assert relation.parent_id == uuid.UUID(resource_id3)
         assert relation.child_id == uuid.UUID(expected["id"])
         assert relation.inherit is False

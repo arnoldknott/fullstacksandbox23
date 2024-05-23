@@ -158,8 +158,7 @@ class BaseCRUD(
                     status_code=400,
                     detail="Cannot inherit permissions without a parent.",
                 )
-            Model = self.model
-            database_object = Model.model_validate(object)
+            database_object = self.model.model_validate(object)
             # print("=== CRUD - base - create - database_object ===")
             # pprint(database_object)
             await self._write_identifier_type_link(database_object.id)
@@ -208,6 +207,9 @@ class BaseCRUD(
                         child_id=database_object.id,
                         inherit=inherit,
                     )
+
+            # print("=== CRUD - base - create - database_object ===")
+            # pprint(database_object)
 
             return database_object
 

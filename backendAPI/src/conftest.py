@@ -37,7 +37,7 @@ from tests.utils import (
     many_identity_ids,
     many_test_access_logs,
     many_test_azure_users,
-    many_test_child_resources,
+    many_test_child_resource_entities,
     identity_id_group2,
     many_test_child_identities,
     many_test_policies,
@@ -544,7 +544,7 @@ async def add_many_parent_child_resource_relationships(
 
     parent_id = resource_id3
     relationships = []
-    for child in many_test_child_resources:
+    for child in many_test_child_resource_entities:
         relationship = await add_parent_child_resource_relationship(
             parent_id, UUID(child["id"]), child["type"]
         )

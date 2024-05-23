@@ -1,7 +1,9 @@
 import uuid
-from typing import Optional
+from typing import Optional, List
 
-from sqlmodel import Field, SQLModel
+from .access import ResourceHierarchy
+
+from sqlmodel import Field, SQLModel, Relationship
 
 # region ProtectedResource
 
@@ -17,10 +19,21 @@ class ProtectedResource(ProtectedResourceCreate, table=True):
         foreign_key="identifiertypelink.id",
         primary_key=True,
     )
+    protected_children: Optional[List["ProtectedChild"]] = Relationship(
+        back_populates="protected_resources",
+        link_model=ResourceHierarchy,
+        # primaryjoin="ProtectedResource.id == ResourceHierarchy.parent_id",
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            "primaryjoin": "ProtectedResource.id == ResourceHierarchy.parent_id",  # TBD: is foreign() needed here?
+            "secondaryjoin": "ProtectedChild.id == ResourceHierarchy.child_id",  # TBD: is foreign() needed here?
+        },
+    )
 
 
 class ProtectedResourceRead(ProtectedResourceCreate):
     id: uuid.UUID
+    protected_children: Optional[List["ProtectedChildRead"]] = None
 
 
 class ProtectedResourceUpdate(ProtectedResourceCreate):
@@ -42,10 +55,21 @@ class ProtectedChild(ProtectedChildCreate, table=True):
         foreign_key="identifiertypelink.id",
         primary_key=True,
     )
+    protected_resources: Optional[List["ProtectedResource"]] = Relationship(
+        back_populates="protected_children",
+        link_model=ResourceHierarchy,
+        # primaryjoin="ProtectedChild.id == ResourceHierarchy.child_id",
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            "primaryjoin": "ProtectedChild.id == ResourceHierarchy.child_id",  # TBD: is foreign() needed here?
+            "secondaryjoin": "ProtectedResource.id == ResourceHierarchy.parent_id",  # TBD: is foreign() needed here?
+        },
+    )
 
 
 class ProtectedChildRead(ProtectedChildCreate):
     id: uuid.UUID
+    protected_resources: Optional[List["ProtectedResourceRead"]] = None
 
 
 class ProtectedChildUpdate(ProtectedChildCreate):
