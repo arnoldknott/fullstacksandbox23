@@ -45,10 +45,6 @@ class BaseView:
                     await token.has_scope(scope)
             if guards.roles is not None:
                 for role in guards.roles:
-                    # TBD: define role overrides here: "Admin" overrides "User"? or should that be taken care of in security?
-                    # This would be relevant if a route is protected with both "Admin" and "User" roles.
-                    # But still, there could be a sense in having a "User" role, There might be Admins, which are not Users.
-                    # But then again - what's the point having an Amin if it can't do everything?
                     await token.has_role(role)
             if guards.groups is not None:
                 for group in guards.groups:

@@ -109,172 +109,29 @@ async def test_post_protected_resource(
     assert policies[0].action == Action.own
 
 
-# TBD: add tests for get, get_by_id, put, delete endpoints of the protected resource API!
-
-# @pytest.mark.anyio
-# @pytest.mark.parametrize(
-#     "mocked_get_azure_token_payload",
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#             **token_payload_one_group,
-#         }
-#     ],
-#     indirect=True,
-# )
-# async def test_post_user_with_integer_user_id(
-#     async_client: AsyncClient,
-#     app_override_get_azure_payload_dependency: FastAPI,
-# ):
-#     """Tests posting a integer user_id to user_post endpoint fails"""
-#     app_override_get_azure_payload_dependency
-
-#     # Make a POST request to create the user
-#     response = await async_client.post(
-#         "/api/v1/user/",
-#         json={**one_test_user, "user_id": 1},
-#     )
-
-#     assert response.status_code == 201
-#     created_user = User(**response.json())
-#     assert created_user.azure_user_id == one_test_user["azure_user_id"]
-#     assert created_user.azure_tenant_id == one_test_user["azure_tenant_id"]
-
-#     # Verify that the user was created in the database
-#     async with UserCRUD() as crud:
-#         db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
-#     assert db_user is not None
-#     db_user_json = jsonable_encoder(db_user)
-#     assert db_user_json["id"] != 1
+# endregion ## POST tests
 
 
-# @pytest.mark.anyio
-# @pytest.mark.parametrize(
-#     "mocked_get_azure_token_payload",
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_admin,
-#             **token_payload_one_group,
-#         }
-#     ],
-#     indirect=True,
-# )
-# async def test_post_user_with_uuid_user_id(
-#     async_client: AsyncClient,
-#     app_override_get_azure_payload_dependency: FastAPI,
-# ):
-#     """Tests the post_user endpoint of the API."""
-#     app_override_get_azure_payload_dependency
-#     test_uuid = str(uuid.uuid4())
+# Nomenclature:
+# ✔︎ implemented
+# X missing tests
+# - not implemented
 
-#     # Make a POST request to create the user
-#     response = await async_client.post(
-#         "/api/v1/user/",
-#         json={**one_test_user, "user_id": test_uuid},
-#     )
-
-#     assert response.status_code == 201
-#     created_user = User(**response.json())
-#     assert created_user.azure_user_id == one_test_user["azure_user_id"]
-#     assert created_user.azure_tenant_id == one_test_user["azure_tenant_id"]
-
-#     # Verify that the user was created in the database
-#     async with UserCRUD() as crud:
-#         db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
-#     assert db_user is not None
-#     # db_user_json = jsonable_encoder(db_user)
-#     db_user = db_user.model_dump()
-#     assert "last_accessed_at" in db_user
-#     assert "last_accessed_at" != None
-#     assert db_user["azure_user_id"] == uuid.UUID(one_test_user["azure_user_id"])
-#     assert db_user["azure_tenant_id"] == uuid.UUID(one_test_user["azure_tenant_id"])
-#     assert db_user["user_id"] != uuid.UUID(test_uuid)
-
-
-# @pytest.mark.anyio
-# @pytest.mark.parametrize(
-#     "mocked_get_azure_token_payload",
-#     [
-#         {
-#             **token_payload_user_id,
-#             **token_payload_tenant_id,
-#             **token_payload_scope_api_read_write,
-#             **token_payload_roles_user,
-#             **token_payload_one_group,
-#         }
-#     ],
-#     indirect=True,
-# )
-# async def test_user_posts_user(
-#     async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
-# ):
-#     """Tests the post_user endpoint of the API."""
-#     app_override_get_azure_payload_dependency
-
-#     # Make a POST request to create the user
-#     response = await async_client.post(
-#         "/api/v1/user/",
-#         json=one_test_user,
-#     )
-
-#     assert response.status_code == 403
-#     assert response.text == '{"detail":"Access denied"}'
-
-#     # this would allow other users to create users, which is not allowed - only self-sign-up!:
-#     # assert response.status_code == 201
-#     # created_user = User(**response.json())
-#     # assert created_user.azure_user_id == one_test_user["azure_user_id"]
-#     # assert created_user.azure_tenant_id == one_test_user["azure_tenant_id"]
-
-#     # # Verify that the user was created in the database
-#     # async with UserCRUD() as crud:
-#     #     db_user = await crud.read_by_azure_user_id(one_test_user["azure_user_id"])
-#     # assert db_user is not None
-#     # db_user_json = jsonable_encoder(db_user)
-#     # assert "last_accessed_at" in db_user_json
-#     # assert db_user_json["azure_user_id"] == one_test_user["azure_user_id"]
-#     # assert db_user_json["azure_tenant_id"] == one_test_user["azure_tenant_id"]
-
-
-# @pytest.mark.anyio
-# @pytest.mark.parametrize(
-#     "mocked_get_azure_token_payload",
-#     [
-#         {
-#             # **token_payload_scope_api_read_write,
-#             **token_payload_scope_api_read,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             # **token_payload_scope_api_read_write,
-#             **token_payload_scope_api_write,
-#             **token_payload_roles_admin,
-#         },
-#         {
-#             **token_payload_scope_api_read_write,
-#             # **token_payload_roles_admin,
-#         },
-#         {},
-#     ],
-#     indirect=True,
-# )
-# async def test_post_user_invalid_token(
-#     async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
-# ):
-#     """Tests the post_user endpoint of the API."""
-#     app_override_get_azure_payload_dependency
-
-#     # Make a POST request to create the user
-#     response = await async_client.post(
-#         "/api/v1/user/",
-#         json=one_test_user,
-#     )
-
-#     assert response.status_code == 403
-#     assert response.text == '{"detail":"Access denied"}'
+# Tests to implement for the protected resource family API:
+# ✔︎ User and Admin creates a protected resource: gets logged and access policy created
+# x User creates a child resource for a protected resource: hierarchy entry gets created
+# X User reads all protected resource: only the resources the user has access to are returned
+# X User reads a protected resource by id: gets logged
+# - User reads a protected resource: children and grand children get returned as well - but only the ones the user has access to
+# - User reads a child protected resource, where user inherits access from parent
+# - User reads a grand child protected resource, where user inherits access from grand parent (which is a protected resource)
+# - User reads a protected resource, where user inherits access from a group
+# - User reads a protected resource, where user is in a sub_sub_group and inherits access from membership in a group
+# - User reads a protected resource fails, where inheritance is set to false (resource inheritance)
+# - User reads a protected resource fails, where inheritance is set to false (group inheritance)
+# X User updates a protected resource: gets logged
+# - User updates a protected resource: with inherited write access from parent / grand parent (resource inheritance)
+# - User updates a protected resource: with inherited write access from group, where user is in group / sub-group / sub-sub-group (group inheritance)
+# X User deletes a protected resource: gets logged
+# - User deletes a protected resource: with inherited owner access from parent / grand parent (resource inheritance)
+# - User deletes a protected resource: with inherited owner access from group, where user is in group / sub-group / sub-sub-group (group inheritance)

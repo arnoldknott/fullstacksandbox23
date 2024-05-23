@@ -7,7 +7,7 @@ from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import AccessPolicyCRUD
-from models.access import AccessLogRead, AccessPolicy, AccessPolicyRead
+from models.access import AccessLogRead, AccessPolicy, AccessPolicyRead, AccessLogCreate
 from models.demo_resource import DemoResource
 from models.identity import AzureGroup, User
 from models.protected_resource import ProtectedResource
@@ -1859,7 +1859,6 @@ async def test_admin_tries_to_delete_all_access_policy_wit_owner_rights(
 # region: ## GET tests:
 
 
-
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
@@ -2073,54 +2072,6 @@ async def test_get_logs_for_resource_and_identity(
         assert returned.time == expected.time
 
 
-# TBD: add tests for identity endpoint
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
-    [token_admin_read],
-    indirect=True,
-)
-async def test_get_logs_for_identity(
-    async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    add_many_test_access_logs,
-    # current_user_from_azure_token,
-    # mocked_get_azure_token_payload,
-):
-    """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
-
-    # current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
-
-    database_logs = add_many_test_access_logs
-
-    response = await async_client.get(
-        f"/api/v1/access/log/identity/{str(identity_id_user3)}"
-    )
-    payload = response.json()
-
-    assert response.status_code == 200
-    assert len(payload) == 6
-
-    expected_logs = [
-        database_logs[3],
-        database_logs[4],
-        database_logs[5],
-        database_logs[6],
-        database_logs[7],
-        database_logs[11],
-    ]
-
-    for returned, expected in zip(payload, expected_logs):
-        returned = AccessLogRead(**returned)
-        assert int(returned.id)
-        assert returned.resource_id == expected.resource_id
-        assert returned.identity_id == expected.identity_id
-        assert returned.action == expected.action
-        assert returned.status_code == expected.status_code
-        assert returned.time == expected.time
-
-
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
@@ -2216,6 +2167,261 @@ async def test_get_logs_for_resource_with_read_permission_only(
 
     assert response.status_code == 404
     assert payload == {"detail": "Access logs not found."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read],
+    indirect=True,
+)
+async def test_admin_get_logs_for_identity(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_access_logs,
+):
+    """Tests GET access logs."""
+    app_override_get_azure_payload_dependency
+
+    database_logs = add_many_test_access_logs
+
+    response = await async_client.get(
+        f"/api/v1/access/log/identity/{str(identity_id_user3)}"
+    )
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert len(payload) == 6
+
+    expected_logs = [
+        database_logs[3],
+        database_logs[4],
+        database_logs[5],
+        database_logs[6],
+        database_logs[7],
+        database_logs[11],
+    ]
+
+    for returned, expected in zip(payload, expected_logs):
+        returned = AccessLogRead(**returned)
+        assert int(returned.id)
+        assert returned.resource_id == expected.resource_id
+        assert returned.identity_id == expected.identity_id
+        assert returned.action == expected.action
+        assert returned.status_code == expected.status_code
+        assert returned.time == expected.time
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_user1_read],
+    indirect=True,
+)
+async def test_user_get_logs_for_identity(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_test_access_policy,
+    add_one_test_access_log,
+    current_user_from_azure_token,
+    mocked_get_azure_token_payload,
+):
+    """Tests GET access logs."""
+    app_override_get_azure_payload_dependency
+
+    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    policies = [
+        {
+            "resource_id": resource_id1,
+            "identity_id": str(current_user.user_id),
+            "action": "own",
+        },
+        {
+            "resource_id": resource_id2,
+            "identity_id": str(current_user.user_id),
+            "action": "own",
+        },
+    ]
+    for policy in policies:
+        await add_one_test_access_policy(policy)
+
+    access_logs = [
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id2,
+            "action": "own",
+            "status_code": 201,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id2,
+            "action": "own",
+            "status_code": 201,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id1,
+            "action": "read",
+            "status_code": 200,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id2,
+            "action": "read",
+            "status_code": 200,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id2,
+            "action": "write",
+            "status_code": 200,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id2,
+            "action": "read",
+            "status_code": 200,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id1,
+            "action": "read",
+            "status_code": 200,
+        },
+    ]
+
+    for log in access_logs:
+        await add_one_test_access_log(log)
+
+    async with AccessPolicyCRUD() as access_policy_crud:
+        policies = await access_policy_crud.read_access_policies_for_identity(
+            CurrentUserData(**current_user_data_admin), current_user.user_id
+        )
+
+    before_time = datetime.now()
+    response = await async_client.get(
+        f"/api/v1/access/log/identity/{str(current_user.user_id)}"
+    )
+    after_time = datetime.now()
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert len(payload) == 9
+
+    # Note: the first two logs are created through user self-sign up and user reading itself
+    for returned, expected in zip(payload[1:], access_logs):
+        returned = AccessLogRead(**returned)
+        expected = AccessLogCreate(**expected)
+        assert int(returned.id)
+        assert returned.resource_id == expected.resource_id
+        assert returned.identity_id == expected.identity_id
+        assert returned.action == expected.action
+        assert returned.status_code == expected.status_code
+        assert returned.time > before_time - timedelta(seconds=1)
+        assert returned.time < after_time + timedelta(seconds=1)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_user1_read],
+    indirect=True,
+)
+async def test_user_get_logs_for_identity_with_write_and_read_permission_only(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_test_access_policy,
+    add_one_test_access_log,
+    current_user_from_azure_token,
+    mocked_get_azure_token_payload,
+):
+    """Tests GET access logs."""
+    app_override_get_azure_payload_dependency
+
+    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+
+    policies = [
+        {
+            "resource_id": resource_id1,
+            "identity_id": str(current_user.user_id),
+            "action": "write",
+        },
+        {
+            "resource_id": resource_id2,
+            "identity_id": str(current_user.user_id),
+            "action": "read",
+        },
+    ]
+    for policy in policies:
+        await add_one_test_access_policy(policy)
+
+    access_logs = [
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id2,
+            "action": "own",
+            "status_code": 201,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id2,
+            "action": "own",
+            "status_code": 201,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id1,
+            "action": "read",
+            "status_code": 200,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id2,
+            "action": "read",
+            "status_code": 200,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id2,
+            "action": "write",
+            "status_code": 200,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id2,
+            "action": "read",
+            "status_code": 200,
+        },
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": resource_id1,
+            "action": "read",
+            "status_code": 200,
+        },
+    ]
+
+    for log in access_logs:
+        await add_one_test_access_log(log)
+
+    async with AccessPolicyCRUD() as access_policy_crud:
+        policies = await access_policy_crud.read_access_policies_for_identity(
+            CurrentUserData(**current_user_data_admin), current_user.user_id
+        )
+
+    response = await async_client.get(
+        f"/api/v1/access/log/identity/{str(current_user.user_id)}"
+    )
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert len(payload) == 2
+
+    for returned in payload:
+        returned = AccessLogRead(**returned)
+        assert returned.resource_id == current_user.user_id
+        assert returned.resource_id != resource_id1
+        assert returned.resource_id != resource_id2
 
 
 @pytest.mark.anyio

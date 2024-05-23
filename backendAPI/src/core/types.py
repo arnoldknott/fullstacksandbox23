@@ -135,7 +135,6 @@ class IdentityType(BaseType):
 
     # TBD: consider getting those values programmatically?
     user = "User"
-    ueber_group = "UeberGroup"
     group = "Group"
     sub_group = "SubGroup"
     sub_sub_group = "SubSubGroup"
@@ -150,7 +149,6 @@ class IdentityHierarchy(BaseHierarchy):
 
     _children = {
         IdentityType.azure_group: [IdentityType.user],
-        IdentityType.ueber_group: [IdentityType.group, IdentityType.user],
         IdentityType.group: [IdentityType.sub_group, IdentityType.user],
         IdentityType.sub_group: [IdentityType.sub_sub_group, IdentityType.user],
         IdentityType.sub_sub_group: [IdentityType.user],

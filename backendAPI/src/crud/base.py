@@ -235,9 +235,6 @@ class BaseCRUD(
         """Creates a new object with public access."""
         database_object = await self.create(object, current_user, parent_id)
 
-        print("=== CRUD - base - create_public - action ===")
-        print(action)
-
         public_access_policy = AccessPolicyCreate(
             resource_id=database_object.id,
             action=action,

@@ -61,6 +61,8 @@ from tests.utils import (
 # ✔︎ wants to read another user by azure id
 # ✔︎ regular user wants to delete another user
 
+# Identity tests:
+# TBD: add endpoints for user - group - sub-group sub-sub-group hierarchy and inheritance
 
 # region: ## POST tests:
 
