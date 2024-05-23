@@ -12,11 +12,8 @@ from models.protected_resource import ProtectedResource
 from tests.utils import (
     current_user_data_admin,
     many_test_protected_resources,
-    token_payload_roles_admin,
-    token_payload_roles_user,
-    token_payload_scope_api_read_write,
-    token_payload_tenant_id,
-    token_payload_user_id,
+    token_admin_read_write,
+    token_user1_read_write,
 )
 
 # region: ## POST tests:
@@ -25,20 +22,7 @@ from tests.utils import (
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_admin,
-        },
-        {
-            **token_payload_user_id,
-            **token_payload_tenant_id,
-            **token_payload_scope_api_read_write,
-            **token_payload_roles_user,
-        },
-    ],
+    [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_post_protected_resource(
@@ -52,7 +36,82 @@ async def test_post_protected_resource(
     # Make a POST request to create the user
     before_time = datetime.now()
     response = await async_client.post(
-        "/api/v1/protectedresource/",
+        "/api/v1/protected/resource/",
+        json=many_test_protected_resources[0],
+    )
+    after_time = datetime.now()
+
+    assert response.status_code == 201
+    created_protected_resource = ProtectedResource(**response.json())
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert (
+        created_protected_resource.description
+        == many_test_protected_resources[0]["description"]
+    )
+
+    # Test for created logs:
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=created_protected_resource.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=created_protected_resource.id,
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.resource_id == UUID(created_protected_resource.id)
+    assert last_accessed_at.identity_id == current_test_user.user_id
+    assert last_accessed_at.action == Action.own
+    assert last_accessed_at.time == created_at
+    assert last_accessed_at.status_code == 201
+
+    async with ProtectedResourceCRUD() as crud:
+        db_protected_resource = await crud.read(
+            current_test_user,
+            filters=[ProtectedResource.id == created_protected_resource.id],
+        )
+    assert len(db_protected_resource) == 1
+    assert db_protected_resource[0].name == many_test_protected_resources[0]["name"]
+    assert (
+        db_protected_resource[0].description
+        == many_test_protected_resources[0]["description"]
+    )
+
+    # Test for created access policies:
+    async with AccessPolicyCRUD() as crud:
+        policies = await crud.read(
+            current_test_user,
+            resource_id=db_protected_resource[0].id,
+        )
+    assert len(policies) == 1
+    assert policies[0].id is not None
+    assert policies[0].resource_id == db_protected_resource[0].id
+    assert policies[0].identity_id == current_test_user.user_id
+    assert policies[0].action == Action.own
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_post_protected_child_resource_and_add_to_parent(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
+    add_many_test_protected_resources,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_get_azure_payload_dependency
+
+    # Make a POST request to create the user
+    before_time = datetime.now()
+    response = await async_client.post(
+        "/api/v1/protected/child/",
         json=many_test_protected_resources[0],
     )
     after_time = datetime.now()

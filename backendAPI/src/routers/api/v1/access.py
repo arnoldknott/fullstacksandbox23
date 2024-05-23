@@ -27,25 +27,6 @@ router = APIRouter()
 # region AccessPolicies
 
 
-# Nomenclature:
-# ✔︎ implemented
-# X missing tests
-# - not implemented
-
-# implement protected routes for:
-# AccessPolicies:
-# ✔︎ create (share with identity, i.e. user, group)
-# ✔︎ create (public share)
-# ✔︎ make a generic for the above two - checks are handled in model AccessPolicyCreate!
-# ✔︎ read all (check who has access)
-# ✔︎ read by resource_id - use filter
-# ✔︎ read by resource_type - use filter - join with IdentifierTypeTable
-# ✔︎ read by identity - use filter
-# ✔︎ read by identity_type - use filter - join with IdentifierTypeTable (can wait)
-# ✔︎ change access Action (own, write, read) -> use delete first and then create; but update model can be used: derive from Create and add new action!
-# ✔︎ delete (unshare)
-
-
 access_policy_view = BaseView(AccessPolicyCRUD, AccessPolicy)
 
 
@@ -195,37 +176,6 @@ async def delete_access_policy(
 # region AccessLogs
 
 access_log_view = BaseView(AccessLoggingCRUD, AccessLog)
-
-# Nomenclature:
-# ✔︎ implemented
-# X missing tests
-# - not implemented
-
-# AccessLogs:
-# only read operations for log - no create, update, delete!
-# implement as query parameters, wherever it makes sense?
-# ✔︎ Admin reads all logs (admin only)
-# ✔︎ Admin reads all logs for non-existing status_code
-# ✔︎ User reads all logs fails
-# ✔︎ Admin reads all logs with existing status_code
-# ✔︎ Admin / User reads logs by resource_id
-# ✔︎ Admin reads logs by resource_id for a specific identity_id
-# ✔︎ User reads logs by resource_id without permission from access policies
-# ✔︎ User reads logs by resource_id with write permission from access policies only fails
-# ✔︎ User reads logs by resource_id with read permission from access policies only fails
-# ✔︎ Admin reads logs by identity_id
-# ✔︎ User reads access by identity for own identity
-# ✔︎ User reads access by identity for other identity fails (consider if access policies can change that?)
-# ✔︎ Admin / Users read resources first "own" log (created_at): corresponds to create
-# ✔︎ Users read resources first "own" log (created_at) with write permission from access policies only fails
-# ✔︎ Users read resources first "own" log (created_at) with read permission from access policies only fails
-# ✔︎ Admin / Users read resources latest access log (last_accessed)
-# ✔︎ Users read resources latest access log (last_accessed) with write permission from access policies only fails
-# ✔︎ Users read resources latest access log (last_accessed) with read permission from access policies only fails
-
-# X Admin / User read access count - use func.count/len
-# X User reads access count for resource with write permission from access policies only fails
-# X User reads access count for resource with read permission from access policies only fails
 
 
 @router.get("/logs", status_code=200)

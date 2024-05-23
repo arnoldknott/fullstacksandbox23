@@ -144,6 +144,7 @@ class BaseCRUD(
         object: BaseSchemaTypeCreate,
         current_user: "CurrentUserData",
         parent_id: Optional[uuid.UUID] = None,
+        inherit: Optional[bool] = False,
     ) -> BaseModelType:
         """Creates a new object."""
         logger.info("BaseCRUD.create")
@@ -152,6 +153,11 @@ class BaseCRUD(
             # requires hierarchy checks to be in place: otherwise a user can never create a resource
             # as the AccessPolicy CRUD create checks, if the user is owner of the resource (that's not created yet)
             # needs to be fixed in the core access control by implementing a hierarchy check
+            if inherit and not parent_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot inherit permissions without a parent.",
+                )
             Model = self.model
             database_object = Model.model_validate(object)
             # print("=== CRUD - base - create - database_object ===")
@@ -200,6 +206,7 @@ class BaseCRUD(
                         parent_id=parent_id,
                         child_type=self.entity_type,
                         child_id=database_object.id,
+                        inherit=inherit,
                     )
 
             return database_object

@@ -134,7 +134,7 @@ app.include_router(
 # protected_scopes = ScopeChecker(["api.read"])
 app.include_router(
     protected_resource_router,
-    prefix=f"{global_prefix}/protectedresource",
+    prefix=f"{global_prefix}/protected",
     tags=["Protected Resource"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
     # TBD: This is not ready to use - requires the redirect URI to be passed through Swagger UI

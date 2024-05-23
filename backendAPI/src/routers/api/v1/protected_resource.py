@@ -30,7 +30,7 @@ protected_resource_view = BaseView(ProtectedResourceCRUD, ProtectedResource)
 
 
 # TBD: write more tests for this:
-@router.post("/", status_code=201)
+@router.post("/resource/", status_code=201)
 async def post_protected_resource(
     protected_resource: ProtectedResourceCreate,
     token_payload=Depends(get_access_token_payload),
@@ -41,7 +41,7 @@ async def post_protected_resource(
 
 
 # TBD: write tests for this:
-@router.get("/", status_code=200)
+@router.get("/resource/", status_code=200)
 async def get_protected_resources(
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
@@ -51,7 +51,7 @@ async def get_protected_resources(
 
 
 # TBD: write tests for this:
-@router.get("/{resource_id}", status_code=200)
+@router.get("/resource/{resource_id}", status_code=200)
 async def get_protected_resource_by_id(
     resource_id: UUID,
     token_payload=Depends(get_access_token_payload),
@@ -62,7 +62,7 @@ async def get_protected_resource_by_id(
 
 
 # TBD: write tests for this:
-@router.put("/{resource_id}", status_code=200)
+@router.put("/resource/{resource_id}", status_code=200)
 async def put_protected_resource(
     resource_id: UUID,
     protected_resource: ProtectedResourceCreate,
@@ -76,7 +76,7 @@ async def put_protected_resource(
 
 
 # TBD: write more tests for this:
-@router.delete("/{resource_id}", status_code=200)
+@router.delete("/resource/{resource_id}", status_code=200)
 async def delete_protected_resource(
     resource_id: UUID,
     token_payload=Depends(get_access_token_payload),
@@ -94,7 +94,7 @@ protected_child_view = BaseView(ProtectedChildCRUD, ProtectedChild)
 
 
 # TBD: write tests for this:
-@router.post("/", status_code=201)
+@router.post("/child", status_code=201)
 async def post_protected_child(
     protected_resource: ProtectedChildCreate,
     parent_id: Annotated[UUID | None, Query()] = None,
