@@ -790,3 +790,5 @@ many_test_protected_grand_child_resources = [
         "text": "For the fun of it: one more protected grand child - 234234234.",
     },
 ]
+
+# TBD: configure the family of protected resources with parent-child relationships in three generations with AccessPolicies!

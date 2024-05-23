@@ -78,9 +78,6 @@ async def test_post_demo_resource_with_nonexisting_category(
 
     resource = one_test_demo_resource
     resource["category_id"] = str(uuid.uuid4())
-    # print("=== resource ===")
-    # print(resource)
-    # get_async_test_session
     response = await async_client.post("/api/v1/demoresource/", json=resource)
     assert response.status_code == 404
     content = response.json()
@@ -134,13 +131,7 @@ async def test_get_all_demo_resources(
             resources[2].language,
             resources[3].language,
         ]
-        # assert response_item["timezone"] in [
-        #     resources[0].timezone,
-        #     resources[1].timezone,
-        # ]
         assert "id" in response_item
-
-    # assert 0
 
 
 @pytest.mark.anyio
@@ -201,12 +192,9 @@ async def test_get_demo_resource_by_id(
     app_override_get_azure_payload_dependency
     resources = await add_test_demo_resources(mocked_get_azure_token_payload)
 
-    # time_before_get_call = datetime.now()
+    # before_time = datetime.now()
     response = await async_client.get(f"/api/v1/demoresource/{resources[0].id}")
-    # time_after_get_call = datetime.now()
-    # print("== test_get_demo_resource_by_id - get call time ===")
-    # print((time_after_get_call - time_before_get_call).total_seconds())
-    # solution with SQLModel back_population of tables: about 0.07 - 0.14 seconds
+    # after_time = datetime.now()
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == resources[0].name
@@ -214,8 +202,6 @@ async def test_get_demo_resource_by_id(
     assert "id" in content
     assert "tags" in content
     assert "category" in content
-
-    # assert 0
 
 
 @pytest.mark.anyio
@@ -234,12 +220,9 @@ async def test_get_public_demo_resource_by_id(
     }
     await add_test_policy_for_resource(policy)
 
-    # time_before_get_call = datetime.now()
+    # before_time = datetime.now()
     response = await async_client.get(f"/api/v1/demoresource/{resources[0].id}")
-    # time_after_get_call = datetime.now()
-    # print("== test_get_demo_resource_by_id - get call time ===")
-    # print((time_after_get_call - time_before_get_call).total_seconds())
-    # solution with SQLModel back_population of tables: about 0.07 - 0.14 seconds
+    # after_time = datetime.now()
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == resources[0].name
@@ -247,8 +230,6 @@ async def test_get_public_demo_resource_by_id(
     assert "id" in content
     assert "tags" in content
     assert "category" in content
-
-    # assert 0
 
 
 @pytest.mark.anyio
@@ -291,7 +272,6 @@ async def test_put_demo_resource(
         "name": "Updated Name",
         "description": "Updated Description",
         "language": "es-ES",
-        # "timezone": "UTC+9",
     }
     time_before_crud = datetime.now()
     response = await async_client.put(
@@ -309,7 +289,6 @@ async def test_put_demo_resource(
             current_user, resource_id=content["id"]
         )
 
-    # print(type(datetime.fromisoformat(content["last_updated_at"])))
     assert (
         time_before_crud - timedelta(seconds=1)
         < created_at
@@ -340,7 +319,6 @@ async def test_put_demo_resource_partial_update(
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
-        # "timezone": "UTC+10",
     }
     response = await async_client.put(
         f"/api/v1/demoresource/{resources[0].id}", json=updated_resource
@@ -350,10 +328,6 @@ async def test_put_demo_resource_partial_update(
     content = response.json()
     assert content["name"] == updated_resource["name"]
     assert content["description"] == updated_resource["description"]
-    # print("=== resources[0].language ===")
-    # print(resources[0].language)
-    # print("=== content['language'] ===")
-    # print(content["language"])
     assert content["language"] == resources[0].language  # this one is not updated!
 
 
@@ -377,7 +351,6 @@ async def test_put_demo_resource_by_invalid_id(
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
-        # "timezone": "UTC+10",
     }
     response = await async_client.put(
         "/api/v1/demoresource/not_an_integer", json=updated_resource

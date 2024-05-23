@@ -3,7 +3,11 @@ import pytest
 from crud.access import AccessPolicyCRUD
 from crud.category import CategoryCRUD
 from crud.demo_resource import DemoResourceCRUD
-from crud.protected_resource import ProtectedResourceCRUD
+from crud.protected_resource import (
+    ProtectedResourceCRUD,
+    ProtectedChildCRUD,
+    ProtectedGrandChildCRUD,
+)
 from crud.public_resource import PublicResourceCRUD
 from crud.tag import TagCRUD
 from models.category import Category
@@ -12,6 +16,8 @@ from tests.utils import (
     many_test_categories,
     many_test_demo_resources,
     many_test_protected_resources,
+    many_test_protected_child_resources,
+    many_test_protected_grand_child_resources,
     many_test_public_resources,
     many_test_tags,
 )
@@ -232,10 +238,36 @@ async def add_many_test_protected_resources(
 
     yield _add_many_test_protected_resources
 
-    # async with ProtectedResourceCRUD() as crud:
-    #     protected_resources = []
-    #     for protected_resource in many_test_protected_resources:
-    #         added_protected_resource = await crud.create(protected_resource)
-    #         protected_resources.append(added_protected_resource)
 
-    # yield protected_resources
+# TBD: is this necessary at all?
+@pytest.fixture(scope="function")
+async def add_many_test_protected_children(
+    current_user_from_azure_token: User,
+):
+    """Adds test protected children to the database."""
+
+    async def _add_many_test_protected_children(token_payload: dict = None):
+        protected_children = []
+        for protected_child in many_test_protected_child_resources:
+            current_user = await current_user_from_azure_token(token_payload)
+            async with ProtectedChildCRUD() as crud:
+                added_protected_child = await crud.create(protected_child, current_user)
+            protected_children.append(added_protected_child)
+
+        return protected_children
+
+    yield _add_many_test_protected_children
+
+
+# TBD: use the function for the endpoints ins the fixture here and create the family from those - top down
+# Might need mocked data from multiple users / identities?
+# @pytest.fixture(scope="function")
+# async def add_protected_resource_family_with_access_policies():
+#     """Adds a protected resource family with access policies to the database."""
+
+#     async def _add_protected_resource_family_with_access_policies(
+#         current_user_from_azure_token: User,
+#         add_many_test_protected_resources,
+
+#     ):
+#         existing_test_protected_resources = await add_many_test_protected_resources()

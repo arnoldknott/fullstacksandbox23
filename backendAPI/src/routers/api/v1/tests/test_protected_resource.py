@@ -212,8 +212,8 @@ async def test_post_protected_child_resource_and_add_to_parent(
 
 # Tests to implement for the protected resource family API:
 # ✔︎ User and Admin creates a protected resource: gets logged and access policy created
-# x User creates a child resource for a protected resource: hierarchy entry gets created
-# X User reads all protected resource: only the resources the user has access to are returned
+# ✔︎ User creates a child resource for a protected resource: hierarchy entry gets created
+# X User reads all protected resource: only the protected resources and child resources, that the user has access to are returned
 # X User reads a protected resource by id: gets logged
 # - User reads a protected resource: children and grand children get returned as well - but only the ones the user has access to
 # - User reads a child protected resource, where user inherits access from parent
