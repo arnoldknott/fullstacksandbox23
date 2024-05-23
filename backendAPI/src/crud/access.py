@@ -849,9 +849,9 @@ class BaseHierarchyCRUD(
             )
             statement = statement.where(IdentifierTypeLink.id == parent_id)
 
-            print("=== BaseHierarchyCRUD.create - statement ===")
-            print(statement.compile())
-            print(statement.compile().params)
+            # print("=== BaseHierarchyCRUD.create - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
 
             result = await self.session.exec(statement)
 

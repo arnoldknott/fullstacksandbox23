@@ -239,10 +239,11 @@ class BaseCRUD(
         object: BaseSchemaTypeCreate,
         current_user: "CurrentUserData",
         parent_id: Optional[uuid.UUID] = None,
+        inherit: Optional[bool] = False,
         action: Action = read,
     ) -> BaseModelType:
         """Creates a new object with public access."""
-        database_object = await self.create(object, current_user, parent_id)
+        database_object = await self.create(object, current_user, parent_id, inherit)
 
         public_access_policy = AccessPolicyCreate(
             resource_id=database_object.id,

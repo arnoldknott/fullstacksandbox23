@@ -754,7 +754,9 @@ many_test_protected_child_resources = [
     {
         "title": "For the fun of it: one more protected child",
     },
-    {"title": "As we are on it - let's add another child.s"},
+    {
+        "title": "As we are on it - let's add another child.",
+    },
 ]
 
 many_test_protected_grand_child_resources = [
@@ -781,5 +783,11 @@ many_test_protected_grand_child_resources = [
     },
     {
         "text": "And one more protected grand child - juhuuu 92304u2342.",
+    },
+    {
+        "text": "And yet another protected grand child - 234234234.",
+    },
+    {
+        "text": "For the fun of it: one more protected grand child - 234234234.",
     },
 ]

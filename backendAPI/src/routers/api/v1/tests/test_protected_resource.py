@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData
-from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
+from crud.access import AccessLoggingCRUD, AccessPolicyCRUD, ResourceHierarchyCRUD
 from crud.protected_resource import ProtectedResourceCRUD, ProtectedChildCRUD
 from models.protected_resource import ProtectedResource, ProtectedChild
 from tests.utils import (
@@ -188,6 +188,18 @@ async def test_post_protected_child_resource_and_add_to_parent(
     assert policies[0].resource_id == db_protected_child[0].id
     assert policies[0].identity_id == current_test_user.user_id
     assert policies[0].action == Action.own
+
+    # Test for created hierarchy entry:
+    async with ResourceHierarchyCRUD() as crud:
+        hierarchy_entry = await crud.read(
+            current_test_user,
+            parent_id=protected_resources[0].id,
+            child_id=db_protected_child[0].id,
+        )
+    assert len(hierarchy_entry) == 1
+    assert hierarchy_entry[0].parent_id == protected_resources[0].id
+    assert hierarchy_entry[0].child_id == db_protected_child[0].id
+    assert hierarchy_entry[0].inherit is False
 
 
 # endregion ## POST tests
