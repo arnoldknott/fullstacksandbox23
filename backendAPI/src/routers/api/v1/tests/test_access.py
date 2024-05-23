@@ -1,13 +1,13 @@
 import uuid
 from datetime import datetime, timedelta
-from pprint import pprint
+
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import AccessPolicyCRUD
-from models.access import AccessLogRead, AccessPolicy, AccessPolicyRead, AccessLogCreate
+from models.access import AccessLogCreate, AccessLogRead, AccessPolicy, AccessPolicyRead
 from models.demo_resource import DemoResource
 from models.identity import AzureGroup, User
 from models.protected_resource import ProtectedResource
@@ -17,6 +17,9 @@ from tests.utils import (
     azure_group_id3,
     azure_group_id4,
     current_user_data_admin,
+    identity_id_user1,
+    identity_id_user2,
+    identity_id_user3,
     many_test_policies,
     resource_id1,
     resource_id2,
@@ -32,9 +35,6 @@ from tests.utils import (
     token_user2_read,
     token_user2_read_write,
     token_user2_write,
-    identity_id_user1,
-    identity_id_user2,
-    identity_id_user3,
 )
 
 # region ## AccessPolicy tests:

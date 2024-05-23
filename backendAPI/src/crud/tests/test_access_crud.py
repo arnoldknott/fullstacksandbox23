@@ -3,12 +3,12 @@ from pprint import pprint
 
 import pytest
 
-from core.types import Action, CurrentUserData, ResourceType, IdentityType
+from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
-    ResourceHierarchyCRUD,
     IdentityHierarchyCRUD,
+    ResourceHierarchyCRUD,
 )
 from models.access import (
     AccessLogCreate,
@@ -19,6 +19,10 @@ from models.access import (
 )
 from models.protected_resource import ProtectedResource
 from tests.utils import (
+    child_identity_id1,
+    child_identity_id4,
+    child_identity_id5,
+    child_identity_id9,
     child_resource_id1,
     child_resource_id2,
     child_resource_id4,
@@ -29,10 +33,13 @@ from tests.utils import (
     current_user_data_user1,
     current_user_data_user2,
     current_user_data_user3,
-    many_test_child_resource_entities,
-    identity_id_group3,
+    identity_id_group1,
     identity_id_group2,
+    identity_id_group3,
+    identity_id_user1,
+    many_resource_ids,
     many_test_child_identities,
+    many_test_child_resource_entities,
     many_test_policies,
     one_test_policy_own,
     one_test_policy_public_read,
@@ -44,19 +51,7 @@ from tests.utils import (
     resource_id7,
     resource_id9,
     resource_id10,
-    many_identity_ids,
-    child_identity_id1,
-    child_identity_id4,
-    child_identity_id5,
-    child_identity_id6,
-    child_identity_id9,
     user_id_nonexistent,
-    identity_id_user1,
-    many_resource_ids,
-    identity_id_group1,
-    identity_id_subgroup2,
-    identity_id_subsubgroup4,
-    identity_id_subsubgroup5,
 )
 
 # region AccessPolicy CRUD tests
@@ -2153,7 +2148,6 @@ async def test_admin_reads_identity_hierarchy_multiple_parents_of_a_child(
 
     assert len(read_relation) == 3
     for relation, expected_parent_id in zip(read_relation, group_ids):
-
         assert relation.parent_id == uuid.UUID(expected_parent_id)
         assert relation.child_id == child_id
         assert relation.inherit is False

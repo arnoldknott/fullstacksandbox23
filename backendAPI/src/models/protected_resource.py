@@ -1,9 +1,9 @@
 import uuid
-from typing import Optional, List
+from typing import List, Optional
+
+from sqlmodel import Field, Relationship, SQLModel
 
 from .access import ResourceHierarchy
-
-from sqlmodel import Field, SQLModel, Relationship
 
 # region ProtectedResource
 

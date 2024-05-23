@@ -7,13 +7,8 @@ from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, SQLModel
 
 # if TYPE_CHECKING:
-from core.types import (
-    Action,
-    CurrentUserData,
-    IdentityType,
-    ResourceType,
-    ResourceHierarchy as ResourceHierarchyType,
-)
+from core.types import Action, CurrentUserData, IdentityType
+from core.types import ResourceType
 
 
 class IdentifierTypeLink(SQLModel, table=True):

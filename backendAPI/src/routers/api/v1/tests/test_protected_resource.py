@@ -7,12 +7,12 @@ from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD, ResourceHierarchyCRUD
-from crud.protected_resource import ProtectedResourceCRUD, ProtectedChildCRUD
-from models.protected_resource import ProtectedResource, ProtectedChild
+from crud.protected_resource import ProtectedChildCRUD, ProtectedResourceCRUD
+from models.protected_resource import ProtectedChild, ProtectedResource
 from tests.utils import (
     current_user_data_admin,
-    many_test_protected_resources,
     many_test_protected_child_resources,
+    many_test_protected_resources,
     token_admin_read_write,
     token_user1_read_write,
 )

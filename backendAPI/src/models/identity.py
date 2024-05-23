@@ -2,11 +2,10 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from sqlmodel import Field, Relationship, SQLModel
 from sqlalchemy import Column, ForeignKey, Uuid
+from sqlmodel import Field, Relationship, SQLModel
 
 from core.config import config
-from core.types import IdentityType
 
 # from .azure_group import AzureGroup, AzureGroupRead
 

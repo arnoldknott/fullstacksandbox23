@@ -1,8 +1,4 @@
 from models.protected_resource import (
-    ProtectedResource,
-    ProtectedResourceCreate,
-    ProtectedResourceRead,
-    ProtectedResourceUpdate,
     ProtectedChild,
     ProtectedChildCreate,
     ProtectedChildRead,
@@ -11,6 +7,10 @@ from models.protected_resource import (
     ProtectedGrandChildCreate,
     ProtectedGrandChildRead,
     ProtectedGrandChildUpdate,
+    ProtectedResource,
+    ProtectedResourceCreate,
+    ProtectedResourceRead,
+    ProtectedResourceUpdate,
 )
 
 from .base import BaseCRUD

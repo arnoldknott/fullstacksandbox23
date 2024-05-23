@@ -1,7 +1,7 @@
 import logging
 from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
-from pprint import pprint
+
 from fastapi import HTTPException
 from sqlalchemy.orm import aliased
 from sqlmodel import SQLModel, and_, delete, or_, select
@@ -12,10 +12,10 @@ from core.types import (
     Action,
     BaseHierarchy,
     CurrentUserData,
-    ResourceType,
-    ResourceHierarchy,
-    IdentityType,
     IdentityHierarchy,
+    IdentityType,
+    ResourceHierarchy,
+    ResourceType,
 )
 from models.access import (
     AccessLog,
@@ -29,15 +29,10 @@ from models.access import (
     AccessRequest,
     IdentifierTypeLink,
 )
-
-from models.access import (
-    ResourceHierarchy as ResourceHierarchyTable,
-    ResourceHierarchyCreate,
-    ResourceHierarchyRead,
-    IdentityHierarchy as IdentityHierarchyTable,
-    IdentityHierarchyCreate,
-    IdentityHierarchyRead,
-)
+from models.access import IdentityHierarchy as IdentityHierarchyTable
+from models.access import IdentityHierarchyCreate, IdentityHierarchyRead
+from models.access import ResourceHierarchy as ResourceHierarchyTable
+from models.access import ResourceHierarchyCreate, ResourceHierarchyRead
 
 # from core.access import AccessControl
 

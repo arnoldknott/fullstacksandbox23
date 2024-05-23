@@ -1,22 +1,20 @@
 import logging
-from uuid import UUID
 from typing import Annotated
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, Query
 
 from core.security import Guards, get_access_token_payload
 from core.types import GuardTypes
 from crud.protected_resource import (
-    ProtectedResourceCRUD,
     ProtectedChildCRUD,
-    ProtectedGrandChildCRUD,
+    ProtectedResourceCRUD,
 )
 from models.protected_resource import (
-    ProtectedResource,
-    ProtectedResourceCreate,
     ProtectedChild,
     ProtectedChildCreate,
-    ProtectedGrandChild,
-    ProtectedGrandChildCreate,
+    ProtectedResource,
+    ProtectedResourceCreate,
 )
 
 from .base import BaseView

@@ -1,9 +1,9 @@
 from enum import Enum
-from sqlmodel import SQLModel
 from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
+from sqlmodel import SQLModel
 
 # import models
 
