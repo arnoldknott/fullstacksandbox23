@@ -4,8 +4,9 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy.orm import aliased
-from sqlmodel import SQLModel, and_, delete, or_, select
+from sqlmodel import SQLModel, and_, delete, or_, select, union_all
 from sqlmodel.ext.asyncio.session import AsyncSession
+
 
 from core.databases import get_async_session
 from core.types import (
@@ -60,15 +61,47 @@ class AccessPolicyCRUD:
         """Closes the database session."""
         await self.session.close()
 
-    async def __check_resource_inheritance(self):
+    def __get_resource_inheritance_common_table_expression(
+        self, base_resource_ids: select  # TBD: change this to List[UUID]?
+    ):
         """Checks if the resource inherits permissions from a parent resource"""
-        # TBD: check the inheritance flag in the resource hierarchy table and stop, if not inherited!
-        pass
+        ResourceHierarchyAlias = aliased(ResourceHierarchy)
 
-    async def __check_identity_inheritance(self):
+        hierarchy_cte = (
+            select(ResourceHierarchy.child_id.label("resource_id"))
+            .where(ResourceHierarchy.child_id.in_(base_resource_ids))
+            .cte(name="resource_hierarchy", recursive=True)
+        )
+
+        hierarchy_cte = hierarchy_cte.union_all(
+            select(ResourceHierarchyAlias.parent_id.label("resource_id")).where(
+                ResourceHierarchyAlias.child_id == hierarchy_cte.c.resource_id,
+                ResourceHierarchyAlias.inherit.is_(True),
+            )
+        )
+
+        return hierarchy_cte
+
+    def __get_identity_inheritance_common_table_expression(
+        self, base_identity_id: UUID
+    ):
         """Checks if the resource inherits permissions from a parent resource"""
-        # TBD: check if the identity inherits permissions from a parent identity (aka group)
-        pass
+        IdentityHierarchyAlias = aliased(IdentityHierarchy)
+
+        hierarchy_cte = (
+            select(IdentityHierarchy.child_id.label("identity_id"))
+            .where(IdentityHierarchy.child_id == base_identity_id)
+            .cte(name="identity_hierarchy", recursive=True)
+        )
+
+        hierarchy_cte = hierarchy_cte.union_all(
+            select(IdentityHierarchyAlias.parent_id.label("identity_id")).where(
+                IdentityHierarchyAlias.child_id == hierarchy_cte.c.identity_id,
+                IdentityHierarchyAlias.inherit.is_(True),
+            )
+        )
+
+        return hierarchy_cte
 
     def filters_allowed(
         self,
@@ -102,114 +135,300 @@ class AccessPolicyCRUD:
             logger.error("Invalid action provided.")
             raise HTTPException(status_code=400, detail="Bad request: invalid action.")
 
+        # TBD: for inheritance:
+        # - wherever resource_id is used, it needs to check inheritance from Resource hierarchy recursively (self-join) until no parent found any more
+        # - wherever identity_id is used, it needs to check inheritance from Identity hierarchy recursively (self-join) until no parent found any more
+        # get all parent resource id's, that the resource inherits from
+        # get all parent identity id's, that the identity inherits from
+        # How do all the actions get into play - do I really need to check all possible combinations for the required action?
+
         # only public resources can be accessed without a user:
         if not current_user:
             # TBD: for consistency this could be refactored into a subquery;
             # but there might be slight performance advantages in using a join instead.
-            if model != AccessPolicy:
-                statement = statement.join(
-                    AccessPolicy, model.id == AccessPolicy.resource_id
-                )
-                statement = statement.where(AccessPolicy.resource_id == model.id)
-            statement = statement.where(AccessPolicy.action.in_(action))
-            statement = statement.where(AccessPolicy.public)
-        # Admins can access everything:
-        elif current_user.roles and "Admin" in current_user.roles:
-            pass
-        # Users can access the resources, they have permission for including public resources:
-        else:
-            subquery = (
-                select(AccessPolicy.resource_id)
-                .where(AccessPolicy.action.in_(action))
-                .where(
-                    or_(
-                        AccessPolicy.identity_id == current_user.user_id,
-                        AccessPolicy.public,
-                    )
-                )
-            )
-            # print("=== AccessPolicyCRUD.filters_allowed - subquery ===")
-            # print(subquery.compile())
-            # print(subquery.compile().params)
-
-            if (model == AccessPolicy) or (model == AccessLog):
-                statement = statement.where(model.resource_id.in_(subquery))
-            else:
-                statement = statement.where(model.id.in_(subquery))
-
-            # print("=== AccessPolicyCRUD.filters_allowed - statement ===")
-            # print(statement.compile())
-            # print(statement.compile().params)
-
-            # ###### Refactor this into a subquery and filter the results for the  the main query statement #####
-            # # this is becoming two different functions - one for resources and one for policies
-            # # consider splitting this into two functions
-            # if model == AccessPolicy:
-            #     subquery = select(AccessPolicy.resource_id).where(
-            #         and_(
-            #             AccessPolicy.identity_id == current_user.user_id,
-            #             AccessPolicy.action
-            #             == own,  # why is the AccessPolicy retrieval limited to owners only here - this should be done in the AccessPolicyCRUD (create, read, update, delete methods!)
-            #         )
-            #     )
-            #     statement = statement.filter(AccessPolicy.resource_id.in_(subquery))
-            # elif model == AccessLog:
-            #     subquery = select(AccessPolicy.resource_id)
-            #     subquery = subquery.where(AccessPolicy.action.in_(action))
-            #     subquery = subquery.where(
-            #         or_(
-            #             AccessPolicy.identity_id == current_user.user_id,
-            #             AccessPolicy.public,
-            #         )
-            #     )
-            #     #     .where(
-            #     #     and_(
-            #     #         AccessPolicy.identity_id == current_user.user_id,
-            #     #         AccessPolicy.action == own,
-            #     #     )
-            #     # )
-            #     # print("=== AccessPolicyCRUD.filters_allowed - subquery ===")
-            #     # print(subquery.compile())
-            #     # print(subquery.compile().params)
-
-            #     # return subquery
-
-            #     # subquery_results = self.session.exec(subquery)
-            #     # subquery_results = subquery_results.all()
-
-            #     # print("=== AccessPolicyCRUD.filters_allowed - subquery_results ===")
-            #     # for result in subquery_results:
-            #     #     pprint(result)
-
-            #     statement = statement.filter(AccessLog.resource_id.in_(subquery))
-            #     # statement = statement.join(
-            #     #     AccessPolicy, AccessLog.resource_id == AccessPolicy.resource_id
-            #     # )
-            #     # statement = statement.where(
-            #     #     AccessPolicy.resource_id == AccessLog.resource_id
-            #     # )
-            #     # statement = statement.where(AccessPolicy.action.in_(action))
-            #     # statement = statement.where(
-            #     #     or_(
-            #     #         AccessPolicy.identity_id == current_user.user_id,
-            #     #         AccessPolicy.public,
-            #     #     )
-            #     # )
-            # else:
+            # can public resources inherit permissions? => yes!
+            # DEFINITELY NEEDS to be refactored into subquery!!!
+            ###### old #######
+            # if model != AccessPolicy:
             #     statement = statement.join(
             #         AccessPolicy, model.id == AccessPolicy.resource_id
             #     )
             #     statement = statement.where(AccessPolicy.resource_id == model.id)
-            #     statement = statement.where(AccessPolicy.action.in_(action))
-            #     statement = statement.where(
+            # statement = statement.where(AccessPolicy.action.in_(action))
+            # statement = statement.where(AccessPolicy.public)
+            #################
+            subquery = (
+                select(AccessPolicy.resource_id)
+                .where(AccessPolicy.action.in_(action))
+                .where(AccessPolicy.public)
+            )
+        # Admins can access everything:
+        elif current_user.roles and "Admin" in current_user.roles:
+            # TBD: avoid a return in the the middle of the function!
+            return statement
+        # Users can access the resources, they have permission for including public resources:
+        else:
+            # for resource hierarchy:
+            # get all parent resource id's, that the resource inherits from
+            #
+            # change the current_user.user_id to be
+            # current_user.user_id AND parent identity id's for all parents, that the identity inherits from
+            # subquery = (
+            #     select(AccessPolicy.resource_id)
+            #     .where(AccessPolicy.action.in_(action))
+            #     .where(
             #         or_(
             #             AccessPolicy.identity_id == current_user.user_id,
             #             AccessPolicy.public,
             #         )
             #     )
-            # #################################
+            # )
+
+            ####### refactor into this #######
+            # Create the CTE for the identity hierarchy
+            identity_hierarchy_cte = (
+                self.__get_identity_inheritance_common_table_expression(
+                    current_user.user_id
+                )
+            )  # omit this line if no current_user (for public resources)
+            # Base resources for access check
+            base_resource_ids = select(AccessPolicy.resource_id).where(
+                AccessPolicy.action.in_(action),
+                or_(
+                    AccessPolicy.identity_id.in_(
+                        select(identity_hierarchy_cte.c.identity_id)
+                    ),  # omit the or_ and this line if no current_user (for public resources)
+                    AccessPolicy.public,
+                ),
+            )
+            # Create the CTE for the resource hierarchy
+            resource_hierarchy_cte = (
+                self.__get_resource_inheritance_common_table_expression(
+                    base_resource_ids
+                )
+            )
+
+            # Subquery to get accessible resource IDs including inherited access
+            subquery = select(AccessPolicy.resource_id).where(
+                AccessPolicy.action.in_(action),
+                or_(
+                    AccessPolicy.identity_id.in_(
+                        select(identity_hierarchy_cte.c.identity_id)
+                    ),  # omit the or_ and this line if no current_user (for public resources)
+                    AccessPolicy.public,
+                ),
+                AccessPolicy.resource_id.in_(
+                    select(resource_hierarchy_cte.c.resource_id)
+                ),
+            )
+            #######################
+
+        # print("=== AccessPolicyCRUD.filters_allowed - subquery ===")
+        # print(subquery.compile())
+        # print(subquery.compile().params)
+
+        # if subquery:
+        if (model == AccessPolicy) or (model == AccessLog):
+            statement = statement.where(model.resource_id.in_(subquery))
+        else:
+            statement = statement.where(model.id.in_(subquery))
+
+        # print("=== AccessPolicyCRUD.filters_allowed - statement ===")
+        # print(statement.compile())
+        # print(statement.compile().params)
 
         return statement
+
+        ############################################################
+        # OK - this could be a good start - from ChatGPT4o:
+        # from sqlalchemy import select, or_, union_all
+        # from sqlalchemy.orm import aliased
+        # from sqlmodel import Session, SQLModel, Field
+        # from typing import List
+        # import uuid
+
+        # class AccessPolicy(SQLModel, table=True):
+        #     resource_id: uuid.UUID = Field(primary_key=True)
+        #     action: str
+        #     identity_id: uuid.UUID
+        #     public: bool
+
+        # class ResourceHierarchy(SQLModel, table=True):
+        #     parent_id: uuid.UUID
+        #     child_id: uuid.UUID
+        #     inherit: bool
+
+        # class IdentityHierarchy(SQLModel, table=True):
+        #     parent_id: uuid.UUID
+        #     child_id: uuid.UUID
+        #     inherit: bool
+
+        # def get_resource_hierarchy_cte(base_resource_ids: List[uuid.UUID]):
+        #     ResourceHierarchyAlias = aliased(ResourceHierarchy)
+
+        #     # Start with the base resources
+        #     # Hmmm, looks to get all the fist parents of the base resources
+        #     base_resources = select(ResourceHierarchy.parent_id).where(
+        #         ResourceHierarchy.child_id.in_(base_resource_ids),
+        #         ResourceHierarchy.inherit.is_(True)
+        #     )
+
+        #     # Recursive CTE to find all parent resources that inherit access
+        #     hierarchy_cte = (
+        #         select(
+        #             ResourceHierarchy.child_id.label('resource_id')
+        #         )
+        #         .where(ResourceHierarchy.child_id.in_(base_resource_ids))
+        #         .cte(name='resource_hierarchy', recursive=True)
+        #     )
+
+        #     hierarchy_cte = hierarchy_cte.union_all(
+        #         select(
+        #             ResourceHierarchyAlias.parent_id.label('resource_id')
+        #         ).where(
+        #             ResourceHierarchyAlias.child_id == hierarchy_cte.c.resource_id,
+        #             ResourceHierarchyAlias.inherit.is_(True)
+        #         )
+        #     )
+
+        #     return hierarchy_cte
+
+        # def get_identity_hierarchy_cte(base_identity_id: uuid.UUID):
+        #     IdentityHierarchyAlias = aliased(IdentityHierarchy)
+
+        #     hierarchy_cte = (
+        #         select(
+        #             IdentityHierarchy.child_id.label('identity_id')
+        #         )
+        #         .where(IdentityHierarchy.child_id == base_identity_id)
+        #         .cte(name='identity_hierarchy', recursive=True)
+        #     )
+
+        #     hierarchy_cte = hierarchy_cte.union_all(
+        #         select(
+        #             IdentityHierarchyAlias.parent_id.label('identity_id')
+        #         ).where(
+        #             IdentityHierarchyAlias.child_id == hierarchy_cte.c.identity_id,
+        #             IdentityHierarchyAlias.inherit.is_(True)
+        #         )
+        #     )
+
+        #     return hierarchy_cte
+
+        # # corresponds to existing filters_allowed function:
+        # def get_accessible_resource_ids(action: List[str], current_user, session: Session):
+        #     # Base identity id is the current user id
+        #     base_identity_id = current_user.user_id
+
+        #     # Create the CTE for the identity hierarchy
+        #     identity_hierarchy_cte = get_identity_hierarchy_cte(base_identity_id)
+
+        #     # Base resources for access check
+        #     base_resource_ids = select(AccessPolicy.resource_id).where(
+        #         AccessPolicy.action.in_(action),
+        #         or_(
+        #             AccessPolicy.identity_id.in_(select(identity_hierarchy_cte.c.identity_id)),
+        #             AccessPolicy.public
+        #         )
+        #     )
+
+        #     # Create the CTE for the resource hierarchy
+        #     resource_hierarchy_cte = get_resource_hierarchy_cte(base_resource_ids)
+
+        #     # Subquery to get accessible resource IDs including inherited access
+        #     subquery = (
+        #         select(AccessPolicy.resource_id)
+        #         .where(
+        #             AccessPolicy.action.in_(action),
+        #             or_(
+        #                 AccessPolicy.identity_id.in_(select(identity_hierarchy_cte.c.identity_id)),
+        #                 AccessPolicy.public,
+        #             ),
+        #             AccessPolicy.resource_id.in_(select(hierarchy_cte.c.resource_id))
+        #         )
+        #     )
+
+        #     return subquery
+
+        # def get_statement(action: List[str], current_user, session: Session):
+        #     subquery = get_accessible_resource_ids(action, current_user, session)
+
+        #     statement = select(model).where(model.id.in_(subquery))
+        #     return statement
+
+        # Example usage
+        # session = Session(engine)
+        # result = session.execute(get_statement(action, current_user, session)).all()
+
+        ############################################################
+
+        # ###### Refactor this into a subquery and filter the results for the  the main query statement #####
+        # # this is becoming two different functions - one for resources and one for policies
+        # # consider splitting this into two functions
+        # if model == AccessPolicy:
+        #     subquery = select(AccessPolicy.resource_id).where(
+        #         and_(
+        #             AccessPolicy.identity_id == current_user.user_id,
+        #             AccessPolicy.action
+        #             == own,  # why is the AccessPolicy retrieval limited to owners only here - this should be done in the AccessPolicyCRUD (create, read, update, delete methods!)
+        #         )
+        #     )
+        #     statement = statement.filter(AccessPolicy.resource_id.in_(subquery))
+        # elif model == AccessLog:
+        #     subquery = select(AccessPolicy.resource_id)
+        #     subquery = subquery.where(AccessPolicy.action.in_(action))
+        #     subquery = subquery.where(
+        #         or_(
+        #             AccessPolicy.identity_id == current_user.user_id,
+        #             AccessPolicy.public,
+        #         )
+        #     )
+        #     #     .where(
+        #     #     and_(
+        #     #         AccessPolicy.identity_id == current_user.user_id,
+        #     #         AccessPolicy.action == own,
+        #     #     )
+        #     # )
+        #     # print("=== AccessPolicyCRUD.filters_allowed - subquery ===")
+        #     # print(subquery.compile())
+        #     # print(subquery.compile().params)
+
+        #     # return subquery
+
+        #     # subquery_results = self.session.exec(subquery)
+        #     # subquery_results = subquery_results.all()
+
+        #     # print("=== AccessPolicyCRUD.filters_allowed - subquery_results ===")
+        #     # for result in subquery_results:
+        #     #     pprint(result)
+
+        #     statement = statement.filter(AccessLog.resource_id.in_(subquery))
+        #     # statement = statement.join(
+        #     #     AccessPolicy, AccessLog.resource_id == AccessPolicy.resource_id
+        #     # )
+        #     # statement = statement.where(
+        #     #     AccessPolicy.resource_id == AccessLog.resource_id
+        #     # )
+        #     # statement = statement.where(AccessPolicy.action.in_(action))
+        #     # statement = statement.where(
+        #     #     or_(
+        #     #         AccessPolicy.identity_id == current_user.user_id,
+        #     #         AccessPolicy.public,
+        #     #     )
+        #     # )
+        # else:
+        #     statement = statement.join(
+        #         AccessPolicy, model.id == AccessPolicy.resource_id
+        #     )
+        #     statement = statement.where(AccessPolicy.resource_id == model.id)
+        #     statement = statement.where(AccessPolicy.action.in_(action))
+        #     statement = statement.where(
+        #         or_(
+        #             AccessPolicy.identity_id == current_user.user_id,
+        #             AccessPolicy.public,
+        #         )
+        #     )
+        # #################################
 
     async def allows(
         self,
@@ -313,20 +532,6 @@ class AccessPolicyCRUD:
             print(err)
             raise HTTPException(status_code=403, detail="Forbidden.")
 
-    # other way around: add to parent - in create_as_child
-    async def add_child(
-        self,
-        current_user: CurrentUserData,
-        policy: AccessPolicyCreate,
-        parent_resource_id: int,
-    ):
-        """Adds a child policy to a parent policy."""
-        # TBD: make sure, that current_user has owner rights in parent_resource or is Admin
-        # put that into the access_control in core.access AccessControl.allows or so?
-        # TBD should this be a method of AccessPolicyCRUD or AccessControl?
-        pass
-
-    # Isn't this starting to become a bit silly? Reading, what you know already?
     async def read(
         self,
         # Who is requesting the policies?

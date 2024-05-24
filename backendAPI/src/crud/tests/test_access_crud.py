@@ -1167,6 +1167,8 @@ async def test_create_access_log(register_many_current_users, register_many_reso
     assert created_log.status_code == access_log.status_code
 
 
+# TBD: check if the rest is covered through test_access.py!
+
 # endregion AccessLogging CRUD tests
 
 # region ResourceHierarchy CRUD tests

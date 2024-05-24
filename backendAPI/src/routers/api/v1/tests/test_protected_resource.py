@@ -127,7 +127,7 @@ async def test_post_protected_child_resource_and_add_to_parent(
         created_protected_child.title == many_test_protected_child_resources[0]["title"]
     )
 
-    # Test for created logs:
+    # Check for created logs:
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
             CurrentUserData(**current_user_data_admin),
@@ -146,6 +146,7 @@ async def test_post_protected_child_resource_and_add_to_parent(
     assert last_accessed_at.time == created_at
     assert last_accessed_at.status_code == 201
 
+    # Check if the parent was updated in database and contains the protected child:
     async with ProtectedResourceCRUD() as crud:
         db_protected_resource = await crud.read(
             current_test_user,
@@ -177,7 +178,7 @@ async def test_post_protected_child_resource_and_add_to_parent(
         db_protected_child[0].title == many_test_protected_child_resources[0]["title"]
     )
 
-    # Test for created access policies:
+    # Check for created access policies:
     async with AccessPolicyCRUD() as crud:
         policies = await crud.read(
             current_test_user,
@@ -189,7 +190,7 @@ async def test_post_protected_child_resource_and_add_to_parent(
     assert policies[0].identity_id == current_test_user.user_id
     assert policies[0].action == Action.own
 
-    # Test for created hierarchy entry:
+    # Check for created hierarchy entry:
     async with ResourceHierarchyCRUD() as crud:
         hierarchy_entry = await crud.read(
             current_test_user,
@@ -203,6 +204,8 @@ async def test_post_protected_child_resource_and_add_to_parent(
 
 
 # endregion ## POST tests
+
+# AccessPolicy and AccessLog tests not necessary in all tests! Just in one post, one read, one update and one delete test!
 
 
 # Nomenclature:
