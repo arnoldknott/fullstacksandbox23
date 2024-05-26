@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy.orm import aliased
-from sqlmodel import SQLModel, and_, delete, or_, select, union_all
+from sqlmodel import SQLModel, and_, delete, or_, select, union_all, literal
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 
@@ -65,11 +65,11 @@ class AccessPolicyCRUD:
         self, base_resource_ids: select  # TBD: change this to List[UUID]?
     ):
         """Checks if the resource inherits permissions from a parent resource"""
-        ResourceHierarchyAlias = aliased(ResourceHierarchy)
+        ResourceHierarchyAlias = aliased(ResourceHierarchyTable)
 
         hierarchy_cte = (
-            select(ResourceHierarchy.child_id.label("resource_id"))
-            .where(ResourceHierarchy.child_id.in_(base_resource_ids))
+            select(ResourceHierarchyTable.child_id.label("resource_id"))
+            .where(ResourceHierarchyTable.child_id.in_(base_resource_ids))
             .cte(name="resource_hierarchy", recursive=True)
         )
 
@@ -77,8 +77,14 @@ class AccessPolicyCRUD:
             select(ResourceHierarchyAlias.parent_id.label("resource_id")).where(
                 ResourceHierarchyAlias.child_id == hierarchy_cte.c.resource_id,
                 ResourceHierarchyAlias.inherit.is_(True),
-            )
+            ),
+            # base_resource_ids,
         )
+
+        # # Include the base_resource_ids in the result
+        # final_query = select(base_resource_ids).union_all(select(hierarchy_cte))
+
+        # return final_query
 
         return hierarchy_cte
 
@@ -86,11 +92,11 @@ class AccessPolicyCRUD:
         self, base_identity_id: UUID
     ):
         """Checks if the resource inherits permissions from a parent resource"""
-        IdentityHierarchyAlias = aliased(IdentityHierarchy)
+        IdentityHierarchyAlias = aliased(IdentityHierarchyTable)
 
         hierarchy_cte = (
-            select(IdentityHierarchy.child_id.label("identity_id"))
-            .where(IdentityHierarchy.child_id == base_identity_id)
+            select(IdentityHierarchyTable.child_id.label("identity_id"))
+            .where(IdentityHierarchyTable.child_id == base_identity_id)
             .cte(name="identity_hierarchy", recursive=True)
         )
 
@@ -98,8 +104,37 @@ class AccessPolicyCRUD:
             select(IdentityHierarchyAlias.parent_id.label("identity_id")).where(
                 IdentityHierarchyAlias.child_id == hierarchy_cte.c.identity_id,
                 IdentityHierarchyAlias.inherit.is_(True),
-            )
+            ),
+            # select(literal(base_identity_id).label("identity_id")),
         )
+
+        # Include the base_identity_id in the result
+        # final_query = select(literal(base_identity_id).label("identity_id")).union_all(
+        #     hierarchy_cte
+        # )
+        # final_query = hierarchy_cte.union_all(
+        #     select(literal(base_identity_id).label("identity_id"))
+        # )
+
+        # return final_query
+
+        # print(
+        #     "=== AccessPolicyCRUD.__get_identity_inheritance_common_table_expression - final_query ==="
+        # )
+        # print(hierarchy_cte.compile())
+        # print(hierarchy_cte.compile().params)
+
+        # Include the base_identity_id in the result
+        # base_identity_id_select = select(literal(base_identity_id).label("identity_id"))
+        # final_query = base_identity_id_select.union_all(hierarchy_cte)
+
+        # print(
+        #     "=== AccessPolicyCRUD.__get_identity_inheritance_common_table_expression - final_query ==="
+        # )
+        # print(final_query.compile())
+        # print(final_query.compile().params)
+
+        # return final_query
 
         return hierarchy_cte
 
@@ -185,12 +220,13 @@ class AccessPolicyCRUD:
             # )
 
             ####### refactor into this #######
-            # Create the CTE for the identity hierarchy
+            # Create the common table expression (CTE) for the identity hierarchy
             identity_hierarchy_cte = (
                 self.__get_identity_inheritance_common_table_expression(
                     current_user.user_id
                 )
             )  # omit this line if no current_user (for public resources)
+
             # Base resources for access check
             base_resource_ids = select(AccessPolicy.resource_id).where(
                 AccessPolicy.action.in_(action),
@@ -198,15 +234,23 @@ class AccessPolicyCRUD:
                     AccessPolicy.identity_id.in_(
                         select(identity_hierarchy_cte.c.identity_id)
                     ),  # omit the or_ and this line if no current_user (for public resources)
+                    AccessPolicy.identity_id == current_user.user_id,
                     AccessPolicy.public,
                 ),
             )
-            # Create the CTE for the resource hierarchy
+            print("=== AccessPolicyCRUD.filters_allowed - base_resource_ids ===")
+            print(base_resource_ids.compile())
+            print(base_resource_ids.compile().params)
+
+            # Create the common table expression (CTE) for the resource hierarchy
             resource_hierarchy_cte = (
                 self.__get_resource_inheritance_common_table_expression(
                     base_resource_ids
                 )
             )
+
+            # print("=== AccessPolicyCRUD.filters_allowed - resource_hierarchy_cte ===")
+            # print(resource_hierarchy_cte.compile())
 
             # Subquery to get accessible resource IDs including inherited access
             subquery = select(AccessPolicy.resource_id).where(
@@ -215,12 +259,21 @@ class AccessPolicyCRUD:
                     AccessPolicy.identity_id.in_(
                         select(identity_hierarchy_cte.c.identity_id)
                     ),  # omit the or_ and this line if no current_user (for public resources)
+                    AccessPolicy.identity_id == current_user.user_id,
                     AccessPolicy.public,
                 ),
-                AccessPolicy.resource_id.in_(
-                    select(resource_hierarchy_cte.c.resource_id)
+                or_(
+                    AccessPolicy.resource_id.in_(
+                        select(resource_hierarchy_cte.c.resource_id)
+                    ),
+                    AccessPolicy.resource_id.in_(base_resource_ids),
                 ),
             )
+
+            # print("=== AccessPolicyCRUD.filters_allowed - subquery ===")
+            # print(subquery.compile())
+            # print(subquery.compile().params)
+
             #######################
 
         # print("=== AccessPolicyCRUD.filters_allowed - subquery ===")
@@ -233,9 +286,10 @@ class AccessPolicyCRUD:
         else:
             statement = statement.where(model.id.in_(subquery))
 
-        # print("=== AccessPolicyCRUD.filters_allowed - statement ===")
-        # print(statement.compile())
-        # print(statement.compile().params)
+        print("=== AccessPolicyCRUD.filters_allowed - statement ===")
+        print(statement.compile())
+        print(statement.compile().params)
+        print("\n")
 
         return statement
 

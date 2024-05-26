@@ -2,6 +2,7 @@ import logging
 import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
+from pprint import pprint
 
 # from core.access import AccessControl
 from fastapi import HTTPException
@@ -312,15 +313,15 @@ class BaseCRUD(
             if offset:
                 statement = statement.offset(offset)
 
-            # print("=== CRUD - base - read - statement ===")
-            # print(statement.compile())
-            # print(statement.compile().params)
+            print("=== CRUD - base - read - statement ===")
+            print(statement.compile())
+            print(statement.compile().params)
 
             response = await self.session.exec(statement)
             results = response.all()
 
-            # print("=== CRUD - base - read - results ===")
-            # pprint(results)
+            print("=== CRUD - base - read - results ===")
+            pprint(results)
 
             for result in results:
                 access_log = AccessLogCreate(
