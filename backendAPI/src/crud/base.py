@@ -316,12 +316,14 @@ class BaseCRUD(
             print("=== CRUD - base - read - statement ===")
             print(statement.compile())
             print(statement.compile().params)
+            print("\n")
 
             response = await self.session.exec(statement)
             results = response.all()
 
             print("=== CRUD - base - read - results ===")
             pprint(results)
+            print("\n")
 
             for result in results:
                 access_log = AccessLogCreate(
@@ -383,6 +385,10 @@ class BaseCRUD(
         current_user: Optional["CurrentUserData"] = None,
     ):
         """Reads an object by id."""
+
+        # print("=== CRUD - base - read_by_id - current_user ===")
+        # print(current_user)
+
         object = await self.read(
             current_user=current_user,
             filters=[self.model.id == id],

@@ -1,5 +1,5 @@
 import pytest
-
+from uuid import UUID
 from crud.access import AccessPolicyCRUD
 from crud.category import CategoryCRUD
 from crud.demo_resource import DemoResourceCRUD
@@ -8,6 +8,7 @@ from crud.protected_resource import (
     ProtectedChildCRUD,
     ProtectedGrandChildCRUD,
 )
+from core.types import CurrentUserData
 from crud.public_resource import PublicResourceCRUD
 from crud.tag import TagCRUD
 from models.category import Category
@@ -237,6 +238,48 @@ async def add_many_test_protected_resources(
         return protected_resources
 
     yield _add_many_test_protected_resources
+
+
+async def add_test_protected_child(
+    current_user_from_azure_token: User,
+    protected_child: dict,
+    current_user: CurrentUserData = None,
+    parent_id: UUID = None,
+    inherit: bool = False,
+):
+    """Adds a test protected child to the database."""
+
+    if not current_user:
+        current_user = await current_user_from_azure_token()
+    async with ProtectedChildCRUD() as crud:
+        added_protected_child = await crud.create(
+            protected_child, current_user, parent_id, inherit
+        )
+
+    return added_protected_child
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_protected_child(
+    current_user_from_azure_token: User,
+):
+    """Adds a test protected child to the database."""
+
+    async def _add_one_test_protected_child(
+        protected_child: dict,
+        current_user: CurrentUserData = None,
+        parent_id: UUID = None,
+        inherit: bool = False,
+    ):
+        return await add_test_protected_child(
+            current_user_from_azure_token,
+            protected_child,
+            current_user,
+            parent_id,
+            inherit,
+        )
+
+    yield _add_one_test_protected_child
 
 
 # TBD: is this necessary at all?
