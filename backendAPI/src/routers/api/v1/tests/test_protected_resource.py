@@ -392,7 +392,6 @@ async def test_get_protected_child_resource_and_from_a_parent_through_inheritanc
         db_protected_child = await crud.read_by_id(
             created_protected_child.id,
             current_user2,
-            # current_user,
         )
 
     assert db_protected_child.title == many_test_protected_child_resources[0]["title"]
@@ -583,7 +582,6 @@ async def test_get_protected_child_resource_and_from_a_parent_through_inheritanc
             await crud.read_by_id(
                 created_protected_child.id,
                 current_user2,
-                # current_user,
             )
         except Exception as err:
             assert err.status_code == 404
@@ -763,7 +761,6 @@ async def test_get_protected_child_resource_and_from_a_parent_missing_inheritanc
             await crud.read_by_id(
                 created_protected_child.id,
                 current_user2,
-                # current_user,
             )
         except Exception as err:
             assert err.status_code == 404
@@ -811,7 +808,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     assert response.status_code == 201
     created_protected_child = ProtectedChild(**response_child.json())
 
-    # Make a POST request to create the protected child as a child of a protected resource
+    # Make a POST request to create the protected grandchild as a child of a protected child resource
     response_grandchild = await async_client.post(
         f"/api/v1/protected/grandchild/?parent_id={created_protected_child.id}&inherit=True",
         json=many_test_protected_grand_child_resources[0],
@@ -819,27 +816,9 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     assert response.status_code == 201
     created_protected_grand_child = ProtectedGrandChild(**response_grandchild.json())
 
-    # # Check for created hierarchy entry:
-    # async with ResourceHierarchyCRUD() as crud:
-    #     hierarchy_entry = await crud.read(
-    #         current_user,
-    #         parent_id=created_protected_resource.id,
-    #         child_id=created_protected_child.id,
-    #     )
-    # # print("=== hierarchy_entry ===")
-    # # pprint(hierarchy_entry)
-    # # print("\n")
-    # assert len(hierarchy_entry) == 1
-    # assert hierarchy_entry[0].parent_id == UUID(created_protected_resource.id)
-    # assert hierarchy_entry[0].child_id == UUID(created_protected_child.id)
-    # assert hierarchy_entry[0].inherit is True
-
     current_user2 = await register_current_user(current_user_data_user2)
 
     # Give read access to the user2 for the parent resource:
-    # print("=== current_user2 ===")
-    # pprint(current_user2)
-    # print("\n")
     policy = {
         "resource_id": created_protected_resource.id,
         "identity_id": current_user_data_user2["user_id"],
@@ -847,26 +826,10 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     }
     await add_one_test_access_policy(policy)
 
-    # # Check for created access policies:
-    # async with AccessPolicyCRUD() as crud:
-    #     policies = await crud.read(
-    #         CurrentUserData(**current_user_data_admin),
-    #         identity_id=current_user_data_user2["user_id"],
-    #     )
-    # # print("=== policies ===")
-    # # pprint(policies)
-    # # print("\n")
-    # assert len(policies) == 1
-    # assert policies[0].id is not None
-    # assert policies[0].resource_id == UUID(created_protected_resource.id)
-    # assert policies[0].identity_id == UUID(current_user_data_user2["user_id"])
-    # assert policies[0].action == Action.read
-
     async with ProtectedGrandChildCRUD() as crud:
         db_protected_grand_child = await crud.read_by_id(
             created_protected_grand_child.id,
             current_user2,
-            # current_user,
         )
 
     assert (
@@ -874,6 +837,206 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
         == many_test_protected_grand_child_resources[0]["text"]
     )
     assert db_protected_grand_child.id == UUID(created_protected_grand_child.id)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_get_protected_grand_child_resource_through_inheritance_via_child_from_parent_missing_permission(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
+    register_current_user,
+    add_one_test_access_policy,
+    get_async_test_session,
+):
+    """Tests ."""
+    app_override_get_azure_payload_dependency
+
+    # Make a POST request to create the protected resource
+    response = await async_client.post(
+        "/api/v1/protected/resource/",
+        json=many_test_protected_resources[0],
+    )
+
+    assert response.status_code == 201
+    created_protected_resource = ProtectedResource(**response.json())
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert (
+        created_protected_resource.description
+        == many_test_protected_resources[0]["description"]
+    )
+
+    # Make a POST request to create the protected child as a child of a protected resource
+    response_child = await async_client.post(
+        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=True",
+        json=many_test_protected_child_resources[0],
+    )
+    assert response.status_code == 201
+    created_protected_child = ProtectedChild(**response_child.json())
+
+    # Make a POST request to create the protected grandchild as a child of a protected child resource
+    response_grandchild = await async_client.post(
+        f"/api/v1/protected/grandchild/?parent_id={created_protected_child.id}&inherit=True",
+        json=many_test_protected_grand_child_resources[0],
+    )
+    assert response.status_code == 201
+    created_protected_grand_child = ProtectedGrandChild(**response_grandchild.json())
+
+    current_user2 = await register_current_user(current_user_data_user2)
+
+    async with ProtectedGrandChildCRUD() as crud:
+        try:
+            await crud.read_by_id(
+                created_protected_grand_child.id,
+                current_user2,
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "ProtectedGrandChild not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_get_protected_grand_child_resource_through_inheritance_via_child_from_parent_missing_child_inheritance(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
+    register_current_user,
+    add_one_test_access_policy,
+    get_async_test_session,
+):
+    """Tests ."""
+    app_override_get_azure_payload_dependency
+
+    # Make a POST request to create the protected resource
+    response = await async_client.post(
+        "/api/v1/protected/resource/",
+        json=many_test_protected_resources[0],
+    )
+
+    assert response.status_code == 201
+    created_protected_resource = ProtectedResource(**response.json())
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert (
+        created_protected_resource.description
+        == many_test_protected_resources[0]["description"]
+    )
+
+    # Make a POST request to create the protected child as a child of a protected resource
+    response_child = await async_client.post(
+        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=False",
+        json=many_test_protected_child_resources[0],
+    )
+    assert response.status_code == 201
+    created_protected_child = ProtectedChild(**response_child.json())
+
+    # Make a POST request to create the protected grandchild as a child of a protected child resource
+    response_grandchild = await async_client.post(
+        f"/api/v1/protected/grandchild/?parent_id={created_protected_child.id}&inherit=True",
+        json=many_test_protected_grand_child_resources[0],
+    )
+    assert response.status_code == 201
+    created_protected_grand_child = ProtectedGrandChild(**response_grandchild.json())
+
+    current_user2 = await register_current_user(current_user_data_user2)
+    # Give read access to the user2 for the parent resource:
+    policy = {
+        "resource_id": created_protected_resource.id,
+        "identity_id": current_user_data_user2["user_id"],
+        "action": "read",
+    }
+    await add_one_test_access_policy(policy)
+
+    async with ProtectedGrandChildCRUD() as crud:
+        try:
+            await crud.read_by_id(
+                created_protected_grand_child.id,
+                current_user2,
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "ProtectedGrandChild not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_get_protected_grand_child_resource_through_inheritance_via_child_from_parent_missing_child_inheritance(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
+    register_current_user,
+    add_one_test_access_policy,
+    get_async_test_session,
+):
+    """Tests ."""
+    app_override_get_azure_payload_dependency
+
+    # Make a POST request to create the protected resource
+    response = await async_client.post(
+        "/api/v1/protected/resource/",
+        json=many_test_protected_resources[0],
+    )
+
+    assert response.status_code == 201
+    created_protected_resource = ProtectedResource(**response.json())
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert (
+        created_protected_resource.description
+        == many_test_protected_resources[0]["description"]
+    )
+
+    # Make a POST request to create the protected child as a child of a protected resource
+    response_child = await async_client.post(
+        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=True",
+        json=many_test_protected_child_resources[0],
+    )
+    assert response.status_code == 201
+    created_protected_child = ProtectedChild(**response_child.json())
+
+    # Make a POST request to create the protected grandchild as a child of a protected child resource
+    response_grandchild = await async_client.post(
+        f"/api/v1/protected/grandchild/?parent_id={created_protected_child.id}&inherit=False",
+        json=many_test_protected_grand_child_resources[0],
+    )
+    assert response.status_code == 201
+    created_protected_grand_child = ProtectedGrandChild(**response_grandchild.json())
+
+    current_user2 = await register_current_user(current_user_data_user2)
+    # Give read access to the user2 for the parent resource:
+    policy = {
+        "resource_id": created_protected_resource.id,
+        "identity_id": current_user_data_user2["user_id"],
+        "action": "read",
+    }
+    await add_one_test_access_policy(policy)
+
+    async with ProtectedGrandChildCRUD() as crud:
+        try:
+            await crud.read_by_id(
+                created_protected_grand_child.id,
+                current_user2,
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "ProtectedGrandChild not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
 
 
 # endregion ## GET tests
