@@ -7,14 +7,17 @@ from fastapi import APIRouter, Depends, Query
 from core.security import Guards, get_access_token_payload
 from core.types import GuardTypes
 from crud.protected_resource import (
-    ProtectedChildCRUD,
     ProtectedResourceCRUD,
+    ProtectedChildCRUD,
+    ProtectedGrandChildCRUD,
 )
 from models.protected_resource import (
     ProtectedChild,
     ProtectedChildCreate,
     ProtectedResource,
     ProtectedResourceCreate,
+    ProtectedGrandChild,
+    ProtectedGrandChildCreate,
 )
 
 from .base import BaseView
@@ -112,7 +115,34 @@ async def post_protected_child(
     )
 
 
+# TBD: missing endpoints for get, get_by_id, put, delete for ProtectedChild
+
+
 # endregion ProtectedChild
+
+# region ProtectedGrandChild
+
+protected_grand_child_view = BaseView(ProtectedGrandChildCRUD, ProtectedGrandChild)
+
+
+# TBD: write tests for this:
+@router.post("/grandchild/", status_code=201)
+async def post_protected_grandchild(
+    protected_grandchild: ProtectedGrandChildCreate,
+    parent_id: Annotated[UUID | None, Query()] = None,
+    inherit: Annotated[bool, Query()] = False,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> ProtectedGrandChild:
+    """Creates a new protected grandchild."""
+    return await protected_grand_child_view.post(
+        protected_grandchild, token_payload, guards, parent_id, inherit
+    )
+
+
+# TBD: missing endpoints for get, get_by_id, put, delete for ProtectedChild
+
+# endregion ProtectedGrandChild
 
 
 # # TBD: implement tests for this:

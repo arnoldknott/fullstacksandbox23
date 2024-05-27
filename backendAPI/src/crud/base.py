@@ -313,17 +313,17 @@ class BaseCRUD(
             if offset:
                 statement = statement.offset(offset)
 
-            print("=== CRUD - base - read - statement ===")
-            print(statement.compile())
-            print(statement.compile().params)
-            print("\n")
+            # print("=== CRUD - base - read - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
+            # print("\n")
 
             response = await self.session.exec(statement)
             results = response.all()
 
-            print("=== CRUD - base - read - results ===")
-            pprint(results)
-            print("\n")
+            # print("=== CRUD - base - read - results ===")
+            # pprint(results)
+            # print("\n")
 
             for result in results:
                 access_log = AccessLogCreate(

@@ -7,20 +7,29 @@ from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD, ResourceHierarchyCRUD
-from crud.protected_resource import ProtectedChildCRUD, ProtectedResourceCRUD
-from models.protected_resource import ProtectedChild, ProtectedResource
+from crud.protected_resource import (
+    ProtectedResourceCRUD,
+    ProtectedChildCRUD,
+    ProtectedGrandChildCRUD,
+)
+from models.protected_resource import (
+    ProtectedResource,
+    ProtectedChild,
+    ProtectedGrandChild,
+)
 from tests.utils import (
     current_user_data_admin,
-    many_test_protected_child_resources,
     many_test_protected_resources,
+    many_test_protected_child_resources,
+    many_test_protected_grand_child_resources,
     token_admin_read_write,
     token_user1_read_write,
     current_user_data_user2,
 )
 
-# temporarily only for debugging:
-from sqlmodel import select, or_
-from models.access import AccessPolicy
+# # temporarily only for debugging:
+# from sqlmodel import select, or_
+# from models.access import AccessPolicy
 
 # region: ## POST tests:
 
@@ -227,7 +236,7 @@ async def test_get_protected_child_resource_and_from_a_parent_through_inheritanc
     add_one_test_access_policy,
     get_async_test_session,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests resource inheritance."""
     app_override_get_azure_payload_dependency
 
     current_user = current_test_user
@@ -247,9 +256,7 @@ async def test_get_protected_child_resource_and_from_a_parent_through_inheritanc
 
     # Make a POST request to create the protected child as a child of a protected resource
     response = await async_client.post(
-        # TBD: construct a test case where inherit is False
         f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=True",
-        # f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=False",
         json=many_test_protected_child_resources[0],
     )
 
@@ -278,9 +285,6 @@ async def test_get_protected_child_resource_and_from_a_parent_through_inheritanc
     current_user2 = await register_current_user(current_user_data_user2)
 
     # Give read access to the user2 for the parent resource:
-    # TBD: add a test case where the user2 has no access to the parent.
-    # TBD: add a test case where the user2 has access to the parent resource through a group
-    # TBD: add a test case where the user2 has access to the parent resource through a group and the group has access through a group
     # print("=== current_user2 ===")
     # pprint(current_user2)
     # print("\n")
@@ -407,198 +411,469 @@ async def test_get_protected_child_resource_and_from_a_parent_through_inheritanc
     )
 
 
-# @pytest.mark.anyio
-# @pytest.mark.parametrize(
-#     "mocked_get_azure_token_payload",
-#     [token_admin_read_write, token_user1_read_write],
-#     indirect=True,
-# )
-# async def test_get_protected_child_resource_and_from_a_parent_through_inheritance_missing_parent_permission(
-#     async_client: AsyncClient,
-#     app_override_get_azure_payload_dependency: FastAPI,
-#     current_test_user,
-#     register_current_user,
-#     add_one_test_access_policy,
-#     get_async_test_session,
-# ):
-#     """Tests the post_user endpoint of the API."""
-#     app_override_get_azure_payload_dependency
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_get_protected_child_resource_and_from_a_parent_through_inheritance_missing_parent_permission(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
+    register_current_user,
+    add_one_test_access_policy,
+    get_async_test_session,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    app_override_get_azure_payload_dependency
 
-#     current_user = current_test_user
-#     # Make a POST request to create the protected resource
-#     response = await async_client.post(
-#         "/api/v1/protected/resource/",
-#         json=many_test_protected_resources[0],
-#     )
+    current_user = current_test_user
+    # Make a POST request to create the protected resource
+    response = await async_client.post(
+        "/api/v1/protected/resource/",
+        json=many_test_protected_resources[0],
+    )
 
-#     assert response.status_code == 201
-#     created_protected_resource = ProtectedResource(**response.json())
-#     assert created_protected_resource.name == many_test_protected_resources[0]["name"]
-#     assert (
-#         created_protected_resource.description
-#         == many_test_protected_resources[0]["description"]
-#     )
+    assert response.status_code == 201
+    created_protected_resource = ProtectedResource(**response.json())
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert (
+        created_protected_resource.description
+        == many_test_protected_resources[0]["description"]
+    )
 
-#     # Make a POST request to create the protected child as a child of a protected resource
-#     response = await async_client.post(
-#         # TBD: construct a test case where inherit is False
-#         f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=True",
-#         # f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=False",
-#         json=many_test_protected_child_resources[0],
-#     )
+    # Make a POST request to create the protected child as a child of a protected resource
+    response = await async_client.post(
+        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=True",
+        # f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=False",
+        json=many_test_protected_child_resources[0],
+    )
 
-#     assert response.status_code == 201
-#     created_protected_child = ProtectedChild(**response.json())
-#     assert (
-#         created_protected_child.title == many_test_protected_child_resources[0]["title"]
-#     )
-#     assert created_protected_child.id is not None
+    assert response.status_code == 201
+    created_protected_child = ProtectedChild(**response.json())
+    assert (
+        created_protected_child.title == many_test_protected_child_resources[0]["title"]
+    )
+    assert created_protected_child.id is not None
 
-#     # Check for created hierarchy entry:
-#     async with ResourceHierarchyCRUD() as crud:
-#         hierarchy_entry = await crud.read(
-#             current_user,
-#             parent_id=created_protected_resource.id,
-#             child_id=created_protected_child.id,
-#         )
-#     # print("=== hierarchy_entry ===")
-#     # pprint(hierarchy_entry)
-#     # print("\n")
-#     assert len(hierarchy_entry) == 1
-#     assert hierarchy_entry[0].parent_id == UUID(created_protected_resource.id)
-#     assert hierarchy_entry[0].child_id == UUID(created_protected_child.id)
-#     assert hierarchy_entry[0].inherit is True
+    # Check for created hierarchy entry:
+    async with ResourceHierarchyCRUD() as crud:
+        hierarchy_entry = await crud.read(
+            current_user,
+            parent_id=created_protected_resource.id,
+            child_id=created_protected_child.id,
+        )
+    # print("=== hierarchy_entry ===")
+    # pprint(hierarchy_entry)
+    # print("\n")
+    assert len(hierarchy_entry) == 1
+    assert hierarchy_entry[0].parent_id == UUID(created_protected_resource.id)
+    assert hierarchy_entry[0].child_id == UUID(created_protected_child.id)
+    assert hierarchy_entry[0].inherit is True
 
-#     current_user2 = await register_current_user(current_user_data_user2)
+    current_user2 = await register_current_user(current_user_data_user2)
 
-#     # # Give read access to the user2 for the parent resource:
-#     # # TBD: add a test case where the user2 has no access to the parent.
-#     # # TBD: add a test case where the user2 has access to the parent resource through a group
-#     # # TBD: add a test case where the user2 has access to the parent resource through a group and the group has access through a group
-#     # # print("=== current_user2 ===")
-#     # # pprint(current_user2)
-#     # # print("\n")
-#     # policy = {
-#     #     "resource_id": created_protected_resource.id,
-#     #     "identity_id": current_user_data_user2["user_id"],
-#     #     "action": "read",
-#     # }
-#     # await add_one_test_access_policy(policy)
+    # # Give read access to the user2 for the parent resource:
+    # # print("=== current_user2 ===")
+    # # pprint(current_user2)
+    # # print("\n")
+    # policy = {
+    #     "resource_id": created_protected_resource.id,
+    #     "identity_id": current_user_data_user2["user_id"],
+    #     "action": "read",
+    # }
+    # await add_one_test_access_policy(policy)
 
-#     # # Check for created access policies:
-#     # async with AccessPolicyCRUD() as crud:
-#     #     policies = await crud.read(
-#     #         CurrentUserData(**current_user_data_admin),
-#     #         identity_id=current_user_data_user2["user_id"],
-#     #     )
-#     # # print("=== policies ===")
-#     # # pprint(policies)
-#     # # print("\n")
-#     # assert len(policies) == 1
-#     # assert policies[0].id is not None
-#     # assert policies[0].resource_id == UUID(created_protected_resource.id)
-#     # assert policies[0].identity_id == UUID(current_user_data_user2["user_id"])
-#     # assert policies[0].action == Action.read
+    # # Check for created access policies:
+    # async with AccessPolicyCRUD() as crud:
+    #     policies = await crud.read(
+    #         CurrentUserData(**current_user_data_admin),
+    #         identity_id=current_user_data_user2["user_id"],
+    #     )
+    # # print("=== policies ===")
+    # # pprint(policies)
+    # # print("\n")
+    # assert len(policies) == 1
+    # assert policies[0].id is not None
+    # assert policies[0].resource_id == UUID(created_protected_resource.id)
+    # assert policies[0].identity_id == UUID(current_user_data_user2["user_id"])
+    # assert policies[0].action == Action.read
 
-#     # async with get_async_test_session as session:
-#     #     base_resource_ids = select(AccessPolicy.resource_id).where(
-#     #         AccessPolicy.action.in_(["read", "write", "own"]),
-#     #         or_(
-#     #             # TBD: add in later:
-#     #             # AccessPolicy.identity_id.in_(
-#     #             #     select(identity_hierarchy_cte.c.identity_id)
-#     #             # ),  # omit the or_ and this line if no current_user (for public resources)
-#     #             AccessPolicy.identity_id == current_user2.user_id,
-#     #             AccessPolicy.public,
-#     #         ),
-#     #     )
+    # async with get_async_test_session as session:
+    #     base_resource_ids = select(AccessPolicy.resource_id).where(
+    #         AccessPolicy.action.in_(["read", "write", "own"]),
+    #         or_(
+    #             # TBD: add in later:
+    #             # AccessPolicy.identity_id.in_(
+    #             #     select(identity_hierarchy_cte.c.identity_id)
+    #             # ),  # omit the or_ and this line if no current_user (for public resources)
+    #             AccessPolicy.identity_id == current_user2.user_id,
+    #             AccessPolicy.public,
+    #         ),
+    #     )
 
-#     #     response_results_base_resource_ids = await session.exec(base_resource_ids)
-#     #     results_base_resource_ids = response_results_base_resource_ids.all()
-#     #     print("=== base_resource_ids ===")
-#     #     pprint(results_base_resource_ids)
-#     #     print("\n")
+    #     response_results_base_resource_ids = await session.exec(base_resource_ids)
+    #     results_base_resource_ids = response_results_base_resource_ids.all()
+    #     print("=== base_resource_ids ===")
+    #     pprint(results_base_resource_ids)
+    #     print("\n")
 
-#     #     access_policy_CRUD = AccessPolicyCRUD()
-#     #     resource_hierarchy_cte = (
-#     #         access_policy_CRUD._get_resource_inheritance_common_table_expression(
-#     #             base_resource_ids
-#     #         )
-#     #     )
-#     #     print("=== resource_hierarchy_cte ===")
-#     #     print(resource_hierarchy_cte.compile())
-#     #     print(resource_hierarchy_cte.compile().params)
-#     #     print("\n")
+    #     access_policy_CRUD = AccessPolicyCRUD()
+    #     resource_hierarchy_cte = (
+    #         access_policy_CRUD._get_resource_inheritance_common_table_expression(
+    #             base_resource_ids
+    #         )
+    #     )
+    #     print("=== resource_hierarchy_cte ===")
+    #     print(resource_hierarchy_cte.compile())
+    #     print(resource_hierarchy_cte.compile().params)
+    #     print("\n")
 
-#     #     response_resource_cte = await session.exec(
-#     #         select("*").select_from(resource_hierarchy_cte)
-#     #     )
-#     #     results_resource_cte = response_resource_cte.all()
+    #     response_resource_cte = await session.exec(
+    #         select("*").select_from(resource_hierarchy_cte)
+    #     )
+    #     results_resource_cte = response_resource_cte.all()
 
-#     #     print("=== results_resource_cte ===")
-#     #     pprint(results_resource_cte)
-#     #     print("\n")
+    #     print("=== results_resource_cte ===")
+    #     pprint(results_resource_cte)
+    #     print("\n")
 
-#     #     # get the accessible resource ids:
-#     #     subquery = select(AccessPolicy.resource_id).where(
-#     #         AccessPolicy.action.in_(["read", "write", "own"]),
-#     #         or_(
-#     #             # TBD: add in later
-#     #             # AccessPolicy.identity_id.in_(
-#     #             #     select(identity_hierarchy_cte.c.identity_id)
-#     #             # ),  # omit the or_ and this line if no current_user (for public resources)
-#     #             AccessPolicy.identity_id == current_user2.user_id,
-#     #             AccessPolicy.public,
-#     #         ),
-#     #         or_(
-#     #             AccessPolicy.resource_id.in_(
-#     #                 select(resource_hierarchy_cte.c.resource_id)
-#     #             ),
-#     #             AccessPolicy.resource_id.in_(base_resource_ids),
-#     #         ),
-#     #     )
+    #     # get the accessible resource ids:
+    #     subquery = select(AccessPolicy.resource_id).where(
+    #         AccessPolicy.action.in_(["read", "write", "own"]),
+    #         or_(
+    #             # TBD: add in later
+    #             # AccessPolicy.identity_id.in_(
+    #             #     select(identity_hierarchy_cte.c.identity_id)
+    #             # ),  # omit the or_ and this line if no current_user (for public resources)
+    #             AccessPolicy.identity_id == current_user2.user_id,
+    #             AccessPolicy.public,
+    #         ),
+    #         or_(
+    #             AccessPolicy.resource_id.in_(
+    #                 select(resource_hierarchy_cte.c.resource_id)
+    #             ),
+    #             AccessPolicy.resource_id.in_(base_resource_ids),
+    #         ),
+    #     )
 
-#     #     print("=== subquery ===")
-#     #     print(subquery.compile())
-#     #     print(subquery.compile().params)
-#     #     print("\n")
+    #     print("=== subquery ===")
+    #     print(subquery.compile())
+    #     print(subquery.compile().params)
+    #     print("\n")
 
-#     #     response_results_subquery = await session.exec(subquery)
-#     #     results_subquery = response_results_subquery.all()
+    #     response_results_subquery = await session.exec(subquery)
+    #     results_subquery = response_results_subquery.all()
 
-#     #     print("=== results_subquery ===")
-#     #     pprint(results_subquery)
-#     #     print("\n")
+    #     print("=== results_subquery ===")
+    #     pprint(results_subquery)
+    #     print("\n")
 
-#     #     assert 0
+    #     assert 0
 
-#     # User2 should be able to read the child resource:
+    # User2 should be able to read the child resource:
 
-#     # print("=== created_protected_child.id ===")
-#     # print(created_protected_child.id)
-#     # print("\n")
+    # print("=== created_protected_child.id ===")
+    # print(created_protected_child.id)
+    # print("\n")
 
-#     async with ProtectedChildCRUD() as crud:
-#         db_protected_child = await crud.read_by_id(
-#             created_protected_child.id,
-#             current_user2,
-#             # current_user,
-#         )
+    async with ProtectedChildCRUD() as crud:
+        try:
+            await crud.read_by_id(
+                created_protected_child.id,
+                current_user2,
+                # current_user,
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "ProtectedChild not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
 
-#     assert db_protected_child.title == many_test_protected_child_resources[0]["title"]
-#     assert db_protected_child.id == UUID(created_protected_child.id)
-#     # Check if parent is returned with child:
-#     assert (
-#         db_protected_child.protected_resources[0].name
-#         == created_protected_resource.name
-#     )
-#     assert (
-#         db_protected_child.protected_resources[0].description
-#         == created_protected_resource.description
-#     )
-#     assert db_protected_child.protected_resources[0].id == UUID(
-#         created_protected_resource.id
-#     )
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_get_protected_child_resource_and_from_a_parent_missing_inheritance(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
+    register_current_user,
+    add_one_test_access_policy,
+    get_async_test_session,
+):
+    """Tests if missing inheritance for child resource is handled correctly."""
+    app_override_get_azure_payload_dependency
+
+    current_user = current_test_user
+    # Make a POST request to create the protected resource
+    response = await async_client.post(
+        "/api/v1/protected/resource/",
+        json=many_test_protected_resources[0],
+    )
+
+    assert response.status_code == 201
+    created_protected_resource = ProtectedResource(**response.json())
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert (
+        created_protected_resource.description
+        == many_test_protected_resources[0]["description"]
+    )
+
+    # Make a POST request to create the protected child as a child of a protected resource
+    response = await async_client.post(
+        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=False",
+        json=many_test_protected_child_resources[0],
+    )
+
+    assert response.status_code == 201
+    created_protected_child = ProtectedChild(**response.json())
+    assert (
+        created_protected_child.title == many_test_protected_child_resources[0]["title"]
+    )
+    assert created_protected_child.id is not None
+
+    # Check for created hierarchy entry:
+    async with ResourceHierarchyCRUD() as crud:
+        hierarchy_entry = await crud.read(
+            current_user,
+            parent_id=created_protected_resource.id,
+            child_id=created_protected_child.id,
+        )
+    # print("=== hierarchy_entry ===")
+    # pprint(hierarchy_entry)
+    # print("\n")
+    assert len(hierarchy_entry) == 1
+    assert hierarchy_entry[0].parent_id == UUID(created_protected_resource.id)
+    assert hierarchy_entry[0].child_id == UUID(created_protected_child.id)
+    assert hierarchy_entry[0].inherit is False
+
+    current_user2 = await register_current_user(current_user_data_user2)
+
+    # Give read access to the user2 for the parent resource:
+    # print("=== current_user2 ===")
+    # pprint(current_user2)
+    # print("\n")
+    policy = {
+        "resource_id": created_protected_resource.id,
+        "identity_id": current_user_data_user2["user_id"],
+        "action": "read",
+    }
+    await add_one_test_access_policy(policy)
+
+    # Check for created access policies:
+    async with AccessPolicyCRUD() as crud:
+        policies = await crud.read(
+            CurrentUserData(**current_user_data_admin),
+            identity_id=current_user_data_user2["user_id"],
+        )
+    # print("=== policies ===")
+    # pprint(policies)
+    # print("\n")
+    assert len(policies) == 1
+    assert policies[0].id is not None
+    assert policies[0].resource_id == UUID(created_protected_resource.id)
+    assert policies[0].identity_id == UUID(current_user_data_user2["user_id"])
+    assert policies[0].action == Action.read
+
+    # async with get_async_test_session as session:
+    #     base_resource_ids = select(AccessPolicy.resource_id).where(
+    #         AccessPolicy.action.in_(["read", "write", "own"]),
+    #         or_(
+    #             # TBD: add in later:
+    #             # AccessPolicy.identity_id.in_(
+    #             #     select(identity_hierarchy_cte.c.identity_id)
+    #             # ),  # omit the or_ and this line if no current_user (for public resources)
+    #             AccessPolicy.identity_id == current_user2.user_id,
+    #             AccessPolicy.public,
+    #         ),
+    #     )
+
+    #     response_results_base_resource_ids = await session.exec(base_resource_ids)
+    #     results_base_resource_ids = response_results_base_resource_ids.all()
+    #     print("=== base_resource_ids ===")
+    #     pprint(results_base_resource_ids)
+    #     print("\n")
+
+    #     access_policy_CRUD = AccessPolicyCRUD()
+    #     resource_hierarchy_cte = (
+    #         access_policy_CRUD._get_resource_inheritance_common_table_expression(
+    #             base_resource_ids
+    #         )
+    #     )
+    #     print("=== resource_hierarchy_cte ===")
+    #     print(resource_hierarchy_cte.compile())
+    #     print(resource_hierarchy_cte.compile().params)
+    #     print("\n")
+
+    #     response_resource_cte = await session.exec(
+    #         select("*").select_from(resource_hierarchy_cte)
+    #     )
+    #     results_resource_cte = response_resource_cte.all()
+
+    #     print("=== results_resource_cte ===")
+    #     pprint(results_resource_cte)
+    #     print("\n")
+
+    #     # get the accessible resource ids:
+    #     subquery = select(AccessPolicy.resource_id).where(
+    #         AccessPolicy.action.in_(["read", "write", "own"]),
+    #         or_(
+    #             # TBD: add in later
+    #             # AccessPolicy.identity_id.in_(
+    #             #     select(identity_hierarchy_cte.c.identity_id)
+    #             # ),  # omit the or_ and this line if no current_user (for public resources)
+    #             AccessPolicy.identity_id == current_user2.user_id,
+    #             AccessPolicy.public,
+    #         ),
+    #         or_(
+    #             AccessPolicy.resource_id.in_(
+    #                 select(resource_hierarchy_cte.c.resource_id)
+    #             ),
+    #             AccessPolicy.resource_id.in_(base_resource_ids),
+    #         ),
+    #     )
+
+    #     print("=== subquery ===")
+    #     print(subquery.compile())
+    #     print(subquery.compile().params)
+    #     print("\n")
+
+    #     response_results_subquery = await session.exec(subquery)
+    #     results_subquery = response_results_subquery.all()
+
+    #     print("=== results_subquery ===")
+    #     pprint(results_subquery)
+    #     print("\n")
+
+    #     assert 0
+
+    # User2 should be able to read the child resource:
+
+    # print("=== created_protected_child.id ===")
+    # print(created_protected_child.id)
+    # print("\n")
+
+    async with ProtectedChildCRUD() as crud:
+        try:
+            await crud.read_by_id(
+                created_protected_child.id,
+                current_user2,
+                # current_user,
+            )
+        except Exception as err:
+            assert err.status_code == 404
+            assert err.detail == "ProtectedChild not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_get_protected_grand_child_resource_through_inheritance_via_child_from_parent(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
+    register_current_user,
+    add_one_test_access_policy,
+    get_async_test_session,
+):
+    """Tests ."""
+    app_override_get_azure_payload_dependency
+
+    # Make a POST request to create the protected resource
+    response = await async_client.post(
+        "/api/v1/protected/resource/",
+        json=many_test_protected_resources[0],
+    )
+
+    assert response.status_code == 201
+    created_protected_resource = ProtectedResource(**response.json())
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert (
+        created_protected_resource.description
+        == many_test_protected_resources[0]["description"]
+    )
+
+    # Make a POST request to create the protected child as a child of a protected resource
+    response_child = await async_client.post(
+        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=True",
+        json=many_test_protected_child_resources[0],
+    )
+    assert response.status_code == 201
+    created_protected_child = ProtectedChild(**response_child.json())
+
+    # Make a POST request to create the protected child as a child of a protected resource
+    response_grandchild = await async_client.post(
+        f"/api/v1/protected/grandchild/?parent_id={created_protected_child.id}&inherit=True",
+        json=many_test_protected_grand_child_resources[0],
+    )
+    assert response.status_code == 201
+    created_protected_grand_child = ProtectedGrandChild(**response_grandchild.json())
+
+    # # Check for created hierarchy entry:
+    # async with ResourceHierarchyCRUD() as crud:
+    #     hierarchy_entry = await crud.read(
+    #         current_user,
+    #         parent_id=created_protected_resource.id,
+    #         child_id=created_protected_child.id,
+    #     )
+    # # print("=== hierarchy_entry ===")
+    # # pprint(hierarchy_entry)
+    # # print("\n")
+    # assert len(hierarchy_entry) == 1
+    # assert hierarchy_entry[0].parent_id == UUID(created_protected_resource.id)
+    # assert hierarchy_entry[0].child_id == UUID(created_protected_child.id)
+    # assert hierarchy_entry[0].inherit is True
+
+    current_user2 = await register_current_user(current_user_data_user2)
+
+    # Give read access to the user2 for the parent resource:
+    # print("=== current_user2 ===")
+    # pprint(current_user2)
+    # print("\n")
+    policy = {
+        "resource_id": created_protected_resource.id,
+        "identity_id": current_user_data_user2["user_id"],
+        "action": "read",
+    }
+    await add_one_test_access_policy(policy)
+
+    # # Check for created access policies:
+    # async with AccessPolicyCRUD() as crud:
+    #     policies = await crud.read(
+    #         CurrentUserData(**current_user_data_admin),
+    #         identity_id=current_user_data_user2["user_id"],
+    #     )
+    # # print("=== policies ===")
+    # # pprint(policies)
+    # # print("\n")
+    # assert len(policies) == 1
+    # assert policies[0].id is not None
+    # assert policies[0].resource_id == UUID(created_protected_resource.id)
+    # assert policies[0].identity_id == UUID(current_user_data_user2["user_id"])
+    # assert policies[0].action == Action.read
+
+    async with ProtectedGrandChildCRUD() as crud:
+        db_protected_grand_child = await crud.read_by_id(
+            created_protected_grand_child.id,
+            current_user2,
+            # current_user,
+        )
+
+    assert (
+        db_protected_grand_child.text
+        == many_test_protected_grand_child_resources[0]["text"]
+    )
+    assert db_protected_grand_child.id == UUID(created_protected_grand_child.id)
 
 
 # endregion ## GET tests
@@ -617,8 +892,11 @@ async def test_get_protected_child_resource_and_from_a_parent_through_inheritanc
 # X User reads all protected resource: only the protected resources and child resources, that the user has access to are returned
 # X User reads a protected resource by id: gets logged
 # - User reads a protected resource: children and grand children get returned as well - but only the ones the user has access to
-# - User reads a child protected resource, where user inherits access from parent
+# ✔︎ User and Admin reads a child protected resource, where resource inherits access from parent
+# ✔︎ User and Admin reads a child protected resource, where resource inherits access from parent but user has no access to parent
+# ✔︎ User and Admin reads a child protected resource, where resource does not inherit access from parent but user has access to parent
 # - User reads a grand child protected resource, where user inherits access from grand parent (which is a protected resource)
+# X User2 reads child and grand child where access to the parent resource through is inherited through subsubgroup / subgroup / group to parent resource
 # - User reads a protected resource, where user inherits access from a group
 # - User reads a protected resource, where user is in a sub_sub_group and inherits access from membership in a group
 # - User reads a protected resource fails, where inheritance is set to false (resource inheritance)
