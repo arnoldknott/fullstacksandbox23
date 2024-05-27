@@ -70,7 +70,8 @@ class AccessPolicyCRUD:
         hierarchy_cte = (
             select(ResourceHierarchyTable.child_id.label("resource_id"))
             .where(ResourceHierarchyTable.child_id.in_(base_resource_ids))
-            .cte(name="resource_hierarchy", recursive=True)
+            .cte(recursive=True)
+            # .cte(name="resource_hierarchy", recursive=True)
         )
 
         hierarchy_cte = hierarchy_cte.union_all(
@@ -97,7 +98,8 @@ class AccessPolicyCRUD:
         hierarchy_cte = (
             select(IdentityHierarchyTable.child_id.label("identity_id"))
             .where(IdentityHierarchyTable.child_id == base_identity_id)
-            .cte(name="identity_hierarchy", recursive=True)
+            .cte(recursive=True)
+            # .cte(name="identity_hierarchy", recursive=True)
         )
 
         hierarchy_cte = hierarchy_cte.union_all(
