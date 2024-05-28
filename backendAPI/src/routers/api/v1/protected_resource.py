@@ -37,7 +37,6 @@ router = APIRouter()
 protected_resource_view = BaseView(ProtectedResourceCRUD, ProtectedResource)
 
 
-# TBD: write more tests for this:
 @router.post("/resource/", status_code=201)
 async def post_protected_resource(
     protected_resource: ProtectedResourceCreate,
@@ -87,7 +86,7 @@ async def delete_protected_resource(
     resource_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> ProtectedResource:
+) -> None:
     """Deletes a protected resource."""
     return await protected_resource_view.delete(resource_id, token_payload, guards)
 

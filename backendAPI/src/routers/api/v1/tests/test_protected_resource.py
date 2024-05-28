@@ -241,7 +241,7 @@ async def test_put_protected_resource(
         "description": "The updated description of the other resource.",
     }
 
-    # Make a GET request to get one protected resource by id
+    # Make a PUT request to update one protected resource
     time_before = datetime.now()
     response = await async_client.put(
         f"/api/v1/protected/resource/{str(mocked_protected_resources[2].id)}",
@@ -270,6 +270,57 @@ async def test_put_protected_resource(
     assert last_accessed_at.time > time_before - timedelta(seconds=1)
     assert last_accessed_at.time < time_after + timedelta(seconds=1)
     assert last_accessed_at.status_code == 200
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_delete_protected_resource(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_protected_resources,
+    mocked_get_azure_token_payload,
+    current_test_user,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_get_azure_payload_dependency
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_get_azure_token_payload
+    )
+
+    # Make a DELETE request to delete one protected resource
+    time_before = datetime.now()
+    response = await async_client.delete(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[1].id)}",
+    )
+    time_after = datetime.now()
+
+    assert response.status_code == 200
+
+    async with AccessLoggingCRUD() as crud:
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=mocked_protected_resources[1].id,
+        )
+
+    current_test_user = current_test_user
+
+    assert last_accessed_at.resource_id == mocked_protected_resources[1].id
+    assert last_accessed_at.identity_id == current_test_user.user_id
+    assert last_accessed_at.action == Action.own
+    assert last_accessed_at.time > time_before - timedelta(seconds=1)
+    assert last_accessed_at.time < time_after + timedelta(seconds=1)
+    assert last_accessed_at.status_code == 200
+
+    # Make a GET request to get deleted protected resource by id fails
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[1].id)}",
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "ProtectedResource not found."}
 
 
 # AccessPolicy and AccessLog tests not necessary in all tests! Just in one post, one read all, one read by id, one update and one delete test!
