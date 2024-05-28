@@ -16,6 +16,7 @@ from models.protected_resource import (
     ProtectedChildCreate,
     ProtectedResource,
     ProtectedResourceCreate,
+    ProtectedResourceUpdate,
     ProtectedGrandChild,
     ProtectedGrandChildCreate,
 )
@@ -47,7 +48,6 @@ async def post_protected_resource(
     return await protected_resource_view.post(protected_resource, token_payload, guards)
 
 
-# TBD: write tests for this:
 @router.get("/resource/", status_code=200)
 async def get_protected_resources(
     token_payload=Depends(get_access_token_payload),
@@ -57,7 +57,6 @@ async def get_protected_resources(
     return await protected_resource_view.get(token_payload, guards)
 
 
-# TBD: write tests for this:
 @router.get("/resource/{resource_id}", status_code=200)
 async def get_protected_resource_by_id(
     resource_id: UUID,
@@ -72,7 +71,7 @@ async def get_protected_resource_by_id(
 @router.put("/resource/{resource_id}", status_code=200)
 async def put_protected_resource(
     resource_id: UUID,
-    protected_resource: ProtectedResourceCreate,
+    protected_resource: ProtectedResourceUpdate,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedResource:
@@ -90,7 +89,7 @@ async def delete_protected_resource(
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedResource:
     """Deletes a protected resource."""
-    return await protected_resource_view.delete(token_payload, resource_id, guards)
+    return await protected_resource_view.delete(resource_id, token_payload, guards)
 
 
 # endregion ProtectedResource

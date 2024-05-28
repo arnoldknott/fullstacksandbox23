@@ -128,7 +128,7 @@ async def test_get_all_protected_resources(
         mocked_get_azure_token_payload
     )
 
-    # Make a GET request to get all protected resource
+    # Make a GET request to get all protected resources
     time_before = datetime.now()
     response = await async_client.get(
         "/api/v1/protected/resource/",
@@ -186,7 +186,7 @@ async def test_get_protected_resource_by_id(
         mocked_get_azure_token_payload
     )
 
-    # Make a GET request to get all protected resource
+    # Make a GET request to get one protected resource by id
     time_before = datetime.now()
     response = await async_client.get(
         f"/api/v1/protected/resource/{str(mocked_protected_resources[3].id)}",
@@ -213,6 +213,60 @@ async def test_get_protected_resource_by_id(
     assert last_accessed_at.resource_id == mocked_protected_resources[3].id
     assert last_accessed_at.identity_id == current_test_user.user_id
     assert last_accessed_at.action == Action.read
+    assert last_accessed_at.time > time_before - timedelta(seconds=1)
+    assert last_accessed_at.time < time_after + timedelta(seconds=1)
+    assert last_accessed_at.status_code == 200
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_put_protected_resource(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_protected_resources,
+    mocked_get_azure_token_payload,
+    current_test_user,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_get_azure_payload_dependency
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_get_azure_token_payload
+    )
+
+    new_data = {
+        "description": "The updated description of the other resource.",
+    }
+
+    # Make a GET request to get one protected resource by id
+    time_before = datetime.now()
+    response = await async_client.put(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[2].id)}",
+        json=new_data,
+    )
+    time_after = datetime.now()
+
+    assert response.status_code == 200
+    read_protected_resources = response.json()
+    modelled_protected_resource = ProtectedResourceRead(**read_protected_resources)
+    assert modelled_protected_resource.id == mocked_protected_resources[2].id
+    assert modelled_protected_resource.name == mocked_protected_resources[2].name
+    assert modelled_protected_resource.description == new_data["description"]
+
+    async with AccessLoggingCRUD() as crud:
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=mocked_protected_resources[2].id,
+        )
+
+    current_test_user = current_test_user
+
+    assert last_accessed_at.resource_id == mocked_protected_resources[2].id
+    assert last_accessed_at.identity_id == current_test_user.user_id
+    assert last_accessed_at.action == Action.write
     assert last_accessed_at.time > time_before - timedelta(seconds=1)
     assert last_accessed_at.time < time_after + timedelta(seconds=1)
     assert last_accessed_at.status_code == 200
@@ -975,7 +1029,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 # ✔︎ User and Admin creates a protected resource: gets logged and access policy created
 # ✔︎ User creates a child resource for a protected resource: hierarchy entry gets created
 # ✔︎ User and Admin reads all protected resources: gets logged
-# X User and Admin reads a protected resource by id: gets logged
+# ✔︎ User and Admin reads a protected resource by id: gets logged
 # X User and Admin updates a protected resource: gets logged
 # X User deletes a protected resource: gets logged and access policy deleted
 # X User reads all protected resource: only the protected resources and child resources, that the user has access to are returned
