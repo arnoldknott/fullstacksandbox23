@@ -21,7 +21,9 @@ from models.protected_resource import (
     ProtectedResourceCreate,
     ProtectedResourceUpdate,
     ProtectedGrandChild,
+    ProtectedGrandChildRead,
     ProtectedGrandChildCreate,
+    ProtectedGrandChildUpdate,
 )
 
 from .base import BaseView
@@ -119,7 +121,7 @@ async def get_protected_child(
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[ProtectedChildRead]:
-    """Returns all protected resources."""
+    """Returns all protected child resources."""
     return await protected_child_view.get(token_payload, guards)
 
 
@@ -129,7 +131,7 @@ async def get_protected_child_by_id(
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> ProtectedChildRead:
-    """Returns a protected resource."""
+    """Returns a protected child resource."""
     return await protected_child_view.get_by_id(resource_id, token_payload, guards)
 
 
@@ -140,7 +142,7 @@ async def put_protected_child(
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedChild:
-    """Updates a protected resource."""
+    """Updates a protected child resource."""
     return await protected_child_view.put(
         resource_id, protected_child, token_payload, guards
     )
@@ -152,11 +154,8 @@ async def delete_protected_child(
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
-    """Deletes a protected resource."""
+    """Deletes a protected child resource."""
     return await protected_child_view.delete(resource_id, token_payload, guards)
-
-
-# TBD: missing endpoints for get, get_by_id, put, delete for ProtectedChild
 
 
 # endregion ProtectedChild
@@ -181,46 +180,51 @@ async def post_protected_grandchild(
     )
 
 
-# TBD: missing endpoints for get, get_by_id, put, delete for ProtectedChild
+@router.get("/grandchild/", status_code=200)
+async def get_protected_grandchild(
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[ProtectedGrandChildRead]:
+    """Returns all protected grandchild resources."""
+    return await protected_grand_child_view.get(token_payload, guards)
+
+
+@router.get("/grandchild/{resource_id}", status_code=200)
+async def get_protected_grandchild_by_id(
+    resource_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> ProtectedGrandChildRead:
+    """Returns a protected grandchild resource."""
+    return await protected_grand_child_view.get_by_id(
+        resource_id, token_payload, guards
+    )
+
+
+@router.put("/grandchild/{resource_id}", status_code=200)
+async def put_protected_grandchild(
+    resource_id: UUID,
+    protected_grandchild: ProtectedGrandChildUpdate,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> ProtectedGrandChild:
+    """Updates a protected grandchild resource."""
+    return await protected_grand_child_view.put(
+        resource_id, protected_grandchild, token_payload, guards
+    )
+
+
+@router.delete("/grandchild/{resource_id}", status_code=200)
+async def delete_protected_grandchild(
+    resource_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Deletes a protected grandchild resource."""
+    return await protected_grand_child_view.delete(resource_id, token_payload, guards)
+
 
 # endregion ProtectedGrandChild
-
-
-# # TBD: implement tests for this:
-# this should be ready to go - just not tested yet and this one get's called by frontend - so for now it's important to return something.
-# @router.get("/", status_code=200)
-# async def get_protected_resource(
-#     token_payload=Depends(get_access_token_payload),
-# ) -> List[ProtectedResource]:
-#     """Returns a protected resource."""
-#     return protected_resource_view.get(
-#         token_payload,
-#         # TBD: id here? - no only for "get-by-id" route!
-#         # scopes=["api.read"], this is on the router already, no need to repeat it here, but it's not wrong to do so. Not the cleanest code. Hmmm...
-#         roles=["User"],
-#     )
-
-
-# # This is secure and works!
-# # old version - remove after refactoring to BaseView is done!
-# @router.post("/", status_code=201)
-# async def post_protected_resource(
-#     protected_resource: ProtectedResourceCreate,
-#     # _1=Depends(CurrentAccessTokenHasScope("api.write")),# put that one back in place if refactoring fails!
-#     # _2=Depends(CurrentAccessTokenHasRole("Admin")),# put that one back in place! if refactoring fails!
-#     token_payload=Depends(get_access_token_payload),
-# ) -> ProtectedResource:
-#     """Creates a new protected resource."""
-#     logger.info("POST protected resource")
-#     token = CurrentAccessToken(token_payload)
-#     await token.has_scope("api.write")
-#     await token.has_role("User")
-#     current_user = await token.provides_current_user()
-#     # print("=== protected_resource ===")
-#     # print(protected_resource)
-#     async with ProtectedResourceCRUD(current_user) as crud:
-#         created_protected_resource = await crud.create(protected_resource)
-#     return created_protected_resource
 
 
 # This is secure and works!

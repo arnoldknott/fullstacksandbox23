@@ -758,7 +758,7 @@ many_test_protected_child_resources = [
     },
 ]
 
-many_test_protected_grand_child_resources = [
+many_test_protected_grandchild_resources = [
     {
         "text": "First Protected Grand Child",
     },

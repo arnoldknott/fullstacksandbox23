@@ -18,7 +18,7 @@ from tests.utils import (
     many_test_demo_resources,
     many_test_protected_resources,
     many_test_protected_child_resources,
-    many_test_protected_grand_child_resources,
+    many_test_protected_grandchild_resources,
     many_test_public_resources,
     many_test_tags,
 )
@@ -299,6 +299,69 @@ async def add_many_test_protected_children(
         return protected_children
 
     yield _add_many_test_protected_children
+
+
+async def add_test_protected_grandchild(
+    current_user_from_azure_token: User,
+    protected_grandchild: dict,
+    current_user: CurrentUserData = None,
+    parent_id: UUID = None,
+    inherit: bool = False,
+):
+    """Adds a test protected grandchild to the database."""
+
+    if not current_user:
+        current_user = await current_user_from_azure_token()
+    async with ProtectedChildCRUD() as crud:
+        added_protected_grandchild = await crud.create(
+            protected_grandchild, current_user, parent_id, inherit
+        )
+
+    return added_protected_grandchild
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_protected_grandchild(
+    current_user_from_azure_token: User,
+):
+    """Adds a test protected grandchild to the database."""
+
+    async def _add_one_test_protected_grandchild(
+        protected_grandchild: dict,
+        current_user: CurrentUserData = None,
+        parent_id: UUID = None,
+        inherit: bool = False,
+    ):
+        return await add_test_protected_grandchild(
+            current_user_from_azure_token,
+            protected_grandchild,
+            current_user,
+            parent_id,
+            inherit,
+        )
+
+    yield _add_one_test_protected_grandchild
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_protected_grandchildren(
+    current_user_from_azure_token: User,
+):
+    """Adds test protected grandchildren to the database."""
+
+    async def _add_many_test_protected_grandchildren(token_payload: dict = None):
+        protected_grandchildren = []
+        for protected_grandchild in many_test_protected_grandchild_resources:
+            current_user = await current_user_from_azure_token(token_payload)
+            async with ProtectedGrandChildCRUD() as crud:
+                added_protected_grandchild = await crud.create(
+                    protected_grandchild, current_user
+                )
+            protected_grandchildren.append(added_protected_grandchild)
+
+        return protected_grandchildren
+
+    yield _add_many_test_protected_grandchildren
 
 
 # TBD: use the function for the endpoints ins the fixture here and create the family from those - top down
