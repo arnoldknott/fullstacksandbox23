@@ -14,7 +14,10 @@ from crud.protected_resource import (
 from models.protected_resource import (
     ProtectedChild,
     ProtectedChildCreate,
+    ProtectedChildRead,
+    ProtectedChildUpdate,
     ProtectedResource,
+    ProtectedResourceRead,
     ProtectedResourceCreate,
     ProtectedResourceUpdate,
     ProtectedGrandChild,
@@ -51,7 +54,7 @@ async def post_protected_resource(
 async def get_protected_resources(
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
-) -> list[ProtectedResource]:
+) -> list[ProtectedResourceRead]:
     """Returns all protected resources."""
     return await protected_resource_view.get(token_payload, guards)
 
@@ -61,12 +64,11 @@ async def get_protected_resource_by_id(
     resource_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
-) -> ProtectedResource:
+) -> ProtectedResourceRead:
     """Returns a protected resource."""
     return await protected_resource_view.get_by_id(resource_id, token_payload, guards)
 
 
-# TBD: write tests for this:
 @router.put("/resource/{resource_id}", status_code=200)
 async def put_protected_resource(
     resource_id: UUID,
@@ -80,7 +82,6 @@ async def put_protected_resource(
     )
 
 
-# TBD: write more tests for this:
 @router.delete("/resource/{resource_id}", status_code=200)
 async def delete_protected_resource(
     resource_id: UUID,
@@ -111,6 +112,48 @@ async def post_protected_child(
     return await protected_child_view.post(
         protected_child, token_payload, guards, parent_id, inherit
     )
+
+
+@router.get("/child/", status_code=200)
+async def get_protected_child(
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[ProtectedChildRead]:
+    """Returns all protected resources."""
+    return await protected_child_view.get(token_payload, guards)
+
+
+@router.get("/child/{resource_id}", status_code=200)
+async def get_protected_child_by_id(
+    resource_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> ProtectedChildRead:
+    """Returns a protected resource."""
+    return await protected_child_view.get_by_id(resource_id, token_payload, guards)
+
+
+@router.put("/child/{resource_id}", status_code=200)
+async def put_protected_child(
+    resource_id: UUID,
+    protected_child: ProtectedChildUpdate,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> ProtectedChild:
+    """Updates a protected resource."""
+    return await protected_child_view.put(
+        resource_id, protected_child, token_payload, guards
+    )
+
+
+@router.delete("/child/{resource_id}", status_code=200)
+async def delete_protected_child(
+    resource_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Deletes a protected resource."""
+    return await protected_child_view.delete(resource_id, token_payload, guards)
 
 
 # TBD: missing endpoints for get, get_by_id, put, delete for ProtectedChild

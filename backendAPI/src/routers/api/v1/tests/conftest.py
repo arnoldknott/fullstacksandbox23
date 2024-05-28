@@ -282,7 +282,6 @@ async def add_one_test_protected_child(
     yield _add_one_test_protected_child
 
 
-# TBD: is this necessary at all?
 @pytest.fixture(scope="function")
 async def add_many_test_protected_children(
     current_user_from_azure_token: User,

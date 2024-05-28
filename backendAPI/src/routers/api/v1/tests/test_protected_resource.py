@@ -16,7 +16,9 @@ from models.protected_resource import (
     ProtectedResource,
     ProtectedResourceRead,
     ProtectedChild,
+    ProtectedChildRead,
     ProtectedGrandChild,
+    ProtectedGrandChildRead,
 )
 from tests.utils import (
     current_user_data_admin,
@@ -323,7 +325,90 @@ async def test_delete_protected_resource(
     assert response.json() == {"detail": "ProtectedResource not found."}
 
 
-# AccessPolicy and AccessLog tests not necessary in all tests! Just in one post, one read all, one read by id, one update and one delete test!
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_all_protected_child_endpoints(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
+    add_many_test_protected_children,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_get_azure_payload_dependency
+
+    # Make a POST request to create the protected child
+    response = await async_client.post(
+        "/api/v1/protected/child/",
+        json=many_test_protected_child_resources[0],
+    )
+
+    assert response.status_code == 201
+    created_protected_child = ProtectedChild(**response.json())
+    assert (
+        created_protected_child.title == many_test_protected_child_resources[0]["title"]
+    )
+
+    # add some more protected children:
+    # note: the first one is going to be double with different id's
+    mocked_protected_children = await add_many_test_protected_children(
+        mocked_get_azure_token_payload
+    )
+    created_protected_child.id = UUID(created_protected_child.id)
+    expected_protected_children = [created_protected_child] + mocked_protected_children
+
+    # Make a GET request to get all protected children
+    response = await async_client.get(
+        "/api/v1/protected/child/",
+    )
+    assert response.status_code == 200
+    read_protected_children = response.json()
+    assert len(read_protected_children) == len(expected_protected_children)
+    for read_child, expected_child in zip(
+        read_protected_children, expected_protected_children
+    ):
+        modelled_protected_child = ProtectedChildRead(**read_child)
+        assert modelled_protected_child.id == expected_child.id
+        assert modelled_protected_child.title == expected_child.title
+
+    # Make a GET request to get one protected child by id
+    response = await async_client.get(
+        f"/api/v1/protected/child/{str(mocked_protected_children[2].id)}",
+    )
+    assert response.status_code == 200
+    read_protected_child = response.json()
+    modelled_protected_child = ProtectedChildRead(**read_protected_child)
+    assert modelled_protected_child.id == mocked_protected_children[2].id
+    assert modelled_protected_child.title == mocked_protected_children[2].title
+
+    # Make a PUT request to update one protected child
+    new_data = {"title": "The updated title of a child."}
+
+    response = await async_client.put(
+        f"/api/v1/protected/child/{str(mocked_protected_children[4].id)}",
+        json=new_data,
+    )
+    assert response.status_code == 200
+    read_protected_child = response.json()
+    modelled_protected_child = ProtectedChildRead(**read_protected_child)
+    assert modelled_protected_child.id == mocked_protected_children[4].id
+    assert modelled_protected_child.title == new_data["title"]
+
+    # Make a DELETE request to delete one protected child
+    response = await async_client.delete(
+        f"/api/v1/protected/child/{str(mocked_protected_children[3].id)}",
+    )
+    assert response.status_code == 200
+
+    # Make a GET request to get deleted protected child by id fails
+    response = await async_client.get(
+        f"/api/v1/protected/child/{str(mocked_protected_children[3].id)}",
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "ProtectedChild not found."}
 
 
 # endregion ## endpoints tests
