@@ -167,7 +167,58 @@ async def test_get_all_protected_resources(
         assert last_accessed_at.status_code == 200
 
 
-# AccessPolicy and AccessLog tests not necessary in all tests! Just in one post, one read, one update and one delete test!
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_get_protected_resource_by_id(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_protected_resources,
+    mocked_get_azure_token_payload,
+    current_test_user,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_get_azure_payload_dependency
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_get_azure_token_payload
+    )
+
+    # Make a GET request to get all protected resource
+    time_before = datetime.now()
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[3].id)}",
+    )
+    time_after = datetime.now()
+    assert response.status_code == 200
+    read_protected_resources = response.json()
+    modelled_protected_resource = ProtectedResourceRead(**read_protected_resources)
+    assert modelled_protected_resource.id == mocked_protected_resources[3].id
+    assert modelled_protected_resource.name == mocked_protected_resources[3].name
+    assert (
+        modelled_protected_resource.description
+        == mocked_protected_resources[3].description
+    )
+
+    async with AccessLoggingCRUD() as crud:
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=mocked_protected_resources[3].id,
+        )
+
+    current_test_user = current_test_user
+
+    assert last_accessed_at.resource_id == mocked_protected_resources[3].id
+    assert last_accessed_at.identity_id == current_test_user.user_id
+    assert last_accessed_at.action == Action.read
+    assert last_accessed_at.time > time_before - timedelta(seconds=1)
+    assert last_accessed_at.time < time_after + timedelta(seconds=1)
+    assert last_accessed_at.status_code == 200
+
+
+# AccessPolicy and AccessLog tests not necessary in all tests! Just in one post, one read all, one read by id, one update and one delete test!
 
 
 # endregion ## endpoints tests
@@ -923,9 +974,11 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 # Tests to implement for the protected resource family API:
 # ✔︎ User and Admin creates a protected resource: gets logged and access policy created
 # ✔︎ User creates a child resource for a protected resource: hierarchy entry gets created
-# X Admin reads all protected resources: gets logged
+# ✔︎ User and Admin reads all protected resources: gets logged
+# X User and Admin reads a protected resource by id: gets logged
+# X User and Admin updates a protected resource: gets logged
+# X User deletes a protected resource: gets logged and access policy deleted
 # X User reads all protected resource: only the protected resources and child resources, that the user has access to are returned
-# X User reads a protected resource by id: gets logged
 # - User reads a protected resource: children and grand children get returned as well - but only the ones the user has access to
 # - User and Admin access all endpoints for child resource
 # - User and Admin access all endpoints for grand child resource
@@ -938,9 +991,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 # - User reads a protected resource, where user is in a sub_sub_group and inherits access from membership in a group
 # - User reads a protected resource fails, where inheritance is set to false (resource inheritance)
 # - User reads a protected resource fails, where inheritance is set to false (group inheritance)
-# X User updates a protected resource: gets logged
 # - User updates a protected resource: with inherited write access from parent / grand parent (resource inheritance)
 # - User updates a protected resource: with inherited write access from group, where user is in group / sub-group / sub-sub-group (group inheritance)
-# X User deletes a protected resource: gets logged and access policy deleted
 # - User deletes a protected resource: with inherited owner access from parent / grand parent (resource inheritance)
 # - User deletes a protected resource: with inherited owner access from group, where user is in group / sub-group / sub-sub-group (group inheritance)

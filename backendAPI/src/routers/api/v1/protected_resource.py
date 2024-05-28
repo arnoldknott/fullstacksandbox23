@@ -65,7 +65,7 @@ async def get_protected_resource_by_id(
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> ProtectedResource:
     """Returns a protected resource."""
-    return await protected_resource_view.get_by_id(token_payload, resource_id, guards)
+    return await protected_resource_view.get_by_id(resource_id, token_payload, guards)
 
 
 # TBD: write tests for this:
