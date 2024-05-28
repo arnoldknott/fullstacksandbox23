@@ -120,6 +120,7 @@ async def test_get_all_protected_resources(
     app_override_get_azure_payload_dependency: FastAPI,
     add_many_test_protected_resources,
     mocked_get_azure_token_payload,
+    current_test_user,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_get_azure_payload_dependency
@@ -128,9 +129,11 @@ async def test_get_all_protected_resources(
     )
 
     # Make a GET request to get all protected resource
+    time_before = datetime.now()
     response = await async_client.get(
         "/api/v1/protected/resource/",
     )
+    time_after = datetime.now()
     assert response.status_code == 200
     read_protected_resources = response.json()
     assert len(read_protected_resources) == len(many_test_protected_resources)
@@ -142,7 +145,26 @@ async def test_get_all_protected_resources(
         assert modelled_protected_resource.name == mocked_resource.name
         assert modelled_protected_resource.description == mocked_resource.description
 
-    # TBD: add log assertions here!
+    all_last_accessed_at = []
+    async with AccessLoggingCRUD() as crud:
+        for resource in mocked_protected_resources:
+            last_accessed_at = await crud.read_resource_last_accessed_at(
+                CurrentUserData(**current_user_data_admin),
+                resource_id=resource.id,
+            )
+            all_last_accessed_at.append(last_accessed_at)
+
+    current_test_user = current_test_user
+
+    for last_accessed_at, mocked_resource in zip(
+        all_last_accessed_at, mocked_protected_resources
+    ):
+        assert last_accessed_at.resource_id == mocked_resource.id
+        assert last_accessed_at.identity_id == current_test_user.user_id
+        assert last_accessed_at.action == Action.read
+        assert last_accessed_at.time > time_before - timedelta(seconds=1)
+        assert last_accessed_at.time < time_after + timedelta(seconds=1)
+        assert last_accessed_at.status_code == 200
 
 
 # AccessPolicy and AccessLog tests not necessary in all tests! Just in one post, one read, one update and one delete test!
