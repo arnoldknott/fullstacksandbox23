@@ -82,6 +82,22 @@ class BaseView:
             )
         return created_object
 
+    async def post_add_child_to_parent(
+        self,
+        parent_id,
+        child_id,
+        token_payload=None,
+        guards=None,
+        inherit=False,
+    ):
+        logger.info("POST view to add child to parent calls add_child_to_parent CRUD")
+        current_user = await self._check_token_against_guards(token_payload, guards)
+        async with self.crud() as crud:
+            created_hierarchy = await crud.add_child_to_parent(
+                parent_id, child_id, current_user, inherit
+            )
+        return created_hierarchy
+
     async def get(
         self,
         # get operation does not need a token_payload, if the resource is public
@@ -94,6 +110,9 @@ class BaseView:
             current_user = await self._check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
             objects = await crud.read(current_user)
+
+        print("=== objects ===")
+        print(objects)
 
         return objects
 

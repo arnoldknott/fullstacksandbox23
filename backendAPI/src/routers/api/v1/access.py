@@ -296,7 +296,6 @@ async def get_access_count_for_resource(
 
 # endregion AccessLogs
 
-# region Resource Hierarchy
 
 # Nomenclature:
 # ✔︎ implemented

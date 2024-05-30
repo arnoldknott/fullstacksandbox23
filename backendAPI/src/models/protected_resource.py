@@ -25,15 +25,19 @@ class ProtectedResource(ProtectedResourceCreate, table=True):
         # primaryjoin="ProtectedResource.id == ResourceHierarchy.parent_id",
         sa_relationship_kwargs={
             "lazy": "selectin",
-            "primaryjoin": "ProtectedResource.id == ResourceHierarchy.parent_id",  # TBD: is foreign() needed here?
-            "secondaryjoin": "ProtectedChild.id == ResourceHierarchy.child_id",  # TBD: is foreign() needed here?
+            # "lazy": "subqery",
+            # "lazy": "select",
+            # "lazy": "joined",
+            # "lazy": "dynamic",
+            "primaryjoin": "ProtectedResource.id == foreign(ResourceHierarchy.parent_id)",  # TBD: is foreign() needed here?
+            "secondaryjoin": "foreign(ProtectedChild.id) == foreign(ResourceHierarchy.child_id)",  # TBD: is foreign() needed here?
         },
     )
 
 
 class ProtectedResourceRead(ProtectedResourceCreate):
     id: uuid.UUID
-    protected_children: Optional[List["ProtectedChildRead"]] = None
+    protected_children: Optional[List["ProtectedChildReadNoParents"]] = None
 
 
 class ProtectedResourceUpdate(ProtectedResourceCreate):
@@ -61,10 +65,18 @@ class ProtectedChild(ProtectedChildCreate, table=True):
         # primaryjoin="ProtectedChild.id == ResourceHierarchy.child_id",
         sa_relationship_kwargs={
             "lazy": "selectin",
-            "primaryjoin": "ProtectedChild.id == ResourceHierarchy.child_id",  # TBD: is foreign() needed here?
-            "secondaryjoin": "ProtectedResource.id == ResourceHierarchy.parent_id",  # TBD: is foreign() needed here?
+            # "lazy": "subquery",
+            # "lazy": "select",
+            # "lazy": "joined",
+            # "lazy": "dynamic",
+            "primaryjoin": "ProtectedChild.id == foreign(ResourceHierarchy.child_id)",  # TBD: is foreign() needed here?
+            "secondaryjoin": "foreign(ProtectedResource.id) == foreign(ResourceHierarchy.parent_id)",  # TBD: is foreign() needed here?
         },
     )
+
+
+class ProtectedChildReadNoParents(ProtectedChildCreate):
+    id: uuid.UUID
 
 
 class ProtectedChildRead(ProtectedChildCreate):

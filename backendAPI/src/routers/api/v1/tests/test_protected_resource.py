@@ -20,6 +20,7 @@ from models.protected_resource import (
     ProtectedGrandChild,
     ProtectedGrandChildRead,
 )
+from models.access import ResourceHierarchyRead
 from tests.utils import (
     current_user_data_admin,
     many_test_protected_resources,
@@ -1237,6 +1238,74 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
             pytest.fail("No HTTPexception raised!")
 
 
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_adds_and_gets_protected_children_as_relationship_from_protected_resource(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    # mocked_get_azure_token_payload,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    app_override_get_azure_payload_dependency
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+    mocked_protected_children = await add_many_test_protected_children()
+
+    add_first_child = await async_client.post(
+        f"/api/v1/protected/child/{str(mocked_protected_children[0].id)}/parent/{str(mocked_protected_resources[0].id)}",
+    )
+    assert add_first_child.status_code == 201
+    created_first_hierarchy = ResourceHierarchyRead(**add_first_child.json())
+    assert created_first_hierarchy.parent_id == mocked_protected_resources[0].id
+    assert created_first_hierarchy.child_id == mocked_protected_children[0].id
+    assert created_first_hierarchy.inherit is False
+
+    add_second_child = await async_client.post(
+        f"/api/v1/protected/child/{str(mocked_protected_children[1].id)}/parent/{str(mocked_protected_resources[0].id)}",
+    )
+    assert add_second_child.status_code == 201
+    created_second_hierarchy = ResourceHierarchyRead(**add_second_child.json())
+    assert created_second_hierarchy.parent_id == mocked_protected_resources[0].id
+    assert created_second_hierarchy.child_id == mocked_protected_children[1].id
+    assert created_second_hierarchy.inherit is False
+
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[0].id)}",
+    )
+    assert response.status_code == 200
+    read_protected_resource = response.json()
+    modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name
+    assert (
+        modelled_protected_resource.description
+        == mocked_protected_resources[0].description
+    )
+    assert len(modelled_protected_resource.protected_children) == 2
+    assert (
+        modelled_protected_resource.protected_children[0].id
+        == mocked_protected_children[0].id
+    )
+    assert (
+        modelled_protected_resource.protected_children[0].title
+        == mocked_protected_children[0].title
+    )
+    assert (
+        modelled_protected_resource.protected_children[1].id
+        == mocked_protected_children[1].id
+    )
+    assert (
+        modelled_protected_resource.protected_children[1].title
+        == mocked_protected_children[1].title
+    )
+
+
 # endregion ## resource hierarchy tests
 
 
@@ -1255,16 +1324,16 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 # ✔︎ User creates a child resource for a protected resource: hierarchy entry gets created
 # ✔︎ User and Admin reads all protected resources: gets logged
 # ✔︎ User and Admin reads a protected resource by id: gets logged
-# X User and Admin updates a protected resource: gets logged
-# X User deletes a protected resource: gets logged and access policy deleted
+# ✔︎ User and Admin updates a protected resource: gets logged
+# ✔︎ User deletes a protected resource: gets logged and access policy deleted
 # X User reads all protected resource: only the protected resources and child resources, that the user has access to are returned
 # - User reads a protected resource: children and grand children get returned as well - but only the ones the user has access to
-# - User and Admin access all endpoints for child resource
-# - User and Admin access all endpoints for grand child resource
+# ✔︎ User and Admin access all endpoints for child resource
+# ✔︎ User and Admin access all endpoints for grand child resource
 # ✔︎ User and Admin reads a child protected resource, where resource inherits access from parent
 # ✔︎ User and Admin reads a child protected resource, where resource inherits access from parent but user has no access to parent
 # ✔︎ User and Admin reads a child protected resource, where resource does not inherit access from parent but user has access to parent
-# - User reads a grand child protected resource, where user inherits access from grand parent (which is a protected resource)
+# ✔︎ User reads a grand child protected resource, where user inherits access from grand parent (which is a protected resource)
 # X User2 reads child and grand child where access to the parent resource through is inherited through subsubgroup / subgroup / group to parent resource
 # - User reads a protected resource, where user inherits access from a group
 # - User reads a protected resource, where user is in a sub_sub_group and inherits access from membership in a group

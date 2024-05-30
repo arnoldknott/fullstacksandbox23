@@ -25,6 +25,7 @@ from models.protected_resource import (
     ProtectedGrandChildCreate,
     ProtectedGrandChildUpdate,
 )
+from models.access import ResourceHierarchyRead
 
 from .base import BaseView
 
@@ -101,7 +102,6 @@ async def delete_protected_resource(
 protected_child_view = BaseView(ProtectedChildCRUD, ProtectedChild)
 
 
-# TBD: write tests for this:
 @router.post("/child/", status_code=201)
 async def post_protected_child(
     protected_child: ProtectedChildCreate,
@@ -113,6 +113,21 @@ async def post_protected_child(
     """Creates a new protected child."""
     return await protected_child_view.post(
         protected_child, token_payload, guards, parent_id, inherit
+    )
+
+
+# TBD: write tests for this endpoint:
+@router.post("/child/{child_id}/parent/{parent_id}", status_code=201)
+async def post_add_child_to_parent(
+    parent_id: UUID,
+    child_id: UUID,
+    inherit: Annotated[bool, Query()] = False,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> ResourceHierarchyRead:
+    """Adds a child to a parent."""
+    return await protected_child_view.post_add_child_to_parent(
+        parent_id, child_id, token_payload, guards, inherit
     )
 
 
@@ -165,7 +180,6 @@ async def delete_protected_child(
 protected_grand_child_view = BaseView(ProtectedGrandChildCRUD, ProtectedGrandChild)
 
 
-# TBD: write tests for this:
 @router.post("/grandchild/", status_code=201)
 async def post_protected_grandchild(
     protected_grandchild: ProtectedGrandChildCreate,

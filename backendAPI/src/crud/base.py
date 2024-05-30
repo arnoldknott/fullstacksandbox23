@@ -7,13 +7,19 @@ from pprint import pprint
 # from core.access import AccessControl
 from fastapi import HTTPException
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, class_mapper, selectinload, joinedload
 from sqlmodel import SQLModel, delete, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
-from crud.access import AccessLoggingCRUD, AccessPolicyCRUD, ResourceHierarchyCRUD
+from crud.access import (
+    AccessLoggingCRUD,
+    AccessPolicyCRUD,
+    ResourceHierarchyCRUD,
+    BaseHierarchyModelRead,
+)
 from models.access import AccessLogCreate, AccessPolicyCreate, IdentifierTypeLink
+from models.protected_resource import ProtectedResource, ProtectedChild
 
 # from sqlalchemy.sql import distinct
 
@@ -199,14 +205,20 @@ class BaseCRUD(
                 await policy_CRUD.create(access_policy, current_user)
             # await self._write_log(database_object.id, own, current_user, 201)
             if parent_id:
-                async with self.hierarchy_CRUD as hierarchy_CRUD:
-                    await hierarchy_CRUD.create(
-                        current_user=current_user,
-                        parent_id=parent_id,
-                        child_type=self.entity_type,
-                        child_id=database_object.id,
-                        inherit=inherit,
-                    )
+                await self.add_child_to_parent(
+                    parent_id=parent_id,
+                    child_id=database_object.id,
+                    current_user=current_user,
+                    inherit=inherit,
+                )
+                # async with self.hierarchy_CRUD as hierarchy_CRUD:
+                #     await hierarchy_CRUD.create(
+                #         current_user=current_user,
+                #         parent_id=parent_id,
+                #         child_type=self.entity_type,
+                #         child_id=database_object.id,
+                #         inherit=inherit,
+                #     )
 
             # print("=== CRUD - base - create - database_object ===")
             # pprint(database_object)
@@ -257,6 +269,25 @@ class BaseCRUD(
 
         return database_object
 
+    async def add_child_to_parent(
+        self,
+        parent_id: uuid.UUID,
+        child_id: uuid.UUID,
+        current_user: "CurrentUserData",
+        inherit: Optional[bool] = False,
+    ) -> BaseHierarchyModelRead:
+
+        async with self.hierarchy_CRUD as hierarchy_CRUD:
+            hierarchy = await hierarchy_CRUD.create(
+                current_user=current_user,
+                parent_id=parent_id,
+                child_type=self.entity_type,
+                child_id=child_id,
+                inherit=inherit,
+            )
+
+        return hierarchy
+
     # TBD: implement a create_if_not_exists method
 
     # TBD: add skip and limit
@@ -288,6 +319,82 @@ class BaseCRUD(
                 current_user=current_user,
             )
 
+            # TBD: Add eager loading for relationships
+            # from sqlalchemy.inspection import inspect
+            # from sqlalchemy.orm import class_mapper
+            # from sqlalchemy.orm.relationships import RelationshipProperty
+            # def apply_access_control(query, model, current_user_id, access_policy_model):
+            #     mapper = inspect(model)
+            #     for attr in mapper.relationships:
+            #         if isinstance(attr, RelationshipProperty):
+            #              related_model = attr.mapper.class_
+            #                 # Join and filter the query
+            #                 query = query.join(attr.key).filter(
+            #                     related_model.id.in_(subquery)
+            #                 )
+
+            # query relationships:
+            # if wider functionality is required use inspect()
+            for relationship in class_mapper(self.model).relationships:
+                statement = statement.options(selectinload(relationship))
+                statement = self.policy_CRUD.filters_allowed(
+                    statement=statement,
+                    action=read,
+                    model=relationship.mapper.class_.__name__,
+                    current_user=current_user,
+                )
+
+            #     print("=== CRUD - base - read - relationship ===")
+            #     print(relationship)
+            #     print("=== CRUD - base - read - relationship.key ===")
+            #     print(relationship.key)
+            #     print("=== CRUD - base - read - relationship.mapper ===")
+            #     print(relationship.mapper)
+            #     print("=== CRUD - base - read - relationship.mapper.class_ ===")
+            #     print(relationship.mapper.class_)
+            #     print(
+            #         "=== CRUD - base - read - relationship.mapper.class_.__name__ ==="
+            #     )
+            #     print(relationship.mapper.class_.__name__)
+            #     print(
+            #         "=== CRUD - base - read - relationship.mapper.class_.__table__ ==="
+            #     )
+            #     print(relationship.mapper.class_.__table__)
+            #     print(
+            #         "=== CRUD - base - read - relationship.mapper.class_.__table__.name ==="
+            #     )
+            #     print(relationship.mapper.class_.__table__.name)
+            #     print(
+            #         "=== CRUD - base - read - relationship.mapper.class_.__table__.columns ==="
+            #     )
+            #     print(relationship.mapper.class_.__table__.columns)
+            #     print(
+            #         "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.keys() ==="
+            #     )
+            #     print(relationship.mapper.class_.__table__.columns.keys())
+            #     print(
+            #         "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.values() ==="
+            #     )
+            #     print(relationship.mapper.class_.__table__.columns.values())
+            #     print(
+            #         "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.items() ==="
+            #     )
+            #     print(relationship.mapper.class_.__table__.columns.items())
+
+            # if self.model == ProtectedResource:
+            #     # print("=== CRUD - base - read - ProtectedResource - options added ===")
+            #     statement = statement.options(
+            #         selectinload(self.model.protected_children)  # , recursion_depth=1
+            #         # .selectinload(
+            #         #     ProtectedChild.protected_resources  # , recursion_depth=3
+            #         # )
+            #     )
+            #     # statement = statement.options(
+            #     #     joinedload(self.model.protected_children).joinedload(
+            #     #         ProtectedChild.protected_resources
+            #     #     )
+            #     # )
+
             if joins:
                 for join in joins:
                     statement = statement.join(join)
@@ -313,10 +420,10 @@ class BaseCRUD(
             if offset:
                 statement = statement.offset(offset)
 
-            # print("=== CRUD - base - read - statement ===")
-            # print(statement.compile())
-            # print(statement.compile().params)
-            # print("\n")
+            print("=== CRUD - base - read - statement ===")
+            print(statement.compile())
+            print(statement.compile().params)
+            print("\n")
 
             response = await self.session.exec(statement)
             results = response.all()
@@ -326,6 +433,19 @@ class BaseCRUD(
             # print("\n")
 
             for result in results:
+
+                print("=== CRUD - base - read - result ===")
+                pprint(result)
+                print("\n")
+
+                # result = self.model.model_validate(result, from_attributes=True)
+                # result = self.model.model_dump(result)
+                # result = BaseSchemaTypeRead.model_validate(result)
+
+                # print("=== CRUD - base - read - validated results ===")
+                # pprint(result)
+                # print("\n")
+
                 access_log = AccessLogCreate(
                     resource_id=result.id,
                     action=read,

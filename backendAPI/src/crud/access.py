@@ -1156,8 +1156,11 @@ class BaseHierarchyCRUD(
         try:
             statement = select(IdentifierTypeLink.type)
             # only selects, the IdentifierTypeLinks, that the user has access to.
+            # statement = self.policy_crud.filters_allowed(
+            #     statement, Action.own, IdentifierTypeLink, current_user
+            # )
             statement = self.policy_crud.filters_allowed(
-                statement, Action.own, IdentifierTypeLink, current_user
+                statement, Action.write, IdentifierTypeLink, current_user
             )
             statement = statement.where(IdentifierTypeLink.id == parent_id)
 
