@@ -22,15 +22,17 @@ class ProtectedResource(ProtectedResourceCreate, table=True):
     protected_children: Optional[List["ProtectedChild"]] = Relationship(
         back_populates="protected_resources",
         link_model=ResourceHierarchy,
-        # primaryjoin="ProtectedResource.id == ResourceHierarchy.parent_id",
+        # # primaryjoin="ProtectedResource.id == ResourceHierarchy.parent_id",
         sa_relationship_kwargs={
-            "lazy": "selectin",
-            # "lazy": "subqery",
-            # "lazy": "select",
+            #     # "lazy": "selectin",
+            # "lazy": "subquery",
+            #     # "lazy": "select",
             # "lazy": "joined",
-            # "lazy": "dynamic",
-            "primaryjoin": "ProtectedResource.id == foreign(ResourceHierarchy.parent_id)",  # TBD: is foreign() needed here?
-            "secondaryjoin": "foreign(ProtectedChild.id) == foreign(ResourceHierarchy.child_id)",  # TBD: is foreign() needed here?
+            #     # "lazy": "dynamic",
+            "lazy": "noload",
+            #     # TBD: is foreign() needed here?
+            "primaryjoin": "ProtectedResource.id == ResourceHierarchy.parent_id",
+            "secondaryjoin": "ProtectedChild.id == ResourceHierarchy.child_id",
         },
     )
 
@@ -64,11 +66,12 @@ class ProtectedChild(ProtectedChildCreate, table=True):
         link_model=ResourceHierarchy,
         # primaryjoin="ProtectedChild.id == ResourceHierarchy.child_id",
         sa_relationship_kwargs={
-            "lazy": "selectin",
+            # "lazy": "selectin",
             # "lazy": "subquery",
             # "lazy": "select",
-            # "lazy": "joined",
+            "lazy": "joined",
             # "lazy": "dynamic",
+            # "lazy": "noload",
             "primaryjoin": "ProtectedChild.id == foreign(ResourceHierarchy.child_id)",  # TBD: is foreign() needed here?
             "secondaryjoin": "foreign(ProtectedResource.id) == foreign(ResourceHierarchy.parent_id)",  # TBD: is foreign() needed here?
         },

@@ -110,9 +110,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[
-        get_azure_token_payload
-    ] = lambda: mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 
@@ -501,6 +501,7 @@ async def add_parent_child_resource_relationship(
     parent_id: UUID,
     child_id: UUID,
     child_type: ResourceType = ResourceType.protected_child,
+    inherit: bool = False,
 ):
     """Adds a parent-child relationship to the resource hierarchy table."""
     await register_entity_to_identity_type_link_table(
@@ -512,6 +513,7 @@ async def add_parent_child_resource_relationship(
             parent_id=parent_id,
             child_type=child_type,
             child_id=child_id,
+            inherit=inherit,
         )
     return created_relationship
 
@@ -528,9 +530,12 @@ async def add_one_parent_child_resource_relationship(
         child_id: UUID,
         parent_id: UUID = registered_resources[0],
         type: ResourceType = ResourceType.protected_child,
+        inherit: bool = False,
     ):
         """Adds a parent-child relationship to the database."""
-        return await add_parent_child_resource_relationship(parent_id, child_id, type)
+        return await add_parent_child_resource_relationship(
+            parent_id, child_id, type, inherit
+        )
 
     yield _add_one_parent_child_resource_relationship
 
@@ -555,6 +560,7 @@ async def add_parent_child_identity_relationship(
     parent_id: UUID,
     child_id: UUID,
     child_type: IdentityType = IdentityType.sub_group,
+    inherit: bool = False,
 ):
     """Adds a parent-child relationship to the identity hierarchy table."""
     await register_entity_to_identity_type_link_table(
@@ -567,6 +573,7 @@ async def add_parent_child_identity_relationship(
             parent_id=parent_id,
             child_type=child_type,
             child_id=child_id,
+            inherit=inherit,
         )
     return created_relationship
 
@@ -584,9 +591,12 @@ async def add_one_parent_child_identity_relationship(
         child_id: UUID,
         parent_id: UUID = parent_id,
         type: IdentityType = IdentityType.sub_group,
+        inherit: bool = False,
     ):
         """Adds a parent-child relationship to the database."""
-        return await add_parent_child_identity_relationship(parent_id, child_id, type)
+        return await add_parent_child_identity_relationship(
+            parent_id, child_id, type, inherit
+        )
 
     yield _add_one_parent_child_identity_relationship
 

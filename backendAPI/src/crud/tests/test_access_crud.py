@@ -1295,13 +1295,21 @@ async def test_admin_create_resource_hierarchy_with_nonexisting_parent(
 
 @pytest.mark.anyio
 async def test_user_create_resource_hierarchy(
-    register_current_user, add_many_test_access_policies
+    register_current_user, add_many_test_access_policies, add_one_test_access_policy
 ):
     """Test creating a resource hierarchy."""
     current_user_data = await register_current_user(current_user_data_user1)
     access_policies = add_many_test_access_policies
 
     new_child_id = uuid.uuid4()
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user_data.user_id,
+            "resource_id": str(new_child_id),
+            "action": Action.own,
+        }
+    )
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         created_hierarchy = await hierarchy_crud.create(
@@ -1322,6 +1330,31 @@ async def test_user_create_resource_hierarchy_without_access(
 ):
     """Test creating a resource hierarchy."""
     current_user_data = await register_current_user(current_user_data_user1)
+    new_child_id = uuid.uuid4()
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.create(
+                current_user=current_user_data,
+                parent_id=uuid.UUID(resource_id3),
+                child_type=ResourceType.protected_child,
+                child_id=new_child_id,
+            )
+        except Exception as err:
+            assert err.status_code == 403
+            assert err.detail == "Forbidden."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_create_resource_hierarchy_without_access_to_child(
+    register_current_user, add_many_test_access_policies
+):
+    """Test creating a resource hierarchy."""
+    current_user_data = await register_current_user(current_user_data_user1)
+    add_many_test_access_policies
+
     new_child_id = uuid.uuid4()
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
@@ -1927,6 +1960,14 @@ async def test_user_create_identity_hierarchy(
 
     new_child_id = uuid.uuid4()
 
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user_data.user_id,
+            "resource_id": str(new_child_id),
+            "action": Action.own,
+        }
+    )
+
     async with IdentityHierarchyCRUD() as hierarchy_crud:
         created_hierarchy = await hierarchy_crud.create(
             current_user=current_user_data,
@@ -1947,6 +1988,40 @@ async def test_user_create_identity_hierarchy_without_access(
     """Test creating a resource hierarchy."""
     current_user_data = await register_current_user(current_user_data_user1)
     parent_identity = register_many_entities[11]
+    new_child_id = uuid.uuid4()
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.create(
+                current_user=current_user_data,
+                parent_id=parent_identity.id,
+                child_type=IdentityType.sub_group,
+                child_id=new_child_id,
+            )
+        except Exception as err:
+            assert err.status_code == 403
+            assert err.detail == "Forbidden."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_create_identity_hierarchy_without_access_to_child(
+    register_current_user, register_many_entities, add_one_test_access_policy
+):
+    """Test creating a resource hierarchy."""
+    current_user_data = await register_current_user(current_user_data_user1)
+    parent_identity = register_many_entities[11]
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": str(current_user_data.user_id),
+            "resource_id": str(parent_identity.id),
+            "action": Action.own,
+        },
+        current_user=current_user_data,
+    )
+
     new_child_id = uuid.uuid4()
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:

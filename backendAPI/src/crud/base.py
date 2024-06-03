@@ -7,8 +7,18 @@ from pprint import pprint
 # from core.access import AccessControl
 from fastapi import HTTPException
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import aliased, class_mapper, selectinload, joinedload
+from sqlalchemy.orm import (
+    aliased,
+    class_mapper,
+    selectinload,
+    joinedload,
+    subqueryload,
+    contains_eager,
+    with_loader_criteria,
+)
 from sqlmodel import SQLModel, delete, select
+
+# from sqlalchemy import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
@@ -18,8 +28,15 @@ from crud.access import (
     ResourceHierarchyCRUD,
     BaseHierarchyModelRead,
 )
-from models.access import AccessLogCreate, AccessPolicyCreate, IdentifierTypeLink
-from models.protected_resource import ProtectedResource, ProtectedChild
+from models.access import (
+    AccessLogCreate,
+    AccessPolicy,
+    AccessPolicyCreate,
+    IdentifierTypeLink,
+    ResourceHierarchy,
+)
+
+from models.protected_resource import ProtectedResource
 
 # from sqlalchemy.sql import distinct
 
@@ -67,7 +84,9 @@ class BaseCRUD(
             )
         self.policy_CRUD = AccessPolicyCRUD()
         self.logging_CRUD = AccessLoggingCRUD()
-        self.hierarchy_CRUD = ResourceHierarchyCRUD()
+        self.hierarchy_CRUD = (
+            ResourceHierarchyCRUD()
+        )  # TBD. are the occasions, where I would need the IdentityHierarchyCRUD() here?
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -311,6 +330,11 @@ class BaseCRUD(
         try:
             # TBD: select_args are not compatible with the return type of the method!
             statement = select(*select_args) if select_args else select(self.model)
+            # statement = (
+            #     self.session.select(*select_args)
+            #     if select_args
+            #     else self.session.select(self.model)
+            # )
 
             statement = self.policy_CRUD.filters_allowed(
                 statement=statement,
@@ -334,52 +358,194 @@ class BaseCRUD(
             #                 )
 
             # query relationships:
+
+            # if class_mapper(self.model).relationships:
+            #     ResourceHierarchyRelationships = aliased(
+            #         ResourceHierarchy, name="resource_hierarchy_relationship"
+            #     )
+            #     statement = statement.add_columns(ResourceHierarchyRelationships)
+            #     statement = statement.join(
+            #         ResourceHierarchyRelationships,
+            #         ResourceHierarchyRelationships.parent_id == self.model.id,
+            #     )
             # if wider functionality is required use inspect()
             for relationship in class_mapper(self.model).relationships:
-                statement = statement.options(selectinload(relationship))
-                statement = self.policy_CRUD.filters_allowed(
-                    statement=statement,
+                if relationship.mapper.class_.__name__ in ResourceType.list():
+                    child_model = ResourceType.get_model(
+                        relationship.mapper.class_.__name__
+                    )
+                elif relationship.mapper.class_.__name__ in IdentityType.list():
+                    child_model = IdentityType.get_model(
+                        relationship.mapper.class_.__name__
+                    )
+                # subquery = select(child_model)
+                # subquery = self.policy_CRUD.filters_allowed(
+                #     statement=subquery,
+                #     action=read,
+                #     model=child_model,
+                #     current_user=current_user,
+                # )
+                # print("=== CRUD - base - read - subquery ===")
+                # statement = statement.add_columns(child_model)
+                # statement = statement.join(
+                #     child_model,
+                #     child_model.id == ResourceHierarchyRelationships.child_id,
+                # )
+                # statement = statement.where(
+                #     ResourceHierarchyRelationships.parent_id == self.model.id
+                # )
+                # statement = self.policy_CRUD.filters_allowed(
+                #     statement=statement,
+                #     action=read,
+                #     model=child_model,
+                #     current_user=current_user,
+                # )
+                # statement = statement.options(selectinload(relationship))
+                # statement = statement.options(joinedload(relationship))
+                # statement = statement.options(contains_eager(child_model)).options(
+                #     subqueryload(subquery)
+                # )
+                # subquery = select(AccessPolicy.resource_id).where(
+                #     AccessPolicy.identity_id == current_user.user_id,
+                #     AccessPolicy.action == read,
+                # )
+                # statement = statement.options(
+                #     joinedload(self.model.relationship)  # , innerjoin=True)
+                #     # somewhere I need to at the join conditions through hierarchy table!
+                # ).with_loader_criteria(child_model, child_model.id.in_(subquery))
+
+                # statement = statement.options(joinedload(self.model.child_model))
+                # statement = statement.add_columns(child_model)
+                # statement = statement.join(
+                #     ResourceHierarchy, self.model.id == ResourceHierarchy.parent_id
+                # )
+                # statement = statement.join(
+                #     child_model, ResourceHierarchy.child_id == child_model.id
+                # )
+                # statement = self.policy_CRUD.filters_allowed(
+                #     statement=statement,
+                #     action=read,
+                #     model=child_model,
+                #     current_user=current_user,
+                # )
+
+                # child_query = select(child_model)
+                # child_query = child_query.join(
+                #     ResourceHierarchy, self.model.id == ResourceHierarchy.parent_id
+                # )
+                # child_query = child_query.join(
+                #     child_model, ResourceHierarchy.child_id == child_model.id
+                # )
+                # statement = statement.options(joinedload(child_query))
+
+                print("=== CRUD - base - read - self.model ===")
+                print(self.model)
+                print("=== CRUD - base - read - relationship ===")
+                print(relationship)
+                print("=== CRUD - base - read - child_model ===")
+                print(child_model)
+
+                print("\n")
+
+                print("=== CRUD - base - read - ProtectedResource ===")
+                print(ProtectedResource)
+                print(
+                    "=== CRUD - base - read - ProtectedResource.protected_children ==="
+                )
+                print(ProtectedResource.protected_children)
+
+                print("\n")
+
+                child_attribute = getattr(self.model, relationship.key)
+                print("=== CRUD - base - read - child_attribute ===")
+                print(child_attribute)
+
+                print("\n")
+
+                print("=== CRUD - base - read - relationship ===")
+                print(relationship)
+                print("=== CRUD - base - read - relationship.key ===")
+                print(relationship.key)
+                # print("=== CRUD - base - read - relationship.mapper ===")
+                # print(relationship.mapper)
+                # print("=== CRUD - base - read - relationship.mapper.class_ ===")
+                # print(relationship.mapper.class_)
+                # print(
+                #     "=== CRUD - base - read - relationship.mapper.class_.__name__ ==="
+                # )
+                # print(relationship.mapper.class_.__name__)
+                # print(
+                #     "=== CRUD - base - read - relationship.mapper.class_.__table__ ==="
+                # )
+                # print(relationship.mapper.class_.__table__)
+                # print(
+                #     "=== CRUD - base - read - relationship.mapper.class_.__table__.name ==="
+                # )
+                # print(relationship.mapper.class_.__table__.name)
+                # print(
+                #     "=== CRUD - base - read - relationship.mapper.class_.__table__.columns ==="
+                # )
+                # print(relationship.mapper.class_.__table__.columns)
+                # print(
+                #     "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.keys() ==="
+                # )
+                # print(relationship.mapper.class_.__table__.columns.keys())
+                # print(
+                #     "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.values() ==="
+                # )
+                # print(relationship.mapper.class_.__table__.columns.values())
+                # print(
+                #     "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.items() ==="
+                # )
+                # print(relationship.mapper.class_.__table__.columns.items())
+
+                child_query = select(child_model.id)
+                child_query = self.policy_CRUD.filters_allowed(
+                    child_query,
                     action=read,
-                    model=relationship.mapper.class_.__name__,
+                    model=child_model,
                     current_user=current_user,
                 )
 
-            #     print("=== CRUD - base - read - relationship ===")
-            #     print(relationship)
-            #     print("=== CRUD - base - read - relationship.key ===")
-            #     print(relationship.key)
-            #     print("=== CRUD - base - read - relationship.mapper ===")
-            #     print(relationship.mapper)
-            #     print("=== CRUD - base - read - relationship.mapper.class_ ===")
-            #     print(relationship.mapper.class_)
-            #     print(
-            #         "=== CRUD - base - read - relationship.mapper.class_.__name__ ==="
-            #     )
-            #     print(relationship.mapper.class_.__name__)
-            #     print(
-            #         "=== CRUD - base - read - relationship.mapper.class_.__table__ ==="
-            #     )
-            #     print(relationship.mapper.class_.__table__)
-            #     print(
-            #         "=== CRUD - base - read - relationship.mapper.class_.__table__.name ==="
-            #     )
-            #     print(relationship.mapper.class_.__table__.name)
-            #     print(
-            #         "=== CRUD - base - read - relationship.mapper.class_.__table__.columns ==="
-            #     )
-            #     print(relationship.mapper.class_.__table__.columns)
-            #     print(
-            #         "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.keys() ==="
-            #     )
-            #     print(relationship.mapper.class_.__table__.columns.keys())
-            #     print(
-            #         "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.values() ==="
-            #     )
-            #     print(relationship.mapper.class_.__table__.columns.values())
-            #     print(
-            #         "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.items() ==="
-            #     )
-            #     print(relationship.mapper.class_.__table__.columns.items())
+                statement = statement.join(
+                    child_model,
+                    child_model.id.in_(child_query),
+                ).options(contains_eager(child_attribute))
+
+                # if relationship.contains(ProtectedResource.protected_children):
+                #     print(
+                #         "=== CRUD - base - read - ProtectedResource.protected_children - query ==="
+                #     )
+                #     child_query = select(child_model.id)
+                #     child_query = self.policy_CRUD.filters_allowed(
+                #         child_query,
+                #         action=read,
+                #         model=child_model,
+                #         current_user=current_user,
+                #     )
+
+                #     # print("=== CRUD - base - read - child_query ===")
+                #     # print(child_query.compile())
+                #     # print(child_query.compile().params)
+
+                #     statement = statement.join(
+                #         child_model,
+                #         # child_model.id.in_(child_query.subquery().alias().select()),
+                #         child_model.id.in_(child_query),
+                #     ).options(contains_eager(ProtectedResource.protected_children))
+
+                # .options(
+                #     with_loader_criteria(
+                #         lambda query: self.policy_CRUD.filters_allowed(
+                #             query, read, child_model, current_user
+                #         )
+                #     )
+                # )
+                # .selectinload(
+                #     lambda query: self.policy_CRUD.filters_allowed(
+                #         query, read, child_model, current_user
+                #     )
+                # )
 
             # if self.model == ProtectedResource:
             #     # print("=== CRUD - base - read - ProtectedResource - options added ===")
@@ -426,11 +592,13 @@ class BaseCRUD(
             print("\n")
 
             response = await self.session.exec(statement)
-            results = response.all()
+            results = response.unique().all()
 
-            # print("=== CRUD - base - read - results ===")
-            # pprint(results)
-            # print("\n")
+            await self.session.flush()
+
+            print("=== CRUD - base - read - results ===")
+            pprint(results)
+            print("\n")
 
             for result in results:
 
@@ -446,6 +614,12 @@ class BaseCRUD(
                 # pprint(result)
                 # print("\n")
 
+                if self.model == ProtectedResource:
+                    print("=== CRUD - base - read - ProtectedResource ===")
+                    pprint(result.protected_children)
+                    print("\n")
+
+                # TBD: add logging to accessed children!
                 access_log = AccessLogCreate(
                     resource_id=result.id,
                     action=read,

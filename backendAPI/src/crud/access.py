@@ -563,16 +563,19 @@ class AccessPolicyCRUD:
                 )
 
             query = self.filters_allowed(query, action, current_user=current_user)
-            # print("=== AccessPolicyCRUD.allows - query ===")
-            # print(query.compile())
-            # pprint(query.compile().params)
 
-            # Only one policy per resource - action - identity combination is allowed!
-            response = await self.session.exec(query)
-            results = response.one()
+            async with self:
 
-            # print("=== AccessPolicyCRUD.allows - results ===")
-            # pprint(results)
+                # print("=== AccessPolicyCRUD.allows - query ===")
+                # print(query.compile())
+                # print(query.compile().params)
+
+                # Only one policy per resource - action - identity combination is allowed!
+                response = await self.session.exec(query)
+                results = response.one()
+
+                # print("=== AccessPolicyCRUD.allows - results ===")
+                # print(results)
 
             if results.resource_id == resource_id and results.action == action:
                 return True
@@ -1154,6 +1157,13 @@ class BaseHierarchyCRUD(
     ) -> BaseHierarchyModelRead:
         """Checks access and type matching and potentially creates parent-child relationship."""
         try:
+            child_access_request = AccessRequest(
+                resource_id=child_id,
+                action=Action.own,
+                current_user=current_user,
+            )
+            if not await self.policy_crud.allows(child_access_request):
+                raise HTTPException(status_code=403, detail="Forbidden.")
             statement = select(IdentifierTypeLink.type)
             # only selects, the IdentifierTypeLinks, that the user has access to.
             # statement = self.policy_crud.filters_allowed(
