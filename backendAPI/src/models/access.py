@@ -197,8 +197,12 @@ class ResourceHierarchyCreate(SQLModel):
 class ResourceHierarchy(ResourceHierarchyCreate, table=True):
     """Table for resource hierarchy"""
 
-    parent_id: uuid.UUID = Field(primary_key=True)
-    child_id: uuid.UUID = Field(primary_key=True)
+    parent_id: uuid.UUID = Field(
+        primary_key=True
+    )  # foreign_key="identifiertypelink.id",
+    child_id: uuid.UUID = Field(
+        primary_key=True
+    )  # foreign_key="identifiertypelink.id",
 
     __table_args__ = (UniqueConstraint("parent_id", "child_id"),)
 

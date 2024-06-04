@@ -22,7 +22,6 @@ class ProtectedResource(ProtectedResourceCreate, table=True):
     protected_children: Optional[List["ProtectedChild"]] = Relationship(
         back_populates="protected_resources",
         link_model=ResourceHierarchy,
-        # # primaryjoin="ProtectedResource.id == ResourceHierarchy.parent_id",
         sa_relationship_kwargs={
             # "lazy": "selectin",
             # "lazy": "subquery",

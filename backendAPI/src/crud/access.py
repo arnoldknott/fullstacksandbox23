@@ -163,9 +163,6 @@ class AccessPolicyCRUD:
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access
         # - find all resources of the given type and action that the user has permission to access through group membership (identity inheritance) and resource inheritance and public access and admin override
 
-        print("=== AccessPolicyCRUD.filters_allowed - current_user ===")
-        print(current_user)
-
         # Permission overrides:
         # own includes write and read
         # write includes read

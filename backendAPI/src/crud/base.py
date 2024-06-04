@@ -16,7 +16,7 @@ from sqlalchemy.orm import (
     contains_eager,
     with_loader_criteria,
 )
-from sqlmodel import SQLModel, delete, select
+from sqlmodel import SQLModel, delete, select, or_
 
 # from sqlalchemy import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -354,6 +354,9 @@ class BaseCRUD(
                     child_model = IdentityType.get_model(
                         relationship.mapper.class_.__name__
                     )
+
+                child_attribute = getattr(self.model, relationship.key)
+
                 # subquery = select(child_model)
                 # subquery = self.policy_CRUD.filters_allowed(
                 #     statement=subquery,
@@ -423,9 +426,6 @@ class BaseCRUD(
 
                 # print("\n")
 
-                print("\n")
-
-                child_attribute = getattr(self.model, relationship.key)
                 print("=== CRUD - base - read - child_attribute ===")
                 print(child_attribute)
 
@@ -476,14 +476,19 @@ class BaseCRUD(
                     current_user=current_user,
                 )
 
-                statement = statement.join(
+                statement = statement.outerjoin(
                     ResourceHierarchy, self.model.id == ResourceHierarchy.parent_id
                 )
-                statement = statement.join(
+                statement = statement.outerjoin(
                     child_model, ResourceHierarchy.child_id == child_model.id
                 )
+
+                print("=== CRUD - base - read - child_statement ===")
+                print(child_statement.compile())
+                print(child_statement.compile().params)
+
                 statement = statement.where(
-                    child_model.id.in_(child_statement)
+                    or_(child_model.id == None, child_model.id.in_(child_statement))
                 ).options(contains_eager(child_attribute))
 
                 # statement = statement.join(
@@ -527,9 +532,9 @@ class BaseCRUD(
 
             await self.session.flush()
 
-            # print("=== CRUD - base - read - results ===")
-            # pprint(results)
-            # print("\n")
+            print("=== CRUD - base - read - results ===")
+            pprint(results)
+            print("\n")
 
             for result in results:
 

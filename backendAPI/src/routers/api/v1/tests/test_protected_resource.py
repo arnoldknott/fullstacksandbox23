@@ -92,6 +92,7 @@ async def test_post_protected_resource_with_logs_and_policies(
             current_test_user,
             filters=[ProtectedResource.id == created_protected_resource.id],
         )
+
     assert len(db_protected_resource) == 1
     assert db_protected_resource[0].name == many_test_protected_resources[0]["name"]
     assert (
