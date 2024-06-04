@@ -343,32 +343,8 @@ class BaseCRUD(
                 current_user=current_user,
             )
 
-            # TBD: Add eager loading for relationships
-            # from sqlalchemy.inspection import inspect
-            # from sqlalchemy.orm import class_mapper
-            # from sqlalchemy.orm.relationships import RelationshipProperty
-            # def apply_access_control(query, model, current_user_id, access_policy_model):
-            #     mapper = inspect(model)
-            #     for attr in mapper.relationships:
-            #         if isinstance(attr, RelationshipProperty):
-            #              related_model = attr.mapper.class_
-            #                 # Join and filter the query
-            #                 query = query.join(attr.key).filter(
-            #                     related_model.id.in_(subquery)
-            #                 )
-
             # query relationships:
 
-            # if class_mapper(self.model).relationships:
-            #     ResourceHierarchyRelationships = aliased(
-            #         ResourceHierarchy, name="resource_hierarchy_relationship"
-            #     )
-            #     statement = statement.add_columns(ResourceHierarchyRelationships)
-            #     statement = statement.join(
-            #         ResourceHierarchyRelationships,
-            #         ResourceHierarchyRelationships.parent_id == self.model.id,
-            #     )
-            # if wider functionality is required use inspect()
             for relationship in class_mapper(self.model).relationships:
                 if relationship.mapper.class_.__name__ in ResourceType.list():
                     child_model = ResourceType.get_model(
@@ -438,21 +414,14 @@ class BaseCRUD(
                 # )
                 # statement = statement.options(joinedload(child_query))
 
-                print("=== CRUD - base - read - self.model ===")
-                print(self.model)
-                print("=== CRUD - base - read - relationship ===")
-                print(relationship)
-                print("=== CRUD - base - read - child_model ===")
-                print(child_model)
+                # print("=== CRUD - base - read - self.model ===")
+                # print(self.model)
+                # print("=== CRUD - base - read - relationship ===")
+                # print(relationship)
+                # print("=== CRUD - base - read - child_model ===")
+                # print(child_model)
 
-                print("\n")
-
-                print("=== CRUD - base - read - ProtectedResource ===")
-                print(ProtectedResource)
-                print(
-                    "=== CRUD - base - read - ProtectedResource.protected_children ==="
-                )
-                print(ProtectedResource.protected_children)
+                # print("\n")
 
                 print("\n")
 
@@ -499,67 +468,29 @@ class BaseCRUD(
                 # )
                 # print(relationship.mapper.class_.__table__.columns.items())
 
-                child_query = select(child_model.id)
-                child_query = self.policy_CRUD.filters_allowed(
-                    child_query,
+                child_statement = select(child_model.id)
+                child_statement = self.policy_CRUD.filters_allowed(
+                    child_statement,
                     action=read,
                     model=child_model,
                     current_user=current_user,
                 )
 
                 statement = statement.join(
-                    child_model,
-                    child_model.id.in_(child_query),
+                    ResourceHierarchy, self.model.id == ResourceHierarchy.parent_id
+                )
+                statement = statement.join(
+                    child_model, ResourceHierarchy.child_id == child_model.id
+                )
+                statement = statement.where(
+                    child_model.id.in_(child_statement)
                 ).options(contains_eager(child_attribute))
 
-                # if relationship.contains(ProtectedResource.protected_children):
-                #     print(
-                #         "=== CRUD - base - read - ProtectedResource.protected_children - query ==="
-                #     )
-                #     child_query = select(child_model.id)
-                #     child_query = self.policy_CRUD.filters_allowed(
-                #         child_query,
-                #         action=read,
-                #         model=child_model,
-                #         current_user=current_user,
-                #     )
+                # statement = statement.join(
+                #     child_model,
+                #     child_model.id.in_(child_statement),
 
-                #     # print("=== CRUD - base - read - child_query ===")
-                #     # print(child_query.compile())
-                #     # print(child_query.compile().params)
-
-                #     statement = statement.join(
-                #         child_model,
-                #         # child_model.id.in_(child_query.subquery().alias().select()),
-                #         child_model.id.in_(child_query),
-                #     ).options(contains_eager(ProtectedResource.protected_children))
-
-                # .options(
-                #     with_loader_criteria(
-                #         lambda query: self.policy_CRUD.filters_allowed(
-                #             query, read, child_model, current_user
-                #         )
-                #     )
-                # )
-                # .selectinload(
-                #     lambda query: self.policy_CRUD.filters_allowed(
-                #         query, read, child_model, current_user
-                #     )
-                # )
-
-            # if self.model == ProtectedResource:
-            #     # print("=== CRUD - base - read - ProtectedResource - options added ===")
-            #     statement = statement.options(
-            #         selectinload(self.model.protected_children)  # , recursion_depth=1
-            #         # .selectinload(
-            #         #     ProtectedChild.protected_resources  # , recursion_depth=3
-            #         # )
-            #     )
-            #     # statement = statement.options(
-            #     #     joinedload(self.model.protected_children).joinedload(
-            #     #         ProtectedChild.protected_resources
-            #     #     )
-            #     # )
+                # ).options(contains_eager(child_attribute))
 
             if joins:
                 for join in joins:
@@ -586,42 +517,29 @@ class BaseCRUD(
             if offset:
                 statement = statement.offset(offset)
 
-            print("=== CRUD - base - read - statement ===")
-            print(statement.compile())
-            print(statement.compile().params)
-            print("\n")
+            # print("=== CRUD - base - read - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
+            # print("\n")
 
             response = await self.session.exec(statement)
             results = response.unique().all()
 
             await self.session.flush()
 
-            print("=== CRUD - base - read - results ===")
-            pprint(results)
-            print("\n")
+            # print("=== CRUD - base - read - results ===")
+            # pprint(results)
+            # print("\n")
 
             for result in results:
 
-                print("=== CRUD - base - read - result ===")
+                print("=== CRUD - base - read - validated results ===")
                 pprint(result)
                 print("\n")
 
-                # result = self.model.model_validate(result, from_attributes=True)
-                # result = self.model.model_dump(result)
-                # result = BaseSchemaTypeRead.model_validate(result)
-
-                # print("=== CRUD - base - read - validated results ===")
-                # pprint(result)
-                # print("\n")
-
-                if self.model == ProtectedResource:
-                    print("=== CRUD - base - read - ProtectedResource ===")
-                    pprint(result.protected_children)
-                    print("\n")
-
                 # TBD: add logging to accessed children!
                 access_log = AccessLogCreate(
-                    resource_id=result.id,
+                    resource_id=result.id,  # result might not be available here?
                     action=read,
                     identity_id=current_user.user_id if current_user else None,
                     status_code=200,

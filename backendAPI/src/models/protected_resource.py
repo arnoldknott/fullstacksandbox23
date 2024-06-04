@@ -24,13 +24,13 @@ class ProtectedResource(ProtectedResourceCreate, table=True):
         link_model=ResourceHierarchy,
         # # primaryjoin="ProtectedResource.id == ResourceHierarchy.parent_id",
         sa_relationship_kwargs={
-            #     # "lazy": "selectin",
+            # "lazy": "selectin",
             # "lazy": "subquery",
-            #     # "lazy": "select",
-            # "lazy": "joined",
-            #     # "lazy": "dynamic",
-            "lazy": "noload",
-            #     # TBD: is foreign() needed here?
+            # "lazy": "select",
+            "lazy": "joined",
+            # "lazy": "dynamic",
+            # "lazy": "noload",
+            # TBD: is foreign() needed here?
             "primaryjoin": "ProtectedResource.id == ResourceHierarchy.parent_id",
             "secondaryjoin": "ProtectedChild.id == ResourceHierarchy.child_id",
         },

@@ -1341,12 +1341,12 @@ async def test_user_gets_protected_children_with_access_to_all_as_relationship_f
     assert first_child.child_id == mocked_protected_children[0].id
     assert first_child.inherit is False
 
-    # policy_first_child = {
-    #     "resource_id": str(first_child.child_id),
-    #     "identity_id": current_test_user.user_id,
-    #     "action": "own",
-    # }
-    # await add_one_test_access_policy(policy_first_child)
+    policy_first_child = {
+        "resource_id": str(first_child.child_id),
+        "identity_id": current_test_user.user_id,
+        "action": "own",
+    }
+    await add_one_test_access_policy(policy_first_child)
 
     second_child = await add_one_parent_child_resource_relationship(
         child_id=mocked_protected_children[1].id,
@@ -1393,9 +1393,6 @@ async def test_user_gets_protected_children_with_access_to_all_as_relationship_f
         modelled_protected_resource.protected_children[1].title
         == mocked_protected_children[1].title
     )
-
-    assert 0
-    # TBD remove warning!
 
 
 @pytest.mark.anyio
@@ -1457,21 +1454,6 @@ async def test_user_gets_only_protected_children_with_access_as_relationship_fro
     # }
     # await add_one_test_access_policy(policy_second_child)
 
-    print("=== resource_hierarchy - first_child ===")
-    print(first_child)
-    print("\n")
-
-    print("===resource_hierarchy - second_child ===")
-    print(second_child)
-    print("\n")
-
-    async with AccessPolicyCRUD() as crud:
-        policies = await crud.read(current_test_user)
-        for policy in policies:
-            print("=== policy ===")
-            pprint(policy)
-            print("\n")
-
     response = await async_client.get(
         f"/api/v1/protected/resource/{str(mocked_protected_resources[0].id)}",
     )
@@ -1487,9 +1469,6 @@ async def test_user_gets_only_protected_children_with_access_as_relationship_fro
     # TBD: make sure that only the children, which the user has access to are included here:
     assert len(modelled_protected_resource.protected_children) == 1
 
-    print(
-        "=== returned protected_resources.protected_children PASS the length test! ==="
-    )
     assert (
         modelled_protected_resource.protected_children[0].id
         == mocked_protected_children[0].id
@@ -1506,9 +1485,6 @@ async def test_user_gets_only_protected_children_with_access_as_relationship_fro
     ]
     assert mocked_protected_children[1].id not in modelled_protected_children_ids
     assert mocked_protected_children[1].title not in modelled_protected_children_titles
-
-    # assert 0
-    # TBD: does not really work: as long as user has access to at lease one of the child resources, both are return!
 
 
 @pytest.mark.anyio
