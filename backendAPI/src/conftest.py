@@ -352,6 +352,7 @@ async def add_many_azure_test_users():
             async with UserCRUD() as crud:
                 user = await crud.create_azure_user_and_groups_if_not_exist(**user)
             users.append(user)
+        users = sorted(users, key=lambda x: x.id)
         return users
 
     yield _add_many_azure_test_users
@@ -459,6 +460,7 @@ async def add_many_test_access_policies(
                 AccessPolicyCreate(**policy), mocked_admin_user
             )
             policies.append(added_policy)
+    policies = sorted(policies, key=lambda x: x.id)
 
     yield policies
 
@@ -493,6 +495,8 @@ async def add_many_test_access_logs(
     for access_log in many_test_access_logs:
         access_log_instance = await add_test_access_log(access_log)
         access_logs.append(access_log_instance)
+
+    access_logs = sorted(access_logs, key=lambda x: x.id)
 
     yield access_logs
 

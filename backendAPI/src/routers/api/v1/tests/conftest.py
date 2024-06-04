@@ -120,19 +120,17 @@ async def add_test_categories(
     # maybe just using the add_test_policies_for_resources fixture?
     # or just failing?
     async def _add_test_categories(token_payload: dict = None):
-        category_instances = []
+        categories = []
         current_user = await current_user_from_azure_token(token_payload)
         # TBD: refactor to use the post endpoint - the token should be mocked already here!
         for category in many_test_categories:
             async with CategoryCRUD() as crud:
                 category_instance = await crud.create(category, current_user)
-                # response = await async_client.post("/api/v1/category/", json=category)
-                # category_instance = response.json()
-                # print("=== category_instance ===")
-                # print(category_instance)
-            category_instances.append(category_instance)
+            categories.append(category_instance)
 
-        return category_instances
+        categories = sorted(categories, key=lambda x: x.id)
+
+        return categories
 
     yield _add_test_categories
 
@@ -162,7 +160,7 @@ async def add_test_demo_resources(
         many_test_demo_resources[1]["category_id"] = existing_test_categories[0].id
         many_test_demo_resources[2]["category_id"] = existing_test_categories[1].id
 
-        demo_resource_instances = []
+        demo_resources = []
         current_user = await current_user_from_azure_token(token_payload)
         for resource in many_test_demo_resources:
             # print("=== resource ===")
@@ -179,13 +177,16 @@ async def add_test_demo_resources(
                 # token = CurrentAccessToken(token_payload)
                 # current_user = await token.provides_current_user()
                 demo_resource_instance = await crud.create(resource, current_user)
-            demo_resource_instances.append(demo_resource_instance)
+            demo_resources.append(demo_resource_instance)
 
         # yield demo_resource_instances
         # for demo_resource_instance in demo_resource_instances:
         #     print("=== add_test_demo_resources - demo_resource_instance ===")
         #     print(demo_resource_instance)
-        return demo_resource_instances
+
+        demo_resources = sorted(demo_resources, key=lambda x: x.id)
+
+        return demo_resources
 
     yield _add_test_demo_resources
 
@@ -207,14 +208,16 @@ async def add_test_tags(
     # yield tag_instances
 
     async def _add_test_tags(token_payload: dict = None):
-        tag_instances = []
+        tags = []
         current_user = await current_user_from_azure_token(token_payload)
         for tag in many_test_tags:
             async with TagCRUD() as crud:
                 tag_instance = await crud.create_public(tag, current_user)
-            tag_instances.append(tag_instance)
+            tags.append(tag_instance)
 
-        return tag_instances
+        tags = sorted(tags, key=lambda x: x.id)
+
+        return tags
 
     yield _add_test_tags
 
@@ -234,6 +237,8 @@ async def add_many_test_protected_resources(
                     protected_resource, current_user
                 )
             protected_resources.append(added_protected_resource)
+
+        protected_resources = sorted(protected_resources, key=lambda x: x.id)
 
         return protected_resources
 
@@ -295,6 +300,8 @@ async def add_many_test_protected_children(
             async with ProtectedChildCRUD() as crud:
                 added_protected_child = await crud.create(protected_child, current_user)
             protected_children.append(added_protected_child)
+
+        protected_children = sorted(protected_children, key=lambda x: x.id)
 
         return protected_children
 
@@ -358,6 +365,8 @@ async def add_many_test_protected_grandchildren(
                     protected_grandchild, current_user
                 )
             protected_grandchildren.append(added_protected_grandchild)
+
+        protected_grandchildren = sorted(protected_grandchildren, key=lambda x: x.id)
 
         return protected_grandchildren
 

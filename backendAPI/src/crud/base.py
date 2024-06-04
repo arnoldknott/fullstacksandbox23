@@ -16,7 +16,7 @@ from sqlalchemy.orm import (
     contains_eager,
     with_loader_criteria,
 )
-from sqlmodel import SQLModel, delete, select, or_
+from sqlmodel import SQLModel, delete, select, or_, asc
 
 # from sqlalchemy import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -426,15 +426,15 @@ class BaseCRUD(
 
                 # print("\n")
 
-                print("=== CRUD - base - read - child_attribute ===")
-                print(child_attribute)
+                # print("=== CRUD - base - read - child_attribute ===")
+                # print(child_attribute)
 
-                print("\n")
+                # print("\n")
 
-                print("=== CRUD - base - read - relationship ===")
-                print(relationship)
-                print("=== CRUD - base - read - relationship.key ===")
-                print(relationship.key)
+                # print("=== CRUD - base - read - relationship ===")
+                # print(relationship)
+                # print("=== CRUD - base - read - relationship.key ===")
+                # print(relationship.key)
                 # print("=== CRUD - base - read - relationship.mapper ===")
                 # print(relationship.mapper)
                 # print("=== CRUD - base - read - relationship.mapper.class_ ===")
@@ -483,9 +483,9 @@ class BaseCRUD(
                     child_model, ResourceHierarchy.child_id == child_model.id
                 )
 
-                print("=== CRUD - base - read - child_statement ===")
-                print(child_statement.compile())
-                print(child_statement.compile().params)
+                # print("=== CRUD - base - read - child_statement ===")
+                # print(child_statement.compile())
+                # print(child_statement.compile().params)
 
                 statement = statement.where(
                     or_(child_model.id == None, child_model.id.in_(child_statement))
@@ -505,10 +505,11 @@ class BaseCRUD(
                 for filter in filters:
                     statement = statement.where(filter)
 
-            # TBD. implement a default order_by:
             if order_by:
                 for order in order_by:
                     statement = statement.order_by(order)
+            elif hasattr(self.model, "id"):
+                statement = statement.order_by(asc(self.model.id))
 
             if group_by:
                 statement = statement.group_by(*group_by)
@@ -532,15 +533,15 @@ class BaseCRUD(
 
             await self.session.flush()
 
-            print("=== CRUD - base - read - results ===")
-            pprint(results)
-            print("\n")
+            # print("=== CRUD - base - read - results ===")
+            # pprint(results)
+            # print("\n")
 
             for result in results:
 
-                print("=== CRUD - base - read - validated results ===")
-                pprint(result)
-                print("\n")
+                # print("=== CRUD - base - read - validated results ===")
+                # pprint(result)
+                # print("\n")
 
                 # TBD: add logging to accessed children!
                 access_log = AccessLogCreate(

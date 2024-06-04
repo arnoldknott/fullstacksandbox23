@@ -106,10 +106,12 @@ async def test_get_all_tags(
     response = await async_client.get("/api/v1/tag/")
 
     assert response.status_code == 200
-    assert len(response.json()) == 4
-    content = response.json()[3]
-    assert content["name"] == tags[3].name
-    assert "id" in content
+    database_tags = response.json()
+    print(database_tags)
+    assert len(database_tags) == 4
+    for database_tag, mocked_tag in zip(database_tags, tags):
+        assert database_tag["name"] == mocked_tag.name
+        assert database_tag["id"] == str(mocked_tag.id)
 
 
 @pytest.mark.anyio

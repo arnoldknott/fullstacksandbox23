@@ -111,9 +111,6 @@ class BaseView:
         async with self.crud() as crud:
             objects = await crud.read(current_user)
 
-        print("=== objects ===")
-        print(objects)
-
         return objects
 
     async def get_by_id(

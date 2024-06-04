@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import List
 
+from pprint import pprint
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -359,6 +360,7 @@ async def test_admin_gets_users(
     assert response.status_code == 200
     database_users = response.json()
     assert len(users) == 5
+    assert len(database_users) == 5
     for database_user, user in zip(database_users, users):
         assert "id" in database_user
         assert database_user["azure_user_id"] == str(user.azure_user_id)

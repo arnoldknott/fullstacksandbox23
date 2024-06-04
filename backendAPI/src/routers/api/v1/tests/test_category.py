@@ -86,21 +86,22 @@ async def test_get_all_categories(
     """Tests GET all categories."""
 
     app_override_get_azure_payload_dependency
-    # OK, this is working, but I need to pass the token_payload to the fixture!
-    # In case a different user is supposed to be the owner
-    # compared to the mocked token_payload from the parameterization,
-    # just add a different token mocking as a parameter to the fixture!
-    # This is so much more pretty than the previous solution with the fixture!
     categories = await add_test_categories(mocked_get_azure_token_payload)
 
     response = await async_client.get("/api/v1/category/")
 
     assert response.status_code == 200
-    assert len(response.json()) == 3
-    content = response.json()[0]
-    assert content["name"] == categories[0].name
-    assert content["description"] == categories[0].description
-    assert "id" in content
+    database_categories = response.json()
+    assert len(database_categories) == 3
+
+    for database_category, mocked_category in zip(database_categories, categories):
+        assert database_category["name"] == mocked_category.name
+        assert database_category["description"] == mocked_category.description
+        assert database_category["id"] == str(mocked_category.id)
+        # assert "id" in database_category
+    # assert content["name"] == categories[0].name
+    # assert content["description"] == categories[0].description
+    # assert "id" in content
     # assert 0
 
 
