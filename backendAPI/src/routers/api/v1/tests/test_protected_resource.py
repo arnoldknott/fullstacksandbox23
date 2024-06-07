@@ -361,6 +361,9 @@ async def test_all_protected_child_endpoints(
     )
     created_protected_child.id = UUID(created_protected_child.id)
     expected_protected_children = [created_protected_child] + mocked_protected_children
+    expected_protected_children = sorted(
+        expected_protected_children, key=lambda x: x.id
+    )
 
     # Make a GET request to get all protected children
     response = await async_client.get(
@@ -450,6 +453,9 @@ async def test_all_protected_grandchild_endpoints(
     expected_protected_grandchildren = [
         created_protected_grandchild
     ] + mocked_protected_grandchildren
+    expected_protected_grandchildren = sorted(
+        expected_protected_grandchildren, key=lambda x: x.id
+    )
 
     # Make a GET request to get all protected children
     response = await async_client.get(
@@ -525,11 +531,16 @@ async def test_post_protected_child_resource_and_add_to_parent(
     protected_resources = await add_many_test_protected_resources(
         mocked_get_azure_token_payload
     )
+    test_parent = [
+        protected_resources
+        for protected_resources in protected_resources
+        if protected_resources.name == "First Protected Resource"
+    ][0]
 
     # Make a POST request to create the protected child as a child of a protected resource
     before_time = datetime.now()
     response = await async_client.post(
-        f"/api/v1/protected/child/?parent_id={protected_resources[0].id}",
+        f"/api/v1/protected/child/?parent_id={test_parent.id}",
         json=many_test_protected_child_resources[0],
     )
     after_time = datetime.now()
@@ -563,7 +574,7 @@ async def test_post_protected_child_resource_and_add_to_parent(
     async with ProtectedResourceCRUD() as crud:
         db_protected_resource = await crud.read(
             current_test_user,
-            filters=[ProtectedResource.id == protected_resources[0].id],
+            filters=[ProtectedResource.id == str(test_parent.id)],
         )
     assert len(db_protected_resource) == 1
     assert db_protected_resource[0].name == many_test_protected_resources[0]["name"]
@@ -607,11 +618,11 @@ async def test_post_protected_child_resource_and_add_to_parent(
     async with ResourceHierarchyCRUD() as crud:
         hierarchy_entry = await crud.read(
             current_test_user,
-            parent_id=protected_resources[0].id,
+            parent_id=test_parent.id,
             child_id=db_protected_child[0].id,
         )
     assert len(hierarchy_entry) == 1
-    assert hierarchy_entry[0].parent_id == protected_resources[0].id
+    assert hierarchy_entry[0].parent_id == test_parent.id
     assert hierarchy_entry[0].child_id == db_protected_child[0].id
     assert hierarchy_entry[0].inherit is False
 
@@ -791,6 +802,11 @@ async def test_get_protected_child_resource_and_from_a_parent_through_inheritanc
     assert db_protected_child.title == many_test_protected_child_resources[0]["title"]
     assert db_protected_child.id == UUID(created_protected_child.id)
     # Check if parent is returned with child:
+    print("=== db_protected_child ===")
+    pprint(db_protected_child)
+    print("=== db_protected_child.protected_resources ===")
+    pprint(db_protected_child.protected_resources)
+    print("\n")
     assert (
         db_protected_child.protected_resources[0].name
         == created_protected_resource.name
@@ -1371,6 +1387,18 @@ async def test_user_gets_protected_children_with_access_to_all_as_relationship_f
     assert response.status_code == 200
     read_protected_resource = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
+    print("=== modelled_protected_resource ===")
+    pprint(modelled_protected_resource)
+    print("=== modelled_protected_resource.protected_children ===")
+    pprint(modelled_protected_resource.protected_children)
+    print("\n")
+
+    print("=== mocked_protected_resources ===")
+    pprint(mocked_protected_resources)
+    print("=== mocked_protected_children ===")
+    pprint(mocked_protected_children)
+    print("\n")
+
     assert modelled_protected_resource.id == mocked_protected_resources[0].id
     assert modelled_protected_resource.name == mocked_protected_resources[0].name
     assert (

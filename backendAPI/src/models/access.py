@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, ClassVar
 
 from pydantic import BaseModel, model_validator  # , create_model
 from sqlalchemy import UniqueConstraint
@@ -54,6 +54,9 @@ class IdentifierTypeLink(SQLModel, table=True):
 
 #     id: uuid.UUID = Field(primary_key=True)
 #     type: IdentityType = Field(index=True)
+
+
+# region Access
 
 
 class AccessPolicyCreate(SQLModel):
@@ -176,6 +179,22 @@ class AccessLogRead(AccessLogCreate):
     time: datetime
 
 
+# endregion Access
+
+
+# region hierarchies
+
+
+class BaseHierarchy:
+    """Class to define the hierarchy of the entities"""
+
+    relations: ClassVar = {}
+
+    @classmethod
+    def get_allowed_children_types(cls, entity_type: str) -> List[str]:
+        return cls.relations.get(entity_type, [])
+
+
 class ResourceHierarchyCreate(SQLModel):
     """Create model for resource hierarchy"""
 
@@ -194,8 +213,8 @@ class ResourceHierarchyCreate(SQLModel):
         return self
 
 
-class ResourceHierarchy(ResourceHierarchyCreate, table=True):
-    """Table for resource hierarchy"""
+class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
+    """Table for resource hierarchy and its types"""
 
     parent_id: uuid.UUID = Field(
         primary_key=True
@@ -205,6 +224,33 @@ class ResourceHierarchy(ResourceHierarchyCreate, table=True):
     )  # foreign_key="identifiertypelink.id",
 
     __table_args__ = (UniqueConstraint("parent_id", "child_id"),)
+
+    relations: ClassVar = {
+        ResourceType.category: [
+            ResourceType.demo_resource,
+            ResourceType.protected_resource,
+            ResourceType.public_resource,
+        ],
+        ResourceType.protected_resource: [
+            ResourceType.protected_child,
+            ResourceType.protected_grand_child,
+        ],
+        ResourceType.protected_child: [
+            ResourceType.protected_grand_child,
+        ],
+        ResourceType.module: [
+            ResourceType.section,
+            ResourceType.topic,
+            ResourceType.element,
+        ],
+        ResourceType.section: [
+            ResourceType.subsection,
+            ResourceType.topic,
+            ResourceType.element,
+        ],
+        ResourceType.subsection: [ResourceType.topic, ResourceType.element],
+        ResourceType.topic: [ResourceType.element],
+    }
 
 
 class ResourceHierarchyRead(ResourceHierarchyCreate):
@@ -231,7 +277,7 @@ class IdentityHierarchyCreate(SQLModel):
         return self
 
 
-class IdentityHierarchy(IdentityHierarchyCreate, table=True):
+class IdentityHierarchy(IdentityHierarchyCreate, BaseHierarchy, table=True):
     """Table for identity hierarchy"""
 
     parent_id: uuid.UUID = Field(primary_key=True)
@@ -239,8 +285,18 @@ class IdentityHierarchy(IdentityHierarchyCreate, table=True):
 
     __table_args__ = (UniqueConstraint("parent_id", "child_id"),)
 
+    relations: ClassVar = {
+        IdentityType.azure_group: [IdentityType.user],
+        IdentityType.group: [IdentityType.sub_group, IdentityType.user],
+        IdentityType.sub_group: [IdentityType.sub_sub_group, IdentityType.user],
+        IdentityType.sub_sub_group: [IdentityType.user],
+    }
+
 
 class IdentityHierarchyRead(IdentityHierarchyCreate):
     """Read model for identity hierarchy"""
 
     pass
+
+
+# endregion hierarchies

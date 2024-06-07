@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
-
+from pprint import pprint
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -543,17 +543,23 @@ async def test_get_all_demo_resources_by_category_id(
     )
 
     assert response.status_code == 200
-    assert len(response.json()) == 2
-    first_content = response.json()[0]
+    database_demo_resources = response.json()
+    resources = [
+        resource
+        for resource in resources
+        if resource.category_id == uuid.UUID(categories[1]["id"])
+    ]
+    assert len(database_demo_resources) == 2
+    first_content = database_demo_resources[0]
     assert first_content["name"] == resources[0].name
     assert first_content["description"] == resources[0].description
     assert first_content["language"] == resources[0].language
     assert "category_id" in first_content
 
-    second_content = response.json()[1]
-    assert second_content["name"] == resources[2].name
-    assert second_content["description"] == resources[2].description
-    assert second_content["language"] == resources[2].language
+    second_content = database_demo_resources[1]
+    assert second_content["name"] == resources[1].name
+    assert second_content["description"] == resources[1].description
+    assert second_content["language"] == resources[1].language
     assert "category_id" in second_content
 
 
@@ -618,7 +624,11 @@ async def test_get_all_demo_resources_by_tag_id(
 
     assert response.status_code == 200
     content = response.json()
-
+    # resources = [
+    #     resource
+    #     for resource in resources
+    #     if resource.tags_id == uuid.UUID(tags[2]["id"])
+    # ]
     # print("=== content ===")
     # print(content[0])
 

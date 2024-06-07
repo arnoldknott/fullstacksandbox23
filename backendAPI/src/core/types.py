@@ -89,45 +89,45 @@ class ResourceType(BaseType):
     element = "Element"
 
 
-class BaseHierarchy:
-    """Class to define the hierarchy of the entities"""
+# class BaseHierarchy:
+#     """Class to define the hierarchy of the entities"""
 
-    _children = {}
+#     relations = {}
 
-    @classmethod
-    def get_allowed_children_types(cls, entity_type: str) -> List[str]:
-        return cls._children.get(entity_type, [])
+#     @classmethod
+#     def get_allowed_children_types(cls, entity_type: str) -> List[str]:
+#         return cls.relations.get(entity_type, [])
 
 
-class ResourceHierarchy(BaseHierarchy):
-    """Class to define the hierarchy of the resources"""
+# class ResourceHierarchy(BaseHierarchy):
+#     """Class to define the hierarchy of the resources"""
 
-    _children = {
-        ResourceType.category: [
-            ResourceType.demo_resource,
-            ResourceType.protected_resource,
-            ResourceType.public_resource,
-        ],
-        ResourceType.protected_resource: [
-            ResourceType.protected_child,
-            ResourceType.protected_grand_child,
-        ],
-        ResourceType.protected_child: [
-            ResourceType.protected_grand_child,
-        ],
-        ResourceType.module: [
-            ResourceType.section,
-            ResourceType.topic,
-            ResourceType.element,
-        ],
-        ResourceType.section: [
-            ResourceType.subsection,
-            ResourceType.topic,
-            ResourceType.element,
-        ],
-        ResourceType.subsection: [ResourceType.topic, ResourceType.element],
-        ResourceType.topic: [ResourceType.element],
-    }
+#     relations = {
+#         ResourceType.category: [
+#             ResourceType.demo_resource,
+#             ResourceType.protected_resource,
+#             ResourceType.public_resource,
+#         ],
+#         ResourceType.protected_resource: [
+#             ResourceType.protected_child,
+#             ResourceType.protected_grand_child,
+#         ],
+#         ResourceType.protected_child: [
+#             ResourceType.protected_grand_child,
+#         ],
+#         ResourceType.module: [
+#             ResourceType.section,
+#             ResourceType.topic,
+#             ResourceType.element,
+#         ],
+#         ResourceType.section: [
+#             ResourceType.subsection,
+#             ResourceType.topic,
+#             ResourceType.element,
+#         ],
+#         ResourceType.subsection: [ResourceType.topic, ResourceType.element],
+#         ResourceType.topic: [ResourceType.element],
+#     }
 
 
 class IdentityType(BaseType):
@@ -144,15 +144,15 @@ class IdentityType(BaseType):
     # google_group = "google_group"
 
 
-class IdentityHierarchy(BaseHierarchy):
-    """Class to define the hierarchy of the identities"""
+# class IdentityHierarchy(BaseHierarchy):
+#     """Class to define the hierarchy of the identities"""
 
-    _children = {
-        IdentityType.azure_group: [IdentityType.user],
-        IdentityType.group: [IdentityType.sub_group, IdentityType.user],
-        IdentityType.sub_group: [IdentityType.sub_sub_group, IdentityType.user],
-        IdentityType.sub_sub_group: [IdentityType.user],
-    }
+#     relations = {
+#         IdentityType.azure_group: [IdentityType.user],
+#         IdentityType.group: [IdentityType.sub_group, IdentityType.user],
+#         IdentityType.sub_group: [IdentityType.sub_sub_group, IdentityType.user],
+#         IdentityType.sub_sub_group: [IdentityType.user],
+#     }
 
 
 # using models in stead of strings:

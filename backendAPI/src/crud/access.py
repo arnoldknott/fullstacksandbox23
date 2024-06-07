@@ -11,11 +11,11 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from core.databases import get_async_session
 from core.types import (
     Action,
-    BaseHierarchy,
+    # BaseHierarchy,
     CurrentUserData,
-    IdentityHierarchy,
+    # IdentityHierarchy,
     IdentityType,
-    ResourceHierarchy,
+    # ResourceHierarchy,
     ResourceType,
 )
 from models.access import (
@@ -30,10 +30,21 @@ from models.access import (
     AccessRequest,
     IdentifierTypeLink,
 )
-from models.access import IdentityHierarchy as IdentityHierarchyTable
-from models.access import IdentityHierarchyCreate, IdentityHierarchyRead
-from models.access import ResourceHierarchy as ResourceHierarchyTable
-from models.access import ResourceHierarchyCreate, ResourceHierarchyRead
+
+# from models.access import IdentityHierarchy  #  as IdentityHierarchyTable
+# from models.access import IdentityHierarchyCreate, IdentityHierarchyRead
+# from models.access import ResourceHierarchy  #  as ResourceHierarchyTable
+# from models.access import ResourceHierarchyCreate, ResourceHierarchyRead
+# from models.access import BaseHierarchy
+from models.access import (
+    IdentityHierarchy,
+    IdentityHierarchyCreate,
+    IdentityHierarchyRead,
+    ResourceHierarchy,
+    ResourceHierarchyCreate,
+    ResourceHierarchyRead,
+    BaseHierarchy,
+)
 
 # from core.access import AccessControl
 
@@ -66,15 +77,20 @@ class AccessPolicyCRUD:
         self, base_resource_ids: select  # TBD: change this to List[UUID]?
     ):
         """Checks if the resource inherits permissions from a parent resource"""
-        ResourceHierarchyAlias = aliased(ResourceHierarchyTable)
+        # ResourceHierarchyAlias = aliased(ResourceHierarchyTable)
+        ResourceHierarchyAlias = aliased(ResourceHierarchy)
 
         hierarchy_cte = (
             # select(ResourceHierarchyTable.child_id.label("resource_id"))
             # .where(ResourceHierarchyTable.child_id.in_(base_resource_ids))
-            select(ResourceHierarchyTable.parent_id.label("resource_id"))
-            .where(ResourceHierarchyTable.parent_id.in_(base_resource_ids))
-            .cte(recursive=True)
             # .cte(name="resource_hierarchy", recursive=True)
+            #
+            # select(ResourceHierarchyTable.parent_id.label("resource_id"))
+            # .where(ResourceHierarchyTable.parent_id.in_(base_resource_ids))
+            # .cte(recursive=True)
+            select(ResourceHierarchy.parent_id.label("resource_id"))
+            .where(ResourceHierarchy.parent_id.in_(base_resource_ids))
+            .cte(recursive=True)
         )
 
         hierarchy_cte = hierarchy_cte.union_all(
@@ -99,11 +115,15 @@ class AccessPolicyCRUD:
         self, base_identity_id: UUID
     ):
         """Checks if the resource inherits permissions from a parent resource"""
-        IdentityHierarchyAlias = aliased(IdentityHierarchyTable)
+        # IdentityHierarchyAlias = aliased(IdentityHierarchyTable)
+        IdentityHierarchyAlias = aliased(IdentityHierarchy)
 
         hierarchy_cte = (
-            select(IdentityHierarchyTable.child_id.label("identity_id"))
-            .where(IdentityHierarchyTable.child_id == base_identity_id)
+            # select(IdentityHierarchyTable.child_id.label("identity_id"))
+            # .where(IdentityHierarchyTable.child_id == base_identity_id)
+            # .cte(recursive=True)
+            select(IdentityHierarchy.child_id.label("identity_id"))
+            .where(IdentityHierarchy.child_id == base_identity_id)
             .cte(recursive=True)
             # .cte(name="identity_hierarchy", recursive=True)
         )
@@ -1325,25 +1345,29 @@ class BaseHierarchyCRUD(
 
 
 class ResourceHierarchyCRUD(
-    BaseHierarchyCRUD[
-        ResourceHierarchyCreate, ResourceHierarchyTable, ResourceHierarchyRead
-    ]
+    # BaseHierarchyCRUD[
+    #     ResourceHierarchyCreate, ResourceHierarchyTable, ResourceHierarchyRead
+    # ]
+    BaseHierarchyCRUD[ResourceHierarchyCreate, ResourceHierarchy, ResourceHierarchyRead]
 ):
     """CRUD for resource hierarchies."""
 
     def __init__(self):
-        super().__init__(ResourceHierarchy, ResourceHierarchyTable)
+        # super().__init__(ResourceHierarchy, ResourceHierarchyTable)
+        super().__init__(ResourceHierarchy, ResourceHierarchy)
 
 
 class IdentityHierarchyCRUD(
-    BaseHierarchyCRUD[
-        IdentityHierarchyCreate, IdentityHierarchyTable, IdentityHierarchyRead
-    ]
+    # BaseHierarchyCRUD[
+    #     IdentityHierarchyCreate, IdentityHierarchyTable, IdentityHierarchyRead
+    # ]
+    BaseHierarchyCRUD[IdentityHierarchyCreate, IdentityHierarchy, IdentityHierarchyRead]
 ):
     """CRUD for resource hierarchies."""
 
     def __init__(self):
-        super().__init__(IdentityHierarchy, IdentityHierarchyTable)
+        # super().__init__(IdentityHierarchy, IdentityHierarchyTable)
+        super().__init__(IdentityHierarchy, IdentityHierarchy)
 
 
 # class IdentityHierarchyCRUD(BaseHierarchyCRUD):
