@@ -30,8 +30,9 @@ class ProtectedResource(ProtectedResourceCreate, table=True):
             # "lazy": "dynamic",
             # "lazy": "noload",
             # TBD: is foreign() needed here?
-            "primaryjoin": "ProtectedResource.id == ResourceHierarchy.parent_id",
-            "secondaryjoin": "ProtectedChild.id == ResourceHierarchy.child_id",
+            "viewonly": True,
+            "primaryjoin": "ProtectedResource.id == foreign(ResourceHierarchy.parent_id)",
+            "secondaryjoin": "ProtectedChild.id == foreign(ResourceHierarchy.child_id)",
         },
     )
 
@@ -71,8 +72,10 @@ class ProtectedChild(ProtectedChildCreate, table=True):
             "lazy": "joined",
             # "lazy": "dynamic",
             # "lazy": "noload",
-            "primaryjoin": "ProtectedChild.id == foreign(ResourceHierarchy.child_id)",  # TBD: is foreign() needed here?
-            "secondaryjoin": "foreign(ProtectedResource.id) == foreign(ResourceHierarchy.parent_id)",  # TBD: is foreign() needed here?
+            "viewonly": True,
+            "primaryjoin": "ProtectedChild.id == foreign(ResourceHierarchy.child_id)",
+            "secondaryjoin": "ProtectedResource.id == foreign(ResourceHierarchy.parent_id)",
+            # TBD: is foreign() needed here?
         },
     )
 

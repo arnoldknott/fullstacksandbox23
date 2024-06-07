@@ -15,6 +15,7 @@ from sqlalchemy.orm import (
     subqueryload,
     contains_eager,
     with_loader_criteria,
+    foreign,
 )
 from sqlmodel import SQLModel, delete, select, or_, asc
 
@@ -455,8 +456,8 @@ class BaseCRUD(
 
                 # print("\n")
 
-                print("=== CRUD - base - read - relationship ===")
-                print(relationship)
+                # print("=== CRUD - base - read - relationship ===")
+                # print(relationship)
                 # print("=== CRUD - base - read - relationship.key ===")
                 # print(relationship.key)
                 # print("=== CRUD - base - read - relationship.mapper ===")
@@ -516,14 +517,17 @@ class BaseCRUD(
                 # )
 
                 # Check if self.entity_type is a key in relations, i.e. the model is a parent in the hierarchy
+                print("=== CRUD - base - read - relations.keys ===")
+                pprint(relations.keys())
                 if self.entity_type in relations.keys():
                     # self.model is a parent, join on parent_id
                     statement = statement.outerjoin(
                         hierarchy_aliased,
-                        self.model.id == hierarchy_aliased.parent_id,
+                        self.model.id == foreign(hierarchy_aliased.parent_id),
                     )
                     statement = statement.outerjoin(
-                        related_model, hierarchy_aliased.child_id == related_model.id
+                        related_model,
+                        related_model.id == foreign(hierarchy_aliased.child_id),
                     )
 
                 # Check if self.entity_type is in the values of relations, i.e. the model is child in the hierarchy
@@ -531,10 +535,11 @@ class BaseCRUD(
                     # self.model is a child, join on child_id
                     statement = statement.outerjoin(
                         hierarchy_aliased,
-                        self.model.id == hierarchy_aliased.child_id,
+                        self.model.id == foreign(hierarchy_aliased.child_id),
                     )
                     statement = statement.outerjoin(
-                        related_model, hierarchy_aliased.parent_id == related_model.id
+                        related_model,
+                        related_model.id == foreign(hierarchy_aliased.parent_id),
                     )
 
                 # print("=== CRUD - base - read - child_statement ===")
@@ -582,10 +587,10 @@ class BaseCRUD(
             if offset:
                 statement = statement.offset(offset)
 
-            # print("=== CRUD - base - read - statement ===")
-            # print(statement.compile())
-            # print(statement.compile().params)
-            # print("\n")
+            print("=== CRUD - base - read - statement ===")
+            print(statement.compile())
+            print(statement.compile().params)
+            print("\n")
 
             response = await self.session.exec(statement)
             results = response.unique().all()

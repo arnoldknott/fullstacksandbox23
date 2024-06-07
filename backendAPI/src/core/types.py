@@ -89,6 +89,7 @@ class ResourceType(BaseType):
     element = "Element"
 
 
+# moved into hierarchy models - as this is used together with the models most of the time anyways:
 # class BaseHierarchy:
 #     """Class to define the hierarchy of the entities"""
 

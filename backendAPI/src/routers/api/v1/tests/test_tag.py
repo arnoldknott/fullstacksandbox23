@@ -107,7 +107,6 @@ async def test_get_all_tags(
 
     assert response.status_code == 200
     database_tags = response.json()
-    print(database_tags)
     assert len(database_tags) == 4
     for database_tag, mocked_tag in zip(database_tags, tags):
         assert database_tag["name"] == mocked_tag.name

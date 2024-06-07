@@ -226,6 +226,9 @@ class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
     __table_args__ = (UniqueConstraint("parent_id", "child_id"),)
 
     relations: ClassVar = {
+        ResourceType.demo_resource: [
+            ResourceType.tag,
+        ],
         ResourceType.category: [
             ResourceType.demo_resource,
             ResourceType.protected_resource,

@@ -4,7 +4,9 @@ from typing import List, Optional  # , TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
 from .category import Category, CategoryRead
-from .demo_resource_tag_link import DemoResourceTagLink
+
+# from .demo_resource_tag_link import DemoResourceTagLink
+from .access import ResourceHierarchy
 from .tag import Tag, TagRead
 
 # if TYPE_CHECKING:
@@ -39,8 +41,15 @@ class DemoResource(DemoResourceCreate, table=True):
 
     tags: Optional[List["Tag"]] = Relationship(
         back_populates="demo_resources",
-        link_model=DemoResourceTagLink,
-        sa_relationship_kwargs={"lazy": "selectin"},
+        # link_model=DemoResourceTagLink,
+        # sa_relationship_kwargs={"lazy": "selectin"},
+        link_model=ResourceHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "DemoResource.id == foreign(ResourceHierarchy.parent_id)",
+            "secondaryjoin": "Tag.id == foreign(ResourceHierarchy.child_id)",
+        },
     )
 
 

@@ -6,7 +6,8 @@ from sqlmodel import Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from .demo_resource import DemoResource
 # from .demo_resource import DemoResource
-from .demo_resource_tag_link import DemoResourceTagLink
+# from .demo_resource_tag_link import DemoResourceTagLink
+from .access import ResourceHierarchy
 
 
 class TagCreate(SQLModel):
@@ -22,8 +23,15 @@ class Tag(TagCreate, table=True):
 
     demo_resources: Optional[List["DemoResource"]] = Relationship(
         back_populates="tags",
-        link_model=DemoResourceTagLink,
-        sa_relationship_kwargs={"lazy": "selectin"},
+        # link_model=DemoResourceTagLink,
+        # sa_relationship_kwargs={"lazy": "selectin"},
+        link_model=ResourceHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "Tag.id == foreign(ResourceHierarchy.child_id)",
+            "secondaryjoin": "DemoResource.id == foreign(ResourceHierarchy.parent_id)",
+        },
     )
 
 
