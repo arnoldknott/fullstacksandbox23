@@ -8,9 +8,11 @@ from core.security import (
     Guards,
     get_access_token_payload,
     optional_get_access_token_payload,
+    CurrentAccessToken,
 )
 from core.types import GuardTypes
 from crud.demo_resource import DemoResourceCRUD
+from crud.tag import TagCRUD
 from models.demo_resource import (
     DemoResource,
     DemoResourceCreate,
@@ -89,10 +91,30 @@ async def delete_demo_resource(
 async def add_tag_to_demo_resource(
     resource_id: UUID,
     tag_ids: Annotated[List[UUID], Query()],
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResourceRead:
     """Adds a tag to a demo resource."""
+    # token = CurrentAccessToken(token_payload)
+    # current_user = await token.provides_current_user()
+    current_user = await demo_resource_view._check_token_against_guards(
+        token_payload, guards
+    )
+    print("=== resource_id ===")
+    print(resource_id)
+    async with TagCRUD() as crud:
+        for tag_id in tag_ids:
+            print("=== tag_id ===")
+            print(tag_id)
+            await crud.add_child_to_parent(
+                parent_id=resource_id,
+                child_id=tag_id,
+                current_user=current_user,
+                inherit=True,
+            )
     async with demo_resource_view.crud() as crud:
-        return await crud.add_tag(resource_id, tag_ids)
+        return await crud.read_by_id(resource_id, current_user)
+        # return await crud.add_tag(resource_id, tag_ids)
 
 
 @router.get("/category/{category_id}")

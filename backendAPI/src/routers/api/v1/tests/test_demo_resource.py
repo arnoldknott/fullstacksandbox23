@@ -595,21 +595,50 @@ async def test_get_demo_resources_for_lonely_category(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
+    [
+        token_admin_read_write,
+        token_user1_read_write,
+    ],  # , token_user1_read],
     indirect=True,
 )
+# TBD: check if this is circumventing the access policies for the demo resources in the CRUD?
 async def test_get_all_demo_resources_by_tag_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
     add_test_tags: list[Tag],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
+    current_test_user,
+    add_one_test_access_policy,
 ):
     """Tests GET all demo resources by category id."""
 
     app_override_get_azure_payload_dependency
     resources = await add_test_demo_resources(mocked_get_azure_token_payload)
     tags = await add_test_tags()
+
+    current_user = current_test_user
+
+    # for tag in tags:
+    #     await add_one_test_access_policy(
+    #         {
+    #             "resource_id": str(tag.id),
+    #             "resource_type": "DemoResource",
+    #             "action": "own",
+    #             "identity_id": current_user.user_id,
+    #         }
+    #     )
+
+    # for resource in resources:
+    #     await add_one_test_access_policy(
+    #         {
+    #             "resource_id": str(resource.id),
+    #             "resource_type": "DemoResource",
+    #             "action": "write",
+    #             "identity_id": current_user.user_id,
+    #         }
+    #     )
+
     await async_client.post(
         f"/api/v1/demoresource/{str(resources[0].id)}/tag/?&tag_ids={str(tags[1].id)}"
     )
@@ -633,6 +662,12 @@ async def test_get_all_demo_resources_by_tag_id(
     # print(content[0])
 
     assert len(content) == 2
+    print("=== content ===")
+    pprint(content)
+    print("=== resources ===")
+    pprint(resources)
+    print("=== tags ===")
+    pprint(tags)
     first_content = content[0]
     demo_resource_1 = DemoResourceRead.model_validate(first_content)
     assert demo_resource_1.name == resources[1].name

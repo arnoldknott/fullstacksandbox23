@@ -301,7 +301,7 @@ class BaseCRUD(
         current_user: "CurrentUserData",
         inherit: Optional[bool] = False,
     ) -> BaseHierarchyModelRead:
-
+        """Adds a member of this class to a parent (of another entity type)."""
         async with self.hierarchy_CRUD as hierarchy_CRUD:
             hierarchy = await hierarchy_CRUD.create(
                 current_user=current_user,
@@ -517,8 +517,6 @@ class BaseCRUD(
                 # )
 
                 # Check if self.entity_type is a key in relations, i.e. the model is a parent in the hierarchy
-                print("=== CRUD - base - read - relations.keys ===")
-                pprint(relations.keys())
                 if self.entity_type in relations.keys():
                     # self.model is a parent, join on parent_id
                     statement = statement.outerjoin(
@@ -587,10 +585,10 @@ class BaseCRUD(
             if offset:
                 statement = statement.offset(offset)
 
-            print("=== CRUD - base - read - statement ===")
-            print(statement.compile())
-            print(statement.compile().params)
-            print("\n")
+            # print("=== CRUD - base - read - statement ===")
+            # print(statement.compile())
+            # print(statement.compile().params)
+            # print("\n")
 
             response = await self.session.exec(statement)
             results = response.unique().all()

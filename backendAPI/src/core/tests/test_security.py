@@ -289,6 +289,82 @@ async def test_existing_azure_user_has_new_group_in_token(
     # )
 
 
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        {
+            **token_payload_user_id,
+            **token_payload_tenant_id,
+            **token_payload_scope_api_read,
+            # **token_payload_roles_user,
+            **token_payload_many_groups,
+        }
+    ],
+    indirect=True,
+)
+async def test_existing_azure_user_got_group_removed_in_token(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_azure_test_user: List[User],
+    mock_guards,
+):
+    """Tests if an user that got removed from an azure group also gets removed the group from the database."""
+
+    assert 0
+
+    ### Check this test - that's Copilots's suggestion:
+    # # preparing the test: adds a user to the database and ensure that this user is member of 3 groups:
+    # existing_user = await add_one_azure_test_user(0)
+    # # existing_user = existing_users[0]
+    # existing_db_user = await get_user_by_id(
+    #     str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+    # )
+
+    # assert len(existing_db_user.azure_groups) == 3
+    # app = app_override_get_azure_payload_dependency
+
+    # # create a temporary route that uses the guard adn call it:
+    # @app.get("/test_existing_azure_user_got_group_removed_in_token")
+    # def temp_endpoint(
+    #     current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())]
+    # ) -> UserRead:
+    #     """Returns the result of the guard."""
+    #     return current_user
+
+    # response = await async_client.get(
+    #     "/test_existing_azure_user_got_group_removed_in_token",
+    # )
+
+    # updated_user = response.json()
+
+    # assert updated_user["azure_user_id"] == many_test_azure_users[0]["azure_user_id"]
+    # assert (
+    #     updated_user["azure_tenant_id"] == many_test_azure_users[0]["azure_tenant_id"]
+    # )
+
+    # # Verify that the user now has the new group in the database
+    # db_user = await get_user_by_id(
+    #     str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+    # )
+    # assert db_user is not None
+    # assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[0]["azure_user_id"])
+    # assert db_user.azure_tenant_id == uuid.UUID(
+    #     many_test_azure_users[0]["azure_tenant_id"]
+    # )
+    # assert len(db_user.azure_groups) == 2
+
+    # azure_groups = db_user.azure_groups
+    # assert not any(
+    #     group.id == uuid.UUID(token_payload_one_group["groups"][0])
+    #     for group in azure_groups
+    # )
+
+    # # db_user_json_encoded = jsonable_encoder(db_user)
+    # # print("=== db_user_json_encoded ===")
+    # # print(db_user)
+
+
 # endregion
 
 

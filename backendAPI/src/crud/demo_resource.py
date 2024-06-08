@@ -31,8 +31,10 @@ class DemoResourceCRUD(
     # so probably base crud need a new method for linking.
     # This method should then be reusable for all link tables:
     # like sharing, tagging, creating hierarchies etc.
+    # TBD: should not be needed any more after refactoring the DemoResource and Tag endpoints!
     async def add_tag(self, demo_resource_id, tag_ids) -> DemoResourceRead:
         """Adds a tag to a demo resource."""
+        # TBD: refactor to use parent attribute in post method and utilize ResourceHierarchy!
         session = self.session
         # TBD: refactor into try-except block and add logging
         statement = select(DemoResource).where(DemoResource.id == demo_resource_id)
@@ -40,12 +42,12 @@ class DemoResourceCRUD(
         # print(statement.compile())
         # print(statement.compile().params)
         demo_resource = await session.exec(statement)
-        demo_resource = demo_resource.one()
+        demo_resource = demo_resource.unique().one()
         if not demo_resource:
             raise HTTPException(status_code=404, detail="No demo resource found")
         statement = select(Tag).where(Tag.id.in_(tag_ids))
         tags = await session.exec(statement)
-        tags = tags.all()
+        tags = tags.unique().all()
         if not tags:
             raise HTTPException(status_code=404, detail="No tag found")
         for tag in tags:
@@ -61,7 +63,7 @@ class DemoResourceCRUD(
         self, current_user: CurrentUserData, category_id: UUID
     ) -> List[DemoResource]:
         """Returns all demo resources within category."""
-
+        # TBD: refactor to use ResourceHierarchy!
         # demo_resources = await self.read(
         #     current_user, filters=[DemoResource.category_id == category_id]
         # )
@@ -89,6 +91,9 @@ class DemoResourceCRUD(
         self, current_user: CurrentUserData, tag_id: UUID
     ) -> List[DemoResourceRead]:
         """Returns all demo resources with tag."""
-        return await self.read(
-            current_user, joins=[DemoResourceTagLink, Tag], filters=[Tag.id == tag_id]
-        )
+        # TBD: refactor to use ResourceHierarchy!
+        # return await self.read(
+        #     current_user, joins=[DemoResourceTagLink, Tag], filters=[Tag.id == tag_id]
+        # )
+        # return self.read(current_user)
+        return await self.read(current_user, filters=[Tag.id == tag_id])
