@@ -470,7 +470,7 @@ async def test_delete_demo_resource_by_invalid_id(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [token_user1_read_write, token_admin_read_write],
+    [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_delete_demo_resource_by_resource_does_not_exist(
@@ -489,14 +489,24 @@ async def test_delete_demo_resource_by_resource_does_not_exist(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
 async def test_attach_tag_to_demo_resource(
     async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
     add_test_demo_resources: list[DemoResource],
+    mocked_get_azure_token_payload,
     add_test_tags: list[Tag],
 ):
     """Tests POST of a tag to a demo resource."""
-    resources = await add_test_demo_resources()
-    tags = await add_test_tags()
+
+    app_override_get_azure_payload_dependency
+
+    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+    tags = await add_test_tags(mocked_get_azure_token_payload)
     response = await async_client.post(
         f"/api/v1/demoresource/{str(resources[1].id)}/tag/?tag_ids={str(tags[0].id)}&tag_ids={str(tags[2].id)}"
     )
@@ -653,20 +663,6 @@ async def test_get_all_demo_resources_by_tag_id(
 
     assert response.status_code == 200
     content = response.json()
-    # resources = [
-    #     resource
-    #     for resource in resources
-    #     if resource.tags_id == uuid.UUID(tags[2]["id"])
-    # ]
-    # print("=== content ===")
-    # print(content[0])
-
-    print("=== content ===")
-    pprint(content)
-    print("=== resources ===")
-    pprint(resources)
-    print("=== tags ===")
-    pprint(tags)
     assert len(content) == 2
     first_content = content[0]
     demo_resource_1 = DemoResourceRead.model_validate(first_content)

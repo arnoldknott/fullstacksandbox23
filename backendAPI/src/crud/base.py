@@ -699,7 +699,7 @@ class BaseCRUD(
             response = await session.exec(statement)
             # print("=== CRUD - base - update - response.all() ===")
             # print(response.all())
-            old = response.one()
+            old = response.unique().one()
             # print("=== CRUD - base - update - old ===")
             # print(old)
             if old is None:
