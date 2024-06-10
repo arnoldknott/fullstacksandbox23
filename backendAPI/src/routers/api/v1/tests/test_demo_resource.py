@@ -608,16 +608,16 @@ async def test_get_all_demo_resources_by_tag_id(
     add_test_tags: list[Tag],
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
-    current_test_user,
-    add_one_test_access_policy,
+    # current_test_user,
+    # add_one_test_access_policy,
 ):
     """Tests GET all demo resources by category id."""
 
     app_override_get_azure_payload_dependency
     resources = await add_test_demo_resources(mocked_get_azure_token_payload)
-    tags = await add_test_tags()
+    tags = await add_test_tags(mocked_get_azure_token_payload)
 
-    current_user = current_test_user
+    # current_user = current_test_user
 
     # for tag in tags:
     #     await add_one_test_access_policy(

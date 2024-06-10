@@ -1,7 +1,7 @@
 import logging
 from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
-
+from pprint import pprint
 from fastapi import HTTPException
 from sqlalchemy.orm import aliased
 from sqlmodel import SQLModel, and_, delete, or_, select, union_all, literal
@@ -567,6 +567,8 @@ class AccessPolicyCRUD:
         access_request: AccessRequest,
     ) -> bool:
         """Checks if the user has permission including inheritance to perform the action on the resource"""
+        print("=== AccessPolicyCRUD.allows - access_request ===")
+        print(access_request)
         resource_id = access_request.resource_id
         action = access_request.action
         current_user = access_request.current_user
@@ -592,13 +594,15 @@ class AccessPolicyCRUD:
 
                 # Only one policy per resource - action - identity combination is allowed!
                 response = await self.session.exec(query)
-                results = response.one()
+                # results = response.one()
+                results = response.all()
 
-                # print("=== AccessPolicyCRUD.allows - results ===")
-                # print(results)
+                print("=== AccessPolicyCRUD.allows - results ===")
+                pprint(results)
 
-            if results.resource_id == resource_id and results.action == action:
-                return True
+            for result in results:
+                if result.resource_id == resource_id and result.action == action:
+                    return True
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
             raise HTTPException(status_code=403, detail="Forbidden.")
