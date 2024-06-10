@@ -661,13 +661,13 @@ async def test_get_all_demo_resources_by_tag_id(
     # print("=== content ===")
     # print(content[0])
 
-    assert len(content) == 2
     print("=== content ===")
     pprint(content)
     print("=== resources ===")
     pprint(resources)
     print("=== tags ===")
     pprint(tags)
+    assert len(content) == 2
     first_content = content[0]
     demo_resource_1 = DemoResourceRead.model_validate(first_content)
     assert demo_resource_1.name == resources[1].name

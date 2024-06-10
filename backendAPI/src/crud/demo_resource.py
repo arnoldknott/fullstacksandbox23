@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlmodel import select
-
+from pprint import pprint
 from core.types import CurrentUserData
 from models.demo_resource import (
     DemoResource,
@@ -96,4 +96,16 @@ class DemoResourceCRUD(
         #     current_user, joins=[DemoResourceTagLink, Tag], filters=[Tag.id == tag_id]
         # )
         # return self.read(current_user)
-        return await self.read(current_user, filters=[Tag.id == tag_id])
+        # return await self.read(current_user, filters=[Tag.id == tag_id])
+        # results = await self.read(current_user)
+        results = await self.read(
+            current_user, filters=[DemoResource.tags.any(Tag.id == tag_id)]
+        )
+        print("=== results ===")
+        pprint(results)
+        for result in results:
+            print("=== result ===")
+            pprint(result)
+            print("=== result.tags ===")
+            pprint(result.tags)
+        return results
