@@ -254,19 +254,27 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 "===  user crud - create_azure_user_and_groups_if_not_exist - current_user_data ==="
             )
             print(current_user_data)
-            async with self.policy_CRUD as policy_CRUD:
-                access_policy = AccessPolicyCreate(
-                    resource_id=azure_group_id,
-                    action=Action.write,
-                    identity_id=current_user_data.user_id,
+            try:
+                async with self.hierarchy_CRUD as hierarchy_CRUD:
+                    await hierarchy_CRUD.read(
+                        parent_id=azure_group_id,
+                        child_id=current_user_data.user_id,
+                        current_user=current_user_data,
+                    )
+            except:
+                async with self.policy_CRUD as policy_CRUD:
+                    access_policy = AccessPolicyCreate(
+                        resource_id=azure_group_id,
+                        action=Action.write,
+                        identity_id=current_user_data.user_id,
+                    )
+                    await policy_CRUD.create(access_policy, current_user_data)
+                await self.add_child_to_parent(
+                    parent_id=azure_group_id,
+                    child_id=current_user_data.user_id,
+                    current_user=current_user_data,
+                    inherit=True,
                 )
-                await policy_CRUD.create(access_policy, current_user_data)
-            await self.add_child_to_parent(
-                parent_id=azure_group_id,
-                child_id=current_user_data.user_id,
-                current_user=current_user_data,
-                inherit=True,
-            )
             # read again after the relationship to the groups is created:
         # TBD: put this one back in - but now with the current_user parameter!
         # current_user = await self.read_by_azure_user_id(
