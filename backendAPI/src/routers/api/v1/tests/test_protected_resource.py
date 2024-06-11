@@ -1256,6 +1256,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     [token_admin_read_write],
     indirect=True,
 )
+# TBD: solve issue with order in assert of UUID's
 async def test_admin_adds_and_gets_protected_children_as_relationship_from_protected_resource(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
@@ -1324,6 +1325,7 @@ async def test_admin_adds_and_gets_protected_children_as_relationship_from_prote
     [token_user1_read_write],
     indirect=True,
 )
+# TBD: solve issue with order in assert of UUID's
 async def test_user_gets_protected_children_with_access_to_all_as_relationship_from_protected_resource(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,

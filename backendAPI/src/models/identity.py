@@ -6,6 +6,7 @@ from sqlalchemy import Column, ForeignKey, Uuid
 from sqlmodel import Field, Relationship, SQLModel
 
 from core.config import config
+from models.access import IdentityHierarchy
 
 # from .azure_group import AzureGroup, AzureGroupRead
 
@@ -75,9 +76,16 @@ class AzureGroup(AzureGroupCreate, table=True):
 
     users: Optional[List["User"]] = Relationship(
         back_populates="azure_groups",
-        link_model=AzureGroupUserLink,
-        sa_relationship_kwargs={"lazy": "selectin"},
-        # sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete"},
+        # link_model=AzureGroupUserLink,
+        # sa_relationship_kwargs={"lazy": "selectin"},
+        # # sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete"},
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "AzureGroup.id == foreign(IdentityHierarchy.parent_id)",
+            "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+        },
     )
 
     # create the relationships and back population to users, courses... here!
@@ -142,9 +150,17 @@ class User(UserCreate, table=True):
     azure_user_id: Optional[uuid.UUID] = Field(index=True, unique=True)
     azure_groups: Optional[List["AzureGroup"]] = Relationship(
         back_populates="users",
-        link_model=AzureGroupUserLink,
-        # sa_relationship_kwargs={"lazy": "selectin"},
-        sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete"},
+        # link_model=AzureGroupUserLink,
+        # # sa_relationship_kwargs={"lazy": "selectin"},
+        # sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete"},
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+            "secondaryjoin": "AzureGroup.id == foreign(IdentityHierarchy.parent_id)",
+            "cascade": "all, delete",
+        },
     )
 
     ### Foreign Account: DTU Learn (Brightspace) ###

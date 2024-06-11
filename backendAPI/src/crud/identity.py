@@ -124,6 +124,11 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 )
                 async with self.logging_CRUD as log_CRUD:
                     await log_CRUD.create(access_log)
+                current_user_data = CurrentUserData(
+                    user_id=current_user.id,
+                    roles=[],  # Roles are coming from the token - but this information is not available here!
+                    groups=groups,
+                )
         except HTTPException as err:
             if err.status_code == 404:
                 try:
@@ -243,6 +248,25 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 # print(azure_user_group_link)
                 await session.commit()
                 await session.refresh(azure_user_group_link)
+            # TBD: check if the group is already linked to the user!
+            # User needs write access to the group to be able to add itself to the group:
+            print(
+                "===  user crud - create_azure_user_and_groups_if_not_exist - current_user_data ==="
+            )
+            print(current_user_data)
+            async with self.policy_CRUD as policy_CRUD:
+                access_policy = AccessPolicyCreate(
+                    resource_id=azure_group_id,
+                    action=Action.write,
+                    identity_id=current_user_data.user_id,
+                )
+                await policy_CRUD.create(access_policy, current_user_data)
+            await self.add_child_to_parent(
+                parent_id=azure_group_id,
+                child_id=current_user_data.user_id,
+                current_user=current_user_data,
+                inherit=True,
+            )
             # read again after the relationship to the groups is created:
         # TBD: put this one back in - but now with the current_user parameter!
         # current_user = await self.read_by_azure_user_id(
