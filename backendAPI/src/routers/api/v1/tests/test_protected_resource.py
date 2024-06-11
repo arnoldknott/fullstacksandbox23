@@ -802,11 +802,6 @@ async def test_get_protected_child_resource_and_from_a_parent_through_inheritanc
     assert db_protected_child.title == many_test_protected_child_resources[0]["title"]
     assert db_protected_child.id == UUID(created_protected_child.id)
     # Check if parent is returned with child:
-    print("=== db_protected_child ===")
-    pprint(db_protected_child)
-    print("=== db_protected_child.protected_resources ===")
-    pprint(db_protected_child.protected_resources)
-    print("\n")
     assert (
         db_protected_child.protected_resources[0].name
         == created_protected_resource.name

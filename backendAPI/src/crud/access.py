@@ -567,8 +567,8 @@ class AccessPolicyCRUD:
         access_request: AccessRequest,
     ) -> bool:
         """Checks if the user has permission including inheritance to perform the action on the resource"""
-        print("=== AccessPolicyCRUD.allows - access_request ===")
-        print(access_request)
+        # print("=== AccessPolicyCRUD.allows - access_request ===")
+        # print(access_request)
         resource_id = access_request.resource_id
         action = access_request.action
         current_user = access_request.current_user
@@ -594,11 +594,7 @@ class AccessPolicyCRUD:
 
                 # Only one policy per resource - action - identity combination is allowed!
                 response = await self.session.exec(query)
-                # results = response.one()
                 results = response.all()
-
-                print("=== AccessPolicyCRUD.allows - results ===")
-                pprint(results)
 
             for result in results:
                 if result.resource_id == resource_id and result.action == action:

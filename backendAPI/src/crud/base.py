@@ -1,50 +1,35 @@
 import logging
 import uuid
-from datetime import datetime
 from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
 from pprint import pprint
 
-# from core.access import AccessControl
 from fastapi import HTTPException
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import (
     aliased,
     class_mapper,
-    selectinload,
-    joinedload,
-    subqueryload,
     contains_eager,
-    with_loader_criteria,
     foreign,
 )
 from sqlmodel import SQLModel, delete, select, or_, asc
 
-# from sqlalchemy import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-# from core.types import (
-#     ResourceHierarchy as ResourceHierarchyRelationships,
-#     IdentityHierarchy as IdentityHierarchyRelationships,
-# )
 from core.databases import get_async_session
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
     ResourceHierarchyCRUD,
+    IdentityHierarchyCRUD,
     BaseHierarchyModelRead,
 )
 from models.access import (
     AccessLogCreate,
-    AccessPolicy,
     AccessPolicyCreate,
     IdentifierTypeLink,
     ResourceHierarchy,
     IdentityHierarchy,
 )
-
-from models.protected_resource import ProtectedResource
-
-# from sqlalchemy.sql import distinct
 
 
 if TYPE_CHECKING:
@@ -81,18 +66,36 @@ class BaseCRUD(
         self.session = None
         self.model = base_model
         if base_model.__name__ in ResourceType.list():
-            self.entity_type = ResourceType(base_model.__name__)
+            self.entity_type = ResourceType(self.model.__name__)
+            self.types = ResourceType
+            self.hierarchy_CRUD = ResourceHierarchyCRUD()
+            self.hierarchy = ResourceHierarchy
+            self.relations = ResourceHierarchy.relations
         elif base_model.__name__ in IdentityType.list():
-            self.entity_type = IdentityType(base_model.__name__)
+            self.entity_type = IdentityType(self.model.__name__)
+            self.types = IdentityType
+            self.hierarchy_CRUD = IdentityHierarchyCRUD()
+            self.hierarchy = IdentityHierarchy
+            self.relations = IdentityHierarchy.relations
         else:
             raise ValueError(
                 f"{base_model.__name__} is not a valid ResourceType or IdentityType"
             )
+
+        # TBD: move to to the init: get all possible parent-child relations for the entity_type there!
+
+        # if self.entity_type in ResourceType:
+        #     related_model = ResourceType.get_model(relationship.mapper.class_.__name__)
+
+        # elif self.entity_type in IdentityType:
+        #     related_model = IdentityType.get_model(relationship.mapper.class_.__name__)
+
         self.policy_CRUD = AccessPolicyCRUD()
         self.logging_CRUD = AccessLoggingCRUD()
-        self.hierarchy_CRUD = (
-            ResourceHierarchyCRUD()
-        )  # TBD. are the occasions, where I would need the IdentityHierarchyCRUD() here?
+        # moved to the if-block to check which hierarchy is relevant.
+        # self.hierarchy_CRUD = (
+        #     ResourceHierarchyCRUD()
+        # )  # TBD. are the occasions, where I would need the IdentityHierarchyCRUD() here?
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -350,26 +353,28 @@ class BaseCRUD(
             )
 
             # query relationships:
-
             for relationship in class_mapper(self.model).relationships:
                 # Determine the related model, the relevant hierarchy and relations based on self.entity_type
-                if self.entity_type in ResourceType:
-                    related_model = ResourceType.get_model(
-                        relationship.mapper.class_.__name__
-                    )
-                    hierarchy_aliased = aliased(ResourceHierarchy)
-                    # relations = (
-                    #     ResourceHierarchyRelationships.relations
-                    # )
-                    relations = ResourceHierarchy.relations
-                    # TBD: move to to the init: get all possible parent-child relations for the entity_type there!
-                elif self.entity_type in IdentityType:
-                    related_model = IdentityType.get_model(
-                        relationship.mapper.class_.__name__
-                    )
-                    hierarchy_aliased = aliased(IdentityHierarchy)
-                    # relations = IdentityHierarchyRelationships.relations
-                    relations = IdentityHierarchy.relations
+                related_model = self.types.get_model(
+                    relationship.mapper.class_.__name__
+                )
+                # if self.entity_type in ResourceType:
+                # related_model = ResourceType.get_model(
+                #     relationship.mapper.class_.__name__
+                # )
+                # hierarchy_aliased = aliased(ResourceHierarchy)
+                # relations = (
+                #     ResourceHierarchyRelationships.relations
+                # )
+                # relations = ResourceHierarchy.relations
+                # TBD: move to to the init: get all possible parent-child relations for the entity_type there!
+                # elif self.entity_type in IdentityType:
+                # related_model = IdentityType.get_model(
+                #     relationship.mapper.class_.__name__
+                # )
+                # hierarchy_aliased = aliased(IdentityHierarchy)
+                # relations = IdentityHierarchyRelationships.relations
+                # relations = IdentityHierarchy.relations
 
                 # if relationship.mapper.class_.__name__ in ResourceType.list():
                 #     related_model = ResourceType.get_model(
@@ -456,12 +461,30 @@ class BaseCRUD(
 
                 # print("\n")
 
-                # print("=== CRUD - base - read - relationship ===")
-                # print(relationship)
-                # print("=== CRUD - base - read - relationship.key ===")
-                # print(relationship.key)
-                # print("=== CRUD - base - read - relationship.mapper ===")
-                # print(relationship.mapper)
+                print("============ The type associated with the model ============")
+                print("=== CRUD - base - read - self.entity_type ===")
+                print(self.entity_type)
+                print("\n")
+
+                print(
+                    "============ This specific relationship inside the model ============"
+                )
+                print("=== CRUD - base - read - relationship ===")
+                print(relationship)
+                print("=== CRUD - base - read - relationship.key ===")
+                print(relationship.key)
+                print("=== CRUD - base - read - relationship.mapper ===")
+                print(relationship.mapper)
+                print("=== CRUD - base - read - related_attribute ===")
+                print(related_attribute)
+                print("=== CRUD - base - read - related_model ===")
+                print(related_model)
+
+                related_type = self.types(related_model.__name__)
+
+                print("=== CRUD - base - read - related_type ===")
+                print(related_type)
+
                 # print("=== CRUD - base - read - relationship.mapper.class_ ===")
                 # print(relationship.mapper.class_)
                 # print(
@@ -492,6 +515,7 @@ class BaseCRUD(
                 #     "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.items() ==="
                 # )
                 # print(relationship.mapper.class_.__table__.columns.items())
+                print("\n")
 
                 related_statement = select(related_model.id)
                 related_statement = self.policy_CRUD.filters_allowed(
@@ -516,29 +540,77 @@ class BaseCRUD(
                 #     related_model, hierarchy_aliased.child_id == related_model.id
                 # )
 
-                # Check if self.entity_type is a key in relations, i.e. the model is a parent in the hierarchy
-                if self.entity_type in relations.keys():
-                    # self.model is a parent, join on parent_id
-                    statement = statement.outerjoin(
-                        hierarchy_aliased,
-                        self.model.id == foreign(hierarchy_aliased.parent_id),
-                    )
-                    statement = statement.outerjoin(
-                        related_model,
-                        related_model.id == foreign(hierarchy_aliased.child_id),
-                    )
+                print(
+                    "============ All relations of the whole application ============"
+                )
+                print("=== CRUD - base - read - self.relations ===")
+                pprint(self.relations)
+                print("=== CRUD - base - read - self.relations.keys() ===")
+                pprint(self.relations.keys())
+                print("=== CRUD - base - read - self.relations.values() ===")
+                pprint(self.relations.values())
+                print("\n")
 
-                # Check if self.entity_type is in the values of relations, i.e. the model is child in the hierarchy
-                elif any(self.entity_type in values for values in relations.values()):
-                    # self.model is a child, join on child_id
-                    statement = statement.outerjoin(
-                        hierarchy_aliased,
-                        self.model.id == foreign(hierarchy_aliased.child_id),
-                    )
-                    statement = statement.outerjoin(
-                        related_model,
-                        related_model.id == foreign(hierarchy_aliased.parent_id),
-                    )
+                # TBD: refactor to get the children and parents into the init()?!
+                # Check if self.entity_type is a key in relations, i.e. the model is a parent in the hierarchy
+                aliased_hierarchy = aliased(self.hierarchy)
+
+                for parent, children in self.relations.items():
+                    print("=== CRUD - base - read - app_relation ===")
+                    print(parent)
+                    print("=== CRUD - base - read - children ===")
+                    print(children)
+                    # print("=== CRUD - base - read - type(app_relation) ===")
+                    # print(type(app_relation))
+                    if self.entity_type == parent and related_type in children:
+                        # self.model is a parent, join on parent_id
+                        statement = statement.outerjoin(
+                            aliased_hierarchy,
+                            self.model.id == foreign(aliased_hierarchy.parent_id),
+                        )
+                        statement = statement.outerjoin(
+                            related_model,
+                            related_model.id == foreign(aliased_hierarchy.child_id),
+                        )
+                    elif self.entity_type in children and related_type == parent:
+                        # self.model is a child, join on child_id
+                        statement = statement.outerjoin(
+                            aliased_hierarchy,
+                            self.model.id == foreign(aliased_hierarchy.child_id),
+                        )
+                        statement = statement.outerjoin(
+                            related_model,
+                            related_model.id == foreign(aliased_hierarchy.parent_id),
+                        )
+
+                # if self.entity_type in self.relations.keys():
+                #     # self.model is a parent, join on parent_id
+                #     statement = statement.outerjoin(
+                #         aliased_hierarchy,
+                #         self.model.id == foreign(aliased_hierarchy.parent_id),
+                #     )
+                #     statement = statement.outerjoin(
+                #         related_model,
+                #         related_model.id == foreign(aliased_hierarchy.child_id),
+                #     )
+
+                # # Check if self.entity_type is in the values of relations, i.e. the model is child in the hierarchy
+                # # TBD: This is wrong: the values needs to be aligned with a specific key in the relations dict
+                # # not just child of anything - but child of the parent, that is requested in the model -> relationship
+                # # This does not take into account, that the model might be a child and a parent at the same time!
+                # elif any(
+                #     self.entity_type in values for values in self.relations.values()
+                # ):
+                #     # self.model is a child, join on child_id
+                #     print("=== CRUD - base - read - finding parents ===")
+                #     statement = statement.outerjoin(
+                #         aliased_hierarchy,
+                #         self.model.id == foreign(aliased_hierarchy.child_id),
+                #     )
+                #     statement = statement.outerjoin(
+                #         related_model,
+                #         related_model.id == foreign(aliased_hierarchy.parent_id),
+                #     )
 
                 # print("=== CRUD - base - read - child_statement ===")
                 # print(child_statement.compile())

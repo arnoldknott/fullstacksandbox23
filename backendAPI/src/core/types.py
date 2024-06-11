@@ -75,6 +75,8 @@ class ResourceType(BaseType):
     # The values need to match the exact name of the model class.
 
     # TBD: consider getting those values programmatically from models?
+    # or make this enum a collection of the models and add
+    # a method __str__(self) that returns the name of the model?
     category = "Category"
     tag = "Tag"
     demo_resource = "DemoResource"
