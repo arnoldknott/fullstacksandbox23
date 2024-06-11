@@ -445,6 +445,15 @@ async def test_user_gets_user_by_azure_user_id(
     }
     await add_one_test_access_policy(policy)
 
+    groups_for_user_in_database = many_test_azure_users[0]["groups"]
+    for group_id in groups_for_user_in_database:
+        policy = {
+            "resource_id": str(group_id),
+            "identity_id": str(accessing_user.user_id),
+            "action": Action.read,
+        }
+        await add_one_test_access_policy(policy)
+
     before_time = datetime.now()
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
