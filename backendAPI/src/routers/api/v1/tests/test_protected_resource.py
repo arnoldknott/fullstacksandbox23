@@ -1481,7 +1481,6 @@ async def test_user_gets_only_protected_children_with_access_as_relationship_fro
         modelled_protected_resource.description
         == mocked_protected_resources[0].description
     )
-    # TBD: make sure that only the children, which the user has access to are included here:
     assert len(modelled_protected_resource.protected_children) == 1
 
     assert (
@@ -1508,7 +1507,7 @@ async def test_user_gets_only_protected_children_with_access_as_relationship_fro
     [token_user1_read_write],
     indirect=True,
 )
-async def test_user_gets_only_protected_children_without_access_as_relationship_from_protected_resource(
+async def test_user_gets_only_protected_resource_and_none_of_the_existing_children_due_to_missing_of_access(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     mocked_get_azure_token_payload,
@@ -1574,26 +1573,6 @@ async def test_user_gets_only_protected_children_without_access_as_relationship_
         == mocked_protected_resources[0].description
     )
     assert len(modelled_protected_resource.protected_children) == 0
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
-    [token_user1_read_write],
-    indirect=True,
-)
-async def test_user_gets_parent_but_non_of_the_existing_children_due_to_missing_access(
-    async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
-    current_test_user,
-    add_many_test_protected_resources,
-    add_many_test_protected_children,
-    add_one_test_access_policy,
-    add_one_parent_child_resource_relationship,
-):
-    """Tests if missing permission for all child resource is handled correctly and parent is still returned."""
-    assert 0
 
 
 @pytest.mark.anyio
