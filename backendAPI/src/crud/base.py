@@ -464,29 +464,29 @@ class BaseCRUD(
 
                 # print("\n")
 
-                print("============ The type associated with the model ============")
-                print("=== CRUD - base - read - self.entity_type ===")
-                print(self.entity_type)
-                print("\n")
+                # print("============ The type associated with the model ============")
+                # print("=== CRUD - base - read - self.entity_type ===")
+                # print(self.entity_type)
+                # print("\n")
 
-                print(
-                    "============ This specific relationship inside the model ============"
-                )
-                print("=== CRUD - base - read - relationship ===")
-                print(relationship)
-                print("=== CRUD - base - read - relationship.key ===")
-                print(relationship.key)
-                print("=== CRUD - base - read - relationship.mapper ===")
-                print(relationship.mapper)
-                print("=== CRUD - base - read - related_attribute ===")
-                print(related_attribute)
-                print("=== CRUD - base - read - related_model ===")
-                print(related_model)
+                # print(
+                #     "============ This specific relationship inside the model ============"
+                # )
+                # print("=== CRUD - base - read - relationship ===")
+                # print(relationship)
+                # print("=== CRUD - base - read - relationship.key ===")
+                # print(relationship.key)
+                # print("=== CRUD - base - read - relationship.mapper ===")
+                # print(relationship.mapper)
+                # print("=== CRUD - base - read - related_attribute ===")
+                # print(related_attribute)
+                # print("=== CRUD - base - read - related_model ===")
+                # print(related_model)
 
                 related_type = self.types(related_model.__name__)
 
-                print("=== CRUD - base - read - related_type ===")
-                print(related_type)
+                # print("=== CRUD - base - read - related_type ===")
+                # print(related_type)
 
                 # print("=== CRUD - base - read - relationship.mapper.class_ ===")
                 # print(relationship.mapper.class_)
@@ -518,7 +518,7 @@ class BaseCRUD(
                 #     "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.items() ==="
                 # )
                 # print(relationship.mapper.class_.__table__.columns.items())
-                print("\n")
+                # print("\n")
 
                 related_statement = select(related_model.id)
                 related_statement = self.policy_CRUD.filters_allowed(
@@ -529,24 +529,24 @@ class BaseCRUD(
                 )
                 # related_statement = related_statement.order_by(asc(related_model.id))
 
-                print(
-                    "============ All relations of the whole application ============"
-                )
-                print("=== CRUD - base - read - self.relations ===")
-                pprint(self.relations)
-                print("=== CRUD - base - read - self.relations.keys() ===")
-                pprint(self.relations.keys())
-                print("=== CRUD - base - read - self.relations.values() ===")
-                pprint(self.relations.values())
-                print("\n")
+                # print(
+                #     "============ All relations of the whole application ============"
+                # )
+                # print("=== CRUD - base - read - self.relations ===")
+                # pprint(self.relations)
+                # print("=== CRUD - base - read - self.relations.keys() ===")
+                # pprint(self.relations.keys())
+                # print("=== CRUD - base - read - self.relations.values() ===")
+                # pprint(self.relations.values())
+                # print("\n")
 
                 # Check if self.entity_type is a key in relations, i.e. the model is a parent in the hierarchy
                 aliased_hierarchy = aliased(self.hierarchy)
                 for parent, children in self.relations.items():
-                    print("=== CRUD - base - read - app_relation ===")
-                    print(parent)
-                    print("=== CRUD - base - read - children ===")
-                    print(children)
+                    # print("=== CRUD - base - read - app_relation ===")
+                    # print(parent)
+                    # print("=== CRUD - base - read - children ===")
+                    # print(children)
                     # print("=== CRUD - base - read - type(app_relation) ===")
                     # print(type(app_relation))
                     if self.entity_type == parent and related_type in children:
@@ -656,6 +656,7 @@ class BaseCRUD(
                 for order in order_by:
                     statement = statement.order_by(order)
             elif hasattr(self.model, "id"):
+                print("=== CRUD - base - read - order_by ===")
                 statement = statement.order_by(asc(self.model.id))
 
             if group_by:

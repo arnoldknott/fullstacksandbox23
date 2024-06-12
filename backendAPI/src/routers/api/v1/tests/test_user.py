@@ -359,6 +359,7 @@ async def test_admin_gets_users(
     response = await async_client.get("/api/v1/user/")
     assert response.status_code == 200
     database_users = response.json()
+    database_users = sorted(database_users, key=lambda x: x["id"])
     assert len(users) == 5
     assert len(database_users) == 5
     for database_user, user in zip(database_users, users):

@@ -250,10 +250,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 await session.refresh(azure_user_group_link)
             # TBD: check if the group is already linked to the user!
             # User needs write access to the group to be able to add itself to the group:
-            print(
-                "===  user crud - create_azure_user_and_groups_if_not_exist - current_user_data ==="
-            )
-            print(current_user_data)
+            # print(
+            #     "===  user crud - create_azure_user_and_groups_if_not_exist - current_user_data ==="
+            # )
+            # print(current_user_data)
             try:
                 async with self.hierarchy_CRUD as hierarchy_CRUD:
                     await hierarchy_CRUD.read(
