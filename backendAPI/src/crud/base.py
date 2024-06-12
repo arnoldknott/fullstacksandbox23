@@ -527,6 +527,7 @@ class BaseCRUD(
                     model=related_model,
                     current_user=current_user,
                 )
+                # related_statement = related_statement.order_by(asc(related_model.id))
 
                 print(
                     "============ All relations of the whole application ============"
@@ -557,7 +558,7 @@ class BaseCRUD(
                         statement = statement.outerjoin(
                             related_model,
                             related_model.id == foreign(aliased_hierarchy.child_id),
-                        )
+                        ).order_by(asc(related_model.id))
                     elif self.entity_type in children and related_type == parent:
                         # self.model is a child, join on child_id
                         statement = statement.outerjoin(
@@ -567,7 +568,7 @@ class BaseCRUD(
                         statement = statement.outerjoin(
                             related_model,
                             related_model.id == foreign(aliased_hierarchy.parent_id),
-                        )
+                        ).order_by(asc(related_model.id))
 
                 # limit the child_model to the ones, that are in the child_statement
                 # and allows the parents, that don't have children in child_statement
@@ -584,13 +585,14 @@ class BaseCRUD(
                 # ).options(joinedload(related_attribute))
 
                 ########
-                print("=== CRUD - base - read - related_statement - count ===")
+
                 count_related_statement = select(func.count()).select_from(
                     related_statement.alias()
                 )
                 related_count = await self.session.exec(count_related_statement)
                 count = related_count.one()
-                print(count)
+                # print("=== CRUD - base - read - related_statement - count ===")
+                # print(count)
 
                 # if related_count.one()[0] > 0:
                 if count == 0:
@@ -678,9 +680,9 @@ class BaseCRUD(
 
             # await self.session.flush()
 
-            print("=== CRUD - base - read - results ===")
-            pprint(results)
-            print("\n")
+            # print("=== CRUD - base - read - results ===")
+            # pprint(results)
+            # print("\n")
 
             if not results:
                 logger.info(f"No objects found for {self.model.__name__}")
@@ -689,9 +691,9 @@ class BaseCRUD(
                 )
 
             for result in results:
-                print("=== CRUD - base - read - validated results ===")
-                pprint(result)
-                print("\n")
+                # print("=== CRUD - base - read - validated results ===")
+                # pprint(result)
+                # print("\n")
 
                 # TBD: add logging to accessed children!
                 access_log = AccessLogCreate(

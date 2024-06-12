@@ -1384,17 +1384,6 @@ async def test_user_gets_protected_children_with_access_to_all_as_relationship_f
     assert response.status_code == 200
     read_protected_resource = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
-    print("=== modelled_protected_resource ===")
-    pprint(modelled_protected_resource)
-    print("=== modelled_protected_resource.protected_children ===")
-    pprint(modelled_protected_resource.protected_children)
-    print("\n")
-
-    print("=== mocked_protected_resources ===")
-    pprint(mocked_protected_resources)
-    print("=== mocked_protected_children ===")
-    pprint(mocked_protected_children)
-    print("\n")
 
     assert modelled_protected_resource.id == mocked_protected_resources[0].id
     assert modelled_protected_resource.name == mocked_protected_resources[0].name
@@ -1511,6 +1500,80 @@ async def test_user_gets_only_protected_children_with_access_as_relationship_fro
     ]
     assert mocked_protected_children[1].id not in modelled_protected_children_ids
     assert mocked_protected_children[1].title not in modelled_protected_children_titles
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_gets_only_protected_children_without_access_as_relationship_from_protected_resource(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
+    current_test_user,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_test_access_policy,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    app_override_get_azure_payload_dependency
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_get_azure_token_payload
+    )
+    mocked_protected_children = await add_many_test_protected_children()
+
+    current_test_user = current_test_user
+
+    first_child = await add_one_parent_child_resource_relationship(
+        parent_id=mocked_protected_resources[0].id,
+        child_id=mocked_protected_children[0].id,
+        type=ResourceType.protected_child,
+    )
+    assert first_child.parent_id == mocked_protected_resources[0].id
+    assert first_child.child_id == mocked_protected_children[0].id
+    assert first_child.inherit is False
+
+    # policy_first_child = {
+    #     "resource_id": str(first_child.child_id),
+    #     "identity_id": current_test_user.user_id,
+    #     "action": "own",
+    # }
+    # await add_one_test_access_policy(policy_first_child)
+
+    second_child = await add_one_parent_child_resource_relationship(
+        parent_id=mocked_protected_resources[0].id,
+        child_id=mocked_protected_children[1].id,
+        type=ResourceType.protected_child,
+    )
+
+    assert second_child.parent_id == mocked_protected_resources[0].id
+    assert second_child.child_id == mocked_protected_children[1].id
+    assert second_child.inherit is False
+
+    # policy_second_child = {
+    #     "resource_id": str(second_child.child_id),
+    #     "identity_id": current_test_user.user_id,
+    #     "action": "own",
+    # }
+    # await add_one_test_access_policy(policy_second_child)
+
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[0].id)}",
+    )
+    assert response.status_code == 200
+    read_protected_resource = response.json()
+    modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name
+    assert (
+        modelled_protected_resource.description
+        == mocked_protected_resources[0].description
+    )
+    assert len(modelled_protected_resource.protected_children) == 0
 
 
 @pytest.mark.anyio
