@@ -9,9 +9,12 @@ from sqlalchemy.orm import (
     aliased,
     class_mapper,
     contains_eager,
+    joinedload,
+    defaultload,
+    noload,
     foreign,
 )
-from sqlmodel import SQLModel, delete, select, or_, asc
+from sqlmodel import SQLModel, delete, select, or_, asc, case, literal, func
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -525,21 +528,6 @@ class BaseCRUD(
                     current_user=current_user,
                 )
 
-                # if self.entity_type in ResourceType:
-                #     hierarchy_aliased = aliased(ResourceHierarchy)
-                # elif self.entity_type in IdentityType:
-                #     hierarchy_aliased = aliased(IdentityHierarchy)
-                # else:
-                #     raise ValueError(f"{self.entity_type} type not found.")
-
-                # statement = statement.outerjoin(
-                #     hierarchy_aliased,
-                #     self.model.id == hierarchy_aliased.parent_id,
-                # )
-                # statement = statement.outerjoin(
-                #     related_model, hierarchy_aliased.child_id == related_model.id
-                # )
-
                 print(
                     "============ All relations of the whole application ============"
                 )
@@ -551,10 +539,8 @@ class BaseCRUD(
                 pprint(self.relations.values())
                 print("\n")
 
-                # TBD: refactor to get the children and parents into the init()?!
                 # Check if self.entity_type is a key in relations, i.e. the model is a parent in the hierarchy
                 aliased_hierarchy = aliased(self.hierarchy)
-
                 for parent, children in self.relations.items():
                     print("=== CRUD - base - read - app_relation ===")
                     print(parent)
@@ -583,53 +569,78 @@ class BaseCRUD(
                             related_model.id == foreign(aliased_hierarchy.parent_id),
                         )
 
-                # if self.entity_type in self.relations.keys():
-                #     # self.model is a parent, join on parent_id
-                #     statement = statement.outerjoin(
-                #         aliased_hierarchy,
-                #         self.model.id == foreign(aliased_hierarchy.parent_id),
-                #     )
-                #     statement = statement.outerjoin(
-                #         related_model,
-                #         related_model.id == foreign(aliased_hierarchy.child_id),
-                #     )
-
-                # # Check if self.entity_type is in the values of relations, i.e. the model is child in the hierarchy
-                # # TBD: This is wrong: the values needs to be aligned with a specific key in the relations dict
-                # # not just child of anything - but child of the parent, that is requested in the model -> relationship
-                # # This does not take into account, that the model might be a child and a parent at the same time!
-                # elif any(
-                #     self.entity_type in values for values in self.relations.values()
-                # ):
-                #     # self.model is a child, join on child_id
-                #     print("=== CRUD - base - read - finding parents ===")
-                #     statement = statement.outerjoin(
-                #         aliased_hierarchy,
-                #         self.model.id == foreign(aliased_hierarchy.child_id),
-                #     )
-                #     statement = statement.outerjoin(
-                #         related_model,
-                #         related_model.id == foreign(aliased_hierarchy.parent_id),
-                #     )
-
-                # print("=== CRUD - base - read - child_statement ===")
-                # print(child_statement.compile())
-                # print(child_statement.compile().params)
-
                 # limit the child_model to the ones, that are in the child_statement
                 # and allows the parents, that don't have children in child_statement
-                statement = statement.where(
-                    or_(
-                        related_model.id == None,
-                        related_model.id.in_(related_statement),
-                    )
-                ).options(contains_eager(related_attribute))
+                # print("=== CRUD - base - read - related_statement ===")
+                # print(related_statement.compile())
+                # print(related_statement.compile().params)
+                # print("\n")
 
-                # statement = statement.join(
-                #     child_model,
-                #     child_model.id.in_(child_statement),
+                # statement = statement.where(
+                #     or_(
+                #         # related_model.id == None,
+                #         related_model.id.in_(related_statement),
+                #     )
+                # ).options(joinedload(related_attribute))
 
-                # ).options(contains_eager(child_attribute))
+                ########
+                print("=== CRUD - base - read - related_statement - count ===")
+                count_related_statement = select(func.count()).select_from(
+                    related_statement.alias()
+                )
+                related_count = await self.session.exec(count_related_statement)
+                count = related_count.one()
+                print(count)
+
+                # if related_count.one()[0] > 0:
+                if count == 0:
+                    statement = statement.options(noload(related_attribute))
+                else:
+                    # statement = statement.where(
+                    #     related_model.id.in_(related_statement)
+                    # ).options(contains_eager(related_attribute))
+                    statement = statement.where(
+                        or_(
+                            related_model.id == None,
+                            related_model.id.in_(related_statement),
+                        )
+                    ).options(contains_eager(related_attribute))
+                #########
+
+                # statement = statement.where(
+                #     or_(
+                #         related_model.id == None,
+                #         # for the cases, where children actually exist, but user does not have access to them:
+                #         case(
+                #             (
+                #                 related_statement.exists(),
+                #                 related_model.id.in_(related_statement),
+                #             ),
+                #             else_=literal(False),
+                #         ),
+                #     )
+                # ).options(contains_eager(related_attribute))
+                # ).options(joinedload(related_attribute))
+
+                # statement = statement.options(
+                #     joinedload(related_attribute).where(
+                #         related_model.id == related_statement
+                #     )
+                # )
+
+                # related_model_alias = aliased(related_model)
+                # statement = statement.outerjoin(
+                #     related_model_alias, related_model_alias.id == related_statement
+                # )
+
+                # statement = statement.where(related_model_alias.id != None).options(
+                #     contains_eager(related_attribute)
+                # )
+
+                # statement = statement.outerjoin(
+                #     related_model,
+                #     related_model.id == related_statement,
+                # ).options(joinedload(related_attribute))
 
             if joins:
                 for join in joins:
@@ -667,15 +678,20 @@ class BaseCRUD(
 
             # await self.session.flush()
 
-            # print("=== CRUD - base - read - results ===")
-            # pprint(results)
-            # print("\n")
+            print("=== CRUD - base - read - results ===")
+            pprint(results)
+            print("\n")
+
+            if not results:
+                logger.info(f"No objects found for {self.model.__name__}")
+                raise HTTPException(
+                    status_code=404, detail=f"{self.model.__name__} not found."
+                )
 
             for result in results:
-
-                # print("=== CRUD - base - read - validated results ===")
-                # pprint(result)
-                # print("\n")
+                print("=== CRUD - base - read - validated results ===")
+                pprint(result)
+                print("\n")
 
                 # TBD: add logging to accessed children!
                 access_log = AccessLogCreate(
@@ -687,11 +703,6 @@ class BaseCRUD(
                 async with self.logging_CRUD as logging_CRUD:
                     await logging_CRUD.create(access_log)
                 # await self._write_log(result.id, read, current_user, 200)
-            if not results:
-                logger.info(f"No objects found for {self.model.__name__}")
-                raise HTTPException(
-                    status_code=404, detail=f"{self.model.__name__} not found."
-                )
 
             return results
         except Exception as err:

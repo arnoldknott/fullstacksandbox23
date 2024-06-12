@@ -445,7 +445,11 @@ async def test_user_gets_user_by_azure_user_id(
     }
     await add_one_test_access_policy(policy)
 
-    groups_for_user_in_database = many_test_azure_users[0]["groups"]
+    # groups_for_user_in_database = many_test_azure_users[0]["groups"]
+    groups_for_user_in_database = [
+        # many_test_azure_users[0]["groups"][0],
+        # many_test_azure_users[0]["groups"][2],
+    ]
     for group_id in groups_for_user_in_database:
         policy = {
             "resource_id": str(group_id),
@@ -453,6 +457,9 @@ async def test_user_gets_user_by_azure_user_id(
             "action": Action.read,
         }
         await add_one_test_access_policy(policy)
+    # TBD: without this, the accessing user should still get the user, but not the groups!
+    # Fails, if the accessing user has not access to any of the groups of the user in the database!
+    # But works if the accessing user has access to at least one of the groups of the user in the database!
 
     before_time = datetime.now()
     response = await async_client.get(
@@ -468,6 +475,8 @@ async def test_user_gets_user_by_azure_user_id(
     assert modelled_response_user.azure_user_id == user_in_database.azure_user_id
     assert modelled_response_user.azure_tenant_id == user_in_database.azure_tenant_id
     assert len(modelled_response_user.azure_groups) == 3
+
+    assert 0
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
