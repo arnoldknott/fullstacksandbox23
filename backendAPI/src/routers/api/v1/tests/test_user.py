@@ -544,6 +544,10 @@ async def test_user_gets_user_by_azure_user_id_with_partial_access_to_other_user
     assert modelled_response_user.azure_user_id == user_in_database.azure_user_id
     assert modelled_response_user.azure_tenant_id == user_in_database.azure_tenant_id
     assert len(modelled_response_user.azure_groups) == 2
+    modelled_response_user.azure_groups = sorted(
+        modelled_response_user.azure_groups, key=lambda x: x.id
+    )
+
     assert modelled_response_user.azure_groups[0].id == uuid.UUID(
         groups_for_user_in_database[0]
     )
