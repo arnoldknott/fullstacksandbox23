@@ -88,7 +88,8 @@ token_payload_one_random_group = {
     "groups": [str(uuid4())],
 }
 token_payload_many_groups = {
-    "groups": [str(uuid4()), str(uuid4()), str(uuid4())],
+    # "groups": [str(uuid4()), str(uuid4()), str(uuid4())],
+    "groups": many_test_azure_users[0]["groups"],
 }
 
 token_user1_read = {
@@ -110,6 +111,22 @@ token_user1_read_write = {
     **token_payload_tenant_id,
     **token_payload_scope_api_read_write,
     **token_payload_roles_user,
+}
+
+token_user1_read_groups = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read,
+    **token_payload_roles_user,
+    **token_payload_many_groups,
+}
+
+token_user1_read_write_groups = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read_write,
+    **token_payload_roles_user,
+    **token_payload_many_groups,
 }
 
 token_user2_read = {

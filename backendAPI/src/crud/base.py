@@ -656,7 +656,6 @@ class BaseCRUD(
                 for order in order_by:
                     statement = statement.order_by(order)
             elif hasattr(self.model, "id"):
-                print("=== CRUD - base - read - order_by ===")
                 statement = statement.order_by(asc(self.model.id))
 
             if group_by:

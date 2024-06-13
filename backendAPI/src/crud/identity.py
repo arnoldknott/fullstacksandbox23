@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlmodel import select
-
+from pprint import pprint
 from core.types import Action, CurrentUserData
 from models.access import AccessLogCreate, AccessPolicyCreate
 from models.identity import (
@@ -238,6 +238,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             azure_user_group_link = azure_user_group_link.first()
             # print("=== user_group_link - select ===")
             # print(azure_user_group_link)
+            # TBD: remove after switching to the IdentityHierarchy table!
             if not azure_user_group_link:
                 azure_user_group_link = AzureGroupUserLink(
                     azure_user_id=azure_user_id,
@@ -254,6 +255,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             #     "===  user crud - create_azure_user_and_groups_if_not_exist - current_user_data ==="
             # )
             # print(current_user_data)
+
             try:
                 async with self.hierarchy_CRUD as hierarchy_CRUD:
                     await hierarchy_CRUD.read(
@@ -275,7 +277,42 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     current_user=current_user_data,
                     inherit=True,
                 )
-            # read again after the relationship to the groups is created:
+
+        # print(
+        #     "=== user crud - create_azure_user_and_groups_if_not_exist - current_user ==="
+        # )
+        # pprint(current_user)
+        # print(
+        #     "=== user crud - create_azure_user_and_groups_if_not_exist - current_user.azure_groups ==="
+        # )
+        # pprint(current_user.azure_groups)
+        # # print(
+        # #     "=== user crud - create_azure_user_and_groups_if_not_exist - current_user_data ==="
+        # # )
+        # # pprint(current_user_data)
+        # print("=== user crud - create_azure_user_and_groups_if_not_exist - groups ===")
+        # pprint(groups)
+        # print("\n")
+
+        # # remove hierarchy links for groups, that are no longer in the token:
+        for linked_group in current_user.azure_groups:
+            # print(
+            #     "=== user crud - create_azure_user_and_groups_if_not_exist - linked_group.id ==="
+            # )
+            # pprint(linked_group.id)
+            if str(linked_group.id) not in groups:
+                print(
+                    "=== user crud - create_azure_user_and_groups_if_not_exist - linked_group ==="
+                )
+                pprint(linked_group)
+                async with self.hierarchy_CRUD as hierarchy_CRUD:
+                    await hierarchy_CRUD.delete(
+                        parent_id=linked_group.id,
+                        child_id=current_user_data.user_id,
+                        current_user=current_user_data,
+                    )
+
+        # read again after the relationship to the groups is created:
         # TBD: put this one back in - but now with the current_user parameter!
         # current_user = await self.read_by_azure_user_id(
         #     azure_user_id  # , update_last_access

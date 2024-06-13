@@ -26,6 +26,8 @@ from tests.utils import (
     token_payload_user_id,
     token_user1_read,
     token_user1_read_write,
+    token_user1_read_groups,
+    token_user1_read_write_groups,
     token_user2_read,
     token_user2_read_write,
 )
@@ -414,8 +416,9 @@ async def test_get_users_without_token(
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
     [
-        token_user1_read,
-        token_user1_read_write,
+        # token_user1_read,
+        # token_user1_read_write,
+        token_user1_read_write_groups,
         token_user2_read,
         token_user2_read_write,
     ],
@@ -435,8 +438,12 @@ async def test_user_gets_user_by_azure_user_id(
     app_override_get_azure_payload_dependency
     # the target user:
     user_in_database = await add_one_azure_test_user(0)
+    print("==== user_in_database ====")
+    pprint(user_in_database)
     # the accessing user:
     accessing_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    print("==== accessing_user ====")
+    pprint(accessing_user)
 
     policy = {
         "resource_id": str(user_in_database.id),
@@ -725,7 +732,7 @@ async def test_get_user_by_azure_id_without_token(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
-    [token_user1_read, token_admin_read],
+    [token_user1_read_groups, token_admin_read],
     # here the admin get's itself => last_accessed_at should change!
     indirect=True,
 )

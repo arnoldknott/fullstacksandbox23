@@ -1313,7 +1313,12 @@ class BaseHierarchyCRUD(
             subquery = self.policy_crud.filters_allowed(
                 subquery, Action.own, IdentifierTypeLink, current_user
             )
-            statement = delete(self.model).where(self.model.child_id.in_(subquery))
+            statement = delete(self.model).where(
+                and_(
+                    self.model.child_id.in_(subquery),
+                    self.model.parent_id == parent_id,
+                )
+            )
             # statement = (
             #     delete(self.model)
             #     .where(
