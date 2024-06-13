@@ -31,11 +31,6 @@ from models.access import (
     IdentifierTypeLink,
 )
 
-# from models.access import IdentityHierarchy  #  as IdentityHierarchyTable
-# from models.access import IdentityHierarchyCreate, IdentityHierarchyRead
-# from models.access import ResourceHierarchy  #  as ResourceHierarchyTable
-# from models.access import ResourceHierarchyCreate, ResourceHierarchyRead
-# from models.access import BaseHierarchy
 from models.access import (
     IdentityHierarchy,
     IdentityHierarchyCreate,
