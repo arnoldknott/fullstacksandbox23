@@ -196,3 +196,18 @@ class BaseView:
         async with self.crud() as crud:
             deleted_object = await crud.delete(current_user, id)
         return deleted_object
+
+    async def remove_child_from_parent(
+        self,
+        parent_id,
+        child_id,
+        token_payload,
+        guards,
+    ):
+        logger.info(
+            "DELETE removes a child from a parent through delete_child_from_parent CRUD"
+        )
+        current_user = await self._check_token_against_guards(token_payload, guards)
+        async with self.crud() as crud:
+            await crud.remove_child_from_parent(parent_id, child_id, current_user)
+        return None

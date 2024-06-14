@@ -1243,6 +1243,7 @@ class BaseHierarchyCRUD(
 
             identifier_type_link_parent = aliased(IdentifierTypeLink)
             identifier_type_link_child = aliased(IdentifierTypeLink)
+            # TBD: is a condition required id only parent_id or child_id is provided?
             statement = (
                 select(self.model)
                 .join(
@@ -1283,6 +1284,8 @@ class BaseHierarchyCRUD(
             logger.error(f"Error in reading hierarchy: {e}")
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
 
+    # TBD: potentially make parent_id optional:
+    # in case a child gets deleted and all parent-child relations to all parents need to be deleted
     async def delete(
         self,
         parent_id: UUID,

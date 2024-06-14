@@ -296,6 +296,25 @@ async def get_access_count_for_resource(
 
 # endregion AccessLogs
 
+### No - don't implement - leave the hierarchy inside the individual resources
+# region ResourceHierarchy
+
+# add child to parent
+# read all children of parent?
+# read all parents of child??
+# remove child from parent
+
+# endregion ResourceHierarchy
+
+### No - don't implement - leave the hierarchy inside the individual resources
+# region IdentityHierarchy
+
+# add child to parent
+# read all children of parent?
+# read all parents of child??
+# remove child from parent
+
+# endregion IdentityHierarchy
 
 # Nomenclature:
 # ✔︎ implemented

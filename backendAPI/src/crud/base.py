@@ -186,6 +186,23 @@ class BaseCRUD(
     #     await self.session.exec(statement)
     #     await self.session.commit()
 
+    async def _check_identifier_type_link(
+        self,
+        object_id: uuid.UUID,
+    ):
+        """Checks if a resource type link of an object_id refers to a type self_model."""
+        statement = select(IdentifierTypeLink).where(
+            IdentifierTypeLink.id == object_id,
+            IdentifierTypeLink.type == self.entity_type,
+        )
+        response = await self.session.exec(statement)
+        result = response.unique().one()
+        if not result:
+            raise HTTPException(
+                status_code=404, detail=f"{self.model.__name__} not found."
+            )
+        return True
+
     async def create(
         self,
         object: BaseSchemaTypeCreate,
@@ -959,6 +976,29 @@ class BaseCRUD(
             logger.error(f"Error in BaseCRUD.delete: {e}")
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not deleted."
+            )
+
+    async def remove_child_from_parent(
+        self,
+        parent_id: uuid.UUID,
+        child_id: uuid.UUID,
+        current_user: "CurrentUserData",
+    ) -> None:
+        """Deletes a member of this class from a parent (of another entity type)."""
+        # check if child id refers to a type equal to self.model in identifiertypelink table:
+        # if not, raise 404
+        # if yes, delete the hierarchy entry
+        if await self._check_identifier_type_link(child_id):
+            async with self.hierarchy_CRUD as hierarchy_CRUD:
+                await hierarchy_CRUD.delete(
+                    current_user=current_user,
+                    parent_id=parent_id,
+                    child_id=child_id,
+                )
+            return None
+        else:
+            raise HTTPException(
+                status_code=404, detail=f"{self.model.__name__} not found."
             )
 
     # TBD: add share / permission methods - maybe in an inherited class BaseCRUDPermissions?

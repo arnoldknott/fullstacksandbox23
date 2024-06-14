@@ -116,7 +116,6 @@ async def post_protected_child(
     )
 
 
-# TBD: write tests for this endpoint:
 @router.post("/child/{child_id}/parent/{parent_id}", status_code=201)
 async def post_add_child_to_parent(
     parent_id: UUID,
@@ -171,6 +170,20 @@ async def delete_protected_child(
 ) -> None:
     """Deletes a protected child resource."""
     return await protected_child_view.delete(resource_id, token_payload, guards)
+
+
+# TBD: write tests for this
+@router.delete("/child/{child_id}/parent/{parent_id}", status_code=200)
+async def remove_child_from_parent(
+    parent_id: UUID,
+    child_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes a child from a parent."""
+    return await protected_child_view.remove_child_from_parent(
+        parent_id, child_id, token_payload, guards
+    )
 
 
 # endregion ProtectedChild
