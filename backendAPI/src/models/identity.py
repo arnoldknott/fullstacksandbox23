@@ -218,14 +218,14 @@ class UserUpdate(UserCreate):
 
 
 class UeberGroupCreate(SQLModel):
-    """Schema for creating a user."""
+    """Schema for creating an ueber-group."""
 
     name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
     description: Optional[str] = Field(None, max_length=500)
 
 
 class UeberGroup(UeberGroupCreate, table=True):
-    """Schema for a user in the database."""
+    """Schema for an ueber-group in the database."""
 
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
@@ -235,9 +235,15 @@ class UeberGroup(UeberGroupCreate, table=True):
 
 
 class UeberGroupRead(UeberGroupCreate):
-    """Schema for reading a user."""
+    """Schema for reading an ueber-group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
+
+
+class UeberGroupUpdate(UeberGroupCreate):
+    """Schema for updating an ueber-group."""
+
+    name: Optional[str] = None
 
 
 # endregion SubGroup
@@ -247,14 +253,14 @@ class UeberGroupRead(UeberGroupCreate):
 
 
 class GroupCreate(SQLModel):
-    """Schema for creating a user."""
+    """Schema for creating a group."""
 
     name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
     description: Optional[str] = Field(None, max_length=500)
 
 
 class Group(GroupCreate, table=True):
-    """Schema for a user in the database."""
+    """Schema for a group in the database."""
 
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
@@ -264,9 +270,15 @@ class Group(GroupCreate, table=True):
 
 
 class GroupRead(GroupCreate):
-    """Schema for reading a user."""
+    """Schema for reading a group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
+
+
+class GroupUpdate(GroupCreate):
+    """Schema for updating a group."""
+
+    name: Optional[str] = None
 
 
 # endregion Group
@@ -276,14 +288,14 @@ class GroupRead(GroupCreate):
 
 
 class SubGroupCreate(SQLModel):
-    """Schema for creating a user."""
+    """Schema for creating a sub-group."""
 
     name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
     description: Optional[str] = Field(None, max_length=500)
 
 
 class SubGroup(SubGroupCreate, table=True):
-    """Schema for a user in the database."""
+    """Schema for a sub-group in the database."""
 
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
@@ -293,9 +305,15 @@ class SubGroup(SubGroupCreate, table=True):
 
 
 class SubGroupRead(SubGroupCreate):
-    """Schema for reading a user."""
+    """Schema for reading a sub-group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
+
+
+class SubGroupUpdate(SubGroupCreate):
+    """Schema for updating a sub-group."""
+
+    name: Optional[str] = None
 
 
 # endregion SubGroup
@@ -305,14 +323,14 @@ class SubGroupRead(SubGroupCreate):
 
 
 class SubSubGroupCreate(SQLModel):
-    """Schema for creating a user."""
+    """Schema for creating a sub-sub-group."""
 
     name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
     description: Optional[str] = Field(None, max_length=500)
 
 
 class SubSubGroup(SubSubGroupCreate, table=True):
-    """Schema for a user in the database."""
+    """Schema for a sub-sub-group in the database."""
 
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
@@ -322,9 +340,15 @@ class SubSubGroup(SubSubGroupCreate, table=True):
 
 
 class SubSubGroupRead(SubSubGroupCreate):
-    """Schema for reading a user."""
+    """Schema for reading a sub-sub-group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
+
+
+class SubSubGroupUpdate(SubSubGroupCreate):
+    """Schema for updating a sub-sub-group."""
+
+    name: Optional[str] = None
 
 
 # endregion SubSubGroup

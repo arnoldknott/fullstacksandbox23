@@ -290,6 +290,7 @@ class IdentityHierarchy(IdentityHierarchyCreate, BaseHierarchy, table=True):
 
     relations: ClassVar = {
         IdentityType.azure_group: [IdentityType.user],
+        IdentityType.ueber_group: [IdentityType.group, IdentityType.user],
         IdentityType.group: [IdentityType.sub_group, IdentityType.user],
         IdentityType.sub_group: [IdentityType.sub_sub_group, IdentityType.user],
         IdentityType.sub_sub_group: [IdentityType.user],

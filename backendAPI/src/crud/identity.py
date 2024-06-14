@@ -17,6 +17,22 @@ from models.identity import (
     UserCreate,
     UserRead,
     UserUpdate,
+    UeberGroup,
+    UeberGroupCreate,
+    UeberGroupRead,
+    UeberGroupUpdate,
+    Group,
+    GroupCreate,
+    GroupRead,
+    GroupUpdate,
+    SubGroup,
+    SubGroupCreate,
+    SubGroupRead,
+    SubGroupUpdate,
+    SubSubGroup,
+    SubSubGroupCreate,
+    SubSubGroupRead,
+    SubSubGroupUpdate,
 )
 
 # from .azure_group import AzureGroupCRUD
@@ -353,3 +369,27 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     #     if not existing_user:
     #         raise HTTPException(status_code=404, detail="User not found")
     #     return existing_user.is_active
+
+
+class UeberGroupCRUD(
+    BaseCRUD[UeberGroup, UeberGroupCreate, UeberGroupRead, UeberGroupUpdate]
+):
+    def __init__(self):
+        super().__init__(UeberGroup)
+
+
+class GroupCRUD(BaseCRUD[Group, GroupCreate, GroupRead, GroupUpdate]):
+    def __init__(self):
+        super().__init__(Group)
+
+
+class SubGroupCRUD(BaseCRUD[SubGroup, SubGroupCreate, SubGroupRead, SubGroupUpdate]):
+    def __init__(self):
+        super().__init__(SubGroup)
+
+
+class SubSubGroupCRUD(
+    BaseCRUD[SubSubGroup, SubSubGroupCreate, SubSubGroupRead, SubSubGroupUpdate]
+):
+    def __init__(self):
+        super().__init__(SubSubGroup)
