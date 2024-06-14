@@ -29,6 +29,7 @@ from crud.access import (
 from models.access import (
     AccessLogCreate,
     AccessPolicyCreate,
+    AccessPolicyDelete,
     IdentifierTypeLink,
     ResourceHierarchy,
     IdentityHierarchy,
@@ -175,6 +176,15 @@ class BaseCRUD(
         statement = self._add_identifier_type_link_to_session(object_id)
         await self.session.exec(statement)
         await self.session.commit()
+
+    # async def _delete_identifier_type_link(
+    #     self,
+    #     object_id: uuid.UUID,
+    # ):
+    #     """Deletes a resource type link entry."""
+    #     statement = delete(IdentifierTypeLink).where(IdentifierTypeLink.id == object_id)
+    #     await self.session.exec(statement)
+    #     await self.session.commit()
 
     async def create(
         self,
@@ -898,6 +908,7 @@ class BaseCRUD(
                 raise HTTPException(
                     status_code=404, detail=f"{self.model.__name__} not found."
                 )
+            await self.session.commit()
 
             access_log = AccessLogCreate(
                 resource_id=object_id,
@@ -907,11 +918,27 @@ class BaseCRUD(
             )
             async with self.logging_CRUD as logging_CRUD:
                 await logging_CRUD.create(access_log)
+            # TBD: delete hierarchy only if exists?
+            # TBD: delete hierarchies for both parent_id and child_id
+            # async with self.hierarchy_CRUD as hierarchy_CRUD:
+            #     await hierarchy_CRUD.delete(
+            #         current_user=current_user,
+            #         child_id=object_id,
+            #     )
+
+            delete_policies = AccessPolicyDelete(
+                resource_id=object_id,
+            )
+            async with self.policy_CRUD as policy_CRUD:
+                await policy_CRUD.delete(current_user, delete_policies)
+
+            # Leave the identifier type link, as it's referred to the log table, which stays even after deletion
+            # await self._delete_identifier_type_link(object_id)
             # self.session = self.logging_CRUD.add_log_to_session(
             #     access_log, self.session
             # )
             # self._add_log_to_session(object_id, own, current_user, 200)
-            await self.session.commit()
+
             return None
 
         except Exception as e:

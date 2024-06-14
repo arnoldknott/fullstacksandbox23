@@ -326,6 +326,18 @@ async def test_delete_protected_resource(
     assert response.status_code == 404
     assert response.json() == {"detail": "ProtectedResource not found."}
 
+    try:
+        async with AccessPolicyCRUD() as crud:
+            await crud.read(
+                current_test_user,
+                resource_id=mocked_protected_resources[1].id,
+            )
+    except Exception as err:
+        assert err.status_code == 404
+        assert err.detail == "Access policy not found."
+    else:
+        pytest.fail("No HTTPexception raised!")
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -1705,17 +1717,18 @@ async def test_user_adds_child_to_parent_without_access_to_child(
 
 # Tests to implement for the protected resource family API:
 # ✔︎ User and Admin creates a protected resource: gets logged and access policy created
-# ✔︎ User creates a child resource for a protected resource: hierarchy entry gets created
 # ✔︎ User and Admin reads all protected resources: gets logged
 # ✔︎ User and Admin reads a protected resource by id: gets logged
 # ✔︎ User and Admin updates a protected resource: gets logged
 # ✔︎ User deletes a protected resource: gets logged and access policy deleted
+# ✔︎ User creates a child resource for a protected resource: hierarchy entry gets created
 # ✔︎ Admin reads all protected resource: only the protected resources and child resources, that the user has access to are returned
 # ✔︎ User adds a child to parent resource
 # ✔︎ User adds a child to parent resource without access to parent and child
 # ✔︎ User adds a child to parent resource without access to parent
 # X User adds a child to parent resource without access to child
 # X User reads all protected resource: only the protected resources and child resources, that the user has access to are returned
+# ? Some more implemented already: parent resource has children, where user has access to all children, some children no children
 # - User reads a protected resource: children and grand children get returned as well - but only the ones the user has access to
 # ✔︎ User and Admin access all endpoints for child resource
 # ✔︎ User and Admin access all endpoints for grand child resource
@@ -1723,6 +1736,7 @@ async def test_user_adds_child_to_parent_without_access_to_child(
 # ✔︎ User and Admin reads a child protected resource, where resource inherits access from parent but user has no access to parent
 # ✔︎ User and Admin reads a child protected resource, where resource does not inherit access from parent but user has access to parent
 # ✔︎ User reads a grand child protected resource, where user inherits access from grand parent (which is a protected resource)
+# ? more grand child tests?
 # X User2 reads child and grand child where access to the parent resource through is inherited through subsubgroup / subgroup / group to parent resource
 # - User reads a protected resource, where user inherits access from a group
 # - User reads a protected resource, where user is in a sub_sub_group and inherits access from membership in a group
