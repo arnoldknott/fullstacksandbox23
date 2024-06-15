@@ -278,6 +278,90 @@ many_current_users_data = [
 #     "groups": [group_id1, group_id2, group_id3],
 # }
 
+many_test_ueber_groups = [
+    {
+        "name": "Ueber Group 1",
+        "description": "The first Ueber Group.",
+    },
+    {
+        "name": "Über Group 2",
+        "description": "The second Über Group.",
+    },
+    {
+        "name": "3rd Ueber Group",
+        "description": "The third Ueber Group.",
+    },
+]
+
+many_test_groups = [
+    {
+        "name": "Group 1",
+        "description": "The first Group.",
+    },
+    {
+        "name": "2nd Group",
+        "description": "The second Group.",
+    },
+    {
+        "name": "Third Group",
+        "description": "The third Group.",
+    },
+    {
+        "name": "Group 4",
+        "description": "The fourth Group.",
+    },
+]
+
+many_test_sub_groups = [
+    {
+        "name": "Sub Group 1",
+        "description": "The first Sub Group.",
+    },
+    {
+        "name": "2nd Sub Group",
+        "description": "The second Sub Group.",
+    },
+    {
+        "name": "Third Sub Group",
+        "description": "The third Sub Group.",
+    },
+    {
+        "name": "Sub Group 4",
+        "description": "The fourth Sub Group.",
+    },
+    {
+        "name": "Sub Group 5",
+        "description": "The fifth Sub Group.",
+    },
+]
+
+many_test_sub_sub_groups = [
+    {
+        "name": "Sub Sub Group 1",
+        "description": "The first Sub Sub Group.",
+    },
+    {
+        "name": "2nd Sub Sub Group",
+        "description": "The second Sub Sub Group.",
+    },
+    {
+        "name": "Third Sub Sub Group",
+        "description": "The third Sub Sub Group.",
+    },
+    {
+        "name": "Sub Sub Group 4",
+        "description": "The fourth Sub Sub Group.",
+    },
+    {
+        "name": "Sub Sub Group 5",
+        "description": "The fifth Sub Sub Group.",
+    },
+    {
+        "name": "Sub Sub Group 6",
+        "description": "The sixth Sub Sub Group.",
+    },
+]
+
 resource_id1 = str(uuid4())
 resource_id2 = str(uuid4())
 resource_id3 = str(uuid4())

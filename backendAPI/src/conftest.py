@@ -18,7 +18,13 @@ from crud.access import (
     ResourceHierarchyCRUD,
 )
 from crud.base import BaseCRUD
-from crud.identity import UserCRUD
+from crud.identity import (
+    UserCRUD,
+    UeberGroupCRUD,
+    GroupCRUD,
+    SubGroupCRUD,
+    SubSubGroupCRUD,
+)
 from main import app
 from models.access import (
     AccessLogCreate,
@@ -42,6 +48,10 @@ from tests.utils import (
     many_test_policies,
     resource_id3,
     token_admin,
+    many_test_ueber_groups,
+    many_test_groups,
+    many_test_sub_groups,
+    many_test_sub_sub_groups,
 )
 
 
@@ -421,6 +431,69 @@ async def add_many_azure_test_users():
 # async def current_test_user():
 #     """Returns the current test user."""
 #     yield CurrentUserData(**)
+
+
+async def add_test_ueber_group(
+    current_user_from_azure_token: User,
+    ueber_group: dict,
+    current_user: CurrentUserData = None,
+    # parent_id: UUID = None,
+    # inherit: bool = False,
+):
+    """Adds a test ueber-group to the database."""
+
+    if not current_user:
+        current_user = await current_user_from_azure_token()
+    async with UeberGroupCRUD() as crud:
+        added_ueber_group = await crud.create(
+            ueber_group, current_user  # , parent_id, inherit
+        )
+
+    return added_ueber_group
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_ueber_group(
+    current_user_from_azure_token: User,
+):
+    """Adds a test ueber-group to the database."""
+
+    async def _add_one_test_ueber_group(
+        ueber_group: dict,
+        current_user: CurrentUserData = None,
+        # parent_id: UUID = None,
+        # inherit: bool = False,
+    ):
+        return await add_test_ueber_group(
+            current_user_from_azure_token,
+            ueber_group,
+            current_user,
+            # parent_id,
+            # inherit,
+        )
+
+    yield _add_one_test_ueber_group
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_ueber_groups(
+    current_user_from_azure_token: User,
+):
+    """Adds test ueber-groups to the database."""
+
+    async def _add_many_test_ueber_groups(token_payload: dict = None):
+        ueber_groups = []
+        for ueber_group in many_test_ueber_groups:
+            current_user = await current_user_from_azure_token(token_payload)
+            async with UeberGroupCRUD() as crud:
+                added_ueber_group = await crud.create(ueber_group, current_user)
+            ueber_groups.append(added_ueber_group)
+
+        ueber_groups = sorted(ueber_groups, key=lambda x: x.id)
+
+        return ueber_groups
+
+    yield _add_many_test_ueber_groups
 
 
 # TBD: refactor add_test_policies_for_resources from endpoint conftest file into this:

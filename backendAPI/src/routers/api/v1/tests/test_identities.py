@@ -9,7 +9,7 @@ from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD
-from models.identity import User, UserRead
+from models.identity import User, UserRead, UeberGroup, UeberGroupRead
 from routers.api.v1.identities import get_user_by_id
 from tests.utils import (
     current_user_data_admin,
@@ -30,6 +30,10 @@ from tests.utils import (
     token_user1_read_write_groups,
     token_user2_read,
     token_user2_read_write,
+    many_test_ueber_groups,
+    many_test_groups,
+    many_test_sub_groups,
+    many_test_sub_sub_groups,
 )
 
 # Passing tests:
@@ -1448,3 +1452,98 @@ async def test_user_deletes_another_user(
 
 
 # endregion: ## DELETE tests
+
+# region: Ueber Group tests:
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_all_ueber_group_endpoints(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
+    add_many_test_ueber_groups,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_get_azure_payload_dependency
+
+    # Make a POST request to create the ueber-group
+    response = await async_client.post(
+        "/api/v1/uebergroup/",
+        json=many_test_ueber_groups[0],
+    )
+
+    assert response.status_code == 201
+    created_ueber_group = UeberGroup(**response.json())
+    assert created_ueber_group.id is not None
+    assert created_ueber_group.name == many_test_ueber_groups[0]["name"]
+    assert created_ueber_group.description == many_test_ueber_groups[0]["description"]
+
+    # add some more ueber groups:
+    # note: the first one is going to be double with different id's
+    mocked_ueber_groups = await add_many_test_ueber_groups(
+        mocked_get_azure_token_payload
+    )
+    created_ueber_group.id = uuid.UUID(created_ueber_group.id)
+    expected_ueber_groups = [created_ueber_group] + mocked_ueber_groups
+    expected_ueber_groups = sorted(expected_ueber_groups, key=lambda x: x.id)
+
+    # Make a GET request to get all ueber-groups
+    response = await async_client.get(
+        "/api/v1/uebergroup/",
+    )
+    assert response.status_code == 200
+    read_ueber_groups = response.json()
+    assert len(read_ueber_groups) == len(expected_ueber_groups)
+    for read_child, expected_child in zip(read_ueber_groups, expected_ueber_groups):
+        modelled_ueber_group = UeberGroupRead(**read_child)
+        assert modelled_ueber_group.id == expected_child.id
+        assert modelled_ueber_group.name == expected_child.name
+        assert modelled_ueber_group.description == expected_child.description
+
+    # Make a GET request to get one ueber-group by id
+    response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[2].id)}",
+    )
+    assert response.status_code == 200
+    read_ueber_group = response.json()
+    modelled_ueber_group = UeberGroupRead(**read_ueber_group)
+    assert modelled_ueber_group.id == mocked_ueber_groups[2].id
+    assert modelled_ueber_group.name == mocked_ueber_groups[2].name
+    assert modelled_ueber_group.description == mocked_ueber_groups[2].description
+
+    # Make a PUT request to update one ueber-group
+    new_data = {"name": "The updated title of a child."}
+
+    response = await async_client.put(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}",
+        json=new_data,
+    )
+    assert response.status_code == 200
+    read_ueber_group = response.json()
+    modelled_ueber_group = UeberGroupRead(**read_ueber_group)
+    assert modelled_ueber_group.id == mocked_ueber_groups[1].id
+    assert modelled_ueber_group.name == new_data["name"]
+    assert modelled_ueber_group.description == mocked_ueber_groups[1].description
+
+    # Make a DELETE request to delete one ueber-group
+    response = await async_client.delete(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[0].id)}",
+    )
+    assert response.status_code == 200
+
+    # Make a GET request to get deleted ueber-group by id fails
+    response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[0].id)}",
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "UeberGroup not found."}
+
+    # TBD: @other groups: add them as children to parents!
+
+
+# endregion: Ueber Group tests

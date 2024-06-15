@@ -18,9 +18,21 @@ from models.identity import (
     UserRead,
     UserUpdate,
     UeberGroup,
+    UeberGroupCreate,
+    UeberGroupRead,
+    UeberGroupUpdate,
     Group,
+    GroupCreate,
+    GroupRead,
+    GroupUpdate,
     SubGroup,
+    SubGroupCreate,
+    SubGroupRead,
+    SubGroupUpdate,
     SubSubGroup,
+    SubSubGroupCreate,
+    SubSubGroupRead,
+    SubSubGroupUpdate,
 )
 
 from .base import BaseView
@@ -128,14 +140,83 @@ async def delete_user(
     return await user_view.delete(user_id, token_payload, guards)
 
 
+# TBD: add an endpoint to add a user to a ueber_group, group, sub_group, sub_sub_group
+
 ueber_group_router = APIRouter()
 ueber_group_view = BaseView(UeberGroupCRUD, UeberGroup)
+
+
+@ueber_group_router.post("/", status_code=201)
+async def post_ueber_group(
+    ueber_group: UeberGroupCreate,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+) -> UeberGroup:
+    """Creates a new ueber_group."""
+    logger.info("POST ueber_group")
+    print("=== API - ueber_group_router.post - ueber_group ===")
+    print(ueber_group)
+    return await ueber_group_view.post(
+        ueber_group,
+        token_payload,
+        guards,
+    )
+
+
+@ueber_group_router.get("/", status_code=200)
+async def get_all_ueber_groups(
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+) -> list[UeberGroupRead]:
+    """Returns all ueber_groups."""
+    return await ueber_group_view.get(token_payload, guards)
+
+
+@ueber_group_router.get("/{ueber_group_id}", status_code=200)
+async def get_ueber_group_by_id(
+    ueber_group_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(roles=["User"])),
+) -> UeberGroupRead:
+    """Returns a ueber_group with a specific ueber_group_id."""
+    return await ueber_group_view.get_by_id(
+        ueber_group_id,
+        token_payload,
+        guards,
+    )
+
+
+@ueber_group_router.put("/{ueber_group_id}", status_code=200)
+async def put_ueber_group(
+    ueber_group_id: UUID,
+    ueber_group: UeberGroupUpdate,
+    token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+) -> UeberGroup:
+    """Updates a ueber_group."""
+    return await ueber_group_view.put(
+        ueber_group_id,
+        ueber_group,
+        token_payload,
+        guards,
+    )
+
+
+@ueber_group_router.delete("/{ueber_group_id}", status_code=200)
+async def delete_ueber_group(
+    ueber_group_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Deletes a ueber_group."""
+    return await ueber_group_view.delete(ueber_group_id, token_payload, guards)
+
 
 # TBD: implement endpoints for ueber_group
 # TBD: implement one test to call all endpoints for ueber_group
 
-groups_router = APIRouter()
-groups_view = BaseView(GroupCRUD, Group)
+group_router = APIRouter()
+group_view = BaseView(GroupCRUD, Group)
 
 # TBD: implement endpoints for group
 # TBD: implement one test to call all endpoints for group

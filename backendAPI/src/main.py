@@ -12,7 +12,13 @@ from routers.api.v1.demo_resource import router as demo_resource_router
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.public_resource import router as public_resource_router
 from routers.api.v1.tag import router as tag_router
-from routers.api.v1.identities import user_router
+from routers.api.v1.identities import (
+    user_router,
+    ueber_group_router,
+    group_router,
+    sub_group_router,
+    sub_sub_group_router,
+)
 
 # print("Current directory:", os.getcwd())
 # print("sys.path:", sys.path)
@@ -99,6 +105,13 @@ app.include_router(
     user_router,
     prefix=f"{global_prefix}/user",
     tags=["User"],
+    dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
+)
+
+app.include_router(
+    ueber_group_router,
+    prefix=f"{global_prefix}/uebergroup",
+    tags=["Ueber Group"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
