@@ -154,8 +154,6 @@ async def post_ueber_group(
 ) -> UeberGroup:
     """Creates a new ueber_group."""
     logger.info("POST ueber_group")
-    print("=== API - ueber_group_router.post - ueber_group ===")
-    print(ueber_group)
     return await ueber_group_view.post(
         ueber_group,
         token_payload,
@@ -211,9 +209,6 @@ async def delete_ueber_group(
     """Deletes a ueber_group."""
     return await ueber_group_view.delete(ueber_group_id, token_payload, guards)
 
-
-# TBD: implement endpoints for ueber_group
-# TBD: implement one test to call all endpoints for ueber_group
 
 group_router = APIRouter()
 group_view = BaseView(GroupCRUD, Group)
