@@ -118,15 +118,15 @@ async def post_protected_child(
 
 @router.post("/child/{child_id}/parent/{parent_id}", status_code=201)
 async def post_add_child_to_parent(
-    parent_id: UUID,
     child_id: UUID,
+    parent_id: UUID,
     inherit: Annotated[bool, Query()] = False,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ResourceHierarchyRead:
     """Adds a child to a parent."""
     return await protected_child_view.post_add_child_to_parent(
-        parent_id, child_id, token_payload, guards, inherit
+        child_id, parent_id, token_payload, guards, inherit
     )
 
 

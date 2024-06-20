@@ -1,7 +1,8 @@
 import logging
 from uuid import UUID
+from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from core.security import Guards, get_access_token_payload
 from core.types import GuardTypes
@@ -74,6 +75,26 @@ async def post_user(
         user,
         token_payload,
         guards,
+    )
+
+
+# TBD: add tests!
+@user_router.post("/{user_id}/group/{group_id}", status_code=201)
+async def post_add_user_to_group(
+    user_id: UUID,
+    group_id: UUID,
+    inherit: Annotated[bool, Query()] = True,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> User:
+    """Adds a user to a group."""
+    logger.info("POST user to group")
+    return await user_view.post_add_child_to_parent(
+        group_id,
+        user_id,
+        token_payload,
+        guards,
+        inherit,
     )
 
 
@@ -213,8 +234,70 @@ async def delete_ueber_group(
 group_router = APIRouter()
 group_view = BaseView(GroupCRUD, Group)
 
-# TBD: implement endpoints for group
-# TBD: implement one test to call all endpoints for group
+
+@group_router.post("/", status_code=201)
+async def post_group(
+    group: GroupCreate,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+) -> Group:
+    """Creates a new group."""
+    logger.info("POST group")
+    return await group_view.post(
+        group,
+        token_payload,
+        guards,
+    )
+
+
+@group_router.get("/", status_code=200)
+async def get_all_groups(
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+) -> list[GroupRead]:
+    """Returns all groups."""
+    return await group_view.get(token_payload, guards)
+
+
+@group_router.get("/{group_id}", status_code=200)
+async def getgroup_by_id(
+    group_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(roles=["User"])),
+) -> UeberGroupRead:
+    """Returns a group with a specific group_id."""
+    return await group_view.get_by_id(
+        group_id,
+        token_payload,
+        guards,
+    )
+
+
+@group_router.put("/{group_id}", status_code=200)
+async def put_group(
+    group_id: UUID,
+    group: UeberGroupUpdate,
+    token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+) -> Group:
+    """Updates a group."""
+    return await group_view.put(
+        group_id,
+        group,
+        token_payload,
+        guards,
+    )
+
+
+@group_router.delete("/{group_id}", status_code=200)
+async def delete_group(
+    group_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Deletes a group."""
+    return await group_view.delete(group_id, token_payload, guards)
+
 
 sub_group_router = APIRouter()
 sub_group_router = BaseView(SubGroupCRUD, SubGroup)

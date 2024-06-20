@@ -84,17 +84,18 @@ class BaseView:
 
     async def post_add_child_to_parent(
         self,
-        parent_id,
         child_id,
+        parent_id,
         token_payload=None,
         guards=None,
         inherit=False,
     ):
         logger.info("POST view to add child to parent calls add_child_to_parent CRUD")
+        # user in child router for consistency
         current_user = await self._check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
             created_hierarchy = await crud.add_child_to_parent(
-                parent_id, child_id, current_user, inherit
+                child_id, parent_id, current_user, inherit
             )
         return created_hierarchy
 

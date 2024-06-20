@@ -9,7 +9,7 @@ from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD
-from models.identity import User, UserRead, UeberGroup, UeberGroupRead
+from models.identity import User, UserRead, UeberGroup, UeberGroupRead, Group, GroupRead
 from routers.api.v1.identities import get_user_by_id
 from tests.utils import (
     current_user_data_admin,
@@ -69,7 +69,17 @@ from tests.utils import (
 # ✔︎ regular user wants to delete another user
 
 # Identity tests:
-# TBD: add endpoints for user - group - sub-group sub-sub-group hierarchy and inheritance
+# ✔︎ all endpoints of ueber-group
+# - all endpoints of group
+# - all endpoints of sub-group
+# - all endpoints of sub-sub-group
+# - add user to ueber-group group, sub-group, sub-sub-group
+# - add group to ueber-group
+# - add sub-group to group,
+# - add sub-sub-group to sub-group
+# - access to resource through inheritance (user from any group)
+# - access to resource through inheritance through multiple generations (user in ueber-group can access resource in sub-sub-group)
+# - user inherits access to resource from group, group gets deleted, user no longer has access to resource
 
 # region: ## POST tests:
 
@@ -442,12 +452,8 @@ async def test_user_gets_user_by_azure_user_id(
     app_override_get_azure_payload_dependency
     # the target user:
     user_in_database = await add_one_azure_test_user(0)
-    print("==== user_in_database ====")
-    pprint(user_in_database)
     # the accessing user:
     accessing_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
-    print("==== accessing_user ====")
-    pprint(accessing_user)
 
     policy = {
         "resource_id": str(user_in_database.id),
@@ -1543,7 +1549,123 @@ async def test_all_ueber_group_endpoints(
     assert response.status_code == 404
     assert response.json() == {"detail": "UeberGroup not found."}
 
-    # TBD: @other groups: add them as children to parents!
-
 
 # endregion: Ueber Group tests
+
+
+# region: Group tests:
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_all_group_endpoints(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
+    add_many_test_groups,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_get_azure_payload_dependency
+
+    # Make a POST request to create the group
+    response = await async_client.post(
+        "/api/v1/group/",
+        json=many_test_groups[0],
+    )
+
+    assert response.status_code == 201
+    created_group = Group(**response.json())
+    assert created_group.id is not None
+    assert created_group.name == many_test_groups[0]["name"]
+    assert created_group.description == many_test_groups[0]["description"]
+
+    # add some more groups:
+    # note: the first one is going to be double with different id's
+    mocked_groups = await add_many_test_groups(mocked_get_azure_token_payload)
+    created_group.id = uuid.UUID(created_group.id)
+    expected_groups = [created_group] + mocked_groups
+    expected_groups = sorted(expected_groups, key=lambda x: x.id)
+
+    # Make a GET request to get all groups
+    response = await async_client.get(
+        "/api/v1/group/",
+    )
+    assert response.status_code == 200
+    read_groups = response.json()
+    assert len(read_groups) == len(expected_groups)
+    for read_child, expected_child in zip(read_groups, expected_groups):
+        modelled_group = GroupRead(**read_child)
+        assert modelled_group.id == expected_child.id
+        assert modelled_group.name == expected_child.name
+        assert modelled_group.description == expected_child.description
+
+    # Make a GET request to get one group by id
+    response = await async_client.get(
+        f"/api/v1/group/{str(mocked_groups[2].id)}",
+    )
+    assert response.status_code == 200
+    read_group = response.json()
+    modelled_group = GroupRead(**read_group)
+    assert modelled_group.id == mocked_groups[2].id
+    assert modelled_group.name == mocked_groups[2].name
+    assert modelled_group.description == mocked_groups[2].description
+
+    # Make a PUT request to update one group
+    new_data = {"name": "The updated title of a child."}
+
+    response = await async_client.put(
+        f"/api/v1/group/{str(mocked_groups[1].id)}",
+        json=new_data,
+    )
+    assert response.status_code == 200
+    read_group = response.json()
+    modelled_group = GroupRead(**read_group)
+    assert modelled_group.id == mocked_groups[1].id
+    assert modelled_group.name == new_data["name"]
+    assert modelled_group.description == mocked_groups[1].description
+
+    # Make a DELETE request to delete one group
+    response = await async_client.delete(
+        f"/api/v1/group/{str(mocked_groups[0].id)}",
+    )
+    assert response.status_code == 200
+
+    # Make a GET request to get deleted group by id fails
+    response = await async_client.get(
+        f"/api/v1/group/{str(mocked_groups[0].id)}",
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Group not found."}
+
+
+# endregion: Group tests
+
+# region: Sub Group tests:
+
+# endregion: Sub Group tests
+
+# region: Sub-sub Group tests:
+
+# endregion: Sub-sub Group tests
+
+# region identity hierarchy tests:
+
+# # TBD: add users to an ueber-group
+# response = await async_client.post(
+#     f"/api/v1/user/{}/group/{str(mocked_ueber_groups[1].id)}",
+# )
+
+# # TBD: remove a user from an ueber-group
+
+# # TBD: Delete ueber-group with attached users - make sure users afterwards don't have inherited rights any more
+
+
+# # TBD: add groups to an ueber-group
+
+# # TBD: remove a group from an ueber-group
+
+# endregion identity hierarchy tests

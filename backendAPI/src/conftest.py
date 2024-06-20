@@ -496,6 +496,67 @@ async def add_many_test_ueber_groups(
     yield _add_many_test_ueber_groups
 
 
+async def add_test_group(
+    current_user_from_azure_token: User,
+    group: dict,
+    current_user: CurrentUserData = None,
+    # parent_id: UUID = None,
+    # inherit: bool = False,
+):
+    """Adds a test group to the database."""
+
+    if not current_user:
+        current_user = await current_user_from_azure_token()
+    async with GroupCRUD() as crud:
+        added_group = await crud.create(group, current_user)  # , parent_id, inherit
+
+    return added_group
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_group(
+    current_user_from_azure_token: User,
+):
+    """Adds a test group to the database."""
+
+    async def _add_one_test_group(
+        group: dict,
+        current_user: CurrentUserData = None,
+        # parent_id: UUID = None,
+        # inherit: bool = False,
+    ):
+        return await add_test_group(
+            current_user_from_azure_token,
+            group,
+            current_user,
+            # parent_id,
+            # inherit,
+        )
+
+    yield _add_one_test_group
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_groups(
+    current_user_from_azure_token: User,
+):
+    """Adds test groups to the database."""
+
+    async def _add_many_test_groups(token_payload: dict = None):
+        groups = []
+        for group in many_test_groups:
+            current_user = await current_user_from_azure_token(token_payload)
+            async with GroupCRUD() as crud:
+                added_group = await crud.create(group, current_user)
+            groups.append(added_group)
+
+        groups = sorted(groups, key=lambda x: x.id)
+
+        return groups
+
+    yield _add_many_test_groups
+
+
 # TBD: refactor add_test_policies_for_resources from endpoint conftest file into this:
 # also consider using the post functions for the actual creation of resources!
 @pytest.fixture(scope="function")

@@ -329,8 +329,8 @@ class BaseCRUD(
 
     async def add_child_to_parent(
         self,
-        parent_id: uuid.UUID,
         child_id: uuid.UUID,
+        parent_id: uuid.UUID,
         current_user: "CurrentUserData",
         inherit: Optional[bool] = False,
     ) -> BaseHierarchyModelRead:
