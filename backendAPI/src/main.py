@@ -130,6 +130,13 @@ app.include_router(
 )
 
 app.include_router(
+    sub_sub_group_router,
+    prefix=f"{global_prefix}/subsubgroup",
+    tags=["Sub-sub Group"],
+    dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
+)
+
+app.include_router(
     access_router,
     prefix=f"{global_prefix}/access",
     tags=["Access"],

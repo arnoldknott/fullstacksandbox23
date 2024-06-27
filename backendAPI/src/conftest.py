@@ -620,6 +620,69 @@ async def add_many_test_sub_groups(
     yield _add_many_test_sub_groups
 
 
+async def add_test_sub_sub_group(
+    current_user_from_azure_token: User,
+    sub_sub_group: dict,
+    current_user: CurrentUserData = None,
+    # parent_id: UUID = None,
+    # inherit: bool = False,
+):
+    """Adds a test sub-sub-group to the database."""
+
+    if not current_user:
+        current_user = await current_user_from_azure_token()
+    async with SubSubGroupCRUD() as crud:
+        added_sub_sub_group = await crud.create(
+            sub_sub_group, current_user  # , parent_id, inherit
+        )
+
+    return added_sub_sub_group
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_sub_sub_group(
+    current_user_from_azure_token: User,
+):
+    """Adds a test sub-sub-group to the database."""
+
+    async def _add_one_test_sub_sub_group(
+        sub_sub_group: dict,
+        current_user: CurrentUserData = None,
+        # parent_id: UUID = None,
+        # inherit: bool = False,
+    ):
+        return await add_test_sub_sub_group(
+            current_user_from_azure_token,
+            sub_sub_group,
+            current_user,
+            # parent_id,
+            # inherit,
+        )
+
+    yield _add_one_test_sub_sub_group
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_sub_sub_groups(
+    current_user_from_azure_token: User,
+):
+    """Adds test sub-groups to the database."""
+
+    async def _add_many_test_sub_sub_groups(token_payload: dict = None):
+        sub_sub_groups = []
+        for sub_group in many_test_sub_groups:
+            current_user = await current_user_from_azure_token(token_payload)
+            async with SubSubGroupCRUD() as crud:
+                added_sub_group = await crud.create(sub_group, current_user)
+            sub_sub_groups.append(added_sub_group)
+
+        sub_groups = sorted(sub_sub_groups, key=lambda x: x.id)
+
+        return sub_groups
+
+    yield _add_many_test_sub_sub_groups
+
+
 # TBD: refactor add_test_policies_for_resources from endpoint conftest file into this:
 # also consider using the post functions for the actual creation of resources!
 @pytest.fixture(scope="function")

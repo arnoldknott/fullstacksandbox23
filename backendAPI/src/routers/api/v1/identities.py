@@ -166,8 +166,6 @@ async def delete_user(
 
 # endregion User
 
-# TBD: add an endpoint to add a user to a ueber_group, group, sub_group, sub_sub_group
-
 # region UeberGroup:
 
 ueber_group_router = APIRouter()
@@ -383,9 +381,6 @@ async def delete_sub_group(
     return await sub_group_view.delete(sub_group_id, token_payload, guards)
 
 
-# TBD: implement endpoints for sub_group
-# TBD: implement one test to call all endpoints for sub_group
-
 # endregion SubGroup
 
 # region SubSubGroup:
@@ -393,7 +388,69 @@ async def delete_sub_group(
 sub_sub_group_router = APIRouter()
 sub_sub_group_view = BaseView(SubSubGroupCRUD, SubSubGroup)
 
-# TBD: implement endpoints for sub_sub_group
-# TBD: implement one test to call all endpoints for sub_sub_group
+
+@sub_sub_group_router.post("/", status_code=201)
+async def post_sub_sub_group(
+    sub_sub_group: SubGroupCreate,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+) -> SubGroup:
+    """Creates a new sub_sub_group."""
+    logger.info("POST sub_sub_group")
+    return await sub_sub_group_view.post(
+        sub_sub_group,
+        token_payload,
+        guards,
+    )
+
+
+@sub_sub_group_router.get("/", status_code=200)
+async def get_all_sub_sub_groups(
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+) -> list[SubGroupRead]:
+    """Returns all sub_sub_groups."""
+    return await sub_sub_group_view.get(token_payload, guards)
+
+
+@sub_sub_group_router.get("/{sub_sub_group_id}", status_code=200)
+async def get_sub_sub_group_by_id(
+    sub_sub_group_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(roles=["User"])),
+) -> SubGroupRead:
+    """Returns a sub_sub_group with a specific sub_sub_group_id."""
+    return await sub_sub_group_view.get_by_id(
+        sub_sub_group_id,
+        token_payload,
+        guards,
+    )
+
+
+@sub_sub_group_router.put("/{sub_sub_group_id}", status_code=200)
+async def put_sub_sub_group(
+    sub_sub_group_id: UUID,
+    sub_sub_group: SubGroupUpdate,
+    token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+) -> SubGroup:
+    """Updates a sub_sub_group."""
+    return await sub_sub_group_view.put(
+        sub_sub_group_id,
+        sub_sub_group,
+        token_payload,
+        guards,
+    )
+
+
+@sub_sub_group_router.delete("/{sub_sub_group_id}", status_code=200)
+async def delete_sub_sub_group(
+    sub_sub_group_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Deletes a sub_sub_group."""
+    return await sub_sub_group_view.delete(sub_sub_group_id, token_payload, guards)
+
 
 # endregion SubSubGroup

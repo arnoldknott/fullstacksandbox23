@@ -18,6 +18,8 @@ from models.identity import (
     GroupRead,
     SubGroup,
     SubGroupRead,
+    SubSubGroup,
+    SubSubGroupRead,
 )
 from routers.api.v1.identities import get_user_by_id
 from tests.utils import (
@@ -1678,7 +1680,7 @@ async def test_all_sub_group_endpoints(
     )
 
     assert response.status_code == 201
-    created_sub_group = UeberGroup(**response.json())
+    created_sub_group = SubGroup(**response.json())
     assert created_sub_group.id is not None
     assert created_sub_group.name == many_test_sub_groups[0]["name"]
     assert created_sub_group.description == many_test_sub_groups[0]["description"]
@@ -1744,9 +1746,101 @@ async def test_all_sub_group_endpoints(
 
 # endregion: Sub Group tests
 
+
 # region: Sub-sub Group tests:
 
-# endregion: Sub-sub Group tests
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_all_sub_sub_group_endpoints(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
+    add_many_test_sub_sub_groups,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_get_azure_payload_dependency
+
+    # Make a POST request to create the sub-sub-group
+    response = await async_client.post(
+        "/api/v1/subsubgroup/",
+        json=many_test_sub_sub_groups[0],
+    )
+
+    assert response.status_code == 201
+    created_sub_sub_group = SubSubGroup(**response.json())
+    assert created_sub_sub_group.id is not None
+    assert created_sub_sub_group.name == many_test_sub_sub_groups[0]["name"]
+    assert (
+        created_sub_sub_group.description == many_test_sub_sub_groups[0]["description"]
+    )
+
+    # add some more sub-sub groups:
+    # note: the first one is going to be double with different id's
+    mocked_sub_sub_groups = await add_many_test_sub_sub_groups(
+        mocked_get_azure_token_payload
+    )
+    created_sub_sub_group.id = uuid.UUID(created_sub_sub_group.id)
+    expected_sub_sub_groups = [created_sub_sub_group] + mocked_sub_sub_groups
+    expected_sub_sub_groups = sorted(expected_sub_sub_groups, key=lambda x: x.id)
+
+    # Make a GET request to get all sub-sub-groups
+    response = await async_client.get(
+        "/api/v1/subsubgroup/",
+    )
+    assert response.status_code == 200
+    read_sub_sub_groups = response.json()
+    assert len(read_sub_sub_groups) == len(expected_sub_sub_groups)
+    for read_child, expected_child in zip(read_sub_sub_groups, expected_sub_sub_groups):
+        modelled_sub_sub_group = SubSubGroupRead(**read_child)
+        assert modelled_sub_sub_group.id == expected_child.id
+        assert modelled_sub_sub_group.name == expected_child.name
+        assert modelled_sub_sub_group.description == expected_child.description
+
+    # Make a GET request to get one sub-sub-group by id
+    response = await async_client.get(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[2].id)}",
+    )
+    assert response.status_code == 200
+    read_sub_sub_group = response.json()
+    modelled_sub_sub_group = SubSubGroupRead(**read_sub_sub_group)
+    assert modelled_sub_sub_group.id == mocked_sub_sub_groups[2].id
+    assert modelled_sub_sub_group.name == mocked_sub_sub_groups[2].name
+    assert modelled_sub_sub_group.description == mocked_sub_sub_groups[2].description
+
+    # Make a PUT request to update one sub-sub-group
+    new_data = {"name": "The updated title of a child."}
+
+    response = await async_client.put(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[1].id)}",
+        json=new_data,
+    )
+    assert response.status_code == 200
+    read_sub_sub_group = response.json()
+    modelled_sub_sub_group = SubSubGroupRead(**read_sub_sub_group)
+    assert modelled_sub_sub_group.id == mocked_sub_sub_groups[1].id
+    assert modelled_sub_sub_group.name == new_data["name"]
+    assert modelled_sub_sub_group.description == mocked_sub_sub_groups[1].description
+
+    # Make a DELETE request to delete one sub-sub-group
+    response = await async_client.delete(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[0].id)}",
+    )
+    assert response.status_code == 200
+
+    # Make a GET request to get deleted sub-sub-group by id fails
+    response = await async_client.get(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[0].id)}",
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "SubSubGroup not found."}
+
+
+# endregion: Sub-sub_sub Group tests
 
 
 # region identity hierarchy tests:
