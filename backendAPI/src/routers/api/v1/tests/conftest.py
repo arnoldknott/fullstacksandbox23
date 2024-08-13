@@ -1,14 +1,16 @@
-import pytest
 from uuid import UUID
+
+import pytest
+
+from core.types import CurrentUserData
 from crud.access import AccessPolicyCRUD
 from crud.category import CategoryCRUD
 from crud.demo_resource import DemoResourceCRUD
 from crud.protected_resource import (
-    ProtectedResourceCRUD,
     ProtectedChildCRUD,
     ProtectedGrandChildCRUD,
+    ProtectedResourceCRUD,
 )
-from core.types import CurrentUserData
 from crud.public_resource import PublicResourceCRUD
 from crud.tag import TagCRUD
 from models.category import Category
@@ -16,9 +18,9 @@ from models.identity import User
 from tests.utils import (
     many_test_categories,
     many_test_demo_resources,
-    many_test_protected_resources,
     many_test_protected_child_resources,
     many_test_protected_grandchild_resources,
+    many_test_protected_resources,
     many_test_public_resources,
     many_test_tags,
 )

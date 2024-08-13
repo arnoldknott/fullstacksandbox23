@@ -2,7 +2,6 @@ import uuid
 from datetime import datetime, timedelta
 from typing import List
 
-from pprint import pprint
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -10,21 +9,25 @@ from httpx import AsyncClient
 from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD
 from models.identity import (
-    User,
-    UserRead,
-    UeberGroup,
-    UeberGroupRead,
     Group,
     GroupRead,
     SubGroup,
     SubGroupRead,
     SubSubGroup,
     SubSubGroupRead,
+    UeberGroup,
+    UeberGroupRead,
+    User,
+    UserRead,
 )
 from routers.api.v1.identities import get_user_by_id
 from tests.utils import (
     current_user_data_admin,
     many_test_azure_users,
+    many_test_groups,
+    many_test_sub_groups,
+    many_test_sub_sub_groups,
+    many_test_ueber_groups,
     token_admin_read,
     token_admin_read_write,
     token_payload_one_group,
@@ -36,15 +39,11 @@ from tests.utils import (
     token_payload_tenant_id,
     token_payload_user_id,
     token_user1_read,
-    token_user1_read_write,
     token_user1_read_groups,
+    token_user1_read_write,
     token_user1_read_write_groups,
     token_user2_read,
     token_user2_read_write,
-    many_test_ueber_groups,
-    many_test_groups,
-    many_test_sub_groups,
-    many_test_sub_sub_groups,
 )
 
 # Passing tests:

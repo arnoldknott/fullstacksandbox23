@@ -1,14 +1,13 @@
 import uuid
 from datetime import datetime
-from typing import Optional, List, ClassVar
+from typing import ClassVar, List, Optional
 
 from pydantic import BaseModel, model_validator  # , create_model
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, SQLModel
 
 # if TYPE_CHECKING:
-from core.types import Action, CurrentUserData, IdentityType
-from core.types import ResourceType
+from core.types import Action, CurrentUserData, IdentityType, ResourceType
 
 
 class IdentifierTypeLink(SQLModel, table=True):

@@ -19,11 +19,11 @@ from crud.access import (
 )
 from crud.base import BaseCRUD
 from crud.identity import (
-    UserCRUD,
-    UeberGroupCRUD,
     GroupCRUD,
     SubGroupCRUD,
     SubSubGroupCRUD,
+    UeberGroupCRUD,
+    UserCRUD,
 )
 from main import app
 from models.access import (
@@ -45,13 +45,12 @@ from tests.utils import (
     many_test_azure_users,
     many_test_child_identities,
     many_test_child_resource_entities,
+    many_test_groups,
     many_test_policies,
+    many_test_sub_groups,
+    many_test_ueber_groups,
     resource_id3,
     token_admin,
-    many_test_ueber_groups,
-    many_test_groups,
-    many_test_sub_groups,
-    many_test_sub_sub_groups,
 )
 
 
@@ -120,9 +119,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[get_azure_token_payload] = (
-        lambda: mocked_get_azure_token_payload
-    )
+    app.dependency_overrides[
+        get_azure_token_payload
+    ] = lambda: mocked_get_azure_token_payload
     yield app
     app.dependency_overrides = {}
 

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from uuid import UUID
-from pprint import pprint
+
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -8,27 +8,27 @@ from httpx import AsyncClient
 from core.types import Action, CurrentUserData, ResourceType
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD, ResourceHierarchyCRUD
 from crud.protected_resource import (
-    ProtectedResourceCRUD,
     ProtectedChildCRUD,
     ProtectedGrandChildCRUD,
+    ProtectedResourceCRUD,
 )
+from models.access import ResourceHierarchyRead
 from models.protected_resource import (
-    ProtectedResource,
-    ProtectedResourceRead,
     ProtectedChild,
     ProtectedChildRead,
     ProtectedGrandChild,
     ProtectedGrandChildRead,
+    ProtectedResource,
+    ProtectedResourceRead,
 )
-from models.access import ResourceHierarchyRead
 from tests.utils import (
     current_user_data_admin,
-    many_test_protected_resources,
+    current_user_data_user2,
     many_test_protected_child_resources,
     many_test_protected_grandchild_resources,
+    many_test_protected_resources,
     token_admin_read_write,
     token_user1_read_write,
-    current_user_data_user2,
 )
 
 # # temporarily only for debugging:

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 from typing import Annotated, List
-from pprint import pprint
+
 import pytest
 from fastapi import Depends, FastAPI
 from httpx import AsyncClient
@@ -14,7 +14,7 @@ from core.security import (
     get_azure_jwks,
 )
 from core.types import Action, CurrentUserData
-from crud.access import AccessLoggingCRUD, IdentityHierarchyCRUD
+from crud.access import AccessLoggingCRUD
 from models.access import AccessLogRead
 from models.identity import User, UserRead
 from routers.api.v1.identities import get_user_by_id

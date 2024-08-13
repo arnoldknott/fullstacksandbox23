@@ -8,7 +8,6 @@ from core.security import (
     Guards,
     get_access_token_payload,
     optional_get_access_token_payload,
-    CurrentAccessToken,
 )
 from core.types import GuardTypes
 from crud.demo_resource import DemoResourceCRUD

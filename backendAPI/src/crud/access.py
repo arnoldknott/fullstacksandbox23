@@ -1,21 +1,17 @@
 import logging
 from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
-from pprint import pprint
+
 from fastapi import HTTPException
 from sqlalchemy.orm import aliased
-from sqlmodel import SQLModel, and_, delete, or_, select, union_all, literal
+from sqlmodel import SQLModel, and_, delete, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-
 from core.databases import get_async_session
-from core.types import (
+from core.types import (  # BaseHierarchy,; IdentityHierarchy,; ResourceHierarchy,
     Action,
-    # BaseHierarchy,
     CurrentUserData,
-    # IdentityHierarchy,
     IdentityType,
-    # ResourceHierarchy,
     ResourceType,
 )
 from models.access import (
@@ -28,17 +24,14 @@ from models.access import (
     AccessPolicyRead,
     AccessPolicyUpdate,
     AccessRequest,
+    BaseHierarchy,
     IdentifierTypeLink,
-)
-
-from models.access import (
     IdentityHierarchy,
     IdentityHierarchyCreate,
     IdentityHierarchyRead,
     ResourceHierarchy,
     ResourceHierarchyCreate,
     ResourceHierarchyRead,
-    BaseHierarchy,
 )
 
 # from core.access import AccessControl
@@ -582,7 +575,6 @@ class AccessPolicyCRUD:
             query = self.filters_allowed(query, action, current_user=current_user)
 
             async with self:
-
                 # print("=== AccessPolicyCRUD.allows - query ===")
                 # print(query.compile())
                 # print(query.compile().params)

@@ -7,25 +7,25 @@ from fastapi import APIRouter, Depends, Query
 from core.security import Guards, get_access_token_payload
 from core.types import GuardTypes
 from crud.protected_resource import (
-    ProtectedResourceCRUD,
     ProtectedChildCRUD,
     ProtectedGrandChildCRUD,
+    ProtectedResourceCRUD,
 )
+from models.access import ResourceHierarchyRead
 from models.protected_resource import (
     ProtectedChild,
     ProtectedChildCreate,
     ProtectedChildRead,
     ProtectedChildUpdate,
-    ProtectedResource,
-    ProtectedResourceRead,
-    ProtectedResourceCreate,
-    ProtectedResourceUpdate,
     ProtectedGrandChild,
-    ProtectedGrandChildRead,
     ProtectedGrandChildCreate,
+    ProtectedGrandChildRead,
     ProtectedGrandChildUpdate,
+    ProtectedResource,
+    ProtectedResourceCreate,
+    ProtectedResourceRead,
+    ProtectedResourceUpdate,
 )
-from models.access import ResourceHierarchyRead
 
 from .base import BaseView
 

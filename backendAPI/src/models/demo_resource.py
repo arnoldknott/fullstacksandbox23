@@ -3,10 +3,9 @@ from typing import List, Optional  # , TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from .category import Category, CategoryRead
-
 # from .demo_resource_tag_link import DemoResourceTagLink
 from .access import ResourceHierarchy
+from .category import Category, CategoryRead
 from .tag import Tag, TagRead
 
 # if TYPE_CHECKING:

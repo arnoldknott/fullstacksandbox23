@@ -1,39 +1,35 @@
 import logging
-from uuid import UUID
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
 from core.security import Guards, get_access_token_payload
 from core.types import GuardTypes
 from crud.identity import (
-    UserCRUD,
-    UeberGroupCRUD,
     GroupCRUD,
     SubGroupCRUD,
     SubSubGroupCRUD,
+    UeberGroupCRUD,
+    UserCRUD,
 )
 from models.identity import (
-    User,
-    UserCreate,
-    UserRead,
-    UserUpdate,
-    UeberGroup,
-    UeberGroupCreate,
-    UeberGroupRead,
-    UeberGroupUpdate,
     Group,
     GroupCreate,
     GroupRead,
-    GroupUpdate,
     SubGroup,
     SubGroupCreate,
     SubGroupRead,
     SubGroupUpdate,
     SubSubGroup,
-    SubSubGroupCreate,
-    SubSubGroupRead,
-    SubSubGroupUpdate,
+    UeberGroup,
+    UeberGroupCreate,
+    UeberGroupRead,
+    UeberGroupUpdate,
+    User,
+    UserCreate,
+    UserRead,
+    UserUpdate,
 )
 
 from .base import BaseView

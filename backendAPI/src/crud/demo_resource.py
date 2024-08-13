@@ -1,9 +1,10 @@
+from pprint import pprint
 from typing import List
 from uuid import UUID
 
 from fastapi import HTTPException
 from sqlmodel import select
-from pprint import pprint
+
 from core.types import CurrentUserData
 from models.demo_resource import (
     DemoResource,

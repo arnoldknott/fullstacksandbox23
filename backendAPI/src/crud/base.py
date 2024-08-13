@@ -1,7 +1,6 @@
 import logging
 import uuid
 from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
-from pprint import pprint
 
 from fastapi import HTTPException
 from sqlalchemy.dialects.postgresql import insert
@@ -9,32 +8,28 @@ from sqlalchemy.orm import (
     aliased,
     class_mapper,
     contains_eager,
-    joinedload,
-    defaultload,
-    noload,
     foreign,
+    noload,
 )
-from sqlmodel import SQLModel, delete, select, or_, asc, case, literal, func
-
+from sqlmodel import SQLModel, asc, delete, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
-    ResourceHierarchyCRUD,
-    IdentityHierarchyCRUD,
     BaseHierarchyModelRead,
+    IdentityHierarchyCRUD,
+    ResourceHierarchyCRUD,
 )
 from models.access import (
     AccessLogCreate,
     AccessPolicyCreate,
     AccessPolicyDelete,
     IdentifierTypeLink,
-    ResourceHierarchy,
     IdentityHierarchy,
+    ResourceHierarchy,
 )
-
 
 if TYPE_CHECKING:
     pass
@@ -630,7 +625,8 @@ class BaseCRUD(
                     # ).options(contains_eager(related_attribute))
                     statement = statement.where(
                         or_(
-                            related_model.id == None,
+                            related_model.id
+                            == None,  # noqa: E711: comparison to None should be 'if cond is None:'
                             related_model.id.in_(related_statement),
                         )
                     ).options(contains_eager(related_attribute))

@@ -1,10 +1,11 @@
 import logging
+from pprint import pprint
 from typing import List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException
 from sqlmodel import select
-from pprint import pprint
+
 from core.types import Action, CurrentUserData
 from models.access import AccessLogCreate, AccessPolicyCreate
 from models.identity import (
@@ -13,14 +14,6 @@ from models.identity import (
     AzureGroupRead,
     AzureGroupUpdate,
     AzureGroupUserLink,
-    User,
-    UserCreate,
-    UserRead,
-    UserUpdate,
-    UeberGroup,
-    UeberGroupCreate,
-    UeberGroupRead,
-    UeberGroupUpdate,
     Group,
     GroupCreate,
     GroupRead,
@@ -33,6 +26,14 @@ from models.identity import (
     SubSubGroupCreate,
     SubSubGroupRead,
     SubSubGroupUpdate,
+    UeberGroup,
+    UeberGroupCreate,
+    UeberGroupRead,
+    UeberGroupUpdate,
+    User,
+    UserCreate,
+    UserRead,
+    UserUpdate,
 )
 
 # from .azure_group import AzureGroupCRUD
@@ -279,7 +280,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                         child_id=current_user_data.user_id,
                         current_user=current_user_data,
                     )
-            except:
+            except Exception as err:
                 async with self.policy_CRUD as policy_CRUD:
                     access_policy = AccessPolicyCreate(
                         resource_id=azure_group_id,
@@ -292,6 +293,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     child_id=current_user_data.user_id,
                     current_user=current_user_data,
                     inherit=True,
+                )
+                logger.info(
+                    f"USERCrud failed with {err}, so user got linked to group in database."
                 )
 
         # print(
