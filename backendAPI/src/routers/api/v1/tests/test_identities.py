@@ -8,6 +8,7 @@ from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD
+from models.access import IdentityHierarchyRead
 from models.identity import (
     Group,
     GroupRead,
@@ -80,9 +81,9 @@ from tests.utils import (
 
 # Identity tests:
 # ✔︎ all endpoints of ueber-group
-# - all endpoints of group
-# - all endpoints of sub-group
-# - all endpoints of sub-sub-group
+# ✔︎ all endpoints of group
+# ✔︎ all endpoints of sub-group
+# ✔︎ all endpoints of sub-sub-group
 # - add user to ueber-group group, sub-group, sub-sub-group
 # - add group to ueber-group
 # - add sub-group to group,
@@ -1484,7 +1485,7 @@ async def test_all_ueber_group_endpoints(
     mocked_get_azure_token_payload,
     add_many_test_ueber_groups,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the ueber_group endpoints of the API."""
     app_override_get_azure_payload_dependency
 
     # Make a POST request to create the ueber-group
@@ -1578,7 +1579,7 @@ async def test_all_group_endpoints(
     mocked_get_azure_token_payload,
     add_many_test_groups,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the group endpoints of the API."""
     app_override_get_azure_payload_dependency
 
     # Make a POST request to create the group
@@ -1669,7 +1670,7 @@ async def test_all_sub_group_endpoints(
     mocked_get_azure_token_payload,
     add_many_test_sub_groups,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the sub_group endpoints of the API."""
     app_override_get_azure_payload_dependency
 
     # Make a POST request to create the sub-group
@@ -1761,7 +1762,7 @@ async def test_all_sub_sub_group_endpoints(
     mocked_get_azure_token_payload,
     add_many_test_sub_sub_groups,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the sub_sub_group endpoints of the API."""
     app_override_get_azure_payload_dependency
 
     # Make a POST request to create the sub-sub-group
@@ -1844,10 +1845,113 @@ async def test_all_sub_sub_group_endpoints(
 
 # region identity hierarchy tests:
 
-# # TBD: add users to an ueber-group
-# response = await async_client.post(
-#     f"/api/v1/user/{}/group/{str(mocked_ueber_groups[1].id)}",
-# )
+
+# # TBD: add users to an ueber-group, group, sub-group, sub-sub-group
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_user_to_groups(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_azure_test_user: List[User],
+    mocked_get_azure_token_payload,
+    add_many_test_ueber_groups,
+    add_many_test_groups,
+    add_many_test_sub_groups,
+    add_many_test_sub_sub_groups,
+):
+    """Tests adding users to an ueber-group, group, sub-group, and sub-sub-group."""
+    app_override_get_azure_payload_dependency
+
+    existing_user = await add_one_azure_test_user(0)
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+
+    response = await async_client.post(
+        f"/api/v1/user/{existing_user.id}/group/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert response.status_code == 201
+    created_ueber_group_membership = response.json()
+    assert created_ueber_group_membership["parent_id"] == str(mocked_ueber_groups[1].id)
+    assert created_ueber_group_membership["child_id"] == str(existing_user.id)
+    assert created_ueber_group_membership["inherit"] is True
+
+    mocked_groups = await add_many_test_groups()
+
+    response = await async_client.post(
+        f"/api/v1/user/{existing_user.id}/group/{str(mocked_groups[3].id)}"
+    )
+
+    assert response.status_code == 201
+    created_group_membership = response.json()
+    assert created_group_membership["parent_id"] == str(mocked_groups[3].id)
+    assert created_group_membership["child_id"] == str(existing_user.id)
+    assert created_group_membership["inherit"] is True
+
+    mocked_sub_groups = await add_many_test_sub_groups()
+
+    response = await async_client.post(
+        f"/api/v1/user/{existing_user.id}/group/{str(mocked_sub_groups[2].id)}"
+    )
+
+    assert response.status_code == 201
+    created_sub_group_membership = response.json()
+    assert created_sub_group_membership["parent_id"] == str(mocked_sub_groups[2].id)
+    assert created_sub_group_membership["child_id"] == str(existing_user.id)
+    assert created_sub_group_membership["inherit"] is True
+
+    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
+
+    response = await async_client.post(
+        f"/api/v1/user/{existing_user.id}/group/{str(mocked_sub_sub_groups[0].id)}"
+    )
+
+    assert response.status_code == 201
+    created_sub_sub_group_membership = response.json()
+    assert created_sub_sub_group_membership["parent_id"] == str(
+        mocked_sub_sub_groups[0].id
+    )
+    assert created_sub_sub_group_membership["child_id"] == str(existing_user.id)
+    assert created_sub_sub_group_membership["inherit"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_user_to_groups_without_inheritance(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_azure_test_user: List[User],
+    mocked_get_azure_token_payload,
+    add_many_test_ueber_groups,
+    add_many_test_groups,
+    add_many_test_sub_groups,
+    add_many_test_sub_sub_groups,
+):
+    """Tests adding users to an ueber-group, group, sub-group, and sub-sub-group."""
+    app_override_get_azure_payload_dependency
+
+    existing_user = await add_one_azure_test_user(0)
+
+    mocked_groups = await add_many_test_groups()
+
+    response = await async_client.post(
+        f"/api/v1/user/{existing_user.id}/group/{str(mocked_groups[1].id)}?inherit=false"
+    )
+
+    assert response.status_code == 201
+    created_hierarchy = response.json()
+    assert created_hierarchy["parent_id"] == str(mocked_groups[1].id)
+    assert created_hierarchy["child_id"] == str(existing_user.id)
+    assert created_hierarchy["inherit"] is False
+
 
 # # TBD: remove a user from an ueber-group
 

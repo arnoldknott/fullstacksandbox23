@@ -1216,8 +1216,8 @@ class BaseHierarchyCRUD(
                     status_code=403,
                     detail="Bad request: child type not allowed for parent.",
                 )
-        except Exception as e:
-            logger.error(f"Error in creating hierarchy: {e}")
+        except Exception as err:
+            logger.error(f"Error in creating hierarchy: {err}")
             raise HTTPException(status_code=403, detail="Forbidden.")
 
     async def read(
@@ -1272,8 +1272,8 @@ class BaseHierarchyCRUD(
                 raise HTTPException(status_code=404, detail="No children not found.")
 
             return results
-        except Exception as e:
-            logger.error(f"Error in reading hierarchy: {e}")
+        except Exception as err:
+            logger.error(f"Error in reading hierarchy: {err}")
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
 
     # TBD: potentially make parent_id optional:

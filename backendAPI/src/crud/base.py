@@ -71,6 +71,10 @@ class BaseCRUD(
             self.hierarchy = ResourceHierarchy
             self.relations = ResourceHierarchy.relations
         elif base_model.__name__ in IdentityType.list():
+            # print("=== CRUD - base - IdentityType ===")
+            # print(IdentityType(self.model))
+            # print("=== CRUD - base - IdentityType.model.__name__ ===")
+            # print(IdentityType(self.model.__name__))
             self.entity_type = IdentityType(self.model.__name__)
             self.types = IdentityType
             self.hierarchy_CRUD = IdentityHierarchyCRUD()

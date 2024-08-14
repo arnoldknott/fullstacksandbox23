@@ -13,6 +13,7 @@ from crud.identity import (
     UeberGroupCRUD,
     UserCRUD,
 )
+from crud.access import BaseHierarchyModelRead
 from models.identity import (
     Group,
     GroupCreate,
@@ -85,12 +86,12 @@ async def post_add_user_to_group(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> User:
+) -> BaseHierarchyModelRead:
     """Adds a user to a group."""
     logger.info("POST user to group")
     return await user_view.post_add_child_to_parent(
-        group_id,
         user_id,
+        group_id,
         token_payload,
         guards,
         inherit,

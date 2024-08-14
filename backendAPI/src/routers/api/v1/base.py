@@ -97,6 +97,8 @@ class BaseView:
             created_hierarchy = await crud.add_child_to_parent(
                 child_id, parent_id, current_user, inherit
             )
+        print("=== created_hierarchy ===")
+        print(created_hierarchy)
         return created_hierarchy
 
     async def get(
