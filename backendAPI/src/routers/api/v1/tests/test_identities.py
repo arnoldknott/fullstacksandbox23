@@ -1853,7 +1853,7 @@ async def test_all_sub_sub_group_endpoints(
     [token_admin_read_write],
     indirect=True,
 )
-async def test_add_user_to_groups(
+async def test_add_user_to_all_types_of_groups(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
@@ -1966,14 +1966,22 @@ async def test_add_group_to_ueber_group(
     mocked_ueber_groups = await add_many_test_ueber_groups()
     mocked_groups = await add_many_test_groups()
 
-    response = await async_client.post(
+    hierarchy_response = await async_client.post(
         f"/api/v1/group/{str(mocked_groups[1].id)}/uebergroup/{str(mocked_ueber_groups[2].id)}"
     )
 
-    assert response.status_code == 201
-    created_hierarchy = response.json()
+    assert hierarchy_response.status_code == 201
+    created_hierarchy = hierarchy_response.json()
     assert created_hierarchy["parent_id"] == str(mocked_ueber_groups[2].id)
     assert created_hierarchy["child_id"] == str(mocked_groups[1].id)
+
+    ueber_group_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[2].id)}"
+    )
+
+    assert ueber_group_response.status_code == 200
+    ueber_group = UeberGroupRead(**ueber_group_response.json())
+    assert any(group.id == str(mocked_groups[1].id) for group in ueber_group.groups)
 
 
 @pytest.mark.anyio
@@ -2003,6 +2011,14 @@ async def test_add_sub_group_to_group(
     assert created_hierarchy["parent_id"] == str(mocked_groups[0].id)
     assert created_hierarchy["child_id"] == str(mocked_sub_groups[3].id)
 
+    group_response = await async_client.get(f"/api/v1/group/{str(mocked_groups[0].id)}")
+
+    assert group_response.status_code == 200
+    group = GroupRead(**group_response.json())
+    assert any(
+        sub_group.id == str(mocked_sub_groups[3].id) for sub_group in group.sub_groups
+    )
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -2031,13 +2047,21 @@ async def test_add_sub_sub_group_to_sub_group(
     assert created_hierarchy["parent_id"] == str(mocked_sub_groups[4].id)
     assert created_hierarchy["child_id"] == str(mocked_sub_sub_groups[4].id)
 
+    sub_group_response = await async_client.get(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[4].id)}"
+    )
+
+    assert sub_group_response.status_code == 200
+    sub_group = SubGroupRead(**sub_group_response.json())
+    assert any(
+        sub_sub_group.id == str(mocked_sub_sub_groups[4].id)
+        for sub_sub_group in sub_group.sub_sub_groups
+    )
+
 
 # # TBD: remove a user from an ueber-group
 
 # # TBD: Delete ueber-group with attached users - make sure users afterwards don't have inherited rights any more
-
-
-# # TBD: add groups to an ueber-group
 
 # # TBD: remove a group from an ueber-group
 

@@ -980,8 +980,8 @@ class BaseCRUD(
 
     async def remove_child_from_parent(
         self,
-        parent_id: uuid.UUID,
         child_id: uuid.UUID,
+        parent_id: uuid.UUID,
         current_user: "CurrentUserData",
     ) -> None:
         """Deletes a member of this class from a parent (of another entity type)."""

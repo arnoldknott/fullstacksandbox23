@@ -157,6 +157,46 @@ class User(UserCreate, table=True):
             "cascade": "all, delete",
         },
     )
+    ueber_groups: Optional[List["UeberGroup"]] = Relationship(
+        back_populates="users",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+            "secondaryjoin": "UeberGroup.id == foreign(IdentityHierarchy.parent_id)",
+        },
+    )
+    groups: Optional[List["Group"]] = Relationship(
+        back_populates="users",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+            "secondaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
+        },
+    )
+    sub_groups: Optional[List["SubGroup"]] = Relationship(
+        back_populates="users",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+            "secondaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
+        },
+    )
+    sub_sub_groups: Optional[List["SubSubGroup"]] = Relationship(
+        back_populates="users",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+            "secondaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.parent_id)",
+        },
+    )
 
     ### Foreign Account: DTU Learn (Brightspace) ###
     # only add the user-id here - nothing else!
@@ -172,6 +212,12 @@ class User(UserCreate, table=True):
     # discord_account: Optional["DiscordAccount"] = Relationship(back_populates="user")
 
 
+class UserReadNoGroups(UserCreate):
+    """Schema for reading a user without linked accounts and groups."""
+
+    id: uuid.UUID
+
+
 class UserRead(UserCreate):
     """Schema for reading a user."""
 
@@ -183,6 +229,10 @@ class UserRead(UserCreate):
     # brightspace_account: Optional["DiscordAccount"] = None
     # google_account: Optional["GoogleAccount"] = None
     # discord_account: Optional["DiscordAccount"] = None
+    ueber_groups: Optional[List["UeberGroupRead"]] = None
+    groups: Optional[List["GroupRead"]] = None
+    sub_groups: Optional[List["SubGroupRead"]] = None
+    sub_sub_groups: Optional[List["SubSubGroupRead"]] = None
 
 
 class UserUpdate(UserCreate):
@@ -232,12 +282,33 @@ class UeberGroup(UeberGroupCreate, table=True):
         foreign_key="identifiertypelink.id",
         primary_key=True,
     )
+    users: Optional[List["User"]] = Relationship(
+        back_populates="ueber_groups",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "UeberGroup.id == foreign(IdentityHierarchy.parent_id)",
+            "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+        },
+    )
+    groups: Optional[List["Group"]] = Relationship(
+        back_populates="ueber_groups",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "UeberGroup.id == foreign(IdentityHierarchy.parent_id)",
+            "secondaryjoin": "Group.id == foreign(IdentityHierarchy.child_id)",
+        },
+    )
 
 
 class UeberGroupRead(UeberGroupCreate):
     """Schema for reading an ueber-group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
+    groups: Optional[List["Group"]] = None
 
 
 class UeberGroupUpdate(UeberGroupCreate):
@@ -267,12 +338,44 @@ class Group(GroupCreate, table=True):
         foreign_key="identifiertypelink.id",
         primary_key=True,
     )
+    users: Optional[List["User"]] = Relationship(
+        back_populates="groups",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
+            "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+        },
+    )
+    ueber_groups: Optional[List["UeberGroup"]] = Relationship(
+        back_populates="groups",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "Group.id == foreign(IdentityHierarchy.child_id)",
+            "secondaryjoin": "UeberGroup.id == foreign(IdentityHierarchy.parent_id)",
+        },
+    )
+    sub_groups: Optional[List["SubGroup"]] = Relationship(
+        back_populates="groups",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
+            "secondaryjoin": "SubGroup.id == foreign(IdentityHierarchy.child_id)",
+        },
+    )
 
 
 class GroupRead(GroupCreate):
     """Schema for reading a group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
+    users: Optional[List["UserReadNoGroups"]] = None
+    sub_groups: Optional[List["SubGroup"]] = None
 
 
 class GroupUpdate(GroupCreate):
@@ -302,12 +405,44 @@ class SubGroup(SubGroupCreate, table=True):
         foreign_key="identifiertypelink.id",
         primary_key=True,
     )
+    users: Optional[List["User"]] = Relationship(
+        back_populates="sub_groups",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
+            "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+        },
+    )
+    groups: Optional[List["Group"]] = Relationship(
+        back_populates="sub_groups",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.child_id)",
+            "secondaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
+        },
+    )
+    sub_sub_groups: Optional[List["SubSubGroup"]] = Relationship(
+        back_populates="sub_groups",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
+            "secondaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.child_id)",
+        },
+    )
 
 
 class SubGroupRead(SubGroupCreate):
     """Schema for reading a sub-group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
+    users: Optional[List["UserReadNoGroups"]] = None
+    sub_sub_groups: Optional[List["SubSubGroup"]] = None
 
 
 class SubGroupUpdate(SubGroupCreate):
@@ -337,12 +472,33 @@ class SubSubGroup(SubSubGroupCreate, table=True):
         foreign_key="identifiertypelink.id",
         primary_key=True,
     )
+    users: Optional[List["User"]] = Relationship(
+        back_populates="sub_sub_groups",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.parent_id)",
+            "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+        },
+    )
+    sub_groups: Optional["SubGroup"] = Relationship(
+        back_populates="sub_sub_groups",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            "viewonly": True,
+            "primaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.child_id)",
+            "secondaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
+        },
+    )
 
 
 class SubSubGroupRead(SubSubGroupCreate):
     """Schema for reading a sub-sub-group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
+    users: Optional[List["UserReadNoGroups"]] = None
 
 
 class SubSubGroupUpdate(SubSubGroupCreate):

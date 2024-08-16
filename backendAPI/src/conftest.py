@@ -490,8 +490,6 @@ async def add_many_test_ueber_groups(
             ueber_groups.append(added_ueber_group)
 
         ueber_groups = sorted(ueber_groups, key=lambda x: x.id)
-        print("=== ueber_groups ===")
-        pprint(ueber_groups)
 
         return ueber_groups
 

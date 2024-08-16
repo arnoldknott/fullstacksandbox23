@@ -86,7 +86,7 @@ async def post_add_user_to_group(
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> BaseHierarchyModelRead:
-    """Adds a user to a group."""
+    """Adds a user to an ueber-group, group, sub-group or sub-sub-group."""
     logger.info("POST user to group")
     return await user_view.post_add_child_to_parent(
         user_id,
@@ -158,6 +158,23 @@ async def delete_user(
 ) -> None:  # User:
     """Deletes a user."""
     return await user_view.delete(user_id, token_payload, guards)
+
+
+@user_router.delete("/{user_id}/group/{group_id}", status_code=201)
+async def delete_remove_user_from_group(
+    user_id: UUID,
+    group_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes a user from an ueber-group, group, sub-group or sub-sub-group."""
+    logger.info("DELETE user from group")
+    return await user_view.post_add_child_to_parent(
+        user_id,
+        group_id,
+        token_payload,
+        guards,
+    )
 
 
 # endregion User
@@ -289,7 +306,7 @@ async def getgroup_by_id(
     group_id: UUID,
     token_payload=Depends(get_access_token_payload),
     guards=Depends(Guards(roles=["User"])),
-) -> UeberGroupRead:
+) -> GroupRead:
     """Returns a group with a specific group_id."""
     return await group_view.get_by_id(
         group_id,

@@ -182,7 +182,7 @@ async def remove_child_from_parent(
 ) -> None:
     """Removes a child from a parent."""
     return await protected_child_view.remove_child_from_parent(
-        parent_id, child_id, token_payload, guards
+        child_id, parent_id, token_payload, guards
     )
 
 

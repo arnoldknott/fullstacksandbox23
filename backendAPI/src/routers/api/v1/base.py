@@ -97,8 +97,6 @@ class BaseView:
             created_hierarchy = await crud.add_child_to_parent(
                 child_id, parent_id, current_user, inherit
             )
-        print("=== created_hierarchy ===")
-        print(created_hierarchy)
         return created_hierarchy
 
     async def get(
@@ -202,8 +200,8 @@ class BaseView:
 
     async def remove_child_from_parent(
         self,
-        parent_id,
         child_id,
+        parent_id,
         token_payload,
         guards,
     ):
@@ -212,5 +210,5 @@ class BaseView:
         )
         current_user = await self._check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
-            await crud.remove_child_from_parent(parent_id, child_id, current_user)
+            await crud.remove_child_from_parent(child_id, parent_id, current_user)
         return None
