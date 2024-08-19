@@ -151,6 +151,7 @@ class User(UserCreate, table=True):
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
             "lazy": "joined",
+            # "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "AzureGroup.id == foreign(IdentityHierarchy.parent_id)",
@@ -161,7 +162,8 @@ class User(UserCreate, table=True):
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "UeberGroup.id == foreign(IdentityHierarchy.parent_id)",
@@ -171,7 +173,8 @@ class User(UserCreate, table=True):
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
@@ -181,7 +184,8 @@ class User(UserCreate, table=True):
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
@@ -191,7 +195,8 @@ class User(UserCreate, table=True):
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.parent_id)",
@@ -216,6 +221,8 @@ class UserReadNoGroups(UserCreate):
     """Schema for reading a user without linked accounts and groups."""
 
     id: uuid.UUID
+    azure_user_id: Optional[uuid.UUID] = None
+    azure_groups: Optional[List["AzureGroupRead"]] = None
 
 
 class UserRead(UserCreate):
@@ -308,6 +315,7 @@ class UeberGroupRead(UeberGroupCreate):
     """Schema for reading an ueber-group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
+    users: Optional[List["User"]] = None
     groups: Optional[List["Group"]] = None
 
 
@@ -374,7 +382,7 @@ class GroupRead(GroupCreate):
     """Schema for reading a group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
-    users: Optional[List["UserReadNoGroups"]] = None
+    users: Optional[List["User"]] = None
     sub_groups: Optional[List["SubGroup"]] = None
 
 
@@ -441,7 +449,7 @@ class SubGroupRead(SubGroupCreate):
     """Schema for reading a sub-group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
-    users: Optional[List["UserReadNoGroups"]] = None
+    users: Optional[List["User"]] = None
     sub_sub_groups: Optional[List["SubSubGroup"]] = None
 
 
@@ -498,7 +506,7 @@ class SubSubGroupRead(SubSubGroupCreate):
     """Schema for reading a sub-sub-group."""
 
     id: uuid.UUID  # no longer optional - needs to exist now
-    users: Optional[List["UserReadNoGroups"]] = None
+    users: Optional[List["User"]] = None
 
 
 class SubSubGroupUpdate(SubSubGroupCreate):

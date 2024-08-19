@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from pprint import pprint
 from typing import List, Optional
 from uuid import UUID
@@ -160,19 +161,20 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     # The model-validation adds the default values (id) to the user_create object!
                     # Can be used for linked tables: avoids multiple round trips to database
                     database_user = User.model_validate(user_create)
-                    # print(
-                    #     "=== user crud - create_azure_user_and_groups_if_not_exist - database_user ==="
-                    # )
-                    # print(database_user)
-                    # TBD: refactor into using _add_write_identifier_type_link_to_session()
-                    # to avoid round-trips to database
-                    # self._add_identifier_type_link_to_session(database_user.id)
                     await self._write_identifier_type_link(database_user.id)
 
                     # session.add(IdentityTypeLink(database_user.id, IdentityType.user))
+                    print(
+                        "=== user crud - create_azure_user_and_groups_if_not_exist => time before writing to database ==="
+                    )
+                    pprint(datetime.now())
                     session.add(database_user)
                     await session.commit()
                     await session.refresh(database_user)
+                    print(
+                        "=== user crud - create_azure_user_and_groups_if_not_exist => time after writing to database ==="
+                    )
+                    pprint(datetime.now())
                     current_user = database_user
                     current_user_data = CurrentUserData(
                         user_id=current_user.id,
@@ -337,6 +339,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # current_user = await self.read_by_azure_user_id(
         #     azure_user_id  # , update_last_access
         # )
+        print(
+            "=== user crud - create_azure_user_and_groups_if_not_exist => time before returning current_user ==="
+        )
+        pprint(datetime.now())
         return current_user
 
     # Hose are not even used anywhere yet - so no priority to update them!

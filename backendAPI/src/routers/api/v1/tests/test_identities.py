@@ -8,7 +8,6 @@ from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD
-from models.access import IdentityHierarchyRead
 from models.identity import (
     Group,
     GroupRead,

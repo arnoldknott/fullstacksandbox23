@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query
 
 from core.security import Guards, get_access_token_payload
 from core.types import GuardTypes
+from crud.access import BaseHierarchyModelRead
 from crud.identity import (
     GroupCRUD,
     SubGroupCRUD,
@@ -13,7 +14,6 @@ from crud.identity import (
     UeberGroupCRUD,
     UserCRUD,
 )
-from crud.access import BaseHierarchyModelRead
 from models.identity import (
     Group,
     GroupCreate,

@@ -4,13 +4,7 @@ from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
 
 from fastapi import HTTPException
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import (
-    aliased,
-    class_mapper,
-    contains_eager,
-    foreign,
-    noload,
-)
+from sqlalchemy.orm import aliased, class_mapper, contains_eager, foreign, noload
 from sqlmodel import SQLModel, asc, delete, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
