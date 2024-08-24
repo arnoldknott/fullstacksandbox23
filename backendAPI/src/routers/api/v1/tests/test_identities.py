@@ -85,9 +85,9 @@ from tests.utils import (
 # ✔︎ all endpoints of sub-sub-group
 # ✔︎ add user to ueber-group group, sub-group, sub-sub-group
 # ✔︎ add user to group without inheriting group
-# - add group to ueber-group
-# - add sub-group to group,
-# - add sub-sub-group to sub-group
+# - add group to ueber-group and delete again
+# - add sub-group to group and delete again
+# - add sub-sub-group to sub-group and delete again
 # - access to resource through inheritance (user from any group)
 # - access to resource through inheritance through multiple generations (user in ueber-group can access resource in sub-sub-group)
 # - user inherits access to resource from group, group gets deleted, user no longer has access to resource
@@ -1843,7 +1843,7 @@ async def test_all_sub_sub_group_endpoints(
 # endregion: Sub-sub_sub Group tests
 
 
-# region identity hierarchy tests:
+# region: identity hierarchy tests:
 
 
 @pytest.mark.anyio
@@ -1974,13 +1974,44 @@ async def test_add_group_to_ueber_group(
     assert created_hierarchy["parent_id"] == str(mocked_ueber_groups[2].id)
     assert created_hierarchy["child_id"] == str(mocked_groups[1].id)
 
+    # add another group to the ueber-group:
+    await async_client.post(
+        f"/api/v1/group/{str(mocked_groups[3].id)}/uebergroup/{str(mocked_ueber_groups[2].id)}"
+    )
+
     ueber_group_response = await async_client.get(
         f"/api/v1/uebergroup/{str(mocked_ueber_groups[2].id)}"
     )
 
     assert ueber_group_response.status_code == 200
     ueber_group = UeberGroupRead(**ueber_group_response.json())
+    assert len(ueber_group.groups) == 2
     assert any(group.id == str(mocked_groups[1].id) for group in ueber_group.groups)
+    assert any(group.id == str(mocked_groups[3].id) for group in ueber_group.groups)
+
+    # remove a group from the ueber-group:
+    remove_response = await async_client.delete(
+        f"/api/v1/group/{str(mocked_groups[1].id)}/uebergroup/{str(mocked_ueber_groups[2].id)}"
+    )
+    assert remove_response.status_code == 200
+
+    ueber_group_after_delete_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[2].id)}"
+    )
+
+    assert ueber_group_after_delete_response.status_code == 200
+    ueber_group_after_delete = UeberGroupRead(
+        **ueber_group_after_delete_response.json()
+    )
+    assert len(ueber_group_after_delete.groups) == 1
+    assert all(
+        group.id != str(mocked_groups[1].id)
+        for group in ueber_group_after_delete.groups
+    )
+    assert any(
+        group.id == str(mocked_groups[3].id)
+        for group in ueber_group_after_delete.groups
+    )
 
 
 @pytest.mark.anyio
@@ -2016,6 +2047,45 @@ async def test_add_sub_group_to_group(
     group = GroupRead(**group_response.json())
     assert any(
         sub_group.id == str(mocked_sub_groups[3].id) for sub_group in group.sub_groups
+    )
+
+    # add another sub_group to the group:
+    await async_client.post(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[0].id)}/group/{str(mocked_groups[0].id)}"
+    )
+
+    group_response = await async_client.get(f"/api/v1/group/{str(mocked_groups[0].id)}")
+
+    assert group_response.status_code == 200
+    group = GroupRead(**group_response.json())
+    assert len(group.sub_groups) == 2
+    assert any(
+        sub_group.id == str(mocked_sub_groups[3].id) for sub_group in group.sub_groups
+    )
+    assert any(
+        sub_group.id == str(mocked_sub_groups[0].id) for sub_group in group.sub_groups
+    )
+
+    # remove a sub_group from the group:
+    remove_response = await async_client.delete(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[0].id)}/group/{str(mocked_groups[0].id)}"
+    )
+    assert remove_response.status_code == 200
+
+    group_after_delete_response = await async_client.get(
+        f"/api/v1/group/{str(mocked_groups[0].id)}"
+    )
+
+    assert group_after_delete_response.status_code == 200
+    group_after_delete = GroupRead(**group_after_delete_response.json())
+    assert len(group_after_delete.sub_groups) == 1
+    assert all(
+        sub_group.id != str(mocked_sub_groups[0].id)
+        for sub_group in group_after_delete.sub_groups
+    )
+    assert any(
+        sub_group.id == str(mocked_sub_groups[3].id)
+        for sub_group in group_after_delete.sub_groups
     )
 
 
@@ -2057,6 +2127,10 @@ async def test_add_sub_sub_group_to_sub_group(
         for sub_sub_group in sub_group.sub_sub_groups
     )
 
+
+# # TBD: adding a sub-group and sub_sub_group to an ueber_group fails
+
+# # TBD: adding a sub_sub_group to a group fails
 
 # # TBD: remove a user from an ueber-group
 

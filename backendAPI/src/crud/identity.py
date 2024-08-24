@@ -164,17 +164,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     await self._write_identifier_type_link(database_user.id)
 
                     # session.add(IdentityTypeLink(database_user.id, IdentityType.user))
-                    print(
-                        "=== user crud - create_azure_user_and_groups_if_not_exist => time before writing to database ==="
-                    )
-                    pprint(datetime.now())
                     session.add(database_user)
                     await session.commit()
                     await session.refresh(database_user)
-                    print(
-                        "=== user crud - create_azure_user_and_groups_if_not_exist => time after writing to database ==="
-                    )
-                    pprint(datetime.now())
                     current_user = database_user
                     current_user_data = CurrentUserData(
                         user_id=current_user.id,
@@ -339,10 +331,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # current_user = await self.read_by_azure_user_id(
         #     azure_user_id  # , update_last_access
         # )
-        print(
-            "=== user crud - create_azure_user_and_groups_if_not_exist => time before returning current_user ==="
-        )
-        pprint(datetime.now())
         return current_user
 
     # Hose are not even used anywhere yet - so no priority to update them!

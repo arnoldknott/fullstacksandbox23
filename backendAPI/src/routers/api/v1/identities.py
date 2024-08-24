@@ -341,6 +341,23 @@ async def delete_group(
     return await group_view.delete(group_id, token_payload, guards)
 
 
+@group_router.delete("/{group_id}/uebergroup/{ueber_group_id}", status_code=200)
+async def remove_group_from_uebergroup(
+    group_id: UUID,
+    ueber_group_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes a group from an ueber_group."""
+    logger.info("DELETE group from ueber_group")
+    return await group_view.remove_child_from_parent(
+        group_id,
+        ueber_group_id,
+        token_payload,
+        guards,
+    )
+
+
 # endregion Group
 
 # region SubGroup:
@@ -430,6 +447,23 @@ async def delete_sub_group(
 ) -> None:
     """Deletes a sub_group."""
     return await sub_group_view.delete(sub_group_id, token_payload, guards)
+
+
+@sub_group_router.delete("/{sub_group_id}/group/{group_id}", status_code=200)
+async def remove_sub_group_from_group(
+    sub_group_id: UUID,
+    group_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes a sub_group from a group."""
+    logger.info("DELETE sub_group from group")
+    return await sub_group_view.remove_child_from_parent(
+        sub_group_id,
+        group_id,
+        token_payload,
+        guards,
+    )
 
 
 # endregion SubGroup
