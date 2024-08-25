@@ -559,4 +559,23 @@ async def delete_sub_sub_group(
     return await sub_sub_group_view.delete(sub_sub_group_id, token_payload, guards)
 
 
+@sub_sub_group_router.delete(
+    "/{sub_sub_group_id}/subgroup/{sub_group_id}", status_code=200
+)
+async def remove_sub_sub_group_from_group(
+    sub_sub_group_id: UUID,
+    sub_group_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes a sub_sub_group from a sub_group."""
+    logger.info("DELETE sub_sub_group from sub_group")
+    return await sub_sub_group_view.remove_child_from_parent(
+        sub_sub_group_id,
+        sub_group_id,
+        token_payload,
+        guards,
+    )
+
+
 # endregion SubSubGroup

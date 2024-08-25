@@ -85,9 +85,11 @@ from tests.utils import (
 # ✔︎ all endpoints of sub-sub-group
 # ✔︎ add user to ueber-group group, sub-group, sub-sub-group
 # ✔︎ add user to group without inheriting group
-# - add group to ueber-group and delete again
-# - add sub-group to group and delete again
+# ✔︎ add group to ueber-group and delete again
+# ✔︎ add sub-group to group and delete again
 # - add sub-sub-group to sub-group and delete again
+# - add sub_group and sub_sub_group to ueber_group fails
+# - add sub_sub_group to group fails
 # - access to resource through inheritance (user from any group)
 # - access to resource through inheritance through multiple generations (user in ueber-group can access resource in sub-sub-group)
 # - user inherits access to resource from group, group gets deleted, user no longer has access to resource
@@ -2125,6 +2127,49 @@ async def test_add_sub_sub_group_to_sub_group(
     assert any(
         sub_sub_group.id == str(mocked_sub_sub_groups[4].id)
         for sub_sub_group in sub_group.sub_sub_groups
+    )
+
+    # add another sub_group to the group:
+    await async_client.post(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[3].id)}/subgroup/{str(mocked_sub_groups[4].id)}"
+    )
+
+    sub_group_response = await async_client.get(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[4].id)}"
+    )
+
+    assert sub_group_response.status_code == 200
+    sub_group = SubGroupRead(**sub_group_response.json())
+    assert len(sub_group.sub_sub_groups) == 2
+    assert any(
+        sub_sub_group.id == str(mocked_sub_sub_groups[3].id)
+        for sub_sub_group in sub_group.sub_sub_groups
+    )
+    assert any(
+        sub_sub_group.id == str(mocked_sub_sub_groups[4].id)
+        for sub_sub_group in sub_group.sub_sub_groups
+    )
+
+    # remove a sub_group from the group:
+    remove_response = await async_client.delete(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[4].id)}/subgroup/{str(mocked_sub_groups[4].id)}"
+    )
+    assert remove_response.status_code == 200
+
+    sub_group_after_delete_response = await async_client.get(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[4].id)}"
+    )
+
+    assert sub_group_after_delete_response.status_code == 200
+    sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
+    assert len(sub_group_after_delete.sub_sub_groups) == 1
+    assert all(
+        sub_sub_group.id != str(mocked_sub_sub_groups[4].id)
+        for sub_sub_group in sub_group_after_delete.sub_sub_groups
+    )
+    assert any(
+        sub_sub_group.id == str(mocked_sub_sub_groups[3].id)
+        for sub_sub_group in sub_group_after_delete.sub_sub_groups
     )
 
 
