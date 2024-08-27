@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 from typing import List
-
+from pprint import pprint
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -1877,6 +1877,41 @@ async def test_add_user_to_ueber_group(
     assert created_ueber_group_membership["child_id"] == str(existing_user.id)
     assert created_ueber_group_membership["inherit"] is True
 
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_bulk_add_users_to_ueber_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_azure_test_users: List[User],
+    add_many_test_ueber_groups,
+):
+    """Tests bulk adding users to an ueber-group"""
+    app_override_get_azure_payload_dependency
+
+    existing_users = await add_many_azure_test_users()
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+
+    response = await async_client.post(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}/users",
+        json=[str(user.id) for user in existing_users],
+    )
+
+    assert response.status_code == 201
+    created_ueber_group_memberships = response.json()
+    for user, created_membership in zip(
+        existing_users, created_ueber_group_memberships
+    ):
+        assert created_membership["parent_id"] == str(mocked_ueber_groups[1].id)
+        assert created_membership["child_id"] == str(user.id)
+        assert created_membership["inherit"] is True
+
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_get_azure_token_payload",
@@ -1905,6 +1940,41 @@ async def test_add_user_to_group(
     assert created_group_membership["parent_id"] == str(mocked_groups[3].id)
     assert created_group_membership["child_id"] == str(existing_user.id)
     assert created_group_membership["inherit"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_bulk_add_users_to_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_azure_test_users: List[User],
+    add_many_test_groups,
+):
+    """Tests bulk adding users to a group"""
+    app_override_get_azure_payload_dependency
+
+    existing_users = await add_many_azure_test_users()
+
+    mocked_groups = await add_many_test_groups()
+
+    response = await async_client.post(
+        f"/api/v1/group/{str(mocked_groups[1].id)}/users",
+        json=[str(user.id) for user in existing_users],
+    )
+
+    assert response.status_code == 201
+    created_ueber_group_memberships = response.json()
+    for user, created_membership in zip(
+        existing_users, created_ueber_group_memberships
+    ):
+        assert created_membership["parent_id"] == str(mocked_groups[1].id)
+        assert created_membership["child_id"] == str(user.id)
+        assert created_membership["inherit"] is True
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -1942,6 +2012,40 @@ async def test_add_user_to_sub_group(
     [token_admin_read_write],
     indirect=True,
 )
+async def test_bulk_add_users_to_sub_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_azure_test_users: List[User],
+    add_many_test_sub_groups,
+):
+    """Tests bulk adding users to a sub-group"""
+    app_override_get_azure_payload_dependency
+
+    existing_users = await add_many_azure_test_users()
+
+    mocked_sub_groups = await add_many_test_sub_groups()
+
+    response = await async_client.post(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[1].id)}/users",
+        json=[str(user.id) for user in existing_users],
+    )
+
+    assert response.status_code == 201
+    created_ueber_group_memberships = response.json()
+    for user, created_membership in zip(
+        existing_users, created_ueber_group_memberships
+    ):
+        assert created_membership["parent_id"] == str(mocked_sub_groups[1].id)
+        assert created_membership["child_id"] == str(user.id)
+        assert created_membership["inherit"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
 async def test_add_user_to_sub_sub_group(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
@@ -1966,6 +2070,40 @@ async def test_add_user_to_sub_sub_group(
     )
     assert created_sub_sub_group_membership["child_id"] == str(existing_user.id)
     assert created_sub_sub_group_membership["inherit"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_bulk_add_users_to_sub_sub_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_azure_test_users: List[User],
+    add_many_test_sub_sub_groups,
+):
+    """Tests bulk adding users to a sub-sub-group"""
+    app_override_get_azure_payload_dependency
+
+    existing_users = await add_many_azure_test_users()
+
+    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
+
+    response = await async_client.post(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[1].id)}/users",
+        json=[str(user.id) for user in existing_users],
+    )
+
+    assert response.status_code == 201
+    created_ueber_group_memberships = response.json()
+    for user, created_membership in zip(
+        existing_users, created_ueber_group_memberships
+    ):
+        assert created_membership["parent_id"] == str(mocked_sub_sub_groups[1].id)
+        assert created_membership["child_id"] == str(user.id)
+        assert created_membership["inherit"] is True
 
 
 @pytest.mark.anyio

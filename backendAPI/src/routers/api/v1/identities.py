@@ -212,9 +212,9 @@ async def post_add_users_to_uebergroup(
     logger.info("POST users to ueber_group")
     hierarchy_response = []
     for user_id in user_ids:
-        response = await user_view.post_add_children_to_parent(
-            ueber_group_id,
+        response = await user_view.post_add_child_to_parent(
             user_id,
+            ueber_group_id,
             token_payload,
             guards,
             inherit,
@@ -316,6 +316,32 @@ async def post_add_group_to_uebergroup(
         guards,
         inherit,
     )
+
+
+@group_router.post("/{group_id}/users", status_code=201)
+async def post_add_users_to_group(
+    group_id: UUID,
+    user_ids: list[UUID],
+    inherit: Annotated[bool, Query()] = True,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> list[BaseHierarchyModelRead]:
+    """Adds bulk of users to a group."""
+    logger.info("POST users to group")
+    hierarchy_response = []
+    for user_id in user_ids:
+        response = await user_view.post_add_child_to_parent(
+            user_id,
+            group_id,
+            token_payload,
+            guards,
+            inherit,
+        )
+        hierarchy_response.append(response)
+    return hierarchy_response
+
+
+# TBD: same for bulk adding sub_groups to group
 
 
 @group_router.get("/", status_code=200)
@@ -426,6 +452,32 @@ async def post_add_subgroup_to_group(
     )
 
 
+@sub_group_router.post("/{sub_group_id}/users", status_code=201)
+async def post_add_users_to_subgroup(
+    sub_group_id: UUID,
+    user_ids: list[UUID],
+    inherit: Annotated[bool, Query()] = True,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> list[BaseHierarchyModelRead]:
+    """Adds bulk of users to a sub_group."""
+    logger.info("POST users to sub_group")
+    hierarchy_response = []
+    for user_id in user_ids:
+        response = await user_view.post_add_child_to_parent(
+            user_id,
+            sub_group_id,
+            token_payload,
+            guards,
+            inherit,
+        )
+        hierarchy_response.append(response)
+    return hierarchy_response
+
+
+# TBD: same for bulk adding sub_sub_groups to sub_group
+
+
 @sub_group_router.get("/", status_code=200)
 async def get_all_sub_groups(
     token_payload=Depends(get_access_token_payload),
@@ -534,6 +586,29 @@ async def post_add_subsubgroup_to_subgroup(
         guards,
         inherit,
     )
+
+
+@sub_sub_group_router.post("/{sub_sub_group_id}/users", status_code=201)
+async def post_add_users_to_subsubgroup(
+    sub_sub_group_id: UUID,
+    user_ids: list[UUID],
+    inherit: Annotated[bool, Query()] = True,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> list[BaseHierarchyModelRead]:
+    """Adds bulk of users to a sub_sub_group."""
+    logger.info("POST users to sub_sub_group")
+    hierarchy_response = []
+    for user_id in user_ids:
+        response = await user_view.post_add_child_to_parent(
+            user_id,
+            sub_sub_group_id,
+            token_payload,
+            guards,
+            inherit,
+        )
+        hierarchy_response.append(response)
+    return hierarchy_response
 
 
 @sub_sub_group_router.get("/", status_code=200)

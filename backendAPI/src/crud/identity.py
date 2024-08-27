@@ -315,10 +315,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # )
             # pprint(linked_group.id)
             if str(linked_group.id) not in groups:
-                print(
-                    "=== user crud - create_azure_user_and_groups_if_not_exist - linked_group ==="
-                )
-                pprint(linked_group)
                 async with self.hierarchy_CRUD as hierarchy_CRUD:
                     await hierarchy_CRUD.delete(
                         parent_id=linked_group.id,
