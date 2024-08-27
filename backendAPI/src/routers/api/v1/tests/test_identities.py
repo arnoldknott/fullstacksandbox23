@@ -87,9 +87,9 @@ from tests.utils import (
 # ✔︎ add user to group without inheriting group
 # ✔︎ add group to ueber-group and delete again
 # ✔︎ add sub-group to group and delete again
-# - add sub-sub-group to sub-group and delete again
-# - add sub_group and sub_sub_group to ueber_group fails
-# - add sub_sub_group to group fails
+# ✔︎ add sub-sub-group to sub-group and delete again
+# ✔︎ add sub_group and sub_sub_group to ueber_group fails
+# ✔ add sub_sub_group to group fails
 # - access to resource through inheritance (user from any group)
 # - access to resource through inheritance through multiple generations (user in ueber-group can access resource in sub-sub-group)
 # - user inherits access to resource from group, group gets deleted, user no longer has access to resource
@@ -2129,7 +2129,7 @@ async def test_add_sub_sub_group_to_sub_group(
         for sub_sub_group in sub_group.sub_sub_groups
     )
 
-    # add another sub_group to the group:
+    # add another sub_sub_group to the sub_group:
     await async_client.post(
         f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[3].id)}/subgroup/{str(mocked_sub_groups[4].id)}"
     )
@@ -2150,7 +2150,7 @@ async def test_add_sub_sub_group_to_sub_group(
         for sub_sub_group in sub_group.sub_sub_groups
     )
 
-    # remove a sub_group from the group:
+    # remove a sub_sub_group from the sub_group:
     remove_response = await async_client.delete(
         f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[4].id)}/subgroup/{str(mocked_sub_groups[4].id)}"
     )
@@ -2173,9 +2173,103 @@ async def test_add_sub_sub_group_to_sub_group(
     )
 
 
-# # TBD: adding a sub-group and sub_sub_group to an ueber_group fails
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_prohibited_groups_to_ueber_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_ueber_groups,
+    add_many_test_sub_groups,
+    add_many_test_sub_sub_groups,
+):
+    """Tests adding groups to an ueber-group."""
+    app_override_get_azure_payload_dependency
 
-# # TBD: adding a sub_sub_group to a group fails
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+    mocked_sub_groups = await add_many_test_sub_groups()
+    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
+
+    response = await async_client.post(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[3].id)}/uebergroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Not Found"}
+
+    response = await async_client.post(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[3].id)}/subgroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Forbidden."}
+
+    response = await async_client.post(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[3].id)}/uebergroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Not Found"}
+
+    response = await async_client.post(
+        f"/api/v1/subgroup/{str(mocked_sub_sub_groups[3].id)}/group/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Forbidden."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_prohibited_groups_to_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_ueber_groups,
+    add_many_test_groups,
+    add_many_test_sub_sub_groups,
+):
+    """Tests adding groups to an ueber-group."""
+    app_override_get_azure_payload_dependency
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+    mocked_groups = await add_many_test_groups()
+    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
+
+    response = await async_client.post(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[3].id)}/group/{str(mocked_groups[2].id)}"
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Not Found"}
+
+    response = await async_client.post(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[3].id)}/subgroup/{str(mocked_groups[2].id)}"
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Forbidden."}
+
+    response = await async_client.post(
+        f"/api/v1/subgroup/{str(mocked_sub_sub_groups[3].id)}/uebergroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Not Found"}
+
+    response = await async_client.post(
+        f"/api/v1/subgroup/{str(mocked_sub_sub_groups[3].id)}/group/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Forbidden."}
+
 
 # # TBD: remove a user from an ueber-group
 

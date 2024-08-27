@@ -283,7 +283,7 @@ async def post_add_group_to_uebergroup(
 ) -> BaseHierarchyModelRead:
     """Adds a group to an ueber_group."""
     logger.info("POST group to ueber_group")
-    return await user_view.post_add_child_to_parent(
+    return await group_view.post_add_child_to_parent(
         group_id,
         ueber_group_id,
         token_payload,
@@ -391,7 +391,7 @@ async def post_add_subgroup_to_group(
 ) -> BaseHierarchyModelRead:
     """Adds a sub_group to a group."""
     logger.info("POST sub_group to group")
-    return await user_view.post_add_child_to_parent(
+    return await sub_group_view.post_add_child_to_parent(
         sub_group_id,
         group_id,
         token_payload,
@@ -501,7 +501,7 @@ async def post_add_subsubgroup_to_subgroup(
 ) -> BaseHierarchyModelRead:
     """Adds a sub_sub_group to a sub_group."""
     logger.info("POST sub_sub_group to sub_group")
-    return await user_view.post_add_child_to_parent(
+    return await sub_sub_group_view.post_add_child_to_parent(
         sub_sub_group_id,
         sub_group_id,
         token_payload,
