@@ -1854,16 +1854,13 @@ async def test_all_sub_sub_group_endpoints(
     [token_admin_read_write],
     indirect=True,
 )
-async def test_add_user_to_all_types_of_groups(
+async def test_add_user_to_ueber_group(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
     add_many_test_ueber_groups,
-    add_many_test_groups,
-    add_many_test_sub_groups,
-    add_many_test_sub_sub_groups,
 ):
-    """Tests adding users to an ueber-group, group, sub-group, and sub-sub-group."""
+    """Tests adding users to an ueber-group"""
     app_override_get_azure_payload_dependency
 
     existing_user = await add_one_azure_test_user(0)
@@ -1880,6 +1877,23 @@ async def test_add_user_to_all_types_of_groups(
     assert created_ueber_group_membership["child_id"] == str(existing_user.id)
     assert created_ueber_group_membership["inherit"] is True
 
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_user_to_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_azure_test_user: List[User],
+    add_many_test_groups,
+):
+    """Tests adding users to a group."""
+    app_override_get_azure_payload_dependency
+
+    existing_user = await add_one_azure_test_user(0)
+
     mocked_groups = await add_many_test_groups()
 
     response = await async_client.post(
@@ -1892,6 +1906,23 @@ async def test_add_user_to_all_types_of_groups(
     assert created_group_membership["child_id"] == str(existing_user.id)
     assert created_group_membership["inherit"] is True
 
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_user_to_sub_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_azure_test_user: List[User],
+    add_many_test_sub_groups,
+):
+    """Tests adding users to a sub-group."""
+    app_override_get_azure_payload_dependency
+
+    existing_user = await add_one_azure_test_user(0)
+
     mocked_sub_groups = await add_many_test_sub_groups()
 
     response = await async_client.post(
@@ -1903,6 +1934,24 @@ async def test_add_user_to_all_types_of_groups(
     assert created_sub_group_membership["parent_id"] == str(mocked_sub_groups[2].id)
     assert created_sub_group_membership["child_id"] == str(existing_user.id)
     assert created_sub_group_membership["inherit"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_user_to_sub_sub_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_one_azure_test_user: List[User],
+    add_many_test_sub_sub_groups,
+):
+    """Tests adding users to a sub-sub-group."""
+    app_override_get_azure_payload_dependency
+
+    existing_user = await add_one_azure_test_user(0)
 
     mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
 
