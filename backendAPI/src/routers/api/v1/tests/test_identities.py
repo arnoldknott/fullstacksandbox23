@@ -1916,9 +1916,7 @@ async def test_bulk_add_users_to_ueber_group(
     assert response.status_code == 201
     created_memberships = response.json()
     assert len(created_memberships) == len(existing_users)
-    for user, created_membership in zip(
-        existing_users, created_memberships
-    ):
+    for user, created_membership in zip(existing_users, created_memberships):
         assert created_membership["parent_id"] == str(mocked_ueber_groups[1].id)
         assert created_membership["child_id"] == str(user.id)
         assert created_membership["inherit"] is True
@@ -1934,9 +1932,9 @@ async def test_bulk_add_groups_to_ueber_group(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_many_test_ueber_groups,
-    add_many_test_groups
+    add_many_test_groups,
 ):
-    """Tests bulk adding users to an ueber-group"""
+    """Tests bulk adding groups to an ueber-group"""
     app_override_get_azure_payload_dependency
 
     mocked_groups = await add_many_test_groups()
@@ -1951,9 +1949,7 @@ async def test_bulk_add_groups_to_ueber_group(
     assert response.status_code == 201
     created_memberships = response.json()
     assert len(created_memberships) == len(mocked_groups)
-    for group, created_membership in zip(
-        mocked_groups, created_memberships
-    ):
+    for group, created_membership in zip(mocked_groups, created_memberships):
         assert created_membership["parent_id"] == str(mocked_ueber_groups[1].id)
         assert created_membership["child_id"] == str(group.id)
         assert created_membership["inherit"] is True
@@ -2016,11 +2012,42 @@ async def test_bulk_add_users_to_group(
     assert response.status_code == 201
     created_memberships = response.json()
     assert len(created_memberships) == len(existing_users)
-    for user, created_membership in zip(
-        existing_users, created_memberships
-    ):
+    for user, created_membership in zip(existing_users, created_memberships):
         assert created_membership["parent_id"] == str(mocked_groups[1].id)
         assert created_membership["child_id"] == str(user.id)
+        assert created_membership["inherit"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_bulk_add_sub_groups_to_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_groups,
+    add_many_test_sub_groups,
+):
+    """Tests bulk adding sub-groups to a group"""
+    app_override_get_azure_payload_dependency
+
+    mocked_sub_groups = await add_many_test_sub_groups()
+
+    mocked_groups = await add_many_test_groups()
+
+    response = await async_client.post(
+        f"/api/v1/group/{str(mocked_groups[2].id)}/subgroups",
+        json=[str(sub_group.id) for sub_group in mocked_sub_groups],
+    )
+
+    assert response.status_code == 201
+    created_memberships = response.json()
+    assert len(created_memberships) == len(mocked_sub_groups)
+    for sub_group, created_membership in zip(mocked_sub_groups, created_memberships):
+        assert created_membership["parent_id"] == str(mocked_groups[2].id)
+        assert created_membership["child_id"] == str(sub_group.id)
         assert created_membership["inherit"] is True
 
 
@@ -2081,11 +2108,44 @@ async def test_bulk_add_users_to_sub_group(
     assert response.status_code == 201
     created_memberships = response.json()
     assert len(created_memberships) == len(existing_users)
-    for user, created_membership in zip(
-        existing_users, created_memberships
-    ):
+    for user, created_membership in zip(existing_users, created_memberships):
         assert created_membership["parent_id"] == str(mocked_sub_groups[1].id)
         assert created_membership["child_id"] == str(user.id)
+        assert created_membership["inherit"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_bulk_add_sub_sub_groups_to_sub_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_sub_groups,
+    add_many_test_sub_sub_groups,
+):
+    """Tests bulk adding sub-sub-groups to a sub-group"""
+    app_override_get_azure_payload_dependency
+
+    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
+
+    mocked_sub_groups = await add_many_test_sub_groups()
+
+    response = await async_client.post(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[3].id)}/subsubgroups",
+        json=[str(sub_sub_group.id) for sub_sub_group in mocked_sub_sub_groups],
+    )
+
+    assert response.status_code == 201
+    created_memberships = response.json()
+    assert len(created_memberships) == len(mocked_sub_sub_groups)
+    for sub_sub_group, created_membership in zip(
+        mocked_sub_sub_groups, created_memberships
+    ):
+        assert created_membership["parent_id"] == str(mocked_sub_groups[3].id)
+        assert created_membership["child_id"] == str(sub_sub_group.id)
         assert created_membership["inherit"] is True
 
 
@@ -2148,9 +2208,7 @@ async def test_bulk_add_users_to_sub_sub_group(
     assert response.status_code == 201
     created_memberships = response.json()
     assert len(created_memberships) == len(existing_users)
-    for user, created_membership in zip(
-        existing_users, created_memberships
-    ):
+    for user, created_membership in zip(existing_users, created_memberships):
         assert created_membership["parent_id"] == str(mocked_sub_sub_groups[1].id)
         assert created_membership["child_id"] == str(user.id)
         assert created_membership["inherit"] is True

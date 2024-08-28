@@ -361,7 +361,27 @@ async def post_add_users_to_group(
     return hierarchy_response
 
 
-# TBD: same for bulk adding sub_groups to group
+@group_router.post("/{group_id}/subgroups", status_code=201)
+async def post_add_subgroups_to_group(
+    group_id: UUID,
+    sub_group_ids: list[UUID],
+    inherit: Annotated[bool, Query()] = True,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> list[BaseHierarchyModelRead]:
+    """Adds bulk of sub-groups to a group."""
+    logger.info("POST sub-groups to group")
+    hierarchy_response = []
+    for sub_group_id in sub_group_ids:
+        response = await sub_group_view.post_add_child_to_parent(
+            sub_group_id,
+            group_id,
+            token_payload,
+            guards,
+            inherit,
+        )
+        hierarchy_response.append(response)
+    return hierarchy_response
 
 
 @group_router.get("/", status_code=200)
@@ -495,7 +515,27 @@ async def post_add_users_to_subgroup(
     return hierarchy_response
 
 
-# TBD: same for bulk adding sub_sub_groups to sub_group
+@sub_group_router.post("/{sub_group_id}/subsubgroups", status_code=201)
+async def post_add_subsubgroups_to_subgroup(
+    sub_group_id: UUID,
+    sub_sub_group_ids: list[UUID],
+    inherit: Annotated[bool, Query()] = True,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> list[BaseHierarchyModelRead]:
+    """Adds bulk of sub-sub-groups to a sub-group."""
+    logger.info("POST sub-sub-groups to sub-group")
+    hierarchy_response = []
+    for sub_sub_group_id in sub_sub_group_ids:
+        response = await sub_sub_group_view.post_add_child_to_parent(
+            sub_sub_group_id,
+            sub_group_id,
+            token_payload,
+            guards,
+            inherit,
+        )
+        hierarchy_response.append(response)
+    return hierarchy_response
 
 
 @sub_group_router.get("/", status_code=200)
