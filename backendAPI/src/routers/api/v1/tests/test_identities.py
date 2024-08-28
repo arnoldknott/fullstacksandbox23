@@ -83,7 +83,18 @@ from tests.utils import (
 # ✔︎ all endpoints of group
 # ✔︎ all endpoints of sub-group
 # ✔︎ all endpoints of sub-sub-group
-# ✔︎ add user to ueber-group group, sub-group, sub-sub-group
+# ✔︎ add user to ueber-group
+# ✔︎ bulk add users to ueber-group
+# - bulk add groups to ueber-group
+# ✔︎ add user to group
+# ✔︎ bulk add users to group
+# - bulk add sub-groups to group
+# ✔︎ add user to sub-group
+# ✔︎ bulk add users to sub-group
+# ✔︎ bulk add sub-sub-groups to sub-group
+# - bulk add sub-sub-groups to sub-group
+# ✔︎ add user to sub-sub-group
+# ✔︎ bulk add users to sub-sub-group
 # ✔︎ add user to group without inheriting group
 # ✔︎ add group to ueber-group and delete again
 # ✔︎ add sub-group to group and delete again
@@ -1903,12 +1914,48 @@ async def test_bulk_add_users_to_ueber_group(
     )
 
     assert response.status_code == 201
-    created_ueber_group_memberships = response.json()
+    created_memberships = response.json()
+    assert len(created_memberships) == len(existing_users)
     for user, created_membership in zip(
-        existing_users, created_ueber_group_memberships
+        existing_users, created_memberships
     ):
         assert created_membership["parent_id"] == str(mocked_ueber_groups[1].id)
         assert created_membership["child_id"] == str(user.id)
+        assert created_membership["inherit"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_bulk_add_groups_to_ueber_group(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    add_many_test_ueber_groups,
+    add_many_test_groups
+):
+    """Tests bulk adding users to an ueber-group"""
+    app_override_get_azure_payload_dependency
+
+    mocked_groups = await add_many_test_groups()
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+
+    response = await async_client.post(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}/groups",
+        json=[str(group.id) for group in mocked_groups],
+    )
+
+    assert response.status_code == 201
+    created_memberships = response.json()
+    assert len(created_memberships) == len(mocked_groups)
+    for group, created_membership in zip(
+        mocked_groups, created_memberships
+    ):
+        assert created_membership["parent_id"] == str(mocked_ueber_groups[1].id)
+        assert created_membership["child_id"] == str(group.id)
         assert created_membership["inherit"] is True
 
 
@@ -1967,9 +2014,10 @@ async def test_bulk_add_users_to_group(
     )
 
     assert response.status_code == 201
-    created_ueber_group_memberships = response.json()
+    created_memberships = response.json()
+    assert len(created_memberships) == len(existing_users)
     for user, created_membership in zip(
-        existing_users, created_ueber_group_memberships
+        existing_users, created_memberships
     ):
         assert created_membership["parent_id"] == str(mocked_groups[1].id)
         assert created_membership["child_id"] == str(user.id)
@@ -2031,9 +2079,10 @@ async def test_bulk_add_users_to_sub_group(
     )
 
     assert response.status_code == 201
-    created_ueber_group_memberships = response.json()
+    created_memberships = response.json()
+    assert len(created_memberships) == len(existing_users)
     for user, created_membership in zip(
-        existing_users, created_ueber_group_memberships
+        existing_users, created_memberships
     ):
         assert created_membership["parent_id"] == str(mocked_sub_groups[1].id)
         assert created_membership["child_id"] == str(user.id)
@@ -2097,9 +2146,10 @@ async def test_bulk_add_users_to_sub_sub_group(
     )
 
     assert response.status_code == 201
-    created_ueber_group_memberships = response.json()
+    created_memberships = response.json()
+    assert len(created_memberships) == len(existing_users)
     for user, created_membership in zip(
-        existing_users, created_ueber_group_memberships
+        existing_users, created_memberships
     ):
         assert created_membership["parent_id"] == str(mocked_sub_sub_groups[1].id)
         assert created_membership["child_id"] == str(user.id)

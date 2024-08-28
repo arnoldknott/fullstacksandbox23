@@ -223,7 +223,27 @@ async def post_add_users_to_uebergroup(
     return hierarchy_response
 
 
-# TBD: same for bulk adding groups to ueber_group
+@ueber_group_router.post("/{ueber_group_id}/groups", status_code=201)
+async def post_add_groups_to_uebergroup(
+    ueber_group_id: UUID,
+    group_ids: list[UUID],
+    inherit: Annotated[bool, Query()] = True,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> list[BaseHierarchyModelRead]:
+    """Adds bulk of groups to an ueber_group."""
+    logger.info("POST groups to ueber_group")
+    hierarchy_response = []
+    for group_id in group_ids:
+        response = await group_view.post_add_child_to_parent(
+            group_id,
+            ueber_group_id,
+            token_payload,
+            guards,
+            inherit,
+        )
+        hierarchy_response.append(response)
+    return hierarchy_response
 
 
 @ueber_group_router.get("/", status_code=200)
