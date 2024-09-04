@@ -160,8 +160,8 @@ async def delete_user(
     return await user_view.delete(user_id, token_payload, guards)
 
 
-@user_router.delete("/{user_id}/group/{group_id}", status_code=201)
-async def delete_remove_user_from_group(
+@user_router.delete("/{user_id}/group/{group_id}", status_code=200)
+async def delete_user_from_group(
     user_id: UUID,
     group_id: UUID,
     token_payload=Depends(get_access_token_payload),
@@ -169,7 +169,7 @@ async def delete_remove_user_from_group(
 ) -> None:
     """Removes a user from an ueber-group, group, sub-group or sub-sub-group."""
     logger.info("DELETE user from group")
-    return await user_view.post_add_child_to_parent(
+    return await user_view.remove_child_from_parent(
         user_id,
         group_id,
         token_payload,
@@ -293,6 +293,24 @@ async def delete_ueber_group(
 ) -> None:
     """Deletes an ueber_group."""
     return await ueber_group_view.delete(ueber_group_id, token_payload, guards)
+
+
+@ueber_group_router.delete("/{ueber_group_id}/users", status_code=200)
+async def remove_users_from_uebergroup(
+    ueber_group_id: UUID,
+    user_ids: list[UUID],
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes users from an ueber_group."""
+    logger.info("DELETE users from ueber_group")
+    for user_id in user_ids:
+        await user_view.remove_child_from_parent(
+            user_id,
+            ueber_group_id,
+            token_payload,
+            guards,
+        )
 
 
 # endregion UeberGroup
@@ -450,6 +468,24 @@ async def remove_group_from_uebergroup(
     )
 
 
+@group_router.delete("/{group_id}/users", status_code=200)
+async def remove_users_from_group(
+    group_id: UUID,
+    user_ids: list[UUID],
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes users from a group."""
+    logger.info("DELETE users from group")
+    for user_id in user_ids:
+        await user_view.remove_child_from_parent(
+            user_id,
+            group_id,
+            token_payload,
+            guards,
+        )
+
+
 # endregion Group
 
 # region SubGroup:
@@ -604,6 +640,24 @@ async def remove_sub_group_from_group(
     )
 
 
+@sub_group_router.delete("/{sub_group_id}/users", status_code=200)
+async def remove_users_from_subgroup(
+    sub_group_id: UUID,
+    user_ids: list[UUID],
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes users from a sub-group."""
+    logger.info("DELETE users from sub-group")
+    for user_id in user_ids:
+        await user_view.remove_child_from_parent(
+            user_id,
+            sub_group_id,
+            token_payload,
+            guards,
+        )
+
+
 # endregion SubGroup
 
 # region SubSubGroup:
@@ -738,5 +792,22 @@ async def remove_sub_sub_group_from_group(
         guards,
     )
 
+
+@sub_sub_group_router.delete("/{sub_sub_group_id}/users", status_code=200)
+async def remove_users_from_subsubgroup(
+    sub_sub_group_id: UUID,
+    user_ids: list[UUID],
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes users from a sub-sub-group."""
+    logger.info("DELETE users from sub-sub-group")
+    for user_id in user_ids:
+        await user_view.remove_child_from_parent(
+            user_id,
+            sub_sub_group_id,
+            token_payload,
+            guards,
+        )
 
 # endregion SubSubGroup

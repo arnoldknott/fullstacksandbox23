@@ -83,18 +83,17 @@ from tests.utils import (
 # ✔︎ all endpoints of group
 # ✔︎ all endpoints of sub-group
 # ✔︎ all endpoints of sub-sub-group
-# ✔︎ add user to ueber-group
-# ✔︎ bulk add users to ueber-group
-# - bulk add groups to ueber-group
-# ✔︎ add user to group
-# ✔︎ bulk add users to group
-# - bulk add sub-groups to group
-# ✔︎ add user to sub-group
-# ✔︎ bulk add users to sub-group
-# ✔︎ bulk add sub-sub-groups to sub-group
-# - bulk add sub-sub-groups to sub-group
-# ✔︎ add user to sub-sub-group
-# ✔︎ bulk add users to sub-sub-group
+# ✔- add user to ueber-group and remove again
+# ✔︎- bulk add users to ueber-group and bulk remove again
+# ✔︎- bulk add groups to ueber-group and bulk remove again
+# ✔︎- add user to group and remove again
+# ✔︎- bulk add users to group and bulk remove again
+# ✔︎- bulk add sub-groups to group and bulk remove again
+# ✔︎- add user to sub-group and remove again
+# ✔︎- bulk add users to sub-group and bulk remove again
+# ✔︎- bulk add sub-sub-groups to sub-group and bulk remove again
+# ✔︎- add user to sub-sub-group and remove again
+# ✔︎- bulk add users to sub-sub-group and bulk remove again
 # ✔︎ add user to group without inheriting group
 # ✔︎ add group to ueber-group and delete again
 # ✔︎ add sub-group to group and delete again
@@ -1865,13 +1864,13 @@ async def test_all_sub_sub_group_endpoints(
     [token_admin_read_write],
     indirect=True,
 )
-async def test_add_user_to_ueber_group(
+async def test_add_user_to_ueber_group_and_remove_again(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
     add_many_test_ueber_groups,
 ):
-    """Tests adding users to an ueber-group"""
+    """Tests adding user to an ueber-group and remove again."""
     app_override_get_azure_payload_dependency
 
     existing_user = await add_one_azure_test_user(0)
@@ -1888,6 +1887,34 @@ async def test_add_user_to_ueber_group(
     assert created_ueber_group_membership["child_id"] == str(existing_user.id)
     assert created_ueber_group_membership["inherit"] is True
 
+    ueber_group_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert ueber_group_response.status_code == 200
+    ueber_group = UeberGroupRead(**ueber_group_response.json())
+    assert len(ueber_group.users) == 1
+    assert any(user.id == str(existing_user.id) for user in ueber_group.users)
+
+    # remove user from ueber group
+    remove_response = await async_client.delete(
+        f"/api/v1/user/{str(existing_user.id)}/group/{str(mocked_ueber_groups[1].id)}"
+    )
+    assert remove_response.status_code == 200
+
+    ueber_group_after_delete_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert ueber_group_after_delete_response.status_code == 200
+    ueber_group_after_delete = UeberGroupRead(
+        **ueber_group_after_delete_response.json()
+    )
+    assert len(ueber_group_after_delete.users) == 0
+    assert all(
+        user.id != str(existing_user.id) for user in ueber_group_after_delete.users
+    )
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -1895,13 +1922,13 @@ async def test_add_user_to_ueber_group(
     [token_admin_read_write],
     indirect=True,
 )
-async def test_bulk_add_users_to_ueber_group(
+async def test_bulk_add_users_to_ueber_group_and_bulk_remove(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_many_azure_test_users: List[User],
     add_many_test_ueber_groups,
 ):
-    """Tests bulk adding users to an ueber-group"""
+    """Tests bulk adding users to an ueber-group and remove some fo them again."""
     app_override_get_azure_payload_dependency
 
     existing_users = await add_many_azure_test_users()
@@ -1920,6 +1947,43 @@ async def test_bulk_add_users_to_ueber_group(
         assert created_membership["parent_id"] == str(mocked_ueber_groups[1].id)
         assert created_membership["child_id"] == str(user.id)
         assert created_membership["inherit"] is True
+
+    ueber_group_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert ueber_group_response.status_code == 200
+    ueber_group = UeberGroupRead(**ueber_group_response.json())
+    assert len(ueber_group.users) == 5
+    assert all(
+        user.id in [str(existing_user.id) for existing_user in existing_users]
+        for user in ueber_group.users
+    )
+
+    # bulk remove users from ueber group
+    remove_response = await async_client.request(
+        "delete",
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}/users",
+        json=[str(user.id) for user in existing_users[0:2]],
+    )
+    assert remove_response.status_code == 200
+
+    ueber_group_after_delete_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert ueber_group_after_delete_response.status_code == 200
+    ueber_group_after_delete = UeberGroupRead(
+        **ueber_group_after_delete_response.json()
+    )
+    assert len(ueber_group_after_delete.users) == 3
+    assert any(
+        user.id not in [str(existing_user.id) for existing_user in existing_users[0:2]]
+        for user in ueber_group.users
+    )
+    expected_ids = [str(existing_user.id) for existing_user in existing_users[2:]]
+    ueber_group_user_ids = [str(user.id) for user in ueber_group.users]
+    assert all(user_id in ueber_group_user_ids for user_id in expected_ids)
 
 
 @pytest.mark.anyio
@@ -1954,6 +2018,9 @@ async def test_bulk_add_groups_to_ueber_group(
         assert created_membership["child_id"] == str(group.id)
         assert created_membership["inherit"] is True
 
+    # bulk remove groups from ueber group
+    assert 0
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -1961,13 +2028,13 @@ async def test_bulk_add_groups_to_ueber_group(
     [token_admin_read_write],
     indirect=True,
 )
-async def test_add_user_to_group(
+async def test_add_user_to_group_and_remove_again(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
     add_many_test_groups,
 ):
-    """Tests adding users to a group."""
+    """Tests adding user to a group and remove again."""
     app_override_get_azure_payload_dependency
 
     existing_user = await add_one_azure_test_user(0)
@@ -1984,6 +2051,28 @@ async def test_add_user_to_group(
     assert created_group_membership["child_id"] == str(existing_user.id)
     assert created_group_membership["inherit"] is True
 
+    group_response = await async_client.get(f"/api/v1/group/{str(mocked_groups[3].id)}")
+
+    assert group_response.status_code == 200
+    group = GroupRead(**group_response.json())
+    assert len(group.users) == 1
+    assert any(user.id == str(existing_user.id) for user in group.users)
+
+    # remove user from group
+    remove_response = await async_client.delete(
+        f"/api/v1/user/{str(existing_user.id)}/group/{str(mocked_groups[3].id)}"
+    )
+    assert remove_response.status_code == 200
+
+    group_after_delete_response = await async_client.get(
+        f"/api/v1/group/{str(mocked_groups[3].id)}"
+    )
+
+    assert group_after_delete_response.status_code == 200
+    group_after_delete = GroupRead(**group_after_delete_response.json())
+    assert len(group_after_delete.users) == 0
+    assert all(user.id != str(existing_user.id) for user in group_after_delete.users)
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -1991,13 +2080,13 @@ async def test_add_user_to_group(
     [token_admin_read_write],
     indirect=True,
 )
-async def test_bulk_add_users_to_group(
+async def test_bulk_add_users_to_group_and_bulk_remove(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_many_azure_test_users: List[User],
     add_many_test_groups,
 ):
-    """Tests bulk adding users to a group"""
+    """Tests bulk adding users to a group and bulk remove some of them again."""
     app_override_get_azure_payload_dependency
 
     existing_users = await add_many_azure_test_users()
@@ -2016,6 +2105,39 @@ async def test_bulk_add_users_to_group(
         assert created_membership["parent_id"] == str(mocked_groups[1].id)
         assert created_membership["child_id"] == str(user.id)
         assert created_membership["inherit"] is True
+
+    group_response = await async_client.get(f"/api/v1/group/{str(mocked_groups[1].id)}")
+
+    assert group_response.status_code == 200
+    group = GroupRead(**group_response.json())
+    assert len(group.users) == 5
+    assert all(
+        user.id in [str(existing_user.id) for existing_user in existing_users]
+        for user in group.users
+    )
+
+    # bulk remove users from group
+    remove_response = await async_client.request(
+        "delete",
+        f"/api/v1/group/{str(mocked_groups[1].id)}/users",
+        json=[str(user.id) for user in existing_users[0:2]],
+    )
+    assert remove_response.status_code == 200
+
+    group_after_delete_response = await async_client.get(
+        f"/api/v1/group/{str(mocked_groups[1].id)}"
+    )
+
+    assert group_after_delete_response.status_code == 200
+    group_after_delete = GroupRead(**group_after_delete_response.json())
+    assert len(group_after_delete.users) == 3
+    assert any(
+        user.id not in [str(existing_user.id) for existing_user in existing_users[0:2]]
+        for user in group.users
+    )
+    expected_ids = [str(existing_user.id) for existing_user in existing_users[2:]]
+    group_user_ids = [str(user.id) for user in group.users]
+    assert all(user_id in group_user_ids for user_id in expected_ids)
 
 
 @pytest.mark.anyio
@@ -2050,6 +2172,9 @@ async def test_bulk_add_sub_groups_to_group(
         assert created_membership["child_id"] == str(sub_group.id)
         assert created_membership["inherit"] is True
 
+    # bulk remove sub group from group
+    assert 0
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -2057,7 +2182,7 @@ async def test_bulk_add_sub_groups_to_group(
     [token_admin_read_write],
     indirect=True,
 )
-async def test_add_user_to_sub_group(
+async def test_add_user_to_sub_group_and_remove_again(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
@@ -2080,6 +2205,32 @@ async def test_add_user_to_sub_group(
     assert created_sub_group_membership["child_id"] == str(existing_user.id)
     assert created_sub_group_membership["inherit"] is True
 
+    sub_group_response = await async_client.get(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[2].id)}"
+    )
+
+    assert sub_group_response.status_code == 200
+    sub_group = SubGroupRead(**sub_group_response.json())
+    assert len(sub_group.users) == 1
+    assert any(user.id == str(existing_user.id) for user in sub_group.users)
+
+    # remove user from sub group
+    remove_response = await async_client.delete(
+        f"/api/v1/user/{str(existing_user.id)}/group/{str(mocked_sub_groups[2].id)}"
+    )
+    assert remove_response.status_code == 200
+
+    sub_group_after_delete_response = await async_client.get(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[2].id)}"
+    )
+
+    assert sub_group_after_delete_response.status_code == 200
+    sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
+    assert len(sub_group_after_delete.users) == 0
+    assert all(
+        user.id != str(existing_user.id) for user in sub_group_after_delete.users
+    )
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -2087,13 +2238,13 @@ async def test_add_user_to_sub_group(
     [token_admin_read_write],
     indirect=True,
 )
-async def test_bulk_add_users_to_sub_group(
+async def test_bulk_add_users_to_sub_group_and_bulk_remove(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_many_azure_test_users: List[User],
     add_many_test_sub_groups,
 ):
-    """Tests bulk adding users to a sub-group"""
+    """Tests bulk adding users to a sub-group and remove some of them again."""
     app_override_get_azure_payload_dependency
 
     existing_users = await add_many_azure_test_users()
@@ -2112,6 +2263,41 @@ async def test_bulk_add_users_to_sub_group(
         assert created_membership["parent_id"] == str(mocked_sub_groups[1].id)
         assert created_membership["child_id"] == str(user.id)
         assert created_membership["inherit"] is True
+
+    sub_group_response = await async_client.get(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[1].id)}"
+    )
+
+    assert sub_group_response.status_code == 200
+    sub_group = UeberGroupRead(**sub_group_response.json())
+    assert len(sub_group.users) == 5
+    assert all(
+        user.id in [str(existing_user.id) for existing_user in existing_users]
+        for user in sub_group.users
+    )
+
+    # bulk remove users from sub group
+    remove_response = await async_client.request(
+        "delete",
+        f"/api/v1/subgroup/{str(mocked_sub_groups[1].id)}/users",
+        json=[str(user.id) for user in existing_users[0:2]],
+    )
+    assert remove_response.status_code == 200
+
+    sub_group_after_delete_response = await async_client.get(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[1].id)}"
+    )
+
+    assert sub_group_after_delete_response.status_code == 200
+    sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
+    assert len(sub_group_after_delete.users) == 3
+    assert any(
+        user.id not in [str(existing_user.id) for existing_user in existing_users[0:2]]
+        for user in sub_group.users
+    )
+    expected_ids = [str(existing_user.id) for existing_user in existing_users[2:]]
+    sub_group_user_ids = [str(user.id) for user in sub_group.users]
+    assert all(user_id in sub_group_user_ids for user_id in expected_ids)
 
 
 @pytest.mark.anyio
@@ -2148,6 +2334,9 @@ async def test_bulk_add_sub_sub_groups_to_sub_group(
         assert created_membership["child_id"] == str(sub_sub_group.id)
         assert created_membership["inherit"] is True
 
+    # bulk remove sub sub group from sub group
+    assert 0
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -2155,13 +2344,13 @@ async def test_bulk_add_sub_sub_groups_to_sub_group(
     [token_admin_read_write],
     indirect=True,
 )
-async def test_add_user_to_sub_sub_group(
+async def test_add_user_to_sub_sub_group_and_remove_again(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_one_azure_test_user: List[User],
     add_many_test_sub_sub_groups,
 ):
-    """Tests adding users to a sub-sub-group."""
+    """Tests adding user to a sub-sub-group and remove again."""
     app_override_get_azure_payload_dependency
 
     existing_user = await add_one_azure_test_user(0)
@@ -2180,6 +2369,34 @@ async def test_add_user_to_sub_sub_group(
     assert created_sub_sub_group_membership["child_id"] == str(existing_user.id)
     assert created_sub_sub_group_membership["inherit"] is True
 
+    sub_sub_group_response = await async_client.get(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[0].id)}"
+    )
+
+    assert sub_sub_group_response.status_code == 200
+    sub_sub_group = SubSubGroupRead(**sub_sub_group_response.json())
+    assert len(sub_sub_group.users) == 1
+    assert any(user.id == str(existing_user.id) for user in sub_sub_group.users)
+
+    # remove user from sub-sub-group
+    remove_response = await async_client.delete(
+        f"/api/v1/user/{str(existing_user.id)}/group/{str(mocked_sub_sub_groups[0].id)}"
+    )
+    assert remove_response.status_code == 200
+
+    sub_sub_group_after_delete_response = await async_client.get(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[0].id)}"
+    )
+
+    assert sub_sub_group_after_delete_response.status_code == 200
+    sub_sub_group_after_delete = SubSubGroupRead(
+        **sub_sub_group_after_delete_response.json()
+    )
+    assert len(sub_sub_group_after_delete.users) == 0
+    assert all(
+        user.id != str(existing_user.id) for user in sub_sub_group_after_delete.users
+    )
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -2187,7 +2404,7 @@ async def test_add_user_to_sub_sub_group(
     [token_admin_read_write],
     indirect=True,
 )
-async def test_bulk_add_users_to_sub_sub_group(
+async def test_bulk_add_users_to_sub_sub_group_and_bulk_remove(
     async_client: AsyncClient,
     app_override_get_azure_payload_dependency: FastAPI,
     add_many_azure_test_users: List[User],
@@ -2212,6 +2429,41 @@ async def test_bulk_add_users_to_sub_sub_group(
         assert created_membership["parent_id"] == str(mocked_sub_sub_groups[1].id)
         assert created_membership["child_id"] == str(user.id)
         assert created_membership["inherit"] is True
+
+    sub_sub_group_response = await async_client.get(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[1].id)}"
+    )
+
+    assert sub_sub_group_response.status_code == 200
+    sub_sub_group = SubSubGroupRead(**sub_sub_group_response.json())
+    assert len(sub_sub_group.users) == 5
+    assert all(
+        user.id in [str(existing_user.id) for existing_user in existing_users]
+        for user in sub_sub_group.users
+    )
+
+    # bulk remove users from sub-sub group
+    remove_response = await async_client.request(
+        "delete",
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[1].id)}/users",
+        json=[str(user.id) for user in existing_users[0:2]],
+    )
+    assert remove_response.status_code == 200
+
+    sub_sub_group_after_delete_response = await async_client.get(
+        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[1].id)}"
+    )
+
+    assert sub_sub_group_after_delete_response.status_code == 200
+    sub_sub_group_after_delete = SubSubGroupRead(**sub_sub_group_after_delete_response.json())
+    assert len(sub_sub_group_after_delete.users) == 3
+    assert any(
+        user.id not in [str(existing_user.id) for existing_user in existing_users[0:2]]
+        for user in sub_sub_group.users
+    )
+    expected_ids = [str(existing_user.id) for existing_user in existing_users[2:]]
+    sub_sub_group_user_ids = [str(user.id) for user in sub_sub_group.users]
+    assert all(user_id in sub_sub_group_user_ids for user_id in expected_ids)
 
 
 @pytest.mark.anyio
@@ -2569,7 +2821,5 @@ async def test_add_prohibited_groups_to_group(
 # # TBD: remove a user from an ueber-group
 
 # # TBD: Delete ueber-group with attached users - make sure users afterwards don't have inherited rights any more
-
-# # TBD: remove a group from an ueber-group
 
 # endregion identity hierarchy tests
