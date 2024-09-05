@@ -60,7 +60,7 @@ class BaseCRUD(
         self.model = base_model
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
-            self.types = ResourceType
+            self.type = ResourceType
             self.hierarchy_CRUD = ResourceHierarchyCRUD()
             self.hierarchy = ResourceHierarchy
             self.relations = ResourceHierarchy.relations
@@ -70,7 +70,7 @@ class BaseCRUD(
             # print("=== CRUD - base - IdentityType.model.__name__ ===")
             # print(IdentityType(self.model.__name__))
             self.entity_type = IdentityType(self.model.__name__)
-            self.types = IdentityType
+            self.type = IdentityType
             self.hierarchy_CRUD = IdentityHierarchyCRUD()
             self.hierarchy = IdentityHierarchy
             self.relations = IdentityHierarchy.relations
@@ -378,9 +378,7 @@ class BaseCRUD(
             # query relationships:
             for relationship in class_mapper(self.model).relationships:
                 # Determine the related model, the relevant hierarchy and relations based on self.entity_type
-                related_model = self.types.get_model(
-                    relationship.mapper.class_.__name__
-                )
+                related_model = self.type.get_model(relationship.mapper.class_.__name__)
                 # if self.entity_type in ResourceType:
                 # related_model = ResourceType.get_model(
                 #     relationship.mapper.class_.__name__
@@ -503,7 +501,7 @@ class BaseCRUD(
                 # print("=== CRUD - base - read - related_model ===")
                 # print(related_model)
 
-                related_type = self.types(related_model.__name__)
+                related_type = self.type(related_model.__name__)
 
                 # print("=== CRUD - base - read - related_type ===")
                 # print(related_type)
@@ -932,14 +930,23 @@ class BaseCRUD(
             # TBD: delete hierarchy only if exists?
             # TBD: delete hierarchies for both parent_id and child_id
             # async with self.hierarchy_CRUD as hierarchy_CRUD:
-            #     await hierarchy_CRUD.delete(
-            #         current_user=current_user,
-            #         child_id=object_id,
-            #     )
+            # await hierarchy_CRUD.delete(
+            #     current_user=current_user,
+            #     parent_id=object_id,
+            # )
+            # await hierarchy_CRUD.delete(
+            #     current_user=current_user,
+            #     child_id=object_id,
+            # )
 
-            delete_policies = AccessPolicyDelete(
-                resource_id=object_id,
-            )
+            if self.type == ResourceType:
+                delete_policies = AccessPolicyDelete(
+                    resource_id=object_id,
+                )
+            elif self.type == IdentityType:
+                delete_policies = AccessPolicyDelete(
+                    identity_id=object_id,
+                )
             async with self.policy_CRUD as policy_CRUD:
                 await policy_CRUD.delete(current_user, delete_policies)
 
