@@ -48,6 +48,7 @@ from tests.utils import (
     many_test_groups,
     many_test_policies,
     many_test_sub_groups,
+    many_test_sub_sub_groups,
     many_test_ueber_groups,
     resource_id3,
     token_admin,
@@ -119,9 +120,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[
-        get_azure_token_payload
-    ] = lambda: mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 
@@ -665,19 +666,19 @@ async def add_one_test_sub_sub_group(
 async def add_many_test_sub_sub_groups(
     current_user_from_azure_token: User,
 ):
-    """Adds test sub-groups to the database."""
+    """Adds test sub-sub-groups to the database."""
 
     async def _add_many_test_sub_sub_groups(token_payload: dict = None):
         sub_sub_groups = []
-        for sub_group in many_test_sub_groups:
+        for sub_sub_group in many_test_sub_sub_groups:
             current_user = await current_user_from_azure_token(token_payload)
             async with SubSubGroupCRUD() as crud:
-                added_sub_group = await crud.create(sub_group, current_user)
-            sub_sub_groups.append(added_sub_group)
+                added_sub_sub_group = await crud.create(sub_sub_group, current_user)
+            sub_sub_groups.append(added_sub_sub_group)
 
-        sub_groups = sorted(sub_sub_groups, key=lambda x: x.id)
+        sub_sub_groups = sorted(sub_sub_groups, key=lambda x: x.id)
 
-        return sub_groups
+        return sub_sub_groups
 
     yield _add_many_test_sub_sub_groups
 

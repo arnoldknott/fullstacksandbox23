@@ -313,6 +313,24 @@ async def remove_users_from_uebergroup(
         )
 
 
+@ueber_group_router.delete("/{ueber_group_id}/groups", status_code=200)
+async def remove_groups_from_uebergroup(
+    ueber_group_id: UUID,
+    group_ids: list[UUID],
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes groups from an ueber_group."""
+    logger.info("DELETE groups from ueber_group")
+    for group_id in group_ids:
+        await group_view.remove_child_from_parent(
+            group_id,
+            ueber_group_id,
+            token_payload,
+            guards,
+        )
+
+
 # endregion UeberGroup
 
 # region Group:
@@ -480,6 +498,24 @@ async def remove_users_from_group(
     for user_id in user_ids:
         await user_view.remove_child_from_parent(
             user_id,
+            group_id,
+            token_payload,
+            guards,
+        )
+
+
+@group_router.delete("/{group_id}/subgroups", status_code=200)
+async def remove_subgroups_from_group(
+    group_id: UUID,
+    sub_group_ids: list[UUID],
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes sub-groups from a group."""
+    logger.info("DELETE sub-groups from a group")
+    for sub_group_id in sub_group_ids:
+        await sub_group_view.remove_child_from_parent(
+            sub_group_id,
             group_id,
             token_payload,
             guards,
@@ -658,6 +694,24 @@ async def remove_users_from_subgroup(
         )
 
 
+@sub_group_router.delete("/{sub_group_id}/subsubgroups", status_code=200)
+async def remove_subsubgroups_from_subgroup(
+    sub_group_id: UUID,
+    sub_sub_group_ids: list[UUID],
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Removes sub-sub-groups from a sub-group."""
+    logger.info("DELETE sub-sub-groups from a sub-group")
+    for sub_sub_group_id in sub_sub_group_ids:
+        await sub_sub_group_view.remove_child_from_parent(
+            sub_sub_group_id,
+            sub_group_id,
+            token_payload,
+            guards,
+        )
+
+
 # endregion SubGroup
 
 # region SubSubGroup:
@@ -809,5 +863,6 @@ async def remove_users_from_subsubgroup(
             token_payload,
             guards,
         )
+
 
 # endregion SubSubGroup
