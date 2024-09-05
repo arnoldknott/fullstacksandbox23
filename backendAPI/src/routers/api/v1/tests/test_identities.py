@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 from typing import List
-from pprint import pprint
+
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -588,12 +588,19 @@ async def test_user_gets_user_by_azure_user_id_with_partial_access_to_other_user
         modelled_response_user.azure_groups, key=lambda x: x.id
     )
 
-    assert modelled_response_user.azure_groups[0].id == uuid.UUID(
-        groups_for_user_in_database[0]
+    response_group_ids = {group.id for group in modelled_response_user.azure_groups}
+
+    assert all(
+        uuid.UUID(group_id) in response_group_ids
+        for group_id in groups_for_user_in_database
     )
-    assert modelled_response_user.azure_groups[1].id == uuid.UUID(
-        groups_for_user_in_database[1]
-    )
+
+    # assert modelled_response_user.azure_groups[0].id == uuid.UUID(
+    #     groups_for_user_in_database[0]
+    # )
+    # assert modelled_response_user.azure_groups[1].id == uuid.UUID(
+    #     groups_for_user_in_database[1]
+    # )
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
