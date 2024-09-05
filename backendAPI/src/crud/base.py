@@ -947,8 +947,11 @@ class BaseCRUD(
                 delete_policies = AccessPolicyDelete(
                     identity_id=object_id,
                 )
-            async with self.policy_CRUD as policy_CRUD:
-                await policy_CRUD.delete(current_user, delete_policies)
+            try:
+                async with self.policy_CRUD as policy_CRUD:
+                    await policy_CRUD.delete(current_user, delete_policies)
+            except Exception:
+                pass
 
             # Leave the identifier type link, as it's referred to the log table, which stays even after deletion
             # await self._delete_identifier_type_link(object_id)

@@ -861,6 +861,7 @@ class AccessPolicyCRUD:
             # print(statement.compile().params)
 
             response = await self.session.exec(statement)
+            # await self.session.exec(statement)
             # print("=== AccessPolicyCRUD.delete - response ===")
             # pprint(response.rowcount)
             await self.session.commit()
@@ -868,6 +869,7 @@ class AccessPolicyCRUD:
             # print("=== AccessPolicyCRUD.delete - results ===")
             # pprint(results)
             if response.rowcount == 0:
+                # print("no policy to delete")
                 raise HTTPException(status_code=404, detail="Access policy not found.")
         except Exception as e:
             logger.error(f"Error in deleting policy: {e}")
