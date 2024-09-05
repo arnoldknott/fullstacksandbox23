@@ -20,7 +20,13 @@ from models.identity import (
     User,
     UserRead,
 )
-from routers.api.v1.identities import get_user_by_id
+from models.protected_resource import ProtectedResourceRead
+from routers.api.v1.identities import (
+    get_user_by_id,
+    post_add_user_to_group,
+    post_add_subgroup_to_group,
+    post_add_group_to_uebergroup,
+)
 from tests.utils import (
     current_user_data_admin,
     many_test_azure_users,
@@ -100,7 +106,7 @@ from tests.utils import (
 # ✔︎ add sub-sub-group to sub-group and delete again
 # ✔︎ add sub_group and sub_sub_group to ueber_group fails
 # ✔ add sub_sub_group to group fails
-# - access to resource through inheritance (user from any group)
+# ✔ access to resource through inheritance (user from any group) and logging access
 # - access to resource through inheritance through multiple generations (user in ueber-group can access resource in sub-sub-group)
 # - user inherits access to resource from group, group gets deleted, user no longer has access to resource
 
@@ -2943,7 +2949,291 @@ async def test_add_prohibited_groups_to_group(
     assert response.json() == {"detail": "Forbidden."}
 
 
-# # TBD: remove a user from an ueber-group
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_user_access_through_inheritance_from_direct_group_membership(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
+    mock_guards,
+    add_many_test_protected_resources,
+    add_one_test_access_policy,
+    add_many_test_groups,
+    current_user_from_azure_token,
+):
+    """Tests user access through inheritance from direct group membership."""
+    app_override_get_azure_payload_dependency
+
+    current_user = current_test_user
+
+    mocked_groups = await add_many_test_groups()
+
+    created_hierarchy = await post_add_user_to_group(
+        str(current_user.user_id),
+        str(mocked_groups[1].id),
+        inherit=True,
+        token_payload=token_admin_read_write,
+        guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
+    )
+    assert created_hierarchy.parent_id == str(mocked_groups[1].id)
+    assert created_hierarchy.child_id == str(current_user.user_id)
+    assert created_hierarchy.inherit is True
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+
+    # Give read access to the group to the resource:
+    policy = {
+        "resource_id": str(mocked_protected_resources[2].id),
+        "identity_id": str(mocked_groups[1].id),
+        "action": "read",
+    }
+    await add_one_test_access_policy(policy)
+
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[2].id)}"
+    )
+    assert response.status_code == 200
+    read_resource = ProtectedResourceRead(**response.json())
+    assert read_resource.id == mocked_protected_resources[2].id
+    assert read_resource.name == mocked_protected_resources[2].name
+    assert read_resource.description == mocked_protected_resources[2].description
+
+    current_admin_user = await current_user_from_azure_token(token_admin_read_write)
+    async with AccessLoggingCRUD() as crud:
+        access_log = await crud.read_resource_last_accessed_at(
+            current_admin_user,
+            resource_id=mocked_protected_resources[2].id,
+        )
+
+    assert access_log.resource_id == mocked_protected_resources[2].id
+    assert access_log.identity_id == current_user.user_id
+    assert access_log.action == "read"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_user1_read_write, token_user2_read_write],
+    indirect=True,
+)
+async def test_user_access_prohibited_through_inheritance_missing_group_membership(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
+    mock_guards,
+    add_many_test_protected_resources,
+    add_one_test_access_policy,
+    add_many_test_groups,
+    current_user_from_azure_token,
+):
+    """Tests user access through inheritance from direct group membership."""
+    app_override_get_azure_payload_dependency
+
+    current_user = current_test_user
+
+    mocked_groups = await add_many_test_groups()
+
+    created_hierarchy = await post_add_user_to_group(
+        str(current_user.user_id),
+        str(mocked_groups[1].id),
+        inherit=True,
+        token_payload=token_admin_read_write,
+        guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
+    )
+    assert created_hierarchy.parent_id == str(mocked_groups[1].id)
+    assert created_hierarchy.child_id == str(current_user.user_id)
+    assert created_hierarchy.inherit is True
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[2].id)}"
+    )
+    assert response.status_code == 404
+    assert response.text == '{"detail":"ProtectedResource not found."}'
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_user_access_through_inheritance_from_indirect_group_membership(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
+    mock_guards,
+    add_many_test_protected_resources,
+    add_one_test_access_policy,
+    add_many_test_ueber_groups,
+    add_many_test_groups,
+    add_many_test_sub_groups,
+    current_user_from_azure_token,
+):
+    """Tests user access through inheritance from direct group membership."""
+    app_override_get_azure_payload_dependency
+
+    current_user = current_test_user
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+    mocked_groups = await add_many_test_groups()
+    mocked_sub_groups = await add_many_test_sub_groups()
+
+    # Adding user to sub-group:
+    created_user_sub_group_membership = await post_add_user_to_group(
+        str(current_user.user_id),
+        str(mocked_sub_groups[2].id),
+        inherit=True,
+        token_payload=token_admin_read_write,
+        guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
+    )
+    assert created_user_sub_group_membership.parent_id == str(mocked_sub_groups[2].id)
+    assert created_user_sub_group_membership.child_id == str(current_user.user_id)
+    assert created_user_sub_group_membership.inherit is True
+
+    # Adding sub-group to group:
+    created_sub_group_group_membership = await post_add_subgroup_to_group(
+        str(mocked_sub_groups[2].id),
+        str(mocked_groups[1].id),
+        inherit=True,
+        token_payload=token_admin_read_write,
+        guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
+    )
+    assert created_sub_group_group_membership.parent_id == str(mocked_groups[1].id)
+    assert created_sub_group_group_membership.child_id == str(mocked_sub_groups[2].id)
+    assert created_sub_group_group_membership.inherit is True
+
+    # Adding group to ueber-group:
+    created_group_ueber_group_membership = await post_add_group_to_uebergroup(
+        str(mocked_groups[1].id),
+        str(mocked_ueber_groups[0].id),
+        inherit=True,
+        token_payload=token_admin_read_write,
+        guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
+    )
+    assert created_group_ueber_group_membership.parent_id == str(
+        mocked_ueber_groups[0].id
+    )
+    assert created_group_ueber_group_membership.child_id == str(mocked_groups[1].id)
+    assert created_group_ueber_group_membership.inherit is True
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+
+    # Give read access to the group to the resource:
+    policy = {
+        "resource_id": str(mocked_protected_resources[2].id),
+        "identity_id": str(mocked_ueber_groups[0].id),
+        "action": "read",
+    }
+    await add_one_test_access_policy(policy)
+
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[2].id)}"
+    )
+    assert response.status_code == 200
+    read_resource = ProtectedResourceRead(**response.json())
+    assert read_resource.id == mocked_protected_resources[2].id
+    assert read_resource.name == mocked_protected_resources[2].name
+    assert read_resource.description == mocked_protected_resources[2].description
+
+    current_admin_user = await current_user_from_azure_token(token_admin_read_write)
+    async with AccessLoggingCRUD() as crud:
+        access_log = await crud.read_resource_last_accessed_at(
+            current_admin_user,
+            resource_id=mocked_protected_resources[2].id,
+        )
+
+    assert access_log.resource_id == mocked_protected_resources[2].id
+    assert access_log.identity_id == current_user.user_id
+    assert access_log.action == "read"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_access_prohibited_from_indirect_group_membership_missing_inheritance(
+    async_client: AsyncClient,
+    app_override_get_azure_payload_dependency: FastAPI,
+    current_test_user,
+    mock_guards,
+    add_many_test_protected_resources,
+    add_one_test_access_policy,
+    add_many_test_ueber_groups,
+    add_many_test_groups,
+    add_many_test_sub_groups,
+    current_user_from_azure_token,
+):
+    """Tests user access through inheritance from direct group membership."""
+    app_override_get_azure_payload_dependency
+
+    current_user = current_test_user
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+    mocked_groups = await add_many_test_groups()
+    mocked_sub_groups = await add_many_test_sub_groups()
+
+    # Adding user to sub-group:
+    created_user_sub_group_membership = await post_add_user_to_group(
+        str(current_user.user_id),
+        str(mocked_sub_groups[2].id),
+        inherit=True,
+        token_payload=token_admin_read_write,
+        guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
+    )
+    assert created_user_sub_group_membership.parent_id == str(mocked_sub_groups[2].id)
+    assert created_user_sub_group_membership.child_id == str(current_user.user_id)
+    assert created_user_sub_group_membership.inherit is True
+
+    # Adding sub-group to group:
+    created_sub_group_group_membership = await post_add_subgroup_to_group(
+        str(mocked_sub_groups[2].id),
+        str(mocked_groups[1].id),
+        inherit=False,
+        token_payload=token_admin_read_write,
+        guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
+    )
+    assert created_sub_group_group_membership.parent_id == str(mocked_groups[1].id)
+    assert created_sub_group_group_membership.child_id == str(mocked_sub_groups[2].id)
+    assert created_sub_group_group_membership.inherit is False
+
+    # Adding group to ueber-group:
+    created_group_ueber_group_membership = await post_add_group_to_uebergroup(
+        str(mocked_groups[1].id),
+        str(mocked_ueber_groups[0].id),
+        inherit=True,
+        token_payload=token_admin_read_write,
+        guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
+    )
+    assert created_group_ueber_group_membership.parent_id == str(
+        mocked_ueber_groups[0].id
+    )
+    assert created_group_ueber_group_membership.child_id == str(mocked_groups[1].id)
+    assert created_group_ueber_group_membership.inherit is True
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+
+    # Give read access to the group to the resource:
+    policy = {
+        "resource_id": str(mocked_protected_resources[2].id),
+        "identity_id": str(mocked_ueber_groups[0].id),
+        "action": "read",
+    }
+    await add_one_test_access_policy(policy)
+
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[2].id)}"
+    )
+    assert response.status_code == 404
+    assert response.text == '{"detail":"ProtectedResource not found."}'
+
 
 # # TBD: Delete ueber-group with attached users - make sure users afterwards don't have inherited rights any more
 
