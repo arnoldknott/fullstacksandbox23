@@ -387,6 +387,8 @@ jobs:
           echo "MIGRATION_SCRIPT_FILENAME=$MIGRATION_SCRIPT_FILENAME" >> $GITHUB_ENV
           az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p migrations/stage_prod/versions/$MIGRATION_SCRIPT_FILENAME --dest $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
           cat $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
+        # For debugging enter container with:
+        # az containerapp exec -n <resource_name> -g <resource_group> --command "/bin/sh"
       - name: Upload migration check artifacts
         uses: actions/upload-artifact@v3
         with:
