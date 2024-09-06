@@ -6,7 +6,7 @@ const appConfig = await AppConfig.getInstance();
 
 export const load: PageServerLoad = async ({ fetch, locals }) => {
 	const accessToken = await getAccessToken(locals.sessionData, [`${appConfig.api_scope}/api.read`, "User.Read"]);
-	const response = await fetch(`${appConfig.backend_origin}/api/v1/protected_resource/`, {
+	const response = await fetch(`${appConfig.backend_origin}/api/v1/protectedresource/`, {
 		headers: {
       Authorization: `Bearer ${accessToken}`
     }

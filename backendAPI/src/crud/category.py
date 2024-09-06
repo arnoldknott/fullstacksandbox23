@@ -1,9 +1,4 @@
-from typing import List
-
-from fastapi import HTTPException
 from models.category import Category, CategoryCreate, CategoryRead, CategoryUpdate
-from models.demo_resource import DemoResource
-from sqlmodel import select
 
 from .base import BaseCRUD
 
@@ -12,28 +7,59 @@ class CategoryCRUD(BaseCRUD[Category, CategoryCreate, CategoryRead, CategoryUpda
     def __init__(self):
         super().__init__(Category)
 
-    # async def read_tag_with_all_demo_resources(
-    #     self, category_id
-    # ) -> CategoryReadWithDemoResources:
+    # Moved to DemoResourceCRUD
+    # # TBD: add access control and access logging for this - use self.read()!
+    # # Move to DemoResourceCRUD?
+    # async def read_all_demo_resources(
+    #     self,
+    #     # current_user: CurrentUserData,
+    #     category_id: UUID,
+    # ) -> List[DemoResource]:
     #     """Returns all demo resources within category."""
+
+    #     # print("=== category_id ===")
+    #     # print(category_id)
+
+    #     # Generic read method is not that generic after all? Note the return type is not a list of CategoryRead with select_args!
+
+    #     # async def read(
+    #     #     self,
+    #     #     current_user: Optional["CurrentUserData"] = None,
+    #     #     select_args: Optional[List] = None,
+    #     #     filters: Optional[List] = None,
+    #     #     joins: Optional[List] = None,
+    #     #     order_by: Optional[List] = None,
+    #     #     group_by: Optional[List] = None,
+    #     #     having: Optional[List] = None,
+    #     #     limit: Optional[int] = None,
+    #     #     offset: Optional[int] = None,
+    #     # ) -> list[BaseSchemaTypeRead]:
+
+    #     # return await self.read(
+    #     #     current_user,
+    #     #     select_args=[Category, DemoResource],
+    #     #     joins=[DemoResource],
+    #     #     filters=[DemoResource.category_id == category_id],
+    #     # )
+
+    #     # response = await self.read(
+    #     #     current_user,
+    #     #     select_args=[DemoResource],
+    #     #     joins=[Category],
+    #     #     filters=[DemoResource.category_id == category_id],
+    #     # )
+    #     # print("=== response ===")
+    #     # print(response)
+    #     # demo_resources = response.demo_resources
+
+    #     # print("=== demo_resources ===")
+    #     # print(demo_resources)
+
     #     session = self.session
-    #     statement = select(Category).where(Category.id == category_id)
+    #     statement = select(DemoResource).where(DemoResource.category_id == category_id)
     #     response = await session.exec(statement)
-    #     category = response.one()
-    #     return category
+    #     demo_resources = response.all()
 
-    # demo_resources = category.demo_resources
-    # if not demo_resources:
-    #     raise HTTPException(status_code=404, detail="No demo resources found")
-    # return CategoryReadWithDemoResources.from_orm(category)
-
-    async def read_all_demo_resources(self, category_id) -> List[DemoResource]:
-        """Returns all demo resources within category."""
-        session = self.session
-        statement = select(Category).where(Category.id == category_id)
-        response = await session.exec(statement)
-        category = response.one()
-        demo_resources = category.demo_resources
-        if not demo_resources:
-            raise HTTPException(status_code=404, detail="No demo resources found")
-        return demo_resources
+    #     if not demo_resources:
+    #         raise HTTPException(status_code=404, detail="No demo resources found")
+    #     return demo_resources

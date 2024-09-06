@@ -2,7 +2,6 @@ import logging
 from typing import Annotated
 
 import httpx
-from core.config import config
 
 # from core.security import get_token_from_header
 from fastapi import APIRouter, Header
@@ -10,6 +9,8 @@ from fastapi import APIRouter, Header
 # from fastapi import APIRouter, Depends, Header, HTTPException, status
 # from fastapi.security import OAuth2AuthorizationCodeBearer
 from msal import ConfidentialClientApplication
+
+from core.config import config
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -19,6 +20,7 @@ router = APIRouter()
 # # needs scopes
 # # primarily this is relevant for Swagger UI, API can be accessed by other tools right now, as long as
 # # their callback URL is registered in the Azure AD app registration!
+# # move this to main.py?
 # oauth2_scheme = OAuth2AuthorizationCodeBearer(
 #     authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize",
 #     tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/token",
@@ -54,6 +56,8 @@ confClientApp = ConfidentialClientApplication(
 #     return token
 
 
+# TBD: refactor to use dependency injection
+# might require a working on-behalf-of workflow?
 def get_users_groups_ms_graph(access_token: str):
     """Dummy function to try if access token works from backend"""
     # response = httpx.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
@@ -138,7 +142,7 @@ async def get_onbehalfof(authorization: Annotated[str | None, Header()] = None):
     print("=== getting token on behalf of ===")
     result = confClientApp.acquire_token_on_behalf_of(
         token,
-        scopes=["User.Read"]
+        scopes=["User.Read"],
         # scopes=[
         #     "api.read"
         # ],  # ["User.Read", "https://management.azure.com/user_impersonation"],

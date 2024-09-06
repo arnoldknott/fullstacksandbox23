@@ -14,7 +14,7 @@ const connectionString = `redis://default:${appConfig.redis_password}@${appConfi
 let redisClient: RedisClientType | null = null;
 if ( !building) { 
   try{
-    console.log("🥞 cache - server - createRedisClient - redis app config");
+    // console.log("🥞 cache - server - createRedisClient - redis app config");
     // console.log(appConfig.redis_password.substring(0, 3) + "***");
     // console.log(appConfig.redis_host);
     // console.log(appConfig.redis_port);
@@ -93,13 +93,13 @@ process.on("exit", () => redisClient?.quit());
 export const setSession = async (sessionId: string, path: string, sessionData: Session): Promise<boolean> => {
   // console.log("🥞 cache - server - setSession - redisClient");
   // console.log(redisClient);
-  console.log("🥞 cache - server - setSession - redisClient?.isOpen");
-  console.log(redisClient?.isOpen);
+  // console.log("🥞 cache - server - setSession - redisClient?.isOpen");
+  // console.log(redisClient?.isOpen);
   if(!redisClient?.isOpen){
     console.log("🥞 cache - server - setSession - redisClient?.isOpen is false");
     await redisClient?.connect()
-    console.log("🥞 cache - server - setSession - NEW connection redisClient?.isOpen");
-    console.log(redisClient?.isOpen);
+    // console.log("🥞 cache - server - setSession - NEW connection redisClient?.isOpen");
+    // console.log(redisClient?.isOpen);
   }
   const authDataString = JSON.stringify(sessionData);
   try{

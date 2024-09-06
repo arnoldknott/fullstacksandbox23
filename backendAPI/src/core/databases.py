@@ -1,6 +1,7 @@
-from core.config import config
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
+
+from core.config import config
 
 # from sqlmodel import SQLmodel  # noqa: F401
 
@@ -17,9 +18,11 @@ async def get_async_session() -> AsyncSession:
     return async_session()
 
 
-# TBD: remove this?
-async def use_async_session() -> AsyncSession:
-    """Yields a database session."""
-    async_session = get_async_session()
-    async with async_session() as session:
-        yield session
+# # This is handled by __aenter__ and __aexit__ in BaseCRUD
+# # in case a session is required elsewhere, use this function!
+# async def use_async_session() -> AsyncSession:
+#     """Yields a database session."""
+#     async_session = get_async_session()
+#     async with async_session() as session:
+#         yield session
+#     # session.close()

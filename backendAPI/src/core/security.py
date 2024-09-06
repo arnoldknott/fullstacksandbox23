@@ -1,16 +1,29 @@
 import json
 import logging
-from typing import Optional
+from typing import List, Optional
 
+# from enum import Enum
+from uuid import UUID
+
+# import asyncio
 import httpx
 import jwt
-from core.cache import redis_jwks_client
-from core.config import config
-from crud.user import UserCRUD
 from fastapi import Depends, HTTPException, Request
 from jwt.algorithms import RSAAlgorithm
 
+from core.cache import redis_jwks_client
+from core.config import config
+from core.types import CurrentUserData, GuardTypes
+from crud.identity import UserCRUD
+from models.identity import UserRead
+
+# from typing import List, Optional
+# from uuid import UUID
+
+
 logger = logging.getLogger(__name__)
+
+# CurrentUserData = types.CurrentUserData
 
 # To get the swagger UI to work, add the OAuth2AuthorizationCodeBearer to the securitySchemes section of the openapi.json file
 # https://github.com/tiangolo/fastapi/pull/797
@@ -19,285 +32,490 @@ logger = logging.getLogger(__name__)
 # so therefore manual token acquisition is necessary and SwaggerUI does not work with protected routes
 
 
+# swagger-ui per default uses /docs/oauth2-redirect
+# @router.get("/docs/oauth2-redirect")
+# async def oauth_callback(code: str):
+#     """Callback for the OAuth2 Authorization Code flow"""
+#     logger.info("OAuth2 Authorization Code flow callback")
+#     try:
+#         print("=== code ===")
+#         print(code)
+#         # TBD: implement MSAL handling of retrieving a token from the code.
+#     except Exception as err:
+#         logger.error("OAuth2 Authorization Code flow callback failed.")
+#         raise err
+
+
 # Helper function for get_token_payload:
-async def get_jwks(no_cache: bool = False):
+async def get_azure_jwks(no_cache: bool = False):
     """Fetches the JWKs from identity provider"""
-    logger.info("🔑 Fetching JWKS")
+    logger.info("🔑 Fetching JWKs")
     try:
-        if not no_cache:
+        if no_cache is False:
             # print("=== no_cache ===")
             # print(no_cache)
             jwks = redis_jwks_client.json().get("jwks")
+            # print("=== jwks ===")
+            # print(jwks)
             if jwks:
+                # print("=== 🔑 JWKS fetched from cache ===")
                 return json.loads(jwks)
             else:
-                await get_jwks(no_cache=True)
+                await get_azure_jwks(no_cache=True)
         else:
-            # print("=== config.AZURE_OPENID_CONFIG_URL ===")
-            # print(config.AZURE_OPENID_CONFIG_URL)
+            logger.info("🔑 Getting JWKs from Azure")
             oidc_config = httpx.get(config.AZURE_OPENID_CONFIG_URL).json()
-            # print("=== oidc_config ===")
-            # print(oidc_config)
-            if not oidc_config:
+            print("=== 🔑 got JWKs from Azure ===")
+            if oidc_config is False:
                 raise HTTPException(
                     status_code=404, detail="Failed to fetch Open ID config."
                 )
             try:
                 jwks = httpx.get(oidc_config["jwks_uri"]).json()
-                # print("=== jwks ===")
-                # print(jwks)
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to fetch JWKS online ${err}"
                 )
             try:
+                # TBD: for real multi-tenant applications, the cache-key should be tenant specific
                 redis_jwks_client.json().set("jwks", ".", json.dumps(jwks))
-                # print("=== set the jwks in redis ===")
+                logger.info("🔑 Setting JWKs in cache")
+                print("=== 🔑 JWKS set in cache ===")
+                return jwks
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to set JWKS in redis: ${err}"
                 )
-        return jwks
     except Exception as err:
         logger.error("🔑 Failed to get JWKS.")
         raise err
 
 
-# TBD: move the retries information to somewhere else - maybe add as a header?
-async def get_token_payload(request: Request, retries: Optional[int] = 0):
-    """Validates the access token sent in the request header and returns the payload if valid"""
+async def decode_token(token: str, jwks: dict) -> dict:
+    """Decodes the token"""
+    # Get the key that matches the kid:
+    kid = jwt.get_unverified_header(token)["kid"]
+    rsa_key = {}
+    for key in jwks["keys"]:
+        if key["kid"] == kid:
+            rsa_key = RSAAlgorithm.from_jwk(key)
+    logger.info("Decoding token")
+    # validate the token
+    payload = jwt.decode(
+        token,
+        rsa_key,
+        algorithms=["RS256"],
+        audience=config.API_SCOPE,
+        issuer=config.AZURE_ISSUER_URL,
+        options={
+            "validate_iss": True,
+            "validate_aud": True,
+            "validate_exp": True,
+            "validate_nbf": True,
+            "validate_iat": True,
+        },
+    )
+    logger.info("Token decoded successfully")
+    return payload
+
+
+async def get_azure_token_payload(request: Request) -> Optional[dict]:
+    """Validates the Azure access token sent in the request header and returns the payload if valid"""
     logger.info("🔑 Validating token")
-    if retries > 1:
-        raise HTTPException(status_code=401, detail="Invalid retry attempt.")
     try:
         auth_header = request.headers.get("Authorization")
         token = auth_header.split("Bearer ")[1]
-        # print("=== token ===")
-        # print(token)
         if token:
-            jwks = await get_jwks()
+            try:
+                jwks = await get_azure_jwks()
+                payload = await decode_token(token, jwks)
+                return payload
+            except Exception:
+                logger.info(
+                    "🔑 Failed to validate token, fetching new JWKS and trying again."
+                )
+                jwks = await get_azure_jwks(no_cache=True)
+                payload = await decode_token(token, jwks)
+                return payload
 
-            # Get the key that matches the kid:
-            kid = jwt.get_unverified_header(token)["kid"]
-            rsa_key = {}
-            for key in jwks["keys"]:
-                if key["kid"] == kid:
-                    rsa_key = RSAAlgorithm.from_jwk(key)
-            logger.info("Decoding token")
-            # validate the token
-            payload = jwt.decode(
-                token,
-                rsa_key,
-                algorithms=["RS256"],
-                audience=config.API_SCOPE,
-                issuer=config.AZURE_ISSUER_URL,
-                options={
-                    "validate_iss": True,
-                    "validate_aud": True,
-                    "validate_exp": True,
-                    "validate_nbf": True,
-                    "validate_iat": True,
-                },
-            )
-            logger.info("Token decoded successfully")
-            # print("=== payload ===")
-            # print(payload)
-            return payload
-            # return True
     except Exception as e:
-        # only one retry allowed: by now the tokens should be cached!
-        if retries < 1:
-            logger.info(
-                "🔑 Failed to validate token, fetching new JWKS and trying again."
-            )
-            await get_jwks(no_cache=True)
-            return await get_token_payload(request, retries + 1)
         logger.error(f"🔑 Token validation failed: ${e}")
-        raise HTTPException(status_code=401, detail="Invalid token")
+        return None
+        # raise HTTPException(status_code=401, detail="Invalid token")
+
+
+# TBD: implement tests for this:
+async def optional_get_access_token_payload(
+    payload=Depends(get_azure_token_payload),
+) -> Optional[dict]:
+    """General function to get the access token payload optionally"""
+    # can later be used for customizing different identity service providers
+    return payload
+    # try:
+    #     return await get_azure_token_payload(request)
+    # except HTTPException as err:
+    #     if err.status_code == 401:
+    #         return None
+    #     else:
+    #         raise err
+
+
+async def get_access_token_payload(
+    payload: dict = Depends(optional_get_access_token_payload),
+) -> dict:
+    """General function to get the access token payload"""
+    # can later be used for customizing different identity service providers
+    if payload is None:
+        # TBD: check if there is test for this to fire!
+        raise HTTPException(status_code=401, detail="Invalid token.")
+    return payload
+
+
+# async def get_access_token_payload(
+#     payload: dict = Depends(get_azure_token_payload),
+# ) -> dict:
+#     """General function to get the access token payload"""
+#     # can later be used for customizing different identity service providers
+#     return payload
+
+
+# region: GUARDS
 
 
 class Guards:
-    """Guards for protecting routes"""
+    """Decorator to protect the routes with scopes, roles and groups."""
 
-    def __init__(self):
+    def __init__(
+        self, scopes: List[str] = [], roles: List[str] = [], groups: List[UUID] = []
+    ):
+        """Initializes the guards for the routes."""
+        self.scopes = scopes
+        self.roles = roles
+        self.groups = groups
+
+    def __call__(self):
+        """Returns the guards for the routes."""
+        protectors = GuardTypes(
+            scopes=self.scopes, roles=self.roles, groups=self.groups
+        )
+        return protectors
+
+
+# endregion: GUARDS
+
+# region: CHECKS:
+#
+# region: Generic check usage:
+#
+# Use those classes directly as checks, e.g.:
+#
+# @router.post("/", status_code=201)
+# async def post_user(
+#     user: ProtectedResourceCreate,
+#     token_payload=Depends(get_access_token_payload),
+# ) -> ProtectedResource:
+#     """Creates a new user."""
+#     logger.info("POST user")
+#     token = CurrentAccessToken(token_payload)
+#     await token.has_scope("api.write")
+#     await token.has_role("User")
+#     async with ProtectedResourceCRUD() as crud:
+#         created_user = await crud.create(user)
+#     return created_user
+
+
+class CurrentAccessToken:
+    """class for all checks related to the current access token"""
+
+    def __init__(self, payload) -> None:
+        self.payload = payload
+
+    async def is_valid(self, require=True):
+        """Checks if the current token is valid"""
+        if self.payload:
+            return True
+        else:
+            if require:
+                raise HTTPException(status_code=401, detail="Invalid token.")
+            else:
+                return False
+
+    async def has_scope(self, scope: str, require=True) -> bool:
+        """Checks if the current token includes a specific scope"""
+        payload = self.payload
+        if ("scp" in payload) and (scope in payload["scp"]):
+            return True
+        else:
+            if require:
+                raise HTTPException(status_code=401, detail="Invalid token.")
+                # raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                return False
+
+    async def has_role(self, role: str, require=True) -> bool:
+        """Checks if the current token includes a specific scope"""
+        payload = self.payload
+        # if ("roles" in payload) and (role in payload["roles"]):
+        # TBD: add the "Admin" override: if the user has the Admin role, the user has access to everything
+        if ("roles" in payload) and (
+            (role in payload["roles"]) or ("Admin" in payload["roles"])
+        ):
+            return True
+        else:
+            if require:
+                raise HTTPException(status_code=401, detail="Invalid token.")
+                # raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                return False
+
+    # TBD: implement tests for this:
+    async def has_group(self, group: str, require=True) -> bool:
+        """Checks if the current token includes a group"""
+        payload = self.payload
+        if ("groups" in payload) and (group in payload["groups"]):
+            return True
+        else:
+            if require:
+                raise HTTPException(status_code=401, detail="Invalid token.")
+                # raise HTTPException(status_code=403, detail="Access denied")
+            else:
+                return False
+
+    # This is responsible for self-sign on: if a user has a token, the user is allowed
+    # Who gets the tokens is controlled by the identity provider (Azure AD)
+    # Can be through membership in a group, which has access to the application
+    # -> in Azure portal under Enterprise applications,
+    # -> turn of filter enterprise applications and
+    # -> search for the backend application registration
+    # -> under users and groups add the users or groups:
+    # -> gives and revokes access for users and groups based on roles
+    #
+    # TBD: make sure this one get's triggered from all checks that require a user
+    async def gets_or_signs_up_current_user(self) -> UserRead:
+        """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
+        groups = []
+        try:
+            if "groups" in self.payload:
+                groups = self.payload["groups"]
+            user_id = self.payload["oid"]
+            tenant_id = self.payload["tid"]
+            # TBD move the crud operations to the base view class, which should have an instance of the checks class.
+            # if the user information stored in this class is already valid - no need to make another database call
+            # if the user information stored in this class is not valid: get or sign-up the user.
+            async with UserCRUD() as crud:
+                # TBD: this variable is misleading. The current_user here is not CurrentUserData, but a UserRead object!
+                current_user = await crud.create_azure_user_and_groups_if_not_exist(
+                    user_id, tenant_id, groups
+                )
+                if current_user:
+                    # TBD: more important than returning: store the user in the class instance: attribute self.current_user
+                    # print("=== current_user ===")
+                    # print(current_user)
+                    # TBD: no - don't do that - it's a security risk to store the user in the class instance!
+                    # self.user_id = current_user.user_id
+                    return current_user
+                else:
+                    raise HTTPException(status_code=404, detail="404 User not found")
+        except Exception as err:
+            logger.error(f"🔑 User not found in database: ${err}")
+            raise HTTPException(status_code=401, detail="Invalid token.")
+
+    # TBD: call get_or_sign_up_current_user from all checks that require a user
+    # TBD: merge with gets_or_signs_up_current_user?
+    async def provides_current_user(self) -> CurrentUserData:
+        """Returns the current user"""
+        roles = None
+        groups = None
+        if "roles" in self.payload:
+            roles = self.payload["roles"]
+        if "groups" in self.payload:
+            groups = self.payload["groups"]
+        user_in_database = await self.gets_or_signs_up_current_user()
+        # TBD: use CurrentUserData class instead of dict for type safety!
+        current_user = CurrentUserData(
+            user_id=user_in_database.id,
+            roles=roles,
+            groups=groups,
+        )
+        # current_user = {
+        #     # TBD: every check needs to call the gets_or_signs_up_current_user method
+        #     # Then change azure_user_id to user_id here:
+        #     # "azure_user_id": self.payload["oid"],
+        #     "user_id": user_in_database.id,
+        #     "roles": roles,
+        #     "groups": groups,
+        #     # "scopes": self.payload["scp"],
+        # }
+        # current_user = CurrentUserData()
+        # current_user.azure_user_id = self.payload["oid"]
+        # current_user.roles = self.payload["roles"]
+        # current_user.groups = self.payload["groups"]
+        # current_user.scopes = self.payload["scp"]
+        # return CurrentUserData(**current_user)
+        return current_user
+
+    # Fine-grained access control is taking care of this!
+    # If used, implement tests for this:
+    # async def azure_self_or_admin(self, azure_user_id: UUID, require=True) -> bool:
+    #     """Checks if the current user is the user_id or an admin"""
+    #     payload = self.payload
+    #     user_has_admin_role = await self.has_role("Admin", require=False)
+    #     try:
+    #         azure_user_id = UUID(azure_user_id)
+    #     except ValueError:
+    #         logger.error("ID is not a universal unique identifier (uuid).")
+    #         raise HTTPException(status_code=400, detail="Invalid id.")
+    #     if user_has_admin_role:
+    #         return True
+    #     elif payload["oid"] == azure_user_id:
+    #         return True
+    #     else:
+    #         if require:
+    #             raise HTTPException(status_code=403, detail="Access denied")
+    #         else:
+    #             return False
+
+    # Fine-grained access control is taking care of this functionality!
+    # If used, implement tests for this:
+    # async def self_or_admin(self, user_id: UUID, require=True) -> bool:
+    #     """Checks if the current user is the user_id or an admin"""
+    #     try:
+    #         user_id = UUID(user_id)
+    #     except ValueError:
+    #         logger.error("ID is not a universal unique identifier (uuid).")
+    #         raise HTTPException(status_code=400, detail="Invalid id.")
+    #     user_has_admin_role = await self.has_role("Admin", require=False)
+    #     current_user = await self.provides_current_user()
+    #     if user_has_admin_role:
+    #         return True
+    #     elif current_user.user_id == user_id:
+    #         return True
+    #     else:
+    #         if require:
+    #             raise HTTPException(status_code=403, detail="Access denied")
+    #         else:
+    #             return False
+
+
+# endregion: Generic check
+
+# region: Specific checks
+
+
+# Use those classes directly as checks, e.g.:
+# @app.get("/example_endpoint")
+# def example(
+#     token: bool = Depends(CurrentAccessTokenIsValid()),
+# ):
+#     """Returns the result of the check."""
+#     return token
+#
+#   options: require
+#            - if set to False, the check will not raise an exception if the condition is not met but return False
+#            - if set to True, the check will raise an exception if the condition is not met
+#            - default is True
+#
+#
+#   examples:
+#   - token_valid: bool = Depends(CurrentAccessTokenIsValid())
+
+
+class CurrentAccessTokenIsValid(CurrentAccessToken):
+    """Checks if the current token is valid"""
+
+    def __init__(self, require=True) -> None:
+        self.require = require
+
+    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
+        super().__init__(payload)
+        return await self.is_valid(self.require)
+
+
+class CurrentAccessTokenHasScope(CurrentAccessToken):
+    """Checks if the current token includes a specific scope"""
+
+    def __init__(self, scope, require=True) -> None:
+        self.scope = scope
+        self.require = require
+
+    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
+        super().__init__(payload)
+        return await self.has_scope(self.scope, self.require)
+
+
+class CurrentAccessTokenHasRole(CurrentAccessToken):
+    """Checks if the current token includes a specific scope"""
+
+    def __init__(self, role, require=True) -> None:
+        self.role = role
+        self.require = require
+
+    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
+        super().__init__(payload)
+        return await self.has_role(self.role, self.require)
+
+
+class CurrentAccessTokenHasGroup(CurrentAccessToken):
+    """Checks if the current token includes a specific scope"""
+
+    def __init__(self, group, require=True) -> None:
+        self.group = group
+        self.require = require
+
+    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
+        super().__init__(payload)
+        return await self.has_group(self.group, self.require)
+
+
+class CurrentAzureUserInDatabase(CurrentAccessToken):
+    """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
+
+    def __init__(self) -> None:
         pass
 
-    async def current_user_is_admin(self, payload: dict = Depends(get_token_payload)):
-        """Checks if the current user is admin"""
-        if "Admin" in payload["roles"]:
-            return True
-        else:
-            raise HTTPException(status_code=403, detail="Access forbidden")
-
-    # TBD: Refactor: merge api.read and api.write into one scope api.access!
-    async def current_token_has_scope_api_read(
-        self, payload: dict = Depends(get_token_payload)
-    ):
-        """Checks if the current token has the api.read scope"""
-        if "api.read" in payload["scp"].split(" "):
-            return True
-        else:
-            raise HTTPException(status_code=403, detail="Access forbidden")
-
-    async def current_token_has_scope_api_write(
-        self, payload: dict = Depends(get_token_payload)
-    ):
-        """Checks if the current token has the api.write scope"""
-        if "api.write" in payload["scp"].split(" "):
-            return True
-        else:
-            raise HTTPException(status_code=403, detail="Access forbidden")
-
-    async def current_user_in_database(
-        payload: dict = Depends(get_token_payload),
-    ):
-        """Checks checks user in database and adds or updates the group membership of the user"""
-        groups = payload["groups"]
-        # print("=== groups ===")
-        # print(groups)
-        user_id = payload["oid"]
-        # roles = payload["roles"]
-        tenant_id = payload["tid"]
-        # This is responsible for self-sign on: if a user has a token, the user is allowed
-        # Who gets the tokens is controlled by the identity provider (Azure AD)
-        # Can be through membership in a group, which has access to the application
-        # -> in Azure portal under Enterprise applications,
-        # ->turn of filter enterprise applications and
-        # -> search for the backend application registration
-        # -> under users and groups add the users or groups:
-        # -> gives and revokes access for users and groups based on roles
-        async with UserCRUD() as crud:
-            current_user = await crud.create_user_and_groups_if_not_exist(
-                user_id, tenant_id, groups
-            )
-            if current_user:
-                return current_user
-            else:
-                raise HTTPException(status_code=404, detail="404 User not found")
-
-    async def token_is_valid(self, payload: dict = Depends(get_token_payload)):
-        """Checks if the token is valid"""
-        if payload:
-            return True
-        else:
-            raise HTTPException(status_code=401, detail="Invalid token")
+    async def __call__(
+        self, payload: dict = Depends(get_azure_token_payload)
+    ) -> UserRead:
+        super().__init__(payload)
+        return await self.gets_or_signs_up_current_user()
 
 
-guards = Guards()
+# endregion: Specific checks
 
-# remove after refactoring:
-
-
-# Following three dependency functions can be used for restricting the access to the API:
-# - validate_token: authorization check if the token is valid
-# - validate_scope: adds checking for the required scope on top of token validation
-#   - get_required_scopes: a decorator function to be used as a dependency in routers and endpoints, to pass the relevant scopes
-# - validate_roles: adds checking for the required roles on top of token validation
-#   - get_required_roles: a decorator function to be used as a dependency in routers and endpoints, to pass the relevant roles
+# endregion: CHECKS
 
 
-def get_token(request: Request):
-    """Returns the access token sent in the request header"""
-    authHeader = request.headers.get("Authorization")
-    token = authHeader.split("Bearer ")[1]
-    return token
+# region: Access control
 
 
-def validate_token(current_user: dict = Depends(get_token_payload)):
-    """Turns the existence of a validated user into a dependency (just by retuning a bool)"""
-    logger.info("🔑 User access to protected route")
-    if current_user:
-        return True
+# class AccessControl:
+#     def __init__(self) -> None:
+#         pass
+
+#     async def permits(
+#         user: "CurrentUserData", resource_id: UUID, action: Action
+#     ) -> bool:
+#         """Checks if the user has permission to perform the action on the resource"""
+#         pass
 
 
-# class ScopeChecker:
-#     """Checks if the required scope is present in the access token"""
+# delete later:
 
-#     def __init__(self, scopes: List[str]):
-#         self.required_scopes = scopes
+# snippet for preventing admin to change last_accessed_at:
+# TBD: remove - functionality replaced by access-log-table)
+# TBD: this will fail some tests - so they need to be rewritten
 
-#     def __call__(
-#         self,
-#         current_user: Annotated[str, Depends(get_token_payload)],
-#         # scopes: List[str] = ["api.read"],
-#     ):
-#         # All required scopes must be present in the access token!
-#         logger.info("🔑 User access to protected route with scope requirement")
-#         if not set(self.required_scopes).issubset(set(current_user["scp"].split(" "))):
-#             raise HTTPException(status_code=403, detail="🔑 Token misses required scope")
+# def updates_last_access(
+# self, admin: bool, current_user: UserRead, owner_id: UUID
+# ) -> None:
+# logger.info("POST updated_last_access")
+# if (admin is True) and (str(current_user.user_id) != str(owner_id)):
+#     self.__update_last_access = False
+# return self.__update_last_access
 
+# snippet to allow only admins to write all and users to write their own data:
+# should be replaced by
+# if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
+#     raise HTTPException(status_code=403, detail="Access denied")
 
-# class GroupChecker:
-#     """Checks if the user is a member of one of the allowed groups"""
-
-#     def __init__(self, groups: List[str]):
-#         self.allowed_groups = groups
-
-#     def __call__(
-#         self,
-#         current_user: Annotated[str, Depends(get_token_payload)],
-#         access_token: Annotated[str, Depends(get_token)],
-#     ):
-#         # The user must be member of at least one of the allowed groups!
-#         logger.info("🔑 Accessing protected route with group requirement")
-#         try:
-#             """Search for the allowed groups in the groups the user is member of from Microsoft Graph API"""
-#             # TBD: add caching here!
-#             # TBD: use search parameter on Microsoft Graph API to reduce the number of requests
-#             response = httpx.get(
-#                 "https://graph.microsoft.com/v1.0/me/transitiveMemberOf"
-#             )
-#             groups = response.json()
-#             print("=== groups ===")
-#             print(groups)
-#             # if not set(self.allowed_groups).issubset(set(current_user["groups"])):
-#             #     raise HTTPException(status_code=403, detail="🔑 User not member of allowed groups")
-#         except Exception as err:
-#             logger.error("🔑 Failed to fetch user groups from Microsoft Graph.")
-#             raise err
-
-
-# # declaration of decorator function to be used as a dependency in routers and endpoints
-# def get_required_scopes(scopes: List[str]):
-#     """Returns a list of required scopes"""
-
-#     def _inner():
-#         return scopes
-
-#     return _inner
-
-
-# def validate_scope(
-#     required_scopes: List[str] = Depends(get_required_scopes(["api.read"])),
-#     get_token_payload: dict = Depends(validate_token),
-# ):
-#     """Validates the scope of the access token sent in the request header - minimum required scope is api.read"""
-#     if not set(required_scopes).issubset(set(get_token_payload["scp"].split(" "))):
-#         raise HTTPException(status_code=403, detail="Forbidden")
-#     pass
-
-
-# # Factory function to create a dependency
-# def require_scopes(scopes: List[str]):
-#     """Returns a dependency that checks for the required scopes"""
-#     return Depends(validate_scope(Depends(get_required_scopes(scopes))))
-
-
-# declaration of decorator function to be used as a dependency in routers and endpoints
-# def get_required_roles(roles: List[str]):
-#     """Returns a list of required scopes"""
-
-#     def _inner():
-#         return roles
-
-#     return _inner
-
-
-# def validate_roles(
-#     required_roles: List[str] = Depends(get_required_roles(["Guest Student"])),
-#     get_token_payload: dict = Depends(validate_token),
-# ):
-#     """Validates the roles of the access token sent in the request header"""
-#     if not set(required_roles).issubset(set(get_token_payload["roles"].split(" "))):
-#         raise HTTPException(status_code=403, detail="Forbidden")
-#     pass
+# endregion: Access control
