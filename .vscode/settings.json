@@ -1,3 +1,9 @@
 {
-  "python.analysis.extraPaths": ["./backendAPI/app"]
+  "python.analysis.extraPaths": [
+    "./backendAPI/app"
+  ],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true
+  },
 }

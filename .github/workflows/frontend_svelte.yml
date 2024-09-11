@@ -28,6 +28,10 @@ jobs:
       REDIS_PORT: ${{ vars.REDIS_PORT }}
       MONGODB_HOST: ${{ vars.MONGODB_HOST }}
       MONGODB_PORT: ${{ vars.MONGODB_PORT }}
+      APP_REG_CLIENT_ID: ${{ secrets.APP_REG_CLIENT_ID }}
+      APP_CLIENT_SECRET: ${{ secrets.APP_CLIENT_SECRET }}
+      AZ_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      API_SCOPE: ${{ secrets.API_SCOPE }}
     steps:
       - uses: actions/checkout@v4
       - name: Build
@@ -120,8 +124,8 @@ jobs:
       id-token: write
       packages: read
     environment: stage
-    env:
-      AZURE_IDENTITY_PROVIDER_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
+    # env:
+    #   AZURE_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
     steps:
       # - name: echos github.event.after variable
       #   run: |
@@ -142,30 +146,47 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to staging
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
-        env:
-          IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
+      # env no longer necessary: all variables coming from terraform now!
+        # env:
+        #   IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
         run: |
           az containerapp revision set-mode \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --mode single
-          az containerapp secret set \
-            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --secrets \
-              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
-              "app-reg-client-id"=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF \
-              "azure-authority=${{ env.AZURE_IDENTITY_PROVIDER_AUTHORITY }}"
-          sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
-            --set-env-vars \
-              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
-              "KEYVAULT_HEALTH=secretref:keyvault-health" \
-              "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
-              "AZURE_AUTHORITY=secretref:azure-authority"
+            --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA
+        # TBD: remove AZ_KEYVAULT_HOST here - coming from terraform now!
+        # REMOVED NOW: all env variables coming from terraform now!
+        # --set-env-vars \
+        #      "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}"
+        # remember also to remove from Github environment!
+        # az containerapp revision set-mode \
+        #   --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+        #   --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+        #   --mode single
+        # az containerapp secret set \
+        #   --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+        #   --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+        #   --secrets \
+        #     "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
+        #     "app-reg-client-id"=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF \
+        #     "azure-authority=${{ env.AZURE_AUTHORITY }}"
+        # sleep 10
+        # az containerapp update \
+        #   --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
+        #   --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+        #   --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
+        #   --set-env-vars \
+        #     "AZURE_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
+        #     "KEYVAULT_HEALTH=secretref:keyvault-health" \
+        #     "BACKEND_HOST=${{ vars.AZURE_CONTAINERAPP_BACKEND }}" \
+        #     "APP_REG_CLIENT_ID=secretref:app-reg-client-id" \
+        #     "AZURE_AUTHORITY=secretref:azure-authority"
+        # TBD: this is weird: here the variable is named AZ_KEYVAULT_HOST, but in the container it is named AZURE_KEYVAULT_HOST
+        # when renaming it here - conatinerapp fails to start with managed identity error - cannot get to keyvault!
         # Set by terraform already in container: "app-reg-client-id=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF" \
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # No: don't otherwise the ones set from Terraform get deleted!
@@ -190,8 +211,8 @@ jobs:
       id-token: write
       packages: read
     environment: prod
-    env:
-      AZURE_IDENTITY_PROVIDER_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
+    # env:
+    #   AZURE_AUTHORITY: https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}
     steps:
       # - name: echos github.event.after variable
       #   run: |
@@ -212,28 +233,23 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to production
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
-        env:
-          IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
+      # env no longer necessary: all variables coming from terraform now!
+        # env:
+        #   IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
         run: |
           az containerapp revision set-mode \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --mode single
-          az containerapp secret set \
-            --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --secrets \
-              "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/keyvault-health,identityref:$IDENTITY_REF" \
-              "azure-authority=${{ env.AZURE_IDENTITY_PROVIDER_AUTHORITY }}"
-          sleep 10
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA \
-            --set-env-vars \
-              "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
-              "KEYVAULT_HEALTH=secretref:keyvault-health" \
-              "AZURE_AUTHORITY=secretref:azure-authority"
+            --image ${{env.REGISTRY}}/${{github.repository}}-frontend_svelte:$COMMIT_SHA
+        # TBD: remove AZ_KEYVAULT_HOST here - coming from terraform now!
+        # REMOVED NOW: all env variables coming from terraform now!
+        # --set-env-vars \
+        #      "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}"
+        # remember also to remove from Github environment!
         # Set by terraform already in container: "app-reg-client-id=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}/secrets/app-reg-client-id,identityref:$IDENTITY_REF" \
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # No: don't otherwise the ones set from Terraform get deleted!

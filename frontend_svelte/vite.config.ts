@@ -8,7 +8,7 @@ export default defineConfig({
 		hmr: {
 			clientPort: 8661
 		},
-		port: 80
+		port: 80 // prod is still on 3000, which is the default port in /app/index.js (look at the end). TBD (less urgent): review build process.
 	},
 	test: {
 		environment: 'jsdom',

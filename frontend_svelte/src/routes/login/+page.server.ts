@@ -1,7 +1,21 @@
-// import { postBackend, getBackend } from '$lib/backend';
-// import { user_store } from '$lib/stores';
-// import { error } from '@sveltejs/kit';
+import { signIn } from '$lib/server/oauth';
+import type { PageServerLoad } from './$types';
+import { redirect } from '@sveltejs/kit';
 
+export const load: PageServerLoad = async ( { url } ) => {
+  let loginUrl: string
+  try {
+    loginUrl = await signIn( url.origin );
+  } catch (err) {
+    console.error("login - server - sign in redirect failed");
+    console.error(err);
+    throw err;
+  }
+  redirect(302, loginUrl);
+};
+
+
+// TBD: good template for use with other forms, e.g. chatbot.
 // // TBD: add type PageServerLoad here?
 // export const actions = {
 // 	default: async ({ cookies, request }) => {

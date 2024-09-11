@@ -1,6 +1,7 @@
 import logging
 import os
 from functools import lru_cache
+from time import sleep
 from typing import Any, Optional
 
 from azure.identity import ManagedIdentityCredential
@@ -24,20 +25,24 @@ def get_variable(variable_name):
     """Returns a function that retrieves a variable from the environment."""
 
     # note: the existence of the environment variable AZURE_KEYVAULT_URL is used to determine whether to use keyvault or not.
-    if os.getenv("AZURE_KEYVAULT_HOST"):
+    if os.getenv("AZ_KEYVAULT_HOST"):
         # credential = DefaultAzureCredential()
         # credential = ManagedIdentityCredential(client_id=os.getenv("AZURE_CLIENT_ID"))
-        credential = ManagedIdentityCredential()
+        credential = ManagedIdentityCredential(client_id=os.getenv("AZ_CLIENT_ID"))
         # Following line works, when the environment variable AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET and AZURE_AUTHORITY_HOST are set.
         # credential = EnvironmentCredential()
+        logger.info("Accessing keyvault")
+        # print("== AZ_KEYVAULT_HOST ==")
+        # print(os.getenv("AZ_KEYVAULT_HOST"))
         client = SecretClient(
             # TBD: check if we need host or URL here?
-            vault_url=os.getenv("AZURE_KEYVAULT_HOST"),
+            vault_url=os.getenv("AZ_KEYVAULT_HOST"),
             credential=credential,
         )
 
         def get_variable_inner(variable_name):
             """Returns a variable from the environment."""
+            logger.info(f"Getting variable ${variable_name} from keyvault")
             variable_name = variable_name.replace("_", "-").lower()
             return client.get_secret(variable_name).value
 
@@ -53,6 +58,23 @@ def get_variable(variable_name):
 class Config(BaseSettings):
     """Base configuration class."""
 
+    # System health check:
+    # get those variables from keyvault if keyvault URL is set, otherwise get from environment:
+    KEYVAULT_HEALTH: str = get_variable("KEYVAULT_HEALTH")
+
+    # Microsoft Azure OAuth 2.0 configuration:
+    AZURE_TENANT_ID: str = get_variable("AZURE_TENANT_ID")
+    AZURE_OPENID_CONFIG_URL: str = f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration"
+    AZURE_ISSUER_URL: str = f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0"
+    AZURE_CLIENT_ID: str = get_variable("AZURE_CLIENT_ID")
+    API_SCOPE: str = get_variable("API_SCOPE")
+    BACK_CLIENT_SECRET: str = get_variable("BACK_CLIENT_SECRET")
+
+    # Client ID of the frontend application registered in Azure AD:
+    # add "customer" client registrations here!
+    # APP_REG_CLIENT_ID: str = get_variable("APP_REG_CLIENT_ID")
+
+    # Postgres configuration:
     # always get those variables from the environment:
     # TBD: refactor:     this should no longer be necessary from the environment since database is now an Azure postgres database:
     POSTGRES_HOST: Optional[str] = os.getenv("POSTGRES_HOST")
@@ -79,18 +101,33 @@ class Config(BaseSettings):
             path=values.data["POSTGRES_DB"] or "",
         )
 
-    # get those variables from keyvault if keyvault URL is set, otherwise get from environment:
-    KEYVAULT_HEALTH: str = get_variable("KEYVAULT_HEALTH")
-    # TEST_SECRET1: str = get_variable("TEST_SECRET1")
-    # TEST_SECRET2: str = get_variable("TEST_SECRET2")
-    # print(f"test_secret: {TEST_SECRET2}")
+    # Redis configuration:
+    REDIS_HOST: str = os.getenv("REDIS_HOST")
+    REDIS_PORT: int = int(os.getenv("REDIS_PORT"))
+    # print("=== REDIS_PORT ===")
+    # print(REDIS_PORT)
+    # print("=== get_variable('REDIS_REDIS_JWKS_DB') ===")
+    # print(get_variable("REDIS_JWKS_DB"))
+    REDIS_JWKS_DB: int = int(get_variable("REDIS_JWKS_DB"))
+    REDIS_PASSWORD: str = get_variable("REDIS_PASSWORD")
 
-    # not in keyvault yet:
-    # REDIS_HOST: str = get_variable("REDIS_HOST")
-    # REDIS_PORT: int = get_variable("REDIS_PORT")
 
-    # MONGODB_HOST: str = get_variable("MONGODB_HOST")
-    # MONGODB_PORT: int = get_variable("MONGODB_PORT")
+def update_config(tries=0):
+    """Updates the configuration instance waits 5 seconds and retries 10 times if necessary."""
+    logger.info("Updating configuration")
+    try:
+        return Config()
+    except Exception as err:
+        tries += 1
+        if tries < 10:
+            logger.info(
+                f"📄 Try {tries} failed to update configuration, retrying in 5 seconds."
+            )
+            sleep(5)
+            return update_config(tries)
+        else:
+            logger.error(f"📄 Failed to update configuration after {tries} tries.")
+            raise err
 
 
 @lru_cache(maxsize=None)
@@ -100,7 +137,8 @@ def get_config():
     logger.info("Configuration called")
     # configuration = Config()
     # print(f"POSTGRES_DB: {configuration.POSTGRES_DB}")
-    return Config()
+    # return Config()
+    return update_config()
 
 
 config = get_config()

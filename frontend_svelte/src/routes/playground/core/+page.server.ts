@@ -1,18 +1,10 @@
-import { app_config } from '$lib/server/config';
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import AppConfig from '$lib/server/config';
 
-// TBD: add type PageServerLoad here?
-// export const load = async ( {fetch, session, context } ) => {
-	// const host = context.host;
+const appConfig = await AppConfig.getInstance();
+
 export const load: PageServerLoad = async ( { url } ) => {
-	const configuration =  await app_config()
-	console.log( configuration.app_reg_client_id );
-	
-	// console.log( url );// URL is needed to generate the redirect URL!
-	if (configuration === null) {
-		return error(404, 'Unavailable');
-	}
-
-	return { config: configuration, url: url.toString() };
+	const response = await fetch(`${appConfig.backend_origin}/api/v1/core/health`);
+	const configuration = await response.json();
+	return { body: { keyvaultHealthBackend: configuration, urlServer: url.href} };
 };

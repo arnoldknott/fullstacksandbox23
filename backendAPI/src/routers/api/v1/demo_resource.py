@@ -1,9 +1,17 @@
 import logging
 from typing import Annotated, List
+from uuid import UUID
 
-from crud.category import CategoryCRUD
+from fastapi import APIRouter, Depends, Query
+
+from core.security import (
+    Guards,
+    get_access_token_payload,
+    optional_get_access_token_payload,
+)
+from core.types import GuardTypes
 from crud.demo_resource import DemoResourceCRUD
-from fastapi import APIRouter, HTTPException, Query
+from crud.tag import TagCRUD
 from models.demo_resource import (
     DemoResource,
     DemoResourceCreate,
@@ -11,113 +19,126 @@ from models.demo_resource import (
     DemoResourceUpdate,
 )
 
+from .base import BaseView
+
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.post("/", status_code=201)  # change to 201 - this is just to try the tests!
-async def post_demo_resource(
+demo_resource_view = BaseView(DemoResourceCRUD, DemoResource)
+
+
+# Post requires a user!
+@router.post("/", status_code=201)
+async def post_category(
     demo_resource: DemoResourceCreate,
-) -> DemoResource:
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> DemoResourceRead:
     """Creates a new demo resource."""
-    logger.info("POST demo resource")
-    print("=== demo_resource.category_id ===")
-    print(demo_resource.category_id)
-    if demo_resource.category_id:
-        async with CategoryCRUD() as crud:
-            await crud.read_by_id(demo_resource.category_id)
-    async with DemoResourceCRUD() as crud:
-        created_demo_resource = await crud.create(demo_resource)
-    return created_demo_resource
-    # crud = DemoResourceCRUD()
-    # created_demo_resource = await crud.create(demo_resource)
-    # return created_demo_resource
+    return await demo_resource_view.post(demo_resource, token_payload, guards)
 
 
-@router.get("/")
-async def get_all_demo_resources() -> List[DemoResource]:
-    """Returns all demo resource."""
-    logger.info("GET all demo resource")
-    async with DemoResourceCRUD() as crud:
-        response = await crud.read_all()
-    # crud = DemoResourceCRUD()
-    # response = await crud.read_all()
-    return response
+# The get functions are totally public
+# TBD: still a policy is needed for the fine grained access control to make the resource public!
+# The default create only grants "own" access to the user, how creates it!
+@router.get("/", status_code=200)
+async def get_all_demo_resources(
+    # token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(optional_get_access_token_payload),
+) -> list[DemoResourceRead]:
+    """Returns all demo resources resources."""
+    return await demo_resource_view.get(token_payload)
 
 
-@router.get("/{resource_id}")
-async def get_demo_resource_by_id(resource_id: str) -> DemoResourceRead:
-    """Returns a demo resource."""
-    logger.info("GET demo resource")
-    # crud = DemoResourceCRUD()
-    try:
-        resource_id = int(resource_id)
-    except ValueError:
-        logger.error("Resource ID is not an integer")
-        raise HTTPException(status_code=400, detail="Invalid resource id")
-    async with DemoResourceCRUD() as crud:
-        response = await crud.read_by_id_with_childs(resource_id)
-    return response
+@router.get("/{demo_resource_id}", status_code=200)
+async def get_demo_resource_by_id(
+    demo_resource_id: UUID,
+    # note: optional allows public access to those resources
+    # where a public access policy is set
+    # Fine grained access control handles this in the CRUD.
+    token_payload=Depends(optional_get_access_token_payload),
+) -> DemoResourceRead:
+    """Returns a demo resource by id."""
+    return await demo_resource_view.get_by_id(demo_resource_id, token_payload)
 
 
-@router.put("/{resource_id}")
-async def update_demo_resource(
-    resource_id: str,
+@router.put("/{demo_resource_id}", status_code=200)
+async def put_category(
+    demo_resource_id: UUID,
     demo_resource: DemoResourceUpdate,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResource:
-    """Updates a demo resource."""
-    logger.info("PUT demo resource")
-    # print("=== demo_resource ===")
-    # print(demo_resource)
-    # crud = DemoResourceCRUD()
-    try:
-        resource_id = int(resource_id)
-    except ValueError:
-        logger.error("Resource ID is not an integer")
-        raise HTTPException(status_code=400, detail="Invalid resource id")
-    async with DemoResourceCRUD() as crud:
-        old_resource = await crud.read_by_id(resource_id)
-        updated_resource = await crud.update(old_resource, demo_resource)
-    return updated_resource
+    """Updates a category."""
+    return await demo_resource_view.put(
+        demo_resource_id, demo_resource, token_payload, guards
+    )
 
 
-@router.delete("/{resource_id}")
-async def delete_demo_resource(resource_id: str) -> DemoResource:
-    """Deletes a demo resource."""
-    logger.info("DELETE demo resource")
-    # crud = DemoResourceCRUD()
-    try:
-        resource_id = int(resource_id)
-    except ValueError:
-        logger.error("Resource ID is not an integer")
-        raise HTTPException(status_code=400, detail="Invalid resource id")
-    async with DemoResourceCRUD() as crud:
-        result = await crud.delete(resource_id)
-    # print("=== result ===")
-    # print(result)
-    return result
+@router.delete("/{demo_resource_id}", status_code=200)
+async def delete_demo_resource(
+    demo_resource_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:  # DemoResource:
+    """Deletes a protected resource."""
+    return await demo_resource_view.delete(demo_resource_id, token_payload, guards)
 
 
 @router.post("/{resource_id}/tag/")
 async def add_tag_to_demo_resource(
-    resource_id: str,
-    tag_ids: Annotated[
-        List[int], Query()
-    ],  # TBD: move the arguments from Query to json!
+    resource_id: UUID,
+    tag_ids: Annotated[List[UUID], Query()],
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResourceRead:
     """Adds a tag to a demo resource."""
-    logger.info("POST demo resource")
-    try:
-        resource_id = int(resource_id)
-    except ValueError:
-        logger.error("Resource ID is not an integer")
-        raise HTTPException(status_code=400, detail="Invalid resource id")
-    # sShould not be necessary, as FastAPI should do this automatically
-    # try:
-    #     tag_ids = int(tag_id)
-    # except ValueError:
-    #     logger.error("Tag ID is not an integer")
-    #     raise HTTPException(status_code=400, detail="Invalid tag id")
-    async with DemoResourceCRUD() as crud:
-        result = await crud.add_tag(resource_id, tag_ids)
-    return result
+    # token = CurrentAccessToken(token_payload)
+    # current_user = await token.provides_current_user()
+    current_user = await demo_resource_view._check_token_against_guards(
+        token_payload, guards
+    )
+    print("=== resource_id ===")
+    print(resource_id)
+    async with TagCRUD() as crud:
+        for tag_id in tag_ids:
+            print("=== tag_id ===")
+            print(tag_id)
+            await crud.add_child_to_parent(
+                parent_id=resource_id,
+                child_id=tag_id,
+                current_user=current_user,
+                inherit=True,
+            )
+    async with demo_resource_view.crud() as crud:
+        return await crud.read_by_id(resource_id, current_user)
+        # return await crud.add_tag(resource_id, tag_ids)
+
+
+@router.get("/category/{category_id}")
+async def get_all_in_category(
+    category_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[DemoResource]:
+    """Gets all demo resources that belong to specific category."""
+    current_user = await demo_resource_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with demo_resource_view.crud() as crud:
+        return await crud.read_by_category_id(current_user, category_id)
+
+
+@router.get("/tag/{tag_id}")
+async def get_all_with_tag(
+    tag_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[DemoResourceRead]:
+    """Gets all demo resources that belong to specific tag."""
+    current_user = await demo_resource_view._check_token_against_guards(
+        token_payload, guards
+    )
+    async with demo_resource_view.crud() as crud:
+        return await crud.read_by_tag_id(current_user, tag_id)

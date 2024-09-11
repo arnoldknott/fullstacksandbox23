@@ -2,6 +2,11 @@ import asyncio
 from logging.config import fileConfig
 
 from alembic import context
+from sqlalchemy import pool
+from sqlalchemy.engine import Connection
+from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlmodel import SQLModel
+
 from core.config import config as app_config
 
 # from models.demo_resource import DemoResource  # noqa: F401 'autogenerate' support
@@ -9,10 +14,6 @@ from core.config import config as app_config
 # to keep a conscious overview of what is migrated
 # to the database.
 from models import *  # noqa: F401, F403 'autogenerate' support
-from sqlalchemy import pool
-from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
-from sqlmodel import SQLModel
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
