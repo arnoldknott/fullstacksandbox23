@@ -1,11 +1,11 @@
 # fmt: off
 # ruff: noqa
 # isort:skip_file
-""""7131c284f474c4bdb410b390c35af728e2996b33"
+"""""
 
-Revision ID: ac50dcb27b5b
-Revises: a127d6490978
-Create Date: 2024-09-09 15:47:05.748422+02:00
+Revision ID: 3fa4ef096aa5
+Revises: dfac770f790f
+Create Date: 2024-09-13 10:12:27.575851+02:00
 
 """
 from typing import Sequence, Union
@@ -16,8 +16,8 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'ac50dcb27b5b'
-down_revision: Union[str, None] = 'a127d6490978'
+revision: str = '3fa4ef096aa5'
+down_revision: Union[str, None] = 'dfac770f790f'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

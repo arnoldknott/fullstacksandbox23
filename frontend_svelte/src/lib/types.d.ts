@@ -22,7 +22,7 @@ export type User = {
 // };
 
 export type Session = {
-	account: AccountInfo;
+	userProfile: AccountInfo;
 	userAgent: string;
 	loggedIn: boolean;
 }
