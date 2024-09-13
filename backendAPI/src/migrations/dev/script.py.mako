@@ -1,5 +1,6 @@
 # fmt: off
 # ruff: noqa
+# isort:skip_file
 """${message}
 
 Revision ID: ${up_revision}
