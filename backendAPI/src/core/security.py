@@ -145,19 +145,22 @@ async def get_azure_token_payload(request: Request) -> Optional[dict]:
 
 
 # TBD: implement tests for this:
+# Or: consider removing this step:
+# are public access policies are implementing the same desired behavior - just more fine grained?
 async def optional_get_access_token_payload(
     payload=Depends(get_azure_token_payload),
 ) -> Optional[dict]:
     """General function to get the access token payload optionally"""
     # can later be used for customizing different identity service providers
-    return payload
-    # try:
-    #     return await get_azure_token_payload(request)
-    # except HTTPException as err:
-    #     if err.status_code == 401:
-    #         return None
-    #     else:
-    #         raise err
+    # return payload
+    try:
+        # return await get_azure_token_payload(request)
+        return payload
+    except HTTPException as err:
+        if err.status_code == 401:
+            return None
+        else:
+            raise err
 
 
 async def get_access_token_payload(

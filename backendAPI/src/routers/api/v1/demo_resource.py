@@ -30,7 +30,7 @@ demo_resource_view = BaseView(DemoResourceCRUD, DemoResource)
 
 # Post requires a user!
 @router.post("/", status_code=201)
-async def post_category(
+async def post_demo_resource(
     demo_resource: DemoResourceCreate,
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
