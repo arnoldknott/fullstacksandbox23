@@ -30,22 +30,23 @@ services:
         networks:
             - dev_network
 
-    pgadmin:
-        image: dpage/pgadmin4:8.3
-        depends_on:
-            - postgres
-        env_file:
-            - ./backendAPI/src/.env
-        environment:
-            - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
-            - MASTER_PASSWORD_REQUIRED=False
-        ports:
-            - "5555:80"
-        volumes:
-            - dev-pgadmin-data:/var/lib/pgadmin
-        restart: unless-stopped
-        networks:
-            - dev_network
+    # Mainly replaced by pgadmin app - reinstate if changing from app to containerization for pgadmin:
+    # pgadmin:
+    #     image: dpage/pgadmin4:8.3
+    #     depends_on:
+    #         - postgres
+    #     env_file:
+    #         - ./backendAPI/src/.env
+    #     environment:
+    #         - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
+    #         - MASTER_PASSWORD_REQUIRED=False
+    #     ports:
+    #         - "5555:80"
+    #     volumes:
+    #         - dev-pgadmin-data:/var/lib/pgadmin
+    #     restart: unless-stopped
+    #     networks:
+    #         - dev_network
 
     # TBD: add .diockerignore to frontend_svelte
     frontend_svelte:

@@ -1,0 +1,26 @@
+name: Infrastructure
+
+on:
+  push:
+    paths:
+      - 'infrastrucutre/**'
+      - '.github/workflows/infrastructure.yml'
+
+jobs:
+  plan:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v1
+      #   with:
+      #     terraform_version: 0.14.7
+
+      # - name: Terraform Init
+      #   run: terraform init
+
+      # - name: Terraform Plan
+      #   run: terraform plan
