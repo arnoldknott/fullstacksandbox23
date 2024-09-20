@@ -21,7 +21,8 @@ on:
       
 env:
   REGISTRY: ghcr.io
-  COMMIT_SHA: ${{ github.event.after }}
+  # COMMIT_SHA: ${{ github.event.after }}
+  COMMIT_SHA: ${{ github.sha }}
 
 jobs:
   test:
