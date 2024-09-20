@@ -17,6 +17,7 @@ on:
       - '.github/workflows/backendAPI.yml'
       - '!infrastrucutre/**'
       - '!.github/workflows/infrastructure.yml'
+# not sure if the above lines work as expected.
 
 
 env:
