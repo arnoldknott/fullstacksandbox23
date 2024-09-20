@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows: [Infrastructure]
-    # types: completed
-    # branches:
-    #   - dev
-    #   - stage
-    #   - main
+    types: completed
+    branches:
+      - dev
+      - stage
+      - main
   push:
     paths:
       - 'frontend_svelte/**'
