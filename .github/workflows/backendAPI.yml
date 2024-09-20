@@ -15,10 +15,6 @@ on:
     paths:
       - 'backendAPI/**'
       - '.github/workflows/backendAPI.yml'
-    paths-ignore:
-      - 'infrastructure/**'
-      - '.github/workflows/infrastructure.yml'
-# not sure if the above lines work as expected.
 
 
 env:
