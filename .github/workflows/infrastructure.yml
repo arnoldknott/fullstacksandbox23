@@ -2,6 +2,10 @@ name: Infrastructure
 
 on:
   push:
+    branches:
+      - dev
+      - stage
+      - main
     paths:
       - 'infrastrucutre/**'
       - '.github/workflows/infrastructure.yml'
@@ -25,10 +29,12 @@ jobs:
       # - name: Terraform Plan
       #   run: terraform plan
 
-  backend:
-    needs: plan_and_apply
-    uses: ./.github/workflows/backendAPI.yml
+  # backend:
+  #   needs: plan_and_apply
+  #   uses: ./.github/workflows/backendAPI.yml
+  #   secrets: inherit
 
-  frontend:
-    needs: plan_and_apply
-    uses: ./.github/workflows/frontend_svelte.yml
+  # frontend:
+  #   needs: plan_and_apply
+  #   uses: ./.github/workflows/frontend_svelte.yml
+  #   secrets: inherit
