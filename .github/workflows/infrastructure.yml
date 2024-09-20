@@ -7,7 +7,7 @@ on:
       - '.github/workflows/infrastructure.yml'
 
 jobs:
-  plan:
+  plan_and_apply:
     runs-on: ubuntu-24.04
 
     steps:
@@ -26,7 +26,9 @@ jobs:
       #   run: terraform plan
 
   run_backend:
+    needs: plan_and_apply
     uses: ./.github/workflows/backendAPI.yml
 
   run_frontend:
+    needs: plan_and_apply
     uses: ./.github/workflows/frontend_svelte.yml
