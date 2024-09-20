@@ -2,10 +2,10 @@ name: Infrastructure
 
 on:
   push:
-    branches:
-      - dev
-      - stage
-      - main
+    # branches:
+    #   - dev
+    #   - stage
+    #   - main
     paths:
       - 'infrastructure/**'
       - '.github/workflows/infrastructure.yml'

@@ -4,16 +4,18 @@ on:
   workflow_dispatch:
   # workflow_call:
   workflow_run:
-    workflows: [Infrastructure]
-    types: [completed]
-    branches:
-      - dev
-      - stage
-      - main
+    workflows: Infrastructure
+    types: completed
+    # branches:
+    #   - dev
+    #   - stage
+    #   - main
   push:
     paths:
       - 'frontend_svelte/**'
       - '.github/workflows/frontend_svelte.yml'
+      - '!infrastructure/**'
+      - '!.github/workflows/infrastructure.yml'
   # pull_request:
   #   paths:
   #     - 'frontend/**'
