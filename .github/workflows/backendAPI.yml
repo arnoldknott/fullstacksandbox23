@@ -19,7 +19,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  COMMIT_SHA: ${{ github.event.after }}
+  # COMMIT_SHA: ${{ github.event.after }}
+  COMMIT_SHA: ${{ github.sha }}
   FILESHARE_APPDATA_MIGRATIONS_PATH: migrations/stage_prod
 
 jobs:
