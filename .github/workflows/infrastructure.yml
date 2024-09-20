@@ -27,6 +27,8 @@ jobs:
       #   run: terraform init
 
       # remember to terraform workspace select [dev, stage, prod] depending on the branch [dev, stage, main]
+      # - name: Terraform Workspace
+      #   run: terraform workspace select {{ some variable to select workspace }}
 
       # - name: Terraform Plan
       #   run: terraform plan
