@@ -20,7 +20,7 @@ on:
 env:
   REGISTRY: ghcr.io
   COMMIT_SHA: ${{ github.event.after }}
-  # GIT_REF: ${{ github.event.ref }}
+  GIT_REF: ${{ github.event.ref }}
   FILESHARE_APPDATA_MIGRATIONS_PATH: migrations/stage_prod
 
 jobs:
@@ -64,6 +64,8 @@ jobs:
           echo $GITHUB_WORKFLOW_SHA
           echo "=== github.sha ==="
           echo ${{ github.sha }}
+          echo "=== GIT_REF ==="
+          echo $GIT_REF
         # echo "=== REDIS_HOST ==="
         # echo $REDIS_HOST
         # echo "=== REDIS_PORT ==="
