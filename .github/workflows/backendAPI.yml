@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   # workflow_call:
   workflow_run:
-    workflows: ["Infrastructure"]
+    workflows: [Infrastructure]
     # types: 
     #   - completed
     # branches:
@@ -15,8 +15,9 @@ on:
     paths:
       - 'backendAPI/**'
       - '.github/workflows/backendAPI.yml'
-      - '!infrastrucutre/**'
-      - '!.github/workflows/infrastructure.yml'
+    paths-ignore:
+      - 'infrastructure/**'
+      - '.github/workflows/infrastructure.yml'
 # not sure if the above lines work as expected.
 
 
