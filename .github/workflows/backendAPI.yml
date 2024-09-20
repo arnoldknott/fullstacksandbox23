@@ -49,6 +49,8 @@ jobs:
         run: |
           echo "=== Is this the correct tag: github.event.after? ==="
           echo ${{ github.event.after }}
+          echo "=== github.event.ref ==="
+          echo ${{ github.event.ref }}
           echo "=== github.event.pull_request.head.sha ==="
           echo ${{ github.event.pull_request.head.sha }}
           echo "=== github.event.workflow_run.head_sha ==="
