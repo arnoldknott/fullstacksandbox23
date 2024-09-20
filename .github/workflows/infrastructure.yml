@@ -33,6 +33,8 @@ jobs:
       # - name: Terraform Plan
       #   run: terraform plan
 
+# add a line to trigger the backend and frontend workflows
+
   # backend:
   #   needs: plan_and_apply
   #   uses: ./.github/workflows/backendAPI.yml
