@@ -33,8 +33,6 @@ jobs:
       # - name: Terraform Plan
       #   run: terraform plan
 
-# Double modifications - should prevent backend and frontend from running
-
   # backend:
   #   needs: plan_and_apply
   #   uses: ./.github/workflows/backendAPI.yml
