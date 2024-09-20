@@ -2,7 +2,14 @@ name: BackendAPI
 
 on:
   workflow_dispatch:
-  workflow_call:
+  # workflow_call:
+  workflow_run:
+    workflows: ["Infrastructure"]
+    types: [completed]
+    branches:
+      - dev
+      - stage
+      - main
   push:
     paths:
       - 'backendAPI/**'
