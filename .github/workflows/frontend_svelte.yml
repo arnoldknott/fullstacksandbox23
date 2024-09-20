@@ -2,10 +2,9 @@ name: Frontend
 
 on:
   workflow_dispatch:
-  # workflow_call:
   workflow_run:
-    workflows: Infrastructure
-    types: completed
+    workflows: [Infrastructure]
+    # types: completed
     # branches:
     #   - dev
     #   - stage
