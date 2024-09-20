@@ -25,10 +25,10 @@ jobs:
       # - name: Terraform Plan
       #   run: terraform plan
 
-  run_backend:
+  backend:
     needs: plan_and_apply
     uses: ./.github/workflows/backendAPI.yml
 
-  run_frontend:
+  frontend:
     needs: plan_and_apply
     uses: ./.github/workflows/frontend_svelte.yml
