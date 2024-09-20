@@ -5,11 +5,12 @@ on:
   # workflow_call:
   workflow_run:
     workflows: ["Infrastructure"]
-    types: [completed]
+    types: 
+      - completed
     branches:
-      - dev
-      - stage
-      - main
+      - "dev"
+      - "stage"
+      - "main"
   push:
     paths:
       - 'backendAPI/**'
