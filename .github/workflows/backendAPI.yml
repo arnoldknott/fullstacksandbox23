@@ -66,6 +66,8 @@ jobs:
           echo $GITHUB_WORKFLOW_SHA
           echo "=== github.sha ==="
           echo ${{ github.sha }}
+          echo "=== COMMIT_SHA ==="
+          echo $COMMIT_SHA
           echo "=== GIT_REF ==="
           echo $GIT_REF
         # echo "=== REDIS_HOST ==="
