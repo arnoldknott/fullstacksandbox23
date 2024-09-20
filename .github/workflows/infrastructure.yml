@@ -34,8 +34,6 @@ jobs:
       #   run: terraform plan
 
 
-  # OK, let's see if this triggers the frontend workflow now.
-
   # backend:
   #   needs: plan_and_apply
   #   uses: ./.github/workflows/backendAPI.yml
