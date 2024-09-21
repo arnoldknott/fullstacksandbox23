@@ -88,7 +88,7 @@ jobs:
     # if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage' }}
     needs: test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
       contents: read
@@ -131,7 +131,7 @@ jobs:
     needs: containerize
     # if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage' }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
       packages: read
@@ -219,7 +219,7 @@ jobs:
     # as this environmnet requires a manual review:
     # also wait on the pull request from postgres migrations to be merged
     # if check migrations detected changes.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
       packages: read
