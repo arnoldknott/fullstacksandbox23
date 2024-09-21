@@ -166,7 +166,7 @@ jobs:
     # if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage' }}
     needs: test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
       contents: read
@@ -209,7 +209,7 @@ jobs:
     needs: containerize
     # if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage' }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
       packages: read
@@ -303,7 +303,7 @@ jobs:
   # Make sure to persist the changes to mounted volume and commit them to the repo afterwards!
   check_postgres_migrations:
     needs: deploy_stage
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
       # packages: read
@@ -355,7 +355,7 @@ jobs:
   create_postgres_migration_scripts:
     needs: check_postgres_migrations
     if: ${{ needs.check_postgres_migrations.outputs.alembic_check != 0 }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
       contents: write
@@ -461,7 +461,7 @@ jobs:
     # as this environmnet requires a manual review:
     # also wait on the pull request from postgres migrations to be merged
     # if check migrations detected changes.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
       packages: read
