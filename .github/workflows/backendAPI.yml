@@ -177,10 +177,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - name: Check for infrastructure changes
         id: check_for_infrastructure_change
         run: |
-          if git diff --quiet HEAD^ HEAD -- infrastructure .github/workflows/infrastructure.yml; then
+          if git diff HEAD^ HEAD --quiet infrastructure .github/workflows/infrastructure.yml; then
             echo "Infrastructure changes detected."
             echo "infrastructure_changed=TRUE" >> $GITHUB_OUTPUT
           else
