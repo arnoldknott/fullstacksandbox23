@@ -1,5 +1,8 @@
 # Provisions resources for full-stack sandbox 23
 
+## Initializing terraform
+
+## Code formatting
 
 ## Using workspaces
 

@@ -58,6 +58,16 @@ jobs:
           echo ${{ github.event.workflow_run.head_sha }}
           echo "=== github.event.workflow_run.head_branch ==="
           echo ${{ github.event.workflow_run.head_branch }}
+          echo "=== github.event.workflow_run.name ==="
+          echo ${{ github.event.workflow_run.name }}
+          echo "=== github.event.workflow_run.referenced_workflows ==="
+          echo ${{ github.event.workflow_run.referenced_workflows }}
+          echo "=== github.event.workflow_run.referenced_workflows.path ==="
+          echo ${{ github.event.workflow_run.referenced_workflows.path }}
+          echo "=== github.event.workflow_run.referenced_workflows.ref ==="
+          echo ${{ github.event.workflow_run.referenced_workflows.ref }}
+          echo "=== github.event.workflow_run.referenced_workflows.sha ==="
+          echo ${{ github.event.workflow_run.referenced_workflows.sha }}
           echo "=== github.event.workflow_run ==="
           echo ${{ github.event.workflow_run }}
           echo "=== GITHUB_SHA ==="
@@ -170,7 +180,7 @@ jobs:
       - name: Check for infrastructure changes
         id: check_for_infrastructure_change
         run: |
-          if git diff --quiet HEAD^ HEAD infrastructure .github/workflows/infrastructure.yml; then
+          if git diff --quiet HEAD^ HEAD -- infrastructure .github/workflows/infrastructure.yml; then
             echo "Infrastructure changes detected."
             echo "infrastructure_changed=TRUE" >> $GITHUB_OUTPUT
           else
@@ -184,7 +194,7 @@ jobs:
     # if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
     # only run on stage and main branch
     # only run if no infrastructure changes were detected, but do run, if the workflow was triggered by a workflow_run event (then the github.event.workflow_run.head_sha is not null)
-    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage' }} && ${{ needs.check_for_infrastructure_change.outputs.infrastructure_changed == 'FALSE' && github.event.workflow_run.head_sha != null }}
+    if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }} && ${{ needs.check_for_infrastructure_change.outputs.infrastructure_changed == 'FALSE' && github.event.workflow_run.head_sha != null }}
     needs: [test, check_for_infrastructure_change]
     runs-on: ubuntu-24.04
     permissions:
