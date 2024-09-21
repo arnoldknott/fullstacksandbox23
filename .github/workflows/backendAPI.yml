@@ -184,12 +184,14 @@ jobs:
         # replace --exit-code with --quite when it works!
         run: |
           if git diff --exit-code HEAD^ HEAD -- infrastructure/ .github/workflows/infrastructure.yml; then
-            echo "Infrastructure changes detected."
-            echo "infrastructure_changed=TRUE" >> $GITHUB_OUTPUT
-          else
             echo "No infrastructure changes detected."
             echo "infrastructure_changed=FALSE" >> $GITHUB_OUTPUT
+          else
+            echo "Infrastructure changes detected."
+            echo "infrastructure_changed=TRUE" >> $GITHUB_OUTPUT
           fi
+          echo "=== Contents of $GITHUB_OUTPUT ==="
+          cat $GITHUB_OUTPUT
     outputs:
       infrastructure_changed: ${{ steps.check_for_infrastructure_change.outputs.infrastructure_changed }}
 
