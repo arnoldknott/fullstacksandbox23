@@ -1,8 +1,10 @@
 # Provisions resources for full-stack sandbox 23
 
+
 ## Using workspaces
 
 ```bash
+terraform workspace select dev
 terraform workspace select stage
 terraform workspace select prod
 ```
