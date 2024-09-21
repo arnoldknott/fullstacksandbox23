@@ -160,6 +160,26 @@ jobs:
         #   run --rm backend_api \
         #   sh -c "pytest -v"
 
+  check_for_infrastructure_change:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check for infrastructure changes
+        id: check_for_infrastructure_change
+        run: |
+          if git diff --quiet HEAD^ HEAD -- infrastructure; then
+            echo "No infrastructure changes detected."
+            echo "infrastructure_changed=FALSE" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            echo "Infrastructure changes detected."
+            echo "infrastructure_changed=TRUE" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+    outputs:
+      infrastructure_changed: ${{ steps.check_for_infrastructure_change.outputs.infrastructure_changed }}
+
   containerize:
     # if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage' }}
