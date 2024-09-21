@@ -13,8 +13,6 @@ on:
     paths:
       - 'backendAPI/**'
       - '.github/workflows/backendAPI.yml'
-      - '!infrastructure/**'
-      - '!.github/workflows/infrastructure.yml'
 
 
 env:

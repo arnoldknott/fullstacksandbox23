@@ -13,8 +13,6 @@ on:
     paths:
       - 'frontend_svelte/**'
       - '.github/workflows/frontend_svelte.yml'
-      - '!infrastructure/**'
-      - '!.github/workflows/infrastructure.yml'
   # pull_request:
   #   paths:
   #     - 'frontend/**'
