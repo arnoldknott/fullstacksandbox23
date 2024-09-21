@@ -2,7 +2,11 @@
 
 ## Initializing terraform
 
-## Code formatting
+## Code formatting - run before committing!
+
+```bash
+terraform fmt
+```
 
 ## Using workspaces
 

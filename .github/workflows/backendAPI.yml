@@ -181,8 +181,9 @@ jobs:
           fetch-depth: 2
       - name: Check for infrastructure changes
         id: check_for_infrastructure_change
+        # replace --exit-code with --quite when it works!
         run: |
-          if git diff HEAD^ HEAD --quiet infrastructure .github/workflows/infrastructure.yml; then
+          if git diff --exit-code HEAD^ HEAD -- infrastructure/ .github/workflows/infrastructure.yml; then
             echo "Infrastructure changes detected."
             echo "infrastructure_changed=TRUE" >> $GITHUB_OUTPUT
           else
