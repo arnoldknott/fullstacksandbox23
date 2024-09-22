@@ -1,5 +1,14 @@
 # Provisions resources for full-stack sandbox 23
 
+## Initializing terraform
+
+Add initialization command of terraform here!
+
+## Code formatting - run before committing!
+
+```bash
+terraform fmt
+```
 
 ## Using workspaces
 
