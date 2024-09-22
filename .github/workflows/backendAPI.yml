@@ -60,6 +60,8 @@ jobs:
           echo ${{ github.event.workflow_run.head_branch }}
           echo "=== github.event.workflow_run.name ==="
           echo ${{ github.event.workflow_run.name }}
+          echo "=== github.event.workflow_run.path ==="
+          echo ${{ github.event.workflow_run.path }}
           echo "=== github.event.workflow_run.referenced_workflows ==="
           echo ${{ github.event.workflow_run.referenced_workflows }}
           echo "=== github.event.workflow_run.referenced_workflows.path ==="
@@ -68,6 +70,10 @@ jobs:
           echo ${{ github.event.workflow_run.referenced_workflows.ref }}
           echo "=== github.event.workflow_run.referenced_workflows.sha ==="
           echo ${{ github.event.workflow_run.referenced_workflows.sha }}
+          echo "=== github.event.workflow_run.workflow.name ==="
+          echo ${{ github.event.workflow_run.workflow.name }}
+          echo "=== github.event.workflow_run.workflow.path ==="
+          echo ${{ github.event.workflow_run.workflow.path }}
           echo "=== github.event.workflow_run ==="
           echo ${{ github.event.workflow_run }}
           echo "=== GITHUB_SHA ==="
