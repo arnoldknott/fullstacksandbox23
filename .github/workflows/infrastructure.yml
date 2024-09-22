@@ -33,6 +33,14 @@ jobs:
       # - name: Terraform Plan
       #   run: terraform plan
 
+      # - name: Terraform Apply
+      #   run: terraform apply -auto-approve
+
+      # - name: Terraform Output
+      #   run: terraform output
+
+      # remmeber to write the relevant terraform files into the infrastructure folder via commit!
+
   # backend:
   #   needs: plan_and_apply
   #   uses: ./.github/workflows/backendAPI.yml
