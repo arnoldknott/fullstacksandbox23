@@ -7,25 +7,25 @@ Add initialization command of terraform here!
 ## Code formatting - run before committing!
 
 ```bash
-terraform fmt
+tofu fmt
 ```
 
 ## Using workspaces
 
 ```bash
-terraform workspace select dev
-terraform workspace select stage
-terraform workspace select prod
+tofu workspace select dev
+tofu workspace select stage
+tofu workspace select prod
 ```
 
 ## Generating the plan file
 
 ```bash
-terraform plan <environment>.tfplan
+tofu plan <environment>.tfplan
 ```
 
 ## Applying the plan file
 
 ```bash
-terraform apply --auto-approve <environment>.tfplan
+tofu apply --auto-approve <environment>.tfplan
 ```
