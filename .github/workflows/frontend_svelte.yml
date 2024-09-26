@@ -240,7 +240,7 @@ jobs:
   deploy_prod:
     needs: [ deploy_stage ]
     # if: ${{ github.event.ref  == 'refs/heads/main' }}
-    if: ${{ github.ref  == 'refs/heads/main' }}
+    if: ${{ github.event.ref  == 'refs/heads/main' || github.event.workflow_run.head_branch == 'main' }}
     # as this environmnet requires a manual review:
     # also wait on the pull request from postgres migrations to be merged
     # if check migrations detected changes.
