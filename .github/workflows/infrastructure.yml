@@ -18,28 +18,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # - name: Setup Terraform
-      #   uses: hashicorp/setup-terraform@v3
+      # - name: Setup OpenTofu
+      #   uses: opentofu/setup-opentofu@v1
       #   with:
-      #     terraform_version: 1.9.5
+      #     tofu_version: 1.8.2
 
-      # - name: Terraform Init
-      #   run: terraform init
+      # - name: OpenTofu Init
+      #   run: tofu init
 
-      # remember to terraform workspace select [dev, stage, prod] depending on the branch [dev, stage, main]
-      # - name: Terraform Workspace
-      #   run: terraform workspace select {{ some variable to select workspace }}
+      # remember to tofu workspace select [dev, stage, prod] depending on the branch [dev, stage, main]
+      # - name: OpenTofu Workspace
+      #   run: tofu workspace select {{ some variable to select workspace }}
 
-      # - name: Terraform Plan
-      #   run: terraform plan
+      # - name: OpenTofu Plan
+      #   run: tofu plan
 
-      # - name: Terraform Apply
-      #   run: terraform apply -auto-approve
+      # - name: OpenTofu Apply
+      #   run: tofu apply -auto-approve
 
-      # - name: Terraform Output
-      #   run: terraform output
+      # - name: OpenTofu Output
+      #   run: tofu output
 
-      # remmeber to write the relevant terraform files into the infrastructure folder via commit!
+      # remmeber to write the relevant tofu files into the infrastructure folder via commit!
 
   # backend:
   #   needs: plan_and_apply
