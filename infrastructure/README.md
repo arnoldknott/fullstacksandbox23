@@ -1,5 +1,7 @@
 # Provisions resources for full-stack sandbox 23
 
+Run outside ci-pipeline and make it a manual trigger to proceed, after the outside-ci-run was successful.
+
 ## Initializing terraform
 
 Add initialization command of terraform here!

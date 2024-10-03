@@ -1,0 +1,15 @@
+services:
+  tofu:
+    build: .
+    environment:
+      - TEST_VARIABLE=${TEST_VARIABLE}
+    # command: ["/bin/sh", "-c", "echo $TEST_VARIABLE && /bin/bash"]
+    # command: ["workspace", "--help", "\\", "echo", "TEST_VARIABLE"]
+    # entrypoint: ["echo", "$TEST_VARIABLE"]
+    # entrypoint: ["/bin/sh", "-c", "echo $TEST_VARIABLE && /bin/bash"]
+    # entrypoint: ["/bin/sh", "-c", "/bin/bash"]
+    # stdin_open: true
+    # tty: true
+    # get into the container for debugging:
+    # docker run --rm -it --entrypoint /bin/sh ghcr.io/opentofu/opentofu:1.8.2
+    # docker run --rm -it --entrypoint /bin/sh infrastructure-opentofu
