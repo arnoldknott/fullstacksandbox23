@@ -15,8 +15,11 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      # Remove Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # one step here only - just for manual trigger of the protection rule. Once infrastructure is ready, the manual approval of protection rule will trigger the next steps including the backend and frontend deployment
 
       # - name: Setup OpenTofu
       #   uses: opentofu/setup-opentofu@v1
