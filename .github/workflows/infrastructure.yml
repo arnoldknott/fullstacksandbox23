@@ -30,8 +30,6 @@ jobs:
 
       - name: Run tofu version
         run: |
-          pwd
-          ls -la
           cd infrastructure/scripts
           ./version.sh tofu version
 
@@ -43,7 +41,8 @@ jobs:
       - name: Formating infrastructure files with tofu fmt
         run: |
           cd infrastructure/scripts
-          ./fmt.sh
+          ls -la
+          ./format.sh
       # if the formatting fails, the pipeline will fail and the developer will have to fix the formatting issues before the pipeline can pass
       
 

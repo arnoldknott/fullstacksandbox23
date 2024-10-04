@@ -38,6 +38,9 @@ else
     exit 1
 fi
 
+echo "=== Tofu Fmt ==="
+# docker compose run --rm tofu fmt
+
 echo "=== Tofu Init ==="
 ./init.sh --my-variable=123
 
