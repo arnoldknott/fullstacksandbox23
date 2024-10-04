@@ -1,4 +1,4 @@
-#!/bash/bin
+#!/bin/bash
 
 echo "=== Running: ==="
 echo "=== tofu - fmt ==="
