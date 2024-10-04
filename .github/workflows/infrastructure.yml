@@ -13,7 +13,7 @@ on:
 jobs:
   plan_and_apply:
     runs-on: ubuntu-24.04
-
+    environment: infrastructure
     steps:
       # Remove Checkout repository
       - name: Checkout repository
@@ -28,15 +28,13 @@ jobs:
           docker compose build
           cd scripts
 
-      - name: Run tofu version
+      # Delete this later after developed workflow:
+      - name: Run tofu version and help
         run: |
           cd infrastructure/scripts
           ./version.sh tofu version
-
-      - name: Run tofu help
-        run: |
-          cd infrastructure/scripts
-          ./help.sh
+          echo ""
+          ./help.sh tofu help
 
       - name: Formating infrastructure files with tofu fmt
         run: |
