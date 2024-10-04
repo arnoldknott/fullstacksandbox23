@@ -20,6 +20,24 @@ jobs:
         uses: actions/checkout@v4
 
       # one step here only - just for manual trigger of the protection rule. Once infrastructure is ready, the manual approval of protection rule will trigger the next steps including the backend and frontend deployment
+      # nope - let's do that for real!!!
+
+      - name: Build infrastructure image
+        run: |
+          cd infrastructure
+          docker compose build
+          cd scripts
+
+      - name: Run tofu version
+        run: ./version.sh tofu version
+
+      - name: Run tofu help
+        run: ./help.sh
+
+      - name: Formating infrastructure files with tofu fmt
+        run: ./fmt.sh
+      # if the formatting fails, the pipeline will fail and the developer will have to fix the formatting issues before the pipeline can pass
+      
 
       # - name: Setup OpenTofu
       #   uses: opentofu/setup-opentofu@v1
