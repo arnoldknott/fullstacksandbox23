@@ -27,4 +27,4 @@ COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.overri
 # TBD: add terraform fmt here
 cd infrastructure
 # COMPOSE_PROJECT_NAME=test-fssb23 docker compose run --rm tofu fmt
-# TBD: call the terraform fmt script here
+# TBD: call the infrastructure fmt script here

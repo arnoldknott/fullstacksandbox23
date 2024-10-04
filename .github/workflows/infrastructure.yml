@@ -29,13 +29,21 @@ jobs:
           cd scripts
 
       - name: Run tofu version
-        run: ./version.sh tofu version
+        run: |
+          pwd
+          ls -la
+          cd infrastructure/scripts
+          ./version.sh tofu version
 
       - name: Run tofu help
-        run: ./help.sh
+        run: |
+          cd infrastructure/scripts
+          ./help.sh
 
       - name: Formating infrastructure files with tofu fmt
-        run: ./fmt.sh
+        run: |
+          cd infrastructure/scripts
+          ./fmt.sh
       # if the formatting fails, the pipeline will fail and the developer will have to fix the formatting issues before the pipeline can pass
       
 
