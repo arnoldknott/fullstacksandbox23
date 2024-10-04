@@ -14,6 +14,8 @@ jobs:
   plan_and_apply:
     runs-on: ubuntu-24.04
     environment: infrastructure
+    env:
+      TEST_VARIABLE: ${{ vars.TEST_VARIABLE }}
     steps:
       # Remove Checkout repository
       - name: Checkout repository
