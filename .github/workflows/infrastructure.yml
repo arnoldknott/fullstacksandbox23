@@ -45,6 +45,10 @@ jobs:
           ./format.sh
       # if the formatting fails, the pipeline will fail and the developer will have to fix the formatting issues before the pipeline can pass
       
+      - name: Run tofu init
+        run: |
+          cd infrastructure/scripts
+          ./init.sh --my.variable=abc --my.other.variable=def --my.third.variable=ghi
 
       # - name: Setup OpenTofu
       #   uses: opentofu/setup-opentofu@v1

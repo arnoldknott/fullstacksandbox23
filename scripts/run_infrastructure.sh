@@ -6,10 +6,10 @@ BRANCH_NAME=$(git branch --show-current)
 cd $REPO_ROOT_DIR/infrastructure
 
 
-docker compose build
+docker compose build --name opentofu
 # docker compose up
 
-docker compose down --remove-orphans
+# docker compose down --remove-orphans
 
 cd scripts
 
@@ -43,7 +43,12 @@ echo ""
 # docker compose run --rm tofu fmt
 
 echo ""
-./init.sh --my-variable=123
+./init.sh \
+    --my-variable=123 \
+    --my-variable2=456 \
+    --my-variable3=789
 echo ""
+
+docker compose down --remove-orphans
 
 # docker compose run --rm tofu --version > tofu_version.txt
