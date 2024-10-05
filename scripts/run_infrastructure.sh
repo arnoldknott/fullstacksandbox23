@@ -6,7 +6,7 @@ BRANCH_NAME=$(git branch --show-current)
 cd $REPO_ROOT_DIR/infrastructure
 
 
-docker compose build --name opentofu
+docker compose build
 # docker compose up
 
 # docker compose down --remove-orphans
