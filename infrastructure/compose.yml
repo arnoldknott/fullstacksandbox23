@@ -1,8 +1,26 @@
 services:
   tofu:
     build: .
-    environment:
-      - TEST_VARIABLE=${TEST_VARIABLE}
+    # build: 
+    #   context: .
+    #   args:
+    #     - AZ_STORAGE_ACCOUNT_NAME=test
+        #${AZ_STORAGE_ACCOUNT_NAME}
+    # entrypoint: /bin/bash -c #tail -f /dev/null
+    env_file: .env
+    # ports:
+    #   - "443:443"
+    # environment:
+    #   - AZ_RESOURCE_GROUP_NAME=${AZ_RESOURCE_GROUP_NAME}
+    #   - AZ_STORAGE_ACCOUNT_NAME=${AZ_STORAGE_ACCOUNT_NAME}
+    #   - AZ_CONTAINER_PREFIX=${AZ_CONTAINER_PREFIX}
+    #   - AZ_BACKEND_STATE_KEY=${AZ_BACKEND_STATE_KEY}
+    #   - ARM_CLIENT_ID=${ARM_CLIENT_ID}
+    #   - ARM_CLIENT_SECRET=${ARM_CLIENT_SECRET}
+    #   - ARM_SUBSCRIPTION_ID=${ARM_SUBSCRIPTION_ID}
+    #   - ARM_TENANT_ID=${ARM_TENANT_ID}
+    #   - ARM_USE_AZUREAD=true
+
     # command: ["/bin/sh", "-c", "echo $TEST_VARIABLE && /bin/bash"]
     # command: ["workspace", "--help", "\\", "echo", "TEST_VARIABLE"]
     # entrypoint: ["echo", "$TEST_VARIABLE"]

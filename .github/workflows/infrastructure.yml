@@ -15,40 +15,95 @@ jobs:
     runs-on: ubuntu-24.04
     environment: infrastructure
     env:
-      TEST_VARIABLE: ${{ vars.TEST_VARIABLE }}
+      # Configuration of backend for infrastructure state:
+      AZ_RESOURCE_GROUP_NAME: ${{ vars.AZ_RESOURCE_GROUP_NAME }}
+      AZ_STORAGE_ACCOUNT_NAME: ${{ vars.AZ_STORAGE_ACCOUNT_NAME }}
+      AZ_CONTAINER_PREFIX: ${{ vars.AZ_CONTAINER_PREFIX }}
+      AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
+      # Provider configuration: 
     steps:
-      # Remove Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # one step here only - just for manual trigger of the protection rule. Once infrastructure is ready, the manual approval of protection rule will trigger the next steps including the backend and frontend deployment
-      # nope - let's do that for real!!!
-
-      - name: Build infrastructure image
+      - name: Set workspace
         run: |
-          cd infrastructure
-          docker compose build
-          cd scripts
+          if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
+            echo "WORKSPACE=`dev`" >> $GITHUB_ENV
+          elif [ ${{ github.ref }} == 'refs/heads/stage' ]; then
+            echo "WORKSPACE=`stage`" >> $GITHUB_ENV
+          elif [ ${{ github.ref }} == 'refs/heads/main' ]; then
+            echo "WORKSPACE=`prod`" >> $GITHUB_ENV
+          else
+            echo "This branch does not support infrastructure deployment"
+            exit 1
+          fi
 
-      # Delete this later after developed workflow:
-      - name: Run tofu version and help
-        run: |
-          cd infrastructure/scripts
-          ./version.sh tofu version
-          echo ""
-          ./help.sh tofu help
+      - name: Set Azure container name for state file
+        run: echo "AZ_CONTAINER_NAME=${AZ_CONTAINER_PREFIX}-${WORKSPACE}" >> $GITHUB_ENV
 
-      - name: Formating infrastructure files with tofu fmt
-        run: |
-          cd infrastructure/scripts
-          ls -la
-          ./format.sh
-      # if the formatting fails, the pipeline will fail and the developer will have to fix the formatting issues before the pipeline can pass
+      # manually register an application in Azure AD and assign "Contributor" role to the subscription!
+      # az ad app create --display-name "Terraform" 
+      # az identity create -g <resource_group> -n <identity_name>
+      # add the repo to the federated credentials of managed identity with branches: dev, stage, main!
+
+      # - name: Login to Azure
+      #   uses: azure/login@v1
+      #   with:
+      #     # use the client_id from above registered identity
+      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      #     # delete secrets.AZURE_TENANT_ID in repository!
+      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.8.2
+
+      - name: tofu version
+        run: tofu --version
+
+      # - name: tofu init
+      #   run: |
+          # tofu init \
+          #   --backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+
+      # - name: tofu workspace
+      #   run: tofu workspace select ${WORKSPACE}
+
+      #
+      # that allows using tofu using a managed identity to access the Azure resources and Azure to handle the credientials for that.
+
+      # - name: Build infrastructure image
+      #   run: |
+      #     cd infrastructure
+      #     docker compose build
+      #   # cd scripts
+
+
+
+
+
+      # This stuff worked, but too complicated and unneccessary with multiple single command script files: 
+      # # Delete this later after developed workflow:
+      # - name: Run tofu version and help
+      #   run: |
+      #     cd infrastructure/scripts
+      #     ./version.sh tofu version
+      #     echo ""
+      #     ./help.sh tofu help
+
+      # - name: Formating infrastructure files with tofu fmt
+      #   run: |
+      #     cd infrastructure/scripts
+      #     ./format.sh
+      # # if the formatting fails, the pipeline will fail and the developer will have to fix the formatting issues before the pipeline can pass
       
-      - name: Run tofu init
-        run: |
-          cd infrastructure/scripts
-          ./init.sh --my.variable=abc --my.other.variable=def --my.third.variable=ghi
+      # - name: Run tofu init
+      #   run: |
+      #     cd infrastructure/scripts
+      #     ./init.sh --my.variable=abc --my.other.variable=def --my.third.variable=ghi
+      # this is the end of what worked with multiple script files.
 
       # - name: Setup OpenTofu
       #   uses: opentofu/setup-opentofu@v1

@@ -22,9 +22,9 @@ echo ""
 ./version.sh
 echo ""
 
-echo ""
-./help.sh
-echo ""
+# echo ""
+# ./help.sh
+# echo ""
 
 # not ready for that yet - but will get there:
 # echo "=== Tofu Select Workspace ==="
@@ -43,10 +43,16 @@ echo ""
 # docker compose run --rm tofu fmt
 
 echo ""
+echo $AZ_RESOURCE_GROUP_NAME
 ./init.sh \
-    --my-variable=123 \
-    --my-variable2=456 \
-    --my-variable3=789
+    echo $AZ_RESOURCE_GROUP_NAME
+    # -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+    # -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNt_NAME}" \
+    # -backend-config="container_name=${AZ_CONTAINER_NAME}" \
+    # -backend-config="key=${AZ_BACKEND_STATE_KEY}"
+    # --my-variable=123 \
+    # --my-variable2=456 \
+    # --my-variable3=789 
 echo ""
 
 docker compose down --remove-orphans
