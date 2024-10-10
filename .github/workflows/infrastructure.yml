@@ -39,7 +39,7 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          echo "WORKSPACE=${WORKSPACE}"
+          echo "WORKSPACE=$WORKSPACE"
 
       # - name: Set Azure container name for state file
       #   run: echo "AZ_CONTAINER_NAME=${AZ_CONTAINER_PREFIX}-${WORKSPACE}" >> $GITHUB_ENV
@@ -87,10 +87,11 @@ jobs:
 
       - name: tofu init
         run: |
+          cd infrastructure
           tofu init \
             -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
             -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
-            -backend-config="container_name=${AZ_CONTAINER_PREFIX}-${WORKSPACE}" \
+            -backend-config="container_name=${AZ_CONTAINER_PREFIX}-$WORKSPACE" \
             -backend-config="key=${AZ_BACKEND_STATE_KEY}"
 
       # - name: tofu workspace
