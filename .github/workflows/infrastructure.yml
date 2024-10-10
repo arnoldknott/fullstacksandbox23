@@ -11,7 +11,7 @@ on:
       - '.github/workflows/infrastructure.yml'
 
 jobs:
-  plan_and_apply:
+  deploy:
     runs-on: ubuntu-24.04
     permissions:
       id-token: write
@@ -30,15 +30,16 @@ jobs:
       - name: Set workspace
         run: |
           if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
-            echo "WORKSPACE=`dev`" >> $GITHUB_ENV
+            echo "WORKSPACE=`dev`" >> "$GITHUB_ENV"
           elif [ ${{ github.ref }} == 'refs/heads/stage' ]; then
-            echo "WORKSPACE=`stage`" >> $GITHUB_ENV
+            echo "WORKSPACE=`stage`" >> "$GITHUB_ENV"
           elif [ ${{ github.ref }} == 'refs/heads/main' ]; then
-            echo "WORKSPACE=`prod`" >> $GITHUB_ENV
+            echo "WORKSPACE=`prod`" >> "$GITHUB_ENV"
           else
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
+          echo "WORKSPACE=${WORKSPACE}"
 
       # - name: Set Azure container name for state file
       #   run: echo "AZ_CONTAINER_NAME=${AZ_CONTAINER_PREFIX}-${WORKSPACE}" >> $GITHUB_ENV
@@ -79,8 +80,10 @@ jobs:
         with:
           tofu_version: 1.8.2
 
-      - name: tofu version
-        run: tofu --version
+      - name: tofu version & workspace
+        run: |
+          tofu --version
+          echo "$WORKSPACE"
 
       - name: tofu init
         run: |
