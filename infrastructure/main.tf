@@ -17,7 +17,7 @@ terraform {
   #   key                  = "dev.terraform.tfstate"                # Can be passed via `-backend-config=`"key=<blob key name>"` in the `init` command.
   # pass via environment variables for running local: ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_SUBSCRIPTION_ID, ARM_TENANT_ID
   #   use_oidc             = true                                    # Can also be set via `ARM_USE_OIDC` environment variable.
-    # client_id            = "00000000-0000-0000-0000-000000000000"  # Can also be set via `ARM_CLIENT_ID` environment variable.
+  #   client_id            = "00000000-0000-0000-0000-000000000000"  # Can also be set via `ARM_CLIENT_ID` environment variable.
   #   client_secret        = "************************************"  # Can also be set via `ARM_CLIENT_SECRET` environment variable.
   #   subscription_id      = "00000000-0000-0000-0000-000000000000"  # Can also be set via `ARM_SUBSCRIPTION_ID` environment variable.
   #   tenant_id            = "00000000-0000-0000-0000-000000000000"  # Can also be set via `ARM_TENANT_ID` environment variable.
@@ -28,7 +28,7 @@ terraform {
 provider "azurerm" {
   features {}
 
-  client_id       = var.azure_client_id
+  client_id = var.azure_client_id
   client_secret   = var.azure_client_secret
   subscription_id = var.azure_subscription_id
   tenant_id       = var.azure_tenant_id
