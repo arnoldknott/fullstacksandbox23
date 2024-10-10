@@ -66,6 +66,7 @@ jobs:
       #   --assignee <managed_identity_principle_id> \
       #   --scope /subscriptions/<subscription_id>
 
+      # works - but unneccessary - tofu is logging in with managed identity itself on tofu init:
       - name: Login to Azure
         uses: azure/login@v1
         with:
@@ -85,9 +86,15 @@ jobs:
           tofu --version
           echo "$WORKSPACE"
 
+      # set the environment variables for tofu further up where the workspace is set and >> into "$GITHUB_ENV":
       - name: tofu init
         run: |
           cd infrastructure
+          ARM_USE_MSI=true
+          ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}
+          ARM_USE_AZUREAD=true
           tofu init \
             -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
             -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
