@@ -42,18 +42,30 @@ jobs:
         run: echo "AZ_CONTAINER_NAME=${AZ_CONTAINER_PREFIX}-${WORKSPACE}" >> $GITHUB_ENV
 
       # manually register an application in Azure AD and assign "Contributor" role to the subscription!
-      # az ad app create --display-name "Terraform" 
-      # az identity create -g <resource_group> -n <identity_name>
-      # add the repo to the federated credentials of managed identity with branches: dev, stage, main!
+      # this step is not necessary if an app is already registered for the local workflow - can be reused:
+      # no - not necessary: # az ad app create --display-name "Terraform" 
+      # az identity create \
+      #   -g <resource_group> \
+      #   -n <identity_name> \
+      #   -l <location> \
+      #   --tags <tags>
+      # add the repo to the federated credentials of managed identity for the GitHub environemnt "infrastucture":
+      # az identity federated-credential create \
+      #   --identity-name <identity_name> \ # from above!
+      #   --name <federated_credential_name> \
+      #   -g <resource_group> \
+      #   --audiences "api://AzureADTokenExchange" \
+      #   --issuer "https://token.actions.githubusercontent.com" \
+      #   --subject "repo:{github_organization}/{github_repository}:{Entity}" # Entity can be (branch:<github_branch_name>, environment:<github_environment_name>, pull_request, ref:refs/tags/<tag_name>)
 
-      # - name: Login to Azure
-      #   uses: azure/login@v1
-      #   with:
-      #     # use the client_id from above registered identity
-      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-      #     # delete secrets.AZURE_TENANT_ID in repository!
-      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
-      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          # use the client_id from above registered identity
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          # delete secrets.AZURE_TENANT_ID in repository!
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1

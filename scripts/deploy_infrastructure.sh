@@ -8,6 +8,9 @@
 # Create the service principle via Azure CLI:
 # az ad sp create-for-rbac --name "<name-of-service-principle>" --role="Contributor" --scopes="/subscriptions/<subscription-id>"
 # (Note: it needs access to the whole subscription, so the infrastructure can be create in resource groups)
+# Also needs "Storage Blob Data Contributor" role assignment to the service principle:
+# https://stackoverflow.com/questions/52769758/azure-blob-storage-authorization-permission-mismatch-error-for-get-request-wit
+# https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory
 # az role assignment create \
 #   --role "Storage Blob Data Contributor"
 #   --assignee <object_id_of_app*>
