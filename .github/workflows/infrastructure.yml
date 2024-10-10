@@ -40,7 +40,7 @@ jobs:
             exit 1
           fi
           echo "WORKSPACE=$WORKSPACE"
-          echo "ARM_USE_MSI=true" >> "$GITHUB_ENV"
+          echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
           echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
           echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
           echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
@@ -70,6 +70,10 @@ jobs:
       #   --role "Contributor" \
       #   --assignee <managed_identity_principle_id> \
       #   --scope /subscriptions/<subscription_id>
+      # az role assignment create \
+      #   --role "Storage Blob Data Contributor" \
+      #   --assignee <managed_identity_principle_id> \
+      #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Storage/storageAccounts/<storage_account_name>/blobServices/default/containers/<container_name>
 
       # works - but unneccessary - tofu is logging in with managed identity itself on tofu init:
       # - name: Login to Azure
