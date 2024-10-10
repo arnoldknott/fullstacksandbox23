@@ -30,11 +30,11 @@ jobs:
       - name: Set workspace
         run: |
           if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
-            echo "WORKSPACE=`dev`" >> "$GITHUB_ENV"
+            echo "WORKSPACE=dev" >> "$GITHUB_ENV"
           elif [ ${{ github.ref }} == 'refs/heads/stage' ]; then
-            echo "WORKSPACE=`stage`" >> "$GITHUB_ENV"
+            echo "WORKSPACE=stage" >> "$GITHUB_ENV"
           elif [ ${{ github.ref }} == 'refs/heads/main' ]; then
-            echo "WORKSPACE=`prod`" >> "$GITHUB_ENV"
+            echo "WORKSPACE=prod" >> "$GITHUB_ENV"
           else
             echo "This branch does not support infrastructure deployment"
             exit 1
