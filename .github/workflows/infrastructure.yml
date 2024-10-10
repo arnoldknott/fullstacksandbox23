@@ -27,7 +27,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set workspace
+      - name: Set workspace and environment variables for tofu authentication
         run: |
           if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
             echo "WORKSPACE=dev" >> "$GITHUB_ENV"
@@ -40,6 +40,11 @@ jobs:
             exit 1
           fi
           echo "WORKSPACE=$WORKSPACE"
+          echo "ARM_USE_MSI=true" >> "$GITHUB_ENV"
+          echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
+          echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
+          echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
+          echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
 
       # - name: Set Azure container name for state file
       #   run: echo "AZ_CONTAINER_NAME=${AZ_CONTAINER_PREFIX}-${WORKSPACE}" >> $GITHUB_ENV
@@ -67,14 +72,14 @@ jobs:
       #   --scope /subscriptions/<subscription_id>
 
       # works - but unneccessary - tofu is logging in with managed identity itself on tofu init:
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          # use the client_id from above registered identity
-          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # delete secrets.AZURE_TENANT_ID in repository!
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      # - name: Login to Azure
+      #   uses: azure/login@v1
+      #   with:
+      #     # use the client_id from above registered identity
+      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      #     # delete secrets.AZURE_TENANT_ID in repository!
+      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
@@ -90,11 +95,6 @@ jobs:
       - name: tofu init
         run: |
           cd infrastructure
-          ARM_USE_MSI=true
-          ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}
-          ARM_USE_AZUREAD=true
           tofu init \
             -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
             -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
