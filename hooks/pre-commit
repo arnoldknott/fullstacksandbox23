@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# TBD: move environment fiel to a place, where frontend and backend can access it - maybe in the root folder. Or check if multiple env files are possible?
+# TBD: move environment file to a place, where frontend and backend can access it - maybe in the root folder. Or check if multiple env files are possible?
 # TBD: consider moving most of this into pre-push?
 # TBD: move into a script directory, commit to repo and then call from here / symlink here?
 ## SINGLE CONTAINER TESTS:
@@ -9,21 +9,19 @@
 # docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "ruff format ."
 # docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env run -T --rm backend_api sh -c "pytest -v"
 
-# Get back in, when having less frequent changes and closer to release
+# Get the build back in, when having less frequent changes and closer to release:
 # COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env build
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env up -d
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "isort --profile black ."
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "black ."
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "ruff --fix ."
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "pytest -v"
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T frontend_svelte sh -c "npm run format"
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T frontend_svelte sh -c "npm run lint"
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T frontend_svelte sh -c "npm run test:unit"
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env down
+# COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env up -d
+# COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "isort --profile black ."
+# COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "black ."
+# COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "ruff --fix ."
+# COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "pytest -v"
+# COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T frontend_svelte sh -c "npm run format"
+# COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T frontend_svelte sh -c "npm run lint"
+# COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T frontend_svelte sh -c "npm run test:unit"
+# COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env down
 
 # TBD: add terraform fmt here
 cd infrastructure
 docker compose build
-./scripts/version.sh
-./scripts/format.sh
-# TBD: call the infrastructure fmt script here
+docker compose run --rm --no-TTY tofu fmt
