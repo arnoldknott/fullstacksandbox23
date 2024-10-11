@@ -110,7 +110,7 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: ${TOFU_VERSION}
+          tofu_version: ${{ env.TOFU_VERSION }}
 
       - name: tofu version & workspace
         run: |
@@ -222,7 +222,7 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: ${TOFU_VERSION}
+          tofu_version: ${{ env.TOFU_VERSION }}
 
       - name: tofu apply
         run: tofu apply -auto-approve ${WORKSPACE}_${COMMIT_SHA}.tfplan
