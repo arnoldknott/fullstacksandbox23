@@ -184,8 +184,11 @@ jobs:
     env:
       AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
       AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
+      ARM_USE_OIDC: true
+      ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_USE_AZUREAD: true
     steps:
       - name: Set workspace
         run: |
