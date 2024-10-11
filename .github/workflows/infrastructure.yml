@@ -216,7 +216,8 @@ jobs:
             --account-name ${AZ_STORAGE_ACCOUNT_NAME} \
             --container-name ${AZ_CONTAINER_NAME} \
             --subscription ${ARM_SUBSCRIPTION_ID} \
-            --name ${WORKSPACE}_${COMMIT_SHA}.tfplan
+            --name ${WORKSPACE}_${COMMIT_SHA}.tfplan \
+            --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
 
       - name: Setup OpenTofu
