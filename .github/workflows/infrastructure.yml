@@ -148,7 +148,7 @@ jobs:
             message: 'ci: updates terraform lock file based on workflow run triggered by commit SHA ${{ env.COMMIT_SHA }}.'
 
       - name: tofu workspace
-        run: tofu workspace select ${WORKSPACE}
+        run: tofu workspace select -or-create ${WORKSPACE}
 
       - name: OpenTofu Plan
         run: |
