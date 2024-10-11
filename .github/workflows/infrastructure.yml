@@ -9,14 +9,208 @@ on:
     paths:
       - 'infrastructure/**'
       - '.github/workflows/infrastructure.yml'
+      - '!infrastructure/.terraform.lock.hcl'
+
+env:
+  COMMIT_SHA: ${{ github.sha }}
 
 jobs:
-  plan_and_apply:
+  deploy:
     runs-on: ubuntu-24.04
-
+    permissions:
+      id-token: write
+      contents: write
+    environment: infrastructure
+    env:
+      # Configuration of backend for infrastructure state:
+      AZ_RESOURCE_GROUP_NAME: ${{ secrets.AZ_RESOURCE_GROUP_NAME }}
+      AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
+      AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
+      AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
+      # Backend login and provider configuration:
+      ARM_USE_OIDC: true
+      ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_USE_AZUREAD: true
+      # Project specific variables:
+      project_name: ${{ vars.PROJECT_NAME }}
+      project_short_name: ${{ vars.PROJECT_SHORT_NAME }}
+      costcenter: ${{ secrets.COSTCENTER }}
+      owner_name: ${{ secrets.OWNER_NAME }}
+      budget_notification_email: ${{ secrets.BUDGET_NOTIFICATION_EMAIL }}
+      owner_user_principle_name: ${{ secrets.OWNER_USER_PRINCIPLE_NAME }}
+      # Postgres settings:
+      postgres_port: ${{ secrets.POSTGRES_PORT }}
+      # Redis settings:
+      redis_port: ${{ secrets.REDIS_PORT }}
+      redis_insight_port: ${{ secrets.REDIS_INSIGHT_PORT }}
+      redis_jwks_db: ${{ secrets.REDIS_JWKS_DB }}
+      redis_session_db: ${{ secrets.REDIS_SESSION_DB }}
+      # public ssh key for the VM:
+      ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+      ssh_public_key_path: ${{ secrets.SSH_PUBLIC_KEY_PATH }}
+    defaults:
+      run:
+        working-directory: infrastructure
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set workspace and environment variables for tofu authentication
+        run: |
+          if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
+            echo "WORKSPACE=dev" >> "$GITHUB_ENV"
+          elif [ ${{ github.ref }} == 'refs/heads/stage' ]; then
+            echo "WORKSPACE=stage" >> "$GITHUB_ENV"
+          elif [ ${{ github.ref }} == 'refs/heads/main' ]; then
+            echo "WORKSPACE=prod" >> "$GITHUB_ENV"
+          else
+            echo "This branch does not support infrastructure deployment"
+            exit 1
+          fi
+          echo "WORKSPACE=$WORKSPACE"
+          echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
+          mkdir ~/.ssh
+          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.SSH_PUBLIC_KEY_PATH }}
+        # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
+
+      # - name: Set Azure container name for state file
+      #   run: echo "AZ_CONTAINER_NAME=${AZ_CONTAINER_PREFIX}-${WORKSPACE}" >> $GITHUB_ENV
+
+      # manually register an application in Azure AD and assign "Contributor" role to the subscription!
+      # az identity create \
+      #   -g <resource_group> \
+      #   -n <identity_name> \
+      #   -l <location> \
+      #   --tags <tags>
+      # add the repo to the federated credentials of managed identity for the GitHub environemnt "infrastucture":
+      # az identity federated-credential create \
+      #   --identity-name <identity_name> \ # from above!
+      #   --name <federated_credential_name> \
+      #   -g <resource_group> \
+      #   --audiences "api://AzureADTokenExchange" \
+      #   --issuer "https://token.actions.githubusercontent.com" \
+      #   --subject "repo:{github_organization}/{github_repository}:{Entity}" # Entity can be (branch:<github_branch_name>, environment:<github_environment_name>, pull_request, ref:refs/tags/<tag_name>)
+      # Assign the managed identity to the subscription:
+      # az role assignment create \
+      #   --role "Contributor" \
+      #   --assignee <managed_identity_principle_id> \
+      #   --scope /subscriptions/<subscription_id>
+      # az role assignment create \
+      #   --role "Storage Blob Data Contributor" \
+      #   --assignee <managed_identity_principle_id> \
+      #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Storage/storageAccounts/<storage_account_name>/blobServices/default/containers/<container_name>
+
+      # works - but unneccessary - tofu is logging in with managed identity itself on tofu init:
+      # - name: Login to Azure
+      #   uses: azure/login@v1
+      #   with:
+      #     # use the client_id from above registered identity
+      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      #     # delete secrets.AZURE_TENANT_ID in repository!
+      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.8.2
+
+      - name: tofu version & workspace
+        run: |
+          tofu --version
+          echo "$WORKSPACE"
+
+      # set the environment variables for tofu further up where the workspace is set and >> into "$GITHUB_ENV":
+      - name: tofu init
+        run: |
+          tofu init \
+            -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+            -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+            -backend-config="container_name=${AZ_CONTAINER_NAME}" \
+            -backend-config="key=${AZ_BACKEND_STATE_KEY}"
+        # tofu init \
+        #   -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+        #   -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+        #   -backend-config="container_name=${AZ_CONTAINER_PREFIX}-$WORKSPACE" \
+        #   -backend-config="key=${AZ_BACKEND_STATE_KEY}"
+
+      # commit the lock file to the repository - if changed?
+      - name: Commit .terraform.lock.hcl file
+        uses: EndBug/add-and-commit@v9
+        with:
+            add: 'infrastructure/.terraform.lock.hcl'
+            fetch: false
+            message: 'ci: updates terraform lock file based on workflow run triggered by commit SHA ${{ env.COMMIT_SHA }}.'
+
+      - name: tofu workspace
+        run: tofu workspace select ${WORKSPACE}
+
+      - name: OpenTofu Plan
+        run: |
+          tofu plan -out=${WORKSPACE}.tfplan \
+            -var "project_name=${project_name}" \
+            -var "project_short_name=${project_short_name}" \
+            -var "costcenter=${costcenter}" \
+            -var "owner_name=${owner_name}" \
+            -var "budget_notification_email=${budget_notification_email}" \
+            -var "owner_user_principal_name=${owner_user_principal_name}" \
+            -var "postgres_port=${postgres_port}" \
+            -var "redis_port=${redis_port}" \
+            -var "redis_insight_port=${redis_insight_port}" \
+            -var "redis_jwks_db=${redis_jwks_db}" \
+            -var "redis_session_db=${redis_session_db}" \
+            -var "public_ssh_key_path=${public_ssh_key_path}"
+        # tofu plan -out=${WORKSPACE}.tfplan \
+        #   -var "azure_client_id=${ARM_CLIENT_ID}" \
+        #   -var "azure_client_secret=${ARM_CLIENT_SECRET}" \
+        #   -var "azure_subscription_id=${ARM_SUBSCRIPTION_ID}" \
+        #   -var "azure_tenant_id=${ARM_TENANT_ID}"
+      # add more variables here!
+
+      - name: OpenTofu Apply
+        run: tofu apply -auto-approve ${WORKSPACE}.tfplan
+
+      # - name: OpenTofu Output
+      #   run: tofu output
+
+      #
+      # that allows using tofu using a managed identity to access the Azure resources and Azure to handle the credientials for that.
+
+      # - name: Build infrastructure image
+      #   run: |
+      #     cd infrastructure
+      #     docker compose build
+      #   # cd scripts
+
+
+
+
+
+      # This stuff worked, but too complicated and unneccessary with multiple single command script files: 
+      # # Delete this later after developed workflow:
+      # - name: Run tofu version and help
+      #   run: |
+      #     cd infrastructure/scripts
+      #     ./version.sh tofu version
+      #     echo ""
+      #     ./help.sh tofu help
+
+      # - name: Formating infrastructure files with tofu fmt
+      #   run: |
+      #     cd infrastructure/scripts
+      #     ./format.sh
+      # # if the formatting fails, the pipeline will fail and the developer will have to fix the formatting issues before the pipeline can pass
+      
+      # - name: Run tofu init
+      #   run: |
+      #     cd infrastructure/scripts
+      #     ./init.sh --my.variable=abc --my.other.variable=def --my.third.variable=ghi
+      # this is the end of what worked with multiple script files.
 
       # - name: Setup OpenTofu
       #   uses: opentofu/setup-opentofu@v1
