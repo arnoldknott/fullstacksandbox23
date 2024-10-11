@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#### REMOVE THIS FILE ####
+# deploy_infrastructure.sh is the new file name #
+
 REPO_ROOT_DIR=$(git rev-parse --show-toplevel)
 BRANCH_NAME=$(git branch --show-current)
 

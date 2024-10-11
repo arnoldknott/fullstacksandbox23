@@ -27,7 +27,12 @@ jobs:
       AZ_STORAGE_ACCOUNT_NAME: ${{ vars.AZ_STORAGE_ACCOUNT_NAME }}
       AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
       AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
-      # Provider configuration: 
+      # Backend login and provider configuration:
+      ARM_USE_OIDC: true
+      ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_USE_AZUREAD: true 
     defaults:
       run:
         working-directory: infrastructure
@@ -49,10 +54,10 @@ jobs:
           fi
           echo "WORKSPACE=$WORKSPACE"
           echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
-          echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
-          echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
-          echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
-          echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
+        # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
 
       # - name: Set Azure container name for state file
       #   run: echo "AZ_CONTAINER_NAME=${AZ_CONTAINER_PREFIX}-${WORKSPACE}" >> $GITHUB_ENV
@@ -128,11 +133,12 @@ jobs:
 
       - name: OpenTofu Plan
         run: |
-          tofu plan -out=${WORKSPACE}.tfplan \
-            -var "azure_client_id=${ARM_CLIENT_ID}" \
-            -var "azure_client_secret=${ARM_CLIENT_SECRET}" \
-            -var "azure_subscription_id=${ARM_SUBSCRIPTION_ID}" \
-            -var "azure_tenant_id=${ARM_TENANT_ID}"
+          tofu plan -out=${WORKSPACE}.tfplan
+        # tofu plan -out=${WORKSPACE}.tfplan \
+        #   -var "azure_client_id=${ARM_CLIENT_ID}" \
+        #   -var "azure_client_secret=${ARM_CLIENT_SECRET}" \
+        #   -var "azure_subscription_id=${ARM_SUBSCRIPTION_ID}" \
+        #   -var "azure_tenant_id=${ARM_TENANT_ID}"
       # add more variables here!
 
       # - name: OpenTofu Apply

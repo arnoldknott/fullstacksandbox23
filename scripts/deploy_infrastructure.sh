@@ -95,14 +95,17 @@ docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' to
     echo "=== tofu - worksapce select ===" &&
     tofu workspace select -or-create ${WORKSPACE} &&
     echo "=== tofu - plan ===" &&
-    tofu plan -out=${WORKSPACE}.tfplan \
-        -var "azure_client_id=${ARM_CLIENT_ID}" \
-        -var "azure_client_secret=${ARM_CLIENT_SECRET}" \
-        -var "azure_subscription_id=${ARM_SUBSCRIPTION_ID}" \
-        -var "azure_tenant_id=${ARM_TENANT_ID}" &&
+    tofu plan -out=${WORKSPACE}.tfplan &&
     echo "=== tofu - apply ==="
     '
     # add all variables to tofu plan!
+    # with passing the variables:
+    # tofu plan -out=${WORKSPACE}.tfplan \
+    #     -var "azure_client_id=${ARM_CLIENT_ID}" \
+    #     -var "azure_client_secret=${ARM_CLIENT_SECRET}" \
+    #     -var "azure_subscription_id=${ARM_SUBSCRIPTION_ID}" \
+    #     -var "azure_tenant_id=${ARM_TENANT_ID}" &&
+
 
 # rm -rf .terraform
 
