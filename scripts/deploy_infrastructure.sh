@@ -108,6 +108,8 @@ docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' to
         -var "redis_jwks_db=${REDIS_JWKS_DB}" \
         -var "redis_session_db=${REDIS_SESSION_DB}" \
         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" &&
+    echo "=== tofu - approval before apply ===" &&
+    read -p "Apply changes? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1 &&
     echo "=== tofu - apply ===" &&
     tofu apply -auto-approve ${WORKSPACE}.tfplan
     '

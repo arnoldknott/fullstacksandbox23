@@ -15,7 +15,7 @@ env:
   COMMIT_SHA: ${{ github.sha }}
 
 jobs:
-  deploy:
+  plan:
     runs-on: ubuntu-24.04
     permissions:
       id-token: write
@@ -34,22 +34,22 @@ jobs:
       ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
       ARM_USE_AZUREAD: true
       # Project specific variables:
-      project_name: ${{ vars.PROJECT_NAME }}
-      project_short_name: ${{ vars.PROJECT_SHORT_NAME }}
-      costcenter: ${{ secrets.COSTCENTER }}
-      owner_name: ${{ secrets.OWNER_NAME }}
-      budget_notification_email: ${{ secrets.BUDGET_NOTIFICATION_EMAIL }}
-      owner_user_principle_name: ${{ secrets.OWNER_USER_PRINCIPLE_NAME }}
+      PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+      PROJECT_SHORT_NAME: ${{ vars.PROJECT_SHORT_NAME }}
+      COSTCENTER: ${{ secrets.COSTCENTER }}
+      OWNER_NAME: ${{ secrets.OWNER_NAME }}
+      BUDGET_NOTIFICATION_EMAIL: ${{ secrets.BUDGET_NOTIFICATION_EMAIL }}
+      OWNER_USER_PRINCIPLE_NAME: ${{ secrets.OWNER_USER_PRINCIPLE_NAME }}
       # Postgres settings:
-      postgres_port: ${{ secrets.POSTGRES_PORT }}
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
       # Redis settings:
-      redis_port: ${{ secrets.REDIS_PORT }}
-      redis_insight_port: ${{ secrets.REDIS_INSIGHT_PORT }}
-      redis_jwks_db: ${{ secrets.REDIS_JWKS_DB }}
-      redis_session_db: ${{ secrets.REDIS_SESSION_DB }}
+      REDIS_PORT: ${{ secrets.REDIS_PORT }}
+      REDIS_INSIGHT_PORT: ${{ secrets.REDIS_INSIGHT_PORT }}
+      REDIS_JWKS_DB: ${{ secrets.REDIS_JWKS_DB }}
+      REDIS_SESSION_DB: ${{ secrets.REDIS_SESSION_DB }}
       # public ssh key for the VM:
-      ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
-      ssh_public_key_path: ${{ secrets.SSH_PUBLIC_KEY_PATH }}
+      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+      SSH_PUBLIC_KEY_PATH: ${{ secrets.SSH_PUBLIC_KEY_PATH }}
     defaults:
       run:
         working-directory: infrastructure
@@ -70,9 +70,9 @@ jobs:
             exit 1
           fi
           echo "WORKSPACE=$WORKSPACE"
-          echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
           mkdir ~/.ssh
           echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.SSH_PUBLIC_KEY_PATH }}
+        # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
@@ -105,15 +105,6 @@ jobs:
       #   --assignee <managed_identity_principle_id> \
       #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Storage/storageAccounts/<storage_account_name>/blobServices/default/containers/<container_name>
 
-      # works - but unneccessary - tofu is logging in with managed identity itself on tofu init:
-      # - name: Login to Azure
-      #   uses: azure/login@v1
-      #   with:
-      #     # use the client_id from above registered identity
-      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-      #     # delete secrets.AZURE_TENANT_ID in repository!
-      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
-      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
@@ -152,28 +143,83 @@ jobs:
 
       - name: OpenTofu Plan
         run: |
-          tofu plan -out=${WORKSPACE}.tfplan \
-            -var "project_name=${project_name}" \
-            -var "project_short_name=${project_short_name}" \
-            -var "costcenter=${costcenter}" \
-            -var "owner_name=${owner_name}" \
-            -var "budget_notification_email=${budget_notification_email}" \
-            -var "owner_user_principal_name=${owner_user_principal_name}" \
-            -var "postgres_port=${postgres_port}" \
-            -var "redis_port=${redis_port}" \
-            -var "redis_insight_port=${redis_insight_port}" \
-            -var "redis_jwks_db=${redis_jwks_db}" \
-            -var "redis_session_db=${redis_session_db}" \
-            -var "public_ssh_key_path=${public_ssh_key_path}"
-        # tofu plan -out=${WORKSPACE}.tfplan \
-        #   -var "azure_client_id=${ARM_CLIENT_ID}" \
-        #   -var "azure_client_secret=${ARM_CLIENT_SECRET}" \
-        #   -var "azure_subscription_id=${ARM_SUBSCRIPTION_ID}" \
-        #   -var "azure_tenant_id=${ARM_TENANT_ID}"
-      # add more variables here!
+          tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
+            -var "project_name=${PROJECT_NAME}" \
+            -var "project_short_name=${PROJECT_SHORT_NAME}" \
+            -var "costcenter=${COSTCENTER}" \
+            -var "owner_name=${OWNER_NAME}" \
+            -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
+            -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
+            -var "postgres_port=${POSTGRES_PORT}" \
+            -var "redis_port=${REDIS_PORT}" \
+            -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
+            -var "redis_jwks_db=${REDIS_JWKS_DB}" \
+            -var "redis_session_db=${REDIS_SESSION_DB}" \
+            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          # use the client_id from above registered identity
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          # delete secrets.AZURE_TENANT_ID in repository!
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Upload plan file to container
+        run: |
+          az storage blob upload \
+            --account-name ${AZ_STORAGE_ACCOUNT_NAME} \
+            --container-name ${AZ_CONTAINER_NAME} \
+            --subscription ${ARM_SUBSCRIPTION_ID} \
+            --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
+
+  apply:
+    needs: plan
+    runs-on: ubuntu-24.04
+    environment: infrastructure-apply
+    env:
+      AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
+      AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+    defaults:
+      run:
+        working-directory: infrastructure
+    steps:
+      - name: Set workspace and environment variables for tofu authentication
+        run: |
+          if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
+            echo "WORKSPACE=dev" >> "$GITHUB_ENV"
+          elif [ ${{ github.ref }} == 'refs/heads/stage' ]; then
+            echo "WORKSPACE=stage" >> "$GITHUB_ENV"
+          elif [ ${{ github.ref }} == 'refs/heads/main' ]; then
+            echo "WORKSPACE=prod" >> "$GITHUB_ENV"
+          else
+            echo "This branch does not support infrastructure deployment"
+            exit 1
+          fi
+          echo "WORKSPACE=$WORKSPACE"
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          # use the client_id from above registered identity
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          # delete secrets.AZURE_TENANT_ID in repository!
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Upload plan file to container
+        run: |
+          az storage blob download \
+            --account-name ${AZ_STORAGE_ACCOUNT_NAME} \
+            --container-name ${AZ_CONTAINER_NAME} \
+            --subscription ${ARM_SUBSCRIPTION_ID} \
+            --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
       - name: OpenTofu Apply
-        run: tofu apply -auto-approve ${WORKSPACE}.tfplan
+        run: tofu apply -auto-approve ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
       # - name: OpenTofu Output
       #   run: tofu output
