@@ -141,7 +141,7 @@ jobs:
       - name: tofu workspace
         run: tofu workspace select -or-create ${WORKSPACE}
 
-      - name: OpenTofu Plan
+      - name: tofu Plan
         run: |
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -var "project_name=${PROJECT_NAME}" \
@@ -209,15 +209,15 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Upload plan file to container
+      - name: Download plan file from container
         run: |
           az storage blob download \
             --account-name ${AZ_STORAGE_ACCOUNT_NAME} \
             --container-name ${AZ_CONTAINER_NAME} \
             --subscription ${ARM_SUBSCRIPTION_ID} \
-            --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
+            --name ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
-      - name: OpenTofu Apply
+      - name: tofu Apply
         run: tofu apply -auto-approve ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
       # - name: OpenTofu Output
