@@ -13,6 +13,7 @@ on:
 
 env:
   COMMIT_SHA: ${{ github.sha }}
+  TOFU_VERSION: 1.8.2
 
 jobs:
   plan:
@@ -109,7 +110,7 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: 1.8.2
+          tofu_version: ${TOFU_VERSION}
 
       - name: tofu version & workspace
         run: |
@@ -217,7 +218,13 @@ jobs:
             --subscription ${ARM_SUBSCRIPTION_ID} \
             --name ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
-      - name: tofu Apply
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${TOFU_VERSION}
+
+      - name: tofu apply
         run: tofu apply -auto-approve ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
       # - name: OpenTofu Output
