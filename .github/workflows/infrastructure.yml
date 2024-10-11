@@ -23,8 +23,8 @@ jobs:
     environment: infrastructure
     env:
       # Configuration of backend for infrastructure state:
-      AZ_RESOURCE_GROUP_NAME: ${{ vars.AZ_RESOURCE_GROUP_NAME }}
-      AZ_STORAGE_ACCOUNT_NAME: ${{ vars.AZ_STORAGE_ACCOUNT_NAME }}
+      AZ_RESOURCE_GROUP_NAME: ${{ secrets.AZ_RESOURCE_GROUP_NAME }}
+      AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
       AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
       AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
       # Backend login and provider configuration:
@@ -32,7 +32,24 @@ jobs:
       ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      ARM_USE_AZUREAD: true 
+      ARM_USE_AZUREAD: true
+      # Project specific variables:
+      project_name: ${{ vars.PROJECT_NAME }}
+      project_short_name: ${{ vars.PROJECT_SHORT_NAME }}
+      costcenter: ${{ secrets.COSTCENTER }}
+      owner_name: ${{ secrets.OWNER_NAME }}
+      budget_notification_email: ${{ secrets.BUDGET_NOTIFICATION_EMAIL }}
+      owner_user_principle_name: ${{ secrets.OWNER_USER_PRINCIPLE_NAME }}
+      # Postgres settings:
+      postgres_port: ${{ secrets.POSTGRES_PORT }}
+      # Redis settings:
+      redis_port: ${{ secrets.REDIS_PORT }}
+      redis_insight_port: ${{ secrets.REDIS_INSIGHT_PORT }}
+      redis_jwks_db: ${{ secrets.REDIS_JWKS_DB }}
+      redis_session_db: ${{ secrets.REDIS_SESSION_DB }}
+      # public ssh key for the VM:
+      ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+      ssh_public_key_path: ${{ secrets.SSH_PUBLIC_KEY_PATH }}
     defaults:
       run:
         working-directory: infrastructure
@@ -54,6 +71,7 @@ jobs:
           fi
           echo "WORKSPACE=$WORKSPACE"
           echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
+          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.SSH_PUBLIC_KEY_PATH }}
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
@@ -133,7 +151,19 @@ jobs:
 
       - name: OpenTofu Plan
         run: |
-          tofu plan -out=${WORKSPACE}.tfplan
+          tofu plan -out=${WORKSPACE}.tfplan \
+            -var "project_name=${project_name}" \
+            -var "project_short_name=${project_short_name}" \
+            -var "costcenter=${costcenter}" \
+            -var "owner_name=${owner_name}" \
+            -var "budget_notification_email=${budget_notification_email}" \
+            -var "owner_user_principal_name=${owner_user_principal_name}" \
+            -var "postgres_port=${postgres_port}" \
+            -var "redis_port=${redis_port}" \
+            -var "redis_insight_port=${redis_insight_port}" \
+            -var "redis_jwks_db=${redis_jwks_db}" \
+            -var "redis_session_db=${redis_session_db}" \
+            -var "public_ssh_key_path=${public_ssh_key_path}"
         # tofu plan -out=${WORKSPACE}.tfplan \
         #   -var "azure_client_id=${ARM_CLIENT_ID}" \
         #   -var "azure_client_secret=${ARM_CLIENT_SECRET}" \
@@ -141,8 +171,8 @@ jobs:
         #   -var "azure_tenant_id=${ARM_TENANT_ID}"
       # add more variables here!
 
-      # - name: OpenTofu Apply
-      #   run: tofu apply -auto-approve ${WORKSPACE}.tfplan
+      - name: OpenTofu Apply
+        run: tofu apply -auto-approve ${WORKSPACE}.tfplan
 
       # - name: OpenTofu Output
       #   run: tofu output

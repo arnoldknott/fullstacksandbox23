@@ -83,7 +83,7 @@ docker compose run --rm tofu --version
 # # docker compose run --rm --entrypoint "pwd" tofu 
 
 
-echo "=== tofu - init, workspace, plan, ... ==="
+echo "=== tofu - init, workspace, plan, and apply ==="
 docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu \
     '
     echo "=== tofu - init ===" &&
@@ -95,16 +95,36 @@ docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' to
     echo "=== tofu - worksapce select ===" &&
     tofu workspace select -or-create ${WORKSPACE} &&
     echo "=== tofu - plan ===" &&
-    tofu plan -out=${WORKSPACE}.tfplan &&
-    echo "=== tofu - apply ==="
+    tofu plan -out=${WORKSPACE}.tfplan \
+        -var "project_name=${PROJECT_NAME}" \
+        -var "project_short_name=${PROJECT_SHORT_NAME}" \
+        -var "costcenter=${COSTCENTER}" \
+        -var "owner_name=${OWNER_NAME}" \
+        -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
+        -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
+        -var "postgres_port=${POSTGRES_PORT}" \
+        -var "redis_port=${REDIS_PORT}" \
+        -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
+        -var "redis_jwks_db=${REDIS_JWKS_DB}" \
+        -var "redis_session_db=${REDIS_SESSION_DB}" \
+        -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" &&
+    echo "=== tofu - apply ===" &&
+    tofu apply -auto-approve ${WORKSPACE}.tfplan
     '
-    # add all variables to tofu plan!
-    # with passing the variables:
-    # tofu plan -out=${WORKSPACE}.tfplan \
-    #     -var "azure_client_id=${ARM_CLIENT_ID}" \
-    #     -var "azure_client_secret=${ARM_CLIENT_SECRET}" \
-    #     -var "azure_subscription_id=${ARM_SUBSCRIPTION_ID}" \
-    #     -var "azure_tenant_id=${ARM_TENANT_ID}" &&
+
+echo "=== tofu - finished ==="
+
+
+# add all variables to tofu plan!
+# with passing the variables:
+# tofu plan -out=${WORKSPACE}.tfplan \
+#     -var "azure_client_id=${ARM_CLIENT_ID}" \
+#     -var "azure_client_secret=${ARM_CLIENT_SECRET}" \
+#     -var "azure_subscription_id=${ARM_SUBSCRIPTION_ID}" \
+#     -var "azure_tenant_id=${ARM_TENANT_ID}" &&
+
+
+
 
 
 # rm -rf .terraform

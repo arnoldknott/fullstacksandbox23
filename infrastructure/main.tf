@@ -36,13 +36,13 @@ provider "azurerm" {
   # use_msi         = true
 }
 
-# provider "azurerm" {
-
-#   client_id       = var.azure_client_id
-#   client_secret   = var.azure_client_secret
-#   subscription_id = var.azure_subscription_id
-#   tenant_id       = var.azure_tenant_id
-
-#   features {}
-
-# }
+resource "azurerm_resource_group" "resourceGroup" {
+  # name     = "${var.project_name}-${terraform.workspace}"
+  name     = "testing-infrastructure-fssb23-${terraform.workspace}"
+  location = "North Europe"
+  tags = {
+    Costcenter  = var.costcenter
+    Owner       = var.owner_name
+    Environment = terraform.workspace
+  }
+}
