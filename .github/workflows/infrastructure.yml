@@ -118,7 +118,7 @@ jobs:
       - name: Commit .terraform.lock.hcl file
         uses: EndBug/add-and-commit@v9
         with:
-            add: '.terraform.lock.hcl'
+            add: 'infrastructure/.terraform.lock.hcl'
             fetch: false
             message: 'ci: updates terraform lock file based on workflow run triggered by commit SHA ${{ env.COMMIT_SHA }}.'
 
