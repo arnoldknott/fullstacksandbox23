@@ -57,7 +57,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set workspace and environment variables for tofu authentication
+      - name: Set workspace
         run: |
           if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
             echo "WORKSPACE=dev" >> "$GITHUB_ENV"
@@ -183,11 +183,8 @@ jobs:
       AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-    defaults:
-      run:
-        working-directory: infrastructure
     steps:
-      - name: Set workspace and environment variables for tofu authentication
+      - name: Set workspace
         run: |
           if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
             echo "WORKSPACE=dev" >> "$GITHUB_ENV"
