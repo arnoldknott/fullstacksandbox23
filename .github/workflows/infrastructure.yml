@@ -177,6 +177,8 @@ jobs:
   apply:
     needs: plan
     runs-on: ubuntu-24.04
+    permissions:
+      id-token: write
     environment: infrastructure-apply
     env:
       AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
