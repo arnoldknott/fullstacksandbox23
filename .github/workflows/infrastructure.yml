@@ -24,7 +24,7 @@ jobs:
       # Configuration of backend for infrastructure state:
       AZ_RESOURCE_GROUP_NAME: ${{ vars.AZ_RESOURCE_GROUP_NAME }}
       AZ_STORAGE_ACCOUNT_NAME: ${{ vars.AZ_STORAGE_ACCOUNT_NAME }}
-      AZ_CONTAINER_PREFIX: ${{ vars.AZ_CONTAINER_PREFIX }}
+      AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
       AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
       # Provider configuration: 
     defaults:
