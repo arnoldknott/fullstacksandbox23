@@ -21,8 +21,9 @@
 # COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T frontend_svelte sh -c "npm run test:unit"
 # COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env down
 
-# TBD: add terraform fmt here
 cd infrastructure
-# TBD: add the code as a volume to the container, as it wouldn't sync it back to host otherwise:
-docker compose build
-docker compose run --rm --no-TTY tofu fmt
+COMPOSE_PROJECT_NAME=test-fssb23 docker compose build
+COMPOSE_PROJECT_NAME=test-fssb23 docker compose run --rm --no-TTY tofu fmt
+
+# Stage changes for commit
+# git add .

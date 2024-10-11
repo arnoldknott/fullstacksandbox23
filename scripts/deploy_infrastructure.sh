@@ -69,7 +69,7 @@ docker compose build
 # docker compose exec -e "WORKSPACE=${WORKSPACE}" tofu echo $WORKSPACE
 #################
 
-This worked without entrypoint in docker compose file  -until tofu workspace select:
+# This worked without entrypoint in docker compose file  -until tofu workspace select:
 echo "=== tofu - version ==="
 docker compose run --rm tofu --version
 # docker compose exec tofu tofu --version
@@ -83,15 +83,33 @@ docker compose run --rm tofu --version
 # # docker compose run --rm --entrypoint "pwd" tofu 
 
 
-echo "=== tofu - init ==="
-docker compose run --rm --entrypoint '/bin/sh -c' tofu 'tofu init \
-    -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
-    -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
-    -backend-config="container_name=${AZ_CONTAINER_NAME}" \
-    -backend-config="key=${AZ_BACKEND_STATE_KEY}"'
-    
-echo "=== tofu - workspace select ${WORKSPACE} ==="
-docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'tofu workspace select ${WORKSPACE}'
+echo "=== tofu - init, workspace, plan, ... ==="
+docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu \
+    '
+    echo "=== tofu - init ===" &&
+    tofu init \
+        -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+        -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+        -backend-config="container_name=${AZ_CONTAINER_NAME}" \
+        -backend-config="key=${AZ_BACKEND_STATE_KEY}" &&
+    echo "=== tofu - worksapce select ===" &&
+    tofu workspace select -or-create ${WORKSPACE} &&
+    echo "=== tofu - plan ===" &&
+    tofu plan -out=${WORKSPACE}.tfplan \
+        -var "azure_client_id=${ARM_CLIENT_ID}" \
+        -var "azure_client_secret=${ARM_CLIENT_SECRET}" \
+        -var "azure_subscription_id=${ARM_SUBSCRIPTION_ID}" \
+        -var "azure_tenant_id=${ARM_TENANT_ID}" &&
+    echo "=== tofu - apply ==="
+    '
+    # add all variables to tofu plan!
+
+# rm -rf .terraform
+
+
+
+# echo "=== tofu - workspace select ${WORKSPACE} ==="
+# docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'tofu workspace select ${WORKSPACE}'
 
 
 
