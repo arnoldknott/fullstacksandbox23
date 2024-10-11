@@ -254,7 +254,7 @@ jobs:
             -backend-config="container_name=${AZ_CONTAINER_NAME}" \
             -backend-config="key=${AZ_BACKEND_STATE_KEY}"
 
-      - name: tofu workspace
+      - name: tofu workspace slect
         run: tofu workspace select ${WORKSPACE}
 
       - name: tofu apply
