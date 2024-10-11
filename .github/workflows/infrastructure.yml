@@ -151,12 +151,15 @@ jobs:
             fetch: false
             message: 'ci: updates terraform lock file based on workflow run triggered by commit SHA ${{ env.COMMIT_SHA }}.'
 
-      - name: tofu workspace
+      - name: tofu workspace selects
         run: tofu workspace select -or-create ${WORKSPACE}
 
-      - name: tofu Plan
+      - name: tofu plan
+        id: tofu_plan
         run: |
+          set +e
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
+            -detailed-exitcode \
             -var "project_name=${PROJECT_NAME}" \
             -var "project_short_name=${PROJECT_SHORT_NAME}" \
             -var "costcenter=${COSTCENTER}" \
@@ -168,7 +171,21 @@ jobs:
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
             -var "redis_jwks_db=${REDIS_JWKS_DB}" \
             -var "redis_session_db=${REDIS_SESSION_DB}" \
-            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
+            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" &&
+          tofu_plan_exit_code=$?
+          set -e
+          echo "tofu_plan_exit_code=$tofu_plan_exit_code" >> $GITHUB_OUTPUT
+          if [ $tofu_plan_exit_code == 1 ]; then
+            echo "tofu plan failed with errors."
+            exit 1
+          elif [ $exit_code == 2 ]; then
+            echo "tofu plan has changes."
+          elif [ $exit_code == 0 ]; then
+            echo "tofu plan has no changes."
+          else
+            echo "tofu plan failed with unknown output."
+            exit 1
+          fi
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -187,8 +204,12 @@ jobs:
             --subscription ${ARM_SUBSCRIPTION_ID} \
             --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
+    outputs:
+      tofu_plan_exit_code: ${{ steps.tofu_plan.outputs.tofu_plan_exit_code }}
+
   apply:
     needs: plan
+    if: ${{ needs.plan.outputs.tofu_plan_exit_code == 2 }}
     runs-on: ubuntu-24.04
     permissions:
       id-token: write
