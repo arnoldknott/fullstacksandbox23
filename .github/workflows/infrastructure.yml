@@ -12,8 +12,20 @@ on:
       - '!infrastructure/.terraform.lock.hcl'
 
 env:
+  # Configuration for pipeline
   COMMIT_SHA: ${{ github.sha }}
   TOFU_VERSION: 1.8.2
+  # Configuration of backend for infrastructure state:
+  AZ_RESOURCE_GROUP_NAME: ${{ secrets.AZ_RESOURCE_GROUP_NAME }}
+  AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
+  AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
+  AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
+  # Backend login and provider configuration:
+  ARM_USE_OIDC: true
+  ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_USE_AZUREAD: true
 
 jobs:
   plan:
@@ -23,17 +35,17 @@ jobs:
       contents: write
     environment: infrastructure
     env:
-      # Configuration of backend for infrastructure state:
-      AZ_RESOURCE_GROUP_NAME: ${{ secrets.AZ_RESOURCE_GROUP_NAME }}
-      AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
-      AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
-      AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
-      # Backend login and provider configuration:
-      ARM_USE_OIDC: true
-      ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      ARM_USE_AZUREAD: true
+      # # Configuration of backend for infrastructure state:
+      # AZ_RESOURCE_GROUP_NAME: ${{ secrets.AZ_RESOURCE_GROUP_NAME }}
+      # AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
+      # AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
+      # AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
+      # # Backend login and provider configuration:
+      # ARM_USE_OIDC: true
+      # ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      # ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      # ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      # ARM_USE_AZUREAD: true
       # Project specific variables:
       PROJECT_NAME: ${{ vars.PROJECT_NAME }}
       PROJECT_SHORT_NAME: ${{ vars.PROJECT_SHORT_NAME }}
@@ -181,15 +193,21 @@ jobs:
     permissions:
       id-token: write
     environment: infrastructure-apply
-    env:
-      AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
-      AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
-      ARM_USE_OIDC: true
-      ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      ARM_USE_AZUREAD: true
+    # env:
+      # AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
+      # AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
+      # ARM_USE_OIDC: true
+      # ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      # ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      # ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      # ARM_USE_AZUREAD: true
+    defaults:
+      run:
+        working-directory: infrastructure
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
       - name: Set workspace
         run: |
           if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
@@ -227,6 +245,17 @@ jobs:
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: ${{ env.TOFU_VERSION }}
+
+      # - name: tofu init
+      #   run: |
+      #     tofu init \
+      #       -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+      #       -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+      #       -backend-config="container_name=${AZ_CONTAINER_NAME}" \
+      #       -backend-config="key=${AZ_BACKEND_STATE_KEY}"
+
+      # - name: tofu workspace
+      #   run: tofu workspace select ${WORKSPACE}
 
       - name: tofu apply
         run: tofu apply -auto-approve ${WORKSPACE}_${COMMIT_SHA}.tfplan
