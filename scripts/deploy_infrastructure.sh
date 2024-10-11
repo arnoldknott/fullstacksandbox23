@@ -113,6 +113,38 @@ docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' to
     echo "=== tofu - apply ===" &&
     tofu apply -auto-approve ${WORKSPACE}.tfplan
     '
+    # set +e &&
+    # tofu plan -out=${WORKSPACE}.tfplan \
+    #     -detailed-exitcode \
+    #     -var "project_name=${PROJECT_NAME}" \
+    #     -var "project_short_name=${PROJECT_SHORT_NAME}" \
+    #     -var "costcenter=${COSTCENTER}" \
+    #     -var "owner_name=${OWNER_NAME}" \
+    #     -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
+    #     -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
+    #     -var "postgres_port=${POSTGRES_PORT}" \
+    #     -var "redis_port=${REDIS_PORT}" \
+    #     -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
+    #     -var "redis_jwks_db=${REDIS_JWKS_DB}" \
+    #     -var "redis_session_db=${REDIS_SESSION_DB}" \
+    #     -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" &&
+    # tofu_plan_exit_code=$? &&
+    # set -e &&
+    # echo "tofu_plan_exit_code: $tofu_plan_exit_code" &&
+    # if [ $tofu_plan_exit_code == 1 ]; then
+    #     echo "=== tofu - plan failed ===" &&
+    #     exit 1
+    # elif [ $tofu_plan_exit_code == 0 ]; then
+    #     echo "=== tofu - no changes ===" &&
+    #     exit 0
+    # elif [ $tofu_plan_exit_code == 2 ]; then
+    #     echo "=== tofu plan has changes ===" &&
+    #     echo "=== tofu - approval before apply ===" &&
+    #     read -p "Apply changes? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1 &&
+    #     echo "=== tofu - apply ===" &&
+    #     tofu apply -auto-approve ${WORKSPACE}.tfplan
+    # fi
+    # '
 
 echo "=== tofu - finished ==="
 

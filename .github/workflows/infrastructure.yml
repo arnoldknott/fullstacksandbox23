@@ -174,6 +174,7 @@ jobs:
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" &&
           tofu_plan_exit_code=$?
           set -e
+          echo "tofu_plan_exit_code: $tofu_plan_exit_code"
           echo "tofu_plan_exit_code=$tofu_plan_exit_code" >> $GITHUB_OUTPUT
           if [ $tofu_plan_exit_code == 1 ]; then
             echo "tofu plan failed with errors."
