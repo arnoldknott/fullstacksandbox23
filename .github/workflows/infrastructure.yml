@@ -207,7 +207,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - name: Set workspace
         run: |
           if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
@@ -263,6 +263,13 @@ jobs:
       # - name: OpenTofu Output
       #   run: tofu output
 
+
+
+
+
+
+
+### Old stuff:
       #
       # that allows using tofu using a managed identity to access the Azure resources and Azure to handle the credientials for that.
 
