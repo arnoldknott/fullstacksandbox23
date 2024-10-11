@@ -158,7 +158,7 @@ jobs:
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
 
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           # use the client_id from above registered identity
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
@@ -199,7 +199,7 @@ jobs:
           echo "WORKSPACE=$WORKSPACE"
 
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           # use the client_id from above registered identity
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
