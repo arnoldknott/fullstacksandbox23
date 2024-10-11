@@ -7,7 +7,10 @@ services:
     #     - AZ_STORAGE_ACCOUNT_NAME=test
         #${AZ_STORAGE_ACCOUNT_NAME}
     # entrypoint: /bin/bash -c #tail -f /dev/null
+    # entrypoint: /bin/sh
     env_file: .env
+    volumes:
+      - .:/code
     # ports:
     #   - "443:443"
     # environment:

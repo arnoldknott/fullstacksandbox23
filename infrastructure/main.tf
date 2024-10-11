@@ -8,8 +8,8 @@ terraform {
 
   # Create manually before running the init command the first time - reuse any of the existing storage accounts. Beware of who has access to the storage account!
   # az group create --name <resource_group_name> --location <location>
-  # az storage account create --name <storage_account_name> --resource-group <resource_group_name> --location <location> --sku Standard_LRS
-  # az storage container create --name <container_name> --public-access blob --account-name <storage_account_name># consider adding --default-encryption-scope <scope> --prevent-encryption-scope-override true
+  # az storage account create --name <storage_account_name> --resource-group <resource_group_name> --location <location> --sku Standard_LRS --public-network-access enabled
+  # az storage container create --name <container_name> --account-name <storage_account_name># consider adding --default-encryption-scope <scope> --prevent-encryption-scope-override true
   backend "azurerm" {
   #   resource_group_name  = "StorageAccount-ResourceGroup"          # Can be passed via `-backend-config=`"resource_group_name=<resource group name>"` in the `init` command.
   #   storage_account_name = "abcd1234"                              # Can be passed via `-backend-config=`"storage_account_name=<storage account name>"` in the `init` command.

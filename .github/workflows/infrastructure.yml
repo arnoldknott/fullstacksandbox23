@@ -23,6 +23,9 @@ jobs:
       AZ_CONTAINER_PREFIX: ${{ vars.AZ_CONTAINER_PREFIX }}
       AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
       # Provider configuration: 
+    defaults:
+      run:
+        working-directory: infrastructure
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -97,16 +100,28 @@ jobs:
 
       # set the environment variables for tofu further up where the workspace is set and >> into "$GITHUB_ENV":
       - name: tofu init
-        run: |
-          cd infrastructure
-          tofu init \
-            -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
-            -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
-            -backend-config="container_name=${AZ_CONTAINER_PREFIX}-$WORKSPACE" \
-            -backend-config="key=${AZ_BACKEND_STATE_KEY}"
+        run: tofu init \
+              -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+              -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+              -backend-config="container_name=${AZ_CONTAINER_NAME}" \
+              -backend-config="key=${AZ_BACKEND_STATE_KEY}"
+        # tofu init \
+        #   -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+        #   -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+        #   -backend-config="container_name=${AZ_CONTAINER_PREFIX}-$WORKSPACE" \
+        #   -backend-config="key=${AZ_BACKEND_STATE_KEY}"
 
-      # - name: tofu workspace
-      #   run: tofu workspace select ${WORKSPACE}
+      - name: tofu workspace
+        run: tofu workspace select ${WORKSPACE}
+
+      # - name: OpenTofu Plan
+      #   run: tofu plan -out=${WORKSPACE}.tfplan
+
+      # - name: OpenTofu Apply
+      #   run: tofu apply -auto-approve ${WORKSPACE}.tfplan
+
+      # - name: OpenTofu Output
+      #   run: tofu output
 
       #
       # that allows using tofu using a managed identity to access the Azure resources and Azure to handle the credientials for that.
