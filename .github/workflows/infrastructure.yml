@@ -70,14 +70,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Testing working with exit code
-        run: |
-          set +e
-          echo "This is a test"
-          exit 100
-          exit_code=$?
-          set -e
-          echo "exit_code: $exit_code"
+      # - name: Testing working with exit code
+      #   run: |
+      #     set +e
+      #     echo "This is a test"
+      #     exit 100
+      #     exit_code=$?
+      #     set -e
+      #     echo "exit_code: $exit_code"
 
       - name: Set workspace
         run: |
@@ -182,6 +182,7 @@ jobs:
             -var "redis_session_db=${REDIS_SESSION_DB}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
           tofu_plan_exit_code=$?
+          echo "exitcode (from tofu wrapper): $exitcode"
           set -e
           echo "tofu_plan_exit_code: $tofu_plan_exit_code"
           echo "tofu_plan_exit_code=$tofu_plan_exit_code" >> $GITHUB_OUTPUT
