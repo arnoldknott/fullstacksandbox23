@@ -158,7 +158,7 @@ jobs:
         id: tofu_plan
         run: |
           set +e
-          tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
+          tofu_output=$(tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
             -var "project_name=${PROJECT_NAME}" \
             -var "project_short_name=${PROJECT_SHORT_NAME}" \
@@ -171,10 +171,10 @@ jobs:
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
             -var "redis_jwks_db=${REDIS_JWKS_DB}" \
             -var "redis_session_db=${REDIS_SESSION_DB}" \
-            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
-          echo $?
+            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}")
           tofu_plan_exit_code=$?
           set -e
+          echo "$tofu_output"
           echo "tofu_plan_exit_code: $tofu_plan_exit_code"
           echo "tofu_plan_exit_code=$tofu_plan_exit_code" >> $GITHUB_OUTPUT
           if [ $tofu_plan_exit_code == 1 ]; then
