@@ -182,7 +182,6 @@ jobs:
             -var "redis_session_db=${REDIS_SESSION_DB}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
           tofu_plan_exit_code=$?
-          echo "exitcode (from tofu wrapper): $exitcode"
           set -e
           echo "tofu_plan_exit_code: $tofu_plan_exit_code"
           echo "tofu_plan_exit_code=$tofu_plan_exit_code" >> $GITHUB_OUTPUT
@@ -197,6 +196,8 @@ jobs:
             echo "tofu plan failed with unknown output."
             exit 1
           fi
+
+      - run: echo ${{ steps.tofu_plan.outputs.exitcode }}
 
       - name: Login to Azure
         if: ${{ steps.tofu_plan.outputs.tofu_plan_exit_code == 2 }}
