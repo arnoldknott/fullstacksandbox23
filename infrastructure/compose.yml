@@ -10,7 +10,7 @@ services:
     # entrypoint: /bin/sh
     env_file: .env
     volumes:
-      - .:/code
+      - .:/src
     # ports:
     #   - "443:443"
     # environment:
