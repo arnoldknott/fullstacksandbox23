@@ -35,17 +35,6 @@ jobs:
       contents: write
     environment: infrastructure
     env:
-      # # Configuration of backend for infrastructure state:
-      # AZ_RESOURCE_GROUP_NAME: ${{ secrets.AZ_RESOURCE_GROUP_NAME }}
-      # AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
-      # AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
-      # AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
-      # # Backend login and provider configuration:
-      # ARM_USE_OIDC: true
-      # ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-      # ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      # ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      # ARM_USE_AZUREAD: true
       # Project specific variables:
       PROJECT_NAME: ${{ vars.PROJECT_NAME }}
       PROJECT_SHORT_NAME: ${{ vars.PROJECT_SHORT_NAME }}
@@ -166,7 +155,6 @@ jobs:
       - name: tofu plan
         id: tofu_plan
         run: |
-          set +e
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
             -var "project_name=${PROJECT_NAME}" \
@@ -181,26 +169,27 @@ jobs:
             -var "redis_jwks_db=${REDIS_JWKS_DB}" \
             -var "redis_session_db=${REDIS_SESSION_DB}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
-          tofu_plan_exit_code=$?
-          set -e
-          echo "tofu_plan_exit_code: $tofu_plan_exit_code"
-          echo "tofu_plan_exit_code=$tofu_plan_exit_code" >> $GITHUB_OUTPUT
-          if [ $tofu_plan_exit_code == 1 ]; then
-            echo "tofu plan failed with errors."
-            exit 1
-          elif [ $tofu_plan_exit_code == 2 ]; then
-            echo "tofu plan has changes."
-          elif [ $tofu_plan_exit_code == 0 ]; then
-            echo "tofu plan has no changes."
-          else
-            echo "tofu plan failed with unknown output."
-            exit 1
-          fi
+        # set +e
+        # -- put tofu plan here --
+        # tofu_plan_exit_code=$?
+        # set -e
+        # echo "tofu_plan_exit_code: $tofu_plan_exit_code"
+        # echo "tofu_plan_exit_code=$tofu_plan_exit_code" >> $GITHUB_OUTPUT
+        # if [ $tofu_plan_exit_code == 1 ]; then
+        #   echo "tofu plan failed with errors."
+        #   exit 1
+        # elif [ $tofu_plan_exit_code == 2 ]; then
+        #   echo "tofu plan has changes."
+        # elif [ $tofu_plan_exit_code == 0 ]; then
+        #   echo "tofu plan has no changes."
+        # else
+        #   echo "tofu plan failed with unknown output."
+        #   exit 1
+        # fi
 
-      - run: echo ${{ steps.tofu_plan.outputs.exitcode }}
 
       - name: Login to Azure
-        if: ${{ steps.tofu_plan.outputs.tofu_plan_exit_code == 2 }}
+        if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
         uses: azure/login@v2
         with:
           # use the client_id from above registered identity
@@ -210,7 +199,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Upload plan file to container
-        if: ${{ steps.tofu_plan.outputs.tofu_plan_exit_code == 2 }}
+        if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
         run: |
           az storage blob upload \
             --account-name ${AZ_STORAGE_ACCOUNT_NAME} \
@@ -219,7 +208,7 @@ jobs:
             --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
     outputs:
-      tofu_plan_exit_code: ${{ steps.tofu_plan.outputs.tofu_plan_exit_code }}
+      tofu_plan_exit_code: ${{ steps.tofu_plan.outputs.exitcode }}
 
   apply:
     needs: plan
@@ -228,14 +217,6 @@ jobs:
     permissions:
       id-token: write
     environment: infrastructure-apply
-    # env:
-      # AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
-      # AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
-      # ARM_USE_OIDC: true
-      # ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-      # ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      # ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      # ARM_USE_AZUREAD: true
     defaults:
       run:
         working-directory: infrastructure
