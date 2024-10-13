@@ -38,7 +38,7 @@ provider "azurerm" {
 
 resource "azurerm_resource_group" "resourceGroup" {
   # name     = "${var.project_name}-${terraform.workspace}"
-  name     = "testing-infrastructure-fssb23-${terraform.workspace}"
+  name     = "testing-infrastructure-with-other-name-fssb23-${terraform.workspace}"
   location = "North Europe"
   tags = {
     Costcenter  = var.costcenter
