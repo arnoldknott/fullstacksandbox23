@@ -67,6 +67,9 @@ jobs:
       run:
         working-directory: infrastructure
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Testing working with exit code
         run: |
           set +e
@@ -75,9 +78,6 @@ jobs:
           exit_code=$?
           set -e
           echo "exit_code: $exit_code"
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Set workspace
         run: |
