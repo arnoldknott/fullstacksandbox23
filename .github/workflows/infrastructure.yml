@@ -171,7 +171,8 @@ jobs:
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
             -var "redis_jwks_db=${REDIS_JWKS_DB}" \
             -var "redis_session_db=${REDIS_SESSION_DB}" \
-            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" &&
+            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
+          echo $?
           tofu_plan_exit_code=$?
           set -e
           echo "tofu_plan_exit_code: $tofu_plan_exit_code"
