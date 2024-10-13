@@ -83,36 +83,82 @@ docker compose run --rm tofu --version
 # # docker compose run --rm --entrypoint "pwd" tofu 
 
 
-echo "=== tofu - init, workspace, plan, and apply ==="
-docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu \
-    '
-    echo "=== tofu - init ===" &&
-    tofu init \
-        -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
-        -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
-        -backend-config="container_name=${AZ_CONTAINER_NAME}" \
-        -backend-config="key=${AZ_BACKEND_STATE_KEY}" &&
-    echo "=== tofu - worksapce select ===" &&
-    tofu workspace select -or-create ${WORKSPACE} &&
-    echo "=== tofu - plan ===" &&
-    tofu plan -out=${WORKSPACE}.tfplan \
-        -var "project_name=${PROJECT_NAME}" \
-        -var "project_short_name=${PROJECT_SHORT_NAME}" \
-        -var "costcenter=${COSTCENTER}" \
-        -var "owner_name=${OWNER_NAME}" \
-        -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
-        -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
-        -var "postgres_port=${POSTGRES_PORT}" \
-        -var "redis_port=${REDIS_PORT}" \
-        -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-        -var "redis_jwks_db=${REDIS_JWKS_DB}" \
-        -var "redis_session_db=${REDIS_SESSION_DB}" \
-        -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" &&
-    echo "=== tofu - approval before apply ===" &&
-    read -p "Apply changes? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1 &&
-    echo "=== tofu - apply ===" &&
-    tofu apply -auto-approve ${WORKSPACE}.tfplan
-    '
+echo "=== tofu - init ==="
+docker compose run --rm tofu init \
+        -backend-config='resource_group_name=${AZ_RESOURCE_GROUP_NAME}' \
+        -backend-config='storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}' \
+        -backend-config='container_name=${AZ_CONTAINER_NAME}' \
+        -backend-config='key=${AZ_BACKEND_STATE_KEY}'
+echo "=== tofu - worksapce select ==="
+docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu workspace select -or-create ${WORKSPACE}
+echo "=== tofu - plan ==="
+set +e
+docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu plan -out=${WORKSPACE}.tfplan \
+        -detailed-exitcode \
+        -var 'project_name=${PROJECT_NAME}' \
+        -var 'project_short_name=${PROJECT_SHORT_NAME}' \
+        -var 'costcenter=${COSTCENTER}' \
+        -var 'owner_name=${OWNER_NAME}' \
+        -var 'budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}' \
+        -var 'owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}' \
+        -var 'postgres_port=${POSTGRES_PORT}' \
+        -var 'redis_port=${REDIS_PORT}' \
+        -var 'redis_insight_port=${REDIS_INSIGHT_PORT}' \
+        -var 'redis_jwks_db=${REDIS_JWKS_DB}' \
+        -var 'redis_session_db=${REDIS_SESSION_DB}' \
+        -var 'public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}'
+tofu_plan_exit_code=$?
+set -e
+echo "tofu_plan_exit_code: $tofu_plan_exit_code"
+if [ $tofu_plan_exit_code == 1 ]; then
+    echo "=== tofu - plan failed ==="
+    exit 1
+elif [ $tofu_plan_exit_code == 0 ]; then
+    echo "=== tofu - no changes ==="
+    exit 0
+elif [ $tofu_plan_exit_code == 2 ]; then
+    echo "=== tofu plan has changes ==="
+    echo "=== tofu - approval before apply ==="
+    read -p "Apply changes? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1
+    echo "=== tofu - apply ==="
+    docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu apply -auto-approve ${WORKSPACE}.tfplan
+else
+    echo "=== tofu plan failed with unknown output ==="
+    exit 1
+fi
+
+
+#### WORKS - start: ####
+# echo "=== tofu - init, workspace, plan, and apply ==="
+# docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu \
+#     '
+#     echo "=== tofu - init ===" &&
+#     tofu init \
+#         -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+#         -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+#         -backend-config="container_name=${AZ_CONTAINER_NAME}" \
+#         -backend-config="key=${AZ_BACKEND_STATE_KEY}" &&
+#     echo "=== tofu - worksapce select ===" &&
+#     tofu workspace select -or-create ${WORKSPACE} &&
+#     echo "=== tofu - plan ===" &&
+#     tofu plan -out=${WORKSPACE}.tfplan \
+#         -var "project_name=${PROJECT_NAME}" \
+#         -var "project_short_name=${PROJECT_SHORT_NAME}" \
+#         -var "costcenter=${COSTCENTER}" \
+#         -var "owner_name=${OWNER_NAME}" \
+#         -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
+#         -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
+#         -var "postgres_port=${POSTGRES_PORT}" \
+#         -var "redis_port=${REDIS_PORT}" \
+#         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
+#         -var "redis_jwks_db=${REDIS_JWKS_DB}" \
+#         -var "redis_session_db=${REDIS_SESSION_DB}" \
+#         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" &&
+#     echo "=== tofu - approval before apply ===" &&
+#     read -p "Apply changes? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1 &&
+#     echo "=== tofu - apply ===" &&
+#     tofu apply -auto-approve ${WORKSPACE}.tfplan
+#     '
     # set +e &&
     # tofu plan -out=${WORKSPACE}.tfplan \
     #     -detailed-exitcode \
@@ -145,6 +191,7 @@ docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' to
     #     tofu apply -auto-approve ${WORKSPACE}.tfplan
     # fi
     # '
+#### WORKS - end ####
 
 echo "=== tofu - finished ==="
 

@@ -179,10 +179,10 @@ jobs:
           if [ $tofu_plan_exit_code == 1 ]; then
             echo "tofu plan failed with errors."
             exit 1
-          elif [ $tofu_plan_exit_code == 2 ]; then
-            echo "tofu plan has changes."
           elif [ $tofu_plan_exit_code == 0 ]; then
             echo "tofu plan has no changes."
+          elif [ $tofu_plan_exit_code == 2 ]; then
+            echo "tofu plan has changes."
           else
             echo "tofu plan failed with unknown output."
             exit 1
