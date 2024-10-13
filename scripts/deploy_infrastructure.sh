@@ -40,6 +40,7 @@ BRANCH_NAME=$(git branch --show-current)
 
 cd $REPO_ROOT_DIR/infrastructure
 
+echo ""
 echo "=== set workspace ==="
 if [ "$BRANCH_NAME" == "dev" ]; then
     WORKSPACE=dev
@@ -53,6 +54,7 @@ else
 fi
 echo "==> workspace is set to: $WORKSPACE <=="
 
+echo ""
 echo "=== building the tofu container ==="
 docker compose build
 
@@ -70,43 +72,51 @@ docker compose build
 #################
 
 # This worked without entrypoint in docker compose file  -until tofu workspace select:
+echo ""
 echo "=== tofu - version ==="
 docker compose run --rm tofu --version
 # docker compose exec tofu tofu --version
 # docker compose exec tofu tofu --version
 
-
+# echo ""
 # echo "=== monitoring variables ==="
 # # docker compose exec --entrypoint "echo $AZ_STORAGE_ACCOUNT_NAME" tofu 
 # # docker compose exec tofu echo $ARM_CLIENT_ID
 # docker compose run --rm --entrypoint '/bin/bash -c' tofu 'echo ${AZ_STORAGE_ACCOUNT_NAME}'
+# docker compose run --rm --entrypoint '/bin/bash -c' tofu 'echo ${POSTGRES_PORT}'
+# docker compose run --rm -e "WORKSPACE=${WORKSPACE}"  --entrypoint '/bin/bash -c' tofu 'echo ${WORKSPACE}'
 # # docker compose run --rm --entrypoint "pwd" tofu 
 
-
+echo ""
 echo "=== tofu - init ==="
-docker compose run --rm tofu init \
-        -backend-config='resource_group_name=${AZ_RESOURCE_GROUP_NAME}' \
-        -backend-config='storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}' \
-        -backend-config='container_name=${AZ_CONTAINER_NAME}' \
-        -backend-config='key=${AZ_BACKEND_STATE_KEY}'
-echo "=== tofu - worksapce select ==="
+docker compose run --rm --entrypoint '/bin/sh -c' tofu 'tofu init \
+        -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+        -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+        -backend-config="container_name=${AZ_CONTAINER_NAME}" \
+        -backend-config="key=${AZ_BACKEND_STATE_KEY}"'
+echo ""
+echo "=== tofu - workspace select ==="
 docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu workspace select -or-create ${WORKSPACE}
+echo "selected workspace:"
+docker compose run --rm tofu workspace show
+echo ""
 echo "=== tofu - plan ==="
 set +e
-docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu plan -out=${WORKSPACE}.tfplan \
+# docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu plan -out=${WORKSPACE}.tfplan \
+docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'tofu plan -out=${WORKSPACE}.tfplan \
         -detailed-exitcode \
-        -var 'project_name=${PROJECT_NAME}' \
-        -var 'project_short_name=${PROJECT_SHORT_NAME}' \
-        -var 'costcenter=${COSTCENTER}' \
-        -var 'owner_name=${OWNER_NAME}' \
-        -var 'budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}' \
-        -var 'owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}' \
-        -var 'postgres_port=${POSTGRES_PORT}' \
-        -var 'redis_port=${REDIS_PORT}' \
-        -var 'redis_insight_port=${REDIS_INSIGHT_PORT}' \
-        -var 'redis_jwks_db=${REDIS_JWKS_DB}' \
-        -var 'redis_session_db=${REDIS_SESSION_DB}' \
-        -var 'public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}'
+        -var "project_name=${PROJECT_NAME}" \
+        -var "project_short_name=${PROJECT_SHORT_NAME}" \
+        -var "costcenter=${COSTCENTER}" \
+        -var "owner_name=${OWNER_NAME}" \
+        -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
+        -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
+        -var "postgres_port=${POSTGRES_PORT}" \
+        -var "redis_port=${REDIS_PORT}" \
+        -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
+        -var "redis_jwks_db=${REDIS_JWKS_DB}" \
+        -var "redis_session_db=${REDIS_SESSION_DB}" \
+        -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 tofu_plan_exit_code=$?
 set -e
 echo "tofu_plan_exit_code: $tofu_plan_exit_code"
@@ -118,6 +128,7 @@ elif [ $tofu_plan_exit_code == 0 ]; then
     exit 0
 elif [ $tofu_plan_exit_code == 2 ]; then
     echo "=== tofu plan has changes ==="
+    echo ""
     echo "=== tofu - approval before apply ==="
     read -p "Apply changes? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1
     echo "=== tofu - apply ==="
@@ -127,6 +138,8 @@ else
     exit 1
 fi
 
+echo ""
+echo "=== tofu - finished ==="
 
 #### WORKS - start: ####
 # echo "=== tofu - init, workspace, plan, and apply ==="
@@ -192,8 +205,6 @@ fi
     # fi
     # '
 #### WORKS - end ####
-
-echo "=== tofu - finished ==="
 
 
 # add all variables to tofu plan!
