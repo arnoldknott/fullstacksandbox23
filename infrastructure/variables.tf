@@ -16,10 +16,31 @@
 #   type        = string
 # }
 
-# variable "azure_tenant_id" {
-#   description = "Azure tenant ID"
+variable "azure_tenant_id" {
+  description = "Azure tenant ID"
+  type        = string
+}
+
+# variable "azure_sp_object_id" {
+#   description = "Service principle object ID - the enterprise application object ID!"
 #   type        = string
 # }
+
+# delete after full migration to full-stack-sandbox23 repo:
+variable "old_repo_service_principle_object_id" {
+  description = "Service principle object ID (the enterprise application object ID!) from the old infrastructure repository"
+  type        = string
+}
+
+variable "developer_localhost_object_id" {
+  description = "Object ID of the service principle running in container on developers localhost"
+  type        = string
+}
+
+variable "managed_identity_github_actions_object_id" {
+  description = "Object ID of the managed identity running infrastructure in Github Actions pipline"
+  type        = string
+}
 
 # Project configuration:
 variable "project_name" {
@@ -47,9 +68,15 @@ variable "budget_notification_email" {
   type        = string
 }
 
-variable "owner_user_principal_name" {
-  description = "User principal name of desired owner"
+# variable "owner_user_principal_name" {
+#   description = "User principal name of desired owner"
+#   type        = string
+# }
+
+variable "owner_object_id" {
+  description = "Object ID of desired owner"
   type        = string
+
 }
 
 # Postgres configuration:

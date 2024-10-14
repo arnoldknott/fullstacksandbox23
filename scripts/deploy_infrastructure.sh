@@ -55,6 +55,14 @@ fi
 echo "==> workspace is set to: $WORKSPACE <=="
 
 echo ""
+echo "=== get public ssh keys from localhost ==="
+local_public_ssh_key_path=$(eval echo $(grep SSH_KEY_PATH_LOCALHOST .env | cut -d '=' -f 2 | tr -d ' "'))
+public_ssh_key_path=$(eval echo $(grep PUBLIC_SSH_KEY_PATH .env | cut -d '=' -f 2 | tr -d ' "'))
+# echo "local_public_ssh_key_path: $local_public_ssh_key_path"
+# echo "public_ssh_key_path: $public_ssh_key_path"
+cp $local_public_ssh_key_path $public_ssh_key_path
+
+echo ""
 echo "=== building the tofu container ==="
 docker compose build
 
@@ -86,6 +94,7 @@ docker compose run --rm tofu --version
 # docker compose run --rm --entrypoint '/bin/bash -c' tofu 'echo ${POSTGRES_PORT}'
 # docker compose run --rm -e "WORKSPACE=${WORKSPACE}"  --entrypoint '/bin/bash -c' tofu 'echo ${WORKSPACE}'
 # # docker compose run --rm --entrypoint "pwd" tofu 
+# docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'ls -la'
 
 echo ""
 echo "=== tofu - init ==="
@@ -103,20 +112,27 @@ echo ""
 echo "=== tofu - plan ==="
 set +e
 # docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu plan -out=${WORKSPACE}.tfplan \
+# docker compose cp ./ssh_key.pub tofu:$local_public_ssh_key_path
 docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'tofu plan -out=${WORKSPACE}.tfplan \
         -detailed-exitcode \
+        -var "azure_tenant_id=${ARM_TENANT_ID}" \
+        -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
+        -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
+        -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
         -var "project_name=${PROJECT_NAME}" \
         -var "project_short_name=${PROJECT_SHORT_NAME}" \
         -var "costcenter=${COSTCENTER}" \
         -var "owner_name=${OWNER_NAME}" \
         -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
-        -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
+        -var "owner_object_id=${OWNER_OBJECT_ID}" \
         -var "postgres_port=${POSTGRES_PORT}" \
         -var "redis_port=${REDIS_PORT}" \
         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
         -var "redis_jwks_db=${REDIS_JWKS_DB}" \
         -var "redis_session_db=${REDIS_SESSION_DB}" \
         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
+# -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
+# -var "azure_sp_object_id=${ARM_OBJECT_ID}" \
 tofu_plan_exit_code=$?
 set -e
 echo "tofu_plan_exit_code: $tofu_plan_exit_code"
@@ -137,6 +153,10 @@ else
     echo "=== tofu plan failed with unknown output ==="
     exit 1
 fi
+
+echo ""
+echo "=== remove the public ssh from working directory ==="
+rm -f $public_ssh_key_path
 
 echo ""
 echo "=== tofu - finished ==="
