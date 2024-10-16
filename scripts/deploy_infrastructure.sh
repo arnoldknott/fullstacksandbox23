@@ -37,7 +37,6 @@ echo "=== Running: deploy_infrastructure ==="
 # Initialization:
 REPO_ROOT_DIR=$(git rev-parse --show-toplevel)
 BRANCH_NAME=$(git branch --show-current)
-
 cd $REPO_ROOT_DIR/infrastructure
 
 echo ""
@@ -131,6 +130,29 @@ docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' to
         -var "redis_jwks_db=${REDIS_JWKS_DB}" \
         -var "redis_session_db=${REDIS_SESSION_DB}" \
         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
+
+# trying with user login instead of service principle inside container:
+# tofu plan -out=${WORKSPACE}.tfplan \
+#         -detailed-exitcode \
+#         -var "azure_tenant_id=${azure_tenant_id}" \
+#         -var "azure_client_id=${azure_client_id}" \
+#         -var "azure_client_secret=${azure_client_secret}" \
+#         -var "azure_subscription_id=${azure_subscription_id}" \
+#         -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
+#         -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
+#         -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
+#         -var "project_name=${PROJECT_NAME}" \
+#         -var "project_short_name=${PROJECT_SHORT_NAME}" \
+#         -var "costcenter=${COSTCENTER}" \
+#         -var "owner_name=${OWNER_NAME}" \
+#         -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
+#         -var "owner_object_id=${OWNER_OBJECT_ID}" \
+#         -var "postgres_port=${POSTGRES_PORT}" \
+#         -var "redis_port=${REDIS_PORT}" \
+#         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
+#         -var "redis_jwks_db=${REDIS_JWKS_DB}" \
+#         -var "redis_session_db=${REDIS_SESSION_DB}" \
+#         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
 # -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
 # -var "azure_sp_object_id=${ARM_OBJECT_ID}" \
 tofu_plan_exit_code=$?
