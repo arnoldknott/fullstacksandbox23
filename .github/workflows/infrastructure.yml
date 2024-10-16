@@ -48,6 +48,7 @@ jobs:
       OWNER_NAME: ${{ secrets.OWNER_NAME }}
       BUDGET_NOTIFICATION_EMAIL: ${{ secrets.BUDGET_NOTIFICATION_EMAIL }}
       # OWNER_USER_PRINCIPLE_NAME: ${{ secrets.OWNER_USER_PRINCIPLE_NAME }}
+      OWNER_OBJECT_ID: ${{ secrets.OWNER_OBJECT_ID }}
       ARM_OBJECT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_SP_OBJECT_ID }}
       # Postgres settings:
       POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
