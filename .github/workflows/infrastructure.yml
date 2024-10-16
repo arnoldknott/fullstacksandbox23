@@ -38,9 +38,9 @@ jobs:
       # Logging from tofu:
       TF_LOG: DEBUG
       # Object ID's of all instances running infrastructure script:
-      OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID: ${{ secrets.OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID }}
-      DEVELOPER_LOCALHOST_OBJECT_ID: ${{ secrets.DEVELOPER_LOCALHOST_OBJECT_ID }}
-      MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_SP_OBJECT_ID }}
+      # OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID: ${{ secrets.OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID }}
+      # DEVELOPER_LOCALHOST_OBJECT_ID: ${{ secrets.DEVELOPER_LOCALHOST_OBJECT_ID }}
+      # MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_SP_OBJECT_ID }}
       # Project specific variables:
       PROJECT_NAME: ${{ vars.PROJECT_NAME }}
       PROJECT_SHORT_NAME: ${{ vars.PROJECT_SHORT_NAME }}
@@ -166,9 +166,6 @@ jobs:
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
             -var "az_tenant_id=${ARM_TENANT_ID}" \
-            -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
-            -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
-            -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
             -var "project_name=${PROJECT_NAME}" \
             -var "project_short_name=${PROJECT_SHORT_NAME}" \
             -var "costcenter=${COSTCENTER}" \
@@ -181,6 +178,11 @@ jobs:
             -var "redis_jwks_db=${REDIS_JWKS_DB}" \
             -var "redis_session_db=${REDIS_SESSION_DB}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
+        
+        # put back in again after debugging:
+          # -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
+          # -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
+          # -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
         # -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
         # -var "azure_sp_object_id=${ARM_OBJECT_ID}" \
         # set +e
