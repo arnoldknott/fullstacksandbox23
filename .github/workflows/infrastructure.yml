@@ -90,7 +90,7 @@ jobs:
           fi
           echo "WORKSPACE=$WORKSPACE"
           mkdir ~/.ssh
-          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.SSH_PUBLIC_KEY_PATH }}
+          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
