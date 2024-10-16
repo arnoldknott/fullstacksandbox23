@@ -55,8 +55,8 @@ provider "azurerm" {
 # }
 
 resource "azurerm_resource_group" "resourceGroup" {
-  # name     = "${var.project_name}-${terraform.workspace}"
-  name = "testing-infrastructure-fssb23-${terraform.workspace}"
+  name = "${var.project_name}-${terraform.workspace}"
+  # name = "testing-infrastructure-fssb23-${terraform.workspace}"
   location = "North Europe"
   tags = {
     Costcenter  = var.costcenter
@@ -77,83 +77,82 @@ resource "azurerm_resource_group" "resourceGroup" {
 # }
 
 
-# TBD: get those back in again:
-# resource "azurerm_monitor_action_group" "actionGroup" {
-#   name                = "${var.project_name}-actionGroup-${terraform.workspace}"
-#   resource_group_name = azurerm_resource_group.resourceGroup.name
-#   short_name          = "SLPaction"
-# }
+resource "azurerm_monitor_action_group" "actionGroup" {
+  name                = "${var.project_name}-actionGroup-${terraform.workspace}"
+  resource_group_name = azurerm_resource_group.resourceGroup.name
+  short_name          = "SLPaction"
+}
 
-# resource "azurerm_consumption_budget_resource_group" "budget" {
-#   name              = "${var.project_name}-${terraform.workspace}"
-#   resource_group_id = azurerm_resource_group.resourceGroup.id
+resource "azurerm_consumption_budget_resource_group" "budget" {
+  name              = "${var.project_name}-${terraform.workspace}"
+  resource_group_id = azurerm_resource_group.resourceGroup.id
 
-#   amount     = 100
-#   time_grain = "Monthly"
+  amount     = 100
+  time_grain = "Monthly"
 
-#   time_period {
-#     start_date = "2023-11-01T00:00:00Z"
-#     end_date   = "2043-11-30T00:00:00Z"
-#   }
+  time_period {
+    start_date = "2023-11-01T00:00:00Z"
+    end_date   = "2043-11-30T00:00:00Z"
+  }
 
-#   filter {
-#     dimension {
-#       name = "ResourceId"
-#       values = [
-#         azurerm_monitor_action_group.actionGroup.id,
-#       ]
-#     }
-#   }
+  filter {
+    dimension {
+      name = "ResourceId"
+      values = [
+        azurerm_monitor_action_group.actionGroup.id,
+      ]
+    }
+  }
 
-#   notification {
-#     enabled        = true
-#     threshold      = 80.0
-#     operator       = "EqualTo"
-#     threshold_type = "Forecasted"
+  notification {
+    enabled        = true
+    threshold      = 80.0
+    operator       = "EqualTo"
+    threshold_type = "Forecasted"
 
-#     contact_emails = [
-#       var.budget_notification_email,
-#     ]
+    contact_emails = [
+      var.budget_notification_email,
+    ]
 
-#     contact_groups = [
-#       azurerm_monitor_action_group.actionGroup.id,
-#     ]
+    contact_groups = [
+      azurerm_monitor_action_group.actionGroup.id,
+    ]
 
-#     contact_roles = [
-#       "Owner",
-#     ]
-#   }
+    contact_roles = [
+      "Owner",
+    ]
+  }
 
-#   notification {
-#     enabled        = true
-#     threshold      = 100.0
-#     operator       = "EqualTo"
-#     threshold_type = "Forecasted"
+  notification {
+    enabled        = true
+    threshold      = 100.0
+    operator       = "EqualTo"
+    threshold_type = "Forecasted"
 
-#     contact_emails = [
-#       var.budget_notification_email,
-#     ]
+    contact_emails = [
+      var.budget_notification_email,
+    ]
 
-#     contact_groups = [
-#       azurerm_monitor_action_group.actionGroup.id,
-#     ]
+    contact_groups = [
+      azurerm_monitor_action_group.actionGroup.id,
+    ]
 
-#     contact_roles = [
-#       "Owner",
-#     ]
-#   }
-# }
+    contact_roles = [
+      "Owner",
+    ]
+  }
+}
 
-# resource "azurerm_service_plan" "servicePlan" {
-#   name                = "${var.project_name}-servicePlan-${terraform.workspace}"
-#   resource_group_name = azurerm_resource_group.resourceGroup.name
-#   location            = azurerm_resource_group.resourceGroup.location
-#   os_type             = "Linux"
-#   sku_name            = "Y1"
+resource "azurerm_service_plan" "servicePlan" {
+  name                = "${var.project_name}-servicePlan-${terraform.workspace}"
+  resource_group_name = azurerm_resource_group.resourceGroup.name
+  location            = azurerm_resource_group.resourceGroup.location
+  os_type             = "Linux"
+  sku_name            = "Y1"
 
-#   tags = {
-#     Costcenter  = var.costcenter
-#     Owner       = var.owner_name
-#     Environment = terraform.workspace
-#   }
-# }
+  tags = {
+    Costcenter  = var.costcenter
+    Owner       = var.owner_name
+    Environment = terraform.workspace
+  }
+}
