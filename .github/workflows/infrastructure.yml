@@ -59,7 +59,7 @@ jobs:
       REDIS_SESSION_DB: ${{ secrets.REDIS_SESSION_DB }}
       # public ssh key for the VM:
       SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
-      SSH_PUBLIC_KEY_PATH: ${{ secrets.SSH_PUBLIC_KEY_PATH }}
+      PUBLIC_SSH_KEY_PATH: ${{ secrets.PUBLIC_SSH_KEY_PATH }}
     defaults:
       run:
         working-directory: infrastructure
@@ -180,7 +180,7 @@ jobs:
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
             -var "redis_jwks_db=${REDIS_JWKS_DB}" \
             -var "redis_session_db=${REDIS_SESSION_DB}" \
-            -var "public_ssh_key_path=${SS_PUBLIC_KEY_PATH}"
+            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
         
         # -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
         # -var "azure_sp_object_id=${ARM_OBJECT_ID}" \
