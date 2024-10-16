@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "4.3.0"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "3.0.2"
+    }
   }
 
   # Create manually before running the init command the first time - reuse any of the existing storage accounts. Beware of who has access to the storage account!
@@ -36,6 +40,8 @@ provider "azurerm" {
   # tenant_id       = var.azure_tenant_id # ARM_TENANT_ID
   # use_msi         = true
 }
+
+provider "azuread" {}
 
 # The client registration running this terraform script
 data "azuread_client_config" "current" {}
