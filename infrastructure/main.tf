@@ -41,6 +41,7 @@ provider "azurerm" {
   # use_msi         = true
 }
 
+# now deleted state-file in backend
 # provider "azuread" {}
 
 # The client registration running this terraform script
