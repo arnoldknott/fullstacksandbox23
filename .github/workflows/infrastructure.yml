@@ -35,6 +35,8 @@ jobs:
       contents: write
     environment: infrastructure
     env:
+      # Logging from tofu:
+      TF_LOG: DEBUG
       # Object ID's of all instances running infrastructure script:
       OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID: ${{ secrets.OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID }}
       DEVELOPER_LOCALHOST_OBJECT_ID: ${{ secrets.DEVELOPER_LOCALHOST_OBJECT_ID }}
