@@ -165,7 +165,6 @@ jobs:
         run: |
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
-            -var "az_tenant_id=${ARM_TENANT_ID}" \
             -var "project_name=${PROJECT_NAME}" \
             -var "project_short_name=${PROJECT_SHORT_NAME}" \
             -var "costcenter=${COSTCENTER}" \
@@ -180,6 +179,7 @@ jobs:
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
         
         # put back in again after debugging:
+          # -var "az_tenant_id=${ARM_TENANT_ID}" \
           # -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
           # -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
           # -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \

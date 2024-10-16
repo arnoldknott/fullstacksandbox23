@@ -16,10 +16,10 @@
 #   type        = string
 # }
 
-variable "azure_tenant_id" {
-  description = "Azure tenant ID"
-  type        = string
-}
+# variable "azure_tenant_id" {
+#   description = "Azure tenant ID"
+#   type        = string
+# }
 
 # variable "azure_sp_object_id" {
 #   description = "Service principle object ID - the enterprise application object ID!"
