@@ -61,6 +61,14 @@ public_ssh_key_path=$(eval echo $(grep PUBLIC_SSH_KEY_PATH .env | cut -d '=' -f 
 # echo "public_ssh_key_path: $public_ssh_key_path"
 cp $local_public_ssh_key_path $public_ssh_key_path
 
+
+echo ""
+echo "=== use Azure login information from host in container ==="
+# az login --tenant $(grep AZURE_TENANT_ID .env | cut -d '=' -f 2 | tr -d ' "')
+az account set --subscription $(grep AZURE_SUBSCRIPTION_ID .env | cut -d '=' -f 2 | tr -d ' "')
+az account get-access-token --resource https://management.azure.com/ --output json > .azure/azure_token.json
+cp -fR ~/.azure/* .azure/
+
 echo ""
 echo "=== building the tofu container ==="
 docker compose build
@@ -97,26 +105,44 @@ docker compose run --rm tofu --version
 
 echo ""
 echo "=== tofu - init ==="
-docker compose run --rm --entrypoint '/bin/sh -c' tofu 'tofu init \
+docker compose run --rm --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
+tofu init \
         -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
         -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
         -backend-config="container_name=${AZ_CONTAINER_NAME}" \
-        -backend-config="key=${AZ_BACKEND_STATE_KEY}"'
+        -backend-config="key=${AZ_BACKEND_STATE_KEY}" \
+        -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+        -var "azure_client_id=${AZURE_CLIENT_ID}" \
+        -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}"'
+
 echo ""
 echo "=== tofu - workspace select ==="
-docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu workspace select -or-create ${WORKSPACE}
+# docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu workspace select -or-create ${WORKSPACE}
+# docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu workspace select -or-create \
+#         -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+#         -var "azure_client_id=${AZURE_CLIENT_ID}" \
+#         -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
+#         ${WORKSPACE}
+docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
+tofu workspace select -or-create \
+        -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+        -var "azure_client_id=${AZURE_CLIENT_ID}" \
+        -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
+        ${WORKSPACE}'
 echo "selected workspace:"
 docker compose run --rm tofu workspace show
+
 echo ""
 echo "=== tofu - plan ==="
 set +e
 # docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu plan -out=${WORKSPACE}.tfplan \
 # docker compose cp ./ssh_key.pub tofu:$local_public_ssh_key_path
-docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'tofu plan -out=${WORKSPACE}.tfplan \
+docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
+ARM_CLIENT_SECRET=$AZURE_CLIENT_SECRET &&
+tofu plan -out=${WORKSPACE}.tfplan \
         -detailed-exitcode \
         -var "azure_tenant_id=${AZURE_TENANT_ID}" \
         -var "azure_client_id=${AZURE_CLIENT_ID}" \
-        -var "azure_client_secret=${AZURE_CLIENT_SECRET}" \
         -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
         -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
         -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
@@ -134,7 +160,9 @@ docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' to
         -var "redis_session_db=${REDIS_SESSION_DB}" \
         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 
-
+# Comes from ARM_ environment variable, as it is not needed with managed identity in the Github Actions workflow:
+# -var "azure_client_secret=${AZURE_CLIENT_SECRET}" \
+#
 # -var "azure_tenant_id=${ARM_TENANT_ID}" \
 # trying with user login instead of service principle inside container:
 # tofu plan -out=${WORKSPACE}.tfplan \
@@ -165,20 +193,43 @@ set -e
 echo "tofu_plan_exit_code: $tofu_plan_exit_code"
 if [ $tofu_plan_exit_code == 1 ]; then
     echo "=== tofu - plan failed ==="
-    exit 1
+    tofu_changes_applied=1
 elif [ $tofu_plan_exit_code == 0 ]; then
     echo "=== tofu - no changes ==="
-    exit 0
+    tofu_changes_applied=0
 elif [ $tofu_plan_exit_code == 2 ]; then
     echo "=== tofu plan has changes ==="
     echo ""
     echo "=== tofu - approval before apply ==="
-    read -p "Apply changes? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1
-    echo "=== tofu - apply ==="
-    docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu apply -auto-approve ${WORKSPACE}.tfplan
+    read -p "Apply changes? (Y/N): " confirm
+    if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+        echo "=== tofu - apply ==="
+        # docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu apply -auto-approve ${WORKSPACE}.tfplan
+        docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
+        ARM_CLIENT_SECRET=$AZURE_CLIENT_SECRET &&
+        tofu apply -auto-approve \
+            -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+            -var "azure_client_id=${AZURE_CLIENT_ID}" \
+            -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
+            ${WORKSPACE}.tfplan'
+        tofu_changes_applied=0
+    else
+        echo "=== tofu - apply not confirmed ==="
+        tofu_changes_applied=1
+    fi
+    # read -p "Apply changes? (Y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1
+    # echo "=== tofu - apply ==="
+    # # docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu apply -auto-approve ${WORKSPACE}.tfplan
+    # docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
+    # ARM_CLIENT_SECRET=$AZURE_CLIENT_SECRET &&
+    # tofu apply -auto-approve \
+    #         -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+    #         -var "azure_client_id=${AZURE_CLIENT_ID}" \
+    #         -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
+    #         ${WORKSPACE}.tfplan'
 else
     echo "=== tofu plan failed with unknown output ==="
-    exit 1
+    tofu_changes_applied=1
 fi
 
 echo ""
@@ -186,7 +237,13 @@ echo "=== remove the public ssh from working directory ==="
 rm -f $public_ssh_key_path
 
 echo ""
+echo "=== remove the azure login information ==="
+rm -f .azure/*
+
+echo ""
 echo "=== tofu - finished ==="
+
+exit $tofu_changes_applied
 
 #### WORKS - start: ####
 # echo "=== tofu - init, workspace, plan, and apply ==="

@@ -5,12 +5,13 @@ variable "azure_client_id" {
   sensitive   = true
 }
 
-variable "azure_client_secret" {
-  description = "Service principle password"
-  type        = string
-  sensitive   = true
-  default     = ""
-}
+# not used any more - replaced by ARM_CLIENT_SECRET for localhost runs only.
+# variable "azure_client_secret" {
+#   description = "Service principle password"
+#   type        = string
+#   sensitive   = true
+#   default     = ""
+# }
 
 variable "azure_subscription_id" {
   description = "Azure subscription ID"

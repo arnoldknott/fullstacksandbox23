@@ -269,8 +269,10 @@ jobs:
 
       - name: Login to Azure using device code
         run: |
-          az login --use-device-code
-          az account set --output none --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          az login --use-device-code --tenant ${{ vars.AZURE_TENANT_ID }} --output none
+          echo "Logged in to Azure"
+          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
+          echo "Set subscription"
 
       - name: Set workspace
         run: |
@@ -286,14 +288,14 @@ jobs:
           fi
           echo "WORKSPACE=$WORKSPACE"
 
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          # use the client_id from above registered identity
-          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # delete secrets.AZURE_TENANT_ID in repository!
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      # - name: Login to Azure
+      #   uses: azure/login@v2
+      #   with:
+      #     # use the client_id from above registered identity
+      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      #     # delete secrets.AZURE_TENANT_ID in repository!
+      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Download plan file from container
         run: |
