@@ -238,7 +238,7 @@ rm -f $public_ssh_key_path
 
 echo ""
 echo "=== remove the azure login information ==="
-rm -f .azure/*
+rm -rfd .azure/*
 
 echo ""
 echo "=== tofu - finished ==="
