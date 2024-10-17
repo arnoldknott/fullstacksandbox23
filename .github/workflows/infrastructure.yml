@@ -183,7 +183,6 @@ jobs:
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
             -var "azure_client_id=${AZURE_CLIENT_ID}" \
-            -var "azure_client_secret=''" \
             -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
             -var "azure_tenant_id=${AZURE_TENANT_ID}" \
             -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
@@ -202,7 +201,7 @@ jobs:
             -var "redis_session_db=${REDIS_SESSION_DB}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
         
-
+        # -var "azure_client_secret=''" \
         # -var "azure_tenant_id=${ARM_TENANT_ID}" \
 
         # -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
