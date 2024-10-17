@@ -67,14 +67,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # - name: Testing working with exit code
-      #   run: |
-      #     set +e
-      #     echo "This is a test"
-      #     exit 100
-      #     exit_code=$?
-      #     set -e
-      #     echo "exit_code: $exit_code"
+      # Login as user instead via --use-device-code?
+      - name: Login to Azure
+        # if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
+        uses: azure/login@v2
+        with:
+          use-device-code: true
+          # use the client_id from above registered identity
+          # client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          # delete secrets.AZURE_TENANT_ID in repository!
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Set workspace
         run: |
