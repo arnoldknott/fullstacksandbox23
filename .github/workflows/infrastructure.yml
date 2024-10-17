@@ -21,11 +21,14 @@ env:
   AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
   AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
   # Backend login and provider configuration:
-  ARM_USE_OIDC: true
-  ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-  ARM_USE_AZUREAD: true
+  # ARM_USE_OIDC: true
+  # ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+  # ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  # ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  # ARM_USE_AZUREAD: true
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
 
 jobs:
   plan:
@@ -177,7 +180,9 @@ jobs:
         run: |
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
-            -var "azure_tenant_id=${ARM_TENANT_ID}" \
+            -var "azure_client_id=${AZURE_CLIENT_ID}" \
+            -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
+            -var "azure_tenant_id=${AZURE_TENANT_ID}" \
             -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
             -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
             -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
@@ -194,6 +199,9 @@ jobs:
             -var "redis_session_db=${REDIS_SESSION_DB}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
         
+
+        # -var "azure_tenant_id=${ARM_TENANT_ID}" \
+
         # -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
         # -var "azure_sp_object_id=${ARM_OBJECT_ID}" \
         # set +e
