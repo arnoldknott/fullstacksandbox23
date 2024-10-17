@@ -9,6 +9,7 @@ variable "azure_client_secret" {
   description = "Service principle password"
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "azure_subscription_id" {
