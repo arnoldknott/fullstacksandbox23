@@ -5,11 +5,11 @@ variable "azure_client_id" {
   sensitive   = true
 }
 
-# variable "azure_client_secret" {
-#   description = "Service principle password"
-#   type        = string
-#   sensitive   = true
-# }
+variable "azure_client_secret" {
+  description = "Service principle password"
+  type        = string
+  sensitive   = true
+}
 
 variable "azure_subscription_id" {
   description = "Azure subscription ID"
