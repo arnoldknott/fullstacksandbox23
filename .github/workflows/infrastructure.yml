@@ -181,6 +181,7 @@ jobs:
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
             -var "azure_client_id=${AZURE_CLIENT_ID}" \
+            -var "azure_client_secret=''" \
             -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
             -var "azure_tenant_id=${AZURE_TENANT_ID}" \
             -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
@@ -267,7 +268,7 @@ jobs:
       - name: Login to Azure using device code
         run: |
           az login --use-device-code
-          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
+          az account set --output none --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Set workspace
         run: |
