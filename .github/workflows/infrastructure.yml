@@ -77,8 +77,10 @@ jobs:
 
       - name: Login to Azure using device code
         run: |
-          az login --use-device-code
+          az login --use-device-code --output none
+          echo "Logged in to Azure"
           az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
+          echo "Set subscription"
 
       # # Login as user instead via --use-device-code?
       # - name: Login to Azure

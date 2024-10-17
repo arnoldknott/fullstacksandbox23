@@ -36,12 +36,7 @@ provider "azurerm" {
   # Those variables should be comming from the environment variables ARM_*
   client_id = var.azure_client_id # ARM_CLIENT_ID
   # client_secret   = var.azure_client_secret # ARM_CLIENT_SECRET - not necessary, when using managed identity, but needed, when using service principle!
-  dynamic "client_secret_block" {
-    for_each = var.azure_client_secret != "" ? [1] : []
-    content {
-      client_secret = var.client_secret
-    }
-  }
+  client_secret = var.azure_client_secret != "" ? var.azure_client_secret : null
   subscription_id = var.azure_subscription_id # ARM_SUBSCRIPTION_ID
   tenant_id       = var.azure_tenant_id       # ARM_TENANT_ID
   # use_msi         = true

@@ -114,7 +114,10 @@ set +e
 # docker compose cp ./ssh_key.pub tofu:$local_public_ssh_key_path
 docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'tofu plan -out=${WORKSPACE}.tfplan \
         -detailed-exitcode \
-        -var "azure_tenant_id=${ARM_TENANT_ID}" \
+        -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+        -var "azure_client_id=${AZURE_CLIENT_ID}" \
+        -var "azure_client_secret=${AZURE_CLIENT_SECRET}" \
+        -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
         -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
         -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
         -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
@@ -131,6 +134,8 @@ docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' to
         -var "redis_session_db=${REDIS_SESSION_DB}" \
         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 
+
+# -var "azure_tenant_id=${ARM_TENANT_ID}" \
 # trying with user login instead of service principle inside container:
 # tofu plan -out=${WORKSPACE}.tfplan \
 #         -detailed-exitcode \
