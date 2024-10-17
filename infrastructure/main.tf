@@ -19,7 +19,7 @@ terraform {
     #   resource_group_name  = "StorageAccount-ResourceGroup"          # Can be passed via `-backend-config=`"resource_group_name=<resource group name>"` in the `init` command.
     #   storage_account_name = "abcd1234"                              # Can be passed via `-backend-config=`"storage_account_name=<storage account name>"` in the `init` command.
     #   container_name       = "tfstate"                               # Can be passed via `-backend-config=`"container_name=<container name>"` in the `init` command.
-    #   key                  = "dev.terraform.tfstate"                # Can be passed via `-backend-config=`"key=<blob key name>"` in the `init` command.
+    #   key                  = "dev.terraform.tfstate"                 # Can be passed via `-backend-config=`"key=<blob key name>"` in the `init` command.
     # pass via environment variables for running local: ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_SUBSCRIPTION_ID, ARM_TENANT_ID
     #   use_oidc             = true                                    # Can also be set via `ARM_USE_OIDC` environment variable.
     #   client_id            = "00000000-0000-0000-0000-000000000000"  # Can also be set via `ARM_CLIENT_ID` environment variable.
@@ -33,14 +33,41 @@ terraform {
 provider "azurerm" {
   features {}
 
-  # Those variables should be comming from the environment variables ARM_*
-  client_id = var.azure_client_id # ARM_CLIENT_ID
-  # client_secret   = var.azure_client_secret # ARM_CLIENT_SECRET - not necessary, when using managed identity, but needed, when using service principle!
-  client_secret = var.azure_client_secret != "" ? var.azure_client_secret : null
+  # Those variables could be comming from the environment variables ARM_*, too.
+  client_id       = var.azure_client_id       # ARM_CLIENT_ID
   subscription_id = var.azure_subscription_id # ARM_SUBSCRIPTION_ID
   tenant_id       = var.azure_tenant_id       # ARM_TENANT_ID
   # use_msi         = true
 }
+
+provider "azurerm" {
+  alias           = "with_client_secret"
+  features {}
+
+  # Those variables could be comming from the environment variables ARM_*, too.
+  client_id       = var.azure_client_id       # ARM_CLIENT_ID
+  client_secret   = var.azure_client_secret   # ARM_CLIENT_SECRET
+  subscription_id = var.azure_subscription_id # ARM_SUBSCRIPTION_ID
+  tenant_id       = var.azure_tenant_id       # ARM_TENANT_ID
+  # use_msi         = true
+}
+
+# Use the appropriate provider alias based on the presence of client_secret
+locals {
+  azurerm_provider = var.azure_client_secret != "" ? azurerm.with_client_secret : azurerm
+}
+
+# provider "azurerm" {
+#   features {}
+
+#   # Those variables should be comming from the environment variables ARM_*
+#   client_id = var.azure_client_id # ARM_CLIENT_ID
+#   # client_secret   = var.azure_client_secret # ARM_CLIENT_SECRET - not necessary, when using managed identity, but needed, when using service principle!
+#   client_secret   = var.azure_client_secret != "" ? var.azure_client_secret : null
+#   subscription_id = var.azure_subscription_id # ARM_SUBSCRIPTION_ID
+#   tenant_id       = var.azure_tenant_id       # ARM_TENANT_ID
+#   # use_msi         = true
+# }
 
 # now deleted state-file in backend
 # provider "azuread" {}
