@@ -33,41 +33,13 @@ terraform {
 provider "azurerm" {
   features {}
 
-  # Those variables could be comming from the environment variables ARM_*, too.
-  client_id       = var.azure_client_id       # ARM_CLIENT_ID
+  # Those variables should be comming from the environment variables ARM_*
+  client_id = var.azure_client_id # ARM_CLIENT_ID
+  # client_secret   = var.azure_client_secret # ARM_CLIENT_SECRET - not necessary, when using managed identity, but needed, when using service principle - so provide through ARM_CLIENT_SECRET variable there!
   subscription_id = var.azure_subscription_id # ARM_SUBSCRIPTION_ID
   tenant_id       = var.azure_tenant_id       # ARM_TENANT_ID
   # use_msi         = true
 }
-
-provider "azurerm" {
-  alias           = "with_client_secret"
-  features {}
-
-  # Those variables could be comming from the environment variables ARM_*, too.
-  client_id       = var.azure_client_id       # ARM_CLIENT_ID
-  client_secret   = var.azure_client_secret   # ARM_CLIENT_SECRET
-  subscription_id = var.azure_subscription_id # ARM_SUBSCRIPTION_ID
-  tenant_id       = var.azure_tenant_id       # ARM_TENANT_ID
-  # use_msi         = true
-}
-
-# Use the appropriate provider alias based on the presence of client_secret
-locals {
-  azurerm_provider = var.azure_client_secret != "" ? azurerm.with_client_secret : azurerm
-}
-
-# provider "azurerm" {
-#   features {}
-
-#   # Those variables should be comming from the environment variables ARM_*
-#   client_id = var.azure_client_id # ARM_CLIENT_ID
-#   # client_secret   = var.azure_client_secret # ARM_CLIENT_SECRET - not necessary, when using managed identity, but needed, when using service principle!
-#   client_secret   = var.azure_client_secret != "" ? var.azure_client_secret : null
-#   subscription_id = var.azure_subscription_id # ARM_SUBSCRIPTION_ID
-#   tenant_id       = var.azure_tenant_id       # ARM_TENANT_ID
-#   # use_msi         = true
-# }
 
 # now deleted state-file in backend
 # provider "azuread" {}

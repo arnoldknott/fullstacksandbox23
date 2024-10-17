@@ -77,7 +77,7 @@ jobs:
 
       - name: Login to Azure using device code
         run: |
-          az login --use-device-code --output none
+          az login --use-device-code --tenant ${{ vars.AZURE_TENANT_ID }} --output none
           echo "Logged in to Azure"
           az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
           echo "Set subscription"
