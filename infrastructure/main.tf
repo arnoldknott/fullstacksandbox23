@@ -41,6 +41,12 @@ provider "azurerm" {
   # use_msi         = true
 }
 
+# resource "azuread_application" "testfullstackinfrastructure" {
+#   display_name = "${var.project_name}-testing-infrastructure-${terraform.workspace}"
+#   owners       = [var.owner_object_id, var.old_repo_service_principle_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
+#   prevent_duplicate_names = true
+# }
+
 # now deleted state-file in backend
 # provider "azuread" {}
 

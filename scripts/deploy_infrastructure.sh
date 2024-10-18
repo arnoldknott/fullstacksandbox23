@@ -64,7 +64,15 @@ cp $local_public_ssh_key_path $public_ssh_key_path
 
 echo ""
 echo "=== use Azure login information from host in container ==="
-# az login --tenant $(grep AZURE_TENANT_ID .env | cut -d '=' -f 2 | tr -d ' "')
+{
+    # try
+    az account show --output none
+} ||
+{
+    # catch
+    az login --tenant $(grep AZURE_TENANT_ID .env | cut -d '=' -f 2 | tr -d ' "')
+    
+}
 az account set --subscription $(grep AZURE_SUBSCRIPTION_ID .env | cut -d '=' -f 2 | tr -d ' "')
 az account get-access-token --resource https://management.azure.com/ --output json > .azure/azure_token.json
 cp -fR ~/.azure/* .azure/
