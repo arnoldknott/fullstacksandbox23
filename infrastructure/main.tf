@@ -41,6 +41,7 @@ provider "azurerm" {
   # use_msi         = true
 }
 
+# Trying a test application registration for thetesting the infrastructure deployment on both localhost and in github actions
 # resource "azuread_application" "testfullstackinfrastructure" {
 #   display_name = "${var.project_name}-testing-infrastructure-${terraform.workspace}"
 #   owners       = [var.owner_object_id, var.old_repo_service_principle_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]

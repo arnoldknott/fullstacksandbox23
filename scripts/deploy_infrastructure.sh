@@ -215,11 +215,12 @@ elif [ $tofu_plan_exit_code == 2 ]; then
         # docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu apply -auto-approve ${WORKSPACE}.tfplan
         docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
         ARM_CLIENT_SECRET=$AZURE_CLIENT_SECRET &&
-        tofu apply -auto-approve \
-            -var "azure_tenant_id=${AZURE_TENANT_ID}" \
-            -var "azure_client_id=${AZURE_CLIENT_ID}" \
-            -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
-            ${WORKSPACE}.tfplan'
+        tofu apply -auto-approve ${WORKSPACE}.tfplan'
+        # tofu apply -auto-approve \
+        #     -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+        #     -var "azure_client_id=${AZURE_CLIENT_ID}" \
+        #     -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
+        #     ${WORKSPACE}.tfplan'
         tofu_changes_applied=0
     else
         echo "=== tofu - apply not confirmed ==="
