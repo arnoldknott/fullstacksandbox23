@@ -272,7 +272,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
           # change to vars.AZURE_TENANT_ID
@@ -327,7 +327,7 @@ jobs:
           echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
           cat postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: postgres_migration_results
           path: postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
@@ -355,7 +355,7 @@ jobs:
     environment: stage
     steps:
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
           # change to vars.AZURE_TENANT_ID
@@ -375,7 +375,7 @@ jobs:
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
       - name: Upload migration check artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: postgres_migration_results
           path: |
@@ -420,7 +420,7 @@ jobs:
           echo ${{ env.COMMIT_SHA }}
           echo $COMMIT_SHA
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
           # change to vars.AZURE_TENANT_ID
@@ -453,7 +453,7 @@ jobs:
         # For debugging enter container with:
         # az containerapp exec -n <resource_name> -g <resource_group> --command "/bin/sh"
       - name: Upload migration check artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: postgres_migration_results
           path: |
@@ -524,7 +524,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
           # change to vars.AZURE_TENANT_ID
@@ -563,7 +563,7 @@ jobs:
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: postgres_migration_results
           path: postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log

@@ -1,3 +1,6 @@
+# Ignore .DS_Store files
+**.DS_Store
+
 # Local .terraform directories
 **/.terraform/*
 
@@ -36,3 +39,15 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Ignore backend configuration files
+**.tfbackend
+
+# Ignore .env files
+**.env
+
+# ignore public ssh keys:
+**.pub
+
+# Ignore azure account files
+.azure/*
