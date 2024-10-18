@@ -1,3 +1,6 @@
+# Ignore .DS_Store files
+**.DS_Store
+
 # Local .terraform directories
 **/.terraform/*
 
@@ -42,3 +45,9 @@ terraform.rc
 
 # Ignore .env files
 **.env
+
+# ignore public ssh keys:
+**.pub
+
+# Ignore azure account files
+.azure/*

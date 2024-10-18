@@ -1,25 +1,48 @@
 # Provider configuration - no longer necessary, passed via environment variables ARM_*
-# variable "azure_client_id" {
-#   description = "Service principle client ID"
-#   type        = string
-#   sensitive   = true
-# }
+variable "azure_client_id" {
+  description = "Service principle client ID"
+  type        = string
+  sensitive   = true
+}
 
+# not used any more - replaced by ARM_CLIENT_SECRET for localhost runs only.
 # variable "azure_client_secret" {
 #   description = "Service principle password"
 #   type        = string
 #   sensitive   = true
+#   default     = ""
 # }
 
-# variable "azure_subscription_id" {
-#   description = "Azure subscription ID"
+variable "azure_subscription_id" {
+  description = "Azure subscription ID"
+  type        = string
+}
+
+variable "azure_tenant_id" {
+  description = "Azure tenant ID"
+  type        = string
+}
+
+# variable "azure_sp_object_id" {
+#   description = "Service principle object ID - the enterprise application object ID!"
 #   type        = string
 # }
 
-# variable "azure_tenant_id" {
-#   description = "Azure tenant ID"
-#   type        = string
-# }
+# delete after full migration to full-stack-sandbox23 repo:
+variable "old_repo_service_principle_object_id" {
+  description = "Service principle object ID (the enterprise application object ID!) from the old infrastructure repository"
+  type        = string
+}
+
+variable "developer_localhost_object_id" {
+  description = "Object ID of the service principle running in container on developers localhost"
+  type        = string
+}
+
+variable "managed_identity_github_actions_object_id" {
+  description = "Object ID of the managed identity running infrastructure in Github Actions pipline"
+  type        = string
+}
 
 # Project configuration:
 variable "project_name" {
@@ -47,9 +70,15 @@ variable "budget_notification_email" {
   type        = string
 }
 
-variable "owner_user_principal_name" {
-  description = "User principal name of desired owner"
+# variable "owner_user_principal_name" {
+#   description = "User principal name of desired owner"
+#   type        = string
+# }
+
+variable "owner_object_id" {
+  description = "Object ID of desired owner"
   type        = string
+
 }
 
 # Postgres configuration:

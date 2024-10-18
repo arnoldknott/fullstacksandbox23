@@ -13,6 +13,7 @@ on:
 
 env:
   # Configuration for pipeline
+  # Configuration for pipeline
   COMMIT_SHA: ${{ github.sha }}
   TOFU_VERSION: 1.8.2
   # Configuration of backend for infrastructure state:
@@ -21,11 +22,14 @@ env:
   AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
   AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
   # Backend login and provider configuration:
-  ARM_USE_OIDC: true
-  ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-  ARM_USE_AZUREAD: true
+  # ARM_USE_OIDC: true
+  # ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+  # ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  # ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  # ARM_USE_AZUREAD: true
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
 
 jobs:
   plan:
@@ -35,13 +39,21 @@ jobs:
       contents: write
     environment: infrastructure
     env:
+      # Logging from tofu:
+      # TF_LOG: DEBUG
+      # Object ID's of all instances running infrastructure script:
+      OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID: ${{ secrets.OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID }}
+      DEVELOPER_LOCALHOST_OBJECT_ID: ${{ secrets.DEVELOPER_LOCALHOST_OBJECT_ID }}
+      MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_SP_OBJECT_ID }}
       # Project specific variables:
       PROJECT_NAME: ${{ vars.PROJECT_NAME }}
       PROJECT_SHORT_NAME: ${{ vars.PROJECT_SHORT_NAME }}
       COSTCENTER: ${{ secrets.COSTCENTER }}
       OWNER_NAME: ${{ secrets.OWNER_NAME }}
       BUDGET_NOTIFICATION_EMAIL: ${{ secrets.BUDGET_NOTIFICATION_EMAIL }}
-      OWNER_USER_PRINCIPLE_NAME: ${{ secrets.OWNER_USER_PRINCIPLE_NAME }}
+      # OWNER_USER_PRINCIPLE_NAME: ${{ secrets.OWNER_USER_PRINCIPLE_NAME }}
+      OWNER_OBJECT_ID: ${{ secrets.OWNER_OBJECT_ID }}
+      ARM_OBJECT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_SP_OBJECT_ID }}
       # Postgres settings:
       POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
       # Redis settings:
@@ -51,7 +63,7 @@ jobs:
       REDIS_SESSION_DB: ${{ secrets.REDIS_SESSION_DB }}
       # public ssh key for the VM:
       SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
-      SSH_PUBLIC_KEY_PATH: ${{ secrets.SSH_PUBLIC_KEY_PATH }}
+      PUBLIC_SSH_KEY_PATH: ${{ secrets.PUBLIC_SSH_KEY_PATH }}
     defaults:
       run:
         working-directory: infrastructure
@@ -59,14 +71,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # - name: Testing working with exit code
-      #   run: |
-      #     set +e
-      #     echo "This is a test"
-      #     exit 100
-      #     exit_code=$?
-      #     set -e
-      #     echo "exit_code: $exit_code"
+
+      - name: Install Azure CLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+      - name: Login to Azure using device code
+        run: |
+          az login --use-device-code --tenant ${{ vars.AZURE_TENANT_ID }} --output none
+          echo "Logged in to Azure"
+          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
+          echo "Set subscription"
+
+      # # Login as user instead via --use-device-code?
+      # - name: Login to Azure
+      #   # if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
+      #   uses: azure/login@v2
+      #   with:
+      #     # use the client_id from above registered identity
+      #     # client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      #     # delete secrets.AZURE_TENANT_ID in repository!
+      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Set workspace
         run: |
@@ -82,7 +108,7 @@ jobs:
           fi
           echo "WORKSPACE=$WORKSPACE"
           mkdir ~/.ssh
-          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.SSH_PUBLIC_KEY_PATH }}
+          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
@@ -149,7 +175,7 @@ jobs:
             fetch: false
             message: 'ci: updates terraform lock file based on workflow run triggered by commit SHA ${{ env.COMMIT_SHA }}.'
 
-      - name: tofu workspace selects
+      - name: tofu workspace select
         run: tofu workspace select -or-create ${WORKSPACE}
 
       - name: tofu plan
@@ -157,18 +183,30 @@ jobs:
         run: |
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
+            -var "azure_client_id=${AZURE_CLIENT_ID}" \
+            -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
+            -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+            -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
+            -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
+            -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
             -var "project_name=${PROJECT_NAME}" \
             -var "project_short_name=${PROJECT_SHORT_NAME}" \
             -var "costcenter=${COSTCENTER}" \
             -var "owner_name=${OWNER_NAME}" \
             -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
-            -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
+            -var "owner_object_id=${OWNER_OBJECT_ID}" \
             -var "postgres_port=${POSTGRES_PORT}" \
             -var "redis_port=${REDIS_PORT}" \
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
             -var "redis_jwks_db=${REDIS_JWKS_DB}" \
             -var "redis_session_db=${REDIS_SESSION_DB}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
+        
+        # -var "azure_client_secret=''" \
+        # -var "azure_tenant_id=${ARM_TENANT_ID}" \
+
+        # -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
+        # -var "azure_sp_object_id=${ARM_OBJECT_ID}" \
         # set +e
         # -- put tofu plan here --
         # tofu_plan_exit_code=$?
@@ -188,15 +226,15 @@ jobs:
         # fi
 
 
-      - name: Login to Azure
-        if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
-        uses: azure/login@v2
-        with:
-          # use the client_id from above registered identity
-          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # delete secrets.AZURE_TENANT_ID in repository!
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      # - name: Login to Azure
+      #   if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
+      #   uses: azure/login@v2
+      #   with:
+      #     # use the client_id from above registered identity
+      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      #     # delete secrets.AZURE_TENANT_ID in repository!
+      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Upload plan file to container
         if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
@@ -204,9 +242,10 @@ jobs:
           az storage blob upload \
             --account-name ${AZ_STORAGE_ACCOUNT_NAME} \
             --container-name ${AZ_CONTAINER_NAME} \
-            --subscription ${ARM_SUBSCRIPTION_ID} \
+            --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
+        # --subscription ${ARM_SUBSCRIPTION_ID} \
     outputs:
       tofu_plan_exit_code: ${{ steps.tofu_plan.outputs.exitcode }}
 
@@ -224,6 +263,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Azure CLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+      - name: Login to Azure using device code
+        run: |
+          az login --use-device-code --tenant ${{ vars.AZURE_TENANT_ID }} --output none
+          echo "Logged in to Azure"
+          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
+          echo "Set subscription"
+
       - name: Set workspace
         run: |
           if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
@@ -238,24 +288,25 @@ jobs:
           fi
           echo "WORKSPACE=$WORKSPACE"
 
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          # use the client_id from above registered identity
-          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # delete secrets.AZURE_TENANT_ID in repository!
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      # - name: Login to Azure
+      #   uses: azure/login@v2
+      #   with:
+      #     # use the client_id from above registered identity
+      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+      #     # delete secrets.AZURE_TENANT_ID in repository!
+      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
+      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Download plan file from container
         run: |
           az storage blob download \
             --account-name ${AZ_STORAGE_ACCOUNT_NAME} \
             --container-name ${AZ_CONTAINER_NAME} \
-            --subscription ${ARM_SUBSCRIPTION_ID} \
+            --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             --name ${WORKSPACE}_${COMMIT_SHA}.tfplan \
             --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
+      # --subscription ${ARM_SUBSCRIPTION_ID} \
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
@@ -270,7 +321,7 @@ jobs:
             -backend-config="container_name=${AZ_CONTAINER_NAME}" \
             -backend-config="key=${AZ_BACKEND_STATE_KEY}"
 
-      - name: tofu workspace slect
+      - name: tofu workspace select
         run: tofu workspace select ${WORKSPACE}
 
       - name: tofu apply
@@ -278,7 +329,6 @@ jobs:
 
       # - name: OpenTofu Output
       #   run: tofu output
-
 
 
 
