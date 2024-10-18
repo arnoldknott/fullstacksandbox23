@@ -13,6 +13,7 @@ on:
 
 env:
   # Configuration for pipeline
+  # Configuration for pipeline
   COMMIT_SHA: ${{ github.sha }}
   TOFU_VERSION: 1.8.2
   # Configuration of backend for infrastructure state:
@@ -320,7 +321,7 @@ jobs:
             -backend-config="container_name=${AZ_CONTAINER_NAME}" \
             -backend-config="key=${AZ_BACKEND_STATE_KEY}"
 
-      - name: tofu workspace slect
+      - name: tofu workspace select
         run: tofu workspace select ${WORKSPACE}
 
       - name: tofu apply
@@ -328,7 +329,6 @@ jobs:
 
       # - name: OpenTofu Output
       #   run: tofu output
-
 
 
 
