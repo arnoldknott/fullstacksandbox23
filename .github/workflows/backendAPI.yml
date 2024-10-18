@@ -336,7 +336,7 @@ jobs:
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
         # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
       - name: Logout from Azure
-        uses: azure/CLI@v1
+        uses: azure/CLI@v2
         with:
           inlineScript: |
             az logout
@@ -387,7 +387,7 @@ jobs:
       #     echo ${{ steps.check_run.outputs.script_output }}
       #     echo ${{ steps.check_run.outputs.script_exit_code }}
       - name: Logout from Azure
-        uses: azure/CLI@v1
+        uses: azure/CLI@v2
         with:
           inlineScript: |
             az logout
@@ -572,7 +572,7 @@ jobs:
       # TBD: consider displaying a "maintanance" page while the migrations are running - but more likely, the new container hasn't activated anyways yet.
       # TBD: or consider creating separate migration scripts for stage and prod? => another pull request? 2 different directories?
       - name: Logout from Azure
-        uses: azure/CLI@v1
+        uses: azure/CLI@v2
         with:
           inlineScript: |
             az logout
