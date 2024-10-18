@@ -370,6 +370,7 @@ jobs:
       #     ./init.sh --my.variable=abc --my.other.variable=def --my.third.variable=ghi
       # this is the end of what worked with multiple script files.
 
+
       # - name: Setup OpenTofu
       #   uses: opentofu/setup-opentofu@v1
       #   with:
