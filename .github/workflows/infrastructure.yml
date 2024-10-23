@@ -239,7 +239,7 @@ jobs:
             --container-name ${AZ_CONTAINER_NAME} \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
-            --overwrite=True
+        # --overwrite=true / add later to allow overwriting the plan file for multiple runs of workflow job
 
         # --subscription ${ARM_SUBSCRIPTION_ID} \
     outputs:
