@@ -12,20 +12,22 @@ on:
       - '!infrastructure/.terraform.lock.hcl'
 
 env:
-  # Configuration for pipeline
+  ### Configuration for pipeline
   COMMIT_SHA: ${{ github.sha }}
   TOFU_VERSION: 1.8.2
-  # Configuration of backend for infrastructure state:
+  ### Configuration of backend for infrastructure state:
   AZ_RESOURCE_GROUP_NAME: ${{ secrets.AZ_RESOURCE_GROUP_NAME }}
   AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
   AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
   AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
-  # Backend login and provider configuration:
-  # ARM_USE_OIDC: true
-  # ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-  # ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  # ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-  # ARM_USE_AZUREAD: true
+  ### Backend login and provider configuration:
+  # use as managed identity login - comment out for user --device-code login:
+  ARM_USE_OIDC: true
+  ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_USE_AZUREAD: true
+  # use as user --device-code login but keep also for managed-identity login:
   AZURE_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
   AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
