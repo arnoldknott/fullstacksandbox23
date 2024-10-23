@@ -19,17 +19,27 @@
 
 # create the workspaces manually:
 # ./scripts/start_infrastructure.sh # to get into the container
+# cp -fR .azure/ ~/.azure
+# tofu init \
+#         -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+#         -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+#         -backend-config="container_name=${AZ_CONTAINER_NAME}" \
+#         -backend-config="key=${AZ_BACKEND_STATE_KEY}" \
+#         -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+#         -var "azure_client_id=${AZURE_CLIENT_ID}" \
+#         -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}"
 # tofu workspace new dev
 # tofu workspace new stage
 # tofu workspace new prod
 # tofu init \
-#     -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
-#     -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
-#     -backend-config="container_name=${AZ_CONTAINER_NAME}" \
-#     -backend-config="key=${AZ_BACKEND_STATE_KEY}"'
-#     -recoonfigure
-
-
+#         -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+#         -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+#         -backend-config="container_name=${AZ_CONTAINER_NAME}" \
+#         -backend-config="key=${AZ_BACKEND_STATE_KEY}" \
+#         -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+#         -var "azure_client_id=${AZURE_CLIENT_ID}" \
+#         -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
+#         -reconfigure
 
 echo "=== Running: deploy_infrastructure ==="
 

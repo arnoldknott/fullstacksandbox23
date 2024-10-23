@@ -13,7 +13,6 @@ on:
 
 env:
   # Configuration for pipeline
-  # Configuration for pipeline
   COMMIT_SHA: ${{ github.sha }}
   TOFU_VERSION: 1.8.2
   # Configuration of backend for infrastructure state:
@@ -106,7 +105,7 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          echo "WORKSPACE=$WORKSPACE"
+          echo "WORKSPACE=${WORKSPACE}"
           mkdir ~/.ssh
           echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
@@ -114,9 +113,6 @@ jobs:
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
-
-      # - name: Set Azure container name for state file
-      #   run: echo "AZ_CONTAINER_NAME=${AZ_CONTAINER_PREFIX}-${WORKSPACE}" >> $GITHUB_ENV
 
       # manually register an application in Azure AD and assign "Contributor" role to the subscription!
       # az identity create \
@@ -161,11 +157,6 @@ jobs:
             -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
             -backend-config="container_name=${AZ_CONTAINER_NAME}" \
             -backend-config="key=${AZ_BACKEND_STATE_KEY}"
-        # tofu init \
-        #   -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
-        #   -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
-        #   -backend-config="container_name=${AZ_CONTAINER_PREFIX}-$WORKSPACE" \
-        #   -backend-config="key=${AZ_BACKEND_STATE_KEY}"
 
       # commit the lock file to the repository - if changed?
       - name: Commit .terraform.lock.hcl file
@@ -286,7 +277,7 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          echo "WORKSPACE=$WORKSPACE"
+          echo "WORKSPACE=${WORKSPACE}"
 
       # - name: Login to Azure
       #   uses: azure/login@v2

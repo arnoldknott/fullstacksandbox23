@@ -275,8 +275,7 @@ jobs:
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # change to vars.AZURE_TENANT_ID
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to staging
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
@@ -358,8 +357,7 @@ jobs:
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # change to vars.AZURE_TENANT_ID
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Check for migrations
         id: check_run
@@ -423,8 +421,7 @@ jobs:
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # change to vars.AZURE_TENANT_ID
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Create migration scripts
         id: migration_scripts
@@ -527,8 +524,7 @@ jobs:
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # change to vars.AZURE_TENANT_ID
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to production
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
