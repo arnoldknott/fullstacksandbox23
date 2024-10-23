@@ -72,17 +72,45 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
-      - name: Install Azure CLI
-        run: |
-          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
+      # # Add in those two steps to run as user instead:
+      # - name: Install Azure CLI
+      #   run: |
+      #     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
       # - name: Login to Azure using device code
       #   run: |
       #     az login --use-device-code --tenant ${{ vars.AZURE_TENANT_ID }} --output none
       #     echo "Logged in to Azure"
       #     az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
       #     echo "Set subscription"
+
+      # manually register an application in Azure AD and assign "Contributor" role to the subscription!
+      # az identity create \
+      #   -g <resource_group> \
+      #   -n <identity_name> \
+      #   -l <location> \
+      #   --tags <tags>
+      # add the repo to the federated credentials of managed identity for the GitHub environemnt "infrastucture":
+      # az identity federated-credential create \
+      #   --identity-name <identity_name> \ # from above!
+      #   --name <federated_credential_name> \
+      #   -g <resource_group> \
+      #   --audiences "api://AzureADTokenExchange" \
+      #   --issuer "https://token.actions.githubusercontent.com" \
+      #   --subject "repo:{github_organization}/{github_repository}:{Entity}" # Entity can be (branch:<github_branch_name>, environment:<github_environment_name>, pull_request, ref:refs/tags/<tag_name>)
+      # Assign the managed identity to the subscription:
+      # az role assignment create \
+      #   --role "Contributor" \
+      #   --assignee <managed_identity_principle_id> \
+      #   --scope /subscriptions/<subscription_id>
+      # az role assignment create \
+      #   --role "Storage Blob Data Contributor" \
+      #   --assignee <managed_identity_principle_id> \
+      #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Storage/storageAccounts/<storage_account_name>/blobServices/default/containers/<container_name>
+      # az role assignment create \
+      #   --role "User Access Administrator" \
+      #   --assignee <managed_identity_principle_id> \
+      #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>
+
 
       - name: Login to Azure using managed identity
         # if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
@@ -114,31 +142,6 @@ jobs:
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
-
-      # manually register an application in Azure AD and assign "Contributor" role to the subscription!
-      # az identity create \
-      #   -g <resource_group> \
-      #   -n <identity_name> \
-      #   -l <location> \
-      #   --tags <tags>
-      # add the repo to the federated credentials of managed identity for the GitHub environemnt "infrastucture":
-      # az identity federated-credential create \
-      #   --identity-name <identity_name> \ # from above!
-      #   --name <federated_credential_name> \
-      #   -g <resource_group> \
-      #   --audiences "api://AzureADTokenExchange" \
-      #   --issuer "https://token.actions.githubusercontent.com" \
-      #   --subject "repo:{github_organization}/{github_repository}:{Entity}" # Entity can be (branch:<github_branch_name>, environment:<github_environment_name>, pull_request, ref:refs/tags/<tag_name>)
-      # Assign the managed identity to the subscription:
-      # az role assignment create \
-      #   --role "Contributor" \
-      #   --assignee <managed_identity_principle_id> \
-      #   --scope /subscriptions/<subscription_id>
-      # az role assignment create \
-      #   --role "Storage Blob Data Contributor" \
-      #   --assignee <managed_identity_principle_id> \
-      #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Storage/storageAccounts/<storage_account_name>/blobServices/default/containers/<container_name>
-
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
@@ -255,10 +258,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Azure CLI
-        run: |
-          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
+      # # Add in those two steps to run as user instead:
+      # - name: Install Azure CLI
+      #   run: |
+      #     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
       # - name: Login to Azure using device code
       #   run: |
       #     az login --use-device-code --tenant ${{ vars.AZURE_TENANT_ID }} --output none
