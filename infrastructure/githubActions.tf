@@ -46,21 +46,47 @@ resource "azurerm_user_assigned_identity" "GithubActionsManagedIdentity" {
     Environment = terraform.workspace
   }
 }
+resource "azurerm_role_assignment" "GithubActionsManagedIdentityRoleResourceGroup" {
+  scope                = azurerm_resource_group.resourceGroup.id
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_user_assigned_identity.GithubActionsManagedIdentity.principal_id
+}
 
-# TBD: check if really necessary?
+resource "azurerm_federated_identity_credential" "GithubActionsManagedIdentityFederatedCredential" {
+  parent_id           = azurerm_user_assigned_identity.GithubActionsManagedIdentity.id
+  name                = "${var.project_name}-githubActionsFederatedIdentityCredentials-${terraform.workspace}"
+  resource_group_name = azurerm_resource_group.resourceGroup.name
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = "https://token.actions.githubusercontent.com"
+  subject             = "repo:<repo_name_here>:environment:${terraform.workspace}"
+}
+
+# Previously manual configurations:
+# https://github.com/Azure/login
+# https://learn.microsoft.com/da-dk/entra/identity/managed-identities-azure-resources/how-manage-user-assigned-managed-identities?pivots=identity-mi-methods-azp#create-a-user-assigned-managed-identity
+# => find managed identity => Azure role assignment => add => resource group => Contributor
+# az role assignment create \
+#   --role "Contributor" \
+#   --assignee <object_id_of_managed_identity> \
+#   --scope /subscriptions/<subscription_id>
+# https://learn.microsoft.com/da-dk/entra/workload-id/workload-identity-federation-create-trust-user-assigned-managed-identity?pivots=identity-wif-mi-methods-azp#github-actions-deploying-azure-resources
+# => find managed identity => add federated credentials => repo settings => environment (dev, stage or prod) => Credential name: ${var.project_name}-githubActionsManagedIdentity-${terraform.workspace}
+# in Github: add environment stage/prod with secrets for the managed identity: client_id, subscription_id, and tenant_id - NOTE: No secret needed!
+# az identity federated-credential create \
+#   --identity-name <identity_name> \
+#   --name "<federated_credential_name" \
+#   -g <resource_group_name> \
+#   --audiences "api://AzureADTokenExchange" \
+#   --issuer "https://token.actions.githubusercontent.com" \
+#   --subject "repo:<repo_name>:branch:<branch_name>"
+
+# TBD: check if really necessary? Yes - pretty sure it is necessary!
 resource "azurerm_role_assignment" "github_runner" {
   scope                = azurerm_storage_account.storage.id
   role_definition_name = "Storage File Data SMB Share Contributor"
   principal_id         = azurerm_user_assigned_identity.GithubActionsManagedIdentity.principal_id
 }
 
-# Manual configurations:
-# https://github.com/Azure/login
-# https://learn.microsoft.com/da-dk/entra/identity/managed-identities-azure-resources/how-manage-user-assigned-managed-identities?pivots=identity-mi-methods-azp#create-a-user-assigned-managed-identity
-# => find managed identity => Azure role assignment => add => resource group => Contributor
-# https://learn.microsoft.com/da-dk/entra/workload-id/workload-identity-federation-create-trust-user-assigned-managed-identity?pivots=identity-wif-mi-methods-azp#github-actions-deploying-azure-resources
-# => find managed identity => add federated credentials => repo settings => environment (dev, stage or prod) => Credential name: ${var.project_name}-githubActionsManagedIdentity-${terraform.workspace}
-# in Github: add environment stage/prod with secrets for the managed identity: client_id, subscription_id, and tenant_id - NOTE: No secret needed!
 
 # # Giving up on this one - and doing it manually in the portal instead!
 # resource "azurerm_role_assignment" "AssigningManagedIdentityAsResourceGroupContributor" {
