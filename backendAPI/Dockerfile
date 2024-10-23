@@ -7,7 +7,7 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 EXPOSE 80
 
-FROM base as dev
+FROM base AS dev
 # EXPOSE 80
 RUN pip install --upgrade pip && \
     pip install -e .[dev]
@@ -23,7 +23,7 @@ RUN pip install --upgrade pip && \
 # USER backend-user
 CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "80"]
 
-FROM base as prod
+FROM base AS prod
 LABEL org.opencontainers.image.source https://github.com/arnoldknott/fullstacksandbox23
 # EXPOSE 80
 RUN rm -rf tests/ .pytest_cache/ .vscode/ .git/ .github/ .gitignore README.md Dockerfile
