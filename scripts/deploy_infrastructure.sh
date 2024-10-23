@@ -12,10 +12,18 @@
 # https://stackoverflow.com/questions/52769758/azure-blob-storage-authorization-permission-mismatch-error-for-get-request-wit
 # https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory
 # az role assignment create \
+#   --role "Contributor" \
+#   --assignee <object_id_of_app> \
+#   --scope /subscriptions/<subscription_id>
+# az role assignment create \
 #   --role "Storage Blob Data Contributor"
-#   --assignee <object_id_of_app*>
+#   --assignee <object_id_of_app>
 #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Storage/storageAccounts/<storage_account_name>/blobServices/default/containers/<container_name>
 # * object_id_of_app is not the allplication id.
+# az role assignment create \
+#   --role "User Access Administrator" \
+#   --assignee <object_id_of_app> \
+#   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>
 
 # create the workspaces manually:
 # ./scripts/start_infrastructure.sh # to get into the container
