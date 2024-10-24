@@ -200,16 +200,6 @@ jobs:
             -var "redis_session_db=${REDIS_SESSION_DB}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
 
-      # - name: Login to Azure
-      #   if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
-      #   uses: azure/login@v2
-      #   with:
-      #     # use the client_id from above registered identity
-      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-      #     # delete secrets.AZURE_TENANT_ID in repository!
-      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
-      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
       - name: Upload plan file to container
         if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
         run: |
@@ -220,7 +210,6 @@ jobs:
             --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
         # --overwrite=true / add later to allow overwriting the plan file for multiple runs of workflow job
 
-        # --subscription ${ARM_SUBSCRIPTION_ID} \
     outputs:
       tofu_plan_exit_code: ${{ steps.tofu_plan.outputs.exitcode }}
 
