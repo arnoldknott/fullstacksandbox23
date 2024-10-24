@@ -189,7 +189,7 @@ jobs:
             -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
             -var "project_name=${PROJECT_NAME}" \
             -var "project_short_name=${PROJECT_SHORT_NAME}" \
-            - var "project_repository_name=${PROJECT_REPOSITORY_NAME}" \
+            -var "project_repository_name=${PROJECT_REPOSITORY_NAME}" \
             -var "costcenter=${COSTCENTER}" \
             -var "owner_name=${OWNER_NAME}" \
             -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
