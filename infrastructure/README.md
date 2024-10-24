@@ -10,11 +10,13 @@ Needs manual approval before apply!
 
 ```bash
 ./scripts/deploy_infrastructure.sh
+
 ```
 
 in projects root directory
 
 ### ... in CI/CD pipeline
+
 
 commit changes to infrastructure and push to repo.
 follow the activity in Github Actions pipeline. 
