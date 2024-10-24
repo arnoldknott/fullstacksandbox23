@@ -200,30 +200,6 @@ jobs:
             -var "redis_jwks_db=${REDIS_JWKS_DB}" \
             -var "redis_session_db=${REDIS_SESSION_DB}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
-        
-        # -var "azure_client_secret=''" \
-        # -var "azure_tenant_id=${ARM_TENANT_ID}" \
-
-        # -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
-        # -var "azure_sp_object_id=${ARM_OBJECT_ID}" \
-        # set +e
-        # -- put tofu plan here --
-        # tofu_plan_exit_code=$?
-        # set -e
-        # echo "tofu_plan_exit_code: $tofu_plan_exit_code"
-        # echo "tofu_plan_exit_code=$tofu_plan_exit_code" >> $GITHUB_OUTPUT
-        # if [ $tofu_plan_exit_code == 1 ]; then
-        #   echo "tofu plan failed with errors."
-        #   exit 1
-        # elif [ $tofu_plan_exit_code == 2 ]; then
-        #   echo "tofu plan has changes."
-        # elif [ $tofu_plan_exit_code == 0 ]; then
-        #   echo "tofu plan has no changes."
-        # else
-        #   echo "tofu plan failed with unknown output."
-        #   exit 1
-        # fi
-
 
       # - name: Login to Azure
       #   if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
@@ -306,8 +282,6 @@ jobs:
             --name ${WORKSPACE}_${COMMIT_SHA}.tfplan \
             --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
-      # --subscription ${ARM_SUBSCRIPTION_ID} \
-
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
@@ -329,76 +303,3 @@ jobs:
 
       # - name: OpenTofu Output
       #   run: tofu output
-
-
-
-
-
-
-### Old stuff:
-      #
-      # that allows using tofu using a managed identity to access the Azure resources and Azure to handle the credientials for that.
-
-      # - name: Build infrastructure image
-      #   run: |
-      #     cd infrastructure
-      #     docker compose build
-      #   # cd scripts
-
-
-
-
-
-      # This stuff worked, but too complicated and unneccessary with multiple single command script files: 
-      # # Delete this later after developed workflow:
-      # - name: Run tofu version and help
-      #   run: |
-      #     cd infrastructure/scripts
-      #     ./version.sh tofu version
-      #     echo ""
-      #     ./help.sh tofu help
-
-      # - name: Formating infrastructure files with tofu fmt
-      #   run: |
-      #     cd infrastructure/scripts
-      #     ./format.sh
-      # # if the formatting fails, the pipeline will fail and the developer will have to fix the formatting issues before the pipeline can pass
-      
-      # - name: Run tofu init
-      #   run: |
-      #     cd infrastructure/scripts
-      #     ./init.sh --my.variable=abc --my.other.variable=def --my.third.variable=ghi
-      # this is the end of what worked with multiple script files.
-
-      # - name: Setup OpenTofu
-      #   uses: opentofu/setup-opentofu@v1
-      #   with:
-      #     tofu_version: 1.8.2
-
-      # - name: OpenTofu Init
-      #   run: tofu init
-
-      # remember to tofu workspace select [dev, stage, prod] depending on the branch [dev, stage, main]
-      # - name: OpenTofu Workspace
-      #   run: tofu workspace select {{ some variable to select workspace }}
-
-      # - name: OpenTofu Plan
-      #   run: tofu plan
-
-      # - name: OpenTofu Apply
-      #   run: tofu apply -auto-approve
-
-      # - name: OpenTofu Output
-      #   run: tofu output
-
-      # remmeber to write the relevant tofu files into the infrastructure folder via commit!
-
-  # backend:
-  #   needs: plan_and_apply
-  #   uses: ./.github/workflows/backendAPI.yml
-  #   secrets: inherit
-
-  # frontend:
-  #   needs: plan_and_apply
-  #   uses: ./.github/workflows/frontend_svelte.yml
-  #   secrets: inherit

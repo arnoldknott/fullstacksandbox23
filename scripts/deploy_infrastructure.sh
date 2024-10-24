@@ -53,7 +53,8 @@
 
 echo "=== Running: deploy_infrastructure ==="
 
-
+echo ""
+echo "=== initialize the script ==="
 # Initialization:
 REPO_ROOT_DIR=$(git rev-parse --show-toplevel)
 BRANCH_NAME=$(git branch --show-current)
