@@ -12,21 +12,22 @@ on:
       - '!infrastructure/.terraform.lock.hcl'
 
 env:
-  # Configuration for pipeline
-  # Configuration for pipeline
+  ### Configuration for pipeline
   COMMIT_SHA: ${{ github.sha }}
   TOFU_VERSION: 1.8.2
-  # Configuration of backend for infrastructure state:
+  ### Configuration of backend for infrastructure state:
   AZ_RESOURCE_GROUP_NAME: ${{ secrets.AZ_RESOURCE_GROUP_NAME }}
   AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
   AZ_CONTAINER_NAME: ${{ vars.AZ_CONTAINER_NAME }}
   AZ_BACKEND_STATE_KEY: ${{ vars.AZ_BACKEND_STATE_KEY }}
-  # Backend login and provider configuration:
-  # ARM_USE_OIDC: true
-  # ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-  # ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  # ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-  # ARM_USE_AZUREAD: true
+  ### Backend login and provider configuration:
+  # use as managed identity login - comment out for user --device-code login:
+  ARM_USE_OIDC: true
+  ARM_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_USE_AZUREAD: true
+  # use as user --device-code login but keep also for managed-identity login:
   AZURE_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
   AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
@@ -48,6 +49,7 @@ jobs:
       # Project specific variables:
       PROJECT_NAME: ${{ vars.PROJECT_NAME }}
       PROJECT_SHORT_NAME: ${{ vars.PROJECT_SHORT_NAME }}
+      PROJECT_REPOSITORY_NAME: ${{ github.repository }}
       COSTCENTER: ${{ secrets.COSTCENTER }}
       OWNER_NAME: ${{ secrets.OWNER_NAME }}
       BUDGET_NOTIFICATION_EMAIL: ${{ secrets.BUDGET_NOTIFICATION_EMAIL }}
@@ -71,53 +73,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # # Add in those two steps to run as user instead:
+      # - name: Install Azure CLI
+      #   run: |
+      #     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      # - name: Login to Azure using device code
+      #   run: |
+      #     az login --use-device-code --tenant ${{ vars.AZURE_TENANT_ID }} --output none
+      #     echo "Logged in to Azure"
+      #     az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
+      #     echo "Set subscription"
 
-      - name: Install Azure CLI
-        run: |
-          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
-      - name: Login to Azure using device code
-        run: |
-          az login --use-device-code --tenant ${{ vars.AZURE_TENANT_ID }} --output none
-          echo "Logged in to Azure"
-          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
-          echo "Set subscription"
-
-      # # Login as user instead via --use-device-code?
-      # - name: Login to Azure
-      #   # if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
-      #   uses: azure/login@v2
-      #   with:
-      #     # use the client_id from above registered identity
-      #     # client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-      #     # delete secrets.AZURE_TENANT_ID in repository!
-      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
-      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Set workspace
-        run: |
-          if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
-            echo "WORKSPACE=dev" >> "$GITHUB_ENV"
-          elif [ ${{ github.ref }} == 'refs/heads/stage' ]; then
-            echo "WORKSPACE=stage" >> "$GITHUB_ENV"
-          elif [ ${{ github.ref }} == 'refs/heads/main' ]; then
-            echo "WORKSPACE=prod" >> "$GITHUB_ENV"
-          else
-            echo "This branch does not support infrastructure deployment"
-            exit 1
-          fi
-          echo "WORKSPACE=$WORKSPACE"
-          mkdir ~/.ssh
-          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
-        # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
-        # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
-        # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
-        # echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
-        # echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
-
-      # - name: Set Azure container name for state file
-      #   run: echo "AZ_CONTAINER_NAME=${AZ_CONTAINER_PREFIX}-${WORKSPACE}" >> $GITHUB_ENV
-
+      # Documentation on how to register the managed identity for the GitHub environment "infrastructure":
+      # https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/guides/service_principal_configuration
       # manually register an application in Azure AD and assign "Contributor" role to the subscription!
       # az identity create \
       #   -g <resource_group> \
@@ -141,7 +109,73 @@ jobs:
       #   --role "Storage Blob Data Contributor" \
       #   --assignee <managed_identity_principle_id> \
       #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Storage/storageAccounts/<storage_account_name>/blobServices/default/containers/<container_name>
+      # az role assignment create \
+      #   --role "User Access Administrator" \
+      #   --assignee <managed_identity_principle_id> \
+      #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>
 
+
+      - name: Login to Azure using managed identity
+        # if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
+        uses: azure/login@v2
+        with:
+          # use the client_id from above registered identity
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          # delete secrets.AZURE_TENANT_ID in repository!
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set workspace
+        run: |
+          if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
+            echo "WORKSPACE=dev" >> "$GITHUB_ENV"
+          elif [ ${{ github.ref }} == 'refs/heads/stage' ]; then
+            echo "WORKSPACE=stage" >> "$GITHUB_ENV"
+          elif [ ${{ github.ref }} == 'refs/heads/main' ]; then
+            echo "WORKSPACE=prod" >> "$GITHUB_ENV"
+          else
+            echo "This branch does not support infrastructure deployment"
+            exit 1
+          fi
+          echo "WORKSPACE=${WORKSPACE}"
+          mkdir -p ~/.ssh
+          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
+        # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
+        # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
+
+      - name: Login to Azure using managed identity
+        # if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
+        uses: azure/login@v2
+        with:
+          # use the client_id from above registered identity
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          # delete secrets.AZURE_TENANT_ID in repository!
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set workspace
+        run: |
+          if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
+            echo "WORKSPACE=dev" >> "$GITHUB_ENV"
+          elif [ ${{ github.ref }} == 'refs/heads/stage' ]; then
+            echo "WORKSPACE=stage" >> "$GITHUB_ENV"
+          elif [ ${{ github.ref }} == 'refs/heads/main' ]; then
+            echo "WORKSPACE=prod" >> "$GITHUB_ENV"
+          else
+            echo "This branch does not support infrastructure deployment"
+            exit 1
+          fi
+          echo "WORKSPACE=${WORKSPACE}"
+          mkdir ~/.ssh
+          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
+        # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
+        # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
+        # echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
@@ -161,11 +195,6 @@ jobs:
             -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
             -backend-config="container_name=${AZ_CONTAINER_NAME}" \
             -backend-config="key=${AZ_BACKEND_STATE_KEY}"
-        # tofu init \
-        #   -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
-        #   -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
-        #   -backend-config="container_name=${AZ_CONTAINER_PREFIX}-$WORKSPACE" \
-        #   -backend-config="key=${AZ_BACKEND_STATE_KEY}"
 
       # commit the lock file to the repository - if changed?
       - name: Commit .terraform.lock.hcl file
@@ -191,6 +220,7 @@ jobs:
             -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
             -var "project_name=${PROJECT_NAME}" \
             -var "project_short_name=${PROJECT_SHORT_NAME}" \
+            -var "project_repository_name=${PROJECT_REPOSITORY_NAME}" \
             -var "costcenter=${COSTCENTER}" \
             -var "owner_name=${OWNER_NAME}" \
             -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
@@ -201,30 +231,6 @@ jobs:
             -var "redis_jwks_db=${REDIS_JWKS_DB}" \
             -var "redis_session_db=${REDIS_SESSION_DB}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
-        
-        # -var "azure_client_secret=''" \
-        # -var "azure_tenant_id=${ARM_TENANT_ID}" \
-
-        # -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
-        # -var "azure_sp_object_id=${ARM_OBJECT_ID}" \
-        # set +e
-        # -- put tofu plan here --
-        # tofu_plan_exit_code=$?
-        # set -e
-        # echo "tofu_plan_exit_code: $tofu_plan_exit_code"
-        # echo "tofu_plan_exit_code=$tofu_plan_exit_code" >> $GITHUB_OUTPUT
-        # if [ $tofu_plan_exit_code == 1 ]; then
-        #   echo "tofu plan failed with errors."
-        #   exit 1
-        # elif [ $tofu_plan_exit_code == 2 ]; then
-        #   echo "tofu plan has changes."
-        # elif [ $tofu_plan_exit_code == 0 ]; then
-        #   echo "tofu plan has no changes."
-        # else
-        #   echo "tofu plan failed with unknown output."
-        #   exit 1
-        # fi
-
 
       # - name: Login to Azure
       #   if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
@@ -244,6 +250,7 @@ jobs:
             --container-name ${AZ_CONTAINER_NAME} \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
+        # --overwrite=true / add later to allow overwriting the plan file for multiple runs of workflow job
 
         # --subscription ${ARM_SUBSCRIPTION_ID} \
     outputs:
@@ -263,16 +270,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Azure CLI
-        run: |
-          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      # # Add in those two steps to run as user instead:
+      # - name: Install Azure CLI
+      #   run: |
+      #     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      # - name: Login to Azure using device code
+      #   run: |
+      #     az login --use-device-code --tenant ${{ vars.AZURE_TENANT_ID }} --output none
+      #     echo "Logged in to Azure"
+      #     az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
+      #     echo "Set subscription"
 
-      - name: Login to Azure using device code
-        run: |
-          az login --use-device-code --tenant ${{ vars.AZURE_TENANT_ID }} --output none
-          echo "Logged in to Azure"
-          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
-          echo "Set subscription"
+      - name: Login to Azure as managed identity
+        uses: azure/login@v2
+        with:
+          # use the client_id from above registered identity
+          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+          # delete secrets.AZURE_TENANT_ID in repository!
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Set workspace
         run: |
@@ -286,16 +302,7 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          echo "WORKSPACE=$WORKSPACE"
-
-      # - name: Login to Azure
-      #   uses: azure/login@v2
-      #   with:
-      #     # use the client_id from above registered identity
-      #     client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-      #     # delete secrets.AZURE_TENANT_ID in repository!
-      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
-      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          echo "WORKSPACE=${WORKSPACE}"
 
       - name: Download plan file from container
         run: |
@@ -305,8 +312,6 @@ jobs:
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             --name ${WORKSPACE}_${COMMIT_SHA}.tfplan \
             --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
-
-      # --subscription ${ARM_SUBSCRIPTION_ID} \
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
@@ -329,77 +334,3 @@ jobs:
 
       # - name: OpenTofu Output
       #   run: tofu output
-
-
-
-
-
-
-### Old stuff:
-      #
-      # that allows using tofu using a managed identity to access the Azure resources and Azure to handle the credientials for that.
-
-      # - name: Build infrastructure image
-      #   run: |
-      #     cd infrastructure
-      #     docker compose build
-      #   # cd scripts
-
-
-
-
-
-      # This stuff worked, but too complicated and unneccessary with multiple single command script files: 
-      # # Delete this later after developed workflow:
-      # - name: Run tofu version and help
-      #   run: |
-      #     cd infrastructure/scripts
-      #     ./version.sh tofu version
-      #     echo ""
-      #     ./help.sh tofu help
-
-      # - name: Formating infrastructure files with tofu fmt
-      #   run: |
-      #     cd infrastructure/scripts
-      #     ./format.sh
-      # # if the formatting fails, the pipeline will fail and the developer will have to fix the formatting issues before the pipeline can pass
-      
-      # - name: Run tofu init
-      #   run: |
-      #     cd infrastructure/scripts
-      #     ./init.sh --my.variable=abc --my.other.variable=def --my.third.variable=ghi
-      # this is the end of what worked with multiple script files.
-
-
-      # - name: Setup OpenTofu
-      #   uses: opentofu/setup-opentofu@v1
-      #   with:
-      #     tofu_version: 1.8.2
-
-      # - name: OpenTofu Init
-      #   run: tofu init
-
-      # remember to tofu workspace select [dev, stage, prod] depending on the branch [dev, stage, main]
-      # - name: OpenTofu Workspace
-      #   run: tofu workspace select {{ some variable to select workspace }}
-
-      # - name: OpenTofu Plan
-      #   run: tofu plan
-
-      # - name: OpenTofu Apply
-      #   run: tofu apply -auto-approve
-
-      # - name: OpenTofu Output
-      #   run: tofu output
-
-      # remmeber to write the relevant tofu files into the infrastructure folder via commit!
-
-  # backend:
-  #   needs: plan_and_apply
-  #   uses: ./.github/workflows/backendAPI.yml
-  #   secrets: inherit
-
-  # frontend:
-  #   needs: plan_and_apply
-  #   uses: ./.github/workflows/frontend_svelte.yml
-  #   secrets: inherit

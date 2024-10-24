@@ -111,7 +111,7 @@ jobs:
     # only run if no infrastructure changes were detected, but do run, if the workflow was triggered by a workflow_run event (then the github.event.workflow_run.head_sha is not null)
     # TBD: split into multiline if statement:
     if: ${{((github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage') && needs.check_for_infrastructure_change.outputs.infrastructure_changed == 'FALSE' ) || ( ( github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'stage' ) && github.event.workflow_run.name == 'Infrastructure' && github.event.workflow_run.conclusion == 'success') }}
-    needs: test
+    needs: [test, check_for_infrastructure_change]
     runs-on: ubuntu-24.04
     permissions:
       id-token: write
@@ -176,10 +176,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to staging
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
@@ -230,7 +230,7 @@ jobs:
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
         # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
       - name: Logout from Azure
-        uses: azure/CLI@v1
+        uses: azure/CLI@v2
         with:
           inlineScript: |
             az logout
@@ -264,10 +264,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to production
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
@@ -294,7 +294,7 @@ jobs:
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
         # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
       - name: Logout from Azure
-        uses: azure/CLI@v1
+        uses: azure/CLI@v2
         with:
           inlineScript: |
             az logout

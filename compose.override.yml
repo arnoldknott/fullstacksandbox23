@@ -48,7 +48,6 @@ services:
     #     networks:
     #         - dev_network
 
-    # TBD: add .diockerignore to frontend_svelte
     frontend_svelte:
         build:
             target: build

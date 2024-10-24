@@ -275,8 +275,7 @@ jobs:
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # change to vars.AZURE_TENANT_ID
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to staging
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
@@ -336,7 +335,7 @@ jobs:
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
         # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
       - name: Logout from Azure
-        uses: azure/CLI@v1
+        uses: azure/CLI@v2
         with:
           inlineScript: |
             az logout
@@ -358,8 +357,7 @@ jobs:
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # change to vars.AZURE_TENANT_ID
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Check for migrations
         id: check_run
@@ -387,7 +385,7 @@ jobs:
       #     echo ${{ steps.check_run.outputs.script_output }}
       #     echo ${{ steps.check_run.outputs.script_exit_code }}
       - name: Logout from Azure
-        uses: azure/CLI@v1
+        uses: azure/CLI@v2
         with:
           inlineScript: |
             az logout
@@ -423,8 +421,7 @@ jobs:
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # change to vars.AZURE_TENANT_ID
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Create migration scripts
         id: migration_scripts
@@ -527,8 +524,7 @@ jobs:
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # change to vars.AZURE_TENANT_ID
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to production
       # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
@@ -572,7 +568,7 @@ jobs:
       # TBD: consider displaying a "maintanance" page while the migrations are running - but more likely, the new container hasn't activated anyways yet.
       # TBD: or consider creating separate migration scripts for stage and prod? => another pull request? 2 different directories?
       - name: Logout from Azure
-        uses: azure/CLI@v1
+        uses: azure/CLI@v2
         with:
           inlineScript: |
             az logout

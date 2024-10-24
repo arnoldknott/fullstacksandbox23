@@ -4,6 +4,8 @@
 
 # This script is used to deploy the infrastructure from localhost using an OpenTofu container.
 
+# Documentation on how to register the service principle for the GitHub environment "infrastructure":
+# https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/guides/service_principal_configuration
 # It requires authentication to Azure via a service principle.
 # Create the service principle via Azure CLI:
 # az ad sp create-for-rbac --name "<name-of-service-principle>" --role="Contributor" --scopes="/subscriptions/<subscription-id>"
@@ -12,28 +14,47 @@
 # https://stackoverflow.com/questions/52769758/azure-blob-storage-authorization-permission-mismatch-error-for-get-request-wit
 # https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory
 # az role assignment create \
+#   --role "Contributor" \
+#   --assignee <object_id_of_app> \
+#   --scope /subscriptions/<subscription_id>
+# az role assignment create \
 #   --role "Storage Blob Data Contributor"
-#   --assignee <object_id_of_app*>
+#   --assignee <object_id_of_app>
 #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Storage/storageAccounts/<storage_account_name>/blobServices/default/containers/<container_name>
 # * object_id_of_app is not the allplication id.
+# az role assignment create \
+#   --role "User Access Administrator" \
+#   --assignee <object_id_of_app> \
+#   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>
 
 # create the workspaces manually:
 # ./scripts/start_infrastructure.sh # to get into the container
+# cp -fR .azure/ ~/.azure
+# tofu init \
+#         -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+#         -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+#         -backend-config="container_name=${AZ_CONTAINER_NAME}" \
+#         -backend-config="key=${AZ_BACKEND_STATE_KEY}" \
+#         -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+#         -var "azure_client_id=${AZURE_CLIENT_ID}" \
+#         -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}"
 # tofu workspace new dev
 # tofu workspace new stage
 # tofu workspace new prod
 # tofu init \
-#     -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
-#     -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
-#     -backend-config="container_name=${AZ_CONTAINER_NAME}" \
-#     -backend-config="key=${AZ_BACKEND_STATE_KEY}"'
-#     -recoonfigure
-
-
+#         -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
+#         -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
+#         -backend-config="container_name=${AZ_CONTAINER_NAME}" \
+#         -backend-config="key=${AZ_BACKEND_STATE_KEY}" \
+#         -var "azure_tenant_id=${AZURE_TENANT_ID}" \
+#         -var "azure_client_id=${AZURE_CLIENT_ID}" \
+#         -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
+#         -reconfigure
 
 echo "=== Running: deploy_infrastructure ==="
 
-
+echo ""
+echo "=== initialize the script ==="
 # Initialization:
 REPO_ROOT_DIR=$(git rev-parse --show-toplevel)
 BRANCH_NAME=$(git branch --show-current)
@@ -157,6 +178,7 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
         -var "project_name=${PROJECT_NAME}" \
         -var "project_short_name=${PROJECT_SHORT_NAME}" \
+        -var "project_repository_name=${PROJECT_REPOSITORY_NAME}" \
         -var "costcenter=${COSTCENTER}" \
         -var "owner_name=${OWNER_NAME}" \
         -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \

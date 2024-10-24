@@ -17,7 +17,7 @@ RUN npm run build
 
 FROM node:20.11.0-alpine3.19
 # TBD: remove when error with internal ingres is fixed.
-RUN apk add --no-cache redis tcptraceroute
+# RUN apk add --no-cache redis tcptraceroute
 COPY --from=build /app/build /app/
 COPY --from=build /app/package*.json /app/
 # TBD: make sure to only copy dependencies and not devDependencies - by runing the correct npm install command above.
