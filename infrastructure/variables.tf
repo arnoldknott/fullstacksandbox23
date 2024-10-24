@@ -55,6 +55,11 @@ variable "project_short_name" {
   type        = string
 }
 
+variable "project_repository_name" {
+  description = "Name github owner and repository"
+  type        = string
+}
+
 variable "costcenter" {
   description = "Organisation internal name of costcenter"
   type        = string
