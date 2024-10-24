@@ -116,38 +116,6 @@ jobs:
 
 
       - name: Login to Azure using managed identity
-        # if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
-        uses: azure/login@v2
-        with:
-          # use the client_id from above registered identity
-          client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
-          # delete secrets.AZURE_TENANT_ID in repository!
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Set workspace
-        run: |
-          if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
-            echo "WORKSPACE=dev" >> "$GITHUB_ENV"
-          elif [ ${{ github.ref }} == 'refs/heads/stage' ]; then
-            echo "WORKSPACE=stage" >> "$GITHUB_ENV"
-          elif [ ${{ github.ref }} == 'refs/heads/main' ]; then
-            echo "WORKSPACE=prod" >> "$GITHUB_ENV"
-          else
-            echo "This branch does not support infrastructure deployment"
-            exit 1
-          fi
-          echo "WORKSPACE=${WORKSPACE}"
-          mkdir -p ~/.ssh
-          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
-        # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
-        # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
-        # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
-        # echo "ARM_TENANT_ID=${{ vars.AZURE_TENANT_ID }}" >> "$GITHUB_ENV"
-        # echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
-
-      - name: Login to Azure using managed identity
-        # if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
         uses: azure/login@v2
         with:
           # use the client_id from above registered identity
