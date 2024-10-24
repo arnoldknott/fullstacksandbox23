@@ -58,7 +58,7 @@ resource "azurerm_federated_identity_credential" "GithubActionsManagedIdentityFe
   resource_group_name = azurerm_resource_group.resourceGroup.name
   audience            = ["api://AzureADTokenExchange"]
   issuer              = "https://token.actions.githubusercontent.com"
-  subject             = "repo:<repo_name_here>:environment:${terraform.workspace}"
+  subject             = "repo:${var.project_repository_name}:environment:${terraform.workspace}"
 }
 
 # Previously manual configurations:
