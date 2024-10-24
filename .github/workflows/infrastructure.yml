@@ -220,7 +220,6 @@ jobs:
             --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
         # --overwrite=true / add later to allow overwriting the plan file for multiple runs of workflow job
 
-        # --subscription ${ARM_SUBSCRIPTION_ID} \
     outputs:
       tofu_plan_exit_code: ${{ steps.tofu_plan.outputs.exitcode }}
 
