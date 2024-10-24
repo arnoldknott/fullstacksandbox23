@@ -4,6 +4,8 @@
 
 # This script is used to deploy the infrastructure from localhost using an OpenTofu container.
 
+# Documentation on how to register the service principle for the GitHub environment "infrastructure":
+# https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/guides/service_principal_configuration
 # It requires authentication to Azure via a service principle.
 # Create the service principle via Azure CLI:
 # az ad sp create-for-rbac --name "<name-of-service-principle>" --role="Contributor" --scopes="/subscriptions/<subscription-id>"
@@ -175,6 +177,7 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
         -var "project_name=${PROJECT_NAME}" \
         -var "project_short_name=${PROJECT_SHORT_NAME}" \
+        -var "project_repository_name=${PROJECT_REPOSITORY_NAME}" \
         -var "costcenter=${COSTCENTER}" \
         -var "owner_name=${OWNER_NAME}" \
         -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \

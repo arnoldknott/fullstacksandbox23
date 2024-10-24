@@ -49,6 +49,7 @@ jobs:
       # Project specific variables:
       PROJECT_NAME: ${{ vars.PROJECT_NAME }}
       PROJECT_SHORT_NAME: ${{ vars.PROJECT_SHORT_NAME }}
+      PROJECT_REPOSITORY_NAME: ${{ github.repository }}
       COSTCENTER: ${{ secrets.COSTCENTER }}
       OWNER_NAME: ${{ secrets.OWNER_NAME }}
       BUDGET_NOTIFICATION_EMAIL: ${{ secrets.BUDGET_NOTIFICATION_EMAIL }}
@@ -83,6 +84,8 @@ jobs:
       #     az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} --output none
       #     echo "Set subscription"
 
+      # Documentation on how to register the managed identity for the GitHub environment "infrastructure":
+      # https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/guides/service_principal_configuration
       # manually register an application in Azure AD and assign "Contributor" role to the subscription!
       # az identity create \
       #   -g <resource_group> \
@@ -186,6 +189,7 @@ jobs:
             -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
             -var "project_name=${PROJECT_NAME}" \
             -var "project_short_name=${PROJECT_SHORT_NAME}" \
+            - var "project_repository_name=${PROJECT_REPOSITORY_NAME}" \
             -var "costcenter=${COSTCENTER}" \
             -var "owner_name=${OWNER_NAME}" \
             -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
