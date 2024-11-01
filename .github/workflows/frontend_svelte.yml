@@ -60,7 +60,7 @@ jobs:
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T frontend_svelte \
-            sh -c "pwd && ls /app/node_modules"
+            sh -c "pwd && ls -la && ls /app/node_modules"
       - name: Code Formating
         run: |
           docker compose \
