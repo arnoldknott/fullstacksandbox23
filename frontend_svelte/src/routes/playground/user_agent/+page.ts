@@ -5,4 +5,4 @@
 //     return { body: userAgent};
 // };
 
-console.log("Hello from routes/playground/user_agent/+page.ts")
+console.log('Hello from routes/playground/user_agent/+page.ts');

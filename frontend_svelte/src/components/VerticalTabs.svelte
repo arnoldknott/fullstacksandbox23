@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
+	// import { fade } from 'svelte/transition';
 
 	let selectedIndex = 0;
 	// const changeSecondTab = () => {

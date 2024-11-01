@@ -2,7 +2,7 @@
 	export let url: string;
 	export let link: string;
 	export let invert: boolean = false;
-	export let pre_load: boolean = "";
+	export let pre_load: boolean = '';
 
 	const formatButton = () => {
 		if (invert) {

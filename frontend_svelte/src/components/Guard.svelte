@@ -18,5 +18,3 @@
 {:else}
 	<span></span>{forward()}
 {/if}
-
-

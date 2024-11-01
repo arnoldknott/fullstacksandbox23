@@ -1,12 +1,10 @@
-
 // import { browser } from "$app/environment";
 // import type { Session } from "$lib/server/session";
 // import { getAccessToken } from "./server/oauth";
 
-
 // const host = `http://${process.env.BACKEND_HOST}:80`;
 
-console.log("Hello from totally redundant backend.ts");
+console.log('Hello from totally redundant backend.ts');
 
 // Seems to be a bit of an overkill and trying to reproduce
 // the fetch function available in server load functions
@@ -21,7 +19,7 @@ console.log("Hello from totally redundant backend.ts");
 
 // 	const headers = {
 // 		'Content-Type': 'application/json',
-// 		Authorization: `Bearer ${accessToken}` 
+// 		Authorization: `Bearer ${accessToken}`
 // 	};
 // 	const response = await fetch(host + url, {
 // 		method: 'GET',
