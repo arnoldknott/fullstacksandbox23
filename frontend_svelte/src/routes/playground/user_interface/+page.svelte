@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Title from '$components/Title.svelte';
+	// import { MultiRangeSlider, initTWE } from 'tw-elements';
 
 	onMount(async () => {
 		const te = await import('tw-elements');
