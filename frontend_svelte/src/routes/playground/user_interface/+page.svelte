@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import Title from '$components/Title.svelte';
 	// import { MultiRangeSlider, initTWE } from 'tw-elements';
+	import {MdSlider} from '@material/web/slider/slider.js'
 
 	onMount(async () => {
 		const te = await import('tw-elements');
@@ -38,7 +39,7 @@
 
 <Title>Status slider</Title>
 
-<div
+<!-- <div
 	data-twe-multi-range-slider-init
 	data-twe-tooltip="true"
 	data-twe-number-of-ranges="1"
@@ -46,7 +47,13 @@
 	class="p-10"
 >
 	{sliderValue}
-</div>
+</div> -->
+
+<!-- <md-slider min="0" max="100" value="50"></md-slider>
+<md-slider value="10" on:input={(e) => (console.log(e.target.value))}></md-slider> -->
+
+<p class="text-2xl text-center">Status: {sliderValue}</p>
+<md-slider class="p-10 w-full" value={sliderValue} on:input={(e:Event) => sliderValue = e.target?.value}></md-slider>
 
 <div class="w-100 m-10 p-10" style="background-color: {color};">
 	STATUS: {sliderValue}
@@ -54,7 +61,7 @@
 
 <Title>Multiple status sliders</Title>
 
-<div
+<!-- <div
 	data-twe-multi-range-slider-init
 	data-twe-tooltip="true"
 	data-twe-number-of-ranges="1"
@@ -62,9 +69,46 @@
 	class="p-10"
 >
 	Left of Topic 1: {sliders[0]}
-</div>
+</div> -->
 
-<div
+<table class="w-full">
+	<thead>
+		<tr>
+			<th>Left of Topic 1</th>
+			<th>Between topic 1 and 2</th>
+			<th>Between topic 2 and 3</th>
+			<th>Right of topic 3</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="px-10 text-center">
+				<md-slider class="p-1 w-full" value={sliders[0]} on:input={(e:Event) => sliders[0] = e.target?.value}></md-slider>
+				{sliders[0]}
+			</td>
+			<td class="px-10 text-center">
+				<md-slider class="p-1 w-full" value={sliders[1]} on:input={(e:Event) => sliders[1] = e.target?.value}></md-slider>
+				{sliders[1]}
+			</td>
+			<td class="px-10 text-center">
+				<md-slider class="p-1 w-full" value={sliders[2]} on:input={(e:Event) => sliders[2] = e.target?.value}></md-slider>
+				{sliders[2]}
+			</td>
+			<td class="px-10 text-center">
+				<md-slider class="p-1 w-full" value={sliders[3]} on:input={(e:Event) => sliders[3] = e.target?.value}></md-slider>
+				{sliders[3]}
+			</td>	
+		</tr>
+	</tbody>
+</table>
+
+<!-- <div class="p-10">Left of Topic 1:
+<md-slider class="p-1" value={sliders[0]} on:input={(e:Event) => sliders[0] = e.target?.value}></md-slider>
+{sliders[0]}
+<md-slider class="p-1" value={sliders[1]} on:input={(e:Event) => sliders[1] = e.target?.value}></md-slider>
+{sliders[1]}
+</div> -->
+<!-- <div
 	data-twe-multi-range-slider-init
 	data-twe-tooltip="true"
 	data-twe-number-of-ranges="1"
@@ -72,9 +116,9 @@
 	class="p-10"
 >
 	Between topic 1 and 2: {sliders[1]}
-</div>
+</div> -->
 
-<div
+<!-- <div
 	data-twe-multi-range-slider-init
 	data-twe-tooltip="true"
 	data-twe-number-of-ranges="1"
@@ -92,7 +136,7 @@
 	class="p-10"
 >
 	Right of topic 3: {sliders[3]}
-</div>
+</div> -->
 
 <!-- {#each colors as color, i}
     <div class="w-100 m-10 p-10" style="background-color: {color};">
