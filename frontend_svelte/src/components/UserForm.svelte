@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	onMount(async () => {
 		const te = await import('tw-elements');
-		te.initTE(
+		te.initTWE(
 			{ Input: te.Input, Ripple: te.Ripple },
 			{ allowReinits: true, checkOtherImports: true }
 		);

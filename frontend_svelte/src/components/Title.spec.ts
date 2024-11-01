@@ -4,12 +4,12 @@ import Title from './Title.svelte';
 
 describe('Title', () => {
 	test('should contain an h1 header', async () => {
-    render(Title);
+		render(Title);
 
-    screen.getByRole('heading', { level: 1 });
+		screen.getByRole('heading', { level: 1 });
 
-    // const heading = screen.getByRole('heading', { level: 1 });
+		// const heading = screen.getByRole('heading', { level: 1 });
 
-    // expect(heading).toBeTruthy();
+		// expect(heading).toBeTruthy();
 	});
 });

@@ -8,36 +8,36 @@ import AppConfig from '$lib/server/config';
 const appConfig = await AppConfig.getInstance();
 
 export const load: LayoutServerLoad = async ({ locals, request }) => {
-  let loggedIn = false;
-  if(locals.sessionData) {
-    try {
-      const accessToken = await getAccessToken(locals.sessionData, ["User.Read"]);
-      const response = await fetch(`${appConfig.ms_graph_base_uri}/me`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      })
-      loggedIn = true;
-      return {
-        body: {
-          sessionData: {
-            loggedIn: loggedIn,
-            userProfile: await response.json(),
-            userAgent: request.headers.get('user-agent')
-          }
-        }
-      };
-      // if (!locals.sessionData){
-      //   console.error("layout - server - getMicrosoftGraph - userProfile - failed");
-      //   redirect(307, "/");
-      // } else {
-      //   const account = locals.sessionData.account;
-      //   const userProfile = await getMicrosoftGraphData(account, '/me');
-      //   return {
-      //     userProfile: userProfile
-      //   };
-    } catch {
-      console.error("layout - server - getMicrosoftGraph - userProfile - failed");
-    }
-  }
+	let loggedIn = false;
+	if (locals.sessionData) {
+		try {
+			const accessToken = await getAccessToken(locals.sessionData, ['User.Read']);
+			const response = await fetch(`${appConfig.ms_graph_base_uri}/me`, {
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+			loggedIn = true;
+			return {
+				body: {
+					sessionData: {
+						loggedIn: loggedIn,
+						userProfile: await response.json(),
+						userAgent: request.headers.get('user-agent')
+					}
+				}
+			};
+			// if (!locals.sessionData){
+			//   console.error("layout - server - getMicrosoftGraph - userProfile - failed");
+			//   redirect(307, "/");
+			// } else {
+			//   const account = locals.sessionData.account;
+			//   const userProfile = await getMicrosoftGraphData(account, '/me');
+			//   return {
+			//     userProfile: userProfile
+			//   };
+		} catch {
+			console.error('layout - server - getMicrosoftGraph - userProfile - failed');
+		}
+	}
 };

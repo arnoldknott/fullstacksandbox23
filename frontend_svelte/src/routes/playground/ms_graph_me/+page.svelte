@@ -6,26 +6,24 @@
 	export let data: PageData;
 
 	let userPictureURL: URL = undefined;
-	onMount( async () => {
-		const response = await fetch('/api/v1/user/me/picture', {method: 'GET'});
+	onMount(async () => {
+		const response = await fetch('/api/v1/user/me/picture', { method: 'GET' });
 		if (!response.ok && response.status !== 200) {
-			console.log("layout - userPictureURL - response not ok");
+			console.log('layout - userPictureURL - response not ok');
 		} else {
-			const pictureBlob = await response.blob()
+			const pictureBlob = await response.blob();
 			if (pictureBlob.size === 0) {
-				console.log("layout - userPictureURL - no User picture available");
+				console.log('layout - userPictureURL - no User picture available');
 			} else {
 				userPictureURL = URL.createObjectURL(pictureBlob);
 			}
-		}}
-	)
-
-
+		}
+	});
 </script>
 
 <Title>Directly from SvelteAPI (works also without client side JavaScript):</Title>
-	<!-- TBD: needs a check if user is logged in -> using store data?  -->
-	<img class="rounded-full" src="/api/v1/user/me/picture" alt="you" />
+<!-- TBD: needs a check if user is logged in -> using store data?  -->
+<img class="rounded-full" src="/api/v1/user/me/picture" alt="you" />
 
 <Title>Passed through server load function and uses client side JavaScript:</Title>
 {#if userPictureURL}
@@ -37,4 +35,3 @@
 
 <Title>Azure Account</Title>
 <code><pre>{JSON.stringify(data.body.account, null, ' ')}</pre></code>
-

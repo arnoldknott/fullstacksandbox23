@@ -10,15 +10,15 @@
 
 	// let origin = 'undefined'
 	// if (typeof window !== 'undefined') {
-  //   origin = location.origin
+	//   origin = location.origin
 	// 	// console.log('location', location)
 	// 	// console.log('host', origin)
-  // }
+	// }
 
 	// // let msal: PublicClientApplication | undefined
-  // // msalInstanceStore.subscribe(value => {
-  // //   msal = value
-  // // })
+	// // msalInstanceStore.subscribe(value => {
+	// //   msal = value
+	// // })
 	// const auth = $auth_instance_store
 	// onMount(async () => {
 	// 	if (auth !== undefined) {

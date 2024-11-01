@@ -16,7 +16,5 @@
 {#if $user_store?.loggedIn}
 	<slot />
 {:else}
-	<span />{forward()}
+	<span></span>{forward()}
 {/if}
-
-

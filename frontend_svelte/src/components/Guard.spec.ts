@@ -26,7 +26,7 @@ describe('Guard', () => {
 		//             default: [ "Protected Content" ] })
 		// })   ;
 		const content = screen.getByText('Protected Content');
-		expect(content).toBeFalsy;
+		expect(content).toBeFalsy();
 	});
 	test.todo('should show content as user is logged in', () => {});
 });

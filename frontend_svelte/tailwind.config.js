@@ -1,9 +1,11 @@
 /** @type {import('tailwindcss').Config} */
-export default {
-	content: ['./src/**/*.{html,js,svelte,ts}', './node_modules/tw-elements/dist/js/**/*.js'],
+import twElements from 'tw-elements/plugin.cjs';
+
+module.exports = {
+	content: ['./src/**/*.{html,js,svelte,ts}', './node_modules/tw-elements/js/**/*.js'],
 	theme: {
 		extend: {}
 	},
 	darkMode: 'media',
-	plugins: [require('tw-elements/dist/plugin.cjs')]
+	plugins: [twElements]
 };

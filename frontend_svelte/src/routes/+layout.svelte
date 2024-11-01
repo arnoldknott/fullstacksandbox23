@@ -38,22 +38,21 @@
 	// }
 
 	let userPictureURL: URL = undefined;
-	onMount( async () => {
-		const response = await fetch('/api/v1/user/me/picture', {method: 'GET'});
+	onMount(async () => {
+		const response = await fetch('/api/v1/user/me/picture', { method: 'GET' });
 		if (!response.ok && response.status !== 200) {
-			console.log("layout - userPictureURL - response not ok");
+			console.log('layout - userPictureURL - response not ok');
 			console.log(response);
 		} else {
-			const pictureBlob = await response.blob()
+			const pictureBlob = await response.blob();
 			if (pictureBlob.size === 0) {
-				console.log("layout - userPictureURL - no User picture available");
+				console.log('layout - userPictureURL - no User picture available');
 				console.log(pictureBlob);
 			} else {
 				userPictureURL = URL.createObjectURL(pictureBlob);
 			}
 		}
-	})
-
+	});
 
 	// if (data?.loggedIn) {
 	// 	$user_store = data;
@@ -77,19 +76,19 @@
 			<!-- <NavButton url="/user" link="User" /> -->
 			<!-- Move this to component user button -->
 			<!-- Implemnt check for user picture size and show svg instead, if no user picture available -->
-			
+
 			{#if loggedIn}
 				<img class="h-12 w-12 rounded-full" src="/api/v1/user/me/picture" alt="you" />
-				{ session.userProfile.displayName }
+				{session.userProfile.displayName}
 				{#if userPictureURL}
-				<img class="h-12 w-12 rounded-full" src={userPictureURL} alt="you" />
-			{/if}
+					<img class="h-12 w-12 rounded-full" src={userPictureURL} alt="you" />
+				{/if}
 			{/if}
 			<!-- Change this to using $page.data -> user -->
 			{#if !loggedIn}
 				<!-- <NavButton url="/register" link="Register" invert /> -->
 				<!-- data-sveltekit-preload-data="false" -->
-				<NavButton pre_load=false url="/login" link="Login" />
+				<NavButton pre_load="false" url="/login" link="Login" />
 			{:else}
 				<UserButton />
 				<!-- needs to redirect to /home and delete session information -->
