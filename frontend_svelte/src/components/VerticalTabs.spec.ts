@@ -11,7 +11,7 @@ describe('VerticalTabs Component', () => {
 		expect(firstTabHeading).toBeTruthy();
 	});
 	it('should switch tabs', async () => {
-		// render(VerticalTabs);
+		render(VerticalTabs);
 
 		const secondTabLink = screen.getByText(/Second Tab/i);
 
