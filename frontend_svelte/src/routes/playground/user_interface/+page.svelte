@@ -4,7 +4,7 @@
 
     onMount(async () => {
     const te = await import('tw-elements');
-    te.initTE(
+    te.initTWE(
         { MultiRangeSlider: te.MultiRangeSlider  },
         { allowReinits: true, checkOtherImports: true }
     );
@@ -37,9 +37,9 @@
 
 <Title>Status slider</Title>
 
-<div data-te-multi-range-slider-init
-    data-te-tooltip="true"
-    data-te-number-of-ranges="1"
+<div data-twe-multi-range-slider-init
+    data-twe-tooltip="true"
+    data-twe-number-of-ranges="1"
     on:valueChanged.te.multiRangeSlider={e => sliderValue = e.values.rounded}
     class=p-10>
     { sliderValue }
@@ -51,33 +51,33 @@
 
 <Title>Multiple status sliders</Title>
 
-<div data-te-multi-range-slider-init
-    data-te-tooltip="true"
-    data-te-number-of-ranges="1"
+<div data-twe-multi-range-slider-init
+    data-twe-tooltip="true"
+    data-twe-number-of-ranges="1"
     on:valueChanged.te.multiRangeSlider={e => sliders[0] = e.values.rounded}
     class=p-10>
     Left of Topic 1: { sliders[0] }
 </div>
 
-<div data-te-multi-range-slider-init
-    data-te-tooltip="true"
-    data-te-number-of-ranges="1"
+<div data-twe-multi-range-slider-init
+    data-twe-tooltip="true"
+    data-twe-number-of-ranges="1"
     on:valueChanged.te.multiRangeSlider={e => sliders[1] = e.values.rounded}
     class=p-10>
     Between topic 1 and 2: { sliders[1] }
 </div>
 
-<div data-te-multi-range-slider-init
-    data-te-tooltip="true"
-    data-te-number-of-ranges="1"
+<div data-twe-multi-range-slider-init
+    data-twe-tooltip="true"
+    data-twe-number-of-ranges="1"
     on:valueChanged.te.multiRangeSlider={e => sliders[2] = e.values.rounded}
     class=p-10>
     Between topic 2 and 3: { sliders[2] }
 </div>
 
-<div data-te-multi-range-slider-init
-    data-te-tooltip="true"
-    data-te-number-of-ranges="1"
+<div data-twe-multi-range-slider-init
+    data-twe-tooltip="true"
+    data-twe-number-of-ranges="1"
     on:valueChanged.te.multiRangeSlider={e => sliders[3] = e.values.rounded}
     class=p-10>
     Right of topic 3: { sliders[3] }
