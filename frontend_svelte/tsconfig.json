@@ -3,21 +3,11 @@
 	"compilerOptions": {
 		"baseUrl": "./src",
 		"paths": {
-			"$components": [
-				"components"
-			],
-			"$components/*": [
-				"components/*"
-			],
-			"$lib": [
-				"lib"
-			],
-			"$lib/*": [
-				"lib/*"
-			],
-			"*": [
-				"./node_modules/*"
-			]
+			"$components": ["components"],
+			"$components/*": ["components/*"],
+			"$lib": ["lib"],
+			"$lib/*": ["lib/*"],
+			"*": ["./node_modules/*"]
 		},
 		"allowJs": true,
 		"checkJs": true,

@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
 	import Title from '$components/Title.svelte';
 	// import { MultiRangeSlider, initTWE } from 'tw-elements';
-	import {MdSlider} from '@material/web/slider/slider.js'
+	// import { MdSlider } from '@material/web/slider/slider.js';
+	import '@material/web/slider/slider.js';
 
 	onMount(async () => {
 		const te = await import('tw-elements');
@@ -52,8 +53,12 @@
 <!-- <md-slider min="0" max="100" value="50"></md-slider>
 <md-slider value="10" on:input={(e) => (console.log(e.target.value))}></md-slider> -->
 
-<p class="text-2xl text-center">Status: {sliderValue}</p>
-<md-slider class="p-10 w-full" value={sliderValue} on:input={(e:Event) => sliderValue = e.target?.value}></md-slider>
+<p class="text-center text-2xl">Status: {sliderValue}</p>
+<md-slider
+	class="w-full p-10"
+	value={sliderValue}
+	on:input={(e: Event) => (sliderValue = e.target?.value)}
+></md-slider>
 
 <div class="w-100 m-10 p-10" style="background-color: {color};">
 	STATUS: {sliderValue}
@@ -83,21 +88,37 @@
 	<tbody>
 		<tr>
 			<td class="px-10 text-center">
-				<md-slider class="p-1 w-full" value={sliders[0]} on:input={(e:Event) => sliders[0] = e.target?.value}></md-slider>
+				<md-slider
+					class="w-full p-1"
+					value={sliders[0]}
+					on:input={(e: Event) => (sliders[0] = e.target?.value)}
+				></md-slider>
 				{sliders[0]}
 			</td>
 			<td class="px-10 text-center">
-				<md-slider class="p-1 w-full" value={sliders[1]} on:input={(e:Event) => sliders[1] = e.target?.value}></md-slider>
+				<md-slider
+					class="w-full p-1"
+					value={sliders[1]}
+					on:input={(e: Event) => (sliders[1] = e.target?.value)}
+				></md-slider>
 				{sliders[1]}
 			</td>
 			<td class="px-10 text-center">
-				<md-slider class="p-1 w-full" value={sliders[2]} on:input={(e:Event) => sliders[2] = e.target?.value}></md-slider>
+				<md-slider
+					class="w-full p-1"
+					value={sliders[2]}
+					on:input={(e: Event) => (sliders[2] = e.target?.value)}
+				></md-slider>
 				{sliders[2]}
 			</td>
 			<td class="px-10 text-center">
-				<md-slider class="p-1 w-full" value={sliders[3]} on:input={(e:Event) => sliders[3] = e.target?.value}></md-slider>
+				<md-slider
+					class="w-full p-1"
+					value={sliders[3]}
+					on:input={(e: Event) => (sliders[3] = e.target?.value)}
+				></md-slider>
 				{sliders[3]}
-			</td>	
+			</td>
 		</tr>
 	</tbody>
 </table>
