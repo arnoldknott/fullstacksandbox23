@@ -5,11 +5,13 @@
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
 	import type { LayoutData } from './$types';
+	import type { Component } from 'svelte';
 	// import JsonData from '$components/JsonData.svelte';
 	// import Guard from '$components/Guard.svelte';
 	// import type { User } from 'src/types.d.ts';
 
-	export let data: LayoutData;
+	let { data, children }: { data: LayoutData; children: Component } = $props();
+	// let data: LayoutData = $props();
 	// console.log('layout - client - data')
 	// console.log(data)
 
@@ -37,7 +39,7 @@
 	// 	user_store.set(data.user);
 	// }
 
-	let userPictureURL: URL = undefined;
+	let userPictureURL: URL | undefined = $state(undefined);
 	onMount(async () => {
 		const response = await fetch('/api/v1/user/me/picture', { method: 'GET' });
 		if (!response.ok && response.status !== 200) {
@@ -101,7 +103,8 @@
 </nav>
 
 <main>
-	<slot />
+	{@render children?.()}
+	<!-- <slot /> -->
 	<!-- <JsonData data={ data?.body?.loggedIn }/> -->
 	<!-- <JsonData data={ data.body }/> -->
 </main>

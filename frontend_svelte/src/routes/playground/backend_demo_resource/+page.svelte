@@ -2,8 +2,9 @@
 	import type { PageData } from './$types';
 	import JsonData from '$components/JsonData.svelte';
 	import Title from '$components/Title.svelte';
-	export let data: PageData;
-	const demo_resources = data.body;
+	// export let data: PageData;
+	let { data }: { data: PageData } = $props();
+	const demo_resources = data.demoResources;
 </script>
 
 <!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->

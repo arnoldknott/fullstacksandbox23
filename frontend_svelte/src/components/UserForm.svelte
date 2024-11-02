@@ -8,8 +8,9 @@
 		);
 	});
 
-	export let type = 'login';
-	export let button = type === 'signup' ? 'Sign up' : 'Log in';
+	type Props = { type: 'login' | 'signup'; button: string };
+	let { type, button }: Props = $props();
+	button = type === 'signup' ? 'Sign up' : 'Log in'; // untested!
 </script>
 
 <section class="flex h-full w-full justify-center">

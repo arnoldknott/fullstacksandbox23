@@ -13,5 +13,6 @@ export const load: PageServerLoad = async ({ fetch, locals }) => {
 		}
 	});
 	const demoResources = await response.json();
-	return { body: demoResources };
+	console.log(demoResources);
+	return { demoResources };
 };

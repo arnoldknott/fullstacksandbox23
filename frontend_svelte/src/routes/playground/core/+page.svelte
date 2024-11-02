@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	export let data: PageData;
+	let { data, urlClient }: { data: PageData; urlClient: string } = $props();
+	// export let data: PageData;
 	const backendInformation = data.body;
-	export let urlClient = 'undefined';
+	// export let urlClient = 'undefined';
 	if (typeof window !== 'undefined') {
 		urlClient = location.href;
 	}

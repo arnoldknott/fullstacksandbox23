@@ -3,9 +3,11 @@
 	import type { PageData } from './$types';
 	import Title from '$components/Title.svelte';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
+	const account = data.account;
+	const userProfile = data.userProfile;
 
-	let userPictureURL: URL = undefined;
+	let userPictureURL: URL | undefined = $state(undefined);
 	onMount(async () => {
 		const response = await fetch('/api/v1/user/me/picture', { method: 'GET' });
 		if (!response.ok && response.status !== 200) {
@@ -31,7 +33,7 @@
 {/if}
 
 <Title>Microsoft User Profile on DTU Tenant</Title>
-<code><pre>{JSON.stringify(data.body.userProfile, null, ' ')}</pre></code>
+<code><pre>{JSON.stringify(userProfile, null, ' ')}</pre></code>
 
 <Title>Azure Account</Title>
-<code><pre>{JSON.stringify(data.body.account, null, ' ')}</pre></code>
+<code><pre>{JSON.stringify(account, null, ' ')}</pre></code>

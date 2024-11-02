@@ -8,8 +8,6 @@ export const load = async () => {
 		return error(401, 'Unauthorized');
 	}
 	return {
-		props: {
-			user: user
-		}
+		user: user
 	};
 };

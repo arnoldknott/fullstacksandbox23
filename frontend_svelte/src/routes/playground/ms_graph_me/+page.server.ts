@@ -22,9 +22,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const userProfile = await response.json();
 
 	return {
-		body: {
-			account: locals.sessionData.account,
-			userProfile: userProfile
-		}
+		account: locals.sessionData.account,
+		userProfile: userProfile
 	};
 };

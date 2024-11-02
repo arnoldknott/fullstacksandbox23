@@ -1,7 +1,5 @@
 <script lang="ts">
-	export let title;
-	export let description;
-	export let href;
+	let { title, description, href } = $props();
 </script>
 
 <!-- Card -->

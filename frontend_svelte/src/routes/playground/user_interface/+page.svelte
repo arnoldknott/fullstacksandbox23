@@ -13,16 +13,16 @@
 		);
 	});
 
-	$: sliderValue = 0;
-	$: color = `hsl(${sliderValue * 1.2}, 80%, 80%)`;
+	let sliderValue = $state(0);
+	const color = $derived(`hsl(${sliderValue * 1.2}, 80%, 80%)`);
 
-	$: sliders = [0, 0, 0, 0];
-	$: colors = [
+	let sliders = $state([0, 0, 0, 0]);
+	const colors = $derived([
 		`hsl(${sliders[0] * 1.2}, 80%, 80%)`,
 		`hsl(${sliders[1] * 1.2}, 80%, 80%)`,
 		`hsl(${sliders[2] * 1.2}, 80%, 80%)`,
 		`hsl(${sliders[3] * 1.2}, 80%, 80%)`
-	];
+	]);
 </script>
 
 <!-- <div class="px-10">
@@ -54,10 +54,11 @@
 <md-slider value="10" on:input={(e) => (console.log(e.target.value))}></md-slider> -->
 
 <p class="text-center text-2xl">Status: {sliderValue}</p>
+<!-- TBD refactor into bindable prop! -->
 <md-slider
 	class="w-full p-10"
 	value={sliderValue}
-	on:input={(e: Event) => (sliderValue = e.target?.value)}
+	oninput={(e: Event) => (sliderValue = e.target?.value)}
 ></md-slider>
 
 <div class="w-100 m-10 p-10" style="background-color: {color};">
@@ -91,7 +92,7 @@
 				<md-slider
 					class="w-full p-1"
 					value={sliders[0]}
-					on:input={(e: Event) => (sliders[0] = e.target?.value)}
+					oninput={(e: Event) => (sliders[0] = e.target?.value)}
 				></md-slider>
 				{sliders[0]}
 			</td>
@@ -99,7 +100,7 @@
 				<md-slider
 					class="w-full p-1"
 					value={sliders[1]}
-					on:input={(e: Event) => (sliders[1] = e.target?.value)}
+					oninput={(e: Event) => (sliders[1] = e.target?.value)}
 				></md-slider>
 				{sliders[1]}
 			</td>
@@ -107,7 +108,7 @@
 				<md-slider
 					class="w-full p-1"
 					value={sliders[2]}
-					on:input={(e: Event) => (sliders[2] = e.target?.value)}
+					oninput={(e: Event) => (sliders[2] = e.target?.value)}
 				></md-slider>
 				{sliders[2]}
 			</td>
@@ -115,7 +116,7 @@
 				<md-slider
 					class="w-full p-1"
 					value={sliders[3]}
-					on:input={(e: Event) => (sliders[3] = e.target?.value)}
+					oninput={(e: Event) => (sliders[3] = e.target?.value)}
 				></md-slider>
 				{sliders[3]}
 			</td>
