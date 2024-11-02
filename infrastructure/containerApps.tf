@@ -302,7 +302,7 @@ resource "azurerm_container_app" "redisContainer" {
     container {
       name = "redis"
       # TBD: consider removing stage here as soon as the development is well on the way!
-      image = terraform.workspace == "dev" || terraform.workspace == "stage" ? "redis/redis-stack:7.2.0-v6" : "redis/redis-stack-server:7.2.0-v6" #  "redis:7.2-alpine"
+      image = terraform.workspace == "dev" || terraform.workspace == "stage" ? "redis/redis-stack:7.2.0-v13" : "redis/redis-stack-server:7.2.0-v13" #  "redis:7.2-alpine"
       # image = terraform.workspace == "dev" ? "redis/redis-stack:7.2.0-v6" : "redis/redis-stack-server:7.2.0-v6" #  "redis:7.2-alpine"
       # args  = ["--save 180 1"]#["--requirepass", "fromTerraformChangedInGithubActions"]
       # command = ["redis-server", "--save 180 1"]
