@@ -21,19 +21,15 @@
 		<li class:selected={selectedIndex === 2}
             on:click={() => changeTab(2)}>Third Tab</li> -->
 		<li>
-			<button class:selected={selectedIndex === 0} on:click={() => changeTab(0)}>
-				First Tab
-			</button>
+			<button class:selected={selectedIndex === 0} onclick={() => changeTab(0)}> First Tab </button>
 		</li>
 		<li>
-			<button class:selected={selectedIndex === 1} on:click={() => changeTab(1)}>
+			<button class:selected={selectedIndex === 1} onclick={() => changeTab(1)}>
 				Second Tab
 			</button>
 		</li>
 		<li>
-			<button class:selected={selectedIndex === 2} on:click={() => changeTab(2)}>
-				Third Tab
-			</button>
+			<button class:selected={selectedIndex === 2} onclick={() => changeTab(2)}> Third Tab </button>
 		</li>
 	</ul>
 

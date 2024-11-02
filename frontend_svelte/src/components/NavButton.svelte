@@ -1,8 +1,30 @@
 <script lang="ts">
-	export let url: string;
-	export let link: string;
-	export let invert: boolean = false;
-	export let pre_load: boolean = '';
+	type Props = {
+		url: string;
+		link: string;
+		invert?: boolean;
+		pre_load?: boolean;
+	};
+	let { url, link, invert = false, pre_load = false }: Props = $props();
+
+	/*
+	// Typing props from https://github.com/sveltejs/svelte/issues/9241#issuecomment-2299188014
+// 	<!-- Input.svelte -->
+//   add script tags here!
+//   type Props = { type: 'text'; value: string } | { type: 'number'; value: number };
+//   let { type, value }: Props = $props();
+
+// add script tags here!
+//   import Input from './Input.svelte';
+
+// <!-- cool -->
+// <Input type="text" value="a string" />
+// <Input type="number" value={42} />
+
+// <!-- type error -->
+// <Input type="number" value="a string" />
+// <Input type="text" value={42} />
+*/
 
 	const formatButton = () => {
 		if (invert) {

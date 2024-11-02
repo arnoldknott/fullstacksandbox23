@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			}
 		});
 		const schema = await response.json();
-		return { body: schema };
+		return { schema };
 	} catch (err) {
 		console.error('playground - on-behalf-of - server - load - failed');
 		console.error(err);

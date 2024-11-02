@@ -5,7 +5,9 @@
 
 	// initTE({ Ripple });
 
-	export let data: PageData;
+	// type Props = { data: PageData };
+	// let { data }: Props = $props();
+	let data: PageData = $props();
 	const apiLink = data.body;
 </script>
 

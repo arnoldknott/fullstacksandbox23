@@ -1,8 +1,8 @@
 <script lang="ts">
 	// /** @type {import('./$types').PageData} */
 	import type { PageData } from './$types';
-	export let data: PageData;
-	const schema = data.body;
+	let { data }: { data: PageData } = $props();
+	const schema = data.schema;
 </script>
 
 <div class="mx-5">
