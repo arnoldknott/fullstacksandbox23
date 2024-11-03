@@ -140,7 +140,9 @@ async def delete_tag(
 ) -> None:  # Tag:
     """Deletes a tag."""
     return await tag_view.delete(
-        tag_id, token_payload, guards  # roles=["User"], scopes=["api.write"]
+        tag_id,
+        token_payload,
+        guards,  # roles=["User"], scopes=["api.write"]
     )
 
 

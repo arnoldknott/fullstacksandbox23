@@ -4,12 +4,12 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 
-from core.security import CurrentAccessTokenHasScope, CurrentAccessTokenHasRole
+from core.security import CurrentAccessTokenHasRole, CurrentAccessTokenHasScope
 from routers.api.v1.access import router as access_router
 from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router
-from routers.api.v1.demo_resource import router as demo_resource_router
 from routers.api.v1.demo_file import router as demo_file_router
+from routers.api.v1.demo_resource import router as demo_resource_router
 from routers.api.v1.identities import (
     group_router,
     sub_group_router,

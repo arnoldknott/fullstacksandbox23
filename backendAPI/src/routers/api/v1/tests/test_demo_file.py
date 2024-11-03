@@ -1,14 +1,11 @@
-import pytest
 from os import path, remove
+
+import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 
-
 from models.demo_file import DemoFile
-from tests.utils import (
-    token_admin_read_write,
-    token_user1_read_write,
-)
+from tests.utils import token_admin_read_write, token_user1_read_write
 
 
 @pytest.mark.anyio

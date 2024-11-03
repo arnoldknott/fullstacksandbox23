@@ -125,7 +125,7 @@ async def test_azure_user_self_signup(
     # create a temporary route that uses the guard:
     @app.get("/test_azure_user_self_signup")
     def temp_endpoint(
-        current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())]
+        current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())],
     ):
         """Returns the result of the guard."""
         return current_user
@@ -192,7 +192,7 @@ async def test_azure_user_self_signup_invalid_token(
     # create a temporary route that uses the guard:
     @app.get("/test_azure_user_self_signup_missing_token")
     def temp_endpoint(
-        current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())]
+        current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())],
     ):
         """Returns the result of the guard."""
         return current_user
@@ -243,7 +243,7 @@ async def test_existing_azure_user_has_new_group_in_token(
     # create a temporary route that uses the guard adn call it:
     @app.get("/test_existing_azure_user_has_new_group_in_token")
     def temp_endpoint(
-        current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())]
+        current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())],
     ) -> UserRead:
         """Returns the result of the guard."""
         return current_user
@@ -329,7 +329,7 @@ async def test_existing_azure_user_got_group_removed_in_token(
     # create a temporary route that uses the guard adn call it:
     @app.get("/test_existing_azure_user_got_group_removed_in_token")
     def temp_endpoint(
-        current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())]
+        current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())],
     ) -> UserRead:
         """Returns the result of the guard."""
         return current_user
@@ -428,7 +428,7 @@ async def test_existing_user_logs_in(
     # create a temporary route that uses the guard:
     @app.get("/test_existing_user_logs_in")
     def temp_endpoint(
-        current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())]
+        current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())],
     ):
         """Returns the result of the guard."""
         return current_user
@@ -827,7 +827,7 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload_retu
         "/test_admin_guard_without_admin_role_in_azure_mocked_token_payload_return_false"
     )
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAccessTokenHasRole("Admin", require=False))
+        current_user: bool = Depends(CurrentAccessTokenHasRole("Admin", require=False)),
     ):
         """Returns the result of the guard."""
         return current_user

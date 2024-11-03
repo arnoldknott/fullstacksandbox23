@@ -1,7 +1,7 @@
 import logging
 import uuid
-from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
 from os import makedirs, path
+from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
 
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.dialects.postgresql import insert
@@ -374,7 +374,7 @@ class BaseCRUD(
     # use with pagination:
     # Model = await model_crud.read(order_by=[Model.name], limit=10)
     # Model = await model_crud.read(order_by=[Model.name], limit=10, offset=10)
-    async def read(
+    async def read(  # noqa: C901
         self,
         current_user: Optional["CurrentUserData"] = None,
         select_args: Optional[List] = None,

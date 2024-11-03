@@ -1,3 +1,5 @@
+# fmt: off
+# ruff: noqa
 """inital revision
 
 Revision ID: 1bb7443317ce

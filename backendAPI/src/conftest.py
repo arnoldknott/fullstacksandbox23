@@ -120,9 +120,9 @@ def mocked_get_azure_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_get_azure_payload_dependency(mocked_get_azure_token_payload):
     """Returns the FastAPI app with dependency pverride for get_azure_token_payload."""
-    app.dependency_overrides[
-        get_azure_token_payload
-    ] = lambda: mocked_get_azure_token_payload
+    app.dependency_overrides[get_azure_token_payload] = (
+        lambda: mocked_get_azure_token_payload
+    )
     yield app
     app.dependency_overrides = {}
 
@@ -446,7 +446,8 @@ async def add_test_ueber_group(
         current_user = await current_user_from_azure_token()
     async with UeberGroupCRUD() as crud:
         added_ueber_group = await crud.create(
-            ueber_group, current_user  # , parent_id, inherit
+            ueber_group,
+            current_user,  # , parent_id, inherit
         )
 
     return added_ueber_group
@@ -570,7 +571,8 @@ async def add_test_sub_group(
         current_user = await current_user_from_azure_token()
     async with SubGroupCRUD() as crud:
         added_sub_group = await crud.create(
-            sub_group, current_user  # , parent_id, inherit
+            sub_group,
+            current_user,  # , parent_id, inherit
         )
 
     return added_sub_group
@@ -633,7 +635,8 @@ async def add_test_sub_sub_group(
         current_user = await current_user_from_azure_token()
     async with SubSubGroupCRUD() as crud:
         added_sub_sub_group = await crud.create(
-            sub_sub_group, current_user  # , parent_id, inherit
+            sub_sub_group,
+            current_user,  # , parent_id, inherit
         )
 
     return added_sub_sub_group
