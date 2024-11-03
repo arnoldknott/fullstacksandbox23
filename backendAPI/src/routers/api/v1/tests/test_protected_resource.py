@@ -49,7 +49,7 @@ async def test_post_protected_resource_with_logs_and_policies(
     app_override_get_azure_payload_dependency: FastAPI,
     current_test_user,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the post_protected_resource endpoint of the API."""
     app_override_get_azure_payload_dependency
 
     # Make a POST request to create the protected resource
@@ -126,7 +126,7 @@ async def test_get_all_protected_resources(
     mocked_get_azure_token_payload,
     current_test_user,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the post_protected_resource endpoint of the API."""
     app_override_get_azure_payload_dependency
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_get_azure_token_payload
@@ -184,7 +184,7 @@ async def test_get_protected_resource_by_id(
     mocked_get_azure_token_payload,
     current_test_user,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the post_protected_resource endpoint of the API."""
     app_override_get_azure_payload_dependency
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_get_azure_token_payload
@@ -235,7 +235,7 @@ async def test_put_protected_resource(
     mocked_get_azure_token_payload,
     current_test_user,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the post_protected_resource endpoint of the API."""
     app_override_get_azure_payload_dependency
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_get_azure_token_payload
@@ -289,7 +289,7 @@ async def test_delete_protected_resource(
     mocked_get_azure_token_payload,
     current_test_user,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the post_protected_resource endpoint of the API."""
     app_override_get_azure_payload_dependency
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_get_azure_token_payload
@@ -351,7 +351,7 @@ async def test_all_protected_child_endpoints(
     mocked_get_azure_token_payload,
     add_many_test_protected_children,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the post_protected_child endpoint of the API."""
     app_override_get_azure_payload_dependency
 
     # Make a POST request to create the protected child
@@ -440,7 +440,7 @@ async def test_all_protected_grandchild_endpoints(
     mocked_get_azure_token_payload,
     add_many_test_protected_grandchildren,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the all protected_child endpoints of the API."""
     app_override_get_azure_payload_dependency
 
     # Make a POST request to create the protected child
@@ -538,7 +538,7 @@ async def test_post_protected_child_resource_and_add_to_parent(
     add_many_test_protected_resources,
     mocked_get_azure_token_payload,
 ):
-    """Tests the post_user endpoint of the API."""
+    """Tests the add protected_child to parent endpoint of the API."""
     app_override_get_azure_payload_dependency
     protected_resources = await add_many_test_protected_resources(
         mocked_get_azure_token_payload

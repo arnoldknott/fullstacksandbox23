@@ -20,6 +20,7 @@ dependencies = [
     'redis>=5.0.1,<6',
     'PyJWT>=2.8.0,<3',
     'msal>=1.26.0,<2',
+    'python-mulitpart>=0.0.17,<0.1',
 ]
 
 [project.optional-dependencies]

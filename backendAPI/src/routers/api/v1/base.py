@@ -99,6 +99,22 @@ class BaseView:
             )
         return created_hierarchy
 
+    async def post_file(
+        self,
+        file,
+        token_payload,
+        guards: GuardTypes,
+        parent_id=None,
+        inherit=False,
+    ):
+        logger.info("POST view to upload files")
+        current_user = await self._check_token_against_guards(token_payload, guards)
+        async with self.crud() as crud:
+            uploaded_files_metadata = await crud.create_file(
+                file, current_user, parent_id, inherit
+            )
+        return uploaded_files_metadata
+
     async def get(
         self,
         # get operation does not need a token_payload, if the resource is public
