@@ -321,7 +321,7 @@ class BaseCRUD(
             parent_id=parent_id,
             inherit=inherit,
         )
-        await self._provide_data_directory()
+        self._provide_data_directory()
         disk_file = open(f"/data/appdata/{self.data_directory}/{file.filename}", "wb")
         disk_file.write(file.file.read())
         return file_object
