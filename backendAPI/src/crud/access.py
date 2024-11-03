@@ -62,7 +62,8 @@ class AccessPolicyCRUD:
 
     # TBD: change back into double underscore __:
     def __get_resource_inheritance_common_table_expression(
-        self, base_resource_ids: select  # TBD: change this to List[UUID]?
+        self,
+        base_resource_ids: select,  # TBD: change this to List[UUID]?
     ):
         """Checks if the resource inherits permissions from a parent resource"""
         # ResourceHierarchyAlias = aliased(ResourceHierarchyTable)

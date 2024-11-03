@@ -5,30 +5,31 @@ readme = "README.md"
 license = {file = "LICENSE"}
 
 dependencies = [
-    'fastapi>=0.104.1,<0.105',
-    'pyjwt[crypto]>=2.8.0,<3',
-    'requests>=2.31.0,<3',
-    'uvicorn[all]>=0.23.2,<0.24',
-    'azure-identity>=1.15.0,<2',
-    'azure-keyvault-secrets>=4.7.0,<5',
-    'pydantic-settings>=2.1.0,<3',
-    'httpx>=0.25.2,<0.26',
-    'asyncpg>=0.29.0,<1',
-    'sqlmodel>=0.0.14,<0.1.0',
-    'pydantic>=2.5.2,<3',
-    'alembic>=1.13.0,<2',
-    'redis>=5.0.1,<6',
-    'PyJWT>=2.8.0,<3',
-    'msal>=1.26.0,<2',
-    'python-mulitpart>=0.0.17,<0.1',
+    'fastapi[standard]>=0.115.4,<1',
+    'pyjwt[crypto]>=2.9.0,<3',
+    'requests>=2.32.3,<3',
+    'uvicorn[all]>=0.32.0,<1',
+    'azure-identity>=1.19.0,<2',
+    'azure-keyvault-secrets>=4.9.0,<5',
+    'pydantic-settings>=2.6.1,<3',
+    'httpx>=0.26.0,<0.27.0', # 0.27.2 creates a warning in the tests; should be fixed in >0.27.2
+    'asyncpg>=0.30.0,<1',
+    'sqlmodel>=0.0.22,<0.1.0',
+    'pydantic>=2.9.2,<3',
+    'alembic>=1.13.3,<2',
+    'redis>=5.2.0,<6',
+    'PyJWT>=2.9.0,<3',
+    'msal>=1.31.0,<2',
+    'python-multipart>=0.0.17,<0.1',
+    'greenlet>=3.1.1,<4', # required by sqlalchemy's asyncio!
 ]
 
 [project.optional-dependencies]
 dev = [
-    'black==23.10.1',
-    'ruff==0.1.6',
-    'isort==5.12.0',
-    'pytest==7.4.3',
+    'black==24.10.0',
+    'ruff==0.7.2',
+    'isort==5.13.2',
+    'pytest==8.3.3',
 ]
 
 [tool.isort]
@@ -36,3 +37,8 @@ profile = "black"
 
 [tool.black]
 exclude = 'src/migrations/'
+
+[tool.ruff]
+line-length = 88  # Match Black's default line length
+lint.select = ["E", "F", "W", "C90"]  # Customize as needed
+lint.ignore = ["E501"]  # Ignore line length to avoid conflicts with Black

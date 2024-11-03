@@ -236,7 +236,7 @@ async def test_user_read_access_policy_by_resource_id(
 ):
     """Test user reading an access policy by id."""
 
-    register_many_resources,
+    (register_many_resources,)
     policies = add_many_test_access_policies
     current_user1 = register_many_current_users[1]
 
@@ -262,7 +262,7 @@ async def test_read_access_policy_by_id_without_permission(
     add_many_test_access_policies,
 ):
     """Test reading an access policy by id without permission."""
-    register_many_current_users,
+    (register_many_current_users,)
     register_many_resources
     policies = add_many_test_access_policies
     try:
@@ -339,9 +339,9 @@ async def test_read_access_policy_for_nonexisting_identity(
     add_many_test_access_policies,
 ):
     """Test reading an access policy for an identity, that does not exist."""
-    register_many_resources,
+    (register_many_resources,)
     current_admin_user = register_many_current_users[0]
-    add_many_test_access_policies,
+    (add_many_test_access_policies,)
     async with AccessPolicyCRUD() as policy_crud:
         try:
             await policy_crud.read(
@@ -386,7 +386,7 @@ async def test_read_access_policy_for_wrong_resource_type(
     add_many_test_access_policies,
 ):
     """Test reading an access policy for a given resource."""
-    register_many_resources,
+    (register_many_resources,)
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -411,7 +411,7 @@ async def test_read_access_policy_by_identity_and_resource(
     add_many_test_access_policies,
 ):
     """Test reading an access policy by identity and resource."""
-    register_many_resources,
+    (register_many_resources,)
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:

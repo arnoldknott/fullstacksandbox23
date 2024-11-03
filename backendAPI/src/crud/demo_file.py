@@ -1,9 +1,4 @@
-from models.demo_file import (
-    DemoFile,
-    DemoFileCreate,
-    DemoFileRead,
-    DemoFileUpdate,
-)
+from models.demo_file import DemoFile, DemoFileCreate, DemoFileRead, DemoFileUpdate
 
 from .base import BaseCRUD
 
