@@ -195,13 +195,13 @@ class BaseCRUD(
             )
         return True
 
-    async def _provide_data_directory(
+    def _provide_data_directory(
         self,
     ):
         """Checks if a file path exists and if not creates it."""
         try:
             if not path.exists(f"/data/appdata/{self.data_directory}"):
-                await makedirs(f"/data/appdata/{self.data_directory}")
+                makedirs(f"/data/appdata/{self.data_directory}")
             return True
         except Exception as e:
             raise Exception(f"Path not found: {e}")
