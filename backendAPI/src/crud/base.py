@@ -1,8 +1,9 @@
 import logging
 import uuid
 from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
+from os import makedirs, path
 
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased, class_mapper, contains_eager, foreign, noload
 from sqlmodel import SQLModel, asc, delete, func, or_, select
@@ -47,17 +48,15 @@ class BaseCRUD(
         BaseSchemaTypeCreate,
         BaseSchemaTypeRead,
         BaseSchemaTypeUpdate,
-    ]
+    ],
 ):
     """Base class for CRUD operations."""
 
-    def __init__(
-        self,
-        base_model: Type[BaseModelType],
-    ):
+    def __init__(self, base_model: Type[BaseModelType], directory: str = None):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
+        self.data_directory = directory
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType
@@ -196,6 +195,17 @@ class BaseCRUD(
             )
         return True
 
+    async def _provide_data_directory(
+        self,
+    ):
+        """Checks if a file path exists and if not creates it."""
+        try:
+            if not path.exists(f"/data/appdata/{self.data_directory}"):
+                await makedirs(f"/data/appdata/{self.data_directory}")
+            return True
+        except Exception as e:
+            raise Exception(f"Path not found: {e}")
+
     async def create(
         self,
         object: BaseSchemaTypeCreate,
@@ -296,6 +306,25 @@ class BaseCRUD(
                 status_code=404,
                 detail=f"{self.model.__name__} not found",  # Or "Forbidden." here?
             )
+
+    async def create_file(
+        self,
+        file: UploadFile,
+        current_user: "CurrentUserData",
+        parent_id: Optional[uuid.UUID] = None,
+        inherit: Optional[bool] = False,
+    ) -> BaseModelType:
+        """Creates new files."""
+        file_object = await self.create(
+            object={"name": file.filename},
+            current_user=current_user,
+            parent_id=parent_id,
+            inherit=inherit,
+        )
+        await self._provide_data_directory()
+        disk_file = open(f"/data/appdata/{self.data_directory}/{file.filename}", "wb")
+        disk_file.write(file.file.read())
+        return file_object
 
     async def create_public(
         self,

@@ -1,0 +1,7 @@
+Hello there,
+
+This is a file for testing file upload. It's called demo_file, because it is used to test the /demofile endpoints.
+
+Cheers
+
+The test developer! ;-)
