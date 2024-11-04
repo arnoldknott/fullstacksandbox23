@@ -1,10 +1,13 @@
+from os import path, remove
 from uuid import UUID
 
 import pytest
+from fastapi import UploadFile
 
 from core.types import CurrentUserData
 from crud.access import AccessPolicyCRUD
 from crud.category import CategoryCRUD
+from crud.demo_file import DemoFileCRUD
 from crud.demo_resource import DemoResourceCRUD
 from crud.protected_resource import (
     ProtectedChildCRUD,
@@ -139,25 +142,16 @@ async def add_test_categories(
 
 @pytest.fixture(scope="function")
 async def add_test_demo_resources(
-    # get_async_test_session: AsyncSession,
     current_user_from_azure_token: User,
     add_test_categories: list[Category],
     # add_test_policies_for_resources: list[AccessPolicy],
 ):
     """Adds demo resources to the database."""
-    # print("=== add_test_demo_resources started ===")
-    # session = get_async_test_session
     # TBD, when refactoring add_test_demo_resources, the mocked token should be available here and
     # needs to be provided to to add_test_categories as well!
 
     async def _add_test_demo_resources(token_payload: dict = None):
         existing_test_categories = await add_test_categories(token_payload)
-        # await add_test_policies_for_resources(
-        #     resources=existing_test_categories,
-        #     actions=["read"] * len(existing_test_categories),
-        #     publics=[True] * len(existing_test_categories),
-        # )
-        # print("=== add_test_demo_resources after add_test_categories ===")
         many_test_demo_resources[0]["category_id"] = existing_test_categories[1].id
         many_test_demo_resources[1]["category_id"] = existing_test_categories[0].id
         many_test_demo_resources[2]["category_id"] = existing_test_categories[1].id
@@ -165,26 +159,9 @@ async def add_test_demo_resources(
         demo_resources = []
         current_user = await current_user_from_azure_token(token_payload)
         for resource in many_test_demo_resources:
-            # print("=== resource ===")
-            # print(resource)
-            # if "category_id" in resource:
-            #     category = await session.get(Category, resource["category_id"])
-            #     resource["category"] = category
-            #     del resource["category_id"]
-            # demo_resource_instance = DemoResource(**resource)
-            # session.add(demo_resource_instance)
-            # await session.commit()
-            # await session.refresh(demo_resource_instance)
             async with DemoResourceCRUD() as crud:
-                # token = CurrentAccessToken(token_payload)
-                # current_user = await token.provides_current_user()
                 demo_resource_instance = await crud.create(resource, current_user)
             demo_resources.append(demo_resource_instance)
-
-        # yield demo_resource_instances
-        # for demo_resource_instance in demo_resource_instances:
-        #     print("=== add_test_demo_resources - demo_resource_instance ===")
-        #     print(demo_resource_instance)
 
         demo_resources = sorted(demo_resources, key=lambda x: x.id)
 
@@ -194,20 +171,47 @@ async def add_test_demo_resources(
 
 
 @pytest.fixture(scope="function")
+async def add_many_test_demo_files(
+    current_user_from_azure_token: User,
+):
+    """Adds test demo files to the database and the appdata on disk."""
+
+    demo_file_names = ["demo_file_01.txt", "demo_file_02.txt"]
+    test_demo_files = []
+    for demo_file_name in demo_file_names:
+        test_demo_files.append(
+            UploadFile(
+                filename=demo_file_name,
+                file=open(f"src/tests/{demo_file_name}", "rb"),
+            )
+        )
+
+    async def _add_many_test_demo_files(token_payload: dict = None):
+        demo_files_metadata = []
+        for demo_file in test_demo_files:
+            current_user = await current_user_from_azure_token(token_payload)
+            async with DemoFileCRUD() as crud:
+                added_demo_file = await crud.create_file(demo_file, current_user)
+            demo_files_metadata.append(added_demo_file)
+
+        demo_files_metadata = sorted(demo_files_metadata, key=lambda x: x.id)
+
+        return demo_files_metadata
+
+    yield _add_many_test_demo_files
+
+    # Remove demo files from disk after the test:
+    appdata_path = "/data/appdata/demo_files"
+    for demo_file_name in demo_file_names:
+        if path.exists(f"{appdata_path}/{demo_file_name}"):
+            remove(f"{appdata_path}/{demo_file_name}")
+
+
+@pytest.fixture(scope="function")
 async def add_test_tags(
     current_user_from_azure_token: User,
 ):  # (get_async_test_session: AsyncSession):
     """Adds tags to the database."""
-    # session = get_async_test_session
-    # tag_instances = []
-    # for tag in many_test_tags:
-    #     tag_instance = Tag(**tag)
-    #     session.add(tag_instance)
-    #     await session.commit()
-    #     await session.refresh(tag_instance)
-    #     tag_instances.append(tag_instance)
-
-    # yield tag_instances
 
     async def _add_test_tags(token_payload: dict = None):
         tags = []
@@ -373,17 +377,3 @@ async def add_many_test_protected_grandchildren(
         return protected_grandchildren
 
     yield _add_many_test_protected_grandchildren
-
-
-# TBD: use the function for the endpoints ins the fixture here and create the family from those - top down
-# Might need mocked data from multiple users / identities?
-# @pytest.fixture(scope="function")
-# async def add_protected_resource_family_with_access_policies():
-#     """Adds a protected resource family with access policies to the database."""
-
-#     async def _add_protected_resource_family_with_access_policies(
-#         current_user_from_azure_token: User,
-#         add_many_test_protected_resources,
-
-#     ):
-#         existing_test_protected_resources = await add_many_test_protected_resources()

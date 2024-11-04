@@ -79,9 +79,9 @@ async def test_post_demo_resource_with_nonexisting_category(
     resource = one_test_demo_resource
     resource["category_id"] = str(uuid.uuid4())
     response = await async_client.post("/api/v1/demoresource/", json=resource)
-    assert response.status_code == 404
+    assert response.status_code == 403
     content = response.json()
-    assert content["detail"] == "DemoResource not found"
+    assert content["detail"] == "DemoResource - Forbidden."
 
 
 # TBD: add a test, that checks if the category_id is existing in the database!

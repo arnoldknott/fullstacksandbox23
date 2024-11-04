@@ -4,6 +4,7 @@ from os import makedirs, path
 from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
 
 from fastapi import HTTPException, UploadFile
+from fastapi.responses import FileResponse
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased, class_mapper, contains_eager, foreign, noload
 from sqlmodel import SQLModel, asc, delete, func, or_, select
@@ -561,6 +562,20 @@ class BaseCRUD(
             filters=[self.model.id == id],
         )
         return object[0]
+
+    async def read_file_by_id(
+        self,
+        id: uuid.UUID,
+        current_user: Optional["CurrentUserData"] = None,
+    ):
+        """Reads a file from disk by id."""
+
+        file = await self.read_by_id(id, current_user)
+        # disk_file = open(f"/data/appdata/{self.data_directory}/{file.name}", "rb")
+        # return disk_file
+        return FileResponse(
+            f"/data/appdata/{self.data_directory}/{file.name}", filename=file.name
+        )
 
     async def update(
         self,
