@@ -9,6 +9,7 @@ class DemoFileCreate(SQLModel):
 
 
 class DemoFile(DemoFileCreate, table=True):
+    name: str = Field(index=True, unique=True)
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
         foreign_key="identifiertypelink.id",

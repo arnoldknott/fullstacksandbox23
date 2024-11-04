@@ -2,6 +2,7 @@ import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi.responses import FileResponse
 
 from core.security import Guards, get_access_token_payload
 from core.types import GuardTypes
@@ -14,13 +15,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 demo_file_view = BaseView(DemoFileCRUD, DemoFile)
+# roles = ["User"] is required for the whole router in main.py!
 
 
 @router.post("/files/", status_code=201)
 async def post_demo_file(
     files: List[UploadFile] = File(...),
     token_payload=Depends(get_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"])),
 ) -> List[DemoFile]:
     """Creates a new demo file."""
     files_metadata = []
@@ -31,15 +33,11 @@ async def post_demo_file(
     return files_metadata
 
 
-# @router.get("/files/{file_id}", response_class=FileResponse)
-# async def get_demo_file(
+# @router.get("/file/{file_id}", status_code=200)
+# async def get_demo_file_by_id(
 #     file_id: int,
 #     token_payload=Depends(get_access_token_payload),
-#     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+#     guards: GuardTypes = Depends(Guards(scopes=["api.read"])),
 # ) -> FileResponse:
 #     """Retrieves a demo file by ID."""
-#     file_metadata = await demo_file_view.get_file(file_id, token_payload, guards)
-#     file_path = file_metadata.file_path  # Assuming file_path is stored in the metadata
-#     if not os.path.exists(file_path):
-#         raise HTTPException(status_code=404, detail="File not found")
-#     return FileResponse(path=file_path, filename=file_metadata.filename)
+#     return await demo_file_view.get_file(file_id, token_payload, guards)
