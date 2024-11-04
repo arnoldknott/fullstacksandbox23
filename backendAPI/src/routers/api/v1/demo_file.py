@@ -1,5 +1,6 @@
 import logging
 from typing import List
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import FileResponse
@@ -33,11 +34,11 @@ async def post_demo_file(
     return files_metadata
 
 
-# @router.get("/file/{file_id}", status_code=200)
-# async def get_demo_file_by_id(
-#     file_id: int,
-#     token_payload=Depends(get_access_token_payload),
-#     guards: GuardTypes = Depends(Guards(scopes=["api.read"])),
-# ) -> FileResponse:
-#     """Retrieves a demo file by ID."""
-#     return await demo_file_view.get_file(file_id, token_payload, guards)
+@router.get("/file/{file_id}", status_code=200)
+async def get_demo_file_by_id(
+    file_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.read"])),
+) -> FileResponse:
+    """Retrieves a demo file by ID."""
+    return await demo_file_view.get_file_by_id(file_id, token_payload, guards)

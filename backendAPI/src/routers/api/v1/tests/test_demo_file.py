@@ -5,7 +5,12 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 
 from models.demo_file import DemoFile
-from tests.utils import token_admin_read_write, token_user1_read_write
+from tests.utils import (
+    token_admin_read,
+    token_admin_read_write,
+    token_user1_read,
+    token_user1_read_write,
+)
 
 
 @pytest.mark.anyio
@@ -29,7 +34,7 @@ async def test_post_demo_files(
         if path.exists(f"{appdata_path}/{demo_file_name}"):
             remove(f"{appdata_path}/{demo_file_name}")
 
-    files = [
+    demo_files = [
         (
             "files",
             (
@@ -49,7 +54,7 @@ async def test_post_demo_files(
     ]
 
     # Make a POST request to upload the demo file
-    response = await async_client.post("/api/v1/demo/files/", files=files)
+    response = await async_client.post("/api/v1/demo/files/", files=demo_files)
 
     assert response.status_code == 201
     created_files_metadata = [DemoFile(**file) for file in response.json()]
@@ -84,7 +89,7 @@ async def test_post_demo_files_uniqueness(
     if path.exists(f"{appdata_path}/{demo_file_name}"):
         remove(f"{appdata_path}/{demo_file_name}")
 
-    files = [
+    demo_files = [
         (
             "files",
             (
@@ -104,7 +109,7 @@ async def test_post_demo_files_uniqueness(
     ]
 
     # Make a POST request to upload the demo file
-    response = await async_client.post("/api/v1/demo/files/", files=files)
+    response = await async_client.post("/api/v1/demo/files/", files=demo_files)
 
     assert response.status_code == 403
     assert response.json() == {"detail": "DemoFile - Forbidden."}
@@ -113,3 +118,40 @@ async def test_post_demo_files_uniqueness(
 
     # Remove demo file from disk after the test:
     remove(f"{appdata_path}/{demo_file_name}")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        token_admin_read,
+        token_admin_read_write,
+        token_user1_read,
+        token_user1_read_write,
+    ],
+    indirect=True,
+)
+async def test_get_demo_file(
+    async_client: AsyncClient,
+    add_many_test_demo_files: list[DemoFile],
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
+):
+    """Tests GET a demo file."""
+    app_override_get_azure_payload_dependency
+    files_metadata = await add_many_test_demo_files(mocked_get_azure_token_payload)
+    response = await async_client.get(f"/api/v1/demo/file/{files_metadata[1].id}")
+
+    assert response.status_code == 200
+
+    # Check for Content-Disposition header
+    assert (
+        response.headers["Content-Disposition"]
+        == f'attachment; filename="{files_metadata[1].name}"'
+    )
+
+    # Read the test file content
+    with open(f"src/tests/{files_metadata[1].name}", "rb") as test_file:
+        test_file_content = test_file.read()
+
+    assert response.content == test_file_content
