@@ -172,6 +172,20 @@ class BaseView:
             updated_object = await crud.update(current_user, id, object)
         return updated_object
 
+    async def put_file(
+        self,
+        id,
+        file,
+        metadata,
+        token_payload,
+        guards,
+    ):
+        logger.info("PUT updates a specific file through update CRUD")
+        current_user = await self._check_token_against_guards(token_payload, guards)
+        async with self.crud() as crud:
+            updated_file = await crud.update_file(id, current_user, file, metadata)
+        return updated_file
+
     async def delete(
         self,
         id,

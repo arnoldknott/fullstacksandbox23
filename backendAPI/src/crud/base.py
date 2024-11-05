@@ -1,6 +1,6 @@
 import logging
 import uuid
-from os import makedirs, path
+from os import makedirs, path, rename
 from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
 
 from fastapi import HTTPException, UploadFile
@@ -636,6 +636,41 @@ class BaseCRUD(
             logger.error(f"Error in BaseCRUD.update: {e}")
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not updated."
+            )
+
+    async def update_file(
+        self,
+        file_id: uuid.UUID,
+        current_user: "CurrentUserData",
+        file: UploadFile | None,
+        metadata: BaseSchemaTypeUpdate | None,
+    ) -> BaseModelType:
+        """Updates a file."""
+        print("=== CRUD - base - update_file ===")
+        try:
+            if metadata:
+                print("=== CRUD - base - update_file - metadata ===")
+                old_metadata = await self.read_by_id(file_id, current_user)
+                new_metadata = await self.update(current_user, file_id, metadata)
+                # TBD: consider adding self._provide_data_directory() here for directory changes
+                rename(
+                    f"/data/appdata/{self.data_directory}/{old_metadata.name}",
+                    f"/data/appdata/{self.data_directory}/{new_metadata.name}",
+                )
+            # conflict: is ithe the file.name or metadata.name, that decides the filename?
+            # TBD: add an update here in any case, even if metadata is None to make sure access checks are executed!
+            print("=== CRUD - base - update_file - file ===")
+            with open(
+                f"/data/appdata/{self.data_directory}/{file.filename}", "wb"
+            ) as disk_file:
+                print("=== CRUD - base - update_file - write file to disk ===")
+                disk_file.write(file.file.read())
+            return file
+        except Exception as e:
+            logger.error(f"Error in BaseCRUD.update_file {file_id}: {e}")
+            raise HTTPException(
+                status_code=403,
+                detail=f"{self.model.__name__} - Forbidden.",
             )
 
     async def delete(

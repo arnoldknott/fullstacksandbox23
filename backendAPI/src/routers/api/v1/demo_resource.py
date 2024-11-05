@@ -64,7 +64,7 @@ async def get_demo_resource_by_id(
 
 
 @router.put("/{demo_resource_id}", status_code=200)
-async def put_category(
+async def put_demo_resource(
     demo_resource_id: UUID,
     demo_resource: DemoResourceUpdate,
     token_payload=Depends(get_access_token_payload),
