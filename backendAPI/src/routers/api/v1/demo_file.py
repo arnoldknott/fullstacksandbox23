@@ -79,26 +79,11 @@ async def put_demo_file_metadata_by_id(
     )
 
 
-# TBD: rename a file:
-# @router.put("/file/rename/{file_id}", status_code=200)
-# async def put_demo_file_rename(
-#     file_id: UUID,
-#     demo_file: DemoFileUpdate,
-#     token_payload=Depends(get_access_token_payload),
-#     guards: GuardTypes = Depends(Guards(scopes=["api.write"])),
-# ) -> DemoFile:
-#     """Updates a demo file by ID."""
-#     return await demo_file_view.put_rename_file(
-#         file_id, demo_file, token_payload, guards
-#     )
-
-
-# TBD: delete a file:
-# @router.delete("/file/{file_id}", status_code=200)
-# async def delete_demo_file_by_id(
-#     file_id: UUID,
-#     token_payload=Depends(get_access_token_payload),
-#     guards: GuardTypes = Depends(Guards(scopes=["api.write"])),
-# ) -> DemoFile:
-#     """Deletes a demo file by ID."""
-#     return await demo_file_view.delete_file_by_id(file_id, token_payload, guards)
+@router.delete("/file/{file_id}", status_code=200)
+async def delete_demo_file_by_id(
+    file_id: UUID,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"])),
+) -> None:
+    """Deletes a demo file by ID."""
+    return await demo_file_view.delete_file(file_id, token_payload, guards)
