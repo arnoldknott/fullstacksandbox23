@@ -1,7 +1,7 @@
-Hello there,
+Thank you very much test developer! 🙏
 
-This is a file for testing file upload. It's called demo_file, because it is used to test the /demofile endpoints.
+It all looks good. File one worked and is uploaded. Now let's see, if that also works with an upload of multiple files!
 
-Cheers
+All the best.
 
-The test developer! ;-)
+The app developer

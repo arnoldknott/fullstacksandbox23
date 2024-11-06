@@ -176,15 +176,31 @@ class BaseView:
         self,
         id,
         file,
-        metadata,
         token_payload,
         guards,
     ):
         logger.info("PUT updates a specific file through update CRUD")
         current_user = await self._check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
-            updated_file = await crud.update_file(id, current_user, file, metadata)
+            updated_file = await crud.update_file(id, current_user, file)
         return updated_file
+
+    async def put_file_metadata(
+        self,
+        id,
+        file_metadata,
+        token_payload,
+        guards,
+    ):
+        logger.info(
+            "PUT updates a specific file metadata including renaming through update CRUD"
+        )
+        current_user = await self._check_token_against_guards(token_payload, guards)
+        async with self.crud() as crud:
+            updated_file_metadata = await crud.update_file_metadata(
+                id, current_user, file_metadata
+            )
+        return updated_file_metadata
 
     async def delete(
         self,

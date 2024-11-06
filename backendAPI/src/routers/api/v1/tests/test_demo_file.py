@@ -26,7 +26,7 @@ async def test_post_demo_files(
     """Tests the post_user endpoint of the API."""
     app_override_get_azure_payload_dependency
 
-    demo_file_names = ["demo_file_01.txt", "demo_file_02.txt"]
+    demo_file_names = ["demo_file_00.txt", "demo_file_01.txt"]
     appdata_path = "/data/appdata/demo_files"
 
     # Make sure the demo files do not exist before the test on disk:
@@ -82,7 +82,7 @@ async def test_post_demo_files_uniqueness(
     """Tests the post_user endpoint of the API."""
     app_override_get_azure_payload_dependency
 
-    demo_file_name = "demo_file_01.txt"
+    demo_file_name = "demo_file_00.txt"
     appdata_path = "/data/appdata/demo_files"
 
     # Make sure the demo files do not exist before the test on disk:
@@ -175,9 +175,9 @@ async def test_put_demo_file(
     """Test PUT a demo file."""
     app_override_get_azure_payload_dependency
     files_metadata = await add_many_test_demo_files(mocked_get_azure_token_payload)
-    with open(f"src/tests/{files_metadata[1].name}", "rb") as old_file:
+    with open(f"src/tests/{files_metadata[0].name}", "rb") as old_file:
         with open(
-            f"/data/appdata/demo_files/{files_metadata[1].name}", "rb"
+            f"/data/appdata/demo_files/{files_metadata[0].name}", "rb"
         ) as app_data_file:
             assert old_file.read() == app_data_file.read()
 
@@ -192,8 +192,9 @@ async def test_put_demo_file(
             ),
         )
     ]
+    # note: the content of demo_file[1] is written in the place of demo_file[0] keeping the id from demo_file[0]:
     update_response = await async_client.put(
-        f"/api/v1/demo/file/{str(files_metadata[1].id)}", files=new_demo_file
+        f"/api/v1/demo/file/{str(files_metadata[0].id)}", files=new_demo_file
     )
     # with open(f"src/tests/{files_metadata[0].name}", "rb") as new_file:
     #     update_response = await async_client.put(
@@ -203,12 +204,73 @@ async def test_put_demo_file(
 
     assert update_response.status_code == 200
     demo_file_metadata = DemoFile(**update_response.json())
-    assert demo_file_metadata.id == files_metadata[1].id
-    assert demo_file_metadata.name == files_metadata[1].name
+    assert demo_file_metadata.id == str(files_metadata[0].id)
+    assert demo_file_metadata.name == files_metadata[0].name
+
+    get_response = await async_client.get(f"/api/v1/demo/file/{files_metadata[0].id}")
+    assert get_response.status_code == 200
+
+    # Read the updated demo_file content:
+    with open(f"src/tests/{files_metadata[1].name}", "rb") as new_file:
+        new_file_content = new_file.read()
+        # from get response:
+        assert get_response.content == new_file_content
+        # on disk:
+        with open(
+            f"/data/appdata/demo_files/{files_metadata[0].name}", "rb"
+        ) as app_data_file:
+            app_data_file_content = app_data_file.read()
+            assert app_data_file_content == new_file_content
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        token_admin_read_write,
+        token_user1_read_write,
+    ],
+    indirect=True,
+)
+async def test_rename_file(
+    async_client: AsyncClient,
+    add_many_test_demo_files: list[DemoFile],
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
+):
+    """Test PUT a demo file."""
+    app_override_get_azure_payload_dependency
+    files_metadata = await add_many_test_demo_files(mocked_get_azure_token_payload)
+    with open(f"src/tests/{files_metadata[1].name}", "rb") as old_file:
+        with open(
+            f"/data/appdata/demo_files/{files_metadata[1].name}", "rb"
+        ) as app_data_file:
+            assert old_file.read() == app_data_file.read()
+
+    new_file_name = "demo_file_new_name.txt"
+
+    # note: the content of demo_file[1] is written in the place of demo_file[0] keeping the id from demo_file[0]:
+    update_response = await async_client.put(
+        f"/api/v1/demo/file/rename/{str(files_metadata[1].id)}",
+        json={"name": new_file_name},
+    )
+
+    assert update_response.status_code == 200
+    demo_file_metadata = DemoFile(**update_response.json())
+    assert demo_file_metadata.id == str(files_metadata[1].id)
+    assert demo_file_metadata.name == new_file_name
 
     get_response = await async_client.get(f"/api/v1/demo/file/{files_metadata[1].id}")
     assert get_response.status_code == 200
 
     # Read the updated demo_file content
-    with open(f"src/tests/{files_metadata[0].name}", "rb") as test_file:
-        assert get_response.content == test_file.read()
+    with open(f"src/tests/{files_metadata[1].name}", "rb") as file:
+        file_content = file.read()
+        assert get_response.content == file_content
+        # on disk:
+        with open(f"/data/appdata/demo_files/{new_file_name}", "rb") as app_data_file:
+            app_data_file_content = app_data_file.read()
+            assert app_data_file_content == file_content
+
+    # Check that the old file is removed from disk:
+    assert not path.exists(f"/data/appdata/demo_files/{files_metadata[1].name}")

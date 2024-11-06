@@ -58,15 +58,24 @@ async def get_demo_file_by_id(
 @router.put("/file/{file_id}", status_code=200)
 async def put_demo_file_by_id(
     file_id: UUID,
-    files: Annotated[UploadFile | None, File()] = None,
-    demo_file_metadata: Annotated[DemoFileUpdate | None, Form()] = None,
+    files: UploadFile = File(...),
     token_payload=Depends(get_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"])),
 ) -> DemoFile:
     """Updates a demo file by ID."""
-    print("=== API - v1 - demo_file - put_demo_file_by_id ===")
-    return await demo_file_view.put_file(
-        file_id, files, demo_file_metadata, token_payload, guards
+    return await demo_file_view.put_file(file_id, files, token_payload, guards)
+
+
+@router.put("/file/rename/{file_id}", status_code=200)
+async def put_demo_file_metadata_by_id(
+    file_id: UUID,
+    demo_file: DemoFileUpdate,
+    token_payload=Depends(get_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"])),
+) -> DemoFile:
+    """Updates a demo file by ID."""
+    return await demo_file_view.put_file_metadata(
+        file_id, demo_file, token_payload, guards
     )
 
 

@@ -639,35 +639,43 @@ class BaseCRUD(
             )
 
     async def update_file(
+        self, file_id: uuid.UUID, current_user: "CurrentUserData", file: UploadFile
+    ) -> BaseModelType:
+        """Updates a file."""
+        try:
+            # This does not really change anything int he metadata, but ensures that the access control is applied:
+            old_metadata = await self.read_by_id(file_id, current_user)
+            same_metadata = await self.update(current_user, file_id, old_metadata)
+            with open(
+                f"/data/appdata/{self.data_directory}/{old_metadata.name}", "wb"
+            ) as disk_file:
+                disk_file.write(file.file.read())
+            return same_metadata
+        except Exception as e:
+            logger.error(f"Error in BaseCRUD.update_file {file_id}: {e}")
+            raise HTTPException(
+                status_code=403,
+                detail=f"{self.model.__name__} - Forbidden.",
+            )
+
+    async def update_file_metadata(
         self,
         file_id: uuid.UUID,
         current_user: "CurrentUserData",
-        file: UploadFile | None,
-        metadata: BaseSchemaTypeUpdate | None,
+        metadata: BaseSchemaTypeUpdate,
     ) -> BaseModelType:
-        """Updates a file."""
-        print("=== CRUD - base - update_file ===")
+        """Updates a file's metadata and renames the file on disk."""
         try:
-            if metadata:
-                print("=== CRUD - base - update_file - metadata ===")
-                old_metadata = await self.read_by_id(file_id, current_user)
-                new_metadata = await self.update(current_user, file_id, metadata)
-                # TBD: consider adding self._provide_data_directory() here for directory changes
-                rename(
-                    f"/data/appdata/{self.data_directory}/{old_metadata.name}",
-                    f"/data/appdata/{self.data_directory}/{new_metadata.name}",
-                )
-            # conflict: is ithe the file.name or metadata.name, that decides the filename?
-            # TBD: add an update here in any case, even if metadata is None to make sure access checks are executed!
-            print("=== CRUD - base - update_file - file ===")
-            with open(
-                f"/data/appdata/{self.data_directory}/{file.filename}", "wb"
-            ) as disk_file:
-                print("=== CRUD - base - update_file - write file to disk ===")
-                disk_file.write(file.file.read())
-            return file
+            old_metadata = await self.read_by_id(file_id, current_user)
+            old_metadata = old_metadata.model_dump()
+            new_metadata = await self.update(current_user, file_id, metadata)
+            rename(
+                f"/data/appdata/{self.data_directory}/{old_metadata["name"]}",
+                f"/data/appdata/{self.data_directory}/{new_metadata.name}",
+            )
+            return new_metadata
         except Exception as e:
-            logger.error(f"Error in BaseCRUD.update_file {file_id}: {e}")
+            logger.error(f"Error in BaseCRUD.update_metadata_file {file_id}: {e}")
             raise HTTPException(
                 status_code=403,
                 detail=f"{self.model.__name__} - Forbidden.",
