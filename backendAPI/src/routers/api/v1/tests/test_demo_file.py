@@ -312,7 +312,7 @@ async def test_delete_demo_file(
     )
 
     assert delete_response.status_code == 200
-    assert delete_response.json() == None
+    assert delete_response.json() is None
 
     # Check that the file is removed from disk:
     assert not path.exists(f"/data/appdata/demo_files/{files_metadata[1].name}")
