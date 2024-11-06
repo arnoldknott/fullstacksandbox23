@@ -176,7 +176,7 @@ async def add_many_test_demo_files(
 ):
     """Adds test demo files to the database and the appdata on disk."""
 
-    demo_file_names = ["demo_file_01.txt", "demo_file_02.txt"]
+    demo_file_names = ["demo_file_00.txt", "demo_file_01.txt"]
     test_demo_files = []
     for demo_file_name in demo_file_names:
         test_demo_files.append(
@@ -200,7 +200,7 @@ async def add_many_test_demo_files(
 
     yield _add_many_test_demo_files
 
-    # Remove demo files from disk after the test:
+    # # Remove demo files from disk after the test:
     appdata_path = "/data/appdata/demo_files"
     for demo_file_name in demo_file_names:
         if path.exists(f"{appdata_path}/{demo_file_name}"):
