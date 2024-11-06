@@ -153,8 +153,14 @@ async def test_get_demo_file(
     # Read the test file content
     with open(f"src/tests/{files_metadata[1].name}", "rb") as test_file:
         test_file_content = test_file.read()
-
-    assert response.content == test_file_content
+        # from get response:
+        assert response.content == test_file_content
+        # on disk:
+        with open(
+            f"/data/appdata/demo_files/{files_metadata[1].name}", "rb"
+        ) as app_data_file:
+            app_data_file_content = app_data_file.read()
+            assert test_file_content == app_data_file_content
 
 
 @pytest.mark.anyio
@@ -274,3 +280,60 @@ async def test_rename_file(
 
     # Check that the old file is removed from disk:
     assert not path.exists(f"/data/appdata/demo_files/{files_metadata[1].name}")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_get_azure_token_payload",
+    [
+        token_admin_read_write,
+        token_user1_read_write,
+    ],
+    indirect=True,
+)
+async def test_delete_demo_file(
+    async_client: AsyncClient,
+    add_many_test_demo_files: list[DemoFile],
+    app_override_get_azure_payload_dependency: FastAPI,
+    mocked_get_azure_token_payload,
+):
+    """Test DELETE a demo file."""
+    app_override_get_azure_payload_dependency
+    files_metadata = await add_many_test_demo_files(mocked_get_azure_token_payload)
+    with open(f"src/tests/{files_metadata[1].name}", "rb") as old_file:
+        with open(
+            f"/data/appdata/demo_files/{files_metadata[1].name}", "rb"
+        ) as app_data_file:
+            assert old_file.read() == app_data_file.read()
+
+    # Delete the demo file
+    delete_response = await async_client.delete(
+        f"/api/v1/demo/file/{str(files_metadata[1].id)}"
+    )
+
+    assert delete_response.status_code == 200
+    assert delete_response.json() == None
+
+    # Check that the file is removed from disk:
+    assert not path.exists(f"/data/appdata/demo_files/{files_metadata[1].name}")
+
+    # Check that the file is removed from the database:
+    get_response = await async_client.get(f"/api/v1/demo/file/{files_metadata[1].id}")
+    assert get_response.status_code == 404
+    assert get_response.json() == {"detail": "DemoFile not found."}
+
+    other_file_get_response = await async_client.get(
+        f"/api/v1/demo/file/{files_metadata[0].id}"
+    )
+    assert other_file_get_response.status_code == 200
+    # Read the other test file:
+    with open(f"src/tests/{files_metadata[0].name}", "rb") as test_file:
+        test_file_content = test_file.read()
+        # from get response:
+        assert other_file_get_response.content == test_file_content
+        # on disk:
+        with open(
+            f"/data/appdata/demo_files/{files_metadata[0].name}", "rb"
+        ) as app_data_file:
+            app_data_file_content = app_data_file.read()
+            assert test_file_content == app_data_file_content

@@ -99,8 +99,6 @@ async def add_tag_to_demo_resource(
     current_user = await demo_resource_view._check_token_against_guards(
         token_payload, guards
     )
-    print("=== resource_id ===")
-    print(resource_id)
     async with TagCRUD() as crud:
         for tag_id in tag_ids:
             print("=== tag_id ===")

@@ -1,6 +1,6 @@
 import logging
 import uuid
-from os import makedirs, path, rename
+from os import makedirs, path, rename, remove
 from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
 
 from fastapi import HTTPException, UploadFile
@@ -783,6 +783,25 @@ class BaseCRUD(
         else:
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not found."
+            )
+
+    async def delete_file(
+        self,
+        file_id: uuid.UUID,
+        current_user: "CurrentUserData",
+    ) -> None:
+        """Deletes a file."""
+        try:
+            file_metadata = await self.read_by_id(file_id, current_user)
+            file_metadata = file_metadata.model_dump()
+            await self.delete(current_user, file_id)
+            remove(f"/data/appdata/{self.data_directory}/{file_metadata["name"]}")
+            return None
+        except Exception as e:
+            logger.error(f"Error in BaseCRUD.delete_file {file_id}: {e}")
+            raise HTTPException(
+                status_code=403,
+                detail=f"{self.model.__name__} - Forbidden.",
             )
 
     # TBD: add share / permission methods - maybe in an inherited class BaseCRUDPermissions?

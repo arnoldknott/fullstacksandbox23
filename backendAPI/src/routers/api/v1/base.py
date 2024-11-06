@@ -228,3 +228,15 @@ class BaseView:
         async with self.crud() as crud:
             await crud.remove_child_from_parent(child_id, parent_id, current_user)
         return None
+
+    async def delete_file(
+        self,
+        id,
+        token_payload,
+        guards,
+    ):
+        logger.info("DELETE removes a specific file through delete CRUD")
+        current_user = await self._check_token_against_guards(token_payload, guards)
+        async with self.crud() as crud:
+            deleted_file = await crud.delete_file(id, current_user)
+        return deleted_file
