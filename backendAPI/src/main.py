@@ -20,6 +20,7 @@ from routers.api.v1.identities import (
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.public_resource import router as public_resource_router
 from routers.api.v1.tag import router as tag_router
+from routers.ws.v1.websockets import router as websocket_router
 
 # print("Current directory:", os.getcwd())
 # print("sys.path:", sys.path)
@@ -50,6 +51,10 @@ async def lifespan(app: FastAPI):
 # # needs scopes
 # # primarily this is relevant for Swagger UI, API can be accessed by other tools right now, as long as
 # # their callback URL is registered in the Azure AD app registration!
+# TBD: so far it works until the redirect URL is required:
+# here's the documentation for how to implement the redirect URL:
+# https://github.com/fastapi/fastapi/blob/0c7296b19ed5cecbafb01a8d0592bcd66e703153/fastapi/applications.py#L447
+# => add an endpoint /docs/oauth2-redirect to receive the token.
 # oauth2_scheme = OAuth2AuthorizationCodeBearer(
 #     authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize",
 #     tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/token",
@@ -73,7 +78,8 @@ async def lifespan(app: FastAPI):
 # }
 
 # TBD consider moving to router?
-global_prefix = "/api/v1"
+api_prefix = "/api/v1"
+ws_prefix = "/ws/v1"
 
 app = FastAPI(
     title="backendAPI",
@@ -101,63 +107,63 @@ app = FastAPI(
 
 # TBD: no using underscores in routes - slashes instead, so nested routers. Or dashes. no uppercase letters either!
 # app.include_router(oauth_router, tags=["OAuth"])
-app.include_router(core_router, prefix=f"{global_prefix}/core", tags=["Core"])
+app.include_router(core_router, prefix=f"{api_prefix}/core", tags=["Core"])
 app.include_router(
     user_router,
-    prefix=f"{global_prefix}/user",
+    prefix=f"{api_prefix}/user",
     tags=["User"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
 app.include_router(
     ueber_group_router,
-    prefix=f"{global_prefix}/uebergroup",
+    prefix=f"{api_prefix}/uebergroup",
     tags=["Ueber Group"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
 app.include_router(
     group_router,
-    prefix=f"{global_prefix}/group",
+    prefix=f"{api_prefix}/group",
     tags=["Group"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
 app.include_router(
     sub_group_router,
-    prefix=f"{global_prefix}/subgroup",
+    prefix=f"{api_prefix}/subgroup",
     tags=["Sub Group"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
 app.include_router(
     sub_sub_group_router,
-    prefix=f"{global_prefix}/subsubgroup",
+    prefix=f"{api_prefix}/subsubgroup",
     tags=["Sub-sub Group"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
 app.include_router(
     access_router,
-    prefix=f"{global_prefix}/access",
+    prefix=f"{api_prefix}/access",
     tags=["Access"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 app.include_router(
     public_resource_router,
-    prefix=f"{global_prefix}/publicresource",
+    prefix=f"{api_prefix}/publicresource",
     tags=["Public Resource"],
 )
 
 app.include_router(
     demo_resource_router,
-    prefix=f"{global_prefix}/demoresource",
+    prefix=f"{api_prefix}/demoresource",
     tags=["Demo Resource"],
 )
 
 app.include_router(
     demo_file_router,
-    prefix=f"{global_prefix}/demo",
+    prefix=f"{api_prefix}/demo",
     tags=["Demo File"],
     dependencies=[Depends(CurrentAccessTokenHasRole("User"))],
 )
@@ -165,19 +171,19 @@ app.include_router(
 
 app.include_router(
     category_router,
-    prefix=f"{global_prefix}/category",
+    prefix=f"{api_prefix}/category",
     tags=["Category"],
 )
 app.include_router(
     tag_router,
-    prefix=f"{global_prefix}/tag",
+    prefix=f"{api_prefix}/tag",
     tags=["Tag"],
 )
 # checked_scopes = ScopeChecker(["api.read", "api.write"])
 # protected_scopes = ScopeChecker(["api.read"])
 app.include_router(
     protected_resource_router,
-    prefix=f"{global_prefix}/protected",
+    prefix=f"{api_prefix}/protected",
     tags=["Protected Resource"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
     # TBD: This is not ready to use - requires the redirect URI to be passed through Swagger UI
@@ -188,12 +194,19 @@ app.include_router(
 # )  # add artificial.read, artificial.write, mapped_account.read, mapped_account.write, ...
 # app.include_router(
 #     access_control_router,
-#     prefix=f"{global_prefix}/access",
+#     prefix=f"{api_prefix}/access",
 #     tags=["Access Control"],
 #     # dependencies=[Depends(course_scopes)],
 # )
 # Sign-up is handled by security - controlled by token content!
 # TBD: this can be implemented later for admin dashboard or so.
+
+app.include_router(
+    websocket_router,
+    prefix=f"{ws_prefix}",
+    tags=["Demo WebSocket"],
+    # TBD: consider adding a dependency here for the token
+)
 
 
 # exception handler logs exceptions before passing them to the default exception handler
