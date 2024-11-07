@@ -14,8 +14,8 @@ async def demo_websocket_endpoint(websocket: WebSocket):
     try:
         while public_web_socket_on:
             data = await websocket.receive_text()
-            print("=== ws - v1 - public_web_socket - data ===")
-            print(data)
+            # print("=== ws - v1 - public_web_socket - data ===")
+            # print(data)
             await websocket.send_text(f"Message text was: {data}")
     except Exception as e:
         await websocket.close()

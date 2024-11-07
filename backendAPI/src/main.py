@@ -204,7 +204,7 @@ app.include_router(
 app.include_router(
     websocket_router,
     prefix=f"{ws_prefix}",
-    tags=["Demo WebSocket"],
+    tags=["Web Sockets"],
     # TBD: consider adding a dependency here for the token
 )
 
