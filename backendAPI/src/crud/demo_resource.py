@@ -102,11 +102,11 @@ class DemoResourceCRUD(
         results = await self.read(
             current_user, filters=[DemoResource.tags.any(Tag.id == tag_id)]
         )
-        print("=== results ===")
-        pprint(results)
-        for result in results:
-            print("=== result ===")
-            pprint(result)
-            print("=== result.tags ===")
-            pprint(result.tags)
+        # print("=== results ===")
+        # pprint(results)
+        # for result in results:
+        #     print("=== result ===")
+        #     pprint(result)
+        #     print("=== result.tags ===")
+        #     pprint(result.tags)
         return results
