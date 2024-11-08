@@ -12,8 +12,12 @@
 		socket = new WebSocket('ws://localhost:8660/ws/v1/public_web_socket');
 
 		socket.onopen = (event) => {
-			console.log('== socket opened ===');
-			socket.send('Hello from the client!');
+			console.log('=== socket opened ===');
+			console.log('=== event ===');
+			console.log(event);
+			console.log('=== socket ===');
+			console.log(socket);
+			socket?.send('Hello from the client!');
 		};
 
 		// const sendMessage = (event) => {
@@ -28,29 +32,30 @@
 
 		socket.onclose = (event) => {
 			console.log('=== socket closed ===');
+			console.log('=== event ===');
+			console.log(event);
 		};
 	});
+
+	const sendMessage = (event: Event) => {
+		event.preventDefault();
+		socket?.send(new_message);
+	};
 </script>
 
 <!-- TBD: clear text box -->
 <div class="w-50">
-	<form id="post-message" class="flex flex-col">
+	<form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
 		<md-filled-text-field
 			label="Message"
 			type="input"
 			name="message"
-			oninput={(e) => (new_message = e.target.value)}
+			oninput={(e: Event) => (new_message = e?.target?.value)}
 			class="w-50"
 		>
 		</md-filled-text-field>
 		<div class="ml-auto py-4">
-			<md-filled-button
-				type="submit"
-				role="button"
-				onclick={socket?.send(new_message)}
-				onkeydown={(e) => e.key === 'Enter' && socket?.send(new_message)}
-				tabindex="0">OK</md-filled-button
-			>
+			<md-filled-button type="submit" role="button" tabindex="0">OK</md-filled-button>
 		</div>
 	</form>
 </div>
