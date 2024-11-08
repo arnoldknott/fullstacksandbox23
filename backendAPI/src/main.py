@@ -20,6 +20,7 @@ from routers.api.v1.identities import (
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.public_resource import router as public_resource_router
 from routers.api.v1.tag import router as tag_router
+from routers.socketio.v1.sockets import socketio_app
 from routers.ws.v1.websockets import router as websocket_router
 
 # print("Current directory:", os.getcwd())
@@ -207,6 +208,8 @@ app.include_router(
     tags=["Web Sockets"],
     # TBD: consider adding a dependency here for the token
 )
+
+app.mount("/socketio/v1", app=socketio_app)
 
 
 # exception handler logs exceptions before passing them to the default exception handler
