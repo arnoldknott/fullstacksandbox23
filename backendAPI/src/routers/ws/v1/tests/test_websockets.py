@@ -10,4 +10,4 @@ async def test_public_websocket(
     async with connect("ws://127.0.0.1:80/ws/v1/public_web_socket") as websocket:
         await websocket.send("Hello, world!")
         response = await websocket.recv()
-        assert response == "Message text was: Hello, world!"
+        assert response == "Message received from client: Hello, world!"
