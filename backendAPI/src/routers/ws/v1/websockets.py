@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, WebSocket, WebSocketException, status
+from fastapi import APIRouter, WebSocket
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -16,6 +16,7 @@ async def demo_websocket_endpoint(websocket: WebSocket):
         while public_web_socket_on:
             logger.info("=== ws - v1 - public_web_socket - connected ===")
             data = await websocket.receive_text()
+            # TBD: the print's are no shown life in the console
             print("=== ws - v1 - public_web_socket - data ===")
             print(data)
             await websocket.send_text(f"Message received from client: {data}")
