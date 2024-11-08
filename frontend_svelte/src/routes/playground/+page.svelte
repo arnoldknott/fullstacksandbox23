@@ -57,6 +57,11 @@
 			name: 'User interface',
 			description: 'play with elements of the user interface',
 			url: '/user_interface'
+		},
+		{
+			name: 'Websockets',
+			description: 'Establishing various websocket connections to backend and using them',
+			url: '/websockets'
 		}
 	];
 </script>
