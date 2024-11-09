@@ -1,5 +1,6 @@
 import pytest
 import socketio
+from typing import List
 
 
 @pytest.fixture
@@ -14,37 +15,54 @@ async def socketio_simple_client():
 
 @pytest.fixture
 async def socketio_client():
-    """Provide a socket.io client."""
-    client = socketio.AsyncClient()
-    await client.connect(
-        "http://127.0.0.1:80",
-        socketio_path="socketio/v1",
-        namespaces=["/protected_events"],
-    )
-    yield client
-    await client.disconnect()
+    """Provides a socket.io client and connects to it."""
+
+    async def _socketio_client(namespaces: List[str] = None):
+        client = socketio.AsyncClient(logger=True, engineio_logger=True)
+
+        @client.event
+        def connect():
+            """Connect event for socket.io."""
+            pass
+
+        await client.connect(
+            "http://127.0.0.1:80",
+            socketio_path="socketio/v1",
+            namespaces=namespaces,
+        )
+        yield client
+        await client.disconnect()
+
+    return _socketio_client
 
 
-@pytest.fixture
-async def client_event_handler(socketio_client):
-    """Provide a client event handler for a specific event and namespace."""
+# @pytest.fixture
+# async def client_with_event_handler(socketio_client):
+#     """Provide a client event handler for a specific event and the first namespace in the passed list."""
 
-    async def _client_event_handler(event_name, namespace):
-        response = None
+#     async def _client_event_handler(event_name, namespaces):
+#         async for client in socketio_client(namespaces):
+#             # response = None
+#             # response_event = asyncio.Event()
 
-        @socketio_client.on(event_name, namespace=namespace)
-        async def handler(data):
-            nonlocal response
-            response = data
+#             # @client.on(event_name, namespace=namespaces[0])
+#             # async def handler(data):
+#             #     nonlocal response
+#             #     response = data
+#             #     response_event.set()
 
-        async def emit(data):
-            print("=== client_event_handler - emit - data ===")
-            print(data, flush=True)
-            print("=== client_event_handler - emit - response ===")
-            print(response, flush=True)
-            await socketio_client.emit(event_name, data, namespace=namespace)
-            return response
+#             #     print("=== client_with_event_handler - handler - data ===")
+#             #     print(data)
+#             #     print("=== client_with_event_handler - handler - response ===")
+#             #     print(response)
 
-        return emit
+#             # await client.sleep(1)
 
-    return _client_event_handler
+#             # print("=== client_with_event_handler - response ===")
+#             # print(response)
+
+#             # yield client, response, response_event
+#             yield client
+#             await client.disconnect()
+
+#     return _client_event_handler
