@@ -1,10 +1,9 @@
 import pytest
-import socketio
 
 
 @pytest.mark.anyio
 async def test_demo_message(socketio_simple_client):
-    """Test the public websocket."""
+    """Test the demo socket.io message event."""
     # Emit a dummy event to ensure the connection is established
     await socketio_simple_client.emit("dummy_event", {})
 
@@ -20,47 +19,61 @@ async def test_demo_message(socketio_simple_client):
 
 
 @pytest.mark.anyio
-# async def test_protected_message(client_event_handler):
-async def test_protected_message():
-    """Test the public websocket."""
+async def test_protected_message(socketio_client):
+    # async def test_protected_message():
+    """Test the protected socket.io message event."""
 
-    # handler = await client_event_handler("protected_message", "/protected_events")
-    # response = await handler("Hello, world!")
+    async for client in socketio_client(["/protected_events"]):
+        response = None
+
+        @client.on("protected_message", namespace="/protected_events")
+        async def handler(data):
+            nonlocal response
+            response = data
+
+        await client.emit(
+            "protected_message", "Hello, world!", namespace="/protected_events"
+        )
+
+        await client.sleep(1)
+
+        assert response == "Protected message received from client: Hello, world!"
+
+    ### WORKS: ###
+
+    # client = socketio.AsyncClient(logger=True, engineio_logger=True)
+
+    # @client.event
+    # def connect(sid, environ, auth):
+    #     """Connect event for socket.io."""
+    #     print("=== connect - sid ===", flush=True)
+    #     print(sid, flush=True)
+    #     print("=== connect - environ ===", flush=True)
+    #     print(environ, flush=True)
+    #     print("=== connect - auth ===", flush=True)
+    #     print(auth, flush=True)
+    #     pass
+
+    # response = None
+
+    # @client.on("protected_message", namespace="/protected_events")
+    # async def protected_message(data):
+    #     """Protected message event for socket.io. client"""
+    #     print("=== protected_message - data ===")
+    #     print(data, flush=True)
+    #     nonlocal response
+    #     response = data
+    #     # assert data == "Protected messages received from client: Hello, world!"
+
+    # await client.connect(
+    #     "http://127.0.0.1:80",
+    #     socketio_path="socketio/v1",
+    #     namespaces=["/protected_events"],
+    # )
+
+    # response = await client.emit(
+    #     "protected_message", "Hello, world!", namespace="/protected_events"
+    # )
+    # await client.sleep(1)
     # assert response == "Protected message received from client: Hello, world!"
-
-    client = socketio.AsyncClient(logger=True, engineio_logger=True)
-
-    @client.event
-    def connect(sid, environ, auth):
-        """Connect event for socket.io."""
-        print("=== connect - sid ===", flush=True)
-        print(sid, flush=True)
-        print("=== connect - environ ===", flush=True)
-        print(environ, flush=True)
-        print("=== connect - auth ===", flush=True)
-        print(auth, flush=True)
-        pass
-
-    response = ""
-
-    @client.on("protected_message", namespace="/protected_events")
-    async def protected_message(data):
-        """Protected message event for socket.io. client"""
-        print("=== protected_message - data ===")
-        print(data, flush=True)
-        nonlocal response
-        response = data
-        # assert data == "Protected messages received from client: Hello, world!"
-
-    await client.connect(
-        "http://127.0.0.1:80",
-        socketio_path="socketio/v1",
-        namespaces=["/protected_events"],
-    )
-
-    response = await client.emit(
-        "protected_message", "Hello, world!", namespace="/protected_events"
-    )
-    await client.sleep(1)
-    assert response == "Protected message received from client: Hello, world!"
-    await client.disconnect()
+    # await client.disconnect()
