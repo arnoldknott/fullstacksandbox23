@@ -22,7 +22,6 @@ from models.identity import (
     SubGroupCreate,
     SubGroupRead,
     SubGroupUpdate,
-    SubSubGroup,
     UeberGroup,
     UeberGroupCreate,
     UeberGroupRead,
