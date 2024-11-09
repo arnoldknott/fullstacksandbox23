@@ -3,7 +3,6 @@ from pprint import pprint
 
 import socketio
 
-
 logger = logging.getLogger(__name__)
 
 socketio_server = socketio.AsyncServer(
