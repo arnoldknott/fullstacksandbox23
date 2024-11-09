@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-demo_resource_view = BaseView(DemoResourceCRUD, DemoResource)
+demo_resource_view = BaseView(DemoResourceCRUD)
 
 
 # Post requires a user!

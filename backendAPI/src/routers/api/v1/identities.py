@@ -38,7 +38,7 @@ from .base import BaseView
 logger = logging.getLogger(__name__)
 
 user_router = APIRouter()
-user_view = BaseView(UserCRUD, User)
+user_view = BaseView(UserCRUD)
 
 
 # note: self-sign-up through security - controlled by token content,
@@ -182,7 +182,7 @@ async def delete_user_from_group(
 # region UeberGroup:
 
 ueber_group_router = APIRouter()
-ueber_group_view = BaseView(UeberGroupCRUD, UeberGroup)
+ueber_group_view = BaseView(UeberGroupCRUD)
 
 
 @ueber_group_router.post("/", status_code=201)
@@ -337,7 +337,7 @@ async def remove_groups_from_uebergroup(
 
 
 group_router = APIRouter()
-group_view = BaseView(GroupCRUD, Group)
+group_view = BaseView(GroupCRUD)
 
 
 @group_router.post("/", status_code=201)
@@ -527,7 +527,7 @@ async def remove_subgroups_from_group(
 # region SubGroup:
 
 sub_group_router = APIRouter()
-sub_group_view = BaseView(SubGroupCRUD, SubGroup)
+sub_group_view = BaseView(SubGroupCRUD)
 
 
 @sub_group_router.post("/", status_code=201)
@@ -717,7 +717,7 @@ async def remove_subsubgroups_from_subgroup(
 # region SubSubGroup:
 
 sub_sub_group_router = APIRouter()
-sub_sub_group_view = BaseView(SubSubGroupCRUD, SubSubGroup)
+sub_sub_group_view = BaseView(SubSubGroupCRUD)
 
 
 @sub_sub_group_router.post("/", status_code=201)

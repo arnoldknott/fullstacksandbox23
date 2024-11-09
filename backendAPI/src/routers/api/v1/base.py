@@ -26,9 +26,8 @@ logger = logging.getLogger(__name__)
 class BaseView:
     """Base class for all views"""
 
-    def __init__(self, crud, model):
+    def __init__(self, crud):
         self.crud = crud
-        self.model = model
 
     # TBD: In a similar manner
     # - implement rate limiting
