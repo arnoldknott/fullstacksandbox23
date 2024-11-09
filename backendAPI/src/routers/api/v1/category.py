@@ -170,7 +170,7 @@ async def delete_category(
 #     guards: GuardTypes = Depends(Guards(roles=["User"])),
 # ) -> list[DemoResource]:
 #     """Gets all demo resources that belong to specific category."""
-#     # current_user = await category_view._check_token_against_guards(
+#     # current_user = await check_token_against_guards(
 #     #     token_payload, guards
 #     # )
 #     async with category_view.crud() as crud:
