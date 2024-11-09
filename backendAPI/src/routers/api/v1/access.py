@@ -14,7 +14,6 @@ from core.security import (
 from core.types import Action, IdentityType, ResourceType
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 from models.access import (
-    AccessLog,
     AccessLogRead,
     AccessPolicy,
     AccessPolicyCreate,
@@ -32,7 +31,7 @@ router = APIRouter()
 # region AccessPolicies
 
 
-access_policy_view = BaseView(AccessPolicyCRUD, AccessPolicy)
+access_policy_view = BaseView(AccessPolicyCRUD)
 
 
 @router.post("/policy", status_code=201)
@@ -168,7 +167,7 @@ async def delete_access_policy(
 
 # region AccessLogs
 
-access_log_view = BaseView(AccessLoggingCRUD, AccessLog)
+access_log_view = BaseView(AccessLoggingCRUD)
 
 
 @router.get("/logs", status_code=200)

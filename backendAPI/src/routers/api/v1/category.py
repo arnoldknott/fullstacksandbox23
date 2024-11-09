@@ -14,7 +14,7 @@ from .base import BaseView
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-category_view = BaseView(CategoryCRUD, Category)
+category_view = BaseView(CategoryCRUD)
 
 # # TBD delete version before refactoring:
 # @router.post("/", status_code=201)

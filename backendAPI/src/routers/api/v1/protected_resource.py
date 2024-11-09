@@ -40,7 +40,7 @@ router = APIRouter()
 
 # region ProtectedResource
 
-protected_resource_view = BaseView(ProtectedResourceCRUD, ProtectedResource)
+protected_resource_view = BaseView(ProtectedResourceCRUD)
 
 
 @router.post("/resource/", status_code=201)
@@ -99,7 +99,7 @@ async def delete_protected_resource(
 
 # region ProtectedChild
 
-protected_child_view = BaseView(ProtectedChildCRUD, ProtectedChild)
+protected_child_view = BaseView(ProtectedChildCRUD)
 
 
 @router.post("/child/", status_code=201)
@@ -190,7 +190,7 @@ async def remove_child_from_parent(
 
 # region ProtectedGrandChild
 
-protected_grand_child_view = BaseView(ProtectedGrandChildCRUD, ProtectedGrandChild)
+protected_grand_child_view = BaseView(ProtectedGrandChildCRUD)
 
 
 @router.post("/grandchild/", status_code=201)

@@ -13,7 +13,7 @@ from .base import BaseView
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-tag_view = BaseView(TagCRUD, Tag)
+tag_view = BaseView(TagCRUD)
 
 # # TBD delete version before refactoring:
 # @router.post("/", status_code=201)

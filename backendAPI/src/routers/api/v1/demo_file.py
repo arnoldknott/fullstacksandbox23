@@ -15,7 +15,7 @@ from .base import BaseView
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-demo_file_view = BaseView(DemoFileCRUD, DemoFile)
+demo_file_view = BaseView(DemoFileCRUD)
 # roles = ["User"] is required for the whole router in main.py!
 
 
