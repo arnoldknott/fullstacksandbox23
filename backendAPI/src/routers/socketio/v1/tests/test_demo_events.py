@@ -14,10 +14,6 @@ async def test_demo_socket(socketio_client):
 
     # Send a demo_message to the server and verify the response
     await socketio_client.emit("demo_message", "Hello, world!")
-    # response = await socketio_client.receive()
-    # print("=== test_demo_socket - after Hello world receive ===")
-    # assert response == ["message", "Message received from client: Hello, world!"]
-    # await socketio_client.emit("demo_message", "Hello again, world!")
-    # new_response = await socketio_client.receive()
-    # assert new_response[0] == "message"
-    # assert new_response[1] == "Message received from client: Hello again, world!"
+    response = await socketio_client.receive(timeout=1)
+    print("=== test_demo_socket - after Hello world receive ===")
+    assert response == ["message", "Message received from client: Hello, world!"]
