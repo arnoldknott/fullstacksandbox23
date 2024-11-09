@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query
 
 from core.security import (
     Guards,
+    check_token_against_guards,
     get_access_token_payload,
     optional_get_access_token_payload,
 )
@@ -96,9 +97,7 @@ async def add_tag_to_demo_resource(
     """Adds a tag to a demo resource."""
     # token = CurrentAccessToken(token_payload)
     # current_user = await token.provides_current_user()
-    current_user = await demo_resource_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with TagCRUD() as crud:
         for tag_id in tag_ids:
             print("=== tag_id ===")
@@ -121,9 +120,7 @@ async def get_all_in_category(
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[DemoResource]:
     """Gets all demo resources that belong to specific category."""
-    current_user = await demo_resource_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with demo_resource_view.crud() as crud:
         return await crud.read_by_category_id(current_user, category_id)
 
@@ -135,8 +132,6 @@ async def get_all_with_tag(
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[DemoResourceRead]:
     """Gets all demo resources that belong to specific tag."""
-    current_user = await demo_resource_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with demo_resource_view.crud() as crud:
         return await crud.read_by_tag_id(current_user, tag_id)

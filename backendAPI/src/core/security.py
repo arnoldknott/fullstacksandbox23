@@ -357,48 +357,6 @@ class CurrentAccessToken:
         # return CurrentUserData(**current_user)
         return current_user
 
-    # Fine-grained access control is taking care of this!
-    # If used, implement tests for this:
-    # async def azure_self_or_admin(self, azure_user_id: UUID, require=True) -> bool:
-    #     """Checks if the current user is the user_id or an admin"""
-    #     payload = self.payload
-    #     user_has_admin_role = await self.has_role("Admin", require=False)
-    #     try:
-    #         azure_user_id = UUID(azure_user_id)
-    #     except ValueError:
-    #         logger.error("ID is not a universal unique identifier (uuid).")
-    #         raise HTTPException(status_code=400, detail="Invalid id.")
-    #     if user_has_admin_role:
-    #         return True
-    #     elif payload["oid"] == azure_user_id:
-    #         return True
-    #     else:
-    #         if require:
-    #             raise HTTPException(status_code=403, detail="Access denied")
-    #         else:
-    #             return False
-
-    # Fine-grained access control is taking care of this functionality!
-    # If used, implement tests for this:
-    # async def self_or_admin(self, user_id: UUID, require=True) -> bool:
-    #     """Checks if the current user is the user_id or an admin"""
-    #     try:
-    #         user_id = UUID(user_id)
-    #     except ValueError:
-    #         logger.error("ID is not a universal unique identifier (uuid).")
-    #         raise HTTPException(status_code=400, detail="Invalid id.")
-    #     user_has_admin_role = await self.has_role("Admin", require=False)
-    #     current_user = await self.provides_current_user()
-    #     if user_has_admin_role:
-    #         return True
-    #     elif current_user.user_id == user_id:
-    #         return True
-    #     else:
-    #         if require:
-    #             raise HTTPException(status_code=403, detail="Access denied")
-    #         else:
-    #             return False
-
 
 # endregion: Generic check
 
@@ -483,42 +441,24 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
         return await self.gets_or_signs_up_current_user()
 
 
+async def check_token_against_guards(
+    token_payload: dict, guards: GuardTypes
+) -> CurrentUserData:
+    """checks if token fulfills the required guards and returns current user."""
+    token = CurrentAccessToken(token_payload)
+    if guards is not None:
+        if guards.scopes is not None:
+            for scope in guards.scopes:
+                await token.has_scope(scope)
+        if guards.roles is not None:
+            for role in guards.roles:
+                await token.has_role(role)
+        if guards.groups is not None:
+            for group in guards.groups:
+                await token.has_group(group)
+    return await token.provides_current_user()
+
+
 # endregion: Specific checks
 
 # endregion: CHECKS
-
-
-# region: Access control
-
-
-# class AccessControl:
-#     def __init__(self) -> None:
-#         pass
-
-#     async def permits(
-#         user: "CurrentUserData", resource_id: UUID, action: Action
-#     ) -> bool:
-#         """Checks if the user has permission to perform the action on the resource"""
-#         pass
-
-
-# delete later:
-
-# snippet for preventing admin to change last_accessed_at:
-# TBD: remove - functionality replaced by access-log-table)
-# TBD: this will fail some tests - so they need to be rewritten
-
-# def updates_last_access(
-# self, admin: bool, current_user: UserRead, owner_id: UUID
-# ) -> None:
-# logger.info("POST updated_last_access")
-# if (admin is True) and (str(current_user.user_id) != str(owner_id)):
-#     self.__update_last_access = False
-# return self.__update_last_access
-
-# snippet to allow only admins to write all and users to write their own data:
-# should be replaced by
-# if (str(current_user.user_id) != str(user_id)) and (check_admin_role is False):
-#     raise HTTPException(status_code=403, detail="Access denied")
-
-# endregion: Access control

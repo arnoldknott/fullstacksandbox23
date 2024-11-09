@@ -5,7 +5,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from core.security import Guards, GuardTypes, get_access_token_payload
+from core.security import (
+    Guards,
+    GuardTypes,
+    check_token_against_guards,
+    get_access_token_payload,
+)
 from core.types import Action, IdentityType, ResourceType
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 from models.access import (
@@ -60,9 +65,7 @@ async def get_access_policies_for_resource(
     """Returns all access policies for requested resource_id."""
     logger.info("GET access policies for resource_id")
 
-    current_user = await access_policy_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_by_resource_id(
             current_user, resource_id
@@ -79,9 +82,7 @@ async def get_access_policies_by_resource_type(
     """Returns all access policies for requested resource_type."""
     logger.info("GET access_policies for resource_type")
 
-    current_user = await access_policy_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_by_resource_type(
             current_user, resource_type
@@ -99,9 +100,7 @@ async def get_access_policies_for_identity(
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for the requested identity."""
     logger.info("GET user by azure_user_id")
-    current_user = await access_policy_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_for_identity(
             current_user, identity_id
@@ -118,9 +117,7 @@ async def get_access_policies_by_identity_type(
     """Returns all access policies for requested resource_type."""
     logger.info("GET access_policies for resource_type")
 
-    current_user = await access_policy_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
         access_policies = await crud.read_access_policies_by_identity_type(
             current_user, identity_type
@@ -136,9 +133,7 @@ async def put_access_policy(
 ) -> AccessPolicyRead:
     """Deletes an old access policy and creates a new instead."""
     logger.info("PUT access policy")
-    current_user = await access_policy_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
         new_policy_in_database = await crud.change(current_user, access_policy)
         print("=== new_policy_in_database ===")
@@ -158,9 +153,7 @@ async def delete_access_policy(
 ) -> None:
     """Deletes an access policy."""
     logger.info("DELETE access policy")
-    current_user = await access_policy_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     access_policy = AccessPolicyDelete(
         resource_id=resource_id,
         identity_id=identity_id,
@@ -189,9 +182,7 @@ async def get_access_logs(
 ) -> list[AccessLogRead]:
     """Returns all access logs."""
     logger.info("GET access logs")
-    current_user = await access_log_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:
         return await crud.read(
             current_user, resource_id, identity_id, action, status_code=status_code
@@ -207,9 +198,7 @@ async def get_access_logs_for_resource(
 ) -> list[AccessLogRead]:
     """Returns creation information for a resource."""
     logger.info("GET access log information for resource")
-    current_user = await access_log_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     # TBD: should be removed now: resource_id is always mandatory now and identity_id is optional - FastAPI should take care of it.
     # if resource_id is None and identity_id is None:
     #     raise HTTPException(
@@ -231,9 +220,7 @@ async def get_access_logs_for_identity(
 ) -> list[AccessLogRead]:
     """Returns creation information for a resource."""
     logger.info("GET access log information for identity")
-    current_user = await access_log_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:
         return await crud.read_access_logs_by_resource_id_and_identity_id(
             current_user, identity_id=identity_id
@@ -248,9 +235,7 @@ async def get_creation_date_for_resource(
 ) -> datetime:
     """Returns creation information for a resource."""
     logger.info("GET access log information for resource")
-    current_user = await access_log_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:
         return await crud.read_resource_created_at(
             current_user,
@@ -266,9 +251,7 @@ async def get_last_accessed_for_resource(
 ) -> AccessLogRead:
     """Returns creation information for a resource."""
     logger.info("GET access log information for resource")
-    current_user = await access_log_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:
         return await crud.read_resource_last_accessed_at(
             current_user,
@@ -284,9 +267,7 @@ async def get_access_count_for_resource(
 ) -> int:
     """Returns creation information for a resource."""
     logger.info("GET access log information for resource")
-    current_user = await access_log_view._check_token_against_guards(
-        token_payload, guards
-    )
+    current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:
         return await crud.read_resource_access_count(
             current_user,

@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from core.security import Guards, get_access_token_payload
+from core.security import Guards, check_token_against_guards, get_access_token_payload
 from core.types import GuardTypes
 from crud.access import BaseHierarchyModelRead
 from crud.identity import (
@@ -114,7 +114,7 @@ async def get_user_by_azure_user_id(
 ) -> UserRead:
     """Returns a user based on its azure user id."""
     logger.info("GET user by azure_user_id")
-    current_user = await user_view._check_token_against_guards(token_payload, guards)
+    current_user = await check_token_against_guards(token_payload, guards)
     async with user_view.crud() as crud:
         user = await crud.read_by_azure_user_id(azure_user_id, current_user)
     return user
