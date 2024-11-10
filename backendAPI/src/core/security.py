@@ -144,7 +144,7 @@ async def provide_http_token_payload(request: Request) -> Optional[dict]:
         auth_header = request.headers.get("Authorization")
         token = auth_header.split("Bearer ")[1]
         # can later be used for customizing different identity service providers
-        get_azure_token_payload(token)
+        return await get_azure_token_payload(token)
     except Exception as err:
         logger.error(f"🔑 Token validation failed: ${err}")
         return None
