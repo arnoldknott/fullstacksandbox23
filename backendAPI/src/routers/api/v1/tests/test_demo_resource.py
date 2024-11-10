@@ -22,19 +22,19 @@ from tests.utils import (
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_post_demo_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
 ):
     """Tests POST of a demo_resource."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     resource = one_test_demo_resource
     before_time = datetime.now()
@@ -51,7 +51,9 @@ async def test_post_demo_resource(
         f"/api/v1/access/log/{content['id']}/last-accessed"
     )
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     assert access_log_response.status_code == 200
     last_accessed_at = AccessLogRead(**access_log_response.json())
@@ -65,16 +67,16 @@ async def test_post_demo_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_post_demo_resource_with_nonexisting_category(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests POST of a demo_resource."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     resource = one_test_demo_resource
     resource["category_id"] = str(uuid.uuid4())
@@ -89,7 +91,7 @@ async def test_post_demo_resource_with_nonexisting_category(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
         token_user1_read_write,
@@ -102,12 +104,12 @@ async def test_post_demo_resource_with_nonexisting_category(
 async def test_get_all_demo_resources(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Tests GET all demo resources."""
-    app_override_get_azure_payload_dependency
-    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+    app_override_provide_http_token_payload
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
     response = await async_client.get("/api/v1/demoresource/")
 
     assert response.status_code == 200
@@ -178,19 +180,19 @@ async def test_get_all_public_demo_resources(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read, token_user1_read_write, token_admin, token_admin_read],
     indirect=True,
 )
 async def test_get_demo_resource_by_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Tests GET of a demo resources."""
-    app_override_get_azure_payload_dependency
-    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+    app_override_provide_http_token_payload
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
 
     # before_time = datetime.now()
     response = await async_client.get(f"/api/v1/demoresource/{resources[0].id}")
@@ -252,22 +254,22 @@ async def test_get_demo_resource_by_nonexisting_uuid(async_client: AsyncClient):
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_put_demo_resource(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     current_user_from_azure_token,
 ):
     """Tests PUT of a demo resource."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -282,7 +284,9 @@ async def test_put_demo_resource(
     assert response.status_code == 200
     content = response.json()
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -301,21 +305,21 @@ async def test_put_demo_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_put_demo_resource_partial_update(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Tests PUT of a demo resource, where not all fields are updated."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -333,21 +337,21 @@ async def test_put_demo_resource_partial_update(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_put_demo_resource_by_invalid_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Tests PUT of a demo resources with invalid id."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    await add_test_demo_resources(mocked_get_azure_token_payload)
+    await add_test_demo_resources(mocked_provide_http_token_payload)
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -361,21 +365,21 @@ async def test_put_demo_resource_by_invalid_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_put_demo_resource_by_resource_does_not_exist(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Tests PUT of nonexisting demo resources."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    await add_test_demo_resources(mocked_get_azure_token_payload)
+    await add_test_demo_resources(mocked_provide_http_token_payload)
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -408,21 +412,21 @@ async def test_put_demo_resource_by_resource_does_not_exist(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_delete_demo_resource(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Tests DELETE of a demo resource."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
     response = await async_client.get(f"/api/v1/demoresource/{str(resources[0].id)}")
 
     # Check if resource exists before deleting:
@@ -451,16 +455,16 @@ async def test_delete_demo_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write, token_admin_read_write],
     indirect=True,
 )
 async def test_delete_demo_resource_by_invalid_id(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests DELETE of a demo resources with invalid id."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     response = await async_client.delete("/api/v1/demoresource/invalid_id")
 
@@ -469,17 +473,17 @@ async def test_delete_demo_resource_by_invalid_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_delete_demo_resource_by_resource_does_not_exist(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests GET of a demo resources."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     response = await async_client.delete(f"/api/v1/demoresource/{str(uuid.uuid4())}")
 
@@ -490,23 +494,23 @@ async def test_delete_demo_resource_by_resource_does_not_exist(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_attach_tag_to_demo_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_test_demo_resources: list[DemoResource],
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_test_tags: list[Tag],
 ):
     """Tests POST of a tag to a demo resource."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
-    tags = await add_test_tags(mocked_get_azure_token_payload)
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
+    tags = await add_test_tags(mocked_provide_http_token_payload)
     response = await async_client.post(
         f"/api/v1/demoresource/{str(resources[1].id)}/tag/?tag_ids={str(tags[0].id)}&tag_ids={str(tags[2].id)}"
     )
@@ -530,20 +534,20 @@ async def test_attach_tag_to_demo_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
     indirect=True,
 )
 async def test_get_all_demo_resources_by_category_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Tests GET all demo resources by category id."""
 
-    app_override_get_azure_payload_dependency
-    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
+    app_override_provide_http_token_payload
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
 
     categories = await async_client.get("/api/v1/category/")
     categories = categories.json()
@@ -575,21 +579,21 @@ async def test_get_all_demo_resources_by_category_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin, token_admin_read_write, token_user1_read_write, token_user1_read],
     indirect=True,
 )
 async def test_get_demo_resources_for_lonely_category(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Tests GET error for category, that has no demo resources attached."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    await add_test_demo_resources(mocked_get_azure_token_payload)
+    await add_test_demo_resources(mocked_provide_http_token_payload)
     # add_test_demo_resources
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()
@@ -604,7 +608,7 @@ async def test_get_demo_resources_for_lonely_category(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_admin_read_write,
         token_user1_read_write,
@@ -616,16 +620,16 @@ async def test_get_all_demo_resources_by_tag_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
     add_test_tags: list[Tag],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     # current_test_user,
     # add_one_test_access_policy,
 ):
     """Tests GET all demo resources by category id."""
 
-    app_override_get_azure_payload_dependency
-    resources = await add_test_demo_resources(mocked_get_azure_token_payload)
-    tags = await add_test_tags(mocked_get_azure_token_payload)
+    app_override_provide_http_token_payload
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
+    tags = await add_test_tags(mocked_provide_http_token_payload)
 
     # current_user = current_test_user
 

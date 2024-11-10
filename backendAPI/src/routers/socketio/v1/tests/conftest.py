@@ -1,6 +1,7 @@
+from typing import List
+
 import pytest
 import socketio
-from typing import List
 
 
 @pytest.fixture

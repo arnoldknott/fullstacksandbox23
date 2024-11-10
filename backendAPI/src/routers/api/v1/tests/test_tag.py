@@ -21,7 +21,7 @@ from tests.utils import (
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_write,
         token_user1_read_write,
@@ -33,11 +33,11 @@ from tests.utils import (
     indirect=True,
 )
 async def test_post_tag(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests POST of a tag."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     tag = {
         "name": "TestTag",
@@ -52,7 +52,7 @@ async def test_post_tag(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_write,
         token_user1_read_write,
@@ -64,11 +64,11 @@ async def test_post_tag(
     indirect=True,
 )
 async def test_post_tag_name_too_long(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests POST of too long tag."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     tag = {
         "name": "TestTag  with more than 10 characters",
@@ -83,7 +83,7 @@ async def test_post_tag_name_too_long(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
         token_user1_read_write,
@@ -97,12 +97,12 @@ async def test_post_tag_name_too_long(
 async def test_get_all_tags(
     async_client: AsyncClient,
     add_test_tags: list[Tag],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload: dict,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload: dict,
 ):
     """Tests GET all tags."""
-    app_override_get_azure_payload_dependency
-    tags = await add_test_tags(mocked_get_azure_token_payload)
+    app_override_provide_http_token_payload
+    tags = await add_test_tags(mocked_provide_http_token_payload)
     response = await async_client.get("/api/v1/tag/")
 
     assert response.status_code == 200
@@ -115,7 +115,7 @@ async def test_get_all_tags(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
         token_user1_read_write,
@@ -129,12 +129,12 @@ async def test_get_all_tags(
 async def test_get_tag_by_id(
     async_client: AsyncClient,
     add_test_tags: list[Tag],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload: dict,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload: dict,
 ):
     """Tests GET all tags."""
-    app_override_get_azure_payload_dependency
-    tags = await add_test_tags(mocked_get_azure_token_payload)
+    app_override_provide_http_token_payload
+    tags = await add_test_tags(mocked_provide_http_token_payload)
 
     response = await async_client.get(f"/api/v1/tag/{str(tags[1].id)}")
 
@@ -146,7 +146,7 @@ async def test_get_tag_by_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
         token_user1_read_write,
@@ -158,17 +158,17 @@ async def test_get_tag_by_id(
     indirect=True,
 )
 async def test_get_tag_by_invalid_id(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests GET of a tag with invalid id."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     response = await async_client.get("/api/v1/tag/invalid_id")
     assert response.status_code == 422
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_write,
         token_user1_read_write,
@@ -181,15 +181,15 @@ async def test_get_tag_by_invalid_id(
 )
 async def test_put_tag(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_test_tags: list[Tag],
-    mocked_get_azure_token_payload: dict,
+    mocked_provide_http_token_payload: dict,
 ):
     """Tests PUT of a tag."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    tags = await add_test_tags(mocked_get_azure_token_payload)
+    tags = await add_test_tags(mocked_provide_http_token_payload)
 
     updated_tag = {
         "name": "NewTag",
@@ -205,7 +205,7 @@ async def test_put_tag(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_write,
         token_user1_read_write,
@@ -219,14 +219,14 @@ async def test_put_tag(
 async def test_put_tag_does_not_exist(
     async_client: AsyncClient,
     add_test_tags: list[Tag],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload: dict,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload: dict,
 ):
     """Tests PUT of a tag."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    await add_test_tags(mocked_get_azure_token_payload)
+    await add_test_tags(mocked_provide_http_token_payload)
 
     updated_tag = {
         "name": "Uptag",
@@ -242,7 +242,7 @@ async def test_put_tag_does_not_exist(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_write,
         token_user1_read_write,
@@ -257,14 +257,14 @@ async def test_delete_tag(
     async_client: AsyncClient,
     add_test_tags: list[Tag],
     # add_test_policy_for_resource: AccessPolicy,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload: dict,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload: dict,
 ):
     """Tests DELETE of a tag."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    tags = await add_test_tags(mocked_get_azure_token_payload)
+    tags = await add_test_tags(mocked_provide_http_token_payload)
     # the get endpoints are public, so no current user is passed -
     # that means all tags need a public access policy in the fine grained access control!
     # TBD: should this be solved in the tags_CRUD, create method;
@@ -301,7 +301,7 @@ async def test_delete_tag(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_write,
         token_user1_read_write,
@@ -313,11 +313,11 @@ async def test_delete_tag(
     indirect=True,
 )
 async def test_delete_tag_by_invalid_id(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests DELETE of a tag with invalid id."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     response = await async_client.delete("/api/v1/tag/invalid_id")
 
@@ -326,7 +326,7 @@ async def test_delete_tag_by_invalid_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_write,
         token_user1_read_write,
@@ -340,14 +340,14 @@ async def test_delete_tag_by_invalid_id(
 async def test_delete_tag_does_not_exist(
     async_client: AsyncClient,
     add_test_tags: list[Tag],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload: dict,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload: dict,
 ):
     """Tests DELETE of a tag."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    await add_test_tags(mocked_get_azure_token_payload)
+    await add_test_tags(mocked_provide_http_token_payload)
     response = await async_client.delete(f"/api/v1/tag/{str(uuid.uuid4())}")
 
     assert response.status_code == 404

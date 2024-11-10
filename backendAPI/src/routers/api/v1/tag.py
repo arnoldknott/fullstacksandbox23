@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from core.security import Guards, get_access_token_payload
+from core.security import Guards, get_http_access_token_payload
 from core.types import GuardTypes
 from crud.tag import TagCRUD
 from models.tag import Tag, TagCreate, TagRead, TagUpdate
@@ -30,7 +30,7 @@ tag_view = BaseView(TagCRUD)
 @router.post("/", status_code=201)
 async def post_tag(
     tag: TagCreate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Tag:
     """Creates a new tag."""
@@ -103,7 +103,7 @@ async def get_tag_by_id(
 async def put_tag(
     tag_id: UUID,
     tag: TagUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Tag:
     """Updates a tag."""
@@ -135,7 +135,7 @@ async def put_tag(
 @router.delete("/{tag_id}", status_code=200)
 async def delete_tag(
     tag_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:  # Tag:
     """Deletes a tag."""
@@ -162,7 +162,7 @@ async def delete_tag(
 # @router.get("/{tag_id}/demoresources")
 # async def get_all_demo_resources_for_tag(
 #     tag_id: UUID,
-#     token_payload=Depends(optional_get_access_token_payload),
+#     token_payload=Depends(optional_get_http_access_token_payload),
 # ) -> list[DemoResource]:
 #     """Gets all demo resources with specific tag."""
 #     async with tag_view.crud() as crud:

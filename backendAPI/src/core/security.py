@@ -119,42 +119,45 @@ async def decode_token(token: str, jwks: dict) -> dict:
     return payload
 
 
-async def get_azure_token_payload(request: Request) -> Optional[dict]:
+# This function is available for all protocols - like websockets, socket.io and http(s).
+# It no longer follows FastAPI's dependency injection pattern
+# which requires the response - request pattern from http(s) routes.
+async def get_azure_token_payload(token: str) -> Optional[dict]:
     """Validates the Azure access token sent in the request header and returns the payload if valid"""
     logger.info("🔑 Validating token")
     try:
+        jwks = await get_azure_jwks()
+        payload = await decode_token(token, jwks)
+        return payload
+    except Exception:
+        logger.info("🔑 Failed to validate token, fetching new JWKS and trying again.")
+        jwks = await get_azure_jwks(no_cache=True)
+        payload = await decode_token(token, jwks)
+        return payload
+
+
+# From get_http_access_token_payload, optional_get_http_access_token_payload to provide_http_token_payload:
+# For http(s) routes only, as it uses FastAPI's dependency injection pattern
+async def provide_http_token_payload(request: Request) -> Optional[dict]:
+    """General function to get the access token payload"""
+    try:
         auth_header = request.headers.get("Authorization")
         token = auth_header.split("Bearer ")[1]
-        if token:
-            try:
-                jwks = await get_azure_jwks()
-                payload = await decode_token(token, jwks)
-                return payload
-            except Exception:
-                logger.info(
-                    "🔑 Failed to validate token, fetching new JWKS and trying again."
-                )
-                jwks = await get_azure_jwks(no_cache=True)
-                payload = await decode_token(token, jwks)
-                return payload
-
-    except Exception as e:
-        logger.error(f"🔑 Token validation failed: ${e}")
+        # can later be used for customizing different identity service providers
+        get_azure_token_payload(token)
+    except Exception as err:
+        logger.error(f"🔑 Token validation failed: ${err}")
         return None
-        # raise HTTPException(status_code=401, detail="Invalid token")
 
 
 # TBD: implement tests for this:
 # Or: consider removing this step:
-# are public access policies are implementing the same desired behavior - just more fine grained?
-async def optional_get_access_token_payload(
-    payload=Depends(get_azure_token_payload),
+# are public access policies implementing the same desired behavior - just more fine grained?
+async def optional_get_http_access_token_payload(
+    payload=Depends(provide_http_token_payload),
 ) -> Optional[dict]:
     """General function to get the access token payload optionally"""
-    # can later be used for customizing different identity service providers
-    # return payload
     try:
-        # return await get_azure_token_payload(request)
         return payload
     except HTTPException as err:
         if err.status_code == 401:
@@ -163,8 +166,8 @@ async def optional_get_access_token_payload(
             raise err
 
 
-async def get_access_token_payload(
-    payload: dict = Depends(optional_get_access_token_payload),
+async def get_http_access_token_payload(
+    payload: dict = Depends(optional_get_http_access_token_payload),
 ) -> dict:
     """General function to get the access token payload"""
     # can later be used for customizing different identity service providers
@@ -174,8 +177,8 @@ async def get_access_token_payload(
     return payload
 
 
-# async def get_access_token_payload(
-#     payload: dict = Depends(get_azure_token_payload),
+# async def get_http_access_token_payload(
+#     payload: dict = Depends(provide_http_token_payload),
 # ) -> dict:
 #     """General function to get the access token payload"""
 #     # can later be used for customizing different identity service providers
@@ -215,7 +218,7 @@ class Guards:
 # @router.post("/", status_code=201)
 # async def post_user(
 #     user: ProtectedResourceCreate,
-#     token_payload=Depends(get_access_token_payload),
+#     token_payload=Depends(get_http_access_token_payload),
 # ) -> ProtectedResource:
 #     """Creates a new user."""
 #     logger.info("POST user")
@@ -387,7 +390,9 @@ class CurrentAccessTokenIsValid(CurrentAccessToken):
     def __init__(self, require=True) -> None:
         self.require = require
 
-    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
+    async def __call__(
+        self, payload: dict = Depends(get_http_access_token_payload)
+    ) -> bool:
         super().__init__(payload)
         return await self.is_valid(self.require)
 
@@ -399,7 +404,9 @@ class CurrentAccessTokenHasScope(CurrentAccessToken):
         self.scope = scope
         self.require = require
 
-    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
+    async def __call__(
+        self, payload: dict = Depends(get_http_access_token_payload)
+    ) -> bool:
         super().__init__(payload)
         return await self.has_scope(self.scope, self.require)
 
@@ -411,7 +418,9 @@ class CurrentAccessTokenHasRole(CurrentAccessToken):
         self.role = role
         self.require = require
 
-    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
+    async def __call__(
+        self, payload: dict = Depends(get_http_access_token_payload)
+    ) -> bool:
         super().__init__(payload)
         return await self.has_role(self.role, self.require)
 
@@ -423,7 +432,9 @@ class CurrentAccessTokenHasGroup(CurrentAccessToken):
         self.group = group
         self.require = require
 
-    async def __call__(self, payload: dict = Depends(get_access_token_payload)) -> bool:
+    async def __call__(
+        self, payload: dict = Depends(get_http_access_token_payload)
+    ) -> bool:
         super().__init__(payload)
         return await self.has_group(self.group, self.require)
 
@@ -435,7 +446,7 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
         pass
 
     async def __call__(
-        self, payload: dict = Depends(get_azure_token_payload)
+        self, payload: dict = Depends(provide_http_token_payload)
     ) -> UserRead:
         super().__init__(payload)
         return await self.gets_or_signs_up_current_user()

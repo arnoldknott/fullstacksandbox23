@@ -1,23 +1,23 @@
 import pytest
 
-from fastapi import FastAPI
-from tests.utils import (
-    token_admin_read_write,
-    token_user1_read_write,
-)
+# from fastapi import FastAPI
+# from tests.utils import (
+#     token_admin_read_write,
+#     token_user1_read_write,
+# )
 
 
+# @pytest.mark.anyio
+# @pytest.mark.parametrize(
+#     "mocked_provide_http_token_payload",
+#     [token_admin_read_write, token_user1_read_write],
+#     indirect=True,
+# )
 @pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
-    [token_admin_read_write, token_user1_read_write],
-    indirect=True,
-)
-@pytest.mark.anyio
-async def test_protected_message(
-    socketio_client, app_override_get_azure_payload_dependency: FastAPI
-):
-    app_override_get_azure_payload_dependency
+async def test_protected_message(socketio_client):
+    # socketio_client, app_override_provide_http_token_payload: FastAPI
+    # ):
+    # app_override_provide_http_token_payload
     # async def test_protected_message():
     """Test the protected socket.io message event."""
 

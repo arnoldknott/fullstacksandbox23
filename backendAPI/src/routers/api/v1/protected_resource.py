@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from core.security import Guards, get_access_token_payload
+from core.security import Guards, get_http_access_token_payload
 from core.types import GuardTypes
 from crud.protected_resource import (
     ProtectedChildCRUD,
@@ -46,7 +46,7 @@ protected_resource_view = BaseView(ProtectedResourceCRUD)
 @router.post("/resource/", status_code=201)
 async def post_protected_resource(
     protected_resource: ProtectedResourceCreate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedResource:
     """Creates a new protected resource."""
@@ -55,7 +55,7 @@ async def post_protected_resource(
 
 @router.get("/resource/", status_code=200)
 async def get_protected_resources(
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[ProtectedResourceRead]:
     """Returns all protected resources."""
@@ -65,7 +65,7 @@ async def get_protected_resources(
 @router.get("/resource/{resource_id}", status_code=200)
 async def get_protected_resource_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> ProtectedResourceRead:
     """Returns a protected resource."""
@@ -76,7 +76,7 @@ async def get_protected_resource_by_id(
 async def put_protected_resource(
     resource_id: UUID,
     protected_resource: ProtectedResourceUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedResource:
     """Updates a protected resource."""
@@ -88,7 +88,7 @@ async def put_protected_resource(
 @router.delete("/resource/{resource_id}", status_code=200)
 async def delete_protected_resource(
     resource_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Deletes a protected resource."""
@@ -107,7 +107,7 @@ async def post_protected_child(
     protected_child: ProtectedChildCreate,
     parent_id: Annotated[UUID | None, Query()] = None,
     inherit: Annotated[bool, Query()] = False,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedChild:
     """Creates a new protected child."""
@@ -121,7 +121,7 @@ async def post_add_child_to_parent(
     child_id: UUID,
     parent_id: UUID,
     inherit: Annotated[bool, Query()] = False,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ResourceHierarchyRead:
     """Adds a child to a parent."""
@@ -132,7 +132,7 @@ async def post_add_child_to_parent(
 
 @router.get("/child/", status_code=200)
 async def get_protected_child(
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[ProtectedChildRead]:
     """Returns all protected child resources."""
@@ -142,7 +142,7 @@ async def get_protected_child(
 @router.get("/child/{resource_id}", status_code=200)
 async def get_protected_child_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> ProtectedChildRead:
     """Returns a protected child resource."""
@@ -153,7 +153,7 @@ async def get_protected_child_by_id(
 async def put_protected_child(
     resource_id: UUID,
     protected_child: ProtectedChildUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedChild:
     """Updates a protected child resource."""
@@ -165,7 +165,7 @@ async def put_protected_child(
 @router.delete("/child/{resource_id}", status_code=200)
 async def delete_protected_child(
     resource_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Deletes a protected child resource."""
@@ -177,7 +177,7 @@ async def delete_protected_child(
 async def remove_child_from_parent(
     parent_id: UUID,
     child_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes a child from a parent."""
@@ -198,7 +198,7 @@ async def post_protected_grandchild(
     protected_grandchild: ProtectedGrandChildCreate,
     parent_id: Annotated[UUID | None, Query()] = None,
     inherit: Annotated[bool, Query()] = False,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedGrandChild:
     """Creates a new protected grandchild."""
@@ -209,7 +209,7 @@ async def post_protected_grandchild(
 
 @router.get("/grandchild/", status_code=200)
 async def get_protected_grandchild(
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[ProtectedGrandChildRead]:
     """Returns all protected grandchild resources."""
@@ -219,7 +219,7 @@ async def get_protected_grandchild(
 @router.get("/grandchild/{resource_id}", status_code=200)
 async def get_protected_grandchild_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> ProtectedGrandChildRead:
     """Returns a protected grandchild resource."""
@@ -232,7 +232,7 @@ async def get_protected_grandchild_by_id(
 async def put_protected_grandchild(
     resource_id: UUID,
     protected_grandchild: ProtectedGrandChildUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedGrandChild:
     """Updates a protected grandchild resource."""
@@ -244,7 +244,7 @@ async def put_protected_grandchild(
 @router.delete("/grandchild/{resource_id}", status_code=200)
 async def delete_protected_grandchild(
     resource_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Deletes a protected grandchild resource."""
@@ -259,7 +259,7 @@ async def delete_protected_grandchild(
 # note - this is the path called by the frontend!
 # @router.get("/")
 # async def get_protected_resource(
-#     token_payload=Depends(get_access_token_payload),
+#     token_payload=Depends(get_http_access_token_payload),
 #     # current_user=Depends(CurrentAzureUserInDatabase()),
 # ):
 #     """Returns a protected resource."""

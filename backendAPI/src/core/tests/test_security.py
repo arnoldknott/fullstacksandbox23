@@ -80,7 +80,7 @@ async def test_get_azure_jwks():
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_user_id,
@@ -115,12 +115,12 @@ async def test_get_azure_jwks():
 )
 async def test_azure_user_self_signup(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     mock_guards,
 ):
     """Tests if a new user can sign up by themselves."""
 
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
     @app.get("/test_azure_user_self_signup")
@@ -168,7 +168,7 @@ async def test_azure_user_self_signup(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {},
         {
@@ -183,11 +183,11 @@ async def test_azure_user_self_signup(
     indirect=True,
 )
 async def test_azure_user_self_signup_invalid_token(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests that a new user cannot sign itself up without access token."""
 
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
     @app.get("/test_azure_user_self_signup_missing_token")
@@ -209,7 +209,7 @@ async def test_azure_user_self_signup_invalid_token(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_user_id,
@@ -224,7 +224,7 @@ async def test_azure_user_self_signup_invalid_token(
 )
 async def test_existing_azure_user_has_new_group_in_token(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     mock_guards,
 ):
@@ -238,7 +238,7 @@ async def test_existing_azure_user_has_new_group_in_token(
     assert len(existing_db_user.azure_groups) == 3
     # print("=== existing_db_user.azure_groups ===")
     # pprint(existing_db_user.azure_groups)
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard adn call it:
     @app.get("/test_existing_azure_user_has_new_group_in_token")
@@ -294,7 +294,7 @@ async def test_existing_azure_user_has_new_group_in_token(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_user_id,
@@ -311,7 +311,7 @@ async def test_existing_azure_user_has_new_group_in_token(
 )
 async def test_existing_azure_user_got_group_removed_in_token(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     mock_guards,
 ):
@@ -324,7 +324,7 @@ async def test_existing_azure_user_got_group_removed_in_token(
     )
 
     assert len(existing_db_user.azure_groups) == 3
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard adn call it:
     @app.get("/test_existing_azure_user_got_group_removed_in_token")
@@ -397,7 +397,7 @@ async def test_existing_azure_user_got_group_removed_in_token(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_user_id,
@@ -416,13 +416,13 @@ async def test_existing_azure_user_got_group_removed_in_token(
 )
 async def test_existing_user_logs_in(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[UserRead],
 ):
     """Test an existing user logs in successfully"""
 
     # mocks the access token:
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
     user_in_database = await add_one_azure_test_user(0)
 
     # create a temporary route that uses the guard:
@@ -474,7 +474,7 @@ async def test_existing_user_logs_in(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         # This allows any user from the tenant to access the route - without scope and roles:
         {
@@ -525,11 +525,11 @@ async def test_existing_user_logs_in(
 )
 async def test_valid_azure_token(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests if a valid token is accepted."""
 
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
     @app.get("/test_valid_azure_token")
@@ -550,14 +550,14 @@ async def test_valid_azure_token(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("mocked_get_azure_token_payload", [{}])
+@pytest.mark.parametrize("mocked_provide_http_token_payload", [{}])
 async def test_invalid_azure_token(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests if an invalid token is rejected."""
 
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
     @app.get("/test_invalid_azure_token")
@@ -578,14 +578,14 @@ async def test_invalid_azure_token(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("mocked_get_azure_token_payload", [{}])
+@pytest.mark.parametrize("mocked_provide_http_token_payload", [{}])
 async def test_invalid_azure_token_return_false(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests if an invalid token returns False."""
 
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
     @app.get("/test_invalid_azure_token_return_false")
@@ -612,7 +612,7 @@ async def test_invalid_azure_token_return_false(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_scope_api_read,
@@ -625,11 +625,11 @@ async def test_invalid_azure_token_return_false(
 )
 async def test_current_azure_token_has_scope_api_read(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests admin guard for tokens that contain the role Admin."""
 
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
     @app.get("/test_current_azure_token_has_scope_api_read")
@@ -651,7 +651,7 @@ async def test_current_azure_token_has_scope_api_read(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_scope_api_write,
@@ -662,11 +662,11 @@ async def test_current_azure_token_has_scope_api_read(
 )
 async def test_current_azure_token_missing_scope_api_read(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests admin guard for tokens that contain the role Admin."""
 
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
     @app.get("/test_current_azure_token_missing_scope_api_read")
@@ -687,7 +687,7 @@ async def test_current_azure_token_missing_scope_api_read(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_scope_api_write,
@@ -698,11 +698,11 @@ async def test_current_azure_token_missing_scope_api_read(
 )
 async def test_current_azure_token_missing_scope_api_read_return_false(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests admin guard for tokens that contain the role Admin."""
 
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
     @app.get("/test_current_azure_token_missing_scope_api_read_return_false")
@@ -731,7 +731,7 @@ async def test_current_azure_token_missing_scope_api_read_return_false(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_roles_admin,
@@ -747,11 +747,11 @@ async def test_current_azure_token_missing_scope_api_read_return_false(
 )
 async def test_admin_guard_with_admin_role_in_azure_mocked_token_payload(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests admin guard for tokens that contain the role Admin."""
 
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
     @app.get("/test_admin_guard_with_admin_role_in_azure_mocked_token_payload")
@@ -771,7 +771,7 @@ async def test_admin_guard_with_admin_role_in_azure_mocked_token_payload(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_roles_user,
@@ -782,11 +782,11 @@ async def test_admin_guard_with_admin_role_in_azure_mocked_token_payload(
 )
 async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests admin guard for tokens that contain the role Admin."""
 
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
     @app.get("/test_admin_guard_without_admin_role_in_azure_mocked_token_payload")
@@ -805,7 +805,7 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_roles_user,
@@ -816,11 +816,11 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload(
 )
 async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload_return_false(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests admin guard for tokens that contain the role Admin."""
 
-    app = app_override_get_azure_payload_dependency
+    app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
     @app.get(

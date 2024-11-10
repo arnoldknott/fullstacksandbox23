@@ -15,16 +15,16 @@ from tests.utils import (
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_post_demo_files(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     demo_file_names = ["demo_file_00.txt", "demo_file_01.txt"]
     appdata_path = "/data/appdata/demo_files"
@@ -71,16 +71,16 @@ async def test_post_demo_files(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_post_demo_files_uniqueness(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     demo_file_name = "demo_file_00.txt"
     appdata_path = "/data/appdata/demo_files"
@@ -122,7 +122,7 @@ async def test_post_demo_files_uniqueness(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_admin_read,
         token_admin_read_write,
@@ -134,12 +134,12 @@ async def test_post_demo_files_uniqueness(
 async def test_get_demo_file(
     async_client: AsyncClient,
     add_many_test_demo_files: list[DemoFile],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Tests GET a demo file."""
-    app_override_get_azure_payload_dependency
-    files_metadata = await add_many_test_demo_files(mocked_get_azure_token_payload)
+    app_override_provide_http_token_payload
+    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)
     response = await async_client.get(f"/api/v1/demo/file/{files_metadata[1].id}")
 
     assert response.status_code == 200
@@ -165,7 +165,7 @@ async def test_get_demo_file(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_admin_read_write,
         token_user1_read_write,
@@ -175,12 +175,12 @@ async def test_get_demo_file(
 async def test_put_demo_file(
     async_client: AsyncClient,
     add_many_test_demo_files: list[DemoFile],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Test PUT a demo file."""
-    app_override_get_azure_payload_dependency
-    files_metadata = await add_many_test_demo_files(mocked_get_azure_token_payload)
+    app_override_provide_http_token_payload
+    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)
     with open(f"src/tests/{files_metadata[0].name}", "rb") as old_file:
         with open(
             f"/data/appdata/demo_files/{files_metadata[0].name}", "rb"
@@ -231,7 +231,7 @@ async def test_put_demo_file(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_admin_read_write,
         token_user1_read_write,
@@ -241,12 +241,12 @@ async def test_put_demo_file(
 async def test_rename_file(
     async_client: AsyncClient,
     add_many_test_demo_files: list[DemoFile],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Test PUT a demo file."""
-    app_override_get_azure_payload_dependency
-    files_metadata = await add_many_test_demo_files(mocked_get_azure_token_payload)
+    app_override_provide_http_token_payload
+    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)
     with open(f"src/tests/{files_metadata[1].name}", "rb") as old_file:
         with open(
             f"/data/appdata/demo_files/{files_metadata[1].name}", "rb"
@@ -284,7 +284,7 @@ async def test_rename_file(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_admin_read_write,
         token_user1_read_write,
@@ -294,12 +294,12 @@ async def test_rename_file(
 async def test_delete_demo_file(
     async_client: AsyncClient,
     add_many_test_demo_files: list[DemoFile],
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Test DELETE a demo file."""
-    app_override_get_azure_payload_dependency
-    files_metadata = await add_many_test_demo_files(mocked_get_azure_token_payload)
+    app_override_provide_http_token_payload
+    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)
     with open(f"src/tests/{files_metadata[1].name}", "rb") as old_file:
         with open(
             f"/data/appdata/demo_files/{files_metadata[1].name}", "rb"

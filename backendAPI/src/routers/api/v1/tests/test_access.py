@@ -62,18 +62,18 @@ from tests.utils import (
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_admin_posts_access_policies(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     register_many_current_users,
     register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     register_many_current_users
     register_many_resources
 
@@ -95,18 +95,18 @@ async def test_admin_posts_access_policies(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_admin_posts_access_policies_for_non_existing_resources(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     register_many_current_users,
     # register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     register_many_current_users
 
     for policy in many_test_policies:
@@ -118,17 +118,17 @@ async def test_admin_posts_access_policies_for_non_existing_resources(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_admin_posts_non_public_access_policies_for_non_existing_identities(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     register_many_resources
 
     private_test_policies = many_test_policies[0:9].copy()
@@ -142,17 +142,17 @@ async def test_admin_posts_non_public_access_policies_for_non_existing_identitie
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_admin_posts_public_access_policies_for_non_existing_identities(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     register_many_resources
 
     public_test_policy = many_test_policies[9].copy()
@@ -170,17 +170,17 @@ async def test_admin_posts_public_access_policies_for_non_existing_identities(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write, token_user2_read_write],
     indirect=True,
 )
 async def test_user_posts_access_policies(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests POST access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     for policy in many_test_policies:
         response = await async_client.post("/api/v1/access/policy", json=policy)
@@ -199,17 +199,17 @@ async def test_user_posts_access_policies(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_admin_read],
     indirect=True,
 )
 async def test_admin_gets_access_policies(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -232,7 +232,7 @@ async def test_admin_gets_access_policies(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
         token_user1_read_write,
@@ -244,11 +244,11 @@ async def test_admin_gets_access_policies(
 )
 async def test_users_get_all_access_policies_fails(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies
 
     response = await async_client.get("/api/v1/access/policies")
@@ -259,7 +259,7 @@ async def test_users_get_all_access_policies_fails(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_admin_read_write,
         token_admin_read,
@@ -268,11 +268,11 @@ async def test_users_get_all_access_policies_fails(
 )
 async def test_admin_get_access_policies_for_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_policies = add_many_test_access_policies
 
     response = await async_client.get(
@@ -296,7 +296,7 @@ async def test_admin_get_access_policies_for_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_admin_read_write,
         token_admin_read,
@@ -305,11 +305,11 @@ async def test_admin_get_access_policies_for_resource(
 )
 async def test_admin_get_access_policies_with_string_resource_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies
 
     response = await async_client.get("/api/v1/access/policy/resource/wrong-format")
@@ -322,7 +322,7 @@ async def test_admin_get_access_policies_with_string_resource_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_admin_read_write,
         token_admin_read,
@@ -331,11 +331,11 @@ async def test_admin_get_access_policies_with_string_resource_id(
 )
 async def test_admin_get_access_policies_with_integer_resource_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies
 
     response = await async_client.get("/api/v1/access/policy/resource/45392874598")
@@ -348,7 +348,7 @@ async def test_admin_get_access_policies_with_integer_resource_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
         token_user2_read,
@@ -357,19 +357,21 @@ async def test_admin_get_access_policies_with_integer_resource_id(
 )
 async def test_user_get_access_policies_for_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id_for_query = str(uuid.uuid4())
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     # Access policies for the querying user - which is owner of resource:
     own_test_access_policy_for_current_user = {
@@ -452,7 +454,7 @@ async def test_user_get_access_policies_for_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
         token_user2_read,
@@ -461,20 +463,22 @@ async def test_user_get_access_policies_for_resource(
 )
 async def test_user_get_access_policies_for_resource_without_being_owner(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id_for_query = str(uuid.uuid4())
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     # Access policies for the querying user - which is missing owner rights of resource:
     write_test_access_policy_for_current_user = {
@@ -542,7 +546,7 @@ async def test_user_get_access_policies_for_resource_without_being_owner(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_admin,
         token_admin_write,
@@ -553,11 +557,11 @@ async def test_user_get_access_policies_for_resource_without_being_owner(
 )
 async def test_get_access_policies_for_resource_missing_read_scope(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
 ):
     """Tests GET existing access policies for specific resource without read scope."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_policies = add_many_test_access_policies
 
     response = await async_client.get(
@@ -570,7 +574,7 @@ async def test_get_access_policies_for_resource_missing_read_scope(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
     ],
@@ -578,21 +582,23 @@ async def test_get_access_policies_for_resource_missing_read_scope(
 )
 async def test_user_get_access_policies_for_resource_type(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     register_many_entities,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     register_one_resource,
     register_one_identity,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     entities = register_many_entities
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     for entity in entities:
         policy = {
@@ -683,7 +689,7 @@ async def test_user_get_access_policies_for_resource_type(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
     ],
@@ -691,21 +697,23 @@ async def test_user_get_access_policies_for_resource_type(
 )
 async def test_user_get_access_policies_for_resource_type_with_write_rights_only(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     register_many_entities,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     register_one_resource,
     register_one_identity,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     entities = register_many_entities
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     for entity in entities:
         policy = {
@@ -790,7 +798,7 @@ async def test_user_get_access_policies_for_resource_type_with_write_rights_only
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
     ],
@@ -798,21 +806,23 @@ async def test_user_get_access_policies_for_resource_type_with_write_rights_only
 )
 async def test_user_get_access_policies_for_resource_type_with_read_rights_only(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     register_many_entities,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     register_one_resource,
     register_one_identity,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     entities = register_many_entities
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     for entity in entities:
         policy = {
@@ -897,17 +907,17 @@ async def test_user_get_access_policies_for_resource_type_with_read_rights_only(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read, token_user1_read],
     indirect=True,
 )
 async def test_user_get_access_policies_for_non_existing_resource_type(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     response = await async_client.get("/api/v1/access/policy/resource/type/blablabla")
     payload = response.json()
@@ -919,7 +929,7 @@ async def test_user_get_access_policies_for_non_existing_resource_type(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
         token_user2_read,
@@ -928,19 +938,21 @@ async def test_user_get_access_policies_for_non_existing_resource_type(
 )
 async def test_user_get_access_policies_for_identity(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id = str(uuid.uuid4())
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     # Access policies for the querying user - which is owner of resource:
     own_test_access_policy_for_current_user = {
@@ -1034,7 +1046,7 @@ async def test_user_get_access_policies_for_identity(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_admin_read,
     ],
@@ -1042,19 +1054,21 @@ async def test_user_get_access_policies_for_identity(
 )
 async def test_admin_get_access_policies_for_identity(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies
 
     resource_id = str(uuid.uuid4())
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     # Access policies for the querying user - which is owner of resource:
     own_test_access_policy_for_current_user = {
@@ -1148,7 +1162,7 @@ async def test_admin_get_access_policies_for_identity(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
         token_user2_read,
@@ -1157,19 +1171,21 @@ async def test_admin_get_access_policies_for_identity(
 )
 async def test_user_get_access_policies_for_another_users_identity_being_owner_of_common_resources(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id = str(uuid.uuid4())
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     # Access policies for the querying user - which is owner of resource:
     own_test_access_policy_for_current_user = {
@@ -1255,7 +1271,7 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
         token_user2_read,
@@ -1264,19 +1280,21 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
 )
 async def test_user_get_access_policies_for_another_users_identity_without_owner_of_common_resources(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id = str(uuid.uuid4())
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     # Access policies for the querying user - which is owner of resource:
     write_test_access_policy_for_current_user = {
@@ -1345,7 +1363,7 @@ async def test_user_get_access_policies_for_another_users_identity_without_owner
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
     ],
@@ -1353,21 +1371,23 @@ async def test_user_get_access_policies_for_another_users_identity_without_owner
 )
 async def test_user_get_access_policies_for_identity_type(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     register_many_entities,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     register_one_resource,
     register_one_identity,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     entities = register_many_entities
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     for entity in entities:
         policy = {
@@ -1461,7 +1481,7 @@ async def test_user_get_access_policies_for_identity_type(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user1_read,
     ],
@@ -1469,21 +1489,23 @@ async def test_user_get_access_policies_for_identity_type(
 )
 async def test_user_get_access_policies_for_identity_type_missing_owner_rights(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     register_many_entities,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     register_one_resource,
     register_one_identity,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     entities = register_many_entities
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     for entity in entities:
         policy = {
@@ -1566,17 +1588,17 @@ async def test_user_get_access_policies_for_identity_type_missing_owner_rights(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read, token_user1_read],
     indirect=True,
 )
 async def test_user_get_access_policies_for_non_existing_identity_type(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     response = await async_client.get("/api/v1/access/policy/identity/type/blablabla")
     payload = response.json()
@@ -1593,17 +1615,17 @@ async def test_user_get_access_policies_for_non_existing_identity_type(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_admin_puts_access_policy(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -1628,24 +1650,26 @@ async def test_admin_puts_access_policy(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_with_owner_rights_puts_access_policy(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     # Give current user owner rights for the tested resource
     await add_one_test_access_policy(
@@ -1677,24 +1701,26 @@ async def test_user_with_owner_rights_puts_access_policy(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_with_owner_rights_puts_wrong_access_policy(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     add_many_test_access_policies
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     # Give current user owner rights for the tested resource
     await add_one_test_access_policy(
@@ -1720,17 +1746,17 @@ async def test_user_with_owner_rights_puts_wrong_access_policy(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_without_owner_rights_puts_access_policy(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     add_many_test_access_policies
 
@@ -1754,17 +1780,17 @@ async def test_user_without_owner_rights_puts_access_policy(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_admin_deletes_access_policy(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -1811,17 +1837,17 @@ async def test_admin_deletes_access_policy(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_admin_tries_to_delete_public_access_policy_without_resource_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -1839,17 +1865,17 @@ async def test_admin_tries_to_delete_public_access_policy_without_resource_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_admin_tries_to_delete_all_access_policy_wit_owner_rights(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -1907,17 +1933,17 @@ async def test_admin_tries_to_delete_all_access_policy_wit_owner_rights(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read],
     indirect=True,
 )
 async def test_admin_gets_created_access_all_logs(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     database_logs = add_many_test_access_logs
 
@@ -1938,16 +1964,16 @@ async def test_admin_gets_created_access_all_logs(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read],
     indirect=True,
 )
 async def test_admin_gets_access_all_logs_with_non_existing_status_code(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # No logs in the database
     # other than the ones created when the user logs in
@@ -1962,16 +1988,16 @@ async def test_admin_gets_access_all_logs_with_non_existing_status_code(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read, token_user1_read_write, token_user2_read],
     indirect=True,
 )
 async def test_user_gets_access_all_logs(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # No logs in the database
     # other than the ones created when the user logs in
@@ -1986,18 +2012,18 @@ async def test_user_gets_access_all_logs(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read],
     indirect=True,
 )
 async def test_admin_gets_all_logs_with_status_code(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # getting the one, that's created due to admin accessing the endpoint
     before_time = datetime.now()
@@ -2008,7 +2034,7 @@ async def test_admin_gets_all_logs_with_status_code(
     assert response.status_code == 200
 
     current_admin_user = await current_user_from_azure_token(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     modelled_access_log = AccessLogRead(**payload[0])
 
@@ -2022,24 +2048,26 @@ async def test_admin_gets_all_logs_with_status_code(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read, token_user1_read],
     indirect=True,
 )
 async def test_get_logs_for_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     add_many_test_access_logs,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies  # not relevant - just filling some data in the table
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
     policy = {
         "resource_id": resource_id2,
         "identity_id": str(current_user.user_id),
@@ -2078,18 +2106,18 @@ async def test_get_logs_for_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read],
     indirect=True,
 )
 async def test_get_logs_for_resource_and_identity(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies  # not relevant - just filling some data in the table
 
     database_logs = add_many_test_access_logs
@@ -2120,18 +2148,18 @@ async def test_get_logs_for_resource_and_identity(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user2_read],
     indirect=True,
 )
 async def test_get_logs_for_resource_without_permissions_from_policies(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies  # not relevant - just filling some data in the table
 
     add_many_test_access_logs
@@ -2145,24 +2173,26 @@ async def test_get_logs_for_resource_without_permissions_from_policies(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read],
     indirect=True,
 )
 async def test_get_logs_for_resource_with_write_permission_only(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     add_many_test_access_logs,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies  # not relevant - just filling some data in the table
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
     policy = {
         "resource_id": resource_id2,
         "identity_id": str(current_user.user_id),
@@ -2181,24 +2211,26 @@ async def test_get_logs_for_resource_with_write_permission_only(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read],
     indirect=True,
 )
 async def test_get_logs_for_resource_with_read_permission_only(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
     add_many_test_access_logs,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     add_many_test_access_policies  # not relevant - just filling some data in the table
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
     policy = {
         "resource_id": resource_id2,
         "identity_id": str(current_user.user_id),
@@ -2217,17 +2249,17 @@ async def test_get_logs_for_resource_with_read_permission_only(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read],
     indirect=True,
 )
 async def test_admin_get_logs_for_identity(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     database_logs = add_many_test_access_logs
 
@@ -2260,22 +2292,24 @@ async def test_admin_get_logs_for_identity(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read],
     indirect=True,
 )
 async def test_user_get_logs_for_identity(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_test_access_policy,
     add_one_test_access_log,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     policies = [
         {
@@ -2370,22 +2404,24 @@ async def test_user_get_logs_for_identity(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read],
     indirect=True,
 )
 async def test_user_get_logs_for_identity_with_write_and_read_permission_only(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_test_access_policy,
     add_one_test_access_log,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     policies = [
         {
@@ -2472,22 +2508,24 @@ async def test_user_get_logs_for_identity_with_write_and_read_permission_only(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read, token_user1_read, token_user2_read],
     indirect=True,
 )
 async def test_get_creation_datetime_for_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_logs,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
     policy = {
         "resource_id": resource_id1,
         "identity_id": str(current_user.user_id),
@@ -2506,22 +2544,24 @@ async def test_get_creation_datetime_for_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read, token_user2_read],
     indirect=True,
 )
 async def test_get_creation_datetime_for_resource_with_only_write_permission(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_logs,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
     policy = {
         "resource_id": resource_id1,
         "identity_id": str(current_user.user_id),
@@ -2540,22 +2580,24 @@ async def test_get_creation_datetime_for_resource_with_only_write_permission(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read, token_user2_read],
     indirect=True,
 )
 async def test_get_creation_datetime_for_resource_with_only_read_permission(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_logs,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
     policy = {
         "resource_id": resource_id1,
         "identity_id": str(current_user.user_id),
@@ -2574,22 +2616,24 @@ async def test_get_creation_datetime_for_resource_with_only_read_permission(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read, token_user1_read, token_user2_read],
     indirect=True,
 )
 async def test_get_last_access_datetime_for_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_logs,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
     policy = {
         "resource_id": resource_id3,
         "identity_id": str(current_user.user_id),
@@ -2618,22 +2662,24 @@ async def test_get_last_access_datetime_for_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read, token_user2_read],
     indirect=True,
 )
 async def test_get_last_access_datetime_for_resource_only_write_permission(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_logs,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
     policy = {
         "resource_id": resource_id3,
         "identity_id": str(current_user.user_id),
@@ -2654,22 +2700,24 @@ async def test_get_last_access_datetime_for_resource_only_write_permission(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read, token_user2_read],
     indirect=True,
 )
 async def test_get_last_access_datetime_for_resource_only_read_permission(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_logs,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
     policy = {
         "resource_id": resource_id3,
         "identity_id": str(current_user.user_id),
@@ -2690,22 +2738,24 @@ async def test_get_last_access_datetime_for_resource_only_read_permission(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read, token_user1_read, token_user2_read],
     indirect=True,
 )
 async def test_get_access_count_for_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_logs,
     current_user_from_azure_token,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
     policy = {
         "resource_id": resource_id2,
         "identity_id": str(current_user.user_id),
