@@ -1,9 +1,9 @@
 import logging
 from pprint import pprint
 
-from core.types import GuardTypes
-
 import socketio
+
+from core.types import GuardTypes
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ class BaseEvents(socketio.AsyncNamespace):
         environ,
         auth,
         # guards,
-        # token_payload=Depends(get_access_token_payload),
+        # token_payload=Depends(get_http_access_token_payload),
     ):
         """Connect event for socket.io namespaces."""
         guards = self.guards
@@ -107,7 +107,7 @@ class BaseEvents(socketio.AsyncNamespace):
         print("=== base - on_connect - guards ===")
         print(guards, flush=True)
         logger.info(f"Client connected with session id: {sid}.")
-        # token_payload = await get_access_token_payload(auth)
+        # token_payload = await get_http_access_token_payload(auth)
         # current_user = await check_token_against_guards(token_payload, self.guards)
         # print("=== base - on_connect - sid - current_user ===")
         # print(current_user, flush=True)

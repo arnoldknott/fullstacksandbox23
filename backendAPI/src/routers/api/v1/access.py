@@ -9,7 +9,7 @@ from core.security import (
     Guards,
     GuardTypes,
     check_token_against_guards,
-    get_access_token_payload,
+    get_http_access_token_payload,
 )
 from core.types import Action, IdentityType, ResourceType
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
@@ -37,7 +37,7 @@ access_policy_view = BaseView(AccessPolicyCRUD)
 @router.post("/policy", status_code=201)
 async def post_access_policy(
     access_policy: AccessPolicyCreate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> AccessPolicy:
     """Creates a new access policy."""
@@ -46,7 +46,7 @@ async def post_access_policy(
 
 @router.get("/policies", status_code=200)
 async def get_access_policies(
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["Admin"])),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies."""
@@ -58,7 +58,7 @@ async def get_access_policies_for_resource(
     resource_id: UUID,
     # TBD: add a query parameter for action
     # TBD: add a query parameter for exclude current_user in the result
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for requested resource_id."""
@@ -75,7 +75,7 @@ async def get_access_policies_for_resource(
 @router.get("/policy/resource/type/{resource_type}", status_code=200)
 async def get_access_policies_by_resource_type(
     resource_type: ResourceType,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for requested resource_type."""
@@ -94,7 +94,7 @@ async def get_access_policies_by_resource_type(
 @router.get("/policy/identity/{identity_id}", status_code=200)
 async def get_access_policies_for_identity(
     identity_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for the requested identity."""
@@ -110,7 +110,7 @@ async def get_access_policies_for_identity(
 @router.get("/policy/identity/type/{identity_type}", status_code=200)
 async def get_access_policies_by_identity_type(
     identity_type: IdentityType,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for requested resource_type."""
@@ -127,7 +127,7 @@ async def get_access_policies_by_identity_type(
 @router.put("/policy", status_code=200)
 async def put_access_policy(
     access_policy: AccessPolicyUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> AccessPolicyRead:
     """Deletes an old access policy and creates a new instead."""
@@ -147,7 +147,7 @@ async def delete_access_policy(
     identity_id: Annotated[UUID | None, Query()] = None,
     action: Annotated[Action | None, Query()] = None,
     public: Annotated[bool | None, Query()] = None,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Deletes an access policy."""
@@ -176,7 +176,7 @@ async def get_access_logs(
     identity_id: Annotated[UUID | None, Query()] = None,
     action: Annotated[Action | None, Query()] = None,
     status_code: Annotated[int | None, Query()] = None,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["Admin"])),
 ) -> list[AccessLogRead]:
     """Returns all access logs."""
@@ -192,7 +192,7 @@ async def get_access_logs(
 async def get_access_logs_for_resource(
     resource_id: UUID,
     identity_id: Annotated[UUID | None, Query()] = None,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessLogRead]:
     """Returns creation information for a resource."""
@@ -214,7 +214,7 @@ async def get_access_logs_for_resource(
 @router.get("/log/identity/{identity_id}", status_code=200)
 async def get_access_logs_for_identity(
     identity_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessLogRead]:
     """Returns creation information for a resource."""
@@ -229,7 +229,7 @@ async def get_access_logs_for_identity(
 @router.get("/log/{resource_id}/created", status_code=200)
 async def get_creation_date_for_resource(
     resource_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> datetime:
     """Returns creation information for a resource."""
@@ -245,7 +245,7 @@ async def get_creation_date_for_resource(
 @router.get("/log/{resource_id}/last-accessed", status_code=200)
 async def get_last_accessed_for_resource(
     resource_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> AccessLogRead:
     """Returns creation information for a resource."""
@@ -261,7 +261,7 @@ async def get_last_accessed_for_resource(
 @router.get("/log/{resource_id}/count", status_code=200)
 async def get_access_count_for_resource(
     resource_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> int:
     """Returns creation information for a resource."""

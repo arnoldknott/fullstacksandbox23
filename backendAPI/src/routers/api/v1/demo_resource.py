@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, Query
 from core.security import (
     Guards,
     check_token_against_guards,
-    get_access_token_payload,
-    optional_get_access_token_payload,
+    get_http_access_token_payload,
+    optional_get_http_access_token_payload,
 )
 from core.types import GuardTypes
 from crud.demo_resource import DemoResourceCRUD
@@ -33,7 +33,7 @@ demo_resource_view = BaseView(DemoResourceCRUD)
 @router.post("/", status_code=201)
 async def post_demo_resource(
     demo_resource: DemoResourceCreate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResourceRead:
     """Creates a new demo resource."""
@@ -45,8 +45,8 @@ async def post_demo_resource(
 # The default create only grants "own" access to the user, how creates it!
 @router.get("/", status_code=200)
 async def get_all_demo_resources(
-    # token_payload=Depends(get_access_token_payload),
-    token_payload=Depends(optional_get_access_token_payload),
+    # token_payload=Depends(get_http_access_token_payload),
+    token_payload=Depends(optional_get_http_access_token_payload),
 ) -> list[DemoResourceRead]:
     """Returns all demo resources resources."""
     return await demo_resource_view.get(token_payload)
@@ -58,7 +58,7 @@ async def get_demo_resource_by_id(
     # note: optional allows public access to those resources
     # where a public access policy is set
     # Fine grained access control handles this in the CRUD.
-    token_payload=Depends(optional_get_access_token_payload),
+    token_payload=Depends(optional_get_http_access_token_payload),
 ) -> DemoResourceRead:
     """Returns a demo resource by id."""
     return await demo_resource_view.get_by_id(demo_resource_id, token_payload)
@@ -68,7 +68,7 @@ async def get_demo_resource_by_id(
 async def put_demo_resource(
     demo_resource_id: UUID,
     demo_resource: DemoResourceUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResource:
     """Updates a category."""
@@ -80,7 +80,7 @@ async def put_demo_resource(
 @router.delete("/{demo_resource_id}", status_code=200)
 async def delete_demo_resource(
     demo_resource_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:  # DemoResource:
     """Deletes a protected resource."""
@@ -91,7 +91,7 @@ async def delete_demo_resource(
 async def add_tag_to_demo_resource(
     resource_id: UUID,
     tag_ids: Annotated[List[UUID], Query()],
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResourceRead:
     """Adds a tag to a demo resource."""
@@ -116,7 +116,7 @@ async def add_tag_to_demo_resource(
 @router.get("/category/{category_id}")
 async def get_all_in_category(
     category_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[DemoResource]:
     """Gets all demo resources that belong to specific category."""
@@ -128,7 +128,7 @@ async def get_all_in_category(
 @router.get("/tag/{tag_id}")
 async def get_all_with_tag(
     tag_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[DemoResourceRead]:
     """Gets all demo resources that belong to specific tag."""

@@ -21,9 +21,9 @@ from routers.api.v1.identities import (
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.public_resource import router as public_resource_router
 from routers.api.v1.tag import router as tag_router
-from routers.ws.v1.websockets import router as websocket_router
 from routers.socketio.v1.base import socketio_server
 from routers.socketio.v1.protected_events import ProtectedEvents
+from routers.ws.v1.websockets import router as websocket_router
 
 # print("Current directory:", os.getcwd())
 # print("sys.path:", sys.path)

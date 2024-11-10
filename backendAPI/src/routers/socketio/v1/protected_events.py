@@ -1,8 +1,9 @@
 import logging
 
-from .base import BaseEvents
 from core.types import GuardTypes
 from crud.protected_resource import ProtectedResourceCRUD
+
+from .base import BaseEvents
 
 logger = logging.getLogger(__name__)
 
