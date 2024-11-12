@@ -2,16 +2,16 @@ import logging
 from pprint import pprint
 
 import socketio
-from core.security import get_http_access_token_payload
 
+from core.security import get_azure_token_payload
 from core.types import GuardTypes
 
 logger = logging.getLogger(__name__)
 
-socketio_server = socketio.AsyncServer(async_mode="asgi")
-# socketio_server = socketio.AsyncServer(
-#     async_mode="asgi", logger=True, engineio_logger=True
-# )
+# socketio_server = socketio.AsyncServer(async_mode="asgi")
+socketio_server = socketio.AsyncServer(
+    async_mode="asgi", logger=True, engineio_logger=True
+)
 
 # print("=== routers - socketio - v1 - vars(socketio_server) ===")
 # pprint(vars(socketio_server))
@@ -90,6 +90,10 @@ class BaseEvents(socketio.AsyncNamespace):
         self.crud = crud
         self.server = socketio_server
 
+    async def callback(self):
+        print("=== base - callback ===")
+        return "callback"
+
     async def on_connect(
         self,
         sid,
@@ -97,6 +101,7 @@ class BaseEvents(socketio.AsyncNamespace):
         auth=None,
     ):
         """Connect event for socket.io namespaces."""
+        # TBD: add a try-except block around the authentication and return specific authentication failed error.
         guards = self.guards
         print("=== base - on_connect - sid ===")
         print(sid, flush=True)
@@ -107,13 +112,23 @@ class BaseEvents(socketio.AsyncNamespace):
         print("=== base - on_connect - guards ===")
         print(guards, flush=True)
         logger.info(f"Client connected with session id: {sid}.")
-        token_payload = await get_http_access_token_payload(auth)
+
+        token_payload = await get_azure_token_payload(auth)
         print("=== base - on_connect - token_payload ===")
         print(token_payload, flush=True)
+
         # current_user = await check_token_against_guards(token_payload, self.guards)
         # print("=== base - on_connect - sid - current_user ===")
         # print(current_user, flush=True)
-        await self.server.emit("message", f"Hello new client with session id {sid}")
+        emit_response = await self.server.emit(
+            "protected_message",
+            f"Hello new client with session id {sid}",
+            namespace=self.namespace,
+            callback=self.callback,
+        )
+        print("=== base - on_connect - emit_response ===")
+        print(emit_response, flush=True)
+        return "OK from server"
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""
