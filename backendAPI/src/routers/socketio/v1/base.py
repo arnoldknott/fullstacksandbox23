@@ -2,14 +2,16 @@ import logging
 from pprint import pprint
 
 import socketio
+from core.security import get_http_access_token_payload
 
 from core.types import GuardTypes
 
 logger = logging.getLogger(__name__)
 
-socketio_server = socketio.AsyncServer(
-    async_mode="asgi", logger=True, engineio_logger=True
-)
+socketio_server = socketio.AsyncServer(async_mode="asgi")
+# socketio_server = socketio.AsyncServer(
+#     async_mode="asgi", logger=True, engineio_logger=True
+# )
 
 # print("=== routers - socketio - v1 - vars(socketio_server) ===")
 # pprint(vars(socketio_server))
@@ -92,22 +94,22 @@ class BaseEvents(socketio.AsyncNamespace):
         self,
         sid,
         environ,
-        auth,
-        # guards,
-        # token_payload=Depends(get_http_access_token_payload),
+        auth=None,
     ):
         """Connect event for socket.io namespaces."""
         guards = self.guards
         print("=== base - on_connect - sid ===")
         print(sid, flush=True)
-        print("=== base - on_connect - environ ===")
-        pprint(environ)
+        # print("=== base - on_connect - environ ===")
+        # pprint(environ)
         print("=== base - on_connect - auth ===")
         print(auth, flush=True)
         print("=== base - on_connect - guards ===")
         print(guards, flush=True)
         logger.info(f"Client connected with session id: {sid}.")
-        # token_payload = await get_http_access_token_payload(auth)
+        token_payload = await get_http_access_token_payload(auth)
+        print("=== base - on_connect - token_payload ===")
+        print(token_payload, flush=True)
         # current_user = await check_token_against_guards(token_payload, self.guards)
         # print("=== base - on_connect - sid - current_user ===")
         # print(current_user, flush=True)
@@ -116,20 +118,3 @@ class BaseEvents(socketio.AsyncNamespace):
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""
         logger.info(f"Client with session id {sid} disconnected.")
-
-
-# class ProtectedEvents(BaseEvents):
-#     """Protected class for socket.io namespaces."""
-
-#     def __init__(self):
-#         super().__init__(
-#             namespace="/protected_events",
-#             guards=GuardTypes(scopes=["sockets.write"], roles=["User"]),
-#         )
-
-#     async def on_protected_message(self, sid, data):
-#         """Demo message event for socket.io namespaces with guards."""
-#         logger.info(f"Received message from client {sid}: {data}")
-#         await socketio_server.emit(
-#             "message", f"Protected message received from client: {data}"
-#         )

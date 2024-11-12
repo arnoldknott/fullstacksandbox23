@@ -124,6 +124,7 @@ async def decode_token(token: str, jwks: dict) -> dict:
 # which requires the response - request pattern from http(s) routes.
 async def get_azure_token_payload(token: str) -> Optional[dict]:
     """Validates the Azure access token sent in the request header and returns the payload if valid"""
+    print("=== get_azure_token_payload - called  ===")
     logger.info("🔑 Validating token")
     try:
         jwks = await get_azure_jwks()
@@ -137,7 +138,7 @@ async def get_azure_token_payload(token: str) -> Optional[dict]:
 
 
 # From get_http_access_token_payload, optional_get_http_access_token_payload to provide_http_token_payload:
-# For http(s) routes only, as it uses FastAPI's dependency injection pattern
+# For http(s):// and ws:// routes only, as it uses FastAPI's dependency injection pattern
 async def provide_http_token_payload(request: Request) -> Optional[dict]:
     """General function to get the access token payload"""
     try:

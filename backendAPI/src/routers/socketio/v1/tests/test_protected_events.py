@@ -1,24 +1,43 @@
 import pytest
 
-# from fastapi import FastAPI
-# from tests.utils import (
-#     token_admin_read_write,
-#     token_user1_read_write,
-# )
+from tests.utils import (
+    token_admin_read_write,
+    token_user1_read_write,
+)
+
+from routers.socketio.v1.protected_events import protected_events_router
 
 
-# @pytest.mark.anyio
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_on_connect(mock_token_payload):
+    """Test the on_connect event for socket.io."""
+    mocked_token = await mock_token_payload()
+
+    connect_response = await protected_events_router.on_connect(
+        sid="123", environ="fake_environ", auth=mocked_token
+    )
+
+    print("=== test_on_connect - connect_response ===")
+    print(connect_response)
+
+    # assert 0
+
+
+@pytest.mark.anyio
 # @pytest.mark.parametrize(
 #     "mocked_provide_http_token_payload",
 #     [token_admin_read_write, token_user1_read_write],
 #     indirect=True,
 # )
-@pytest.mark.anyio
+# TBD: rewrite, so it doesn't use the client,
+# but directly calls the server events with on_connect() in a fixture,
+# where on_connect is mocked with the token payload
 async def test_protected_message(socketio_client):
-    # socketio_client, app_override_provide_http_token_payload: FastAPI
-    # ):
-    # app_override_provide_http_token_payload
-    # async def test_protected_message():
     """Test the protected socket.io message event."""
 
     async for client in socketio_client(["/protected_events"]):
