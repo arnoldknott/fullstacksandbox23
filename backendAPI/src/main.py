@@ -5,6 +5,9 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from socketio import ASGIApp
 
+from dependencies.fastapi_with_socketio.applications import (
+    FastAPIwithSocketIO,
+)
 from core.security import CurrentAccessTokenHasRole, CurrentAccessTokenHasScope
 from routers.api.v1.access import router as access_router
 from routers.api.v1.category import router as category_router
@@ -21,7 +24,9 @@ from routers.api.v1.identities import (
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.public_resource import router as public_resource_router
 from routers.api.v1.tag import router as tag_router
-from routers.socketio.v1.base import socketio_server
+
+# from routers.socketio.v1.base import socketio_server
+from routers.socketio.v1.base import SocketIOServer
 from routers.socketio.v1.protected_events import ProtectedEvents
 from routers.ws.v1.websockets import router as websocket_router
 
@@ -84,7 +89,9 @@ async def lifespan(app: FastAPI):
 api_prefix = "/api/v1"
 ws_prefix = "/ws/v1"
 
-app = FastAPI(
+
+# app = FastAPI(
+app = FastAPIwithSocketIO(
     title="backendAPI",
     summary="Backend for fullstack Sandbox.",
     description="Playground for trying out anything freely before using in projects.",  # TBD: add the longer markdown description here
@@ -211,7 +218,10 @@ app.include_router(
     # TBD: consider adding a dependency here for the token
 )
 
-socketio_server.register_namespace(ProtectedEvents("/protected_events"))
+socketio_server = SocketIOServer(app)
+socketio_server.register_namespace(
+    ProtectedEvents(socketio_server, namespace="/protected_events")
+)
 socketio_app = ASGIApp(socketio_server, socketio_path="socketio/v1")
 app.mount("/socketio/v1", app=socketio_app)
 

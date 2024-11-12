@@ -1,25 +1,32 @@
 import pytest
 
-# from fastapi import FastAPI
-# from tests.utils import (
-#     token_admin_read_write,
-#     token_user1_read_write,
-# )
+from core.security import get_azure_token_payload
 
 
-# @pytest.mark.anyio
+@pytest.mark.anyio
 # @pytest.mark.parametrize(
-#     "mocked_provide_http_token_payload",
+#     "patch_socketio_app",
 #     [token_admin_read_write, token_user1_read_write],
 #     indirect=True,
 # )
-@pytest.mark.anyio
+# @patch("core.security.get_azure_token_payload", token_admin_read_write)
 async def test_protected_message(socketio_client):
-    # socketio_client, app_override_provide_http_token_payload: FastAPI
-    # ):
-    # app_override_provide_http_token_payload
-    # async def test_protected_message():
     """Test the protected socket.io message event."""
+    # socketio_client = socketio_client
+
+    # def mocker_function():
+    #     return token_admin_read_write
+
+    # monkeypatch.setattr("core.security.get_azure_token_payload", mocker_function)
+
+    print(
+        "=== routers - socketio - v1 - tests - test_protected_events - get_azure_token_payload() ==="
+    )
+    token_payload = await get_azure_token_payload("somestring")
+    print(
+        "=== routers - socketio - v1 - tests - test_protected_events - token_payload ==="
+    )
+    print(token_payload)
 
     async for client in socketio_client(["/protected_events"]):
         response = None
@@ -36,3 +43,16 @@ async def test_protected_message(socketio_client):
         await client.sleep(1)
 
         assert response == "Protected message received from client: Hello, world!"
+
+    assert 0
+
+
+# @pytest.mark.anyio
+# async def test_token_payload(mock_token_payload):
+#     """Test the token payload."""
+#     token_payload = await get_azure_token_payload("somestring")
+#     print(
+#         "=== routers - socketio - v1 - tests - test_protected_events - test_token_payload - token_payload ==="
+#     )
+#     print(token_payload)
+#     assert 0

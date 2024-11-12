@@ -1,4 +1,5 @@
 from typing import AsyncGenerator, Generator, List, Optional, Union
+from unittest.mock import patch
 from uuid import UUID
 
 import pytest
@@ -53,6 +54,15 @@ from tests.utils import (
     resource_id3,
     token_admin,
 )
+
+
+@pytest.fixture(scope="function")
+async def mock_token_payload():
+    """Returns a mocked token payload."""
+
+    with patch("core.security.decode_token") as mock:
+        mock.return_value = {"some": "payload"}
+        yield mock
 
 
 @pytest.fixture(scope="session")

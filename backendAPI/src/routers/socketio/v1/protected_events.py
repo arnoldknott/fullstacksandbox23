@@ -19,12 +19,14 @@ logger = logging.getLogger(__name__)
 class ProtectedEvents(BaseEvents):
     """Protected class for socket.io namespaces."""
 
-    def __init__(self, namespace=None):
+    def __init__(self, socketio_server, namespace=None):
         super().__init__(
+            socketio_server=socketio_server,
             namespace=namespace,
-            guards=GuardTypes(scopes=["sockets.write"], roles=["User"]),
+            guards=GuardTypes(scopes=["sockets", "api.write"], roles=["User"]),
             crud=ProtectedResourceCRUD,
         )
+        # self.server = socketio_server
         self.namespace = namespace
 
     async def on_protected_message(self, sid, data):
