@@ -1,8 +1,8 @@
 from typing import List
+from unittest.mock import patch
 
 import pytest
 import socketio
-from unittest.mock import patch
 
 
 @pytest.fixture
@@ -21,13 +21,23 @@ async def socketio_simple_client():
 @pytest.fixture
 async def socketio_client():
     """Provides a socket.io client and connects to it."""
+    # Note, this one can only make real connections without authentication
+    # The server cannot be patched, as this client is running on a different machine
 
     async def _socketio_client(namespaces: List[str] = None):
         client = socketio.AsyncClient(logger=True, engineio_logger=True)
 
         @client.event
-        def connect():
+        def connect(namespace="/protected_events"):
             """Connect event for socket.io."""
+            return "OK from client"
+            # pass
+
+        @client.event
+        def protected_message(data, namespace="/protected_events"):
+            print("=== protected_message - listening to server here ===")
+            print("=== conftest - socketio_client - protected_message - data ===")
+            print(data)
             pass
 
         await client.connect(
