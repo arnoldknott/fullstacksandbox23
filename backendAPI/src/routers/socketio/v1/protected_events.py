@@ -22,7 +22,7 @@ class ProtectedEvents(BaseEvents):
     def __init__(self, namespace=None):
         super().__init__(
             namespace=namespace,
-            guards=GuardTypes(scopes=["sockets.write"], roles=["User"]),
+            guards=GuardTypes(scopes=["sockets.write" "api.write"], roles=["User"]),
             crud=ProtectedResourceCRUD,
         )
         self.namespace = namespace
@@ -37,4 +37,5 @@ class ProtectedEvents(BaseEvents):
         )
 
 
+protected_events_router = ProtectedEvents("/protected_events")
 # socketio_server.register_namespace(ProtectedEvents())
