@@ -14,19 +14,42 @@ COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.overri
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env up -d
 # TBD: put back in, when frontend is further developed:
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "isort --profile black ."
+ISORT_EXIT_CODE=$?
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "ruff check --fix ."
+RUFF_EXIT_CODE=$?
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "black ."
+BLACK_EXIT_CODE=$?
 git add ./backendAPI/
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "pytest -v"
+COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T backend_api sh -c "pytest"
+PYTEST_EXIT_CODE=$?
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T frontend_svelte sh -c "npm run format"
+NPM_FORMAT_EXIT_CODE=$?
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T frontend_svelte sh -c "npm run lint"
+NPM_LINT_EXIT_CODE=$?
 git add ./frontend_svelte/
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env exec -T frontend_svelte sh -c "npm run test:unit"
+NPM_UNITTEST_EXIT_CODE=$?
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backendAPI/src/tests/.env down
 
 cd infrastructure
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose build
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose run --rm --no-TTY tofu fmt
-
-# Stage changes for commit
+TOFU_FMT_EXIT_CODE=$?
 git add .
+
+print_result() {
+    if [ $1 -eq 0 ]; then
+        echo "✅ $2"
+    else
+        echo "💥 $2"
+    fi
+}
+
+print_result $ISORT_EXIT_CODE "isort"
+print_result $RUFF_EXIT_CODE "ruff"
+print_result $BLACK_EXIT_CODE "black"
+print_result $PYTEST_EXIT_CODE "pytest"
+print_result $NPM_FORMAT_EXIT_CODE "npm format"
+print_result $NPM_LINT_EXIT_CODE "npm lint"
+print_result $NPM_UNITTEST_EXIT_CODE "npm unit test"
+print_result $TOFU_FMT_EXIT_CODE "tofu fmt"
