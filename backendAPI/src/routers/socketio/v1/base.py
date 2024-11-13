@@ -84,11 +84,18 @@ async def demo_message(sid, data):
 class BaseEvents(socketio.AsyncNamespace):
     """Base class for socket.io namespaces."""
 
-    def __init__(self, namespace: str = None, guards: GuardTypes = None, crud=None):
+    def __init__(
+        self,
+        namespace: str = None,
+        room: str = None,
+        guards: GuardTypes = None,
+        crud=None,
+    ):
         super().__init__(namespace=namespace)
         self.guards = guards
         self.crud = crud
         self.server = socketio_server
+        self.room = room
 
     async def callback(self):
         print("=== base - callback ===")
