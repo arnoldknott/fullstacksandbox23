@@ -249,6 +249,12 @@ resource "azurerm_key_vault_secret" "keyvaultHealth" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+resource "azurerm_key_vault_secret" "backendOrigin" {
+  name         = "backend-origin"
+  value        = azurerm_container_app.BackendContainer.name
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
 resource "random_string" "postgresUser" {
   length  = 12
   special = false

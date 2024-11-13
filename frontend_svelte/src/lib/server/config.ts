@@ -30,8 +30,8 @@ export default class AppConfig {
 		this.app_client_secret = '';
 		this.az_authority = '';
 		this.az_logout_uri = '';
-		this.backend_host = process.env.BACKEND_HOST;
-		this.backend_origin = `http://${process.env.BACKEND_HOST}:80`;
+		this.backend_host = ''; // process.env.BACKEND_HOST;
+		this.backend_origin = ''; //`http://${process.env.BACKEND_HOST}:80`;
 		this.keyvault_health = '';
 		this.ms_graph_base_uri = 'https://graph.microsoft.com/v1.0';
 		this.redis_host = process.env.REDIS_HOST;
@@ -86,6 +86,8 @@ export default class AppConfig {
 				// console.log("📜 app_config - client:");
 				// console.log(client);
 				const keyvaultHealth = await client?.getSecret('keyvault-health');
+				const backend_origin = await client?.getSecret('backend-origin');
+				const backend_host = this.backend_origin.split('://')[1].split(':')[0]; // replace("https://", "").split(":")[0]
 				// console.log("📜 app_config - keyvaultHealth: ");
 				// console.log(keyvaultHealth);
 				// console.log("📜 app_config - keyvaultHealth.value: ");
@@ -115,6 +117,8 @@ export default class AppConfig {
 		} else {
 			console.log('📜 app_config - process.env.AZ_KEYVAULT_HOST not set');
 			this.keyvault_health = process.env.KEYVAULT_HEALTH;
+			this.backend_host = process.env.BACKEND_HOST;
+			this.backend_origin = `http://${process.env.BACKEND_HOST}:80`;
 			this.app_reg_client_id = process.env.APP_REG_CLIENT_ID;
 			this.app_client_secret = process.env.APP_CLIENT_SECRET;
 			this.api_scope = process.env.API_SCOPE;
