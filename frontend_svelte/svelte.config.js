@@ -6,6 +6,7 @@ import { sveltePreprocess } from 'svelte-preprocess';
 const config = {
 	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
 	// for more information about preprocessors
+	// preprocess: [vitePreprocess()],
 	preprocess: [sveltePreprocess()],
 	kit: {
 		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
@@ -16,8 +17,9 @@ const config = {
 			$components: './src/components',
 			$lib: './src/lib'
 			// '*': './node_modules/*'
-		}
-	}
+		},
+	},
+	extensions: ['.svelte', '.svx']
 };
 
 export default config;
