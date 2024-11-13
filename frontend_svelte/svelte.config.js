@@ -17,7 +17,7 @@ const config = {
 			$components: './src/components',
 			$lib: './src/lib'
 			// '*': './node_modules/*'
-		},
+		}
 	},
 	extensions: ['.svelte', '.svx']
 };

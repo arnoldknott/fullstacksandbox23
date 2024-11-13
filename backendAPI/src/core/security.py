@@ -304,7 +304,7 @@ class CurrentAccessToken:
         try:
             if "groups" in self.payload:
                 groups = self.payload["groups"]
-            user_id = self.payload["oid"]
+            user_id = self.payload["oid"]  # this is the azure_user_id!
             tenant_id = self.payload["tid"]
             # TBD move the crud operations to the base view class, which should have an instance of the checks class.
             # if the user information stored in this class is already valid - no need to make another database call

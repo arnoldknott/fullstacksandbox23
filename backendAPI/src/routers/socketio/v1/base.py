@@ -10,7 +10,10 @@ logger = logging.getLogger(__name__)
 
 # socketio_server = socketio.AsyncServer(async_mode="asgi")
 socketio_server = socketio.AsyncServer(
-    async_mode="asgi", logger=True, engineio_logger=True
+    async_mode="asgi",
+    cors_allowed_origins=[],  # disable CORS in Socket.IO, as FastAPI handles CORS!
+    logger=True,
+    engineio_logger=True,
 )
 
 # print("=== routers - socketio - v1 - vars(socketio_server) ===")
@@ -59,13 +62,14 @@ async def catch_all(event, sid, data):
     print("=== routers - socketio - v1 - catch_all - sid ===")
     print(sid)
     print("=== routers - socketio - v1 - catch_all - data ===")
-    print(data)
+    print(data, flush=True)
 
 
 @socketio_server.event
 async def demo_message(sid, data):
     """Demo message event for socket.io."""
     print("=== demo_events - demo_message ===", flush=True)
+    print(data, flush=True)
     logger.info(f"Received message from client {sid}: {data}")
     await socketio_server.emit("demo_message", f"Message received from client: {data}")
 

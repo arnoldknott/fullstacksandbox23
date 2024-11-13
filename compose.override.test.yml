@@ -11,6 +11,11 @@ services:
             - postgres
         environment:
             - KEYVAULT_HEALTH=$KEYVAULT_HEALTH
+            - FRONTEND_SVELTE_ORIGIN
+            - AZURE_TENANT_ID=$AZURE_TENANT_ID
+            - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
+            - API_SCOPE=$API_SCOPE
+            - BACK_CLIENT_SECRET=$BACK_CLIENT_SECRET
             - POSTGRES_HOST=$POSTGRES_HOST
             # - POSTGRES_PORT=$POSTGRES_PORT
             - POSTGRES_DB=$POSTGRES_DB
@@ -21,10 +26,6 @@ services:
             - REDIS_JWKS_DB=$REDIS_JWKS_DB
             - REDIS_SESSION_DB=$REDIS_SESSION_DB
             - REDIS_PASSWORD=$REDIS_PASSWORD
-            - AZURE_TENANT_ID=$AZURE_TENANT_ID
-            - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
-            - API_SCOPE=$API_SCOPE
-            - BACK_CLIENT_SECRET=$BACK_CLIENT_SECRET
         networks:
             - test_network
         ports: 

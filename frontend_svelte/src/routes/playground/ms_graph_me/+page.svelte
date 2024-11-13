@@ -7,7 +7,7 @@
 	const account = data.account;
 	const userProfile = data.userProfile;
 
-	let userPictureURL: URL | undefined = $state(undefined);
+	let userPictureURL: string | undefined = $state(undefined);
 	onMount(async () => {
 		const response = await fetch('/api/v1/user/me/picture', { method: 'GET' });
 		if (!response.ok && response.status !== 200) {
