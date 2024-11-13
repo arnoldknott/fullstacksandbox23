@@ -12,11 +12,11 @@
 		socket = new WebSocket('ws://localhost:8660/ws/v1/public_web_socket');
 
 		socket.onopen = (event) => {
-			console.log('=== socket opened ===');
+			console.log('=== playground - websocket opened ===');
 			console.log('=== event ===');
 			console.log(event);
-			console.log('=== socket ===');
-			console.log(socket);
+			// console.log('=== socket ===');
+			// console.log(socket);
 			socket?.send('Hello from the client!');
 		};
 
@@ -31,7 +31,7 @@
 		};
 
 		socket.onclose = (event) => {
-			console.log('=== socket closed ===');
+			console.log('=== playgorund - socket closed ===');
 			console.log('=== event ===');
 			console.log(event);
 		};
@@ -50,7 +50,7 @@
 			label="Message"
 			type="input"
 			name="message"
-			oninput={(e: Event) => (new_message = e?.target?.value)}
+			oninput={(e: Event) => (new_message = (e.target as HTMLInputElement).value)}
 			class="w-50"
 		>
 		</md-filled-text-field>

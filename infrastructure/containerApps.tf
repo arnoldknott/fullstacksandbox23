@@ -163,6 +163,11 @@ resource "azurerm_container_app" "BackendContainer" {
         name = "${terraform.workspace}-application-data"
         path = "/data"
       }
+      env {
+        name  = "FRONTEND_SVELTE_ORIGIN"
+        value = azurerm_container_app.FrontendContainer.name
+      }
+      # BackendAPI:
       // Needs client id for Pod implmentations - see here:
       // https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.managedidentitycredential?view=azure-python
       env {
@@ -173,22 +178,10 @@ resource "azurerm_container_app" "BackendContainer" {
         name  = "AZ_KEYVAULT_HOST"
         value = azurerm_key_vault.keyVault.vault_uri
       }
+      # Postgres:
       env {
         name  = "POSTGRES_HOST"
         value = azurerm_postgresql_flexible_server.postgresServer.fqdn
-      }
-      # Probably not needed!
-      env {
-        name  = "POSTGRES_PORT"
-        value = var.postgres_port
-      }
-      env {
-        name  = "REDIS_HOST"
-        value = azurerm_container_app.redisContainer.name
-      }
-      env {
-        name  = "REDIS_PORT"
-        value = var.redis_port
       }
       env {
         name        = "POSTGRES_USER"
@@ -201,6 +194,20 @@ resource "azurerm_container_app" "BackendContainer" {
       env {
         name  = "POSTGRES_DB"
         value = "${terraform.workspace}_db"
+      }
+      # Probably not needed!
+      env {
+        name  = "POSTGRES_PORT"
+        value = var.postgres_port
+      }
+      # Redis:
+      env {
+        name  = "REDIS_HOST"
+        value = azurerm_container_app.redisContainer.name
+      }
+      env {
+        name  = "REDIS_PORT"
+        value = var.redis_port
       }
       env {
         name  = "REDIS_JWKS_DB"

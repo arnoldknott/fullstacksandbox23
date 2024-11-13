@@ -3,8 +3,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
+from fastapi.middleware.cors import CORSMiddleware
 from socketio import ASGIApp
 
+from core.config import config
 from core.security import CurrentAccessTokenHasRole, CurrentAccessTokenHasScope
 from routers.api.v1.access import router as access_router
 from routers.api.v1.category import router as category_router
@@ -94,6 +96,14 @@ app = FastAPI(
     # TBD: add contact - also through environment variables?
 )
 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[config.FRONTEND_SVELTE_ORIGIN],
+    allow_credentials=True,
+    allow_methods=["POST", "GET", "PUT", "DELETE"],  # or ["*"],
+    allow_headers=["*"],
+)
 
 ### DEPRECTATED: use lifespan instead
 # @app.on_event("startup")

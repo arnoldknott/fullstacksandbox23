@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 # TBD: implement sorting
 # TBD: implement filtering
 # TBD: implement searching
-# TBD: implement CORS
 # TBD: implement caching
 
 

@@ -72,6 +72,8 @@ class Config(BaseSettings):
     API_SCOPE: str = get_variable("API_SCOPE")
     BACK_CLIENT_SECRET: str = get_variable("BACK_CLIENT_SECRET")
 
+    # Frontend_svelte configuration:
+    FRONTEND_SVELTE_ORIGIN: str = get_variable("FRONTEND_SVELTE_ORIGIN")
     # Client ID of the frontend application registered in Azure AD:
     # add "customer" client registrations here!
     # APP_REG_CLIENT_ID: str = get_variable("APP_REG_CLIENT_ID")
