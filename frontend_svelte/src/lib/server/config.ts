@@ -98,6 +98,8 @@ export default class AppConfig {
 				const azTenantId = await client?.getSecret('azure-tenant-id');
 				const redisPassword = await client?.getSecret('redis-password');
 				this.keyvault_health = keyvaultHealth?.value;
+				this.backend_origin = backend_origin?.value || '';
+				this.backend_host = backend_host;
 				this.app_reg_client_id = appRegClientId?.value || '';
 				this.app_client_secret = appClientSecret?.value || '';
 				this.api_scope = apiScope?.value || '';
