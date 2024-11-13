@@ -2,6 +2,9 @@
 resource "random_uuid" "UuidScope1" {}
 resource "random_uuid" "UuidScope2" {}
 resource "random_uuid" "UuidScope3" {}
+resource "random_uuid" "UuidScope4" {}
+resource "random_uuid" "UuidScope5" {}
+resource "random_uuid" "UuidScope6" {}
 resource "random_uuid" "UuidRole1" {}     # Used for admins in backend
 resource "random_uuid" "userGroupUUID" {} # Used for users in backend
 # resource "random_uuid" "UuidRole2" {}
@@ -81,7 +84,7 @@ resource "azuread_application" "backendAPI" {
       admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to interact with Fullstack application via websockets."
       admin_consent_display_name = "Users can interact with Fullstack Sandbox via websockets"
       enabled                    = true
-      id                         = random_uuid.UuidScope3.result
+      id                         = random_uuid.UuidScope4.result
       type                       = "User"
       user_consent_description   = "Enables you as user to use real-time communication, like chats in Fullstack Sandbox."
       user_consent_display_name  = "Real-time interaction with Fullstack Sandbox"
@@ -92,7 +95,7 @@ resource "azuread_application" "backendAPI" {
       admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to use public artifical intelligence within the app."
       admin_consent_display_name = "Users can use public artificial intelligence in Fullstack Sandbox"
       enabled                    = true
-      id                         = random_uuid.UuidScope3.result
+      id                         = random_uuid.UuidScope5.result
       type                       = "User"
       user_consent_description   = "Enables you as user to use the public artifical intelligence capabilities of Fullstack Sandbox."
       user_consent_display_name  = "Use public artificial intelligence in Fullstack Sandbox"
@@ -103,7 +106,7 @@ resource "azuread_application" "backendAPI" {
       admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to use private artifical intelligence within the app."
       admin_consent_display_name = "Users can use private artificial intelligence in Fullstack Sandbox"
       enabled                    = true
-      id                         = random_uuid.UuidScope3.result
+      id                         = random_uuid.UuidScope6.result
       type                       = "User"
       user_consent_description   = "Enables you as user to use the private artifical intelligence capabilities of Fullstack Sandbox."
       user_consent_display_name  = "Use private artificial intelligence in Fullstack Sandbox"
