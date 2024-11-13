@@ -77,11 +77,12 @@ resource "azurerm_container_app" "FrontendContainer" {
       # Frontend container is close to limit with 0.5Gi!
       cpu    = 0.5   #0.25
       memory = "1Gi" #"0.5Gi"
-      env {
-        name = "BACKEND_HOST"
-        # value = azurerm_container_app.BackendContainer.ingress[0].fqdn
-        value = azurerm_container_app.BackendContainer.name
-      }
+      # Due to cyclic dependency, backend origin is moved into a keyvault secret.
+      # env {
+      #   name = "BACKEND_HOST"
+      #   # value = azurerm_container_app.BackendContainer.ingress[0].fqdn
+      #   value = azurerm_container_app.BackendContainer.name
+      # }
       // required for keyvault access due to "working with AKS pod-identity" - see here:
       // https://learn.microsoft.com/en-us/javascript/api/@azure/identity/managedidentitycredential?view=azure-node-latest
       env {
@@ -277,6 +278,7 @@ resource "azurerm_container_app" "BackendContainer" {
     Environment = terraform.workspace
   }
 }
+
 
 # DEBUGGING TCP connection to Redis on internal postgres:
 # in FRONTEND container:

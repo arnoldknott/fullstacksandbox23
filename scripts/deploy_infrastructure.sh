@@ -95,6 +95,7 @@ echo "=== use Azure login information from host in container ==="
     
 }
 az account set --subscription $(grep AZURE_SUBSCRIPTION_ID .env | cut -d '=' -f 2 | tr -d ' "')
+mkdir -p .azure
 az account get-access-token --resource https://management.azure.com/ --output json > .azure/azure_token.json
 cp -fR ~/.azure/* .azure/
 
