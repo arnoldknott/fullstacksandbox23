@@ -9,8 +9,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest run",
-		"lint": "prettier  --plugin=prettier-plugin-svelte --plugin=prettier-plugin-tailwindcss --check . && eslint .",
-		"format": "prettier --plugin=prettier-plugin-svelte --plugin=prettier-plugin-tailwindcss --write --log-level warn ."
+		"lint": "npx prettier  --plugin=prettier-plugin-svelte --plugin=prettier-plugin-tailwindcss --check . && eslint .",
+		"format": "npx prettier --plugin=prettier-plugin-svelte --plugin=prettier-plugin-tailwindcss --write --log-level warn ."
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.1.0",
