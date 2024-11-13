@@ -62,6 +62,11 @@
 			name: 'Websockets',
 			description: 'Establishing various websocket connections to backend and using them',
 			url: '/websockets'
+		},
+		{
+			name: 'Socket.IO',
+			description: 'Establishing various Socket.IO connections to backend and using them',
+			url: '/socketio'
 		}
 	];
 </script>
