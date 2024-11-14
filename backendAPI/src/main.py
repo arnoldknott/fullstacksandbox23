@@ -30,11 +30,6 @@ from routers.ws.v1.websockets import router as websocket_router
 # print("Current directory:", os.getcwd())
 # print("sys.path:", sys.path)
 
-# from core.databases import postgres
-# from core.databases import mongodb
-# from core.cache import redis
-# from core.logging import configure_logging
-
 logger = logging.getLogger(__name__)
 
 
