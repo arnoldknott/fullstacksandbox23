@@ -249,8 +249,17 @@ resource "azurerm_key_vault_secret" "keyvaultHealth" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+# implemented as secret to break circular dpendency
+# between backend and frontend container app
+# but it's no really a secret!
 resource "azurerm_key_vault_secret" "backendHost" {
   name         = "backend-host"
+  value        = azurerm_container_app.BackendContainer.name
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+resource "azurerm_key_vault_secret" "backendFqdn" {
+  name         = "backend-fqdn"
   value        = azurerm_container_app.BackendContainer.ingress[0].fqdn
   key_vault_id = azurerm_key_vault.keyVault.id
 }

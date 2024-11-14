@@ -100,7 +100,7 @@ export default class AppConfig {
 				const redisPassword = await client?.getSecret('redis-password');
 				this.keyvault_health = keyvaultHealth?.value;
 				this.backend_host = backend_host?.value || '';
-				this.backend_origin = `https://${this.backend_host}:80`;
+				this.backend_origin = `http://${this.backend_host}:80`;
 				// this.backend_host = backend_host;
 				this.app_reg_client_id = appRegClientId?.value || '';
 				this.app_client_secret = appClientSecret?.value || '';
