@@ -1,11 +1,19 @@
 <script lang="ts">
 	// import { onMount } from 'svelte';
+	import type { PageData } from './$types';
 	import { io } from 'socket.io-client';
 	import '@material/web/textfield/filled-text-field.js';
 	import '@material/web/button/filled-button.js';
 	import Title from '$components/Title.svelte';
 
-	const socketio_client = io('http://localhost:8660', { path: '/socketio/v1/' });
+	let { data }: { data: PageData } = $props();
+	const backend_fqdn = data.backend_fqdn;
+
+	// const socketio_client = io('http://localhost:8660', { path: '/socketio/v1/' });
+	const socketio_server_url = backend_fqdn ? `https://${backend_fqdn}:80` : 'http://localhost:8660';
+	console.log('=== playground - socketio - socketio_server_url ===');
+	console.log(socketio_server_url);
+	const socketio_client = io(socketio_server_url, { path: '/socketio/v1/' });
 
 	let new_message = $state('');
 	let old_messages: string[] = $state([]);

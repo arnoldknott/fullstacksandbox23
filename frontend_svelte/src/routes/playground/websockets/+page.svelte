@@ -1,15 +1,27 @@
 <script lang="ts">
+	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
 	import '@material/web/textfield/filled-text-field.js';
 	import '@material/web/button/filled-button.js';
 	import Title from '$components/Title.svelte';
+
+	let { data }: { data: PageData } = $props();
+	const backend_fqdn = data.backend_fqdn;
 
 	let new_message = $state('');
 	let socket: WebSocket | undefined = $state(undefined);
 	let old_messages: string[] = $state([]);
 
 	onMount(async () => {
-		socket = new WebSocket('ws://localhost:8660/ws/v1/public_web_socket');
+		console.log('=== playground - websockets - onMount - backend_fqdn ===');
+		console.log(backend_fqdn);
+		// socket = new WebSocket('ws://localhost:8660/ws/v1/public_web_socket');
+		const websocket_server_url = backend_fqdn
+			? `wss://${backend_fqdn}:80/ws/v1/public_web_socket`
+			: 'ws://localhost:8660/ws/v1/public_web_socket';
+		console.log('=== playground - websockets - onMount - websocket_server_url ===');
+		console.log(websocket_server_url);
+		socket = new WebSocket(websocket_server_url);
 
 		socket.onopen = (event) => {
 			console.log('=== playground - websocket opened ===');
@@ -31,7 +43,7 @@
 		};
 
 		socket.onclose = (event) => {
-			console.log('=== playgorund - socket closed ===');
+			console.log('=== playground - socket closed ===');
 			console.log('=== event ===');
 			console.log(event);
 		};

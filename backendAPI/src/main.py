@@ -99,7 +99,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[config.FRONTEND_SVELTE_ORIGIN, config.FRONTEND_SVELTE_FQDN],
+    allow_origins=[
+        config.FRONTEND_SVELTE_ORIGIN,
+        (
+            f"https://{config.FRONTEND_SVELTE_FQDN}:80"
+            if config.FRONTEND_SVELTE_FQDN
+            else None
+        ),
+    ],
     allow_credentials=True,
     allow_methods=["POST", "GET", "PUT", "DELETE"],  # or ["*"],
     allow_headers=["*"],
