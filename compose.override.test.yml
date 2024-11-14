@@ -75,8 +75,8 @@ services:
             # npm run dev
         volumes:
             - ./frontend_svelte:/app
-            # - /app/node_modules
-            - ./frontend_svelte/node_modules:/app/node_modules
+            - /app/node_modules
+            # - ./frontend_svelte/node_modules:/app/node_modules
 
     redis:
         container_name: test_redis
