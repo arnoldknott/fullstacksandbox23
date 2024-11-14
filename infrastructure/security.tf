@@ -249,9 +249,9 @@ resource "azurerm_key_vault_secret" "keyvaultHealth" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-resource "azurerm_key_vault_secret" "backendOrigin" {
-  name         = "backend-origin"
-  value        = azurerm_container_app.BackendContainer.name
+resource "azurerm_key_vault_secret" "backendHost" {
+  name         = "backend-host"
+  value        = azurerm_container_app.BackendContainer.ingress[0].fqdn
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
