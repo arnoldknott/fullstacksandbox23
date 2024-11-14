@@ -4,7 +4,7 @@ export type User = {
 	email: string;
 	name?: string;
 	loggedIn?: boolean;
-};// TBD: remove
+}; // TBD: remove
 
 // export type Configuration = {
 // 	az_authority: string;
@@ -25,4 +25,4 @@ export type Session = {
 	userProfile: AccountInfo;
 	userAgent: string;
 	loggedIn: boolean;
-}
+};

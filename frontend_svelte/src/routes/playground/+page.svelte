@@ -4,7 +4,8 @@
 	export const links = [
 		{
 			name: 'Components',
-			description: 'Svelte components to play around with various Tailwind CSS features and Tailwind elements',
+			description:
+				'Svelte components to play around with various Tailwind CSS features and Tailwind elements',
 			url: '/components'
 		},
 		{
@@ -15,7 +16,8 @@
 		{
 			// TBD: don't do "_" in URLs, ideally just "/", but "-" is also ok.
 			name: 'Backend - Demo Resources',
-			description: 'The demo resources of the backend API, retrieved through the backend API from the postgres database',
+			description:
+				'The demo resources of the backend API, retrieved through the backend API from the postgres database',
 			url: '/backend_demo_resource'
 		},
 		{
@@ -25,17 +27,20 @@
 		},
 		{
 			name: 'Counter',
-			description: 'A simple counter, stored in a svelte store. Works well to try  page reloads: the counter gets reset every time.',
+			description:
+				'A simple counter, stored in a svelte store. Works well to try  page reloads: the counter gets reset every time.',
 			url: '/counter'
 		},
 		{
 			name: 'User store',
-			description: 'A simple user store, stored in a svelte store: contains json data of the logged in user',
+			description:
+				'A simple user store, stored in a svelte store: contains json data of the logged in user',
 			url: '/userstore'
 		},
 		{
 			name: 'Core',
-			description: 'Core data of the application: host names, connection to the keyvault through the backend API, etc.',
+			description:
+				'Core data of the application: host names, connection to the keyvault through the backend API, etc.',
 			url: '/core'
 		},
 		{
@@ -52,20 +57,28 @@
 			name: 'User interface',
 			description: 'play with elements of the user interface',
 			url: '/user_interface'
+		},
+		{
+			name: 'Websockets',
+			description: 'Establishing various websocket connections to backend and using them',
+			url: '/websockets'
+		},
+		{
+			name: 'Socket.IO',
+			description: 'Establishing various Socket.IO connections to backend and using them',
+			url: '/socketio'
 		}
 	];
 </script>
 
-Version 3: 
+Version 3:
 
 <div class="grid grid-cols-3 gap-4">
-
 	{#each links as link}
 		<div>
 			<Card title={link.name} description={link.description} href={`playground${link.url}`}></Card>
 		</div>
 	{/each}
-
 </div>
 
 <!-- Version 2:

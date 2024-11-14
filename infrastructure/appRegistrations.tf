@@ -2,6 +2,9 @@
 resource "random_uuid" "UuidScope1" {}
 resource "random_uuid" "UuidScope2" {}
 resource "random_uuid" "UuidScope3" {}
+resource "random_uuid" "UuidScope4" {}
+resource "random_uuid" "UuidScope5" {}
+resource "random_uuid" "UuidScope6" {}
 resource "random_uuid" "UuidRole1" {}     # Used for admins in backend
 resource "random_uuid" "userGroupUUID" {} # Used for users in backend
 # resource "random_uuid" "UuidRole2" {}
@@ -56,25 +59,58 @@ resource "azuread_application" "backendAPI" {
     # }
 
     oauth2_permission_scope {
-      admin_consent_description  = "Allow the application to read from the test user and session handling API on behalf of the signed-in user. See owner property for more information."
-      admin_consent_display_name = "Read from test user and session handling API"
+      admin_consent_description  = "Gives the users of Fullstack Sandox Application read rights to its REST API."
+      admin_consent_display_name = "Users can read from Fullstack Sandbox REST API"
       enabled                    = true
       id                         = random_uuid.UuidScope2.result
       type                       = "User"
-      user_consent_description   = "Allow the application to read from the test user and session handling API on your behalf."
-      user_consent_display_name  = "Read access to test user and session handling API"
+      user_consent_description   = "Enables you as user to read data from the Fullstack Sandbox."
+      user_consent_display_name  = "Read data from Fullstack Sandbox"
       value                      = "api.read"
     }
 
     oauth2_permission_scope {
-      admin_consent_description  = "Allow the application to write to the test user and session handling API on behalf of the signed-in user. See owner property for more information."
-      admin_consent_display_name = "Write to test user and session handling API"
+      admin_consent_description  = "Gives the users of Fullstack Sandox Application write rights to its REST API."
+      admin_consent_display_name = "Users can write to Fullstack Sandbox application's REST API"
       enabled                    = true
       id                         = random_uuid.UuidScope3.result
       type                       = "User"
-      user_consent_description   = "Allow the application to write to the test user and session handling API on your behalf."
-      user_consent_display_name  = "Write access to test user and session handling API"
+      user_consent_description   = "Enables you as user to write data to the Fullstack Sandbox."
+      user_consent_display_name  = "Write data to Fullstack Sandbox"
       value                      = "api.write"
+    }
+
+    oauth2_permission_scope {
+      admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to interact with Fullstack application via websockets."
+      admin_consent_display_name = "Users can interact with Fullstack Sandbox via websockets"
+      enabled                    = true
+      id                         = random_uuid.UuidScope4.result
+      type                       = "User"
+      user_consent_description   = "Enables you as user to use real-time communication, like chats in Fullstack Sandbox."
+      user_consent_display_name  = "Real-time interaction with Fullstack Sandbox"
+      value                      = "sockets"
+    }
+
+    oauth2_permission_scope {
+      admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to use public artifical intelligence within the app."
+      admin_consent_display_name = "Users can use public artificial intelligence in Fullstack Sandbox"
+      enabled                    = true
+      id                         = random_uuid.UuidScope5.result
+      type                       = "User"
+      user_consent_description   = "Enables you as user to use the public artifical intelligence capabilities of Fullstack Sandbox."
+      user_consent_display_name  = "Use public artificial intelligence in Fullstack Sandbox"
+      value                      = "artificial_intelligence.public"
+    }
+
+    oauth2_permission_scope {
+      admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to use private artifical intelligence within the app."
+      admin_consent_display_name = "Users can use private artificial intelligence in Fullstack Sandbox"
+      enabled                    = true
+      id                         = random_uuid.UuidScope6.result
+      type                       = "User"
+      user_consent_description   = "Enables you as user to use the private artifical intelligence capabilities of Fullstack Sandbox."
+      user_consent_display_name  = "Use private artificial intelligence in Fullstack Sandbox"
+      value                      = "artificial_intelligence.private"
     }
 
     # add further scopes here:

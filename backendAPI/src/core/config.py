@@ -64,19 +64,25 @@ class Config(BaseSettings):
 
     # Microsoft Azure OAuth 2.0 configuration:
     AZURE_TENANT_ID: str = get_variable("AZURE_TENANT_ID")
-    AZURE_OPENID_CONFIG_URL: str = f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration"
+    AZURE_OPENID_CONFIG_URL: str = (
+        f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration"
+    )
     AZURE_ISSUER_URL: str = f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0"
     AZURE_CLIENT_ID: str = get_variable("AZURE_CLIENT_ID")
     API_SCOPE: str = get_variable("API_SCOPE")
     BACK_CLIENT_SECRET: str = get_variable("BACK_CLIENT_SECRET")
 
+    # Frontend_svelte configuration:
+    FRONTEND_SVELTE_ORIGIN: str = os.getenv("FRONTEND_SVELTE_ORIGIN")
+    FRONTEND_SVELTE_FQDN: Optional[str] = os.getenv("FRONTEND_SVELTE_FQDN")
     # Client ID of the frontend application registered in Azure AD:
     # add "customer" client registrations here!
     # APP_REG_CLIENT_ID: str = get_variable("APP_REG_CLIENT_ID")
 
     # Postgres configuration:
     # always get those variables from the environment:
-    # TBD: refactor:     this should no longer be necessary from the environment since database is now an Azure postgres database:
+    # TBD: refactor: this should no longer be necessary from the environment since database is now an Azure postgres database:
+    # Hmmm, why not?
     POSTGRES_HOST: Optional[str] = os.getenv("POSTGRES_HOST")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")

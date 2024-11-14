@@ -1,8 +1,10 @@
 import logging
 import uuid
+from os import makedirs, path, remove, rename
 from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
 
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
+from fastapi.responses import FileResponse
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased, class_mapper, contains_eager, foreign, noload
 from sqlmodel import SQLModel, asc, delete, func, or_, select
@@ -47,17 +49,15 @@ class BaseCRUD(
         BaseSchemaTypeCreate,
         BaseSchemaTypeRead,
         BaseSchemaTypeUpdate,
-    ]
+    ],
 ):
     """Base class for CRUD operations."""
 
-    def __init__(
-        self,
-        base_model: Type[BaseModelType],
-    ):
+    def __init__(self, base_model: Type[BaseModelType], directory: str = None):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
+        self.data_directory = directory
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType
@@ -196,6 +196,17 @@ class BaseCRUD(
             )
         return True
 
+    def _provide_data_directory(
+        self,
+    ):
+        """Checks if a file path exists and if not creates it."""
+        try:
+            if not path.exists(f"/data/appdata/{self.data_directory}"):
+                makedirs(f"/data/appdata/{self.data_directory}")
+            return True
+        except Exception as e:
+            raise Exception(f"Path not found: {e}")
+
     async def create(
         self,
         object: BaseSchemaTypeCreate,
@@ -293,8 +304,36 @@ class BaseCRUD(
                 )
             logger.error(f"Error in BaseCRUD.create: {e}")
             raise HTTPException(
-                status_code=404,
-                detail=f"{self.model.__name__} not found",  # Or "Forbidden." here?
+                status_code=403,
+                detail=f"{self.model.__name__} - Forbidden.",
+            )
+
+    async def create_file(
+        self,
+        file: UploadFile,
+        current_user: "CurrentUserData",
+        parent_id: Optional[uuid.UUID] = None,
+        inherit: Optional[bool] = False,
+    ) -> BaseModelType:
+        """Creates new files."""
+        file_object = await self.create(
+            object={"name": file.filename},
+            current_user=current_user,
+            parent_id=parent_id,
+            inherit=inherit,
+        )
+        try:
+            self._provide_data_directory()
+            disk_file = open(
+                f"/data/appdata/{self.data_directory}/{file.filename}", "wb"
+            )
+            disk_file.write(file.file.read())
+            return file_object
+        except Exception as e:
+            logger.error(f"Error in BaseCRUD.create_file {file.filename}: {e}")
+            raise HTTPException(
+                status_code=403,
+                detail=f"{self.model.__name__} - Forbidden.",
             )
 
     async def create_public(
@@ -315,8 +354,6 @@ class BaseCRUD(
         )
         async with self.policy_CRUD as policy_CRUD:
             await policy_CRUD.create(public_access_policy, current_user)
-        # async with self.policy_CRUD as policy_CRUD:
-        #     await policy_CRUD.create(database_object.id, action, public=True)
 
         return database_object
 
@@ -345,7 +382,7 @@ class BaseCRUD(
     # use with pagination:
     # Model = await model_crud.read(order_by=[Model.name], limit=10)
     # Model = await model_crud.read(order_by=[Model.name], limit=10, offset=10)
-    async def read(
+    async def read(  # noqa: C901
         self,
         current_user: Optional["CurrentUserData"] = None,
         select_args: Optional[List] = None,
@@ -379,165 +416,8 @@ class BaseCRUD(
             for relationship in class_mapper(self.model).relationships:
                 # Determine the related model, the relevant hierarchy and relations based on self.entity_type
                 related_model = self.type.get_model(relationship.mapper.class_.__name__)
-                # if self.entity_type in ResourceType:
-                # related_model = ResourceType.get_model(
-                #     relationship.mapper.class_.__name__
-                # )
-                # hierarchy_aliased = aliased(ResourceHierarchy)
-                # relations = (
-                #     ResourceHierarchyRelationships.relations
-                # )
-                # relations = ResourceHierarchy.relations
-                # TBD: move to to the init: get all possible parent-child relations for the entity_type there!
-                # elif self.entity_type in IdentityType:
-                # related_model = IdentityType.get_model(
-                #     relationship.mapper.class_.__name__
-                # )
-                # hierarchy_aliased = aliased(IdentityHierarchy)
-                # relations = IdentityHierarchyRelationships.relations
-                # relations = IdentityHierarchy.relations
-
-                # if relationship.mapper.class_.__name__ in ResourceType.list():
-                #     related_model = ResourceType.get_model(
-                #         relationship.mapper.class_.__name__
-                #     )
-                # elif relationship.mapper.class_.__name__ in IdentityType.list():
-                #     related_model = IdentityType.get_model(
-                #         relationship.mapper.class_.__name__
-                #     )
-
                 related_attribute = getattr(self.model, relationship.key)
-
-                # subquery = select(child_model)
-                # subquery = self.policy_CRUD.filters_allowed(
-                #     statement=subquery,
-                #     action=read,
-                #     model=child_model,
-                #     current_user=current_user,
-                # )
-                # print("=== CRUD - base - read - subquery ===")
-                # statement = statement.add_columns(child_model)
-                # statement = statement.join(
-                #     child_model,
-                #     child_model.id == ResourceHierarchyRelationships.child_id,
-                # )
-                # statement = statement.where(
-                #     ResourceHierarchyRelationships.parent_id == self.model.id
-                # )
-                # statement = self.policy_CRUD.filters_allowed(
-                #     statement=statement,
-                #     action=read,
-                #     model=child_model,
-                #     current_user=current_user,
-                # )
-                # statement = statement.options(selectinload(relationship))
-                # statement = statement.options(joinedload(relationship))
-                # statement = statement.options(contains_eager(child_model)).options(
-                #     subqueryload(subquery)
-                # )
-                # subquery = select(AccessPolicy.resource_id).where(
-                #     AccessPolicy.identity_id == current_user.user_id,
-                #     AccessPolicy.action == read,
-                # )
-                # statement = statement.options(
-                #     joinedload(self.model.relationship)  # , innerjoin=True)
-                #     # somewhere I need to at the join conditions through hierarchy table!
-                # ).with_loader_criteria(child_model, child_model.id.in_(subquery))
-
-                # statement = statement.options(joinedload(self.model.child_model))
-                # statement = statement.add_columns(child_model)
-                # statement = statement.join(
-                #     ResourceHierarchy, self.model.id == ResourceHierarchy.parent_id
-                # )
-                # statement = statement.join(
-                #     child_model, ResourceHierarchy.child_id == child_model.id
-                # )
-                # statement = self.policy_CRUD.filters_allowed(
-                #     statement=statement,
-                #     action=read,
-                #     model=child_model,
-                #     current_user=current_user,
-                # )
-
-                # child_query = select(child_model)
-                # child_query = child_query.join(
-                #     ResourceHierarchy, self.model.id == ResourceHierarchy.parent_id
-                # )
-                # child_query = child_query.join(
-                #     child_model, ResourceHierarchy.child_id == child_model.id
-                # )
-                # statement = statement.options(joinedload(child_query))
-
-                # print("=== CRUD - base - read - self.model ===")
-                # print(self.model)
-                # print("=== CRUD - base - read - relationship ===")
-                # print(relationship)
-                # print("=== CRUD - base - read - child_model ===")
-                # print(child_model)
-
-                # print("\n")
-
-                # print("=== CRUD - base - read - child_attribute ===")
-                # print(child_attribute)
-
-                # print("\n")
-
-                # print("============ The type associated with the model ============")
-                # print("=== CRUD - base - read - self.entity_type ===")
-                # print(self.entity_type)
-                # print("\n")
-
-                # print(
-                #     "============ This specific relationship inside the model ============"
-                # )
-                # print("=== CRUD - base - read - relationship ===")
-                # print(relationship)
-                # print("=== CRUD - base - read - relationship.key ===")
-                # print(relationship.key)
-                # print("=== CRUD - base - read - relationship.mapper ===")
-                # print(relationship.mapper)
-                # print("=== CRUD - base - read - related_attribute ===")
-                # print(related_attribute)
-                # print("=== CRUD - base - read - related_model ===")
-                # print(related_model)
-
                 related_type = self.type(related_model.__name__)
-
-                # print("=== CRUD - base - read - related_type ===")
-                # print(related_type)
-
-                # print("=== CRUD - base - read - relationship.mapper.class_ ===")
-                # print(relationship.mapper.class_)
-                # print(
-                #     "=== CRUD - base - read - relationship.mapper.class_.__name__ ==="
-                # )
-                # print(relationship.mapper.class_.__name__)
-                # print(
-                #     "=== CRUD - base - read - relationship.mapper.class_.__table__ ==="
-                # )
-                # print(relationship.mapper.class_.__table__)
-                # print(
-                #     "=== CRUD - base - read - relationship.mapper.class_.__table__.name ==="
-                # )
-                # print(relationship.mapper.class_.__table__.name)
-                # print(
-                #     "=== CRUD - base - read - relationship.mapper.class_.__table__.columns ==="
-                # )
-                # print(relationship.mapper.class_.__table__.columns)
-                # print(
-                #     "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.keys() ==="
-                # )
-                # print(relationship.mapper.class_.__table__.columns.keys())
-                # print(
-                #     "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.values() ==="
-                # )
-                # print(relationship.mapper.class_.__table__.columns.values())
-                # print(
-                #     "=== CRUD - base - read - relationship.mapper.class_.__table__.columns.items() ==="
-                # )
-                # print(relationship.mapper.class_.__table__.columns.items())
-                # print("\n")
-
                 related_statement = select(related_model.id)
                 related_statement = self.policy_CRUD.filters_allowed(
                     related_statement,
@@ -545,28 +425,10 @@ class BaseCRUD(
                     model=related_model,
                     current_user=current_user,
                 )
-                # related_statement = related_statement.order_by(asc(related_model.id))
-
-                # print(
-                #     "============ All relations of the whole application ============"
-                # )
-                # print("=== CRUD - base - read - self.relations ===")
-                # pprint(self.relations)
-                # print("=== CRUD - base - read - self.relations.keys() ===")
-                # pprint(self.relations.keys())
-                # print("=== CRUD - base - read - self.relations.values() ===")
-                # pprint(self.relations.values())
-                # print("\n")
 
                 # Check if self.entity_type is a key in relations, i.e. the model is a parent in the hierarchy
                 aliased_hierarchy = aliased(self.hierarchy)
                 for parent, children in self.relations.items():
-                    # print("=== CRUD - base - read - app_relation ===")
-                    # print(parent)
-                    # print("=== CRUD - base - read - children ===")
-                    # print(children)
-                    # print("=== CRUD - base - read - type(app_relation) ===")
-                    # print(type(app_relation))
                     if self.entity_type == parent and related_type in children:
                         # self.model is a parent, join on parent_id
                         statement = statement.outerjoin(
@@ -588,37 +450,15 @@ class BaseCRUD(
                             related_model.id == foreign(aliased_hierarchy.parent_id),
                         ).order_by(asc(related_model.id))
 
-                # limit the child_model to the ones, that are in the child_statement
-                # and allows the parents, that don't have children in child_statement
-                # print("=== CRUD - base - read - related_statement ===")
-                # print(related_statement.compile())
-                # print(related_statement.compile().params)
-                # print("\n")
-
-                # statement = statement.where(
-                #     or_(
-                #         # related_model.id == None,
-                #         related_model.id.in_(related_statement),
-                #     )
-                # ).options(joinedload(related_attribute))
-
-                ########
-
                 count_related_statement = select(func.count()).select_from(
                     related_statement.alias()
                 )
                 related_count = await self.session.exec(count_related_statement)
                 count = related_count.one()
-                # print("=== CRUD - base - read - related_statement - count ===")
-                # print(count)
 
-                # if related_count.one()[0] > 0:
                 if count == 0:
                     statement = statement.options(noload(related_attribute))
                 else:
-                    # statement = statement.where(
-                    #     related_model.id.in_(related_statement)
-                    # ).options(contains_eager(related_attribute))
                     statement = statement.where(
                         or_(
                             related_model.id
@@ -626,42 +466,6 @@ class BaseCRUD(
                             related_model.id.in_(related_statement),
                         )
                     ).options(contains_eager(related_attribute))
-                #########
-
-                # statement = statement.where(
-                #     or_(
-                #         related_model.id == None,
-                #         # for the cases, where children actually exist, but user does not have access to them:
-                #         case(
-                #             (
-                #                 related_statement.exists(),
-                #                 related_model.id.in_(related_statement),
-                #             ),
-                #             else_=literal(False),
-                #         ),
-                #     )
-                # ).options(contains_eager(related_attribute))
-                # ).options(joinedload(related_attribute))
-
-                # statement = statement.options(
-                #     joinedload(related_attribute).where(
-                #         related_model.id == related_statement
-                #     )
-                # )
-
-                # related_model_alias = aliased(related_model)
-                # statement = statement.outerjoin(
-                #     related_model_alias, related_model_alias.id == related_statement
-                # )
-
-                # statement = statement.where(related_model_alias.id != None).options(
-                #     contains_eager(related_attribute)
-                # )
-
-                # statement = statement.outerjoin(
-                #     related_model,
-                #     related_model.id == related_statement,
-                # ).options(joinedload(related_attribute))
 
             if joins:
                 for join in joins:
@@ -689,19 +493,8 @@ class BaseCRUD(
             if offset:
                 statement = statement.offset(offset)
 
-            # print("=== CRUD - base - read - statement ===")
-            # print(statement.compile())
-            # print(statement.compile().params)
-            # print("\n")
-
             response = await self.session.exec(statement)
             results = response.unique().all()
-
-            # await self.session.flush()
-
-            # print("=== CRUD - base - read - results ===")
-            # pprint(results)
-            # print("\n")
 
             if not results:
                 logger.info(f"No objects found for {self.model.__name__}")
@@ -710,10 +503,6 @@ class BaseCRUD(
                 )
 
             for result in results:
-                # print("=== CRUD - base - read - validated results ===")
-                # pprint(result)
-                # print("\n")
-
                 # TBD: add logging to accessed children!
                 access_log = AccessLogCreate(
                     resource_id=result.id,  # result might not be available here?
@@ -723,7 +512,6 @@ class BaseCRUD(
                 )
                 async with self.logging_CRUD as logging_CRUD:
                     await logging_CRUD.create(access_log)
-                # await self._write_log(result.id, read, current_user, 200)
 
             return results
         except Exception as err:
@@ -736,7 +524,6 @@ class BaseCRUD(
                 )
                 async with self.logging_CRUD as logging_CRUD:
                     await logging_CRUD.create(access_log)
-                # await self._write_log(result.id, read, current_user, 404)
             except Exception as log_error:
                 logger.error(
                     (
@@ -770,14 +557,25 @@ class BaseCRUD(
     ):
         """Reads an object by id."""
 
-        # print("=== CRUD - base - read_by_id - current_user ===")
-        # print(current_user)
-
         object = await self.read(
             current_user=current_user,
             filters=[self.model.id == id],
         )
         return object[0]
+
+    async def read_file_by_id(
+        self,
+        id: uuid.UUID,
+        current_user: Optional["CurrentUserData"] = None,
+    ):
+        """Reads a file from disk by id."""
+
+        file = await self.read_by_id(id, current_user)
+        # disk_file = open(f"/data/appdata/{self.data_directory}/{file.name}", "rb")
+        # return disk_file
+        return FileResponse(
+            f"/data/appdata/{self.data_directory}/{file.name}", filename=file.name
+        )
 
     async def update(
         self,
@@ -797,21 +595,13 @@ class BaseCRUD(
                 model=self.model,
                 current_user=current_user,
             )
-            # print("=== CRUD - base - update - statement ===")
-            # print(statement.compile())
-            # print(statement.compile().params)
             response = await session.exec(statement)
-            # print("=== CRUD - base - update - response.all() ===")
-            # print(response.all())
             old = response.unique().one()
-            # print("=== CRUD - base - update - old ===")
-            # print(old)
             if old is None:
                 logger.info(f"Object with id {object_id} not found")
                 raise HTTPException(
                     status_code=404, detail=f"{self.model.__name__} not found."
                 )
-            ####
 
             updated = new.model_dump(exclude_unset=True)
             for key, value in updated.items():
@@ -826,10 +616,6 @@ class BaseCRUD(
             )
             async with self.logging_CRUD as logging_CRUD:
                 await logging_CRUD.create(access_log)
-            # self.session = self.logging_CRUD.add_log_to_session(
-            #     access_log, self.session
-            # )
-            # self._add_log_to_session(object_id, write, current_user, 200)
             await session.commit()
             await session.refresh(object)
             return object
@@ -843,7 +629,6 @@ class BaseCRUD(
                 )
                 async with self.logging_CRUD as logging_CRUD:
                     await logging_CRUD.create(access_log)
-                # await self._write_log(object_id, write, current_user, 404)
             except Exception as log_error:
                 logger.error(
                     f"Error in BaseCRUD.update with parameters object_id: {object_id}, action: {write}, current_user: {current_user}, status_code: {404} results in  {log_error}"
@@ -853,6 +638,49 @@ class BaseCRUD(
                 status_code=404, detail=f"{self.model.__name__} not updated."
             )
 
+    async def update_file(
+        self, file_id: uuid.UUID, current_user: "CurrentUserData", file: UploadFile
+    ) -> BaseModelType:
+        """Updates a file."""
+        try:
+            # This does not really change anything int he metadata, but ensures that the access control is applied:
+            old_metadata = await self.read_by_id(file_id, current_user)
+            same_metadata = await self.update(current_user, file_id, old_metadata)
+            with open(
+                f"/data/appdata/{self.data_directory}/{old_metadata.name}", "wb"
+            ) as disk_file:
+                disk_file.write(file.file.read())
+            return same_metadata
+        except Exception as e:
+            logger.error(f"Error in BaseCRUD.update_file {file_id}: {e}")
+            raise HTTPException(
+                status_code=403,
+                detail=f"{self.model.__name__} - Forbidden.",
+            )
+
+    async def update_file_metadata(
+        self,
+        file_id: uuid.UUID,
+        current_user: "CurrentUserData",
+        metadata: BaseSchemaTypeUpdate,
+    ) -> BaseModelType:
+        """Updates a file's metadata and renames the file on disk."""
+        try:
+            old_metadata = await self.read_by_id(file_id, current_user)
+            old_metadata = old_metadata.model_dump()
+            new_metadata = await self.update(current_user, file_id, metadata)
+            rename(
+                f"/data/appdata/{self.data_directory}/{old_metadata["name"]}",
+                f"/data/appdata/{self.data_directory}/{new_metadata.name}",
+            )
+            return new_metadata
+        except Exception as e:
+            logger.error(f"Error in BaseCRUD.update_metadata_file {file_id}: {e}")
+            raise HTTPException(
+                status_code=403,
+                detail=f"{self.model.__name__} - Forbidden.",
+            )
+
     async def delete(
         self,
         current_user: "CurrentUserData",
@@ -860,44 +688,6 @@ class BaseCRUD(
     ) -> None:  # BaseModelType:
         """Deletes an object."""
         try:
-            # statement = select(self.model).distinct().where(self.model.id == object_id)
-            # statement = self.policy_CRUD.filters_allowed(
-            #     statement=statement,
-            #     action=own,
-            #     model=self.model,
-            #     current_user=current_user,
-            # )
-
-            # response = await self.session.exec(statement)
-            # object = response.one()
-            # if object is None:
-            #     logger.info(f"Object with id {object_id} not found")
-            #     raise HTTPException(
-            #         status_code=404, detail=f"{self.model.__name__} not found."
-            #     )
-            # # print("=== CRUD - base - delete - object ===")
-            # # pprint(object)
-
-            # # TBD: deleting a resource also needs to delete the according access policies!
-
-            # await self.session.delete(object)
-
-            # access_log = AccessLogCreate(
-            #     resource_id=object.id,
-            #     action=own,
-            #     identity_id=current_user.user_id,
-            #     status_code=200,
-            # )
-            # async with self.logging_CRUD as logging_CRUD:
-            #     await logging_CRUD.create(access_log)
-            # # self.session = self.logging_CRUD.add_log_to_session(
-            # #     access_log, self.session
-            # # )
-            # # self._add_log_to_session(object_id, own, current_user, 200)
-            # await self.session.commit()
-            # return object
-
-            #### Refactored into subquery:
             model_alias = aliased(self.model)
             subquery = (
                 select(model_alias.id).distinct().where(model_alias.id == object_id)
@@ -929,15 +719,6 @@ class BaseCRUD(
                 await logging_CRUD.create(access_log)
             # TBD: delete hierarchy only if exists?
             # TBD: delete hierarchies for both parent_id and child_id
-            # async with self.hierarchy_CRUD as hierarchy_CRUD:
-            # await hierarchy_CRUD.delete(
-            #     current_user=current_user,
-            #     parent_id=object_id,
-            # )
-            # await hierarchy_CRUD.delete(
-            #     current_user=current_user,
-            #     child_id=object_id,
-            # )
 
             if self.type == ResourceType:
                 delete_policies = AccessPolicyDelete(
@@ -972,7 +753,6 @@ class BaseCRUD(
                 )
                 async with self.logging_CRUD as logging_CRUD:
                     await logging_CRUD.create(access_log)
-                # await self._write_log(object_id, own, current_user, 404)
             except Exception as log_error:
                 logger.error(
                     f"Error in BaseCRUD.delete with parameters object_id: {object_id}, action: {own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
@@ -1003,6 +783,25 @@ class BaseCRUD(
         else:
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not found."
+            )
+
+    async def delete_file(
+        self,
+        file_id: uuid.UUID,
+        current_user: "CurrentUserData",
+    ) -> None:
+        """Deletes a file."""
+        try:
+            file_metadata = await self.read_by_id(file_id, current_user)
+            file_metadata = file_metadata.model_dump()
+            await self.delete(current_user, file_id)
+            remove(f"/data/appdata/{self.data_directory}/{file_metadata["name"]}")
+            return None
+        except Exception as e:
+            logger.error(f"Error in BaseCRUD.delete_file {file_id}: {e}")
+            raise HTTPException(
+                status_code=403,
+                detail=f"{self.model.__name__} - Forbidden.",
             )
 
     # TBD: add share / permission methods - maybe in an inherited class BaseCRUDPermissions?

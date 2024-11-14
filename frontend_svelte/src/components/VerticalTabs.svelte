@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition';
+	// import { fade } from 'svelte/transition';
 
 	let selectedIndex = 0;
 	// const changeSecondTab = () => {
@@ -21,19 +21,15 @@
 		<li class:selected={selectedIndex === 2}
             on:click={() => changeTab(2)}>Third Tab</li> -->
 		<li>
-			<button class:selected={selectedIndex === 0} on:click={() => changeTab(0)}>
-				First Tab
-			</button>
+			<button class:selected={selectedIndex === 0} onclick={() => changeTab(0)}> First Tab </button>
 		</li>
 		<li>
-			<button class:selected={selectedIndex === 1} on:click={() => changeTab(1)}>
+			<button class:selected={selectedIndex === 1} onclick={() => changeTab(1)}>
 				Second Tab
 			</button>
 		</li>
 		<li>
-			<button class:selected={selectedIndex === 2} on:click={() => changeTab(2)}>
-				Third Tab
-			</button>
+			<button class:selected={selectedIndex === 2} onclick={() => changeTab(2)}> Third Tab </button>
 		</li>
 	</ul>
 
@@ -56,17 +52,17 @@
 			<p>...</p>
 		{/if} -->
 		{#if selectedIndex == 0}
-			<div transition:fly>
+			<div>
 				<h2>First Tab Heading</h2>
 				<p>First text ...</p>
 			</div>
 		{:else if selectedIndex == 1}
-			<div transition:fly>
+			<div>
 				<h2>Second Tab Heading</h2>
 				<p>Second text ...</p>
 			</div>
 		{:else if selectedIndex == 2}
-			<div transition:fly>
+			<div>
 				<h2>Third Tab Heading</h2>
 				<p>Third text ...</p>
 			</div>

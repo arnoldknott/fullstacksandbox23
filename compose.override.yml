@@ -10,8 +10,7 @@ services:
             - "8660:80"
         volumes:
             - dev-app-data:/data
-            # TBD: mount container app to development on localhost
-            # something like that:
+            # mount container app to development on localhost
             - ./backendAPI/:/app
         restart: unless-stopped
         networks:
@@ -68,7 +67,7 @@ services:
 
     redis:
         container_name: dev_redis
-        image: redis/redis-stack:7.2.0-v6
+        image: redis/redis-stack:7.2.0-v13
         env_file:
             - ./backendAPI/src/.env
         volumes:

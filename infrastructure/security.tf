@@ -74,15 +74,15 @@ resource "azurerm_key_vault" "keyVault" {
     object_id = var.owner_object_id
 
     certificate_permissions = [
-      "Backup", "Create", "Delete", "DeleteIssuers", "Get", "GetIssuers", "Import", "List", "ListIssuers", "ManageContacts", "ManageIssuers", "Recover", "Restore", "SetIssuers", "Update"
+      "Backup", "Create", "Delete", "DeleteIssuers", "Get", "GetIssuers", "Import", "List", "ListIssuers", "ManageContacts", "ManageIssuers", "Purge", "Recover", "Restore", "SetIssuers", "Update"
     ]
 
     key_permissions = [
-      "Backup", "Create", "Decrypt", "Delete", "Encrypt", "Get", "Import", "List", "Recover", "Restore", "Sign", "UnwrapKey", "Update", "Verify", "WrapKey", "Release", "Rotate", "GetRotationPolicy", "SetRotationPolicy"
+      "Backup", "Create", "Decrypt", "Delete", "Encrypt", "Get", "Import", "List", "Recover", "Restore", "Sign", "UnwrapKey", "Update", "Verify", "WrapKey", "Purge", "Release", "Rotate", "GetRotationPolicy", "SetRotationPolicy"
     ]
 
     secret_permissions = [
-      "Backup", "Delete", "Get", "List", "Recover", "Restore", "Set"
+      "Backup", "Delete", "Get", "List", "Purge", "Recover", "Restore", "Set"
     ]
 
     storage_permissions = [
@@ -119,15 +119,15 @@ resource "azurerm_key_vault" "keyVault" {
     object_id = var.developer_localhost_object_id
 
     certificate_permissions = [
-      "Get", "Create", "Update"
+      "Get", "Create", "Delete", "Update"
     ]
 
     key_permissions = [
-      "Get", "Create", "Update"
+      "Get", "Create", "Delete", "Update"
     ]
 
     secret_permissions = [
-      "Get", "Set", "Recover"
+      "Get", "Set", "Delete", "Recover"
     ]
   }
 
@@ -137,15 +137,15 @@ resource "azurerm_key_vault" "keyVault" {
     object_id = var.managed_identity_github_actions_object_id
 
     certificate_permissions = [
-      "Get", "Create", "Update"
+      "Get", "Create", "Delete", "Update"
     ]
 
     key_permissions = [
-      "Get", "Create", "Update"
+      "Get", "Create", "Delete", "Update"
     ]
 
     secret_permissions = [
-      "Get", "Set", "Recover"
+      "Get", "Set", "Delete", "Recover"
     ]
   }
 
@@ -246,6 +246,21 @@ resource "azurerm_key_vault" "keyVault" {
 resource "azurerm_key_vault_secret" "keyvaultHealth" {
   name         = "keyvault-health"
   value        = "ok, keyvault, ${azurerm_key_vault.keyVault.name}, ${terraform.workspace}"
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+# implemented as secret to break circular dpendency
+# between backend and frontend container app
+# but it's no really a secret!
+resource "azurerm_key_vault_secret" "backendHost" {
+  name         = "backend-host"
+  value        = azurerm_container_app.BackendContainer.name
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+resource "azurerm_key_vault_secret" "backendFqdn" {
+  name         = "backend-fqdn"
+  value        = azurerm_container_app.BackendContainer.ingress[0].fqdn
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 

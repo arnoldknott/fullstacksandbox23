@@ -1,4 +1,4 @@
-FROM node:20.11.0-alpine3.19 AS build
+FROM node:22.11.0-alpine3.20 AS build
 WORKDIR /app
 # ARG REDIS_HOST
 # ARG REDIS_PORT
@@ -15,13 +15,18 @@ COPY . .
 RUN npm run build
 # CMD ["sh" "-c"]
 
-FROM node:20.11.0-alpine3.19
+FROM node:22.11.0-alpine3.20
+WORKDIR /app
 # TBD: remove when error with internal ingres is fixed.
 # RUN apk add --no-cache redis tcptraceroute
 COPY --from=build /app/build /app/
 COPY --from=build /app/package*.json /app/
+# RUN ls -la /app
 # TBD: make sure to only copy dependencies and not devDependencies - by runing the correct npm install command above.
-COPY --from=build /app/node_modules ./node_modules
+# COPY --from=build /app/node_modules ./node_modules
+RUN npm ci --omit=dev
+# RUN ls -la /app/node_modules
+RUN chown -R node:node /app
 EXPOSE 80
 # ENV PORT=80
 USER node

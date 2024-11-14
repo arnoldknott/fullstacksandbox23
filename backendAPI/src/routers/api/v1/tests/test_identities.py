@@ -118,7 +118,7 @@ from tests.utils import (
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_user_id,
@@ -132,13 +132,13 @@ from tests.utils import (
 )
 async def test_admin_posts_user(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     mock_guards,
     current_user_from_azure_token,
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the user
     before_time = datetime.now()
@@ -153,7 +153,9 @@ async def test_admin_posts_user(
     assert created_user.azure_user_id == many_test_azure_users[2]["azure_user_id"]
     assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -169,7 +171,7 @@ async def test_admin_posts_user(
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
-        created_user.id, mocked_get_azure_token_payload, mock_guards(roles=["User"])
+        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])
     )
     assert db_user is not None
     assert db_user.id is not None
@@ -181,7 +183,7 @@ async def test_admin_posts_user(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_user_id,
@@ -195,13 +197,13 @@ async def test_admin_posts_user(
 )
 async def test_post_user_with_integer_user_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     mock_guards,
     current_user_from_azure_token,
 ):
     """Tests posting a integer user_id to user_post endpoint fails"""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the user
     before_time = datetime.now()
@@ -216,7 +218,9 @@ async def test_post_user_with_integer_user_id(
     assert created_user.azure_user_id == many_test_azure_users[2]["azure_user_id"]
     assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -232,7 +236,7 @@ async def test_post_user_with_integer_user_id(
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
-        created_user.id, mocked_get_azure_token_payload, mock_guards(roles=["User"])
+        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])
     )
     assert db_user.id == uuid.UUID(created_user.id)
     assert db_user.id != 1
@@ -244,7 +248,7 @@ async def test_post_user_with_integer_user_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_user_id,
@@ -258,13 +262,13 @@ async def test_post_user_with_integer_user_id(
 )
 async def test_post_user_with_uuid_user_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     mock_guards,
     current_user_from_azure_token,
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     test_uuid = str(uuid.uuid4())
 
     # Make a POST request to create the user
@@ -280,7 +284,9 @@ async def test_post_user_with_uuid_user_id(
     assert created_user.azure_user_id == many_test_azure_users[2]["azure_user_id"]
     assert created_user.azure_tenant_id == many_test_azure_users[2]["azure_tenant_id"]
 
-    current_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -296,7 +302,7 @@ async def test_post_user_with_uuid_user_id(
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
-        created_user.id, mocked_get_azure_token_payload, mock_guards(roles=["User"])
+        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])
     )
     assert db_user.id == uuid.UUID(created_user.id)
     assert db_user.id != uuid.UUID(test_uuid)
@@ -308,7 +314,7 @@ async def test_post_user_with_uuid_user_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_user_id,
@@ -321,10 +327,10 @@ async def test_post_user_with_uuid_user_id(
     indirect=True,
 )
 async def test_user_posts_user(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the user
     response = await async_client.post(
@@ -344,7 +350,7 @@ async def test_user_posts_user(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             # **token_payload_scope_api_read_write,
@@ -365,10 +371,10 @@ async def test_user_posts_user(
     indirect=True,
 )
 async def test_post_user_invalid_token(
-    async_client: AsyncClient, app_override_get_azure_payload_dependency: FastAPI
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the user
     response = await async_client.post(
@@ -387,19 +393,19 @@ async def test_post_user_invalid_token(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read],
     indirect=True,
 )
 async def test_admin_gets_users(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_azure_test_users: List[User],
 ):
     """Test GET one user"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # adds a user to the database, which is the one to GET:
     users = await add_many_azure_test_users()
@@ -418,7 +424,7 @@ async def test_admin_gets_users(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_scope_api_read,
@@ -429,13 +435,13 @@ async def test_admin_gets_users(
 )
 async def test_user_gets_users(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_azure_test_users: List[User],
 ):
     """Test GET all users"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # adds users to the database
     await add_many_azure_test_users()
@@ -460,7 +466,7 @@ async def test_get_users_without_token(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         # token_user1_read,
         # token_user1_read_write,
@@ -472,20 +478,22 @@ async def test_get_users_without_token(
 )
 async def test_user_gets_user_by_azure_user_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     current_user_from_azure_token,
     add_one_test_access_policy,
 ):
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     # the target user:
     user_in_database = await add_one_azure_test_user(0)
     # the accessing user:
-    accessing_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    accessing_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     policy = {
         "resource_id": str(user_in_database.id),
@@ -536,7 +544,7 @@ async def test_user_gets_user_by_azure_user_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user2_read,
         token_user2_read_write,
@@ -545,20 +553,22 @@ async def test_user_gets_user_by_azure_user_id(
 )
 async def test_user_gets_user_by_azure_user_id_with_partial_access_to_other_users_groups(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     current_user_from_azure_token,
     add_one_test_access_policy,
 ):
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     # the target user:
     user_in_database = await add_one_azure_test_user(0)
     # the accessing user:
-    accessing_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    accessing_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     policy = {
         "resource_id": str(user_in_database.id),
@@ -629,7 +639,7 @@ async def test_user_gets_user_by_azure_user_id_with_partial_access_to_other_user
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         token_user2_read,
         token_user2_read_write,
@@ -638,20 +648,22 @@ async def test_user_gets_user_by_azure_user_id_with_partial_access_to_other_user
 )
 async def test_user_gets_user_by_azure_user_id_with_no_access_to_other_users_groups(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     current_user_from_azure_token,
     add_one_test_access_policy,
 ):
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     # the target user:
     user_in_database = await add_one_azure_test_user(0)
     # the accessing user:
-    accessing_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    accessing_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     policy = {
         "resource_id": str(user_in_database.id),
@@ -693,19 +705,19 @@ async def test_user_gets_user_by_azure_user_id_with_no_access_to_other_users_gro
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read],
     indirect=True,
 )
 async def test_admin_gets_user_by_azure_user_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[UserRead],
 ):
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     user_in_database = await add_one_azure_test_user(1)
 
     before_time = datetime.now()
@@ -739,19 +751,19 @@ async def test_admin_gets_user_by_azure_user_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read],
     indirect=True,
 )
 async def test_user_gets_another_user_by_azure_user_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[UserRead],
 ):
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     # the target user:
     user_in_database = await add_one_azure_test_user(2)
 
@@ -780,27 +792,29 @@ async def test_get_user_by_azure_id_without_token(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_groups, token_admin_read],
     # here the admin get's itself => last_accessed_at should change!
     indirect=True,
 )
 async def test_user_gets_user_by_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     current_user_from_azure_token,
     add_one_test_access_policy,
 ):
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     # the target user:
     user_in_database = await add_one_azure_test_user(0)
     # the accessing user:
-    accessing_user = await current_user_from_azure_token(mocked_get_azure_token_payload)
+    accessing_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
     policy = {
         "resource_id": str(user_in_database.id),
@@ -839,19 +853,19 @@ async def test_user_gets_user_by_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read],
     indirect=True,
 )
 async def test_admin_gets_user_by_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[UserRead],
 ):
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     user_in_database = await add_one_azure_test_user(1)
 
     before_time = datetime.now()
@@ -884,19 +898,19 @@ async def test_admin_gets_user_by_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read],
     indirect=True,
 )
 async def test_user_gets_another_user_by_user_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[UserRead],
 ):
     """Test a user GETs it's another user id by its user id."""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     user_in_database = await add_one_azure_test_user(1)
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
@@ -920,7 +934,7 @@ async def test_get_user_by_id_without_token(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             # missing scope_api_read
@@ -941,13 +955,13 @@ async def test_get_user_by_id_without_token(
 )
 async def test_get_user_by_id_with_missing_scope(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
 ):
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     user_in_database = await add_one_azure_test_user(0)
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
@@ -957,7 +971,7 @@ async def test_get_user_by_id_with_missing_scope(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_scope_api_read,
@@ -976,13 +990,13 @@ async def test_get_user_by_id_with_missing_scope(
 )
 async def test_get_user_by_id_invalid_token(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
 ):
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     user_in_database = await add_one_azure_test_user(0)
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
@@ -997,20 +1011,20 @@ async def test_get_user_by_id_invalid_token(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_put_user(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     mock_guards,
 ):
     """Tests put user endpoint"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(0)
 
     existing_db_user = await get_user_by_id(
@@ -1029,26 +1043,26 @@ async def test_user_put_user(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_put_user_from_admin(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     mock_guards,
 ):
     """Test a admin updates a user"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(2)
 
     existing_db_user = await get_user_by_id(
         str(existing_user.id),
-        mocked_get_azure_token_payload,
+        mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
     )
     assert existing_db_user.is_active is True
@@ -1089,26 +1103,26 @@ async def test_put_user_from_admin(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     # refactored into: updating a user needs Admin roles
     indirect=True,
 )
 async def test_put_user_with_integer_user_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     mock_guards,
 ):
     """Tests put user endpoint"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(0)
     existing_db_user = await get_user_by_id(
         str(existing_user.id),
-        mocked_get_azure_token_payload,
+        mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
     )
     assert existing_db_user.is_active is True
@@ -1151,16 +1165,16 @@ async def test_put_user_with_integer_user_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     # refactored into: updating a user needs Admin roles
     indirect=True,
 )
 async def test_admin_put_user_with_uuid_user_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     mock_guards,
 ):
     """Tests put user endpoint"""
@@ -1168,12 +1182,12 @@ async def test_admin_put_user_with_uuid_user_id(
     test_uuid = str(uuid.uuid4())
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(0)
 
     existing_db_user = await get_user_by_id(
         str(existing_user.id),
-        mocked_get_azure_token_payload,
+        mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
     )
     assert existing_db_user.is_active is True
@@ -1215,7 +1229,7 @@ async def test_admin_put_user_with_uuid_user_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_user_id,
@@ -1244,14 +1258,14 @@ async def test_admin_put_user_with_uuid_user_id(
 )
 async def test_put_user_invalid_token(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     mock_guards,
 ):
     """Test a admin updates a user"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(0)
 
     existing_db_user = await get_user_by_id(
@@ -1272,20 +1286,20 @@ async def test_put_user_invalid_token(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_puts_another_user(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     mock_guards,
 ):
     """Test a admin updates a user"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(0)
 
     existing_db_user = await get_user_by_id(
@@ -1310,20 +1324,20 @@ async def test_user_puts_another_user(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_deletes_itself(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     mock_guards,
 ):
     """Test user deletes itself"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(0)
     existing_db_user = await get_user_by_id(
         str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
@@ -1348,26 +1362,26 @@ async def test_user_deletes_itself(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_admin_deletes_user(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     mock_guards,
 ):
     """Test admin deletes a user"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(0)
 
     existing_db_user = await get_user_by_id(
         str(existing_user.id),
-        mocked_get_azure_token_payload,
+        mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
     )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
@@ -1389,7 +1403,7 @@ async def test_admin_deletes_user(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [
         {
             **token_payload_user_id,
@@ -1417,14 +1431,14 @@ async def test_admin_deletes_user(
 )
 async def test_delete_user_invalid_token(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: User,
     mock_guards,
 ):
     """Test deleting a user with invalid token fails"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(2)
 
     existing_db_user = await get_user_by_id(
@@ -1456,21 +1470,21 @@ async def test_delete_user_invalid_token(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     # TBD: use user2 here somewhere?
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_deletes_another_user(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     mock_guards,
 ):
     """Test delete another user fails"""
 
     # mocks the access token:
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(2)
 
     existing_db_user = await get_user_by_id(
@@ -1503,18 +1517,18 @@ async def test_user_deletes_another_user(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_all_ueber_group_endpoints(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     add_many_test_ueber_groups,
 ):
     """Tests the ueber_group endpoints of the API."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the ueber-group
     response = await async_client.post(
@@ -1531,7 +1545,7 @@ async def test_all_ueber_group_endpoints(
     # add some more ueber groups:
     # note: the first one is going to be double with different id's
     mocked_ueber_groups = await add_many_test_ueber_groups(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     created_ueber_group.id = uuid.UUID(created_ueber_group.id)
     expected_ueber_groups = [created_ueber_group] + mocked_ueber_groups
@@ -1597,18 +1611,18 @@ async def test_all_ueber_group_endpoints(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_all_group_endpoints(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     add_many_test_groups,
 ):
     """Tests the group endpoints of the API."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the group
     response = await async_client.post(
@@ -1624,7 +1638,7 @@ async def test_all_group_endpoints(
 
     # add some more groups:
     # note: the first one is going to be double with different id's
-    mocked_groups = await add_many_test_groups(mocked_get_azure_token_payload)
+    mocked_groups = await add_many_test_groups(mocked_provide_http_token_payload)
     created_group.id = uuid.UUID(created_group.id)
     expected_groups = [created_group] + mocked_groups
     expected_groups = sorted(expected_groups, key=lambda x: x.id)
@@ -1688,18 +1702,18 @@ async def test_all_group_endpoints(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_all_sub_group_endpoints(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     add_many_test_sub_groups,
 ):
     """Tests the sub_group endpoints of the API."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the sub-group
     response = await async_client.post(
@@ -1715,7 +1729,9 @@ async def test_all_sub_group_endpoints(
 
     # add some more sub groups:
     # note: the first one is going to be double with different id's
-    mocked_sub_groups = await add_many_test_sub_groups(mocked_get_azure_token_payload)
+    mocked_sub_groups = await add_many_test_sub_groups(
+        mocked_provide_http_token_payload
+    )
     created_sub_group.id = uuid.UUID(created_sub_group.id)
     expected_sub_groups = [created_sub_group] + mocked_sub_groups
     expected_sub_groups = sorted(expected_sub_groups, key=lambda x: x.id)
@@ -1780,18 +1796,18 @@ async def test_all_sub_group_endpoints(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_all_sub_sub_group_endpoints(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     add_many_test_sub_sub_groups,
 ):
     """Tests the sub_sub_group endpoints of the API."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the sub-sub-group
     response = await async_client.post(
@@ -1810,7 +1826,7 @@ async def test_all_sub_sub_group_endpoints(
     # add some more sub-sub groups:
     # note: the first one is going to be double with different id's
     mocked_sub_sub_groups = await add_many_test_sub_sub_groups(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     created_sub_sub_group.id = uuid.UUID(created_sub_sub_group.id)
     expected_sub_sub_groups = [created_sub_sub_group] + mocked_sub_sub_groups
@@ -1876,18 +1892,18 @@ async def test_all_sub_sub_group_endpoints(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_add_user_to_ueber_group_and_remove_again(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     add_many_test_ueber_groups,
 ):
     """Tests adding user to an ueber-group and remove again."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     existing_user = await add_one_azure_test_user(0)
 
@@ -1934,18 +1950,18 @@ async def test_add_user_to_ueber_group_and_remove_again(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_bulk_add_users_to_ueber_group_and_bulk_remove(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_azure_test_users: List[User],
     add_many_test_ueber_groups,
 ):
     """Tests bulk adding users to an ueber-group and remove some fo them again."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     existing_users = await add_many_azure_test_users()
 
@@ -2004,18 +2020,18 @@ async def test_bulk_add_users_to_ueber_group_and_bulk_remove(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_bulk_add_groups_to_ueber_group_and_bulk_remove(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_ueber_groups,
     add_many_test_groups,
 ):
     """Tests bulk adding groups to an ueber-group and remove some of them again."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_groups = await add_many_test_groups()
 
@@ -2074,18 +2090,18 @@ async def test_bulk_add_groups_to_ueber_group_and_bulk_remove(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_add_user_to_group_and_remove_again(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     add_many_test_groups,
 ):
     """Tests adding user to a group and remove again."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     existing_user = await add_one_azure_test_user(0)
 
@@ -2126,18 +2142,18 @@ async def test_add_user_to_group_and_remove_again(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_bulk_add_users_to_group_and_bulk_remove(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_azure_test_users: List[User],
     add_many_test_groups,
 ):
     """Tests bulk adding users to a group and bulk remove some of them again."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     existing_users = await add_many_azure_test_users()
 
@@ -2192,18 +2208,18 @@ async def test_bulk_add_users_to_group_and_bulk_remove(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_bulk_add_sub_groups_to_group_and_bulk_remove(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_groups,
     add_many_test_sub_groups,
 ):
     """Tests bulk adding sub-groups to a group and bulk remove some of them again."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_sub_groups = await add_many_test_sub_groups()
 
@@ -2262,18 +2278,18 @@ async def test_bulk_add_sub_groups_to_group_and_bulk_remove(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_add_user_to_sub_group_and_remove_again(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     add_many_test_sub_groups,
 ):
     """Tests adding users to a sub-group."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     existing_user = await add_one_azure_test_user(0)
 
@@ -2318,18 +2334,18 @@ async def test_add_user_to_sub_group_and_remove_again(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_bulk_add_users_to_sub_group_and_bulk_remove(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_azure_test_users: List[User],
     add_many_test_sub_groups,
 ):
     """Tests bulk adding users to a sub-group and remove some of them again."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     existing_users = await add_many_azure_test_users()
 
@@ -2386,18 +2402,18 @@ async def test_bulk_add_users_to_sub_group_and_bulk_remove(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_bulk_add_sub_sub_groups_to_sub_group_and_bulk_remove(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_sub_groups,
     add_many_test_sub_sub_groups,
 ):
     """Tests bulk adding sub-sub-groups to a sub-group and bulk remove some of them again."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
 
@@ -2472,18 +2488,18 @@ async def test_bulk_add_sub_sub_groups_to_sub_group_and_bulk_remove(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_add_user_to_sub_sub_group_and_remove_again(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     add_many_test_sub_sub_groups,
 ):
     """Tests adding user to a sub-sub-group and remove again."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     existing_user = await add_one_azure_test_user(0)
 
@@ -2532,18 +2548,18 @@ async def test_add_user_to_sub_sub_group_and_remove_again(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_bulk_add_users_to_sub_sub_group_and_bulk_remove(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_azure_test_users: List[User],
     add_many_test_sub_sub_groups,
 ):
     """Tests bulk adding users to a sub-sub-group"""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     existing_users = await add_many_azure_test_users()
 
@@ -2602,18 +2618,18 @@ async def test_bulk_add_users_to_sub_sub_group_and_bulk_remove(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_add_user_to_groups_without_inheritance(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
     add_many_test_groups,
 ):
     """Tests adding users to an ueber-group, group, sub-group, and sub-sub-group."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     existing_user = await add_one_azure_test_user(0)
 
@@ -2632,18 +2648,18 @@ async def test_add_user_to_groups_without_inheritance(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_add_group_to_ueber_group(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_ueber_groups,
     add_many_test_groups,
 ):
     """Tests adding groups to an ueber-group."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_ueber_groups = await add_many_test_ueber_groups()
     mocked_groups = await add_many_test_groups()
@@ -2699,18 +2715,18 @@ async def test_add_group_to_ueber_group(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_add_sub_group_to_group(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_groups,
     add_many_test_sub_groups,
 ):
     """Tests adding groups to an ueber-group."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_groups = await add_many_test_groups()
     mocked_sub_groups = await add_many_test_sub_groups()
@@ -2774,18 +2790,18 @@ async def test_add_sub_group_to_group(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_add_sub_sub_group_to_sub_group(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_sub_groups,
     add_many_test_sub_sub_groups,
 ):
     """Tests adding groups to an ueber-group."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_sub_groups = await add_many_test_sub_groups()
     mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
@@ -2856,19 +2872,19 @@ async def test_add_sub_sub_group_to_sub_group(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_add_prohibited_groups_to_ueber_group(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_ueber_groups,
     add_many_test_sub_groups,
     add_many_test_sub_sub_groups,
 ):
     """Tests adding groups to an ueber-group."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_ueber_groups = await add_many_test_ueber_groups()
     mocked_sub_groups = await add_many_test_sub_groups()
@@ -2905,19 +2921,19 @@ async def test_add_prohibited_groups_to_ueber_group(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_add_prohibited_groups_to_group(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_ueber_groups,
     add_many_test_groups,
     add_many_test_sub_sub_groups,
 ):
     """Tests adding groups to an ueber-group."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_ueber_groups = await add_many_test_ueber_groups()
     mocked_groups = await add_many_test_groups()
@@ -2954,13 +2970,13 @@ async def test_add_prohibited_groups_to_group(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_user_access_through_inheritance_from_direct_group_membership(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     mock_guards,
     add_many_test_protected_resources,
@@ -2969,7 +2985,7 @@ async def test_user_access_through_inheritance_from_direct_group_membership(
     current_user_from_azure_token,
 ):
     """Tests user access through inheritance from direct group membership."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     current_user = current_test_user
 
@@ -3019,13 +3035,13 @@ async def test_user_access_through_inheritance_from_direct_group_membership(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write, token_user2_read_write],
     indirect=True,
 )
 async def test_user_access_prohibited_through_inheritance_missing_group_membership(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     mock_guards,
     add_many_test_protected_resources,
@@ -3034,7 +3050,7 @@ async def test_user_access_prohibited_through_inheritance_missing_group_membersh
     current_user_from_azure_token,
 ):
     """Tests user access through inheritance from direct group membership."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     current_user = current_test_user
 
@@ -3062,13 +3078,13 @@ async def test_user_access_prohibited_through_inheritance_missing_group_membersh
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_user_access_through_inheritance_from_indirect_group_membership(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     mock_guards,
     add_many_test_protected_resources,
@@ -3079,7 +3095,7 @@ async def test_user_access_through_inheritance_from_indirect_group_membership(
     current_user_from_azure_token,
 ):
     """Tests user access through inheritance from direct group membership."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     current_user = current_test_user
 
@@ -3158,13 +3174,13 @@ async def test_user_access_through_inheritance_from_indirect_group_membership(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_access_prohibited_from_indirect_group_membership_missing_inheritance(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     mock_guards,
     add_many_test_protected_resources,
@@ -3175,7 +3191,7 @@ async def test_user_access_prohibited_from_indirect_group_membership_missing_inh
     current_user_from_azure_token,
 ):
     """Tests user access through inheritance from direct group membership."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     current_user = current_test_user
 
@@ -3240,13 +3256,13 @@ async def test_user_access_prohibited_from_indirect_group_membership_missing_inh
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_access_prohibited_after_deleting_group_with_direct_group_membership(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     mock_guards,
     add_many_test_protected_resources,
@@ -3255,7 +3271,7 @@ async def test_user_access_prohibited_after_deleting_group_with_direct_group_mem
     current_user_from_azure_token,
 ):
     """Tests user access through inheritance from direct group membership."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     current_user = current_test_user
 

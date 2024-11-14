@@ -4,7 +4,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from core.security import Guards, get_access_token_payload
+from core.security import (
+    Guards,
+    check_token_against_guards,
+    get_http_access_token_payload,
+)
 from core.types import GuardTypes
 from crud.access import BaseHierarchyModelRead
 from crud.identity import (
@@ -22,7 +26,6 @@ from models.identity import (
     SubGroupCreate,
     SubGroupRead,
     SubGroupUpdate,
-    SubSubGroup,
     UeberGroup,
     UeberGroupCreate,
     UeberGroupRead,
@@ -38,7 +41,7 @@ from .base import BaseView
 logger = logging.getLogger(__name__)
 
 user_router = APIRouter()
-user_view = BaseView(UserCRUD, User)
+user_view = BaseView(UserCRUD)
 
 
 # note: self-sign-up through security - controlled by token content,
@@ -66,7 +69,7 @@ user_view = BaseView(UserCRUD, User)
 @user_router.post("/", status_code=201)
 async def post_user(
     user: UserCreate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> User:
     """Creates a new user."""
@@ -83,7 +86,7 @@ async def post_add_user_to_group(
     user_id: UUID,
     group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> BaseHierarchyModelRead:
     """Adds a user to an ueber-group, group, sub-group or sub-sub-group."""
@@ -99,7 +102,7 @@ async def post_add_user_to_group(
 
 @user_router.get("/", status_code=200)
 async def get_all_users(
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["Admin"])),
 ) -> list[UserRead]:
     """Returns all users."""
@@ -109,12 +112,12 @@ async def get_all_users(
 @user_router.get("/azure/{azure_user_id}", status_code=200)
 async def get_user_by_azure_user_id(
     azure_user_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> UserRead:
     """Returns a user based on its azure user id."""
     logger.info("GET user by azure_user_id")
-    current_user = await user_view._check_token_against_guards(token_payload, guards)
+    current_user = await check_token_against_guards(token_payload, guards)
     async with user_view.crud() as crud:
         user = await crud.read_by_azure_user_id(azure_user_id, current_user)
     return user
@@ -123,7 +126,7 @@ async def get_user_by_azure_user_id(
 @user_router.get("/{user_id}", status_code=200)
 async def get_user_by_id(
     user_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(roles=["User"])),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
@@ -138,7 +141,7 @@ async def get_user_by_id(
 async def put_user(
     user_id: UUID,
     user: UserUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> User:
     """Updates a user."""
@@ -153,7 +156,7 @@ async def put_user(
 @user_router.delete("/{user_id}", status_code=200)
 async def delete_user(
     user_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:  # User:
     """Deletes a user."""
@@ -164,7 +167,7 @@ async def delete_user(
 async def delete_user_from_group(
     user_id: UUID,
     group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes a user from an ueber-group, group, sub-group or sub-sub-group."""
@@ -182,13 +185,13 @@ async def delete_user_from_group(
 # region UeberGroup:
 
 ueber_group_router = APIRouter()
-ueber_group_view = BaseView(UeberGroupCRUD, UeberGroup)
+ueber_group_view = BaseView(UeberGroupCRUD)
 
 
 @ueber_group_router.post("/", status_code=201)
 async def post_ueber_group(
     ueber_group: UeberGroupCreate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> UeberGroup:
     """Creates a new ueber_group."""
@@ -205,7 +208,7 @@ async def post_add_users_to_uebergroup(
     ueber_group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> list[BaseHierarchyModelRead]:
     """Adds bulk of users to an ueber_group."""
@@ -228,7 +231,7 @@ async def post_add_groups_to_uebergroup(
     ueber_group_id: UUID,
     group_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> list[BaseHierarchyModelRead]:
     """Adds bulk of groups to an ueber_group."""
@@ -248,7 +251,7 @@ async def post_add_groups_to_uebergroup(
 
 @ueber_group_router.get("/", status_code=200)
 async def get_all_ueber_groups(
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["Admin"])),
 ) -> list[UeberGroupRead]:
     """Returns all ueber_groups."""
@@ -258,7 +261,7 @@ async def get_all_ueber_groups(
 @ueber_group_router.get("/{ueber_group_id}", status_code=200)
 async def get_ueber_group_by_id(
     ueber_group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(roles=["User"])),
 ) -> UeberGroupRead:
     """Returns an ueber_group with a specific ueber_group_id."""
@@ -273,7 +276,7 @@ async def get_ueber_group_by_id(
 async def put_ueber_group(
     ueber_group_id: UUID,
     ueber_group: UeberGroupUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> UeberGroup:
     """Updates an ueber_group."""
@@ -288,7 +291,7 @@ async def put_ueber_group(
 @ueber_group_router.delete("/{ueber_group_id}", status_code=200)
 async def delete_ueber_group(
     ueber_group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Deletes an ueber_group."""
@@ -299,7 +302,7 @@ async def delete_ueber_group(
 async def remove_users_from_uebergroup(
     ueber_group_id: UUID,
     user_ids: list[UUID],
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes users from an ueber_group."""
@@ -317,7 +320,7 @@ async def remove_users_from_uebergroup(
 async def remove_groups_from_uebergroup(
     ueber_group_id: UUID,
     group_ids: list[UUID],
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes groups from an ueber_group."""
@@ -337,13 +340,13 @@ async def remove_groups_from_uebergroup(
 
 
 group_router = APIRouter()
-group_view = BaseView(GroupCRUD, Group)
+group_view = BaseView(GroupCRUD)
 
 
 @group_router.post("/", status_code=201)
 async def post_group(
     group: GroupCreate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> Group:
     """Creates a new group."""
@@ -360,7 +363,7 @@ async def post_add_group_to_uebergroup(
     group_id: UUID,
     ueber_group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> BaseHierarchyModelRead:
     """Adds a group to an ueber_group."""
@@ -379,7 +382,7 @@ async def post_add_users_to_group(
     group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> list[BaseHierarchyModelRead]:
     """Adds bulk of users to a group."""
@@ -402,7 +405,7 @@ async def post_add_subgroups_to_group(
     group_id: UUID,
     sub_group_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> list[BaseHierarchyModelRead]:
     """Adds bulk of sub-groups to a group."""
@@ -422,7 +425,7 @@ async def post_add_subgroups_to_group(
 
 @group_router.get("/", status_code=200)
 async def get_all_groups(
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["Admin"])),
 ) -> list[GroupRead]:
     """Returns all groups."""
@@ -432,7 +435,7 @@ async def get_all_groups(
 @group_router.get("/{group_id}", status_code=200)
 async def getgroup_by_id(
     group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(roles=["User"])),
 ) -> GroupRead:
     """Returns a group with a specific group_id."""
@@ -447,7 +450,7 @@ async def getgroup_by_id(
 async def put_group(
     group_id: UUID,
     group: UeberGroupUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> Group:
     """Updates a group."""
@@ -462,7 +465,7 @@ async def put_group(
 @group_router.delete("/{group_id}", status_code=200)
 async def delete_group(
     group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Deletes a group."""
@@ -473,7 +476,7 @@ async def delete_group(
 async def remove_group_from_uebergroup(
     group_id: UUID,
     ueber_group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes a group from an ueber_group."""
@@ -490,7 +493,7 @@ async def remove_group_from_uebergroup(
 async def remove_users_from_group(
     group_id: UUID,
     user_ids: list[UUID],
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes users from a group."""
@@ -508,7 +511,7 @@ async def remove_users_from_group(
 async def remove_subgroups_from_group(
     group_id: UUID,
     sub_group_ids: list[UUID],
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes sub-groups from a group."""
@@ -527,13 +530,13 @@ async def remove_subgroups_from_group(
 # region SubGroup:
 
 sub_group_router = APIRouter()
-sub_group_view = BaseView(SubGroupCRUD, SubGroup)
+sub_group_view = BaseView(SubGroupCRUD)
 
 
 @sub_group_router.post("/", status_code=201)
 async def post_sub_group(
     sub_group: SubGroupCreate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> SubGroup:
     """Creates a new sub_group."""
@@ -550,7 +553,7 @@ async def post_add_subgroup_to_group(
     sub_group_id: UUID,
     group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> BaseHierarchyModelRead:
     """Adds a sub_group to a group."""
@@ -569,7 +572,7 @@ async def post_add_users_to_subgroup(
     sub_group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> list[BaseHierarchyModelRead]:
     """Adds bulk of users to a sub_group."""
@@ -592,7 +595,7 @@ async def post_add_subsubgroups_to_subgroup(
     sub_group_id: UUID,
     sub_sub_group_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> list[BaseHierarchyModelRead]:
     """Adds bulk of sub-sub-groups to a sub-group."""
@@ -612,7 +615,7 @@ async def post_add_subsubgroups_to_subgroup(
 
 @sub_group_router.get("/", status_code=200)
 async def get_all_sub_groups(
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["Admin"])),
 ) -> list[SubGroupRead]:
     """Returns all sub_groups."""
@@ -622,7 +625,7 @@ async def get_all_sub_groups(
 @sub_group_router.get("/{sub_group_id}", status_code=200)
 async def get_sub_group_by_id(
     sub_group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(roles=["User"])),
 ) -> SubGroupRead:
     """Returns a sub_group with a specific sub_group_id."""
@@ -637,7 +640,7 @@ async def get_sub_group_by_id(
 async def put_sub_group(
     sub_group_id: UUID,
     sub_group: SubGroupUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> SubGroup:
     """Updates a sub_group."""
@@ -652,7 +655,7 @@ async def put_sub_group(
 @sub_group_router.delete("/{sub_group_id}", status_code=200)
 async def delete_sub_group(
     sub_group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Deletes a sub_group."""
@@ -663,7 +666,7 @@ async def delete_sub_group(
 async def remove_sub_group_from_group(
     sub_group_id: UUID,
     group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes a sub_group from a group."""
@@ -680,7 +683,7 @@ async def remove_sub_group_from_group(
 async def remove_users_from_subgroup(
     sub_group_id: UUID,
     user_ids: list[UUID],
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes users from a sub-group."""
@@ -698,7 +701,7 @@ async def remove_users_from_subgroup(
 async def remove_subsubgroups_from_subgroup(
     sub_group_id: UUID,
     sub_sub_group_ids: list[UUID],
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes sub-sub-groups from a sub-group."""
@@ -717,13 +720,13 @@ async def remove_subsubgroups_from_subgroup(
 # region SubSubGroup:
 
 sub_sub_group_router = APIRouter()
-sub_sub_group_view = BaseView(SubSubGroupCRUD, SubSubGroup)
+sub_sub_group_view = BaseView(SubSubGroupCRUD)
 
 
 @sub_sub_group_router.post("/", status_code=201)
 async def post_sub_sub_group(
     sub_sub_group: SubGroupCreate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> SubGroup:
     """Creates a new sub_sub_group."""
@@ -742,7 +745,7 @@ async def post_add_subsubgroup_to_subgroup(
     sub_sub_group_id: UUID,
     sub_group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> BaseHierarchyModelRead:
     """Adds a sub_sub_group to a sub_group."""
@@ -761,7 +764,7 @@ async def post_add_users_to_subsubgroup(
     sub_sub_group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> list[BaseHierarchyModelRead]:
     """Adds bulk of users to a sub_sub_group."""
@@ -781,7 +784,7 @@ async def post_add_users_to_subsubgroup(
 
 @sub_sub_group_router.get("/", status_code=200)
 async def get_all_sub_sub_groups(
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["Admin"])),
 ) -> list[SubGroupRead]:
     """Returns all sub_sub_groups."""
@@ -791,7 +794,7 @@ async def get_all_sub_sub_groups(
 @sub_sub_group_router.get("/{sub_sub_group_id}", status_code=200)
 async def get_sub_sub_group_by_id(
     sub_sub_group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(roles=["User"])),
 ) -> SubGroupRead:
     """Returns a sub_sub_group with a specific sub_sub_group_id."""
@@ -806,7 +809,7 @@ async def get_sub_sub_group_by_id(
 async def put_sub_sub_group(
     sub_sub_group_id: UUID,
     sub_sub_group: SubGroupUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> SubGroup:
     """Updates a sub_sub_group."""
@@ -821,7 +824,7 @@ async def put_sub_sub_group(
 @sub_sub_group_router.delete("/{sub_sub_group_id}", status_code=200)
 async def delete_sub_sub_group(
     sub_sub_group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Deletes a sub_sub_group."""
@@ -834,7 +837,7 @@ async def delete_sub_sub_group(
 async def remove_sub_sub_group_from_group(
     sub_sub_group_id: UUID,
     sub_group_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes a sub_sub_group from a sub_group."""
@@ -851,7 +854,7 @@ async def remove_sub_sub_group_from_group(
 async def remove_users_from_subsubgroup(
     sub_sub_group_id: UUID,
     user_ids: list[UUID],
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:
     """Removes users from a sub-sub-group."""

@@ -40,17 +40,17 @@ from tests.utils import (
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_post_protected_resource_with_logs_and_policies(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
 ):
-    """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    """Tests the post_protected_resource endpoint of the API."""
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     before_time = datetime.now()
@@ -115,21 +115,21 @@ async def test_post_protected_resource_with_logs_and_policies(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_get_all_protected_resources(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_protected_resources,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    """Tests the post_protected_resource endpoint of the API."""
+    app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
 
     # Make a GET request to get all protected resources
@@ -173,21 +173,21 @@ async def test_get_all_protected_resources(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_get_protected_resource_by_id(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_protected_resources,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    """Tests the post_protected_resource endpoint of the API."""
+    app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
 
     # Make a GET request to get one protected resource by id
@@ -224,21 +224,21 @@ async def test_get_protected_resource_by_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_put_protected_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_protected_resources,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    """Tests the post_protected_resource endpoint of the API."""
+    app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
 
     new_data = {
@@ -278,21 +278,21 @@ async def test_put_protected_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_delete_protected_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     add_many_test_protected_resources,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    """Tests the post_protected_resource endpoint of the API."""
+    app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
 
     # Make a DELETE request to delete one protected resource
@@ -341,18 +341,18 @@ async def test_delete_protected_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_all_protected_child_endpoints(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     add_many_test_protected_children,
 ):
-    """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    """Tests the post_protected_child endpoint of the API."""
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the protected child
     response = await async_client.post(
@@ -369,7 +369,7 @@ async def test_all_protected_child_endpoints(
     # add some more protected children:
     # note: the first one is going to be double with different id's
     mocked_protected_children = await add_many_test_protected_children(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     created_protected_child.id = UUID(created_protected_child.id)
     expected_protected_children = [created_protected_child] + mocked_protected_children
@@ -430,18 +430,18 @@ async def test_all_protected_child_endpoints(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_all_protected_grandchild_endpoints(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     add_many_test_protected_grandchildren,
 ):
-    """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    """Tests the all protected_child endpoints of the API."""
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the protected child
     response = await async_client.post(
@@ -459,7 +459,7 @@ async def test_all_protected_grandchild_endpoints(
     # add some more protected children:
     # note: the first one is going to be double with different id's
     mocked_protected_grandchildren = await add_many_test_protected_grandchildren(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     created_protected_grandchild.id = UUID(created_protected_grandchild.id)
     expected_protected_grandchildren = [
@@ -527,21 +527,21 @@ async def test_all_protected_grandchild_endpoints(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_post_protected_child_resource_and_add_to_parent(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     add_many_test_protected_resources,
-    mocked_get_azure_token_payload,
+    mocked_provide_http_token_payload,
 ):
-    """Tests the post_user endpoint of the API."""
-    app_override_get_azure_payload_dependency
+    """Tests the add protected_child to parent endpoint of the API."""
+    app_override_provide_http_token_payload
     protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     test_parent = [
         protected_resources
@@ -641,25 +641,25 @@ async def test_post_protected_child_resource_and_add_to_parent(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_adds_child_to_parent(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     add_many_test_protected_resources,
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     mocked_protected_children = await add_many_test_protected_children(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
 
     response = await async_client.post(
@@ -674,19 +674,19 @@ async def test_user_adds_child_to_parent(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_adds_child_to_parent_without_access(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    # mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    # mocked_provide_http_token_payload,
     add_many_test_protected_resources,
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -700,23 +700,23 @@ async def test_user_adds_child_to_parent_without_access(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_adds_child_to_parent_without_access_to_parent(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     add_many_test_protected_resources,
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
 
     response = await async_client.post(
@@ -728,22 +728,22 @@ async def test_user_adds_child_to_parent_without_access_to_parent(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_adds_child_to_parent_without_access_to_child(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     add_many_test_protected_resources,
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     mocked_protected_children = await add_many_test_protected_children()
 
@@ -756,20 +756,20 @@ async def test_user_adds_child_to_parent_without_access_to_child(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_get_protected_child_resource_from_a_parent_through_inheritance(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     register_current_user,
     add_one_test_access_policy,
     get_async_test_session,
 ):
     """Tests resource inheritance."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     current_user = current_test_user
     # Make a POST request to create the protected resource
@@ -858,20 +858,20 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_get_protected_child_resource_from_a_parent_through_inheritance_missing_parent_permission(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     register_current_user,
     add_one_test_access_policy,
     get_async_test_session,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     current_user = current_test_user
     # Make a POST request to create the protected resource
@@ -930,20 +930,20 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance_mi
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_get_protected_child_resource_from_a_parent_missing_inheritance(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     register_current_user,
     add_one_test_access_policy,
     get_async_test_session,
 ):
     """Tests if missing inheritance for child resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     current_user = current_test_user
     # Make a POST request to create the protected resource
@@ -1022,20 +1022,20 @@ async def test_get_protected_child_resource_from_a_parent_missing_inheritance(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_get_protected_grand_child_resource_through_inheritance_via_child_from_parent(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     register_current_user,
     add_one_test_access_policy,
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1092,20 +1092,20 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_get_protected_grand_child_resource_through_inheritance_via_child_from_parent_missing_permission(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     register_current_user,
     add_one_test_access_policy,
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1154,20 +1154,20 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_get_protected_grand_child_resource_through_inheritance_via_child_from_parent_missing_child_inheritance(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     register_current_user,
     add_one_test_access_policy,
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1223,20 +1223,20 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_get_protected_grand_child_resource_through_inheritance_via_child_from_parent_missing_grand_child_inheritance(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
+    app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     register_current_user,
     add_one_test_access_policy,
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1292,19 +1292,19 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )
 async def test_admin_adds_and_gets_protected_children_as_relationship_from_protected_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    # mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    # mocked_provide_http_token_payload,
     add_many_test_protected_resources,
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1360,14 +1360,14 @@ async def test_admin_adds_and_gets_protected_children_as_relationship_from_prote
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_gets_protected_children_with_access_to_all_as_relationship_from_protected_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     current_test_user,
     add_many_test_protected_resources,
     add_many_test_protected_children,
@@ -1375,10 +1375,10 @@ async def test_user_gets_protected_children_with_access_to_all_as_relationship_f
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     mocked_protected_children = await add_many_test_protected_children()
 
@@ -1450,14 +1450,14 @@ async def test_user_gets_protected_children_with_access_to_all_as_relationship_f
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_gets_only_protected_children_with_access_as_relationship_from_protected_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     current_test_user,
     add_many_test_protected_resources,
     add_many_test_protected_children,
@@ -1465,10 +1465,10 @@ async def test_user_gets_only_protected_children_with_access_as_relationship_fro
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     mocked_protected_children = await add_many_test_protected_children()
 
@@ -1541,14 +1541,14 @@ async def test_user_gets_only_protected_children_with_access_as_relationship_fro
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_gets_only_protected_resource_and_none_of_the_existing_children_due_to_missing_of_access(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     current_test_user,
     add_many_test_protected_resources,
     add_many_test_protected_children,
@@ -1556,10 +1556,10 @@ async def test_user_gets_only_protected_resource_and_none_of_the_existing_childr
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     mocked_protected_children = await add_many_test_protected_children()
 
@@ -1615,14 +1615,14 @@ async def test_user_gets_only_protected_resource_and_none_of_the_existing_childr
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_admin_removes_a_child_resource_from_a_parent_protected_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     current_test_user,
     add_many_test_protected_resources,
     add_many_test_protected_children,
@@ -1630,10 +1630,10 @@ async def test_admin_removes_a_child_resource_from_a_parent_protected_resource(
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     mocked_protected_children = await add_many_test_protected_children()
 
@@ -1734,14 +1734,14 @@ async def test_admin_removes_a_child_resource_from_a_parent_protected_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_removes_a_child_resource_from_a_parent_protected_resource(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     current_test_user,
     add_many_test_protected_resources,
     add_many_test_protected_children,
@@ -1749,10 +1749,10 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource(
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     mocked_protected_children = await add_many_test_protected_children()
 
@@ -1853,14 +1853,14 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mocked_get_azure_token_payload",
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
 async def test_user_removes_a_child_resource_from_a_parent_protected_resource_missing_access_to_child(
     async_client: AsyncClient,
-    app_override_get_azure_payload_dependency: FastAPI,
-    mocked_get_azure_token_payload,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     current_test_user,
     add_many_test_protected_resources,
     add_many_test_protected_children,
@@ -1868,10 +1868,10 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource_mi
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_get_azure_payload_dependency
+    app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
-        mocked_get_azure_token_payload
+        mocked_provide_http_token_payload
     )
     mocked_protected_children = await add_many_test_protected_children()
 

@@ -89,6 +89,7 @@ class ResourceType(BaseType):
     subsection = "Subsection"
     topic = "Topic"
     element = "Element"
+    demo_file = "DemoFile"
 
 
 # moved into hierarchy models - as this is used together with the models most of the time anyways:

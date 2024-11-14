@@ -2,14 +2,15 @@
 	import { onMount } from 'svelte';
 	onMount(async () => {
 		const te = await import('tw-elements');
-		te.initTE(
+		te.initTWE(
 			{ Input: te.Input, Ripple: te.Ripple },
 			{ allowReinits: true, checkOtherImports: true }
 		);
 	});
 
-	export let type = 'login';
-	export let button = type === 'signup' ? 'Sign up' : 'Log in';
+	type Props = { type: 'login' | 'signup'; button: string };
+	let { type, button }: Props = $props();
+	button = type === 'signup' ? 'Sign up' : 'Log in'; // untested!
 </script>
 
 <section class="flex h-full w-full justify-center">

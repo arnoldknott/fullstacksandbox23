@@ -77,11 +77,12 @@ resource "azurerm_container_app" "FrontendContainer" {
       # Frontend container is close to limit with 0.5Gi!
       cpu    = 0.5   #0.25
       memory = "1Gi" #"0.5Gi"
-      env {
-        name = "BACKEND_HOST"
-        # value = azurerm_container_app.BackendContainer.ingress[0].fqdn
-        value = azurerm_container_app.BackendContainer.name
-      }
+      # Due to cyclic dependency, backend origin is moved into a keyvault secret.
+      # env {
+      #   name = "BACKEND_HOST"
+      #   # value = azurerm_container_app.BackendContainer.ingress[0].fqdn
+      #   value = azurerm_container_app.BackendContainer.name
+      # }
       // required for keyvault access due to "working with AKS pod-identity" - see here:
       // https://learn.microsoft.com/en-us/javascript/api/@azure/identity/managedidentitycredential?view=azure-node-latest
       env {
@@ -144,6 +145,7 @@ resource "azurerm_container_app" "BackendContainer" {
   # Don't change back to Multiple - which github actions changes to single - see bug below!
   # The change to single also changes the ingress -> so don't change that back either.
 
+  # TBD: get back in, when environment variables are set azure:
   lifecycle {
     ignore_changes = [template[0].container[0], secret, revision_mode, ingress] # TBD: get this back in once run on prod - to add volume mounts!
   }
@@ -163,6 +165,15 @@ resource "azurerm_container_app" "BackendContainer" {
         name = "${terraform.workspace}-application-data"
         path = "/data"
       }
+      env {
+        name  = "FRONTEND_SVELTE_ORIGIN"
+        value = azurerm_container_app.FrontendContainer.name
+      }
+      env {
+        name  = "FRONTEND_SVELTE_FQDN"
+        value = azurerm_container_app.FrontendContainer.ingress[0].fqdn
+      }
+      # BackendAPI:
       // Needs client id for Pod implmentations - see here:
       // https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.managedidentitycredential?view=azure-python
       env {
@@ -173,22 +184,10 @@ resource "azurerm_container_app" "BackendContainer" {
         name  = "AZ_KEYVAULT_HOST"
         value = azurerm_key_vault.keyVault.vault_uri
       }
+      # Postgres:
       env {
         name  = "POSTGRES_HOST"
         value = azurerm_postgresql_flexible_server.postgresServer.fqdn
-      }
-      # Probably not needed!
-      env {
-        name  = "POSTGRES_PORT"
-        value = var.postgres_port
-      }
-      env {
-        name  = "REDIS_HOST"
-        value = azurerm_container_app.redisContainer.name
-      }
-      env {
-        name  = "REDIS_PORT"
-        value = var.redis_port
       }
       env {
         name        = "POSTGRES_USER"
@@ -201,6 +200,20 @@ resource "azurerm_container_app" "BackendContainer" {
       env {
         name  = "POSTGRES_DB"
         value = "${terraform.workspace}_db"
+      }
+      # Probably not needed!
+      env {
+        name  = "POSTGRES_PORT"
+        value = var.postgres_port
+      }
+      # Redis:
+      env {
+        name  = "REDIS_HOST"
+        value = azurerm_container_app.redisContainer.name
+      }
+      env {
+        name  = "REDIS_PORT"
+        value = var.redis_port
       }
       env {
         name  = "REDIS_JWKS_DB"
@@ -271,6 +284,7 @@ resource "azurerm_container_app" "BackendContainer" {
   }
 }
 
+
 # DEBUGGING TCP connection to Redis on internal postgres:
 # in FRONTEND container:
 # - apk add tcptraceroute
@@ -302,7 +316,7 @@ resource "azurerm_container_app" "redisContainer" {
     container {
       name = "redis"
       # TBD: consider removing stage here as soon as the development is well on the way!
-      image = terraform.workspace == "dev" || terraform.workspace == "stage" ? "redis/redis-stack:7.2.0-v6" : "redis/redis-stack-server:7.2.0-v6" #  "redis:7.2-alpine"
+      image = terraform.workspace == "dev" || terraform.workspace == "stage" ? "redis/redis-stack:7.2.0-v13" : "redis/redis-stack-server:7.2.0-v13" #  "redis:7.2-alpine"
       # image = terraform.workspace == "dev" ? "redis/redis-stack:7.2.0-v6" : "redis/redis-stack-server:7.2.0-v6" #  "redis:7.2-alpine"
       # args  = ["--save 180 1"]#["--requirepass", "fromTerraformChangedInGithubActions"]
       # command = ["redis-server", "--save 180 1"]

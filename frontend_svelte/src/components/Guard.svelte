@@ -3,7 +3,7 @@
 	import { user_store } from '$lib/stores.js';
 	import { onMount } from 'svelte';
 
-	export let redirect = '/login';
+	let { redirect = 'login', children } = $props();
 
 	const forward = () => {
 		onMount(() => {
@@ -14,9 +14,7 @@
 </script>
 
 {#if $user_store?.loggedIn}
-	<slot />
+	{@render children?.()}
 {:else}
-	<span />{forward()}
+	<span></span>{forward()}
 {/if}
-
-

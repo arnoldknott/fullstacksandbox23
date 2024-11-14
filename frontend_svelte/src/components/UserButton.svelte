@@ -1,7 +1,7 @@
 <script lang="ts">
 	// import { get_user_picture } from '$lib/microsoft_graph';
 	// import { onMount } from 'svelte';
-	let pictureUrl
+	let pictureUrl;
 
 	// onMount(async () => {
 	// 	try {

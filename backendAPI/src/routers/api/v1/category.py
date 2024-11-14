@@ -4,7 +4,7 @@ from uuid import UUID
 # from typing import List
 from fastapi import APIRouter, Depends
 
-from core.security import Guards, get_access_token_payload
+from core.security import Guards, get_http_access_token_payload
 from core.types import GuardTypes
 from crud.category import CategoryCRUD
 from models.category import Category, CategoryCreate, CategoryRead, CategoryUpdate
@@ -14,7 +14,7 @@ from .base import BaseView
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-category_view = BaseView(CategoryCRUD, Category)
+category_view = BaseView(CategoryCRUD)
 
 # # TBD delete version before refactoring:
 # @router.post("/", status_code=201)
@@ -31,7 +31,7 @@ category_view = BaseView(CategoryCRUD, Category)
 @router.post("/", status_code=201)
 async def post_category(
     category: CategoryCreate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Category:
     """Creates a new category."""
@@ -69,7 +69,7 @@ async def post_category(
 
 @router.get("/", status_code=200)
 async def get_categories(
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[CategoryRead]:
     """Returns all category."""
@@ -83,7 +83,7 @@ async def get_categories(
 @router.get("/{category_id}", status_code=200)
 async def get_category_by_id(
     category_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> CategoryRead:
     """Returns a category."""
@@ -113,7 +113,7 @@ async def get_category_by_id(
 async def put_category(
     category_id: UUID,
     category: CategoryUpdate,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Category:
     """Updates a category."""
@@ -137,7 +137,7 @@ async def put_category(
 @router.delete("/{category_id}", status_code=200)
 async def delete_category(
     category_id: UUID,
-    token_payload=Depends(get_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> None:  # Category:
     """Deletes a category."""
@@ -166,11 +166,11 @@ async def delete_category(
 # @router.get("/{category_id}/demoresources")
 # async def get_all_demo_resources_in_category(
 #     category_id: UUID,
-#     token_payload=Depends(get_access_token_payload),
+#     token_payload=Depends(get_http_access_token_payload),
 #     guards: GuardTypes = Depends(Guards(roles=["User"])),
 # ) -> list[DemoResource]:
 #     """Gets all demo resources that belong to specific category."""
-#     # current_user = await category_view._check_token_against_guards(
+#     # current_user = await check_token_against_guards(
 #     #     token_payload, guards
 #     # )
 #     async with category_view.crud() as crud:
