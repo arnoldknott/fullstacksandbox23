@@ -81,7 +81,8 @@ class Config(BaseSettings):
 
     # Postgres configuration:
     # always get those variables from the environment:
-    # TBD: refactor:     this should no longer be necessary from the environment since database is now an Azure postgres database:
+    # TBD: refactor: this should no longer be necessary from the environment since database is now an Azure postgres database:
+    # Hmmm, why not?
     POSTGRES_HOST: Optional[str] = os.getenv("POSTGRES_HOST")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
