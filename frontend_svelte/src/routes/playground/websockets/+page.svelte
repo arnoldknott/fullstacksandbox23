@@ -13,14 +13,10 @@
 	let old_messages: string[] = $state([]);
 
 	onMount(async () => {
-		console.log('=== playground - websockets - onMount - backend_fqdn ===');
-		console.log(backend_fqdn);
 		// socket = new WebSocket('ws://localhost:8660/ws/v1/public_web_socket');
 		const websocket_server_url = backend_fqdn
 			? `wss://${backend_fqdn}/ws/v1/public_web_socket`
 			: 'ws://localhost:8660/ws/v1/public_web_socket';
-		console.log('=== playground - websockets - onMount - websocket_server_url ===');
-		console.log(websocket_server_url);
 		socket = new WebSocket(websocket_server_url);
 
 		socket.onopen = (event) => {
