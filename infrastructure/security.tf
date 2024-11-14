@@ -119,15 +119,15 @@ resource "azurerm_key_vault" "keyVault" {
     object_id = var.developer_localhost_object_id
 
     certificate_permissions = [
-      "Get", "Create", "Update"
+      "Get", "Create", "Delete", "Update"
     ]
 
     key_permissions = [
-      "Get", "Create", "Update"
+      "Get", "Create", "Delete", "Update"
     ]
 
     secret_permissions = [
-      "Get", "Set", "Recover"
+      "Get", "Set", "Delete", "Recover"
     ]
   }
 
@@ -137,15 +137,15 @@ resource "azurerm_key_vault" "keyVault" {
     object_id = var.managed_identity_github_actions_object_id
 
     certificate_permissions = [
-      "Get", "Create", "Update"
+      "Get", "Create", "Delete", "Update"
     ]
 
     key_permissions = [
-      "Get", "Create", "Update"
+      "Get", "Create", "Delete", "Update"
     ]
 
     secret_permissions = [
-      "Get", "Set", "Recover"
+      "Get", "Set", "Delete", "Recover"
     ]
   }
 
