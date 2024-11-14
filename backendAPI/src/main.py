@@ -106,6 +106,11 @@ app.add_middleware(
             if config.FRONTEND_SVELTE_FQDN
             else None
         ),
+        (
+            f"https://{config.FRONTEND_SVELTE_FQDN}"
+            if config.FRONTEND_SVELTE_FQDN
+            else None
+        ),
     ],
     allow_credentials=True,
     allow_methods=["POST", "GET", "PUT", "DELETE"],  # or ["*"],
