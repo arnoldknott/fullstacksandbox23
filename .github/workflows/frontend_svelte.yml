@@ -60,14 +60,15 @@ jobs:
             -f compose.yml \
             -f compose.override.test.yml \
             run --rm frontend_svelte \
-            sh -c "ls -la"
+            sh -c "ls -la node_modules"
       - name: show image contents
         run: |
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T frontend_svelte \
-            sh -c "ls -la"
+            sh -c "ls -la node_modules"
+      # TBD change all commands to docker compose run - as the container is up and runnig already!
       - name: Code Formating
         run: |
           docker compose \
