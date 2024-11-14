@@ -169,6 +169,10 @@ resource "azurerm_container_app" "BackendContainer" {
         name  = "FRONTEND_SVELTE_ORIGIN"
         value = azurerm_container_app.FrontendContainer.name
       }
+      env {
+        name  = "FRONTEND_SVELTE_FQDN"
+        value = azurerm_container_app.FrontendContainer.ingress[0].fqdn
+      }
       # BackendAPI:
       // Needs client id for Pod implmentations - see here:
       // https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.managedidentitycredential?view=azure-python
