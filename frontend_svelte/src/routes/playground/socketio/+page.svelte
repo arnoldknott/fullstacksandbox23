@@ -10,7 +10,7 @@
 	const backend_fqdn = data.backend_fqdn;
 
 	// const socketio_client = io('http://localhost:8660', { path: '/socketio/v1/' });
-	const socketio_server_url = backend_fqdn ? `https://${backend_fqdn}:80` : 'http://localhost:8660';
+	const socketio_server_url = backend_fqdn ? `https://${backend_fqdn}` : 'http://localhost:8660';
 	console.log('=== playground - socketio - socketio_server_url ===');
 	console.log(socketio_server_url);
 	const socketio_client = io(socketio_server_url, { path: '/socketio/v1/' });
