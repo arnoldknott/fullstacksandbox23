@@ -16,6 +16,7 @@ export default class AppConfig {
 	public az_logout_uri: string;
 	public backend_host: string;
 	public backend_origin: string;
+	public backend_fqdn: string;
 	public keyvault_health?: string;
 	public ms_graph_base_uri: string;
 	public redis_host: string;
@@ -32,6 +33,7 @@ export default class AppConfig {
 		this.az_logout_uri = '';
 		this.backend_host = ''; // process.env.BACKEND_HOST;
 		this.backend_origin = ''; //`http://${process.env.BACKEND_HOST}:80`;
+		this.backend_fqdn = '';
 		this.keyvault_health = '';
 		this.ms_graph_base_uri = 'https://graph.microsoft.com/v1.0';
 		this.redis_host = process.env.REDIS_HOST;
@@ -87,6 +89,7 @@ export default class AppConfig {
 				// console.log(client);
 				const keyvaultHealth = await client?.getSecret('keyvault-health');
 				const backend_host = await client?.getSecret('backend-host');
+				const backend_fqdn = await client?.getSecret('backend-fqdn');
 				// const backend_origin = await client?.getSecret('backend-origin');
 				// const backend_host = this.backend_origin.split('://')[1].split(':')[0]; // replace("https://", "").split(":")[0]
 				// console.log("📜 app_config - keyvaultHealth: ");
@@ -101,6 +104,7 @@ export default class AppConfig {
 				this.keyvault_health = keyvaultHealth?.value;
 				this.backend_host = backend_host?.value || '';
 				this.backend_origin = `http://${this.backend_host}:80`;
+				this.backend_fqdn = backend_fqdn?.value || '';
 				// this.backend_host = backend_host;
 				this.app_reg_client_id = appRegClientId?.value || '';
 				this.app_client_secret = appClientSecret?.value || '';
@@ -123,6 +127,7 @@ export default class AppConfig {
 			this.keyvault_health = process.env.KEYVAULT_HEALTH;
 			this.backend_host = process.env.BACKEND_HOST;
 			this.backend_origin = `http://${process.env.BACKEND_HOST}:80`;
+			this.backend_fqdn = `http://${process.env.BACKEND_FQDN}:80`;
 			this.app_reg_client_id = process.env.APP_REG_CLIENT_ID;
 			this.app_client_secret = process.env.APP_CLIENT_SECRET;
 			this.api_scope = process.env.API_SCOPE;
