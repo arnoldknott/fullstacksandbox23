@@ -86,8 +86,9 @@ export default class AppConfig {
 				// console.log("📜 app_config - client:");
 				// console.log(client);
 				const keyvaultHealth = await client?.getSecret('keyvault-health');
-				const backend_origin = await client?.getSecret('backend-origin');
-				const backend_host = this.backend_origin.split('://')[1].split(':')[0]; // replace("https://", "").split(":")[0]
+				const backend_host = await client?.getSecret('backend-host');
+				// const backend_origin = await client?.getSecret('backend-origin');
+				// const backend_host = this.backend_origin.split('://')[1].split(':')[0]; // replace("https://", "").split(":")[0]
 				// console.log("📜 app_config - keyvaultHealth: ");
 				// console.log(keyvaultHealth);
 				// console.log("📜 app_config - keyvaultHealth.value: ");
@@ -98,8 +99,9 @@ export default class AppConfig {
 				const azTenantId = await client?.getSecret('azure-tenant-id');
 				const redisPassword = await client?.getSecret('redis-password');
 				this.keyvault_health = keyvaultHealth?.value;
-				this.backend_origin = backend_origin?.value || '';
-				this.backend_host = backend_host;
+				this.backend_host = backend_host?.value || '';
+				this.backend_origin = `https://${this.backend_host}:80`;
+				// this.backend_host = backend_host;
 				this.app_reg_client_id = appRegClientId?.value || '';
 				this.app_client_secret = appClientSecret?.value || '';
 				this.api_scope = apiScope?.value || '';
