@@ -74,15 +74,15 @@ resource "azurerm_key_vault" "keyVault" {
     object_id = var.owner_object_id
 
     certificate_permissions = [
-      "Backup", "Create", "Delete", "DeleteIssuers", "Get", "GetIssuers", "Import", "List", "ListIssuers", "ManageContacts", "ManageIssuers", "Recover", "Restore", "SetIssuers", "Update"
+      "Backup", "Create", "Delete", "DeleteIssuers", "Get", "GetIssuers", "Import", "List", "ListIssuers", "ManageContacts", "ManageIssuers", "Purge", "Recover", "Restore", "SetIssuers", "Update"
     ]
 
     key_permissions = [
-      "Backup", "Create", "Decrypt", "Delete", "Encrypt", "Get", "Import", "List", "Recover", "Restore", "Sign", "UnwrapKey", "Update", "Verify", "WrapKey", "Release", "Rotate", "GetRotationPolicy", "SetRotationPolicy"
+      "Backup", "Create", "Decrypt", "Delete", "Encrypt", "Get", "Import", "List", "Recover", "Restore", "Sign", "UnwrapKey", "Update", "Verify", "WrapKey", "Purge", "Release", "Rotate", "GetRotationPolicy", "SetRotationPolicy"
     ]
 
     secret_permissions = [
-      "Backup", "Delete", "Get", "List", "Recover", "Restore", "Set"
+      "Backup", "Delete", "Get", "List", "Purge", "Recover", "Restore", "Set"
     ]
 
     storage_permissions = [
