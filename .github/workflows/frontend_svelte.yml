@@ -54,6 +54,20 @@ jobs:
             -f compose.yml \
             -f compose.override.test.yml \
             up -d
+      - name: run inside the container and show content
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            run --rm frontend_svelte \
+            sh -c "ls -la"
+      - name: show image contents
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T frontend_svelte \
+            sh -c "ls -la"
       - name: Code Formating
         run: |
           docker compose \
