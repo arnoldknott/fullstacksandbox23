@@ -11,8 +11,6 @@
 
 	// const socketio_client = io('http://localhost:8660', { path: '/socketio/v1/' });
 	const socketio_server_url = backend_fqdn ? `https://${backend_fqdn}` : 'http://localhost:8660';
-	console.log('=== playground - socketio - socketio_server_url ===');
-	console.log(socketio_server_url);
 	const socketio_client = io(socketio_server_url, { path: '/socketio/v1/' });
 
 	let new_message = $state('');
