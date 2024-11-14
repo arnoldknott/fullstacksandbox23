@@ -16,6 +16,7 @@
 	let new_message = $state('');
 	let old_messages: string[] = $state([]);
 
+	// Using Svelte5 runes for reactivity:
 	// const message = $derived(socketio_client.emit("demo_message", "Hello from the client!"));
 	// console.log('Message from client:', message);
 
