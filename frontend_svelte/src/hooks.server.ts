@@ -1,6 +1,6 @@
 /** @type {import('@sveltejs/kit').Handle} */
 import { getSession, updateSessionExpiry } from '$lib/server/cache';
-import type { Session } from '$lib/types';// TBD: move to app.d.ts (look at new template from ground up installation)
+import type { Session } from '$lib/types'; // TBD: move to app.d.ts (look at new template from ground up installation)
 import { redirect } from '@sveltejs/kit';
 
 const retrieveSession = async (sessionId: string | null): Promise<Session | void> => {
@@ -44,7 +44,6 @@ export const handle = async ({ event, resolve }) => {
 
 	return await resolve(event);
 };
-
 
 /* app.html before update:
 <!doctype html>
