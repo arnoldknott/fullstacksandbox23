@@ -330,7 +330,7 @@ jobs:
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: postgres_migration_results
+          name: postgres_migration_upgrade_stage_results_${{ env.COMMIT_SHA }}
           path: postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
       #
         # TBD: consider deleting all existing environment variables before setting the new ones?
@@ -377,7 +377,7 @@ jobs:
       - name: Upload migration check artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: postgres_migration_results
+          name: postgres_migration_check_results_${{ env.COMMIT_SHA }}
           path: |
             postgres_migration/check_${{ env.COMMIT_SHA }}.log
             postgres_migration/check_connection_${{ env.COMMIT_SHA }}.log
@@ -454,7 +454,7 @@ jobs:
       - name: Upload migration check artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: postgres_migration_results
+          name: postgres_migration_revision_results_${{ env.COMMIT_SHA }}
           path: |
             postgres_migration/revision_connection_${{ env.COMMIT_SHA }}.log
             postgres_migration/revision_${{ env.COMMIT_SHA }}.log
@@ -563,7 +563,7 @@ jobs:
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: postgres_migration_results
+          name: postgres_migration_upgrade_prod_results_${{ env.COMMIT_SHA }}
           path: postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
         # TBD: consider deleting all existing environment variables before setting the new ones?
         # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
