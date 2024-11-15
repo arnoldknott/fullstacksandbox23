@@ -4,6 +4,10 @@
 	// import { MultiRangeSlider, initTWE } from 'tw-elements';
 	// import { MdSlider } from '@material/web/slider/slider.js';
 	import '@material/web/slider/slider.js';
+	import '@material/web/labs/card/filled-card.js';
+	import '@material/web/tabs/tabs.js';
+	import '@material/web/tabs/primary-tab.js';
+	import '@material/web/tabs/secondary-tab.js';
 
 	onMount(async () => {
 		const te = await import('tw-elements');
@@ -23,6 +27,18 @@
 		`hsl(${sliders[2] * 1.2}, 80%, 80%)`,
 		`hsl(${sliders[3] * 1.2}, 80%, 80%)`
 	]);
+
+	let activeTab = $state(1);
+	const tabChange = (event: Event) => {
+		console.log(`Primary tab changed to ${event.target.activeTabIndex}`);
+		// console.log("=== playground - user-interface - tabChange - event ===");
+		// console.log(event)
+		activeTab = event.target.activeTabIndex;
+	};
+
+	const tabContent = ['Tab content 1', 'Tab content 2', 'Tab content 3'];
+
+	const cardContent = $derived(tabContent[activeTab]);
 </script>
 
 <!-- <div class="px-10">
@@ -37,6 +53,21 @@
         class="transparent h-[4px] w-full cursor-pointer appearance-none border-transparent bg-neutral-200 dark:bg-neutral-600"
         id="customRange1" />
 </div> -->
+
+<Title>Card with tabs</Title>
+
+<md-filled-card class="w-100 m-10 p-10">
+	<md-tabs onchange={tabChange}>
+		<md-primary-tab active={activeTab == 0}>Tab 1</md-primary-tab>
+		<md-primary-tab active={activeTab == 1}>Tab 2</md-primary-tab>
+		<md-primary-tab active={activeTab == 2}>Tab 3</md-primary-tab>
+	</md-tabs>
+	<md-tabs>
+		<md-secondary-tab>Tab A</md-secondary-tab>
+		<md-secondary-tab>Tab B</md-secondary-tab>
+	</md-tabs>
+	<div class="text-2xl"><Title>{cardContent}</Title></div>
+</md-filled-card>
 
 <Title>Status slider</Title>
 

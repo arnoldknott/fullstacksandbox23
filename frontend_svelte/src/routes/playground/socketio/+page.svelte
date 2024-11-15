@@ -5,6 +5,12 @@
 	import '@material/web/textfield/filled-text-field.js';
 	import '@material/web/button/filled-button.js';
 	import Title from '$components/Title.svelte';
+	import Tabs from '$components/Tabs.svelte';
+
+	const tabs = [
+		{ header: 'Demo Message', content: 'Demo message interface.' },
+		{ header: 'Protected Message', content: 'Protected message interface', active: true }
+	];
 
 	let { data }: { data: PageData } = $props();
 	const backend_fqdn = data.backend_fqdn;
@@ -81,6 +87,11 @@
 	// 	socket?.send(new_message);
 	// };
 </script>
+
+<Tabs {tabs}
+	>Some Text - now changed. Put a Chat component here from $lib/chat, which is configures with the
+	correct message</Tabs
+>
 
 <!-- TBD: clear text box -->
 <div class="w-50">
