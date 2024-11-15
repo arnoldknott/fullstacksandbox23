@@ -39,7 +39,7 @@
 		padding: 10px;
 		margin: 20px;
 		text-align: center;
-		--md-filled-card-container-color: var(--md-sys-color-error);
+		--md-filled-card-container-color: var(--md-sys-color-primary);
 		/* --md-filled-card-container-color: #ffcc00; works */
 	}
 </style>
