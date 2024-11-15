@@ -2,7 +2,7 @@
 # ruff: noqa
 """"2e02663290c00d7da5ff455009cd15a39d430106"
 
-Revision ID: fef35985a361
+Revision ID: c2f6009b2bb6
 Revises: ac50dcb27b5b
 Create Date: 2024-11-14 22:03:00.833263+01:00
 
@@ -15,7 +15,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'fef35985a361'
+revision: str = 'c2f6009b2bb6'
 down_revision: Union[str, None] = 'ac50dcb27b5b'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
