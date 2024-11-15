@@ -7,7 +7,7 @@ import AppConfig from './config';
 
 const appConfig = await AppConfig.getInstance();
 
-const sessionTimeOut = 60 * 10; // TBD: this is 10 minutes only - set to three weeks or so for production!
+const sessionTimeOut = 60 * 60; // TBD: this is 60 minutes only - set to three weeks or so for production!
 const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
 
 // let redisClient: RedisClientType | null = null;

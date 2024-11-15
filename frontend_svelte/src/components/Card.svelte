@@ -2,6 +2,8 @@
 	let { title, description, href } = $props();
 </script>
 
+<!-- TBD: update to md-card -->
+
 <!-- Card -->
 <div class="block rounded-lg bg-white text-left shadow-lg dark:bg-neutral-700">
 	<!-- Card body -->
