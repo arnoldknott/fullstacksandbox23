@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { user_store } from '$lib/stores';
+	import { setContext } from 'svelte';
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
 	import type { LayoutData } from './$types';
@@ -25,6 +26,9 @@
 	if (loggedIn) {
 		user_store.set(session);
 	}
+
+	setContext('clientConfiguration', data?.body?.clientConfiguration);
+
 
 	// console.log('layout - client - userProfile')
 	// console.log(userProfile)

@@ -1,11 +1,15 @@
 <script lang="ts">
 	// import { onMount } from 'svelte';
 	import type { PageData } from './$types';
+	import { SocketIO } from '$lib/socketio';
 	import { io } from 'socket.io-client';
 	import '@material/web/textfield/filled-text-field.js';
 	import '@material/web/button/filled-button.js';
 	import Title from '$components/Title.svelte';
 	import Tabs from '$components/Tabs.svelte';
+
+	const socketio_client_from_lib = new SocketIO();
+
 
 	const tabs = [
 		{ header: 'Demo Message', content: 'Demo message interface.' },

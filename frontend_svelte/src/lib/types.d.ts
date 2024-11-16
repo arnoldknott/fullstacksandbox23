@@ -1,5 +1,12 @@
 import type { AccountInfo } from '@azure/msal-node';
 
+export type ClientConfiguration = {
+	backendFqdn: string;
+	restApiPath: string;
+	websocketPath: string;
+	socketIOPath: string | null;
+}
+
 export type User = {
 	email: string;
 	name?: string;
