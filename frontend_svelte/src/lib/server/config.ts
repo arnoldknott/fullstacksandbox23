@@ -127,7 +127,7 @@ export default class AppConfig {
 			this.keyvault_health = process.env.KEYVAULT_HEALTH;
 			this.backend_host = process.env.BACKEND_HOST;
 			this.backend_origin = `http://${process.env.BACKEND_HOST}:80`;
-			this.backend_fqdn = '';
+			this.backend_fqdn = `${process.env.BACKEND_FQDN}`;
 			this.app_reg_client_id = process.env.APP_REG_CLIENT_ID;
 			this.app_client_secret = process.env.APP_CLIENT_SECRET;
 			this.api_scope = process.env.API_SCOPE;

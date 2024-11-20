@@ -1,32 +1,30 @@
-import { getContext } from "svelte";
+import { getContext } from 'svelte';
+import { io } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
+import type { BackendAPIConfiguration } from '$lib/types.d.ts';
+import type { SocketioConnection } from '$lib/types.d.ts';
 
 export class SocketIO {
-    // private socket: WebSocket;
+	private connection: SocketioConnection;
+	public client: Socket;
 
+	constructor(connection: SocketioConnection) {
+		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
+		this.connection = connection;
+		const backendFqdn = backendAPIConfiguration.backendFqdn;
+		const socketioServerUrl = backendFqdn.startsWith('localhost')
+			? `http://${backendFqdn}`
+			: `https://${backendFqdn}`;
+		this.client = io(socketioServerUrl + connection.namespace, { path: `/socketio/v1` });
+		this.client.connect();
+	}
 
-    constructor() {
-        console.log('=== class socket IO instantiated ===');
-        const clientConfiguration = getContext('clientConfiguration');
-        console.log("=== lib - socketio.ts - clientConfiguration ===");
-        console.log('clientConfiguration:', clientConfiguration);
-    }
-
-    // constructor() {
-    //     this.socket = new WebSocket('ws://localhost:8660');
-    //     this.socket.onopen = () => {
-    //         console.log('=== socket opened ===');
-    //     };
-    //     this.socket.onmessage = (event) => {
-    //         console.log('Message from server:', event.data);
-    //     };
-    // }
-
-    // sendMessage(message: string) {
-    //     this.socket.send(message);
-    // }
-    sendMessage(message: string) {
-        console.log('Message sent:', message);
-    }
+	// sendMessage(message: string) {
+	//     this.socket.send(message);
+	// }
+	// sendMessage(message: string) {
+	// 	console.log('Message sent:', message);
+	// }
 }
 
 // import { io } from 'socket.io-client';
@@ -35,6 +33,7 @@ export class SocketIO {
 // let new_message: string = '';
 // let old_messages: string[] = [];
 
+// implement check for localhost here
 // socketio_client = io('http://localhost:8660');
 // socketio_client.on('connect', () => {
 //     console.log('=== socket opened ===');

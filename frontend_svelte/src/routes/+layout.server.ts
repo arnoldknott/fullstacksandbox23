@@ -2,21 +2,23 @@ import type { LayoutServerLoad } from './$types';
 import { getAccessToken } from '$lib/server/oauth';
 // import { app_config } from '$lib/server/config';
 import AppConfig from '$lib/server/config';
-import type { Session, ClientConfiguration } from '$lib/types.d.ts';
+import type { Session, BackendAPIConfiguration } from '$lib/types.d.ts';
 
 // const config = await app_config();
 
 const appConfig = await AppConfig.getInstance();
+console.log('=== layout.server.ts - appConfig ===');
+console.log(appConfig);
 
 export const load: LayoutServerLoad = async ({ locals, request }) => {
 	let loggedIn = false;
 	let sessionData: Session | null = null;
-	const clientConfiguration : ClientConfiguration = {
+	const backendAPIConfiguration: BackendAPIConfiguration = {
 		backendFqdn: appConfig.backend_fqdn,
-		restApiPath: "/api/v1",
-		websocketPath: "/ws/v1",
-		socketIOPath: "/socketio/v1"
-	}
+		restApiPath: '/api/v1',
+		websocketPath: '/ws/v1',
+		socketIOPath: '/socketio/v1'
+	};
 	if (locals.sessionData) {
 		try {
 			const accessToken = await getAccessToken(locals.sessionData, ['User.Read']);
@@ -30,7 +32,7 @@ export const load: LayoutServerLoad = async ({ locals, request }) => {
 				loggedIn: loggedIn,
 				userProfile: await response.json(),
 				userAgent: request.headers.get('user-agent')
-			}
+			};
 			// if (!locals.sessionData){
 			//   console.error("layout - server - getMicrosoftGraph - userProfile - failed");
 			//   redirect(307, "/");
@@ -47,7 +49,7 @@ export const load: LayoutServerLoad = async ({ locals, request }) => {
 	return {
 		body: {
 			sessionData: sessionData,
-			clientConfiguration: clientConfiguration
+			backendAPIConfiguration: backendAPIConfiguration
 		}
 	};
 };

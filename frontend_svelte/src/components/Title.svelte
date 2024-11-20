@@ -1,7 +1,8 @@
 <script lang="ts">
-	let { children } = $props();
-	console.log('=== lib - components - title - children ===');
-	console.log(children);
+	import type { Snippet } from 'svelte';
+	let { children }: { children: Snippet } = $props();
+	// console.log('=== lib - components - title - children ===');
+	// console.log(children);
 </script>
 
 <div class="mx-5">
