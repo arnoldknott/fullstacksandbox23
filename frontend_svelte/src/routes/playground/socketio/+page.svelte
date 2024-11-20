@@ -123,7 +123,6 @@
 	correct message</Tabs
 >
 
-<!-- TBD: clear text box -->
 <div class="w-50">
 	<form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
 		<md-filled-text-field
