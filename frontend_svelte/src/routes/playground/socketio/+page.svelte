@@ -117,6 +117,14 @@
 <Tabs {tabs}>Some Text common to all tabs</Tabs>
 
 <!-- <div class="w-50">
+=======
+<Tabs {tabs}
+	>Some Text - now changed. Put a Chat component here from $lib/chat, which is configures with the
+	correct message</Tabs
+>
+
+<!-- TBD: clear text box -->
+<div class="w-50">
 	<form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
 		<md-filled-text-field
 			label="Message"
