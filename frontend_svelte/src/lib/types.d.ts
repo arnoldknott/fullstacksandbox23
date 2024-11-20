@@ -1,5 +1,12 @@
 import type { AccountInfo } from '@azure/msal-node';
 
+export type BackendAPIConfiguration = {
+	backendFqdn: string;
+	restApiPath: string;
+	websocketPath: string;
+	socketIOPath: string | null;
+};
+
 export type User = {
 	email: string;
 	name?: string;
@@ -25,4 +32,18 @@ export type Session = {
 	userProfile: AccountInfo;
 	userAgent: string;
 	loggedIn: boolean;
+};
+
+export type SocketioConnection = {
+	event: string;
+	namespace?: string;
+	room?: string;
+	connected?: boolean;
+};
+
+type Tab = {
+	header: string;
+	content: string;
+	connection: SocketioConnection;
+	active?: boolean;
 };

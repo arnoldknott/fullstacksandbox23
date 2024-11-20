@@ -7,6 +7,8 @@
 
 	let { data }: { data: PageData } = $props();
 	const backend_fqdn = data.backend_fqdn;
+	console.log('=== playground - backend_fqdn ===');
+	console.log(backend_fqdn);
 
 	let new_message = $state('');
 	let socket: WebSocket | undefined = $state(undefined);
@@ -14,9 +16,10 @@
 
 	onMount(async () => {
 		// socket = new WebSocket('ws://localhost:8660/ws/v1/public_web_socket');
-		const websocket_server_url = backend_fqdn
-			? `wss://${backend_fqdn}/ws/v1/public_web_socket`
-			: 'ws://localhost:8660/ws/v1/public_web_socket';
+		// implement check for localhost here
+		const websocket_server_url = backend_fqdn.startsWith('localhost')
+			? `ws://${backend_fqdn}/ws/v1/public_web_socket`
+			: `wss://${backend_fqdn}/ws/v1/public_web_socket`;
 		socket = new WebSocket(websocket_server_url);
 
 		socket.onopen = (event) => {

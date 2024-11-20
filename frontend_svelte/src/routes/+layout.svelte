@@ -2,15 +2,16 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { user_store } from '$lib/stores';
+	import { setContext } from 'svelte';
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
 	import type { LayoutData } from './$types';
-	import type { Component } from 'svelte';
+	import type { Snippet } from 'svelte';
 	// import JsonData from '$components/JsonData.svelte';
 	// import Guard from '$components/Guard.svelte';
 	// import type { User } from 'src/types.d.ts';
 
-	let { data, children }: { data: LayoutData; children: Component } = $props();
+	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 	// let data: LayoutData = $props();
 	// console.log('layout - client - data')
 	// console.log(data)
@@ -25,6 +26,8 @@
 	if (loggedIn) {
 		user_store.set(session);
 	}
+
+	setContext('backendAPIConfiguration', data?.body?.backendAPIConfiguration);
 
 	// console.log('layout - client - userProfile')
 	// console.log(userProfile)
