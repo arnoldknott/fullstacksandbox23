@@ -7,8 +7,6 @@ import type { Session, BackendAPIConfiguration } from '$lib/types.d.ts';
 // const config = await app_config();
 
 const appConfig = await AppConfig.getInstance();
-console.log('=== layout.server.ts - appConfig ===');
-console.log(appConfig);
 
 export const load: LayoutServerLoad = async ({ locals, request }) => {
 	let loggedIn = false;
