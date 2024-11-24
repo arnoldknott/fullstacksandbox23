@@ -13,9 +13,19 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 	try {
 		// Acquire tokens with the code from Microsoft Identity Platform
 		let authenticationResult: AuthenticationResult;
+		let sessionId: string | undefined;
 		try {
 			const code = url.searchParams.get('code');
-			authenticationResult = await msalAuthProvider.authenticateWithCode(code, url.origin);
+			// const sessionId = 'session:abc123'
+			sessionId = cookies.get('session_id');
+			// sessionId = `session:${cookies.get('session_id_new')}`;
+			// sessionId = `session:${sessionId}`;
+			if (sessionId) {
+				authenticationResult = await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
+			}else{
+				redirect(302, '/login');
+			}
+			
 		} catch (err) {
 			console.error('Callback - server - authenticateWithCode failed');
 			console.error(err);
@@ -24,7 +34,7 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 
 		// Create a session, store authenticationResult in the cache, set the session cookie, and write to user store
 		try {
-			const sessionId = uuidv4();
+			// const sessionId = uuidv4();
 			const account = authenticationResult.account;
 			const accessToken = authenticationResult.accessToken;
 			// TBD: add expiry!
@@ -36,8 +46,8 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 					userAgent: userAgent || '',
 					loggedIn: true
 				};
-				await redisCache.setSession(sessionId, '.', session);
-				user_store.set(session);
+				// await redisCache.setSession(sessionId, '.', session);
+				// user_store.set(session);
 			} else {
 				console.error('Callback - server - Account not found');
 				throw new Error('No account found');
@@ -46,7 +56,7 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 			// httpOnly and secure are true by default from sveltekit (https://kit.svelte.dev/docs/types#public-types-cookies)
 			// secure is disabled for localhost, but enabled for all other domains
 			// TBD: add expiry!
-			cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: false }); //sameSite: 'strict' });
+			// cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: false }); //sameSite: 'strict' });
 		} catch (err) {
 			console.error('Callback - server - create session failed');
 			console.error(err);

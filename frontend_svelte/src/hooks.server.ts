@@ -6,6 +6,8 @@ import { redirect } from '@sveltejs/kit';
 const retrieveSession = async (sessionId: string | null): Promise<Session | void> => {
 	if (sessionId) {
 		const session = await redisCache.getSession(sessionId);
+		// console.log('🎣 hooks - server - retrieveSession - session');
+		// console.log(session);
 		if (session) {
 			await redisCache.updateSessionExpiry(sessionId);
 			return session;
@@ -16,7 +18,18 @@ const retrieveSession = async (sessionId: string | null): Promise<Session | void
 };
 
 export const handle = async ({ event, resolve }) => {
+	// const sessionId = `session:${event.cookies.get('session_id')}`;
 	const sessionId = event.cookies.get('session_id');
+	// sessionId = `session:${sessionId}`;
+	// console.log('🎣 hooks - server - sessionId');
+	// console.log(sessionId);
+
+	// const sessionIdNew = `session:${event.cookies.get('session_id_new')}`;
+	// console.log('🎣 hooks - server - sessionIdNew')
+	// console.log(sessionId);
+
+	// console.log('🎣 hooks - server - session_id check')
+	// console.log(sessionId === sessionIdNew);
 
 	if (!sessionId) {
 		if (event.route.id?.includes('(admin)')) {

@@ -29,10 +29,9 @@ export type User = {
 // };
 
 export type Session = {
-	userProfile: AccountInfo;
-	accessToken: string;
-	userAgent: string;
 	loggedIn: boolean;
+	microsoftAccount?: AccountInfo;// TBD: change to MicrosoftAccount, containing Account, IdToken, AccessToken, RefreshToken, AppMetadata
+	userAgent?: string;
 };
 
 export type SocketioConnection = {
