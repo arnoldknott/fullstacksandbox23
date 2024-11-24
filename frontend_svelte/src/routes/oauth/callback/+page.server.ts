@@ -1,5 +1,5 @@
-import { authenticateWithCode } from '$lib/server/oauth';
-import { setSession } from '$lib/server/cache';
+import { msalAuthProvider } from '$lib/server/oauth';
+import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
 import { v4 as uuidv4 } from 'uuid';
 import { redirect } from '@sveltejs/kit';
@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		let authenticationResult: AuthenticationResult;
 		try {
 			const code = url.searchParams.get('code');
-			authenticationResult = await authenticateWithCode(code, url.origin);
+			authenticationResult = await msalAuthProvider.authenticateWithCode(code, url.origin);
 		} catch (err) {
 			console.error('Callback - server - authenticateWithCode failed');
 			console.error(err);
@@ -26,15 +26,17 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		try {
 			const sessionId = uuidv4();
 			const account = authenticationResult.account;
+			const accessToken = authenticationResult.accessToken;
 			// TBD: add expiry!
 			if (account) {
 				const userAgent = request.headers.get('user-agent');
 				const session = {
-					account: account,
+					userProfile: account,
+					accessToken: accessToken,
 					userAgent: userAgent || '',
 					loggedIn: true
 				};
-				await setSession(sessionId, '.', session);
+				await redisCache.setSession(sessionId, '.', session);
 				user_store.set(session);
 			} else {
 				console.error('Callback - server - Account not found');

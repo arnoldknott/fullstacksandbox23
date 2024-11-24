@@ -30,6 +30,7 @@ export type User = {
 
 export type Session = {
 	userProfile: AccountInfo;
+	accessToken: string;
 	userAgent: string;
 	loggedIn: boolean;
 };

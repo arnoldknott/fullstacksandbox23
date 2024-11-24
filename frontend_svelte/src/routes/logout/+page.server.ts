@@ -13,6 +13,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 		expires: new Date(0)
 	});
 	user_store.set(undefined);
+	// TBD: delete session from redis!
 	// signOut();
 	redirect(307, `${appConfig.az_logout_uri}?post_logout_redirect_uri=${url.origin}/`);
 	// 	// redirect(302, "/");

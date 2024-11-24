@@ -1,11 +1,11 @@
-import { signIn } from '$lib/server/oauth';
+import { msalAuthProvider } from '$lib/server/oauth';
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ url }) => {
 	let loginUrl: string;
 	try {
-		loginUrl = await signIn(url.origin);
+		loginUrl = await msalAuthProvider.signIn(url.origin);
 	} catch (err) {
 		console.error('login - server - sign in redirect failed');
 		console.error(err);

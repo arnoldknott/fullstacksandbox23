@@ -1,13 +1,13 @@
 import type { PageServerLoad } from './$types';
 import AppConfig from '$lib/server/config';
-import { getAccessToken } from '$lib/server/oauth';
+import { msalAuthProvider } from '$lib/server/oauth';
 
 const appConfig = await AppConfig.getInstance();
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// TBD: consider removing the try catch block
 	try {
-		const accessToken = await getAccessToken(locals.sessionData, [
+		const accessToken = await msalAuthProvider.getAccessToken(locals.sessionData, [
 			`${appConfig.api_scope}/api.read`
 		]); // ["https://management.azure.com/user_impersonation"] ["api.read"]  ["User.Read"]
 		// console.log("playground - on-behalf-of - server - load - accessToken");
