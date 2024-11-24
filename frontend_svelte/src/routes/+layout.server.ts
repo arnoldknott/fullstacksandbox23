@@ -12,7 +12,6 @@ const appConfig = await AppConfig.getInstance();
 
 export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
 	let loggedIn = false;
-	const sessionId = cookies.get('session_id');
 	let sessionData: Session | null = null;
 	const backendAPIConfiguration: BackendAPIConfiguration = {
 		backendFqdn: appConfig.backend_fqdn,
@@ -22,11 +21,14 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
 	};
 	if (locals.sessionData) {
 		try {
+			const sessionId = cookies.get('session_id');
 			if (!sessionId) {
 				console.error('api - v1 - user - me - picture - server - no session id');
-				throw error(401, 'No session id!');
+				throw Error('401', 'No session id!');
 			}
-			const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, ['User.Read']);
+			const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
+				'User.Read'
+			]);
 			const response = await fetch(`${appConfig.ms_graph_base_uri}/me`, {
 				headers: {
 					Authorization: `Bearer ${accessToken}`
