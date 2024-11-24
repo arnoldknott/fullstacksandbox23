@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		const sessionData: Session = {
 			loggedIn: false,
 			userAgent: userAgent || ''
-		}
+		};
 		// console.log("=== signin - sessionData, typed ===");
 		// console.log(sessionData);
 
@@ -40,16 +40,15 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 
 		// move to setSession in $lib/server/cache.ts:
 		const redisClient = await redisCache.provideClient();
-		await redisClient.json.set(sessionId, "$", Object(sessionData));
-		await redisClient.expire(sessionId, 60);// use sessionTimeout from cache.ts
+		await redisClient.json.set(sessionId, '$', Object(sessionData));
+		await redisClient.expire(sessionId, 60); // use sessionTimeout from cache.ts
 
 		user_store.set(sessionData);
 
 		// const sessionIdCookie = sessionId.replace("session:", "");
 		// cookies.set('session_id', sessionIdCookie, { path: '/', httpOnly: true, sameSite: "strict" });// used to be sameSite: false
-		cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: "strict" });// used to be sameSite: false
-		
-		
+		cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: 'strict' }); // used to be sameSite: false
+
 		// await redisCache.setSession(sessionId, '.', sessionData);
 		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin);
 	} catch (err) {

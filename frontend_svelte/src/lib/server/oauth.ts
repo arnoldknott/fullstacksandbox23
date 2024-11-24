@@ -9,8 +9,12 @@ import {
 } from '@azure/msal-node';
 import type { Session } from '$lib/types';
 import { building } from '$app/environment';
-import type { ICachePlugin, ICacheClient, IPartitionManager, TokenCache } from '@azure/msal-node';
-import { type AccountInfo, AccountEntity, TokenCacheContext } from '@azure/msal-common';
+import {
+	DistributedCachePlugin,
+	type ICacheClient,
+	type IPartitionManager
+} from '@azure/msal-node';
+import { type AccountInfo, AccountEntity } from '@azure/msal-common';
 
 const appConfig = await AppConfig.getInstance();
 // const scopesBackend = [appConfig.api_scope_default]
@@ -39,8 +43,8 @@ class RedisClientWrapper implements ICacheClient {
 		// console.log(JSON.parse(value));
 
 		// const authSessionData = await this.redisClient.json.set(key, "$.userProfile", value) || "";
-		const authSessionData = await this.redisClient.json.set(key, "$.microsoftAccount",  JSON.parse(value) ) || "";
-
+		const authSessionData =
+			(await this.redisClient.json.set(`msal:${key}`, '.', JSON.parse(value))) || '';
 
 		// const sessionData: Session = {
 		// 	loggedIn: false,
@@ -49,8 +53,9 @@ class RedisClientWrapper implements ICacheClient {
 		// await redisClient.json.set("JSONparsed", "$", Object(sessionData));
 		// await redisClient.expire("JSONparsed", 3600);
 		// const authSessionDataJSON = await this.redisClient.json.set("JSONparsed", "$.userProfile",  JSON.parse(value) ) || ""
-		if (authSessionData){
-			await this.redisClient.expire(key, 300);
+		// TBD: increased expiry time after developing - must be pretty long - maybe match token expiry time?
+		if (authSessionData) {
+			await this.redisClient.expire(`msal:${key}`, 300);
 		}
 		return authSessionData;
 	}
@@ -59,8 +64,10 @@ class RedisClientWrapper implements ICacheClient {
 		console.log('🔑 oauth - Authentication - RedisClientWrapper - get - key: ');
 		console.log(key);
 		try {
-			const authSessionData = await this.redisClient.json.get(key, {path: "$.microsoftAccount"}) || "";
-			console.log('🔑 oauth - Authentication - RedisClientWrapper - get - authSessionData: ')
+			console.log('🔑 oauth - Authentication - RedisClientWrapper - get - key: ');
+			console.log(key);
+			const authSessionData = (await this.redisClient.json.get(`msal:${key}`)) || '';
+			console.log('🔑 oauth - Authentication - RedisClientWrapper - get - authSessionData: ');
 			console.log(authSessionData);
 			return JSON.stringify(authSessionData);
 			// return String(authSessionData);// needs to return string to satisfy ICacheClient - but is parsed in the RedisPartitionManager - getKey again.
@@ -91,106 +98,135 @@ class RedisPartitionManager implements IPartitionManager {
 		console.log(sessionId);
 	}
 
+	// async getKey(): Promise<string> {
+	// 	try {
+	// 		// removed the sess: prefix here
+	// 		const sessionData = await this.redisClient.get(this.sessionId);
+	// 		// const session = sessionData ? (JSON.parse(sessionData) as SessionCacheData) : null;
+	// 		console.log('🔑 oauth - Authentication - RedisPartitionManager - getKey - sessionData: ');
+	// 		console.log(sessionData);
+	// 		return this.sessionId
+	// 		// return '12345'; // TBD: return the real sessionId!
+	// 		// return session?.account?.homeAccountId || "";
+	// 	} catch (error) {
+	// 		console.log(error);
+	// 	}
+
+	// 	return '';
+	// }
 	async getKey(): Promise<string> {
 		try {
-			// removed the sess: prefix here
-			const sessionData = await this.redisClient.get(this.sessionId);
-			// const session = sessionData ? (JSON.parse(sessionData) as SessionCacheData) : null;
+			// TBD: move to / update in redisCache in $lib/server/cache.ts:
+			const regularRedisClient = await redisCache.provideClient();
+			const sessionData = await regularRedisClient.json.get(this.sessionId);
+			const session = sessionData as SessionCacheData;
 			console.log('🔑 oauth - Authentication - RedisPartitionManager - getKey - sessionData: ');
 			console.log(sessionData);
-			return this.sessionId
-			// return '12345'; // TBD: return the real sessionId!
-			// return session?.account?.homeAccountId || "";
+			// const session = JSON.parse(sessionData) as SessionCacheData ;
+			const partitionKey = session.microsoftAccount?.homeAccountId || '';
+			console.log('🔑 oauth - Authentication - RedisPartitionManager - getKey - partitionKey: ');
+			console.log(partitionKey);
+			return partitionKey;
+			// return session.account?.homeAccountId || "";
 		} catch (error) {
 			console.log(error);
 		}
-
 		return '';
 	}
 
+	// async extractKey(accountEntity: AccountEntity): Promise<string> {
+	// 	console.log('🔑 oauth - Authentication - RedisPartitionManager - extractKey - accountEntity: ');
+	// 	console.log(accountEntity);
+	// 	// if(accountEntity.homeAccountId){
+	// 	return this.sessionId;
+	// 	// }
+	// 	// if (Object.prototype.hasOwnProperty.call(accountEntity, 'homeAccountId')) {
+	// 	// 	// if (accountEntity.hasOwnProperty('homeAccountId')) {
+	// 	// 	return '12345'; // TBD: return the real sessionId!
+	// 	// 	// return accountEntity.homeAccountId; // the homeAccountId is the partition key
+	// 	// } else {
+	// 	// 	throw new Error('homeAccountId is not found');
+	// 	// }
+	// }
 	async extractKey(accountEntity: AccountEntity): Promise<string> {
 		console.log('🔑 oauth - Authentication - RedisPartitionManager - extractKey - accountEntity: ');
 		console.log(accountEntity);
-		// if(accountEntity.homeAccountId){
-		return this.sessionId;
-		// }
-		// if (Object.prototype.hasOwnProperty.call(accountEntity, 'homeAccountId')) {
-		// 	// if (accountEntity.hasOwnProperty('homeAccountId')) {
-		// 	return '12345'; // TBD: return the real sessionId!
-		// 	// return accountEntity.homeAccountId; // the homeAccountId is the partition key
-		// } else {
-		// 	throw new Error('homeAccountId is not found');
-		// }
-	}
-}
-
-export class MicrosoftTokenCache implements ICachePlugin {
-	private client: ICacheClient;
-	private partitionManager: IPartitionManager;
-
-	constructor(client: ICacheClient, partitionManager: IPartitionManager) {
-		this.client = client;
-		this.partitionManager = partitionManager;
-	}
-
-	public async beforeCacheAccess(cacheContext: TokenCacheContext): Promise<void> {
-		console.log('🔑 oauth - Authentication - MicrosoftTokenCache - beforeCacheAccess');
-		const partitionKey = await this.partitionManager.getKey();
-		const cacheData = await this.client.get(partitionKey);
-		// try {
-		// 	cacheContext.tokenCache.deserialize(cacheData);
-		// } catch (error) {
-		// 	console.error('🔑 🔥 Error deserializing cache data:');
-		// 	console.error(error);
-		// 	throw error;
-		// }
-		// cacheContext.tokenCache.deserialize(cacheData);
-	}
-
-	public async afterCacheAccess(cacheContext: TokenCacheContext): Promise<void> {
-		console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess');
-		// console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - cacheContext: ')
-		// console.log(cacheContext);
-		if (cacheContext.cacheHasChanged) {
-			const kvStore = (cacheContext.tokenCache as TokenCache).getKVStore();
-			// console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - kvStore: ')
-			// console.log(kvStore);
-			// const kvStore = cacheContext.tokenCache.getKVStore();
-			const accountEntities = Object.values(kvStore).filter((value) =>
-				AccountEntity.isAccountEntity(value as object)
-			);
-			// console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - accountEntities.length: ')
-			// console.log(accountEntities.length);
-
-			if (accountEntities.length > 0) {
-				const accountEntity = accountEntities[0] as AccountEntity;
-				// const accountEntity = cacheContext.tokenCache.getAccount();
-				const partitionKey = await this.partitionManager.extractKey(accountEntity);
-
-				// console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - cacheContext.tokenCache: ')
-				// console.log(cacheContext.tokenCache);
-				// console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - cacheContext.cacheHasChanged: ')
-				// console.log(cacheContext.cacheHasChanged);
-
-				console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - partitionKey: ')
-				console.log(partitionKey);
-
-				console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - cacheContext.cache: ')
-				console.log(cacheContext.cache);
-
-				const serializedCache = cacheContext.tokenCache.serialize();
-				console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - cacheContext.tokenCache.serialize(): ')
-				console.log(serializedCache);
-
-				// await this.client.set(partitionKey, cacheContext.tokenCache.serialize());
-				await this.client.set(partitionKey, serializedCache);
-				if (cacheContext.cacheHasChanged) {
-					await this.client.set(partitionKey, cacheContext.tokenCache.serialize()); // deserialize in-memory cache to persistence
-				}
-			}
+		// if (accountEntity.hasOwnProperty('homeAccountId')) {
+		if (Object.prototype.hasOwnProperty.call(accountEntity, 'homeAccountId')) {
+			return accountEntity.homeAccountId; // the homeAccountId is the partition key
+		} else {
+			throw new Error('homeAccountId is not found');
 		}
 	}
 }
+
+// export class MicrosoftTokenCache implements ICachePlugin {
+// 	private client: ICacheClient;
+// 	private partitionManager: IPartitionManager;
+
+// 	constructor(client: ICacheClient, partitionManager: IPartitionManager) {
+// 		this.client = client;
+// 		this.partitionManager = partitionManager;
+// 	}
+
+// 	public async beforeCacheAccess(cacheContext: TokenCacheContext): Promise<void> {
+// 		console.log('🔑 oauth - Authentication - MicrosoftTokenCache - beforeCacheAccess');
+// 		const partitionKey = await this.partitionManager.getKey();
+// 		const cacheData = await this.client.get(partitionKey);
+// 		// try {
+// 		// 	cacheContext.tokenCache.deserialize(cacheData);
+// 		// } catch (error) {
+// 		// 	console.error('🔑 🔥 Error deserializing cache data:');
+// 		// 	console.error(error);
+// 		// 	throw error;
+// 		// }
+// 		// cacheContext.tokenCache.deserialize(cacheData);
+// 	}
+
+// 	public async afterCacheAccess(cacheContext: TokenCacheContext): Promise<void> {
+// 		console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess');
+// 		// console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - cacheContext: ')
+// 		// console.log(cacheContext);
+// 		if (cacheContext.cacheHasChanged) {
+// 			const kvStore = (cacheContext.tokenCache as TokenCache).getKVStore();
+// 			// console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - kvStore: ')
+// 			// console.log(kvStore);
+// 			// const kvStore = cacheContext.tokenCache.getKVStore();
+// 			const accountEntities = Object.values(kvStore).filter((value) =>
+// 				AccountEntity.isAccountEntity(value as object)
+// 			);
+// 			// console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - accountEntities.length: ')
+// 			// console.log(accountEntities.length);
+
+// 			if (accountEntities.length > 0) {
+// 				const accountEntity = accountEntities[0] as AccountEntity;
+// 				// const accountEntity = cacheContext.tokenCache.getAccount();
+// 				const partitionKey = await this.partitionManager.extractKey(accountEntity);
+
+// 				// console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - cacheContext.tokenCache: ')
+// 				// console.log(cacheContext.tokenCache);
+// 				// console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - cacheContext.cacheHasChanged: ')
+// 				// console.log(cacheContext.cacheHasChanged);
+
+// 				console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - partitionKey: ')
+// 				console.log(partitionKey);
+
+// 				console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - cacheContext.cache: ')
+// 				console.log(cacheContext.cache);
+
+// 				const serializedCache = cacheContext.tokenCache.serialize();
+// 				console.log('🔑 oauth - Authentication - MicrosoftTokenCache - afterCacheAccess - cacheContext.tokenCache.serialize(): ')
+// 				console.log(serializedCache);
+
+// 				// await this.client.set(partitionKey, cacheContext.tokenCache.serialize());
+// 				await this.client.set(partitionKey, serializedCache);
+// 				if (cacheContext.cacheHasChanged) {
+// 					await this.client.set(partitionKey, cacheContext.tokenCache.serialize()); // deserialize in-memory cache to persistence
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
 class MicrosoftAuthenticationProvider {
 	private msalCommonConfig;
@@ -224,7 +260,8 @@ class MicrosoftAuthenticationProvider {
 
 			const partitionManager = new RedisPartitionManager(this.redisClientWrapper, sessionId);
 
-			const tokenCache = new MicrosoftTokenCache(this.redisClientWrapper, partitionManager);
+			// const tokenCache = new MicrosoftTokenCache(this.redisClientWrapper, partitionManager);
+			const tokenCache = new DistributedCachePlugin(this.redisClientWrapper, partitionManager);
 			const msalUserSessionSpecificConfig = {
 				...this.msalCommonConfig,
 				cache: { cachePlugin: tokenCache }
@@ -277,14 +314,21 @@ class MicrosoftAuthenticationProvider {
 		try {
 			console.log('🔑 oauth - Authentication - authenticateWithCode ');
 			const msalConfClient = this.createMsalConfClient(sessionId);
-			await msalConfClient.getTokenCache().getAllAccounts(); // required for triggering beforeCacheACcess
+			await msalConfClient.getTokenCache().getAllAccounts(); // required for triggering beforeCacheAccess
 			const response = await msalConfClient.acquireTokenByCode({
 				code: code,
 				scopes: scopes,
 				redirectUri: `${origin}/oauth/callback`
 			});
-			// console.log('🔑 oauth - Authentication - authenticateWithCode - response: ');
-			// console.log(response);
+			console.log('🔑 oauth - Authentication - authenticateWithCode - response.account: ');
+			console.log(response.account);
+			const data = response.account ? JSON.parse(JSON.stringify(response.account)) : null;
+			// TBD: move to / update in redisCache in $lib/server/cache.ts:
+			const regularRedisClient = await redisCache.provideClient();
+			const responseSessionAccount =
+				(await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data)) || '';
+			console.log('🔑 oauth - Authentication - authenticateWithCode - responseSessionAccount: ');
+			console.log(responseSessionAccount);
 			// const tokenCache = msalConfClient.getTokenCache();
 			// const accounts = await tokenCache.getAllAccounts();
 			return response;
@@ -315,30 +359,37 @@ class MicrosoftAuthenticationProvider {
 			// console.log(accounts);
 			// console.log("🔑 oauth - Authentication - getAccessToken - sessionData: ");
 			// console.log(sessionData);
-			const account = sessionData.microsoftAccount
-			if (!account) {
+			// const account = sessionData.microsoftAccount
+			const regularRedisClient = await redisCache.provideClient();
+			const accountResponse = await regularRedisClient.json.get(sessionId, {
+				path: '$.microsoftAccount'
+			});
+			if (!accountResponse) {
 				throw new Error('🔥 🔑 oauth - GetAccessToken failed - no account');
 			}
-			console.log("🔑 oauth - Authentication - getAccessToken - account-keys: ")
-			console.log(Object.keys(account));
-
-			let accountInfo: AccountInfo;
-			// if(Object.keys(account).includes("Account")){
-			accountInfo = account["Account"] as AccountInfo;
+			const account: AccountInfo = accountResponse[0] as AccountInfo;
+			// if (!account) {
+			// 	throw new Error('🔥 🔑 oauth - GetAccessToken failed - no account');
 			// }
-			console.log("🔑 oauth - Authentication - getAccessToken - typeof account ")
+			// console.log("🔑 oauth - Authentication - getAccessToken - account-keys: ")
+			// console.log(Object.keys(account));
+
+			// let accountInfo: AccountInfo;
+			// // if(Object.keys(account).includes("Account")){
+			// accountInfo = account["Account"] as AccountInfo;
+			// }
+			// console.log("🔑 oauth - Authentication - getAccessToken - typeof account ")
+			// console.log(typeof account);
+			console.log('🔑 oauth - Authentication - getAccessToken - account: ');
+			console.log(account);
+			console.log('🔑 oauth - Authentication - getAccessToken - typeof account: ');
 			console.log(typeof account);
-			// console.log("🔑 oauth - Authentication - getAccessToken - account['Account']: ")
-			// console.log(accountInfo);
-			
-			if (!account) {
-				throw new Error('🔥 🔑 oauth - GetAccessToken failed - no account');
-			}
+
 			const response = await msalConfClient.acquireTokenSilent({
 				scopes: scopes,
-				account: accountInfo,
+				account: account
 			});
-			console.log("🔑 oauth - Authentication - getAccessToken - response: ")
+			console.log('🔑 oauth - Authentication - getAccessToken - response: ');
 			console.log(response);
 			const accessToken = response.accessToken;
 			return accessToken;

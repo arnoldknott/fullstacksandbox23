@@ -19,9 +19,14 @@ const appConfig = await AppConfig.getInstance();
 // 	}, {});
 // }
 
-export const load: PageServerLoad = async ({ fetch, locals }) => {
+export const load: PageServerLoad = async ({ fetch, locals, cookies }) => {
 	// either send a token or make the demo resource publically accessable by adding an access policy with flag public=True
-	const accessToken = await msalAuthProvider.getAccessToken(locals.sessionData, [
+	const sessionId = cookies.get('session_id');
+	if (!sessionId) {
+		console.error('routes - demo-resource - page.server - no session id');
+		throw Error('401', 'No session id!');
+	}
+	const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 		`${appConfig.api_scope}/api.read`
 	]);
 	const response = await fetch(`${appConfig.backend_origin}/api/v1/demoresource/`, {
@@ -34,7 +39,7 @@ export const load: PageServerLoad = async ({ fetch, locals }) => {
 };
 
 export const actions = {
-	default: async ({ locals, request }) => {
+	default: async ({ locals, request, cookies }) => {
 		const data = await request.formData();
 
 		console.log('=== data ===');
@@ -44,7 +49,12 @@ export const actions = {
 		console.log('=== payload ===');
 		console.log(payload);
 
-		const accessToken = await msalAuthProvider.getAccessToken(locals.sessionData, [
+		const sessionId = cookies.get('session_id');
+		if (!sessionId) {
+			console.error('routes - demo-resource - page.server - no session id');
+			throw Error('401', 'No session id!');
+		}
+		const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 			`${appConfig.api_scope}/api.write`
 		]);
 		await fetch(`${appConfig.backend_origin}/api/v1/demoresource/`, {

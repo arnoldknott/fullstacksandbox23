@@ -1,10 +1,10 @@
 import { msalAuthProvider } from '$lib/server/oauth';
-import { redisCache } from '$lib/server/cache';
+// import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
-import { v4 as uuidv4 } from 'uuid';
+// import { v4 as uuidv4 } from 'uuid';
 import { redirect } from '@sveltejs/kit';
 import type { AuthenticationResult } from '@azure/msal-node';
-import { user_store } from '$lib/stores';
+// import { user_store } from '$lib/stores';
 
 export const load: PageServerLoad = async ({ url, cookies, request }) => {
 	// const userAgent = request.headers.get('user-agent');
@@ -21,11 +21,14 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 			// sessionId = `session:${cookies.get('session_id_new')}`;
 			// sessionId = `session:${sessionId}`;
 			if (sessionId) {
-				authenticationResult = await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
-			}else{
+				authenticationResult = await msalAuthProvider.authenticateWithCode(
+					sessionId,
+					code,
+					url.origin
+				);
+			} else {
 				redirect(302, '/login');
 			}
-			
 		} catch (err) {
 			console.error('Callback - server - authenticateWithCode failed');
 			console.error(err);

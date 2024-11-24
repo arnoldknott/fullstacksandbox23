@@ -30,7 +30,7 @@ export type User = {
 
 export type Session = {
 	loggedIn: boolean;
-	microsoftAccount?: AccountInfo;// TBD: change to MicrosoftAccount, containing Account, IdToken, AccessToken, RefreshToken, AppMetadata
+	microsoftAccount?: AccountInfo; // TBD: change to MicrosoftAccount, containing Account, IdToken, AccessToken, RefreshToken, AppMetadata
 	userAgent?: string;
 };
 

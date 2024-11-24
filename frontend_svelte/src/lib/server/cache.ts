@@ -84,7 +84,7 @@ class RedisCache {
 
 	public async setSession(sessionId: string, path: string, sessionData: Session): Promise<boolean> {
 		const authDataString = JSON.stringify(sessionData);
-		try {;
+		try {
 			const setStatus = await this.redisClient?.json.set(sessionId, path, authDataString);
 			console.log('👍 🥞 cache - server - setSession - sessionId set');
 			await this.redisClient?.expire(sessionId, sessionTimeOut);
@@ -109,7 +109,7 @@ class RedisCache {
 			const result = await this.redisClient?.json.get(sessionId);
 			// console.log('👍 🥞 cache - server - getSession - result');
 			// console.log(result);
-			return result as unknown as Session
+			return result as unknown as Session;
 			// return typeof result === 'string' ? (JSON.parse(result) as Session) : undefined;
 		} catch (error) {
 			console.error('🔥 🥞 cache - server - getSession - redisClient?.json.get failed');
