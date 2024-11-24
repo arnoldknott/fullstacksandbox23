@@ -4,9 +4,14 @@ import AppConfig from '$lib/server/config';
 
 const appConfig = await AppConfig.getInstance();
 
-export const GET: RequestHandler = async ({ locals, setHeaders }): Promise<Response> => {
+export const GET: RequestHandler = async ({ locals, setHeaders, cookies }): Promise<Response> => {
 	try {
-		const accessToken = await msalAuthProvider.getAccessToken(locals.sessionData, ['User.Read']);
+		const sessionId = cookies.get('session_id');
+		if (!sessionId) {
+			console.error('api - v1 - user - me - picture - server - no session id');
+			throw error(401, 'No session id!');
+		}
+		const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, ['User.Read']);
 		const response = await fetch(`${appConfig.ms_graph_base_uri}/me/photo/$value`, {
 			headers: {
 				Authorization: `Bearer ${accessToken}`

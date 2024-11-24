@@ -1,11 +1,57 @@
+import { v4 } from 'uuid';
 import { msalAuthProvider } from '$lib/server/oauth';
+import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
+import type { Session } from '$lib/types';
+import { user_store } from '$lib/stores';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, cookies, request }) => {
 	let loginUrl: string;
 	try {
-		loginUrl = await msalAuthProvider.signIn(url.origin);
+		// create the session uuid here:
+		const sessionId = `session:${v4()}`;
+		const userAgent = request.headers.get('user-agent');
+		// Type that one:
+		const sessionData: Session = {
+			loggedIn: false,
+			userAgent: userAgent || ''
+		}
+		// console.log("=== signin - sessionData, typed ===");
+		// console.log(sessionData);
+
+		// const sessionDataJSON = JSON.stringify(sessionData);
+		// console.log("=== signin - sessionData, JSON ===");
+		// console.log(sessionDataJSON);
+
+		// const sessionDataJSONnative = { "loggedIn": false, "userProfile": {} }
+		// console.log("=== signin - sessionDatanative, JSON input ===");
+		// console.log(sessionDataJSONnative);
+
+		// const redisClient = await redisCache.provideClient();
+		// await redisClient.json.set("typed", "$", Object(sessionData));
+		// await redisClient.expire("typed", 3600);
+
+		// await redisClient.json.set("stringified", "$", sessionDataJSON);
+		// await redisClient.expire("stringified", 3600);
+
+		// await redisClient.json.set("native", "$", sessionDataJSONnative);
+		// await redisClient.expire("native", 3600);
+
+		// move to setSession in $lib/server/cache.ts:
+		const redisClient = await redisCache.provideClient();
+		await redisClient.json.set(sessionId, "$", Object(sessionData));
+		await redisClient.expire(sessionId, 60);// use sessionTimeout from cache.ts
+
+		user_store.set(sessionData);
+
+		// const sessionIdCookie = sessionId.replace("session:", "");
+		// cookies.set('session_id', sessionIdCookie, { path: '/', httpOnly: true, sameSite: "strict" });// used to be sameSite: false
+		cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: "strict" });// used to be sameSite: false
+		
+		
+		// await redisCache.setSession(sessionId, '.', sessionData);
+		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin);
 	} catch (err) {
 		console.error('login - server - sign in redirect failed');
 		console.error(err);
