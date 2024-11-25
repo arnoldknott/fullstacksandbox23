@@ -22,11 +22,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			// sessionId = `session:${sessionId}`;
 			if (sessionId) {
 				// authenticationResult = await msalAuthProvider.authenticateWithCode(
-				await msalAuthProvider.authenticateWithCode(
-					sessionId,
-					code,
-					url.origin
-				);
+				await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
 			} else {
 				// redirect(302, '/login');
 				redirect(302, '/');
