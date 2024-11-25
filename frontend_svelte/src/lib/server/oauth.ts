@@ -62,11 +62,11 @@ class RedisClientWrapper implements ICacheClient {
 	}
 
 	public async get(key: string): Promise<string> {
-		console.log('🔑 oauth - Authentication - RedisClientWrapper - get - key: ');
-		console.log(key);
+		// console.log('🔑 oauth - Authentication - RedisClientWrapper - get - key: ');
+		// console.log(key);
 		try {
-			console.log('🔑 oauth - Authentication - RedisClientWrapper - get - key: ');
-			console.log(key);
+			// console.log('🔑 oauth - Authentication - RedisClientWrapper - get - key: ');
+			// console.log(key);
 			const authSessionData = (await this.redisClient.json.get(`msal:${key}`)) || '';
 			// console.log('🔑 oauth - Authentication - RedisClientWrapper - get - authSessionData: ');
 			// console.log(authSessionData);
@@ -95,8 +95,8 @@ class RedisPartitionManager implements IPartitionManager {
 		this.sessionId = sessionId;
 		this.redisClient = redisClient;
 		console.log('👍 🔑 oauth - Authentication - RedisPartitionManager - created!');
-		console.log('🔑 oauth - Authentication - RedisPartitionManager - sessionId: ');
-		console.log(sessionId);
+		// console.log('🔑 oauth - Authentication - RedisPartitionManager - sessionId: ');
+		// console.log(sessionId);
 	}
 
 	// async getKey(): Promise<string> {
@@ -121,12 +121,12 @@ class RedisPartitionManager implements IPartitionManager {
 			const regularRedisClient = await redisCache.provideClient();
 			const sessionData = await regularRedisClient.json.get(this.sessionId);
 			const session = sessionData as SessionCacheData;
-			console.log('🔑 oauth - Authentication - RedisPartitionManager - getKey - sessionData: ');
-			console.log(sessionData);
+			// console.log('🔑 oauth - Authentication - RedisPartitionManager - getKey - sessionData: ');
+			// console.log(sessionData);
 			// const session = JSON.parse(sessionData) as SessionCacheData ;
 			const partitionKey = session.microsoftAccount?.homeAccountId || '';
-			console.log('🔑 oauth - Authentication - RedisPartitionManager - getKey - partitionKey: ');
-			console.log(partitionKey);
+			// console.log('🔑 oauth - Authentication - RedisPartitionManager - getKey - partitionKey: ');
+			// console.log(partitionKey);
 			return partitionKey;
 			// return session.account?.homeAccountId || "";
 		} catch (error) {
@@ -329,8 +329,8 @@ class MicrosoftAuthenticationProvider {
 				scopes: scopes,
 				redirectUri: `${origin}/oauth/callback`
 			});
-			console.log('🔑 oauth - Authentication - authenticateWithCode - response.account: ');
-			console.log(response.account);
+			// console.log('🔑 oauth - Authentication - authenticateWithCode - response.account: ');
+			// console.log(response.account);
 			const data = response.account ? JSON.parse(JSON.stringify(response.account)) : null;
 			// TBD: move to / update in redisCache in $lib/server/cache.ts:
 			const regularRedisClient = await redisCache.provideClient();
@@ -356,9 +356,10 @@ class MicrosoftAuthenticationProvider {
 		scopes: string[] = [appConfig.api_scope_default]
 	): Promise<string> {
 		try {
+			console.log('🔑 oauth - Authentication - getAccessToken ');
 			// const sessionId = "session:abc123"
-			console.log('🔑 oauth - Authentication - getAccessToken - sessionData ');
-			console.log(sessionData);
+			// console.log('🔑 oauth - Authentication - getAccessToken - sessionData ');
+			// console.log(sessionData);
 			// pass the sessionId to the createMsalConfClient method
 			const msalConfClient = this.createMsalConfClient(sessionId);
 			await msalConfClient.getTokenCache().getAllAccounts(); // required for triggering beforeCacheACcess
@@ -400,8 +401,8 @@ class MicrosoftAuthenticationProvider {
 				scopes: scopes,
 				account: account
 			});
-			console.log('🔑 oauth - Authentication - getAccessToken - response: ');
-			console.log(response);
+			// console.log('🔑 oauth - Authentication - getAccessToken - response: ');
+			// console.log(response);
 			const accessToken = response.accessToken;
 			return accessToken;
 		} catch (error) {
