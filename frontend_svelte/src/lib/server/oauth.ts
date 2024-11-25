@@ -336,7 +336,7 @@ class MicrosoftAuthenticationProvider {
 			const regularRedisClient = await redisCache.provideClient();
 			// const responseSessionAccount =
 			// 	(await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data)) || '';
-			await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data)
+			await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data);
 			await redisClient.json.set(sessionId, '$.loggedIn', true);
 			// console.log('🔑 oauth - Authentication - authenticateWithCode - responseSessionAccount: ');
 			// console.log(responseSessionAccount);
