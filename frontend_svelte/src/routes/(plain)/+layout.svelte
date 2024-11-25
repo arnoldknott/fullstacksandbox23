@@ -1,5 +1,5 @@
 <script lang="ts">
-	import '../app.css';
+	import '../../app.css';
 	// import { onMount } from 'svelte';
 	import { user_store } from '$lib/stores';
 	import { setContext } from 'svelte';
@@ -39,6 +39,23 @@
 	// if ($user_store?.loggedIn) {
 	// 	user_store.set(data.user);
 	// }
+
+	// let userPictureURL: URL | undefined = $state(undefined);
+	// onMount(async () => {
+	// 	const response = await fetch('/api/v1/user/me/picture', { method: 'GET' });
+	// 	if (!response.ok && response.status !== 200) {
+	// 		console.log('layout - userPictureURL - response not ok');
+	// 		console.log(response);
+	// 	} else {
+	// 		const pictureBlob = await response.blob();
+	// 		if (pictureBlob.size === 0) {
+	// 			console.log('layout - userPictureURL - no User picture available');
+	// 			console.log(pictureBlob);
+	// 		} else {
+	// 			userPictureURL = URL.createObjectURL(pictureBlob);
+	// 		}
+	// 	}
+	// });
 
 	// if (data?.loggedIn) {
 	// 	$user_store = data;

@@ -287,7 +287,6 @@ class MicrosoftAuthenticationProvider {
 	}
 }
 
-
 if (!redisCache) {
 	throw new Error('🔑🔥 oauth - Authentication - redisCache not initialized');
 }
