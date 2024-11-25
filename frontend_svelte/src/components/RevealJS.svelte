@@ -9,7 +9,13 @@
 
 	onMount(() => {
 		const reveal = new Reveal({});
-		reveal.initialize({ embeddded: true, center: true, width: 1024, height: 768 });
+		reveal.initialize({
+			embeddded: true,
+			slideNumber: 'c/t',
+			center: true,
+			width: 1024,
+			height: 768
+		});
 	});
 </script>
 
