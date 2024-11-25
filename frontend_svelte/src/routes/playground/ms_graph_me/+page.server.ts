@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 	const userProfile = await response.json();
 
 	return {
-		account: locals.sessionData.account,
+		account: locals.sessionData.microsoftAccount,
 		userProfile: userProfile
 	};
 };
