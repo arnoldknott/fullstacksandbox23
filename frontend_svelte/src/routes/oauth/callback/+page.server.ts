@@ -3,7 +3,7 @@ import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
 // import { v4 as uuidv4 } from 'uuid';
 import { redirect } from '@sveltejs/kit';
-import type { AuthenticationResult } from '@azure/msal-node';
+// import type { AuthenticationResult } from '@azure/msal-node';
 import { user_store } from '$lib/stores';
 
 export const load: PageServerLoad = async ({ url, cookies }) => {
