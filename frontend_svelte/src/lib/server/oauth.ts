@@ -15,6 +15,7 @@ import {
 	type IPartitionManager
 } from '@azure/msal-node';
 import { type AccountInfo, AccountEntity } from '@azure/msal-common';
+import { redirect } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
 // const scopesBackend = [appConfig.api_scope_default]
@@ -55,7 +56,7 @@ class RedisClientWrapper implements ICacheClient {
 		// const authSessionDataJSON = await this.redisClient.json.set("JSONparsed", "$.userProfile",  JSON.parse(value) ) || ""
 		// TBD: increased expiry time after developing - must be pretty long - maybe match token expiry time?
 		if (authSessionData) {
-			await this.redisClient.expire(`msal:${key}`, 300);
+			await this.redisClient.expire(`msal:${key}`, 60 * 60 * 24 * 7); // 7 days - adopt to token expiry time?
 		}
 		return authSessionData;
 	}
@@ -67,8 +68,8 @@ class RedisClientWrapper implements ICacheClient {
 			console.log('🔑 oauth - Authentication - RedisClientWrapper - get - key: ');
 			console.log(key);
 			const authSessionData = (await this.redisClient.json.get(`msal:${key}`)) || '';
-			console.log('🔑 oauth - Authentication - RedisClientWrapper - get - authSessionData: ');
-			console.log(authSessionData);
+			// console.log('🔑 oauth - Authentication - RedisClientWrapper - get - authSessionData: ');
+			// console.log(authSessionData);
 			return JSON.stringify(authSessionData);
 			// return String(authSessionData);// needs to return string to satisfy ICacheClient - but is parsed in the RedisPartitionManager - getKey again.
 			// return authSessionData;
@@ -149,8 +150,8 @@ class RedisPartitionManager implements IPartitionManager {
 	// 	// }
 	// }
 	async extractKey(accountEntity: AccountEntity): Promise<string> {
-		console.log('🔑 oauth - Authentication - RedisPartitionManager - extractKey - accountEntity: ');
-		console.log(accountEntity);
+		// console.log('🔑 oauth - Authentication - RedisPartitionManager - extractKey - accountEntity: ');
+		// console.log(accountEntity);
 		// if (accountEntity.hasOwnProperty('homeAccountId')) {
 		if (Object.prototype.hasOwnProperty.call(accountEntity, 'homeAccountId')) {
 			return accountEntity.homeAccountId; // the homeAccountId is the partition key
@@ -258,19 +259,27 @@ class MicrosoftAuthenticationProvider {
 			// console.log('👍 🔑 oauth - Authentication - MsalConfClient - createMsalConfClient - redisClientWrapper');
 			// console.log(this.redisClientWrapper);
 
-			const partitionManager = new RedisPartitionManager(this.redisClientWrapper, sessionId);
+			if (!building) {
+				const partitionManager = new RedisPartitionManager(this.redisClientWrapper, sessionId);
 
-			// const tokenCache = new MicrosoftTokenCache(this.redisClientWrapper, partitionManager);
-			const tokenCache = new DistributedCachePlugin(this.redisClientWrapper, partitionManager);
-			const msalUserSessionSpecificConfig = {
-				...this.msalCommonConfig,
-				cache: { cachePlugin: tokenCache }
-			};
-			const msalConfClient = new ConfidentialClientApplication(msalUserSessionSpecificConfig);
-			console.log('👍 🔑 oauth - Authentication - MsalConfClient - created!');
-			// console.log("🔑 oauth - Authentication - getAccessToken - msalConfClient: ");
-			// console.log(msalConfClient);
-			return msalConfClient;
+				// const tokenCache = new MicrosoftTokenCache(this.redisClientWrapper, partitionManager);
+				const tokenCache = new DistributedCachePlugin(this.redisClientWrapper, partitionManager);
+				const msalUserSessionSpecificConfig = {
+					...this.msalCommonConfig,
+					cache: { cachePlugin: tokenCache }
+				};
+				const msalConfClient = new ConfidentialClientApplication(msalUserSessionSpecificConfig);
+				console.log('👍 🔑 oauth - Authentication - MsalConfClient - created!');
+				// console.log("🔑 oauth - Authentication - getAccessToken - msalConfClient: ");
+				// console.log(msalConfClient);
+				return msalConfClient;
+			} else {
+				const msalConfClient = new ConfidentialClientApplication(this.msalCommonConfig);
+				console.log(
+					'👎 🔑 oauth - Authentication - MsalConfClient - created without Cache (not necessary during build stage)!'
+				);
+				return msalConfClient;
+			}
 		} catch (error) {
 			console.error('🔥 🔑 oauth - Authentication - MsalConfClient - createMsalConfClient failed');
 			console.log(error);
@@ -325,10 +334,12 @@ class MicrosoftAuthenticationProvider {
 			const data = response.account ? JSON.parse(JSON.stringify(response.account)) : null;
 			// TBD: move to / update in redisCache in $lib/server/cache.ts:
 			const regularRedisClient = await redisCache.provideClient();
-			const responseSessionAccount =
-				(await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data)) || '';
-			console.log('🔑 oauth - Authentication - authenticateWithCode - responseSessionAccount: ');
-			console.log(responseSessionAccount);
+			// const responseSessionAccount =
+			// 	(await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data)) || '';
+			await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data)
+			await redisClient.json.set(sessionId, '$.loggedIn', true);
+			// console.log('🔑 oauth - Authentication - authenticateWithCode - responseSessionAccount: ');
+			// console.log(responseSessionAccount);
 			// const tokenCache = msalConfClient.getTokenCache();
 			// const accounts = await tokenCache.getAllAccounts();
 			return response;
@@ -380,10 +391,10 @@ class MicrosoftAuthenticationProvider {
 			// }
 			// console.log("🔑 oauth - Authentication - getAccessToken - typeof account ")
 			// console.log(typeof account);
-			console.log('🔑 oauth - Authentication - getAccessToken - account: ');
-			console.log(account);
-			console.log('🔑 oauth - Authentication - getAccessToken - typeof account: ');
-			console.log(typeof account);
+			// console.log('🔑 oauth - Authentication - getAccessToken - account: ');
+			// console.log(account);
+			// console.log('🔑 oauth - Authentication - getAccessToken - typeof account: ');
+			// console.log(typeof account);
 
 			const response = await msalConfClient.acquireTokenSilent({
 				scopes: scopes,
@@ -396,6 +407,7 @@ class MicrosoftAuthenticationProvider {
 		} catch (error) {
 			if (error instanceof InteractionRequiredAuthError) {
 				console.warn('👎 🔑 oauth - GetAccessToken silent failed - sign in again!');
+				redirect(307, '/login');
 				// console.warn(error);
 				// TBD: implement redirect to sign in!
 				return '';

@@ -47,7 +47,7 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 
 		// const sessionIdCookie = sessionId.replace("session:", "");
 		// cookies.set('session_id', sessionIdCookie, { path: '/', httpOnly: true, sameSite: "strict" });// used to be sameSite: false
-		cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: 'strict' }); // used to be sameSite: false
+		cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: false }); // change sameSite: "strict" (didn't work in Safari in local dev)
 
 		// await redisCache.setSession(sessionId, '.', sessionData);
 		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin);

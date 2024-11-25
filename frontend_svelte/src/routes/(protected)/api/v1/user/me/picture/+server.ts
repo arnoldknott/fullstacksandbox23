@@ -14,6 +14,8 @@ export const GET: RequestHandler = async ({ locals, setHeaders, cookies }): Prom
 		const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 			'User.Read'
 		]);
+		// console.log('api - v1 - user - me - picture - server - accessToken');
+		// console.log(accessToken);
 		const response = await fetch(`${appConfig.ms_graph_base_uri}/me/photo/$value`, {
 			headers: {
 				Authorization: `Bearer ${accessToken}`
