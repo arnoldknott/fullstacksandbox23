@@ -68,6 +68,7 @@
 	<div class="flex w-full flex-wrap items-center justify-between">
 		<div class="flex-grow space-x-4">
 			<NavButton url="/" link="Home" />
+			<NavButton url="/docs" link="Docs" />
 			{#if loggedIn}
 				<NavButton url="/playground" link="Playground" />
 				<NavButton url="/protectedResource" link="Protected" />

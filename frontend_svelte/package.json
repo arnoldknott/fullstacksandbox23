@@ -55,6 +55,7 @@
 		"@material/web": "^2.2.0",
 		"dotenv": "^16.4.5",
 		"redis": "^4.7.0",
+		"reveal.js": "^5.1.0",
 		"socket.io-client": "^4.8.1",
 		"tw-elements": "^2.0.0",
 		"uuid": "^11.0.2"
