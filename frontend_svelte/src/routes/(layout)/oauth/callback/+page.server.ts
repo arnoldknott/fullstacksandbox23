@@ -52,8 +52,8 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			// await redisClient.json.set(sessionId, '$.loggedIn', true);
 			await redisCache.updateSessionExpiry(sessionId);
 			const session = await redisCache.getSession(sessionId);
-			console.log('Callback - server - session');
-			console.log(session);
+			// console.log('Callback - server - session');
+			// console.log(session);
 			// await redisCache.setSession(sessionId, '.', session);
 			user_store.set(session);
 			// } else {
