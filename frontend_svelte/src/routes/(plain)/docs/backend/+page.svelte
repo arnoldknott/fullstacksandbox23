@@ -111,6 +111,7 @@
 				<li>Pydantic for data type checks and SQLAlchemy</li>
 				<li>SQLAlchemy as Object Relational Manager for database interaction</li>
 			</ul>
+			<li>Alembic for automated database migrations based on model layer</li>
 			<li>Websockets</li>
 			<li>Socket.io server</li>
 		</ul>

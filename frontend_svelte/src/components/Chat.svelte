@@ -13,6 +13,7 @@
 
 	let old_messages: string[] = $state([]);
 
+	// TBD: add as method to SocketIO class
 	const sendMessage = (event: Event) => {
 		event.preventDefault();
 		socketio.client.emit(connection.event, new_message);
@@ -27,7 +28,7 @@
 	});
 </script>
 
-<Title>{@render children?.()} in Chat</Title>
+<p>{@render children?.()} in Chat</p>
 
 <div class="w-50">
 	<form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
@@ -46,8 +47,8 @@
 	</form>
 </div>
 
-<Title>Socket.IO message history</Title>
+<p>Socket.IO message history</p>
 
 {#each old_messages as old_message}
-	<p>{old_message}</p>
+	<Title>{old_message}</Title>
 {/each}

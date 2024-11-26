@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 # #     await sio.emit("message", f"Message received from client {sid}: {data}")
 
 
+# TBD: rename into ProtectedNamespace(BaseNamespace)!
 class ProtectedEvents(BaseEvents):
     """Protected class for socket.io namespaces."""
 
@@ -37,5 +38,6 @@ class ProtectedEvents(BaseEvents):
         )
 
 
+# TBD: rename into protected_namespace_router!
 protected_events_router = ProtectedEvents("/protected_events")
 # socketio_server.register_namespace(ProtectedEvents())
