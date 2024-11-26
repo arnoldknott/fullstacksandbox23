@@ -23,7 +23,7 @@ from routers.api.v1.identities import (
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.public_resource import router as public_resource_router
 from routers.api.v1.tag import router as tag_router
-from routers.socketio.v1.base import socketio_server
+from routers.socketio.v1.base import presentation_interests_router, socketio_server
 from routers.socketio.v1.protected_events import protected_events_router
 from routers.ws.v1.websockets import router as websocket_router
 
@@ -229,6 +229,7 @@ app.include_router(
 )
 
 socketio_server.register_namespace(protected_events_router)
+socketio_server.register_namespace(presentation_interests_router)
 socketio_app = ASGIApp(socketio_server, socketio_path="socketio/v1")
 app.mount("/socketio/v1", app=socketio_app)
 

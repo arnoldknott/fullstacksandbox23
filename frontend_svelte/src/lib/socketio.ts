@@ -5,6 +5,7 @@ import type { BackendAPIConfiguration } from '$lib/types.d.ts';
 import type { SocketioConnection } from '$lib/types.d.ts';
 
 export class SocketIO {
+	// TBD: remove event and rooms from SockerioConnection
 	private connection: SocketioConnection;
 	public client: Socket;
 

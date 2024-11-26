@@ -7,7 +7,7 @@
 
 	export const ssr = false;
 	// let { children, keyboard=true }: {  children: Snippet, keyboard: boolean} = $props();
-	let { children }: {  children: Snippet} = $props();
+	let { children }: { children: Snippet } = $props();
 
 	onMount(() => {
 		const reveal = new Reveal({});
@@ -17,9 +17,8 @@
 			slideNumber: 'c/t',
 			width: 1600,
 			height: 900,
-			margin: 0.01,
+			margin: 0.01
 		});
-
 	});
 </script>
 
