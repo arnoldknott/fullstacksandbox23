@@ -4,7 +4,6 @@
 	import '@material/web/tabs/primary-tab.js';
 	import '@material/web/tabs/secondary-tab.js';
 	import '@material/web/list/list.js';
-	import Title from '$components/Title.svelte';
 	import Chat from '$components/Chat.svelte';
 	import type { Tab } from '$lib/types';
 	import type { Snippet } from 'svelte';
