@@ -26,7 +26,7 @@
 		{/each}
 	</md-tabs>
 	<div class="p-10">
-		<Title>{tabs[activeTab].content} in Tabs</Title>
+		<p>{tabs[activeTab].content} in Tabs</p>
 		<md-list>
 			<md-list-item>{@render children?.()}</md-list-item>
 			<Chat {connection}>{tabs[activeTab].content}</Chat>
