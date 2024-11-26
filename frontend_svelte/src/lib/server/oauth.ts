@@ -240,6 +240,8 @@ class MicrosoftAuthenticationProvider {
 			const data = response.account ? JSON.parse(JSON.stringify(response.account)) : null;
 			// TBD: move to / update in redisCache in $lib/server/cache.ts:
 			const regularRedisClient = await redisCache.provideClient();
+			// const responseSessionAccount =
+			// 	(await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data)) || '';
 			await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data);
 			await redisClient.json.set(sessionId, '$.loggedIn', true);
 			return response;
