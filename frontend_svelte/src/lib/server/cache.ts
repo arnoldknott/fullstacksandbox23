@@ -84,7 +84,7 @@ class RedisCache {
 
 	public async setSession(sessionId: string, path: string, sessionData: Session): Promise<boolean> {
 		const authDataString = JSON.stringify(sessionData);
-		try {
+		try {;
 			const setStatus = await this.redisClient?.json.set(sessionId, path, authDataString);
 			console.log('👍 🥞 cache - server - setSession - sessionId set');
 			await this.redisClient?.expire(sessionId, sessionTimeOut);

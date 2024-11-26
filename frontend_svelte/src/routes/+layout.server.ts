@@ -12,6 +12,7 @@ const appConfig = await AppConfig.getInstance();
 
 export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
 	let loggedIn = false;
+	const sessionId = cookies.get('session_id');
 	let sessionData: Session | null = null;
 	const backendAPIConfiguration: BackendAPIConfiguration = {
 		backendFqdn: appConfig.backend_fqdn,
