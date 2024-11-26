@@ -13,6 +13,7 @@
 
 	let old_messages: string[] = $state([]);
 
+	// TBD: add as method to SocketIO class
 	const sendMessage = (event: Event) => {
 		event.preventDefault();
 		socketio.client.emit(connection.event, new_message);
