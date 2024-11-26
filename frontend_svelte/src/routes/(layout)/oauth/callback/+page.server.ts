@@ -1,5 +1,5 @@
 import { msalAuthProvider } from '$lib/server/oauth';
-import { redisCache } from '$lib/server/cache';
+// import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
 // import { v4 as uuidv4 } from 'uuid';
 import { redirect } from '@sveltejs/kit';

@@ -270,7 +270,7 @@ class MicrosoftAuthenticationProvider {
 			const account: AccountInfo = accountResponse[0] as AccountInfo;
 			const response = await msalConfClient.acquireTokenSilent({
 				scopes: scopes,
-				account: accountInfo,
+				account: account
 			});
 			const accessToken = response.accessToken;
 			return accessToken;
