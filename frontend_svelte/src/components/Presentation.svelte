@@ -3,7 +3,9 @@
 	import Title from './Title.svelte';
 	// import RevealJs from './RevealJS.svelte';
 	import type { Snippet } from 'svelte';
-	let { title, children }: { title: string; children: Snippet } = $props();
+	let { title, link, children }: { title: string; link: string, children: Snippet } = $props();
+    console.log('=== lib - components - presentation - link ===');
+    console.log(link);
 </script>
 
 <!-- <md-filled-card class="w-80">
@@ -18,6 +20,6 @@
 </md-filled-card> -->
 
 <md-elevated-card>
-	<Title>{title}</Title>
+	<Title><a href={link}>{title}</a></Title>
 	{@render children?.()}
 </md-elevated-card>
