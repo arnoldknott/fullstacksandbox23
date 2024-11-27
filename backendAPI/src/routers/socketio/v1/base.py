@@ -105,11 +105,25 @@ class PresentationInterests(socketio.AsyncNamespace):
             "Backend": 0,
             "Frontend": 0,
         }
+        self.comments = []
 
     async def on_connect(self, sid, environ):
         """Connect event for socket.io namespaces."""
         logger.info(f"Client connected with session id: {sid}.")
-        # await self.emit("comments", f"Hello new client with session id {sid}")
+        for topic in self.average:
+            await self.emit(
+                "averages",
+                {
+                    "topic": topic,
+                    "average": self.average[topic],
+                    "count": self.count[topic],
+                },
+            )
+        for comment in self.comments:
+            await self.emit(
+                "server_comments",
+                {"topic": comment["topic"], "comment": comment["comment"]},
+            )
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""
@@ -119,8 +133,7 @@ class PresentationInterests(socketio.AsyncNamespace):
         """Presentation interests for socket.io."""
         logger.info(f"Received message from client {sid}.")
 
-        await self.emit("comments", f"Client says: {data}")
-
+        self.comments.append({"topic": data["topic"], "comment": data["comment"]})
         await self.emit(
             "server_comments", {"topic": data["topic"], "comment": data["comment"]}
         )

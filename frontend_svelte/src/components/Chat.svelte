@@ -36,8 +36,11 @@
 			label="Message"
 			type="input"
 			name="message"
+			role="textbox"
+			tabindex="0"
 			value={new_message}
 			oninput={(e: Event) => (new_message = (e.target as HTMLInputElement).value)}
+			onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && sendMessage(e)}
 			class="w-50"
 		>
 		</md-filled-text-field>

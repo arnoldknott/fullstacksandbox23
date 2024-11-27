@@ -24,7 +24,15 @@
 
 	let replies: string[] = $state([]);
 
-	let topics = $state([
+	type Topic = {
+		name: string;
+		value: number;
+		comment: string;
+		average: number;
+		count: number;
+	};
+
+	let topics: Topic[] = $state([
 		{ name: 'Repository', value: 50, comment: '', average: 50, count: 0 },
 		{ name: 'Infrastructure', value: 50, comment: '', average: 50, count: 0 },
 		{ name: 'Architecture', value: 50, comment: '', average: 50, count: 0 },
@@ -41,18 +49,21 @@
 	);
 
 	// TBD: add as method to SocketIO class
-	const sendMessage = (event: Event) => {
+	const submitForm = async (event: Event) => {
+		console.log('sendMessage triggered');
 		event.preventDefault();
 		const target = event.target as HTMLElement | null;
 		const name = target ? target.id : '';
 		const topic = topics.find((t) => t.name === name);
+		if (topic) {
+			await sendMessage(topic);
+		}
+	};
 
+	const sendMessage = async (topic: Topic) => {
+		const name = topic.name;
 		const message = topic ? topic.comment.trim() : '';
 		const value = topic ? topic.value : 50;
-
-		// const namespace = name.toLowerCase();
-		// console.log(`Sending message in namespace ${namespace}`, message);
-		// socketio.client.emit(connection.event, {topic: name, comment: message, value: value});
 		socketio.client.emit('comments', { topic: name, comment: message, value: value });
 		if (topic) {
 			topic.comment = '';
@@ -66,7 +77,7 @@
 			}
 		});
 		socketio.client.on('averages', (data) => {
-			console.log(`New average for topic ${data.topic}: ${data.average}`);
+			console.log(`Average for ${data.topic}: ${data.average}`);
 
 			const topic = topics.find((t) => t.name === data.topic);
 			if (topic) {
@@ -124,19 +135,41 @@
 	</ul>
 </section>
 <section id="backend">
-	<h3>Backend</h3>
+	<h3>Backend: FastAPI</h3>
 	<ul>
 		<li>Services</li>
+		<ul>
+			<li>REST API</li>
+			<li>Socket.io</li>
+			<li>Websockets</li>
+			<li>Authorization</li>
+			<li>Access Control</li>
+			<li>Logging</li>
+		</ul>
 		<li>Design</li>
+		<ul>
+			<li>Models</li>
+			<li>Views</li>
+			<li>Controllers</li>
+		</ul>
 		<li>Technologies</li>
 	</ul>
 </section>
 <section id="frontend">
-	<h3>Frontend</h3>
+	<h3>Frontend: Svelte5</h3>
 	<ul>
 		<li>Services</li>
+		<ul>
+			<li>Authentication</li>
+			<li>Session Management</li>
+		</ul>
 		<li>Design</li>
 		<li>Technologies</li>
+		<ul>
+			<li>Material Design</li>
+			<li>TailwindCSS</li>
+			<li>Reveal.JS</li>
+		</ul>
 	</ul>
 </section>
 <section id="inputs" class="w-screen">
@@ -145,14 +178,14 @@
 		<div class="h-[700px] overflow-y-scroll">
 			{#each topics as topic, i}
 				<div class="my-2 flex flex-col" style="background-color: {input_colors[i]};">
-					<form id={topic.name} method="POST" onsubmit={sendMessage}>
+					<form id={topic.name} method="POST" onsubmit={submitForm}>
 						<div class="justify-left flex flex-row">
 							<div class="flex w-full flex-row">
-								<span class="justify-left text-2xl text-black">{topic.name}:</span>
+								<span class="justify-left p-4 text-3xl text-black">{topic.name}:</span>
 								<div class="w-full justify-end">
 									<span class="text-xl text-black">👎</span>
 									<md-slider
-										class="w-3/5"
+										class="w-4/5"
 										min="0"
 										max="100"
 										step="1"
@@ -170,8 +203,11 @@
 								label="Comments"
 								type="input"
 								name="message"
+								role="textbox"
+								tabindex="0"
 								value={topic.comment}
 								oninput={(e: Event) => (topic.comment = (e.target as HTMLInputElement).value)}
+								onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && sendMessage(topic)}
 								class="mr-2 w-full"
 							>
 							</md-filled-text-field>
