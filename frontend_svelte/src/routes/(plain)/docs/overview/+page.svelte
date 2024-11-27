@@ -81,7 +81,7 @@
 	$effect(() => {
 		socketio.client.on('server_comments', (data) => {
 			if (data.comment !== '') {
-				replies.push({"name": data.topic,  "comment": data.comment});
+				replies.push({ name: data.topic, comment: data.comment });
 			}
 		});
 		socketio.client.on('averages', (data) => {
@@ -245,8 +245,16 @@
 					{#each replies as reply}
 						<md-list class="bg-transparent">
 							<md-list-item>
-								<div slot="headline" style="color: {average_colors[topics.findIndex(t => t.name === reply.name)]}" class="text-2xl font-bold text-left">{reply.name}</div>
-								<div slot="supporting-text" class="text-xl text-white text-left">{reply.comment}</div>
+								<div
+									slot="headline"
+									style="color: {average_colors[topics.findIndex((t) => t.name === reply.name)]}"
+									class="text-left text-2xl font-bold"
+								>
+									{reply.name}
+								</div>
+								<div slot="supporting-text" class="text-left text-xl text-white">
+									{reply.comment}
+								</div>
 								<md-divider></md-divider>
 							</md-list-item>
 						</md-list>
