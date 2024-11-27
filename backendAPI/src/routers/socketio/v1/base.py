@@ -118,11 +118,13 @@ class PresentationInterests(socketio.AsyncNamespace):
                     "average": self.average[topic],
                     "count": self.count[topic],
                 },
+                to=sid,
             )
         for comment in self.comments:
             await self.emit(
                 "server_comments",
                 {"topic": comment["topic"], "comment": comment["comment"]},
+                to=sid,
             )
 
     async def on_disconnect(self, sid):

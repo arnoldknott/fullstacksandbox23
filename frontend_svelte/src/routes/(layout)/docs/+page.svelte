@@ -35,14 +35,14 @@
 </script>
 
 <div class="grid grid-cols-1 gap-4 p-4">
-	<Presentation title="Overview">
+	<Presentation title="Overview" link="/docs/overview">
 		<iframe title="Overview" src="/docs/overview" width="100%" height="400px"></iframe>
 	</Presentation>
 </div>
 
 <div class="grid grid-cols-2 gap-4 p-4">
 	{#each presentations as { title, link }}
-		<Presentation {title}>
+		<Presentation {title} {link}>
 			<iframe {title} src={link} width="100%" height="400px"></iframe>
 		</Presentation>
 	{/each}
