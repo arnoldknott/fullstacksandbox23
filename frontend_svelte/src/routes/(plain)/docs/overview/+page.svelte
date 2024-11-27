@@ -1,4 +1,5 @@
 <script lang="ts">
+	import RevealJs from '$components/RevealJS.svelte';
 	import { SocketIO } from '$lib/socketio';
 	import '@material/web/textfield/filled-text-field.js';
 	import '@material/web/button/elevated-button.js';
@@ -24,7 +25,15 @@
 
 	let replies: string[] = $state([]);
 
-	let topics = $state([
+	type Topic = {
+		name: string;
+		value: number;
+		comment: string;
+		average: number;
+		count: number;
+	};
+
+	let topics: Topic[] = $state([
 		{ name: 'Repository', value: 50, comment: '', average: 50, count: 0 },
 		{ name: 'Infrastructure', value: 50, comment: '', average: 50, count: 0 },
 		{ name: 'Architecture', value: 50, comment: '', average: 50, count: 0 },
@@ -41,18 +50,21 @@
 	);
 
 	// TBD: add as method to SocketIO class
-	const sendMessage = (event: Event) => {
+	const submitForm = async (event: Event) => {
+		console.log('sendMessage triggered');
 		event.preventDefault();
 		const target = event.target as HTMLElement | null;
 		const name = target ? target.id : '';
 		const topic = topics.find((t) => t.name === name);
+		if (topic) {
+			await sendMessage(topic);
+		}
+	};
 
+	const sendMessage = async (topic: Topic) => {
+		const name = topic.name;
 		const message = topic ? topic.comment.trim() : '';
 		const value = topic ? topic.value : 50;
-
-		// const namespace = name.toLowerCase();
-		// console.log(`Sending message in namespace ${namespace}`, message);
-		// socketio.client.emit(connection.event, {topic: name, comment: message, value: value});
 		socketio.client.emit('comments', { topic: name, comment: message, value: value });
 		if (topic) {
 			topic.comment = '';
@@ -66,7 +78,7 @@
 			}
 		});
 		socketio.client.on('averages', (data) => {
-			console.log(`New average for topic ${data.topic}: ${data.average}`);
+			console.log(`Average for ${data.topic}: ${data.average}`);
 
 			const topic = topics.find((t) => t.name === data.topic);
 			if (topic) {
@@ -77,139 +89,166 @@
 	});
 </script>
 
-<section>
-	<h1>Fullstack Sandbox23</h1>
-	<ul>
-		<li><a href="#/repository">Repository</a></li>
-		<li><a href="#/infrastructure">Infrastructure</a></li>
-		<li><a href="#/architecture">Architecture</a></li>
-		<li><a href="#/security">Security</a></li>
-		<li><a href="#/backend">Backend</a></li>
-		<li><a href="#/frontend">Frontend</a></li>
-	</ul>
-</section>
-<section id="repository">
-	<h3>Repository: Github</h3>
-	<ul>
-		<li>Code Base</li>
-		<li>Continuous Integration / Continuous Deployment</li>
-		<li>Container Registry</li>
-		<li>Environments</li>
-	</ul>
-</section>
-<section id="infrastructure">
-	<h3>Infrastructure: Azure Cloud</h3>
-	<ul>
-		<li>Infrastructure as Code</li>
-		<li>Resources</li>
-		<li>Identity Management</li>
-	</ul>
-</section>
-<section id="architecture">
-	<h3>Architecture</h3>
-	<ul>
-		<li>Containers</li>
-		<li>Storage</li>
-		<li>Connections</li>
-	</ul>
-</section>
-<section id="security">
-	<h3>Security</h3>
-	<ul>
-		<li>Network</li>
-		<li>OAuth2</li>
-		<li>AccessControl</li>
-		<li>Hierarchies</li>
-		<li>Logging</li>
-	</ul>
-</section>
-<section id="backend">
-	<h3>Backend</h3>
-	<ul>
-		<li>Services</li>
-		<li>Design</li>
-		<li>Technologies</li>
-	</ul>
-</section>
-<section id="frontend">
-	<h3>Frontend</h3>
-	<ul>
-		<li>Services</li>
-		<li>Design</li>
-		<li>Technologies</li>
-	</ul>
-</section>
-<section id="inputs" class="w-screen">
-	<p>Select your interest in this topic and comment on it</p>
-	<div class="grid grid-cols-2 gap-8">
-		<div class="h-[700px] overflow-y-scroll">
-			{#each topics as topic, i}
-				<div class="my-2 flex flex-col" style="background-color: {input_colors[i]};">
-					<form id={topic.name} method="POST" onsubmit={sendMessage}>
-						<div class="justify-left flex flex-row">
-							<div class="flex w-full flex-row">
-								<span class="justify-left text-2xl text-black">{topic.name}:</span>
-								<div class="w-full justify-end">
-									<span class="text-xl text-black">👎</span>
-									<md-slider
-										class="w-3/5"
-										min="0"
-										max="100"
-										step="1"
-										value={topic.value}
-										oninput={(e: Event) =>
-											(topic.value = parseInt((e.target as HTMLInputElement).value))}
-									>
-									</md-slider>
-									<span class="text-xl text-black">👍</span>
+<RevealJs keyboard={false}>
+	<section>
+		<h1>Fullstack Sandbox23</h1>
+		<ul>
+			<li><a href="#/repository">Repository</a></li>
+			<li><a href="#/infrastructure">Infrastructure</a></li>
+			<li><a href="#/architecture">Architecture</a></li>
+			<li><a href="#/security">Security</a></li>
+			<li><a href="#/backend">Backend</a></li>
+			<li><a href="#/frontend">Frontend</a></li>
+		</ul>
+	</section>
+	<section id="repository">
+		<h3>Repository: Github</h3>
+		<ul>
+			<li>Code Base</li>
+			<li>Continuous Integration / Continuous Deployment</li>
+			<li>Container Registry</li>
+			<li>Environments</li>
+		</ul>
+	</section>
+	<section id="infrastructure">
+		<h3>Infrastructure: Azure Cloud</h3>
+		<ul>
+			<li>Infrastructure as Code</li>
+			<li>Resources</li>
+			<li>Identity Management</li>
+		</ul>
+	</section>
+	<section id="architecture">
+		<h3>Architecture</h3>
+		<ul>
+			<li>Containers</li>
+			<li>Storage</li>
+			<li>Connections</li>
+		</ul>
+	</section>
+	<section id="security">
+		<h3>Security</h3>
+		<ul>
+			<li>Network</li>
+			<li>OAuth2</li>
+			<li>AccessControl</li>
+			<li>Hierarchies</li>
+			<li>Logging</li>
+		</ul>
+	</section>
+	<section id="backend">
+		<h3>Backend: FastAPI</h3>
+		<ul>
+			<li>Services</li>
+			<ul>
+				<li>REST API</li>
+				<li>Socket.io</li>
+				<li>Websockets</li>
+				<li>Authorization</li>
+				<li>Access Control</li>
+				<li>Logging</li>
+			</ul>
+			<li>Design</li>
+			<ul>
+				<li>Models</li>
+				<li>Views</li>
+				<li>Controllers</li>
+			</ul>
+			<li>Technologies</li>
+		</ul>
+	</section>
+	<section id="frontend">
+		<h3>Frontend: Svelte5</h3>
+		<ul>
+			<li>Services</li>
+			<ul>
+				<li>Authentication</li>
+				<li>Session Management</li>
+			</ul>
+			<li>Design</li>
+			<li>Technologies</li>
+			<ul>
+				<li>Material Design</li>
+				<li>TailwindCSS</li>
+				<li>Reveal.JS</li>
+			</ul>
+		</ul>
+	</section>
+	<section id="inputs" class="w-screen">
+		<p>Select your interest in this topic and comment on it</p>
+		<div class="grid grid-cols-2 gap-8">
+			<div class="h-[700px] overflow-y-scroll">
+				{#each topics as topic, i}
+					<div class="my-2 flex flex-col" style="background-color: {input_colors[i]};">
+						<form id={topic.name} method="POST" onsubmit={submitForm}>
+							<div class="justify-left flex flex-row">
+								<div class="flex w-full flex-row">
+									<span class="justify-left p-4 text-3xl text-black">{topic.name}:</span>
+									<div class="w-full justify-end">
+										<span class="text-xl text-black">👎</span>
+										<md-slider
+											class="w-4/5"
+											min="0"
+											max="100"
+											step="1"
+											value={topic.value}
+											oninput={(e: Event) =>
+												(topic.value = parseInt((e.target as HTMLInputElement).value))}
+										>
+										</md-slider>
+										<span class="text-xl text-black">👍</span>
+									</div>
 								</div>
 							</div>
-						</div>
-						<div class="flex flex-row p-2">
-							<md-filled-text-field
-								label="Comments"
-								type="input"
-								name="message"
-								value={topic.comment}
-								oninput={(e: Event) => (topic.comment = (e.target as HTMLInputElement).value)}
-								class="mr-2 w-full"
-							>
-							</md-filled-text-field>
-							<div>
-								<md-elevated-button type="submit" role="button" tabindex="0" class="my-1">
-									Send
-								</md-elevated-button>
+							<div class="flex flex-row p-2">
+								<md-filled-text-field
+									label="Comments"
+									type="input"
+									name="message"
+									role="textbox"
+									tabindex="0"
+									value={topic.comment}
+									oninput={(e: Event) => (topic.comment = (e.target as HTMLInputElement).value)}
+									onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && sendMessage(topic)}
+									class="mr-2 w-full"
+								>
+								</md-filled-text-field>
+								<div>
+									<md-elevated-button type="submit" role="button" tabindex="0" class="my-1">
+										Send
+									</md-elevated-button>
+								</div>
 							</div>
-						</div>
-					</form>
-				</div>
-			{/each}
-		</div>
-		<div>
-			<span>Results</span>
-			<md-chip-set>
-				{#each topics as topic, i}
-					<md-assist-chip
-						label={`${topic.name}: ${topic.count}`}
-						style="background-color: {average_colors[i]};"
-					></md-assist-chip>
-				{/each}
-			</md-chip-set>
-			<div class="h-[650px] overflow-y-scroll">
-				<p>Replies</p>
-				{#each replies as reply}
-					<span class=" text-3xl">{reply}</span><br />
+						</form>
+					</div>
 				{/each}
 			</div>
+			<div>
+				<span>Results</span>
+				<md-chip-set>
+					{#each topics as topic, i}
+						<md-assist-chip
+							label={`${topic.name}: ${topic.count}`}
+							style="background-color: {average_colors[i]};"
+						></md-assist-chip>
+					{/each}
+				</md-chip-set>
+				<div class="h-[650px] overflow-y-scroll">
+					<p>Replies</p>
+					{#each replies as reply}
+						<span class=" text-3xl">{reply}</span><br />
+					{/each}
+				</div>
+			</div>
 		</div>
-	</div>
-</section>
+	</section>
 
-<style>
-	md-filled-text-field {
-		--md-filled-text-field-container-color: #ffbe6e;
-	}
-	md-elevated-button {
-		--md-elevated-button-container-color: #ffbe6e;
-	}
-</style>
+	<style>
+		md-filled-text-field {
+			--md-filled-text-field-container-color: #ffbe6e;
+		}
+		md-elevated-button {
+			--md-elevated-button-container-color: #ffbe6e;
+		}
+	</style>
+</RevealJs>
