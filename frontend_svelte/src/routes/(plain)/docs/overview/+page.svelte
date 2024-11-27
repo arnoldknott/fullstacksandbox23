@@ -6,6 +6,9 @@
 	import '@material/web/slider/slider.js';
 	import '@material/web/chips/chip-set.js';
 	import '@material/web/chips/assist-chip.js';
+	import '@material/web/list/list.js';
+	import '@material/web/list/list-item.js';
+	import '@material/web/divider/divider.js';
 	// import '@material/web/chips/input-chip.js';
 	// import '@material/web/chips/filter-chip.js';
 	// import '@material/web/chips/suggestion-chip.js';
@@ -23,7 +26,11 @@
 
 	const socketio = new SocketIO(connection);
 
-	let replies: string[] = $state([]);
+	type Reply = {
+		name: string;
+		comment: string;
+	};
+	let replies: Reply[] = $state([]);
 
 	type Topic = {
 		name: string;
@@ -74,7 +81,7 @@
 	$effect(() => {
 		socketio.client.on('server_comments', (data) => {
 			if (data.comment !== '') {
-				replies.push(`${data.topic}: ${data.comment}`);
+				replies.push({ name: data.topic, comment: data.comment });
 			}
 		});
 		socketio.client.on('averages', (data) => {
@@ -236,7 +243,22 @@
 				<div class="h-[650px] overflow-y-scroll">
 					<p>Replies</p>
 					{#each replies as reply}
-						<span class=" text-3xl">{reply}</span><br />
+						<md-list class="bg-transparent">
+							<md-list-item>
+								<div
+									slot="headline"
+									style="color: {average_colors[topics.findIndex((t) => t.name === reply.name)]}"
+									class="text-left text-2xl font-bold"
+								>
+									{reply.name}
+								</div>
+								<div slot="supporting-text" class="text-left text-xl text-white">
+									{reply.comment}
+								</div>
+								<md-divider></md-divider>
+							</md-list-item>
+						</md-list>
+						<!-- <span class=" text-3xl">{reply}</span><br /> -->
 					{/each}
 				</div>
 			</div>
