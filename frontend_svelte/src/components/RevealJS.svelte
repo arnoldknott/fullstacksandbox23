@@ -7,13 +7,13 @@
 
 	export const ssr = false;
 	// let { children, keyboard=true }: {  children: Snippet, keyboard: boolean} = $props();
-	let { children }: { children: Snippet } = $props();
+	let { children, keyboard = true }: { children: Snippet; keyboard: boolean } = $props();
 
 	onMount(() => {
 		const reveal = new Reveal({});
 		reveal.initialize({
 			embeddded: true,
-			keyboard: false,
+			keyboard: keyboard,
 			slideNumber: 'c/t',
 			width: 1600,
 			height: 900,
