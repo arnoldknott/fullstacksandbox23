@@ -1,8 +1,8 @@
 <script lang="ts">
-	import RevealJs from '$components/RevealJS.svelte';
+	// import RevealJs from '$components/RevealJS.svelte';
 	import type { Snippet } from 'svelte';
 	// let { keyboard, children }: { keyboard: boolean, children: Snippet } = $props();
-	let { keyboard, children }: { keyboard: boolean; children: Snippet } = $props();
+	let { children }: { children: Snippet } = $props();
 
 	// let keyboard = $state(true);
 	// console.log("=== docs - layout.svelte - keyboard ===");
@@ -10,7 +10,5 @@
 </script>
 
 <div class="h-screen w-screen">
-	<RevealJs {keyboard}>
-		{@render children?.()}
-	</RevealJs>
+	{@render children?.()}
 </div>
