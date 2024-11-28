@@ -12,27 +12,27 @@
 
 	// const socketio_client_from_lib = new SocketIO();
 
-	const socketio_demo_message_connection = {
-		event: 'demo_message',
+	const socketio_public_message_connection = {
+		event: 'public_message',
 		namespace: '',
 		room: ''
 	};
-	const socketio_protected_message_connection = {
-		event: 'protected_message',
+	const socketio_demo_message_connection = {
+		event: 'demo_message',
 		namespace: '',
 		room: ''
 	};
 
 	const tabs: Tab[] = [
 		{
-			header: 'Demo Message',
-			content: 'Demo message interface.',
-			connection: socketio_demo_message_connection
+			header: 'Public Message',
+			content: 'Public message interface.',
+			connection: socketio_public_message_connection
 		},
 		{
-			header: 'Protected Message',
-			content: 'Protected message interface',
-			connection: socketio_protected_message_connection,
+			header: 'Demo Message',
+			content: 'Demo message interface',
+			connection: socketio_demo_message_connection,
 			active: true
 		}
 	];
