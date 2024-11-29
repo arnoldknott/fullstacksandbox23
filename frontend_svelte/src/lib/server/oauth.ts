@@ -85,7 +85,7 @@ class RedisPartitionManager implements IPartitionManager {
 			const partitionKey = account?.homeAccountId || '';
 			return partitionKey;
 		} catch (error) {
-			console.log("Error in getKey() : ",  error);
+			console.log('Error in getKey() : ', error);
 		}
 		return '';
 	}
@@ -205,7 +205,7 @@ class MicrosoftAuthenticationProvider {
 		sessionId: string,
 		origin: string,
 		targetUrl: string = '/',
-		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scoepsAzure],
+		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scoepsAzure]
 	): Promise<string> {
 		try {
 			// console.log('🔑 oauth - Authentication - signIn ');
@@ -216,8 +216,6 @@ class MicrosoftAuthenticationProvider {
 				})
 			);
 			// TBD: add state to session cache
-			console.log('🔑 oauth - Authentication - signIn - state')
-			console.log(state);
 			const msalConfClient = this.createMsalConfClient(sessionId);
 			const authCodeUrlParameters = {
 				scopes: scopes,
@@ -246,9 +244,8 @@ class MicrosoftAuthenticationProvider {
 		// if (stateJSON["csrfToken"] !== sessionCache["csrfToken"]) {
 		// 	throw new Error('CSRF Token mismatch');
 		// }
-		return stateJSON.targetURL
+		return stateJSON.targetURL;
 	}
-
 
 	public async authenticateWithCode(
 		sessionId: string,
@@ -269,7 +266,7 @@ class MicrosoftAuthenticationProvider {
 			const response = await msalConfClient.acquireTokenByCode({
 				code: code,
 				scopes: scopes,
-				redirectUri: `${origin}/oauth/callback`,
+				redirectUri: `${origin}/oauth/callback`
 			});
 			// console.log('🔑 oauth - Authentication - authenticateWithCode - response')
 			// console.log(response);
@@ -283,9 +280,8 @@ class MicrosoftAuthenticationProvider {
 			// 	(await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data)) || '';
 			await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data);
 			await redisClient.json.set(sessionId, '$.loggedIn', true);
-		
-			/*********/
 
+			/*********/
 
 			return response;
 		} catch (error) {
@@ -297,8 +293,8 @@ class MicrosoftAuthenticationProvider {
 
 	public async getAccessToken(
 		sessionId: string,
-		sessionData: Session,// TBD: remove the event.locals.sessionData and use the sessionData from the cache instead!
-		scopes: string[] = [appConfig.api_scope_default],
+		sessionData: Session, // TBD: remove the event.locals.sessionData and use the sessionData from the cache instead!
+		scopes: string[] = [appConfig.api_scope_default]
 	): Promise<string> {
 		try {
 			// console.log('🔑 oauth - Authentication - getAccessToken ');

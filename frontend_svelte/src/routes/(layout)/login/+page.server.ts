@@ -22,7 +22,6 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 
 		/*********************/
 
-
 		// console.log("=== signin - sessionData, typed ===");
 		// console.log(sessionData);
 
@@ -44,7 +43,6 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		// await redisClient.json.set("native", "$", sessionDataJSONnative);
 		// await redisClient.expire("native", 3600);
 
-
 		/******* Used previously:*/
 
 		// move to setSession in $lib/server/cache.ts:
@@ -60,12 +58,11 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 
 		// await redisCache.setSession(sessionId, '.', sessionData);
 
-
 		/******/
 
 		const targetURL = url.searchParams.get('targetURL');
 
-		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL );
+		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL);
 	} catch (err) {
 		console.error('login - server - sign in redirect failed');
 		console.error(err);

@@ -50,8 +50,8 @@ export const handle = async ({ event, resolve }) => {
 				path: '/',
 				expires: new Date(0)
 			});
-			console.log('🎣 hooks - server - locals after session expired');
-			console.log(event.locals);
+			// console.log('🎣 hooks - server - locals after session expired');
+			// console.log(event.locals);
 			// console.log("===> hooks - server - session expired - redirecting to '/' <===");
 			redirect(307, '/');
 		} else {

@@ -5,8 +5,8 @@
 	// import { user_store } from '$lib/stores';
 	import type { LayoutData } from '../$types';
 	import type { Snippet } from 'svelte';
-	import { page } from '$app/stores'
-	import JsonData from '$components/JsonData.svelte';
+	import { page } from '$app/stores';
+	// import JsonData from '$components/JsonData.svelte';
 	// import Guard from '$components/Guard.svelte';
 	// import type { User } from 'src/types.d.ts';
 
@@ -32,11 +32,6 @@
 			}
 		}
 	});
-
-	console.log("=== layout - client - $page ===")
-	console.log($page.url.href)
-	const targetUrl = $page.url.href //"/playground" // $page.route.id
-
 </script>
 
 <nav class="mx-2 p-2">
@@ -57,7 +52,6 @@
 			<!-- <NavButton url="/user" link="User" /> -->
 			<!-- Move this to component user button -->
 			<!-- Implemnt check for user picture size and show svg instead, if no user picture available -->
-
 
 			{#if loggedIn}
 				<img class="h-12 w-12 rounded-full" src="/api/v1/user/me/picture" alt="you" />
@@ -82,10 +76,8 @@
 	</div>
 </nav>
 
-
 <!-- <JsonData data={$page}></JsonData> -->
 
 <main>
-	
 	{@render children?.()}
 </main>
