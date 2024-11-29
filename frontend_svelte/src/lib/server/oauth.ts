@@ -5,6 +5,7 @@ import type { RedisClientType } from 'redis';
 import {
 	ConfidentialClientApplication,
 	InteractionRequiredAuthError,
+	CryptoProvider,
 	type AuthenticationResult
 } from '@azure/msal-node';
 import type { Session } from '$lib/types';
@@ -32,7 +33,7 @@ class RedisClientWrapper implements ICacheClient {
 
 	constructor(redisClient: RedisClientType) {
 		this.redisClient = redisClient;
-		console.log('👍 🔑 oauth - Authentication - RedisClientWrapper - created!');
+		// console.log('👍 🔑 oauth - Authentication - RedisClientWrapper - created!');
 	}
 
 	public async set(key: string, value: string): Promise<string> {
@@ -71,7 +72,7 @@ class RedisPartitionManager implements IPartitionManager {
 	constructor(redisClient: RedisClientWrapper, sessionId: string) {
 		this.sessionId = sessionId;
 		this.redisClient = redisClient;
-		console.log('👍 🔑 oauth - Authentication - RedisPartitionManager - created!');
+		// console.log('👍 🔑 oauth - Authentication - RedisPartitionManager - created!');
 	}
 
 	async getKey(): Promise<string> {
@@ -81,10 +82,10 @@ class RedisPartitionManager implements IPartitionManager {
 			const sessionData = await regularRedisClient.json.get(this.sessionId);
 			const session = sessionData as SessionCacheData;
 			const account = session.microsoftAccount as AccountInfo;
-			const partitionKey = account.homeAccountId || '';
+			const partitionKey = account?.homeAccountId || '';
 			return partitionKey;
 		} catch (error) {
-			console.log(error);
+			console.log("Error in getKey() : ",  error);
 		}
 		return '';
 	}
@@ -149,6 +150,7 @@ class RedisPartitionManager implements IPartitionManager {
 class MicrosoftAuthenticationProvider {
 	private msalCommonConfig;
 	private redisClientWrapper: RedisClientWrapper;
+	private cryptoProvider: CryptoProvider;
 
 	constructor(redisClient: RedisClientType) {
 		// Common configuration for all users:
@@ -160,7 +162,8 @@ class MicrosoftAuthenticationProvider {
 				scopes: [...scopesBackend, ...scopesMsGraph]
 			}
 		};
-		console.log('👍 🔑 oauth - Authentication - Configuration for MsalConfClient - created!');
+		this.cryptoProvider = new CryptoProvider();
+		// console.log('👍 🔑 oauth - Authentication - Configuration for MsalConfClient - created!');
 		this.redisClientWrapper = new RedisClientWrapper(redisClient);
 	}
 
@@ -180,7 +183,7 @@ class MicrosoftAuthenticationProvider {
 					cache: { cachePlugin: tokenCache }
 				};
 				const msalConfClient = new ConfidentialClientApplication(msalUserSessionSpecificConfig);
-				console.log('👍 🔑 oauth - Authentication - MsalConfClient - created!');
+				// console.log('👍 🔑 oauth - Authentication - MsalConfClient - created!');
 				return msalConfClient;
 			} else {
 				const msalConfClient = new ConfidentialClientApplication(this.msalCommonConfig);
@@ -201,16 +204,32 @@ class MicrosoftAuthenticationProvider {
 	public async signIn(
 		sessionId: string,
 		origin: string,
-		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scoepsAzure]
+		targetUrl: string = '/',
+		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scoepsAzure],
 	): Promise<string> {
 		try {
-			console.log('🔑 oauth - Authentication - signIn ');
+			// console.log('🔑 oauth - Authentication - signIn ');
+			const state = this.cryptoProvider.base64Encode(
+				JSON.stringify({
+					csrfToken: this.cryptoProvider.createNewGuid(), // create a GUID for csrf
+					targetURL: targetUrl
+				})
+			);
+			// TBD: add state to session cache
+			console.log('🔑 oauth - Authentication - signIn - state')
+			console.log(state);
 			const msalConfClient = this.createMsalConfClient(sessionId);
 			const authCodeUrlParameters = {
 				scopes: scopes,
-				redirectUri: `${origin}/oauth/callback`
+				redirectUri: `${origin}/oauth/callback`,
+				state: state
 			};
+			// pass the state here as well, so user can get redirected to the correct page after login:
+			// for example: https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/7a01aafc1af9aca6d51638204aa942700c0418ca/samples/msal-node-samples/auth-code-distributed-cache/src/AuthProvider.ts#L84
+			// also add a CSRF token here.
 			const authCodeUrl = await msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
+			// console.log('🔑 oauth - Authentication - signIn - authCodeUrl')
+			// console.log(authCodeUrl);
 			return authCodeUrl;
 		} catch (error) {
 			console.error('🔥 🔑 oauth - Authentication - signIn failed');
@@ -218,6 +237,18 @@ class MicrosoftAuthenticationProvider {
 			throw error;
 		}
 	}
+
+	public async decodeState(state: string): Promise<URL> {
+		const stateJSON = JSON.parse(this.cryptoProvider.base64Decode(state));
+		// console.log('🔑 oauth - Authentication - decodeState - stateJSON')
+		// console.log(stateJSON);
+		// TBD: get state from session cache and compare with the state from the URL
+		// if (stateJSON["csrfToken"] !== sessionCache["csrfToken"]) {
+		// 	throw new Error('CSRF Token mismatch');
+		// }
+		return stateJSON.targetURL
+	}
+
 
 	public async authenticateWithCode(
 		sessionId: string,
@@ -229,14 +260,22 @@ class MicrosoftAuthenticationProvider {
 			throw new Error('🔥 🔑 oauth - GetAccessToken failed - no code');
 		}
 		try {
-			console.log('🔑 oauth - Authentication - authenticateWithCode ');
+			// console.log('🔑 oauth - Authentication - authenticateWithCode ');
 			const msalConfClient = this.createMsalConfClient(sessionId);
-			await msalConfClient.getTokenCache().getAllAccounts(); // required for triggering beforeCacheAccess
+			// Doesn't make sense here - at this time the tokens and the session data is not cached yet in Redis:
+			// await msalConfClient.getTokenCache().getAllAccounts(); // required for triggering beforeCacheAccess
+
+			// state: url.searchParams['state']
 			const response = await msalConfClient.acquireTokenByCode({
 				code: code,
 				scopes: scopes,
-				redirectUri: `${origin}/oauth/callback`
+				redirectUri: `${origin}/oauth/callback`,
 			});
+			// console.log('🔑 oauth - Authentication - authenticateWithCode - response')
+			// console.log(response);
+
+			/********* used previously: ***/
+
 			const data = response.account ? JSON.parse(JSON.stringify(response.account)) : null;
 			// TBD: move to / update in redisCache in $lib/server/cache.ts:
 			const regularRedisClient = await redisCache.provideClient();
@@ -244,6 +283,10 @@ class MicrosoftAuthenticationProvider {
 			// 	(await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data)) || '';
 			await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data);
 			await redisClient.json.set(sessionId, '$.loggedIn', true);
+		
+			/*********/
+
+
 			return response;
 		} catch (error) {
 			console.error('🔥 🔑 oauth - GetAccessToken failed');
@@ -254,11 +297,11 @@ class MicrosoftAuthenticationProvider {
 
 	public async getAccessToken(
 		sessionId: string,
-		sessionData: Session,
-		scopes: string[] = [appConfig.api_scope_default]
+		sessionData: Session,// TBD: remove the event.locals.sessionData and use the sessionData from the cache instead!
+		scopes: string[] = [appConfig.api_scope_default],
 	): Promise<string> {
 		try {
-			console.log('🔑 oauth - Authentication - getAccessToken ');
+			// console.log('🔑 oauth - Authentication - getAccessToken ');
 			const msalConfClient = this.createMsalConfClient(sessionId);
 			await msalConfClient.getTokenCache().getAllAccounts(); // required for triggering beforeCacheACcess
 			const regularRedisClient = await redisCache.provideClient();
@@ -266,8 +309,11 @@ class MicrosoftAuthenticationProvider {
 			const accountResponse = await regularRedisClient.json.get(sessionId, {
 				path: '$.microsoftAccount'
 			});
+			// console.log('🔑 oauth - Authentication - getAccessToken - accountResponse')
+			// console.log(accountResponse);
 			if (!accountResponse) {
-				throw new Error('🔥 🔑 oauth - GetAccessToken failed - no account');
+				console.error('🔥 🔑 oauth - GetAccessToken failed - no account');
+				throw new Error();
 			}
 			const account: AccountInfo = accountResponse[0] as AccountInfo;
 			const response = await msalConfClient.acquireTokenSilent({
@@ -279,6 +325,7 @@ class MicrosoftAuthenticationProvider {
 		} catch (error) {
 			if (error instanceof InteractionRequiredAuthError) {
 				console.warn('👎 🔑 oauth - GetAccessToken silent failed - sign in again!');
+				// console.log("===> redirecting to '/login' <===");
 				redirect(307, '/login');
 			} else {
 				console.error('🔥 🔑 oauth - GetAccessToken failed');

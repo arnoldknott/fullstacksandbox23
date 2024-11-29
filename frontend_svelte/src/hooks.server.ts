@@ -32,11 +32,14 @@ export const handle = async ({ event, resolve }) => {
 	// console.log(sessionId === sessionIdNew);
 
 	if (!sessionId) {
+		// TBD add reset of sessionData: ???
+		// event.locals.sessionData = null;
 		if (event.route.id?.includes('(admin)')) {
 			console.error('🎣 hooks - server - access attempt to admin route without session_id');
 			redirect(307, '/');
 		} else if (event.route.id?.includes('(protected)')) {
 			console.error('🎣 hooks - server - access attempt to protected route without session_id');
+			// console.log("===> hooks - server - !sessionId - redirecting to '/' <===");
 			redirect(307, '/');
 		}
 	} else if (sessionId) {
@@ -49,8 +52,11 @@ export const handle = async ({ event, resolve }) => {
 			});
 			console.log('🎣 hooks - server - locals after session expired');
 			console.log(event.locals);
+			// console.log("===> hooks - server - session expired - redirecting to '/' <===");
 			redirect(307, '/');
 		} else {
+			// console.log('🎣 hooks - server - sessionData - set');
+			// Remove the handling via event.locals and use cache data instead!
 			event.locals.sessionData = session;
 		}
 	}

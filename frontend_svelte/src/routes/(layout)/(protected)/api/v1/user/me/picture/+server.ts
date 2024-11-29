@@ -4,6 +4,8 @@ import AppConfig from '$lib/server/config';
 
 const appConfig = await AppConfig.getInstance();
 
+// This is a publically accessible endpoint - so anyone could get to this data without authentication!!!
+// TBD: remove! The secured API endpoints are in the backend API. This is just a demo.
 export const GET: RequestHandler = async ({ locals, setHeaders, cookies }): Promise<Response> => {
 	try {
 		const sessionId = cookies.get('session_id');

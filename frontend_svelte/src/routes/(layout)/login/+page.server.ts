@@ -9,6 +9,8 @@ import { user_store } from '$lib/stores';
 export const load: PageServerLoad = async ({ url, cookies, request }) => {
 	let loginUrl: string;
 	try {
+		/*****  Used previously: */
+
 		// create the session uuid here:
 		const sessionId = `session:${v4()}`;
 		const userAgent = request.headers.get('user-agent');
@@ -17,6 +19,10 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 			loggedIn: false,
 			userAgent: userAgent || ''
 		};
+
+		/*********************/
+
+
 		// console.log("=== signin - sessionData, typed ===");
 		// console.log(sessionData);
 
@@ -38,10 +44,13 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		// await redisClient.json.set("native", "$", sessionDataJSONnative);
 		// await redisClient.expire("native", 3600);
 
+
+		/******* Used previously:*/
+
 		// move to setSession in $lib/server/cache.ts:
 		const redisClient = await redisCache.provideClient();
 		await redisClient.json.set(sessionId, '$', Object(sessionData));
-		await redisClient.expire(sessionId, 60); // use sessionTimeout from cache.ts
+		await redisClient.expire(sessionId, 20); // use sessionTimeout from cache.ts
 
 		user_store.set(sessionData);
 
@@ -50,12 +59,19 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: false }); // change sameSite: "strict" (didn't work in Safari in local dev)
 
 		// await redisCache.setSession(sessionId, '.', sessionData);
-		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin);
+
+
+		/******/
+
+		const targetURL = url.searchParams.get('targetURL');
+
+		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL );
 	} catch (err) {
 		console.error('login - server - sign in redirect failed');
 		console.error(err);
 		throw err;
 	}
+	// console.log('===> login - server - redirecting to loginUrl <===');
 	redirect(302, loginUrl);
 };
 

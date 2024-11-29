@@ -19,7 +19,9 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
 		websocketPath: '/ws/v1',
 		socketIOPath: '/socketio/v1'
 	};
-	if (locals.sessionData) {
+	// console.log('=== layout.server.ts - load - locals ===');
+	// console.log(locals);
+	if (locals.sessionData?.loggedIn) {
 		try {
 			const sessionId = cookies.get('session_id');
 			if (!sessionId) {

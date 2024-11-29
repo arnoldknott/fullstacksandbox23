@@ -9,6 +9,7 @@
 
 	let userPictureURL: string | undefined = $state(undefined);
 	onMount(async () => {
+		// this call does not have any authentication - remove it!
 		const response = await fetch('/api/v1/user/me/picture', { method: 'GET' });
 		if (!response.ok && response.status !== 200) {
 			console.log('layout - userPictureURL - response not ok');
