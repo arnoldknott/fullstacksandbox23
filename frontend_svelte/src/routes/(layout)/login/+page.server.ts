@@ -4,7 +4,6 @@ import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import type { Session } from '$lib/types';
-import { user_store } from '$lib/stores';
 
 export const load: PageServerLoad = async ({ url, cookies, request }) => {
 	let loginUrl: string;
@@ -20,37 +19,10 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 			userAgent: userAgent || ''
 		};
 
-		/*********************/
-
-		// console.log("=== signin - sessionData, typed ===");
-		// console.log(sessionData);
-
-		// const sessionDataJSON = JSON.stringify(sessionData);
-		// console.log("=== signin - sessionData, JSON ===");
-		// console.log(sessionDataJSON);
-
-		// const sessionDataJSONnative = { "loggedIn": false, "userProfile": {} }
-		// console.log("=== signin - sessionDatanative, JSON input ===");
-		// console.log(sessionDataJSONnative);
-
-		// const redisClient = await redisCache.provideClient();
-		// await redisClient.json.set("typed", "$", Object(sessionData));
-		// await redisClient.expire("typed", 3600);
-
-		// await redisClient.json.set("stringified", "$", sessionDataJSON);
-		// await redisClient.expire("stringified", 3600);
-
-		// await redisClient.json.set("native", "$", sessionDataJSONnative);
-		// await redisClient.expire("native", 3600);
-
-		/******* Used previously:*/
-
 		// move to setSession in $lib/server/cache.ts:
 		const redisClient = await redisCache.provideClient();
 		await redisClient.json.set(sessionId, '$', Object(sessionData));
 		await redisClient.expire(sessionId, 20); // use sessionTimeout from cache.ts
-
-		user_store.set(sessionData);
 
 		// const sessionIdCookie = sessionId.replace("session:", "");
 		// cookies.set('session_id', sessionIdCookie, { path: '/', httpOnly: true, sameSite: "strict" });// used to be sameSite: false
@@ -60,7 +32,7 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 
 		/******/
 
-		const targetURL = url.searchParams.get('targetURL');
+		const targetURL = url.searchParams.get('targetURL') || undefined;
 
 		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL);
 	} catch (err) {

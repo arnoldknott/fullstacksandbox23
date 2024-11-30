@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 	// const { targetUrl } = JSON.parse(Buffer.from(state, "base64").toString("utf8"));
 	// console.log('Callback - server - load - targetUrl');
 	// console.log(targetUrl);
-	const targetUrl = "/";
+	let targetUrl = new URL('/');
 	try {
 		// Acquire tokens with the code from Microsoft Identity Platform
 		// let authenticationResult: AuthenticationResult
@@ -36,8 +36,8 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			// const sessionId = 'session:abc123'
 			sessionId = cookies.get('session_id');
 			const state = url.searchParams.get('state');
-			if (state) {
-				const targetUrl = await msalAuthProvider.decodeState(sessionId, state);
+			if (state && sessionId) {
+				targetUrl = await msalAuthProvider.decodeState(sessionId, state);
 			}
 			// sessionId = `session:${cookies.get('session_id_new')}`;
 			// sessionId = `session:${sessionId}`;

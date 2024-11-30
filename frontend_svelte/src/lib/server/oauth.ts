@@ -17,7 +17,6 @@ import {
 } from '@azure/msal-node';
 import { type AccountInfo, AccountEntity } from '@azure/msal-common';
 import { redirect } from '@sveltejs/kit';
-import { crossfade } from 'svelte/transition';
 
 const appConfig = await AppConfig.getInstance();
 // const scopesBackend = [appConfig.api_scope_default]
@@ -210,7 +209,7 @@ class MicrosoftAuthenticationProvider {
 	): Promise<string> {
 		try {
 			// console.log('🔑 oauth - Authentication - signIn ');
-			const csrfToken = this.cryptoProvider.createNewGuid()
+			const csrfToken = this.cryptoProvider.createNewGuid();
 			const state = this.cryptoProvider.base64Encode(
 				JSON.stringify({
 					csrfToken: csrfToken,
@@ -243,9 +242,11 @@ class MicrosoftAuthenticationProvider {
 	public async decodeState(sessionId: string, state: string): Promise<URL> {
 		const stateJSON = JSON.parse(this.cryptoProvider.base64Decode(state));
 		const regularRedisClient = await redisCache.provideClient();
-		const cachedCsrfToken = await regularRedisClient.json.get(sessionId, {path: '$.csrfToken'}) as string[];
-		if(cachedCsrfToken && cachedCsrfToken.length > 0){
-		// TBD: get state from session cache and compare with the state from the URL
+		const cachedCsrfToken = (await regularRedisClient.json.get(sessionId, {
+			path: '$.csrfToken'
+		})) as string[];
+		if (cachedCsrfToken && cachedCsrfToken.length > 0) {
+			// TBD: get state from session cache and compare with the state from the URL
 			if (stateJSON.csrfToken !== cachedCsrfToken[0]) {
 				throw new Error('CSRF Token mismatch');
 			}
@@ -318,7 +319,7 @@ class MicrosoftAuthenticationProvider {
 				throw new Error();
 			}
 			if (Array.isArray(accountResponse) && accountResponse.length > 0) {
-				const account: AccountInfo = accountResponse[0] as AccountInfo;
+				const account: AccountInfo = accountResponse[0] as unknown as AccountInfo;
 				const response = await msalConfClient.acquireTokenSilent({
 					scopes: scopes,
 					account: account

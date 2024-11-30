@@ -27,14 +27,6 @@
 
 	setContext('backendAPIConfiguration', data?.body?.backendAPIConfiguration);
 
-	// console.log('layout - client - userProfile')
-	// console.log(userProfile)
-
-	// console.log('layout - client - data')
-	// console.log(data)
-	// console.log('layout - client - $page.data')
-	// console.log($page.data)
-
 	// TBD use $page.data for that - that's the standard store, and user logged in information is relevant everywhere.
 	// if ($user_store?.loggedIn) {
 	// 	user_store.set(data.user);
