@@ -2,16 +2,28 @@ import { msalAuthProvider } from '$lib/server/oauth';
 import { error, type RequestHandler } from '@sveltejs/kit';
 import AppConfig from '$lib/server/config';
 
+// TBD move the frontend API to the (plain routes), no need to load the layout browser components here!
+
 const appConfig = await AppConfig.getInstance();
 
 // This is a publically accessible endpoint - so anyone could get to this data without authentication!!!
 // TBD: remove! The secured API endpoints are in the backend API. This is just a demo.
+// Reconsider: now the session is validated!
+
 export const GET: RequestHandler = async ({ locals, setHeaders, cookies }): Promise<Response> => {
 	try {
 		const sessionId = cookies.get('session_id');
 		if (!sessionId) {
 			console.error('api - v1 - user - me - picture - server - no session id');
 			throw error(401, 'No session id!');
+		}
+		// Validate session ID and get user data
+		const sessionData = locals.sessionData;
+		// console.log('api - v1 - user - me - picture - server - sessionData');
+		// console.log(sessionData.sessionId);
+		if (!sessionData || sessionData.sessionId !== sessionId) {
+			console.error('api - v1 - user - me - picture - server - invalid session');
+			throw error(401, 'Invalid session!');
 		}
 		const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 			'User.Read'

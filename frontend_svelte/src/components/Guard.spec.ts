@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/svelte';
 import { user_store } from '../lib/stores';
 import Guard from './Guard.svelte';
 import type { User } from 'src/types';
+// import { page } from '$app/stores';
 
 // Svelte has no way to fill slots programmatically yet,
 // https://github.com/sveltejs/svelte/pull/4296
@@ -14,6 +15,10 @@ describe('Guard', () => {
 			loggedIn: false
 		};
 		user_store.set(mockedUser);
+		// const sessionData = {
+		// 	loggedIn: false
+		// }
+
 		render(Guard, {
 			props: {
 				$$slots: {

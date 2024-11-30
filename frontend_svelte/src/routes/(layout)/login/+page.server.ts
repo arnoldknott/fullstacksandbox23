@@ -5,6 +5,8 @@ import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import type { Session } from '$lib/types';
 
+const sessionTimeout = 20; // TBD: move to cache.ts and increase to a few days.
+
 export const load: PageServerLoad = async ({ url, cookies, request }) => {
 	let loginUrl: string;
 	try {
@@ -22,11 +24,16 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		// move to setSession in $lib/server/cache.ts:
 		const redisClient = await redisCache.provideClient();
 		await redisClient.json.set(sessionId, '$', Object(sessionData));
-		await redisClient.expire(sessionId, 20); // use sessionTimeout from cache.ts
+		await redisClient.expire(sessionId, sessionTimeout); // use sessionTimeout from cache.ts
 
 		// const sessionIdCookie = sessionId.replace("session:", "");
 		// cookies.set('session_id', sessionIdCookie, { path: '/', httpOnly: true, sameSite: "strict", secure: true });// used to be sameSite: false
-		cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: false }); // change sameSite: "strict" (didn't work in Safari in local dev)
+		cookies.set('session_id', sessionId, {
+			path: '/',
+			httpOnly: true,
+			sameSite: false,
+			maxAge: sessionTimeout
+		}); // change sameSite: "strict" (didn't work in Safari in local dev)
 
 		// await redisCache.setSession(sessionId, '.', sessionData);
 

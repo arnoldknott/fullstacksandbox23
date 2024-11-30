@@ -119,6 +119,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			// console.log('Callback - server - session');
 			// console.log(session);
 			// await redisCache.setSession(sessionId, '.', session);
+			// TBD: remove user_store and use locals on server side and cookies on client side instead.
 			user_store.set(session);
 			// } else {
 			// 	console.error('Callback - server - Account not found');

@@ -287,6 +287,7 @@ class MicrosoftAuthenticationProvider {
 			// 	(await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data)) || '';
 			await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data);
 			await redisClient.json.set(sessionId, '$.loggedIn', true);
+			await redisClient.json.set(sessionId, '$.sessionId', sessionId);
 
 			/*********/
 
