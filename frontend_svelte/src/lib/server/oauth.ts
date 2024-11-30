@@ -17,6 +17,7 @@ import {
 } from '@azure/msal-node';
 import { type AccountInfo, AccountEntity } from '@azure/msal-common';
 import { redirect } from '@sveltejs/kit';
+import { crossfade } from 'svelte/transition';
 
 const appConfig = await AppConfig.getInstance();
 // const scopesBackend = [appConfig.api_scope_default]
@@ -209,12 +210,15 @@ class MicrosoftAuthenticationProvider {
 	): Promise<string> {
 		try {
 			// console.log('🔑 oauth - Authentication - signIn ');
+			const csrfToken = this.cryptoProvider.createNewGuid()
 			const state = this.cryptoProvider.base64Encode(
 				JSON.stringify({
-					csrfToken: this.cryptoProvider.createNewGuid(), // create a GUID for csrf
+					csrfToken: csrfToken,
 					targetURL: targetUrl
 				})
 			);
+			const regularRedisClient = await redisCache.provideClient();
+			await regularRedisClient.json.set(sessionId, '$.csrfToken', csrfToken);
 			// TBD: add state to session cache
 			const msalConfClient = this.createMsalConfClient(sessionId);
 			const authCodeUrlParameters = {
@@ -236,14 +240,16 @@ class MicrosoftAuthenticationProvider {
 		}
 	}
 
-	public async decodeState(state: string): Promise<URL> {
+	public async decodeState(sessionId: string, state: string): Promise<URL> {
 		const stateJSON = JSON.parse(this.cryptoProvider.base64Decode(state));
-		// console.log('🔑 oauth - Authentication - decodeState - stateJSON')
-		// console.log(stateJSON);
+		const regularRedisClient = await redisCache.provideClient();
+		const cachedCsrfToken = await regularRedisClient.json.get(sessionId, {path: '$.csrfToken'}) as string[];
+		if(cachedCsrfToken && cachedCsrfToken.length > 0){
 		// TBD: get state from session cache and compare with the state from the URL
-		// if (stateJSON["csrfToken"] !== sessionCache["csrfToken"]) {
-		// 	throw new Error('CSRF Token mismatch');
-		// }
+			if (stateJSON.csrfToken !== cachedCsrfToken[0]) {
+				throw new Error('CSRF Token mismatch');
+			}
+		}
 		return stateJSON.targetURL;
 	}
 
@@ -311,13 +317,17 @@ class MicrosoftAuthenticationProvider {
 				console.error('🔥 🔑 oauth - GetAccessToken failed - no account');
 				throw new Error();
 			}
-			const account: AccountInfo = accountResponse[0] as AccountInfo;
-			const response = await msalConfClient.acquireTokenSilent({
-				scopes: scopes,
-				account: account
-			});
-			const accessToken = response.accessToken;
-			return accessToken;
+			if (Array.isArray(accountResponse) && accountResponse.length > 0) {
+				const account: AccountInfo = accountResponse[0] as AccountInfo;
+				const response = await msalConfClient.acquireTokenSilent({
+					scopes: scopes,
+					account: account
+				});
+				const accessToken = response.accessToken;
+				return accessToken;
+			} else {
+				throw new Error('🔥 🔑 oauth - GetAccessToken failed - accountResponse missing');
+			}
 		} catch (error) {
 			if (error instanceof InteractionRequiredAuthError) {
 				console.warn('👎 🔑 oauth - GetAccessToken silent failed - sign in again!');

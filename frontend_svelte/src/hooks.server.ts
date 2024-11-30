@@ -53,7 +53,9 @@ export const handle = async ({ event, resolve }) => {
 			// console.log('🎣 hooks - server - locals after session expired');
 			// console.log(event.locals);
 			// console.log("===> hooks - server - session expired - redirecting to '/' <===");
-			redirect(307, '/');
+			// redirects in case of a real login event, but misses the targetUrl.
+			// if redirect to "/" here, then login is not successful in case of a real round-trip to identity service provider.
+			redirect(307, '/login');
 		} else {
 			// console.log('🎣 hooks - server - sessionData - set');
 			// Remove the handling via event.locals and use cache data instead!
