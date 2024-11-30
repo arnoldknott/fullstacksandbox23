@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 	// const { targetUrl } = JSON.parse(Buffer.from(state, "base64").toString("utf8"));
 	// console.log('Callback - server - load - targetUrl');
 	// console.log(targetUrl);
-	let targetUrl = new URL('/');
+	let targetUrl = '/';
 	try {
 		// Acquire tokens with the code from Microsoft Identity Platform
 		// let authenticationResult: AuthenticationResult

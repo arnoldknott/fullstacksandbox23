@@ -239,7 +239,7 @@ class MicrosoftAuthenticationProvider {
 		}
 	}
 
-	public async decodeState(sessionId: string, state: string): Promise<URL> {
+	public async decodeState(sessionId: string, state: string): Promise<string> {
 		const stateJSON = JSON.parse(this.cryptoProvider.base64Decode(state));
 		const regularRedisClient = await redisCache.provideClient();
 		const cachedCsrfToken = (await regularRedisClient.json.get(sessionId, {

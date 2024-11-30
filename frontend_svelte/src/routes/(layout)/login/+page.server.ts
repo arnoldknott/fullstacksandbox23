@@ -25,7 +25,7 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		await redisClient.expire(sessionId, 20); // use sessionTimeout from cache.ts
 
 		// const sessionIdCookie = sessionId.replace("session:", "");
-		// cookies.set('session_id', sessionIdCookie, { path: '/', httpOnly: true, sameSite: "strict" });// used to be sameSite: false
+		// cookies.set('session_id', sessionIdCookie, { path: '/', httpOnly: true, sameSite: "strict", secure: true });// used to be sameSite: false
 		cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: false }); // change sameSite: "strict" (didn't work in Safari in local dev)
 
 		// await redisCache.setSession(sessionId, '.', sessionData);
