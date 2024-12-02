@@ -17,54 +17,98 @@ const retrieveSession = async (sessionId: string | null): Promise<Session | void
 	}
 };
 
+const redirectLogin = ( tagetUrl: string ) => {
+	redirect(307, `/login?targetURL=${tagetUrl}`);
+}
+
 export const handle = async ({ event, resolve }) => {
-	// const sessionId = `session:${event.cookies.get('session_id')}`;
-	const sessionId = event.cookies.get('session_id');
-	// sessionId = `session:${sessionId}`;
-	// console.log('🎣 hooks - server - sessionId');
-	// console.log(sessionId);
+	if (event.route.id?.includes('(protected)')) {
+		// console.log('🎣 hooks - server - access to protected route - event.url.href:')
+		// console.log(event.url.href);
+		try {
+			const sessionId = event.cookies.get('session_id');
+			if (sessionId) {
+				const session = await retrieveSession(sessionId);
+				if (session && session.sessionId === sessionId) {
+					event.locals.sessionData = session;
+					if (event.route.id?.includes('(admin)')) {
+						console.log('🎣 hooks - server - access to admin route');
+						// Add check if user is admin in backend here
+						// if (session.roles.includes('admin')) {
+							
+						// } else {
+						// 	console.error('🎣 hooks - server - access attempt to admin route without admin role');
+						// 	redirectLogin(event.url.href);
+						// }
+					}
 
-	// const sessionIdNew = `session:${event.cookies.get('session_id_new')}`;
-	// console.log('🎣 hooks - server - sessionIdNew')
-	// console.log(sessionId);
-
-	// console.log('🎣 hooks - server - session_id check')
-	// console.log(sessionId === sessionIdNew);
-
-	if (!sessionId) {
-		// TBD add reset of sessionData: ???
-		// event.locals.sessionData = null;
-		if (event.route.id?.includes('(admin)')) {
-			console.error('🎣 hooks - server - access attempt to admin route without session_id');
-			redirect(307, '/');
-		} else if (event.route.id?.includes('(protected)')) {
-			console.error('🎣 hooks - server - access attempt to protected route without session_id');
-			// console.log("===> hooks - server - !sessionId - redirecting to '/' <===");
-			redirect(307, '/');
-		}
-	} else if (sessionId) {
-		const session = await retrieveSession(sessionId);
-		if (!session) {
-			console.error('🎣 hooks - server - session expired');
-			event.cookies.delete('session_id', {
-				path: '/',
-				expires: new Date(0)
-			});
-			// console.log('🎣 hooks - server - locals after session expired');
-			// console.log(event.locals);
-			// console.log("===> hooks - server - session expired - redirecting to '/' <===");
-			// redirects in case of a real login event, but misses the targetUrl.
-			// if redirect to "/" here, then login is not successful in case of a real round-trip to identity service provider.
-			redirect(307, '/login');
-		} else {
-			// console.log('🎣 hooks - server - sessionData - set');
-			// Remove the handling via event.locals and use cache data instead!
-			event.locals.sessionData = session;
+				} else {
+					console.error('🔥 🎣 hooks - server - session expired in cache');
+					event.cookies.delete('session_id', {
+						path: '/',
+						expires: new Date(0)
+					});
+					redirectLogin(event.url.href);
+				}
+			} else {
+				console.error('🔥 🎣 hooks - server - access attempt to protected route without session_id in cookie');
+				redirectLogin(event.url.href);
+			};
+		}catch (err) {
+			console.error('🔥 🎣 hooks - server - error in handle');
+			throw err;
 		}
 	}
-
 	return await resolve(event);
-};
+}
+
+
+
+
+// 	// const sessionId = `session:${event.cookies.get('session_id')}`;
+// 	console.log('🎣 hooks - server - event.url.href')
+// 	console.log(event.url.href);
+// 	// sessionId = `session:${sessionId}`;
+// 	// console.log('🎣 hooks - server - sessionId');
+// 	// console.log(sessionId);
+
+// 	// Check for cookie in request:
+// 	const sessionId = event.cookies.get('session_id');
+// 	if (!sessionId) {
+// 		// TBD add reset of sessionData: ???
+// 		// event.locals.sessionData = null;
+// 		const targetURL = event.request.url;
+// 		if (event.route.id?.includes('(admin)')) {
+// 			console.error('🎣 hooks - server - access attempt to admin route without session_id');
+// 			redirect(307, '/');
+// 		} else if (event.route.id?.includes('(protected)')) {
+// 			console.error('🎣 hooks - server - access attempt to protected route without session_id');
+// 			// console.log("===> hooks - server - !sessionId - redirecting to '/' <===");
+// 			redirect(307, '/');
+// 		}
+// 	} else if (sessionId) {
+// 		const session = await retrieveSession(sessionId);
+// 		if (!session) {
+// 			console.error('🎣 hooks - server - session expired in cache');
+// 			event.cookies.delete('session_id', {
+// 				path: '/',
+// 				expires: new Date(0)
+// 			});
+// 			// console.log('🎣 hooks - server - locals after session expired');
+// 			// console.log(event.locals);
+// 			// console.log("===> hooks - server - session expired - redirecting to '/' <===");
+// 			// redirects in case of a real login event, but misses the targetUrl.
+// 			// if redirect to "/" here, then login is not successful in case of a real round-trip to identity service provider.
+// 			redirect(307, '/login');
+// 		} else {
+// 			// console.log('🎣 hooks - server - sessionData - set');
+// 			// Remove the handling via event.locals and use cache data instead!
+// 			event.locals.sessionData = session;
+// 		}
+// 	}
+
+// 	return await resolve(event);
+// };
 
 /* app.html before update:
 <!doctype html>

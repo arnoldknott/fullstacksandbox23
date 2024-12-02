@@ -107,6 +107,7 @@ class RedisCache {
 			// console.log('🥞 cache - server - getSession - sessionId')
 			// console.log(sessionId);
 			const result = await this.redisClient?.json.get(sessionId);
+			// const result = await this.redisClient?.json.get(`session:${sessionId}`);
 			// console.log('👍 🥞 cache - server - getSession - result');
 			// console.log(result);
 			return result as unknown as Session;
@@ -128,6 +129,21 @@ class RedisCache {
 			await this.redisClient.expire(sessionId, sessionTimeOut);
 		} catch (err) {
 			console.error('🔥 🥞 cache - server - updateSessionExpiry - redisClient?.expire failed');
+			console.error(err);
+			// throw err
+		}
+	}
+
+	public async deleteSession(sessionId: string): Promise<void> {
+		// TBD: should no longer be necessary, as the sessionId is always a string!
+		if (!sessionId) {
+			console.error('🔥 🥞 cache - server - deleteSession - sessionId is null');
+			throw new Error('Session ID is null');
+		}
+		try {
+			await this.redisClient.json.del(sessionId);
+		} catch (err) {
+			console.error('🔥 🥞 cache - server - deleteSession - redisClient?.del failed');
 			console.error(err);
 			// throw err
 		}

@@ -6,11 +6,12 @@ const appConfig = await AppConfig.getInstance();
 
 // TBD: add type PageServerLoad here?
 export const load: PageServerLoad = async ({ locals, cookies }) => {
-	const sessionId = cookies.get('session_id');
-	if (!sessionId) {
-		console.error('routes - playground - ms_graph_me - page.server - no session id');
-		throw Error('401', 'No session id!');
-	}
+	const sessionId = locals.sessionData.sessionId;
+	// const sessionId = cookies.get('session_id');
+	// if (!sessionId) {
+	// 	console.error('routes - playground - ms_graph_me - page.server - no session id');
+	// 	throw Error('401', 'No session id!');
+	// }
 	const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 		'User.Read'
 	]);
@@ -21,16 +22,18 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 	});
 
 	// a way of returning file content from server load function (untested):
-	// // Read the file
+	// Read the file
 	// const filePath = 'path/to/your/file';
 	// const fileBuffer = await fs.readFile(filePath);
 	// const arrayBuffer = fileBuffer.buffer;
+	const pictureResponse = await fetch(`${appConfig.ms_graph_base_uri}/me/photo/$value`, {
+		headers: {
+			Authorization: `Bearer ${accessToken}`
+		}
+	});
+	const userPictureBlob = await pictureResponse.blob();
+	const userPicture = await userPictureBlob.arrayBuffer();
 
-	// // Other data to include in the response
-	// const otherData = {
-	// message: 'Here is your file and some additional data',
-	// timestamp: new Date().toISOString()
-	// };
 
 	// // Create the response object
 	// const response = {
@@ -52,6 +55,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 
 	return {
 		account: locals.sessionData.microsoftAccount,
-		userProfile: userProfile
+		userProfile: userProfile,
+		userPicture: userPicture
 	};
 };

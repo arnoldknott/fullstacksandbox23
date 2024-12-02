@@ -69,6 +69,7 @@
 			{#if !loggedIn}
 				<!-- <NavButton url="/register" link="Register" invert /> -->
 				<!-- data-sveltekit-preload-data="false" -->
+				 <!-- TBD: remove it here and set in hooks.Server.ts -->
 				<NavButton pre_load="false" url={`/login?targetURL=${$page.url.href}`} link="Login" />
 			{:else}
 				<UserButton />

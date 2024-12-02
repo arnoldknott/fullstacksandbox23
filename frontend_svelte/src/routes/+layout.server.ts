@@ -21,13 +21,16 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
 	};
 	// console.log('=== layout.server.ts - load - locals ===');
 	// console.log(locals);
+	// TBD: remove the logged in aand use the existence of sessionId in locals.sessionData instead!
 	if (locals.sessionData?.loggedIn) {
 		try {
-			const sessionId = cookies.get('session_id');
-			if (!sessionId) {
-				console.error('api - v1 - user - me - picture - server - no session id');
-				throw Error('401', 'No session id!');
-			}
+			//  This is handled in hooks.server.ts now!
+			// const sessionId = cookies.get('session_id');
+			// if (!sessionId) {
+			// 	console.error('api - v1 - user - me - picture - server - no session id');
+			// 	throw Error('401', 'No session id!');
+			// }
+			const sessionId = locals.sessionData.sessionId;
 			const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 				'User.Read'
 			]);

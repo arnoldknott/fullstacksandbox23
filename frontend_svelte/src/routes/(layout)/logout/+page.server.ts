@@ -7,9 +7,10 @@ import AppConfig from '$lib/server/config';
 import { user_store } from '$lib/stores';
 const appConfig = await AppConfig.getInstance();
 
-export const load: PageServerLoad = async ({ url, cookies }) => {
+export const load: PageServerLoad = async ({ locals, url, cookies }) => {
 	// console.log("IMPLEMENT logout!");
-	const sessionId = cookies.get('session_id');
+	const sessionId = locals.sessionData.sessionId;
+	// const sessionId = cookies.get('session_id');
 	cookies.delete('session_id', {
 		path: '/',
 		expires: new Date(0)
@@ -20,6 +21,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 		console.error('🔥 logout - server - missing session_id');
 		redirect(307, '/');
 	}
+	// TBD. delete the session fully:
 	const redisClient = await redisCache.provideClient();
 	await redisClient.json.set(sessionId, '$.loggedIn', false);
 	// signOut();

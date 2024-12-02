@@ -6,7 +6,7 @@ import { redirect } from '@sveltejs/kit';
 // import type { AuthenticationResult } from '@azure/msal-node';
 import { user_store } from '$lib/stores';
 
-export const load: PageServerLoad = async ({ url, cookies }) => {
+export const load: PageServerLoad = async ({ locals, url, cookies }) => {
 	// const userAgent = request.headers.get('user-agent');
 	// const referer = request.headers.get('referer');
 	// const connection = request.headers.get('connection');
@@ -34,6 +34,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 		try {
 			const code = url.searchParams.get('code');
 			// const sessionId = 'session:abc123'
+			// sessionId = locals.sessionData.sessionId;
 			sessionId = cookies.get('session_id');
 			const state = url.searchParams.get('state');
 			if (state && sessionId) {
