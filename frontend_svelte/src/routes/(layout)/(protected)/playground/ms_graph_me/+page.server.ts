@@ -8,10 +8,10 @@ const appConfig = await AppConfig.getInstance();
 export const load: PageServerLoad = async ({ locals, cookies }) => {
 	const sessionId = locals.sessionData.sessionId;
 	// const sessionId = cookies.get('session_id');
-	// if (!sessionId) {
-	// 	console.error('routes - playground - ms_graph_me - page.server - no session id');
-	// 	throw Error('401', 'No session id!');
-	// }
+	if (!sessionId) {
+		console.error('routes - playground - ms_graph_me - page.server - no session id');
+		throw Error('No session id!');
+	}
 	const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 		'User.Read'
 	]);

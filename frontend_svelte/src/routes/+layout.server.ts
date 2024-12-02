@@ -26,11 +26,11 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
 		try {
 			//  This is handled in hooks.server.ts now!
 			// const sessionId = cookies.get('session_id');
-			// if (!sessionId) {
-			// 	console.error('api - v1 - user - me - picture - server - no session id');
-			// 	throw Error('401', 'No session id!');
-			// }
 			const sessionId = locals.sessionData.sessionId;
+			if (!sessionId) {
+				console.error('api - v1 - user - me - picture - server - no session id');
+				throw Error('No session id!');
+			}
 			const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 				'User.Read'
 			]);

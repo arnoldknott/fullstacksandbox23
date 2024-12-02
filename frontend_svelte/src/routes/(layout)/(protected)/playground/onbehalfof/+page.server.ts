@@ -9,10 +9,10 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 	try {
 		const sessionId = locals.sessionData.sessionId;
 		// const sessionId = cookies.get('session_id');
-		// if (!sessionId) {
-		// 	console.error('routes - demo-resource - page.server - no session id');
-		// 	throw Error('401', 'No session id!');
-		// }
+		if (!sessionId) {
+			console.error('routes - demo-resource - page.server - no session id');
+			throw Error('No session id!');
+		}
 		const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 			`${appConfig.api_scope}/api.read`
 		]); // ["https://management.azure.com/user_impersonation"] ["api.read"]  ["User.Read"]
