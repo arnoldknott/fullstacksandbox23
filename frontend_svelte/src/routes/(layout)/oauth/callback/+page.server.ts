@@ -1,12 +1,10 @@
 import { msalAuthProvider } from '$lib/server/oauth';
-import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
 // import { v4 as uuidv4 } from 'uuid';
 import { redirect } from '@sveltejs/kit';
 // import type { AuthenticationResult } from '@azure/msal-node';
-import { user_store } from '$lib/stores';
 
-export const load: PageServerLoad = async ({ locals, url, cookies }) => {
+export const load: PageServerLoad = async ({ url, cookies }) => {
 	// const userAgent = request.headers.get('user-agent');
 	// const referer = request.headers.get('referer');
 	// const connection = request.headers.get('connection');
@@ -30,117 +28,78 @@ export const load: PageServerLoad = async ({ locals, url, cookies }) => {
 		// console.log('Callback - server - load - request');
 		// console.log(request);
 
-		let sessionId: string | undefined;
-		try {
-			const code = url.searchParams.get('code');
-			// const sessionId = 'session:abc123'
-			// sessionId = locals.sessionData.sessionId;
-			sessionId = cookies.get('session_id');
-			const state = url.searchParams.get('state');
-			if (state && sessionId) {
+		// let sessionId: string | undefined;
+		// try {
+		const code = url.searchParams.get('code');
+		// const sessionId = 'session:abc123'
+		// sessionId = locals.sessionData.sessionId;
+		const sessionId = cookies.get('session_id');
+		const state = url.searchParams.get('state');
+		if (sessionId) {
+			if (state) {
 				targetUrl = await msalAuthProvider.decodeState(sessionId, state);
 			}
 			// sessionId = `session:${cookies.get('session_id_new')}`;
 			// sessionId = `session:${sessionId}`;
-			if (sessionId) {
-				// authenticationResult = await msalAuthProvider.authenticateWithCode(
-				// TBD: at this time the session is not set yet in the cache; that's what causes the errors at first login
-				await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
-				// console.log('Callback - server - authenticateWithCode - authResult');
-				// console.log(authResult);
-				// console.log('Callback - server - authenticateWithCode - request ');
-				// console.log(request);
-				// const { targetUrl } = JSON.parse(Buffer.from(request.body.state, "base64").toString("utf8"));
-				// console.log('Callback - server - targetUrl');
-				// console.log(targetUrl);
-				// redirect(302, '/');
-			} else {
-				// redirect(302, '/login');
-				// console.error('===> Callback - server - authenticate with Code failed - redirecting to "/" <===');
-				redirect(302, '/');
-			}
-
-			/*********  */
-
-			/***** New? */
-
-			// try {
-			// 	const code = url.searchParams.get('code');
-			// 	await msalAuthProvider.authenticateWithCode(code, url.origin);
-			// 	} else {
-			// 		// redirect(302, '/login');
-			// 		console.error('===> Callback - server - authenticate with Code failed - redirecting to "/" <===');
-			// 		redirect(302, '/');
-			// 	}
-
-			// // create the session uuid here:
-			// const sessionId = `session:${v4()}`;
-			// const userAgent = request.headers.get('user-agent');
-			// // Type that one:
-			// const sessionData: Session = {
-			// 	loggedIn: false,
-			// 	userAgent: userAgent || ''
-			// };
-
-			// const redisClient = await redisCache.provideClient();
-			// await redisClient.json.set(sessionId, '$', Object(sessionData));
-			// await redisClient.expire(sessionId, 20); // use sessionTimeout from cache.ts
-
-			// user_store.set(sessionData);
-
-			// // cookies.set('session_id', sessionIdCookie, { path: '/', httpOnly: true, sameSite: "strict" });// used to be sameSite: false
-			// cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: false }); // change sameSite: "strict" (didn't work in Safari in local dev)
-
-			/***** New end? */
-		} catch (err) {
-			console.error('Callback - server - authenticateWithCode failed');
-			console.error(err);
-			throw err;
-		}
-
-		// Create a session, store authenticationResult in the cache, set the session cookie, and write to user store
-		try {
-			// const sessionId = uuidv4();
-			// const account = authenticationResult.account;
-			// const accessToken = authenticationResult.accessToken;
-			// TBD: add expiry!
-			// if (account) {
-			// 	// const userAgent = request.headers.get('user-agent');
-			// 	const session = {
-			// 		userProfile: account,
-			// 		// accessToken: accessToken,
-			// 		// userAgent: userAgent || '',
-			// 		loggedIn: true
-			// 	};
-			// move to setSession in $lib/server/cache.ts:
-			// const redisClient = await redisCache.provideClient();
-			// await redisClient.json.set(sessionId, '$.loggedIn', true);
-			await redisCache.updateSessionExpiry(sessionId);
-			const session = await redisCache.getSession(sessionId);
-			// console.log('Callback - server - session');
-			// console.log(session);
-			// await redisCache.setSession(sessionId, '.', session);
-			// TBD: remove user_store and use locals on server side and cookies on client side instead.
-			user_store.set(session);
-			// } else {
-			// 	console.error('Callback - server - Account not found');
-			// 	throw new error(404, 'No account found');
-			// }
-
-			// httpOnly and secure are true by default from sveltekit (https://kit.svelte.dev/docs/types#public-types-cookies)
-			// secure is disabled for localhost, but enabled for all other domains
-			// TBD: add expiry!
-			// cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: false }); //sameSite: 'strict' });
-		} catch (err) {
-			console.error('Callback - server - create session failed');
-			console.error(err);
-			throw err;
+			await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
+		} else {
+			// redirect(302, '/login');
+			// console.error('===> Callback - server - authenticate with Code failed - redirecting to "/" <===');
+			console.error('🔥 🚪 oauth - callback - server - redirect failed');
+			redirect(302, '/');
 		}
 	} catch (err) {
-		console.error('Callback session initialization failed');
-		console.log(err);
+		console.error('oauth - callback - server - authenticateWithCode failed');
+		console.error(err);
 		throw err;
 	}
+
+	// Create a session, store authenticationResult in the cache, set the session cookie, and write to user store
+	// try {
+	// const sessionId = uuidv4();
+	// const account = authenticationResult.account;
+	// const accessToken = authenticationResult.accessToken;
+	// TBD: add expiry!
+	// if (account) {
+	// 	// const userAgent = request.headers.get('user-agent');
+	// 	const session = {
+	// 		userProfile: account,
+	// 		// accessToken: accessToken,
+	// 		// userAgent: userAgent || '',
+	// 		loggedIn: true
+	// 	};
+	// move to setSession in $lib/server/cache.ts:
+	// const redisClient = await redisCache.provideClient();
+	// await redisClient.json.set(sessionId, '$.loggedIn', true);
+
+	// await redisCache.updateSessionExpiry(sessionId);
+
+	// const session = await redisCache.getSession(sessionId);
+	// console.log('Callback - server - session');
+	// console.log(session);
+	// await redisCache.setSession(sessionId, '.', session);
+	// TBD: remove user_store and use locals on server side and cookies on client side instead.
+
+	// user_store.set(session);
+	// } else {
+	// 	console.error('Callback - server - Account not found');
+	// 	throw new error(404, 'No account found');
+	// }
+
+	// httpOnly and secure are true by default from sveltekit (https://kit.svelte.dev/docs/types#public-types-cookies)
+	// secure is disabled for localhost, but enabled for all other domains
+	// TBD: add expiry!
+	// cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: false }); //sameSite: 'strict' });
+	// } catch (err) {
+	// 	console.error('Callback - server - create session failed');
+	// 	console.error(err);
+	// 	throw err;
+	// }
+	// } catch (err) {
+	// 	console.error('Callback session initialization failed');
+	// 	console.log(err);
+	// 	throw err;
+	// }
 	// console.log('===> Callback - server - redirecting to "/" <===');
 	// redirect(302, "/");
 	redirect(302, targetUrl);

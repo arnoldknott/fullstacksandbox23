@@ -6,16 +6,14 @@ import { error } from '@sveltejs/kit';
 const appConfig = await AppConfig.getInstance();
 
 // TBD: add type PageServerLoad here?
-export const load: PageServerLoad = async ({ locals, cookies }) => {
+export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;
 	// const sessionId = cookies.get('session_id');
 	if (!sessionId) {
 		console.error('routes - playground - ms_graph_me - page.server - no session id');
 		throw error(401, 'No session id!');
 	}
-	const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
-		'User.Read'
-	]);
+	const accessToken = await msalAuthProvider.getAccessToken(sessionId, ['User.Read']);
 	const response = await fetch(`${appConfig.ms_graph_base_uri}/me`, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`
@@ -34,7 +32,6 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 	});
 	const userPictureBlob = await pictureResponse.blob();
 	const userPicture = await userPictureBlob.arrayBuffer();
-
 
 	// // Create the response object
 	// const response = {

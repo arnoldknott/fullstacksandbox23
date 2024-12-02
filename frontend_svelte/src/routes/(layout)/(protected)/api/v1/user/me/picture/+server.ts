@@ -10,7 +10,7 @@ const appConfig = await AppConfig.getInstance();
 // TBD: remove! The secured API endpoints are in the backend API. This is just a demo.
 // Reconsider: now the session is validated!
 
-export const GET: RequestHandler = async ({ locals, setHeaders, cookies }): Promise<Response> => {
+export const GET: RequestHandler = async ({ locals, setHeaders }): Promise<Response> => {
 	try {
 		// const sessionId = cookies.get('session_id');
 		const sessionId = locals.sessionData.sessionId;
@@ -26,9 +26,7 @@ export const GET: RequestHandler = async ({ locals, setHeaders, cookies }): Prom
 			console.error('api - v1 - user - me - picture - server - invalid session');
 			throw error(401, 'Invalid session!');
 		}
-		const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
-			'User.Read'
-		]);
+		const accessToken = await msalAuthProvider.getAccessToken(sessionId, ['User.Read']);
 		// console.log('api - v1 - user - me - picture - server - accessToken');
 		// console.log(accessToken);
 		const response = await fetch(`${appConfig.ms_graph_base_uri}/me/photo/$value`, {

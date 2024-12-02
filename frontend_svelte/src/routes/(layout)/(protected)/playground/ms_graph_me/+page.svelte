@@ -33,7 +33,6 @@
 <!-- TBD: needs a check if user is logged in -> using store data?  -->
 <img class="rounded-full" src="/api/v1/user/me/picture" alt="you" />
 
-
 <!-- TBD: remove the following one: -->
 {#if userPictureURL}
 	<img class="h-100 w-100" src={userPictureURL} alt="you" />

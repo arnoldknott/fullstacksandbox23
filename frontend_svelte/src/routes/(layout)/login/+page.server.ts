@@ -5,47 +5,42 @@ import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import type { Session } from '$lib/types';
 
-const sessionTimeout = 20; // TBD: move to cache.ts and increase to a few days.
+const authenticationTimeout = 60 * 10; //set initial timeout to 10 minutes: if no authentication, session expires fast.
 
 export const load: PageServerLoad = async ({ url, cookies, request }) => {
 	let loginUrl: string;
 	try {
-		/*****  Used previously: */
-
 		// create the session uuid here:
-		const sessionId = `session:${v4()}`;
+		const sessionId = v4();
 		const userAgent = request.headers.get('user-agent');
 		// Type that one:
 		const sessionData: Session = {
+			status: 'authentication_pending',
 			loggedIn: false,
 			userAgent: userAgent || ''
 		};
 
 		// move to setSession in $lib/server/cache.ts:
-		const redisClient = await redisCache.provideClient();
-		await redisClient.json.set(sessionId, '$', Object(sessionData));
-		await redisClient.expire(sessionId, sessionTimeout); // use sessionTimeout from cache.ts
+		// const redisClient = await redisCache.provideClient();
+		// await redisClient.json.set(sessionId, '$', Object(sessionData));
+		// await redisClient.expire(sessionId, sessionTimeout); // use sessionTimeout from cache.ts
+		await redisCache.setSession(sessionId, '$', JSON.stringify(sessionData), authenticationTimeout);
 
-		// const sessionIdCookie = sessionId.replace("session:", "");
-		// cookies.set('session_id', sessionIdCookie, { path: '/', httpOnly: true, sameSite: "strict", secure: true });// used to be sameSite: false
 		cookies.set('session_id', sessionId, {
 			path: '/',
 			httpOnly: true,
-			sameSite: false,
-			maxAge: sessionTimeout
+			sameSite: false, // TBD: change to strict for production!
+			// secure: true,// TBD: add this in for production!
+			maxAge: authenticationTimeout
 		}); // change sameSite: "strict" (didn't work in Safari in local dev)
-
-		// await redisCache.setSession(sessionId, '.', sessionData);
-
-		/******/
 
 		const targetURL = url.searchParams.get('targetURL') || undefined;
 
 		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL);
 	} catch (err) {
-		console.error('login - server - sign in redirect failed');
+		console.error('🔥 🚪 login - server - sign in redirect failed');
 		console.error(err);
-		throw err;
+		throw err; // TBD consider redirect to "/" instead here?
 	}
 	// console.log('===> login - server - redirecting to loginUrl <===');
 	redirect(302, loginUrl);

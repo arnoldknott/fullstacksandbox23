@@ -26,15 +26,6 @@
 	}
 
 	setContext('backendAPIConfiguration', data?.body?.backendAPIConfiguration);
-
-	// TBD use $page.data for that - that's the standard store, and user logged in information is relevant everywhere.
-	// if ($user_store?.loggedIn) {
-	// 	user_store.set(data.user);
-	// }
-
-	// if (data?.loggedIn) {
-	// 	$user_store = data;
-	// }
 </script>
 
 <main>

@@ -5,7 +5,7 @@ import { error } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
 
-export const load: PageServerLoad = async ({ locals, cookies }) => {
+export const load: PageServerLoad = async ({ locals }) => {
 	// TBD: consider removing the try catch block
 	try {
 		const sessionId = locals.sessionData.sessionId;
@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 			console.error('routes - demo-resource - page.server - no session id');
 			throw error(401, 'No session id!');
 		}
-		const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
+		const accessToken = await msalAuthProvider.getAccessToken(sessionId, [
 			`${appConfig.api_scope}/api.read`
 		]); // ["https://management.azure.com/user_impersonation"] ["api.read"]  ["User.Read"]
 		// console.log("playground - on-behalf-of - server - load - accessToken");

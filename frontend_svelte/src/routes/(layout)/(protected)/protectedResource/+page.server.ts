@@ -5,14 +5,14 @@ import { error } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
 
-export const load: PageServerLoad = async ({ fetch, locals, cookies }) => {
+export const load: PageServerLoad = async ({ fetch, locals }) => {
 	const sessionId = locals.sessionData.sessionId;
 	// const sessionId = cookies.get('session_id');
 	if (!sessionId) {
 		console.error('routes - protectedResource - page.server - no session id');
 		throw error(401, 'No session id!');
 	}
-	const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
+	const accessToken = await msalAuthProvider.getAccessToken(sessionId, [
 		`${appConfig.api_scope}/api.read`,
 		'User.Read'
 	]);
