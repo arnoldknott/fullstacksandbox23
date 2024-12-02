@@ -19,6 +19,28 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 			Authorization: `Bearer ${accessToken}`
 		}
 	});
+
+	// a way of returning file content from server load function (untested):
+	// // Read the file
+	// const filePath = 'path/to/your/file';
+	// const fileBuffer = await fs.readFile(filePath);
+	// const arrayBuffer = fileBuffer.buffer;
+
+	// // Other data to include in the response
+	// const otherData = {
+	// message: 'Here is your file and some additional data',
+	// timestamp: new Date().toISOString()
+	// };
+
+	// // Create the response object
+	// const response = {
+	// file: arrayBuffer,
+	// ...otherData
+	// };
+
+	// // Return the response as JSON
+	// return json(response);
+
 	// const demo_resource = await get_ms_graph('/me');
 	// console.log("demo resource - server - health");
 	// console.log(health);

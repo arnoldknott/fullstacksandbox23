@@ -24,11 +24,15 @@
 			console.log(response);
 		} else {
 			const pictureBlob = await response.blob();
+			// console.log('layout - userPictureURL - pictureBlob');
+			// console.log(pictureBlob);
 			if (pictureBlob.size === 0) {
 				console.log('layout - userPictureURL - no User picture available');
 				console.log(pictureBlob);
 			} else {
 				userPictureURL = URL.createObjectURL(pictureBlob);
+				// console.log('layout - userPictureURL');
+				// console.log(userPictureURL);
 			}
 		}
 	});
@@ -56,6 +60,7 @@
 			{#if loggedIn}
 				<img class="h-12 w-12 rounded-full" src="/api/v1/user/me/picture" alt="you" />
 				{session.userProfile.displayName}
+				<!-- TBD: remove the following one: -->
 				{#if userPictureURL}
 					<img class="h-12 w-12 rounded-full" src={userPictureURL} alt="you" />
 				{/if}

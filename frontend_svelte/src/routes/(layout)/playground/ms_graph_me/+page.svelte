@@ -24,11 +24,13 @@
 	});
 </script>
 
-<Title>Directly from SvelteAPI (works also without client side JavaScript):</Title>
+<Title>First: Directly from SvelteAPI (works also without client side JavaScript):</Title>
+<Title>Second: Passed through server load function and uses client side JavaScript:</Title>
 <!-- TBD: needs a check if user is logged in -> using store data?  -->
 <img class="rounded-full" src="/api/v1/user/me/picture" alt="you" />
 
-<Title>Passed through server load function and uses client side JavaScript:</Title>
+
+<!-- TBD: remove the following one: -->
 {#if userPictureURL}
 	<img class="h-100 w-100" src={userPictureURL} alt="you" />
 {/if}
