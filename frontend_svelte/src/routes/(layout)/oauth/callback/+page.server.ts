@@ -124,7 +124,7 @@ export const load: PageServerLoad = async ({ locals, url, cookies }) => {
 			user_store.set(session);
 			// } else {
 			// 	console.error('Callback - server - Account not found');
-			// 	throw new Error('No account found');
+			// 	throw new error(404, 'No account found');
 			// }
 
 			// httpOnly and secure are true by default from sveltekit (https://kit.svelte.dev/docs/types#public-types-cookies)

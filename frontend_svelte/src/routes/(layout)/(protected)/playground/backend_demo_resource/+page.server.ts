@@ -1,6 +1,7 @@
 import type { Actions, PageServerLoad } from './$types';
 import { msalAuthProvider } from '$lib/server/oauth';
 import AppConfig from '$lib/server/config';
+import { error } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
 
@@ -25,7 +26,7 @@ export const load: PageServerLoad = async ({ fetch, locals, cookies }) => {
 	const sessionId = locals.sessionData.sessionId;
 	if (!sessionId) {
 		console.error('routes - demo-resource - page.server - no session id');
-		throw new Error('No session id!');
+		throw error(401, 'No session id!');
 	}
 	const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 		`${appConfig.api_scope}/api.read`
@@ -54,7 +55,7 @@ export const actions = {
 		const sessionId = locals.sessionData.sessionId;
 		if (!sessionId) {
 			console.error('routes - demo-resource - page.server - no session id');
-			throw Error('No session id!');
+			throw error(401, 'No session id!');
 		}
 		const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 			`${appConfig.api_scope}/api.write`

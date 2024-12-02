@@ -12,7 +12,8 @@ const appConfig = await AppConfig.getInstance();
 
 export const GET: RequestHandler = async ({ locals, setHeaders, cookies }): Promise<Response> => {
 	try {
-		const sessionId = cookies.get('session_id');
+		// const sessionId = cookies.get('session_id');
+		const sessionId = locals.sessionData.sessionId;
 		if (!sessionId) {
 			console.error('api - v1 - user - me - picture - server - no session id');
 			throw error(401, 'No session id!');

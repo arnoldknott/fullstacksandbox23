@@ -2,6 +2,7 @@ import type { LayoutServerLoad } from './$types';
 import { msalAuthProvider } from '$lib/server/oauth';
 // import { app_config } from '$lib/server/config';
 import AppConfig from '$lib/server/config';
+import { error } from '@sveltejs/kit';
 import type { Session, BackendAPIConfiguration } from '$lib/types.d.ts';
 
 // const config = await app_config();
@@ -29,7 +30,7 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
 			const sessionId = locals.sessionData.sessionId;
 			if (!sessionId) {
 				console.error('api - v1 - user - me - picture - server - no session id');
-				throw Error('No session id!');
+				throw error(401, 'No session id!');
 			}
 			const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
 				'User.Read'

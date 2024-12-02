@@ -1,7 +1,7 @@
 /** @type {import('@sveltejs/kit').Handle} */
 import { redisCache } from '$lib/server/cache';
 import type { Session } from '$lib/types'; // TBD: move to app.d.ts (look at new template from ground up installation)
-import { redirect } from '@sveltejs/kit';
+import { redirect, error } from '@sveltejs/kit';
 
 const retrieveSession = async (sessionId: string | null): Promise<Session | void> => {
 	if (sessionId) {
@@ -56,7 +56,7 @@ export const handle = async ({ event, resolve }) => {
 			};
 		}catch (err) {
 			console.error('🔥 🎣 hooks - server - error in handle');
-			throw err;
+			throw error (500, 'Error in handle');
 		}
 	}
 	return await resolve(event);
