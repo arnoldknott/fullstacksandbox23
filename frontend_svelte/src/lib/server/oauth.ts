@@ -5,9 +5,9 @@ import type { RedisClientType } from 'redis';
 import {
 	ConfidentialClientApplication,
 	InteractionRequiredAuthError,
+	CryptoProvider,
 	type AuthenticationResult
 } from '@azure/msal-node';
-import type { Session } from '$lib/types';
 import { building } from '$app/environment';
 import {
 	DistributedCachePlugin,
@@ -32,7 +32,7 @@ class RedisClientWrapper implements ICacheClient {
 
 	constructor(redisClient: RedisClientType) {
 		this.redisClient = redisClient;
-		console.log('👍 🔑 oauth - Authentication - RedisClientWrapper - created!');
+		// console.log('👍 🔑 oauth - Authentication - RedisClientWrapper - created!');
 	}
 
 	public async set(key: string, value: string): Promise<string> {
@@ -71,20 +71,23 @@ class RedisPartitionManager implements IPartitionManager {
 	constructor(redisClient: RedisClientWrapper, sessionId: string) {
 		this.sessionId = sessionId;
 		this.redisClient = redisClient;
-		console.log('👍 🔑 oauth - Authentication - RedisPartitionManager - created!');
+		// console.log('👍 🔑 oauth - Authentication - RedisPartitionManager - created!');
 	}
 
 	async getKey(): Promise<string> {
 		try {
 			// TBD: move to / update in redisCache in $lib/server/cache.ts:
-			const regularRedisClient = await redisCache.provideClient();
-			const sessionData = await regularRedisClient.json.get(this.sessionId);
+			// const regularRedisClient = await redisCache.provideClient();
+			// const sessionData = await regularRedisClient.json.get(this.sessionId);
+			const sessionData = await redisCache.getSession(this.sessionId);
+			// console.log('🔑 oauth - Authentication - RedisPartitionManager - getKey - sessionData')
+			// console.log(sessionData);
 			const session = sessionData as SessionCacheData;
 			const account = session.microsoftAccount as AccountInfo;
-			const partitionKey = account.homeAccountId || '';
+			const partitionKey = account?.homeAccountId || '';
 			return partitionKey;
 		} catch (error) {
-			console.log(error);
+			console.log('Error in getKey() : ', error);
 		}
 		return '';
 	}
@@ -149,6 +152,7 @@ class RedisPartitionManager implements IPartitionManager {
 class MicrosoftAuthenticationProvider {
 	private msalCommonConfig;
 	private redisClientWrapper: RedisClientWrapper;
+	private cryptoProvider: CryptoProvider;
 
 	constructor(redisClient: RedisClientType) {
 		// Common configuration for all users:
@@ -160,7 +164,8 @@ class MicrosoftAuthenticationProvider {
 				scopes: [...scopesBackend, ...scopesMsGraph]
 			}
 		};
-		console.log('👍 🔑 oauth - Authentication - Configuration for MsalConfClient - created!');
+		this.cryptoProvider = new CryptoProvider();
+		// console.log('👍 🔑 oauth - Authentication - Configuration for MsalConfClient - created!');
 		this.redisClientWrapper = new RedisClientWrapper(redisClient);
 	}
 
@@ -180,7 +185,7 @@ class MicrosoftAuthenticationProvider {
 					cache: { cachePlugin: tokenCache }
 				};
 				const msalConfClient = new ConfidentialClientApplication(msalUserSessionSpecificConfig);
-				console.log('👍 🔑 oauth - Authentication - MsalConfClient - created!');
+				// console.log('👍 🔑 oauth - Authentication - MsalConfClient - created!');
 				return msalConfClient;
 			} else {
 				const msalConfClient = new ConfidentialClientApplication(this.msalCommonConfig);
@@ -201,14 +206,29 @@ class MicrosoftAuthenticationProvider {
 	public async signIn(
 		sessionId: string,
 		origin: string,
+		targetUrl: string = '/',
 		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scoepsAzure]
 	): Promise<string> {
 		try {
-			console.log('🔑 oauth - Authentication - signIn ');
+			// console.log('🔑 oauth - Authentication - signIn ');
+			const csrfToken = this.cryptoProvider.createNewGuid();
+			const state = this.cryptoProvider.base64Encode(
+				JSON.stringify({
+					csrfToken: csrfToken,
+					targetURL: targetUrl
+				})
+			);
+			// const regularRedisClient = await redisCache.provideClient();
+			// await regularRedisClient.json.set(sessionId, '$.csrfToken', csrfToken);
+			// await redisCache.setSession(sessionId, '$.csrfToken', {"csrfToken": csrfToken}, 60 * 10)
+			await redisCache.setSession(sessionId, '$.csrfToken', JSON.stringify(csrfToken), 60 * 10);
 			const msalConfClient = this.createMsalConfClient(sessionId);
+			// pass the state here as well, so user can get redirected to the correct page after login:
+			// for example: https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/7a01aafc1af9aca6d51638204aa942700c0418ca/samples/msal-node-samples/auth-code-distributed-cache/src/AuthProvider.ts#L84
 			const authCodeUrlParameters = {
 				scopes: scopes,
-				redirectUri: `${origin}/oauth/callback`
+				redirectUri: `${origin}/oauth/callback`,
+				state: state
 			};
 			const authCodeUrl = await msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
 			return authCodeUrl;
@@ -217,6 +237,27 @@ class MicrosoftAuthenticationProvider {
 			console.error(error);
 			throw error;
 		}
+	}
+
+	public async decodeState(sessionId: string, state: string): Promise<string> {
+		const stateJSON = JSON.parse(this.cryptoProvider.base64Decode(state));
+		// const cachedCsrfToken = (await regularRedisClient.json.get(sessionId, {
+		// 	path: '$.csrfToken'
+		// })) as string[];
+		const cachedCsrfToken = await redisCache.getSession(sessionId, '$.csrfToken');
+		if (stateJSON.csrfToken === cachedCsrfToken) {
+			return stateJSON.targetURL;
+		} else {
+			throw new Error('CSRF Token mismatch');
+		}
+
+		// 	if (cachedCsrfToken && stateJSON.csrfToken !== cachedCsrfToken[0]) {
+		// 		// if (stateJSON.csrfToken !== cachedCsrfToken[0]) {
+		// 		throw new Error('CSRF Token mismatch');
+		// 		// }
+		// 	}
+
+		// }
 	}
 
 	public async authenticateWithCode(
@@ -229,21 +270,24 @@ class MicrosoftAuthenticationProvider {
 			throw new Error('🔥 🔑 oauth - GetAccessToken failed - no code');
 		}
 		try {
-			console.log('🔑 oauth - Authentication - authenticateWithCode ');
+			// console.log('🔑 oauth - Authentication - authenticateWithCode ');
 			const msalConfClient = this.createMsalConfClient(sessionId);
-			await msalConfClient.getTokenCache().getAllAccounts(); // required for triggering beforeCacheAccess
+			// Doesn't make sense here - at this time the tokens and the session data is not cached yet in Redis:
+			// await msalConfClient.getTokenCache().getAllAccounts(); // required for triggering beforeCacheAccess
 			const response = await msalConfClient.acquireTokenByCode({
 				code: code,
 				scopes: scopes,
 				redirectUri: `${origin}/oauth/callback`
 			});
-			const data = response.account ? JSON.parse(JSON.stringify(response.account)) : null;
-			// TBD: move to / update in redisCache in $lib/server/cache.ts:
-			const regularRedisClient = await redisCache.provideClient();
-			// const responseSessionAccount =
-			// 	(await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data)) || '';
-			await regularRedisClient.json.set(sessionId, '$.microsoftAccount', data);
-			await redisClient.json.set(sessionId, '$.loggedIn', true);
+
+			const accountData = response.account ? JSON.parse(JSON.stringify(response.account)) : null;
+			await redisCache.setSession(sessionId, '$.loggedIn', JSON.stringify(true));
+			await redisCache.setSession(sessionId, '$.status', JSON.stringify('authenticated'));
+			await redisCache.setSession(sessionId, '$.microsoftAccount', JSON.stringify(accountData));
+			await redisCache.setSession(sessionId, '$.sessionId', JSON.stringify(sessionId));
+
+			// await redisCache.updateSessionExpiry(sessionId, timeOut);
+
 			return response;
 		} catch (error) {
 			console.error('🔥 🔑 oauth - GetAccessToken failed');
@@ -254,31 +298,46 @@ class MicrosoftAuthenticationProvider {
 
 	public async getAccessToken(
 		sessionId: string,
-		sessionData: Session,
 		scopes: string[] = [appConfig.api_scope_default]
 	): Promise<string> {
 		try {
-			console.log('🔑 oauth - Authentication - getAccessToken ');
+			// console.log('🔑 oauth - Authentication - getAccessToken ');
 			const msalConfClient = this.createMsalConfClient(sessionId);
 			await msalConfClient.getTokenCache().getAllAccounts(); // required for triggering beforeCacheACcess
-			const regularRedisClient = await redisCache.provideClient();
-			// TBD: move to / update in redisCache in $lib/server/cache.ts:
-			const accountResponse = await regularRedisClient.json.get(sessionId, {
-				path: '$.microsoftAccount'
-			});
-			if (!accountResponse) {
-				throw new Error('🔥 🔑 oauth - GetAccessToken failed - no account');
-			}
-			const account: AccountInfo = accountResponse[0] as AccountInfo;
+			// const regularRedisClient = await redisCache.provideClient();
+			// // TBD: move to / update in redisCache in $lib/server/cache.ts:
+			// const accountResponse = await regularRedisClient.json.get(sessionId, {
+			// 	path: '$.microsoftAccount'
+			// });
+			const account = (await redisCache.getSession(sessionId, '$.microsoftAccount')) as AccountInfo;
+			// console.log('🔑 oauth - Authentication - getAccessToken - accountResponse')
+			// console.log(account);
 			const response = await msalConfClient.acquireTokenSilent({
 				scopes: scopes,
 				account: account
 			});
 			const accessToken = response.accessToken;
 			return accessToken;
+
+			// if (!accountResponse) {
+			// 	console.error('🔥 🔑 oauth - GetAccessToken failed - no account');
+			// 	throw new Error();
+			// }
+			// if (Array.isArray(accountResponse) && accountResponse.length > 0) {
+			// 	const account: AccountInfo = accountResponse[0] as unknown as AccountInfo;
+			// 	const response = await msalConfClient.acquireTokenSilent({
+			// 		scopes: scopes,
+			// 		account: account
+			// 	});
+			// 	const accessToken = response.accessToken;
+			// 	return accessToken;
+			// } else {
+			// 	throw new Error('🔥 🔑 oauth - GetAccessToken failed - accountResponse missing');
+			// }
 		} catch (error) {
 			if (error instanceof InteractionRequiredAuthError) {
 				console.warn('👎 🔑 oauth - GetAccessToken silent failed - sign in again!');
+				// console.log("===> redirecting to '/login' <===");
 				redirect(307, '/login');
 			} else {
 				console.error('🔥 🔑 oauth - GetAccessToken failed');

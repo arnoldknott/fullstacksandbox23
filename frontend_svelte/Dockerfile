@@ -12,6 +12,7 @@ COPY package*.json svelte.config.js ./
 RUN npm install
 COPY . .
 # RUN printenv
+# TBD: run in dev mode with npm run dev during development: separate build and dev stages!
 RUN npm run build
 # CMD ["sh" "-c"]
 

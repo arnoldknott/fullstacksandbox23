@@ -12,18 +12,8 @@ socketio_server = socketio.AsyncServer(
     async_mode="asgi",
     cors_allowed_origins=[],  # disable CORS in Socket.IO, as FastAPI handles CORS!
     logger=True,
-    engineio_logger=True,
+    engineio_logger=False,  # prevents the ping and pong messages from being logged
 )
-
-# print("=== routers - socketio - v1 - vars(socketio_server) ===")
-# pprint(vars(socketio_server))
-# print("=== routers - socketio - v1 - dir(socketio_server) ===")
-# pprint(dir(socketio_server))
-# print("=== routers - socketio - v1 - var(socketio_app) ===")
-# pprint(socketio_app)
-# print("=== routers - socketio - v1 - dir(socketio_app) ===")
-# pprint(dir(socketio_app))
-# print("=== routers - socketio - v1 - flush ===", flush=True)
 
 
 # TBD: add auth as FastAPI Depends
@@ -67,10 +57,12 @@ async def catch_all(event, sid, data):
 
 
 @socketio_server.event
-async def demo_message(sid, data):
-    """Demo message event for socket.io."""
+async def public_message(sid, data):
+    """Public message event for socket.io."""
     logger.info(f"Received message from client {sid}: {data}")
-    await socketio_server.emit("demo_message", f"Message received from client: {data}")
+    await socketio_server.emit(
+        "public_message", f"Message received from client: {data}"
+    )
 
 
 # @socketio_server.event(namespace="/protected_events")
@@ -157,8 +149,7 @@ class PresentationInterests(socketio.AsyncNamespace):
 presentation_interests_router = PresentationInterests("/presentation_interests")
 
 
-# TBD: rename into BaseNamespace!
-class BaseEvents(socketio.AsyncNamespace):
+class BaseNamespace(socketio.AsyncNamespace):
     """Base class for socket.io namespaces."""
 
     def __init__(
@@ -185,33 +176,37 @@ class BaseEvents(socketio.AsyncNamespace):
         auth=None,
     ):
         """Connect event for socket.io namespaces."""
-        # TBD: add a try-except block around the authentication and return specific authentication failed error.
-        guards = self.guards
-        print("=== base - on_connect - sid ===")
-        print(sid, flush=True)
-        # print("=== base - on_connect - environ ===")
-        # pprint(environ)
-        print("=== base - on_connect - auth ===")
-        print(auth, flush=True)
-        print("=== base - on_connect - guards ===")
-        print(guards, flush=True)
-        logger.info(f"Client connected with session id: {sid}.")
+        try:
+            guards = self.guards
+            print("=== base - on_connect - sid ===")
+            print(sid, flush=True)
+            # print("=== base - on_connect - environ ===")
+            # pprint(environ)
+            print("=== base - on_connect - auth ===")
+            print(auth, flush=True)
+            print("=== base - on_connect - guards ===")
+            print(guards, flush=True)
+            logger.info(f"Client connected with session id: {sid}.")
 
-        token_payload = await get_azure_token_payload(auth)
-        print("=== base - on_connect - token_payload ===")
-        print(token_payload, flush=True)
+            token_payload = await get_azure_token_payload(auth)
+            print("=== base - on_connect - token_payload ===")
+            print(token_payload, flush=True)
+        except Exception as err:
+            logger.error(f"Client with session id {sid} failed to authenticate.")
+            print("=== base - on_connect - Exception ===")
+            print(err, flush=True)
+            raise ConnectionRefusedError("Authorization failed")
 
         # current_user = await check_token_against_guards(token_payload, self.guards)
         # print("=== base - on_connect - sid - current_user ===")
         # print(current_user, flush=True)
-        emit_response = await self.server.emit(
-            "protected_message",
+        await self.server.emit(
+            "demo_message",
             f"Hello new client with session id {sid}",
             namespace=self.namespace,
             callback=self.callback,
         )
-        print("=== base - on_connect - emit_response ===")
-        print(emit_response, flush=True)
+        # TBD: should not return anything or potentially true?
         return "OK from server"
 
     async def on_disconnect(self, sid):

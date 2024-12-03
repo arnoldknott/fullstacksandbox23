@@ -30,8 +30,10 @@ export type User = {
 
 export type Session = {
 	loggedIn: boolean;
+	status?: string;
 	microsoftAccount?: AccountInfo; // TBD: change to MicrosoftAccount, containing Account, IdToken, AccessToken, RefreshToken, AppMetadata
 	userAgent?: string;
+	sessionId?: string;
 };
 
 export type SocketioConnection = {

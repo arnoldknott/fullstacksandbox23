@@ -1,10 +1,82 @@
+import asyncio
 from typing import List
 from unittest.mock import patch
 
 import pytest
 import socketio
+import uvicorn
 
 
+@pytest.fixture(scope="function")
+async def mock_token_payload(request):
+    """Returns a mocked token payload."""
+
+    # print("=== mock_token_payload ===")
+    # print(request.param)
+
+    with patch("core.security.decode_token") as mock:
+        mock.return_value = request.param
+        yield mock
+
+
+@pytest.fixture()
+async def socketio_server(mock_token_payload):
+    """Provide a socket.io server."""
+
+    sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
+    app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
+
+    # @sio.event
+    # def connect(sid, environ):
+    #     print("connect ", sid, flush=True)
+
+    # @sio.event
+    # async def chat_message(sid, data):
+    #     await sio.emit("chat_message", f"You are connected to test server with {sid}")
+    #     print("=== chat_message - data ===")
+    #     print(data)
+
+    # @sio.event
+    # def disconnect(sid):
+    #     print("disconnect ", sid)
+
+    config = uvicorn.Config(app, host="127.0.0.1", port=8669, log_level="info")
+    server = uvicorn.Server(config)
+
+    ### Works with aiohttp, too:
+
+    # sio = socketio.AsyncServer()
+    # app = web.Application()# add the path "/socketio/v1" here?
+    # sio.attach(app)
+
+    # @sio.event
+    # def connect(sid, environ):
+    #     print("connect ", sid, flush=True)
+
+    # @sio.event
+    # async def chat_message(sid, data):
+    #     await sio.emit("chat_message", f"You are connected to test server with {sid}")
+    #     print("=== chat_message - data ===")
+    #     print(data)
+
+    # @sio.event
+    # def disconnect(sid):
+    #     print("disconnect ", sid)
+
+    # runner = web.AppRunner(app)
+    # await runner.setup()
+    # site = web.TCPSite(runner, "localhost", 8669)
+    # await site.start()
+
+    ### end WORKS with aiohttp
+
+    asyncio.create_task(server.serve())
+    await asyncio.sleep(1)
+    yield sio
+    await server.shutdown()
+
+
+# This one connects to the socketio server in the main FastAPI application:
 @pytest.fixture
 async def socketio_simple_client():
     """Provide a simple socket.io client."""
@@ -18,27 +90,27 @@ async def socketio_simple_client():
     await client.disconnect()
 
 
+# This one connects to the production socketio server in FastAPI:
 @pytest.fixture
 async def socketio_client():
     """Provides a socket.io client and connects to it."""
     # Note, this one can only make real connections without authentication
-    # The server cannot be patched, as this client is running on a different machine
 
     async def _socketio_client(namespaces: List[str] = None):
         client = socketio.AsyncClient(logger=True, engineio_logger=True)
 
-        @client.event
-        def connect(namespace="/protected_events"):
-            """Connect event for socket.io."""
-            return "OK from client"
-            # pass
+        # @client.event
+        # def connect(namespace=namespaces[0]):
+        #     """Connect event for socket.io."""
+        #     return "OK from client"
+        #     # pass
 
-        @client.event
-        def protected_message(data, namespace="/protected_events"):
-            print("=== protected_message - listening to server here ===")
-            print("=== conftest - socketio_client - protected_message - data ===")
-            print(data)
-            pass
+        # @client.event
+        # def demo_message(data, namespace=namespaces[0]):
+        #     print("=== demo_message - listening to server here ===")
+        #     print("=== conftest - socketio_client - protected_message - data ===")
+        #     print(data)
+        #     pass
 
         await client.connect(
             "http://127.0.0.1:80",
@@ -51,26 +123,20 @@ async def socketio_client():
     return _socketio_client
 
 
-@pytest.fixture(scope="function")
-async def mock_token_payload(request):
-    """Returns a mocked token payload."""
+# This one connects to the mocked test socketio server from the fixture socketio_server:
+@pytest.fixture
+async def socketio_patched_client():
+    """Provides a socket.io client and connects to it."""
 
-    print("=== mock_token_payload ===")
-    print(request.param)
+    async def _socketio_client(namespaces: List[str] = None):
+        client = socketio.AsyncClient(logger=True, engineio_logger=True)
 
-    with patch("core.security.decode_token") as mock:
-        mock.return_value = request.param
-        # mock.return_value = {
-        #     "some": "payload"
-        # }  # TBD: replace with parameterization for different payloads
-        yield mock
+        await client.connect(
+            "http://127.0.0.1:8669",
+            socketio_path="socketio/v1",
+            namespaces=namespaces,
+        )
+        yield client
+        await client.disconnect()
 
-
-@pytest.fixture(scope="function")
-async def provide_socketio_connection(mock_token_payload):
-    """Provide a socket.io connection with a mocked token payload."""
-    pass
-    # TBD: all server-side - no client!
-    # TBD: implement: call on_connect() with mocked token payload
-    # TBD: yield the connection
-    # TBD: implement: call on_disconnect()
+    return _socketio_client

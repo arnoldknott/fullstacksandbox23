@@ -4,58 +4,53 @@ import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import type { Session } from '$lib/types';
-import { user_store } from '$lib/stores';
+import AppConfig from '$lib/server/config';
+
+const appConfig = await AppConfig.getInstance();
 
 export const load: PageServerLoad = async ({ url, cookies, request }) => {
 	let loginUrl: string;
 	try {
 		// create the session uuid here:
-		const sessionId = `session:${v4()}`;
+		const sessionId = v4();
 		const userAgent = request.headers.get('user-agent');
 		// Type that one:
 		const sessionData: Session = {
+			status: 'authentication_pending',
 			loggedIn: false,
 			userAgent: userAgent || ''
 		};
-		// console.log("=== signin - sessionData, typed ===");
-		// console.log(sessionData);
-
-		// const sessionDataJSON = JSON.stringify(sessionData);
-		// console.log("=== signin - sessionData, JSON ===");
-		// console.log(sessionDataJSON);
-
-		// const sessionDataJSONnative = { "loggedIn": false, "userProfile": {} }
-		// console.log("=== signin - sessionDatanative, JSON input ===");
-		// console.log(sessionDataJSONnative);
-
-		// const redisClient = await redisCache.provideClient();
-		// await redisClient.json.set("typed", "$", Object(sessionData));
-		// await redisClient.expire("typed", 3600);
-
-		// await redisClient.json.set("stringified", "$", sessionDataJSON);
-		// await redisClient.expire("stringified", 3600);
-
-		// await redisClient.json.set("native", "$", sessionDataJSONnative);
-		// await redisClient.expire("native", 3600);
 
 		// move to setSession in $lib/server/cache.ts:
-		const redisClient = await redisCache.provideClient();
-		await redisClient.json.set(sessionId, '$', Object(sessionData));
-		await redisClient.expire(sessionId, 60); // use sessionTimeout from cache.ts
+		// const redisClient = await redisCache.provideClient();
+		// await redisClient.json.set(sessionId, '$', Object(sessionData));
+		// await redisClient.expire(sessionId, sessionTimeout); // use sessionTimeout from cache.ts
+		await redisCache.setSession(
+			sessionId,
+			'$',
+			JSON.stringify(sessionData),
+			appConfig.authentication_timeout
+		);
 
-		user_store.set(sessionData);
+		cookies.set('session_id', sessionId, {
+			path: '/',
+			httpOnly: true,
+			sameSite: false, // TBD: change to strict for production!
+			// secure: true,// TBD: add this in for production!
+			maxAge: appConfig.authentication_timeout
+		}); // change sameSite: "strict" (didn't work in Safari in local dev)
 
-		// const sessionIdCookie = sessionId.replace("session:", "");
-		// cookies.set('session_id', sessionIdCookie, { path: '/', httpOnly: true, sameSite: "strict" });// used to be sameSite: false
-		cookies.set('session_id', sessionId, { path: '/', httpOnly: true, sameSite: false }); // change sameSite: "strict" (didn't work in Safari in local dev)
+		const targetURL = url.searchParams.get('targetURL') || undefined;
+		// console.log('🚪 login - server - targetURL')
+		// console.log(targetURL);
 
-		// await redisCache.setSession(sessionId, '.', sessionData);
-		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin);
+		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL);
 	} catch (err) {
-		console.error('login - server - sign in redirect failed');
+		console.error('🔥 🚪 login - server - sign in redirect failed');
 		console.error(err);
-		throw err;
+		throw err; // TBD consider redirect to "/" instead here?
 	}
+	// console.log('===> login - server - redirecting to loginUrl <===');
 	redirect(302, loginUrl);
 };
 
