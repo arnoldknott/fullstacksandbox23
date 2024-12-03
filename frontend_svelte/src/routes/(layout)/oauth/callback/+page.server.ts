@@ -2,7 +2,10 @@ import { msalAuthProvider } from '$lib/server/oauth';
 import type { PageServerLoad } from './$types';
 // import { v4 as uuidv4 } from 'uuid';
 import { redirect } from '@sveltejs/kit';
+import AppConfig from '$lib/server/config';
 // import type { AuthenticationResult } from '@azure/msal-node';
+
+const appConfig = await AppConfig.getInstance();
 
 export const load: PageServerLoad = async ({ url, cookies }) => {
 	// const userAgent = request.headers.get('user-agent');
@@ -42,6 +45,10 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			// sessionId = `session:${cookies.get('session_id_new')}`;
 			// sessionId = `session:${sessionId}`;
 			await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
+			cookies.set('session_id', sessionId, {
+				path: '/',
+				...appConfig.session_cookie_options
+			});
 		} else {
 			// redirect(302, '/login');
 			// console.error('===> Callback - server - authenticate with Code failed - redirecting to "/" <===');

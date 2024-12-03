@@ -23,6 +23,9 @@ export default class AppConfig {
 	public redis_port: string;
 	public redis_session_db: string;
 	public redis_password: string;
+	public authentication_timeout: number;
+	public session_timeout: number;
+	public session_cookie_options: object;
 
 	private constructor() {
 		this.api_scope = '';
@@ -40,6 +43,9 @@ export default class AppConfig {
 		this.redis_port = process.env.REDIS_PORT;
 		this.redis_session_db = process.env.REDIS_SESSION_DB;
 		this.redis_password = '';
+		this.authentication_timeout = 60 * 10; // 10 minutes to authenticate
+		this.session_timeout = 60 * 60; // 1 hour
+		this.session_cookie_options = {};
 	}
 
 	public static async getInstance(): Promise<AppConfig> {
@@ -117,6 +123,12 @@ export default class AppConfig {
 				this.az_authority = `https://login.microsoftonline.com/${azTenantId?.value}`;
 				this.az_logout_uri = `https://login.microsoftonline.com/${azTenantId?.value}/oauth2/v2.0/logout`;
 				this.redis_password = redisPassword?.value || '';
+				this.session_cookie_options = {
+					httpOnly: true,
+					sameSite: 'strict',
+					secure: true,
+					maxAge: this.session_timeout
+				};
 			} catch (err) {
 				console.error('🥞 app_config - server - updateValues - failed');
 				throw err;
@@ -135,6 +147,12 @@ export default class AppConfig {
 			this.az_authority = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`;
 			this.az_logout_uri = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}/oauth2/v2.0/logout`;
 			this.redis_password = process.env.REDIS_PASSWORD;
+			this.session_cookie_options = {
+				httpOnly: true,
+				sameSite: false,
+				secure: false,
+				maxAge: this.session_timeout
+			};
 		}
 	}
 }

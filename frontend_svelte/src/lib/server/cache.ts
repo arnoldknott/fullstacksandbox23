@@ -8,8 +8,8 @@ import { error } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
 
-const sessionTimeOut = 60 * 30; // TBD: this is 5 minutes only - set to three weeks or so for production!
 const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
+const sessionTimeOut = 60 * 60; // TBD: this is 5 minutes only - set to three weeks or so for production!
 
 class RedisCache {
 	redisClient: RedisClientType;

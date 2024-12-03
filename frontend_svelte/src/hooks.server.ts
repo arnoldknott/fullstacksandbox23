@@ -1,7 +1,7 @@
 /** @type {import('@sveltejs/kit').Handle} */
 import { redisCache } from '$lib/server/cache';
 import type { Session } from '$lib/types'; // TBD: move to app.d.ts (look at new template from ground up installation)
-import { redirect, error } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 
 // const retrieveSession = async (sessionId: string | null): Promise<Session | void> => {
 // 	if (sessionId) {
@@ -76,8 +76,10 @@ export const handle = async ({ event, resolve }) => {
 			// console.log('🎣 hooks - server - access to route - event:')
 			// console.log(event);
 		}
-	} catch (err) {
-		console.error('🔥 🎣 hooks - server - access to this protected route failed:');
+	} catch {
+		console.error(
+			'🔥 🎣 hooks - server - access to this protected route failed (potentially session expired):'
+		);
 		console.log(event.url.href);
 		redirect(307, `/login?targetURL=${event.url.href}`);
 		// return await resolve(event);

@@ -4,8 +4,9 @@ import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import type { Session } from '$lib/types';
+import AppConfig from '$lib/server/config';
 
-const authenticationTimeout = 60 * 10; //set initial timeout to 10 minutes: if no authentication, session expires fast.
+const appConfig = await AppConfig.getInstance();
 
 export const load: PageServerLoad = async ({ url, cookies, request }) => {
 	let loginUrl: string;
@@ -24,19 +25,24 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		// const redisClient = await redisCache.provideClient();
 		// await redisClient.json.set(sessionId, '$', Object(sessionData));
 		// await redisClient.expire(sessionId, sessionTimeout); // use sessionTimeout from cache.ts
-		await redisCache.setSession(sessionId, '$', JSON.stringify(sessionData), authenticationTimeout);
+		await redisCache.setSession(
+			sessionId,
+			'$',
+			JSON.stringify(sessionData),
+			appConfig.authentication_timeout
+		);
 
 		cookies.set('session_id', sessionId, {
 			path: '/',
 			httpOnly: true,
 			sameSite: false, // TBD: change to strict for production!
 			// secure: true,// TBD: add this in for production!
-			maxAge: authenticationTimeout
+			maxAge: appConfig.authentication_timeout
 		}); // change sameSite: "strict" (didn't work in Safari in local dev)
 
 		const targetURL = url.searchParams.get('targetURL') || undefined;
-		console.log('=== login - server - targetURL ===');
-		console.log(targetURL);
+		// console.log('🚪 login - server - targetURL')
+		// console.log(targetURL);
 
 		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL);
 	} catch (err) {

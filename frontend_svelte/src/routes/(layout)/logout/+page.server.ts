@@ -21,9 +21,10 @@ export const load: PageServerLoad = async ({ locals, url, cookies }) => {
 		console.error('🔥 logout - server - missing session_id');
 		redirect(307, '/');
 	}
+	await redisCache.deleteSession(sessionId);
 	// TBD. delete the session fully:
-	const redisClient = await redisCache.provideClient();
-	await redisClient.json.set(sessionId, '$.loggedIn', false);
+	// const redisClient = await redisCache.provideClient();
+	// await redisClient.json.set(sessionId, '$.loggedIn', false);
 	// signOut();
 	redirect(307, `${appConfig.az_logout_uri}?post_logout_redirect_uri=${url.origin}/`);
 	// 	// redirect(302, "/");
