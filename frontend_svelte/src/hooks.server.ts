@@ -50,8 +50,8 @@ export const handle = async ({ event, resolve }) => {
 	// console.log('🎣 hooks - server - session')
 	// console.log(session);
 	if (session) {
-		// console.log('🎣 hooks - server - session.loggedIn')
-		// console.log(session.loggedIn);
+		// console.log('🎣 hooks - server - session')
+		// console.log(session);
 		event.locals.sessionData = session;
 	}
 	// }
