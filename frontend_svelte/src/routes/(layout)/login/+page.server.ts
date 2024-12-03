@@ -35,6 +35,8 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		}); // change sameSite: "strict" (didn't work in Safari in local dev)
 
 		const targetURL = url.searchParams.get('targetURL') || undefined;
+		console.log('=== login - server - targetURL ===');
+		console.log(targetURL);
 
 		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL);
 	} catch (err) {

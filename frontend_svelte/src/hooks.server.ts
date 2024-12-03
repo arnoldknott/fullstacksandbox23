@@ -17,13 +17,13 @@ import { redirect, error } from '@sveltejs/kit';
 // 	}
 // };
 
-const redirectLogin = (tagetUrl: string) => {
-	redirect(307, `/login?targetURL=${tagetUrl}`);
-};
+// const redirectLogin = (tagetUrl: string) => {
+// 	redirect(307, `/login?targetURL=${tagetUrl}`);
+// };
 
 const getSession = async (sessionId: string): Promise<Session | void> => {
 	try {
-		// console.log('🎣 hooks - server - sessionId')
+		// console.log('🎣 hooks - server - getSession - sessionId')
 		// console.log(sessionId);
 		if (sessionId) {
 			const session: Session = (await redisCache.getSession(sessionId)) as Session;
@@ -39,25 +39,24 @@ const getSession = async (sessionId: string): Promise<Session | void> => {
 };
 
 export const handle = async ({ event, resolve }) => {
-	try {
-		// console.log('🎣 hooks - server - access to route - event.url.href - before session check:')
-		// console.log(event.url.href);
-		if (event.cookies) {
-			const sessionId = event.cookies.get('session_id');
-			// console.log('🎣 hooks - server - sessionId')
-			// console.log(sessionId);
-			const session = sessionId ? await getSession(sessionId) : undefined;
-			// console.log('🎣 hooks - server - session')
-			// console.log(session);
-			if (session) {
-				// console.log('🎣 hooks - server - session.loggedIn')
-				// console.log(session.loggedIn);
-				event.locals.sessionData = session;
-			}
-		}
+	// try {
+	// if (event.cookies) {
+	// console.log('🎣 hooks - server - handle - event')
+	// console.log(event);
+	const sessionId = event.cookies.get('session_id');
+	// console.log('🎣 hooks - server - handle - sessionId')
+	// console.log(sessionId);
+	const session = sessionId ? await getSession(sessionId) : undefined;
+	// console.log('🎣 hooks - server - session')
+	// console.log(session);
+	if (session) {
+		// console.log('🎣 hooks - server - session.loggedIn')
+		// console.log(session.loggedIn);
+		event.locals.sessionData = session;
+	}
+	// }
 
-		console.log('🎣 hooks - server - access to route - event.url.href - after session check:');
-		console.log(event.url.href);
+	try {
 		if (event.route.id?.includes('(protected)')) {
 			// console.log('🎣 hooks - server - access to protected route:');
 			// console.log(event.url.href);
@@ -65,7 +64,8 @@ export const handle = async ({ event, resolve }) => {
 				console.error(
 					'🔥 🎣 hooks - server - access attempt to protected route with invalid session'
 				);
-				redirectLogin(event.url.href);
+				// redirectLogin(event.url.href);
+				redirect(307, `/login?targetURL=${event.url.href}`);
 			} else {
 				if (event.route.id?.includes('(admin)')) {
 					console.log('🎣 hooks - server - access to admin route');
@@ -76,13 +76,20 @@ export const handle = async ({ event, resolve }) => {
 			// console.log('🎣 hooks - server - access to route - event:')
 			// console.log(event);
 		}
-		return await resolve(event);
 	} catch (err) {
-		console.error('🔥 🎣 hooks - server - error in handle');
-		console.log('=== Access to this protected route failed: ===');
+		console.error('🔥 🎣 hooks - server - access to this protected route failed:');
 		console.log(event.url.href);
-		throw error(500, 'Error in handle: ' + err);
+		redirect(307, `/login?targetURL=${event.url.href}`);
+		// return await resolve(event);
 	}
+	return await resolve(event);
+	// } catch (err) {
+	// 	console.error('🔥 🎣 hooks - server - accessing this route failed:');
+	// 	console.log(event.url.href);
+	// 	console.error(err);
+	// 	redirect(307, `/`);
+	// 	// throw error(500, 'Error in handle: ' + err);
+	// }
 
 	// try {
 	// 	const sessionId = event.cookies.get('session_id');
