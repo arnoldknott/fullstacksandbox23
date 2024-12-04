@@ -1,7 +1,4 @@
 import { createClient, type RedisClientType } from 'redis';
-// import {} from @types/redis
-// import type { Session } from '$lib/types';
-// import { app_config } from "./config";
 import { building } from '$app/environment';
 import AppConfig from './config';
 import { error } from '@sveltejs/kit';
@@ -9,7 +6,7 @@ import { error } from '@sveltejs/kit';
 const appConfig = await AppConfig.getInstance();
 
 const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
-const sessionTimeOut = 60 * 60; // TBD: this is 5 minutes only - set to three weeks or so for production!
+const sessionTimeOut = appConfig.session_timeout;
 
 class RedisCache {
 	redisClient: RedisClientType;

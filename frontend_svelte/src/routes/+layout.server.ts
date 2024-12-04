@@ -1,8 +1,5 @@
 import type { LayoutServerLoad } from './$types';
-// import { msalAuthProvider } from '$lib/server/oauth';
-// import { app_config } from '$lib/server/config';
 import AppConfig from '$lib/server/config';
-// import { error } from '@sveltejs/kit';
 import type { BackendAPIConfiguration } from '$lib/types.d.ts';
 
 // const config = await app_config();
@@ -20,6 +17,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		websocketPath: '/ws/v1',
 		socketIOPath: '/socketio/v1'
 	};
+
 	// console.log('=== layout.server.ts - load - locals ===');
 	// console.log(locals);
 	// // TBD: remove the logged in aand use the existence of sessionId in locals.sessionData instead!
