@@ -3,7 +3,9 @@ import type { PageServerLoad } from './$types';
 // import { v4 as uuidv4 } from 'uuid';
 import { redirect } from '@sveltejs/kit';
 import AppConfig from '$lib/server/config';
-// import type { AuthenticationResult } from '@azure/msal-node';
+import { redisCache } from '$lib/server/cache';
+
+import type { AuthenticationResult } from '@azure/msal-node';
 
 const appConfig = await AppConfig.getInstance();
 
@@ -44,11 +46,22 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			}
 			// sessionId = `session:${cookies.get('session_id_new')}`;
 			// sessionId = `session:${sessionId}`;
-			await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
+			const authenticationResult: AuthenticationResult = await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
+			// console.log('Callback - server - authenticationResult');
+			// console.log(authenticationResult);
 			cookies.set('session_id', sessionId, {
 				path: '/',
 				...appConfig.session_cookie_options
 			});
+			const response = await fetch(`${appConfig.ms_graph_base_uri}/me`, {
+				headers: {
+					Authorization: `Bearer ${authenticationResult.accessToken}`
+				}
+			});
+			const microsoftProfile = await response.json();
+			console.log('Callback - server - microsoftProfile');
+			console.log(microsoftProfile);
+			await redisCache.setSession(sessionId, '$.microsoftProfile', JSON.stringify(microsoftProfile));
 		} else {
 			// redirect(302, '/login');
 			// console.error('===> Callback - server - authenticate with Code failed - redirecting to "/" <===');
@@ -87,7 +100,6 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 	// await redisCache.setSession(sessionId, '.', session);
 	// TBD: remove user_store and use locals on server side and cookies on client side instead.
 
-	// user_store.set(session);
 	// } else {
 	// 	console.error('Callback - server - Account not found');
 	// 	throw new error(404, 'No account found');
