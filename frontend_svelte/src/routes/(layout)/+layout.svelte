@@ -1,9 +1,7 @@
 <script lang="ts">
-	// import { onMount } from 'svelte';
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
-	// import { redisCache } from '$lib/redisCache';
-	// import { user_store } from '$lib/stores';
+
 	import type { LayoutData } from '../$types';
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/stores';
