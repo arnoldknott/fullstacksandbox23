@@ -4,7 +4,7 @@ import { redisCache } from '$lib/server/cache';
 import { redirect } from '@sveltejs/kit';
 // import {redirect} from '@sveltejs/kit';
 import AppConfig from '$lib/server/config';
-import { user_store } from '$lib/stores';
+// import { user_store } from '$lib/stores';
 const appConfig = await AppConfig.getInstance();
 
 export const load: PageServerLoad = async ({ locals, url, cookies }) => {
@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ locals, url, cookies }) => {
 		path: '/',
 		expires: new Date(0)
 	});
-	user_store.set(undefined);
+	// user_store.set(undefined);
 	if (!sessionId) {
 		console.error('🔥 logout - server - missing session_id');
 		redirect(307, '/');

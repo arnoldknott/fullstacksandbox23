@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	// import { onMount } from 'svelte';
-	import { user_store } from '$lib/stores';
+	// import { user_store } from '$lib/stores';
 	import { setContext } from 'svelte';
 	import type { LayoutData } from './$types';
 	import type { Snippet } from 'svelte';
@@ -18,12 +18,12 @@
 	// $: userProfile = data?.body?.userProfile;
 	// $: userAgent = data?.body?.userAgent;
 	// $: loggedIn = data?.body?.loggedIn || false;
-	const session = data?.body?.sessionData;
-	const loggedIn = session?.loggedIn || false;
+	// const session = data?.body?.sessionData;
+	// const loggedIn = session?.loggedIn || false;
 
-	if (loggedIn && session) {
-		user_store.set(session);
-	}
+	// if (loggedIn && session) {
+	// 	user_store.set(session);
+	// }
 
 	setContext('backendAPIConfiguration', data?.body?.backendAPIConfiguration);
 </script>

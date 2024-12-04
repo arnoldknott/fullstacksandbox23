@@ -32,10 +32,10 @@
 			url: '/counter'
 		},
 		{
-			name: 'User store',
+			name: 'Session data',
 			description:
-				'A simple user store, stored in a svelte store: contains json data of the logged in user',
-			url: '/userstore'
+				'Session data including userprofile stores in $page data: contains json data of the logged in user',
+			url: '/sessiondata'
 		},
 		{
 			name: 'Core',

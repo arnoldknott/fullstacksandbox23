@@ -15,6 +15,7 @@ describe('Guard', () => {
 			loggedIn: false
 		};
 		user_store.set(mockedUser);
+		// TBD: mock $page.data.body.sessionData.loggedIn instead
 		// const sessionData = {
 		// 	loggedIn: false
 		// }
