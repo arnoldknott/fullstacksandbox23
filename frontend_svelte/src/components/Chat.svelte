@@ -4,11 +4,21 @@
 	import Title from '$components/Title.svelte';
 	import { SocketIO } from '$lib/socketio';
 	import type { SocketioConnection } from '$lib/types';
-	import type { Snippet } from 'svelte';
+	// import { getContext, type Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
+	import { page } from '$app/stores';
 
 	let { connection, children }: { connection: SocketioConnection; children: Snippet } = $props();
 
-	const socketio = new SocketIO(connection);
+	const socketio = new SocketIO($page.data.backendAPIConfiguration, connection);
+	// let socketio = $state()
+	// $effect(() => {
+	// 	console.log('Chat.svelte - getContext - backend configuration')
+	// 	console.log(getContext('backendAPIConfiguration'))
+	// 	// console.log('Chat.svelte - $page.data.backendAPIConfiguration')
+	// 	// console.log($page.data.backendAPIConfiguration)
+	// 	socketio = new SocketIO(connection);
+	// })
 	let new_message = $state('');
 
 	let old_messages: string[] = $state([]);
