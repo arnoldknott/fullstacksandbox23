@@ -34,8 +34,8 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 				sessionId: locals.sessionData.sessionId
 			}
 		};
-		console.log('=== layout.server.ts - load - globalClientData ===');
-		console.log(globalClientData);
+		// console.log('=== layout.server.ts - load - globalClientData ===');
+		// console.log(globalClientData);
 		return {
 			...globalClientData
 		};
