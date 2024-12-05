@@ -1,7 +1,6 @@
 <script lang="ts">
 	import '../app.css';
 	// import { onMount } from 'svelte';
-	// import { user_store } from '$lib/stores';
 	import { setContext } from 'svelte';
 	import type { LayoutData } from './$types';
 	import type { Snippet } from 'svelte';
@@ -21,11 +20,7 @@
 	// const session = data?.body?.sessionData;
 	// const loggedIn = session?.loggedIn || false;
 
-	// if (loggedIn && session) {
-	// 	user_store.set(session);
-	// }
-
-	setContext('backendAPIConfiguration', data?.body?.backendAPIConfiguration);
+	setContext('backendAPIConfiguration', data?.backendAPIConfiguration);
 </script>
 
 <main>

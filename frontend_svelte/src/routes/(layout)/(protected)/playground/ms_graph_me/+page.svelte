@@ -4,6 +4,7 @@
 	import Title from '$components/Title.svelte';
 
 	let { data }: { data: PageData } = $props();
+	// TBD refactor using sessionData
 	const account = data.account;
 	const userProfile = data.userProfile;
 	// const userPicture = data.userPicture;

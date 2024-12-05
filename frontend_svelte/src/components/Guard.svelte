@@ -1,20 +1,23 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { user_store } from '$lib/stores.js';
-	import { onMount } from 'svelte';
+	// import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import type { Snippet } from 'svelte';
+	// import { onMount } from 'svelte';
 
-	let { redirect = 'login', children } = $props();
-
-	const forward = () => {
-		onMount(() => {
-			goto(redirect);
-		});
-		return '';
-	};
+	// let { redirect = 'login', children } = $props();
+	let { children }: { children: Snippet } = $props();
+	const { loggedIn } = $page.data.session || false;
+	// const forward = () => {
+	// 	onMount(() => {
+	// 		goto(redirect);
+	// 	});
+	// 	return '';
+	// };
 </script>
 
-{#if $user_store?.loggedIn}
+{#if loggedIn}
 	{@render children?.()}
 {:else}
-	<span></span>{forward()}
+	<span></span>
+	<!-- {forward()} -->
 {/if}

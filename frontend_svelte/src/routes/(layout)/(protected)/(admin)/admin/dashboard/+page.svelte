@@ -7,6 +7,7 @@
 
 	// type Props = { data: PageData };
 	// let { data }: Props = $props();
+	// TBD: rework the data flow here
 	let data: PageData = $props();
 	const apiLink = data.body;
 </script>
