@@ -6,7 +6,7 @@ const appConfig = await AppConfig.getInstance();
 
 export const GET: RequestHandler = async ({ locals, setHeaders }): Promise<Response> => {
 	try {
-		// TBD: checks are now implemented in hooks.server.ts - as long as the route is under (protected) the validity of the session is checked!
+		// TBD: delete as checks are now implemented in hooks.server.ts - as long as the route is under (protected) the validity of the session is checked!
 		const sessionId = locals.sessionData.sessionId;
 		if (!sessionId) {
 			console.error('api - v1 - user - me - picture - server - no session id');

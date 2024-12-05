@@ -1,4 +1,5 @@
 import type { AccountInfo } from '@azure/msal-node';
+import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
 
 export type BackendAPIConfiguration = {
 	backendFqdn: string;
@@ -28,12 +29,20 @@ export type User = {
 // 	redis_password: string;
 // };
 
+// TBD: rename into ServerSession:
 export type Session = {
 	loggedIn: boolean;
 	status?: string;
 	microsoftAccount?: AccountInfo; // TBD: change to MicrosoftAccount, containing Account, IdToken, AccessToken, RefreshToken, AppMetadata
+	microsoftProfile?: MicrosoftProfile;
 	userAgent?: string;
 	sessionId?: string;
+};
+
+export type ClientSession = {
+	loggedIn: boolean;
+	sessionId: string;
+	microsoftProfile: MicrosoftProfile;
 };
 
 export type SocketioConnection = {

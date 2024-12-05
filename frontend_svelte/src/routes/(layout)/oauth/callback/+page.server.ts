@@ -4,6 +4,7 @@ import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import AppConfig from '$lib/server/config';
 import { redisCache } from '$lib/server/cache';
+import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
 
 import type { AuthenticationResult } from '@azure/msal-node';
 
@@ -31,7 +32,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 					Authorization: `Bearer ${authenticationResult.accessToken}`
 				}
 			});
-			const microsoftProfile = await response.json();
+			const microsoftProfile = (await response.json()) as MicrosoftProfile;
 			await redisCache.setSession(
 				sessionId,
 				'$.microsoftProfile',
