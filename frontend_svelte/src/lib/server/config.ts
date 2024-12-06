@@ -23,6 +23,10 @@ export default class AppConfig {
 	public redis_port: string;
 	public redis_session_db: string;
 	public redis_password: string;
+	public authentication_timeout: number;
+	public authentication_cookie_options: object;
+	public session_timeout: number;
+	public session_cookie_options: object;
 
 	private constructor() {
 		this.api_scope = '';
@@ -36,10 +40,14 @@ export default class AppConfig {
 		this.backend_fqdn = '';
 		this.keyvault_health = '';
 		this.ms_graph_base_uri = 'https://graph.microsoft.com/v1.0';
-		this.redis_host = process.env.REDIS_HOST;
-		this.redis_port = process.env.REDIS_PORT;
-		this.redis_session_db = process.env.REDIS_SESSION_DB;
+		this.redis_host = process.env.REDIS_HOST || '';
+		this.redis_port = process.env.REDIS_PORT || '';
+		this.redis_session_db = process.env.REDIS_SESSION_DB || '';
 		this.redis_password = '';
+		this.authentication_timeout = 60 * 10; // 10 minutes to authenticate
+		this.authentication_cookie_options = {};
+		this.session_timeout = 60 * 60; // 1 hour
+		this.session_cookie_options = {};
 	}
 
 	public static async getInstance(): Promise<AppConfig> {
@@ -56,6 +64,10 @@ export default class AppConfig {
 			// https://learn.microsoft.com/en-us/javascript/api/@azure/identity/managedidentitycredential?view=azure-node-latest
 			// console.log("📜 app_config - process.env.AZ_CLIENT_ID:");
 			// console.log(process.env.AZ_CLIENT_ID);
+			if (!process.env.AZ_CLIENT_ID || !process.env.AZ_KEYVAULT_HOST) {
+				console.error('🥞 app_config - server - connectKeyvault - keyvault connection data missing');
+				throw new Error('🥞 app_config - server - connectKeyvault - keyvault connection data missing');
+			}
 			const credential = new ManagedIdentityCredential(process.env.AZ_CLIENT_ID);
 			const client = new SecretClient(process.env.AZ_KEYVAULT_HOST, credential);
 			// throw new Error("⚡️ TEST ERROR ⚡️")// TBD for testing only!
@@ -117,6 +129,18 @@ export default class AppConfig {
 				this.az_authority = `https://login.microsoftonline.com/${azTenantId?.value}`;
 				this.az_logout_uri = `https://login.microsoftonline.com/${azTenantId?.value}/oauth2/v2.0/logout`;
 				this.redis_password = redisPassword?.value || '';
+				this.authentication_cookie_options = {
+					httpOnly: true,
+					sameSite: false,
+					secure: true,
+					maxAge: this.authentication_timeout
+				};
+				this.session_cookie_options = {
+					httpOnly: true,
+					sameSite: 'lax',
+					secure: true,
+					maxAge: this.session_timeout
+				};
 			} catch (err) {
 				console.error('🥞 app_config - server - updateValues - failed');
 				throw err;
@@ -125,16 +149,28 @@ export default class AppConfig {
 		} else {
 			console.log('📜 app_config - process.env.AZ_KEYVAULT_HOST not set');
 			this.keyvault_health = process.env.KEYVAULT_HEALTH;
-			this.backend_host = process.env.BACKEND_HOST;
+			this.backend_host = process.env.BACKEND_HOST || '';
 			this.backend_origin = `http://${process.env.BACKEND_HOST}:80`;
 			this.backend_fqdn = `${process.env.BACKEND_FQDN}`;
-			this.app_reg_client_id = process.env.APP_REG_CLIENT_ID;
-			this.app_client_secret = process.env.APP_CLIENT_SECRET;
-			this.api_scope = process.env.API_SCOPE;
+			this.app_reg_client_id = process.env.APP_REG_CLIENT_ID || '';
+			this.app_client_secret = process.env.APP_CLIENT_SECRET || '';
+			this.api_scope = process.env.API_SCOPE || '';
 			this.api_scope_default = `api://${process.env.API_SCOPE}/.default`;
 			this.az_authority = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`;
 			this.az_logout_uri = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}/oauth2/v2.0/logout`;
-			this.redis_password = process.env.REDIS_PASSWORD;
+			this.redis_password = process.env.REDIS_PASSWORD || '';
+			this.authentication_cookie_options = {
+				httpOnly: true,
+				sameSite: 'lax',
+				secure: false,
+				maxAge: this.authentication_timeout
+			};
+			this.session_cookie_options = {
+				httpOnly: true,
+				sameSite: 'lax',
+				secure: false,
+				maxAge: this.session_timeout
+			};
 		}
 	}
 }

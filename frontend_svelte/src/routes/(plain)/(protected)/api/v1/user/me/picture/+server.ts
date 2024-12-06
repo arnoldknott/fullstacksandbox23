@@ -4,30 +4,26 @@ import AppConfig from '$lib/server/config';
 
 const appConfig = await AppConfig.getInstance();
 
-export const GET: RequestHandler = async ({ locals, setHeaders, cookies }): Promise<Response> => {
+export const GET: RequestHandler = async ({ locals, setHeaders }): Promise<Response> => {
 	try {
-		const sessionId = cookies.get('session_id');
+		// TBD: delete as checks are now implemented in hooks.server.ts - as long as the route is under (protected) the validity of the session is checked!
+		const sessionId = locals.sessionData.sessionId;
 		if (!sessionId) {
 			console.error('api - v1 - user - me - picture - server - no session id');
 			throw error(401, 'No session id!');
 		}
-		const accessToken = await msalAuthProvider.getAccessToken(sessionId, locals.sessionData, [
-			'User.Read'
-		]);
-		// console.log('api - v1 - user - me - picture - server - accessToken');
-		// console.log(accessToken);
+		// Validate session ID and get user data
+		const sessionData = locals.sessionData;
+		if (!sessionData || sessionData.sessionId !== sessionId) {
+			console.error('api - v1 - user - me - picture - server - invalid session');
+			throw error(401, 'Invalid session!');
+		}
+		const accessToken = await msalAuthProvider.getAccessToken(sessionId, ['User.Read']);
 		const response = await fetch(`${appConfig.ms_graph_base_uri}/me/photo/$value`, {
 			headers: {
 				Authorization: `Bearer ${accessToken}`
 			}
 		});
-
-		// if (!locals.sessionData) {
-		//   console.error("api - v1 - user - me - picture - server - no session data");
-		//   throw error(401, "No session data!")
-		// } else {
-		//   const account = locals.sessionData.account;
-		//   const response = await getMicrosoftGraphBlob(account, '/me/photo/$value');
 
 		if (
 			response &&

@@ -3,7 +3,7 @@ import logging
 from core.types import GuardTypes
 from crud.protected_resource import ProtectedResourceCRUD
 
-from .base import BaseEvents
+from .base import BaseNamespace
 
 logger = logging.getLogger(__name__)
 
@@ -16,28 +16,26 @@ logger = logging.getLogger(__name__)
 # #     await sio.emit("message", f"Message received from client {sid}: {data}")
 
 
-# TBD: rename into ProtectedNamespace(BaseNamespace)!
-class ProtectedEvents(BaseEvents):
+class DemoNamespace(BaseNamespace):
     """Protected class for socket.io namespaces."""
 
     def __init__(self, namespace=None):
         super().__init__(
             namespace=namespace,
-            guards=GuardTypes(scopes=["sockets" "api.write"], roles=["User"]),
+            guards=GuardTypes(scopes=["sockets", "api.write"], roles=["User"]),
             crud=ProtectedResourceCRUD,
         )
         self.namespace = namespace
 
-    async def on_protected_message(self, sid, data):
+    async def on_demo_message(self, sid, data):
         """Demo message event for socket.io namespaces with guards."""
         logger.info(f"Received message from client {sid}: {data}")
         await self.server.emit(
-            "protected_message",
-            f"Protected message received from client: {data}",
+            "demo_message",
+            f"Demo message received from client: {data}",
             namespace=self.namespace,
         )
 
 
-# TBD: rename into protected_namespace_router!
-protected_events_router = ProtectedEvents("/protected_events")
+demo_namespace_router = DemoNamespace("/demo_namespace")
 # socketio_server.register_namespace(ProtectedEvents())

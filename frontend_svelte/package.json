@@ -15,6 +15,7 @@
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.1.0",
 		"@eslint/js": "^9.13.0",
+		"@microsoft/microsoft-graph-types": "^2.40.0",
 		"@sveltejs/adapter-node": "^5.2.9",
 		"@sveltejs/kit": "^2.7.3",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
@@ -37,6 +38,7 @@
 		"prettier": "^3.3.3",
 		"prettier-plugin-svelte": "^3.2.7",
 		"prettier-plugin-tailwindcss": "^0.6.8",
+		"rollup-plugin-svelte": "^7.2.2",
 		"svelte": "^5.1.6",
 		"svelte-check": "^4.0.5",
 		"svelte-jester": "^5.0.0",
@@ -59,5 +61,8 @@
 		"socket.io-client": "^4.8.1",
 		"tw-elements": "^2.0.0",
 		"uuid": "^11.0.2"
+	},
+	"optionalDependencies": {
+		"@rollup/rollup-darwin-x64": "^4.28.0"
 	}
 }

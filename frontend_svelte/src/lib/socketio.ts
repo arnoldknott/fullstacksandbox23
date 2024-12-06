@@ -1,17 +1,18 @@
-import { getContext } from 'svelte';
+// import { getContext } from 'svelte';
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
+import { getContext } from 'svelte';
 import type { BackendAPIConfiguration } from '$lib/types.d.ts';
 import type { SocketioConnection } from '$lib/types.d.ts';
 
 export class SocketIO {
-	// TBD: remove event and rooms from SockerioConnection
-	private connection: SocketioConnection;
+	// TBD: remove event and rooms from SocketioConnection
+	// private connection: SocketioConnection;
 	public client: Socket;
 
 	constructor(connection: SocketioConnection) {
+		// TBD: put a try catch here?
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
-		this.connection = connection;
 		const backendFqdn = backendAPIConfiguration.backendFqdn;
 		const socketioServerUrl = backendFqdn.startsWith('localhost')
 			? `http://${backendFqdn}`

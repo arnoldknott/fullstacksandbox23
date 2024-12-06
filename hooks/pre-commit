@@ -41,7 +41,7 @@ print_result() {
     if [ $1 -eq 0 ]; then
         echo "✅ $2"
     else
-        echo "💥 $2"
+        echo "🔥 $2"
     fi
 }
 
