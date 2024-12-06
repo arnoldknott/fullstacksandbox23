@@ -103,11 +103,6 @@ variable "redis_insight_port" {
   type        = number
 }
 
-variable "redis_jwks_db" {
-  description = "Database number for storing JSON Web Keys in Redis cache"
-  type        = number
-}
-
 variable "redis_session_db" {
   description = "Database number for storing session data in Redis cache"
   type        = number

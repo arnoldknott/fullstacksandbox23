@@ -65,8 +65,12 @@ export default class AppConfig {
 			// console.log("📜 app_config - process.env.AZ_CLIENT_ID:");
 			// console.log(process.env.AZ_CLIENT_ID);
 			if (!process.env.AZ_CLIENT_ID || !process.env.AZ_KEYVAULT_HOST) {
-				console.error('🥞 app_config - server - connectKeyvault - keyvault connection data missing');
-				throw new Error('🥞 app_config - server - connectKeyvault - keyvault connection data missing');
+				console.error(
+					'🥞 app_config - server - connectKeyvault - keyvault connection data missing'
+				);
+				throw new Error(
+					'🥞 app_config - server - connectKeyvault - keyvault connection data missing'
+				);
 			}
 			const credential = new ManagedIdentityCredential(process.env.AZ_CLIENT_ID);
 			const client = new SecretClient(process.env.AZ_KEYVAULT_HOST, credential);

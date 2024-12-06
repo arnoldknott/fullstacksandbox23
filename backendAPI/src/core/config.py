@@ -112,9 +112,9 @@ class Config(BaseSettings):
     REDIS_PORT: int = int(os.getenv("REDIS_PORT"))
     # print("=== REDIS_PORT ===")
     # print(REDIS_PORT)
-    # print("=== get_variable('REDIS_REDIS_JWKS_DB') ===")
-    # print(get_variable("REDIS_JWKS_DB"))
-    REDIS_JWKS_DB: int = int(get_variable("REDIS_JWKS_DB"))
+    # print("=== get_variable('REDIS_REDIS_SESSION_DB') ===")
+    # print(get_variable("REDIS_SESSION_DB"))
+    REDIS_SESSION_DB: int = int(get_variable("REDIS_SESSION_DB"))
     REDIS_PASSWORD: str = get_variable("REDIS_PASSWORD")
 
 

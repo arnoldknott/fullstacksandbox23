@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import List, Optional
 
@@ -11,7 +10,7 @@ import jwt
 from fastapi import Depends, HTTPException, Request
 from jwt.algorithms import RSAAlgorithm
 
-from core.cache import redis_jwks_client
+from core.cache import redis_session_client
 from core.config import config
 from core.types import CurrentUserData, GuardTypes
 from crud.identity import UserCRUD
@@ -54,12 +53,12 @@ async def get_azure_jwks(no_cache: bool = False):
         if no_cache is False:
             # print("=== no_cache ===")
             # print(no_cache)
-            jwks = redis_jwks_client.json().get("jwks")
+            jwks = redis_session_client.json().get("jwks:microsoft")
             # print("=== jwks ===")
             # print(jwks)
             if jwks:
                 # print("=== 🔑 JWKS fetched from cache ===")
-                return json.loads(jwks)
+                return jwks
             else:
                 await get_azure_jwks(no_cache=True)
         else:
@@ -78,7 +77,7 @@ async def get_azure_jwks(no_cache: bool = False):
                 )
             try:
                 # TBD: for real multi-tenant applications, the cache-key should be tenant specific
-                redis_jwks_client.json().set("jwks", ".", json.dumps(jwks))
+                redis_session_client.json().set("jwks:microsoft", ".", jwks)
                 logger.info("🔑 Setting JWKs in cache")
                 print("=== 🔑 JWKS set in cache ===")
                 return jwks

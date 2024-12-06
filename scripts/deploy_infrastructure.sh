@@ -187,7 +187,6 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "postgres_port=${POSTGRES_PORT}" \
         -var "redis_port=${REDIS_PORT}" \
         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-        -var "redis_jwks_db=${REDIS_JWKS_DB}" \
         -var "redis_session_db=${REDIS_SESSION_DB}" \
         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 
@@ -214,7 +213,6 @@ tofu plan -out=${WORKSPACE}.tfplan \
 #         -var "postgres_port=${POSTGRES_PORT}" \
 #         -var "redis_port=${REDIS_PORT}" \
 #         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-#         -var "redis_jwks_db=${REDIS_JWKS_DB}" \
 #         -var "redis_session_db=${REDIS_SESSION_DB}" \
 #         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
 # -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
@@ -300,7 +298,6 @@ exit $tofu_changes_applied
 #         -var "postgres_port=${POSTGRES_PORT}" \
 #         -var "redis_port=${REDIS_PORT}" \
 #         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-#         -var "redis_jwks_db=${REDIS_JWKS_DB}" \
 #         -var "redis_session_db=${REDIS_SESSION_DB}" \
 #         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" &&
 #     echo "=== tofu - approval before apply ===" &&
@@ -320,7 +317,6 @@ exit $tofu_changes_applied
     #     -var "postgres_port=${POSTGRES_PORT}" \
     #     -var "redis_port=${REDIS_PORT}" \
     #     -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-    #     -var "redis_jwks_db=${REDIS_JWKS_DB}" \
     #     -var "redis_session_db=${REDIS_SESSION_DB}" \
     #     -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" &&
     # tofu_plan_exit_code=$? &&
