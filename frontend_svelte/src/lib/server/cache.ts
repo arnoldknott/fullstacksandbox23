@@ -40,7 +40,7 @@ class RedisCache {
 		}
 	}
 
-	// TBD: what about disconnecting? 
+	// TBD: what about disconnecting?
 	private async connectClient() {
 		try {
 			await this.redisClient?.connect();
@@ -81,7 +81,7 @@ class RedisCache {
 		this.redisClient?.disconnect();
 		console.log('👍 🥞 cache - server - stopClient - redisClient disconnected');
 		this.redisClient?.quit();
-		console.log('👍 🥞 cache - server - stopClient - redisClient quit')
+		console.log('👍 🥞 cache - server - stopClient - redisClient quit');
 	}
 
 	public async setSession(
@@ -158,7 +158,6 @@ class RedisCache {
 }
 
 export const redisCache = new RedisCache();
-
 
 process.on('exit', () => redisCache?.stopClient());
 

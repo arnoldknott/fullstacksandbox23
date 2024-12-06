@@ -24,7 +24,6 @@ services:
             - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
             - REDIS_HOST=$REDIS_HOST
             - REDIS_PORT=$REDIS_PORT
-            - REDIS_JWKS_DB=$REDIS_JWKS_DB
             - REDIS_SESSION_DB=$REDIS_SESSION_DB
             - REDIS_PASSWORD=$REDIS_PASSWORD
         networks:
@@ -52,7 +51,6 @@ services:
             args:
                 - REDIS_HOST=$REDIS_HOST
                 - REDIS_PORT=$REDIS_PORT
-                - REDIS_JWKS_DB=$REDIS_JWKS_DB
                 - REDIS_SESSION_DB=$REDIS_SESSION_DB
                 - REDIS_PASSWORD=$REDIS_PASSWORD
                 - APP_REG_CLIENT_ID=$APP_REG_CLIENT_ID
@@ -62,7 +60,6 @@ services:
         environment:
             - REDIS_HOST=$REDIS_HOST
             - REDIS_PORT=$REDIS_PORT
-            - REDIS_JWKS_DB=$REDIS_JWKS_DB
             - REDIS_SESSION_DB=$REDIS_SESSION_DB
             - REDIS_PASSWORD=$REDIS_PASSWORD
             - APP_REG_CLIENT_ID=$APP_REG_CLIENT_ID
