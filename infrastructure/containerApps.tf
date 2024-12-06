@@ -216,8 +216,8 @@ resource "azurerm_container_app" "BackendContainer" {
         value = var.redis_port
       }
       env {
-        name  = "REDIS_JWKS_DB"
-        value = var.redis_jwks_db
+        name  = "REDIS_SESSION_DB"
+        value = var.redis_session_db
       }
     }
     volume {
