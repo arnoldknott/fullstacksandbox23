@@ -307,12 +307,6 @@ resource "azurerm_key_vault_secret" "redisArgs" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-resource "azurerm_key_vault_secret" "redisJwksDb" {
-  name         = "redis-jwks-db"
-  value        = 14
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
-
 resource "azurerm_key_vault_secret" "redisSessionDb" {
   name         = "redis-session-db"
   value        = 15
