@@ -78,7 +78,10 @@ class RedisCache {
 
 	// TBD: stop the client when the server is stopped!
 	public stopClient() {
+		this.redisClient?.disconnect();
+		console.log('👍 🥞 cache - server - stopClient - redisClient disconnected');
 		this.redisClient?.quit();
+		console.log('👍 🥞 cache - server - stopClient - redisClient quit')
 	}
 
 	public async setSession(
@@ -155,6 +158,9 @@ class RedisCache {
 }
 
 export const redisCache = new RedisCache();
+
+
+process.on('exit', () => redisCache?.stopClient());
 
 // OLD CODE:
 
