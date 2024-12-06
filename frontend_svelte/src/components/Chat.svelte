@@ -10,14 +10,7 @@
 	let { connection, children }: { connection: SocketioConnection; children: Snippet } = $props();
 
 	const socketio = new SocketIO(connection);
-	// let socketio = $state()
-	// $effect(() => {
-	// 	console.log('Chat.svelte - getContext - backend configuration')
-	// 	console.log(getContext('backendAPIConfiguration'))
-	// 	// console.log('Chat.svelte - $page.data.backendAPIConfiguration')
-	// 	// console.log($page.data.backendAPIConfiguration)
-	// 	socketio = new SocketIO(connection);
-	// })
+	
 	let new_message = $state('');
 
 	let old_messages: string[] = $state([]);
