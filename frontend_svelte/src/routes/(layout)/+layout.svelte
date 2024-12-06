@@ -1,25 +1,17 @@
 <script lang="ts">
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
-
 	// import type { LayoutData } from '../$types';
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/stores';
 	import Guard from '$components/Guard.svelte';
-	// import JsonData from '$components/JsonData.svelte';
-	// import Guard from '$components/Guard.svelte';
-	// import type { User } from 'src/types.d.ts';
 
 	// let { data, children }: { data: LayoutData; children: Snippet } = $props();
 	let { children }: { children: Snippet } = $props();
-	// const session = data?.body?.sessionData;
+	// const session = data?.sessionData;
 	// const loggedIn = session?.loggedIn || false;
 	const { loggedIn } = $page.data.session || false;
 	// const { session } = $page.data;
-	// console.log('layout - session');
-	// console.log(session);
-	// console.log('layout - loggedIn');
-	// console.log(loggedIn);
 
 	// let userPictureURL: URL | undefined = $state(undefined);
 	// onMount(async () => {
@@ -49,27 +41,19 @@
 		<div class="flex-grow space-x-4">
 			<NavButton url="/" link="Home" />
 			<NavButton url="/docs" link="Docs" />
-			<!-- {#if loggedIn} -->
 			<Guard>
 				<NavButton url="/playground" link="Playground" />
 				<NavButton url="/protectedResource" link="Protected" />
 				<NavButton url="/dashboard" link="Dashboard" />
 			</Guard>
-			<!-- {/if} -->
-			<!-- <Guard redirect="/">
-				<NavButton url="/dashboard" link="Dashboard" />
-			</Guard> -->
 		</div>
 		<div class="flex space-x-4">
-			<!-- <NavButton url="/user" link="User" /> -->
 			<!-- Move this to component user button -->
-			<!-- Implemnt check for user picture size and show svg instead, if no user picture available -->
+			<!-- Implement check for user picture size and show svg instead, if no user picture available -->
 
 			<!-- {#if loggedIn} -->
 			<Guard>
 				<img class="h-12 w-12 rounded-full" src="/api/v1/user/me/picture" alt="you" />
-				<!-- TBD: add the userProfile to the session - don't use the microsoft acount here! -->
-				<!-- {session.userProfile.displayName} -->
 				{$page.data.session.microsoftProfile.displayName}
 				<!-- TBD: remove the following one: -->
 				<!-- {#if userPictureURL}
