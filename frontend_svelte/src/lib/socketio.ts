@@ -17,7 +17,7 @@ export class SocketIO {
 		const socketioServerUrl = backendFqdn.startsWith('localhost')
 			? `http://${backendFqdn}`
 			: `https://${backendFqdn}`;
-		this.client = io(socketioServerUrl + connection.namespace, { path: `/socketio/v1` });
+		this.client = io(socketioServerUrl + connection.namespace, { path: `/socketio/v1`, auth: { session_id: "abc123" } });
 		this.client.connect();
 	}
 
