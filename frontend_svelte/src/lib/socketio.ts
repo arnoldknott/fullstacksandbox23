@@ -1,39 +1,24 @@
 // import { getContext } from 'svelte';
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
+import { getContext } from 'svelte';
 import type { BackendAPIConfiguration } from '$lib/types.d.ts';
 import type { SocketioConnection } from '$lib/types.d.ts';
-// import { page } from '$app/stores';
-export const ssr = false;
 
 export class SocketIO {
-	// TBD: remove event and rooms from SockerioConnection
+	// TBD: remove event and rooms from SocketioConnection
 	// private connection: SocketioConnection;
 	public client: Socket;
 
-	constructor(backendAPIConfiguration: BackendAPIConfiguration, connection: SocketioConnection) {
-		// const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
-		// // this.connection = connection;
-		// let backendAPIConfiguration
-		// const unsubscribePageData = page.subscribe((value) => backendAPIConfiguration = value);
-		// console.log('=== SocketIO constructor - backendAPIConfiguration ===');
-		// console.log(backendAPIConfiguration);
-		// $effect(() => {
-		// if (backendAPIConfiguration && backendAPIConfiguration?.backendFqdn) {
-		// console.log('=== SocketIO constructor - backendAPIConfiguration ===');
-		// console.log(backendAPIConfiguration.backendFqdn);
-
+	constructor(connection: SocketioConnection) {
+		// TBD: put a try catch here?
+		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
 		const backendFqdn = backendAPIConfiguration.backendFqdn;
 		const socketioServerUrl = backendFqdn.startsWith('localhost')
 			? `http://${backendFqdn}`
 			: `https://${backendFqdn}`;
 		this.client = io(socketioServerUrl + connection.namespace, { path: `/socketio/v1` });
 		this.client.connect();
-
-		// } else {
-		// 	console.error('=== SocketIO constructor - backendAPIConfiguration not set ===');
-		// }
-		// })
 	}
 
 	// sendMessage(message: string) {

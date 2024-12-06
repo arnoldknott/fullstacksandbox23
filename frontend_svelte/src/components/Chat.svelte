@@ -6,11 +6,10 @@
 	import type { SocketioConnection } from '$lib/types';
 	// import { getContext, type Snippet } from 'svelte';
 	import { type Snippet } from 'svelte';
-	import { page } from '$app/stores';
 
 	let { connection, children }: { connection: SocketioConnection; children: Snippet } = $props();
 
-	const socketio = new SocketIO($page.data.backendAPIConfiguration, connection);
+	const socketio = new SocketIO(connection);
 	// let socketio = $state()
 	// $effect(() => {
 	// 	console.log('Chat.svelte - getContext - backend configuration')

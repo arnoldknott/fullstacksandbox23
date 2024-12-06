@@ -40,6 +40,7 @@ class RedisCache {
 		}
 	}
 
+	// TBD: what about disconnecting? 
 	private async connectClient() {
 		try {
 			await this.redisClient?.connect();
@@ -75,6 +76,7 @@ class RedisCache {
 		}
 	}
 
+	// TBD: stop the client when the server is stopped!
 	public stopClient() {
 		this.redisClient?.quit();
 	}
@@ -85,20 +87,13 @@ class RedisCache {
 		data: string,
 		timeOut: number = sessionTimeOut
 	): Promise<boolean> {
-		// const dataJson = JSON.parse(data);
-		// console.log('🥞 cache - server - setSession - sessionId')
-		// console.log(sessionId);
-		// console.log('🥞 cache - server - setSession - data');
-		// console.log(data);
 		try {
 			const setStatus = await this.redisClient?.json.set(
 				`session:${sessionId}`,
 				path,
 				JSON.parse(data)
 			);
-			// console.log('👍 🥞 cache - server - setSession - sessionId set');
 			await this.redisClient?.expire(`session:${sessionId}`, timeOut);
-			// console.log('👍 🥞 cache - server - setSession - sessionId expiry set');
 			return setStatus === 'OK' ? true : false;
 		} catch (err) {
 			console.error('🔥 🥞 cache - server - setSession - failed');
@@ -114,24 +109,16 @@ class RedisCache {
 			throw new Error('Session ID is null');
 		}
 		try {
-			// console.log('🥞 cache - server - getSession - sessionId')
-			// console.log(sessionId);
 			const result = await this.redisClient?.json.get(`session:${sessionId}`, { path: path });
-			// const result = await this.redisClient?.json.get(`session:${sessionId}`);
-			// console.log('👍 🥞 cache - server - getSession - result');
-			// console.log(result);
 			if (Array.isArray(result) && result.length > 0) {
 				return result[0] as object;
 			} else {
 				return {};
 			}
-			// return JSON.stringify(result); //unknown as Session;
-			// return typeof result === 'string' ? (JSON.parse(result) as Session) : undefined;
 		} catch (err) {
 			console.error('🔥 🥞 cache - server - getSession - failed');
 			console.error(err);
 			throw error(404, 'Session not found');
-			// throw err
 		}
 	}
 
@@ -149,7 +136,6 @@ class RedisCache {
 		} catch (err) {
 			console.error('🔥 🥞 cache - server - updateSessionExpiry - failed');
 			console.error(err);
-			// throw err
 		}
 	}
 
@@ -164,24 +150,9 @@ class RedisCache {
 		} catch (err) {
 			console.error('🔥 🥞 cache - server - deleteSession - failed');
 			console.error(err);
-			// throw err
 		}
 	}
 }
-
-// let redisCacheInstance: RedisCache | null = null;
-
-// if(!building){
-// 	redisCacheInstance = new RedisCache();
-// }
-
-// export const redisCache = redisCacheInstance;
-
-// export const setSession  = redisCacheInstance?.setSession
-// export const getSession = redisCacheInstance?.getSession
-// export const updateSessionExpiry = redisCacheInstance?.updateSessionExpiry
-
-// process.on('exit', () => redisCacheInstance?.stopClient());
 
 export const redisCache = new RedisCache();
 

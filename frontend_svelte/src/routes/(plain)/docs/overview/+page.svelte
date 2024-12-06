@@ -12,8 +12,6 @@
 	// import '@material/web/chips/input-chip.js';
 	// import '@material/web/chips/filter-chip.js';
 	// import '@material/web/chips/suggestion-chip.js';
-	import { page } from '$app/stores';
-	export const ssr = false;
 
 	import type { SocketioConnection } from '$lib/types';
 
@@ -26,7 +24,7 @@
 		room: 'does_not_matter_here_either'
 	};
 
-	const socketio = new SocketIO($page.data.backendAPIConfiguration, connection);
+	const socketio = new SocketIO(connection);
 
 	type Reply = {
 		name: string;
