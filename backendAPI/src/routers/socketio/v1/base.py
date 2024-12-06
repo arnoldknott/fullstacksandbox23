@@ -1,6 +1,7 @@
 import logging
 
 import socketio
+from pprint import pprint
 
 from core.security import get_azure_token_payload
 from core.types import GuardTypes
@@ -23,11 +24,11 @@ async def connect(sid, environ, auth):
     logger.info(f"Client connected with session id: {sid}.")
     # print("=== routers - socketio - v1 - connect - sid ===", flush=True)
     # print(sid, flush=True)
-    # print("=== routers - socketio - v1 - environ ===", flush=True)
+    # print("=== routers - socketio - v1 - environ ===")
     # pprint(environ)
-    # print("=== routers - socketio - v1 - auth ===", flush=True)
-    # pprint(auth)
-    # print(" ", flush=True)
+    print("=== routers - socketio - v1 - auth ===")
+    pprint(auth)
+    print(" ", flush=True)
     await socketio_server.emit("message", f"Hello new client with session id {sid}")
     # TBD: add rooms and namespaces?
     # TBD: or refuse connection
