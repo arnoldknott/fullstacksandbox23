@@ -6,7 +6,6 @@
 	import type { SocketioConnection } from '$lib/types';
 	// import { getContext, type Snippet } from 'svelte';
 	import { type Snippet } from 'svelte';
-	import { page } from '$app/stores';
 
 	let { connection, children }: { connection: SocketioConnection; children: Snippet } = $props();
 

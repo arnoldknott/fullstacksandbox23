@@ -83,13 +83,13 @@
 				<!-- <NavButton url="/register" link="Register" invert /> -->
 				<!-- data-sveltekit-preload-data="false" -->
 				<!-- TBD: remove it here and set in hooks.Server.ts -->
-				<NavButton pre_load="false" url={`/login?targetURL=${$page.url.href}`} link="Login" />
+				<NavButton pre_load={false} url={`/login?targetURL=${$page.url.href}`} link="Login" />
 			{:else}
 				<UserButton />
 				<!-- needs to redirect to /home and delete session information -->
 				<!-- TBD: write tests for logout -->
 				<!-- data-sveltekit-preload-data="false" -->
-				<NavButton pre_load="false" url="/logout" link="Logout" />
+				<NavButton pre_load={false} url="/logout" link="Logout" />
 			{/if}
 		</div>
 	</div>

@@ -4,11 +4,9 @@ import type { Socket } from 'socket.io-client';
 import { getContext } from 'svelte';
 import type { BackendAPIConfiguration } from '$lib/types.d.ts';
 import type { SocketioConnection } from '$lib/types.d.ts';
-// import { page } from '$app/stores';
-// export const ssr = false;
 
 export class SocketIO {
-	// TBD: remove event and rooms from SockerioConnection
+	// TBD: remove event and rooms from SocketioConnection
 	// private connection: SocketioConnection;
 	public client: Socket;
 
