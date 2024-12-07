@@ -1,4 +1,6 @@
+import json
 import logging
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 # from enum import Enum
@@ -9,6 +11,9 @@ import httpx
 import jwt
 from fastapi import Depends, HTTPException, Request
 from jwt.algorithms import RSAAlgorithm
+from msal import ConfidentialClientApplication
+from msal_extensions.persistence import BasePersistence
+from msal_extensions.token_cache import PersistedTokenCache
 
 from core.cache import redis_session_client
 from core.config import config
@@ -114,6 +119,8 @@ async def decode_token(token: str, jwks: dict) -> dict:
             "validate_iat": True,
         },
     )
+    print("=== decode_token - payload ===")
+    print(payload)
     logger.info("Token decoded successfully")
     return payload
 
@@ -175,6 +182,126 @@ async def get_http_access_token_payload(
         # TBD: check if there is test for this to fire!
         raise HTTPException(status_code=401, detail="Invalid token.")
     return payload
+
+
+# raise Exception("Backend does not support saving tokens")
+
+
+class RedisPersistence(BasePersistence):
+    """Redis persistence class for the token cache"""
+
+    def __init__(self, user_account):
+        self.user_account = user_account
+
+    def save(self, content):
+        """Saves the token to the cache"""
+        # raise Exception("Backend does not support saving tokens")
+        result = redis_session_client.json().set(
+            self.get_location(), ".", json.loads(content)
+        )
+        print("===➡️ 🔑 token saved to cache in backend based on session_id ===")
+        return json.dumps(result)
+
+    def load(self):
+        """Loads the token from the cache"""
+        result = redis_session_client.json().get(self.get_location())
+        print("===⬅️ 🔑 token loaded from cache in backend based on session_id ===")
+        return json.dumps(result)
+
+    def get_location(self):
+        """Returns the location in the cache"""
+        location = f"msal:{self.user_account['homeAccountId']}"
+        return location
+
+    def time_last_modified(self):
+        """Returns the time the cache was last modified"""
+        try:
+            idle_time = redis_session_client.object("idletime", self.get_location())
+            if idle_time:
+                last_accessed_time = datetime.now() - timedelta(seconds=idle_time)
+                return last_accessed_time.timestamp()
+            else:
+                return datetime.now().timestamp()
+        except Exception:
+            logger.error("🔑 Failed to get last modified time for cached token")
+            raise Exception("no modification time available")
+
+
+def get_persistent_cache(user_account):
+    """Returns the persistent cache for the user account"""
+    persistence = RedisPersistence(user_account)
+    persistedTokenCache = PersistedTokenCache(persistence)
+    return persistedTokenCache
+
+
+async def get_user_account_from_session_cache(session_id: str) -> dict:
+    """Gets the user account from the cache"""
+    logger.info("🔑 Getting user account from cache")
+    user_account = redis_session_client.json().get(
+        f"session:{session_id}", "$.microsoftAccount"
+    )
+    if not user_account:
+        raise ValueError("User account not found in session")
+    return user_account[0]
+
+
+async def get_azure_token_from_cache(user_account, scopes: List[str] = []) -> str:
+    """Gets the azure token from the cache"""
+    # Create the PersistentTokenCache
+    cache = get_persistent_cache(user_account)
+    msal_conf_client = ConfidentialClientApplication(
+        client_id=config.APP_REG_CLIENT_ID,
+        client_credential=config.APP_CLIENT_SECRET,
+        authority=config.AZURE_AUTHORITY,
+        token_cache=cache,
+    )
+
+    accounts = msal_conf_client.get_accounts(user_account["username"])
+    for account in accounts:
+        # TBD: change into scopes:
+        # result = msal_conf_client.acquire_token_silent(["User.Read"], account=account)
+        result = msal_conf_client.acquire_token_silent(scopes, account=account)
+        if "access_token" in result:
+            print("===🔑 azure access_token from cache - access-token ===")
+            # print(result["access_token"])
+            return result["access_token"]
+    return None
+
+
+async def get_token_from_cache(session_id: str, scopes: List[str] = []) -> str:
+    """Gets the azure token from the cache"""
+    logger.info("🔑 Getting token from cache")
+    # user_account_data = redis_session_client.json().get(
+    #     f"session:{session_id}", "$.microsoftAccount"
+    # )
+    # if not user_account_data:
+    #     # TBD: catch that one and report back as session not found to user!
+    #     raise ValueError("User account not found in session")
+
+    # user_account = user_account_data[0]
+    user_account = await get_user_account_from_session_cache(session_id)
+
+    return await get_azure_token_from_cache(user_account, scopes)
+
+    # # Create the PersistentTokenCache
+    # cache = get_persistent_cache(user_account)
+    # msal_conf_client = ConfidentialClientApplication(
+    #     client_id=config.APP_REG_CLIENT_ID,
+    #     client_credential=config.APP_CLIENT_SECRET,
+    #     authority=config.AZURE_AUTHORITY,
+    #     token_cache=cache,
+    # )
+
+    # accounts = msal_conf_client.get_accounts(user_account["username"])
+    # for account in accounts:
+    #     # TBD: change into scopes:
+    #     # result = msal_conf_client.acquire_token_silent(["User.Read"], account=account)
+    #     result = msal_conf_client.acquire_token_silent(scopes, account=account)
+    #     if "access_token" in result:
+    #         print("===🔑 azure access_token from cache - access-token ===")
+    #         # print(result["access_token"])
+    #         return result["access_token"]
+    # return None
 
 
 # async def get_http_access_token_payload(

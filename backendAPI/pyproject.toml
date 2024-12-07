@@ -24,6 +24,7 @@ dependencies = [
     'greenlet>=3.1.1,<4', # required by sqlalchemy's asyncio!
     'websockets>=13.1,<14',
     'python-socketio[asyncio_client]>=5.11.4,<6',
+    'msal-extensions>=1.2.0,<2',
 ]
 
 [project.optional-dependencies]

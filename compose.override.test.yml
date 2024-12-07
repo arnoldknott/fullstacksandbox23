@@ -11,6 +11,8 @@ services:
             - postgres
         environment:
             - KEYVAULT_HEALTH=$KEYVAULT_HEALTH
+            - APP_REG_CLIENT_ID
+            - APP_CLIENT_SECRET
             - FRONTEND_SVELTE_ORIGIN
             - FRONTEND_SVELTE_FQDN
             - AZURE_TENANT_ID=$AZURE_TENANT_ID

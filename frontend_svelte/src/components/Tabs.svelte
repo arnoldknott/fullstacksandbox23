@@ -4,7 +4,6 @@
 	import '@material/web/tabs/primary-tab.js';
 	import '@material/web/tabs/secondary-tab.js';
 	import '@material/web/list/list.js';
-	import Chat from '$components/Chat.svelte';
 	import type { Tab } from '$lib/types';
 	import type { Snippet } from 'svelte';
 
@@ -12,8 +11,6 @@
 
 	let activeTab = $state(tabs.findIndex((tab) => tab.active == true) || 0);
 	const tabChange = (event: Event) => (activeTab = event.target ? event.target.activeTabIndex : 0);
-
-	const connection = $derived(tabs[activeTab].connection);
 </script>
 
 <md-filled-card class="w-80 py-10">
@@ -25,11 +22,11 @@
 		{/each}
 	</md-tabs>
 	<div class="p-10">
-		<p>{tabs[activeTab].content} in Tabs</p>
 		<md-list>
 			<md-list-item>{@render children?.()}</md-list-item>
-			<Chat {connection}>{tabs[activeTab].content}</Chat>
+			<!-- <Chat {connection}>{tabs[activeTab].content}</Chat> -->
 		</md-list>
+		<p>{tabs[activeTab].content} in Tabs</p>
 	</div>
 </md-filled-card>
 
@@ -42,6 +39,7 @@
 		margin: 20px;
 		text-align: center;
 		--md-filled-card-container-color: var(--md-sys-color-primary);
-		/* --md-filled-card-container-color: #ffcc00; works */
+		/* works: */
+		/* --md-filled-card-container-color: #ffcc00; */
 	}
 </style>

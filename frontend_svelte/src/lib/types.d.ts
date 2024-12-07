@@ -50,11 +50,11 @@ export type SocketioConnection = {
 	namespace?: string;
 	room?: string;
 	connected?: boolean;
+	cookie_session_id?: string;
 };
 
 type Tab = {
 	header: string;
 	content: string;
-	connection: SocketioConnection;
 	active?: boolean;
 };

@@ -2,7 +2,8 @@ import logging
 
 import socketio
 
-from core.security import get_azure_token_payload
+from core.config import config
+from core.security import get_azure_token_payload, get_token_from_cache
 from core.types import GuardTypes
 
 logger = logging.getLogger(__name__)
@@ -23,12 +24,24 @@ async def connect(sid, environ, auth):
     logger.info(f"Client connected with session id: {sid}.")
     # print("=== routers - socketio - v1 - connect - sid ===", flush=True)
     # print(sid, flush=True)
-    # print("=== routers - socketio - v1 - environ ===", flush=True)
+    # print("=== routers - socketio - v1 - environ ===")
     # pprint(environ)
-    # print("=== routers - socketio - v1 - auth ===", flush=True)
-    # pprint(auth)
+    # print("=== routers - socketio - v1 - auth['session_io'] ===")
+    # pprint(auth["session_id"])
     # print(" ", flush=True)
-    await socketio_server.emit("message", f"Hello new client with session id {sid}")
+    try:
+        # await get_token_from_cache(auth["session_id"], ["User.Read"])
+        # Works:
+        # token = await get_token_from_cache(auth["session_id"])
+        # print("=== routers - socketio - v1 - token ===")
+        # print(token)
+        # print(" ", flush=True)
+        await socketio_server.emit("message", f"Hello new client with session id {sid}")
+    except Exception as err:
+        logger.error(f"Client with session id {sid} failed to authenticate.")
+        print("=== routers - socketio - v1 - Exception ===")
+        print(err, flush=True)
+        raise ConnectionRefusedError("Authorization failed")
     # TBD: add rooms and namespaces?
     # TBD: or refuse connection
     # for example if authentication is not successful:
@@ -178,17 +191,17 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Connect event for socket.io namespaces."""
         try:
             guards = self.guards
-            print("=== base - on_connect - sid ===")
-            print(sid, flush=True)
-            # print("=== base - on_connect - environ ===")
-            # pprint(environ)
-            print("=== base - on_connect - auth ===")
-            print(auth, flush=True)
             print("=== base - on_connect - guards ===")
             print(guards, flush=True)
+            print("=== base - on_connect - auth ===")
+            print(auth, flush=True)
             logger.info(f"Client connected with session id: {sid}.")
-
-            token_payload = await get_azure_token_payload(auth)
+            # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
+            # token = await get_token_from_cache(auth["session_id"], ["User.Read"])
+            token = await get_token_from_cache(
+                auth["session_id"], [f"api://{config.API_SCOPE}/api.read"]
+            )  # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
+            token_payload = await get_azure_token_payload(token)
             print("=== base - on_connect - token_payload ===")
             print(token_payload, flush=True)
         except Exception as err:
@@ -202,7 +215,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         # print(current_user, flush=True)
         await self.server.emit(
             "demo_message",
-            f"Hello new client with session id {sid}",
+            f"Started session with id: {sid}",
             namespace=self.namespace,
             callback=self.callback,
         )
