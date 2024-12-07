@@ -5,40 +5,24 @@
 	// import { io } from 'socket.io-client';
 	import '@material/web/textfield/filled-text-field.js';
 	import '@material/web/button/filled-button.js';
-	// import Title from '$components/Title.svelte';
-	import Tabs from '$components/Tabs.svelte';
-	// import Chat from '$components/Chat.svelte';
-	import type { Tab } from '$lib/types';
+	import Title from '$components/Title.svelte';
+	import Chat from '$components/Chat.svelte';
 	import { page } from '$app/stores';
 
 	// const socketio_client_from_lib = new SocketIO();
 
-	const socketio_public_message_connection = {
+	const public_message_connection = {
 		event: 'public_message',
 		namespace: '',
 		room: '',
 		cookie_session_id: $page.data.session.sessionId
 	};
-	const socketio_demo_message_connection = {
+	const demo_message_connection = {
 		event: 'demo_message',
 		namespace: '',
 		room: '',
 		cookie_session_id: $page.data.session.sessionId
 	};
-
-	const tabs: Tab[] = [
-		{
-			header: 'Public Message',
-			content: 'Public message interface.',
-			connection: socketio_public_message_connection
-		},
-		{
-			header: 'Demo Message',
-			content: 'Demo message interface',
-			connection: socketio_demo_message_connection,
-			active: true
-		}
-	];
 
 	// let { data }: { data: PageData } = $props();
 	// const backend_fqdn = data.backend_fqdn;
@@ -117,7 +101,15 @@
 	// };
 </script>
 
-<Tabs {tabs}>Some Text common to all tabs</Tabs>
+<div class="m-5 grid grid-cols-2 gap-8">
+	<div>
+		<Chat connection={public_message_connection}><Title>Public Message Namespace</Title></Chat>
+	</div>
+	<div>
+		<Chat connection={demo_message_connection}><Title>Demo Message Namespace</Title></Chat>
+	</div>
+</div>
+
 
 <!-- <div class="w-50">
 =======

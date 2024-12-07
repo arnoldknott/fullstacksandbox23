@@ -26,14 +26,22 @@ async def connect(sid, environ, auth):
     # print(sid, flush=True)
     # print("=== routers - socketio - v1 - environ ===")
     # pprint(environ)
-    print("=== routers - socketio - v1 - auth['session_io'] ===")
-    pprint(auth["session_id"])
-    print(" ", flush=True)
-    token = await get_azure_token_from_cache(auth["session_id"])
-    print("=== routers - socketio - v1 - token ===")
-    print(token)
-    print(" ", flush=True)
-    await socketio_server.emit("message", f"Hello new client with session id {sid}")
+    # print("=== routers - socketio - v1 - auth['session_io'] ===")
+    # pprint(auth["session_id"])
+    # print(" ", flush=True)
+    try:
+        await get_azure_token_from_cache(auth["session_id"])
+        # Works:
+        # token = await get_azure_token_from_cache(auth["session_id"])
+        # print("=== routers - socketio - v1 - token ===")
+        # print(token)
+        # print(" ", flush=True)
+        await socketio_server.emit("message", f"Hello new client with session id {sid}")
+    except Exception as err:
+        logger.error(f"Client with session id {sid} failed to authenticate.")
+        print("=== routers - socketio - v1 - Exception ===")
+        print(err, flush=True)
+        raise ConnectionRefusedError("Authorization failed")
     # TBD: add rooms and namespaces?
     # TBD: or refuse connection
     # for example if authentication is not successful:

@@ -22,7 +22,7 @@ class DemoNamespace(BaseNamespace):
     def __init__(self, namespace=None):
         super().__init__(
             namespace=namespace,
-            guards=GuardTypes(scopes=["sockets", "api.write"], roles=["User"]),
+            guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
             crud=ProtectedResourceCRUD,
         )
         self.namespace = namespace
