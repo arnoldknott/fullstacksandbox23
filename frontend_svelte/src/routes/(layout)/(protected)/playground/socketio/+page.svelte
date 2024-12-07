@@ -19,7 +19,8 @@
 	};
 	const demo_message_connection = {
 		event: 'demo_message',
-		namespace: '',
+		namespace: '/demo_namespace',
+		// namespace: '',
 		room: '',
 		cookie_session_id: $page.data.session.sessionId
 	};
@@ -109,7 +110,6 @@
 		<Chat connection={demo_message_connection}><Title>Demo Message Namespace</Title></Chat>
 	</div>
 </div>
-
 
 <!-- <div class="w-50">
 =======

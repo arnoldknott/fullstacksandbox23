@@ -7,14 +7,14 @@
 	const tabs: Tab[] = [
 		{
 			header: 'Left Tab',
-			content: 'Some content in the left tab.',
+			content: 'Some content in the left tab.'
 		},
 		{
 			header: 'Right Tag',
 			content: 'The tab, that is activated by default is the one on the right side.',
 			active: true
 		}
-	]
+	];
 </script>
 
 <div class="mx-5">

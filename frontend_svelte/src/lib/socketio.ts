@@ -18,7 +18,10 @@ export class SocketIO {
 			? `http://${backendFqdn}`
 			: `https://${backendFqdn}`;
 		// Before sending the session_id, make sure to acquire a token silently to update the cache!
-		this.client = io(socketioServerUrl + connection.namespace, { path: `/socketio/v1`, auth: { session_id: connection.cookie_session_id } } );
+		this.client = io(socketioServerUrl + connection.namespace, {
+			path: `/socketio/v1`,
+			auth: { session_id: connection.cookie_session_id }
+		});
 		this.client.connect();
 	}
 

@@ -3,13 +3,14 @@ resource "random_uuid" "UuidScope1" {}
 resource "random_uuid" "UuidScope2" {}
 resource "random_uuid" "UuidScope3" {}
 resource "random_uuid" "UuidScope4" {}
-resource "random_uuid" "UuidScope5" {}
-resource "random_uuid" "UuidScope6" {}
+# resource "random_uuid" "UuidScope5" {}
+# resource "random_uuid" "UuidScope6" {}
 resource "random_uuid" "UuidRole1" {}     # Used for admins in backend
 resource "random_uuid" "userGroupUUID" {} # Used for users in backend
-# resource "random_uuid" "UuidRole2" {}
-# resource "random_uuid" "UuidRole3" {}
-# resource "random_uuid" "UuidRole4" {}
+resource "random_uuid" "AIpublicRoleUUID" {}
+resource "random_uuid" "AIprivateRoleUUID" {}
+# resource "random_uuid" "GitHubUserRoleUUID" {} # manage through account linking!
+# resource "random_uuid" "DiscordUserRoleUUID" {} # manage through account linking!
 # resource "random_uuid" "UuidRole5" {}
 
 # # get the application ids for the well known applications to configure ms graph access:
@@ -88,30 +89,31 @@ resource "azuread_application" "backendAPI" {
       type                       = "User"
       user_consent_description   = "Enables you as user to use real-time communication, like chats in Fullstack Sandbox."
       user_consent_display_name  = "Real-time interaction with Fullstack Sandbox"
-      value                      = "sockets"
+      value                      = "socketio"
     }
 
-    oauth2_permission_scope {
-      admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to use public artifical intelligence within the app."
-      admin_consent_display_name = "Users can use public artificial intelligence in Fullstack Sandbox"
-      enabled                    = true
-      id                         = random_uuid.UuidScope5.result
-      type                       = "User"
-      user_consent_description   = "Enables you as user to use the public artifical intelligence capabilities of Fullstack Sandbox."
-      user_consent_display_name  = "Use public artificial intelligence in Fullstack Sandbox"
-      value                      = "artificial_intelligence.public"
-    }
+    # Handle through Roles: AIUser.public, AIUser.private, GitHubUser, DiscordUser, ...
+    # oauth2_permission_scope {
+    #   admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to use public artifical intelligence within the app."
+    #   admin_consent_display_name = "Users can use public artificial intelligence in Fullstack Sandbox"
+    #   enabled                    = true
+    #   id                         = random_uuid.UuidScope5.result
+    #   type                       = "User"
+    #   user_consent_description   = "Enables you as user to use the public artifical intelligence capabilities of Fullstack Sandbox."
+    #   user_consent_display_name  = "Use public artificial intelligence in Fullstack Sandbox"
+    #   value                      = "artificial_intelligence.public"
+    # }
 
-    oauth2_permission_scope {
-      admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to use private artifical intelligence within the app."
-      admin_consent_display_name = "Users can use private artificial intelligence in Fullstack Sandbox"
-      enabled                    = true
-      id                         = random_uuid.UuidScope6.result
-      type                       = "User"
-      user_consent_description   = "Enables you as user to use the private artifical intelligence capabilities of Fullstack Sandbox."
-      user_consent_display_name  = "Use private artificial intelligence in Fullstack Sandbox"
-      value                      = "artificial_intelligence.private"
-    }
+    # oauth2_permission_scope {
+    #   admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to use private artifical intelligence within the app."
+    #   admin_consent_display_name = "Users can use private artificial intelligence in Fullstack Sandbox"
+    #   enabled                    = true
+    #   id                         = random_uuid.UuidScope6.result
+    #   type                       = "User"
+    #   user_consent_description   = "Enables you as user to use the private artifical intelligence capabilities of Fullstack Sandbox."
+    #   user_consent_display_name  = "Use private artificial intelligence in Fullstack Sandbox"
+    #   value                      = "artificial_intelligence.private"
+    # }
 
     # add further scopes here:
     # add artificial.read, artificial.write, mapped_account.read, mapped_account.write, ...
@@ -140,32 +142,30 @@ resource "azuread_application" "backendAPI" {
     value                = "User" # could be comething like "User.Write" or "User.Read"
   }
 
+  app_role {
+    allowed_member_types = ["User"]
+    description          = "Users can access the public artificial intelligence"
+    display_name         = "Public Artificial Intelligence Users"
+    enabled              = true
+    id                   = random_uuid.AIpublicRoleUUID.result
+    value                = "publicAIuser"
+  }
 
-  # Fine graind access in code - as there is no correlation in the token for which role in which group!
-  # app_role {
-  #   allowed_member_types = ["User"]
-  #   description          = "Teachers can manage their courses"
-  #   display_name         = "Teacher"
-  #   enabled              = true
-  #   id                   = random_uuid.UuidRole2.result
-  #   value                = "Teacher"
-  # }
-
-  # app_role {
-  #   allowed_member_types = ["User"]
-  #   description          = "Guest lecturers can view parts of the course"
-  #   display_name         = "Guest Lecturer"
-  #   enabled              = true
-  #   id                   = random_uuid.UuidRole3.result
-  #   value                = "GuestLecturer"
-  # }
+  app_role {
+    allowed_member_types = ["User"]
+    description          = "Users can access the private artificial intelligence"
+    display_name         = "Private Artificial Intelligence Users"
+    enabled              = true
+    id                   = random_uuid.AIprivateRoleUUID.result
+    value                = "privateAIuser"
+  }
 
   # app_role {
   #   allowed_member_types = ["User"]
   #   description          = "Students can access their courses"
   #   display_name         = "Student"
   #   enabled              = true
-  #   id                   = random_uuid.UuidRole4.result
+  #   id                   = random_uuid.GitHubUserRoleUUID.result
   #   value                = "Student"
   # }
 
@@ -174,7 +174,7 @@ resource "azuread_application" "backendAPI" {
   #   description          = "Guest students can view courses"
   #   display_name         = "Guest Student"
   #   enabled              = true
-  #   id                   = random_uuid.UuidRole5.result
+  #   id                   = random_uuid.DiscordUserRoleUUID.result
   #   value                = "GuestStudent"
   # }
 
@@ -212,11 +212,17 @@ resource "azuread_application" "backendAPI" {
   }
 
   # TBD: consider adding for enabling swaggerUI authentication - change the host names for stage and prod:
-  # single_page_application {
-  #   redirect_uris = [
-  #     "http://localhost:8660/docs/oauth2-redirect"
-  #   ]
-  # }
+  single_page_application {
+    redirect_uris = (terraform.workspace == "dev" ?
+      [
+        "http://localhost:8660/docs/oauth2-redirect",
+        "https://${azurerm_container_app.BackendContainer.ingress[0].fqdn}/docs/oauth2-redirect",
+      ] :
+      [
+        "https://${azurerm_container_app.BackendContainer.ingress[0].fqdn}/docs/oauth2-redirect",
+      ]
+    )
+  }
 
 
   tags = [var.costcenter, var.owner_name, terraform.workspace]
@@ -248,6 +254,7 @@ resource "azuread_application_pre_authorized" "preAuthorizeFrontendatBackend" {
   permission_ids = [
     random_uuid.UuidScope2.result,
     random_uuid.UuidScope3.result,
+    random_uuid.UuidScope4.result,
   ]
 }
 
@@ -268,7 +275,6 @@ resource "azuread_application" "frontend" {
         "http://localhost:8661/oauth/callback",
         "https://www.thunderclient.com/oauth/callback",
         "https://oauth.pstmn.io/v1/callback",
-        # "http://localhost:8661/oauth/tokens",
         "https://${azurerm_container_app.FrontendContainer.ingress[0].fqdn}/oauth/callback",
         # "https://${azurerm_container_app.FrontendContainer.ingress[0].fqdn}/oauth/tokens"
       ] :

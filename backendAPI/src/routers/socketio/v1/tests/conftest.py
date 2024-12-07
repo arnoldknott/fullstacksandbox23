@@ -19,8 +19,33 @@ async def mock_token_payload(request):
         yield mock
 
 
+@pytest.fixture(scope="function")
+async def mock_get_user_account_from_session_cache():
+    """Returns a mocked token."""
+
+    with patch("core.security.get_user_account_from_session_cache") as mock:
+        mock.return_value = {
+            "userName": "testuser",
+            "homeAccountId": "testhometenantid.testhomeaccounid",
+        }
+        yield mock
+
+
+@pytest.fixture(scope="function")
+async def mock_get_azure_token_from_cache():
+    """Returns a mocked token."""
+
+    with patch("core.security.get_azure_token_from_cache") as mock:
+        mock.return_value = "ey-fake-token-from_cache"
+        yield mock
+
+
 @pytest.fixture()
-async def socketio_server(mock_token_payload):
+async def socketio_server(
+    mock_token_payload,
+    mock_get_azure_token_from_cache,
+    mock_get_user_account_from_session_cache,
+):
     """Provide a socket.io server."""
 
     sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
@@ -116,6 +141,7 @@ async def socketio_client():
             "http://127.0.0.1:80",
             socketio_path="socketio/v1",
             namespaces=namespaces,
+            auth={"session_id": "testsessionid"},
         )
         yield client
         await client.disconnect()
@@ -135,6 +161,7 @@ async def socketio_patched_client():
             "http://127.0.0.1:8669",
             socketio_path="socketio/v1",
             namespaces=namespaces,
+            auth={"session_id": "testsessionid"},
         )
         yield client
         await client.disconnect()

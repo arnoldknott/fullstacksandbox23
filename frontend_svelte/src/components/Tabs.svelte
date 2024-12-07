@@ -11,7 +11,6 @@
 
 	let activeTab = $state(tabs.findIndex((tab) => tab.active == true) || 0);
 	const tabChange = (event: Event) => (activeTab = event.target ? event.target.activeTabIndex : 0);
-
 </script>
 
 <md-filled-card class="w-80 py-10">

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import '@material/web/textfield/filled-text-field.js';
 	import '@material/web/button/filled-button.js';
-	import Title from '$components/Title.svelte';
 	import { SocketIO } from '$lib/socketio';
 	import type { SocketioConnection } from '$lib/types';
 	// import { getContext, type Snippet } from 'svelte';
@@ -24,13 +23,13 @@
 
 	$effect(() => {
 		socketio.client.on(connection.event, (data) => {
-			console.log(`Response from server: ${data}`);
-			old_messages.push(`Response from server: ${data}`);
+			console.log(`Received: ${data}`);
+			old_messages.push(`Received: ${data}`);
 		});
 	});
 </script>
 
-<p>{@render children?.()} in Chat</p>
+{@render children?.()} in Chat
 
 <div class="w-50">
 	<form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
@@ -55,7 +54,7 @@
 <p>Socket.IO message history</p>
 
 <ul>
-{#each old_messages as old_message}
-	<li>{old_message}</li>
-{/each}
+	{#each old_messages as old_message}
+		<li>{old_message}</li>
+	{/each}
 </ul>
