@@ -50,6 +50,7 @@ export type SocketioConnection = {
 	namespace?: string;
 	room?: string;
 	connected?: boolean;
+	cookie_session_id?: string;
 };
 
 type Tab = {

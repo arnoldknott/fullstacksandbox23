@@ -3,7 +3,7 @@ import logging
 import socketio
 from pprint import pprint
 
-from core.security import get_azure_token_payload
+from core.security import get_azure_token_from_cache, get_azure_token_payload
 from core.types import GuardTypes
 
 logger = logging.getLogger(__name__)
@@ -26,8 +26,12 @@ async def connect(sid, environ, auth):
     # print(sid, flush=True)
     # print("=== routers - socketio - v1 - environ ===")
     # pprint(environ)
-    print("=== routers - socketio - v1 - auth ===")
-    pprint(auth)
+    print("=== routers - socketio - v1 - auth['session_io'] ===")
+    pprint(auth["session_id"])
+    print(" ", flush=True)
+    token = await get_azure_token_from_cache(auth["session_id"])
+    print("=== routers - socketio - v1 - token ===")
+    print(token)
     print(" ", flush=True)
     await socketio_server.emit("message", f"Hello new client with session id {sid}")
     # TBD: add rooms and namespaces?
@@ -188,8 +192,10 @@ class BaseNamespace(socketio.AsyncNamespace):
             print("=== base - on_connect - guards ===")
             print(guards, flush=True)
             logger.info(f"Client connected with session id: {sid}.")
-
-            token_payload = await get_azure_token_payload(auth)
+            token = await get_azure_token_from_cache(
+                auth["session_id"]
+            )  # TBD: add list of scopes here!
+            token_payload = await get_azure_token_payload(token)
             print("=== base - on_connect - token_payload ===")
             print(token_payload, flush=True)
         except Exception as err:

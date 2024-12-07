@@ -9,18 +9,21 @@
 	import Tabs from '$components/Tabs.svelte';
 	// import Chat from '$components/Chat.svelte';
 	import type { Tab } from '$lib/types';
+	import { page } from '$app/stores';
 
 	// const socketio_client_from_lib = new SocketIO();
 
 	const socketio_public_message_connection = {
 		event: 'public_message',
 		namespace: '',
-		room: ''
+		room: '',
+		cookie_session_id: $page.data.session.sessionId
 	};
 	const socketio_demo_message_connection = {
 		event: 'demo_message',
 		namespace: '',
-		room: ''
+		room: '',
+		cookie_session_id: $page.data.session.sessionId
 	};
 
 	const tabs: Tab[] = [
