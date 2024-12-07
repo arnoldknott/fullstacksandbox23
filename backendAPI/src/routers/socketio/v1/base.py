@@ -1,9 +1,9 @@
 import logging
 
 import socketio
-from pprint import pprint
 
-from core.security import get_azure_token_from_cache, get_azure_token_payload
+from core.config import config
+from core.security import get_azure_token_payload, get_token_from_cache
 from core.types import GuardTypes
 
 logger = logging.getLogger(__name__)
@@ -30,9 +30,9 @@ async def connect(sid, environ, auth):
     # pprint(auth["session_id"])
     # print(" ", flush=True)
     try:
-        await get_azure_token_from_cache(auth["session_id"])
+        # await get_token_from_cache(auth["session_id"], ["User.Read"])
         # Works:
-        # token = await get_azure_token_from_cache(auth["session_id"])
+        # token = await get_token_from_cache(auth["session_id"])
         # print("=== routers - socketio - v1 - token ===")
         # print(token)
         # print(" ", flush=True)
@@ -191,18 +191,16 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Connect event for socket.io namespaces."""
         try:
             guards = self.guards
-            print("=== base - on_connect - sid ===")
-            print(sid, flush=True)
-            # print("=== base - on_connect - environ ===")
-            # pprint(environ)
-            print("=== base - on_connect - auth ===")
-            print(auth, flush=True)
             print("=== base - on_connect - guards ===")
             print(guards, flush=True)
+            print("=== base - on_connect - auth ===")
+            print(auth, flush=True)
             logger.info(f"Client connected with session id: {sid}.")
-            token = await get_azure_token_from_cache(
-                auth["session_id"]
-            )  # TBD: add list of scopes here!
+            # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
+            # token = await get_token_from_cache(auth["session_id"], ["User.Read"])
+            token = await get_token_from_cache(
+                auth["session_id"], [f"api://{config.API_SCOPE}/api.read"]
+            )  # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
             token_payload = await get_azure_token_payload(token)
             print("=== base - on_connect - token_payload ===")
             print(token_payload, flush=True)
@@ -217,7 +215,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         # print(current_user, flush=True)
         await self.server.emit(
             "demo_message",
-            f"Hello new client with session id {sid}",
+            f"Started session with id: {sid}",
             namespace=self.namespace,
             callback=self.callback,
         )

@@ -12,14 +12,18 @@ from tests.utils import token_admin_read_write, token_user1_read_write
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
-async def test_on_connect(mock_token_payload):
+async def test_on_connect(
+    mock_token_payload,
+    mock_get_azure_token_from_cache,
+    mock_get_user_account_from_session_cache,
+):
     """Test the on_connect event for socket.io."""
-    mocked_token = await mock_token_payload()
+    await mock_token_payload()
 
     connect_response = await demo_namespace_router.on_connect(
         sid="123",
         environ="fake_environ",
-        auth=mocked_token,
+        auth={"session_id": "fake_session_id"},
     )
 
     print("=== test_on_connect - connect_response ===")
@@ -37,7 +41,7 @@ async def test_on_connect_invalid_token():
         await demo_namespace_router.on_connect(
             sid="123",
             environ="fake_environ",
-            auth="invalid_token",
+            auth={"session_id": "fake_session_id"},
         )
         raise Exception("This should have failed due to invalid token.")
     except ConnectionRefusedError as err:
@@ -54,7 +58,10 @@ async def test_on_connect_invalid_token():
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
-async def test_demo_message_with_test_server(socketio_server, socketio_patched_client):
+async def test_demo_message_with_test_server(
+    socketio_server,
+    socketio_patched_client,
+):
     """Test the demo socket.io message event."""
 
     sio = socketio_server
