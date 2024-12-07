@@ -10,7 +10,7 @@
 	let { connection, children }: { connection: SocketioConnection; children: Snippet } = $props();
 
 	const socketio = new SocketIO(connection);
-	
+
 	let new_message = $state('');
 
 	let old_messages: string[] = $state([]);
@@ -54,6 +54,8 @@
 
 <p>Socket.IO message history</p>
 
+<ul>
 {#each old_messages as old_message}
-	<Title>{old_message}</Title>
+	<li>{old_message}</li>
 {/each}
+</ul>

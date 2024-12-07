@@ -56,6 +56,5 @@ export type SocketioConnection = {
 type Tab = {
 	header: string;
 	content: string;
-	connection: SocketioConnection;
 	active?: boolean;
 };

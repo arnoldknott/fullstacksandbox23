@@ -182,38 +182,28 @@ async def get_http_access_token_payload(
     return payload
 
 
+# raise Exception("Backend does not support saving tokens")
+
+
 class RedisPersistence(BasePersistence):
     """Redis persistence class for the token cache"""
 
     def __init__(self, user_account):
         self.user_account = user_account
 
-    def save(self):
+    def save(self, content):
         """Saves the token to the cache"""
-        raise Exception("Backend does not support saving tokens")
+        result = redis_session_client.json().set(self.get_location(), "$.", content)
+        return json.dumps(result)
 
     def load(self):
         """Loads the token from the cache"""
-        # print("=== load - *args ===")
-        # print(args)
-        # print("=== load - **kwargs ===")
-        # print(kwargs)
-        # result = redis_session_client.json().get(self.get_location(), "$.AccessToken")
         result = redis_session_client.json().get(self.get_location())
-        #     f"msal:{self.user_account['homeAccountId']}"
-        # )
-        # print("=== core - security - RedisPersistence - load - result ===")
-        # print(result)
-        # string_result = json.dumps(result)
-        # print("=== core - security - RedisPersistence - load - string_result ===")
-        # print(string_result)
-        return json.dumps(result)  # string_result
+        return json.dumps(result)
 
     def get_location(self):
         """Returns the location in the cache"""
         location = f"msal:{self.user_account['homeAccountId']}"
-        # print("=== get_location ===")
-        # print(location)
         return location
 
     def time_last_modified(self):
@@ -230,35 +220,15 @@ class RedisPersistence(BasePersistence):
             raise Exception("no modification time available")
 
 
-# class MyPersistedTokenCache(PersistedTokenCache):
-#     def __init__(self, persistence, home_account_id=None):
-#         self.home_account_id = home_account_id
-#         super().__init__(persistence)
-
-#     def search(self, *args, **kwargs):
-#         print("=== search - *args ===")
-#         print(args)
-#         print("=== search - **kwargs ===")
-#         print(kwargs)
-#         kwargs["query"]["home_account_id"] = self.home_account_id
-#         print("=== search - modified **kwargs ===")
-#         print(kwargs)
-#         super().search(*args, **kwargs)
-
-
 def get_persistent_cache(user_account):
     """Returns the persistent cache for the user account"""
     persistence = RedisPersistence(user_account)
-    # persistedTokenCache = MyPersistedTokenCache(
-    #     persistence, user_account["homeAccountId"]
-    # )
     persistedTokenCache = PersistedTokenCache(persistence)
     return persistedTokenCache
 
 
 async def get_azure_token_from_cache(session_id: str, scopes: List[str] = []) -> str:
     """Gets the azure token from the cache"""
-    # scopes = ["api.read", "api.write"]  # TBD: remove the hard coded scopes
     logger.info("🔑 Getting token from cache")
     user_account_data = redis_session_client.json().get(
         f"session:{session_id}", "$.microsoftAccount"
@@ -278,16 +248,13 @@ async def get_azure_token_from_cache(session_id: str, scopes: List[str] = []) ->
         token_cache=cache,
     )
 
-    account = msal_conf_client.get_accounts(user_account["username"])
-    print("=== accounts ===")
-    print(account)
-    result = msal_conf_client.acquire_token_silent(["User.Read"], account=account[0])
-    print("=== result ===")
-    print(result)
-    if "access_token" in result:
-        print("===🔑 azure access_token from cache - access-token ===")
-        print(result["access_token"])
-        return result["access_token"]
+    accounts = msal_conf_client.get_accounts(user_account["username"])
+    for account in accounts:
+        result = msal_conf_client.acquire_token_silent(["User.Read"], account=account)
+        if "access_token" in result:
+            print("===🔑 azure access_token from cache - access-token ===")
+            # print(result["access_token"])
+            return result["access_token"]
     return None
 
 
