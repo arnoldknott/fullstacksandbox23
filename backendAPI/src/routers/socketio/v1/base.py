@@ -200,7 +200,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
             # token = await get_token_from_cache(auth["session_id"], ["User.Read"])
             token = await get_token_from_cache(
-                auth["session_id"], [f"api://{config.API_SCOPE}/api.read"]
+                auth["session_id"], [f"api://{config.API_SCOPE}/socketio"]
             )  # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
             token_payload = await get_azure_token_payload(token)
             print("=== base - on_connect - token_payload ===")
@@ -221,7 +221,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             callback=self.callback,
         )
         # TBD: should not return anything or potentially true?
-        return "OK from server"
+        # return "OK from server"
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""

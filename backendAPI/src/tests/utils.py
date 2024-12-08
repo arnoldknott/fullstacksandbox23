@@ -362,6 +362,45 @@ many_test_sub_sub_groups = [
     },
 ]
 
+
+# for testing the connection between session and cache:
+azure_oid1 = str(uuid4())
+azure_oid2 = str(uuid4())
+azure_oid3 = str(uuid4())
+azure_user_account_1 = {
+    "homeAccountId": f"{azure_oid1}.{azure_home_tenant}",
+    "username": "user1@example.com",
+    "environment": "login.microsoftonline.com",
+    "tenantId": azure_home_tenant,
+    "localAccountId": azure_oid1,
+    "authorityType": "MSSTS",
+}
+
+azure_user_account_2 = {
+    "homeAccountId": f"{azure_oid2}.{azure_home_tenant}",
+    "username": "user2@example.com",
+    "environment": "login.microsoftonline.com",
+    "tenantId": azure_home_tenant,
+    "localAccountId": azure_oid2,
+    "authorityType": "MSSTS",
+}
+
+azure_foreign_tenant_id = str(uuid4())
+azure_user_account_3 = {
+    "homeAccountId": f"{azure_oid3}.{azure_foreign_tenant_id}",
+    "username": "user3@example.com",
+    "environment": "login.microsoftonline.com",
+    "tenantId": azure_foreign_tenant_id,
+    "localAccountId": azure_oid2,
+    "authorityType": "MSSTS",
+}
+
+many_azure_user_accounts = [
+    azure_user_account_1,
+    azure_user_account_2,
+    azure_user_account_3,
+]
+
 resource_id1 = str(uuid4())
 resource_id2 = str(uuid4())
 resource_id3 = str(uuid4())

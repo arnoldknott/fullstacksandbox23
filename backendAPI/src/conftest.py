@@ -1,5 +1,5 @@
 from typing import AsyncGenerator, Generator, List, Optional, Union
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from core.cache import redis_session_client
 from core.databases import postgres_async_engine  # should be SQLite here only!
 from core.security import CurrentAccessToken, Guards, provide_http_token_payload
 from core.types import CurrentUserData, IdentityType, ResourceType
@@ -38,6 +39,7 @@ from models.protected_resource import ProtectedResource
 from tests.utils import (
     current_user_data_admin,
     identity_id_group2,
+    many_azure_user_accounts,
     many_current_users_data,
     many_entity_type_links,
     many_resource_ids,
@@ -189,6 +191,22 @@ async def current_user_from_azure_token():
         return current_user
 
     yield _current_user_from_azure_token
+
+
+@pytest.fixture(scope="function")
+async def setup_redis_session_data():
+    """Fixture to set up session data in Redis."""
+    sessions = []
+    for azure_user_account in many_azure_user_accounts:
+        session_id = uuid4()
+        sessions.append({session_id: {"microsoftAccount": azure_user_account}})
+        redis_session_client.json().set(
+            f"session:{session_id}", ".", {"microsoftAccount": azure_user_account}
+        )
+    yield sessions
+    # Clean up after the test
+    for session in sessions:
+        redis_session_client.json().delete(f"session:{session.keys()}")
 
 
 async def register_entity_to_identity_type_link_table(

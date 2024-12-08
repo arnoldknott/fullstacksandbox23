@@ -12,6 +12,7 @@ from core.security import (
     CurrentAccessTokenIsValid,
     CurrentAzureUserInDatabase,
     get_azure_jwks,
+    get_user_account_from_session_cache,
 )
 from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD
@@ -463,6 +464,53 @@ async def test_existing_user_logs_in(
 
 # endregion
 
+
+# region: Testing Session and Cache interaction
+
+
+@pytest.mark.anyio
+async def test_get_user_account_from_session_cache(setup_redis_session_data):
+    """Tests if the user account can be retrieved from the session cache."""
+    sessions = setup_redis_session_data
+
+    for session in sessions:
+        session_id = next(iter(session))
+        user_account = await get_user_account_from_session_cache(session_id)
+        mocked_microsoft_account = session[session_id]["microsoftAccount"]
+        assert (
+            user_account["homeAccountId"] == mocked_microsoft_account["homeAccountId"]
+        )
+        assert user_account["username"] == mocked_microsoft_account["username"]
+        assert user_account["environment"] == mocked_microsoft_account["environment"]
+        assert user_account["tenantId"] == mocked_microsoft_account["tenantId"]
+        assert (
+            user_account["localAccountId"] == mocked_microsoft_account["localAccountId"]
+        )
+        assert (
+            user_account["authorityType"] == mocked_microsoft_account["authorityType"]
+        )
+
+
+@pytest.mark.anyio
+async def test_get_user_account_from_session_cache_nonexistent():
+    session_id = "nonexistent_session_id"
+    try:
+        await get_user_account_from_session_cache(session_id)
+        raise Exception("This should have failed due to non-existent session.")
+    except ValueError as error:
+        assert str(error) == "User account not found in session."
+
+    # with pytest.raises(ValueError) as error:
+    #     await get_user_account_from_session_cache(session_id)
+    #     print("=== error ===")
+    #     print(error)
+    #     assert str(error) == f"Session with id {session_id} not found."
+    #     assert 0
+
+
+# endregion: Testing Session and Cache interaction
+
+
 # region: Testing guards:
 
 # TBD: add tests for other implementation of the guards,
@@ -840,6 +888,49 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload_retu
     assert response.status_code == 200
     token_contains_role_admin = response.json()
     assert token_contains_role_admin is False
+    # Add the following to utils.py
+
+    # Define user accounts (Microsoft style)
+    user_account_1 = {
+        "homeAccountId": "1",
+        "username": "user1@example.com",
+        "environment": "login.microsoftonline.com",
+        "realm": "example.com",
+        "localAccountId": "1",
+        "authorityType": "MSSTS",
+    }
+
+    user_account_2 = {
+        "homeAccountId": "2",
+        "username": "user2@example.com",
+        "environment": "login.microsoftonline.com",
+        "realm": "example.com",
+        "localAccountId": "2",
+        "authorityType": "MSSTS",
+    }
+
+    # Define MSAL entries in Redis Cache
+    msal_entry_1 = {
+        "access_token": "token1",
+        "expires_in": 3600,
+        "ext_expires_in": 3600,
+        "expires_on": int((datetime.now() + timedelta(hours=1)).timestamp()),
+        "not_before": int(datetime.now().timestamp()),
+        "resource": "resource1",
+        "token_type": "Bearer",
+        "scope": "User.Read",
+    }
+
+    msal_entry_2 = {
+        "access_token": "token2",
+        "expires_in": 3600,
+        "ext_expires_in": 3600,
+        "expires_on": int((datetime.now() - timedelta(hours=1)).timestamp()),  # expired
+        "not_before": int((datetime.now() - timedelta(hours=2)).timestamp()),
+        "resource": "resource2",
+        "token_type": "Bearer",
+        "scope": "User.Read",
+    }
 
 
 # endregion

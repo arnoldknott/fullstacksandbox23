@@ -4,32 +4,31 @@ from socketio.exceptions import ConnectionError
 from src.routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
 from tests.utils import token_admin_read_write, token_user1_read_write
 
+# # This one does not really make sense any more!
+# @pytest.mark.anyio
+# @pytest.mark.parametrize(
+#     "mock_token_payload",
+#     [token_admin_read_write, token_user1_read_write],
+#     indirect=True,
+# )
+# async def test_on_connect(
+#     mock_token_payload,
+#     mock_get_azure_token_from_cache,
+#     mock_get_user_account_from_session_cache,
+# ):
+#     """Test the on_connect event for socket.io."""
+#     await mock_token_payload()
 
-# This one does not really make sense any more!
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_admin_read_write, token_user1_read_write],
-    indirect=True,
-)
-async def test_on_connect(
-    mock_token_payload,
-    mock_get_azure_token_from_cache,
-    mock_get_user_account_from_session_cache,
-):
-    """Test the on_connect event for socket.io."""
-    await mock_token_payload()
+#     connect_response = await demo_namespace_router.on_connect(
+#         sid="123",
+#         environ="fake_environ",
+#         auth={"session_id": "fake_session_id"},
+#     )
 
-    connect_response = await demo_namespace_router.on_connect(
-        sid="123",
-        environ="fake_environ",
-        auth={"session_id": "fake_session_id"},
-    )
+#     print("=== test_on_connect - connect_response ===")
+#     print(connect_response)
 
-    print("=== test_on_connect - connect_response ===")
-    print(connect_response)
-
-    assert connect_response == "OK from server"
+#     assert connect_response == "OK from server"
 
 
 @pytest.mark.anyio

@@ -141,7 +141,7 @@ async def socketio_client():
             "http://127.0.0.1:80",
             socketio_path="socketio/v1",
             namespaces=namespaces,
-            auth={"session_id": "testsessionid"},
+            # auth={"session_id": "testsessionid"},
         )
         yield client
         await client.disconnect()
