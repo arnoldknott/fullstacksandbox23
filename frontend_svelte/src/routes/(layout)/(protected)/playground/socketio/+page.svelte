@@ -13,7 +13,7 @@
 
 	const public_message_connection = {
 		event: 'public_message',
-		namespace: '',
+		namespace: '/public_namespace',
 		room: '',
 		cookie_session_id: $page.data.session.sessionId
 	};

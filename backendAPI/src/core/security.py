@@ -21,10 +21,6 @@ from core.types import CurrentUserData, GuardTypes
 from crud.identity import UserCRUD
 from models.identity import UserRead
 
-# from typing import List, Optional
-# from uuid import UUID
-
-
 logger = logging.getLogger(__name__)
 
 # CurrentUserData = types.CurrentUserData
@@ -119,8 +115,8 @@ async def decode_token(token: str, jwks: dict) -> dict:
             "validate_iat": True,
         },
     )
-    print("=== decode_token - payload ===")
-    print(payload)
+    # print("=== decode_token - payload ===")
+    # print(payload)
     logger.info("Token decoded successfully")
     return payload
 
@@ -130,7 +126,7 @@ async def decode_token(token: str, jwks: dict) -> dict:
 # which requires the response - request pattern from http(s) routes.
 async def get_azure_token_payload(token: str) -> Optional[dict]:
     """Validates the Azure access token sent in the request header and returns the payload if valid"""
-    print("=== get_azure_token_payload - called  ===")
+    # print("=== get_azure_token_payload - called  ===")
     logger.info("🔑 Validating token")
     try:
         jwks = await get_azure_jwks()
@@ -186,6 +182,8 @@ async def get_http_access_token_payload(
 
 # raise Exception("Backend does not support saving tokens")
 
+# region: Token from Cache through Session
+
 
 class RedisPersistence(BasePersistence):
     """Redis persistence class for the token cache"""
@@ -199,13 +197,13 @@ class RedisPersistence(BasePersistence):
         result = redis_session_client.json().set(
             self.get_location(), ".", json.loads(content)
         )
-        print("===➡️ 🔑 token saved to cache in backend based on session_id ===")
+        # print("===➡️ 🔑 token saved to cache in backend based on session_id ===")
         return json.dumps(result)
 
     def load(self):
         """Loads the token from the cache"""
         result = redis_session_client.json().get(self.get_location())
-        print("===⬅️ 🔑 token loaded from cache in backend based on session_id ===")
+        # print("===⬅️ 🔑 token loaded from cache in backend based on session_id ===")
         return json.dumps(result)
 
     def get_location(self):
@@ -234,6 +232,7 @@ def get_persistent_cache(user_account):
     return persistedTokenCache
 
 
+# TBD: write tests for this
 async def get_user_account_from_session_cache(session_id: str) -> dict:
     """Gets the user account from the cache"""
     logger.info("🔑 Getting user account from cache")
@@ -241,10 +240,11 @@ async def get_user_account_from_session_cache(session_id: str) -> dict:
         f"session:{session_id}", "$.microsoftAccount"
     )
     if not user_account:
-        raise ValueError("User account not found in session")
+        raise ValueError("User account not found in session.")
     return user_account[0]
 
 
+# TBD: write tests for this
 async def get_azure_token_from_cache(user_account, scopes: List[str] = []) -> str:
     """Gets the azure token from the cache"""
     # Create the PersistentTokenCache
@@ -262,7 +262,7 @@ async def get_azure_token_from_cache(user_account, scopes: List[str] = []) -> st
         # result = msal_conf_client.acquire_token_silent(["User.Read"], account=account)
         result = msal_conf_client.acquire_token_silent(scopes, account=account)
         if "access_token" in result:
-            print("===🔑 azure access_token from cache - access-token ===")
+            # print("===🔑 azure access_token from cache - access-token ===")
             # print(result["access_token"])
             return result["access_token"]
     return None
@@ -271,16 +271,9 @@ async def get_azure_token_from_cache(user_account, scopes: List[str] = []) -> st
 async def get_token_from_cache(session_id: str, scopes: List[str] = []) -> str:
     """Gets the azure token from the cache"""
     logger.info("🔑 Getting token from cache")
-    # user_account_data = redis_session_client.json().get(
-    #     f"session:{session_id}", "$.microsoftAccount"
-    # )
-    # if not user_account_data:
-    #     # TBD: catch that one and report back as session not found to user!
-    #     raise ValueError("User account not found in session")
-
-    # user_account = user_account_data[0]
     user_account = await get_user_account_from_session_cache(session_id)
 
+    # Can be extended to further identity service providers:
     return await get_azure_token_from_cache(user_account, scopes)
 
     # # Create the PersistentTokenCache
@@ -311,6 +304,8 @@ async def get_token_from_cache(session_id: str, scopes: List[str] = []) -> str:
 #     # can later be used for customizing different identity service providers
 #     return payload
 
+
+# endregion: Token from Cache through Session
 
 # region: GUARDS
 

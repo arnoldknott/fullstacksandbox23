@@ -212,6 +212,8 @@ resource "azuread_application" "backendAPI" {
   }
 
   # TBD: consider adding for enabling swaggerUI authentication - change the host names for stage and prod:
+  # Example on how to connect SwaggerUI to AzureAD:
+  # https://stackoverflow.com/questions/79259104/fastapi-azure-auth-proof-key-for-code-exchange-is-required-for-cross-origin-au/79260558#79260558
   single_page_application {
     redirect_uris = (terraform.workspace == "dev" ?
       [

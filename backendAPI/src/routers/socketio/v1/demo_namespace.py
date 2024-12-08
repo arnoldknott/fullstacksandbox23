@@ -29,7 +29,6 @@ class DemoNamespace(BaseNamespace):
 
     async def on_demo_message(self, sid, data):
         """Demo message event for socket.io namespaces with guards."""
-        logger.info(f"Received message from client {sid}: {data}")
         await self.server.emit(
             "demo_message",
             f"Demo message received from client: {data}",
