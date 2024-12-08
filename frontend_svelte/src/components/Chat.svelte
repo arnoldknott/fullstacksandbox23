@@ -23,8 +23,8 @@
 
 	$effect(() => {
 		socketio.client.on(connection.event, (data) => {
-			console.log(`Received: ${data}`);
-			old_messages.push(`Received: ${data}`);
+			console.log(`Received from socket.io server: ${data}`);
+			old_messages.push(`${data}`);
 		});
 	});
 </script>

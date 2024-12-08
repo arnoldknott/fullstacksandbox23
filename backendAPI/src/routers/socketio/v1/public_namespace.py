@@ -1,7 +1,8 @@
 import logging
 
-from .base import BaseNamespace
 from crud.public_resource import PublicResourceCRUD
+
+from .base import BaseNamespace
 
 logger = logging.getLogger(__name__)
 
@@ -26,4 +27,4 @@ class PublicNamespace(BaseNamespace):
         )
 
 
-public_namespace_router = PublicNamespace("/public_namespace")
+public_namespace_router = PublicNamespace("/public-namespace")

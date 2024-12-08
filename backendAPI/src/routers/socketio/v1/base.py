@@ -4,9 +4,9 @@ import socketio
 
 from core.config import config
 from core.security import (
+    check_token_against_guards,
     get_azure_token_payload,
     get_token_from_cache,
-    check_token_against_guards,
 )
 from core.types import GuardTypes
 
@@ -130,6 +130,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         room: str = None,
         guards: GuardTypes = None,
         crud=None,
+        callback_on_connect=None,
+        callback_on_disconnect=None,
     ):
         super().__init__(namespace=namespace)
         self.guards = guards
@@ -137,6 +139,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         self.server = socketio_server
         self.namespace = namespace
         self.room = room
+        self.callback_on_connect = callback_on_connect
+        self.callback_on_disconnect = callback_on_disconnect
 
     async def callback(self):
         print("=== base - callback ===")
@@ -159,15 +163,26 @@ class BaseNamespace(socketio.AsyncNamespace):
             try:
                 # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
                 # token = await get_token_from_cache(auth["session_id"], ["User.Read"])
+                # catch and handle an expired token gracefully and return something to the client on a different message channel,
+                # so it can initiate the authentication process and come back with a new session id
                 token = await get_token_from_cache(
                     auth["session_id"], [f"api://{config.API_SCOPE}/socketio"]
                 )  # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
                 token_payload = await get_azure_token_payload(token)
-                print("=== base - on_connect - token_payload ===")
-                print(token_payload, flush=True)
+                # print("=== base - on_connect - token_payload ===")
+                # print(token_payload, flush=True)
+                # print("=== base - on_connect - token_payload - name ===")
+                # print(token_payload["name"], flush=True)
                 current_user = await check_token_against_guards(token_payload, guards)
-                print("=== base - on_connect - current_user ===")
-                print(current_user, flush=True)
+                session_data = {
+                    "user_name": token_payload["name"],
+                    "current_user": current_user,
+                }
+                await self.server.save_session(
+                    sid, session_data, namespace=self.namespace
+                )
+                # print("=== base - on_connect - current_user ===")
+                # print(current_user, flush=True)
                 logger.info(
                     f"Client authenticated to access protected namespace {self.namespace}."
                 )
@@ -179,6 +194,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         else:
             current_user = None
             logger.info(f"Client authenticated to public namespace {self.namespace}.")
+        if self.callback_on_connect is not None:
+            await self.callback_on_connect(sid)
 
         # current_user = await check_token_against_guards(token_payload, self.guards)
         # print("=== base - on_connect - sid - current_user ===")
@@ -195,3 +212,5 @@ class BaseNamespace(socketio.AsyncNamespace):
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""
         logger.info(f"Client with session id {sid} disconnected.")
+        if self.callback_on_disconnect is not None:
+            await self.callback_on_disconnect(sid)
