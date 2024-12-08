@@ -30,8 +30,8 @@ class DemoNamespace(BaseNamespace):
 
     async def callback_on_connect(self, sid):
         """Callback on connect for socket.io namespaces."""
-        print("=== demo_namespace - callback_on_connect - sid ===")
-        print(sid)
+        # print("=== demo_namespace - callback_on_connect - sid ===")
+        # print(sid)
         # if self.server.get_session(sid):
         session = await self.server.get_session(sid, namespace=self.namespace)
         # print("=== demo_namespace - callback_on_connect - session ===")

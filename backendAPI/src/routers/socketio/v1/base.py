@@ -163,20 +163,26 @@ class BaseNamespace(socketio.AsyncNamespace):
             try:
                 # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
                 # token = await get_token_from_cache(auth["session_id"], ["User.Read"])
+                # catch and handle an expired token gracefully and return something to the client on a different message channel,
+                # so it can initiate the authentication process and come back with a new session id
                 token = await get_token_from_cache(
                     auth["session_id"], [f"api://{config.API_SCOPE}/socketio"]
                 )  # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
                 token_payload = await get_azure_token_payload(token)
-                print("=== base - on_connect - token_payload ===")
-                print(token_payload, flush=True)
-                print("=== base - on_connect - token_payload - name ===")
-                print(token_payload["name"], flush=True)
-                await self.server.save_session(
-                    sid, {"user_name": token_payload["name"]}, namespace=self.namespace
-                )
+                # print("=== base - on_connect - token_payload ===")
+                # print(token_payload, flush=True)
+                # print("=== base - on_connect - token_payload - name ===")
+                # print(token_payload["name"], flush=True)
                 current_user = await check_token_against_guards(token_payload, guards)
-                print("=== base - on_connect - current_user ===")
-                print(current_user, flush=True)
+                session_data = {
+                    "user_name": token_payload["name"],
+                    "current_user": current_user,
+                }
+                await self.server.save_session(
+                    sid, session_data, namespace=self.namespace
+                )
+                # print("=== base - on_connect - current_user ===")
+                # print(current_user, flush=True)
                 logger.info(
                     f"Client authenticated to access protected namespace {self.namespace}."
                 )
