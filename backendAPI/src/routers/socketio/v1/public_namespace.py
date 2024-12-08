@@ -1,7 +1,8 @@
 import logging
 
-from .base import BaseNamespace
 from crud.public_resource import PublicResourceCRUD
+
+from .base import BaseNamespace
 
 logger = logging.getLogger(__name__)
 

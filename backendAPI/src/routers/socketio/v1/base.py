@@ -4,9 +4,9 @@ import socketio
 
 from core.config import config
 from core.security import (
+    check_token_against_guards,
     get_azure_token_payload,
     get_token_from_cache,
-    check_token_against_guards,
 )
 from core.types import GuardTypes
 
