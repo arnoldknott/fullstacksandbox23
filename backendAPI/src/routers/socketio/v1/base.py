@@ -60,7 +60,7 @@ async def disconnect(sid):
 @socketio_server.on("*")
 async def catch_all(event, sid, data):
     """Catch all events for socket.io, that don't have an event handler defined."""
-    logger.info(f"Caught event {data} from client {sid}.")
+    logger.info(f"Caught an event {data} from client {sid}.")
     print("=== routers - socketio - v1 - catch_all - event ===")
     print(event)
     print("=== routers - socketio - v1 - catch_all - sid ===")
@@ -69,6 +69,7 @@ async def catch_all(event, sid, data):
     print(data, flush=True)
 
 
+# TBD: refactor into always using the BaseNamespace!
 @socketio_server.event
 async def public_message(sid, data):
     """Public message event for socket.io."""
