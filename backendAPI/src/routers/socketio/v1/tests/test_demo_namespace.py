@@ -2,33 +2,7 @@ import pytest
 from socketio.exceptions import ConnectionError
 
 from src.routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
-from tests.utils import token_admin_read_write, token_user1_read_write
-
-# # This one does not really make sense any more!
-# @pytest.mark.anyio
-# @pytest.mark.parametrize(
-#     "mock_token_payload",
-#     [token_admin_read_write, token_user1_read_write],
-#     indirect=True,
-# )
-# async def test_on_connect(
-#     mock_token_payload,
-#     mock_get_azure_token_from_cache,
-#     mock_get_user_account_from_session_cache,
-# ):
-#     """Test the on_connect event for socket.io."""
-#     await mock_token_payload()
-
-#     connect_response = await demo_namespace_router.on_connect(
-#         sid="123",
-#         environ="fake_environ",
-#         auth={"session_id": "fake_session_id"},
-#     )
-
-#     print("=== test_on_connect - connect_response ===")
-#     print(connect_response)
-
-#     assert connect_response == "OK from server"
+from tests.utils import token_admin_read_write_socketio, token_user1_read_write_socketio
 
 
 @pytest.mark.anyio
@@ -50,24 +24,23 @@ async def test_on_connect_invalid_token():
         assert str(err) == "Authorization failed"
 
 
-# and still the client and sever are not called from the same test
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_token_payload",
-    [token_admin_read_write, token_user1_read_write],
+    [token_admin_read_write_socketio, token_user1_read_write_socketio],
     indirect=True,
 )
 async def test_demo_message_with_test_server(
-    socketio_server,
-    socketio_patched_client,
+    socketio_test_server,
+    socketio_test_client,
 ):
     """Test the demo socket.io message event."""
 
-    sio = socketio_server
+    sio = socketio_test_server
 
     sio.register_namespace(DemoNamespace("/demo_namespace"))
 
-    async for client in socketio_patched_client(["/demo_namespace"]):
+    async for client in socketio_test_client(["/demo_namespace"]):
         await client.emit("demo_message", "Something", namespace="/demo_namespace")
 
         response = ""
@@ -87,11 +60,15 @@ async def test_demo_message_with_test_server(
 
 
 @pytest.mark.anyio
-async def test_demo_message_with_production_server_fails_without_token(socketio_client):
+async def test_demo_message_with_production_server_fails_without_token(
+    socketio_test_client,
+):
     """Test the demo socket.io message event."""
 
     try:
-        async for client in socketio_client(["/demo_namespace"]):
+        async for client in socketio_test_client(
+            ["/demo_namespace"], "http://127.0.0.1:80"
+        ):
             response = None
 
             @client.on("demo_message", namespace="/demo_namespace")
@@ -99,11 +76,9 @@ async def test_demo_message_with_production_server_fails_without_token(socketio_
                 nonlocal response
                 response = data
 
-            emit_response = await client.emit(
+            await client.emit(
                 "demo_message", "Hello, world!", namespace="/demo_namespace"
             )
-            print("=== test_demo_message - emit_response ===")
-            print(emit_response)
 
             await client.sleep(1)
 
@@ -114,7 +89,4 @@ async def test_demo_message_with_production_server_fails_without_token(socketio_
             )
 
     except ConnectionError as err:
-        print("=== test_demo_message - Exception ===")
-        print(err)
-
         assert str(err) == "One or more namespaces failed to connect"

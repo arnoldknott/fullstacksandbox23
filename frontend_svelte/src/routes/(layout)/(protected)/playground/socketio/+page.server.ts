@@ -10,5 +10,5 @@ export const load: PageServerLoad = async ({ locals }) => {
 		throw new Error('No session id!');
 	}
 	// TBD: change scope to socketio!
-	await msalAuthProvider.getAccessToken(sessionId, [`${appConfig.api_scope}/socketio`]);
+	await msalAuthProvider.getAccessToken(sessionId, [`${appConfig.api_scope}/socketio`, `${appConfig.api_scope}/api.write`]);
 };

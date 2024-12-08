@@ -126,7 +126,7 @@ async def decode_token(token: str, jwks: dict) -> dict:
 # which requires the response - request pattern from http(s) routes.
 async def get_azure_token_payload(token: str) -> Optional[dict]:
     """Validates the Azure access token sent in the request header and returns the payload if valid"""
-    print("=== get_azure_token_payload - called  ===")
+    # print("=== get_azure_token_payload - called  ===")
     logger.info("🔑 Validating token")
     try:
         jwks = await get_azure_jwks()
@@ -197,13 +197,13 @@ class RedisPersistence(BasePersistence):
         result = redis_session_client.json().set(
             self.get_location(), ".", json.loads(content)
         )
-        print("===➡️ 🔑 token saved to cache in backend based on session_id ===")
+        # print("===➡️ 🔑 token saved to cache in backend based on session_id ===")
         return json.dumps(result)
 
     def load(self):
         """Loads the token from the cache"""
         result = redis_session_client.json().get(self.get_location())
-        print("===⬅️ 🔑 token loaded from cache in backend based on session_id ===")
+        # print("===⬅️ 🔑 token loaded from cache in backend based on session_id ===")
         return json.dumps(result)
 
     def get_location(self):
@@ -262,7 +262,7 @@ async def get_azure_token_from_cache(user_account, scopes: List[str] = []) -> st
         # result = msal_conf_client.acquire_token_silent(["User.Read"], account=account)
         result = msal_conf_client.acquire_token_silent(scopes, account=account)
         if "access_token" in result:
-            print("===🔑 azure access_token from cache - access-token ===")
+            # print("===🔑 azure access_token from cache - access-token ===")
             # print(result["access_token"])
             return result["access_token"]
     return None

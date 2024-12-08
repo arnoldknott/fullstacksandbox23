@@ -2,17 +2,28 @@ import pytest
 
 
 @pytest.mark.anyio
-async def test_public_message(socketio_simple_client):
-    """Test the public socket.io message event."""
-    # Emit a dummy event to ensure the connection is established
-    await socketio_simple_client.emit("dummy_event", {})
+async def test_public_message_event_in_public_namespace(socketio_test_client):
+    """Test the public message event in socket.io's public namespace."""
 
-    # Handle the initial connection message
-    initial_message = await socketio_simple_client.receive()
-    assert initial_message[0] == "message"
-    assert initial_message[1].startswith("Hello new client with session id")
+    async for client in socketio_test_client(
+        ["/public_namespace"], "http://127.0.0.1:80"
+    ):
+        response = None
 
-    # Send a public_message to the server and verify the response
-    await socketio_simple_client.emit("public_message", "Hello, world!")
-    response = await socketio_simple_client.receive(timeout=1)
-    assert response == ["public_message", "Message received from client: Hello, world!"]
+        @client.on("public_message", namespace="/public_namespace")
+        async def handler(data):
+            nonlocal response
+            response = data
+
+        await client.emit(
+            "public_message", "Hello, world!", namespace="/public_namespace"
+        )
+
+        await client.sleep(1)
+
+        assert (
+            response
+            == "Message received in public namespace from client: Hello, world!"
+        )
+
+        await client.disconnect()
