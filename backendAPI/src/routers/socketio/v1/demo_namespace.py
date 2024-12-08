@@ -36,5 +36,5 @@ class DemoNamespace(BaseNamespace):
         )
 
 
-demo_namespace_router = DemoNamespace("/demo_namespace")
+demo_namespace_router = DemoNamespace("/demo-namespace")
 # socketio_server.register_namespace(ProtectedEvents())

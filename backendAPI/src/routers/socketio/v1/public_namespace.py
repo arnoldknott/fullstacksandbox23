@@ -26,4 +26,4 @@ class PublicNamespace(BaseNamespace):
         )
 
 
-public_namespace_router = PublicNamespace("/public_namespace")
+public_namespace_router = PublicNamespace("/public-namespace")
