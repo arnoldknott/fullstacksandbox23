@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -63,16 +63,18 @@ def anyio_backend():
     return "asyncio"
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def client() -> Generator:
     """Returns a TestClient instance."""
     yield TestClient(app)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 async def async_client(client) -> AsyncGenerator:
     """Returns an AsyncClient instance."""
-    async with AsyncClient(app=app, base_url=client.base_url) as async_client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url=client.base_url
+    ) as async_client:
         yield async_client
 
 

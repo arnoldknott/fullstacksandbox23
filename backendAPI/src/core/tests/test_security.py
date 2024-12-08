@@ -888,49 +888,6 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload_retu
     assert response.status_code == 200
     token_contains_role_admin = response.json()
     assert token_contains_role_admin is False
-    # Add the following to utils.py
-
-    # Define user accounts (Microsoft style)
-    user_account_1 = {
-        "homeAccountId": "1",
-        "username": "user1@example.com",
-        "environment": "login.microsoftonline.com",
-        "realm": "example.com",
-        "localAccountId": "1",
-        "authorityType": "MSSTS",
-    }
-
-    user_account_2 = {
-        "homeAccountId": "2",
-        "username": "user2@example.com",
-        "environment": "login.microsoftonline.com",
-        "realm": "example.com",
-        "localAccountId": "2",
-        "authorityType": "MSSTS",
-    }
-
-    # Define MSAL entries in Redis Cache
-    msal_entry_1 = {
-        "access_token": "token1",
-        "expires_in": 3600,
-        "ext_expires_in": 3600,
-        "expires_on": int((datetime.now() + timedelta(hours=1)).timestamp()),
-        "not_before": int(datetime.now().timestamp()),
-        "resource": "resource1",
-        "token_type": "Bearer",
-        "scope": "User.Read",
-    }
-
-    msal_entry_2 = {
-        "access_token": "token2",
-        "expires_in": 3600,
-        "ext_expires_in": 3600,
-        "expires_on": int((datetime.now() - timedelta(hours=1)).timestamp()),  # expired
-        "not_before": int((datetime.now() - timedelta(hours=2)).timestamp()),
-        "resource": "resource2",
-        "token_type": "Bearer",
-        "scope": "User.Read",
-    }
 
 
 # endregion
