@@ -12,7 +12,6 @@ from core.types import GuardTypes
 
 logger = logging.getLogger(__name__)
 
-# socketio_server = socketio.AsyncServer(async_mode="asgi")
 socketio_server = socketio.AsyncServer(
     async_mode="asgi",
     cors_allowed_origins=[],  # disable CORS in Socket.IO, as FastAPI handles CORS!
@@ -21,82 +20,32 @@ socketio_server = socketio.AsyncServer(
 )
 
 
-# TBD: add auth as FastAPI Depends
 @socketio_server.event
-async def connect(sid, environ, auth):
+async def connect(sid):
     """Connect event for socket.io."""
     logger.info(f"Client connected with session id: {sid} outside namespaces.")
     print(f"=== routers - socketio - v1 - connect - sid {sid} / outside namespaces ===")
-    # print("=== routers - socketio - v1 - connect - sid ===", flush=True)
-    # print(sid, flush=True)
-    # print("=== routers - socketio - v1 - environ ===")
-    # pprint(environ)
-    # print("=== routers - socketio - v1 - auth['session_io'] ===")
-    # pprint(auth["session_id"])
-    # print(" ", flush=True)
-    try:
-        # await get_token_from_cache(auth["session_id"], ["User.Read"])
-        # Works:
-        # token = await get_token_from_cache(auth["session_id"])
-        # print("=== routers - socketio - v1 - token ===")
-        # print(token)
-        # print(" ", flush=True)
-        await socketio_server.emit("message", f"Hello new client with session id {sid}")
-    except Exception as err:
-        logger.error(
-            f"Client with session id {sid} failed to connect outside namespaces."
-        )
-        print(
-            "=== routers - socketio - v1 - Exception - connection outside namespaces failed ==="
-        )
-        print(err, flush=True)
-        raise ConnectionRefusedError("Connection failed")
-    # TBD: add rooms and namespaces?
-    # TBD: or refuse connection
-    # for example if authentication is not successful:
-    # raise ConnectionRefusedError("Connection refused")
 
 
 @socketio_server.event
 async def disconnect(sid):
     """Disconnect event for socket.io."""
-    logger.info(f"Client with session id {sid} disconnected.")
-    print("=== routers - socketio - v1 - disconnect - sid ===")
-    print(sid)
+    logger.info(f"Client with session id {sid} disconnected / outside namespaces.")
 
 
 # TBD: don't log the data, as it may contain sensitive information!
 @socketio_server.on("*")
 async def catch_all(event, sid, data):
     """Catch all events for socket.io, that don't have an event handler defined."""
-    logger.info(f"Caught an event {data} from client {sid}.")
+    logger.info(
+        f"Caught an event from client {sid} to unassigned event outside namespaces."
+    )
     print("=== routers - socketio - v1 - catch_all - event ===")
     print(event)
     print("=== routers - socketio - v1 - catch_all - sid ===")
     print(sid)
     print("=== routers - socketio - v1 - catch_all - data ===")
     print(data, flush=True)
-
-
-# # TBD: refactor into always using the BaseNamespace!
-# @socketio_server.event
-# async def public_message(sid, data):
-#     """Public message event for socket.io."""
-#     logger.info(f"Received message from client {sid}: {data}")
-#     await socketio_server.emit(
-#         "public_message", f"Message received from client: {data}"
-#     )
-
-
-# @socketio_server.event(namespace="/protected_events")
-# async def protected_message(sid, data):
-#     """Protected message event for socket.io."""
-#     logger.info(f"Received protected message from client {sid}: {data}")
-#     await socketio_server.emit(
-#         "protected_message",
-#         f"Protected message received from client: {data}",
-#         namespace="/protected_events",
-#     )
 
 
 class PresentationInterests(socketio.AsyncNamespace):
@@ -214,8 +163,8 @@ class BaseNamespace(socketio.AsyncNamespace):
                     auth["session_id"], [f"api://{config.API_SCOPE}/socketio"]
                 )  # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
                 token_payload = await get_azure_token_payload(token)
-                # print("=== base - on_connect - token_payload ===")
-                # print(token_payload, flush=True)
+                print("=== base - on_connect - token_payload ===")
+                print(token_payload, flush=True)
                 current_user = await check_token_against_guards(token_payload, guards)
                 print("=== base - on_connect - current_user ===")
                 print(current_user, flush=True)
