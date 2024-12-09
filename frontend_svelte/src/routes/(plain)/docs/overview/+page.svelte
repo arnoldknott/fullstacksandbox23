@@ -19,9 +19,9 @@
 	// let keyboard = false
 
 	const connection: SocketioConnection = {
-		event: 'does_not_matter_here',
-		namespace: '/presentation_interests',
-		// namespace: '/interactive-documentation',
+		event: 'comments',// does not really matter here, I guess?
+		// namespace: '/presentation_interests',
+		namespace: '/interactive-documentation',
 		room: 'does_not_matter_here_either'
 	};
 
@@ -81,6 +81,7 @@
 
 	$effect(() => {
 		socketio.client.on('server_comments', (data) => {
+			console.log(`Received from socket.io server: ${data}`);
 			if (data.comment !== '') {
 				replies.push({ name: data.topic, comment: data.comment });
 			}

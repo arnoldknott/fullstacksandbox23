@@ -37,11 +37,6 @@ class InteractiveDocumentation(BaseNamespace):
 
     async def initial_data_transfer(self, sid):
         """Executes transferring the initial data on connect."""
-        print("=== interactive_documentation - initial_data_transfer ===")
-        print("=== self.average ===")
-        print(self.average)
-        print("=== self.count ===")
-        print(self.count)
         for topic in self.average:
             await self.server.emit(
                 "averages",
@@ -51,6 +46,7 @@ class InteractiveDocumentation(BaseNamespace):
                     "count": self.count[topic],
                 },
                 to=sid,
+                namespace=self.namespace,
             )
         for comment in self.comments:
             await self.server.emit(

@@ -47,77 +47,77 @@ async def catch_all(event, sid, data):
     print(data, flush=True)
 
 
-class PresentationInterests(socketio.AsyncNamespace):
-    """Handling presentation interests for socket.io."""
+# class PresentationInterests(socketio.AsyncNamespace):
+#     """Handling presentation interests for socket.io."""
 
-    def __init__(self, namespace: str = None):
-        super().__init__(namespace=namespace)
-        self.average = {
-            "Repository": 0.0,
-            "Infrastructure": 0.0,
-            "Architecture": 0.0,
-            "Security": 0.0,
-            "Backend": 0.0,
-            "Frontend": 0.0,
-        }
-        self.count = {
-            "Repository": 0,
-            "Infrastructure": 0,
-            "Architecture": 0,
-            "Security": 0,
-            "Backend": 0,
-            "Frontend": 0,
-        }
-        self.comments = []
+#     def __init__(self, namespace: str = None):
+#         super().__init__(namespace=namespace)
+#         self.average = {
+#             "Repository": 0.0,
+#             "Infrastructure": 0.0,
+#             "Architecture": 0.0,
+#             "Security": 0.0,
+#             "Backend": 0.0,
+#             "Frontend": 0.0,
+#         }
+#         self.count = {
+#             "Repository": 0,
+#             "Infrastructure": 0,
+#             "Architecture": 0,
+#             "Security": 0,
+#             "Backend": 0,
+#             "Frontend": 0,
+#         }
+#         self.comments = []
 
-    async def on_connect(self, sid, environ):
-        """Connect event for socket.io namespaces."""
-        logger.info(f"Client connected with session id: {sid}.")
-        for topic in self.average:
-            await self.emit(
-                "averages",
-                {
-                    "topic": topic,
-                    "average": self.average[topic],
-                    "count": self.count[topic],
-                },
-                to=sid,
-            )
-        for comment in self.comments:
-            await self.emit(
-                "server_comments",
-                {"topic": comment["topic"], "comment": comment["comment"]},
-                to=sid,
-            )
+#     async def on_connect(self, sid, environ):
+#         """Connect event for socket.io namespaces."""
+#         logger.info(f"Client connected with session id: {sid}.")
+#         for topic in self.average:
+#             await self.emit(
+#                 "averages",
+#                 {
+#                     "topic": topic,
+#                     "average": self.average[topic],
+#                     "count": self.count[topic],
+#                 },
+#                 to=sid,
+#             )
+#         for comment in self.comments:
+#             await self.emit(
+#                 "server_comments",
+#                 {"topic": comment["topic"], "comment": comment["comment"]},
+#                 to=sid,
+#             )
 
-    async def on_disconnect(self, sid):
-        """Disconnect event for socket.io namespaces."""
-        logger.info(f"Client with session id {sid} disconnected.")
+#     async def on_disconnect(self, sid):
+#         """Disconnect event for socket.io namespaces."""
+#         logger.info(f"Client with session id {sid} disconnected.")
 
-    async def on_comments(self, sid, data):
-        """Presentation interests for socket.io."""
-        logger.info(f"Received message from client {sid}.")
+#     async def on_comments(self, sid, data):
+#         """Presentation interests for socket.io."""
+#         logger.info(f"Received message from client {sid}.")
 
-        self.comments.append({"topic": data["topic"], "comment": data["comment"]})
-        await self.emit(
-            "server_comments", {"topic": data["topic"], "comment": data["comment"]}
-        )
+#         self.comments.append({"topic": data["topic"], "comment": data["comment"]})
+#         await self.emit(
+#             "server_comments", {"topic": data["topic"], "comment": data["comment"]}
+#         )
 
-        old_average = self.average[data["topic"]]
-        old_count = self.count[data["topic"]]
+#         old_average = self.average[data["topic"]]
+#         old_count = self.count[data["topic"]]
 
-        new_average = (old_average * old_count + data["value"]) / (old_count + 1)
-        self.count[data["topic"]] += 1
-        new_count = self.count[data["topic"]]
-        self.average[data["topic"]] = new_average
+#         new_average = (old_average * old_count + data["value"]) / (old_count + 1)
+#         self.count[data["topic"]] += 1
+#         new_count = self.count[data["topic"]]
+#         self.average[data["topic"]] = new_average
 
-        await self.emit(
-            "averages",
-            {"topic": data["topic"], "average": new_average, "count": new_count},
-        )
+#         await self.emit(
+#             "averages",
+#             {"topic": data["topic"], "average": new_average, "count": new_count},
+#         )
 
 
-presentation_interests_router = PresentationInterests("/presentation_interests")
+# presentation_interests_router = PresentationInterests("/presentation_interests")
 
 
 class BaseNamespace(socketio.AsyncNamespace):
@@ -138,8 +138,6 @@ class BaseNamespace(socketio.AsyncNamespace):
         self.server = socketio_server
         self.namespace = namespace
         self.room = room
-        print("=== base - __init__ - callback_on_connect ===")
-        print(callback_on_connect)
         self.callback_on_connect = callback_on_connect
         self.callback_on_disconnect = callback_on_disconnect
 
@@ -201,6 +199,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         else:
             current_user = None
             logger.info(f"Client authenticated to public namespace {self.namespace}.")
+        print("=== base - on_connect - callback_on_connect ===")
+        print(self.callback_on_connect)
         if self.callback_on_connect is not None:
             print("=== base - on_connect - callback_on_connect ===")
             await self.callback_on_connect(sid)
