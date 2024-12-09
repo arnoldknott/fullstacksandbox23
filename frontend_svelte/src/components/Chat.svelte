@@ -23,7 +23,7 @@
 
 	$effect(() => {
 		socketio.client.on(connection.event, (data) => {
-			console.log(`Received from socket.io server: ${data}`);
+			// console.log(`Received from socket.io server: ${data}`);
 			old_messages.push(`${data}`);
 		});
 	});
@@ -55,6 +55,6 @@
 
 <ul>
 	{#each old_messages as old_message}
-		<li>{old_message}</li>
+		<li>➡️ {old_message}</li>
 	{/each}
 </ul>

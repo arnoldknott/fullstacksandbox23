@@ -23,22 +23,21 @@ socketio_server = socketio.AsyncServer(
 @socketio_server.event
 async def connect(sid):
     """Connect event for socket.io."""
-    logger.info(f"Client connected with session id: {sid} outside namespaces.")
+    logger.warning(f"Client connected with session id: {sid} outside namespaces.")
     print(f"=== routers - socketio - v1 - connect - sid {sid} / outside namespaces ===")
 
 
 @socketio_server.event
 async def disconnect(sid):
     """Disconnect event for socket.io."""
-    logger.info(f"Client with session id {sid} disconnected / outside namespaces.")
+    logger.warning(f"Client with session id {sid} disconnected / outside namespaces.")
 
 
-# TBD: don't log the data, as it may contain sensitive information!
 @socketio_server.on("*")
 async def catch_all(event, sid, data):
     """Catch all events for socket.io, that don't have an event handler defined."""
-    logger.info(
-        f"Caught an event from client {sid} to unassigned event outside namespaces."
+    logger.warning(
+        f"Caught an event from client {sid} to event {event} in unassigned namespace."
     )
     print("=== routers - socketio - v1 - catch_all - event ===")
     print(event)
@@ -48,77 +47,77 @@ async def catch_all(event, sid, data):
     print(data, flush=True)
 
 
-class PresentationInterests(socketio.AsyncNamespace):
-    """Handling presentation interests for socket.io."""
+# class PresentationInterests(socketio.AsyncNamespace):
+#     """Handling presentation interests for socket.io."""
 
-    def __init__(self, namespace: str = None):
-        super().__init__(namespace=namespace)
-        self.average = {
-            "Repository": 0.0,
-            "Infrastructure": 0.0,
-            "Architecture": 0.0,
-            "Security": 0.0,
-            "Backend": 0.0,
-            "Frontend": 0.0,
-        }
-        self.count = {
-            "Repository": 0,
-            "Infrastructure": 0,
-            "Architecture": 0,
-            "Security": 0,
-            "Backend": 0,
-            "Frontend": 0,
-        }
-        self.comments = []
+#     def __init__(self, namespace: str = None):
+#         super().__init__(namespace=namespace)
+#         self.average = {
+#             "Repository": 0.0,
+#             "Infrastructure": 0.0,
+#             "Architecture": 0.0,
+#             "Security": 0.0,
+#             "Backend": 0.0,
+#             "Frontend": 0.0,
+#         }
+#         self.count = {
+#             "Repository": 0,
+#             "Infrastructure": 0,
+#             "Architecture": 0,
+#             "Security": 0,
+#             "Backend": 0,
+#             "Frontend": 0,
+#         }
+#         self.comments = []
 
-    async def on_connect(self, sid, environ):
-        """Connect event for socket.io namespaces."""
-        logger.info(f"Client connected with session id: {sid}.")
-        for topic in self.average:
-            await self.emit(
-                "averages",
-                {
-                    "topic": topic,
-                    "average": self.average[topic],
-                    "count": self.count[topic],
-                },
-                to=sid,
-            )
-        for comment in self.comments:
-            await self.emit(
-                "server_comments",
-                {"topic": comment["topic"], "comment": comment["comment"]},
-                to=sid,
-            )
+#     async def on_connect(self, sid, environ):
+#         """Connect event for socket.io namespaces."""
+#         logger.info(f"Client connected with session id: {sid}.")
+#         for topic in self.average:
+#             await self.emit(
+#                 "averages",
+#                 {
+#                     "topic": topic,
+#                     "average": self.average[topic],
+#                     "count": self.count[topic],
+#                 },
+#                 to=sid,
+#             )
+#         for comment in self.comments:
+#             await self.emit(
+#                 "server_comments",
+#                 {"topic": comment["topic"], "comment": comment["comment"]},
+#                 to=sid,
+#             )
 
-    async def on_disconnect(self, sid):
-        """Disconnect event for socket.io namespaces."""
-        logger.info(f"Client with session id {sid} disconnected.")
+#     async def on_disconnect(self, sid):
+#         """Disconnect event for socket.io namespaces."""
+#         logger.info(f"Client with session id {sid} disconnected.")
 
-    async def on_comments(self, sid, data):
-        """Presentation interests for socket.io."""
-        logger.info(f"Received message from client {sid}.")
+#     async def on_comments(self, sid, data):
+#         """Presentation interests for socket.io."""
+#         logger.info(f"Received message from client {sid}.")
 
-        self.comments.append({"topic": data["topic"], "comment": data["comment"]})
-        await self.emit(
-            "server_comments", {"topic": data["topic"], "comment": data["comment"]}
-        )
+#         self.comments.append({"topic": data["topic"], "comment": data["comment"]})
+#         await self.emit(
+#             "server_comments", {"topic": data["topic"], "comment": data["comment"]}
+#         )
 
-        old_average = self.average[data["topic"]]
-        old_count = self.count[data["topic"]]
+#         old_average = self.average[data["topic"]]
+#         old_count = self.count[data["topic"]]
 
-        new_average = (old_average * old_count + data["value"]) / (old_count + 1)
-        self.count[data["topic"]] += 1
-        new_count = self.count[data["topic"]]
-        self.average[data["topic"]] = new_average
+#         new_average = (old_average * old_count + data["value"]) / (old_count + 1)
+#         self.count[data["topic"]] += 1
+#         new_count = self.count[data["topic"]]
+#         self.average[data["topic"]] = new_average
 
-        await self.emit(
-            "averages",
-            {"topic": data["topic"], "average": new_average, "count": new_count},
-        )
+#         await self.emit(
+#             "averages",
+#             {"topic": data["topic"], "average": new_average, "count": new_count},
+#         )
 
 
-presentation_interests_router = PresentationInterests("/presentation_interests")
+# presentation_interests_router = PresentationInterests("/presentation_interests")
 
 
 class BaseNamespace(socketio.AsyncNamespace):
@@ -142,7 +141,11 @@ class BaseNamespace(socketio.AsyncNamespace):
         self.callback_on_connect = callback_on_connect
         self.callback_on_disconnect = callback_on_disconnect
 
-    async def callback(self):
+    async def _get_session_data(self, sid):
+        """Get socketio session data from the socketio server."""
+        return await self.server.get_session(sid, namespace=self.namespace)
+
+    async def callback_in_base_namespace(self):
         print("=== base - callback ===")
         return "callback"
 
@@ -155,6 +158,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Connect event for socket.io namespaces."""
         logger.info(f"Client connected with session id: {sid}.")
         guards = self.guards
+        # print("=== base - on_connect - self.namespace ===")
+        # print(self.namespace, flush=True)
         # print("=== base - on_connect - guards ===")
         # print(guards, flush=True)
         # print("=== base - on_connect - auth ===")
@@ -186,26 +191,29 @@ class BaseNamespace(socketio.AsyncNamespace):
                 logger.info(
                     f"Client authenticated to access protected namespace {self.namespace}."
                 )
-            except Exception as err:
+            except Exception:
                 logger.error(f"Client with session id {sid} failed to authenticate.")
-                print("=== base - on_connect - Exception ===")
-                print(err, flush=True)
+                # print("=== base - on_connect - Exception ===")
+                # print(err, flush=True)
                 raise ConnectionRefusedError("Authorization failed")
         else:
             current_user = None
             logger.info(f"Client authenticated to public namespace {self.namespace}.")
+        print("=== base - on_connect - callback_on_connect ===")
+        print(self.callback_on_connect)
         if self.callback_on_connect is not None:
+            print("=== base - on_connect - callback_on_connect ===")
             await self.callback_on_connect(sid)
 
         # current_user = await check_token_against_guards(token_payload, self.guards)
         # print("=== base - on_connect - sid - current_user ===")
         # print(current_user, flush=True)
-        await self.server.emit(
-            "demo_message",
-            f"Started session with id: {sid}",
-            namespace=self.namespace,
-            callback=self.callback,
-        )
+        # await self.server.emit(
+        #     "demo_message",
+        #     f"Started session with id: {sid}",
+        #     namespace=self.namespace,
+        #     callback=self.callback_in_base_namespace,
+        # )
         # TBD: should not return anything or potentially true?
         # return "OK from server"
 

@@ -21,7 +21,7 @@ RUN pip install --upgrade pip && \
 #         --no-create-home \
 #         backend-user
 # USER backend-user
-CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "main:app", "--reload", "--log-level", "warning" ,"--host", "0.0.0.0", "--port", "80"]
 
 FROM base AS prod
 LABEL org.opencontainers.image.source https://github.com/arnoldknott/fullstacksandbox23
@@ -33,4 +33,4 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # USER backend-user
 ARG COMMIT_SHA="noGitBuild"
 ENV COMMIT_SHA=$COMMIT_SHA
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "main:app", "--log-level", "warning", "--host", "0.0.0.0", "--port", "80"]

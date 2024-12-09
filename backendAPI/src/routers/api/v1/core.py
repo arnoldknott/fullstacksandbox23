@@ -46,7 +46,7 @@ confClientApp = ConfidentialClientApplication(
 #         "code": code,
 #         "client_id": config.AZURE_CLIENT_ID,
 #         "client_secret": config.BACK_CLIENT_SECRET,
-#         "redirect_uri": "http://localhost:8000/callback",  # replace with your actual callback URL
+#         "redirect_uri": "http://localhost:8000/docs/oauth2-redirect",  # replace with your actual callback URL
 #     }
 #     response = httpx.post(
 #         "https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/token",
@@ -106,7 +106,7 @@ async def get_keyvault():
 #     }
 
 # # Not working yet, callback needs to handle the token
-# @router.get("/callback")
+# @router.get("/docs/oauth2-redirect")
 # def callback(code: str = Depends(oauth2_scheme)):
 #     token = exchange_code_for_token(code)
 #     if not token:

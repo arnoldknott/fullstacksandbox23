@@ -23,9 +23,14 @@ from routers.api.v1.identities import (
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.public_resource import router as public_resource_router
 from routers.api.v1.tag import router as tag_router
-from routers.socketio.v1.base import presentation_interests_router, socketio_server
+
+# from routers.socketio.v1.base import presentation_interests_router, socketio_server
+from routers.socketio.v1.base import socketio_server
 from routers.socketio.v1.demo_namespace import demo_namespace_router
 from routers.socketio.v1.public_namespace import public_namespace_router
+from routers.socketio.v1.interactive_documentation import (
+    interactive_documentation_router,
+)
 from routers.ws.v1.websockets import router as websocket_router
 
 # print("Current directory:", os.getcwd())
@@ -62,19 +67,20 @@ async def lifespan(app: FastAPI):
 #     scopes={
 #         f"api://{config.API_SCOPE}/api.read": "Read API",
 #         f"api://{config.API_SCOPE}/api.write": "Write API",
+#         f"api://{config.API_SCOPE}/socketio": "Socket.io",
 #     },
 #     scheme_name="OAuth2 Authorization Code",
 #     description="OAuth2 Authorization Code Bearer implementation for Swagger UI - identity provider is Microsoft Azure AD",
 # )
 
 # swagger_ui_parameters = {
-#     "oauth2RedirectUrl": "http://localhost:8000/oauth/callback",  # replace with your actual callback URL
+#     "oauth2RedirectUrl": "http://localhost:8000/docs/oauth2-redirect",  # replace with your actual callback URL
 # }
 
 # or:
 # swagger_ui_parameters = {
 #     "network": {
-#         "oauth2RedirectUrl": "http://localhost:8000/oauth/callback",  # replace with your actual callback URL
+#         "oauth2RedirectUrl": "http://localhost:8000/docs/oauth2-redirect",  # replace with your actual callback URL
 #     }
 # }
 
@@ -231,7 +237,8 @@ app.include_router(
 
 socketio_server.register_namespace(public_namespace_router)
 socketio_server.register_namespace(demo_namespace_router)
-socketio_server.register_namespace(presentation_interests_router)
+# socketio_server.register_namespace(presentation_interests_router)
+socketio_server.register_namespace(interactive_documentation_router)
 socketio_app = ASGIApp(socketio_server, socketio_path="socketio/v1")
 app.mount("/socketio/v1", app=socketio_app)
 
