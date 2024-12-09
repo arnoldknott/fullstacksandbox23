@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import Title from '$components/Title.svelte';
+import type { PageData } from './$types';
 	let { data, urlClient }: { data: PageData; urlClient: string } = $props();
 	// export let data: PageData;
 	const backendInformation = data.body;
@@ -11,25 +12,19 @@
 </script>
 
 <div class="mx-5">
-	<h1 class="mx-5 mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
-		Getting health status of backendAPI connection to keyvault:
-	</h1>
+	<Title>Getting health status of backendAPI connection to keyvault:</Title>
 </div>
 
 <code><pre>{JSON.stringify(backendInformation.keyvaultHealthBackend, null, ' ')}</pre></code>
 
 <div class="mx-5">
-	<h1 class="mx-5 mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
-		Location name - client side:
-	</h1>
+	<Title>Location name - client side:</Title>
 </div>
 
 <code>{urlClient}</code>
 
 <div class="mx-5">
-	<h1 class="mx-5 mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
-		URL of this page - Svelte server side:
-	</h1>
+	<Title>URL of this page - Svelte server side:</Title>
 </div>
 
 <code>{JSON.stringify(backendInformation.urlServer, null, ' ')}</code>

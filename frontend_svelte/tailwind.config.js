@@ -1,11 +1,9 @@
 /** @type {import('tailwindcss').Config} */
-import twElements from 'tw-elements/plugin.cjs';
 
 module.exports = {
-	content: ['./src/**/*.{html,js,svelte,ts}', './node_modules/tw-elements/js/**/*.js'],
+	content: ['./src/**/*.{html,js,svelte,ts}'],
 	theme: {
 		extend: {}
 	},
 	darkMode: 'media',
-	plugins: [twElements]
 };

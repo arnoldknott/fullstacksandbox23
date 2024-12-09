@@ -1,14 +1,13 @@
 <script lang="ts">
 	// /** @type {import('./$types').PageData} */
-	import type { PageData } from './$types';
+	import Title from '$components/Title.svelte';
+import type { PageData } from './$types';
 	export let data: PageData;
 	const schema = data.body;
 </script>
 
 <div class="mx-5">
-	<h1 class="mx-5 mb-2 mt-0 text-5xl font-medium leading-tight text-primary">
-		Getting schema from backend
-	</h1>
+	<Title>Getting schema from backend</Title>
 </div>
 
 <code><pre>{JSON.stringify(schema, null, ' ')}</pre></code>

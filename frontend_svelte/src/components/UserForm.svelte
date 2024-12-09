@@ -1,16 +1,9 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	onMount(async () => {
-		const te = await import('tw-elements');
-		te.initTWE(
-			{ Input: te.Input, Ripple: te.Ripple },
-			{ allowReinits: true, checkOtherImports: true }
-		);
-	});
+	import '@material/web/textfield/filled-text-field.js';
 
-	type Props = { type: 'login' | 'signup'; button: string };
-	let { type, button }: Props = $props();
-	button = type === 'signup' ? 'Sign up' : 'Log in'; // untested!
+	type Props = { type: 'login' | 'signup' };
+	let { type }: Props = $props();
+	const button = type === 'signup' ? 'Sign up' : 'Log in'; // untested!
 </script>
 
 <section class="flex h-full w-full justify-center">
@@ -19,52 +12,43 @@
 			<form method="POST">
 				<!-- Name input -->
 				{#if type === 'signup'}
-					<div class="relative mb-6" data-te-input-wrapper-init>
-						<input
-							type="text"
-							class="peer block min-h-[auto] w-full rounded bg-transparent px-3 py-[0.32rem] text-lg leading-[2.15] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none dark:text-neutral-800 dark:placeholder:text-neutral-200 [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
-							id="nameField"
+					<div class="relative mb-6">
+						<md-filled-text-field
+							label="Full Name"
+							type="input"
 							name="name"
-							placeholder="Full name"
-						/>
-						<label
-							for="nameField"
-							class="pointer-events-none absolute left-3 top-0 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[2.15] text-neutral-500 transition-all duration-200 ease-out peer-focus:-translate-y-[1.15rem] peer-focus:scale-[0.8] peer-focus:text-primary peer-data-[te-input-state-active]:-translate-y-[1.15rem] peer-data-[te-input-state-active]:scale-[0.8] motion-reduce:transition-none dark:text-neutral-400 dark:peer-focus:text-primary"
-							>Full name
-						</label>
+							role="textbox"
+							tabindex="0"
+							class="mr-2 w-full"
+						>
+						</md-filled-text-field>
 					</div>
 				{/if}
 
 				<!-- Email input -->
-				<div class="relative mb-6" data-te-input-wrapper-init>
-					<input
+				<div class="relative mb-6">
+					<md-filled-text-field
+						label="Email"
 						type="email"
-						class="peer block min-h-[auto] w-full rounded bg-transparent px-3 py-[0.32rem] text-lg leading-[2.15] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none dark:text-neutral-800 dark:placeholder:text-neutral-200 [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
-						id="emailField"
 						name="email"
-						placeholder="Email address"
-					/>
-					<label
-						for="emailField"
-						class="pointer-events-none absolute left-3 top-0 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[2.15] text-neutral-500 transition-all duration-200 ease-out peer-focus:-translate-y-[1.15rem] peer-focus:scale-[0.8] peer-focus:text-primary peer-data-[te-input-state-active]:-translate-y-[1.15rem] peer-data-[te-input-state-active]:scale-[0.8] motion-reduce:transition-none dark:text-neutral-400 dark:peer-focus:text-primary"
-						>Email address
-					</label>
+						role="textbox"
+						tabindex="0"
+						class="mr-2 w-full"
+					>
+					</md-filled-text-field>
 				</div>
 
 				<!-- Password input -->
-				<div class="relative mb-6" data-te-input-wrapper-init>
-					<input
+				<div class="relative mb-6">
+					<md-filled-text-field
+						label="Password"
 						type="password"
-						class="peer block min-h-[auto] w-full rounded bg-transparent px-3 py-[0.32rem] text-lg leading-[2.15] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none dark:text-neutral-800 dark:placeholder:text-neutral-200 [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
-						id="passwordField"
 						name="password"
-						placeholder="Password"
-					/>
-					<label
-						for="passwordField"
-						class="pointer-events-none absolute left-3 top-0 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[2.15] text-neutral-500 transition-all duration-200 ease-out peer-focus:-translate-y-[1.15rem] peer-focus:scale-[0.8] peer-focus:text-primary peer-data-[te-input-state-active]:-translate-y-[1.15rem] peer-data-[te-input-state-active]:scale-[0.8] motion-reduce:transition-none dark:text-neutral-400 dark:peer-focus:text-primary"
-						>Password
-					</label>
+						role="textbox"
+						tabindex="0"
+						class="mr-2 w-full"
+					>
+					</md-filled-text-field>
 				</div>
 
 				<!-- Submit button -->

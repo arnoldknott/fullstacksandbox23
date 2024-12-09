@@ -1,13 +1,7 @@
 <script lang="ts">
 	import Title from '$components/Title.svelte';
-	// import { Ripple, initTE } from "tw-elements";
 	import type { PageData } from './$types';
 
-	// initTE({ Ripple });
-
-	// type Props = { data: PageData };
-	// let { data }: Props = $props();
-	// TBD: rework the data flow here
 	let data: PageData = $props();
 	const apiLink = data.body;
 </script>
@@ -33,11 +27,3 @@
 	>Link</a
 >
 
-<!-- TBD: turn into a button: -->
-<!-- <button
-  type="button"
-  data-te-ripple-init
-  data-te-ripple-color="light"
-  class="rounded px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-primary transition duration-150 ease-in-out hover:bg-neutral-100 hover:text-primary-600 focus:text-primary-600 focus:outline-none focus:ring-0 active:text-primary-700 dark:hover:bg-neutral-700">
-  Link
-</button> -->
