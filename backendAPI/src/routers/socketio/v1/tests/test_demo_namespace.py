@@ -31,10 +31,12 @@ async def test_on_connect_invalid_token():
     indirect=True,
 )
 async def test_demo_message_with_test_server(
+    mock_token_payload,
     socketio_test_server,
     socketio_test_client,
 ):
     """Test the demo socket.io message event."""
+    mocked_token_payload = mock_token_payload
 
     sio = socketio_test_server
 
@@ -54,7 +56,7 @@ async def test_demo_message_with_test_server(
         # Wait for the response to be set
         await client.sleep(1)
 
-        assert response == "Demo message received from client: Something"
+        assert response == f"{mocked_token_payload["name"]}: Something"
 
         await client.disconnect()
 
@@ -81,8 +83,6 @@ async def test_demo_message_with_production_server_fails_without_token(
             )
 
             await client.sleep(1)
-
-            assert response == "Demo message received from client: Hello, world!"
 
             raise Exception(
                 "This should have failed due to missing authentication in on_connect."

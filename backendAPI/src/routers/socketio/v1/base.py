@@ -142,7 +142,11 @@ class BaseNamespace(socketio.AsyncNamespace):
         self.callback_on_connect = callback_on_connect
         self.callback_on_disconnect = callback_on_disconnect
 
-    async def callback(self):
+    async def _get_session_data(self, sid):
+        """Get socketio session data from the socketio server."""
+        return await self.server.get_session(sid, namespace=self.namespace)
+
+    async def callback_in_base_namespace(self):
         print("=== base - callback ===")
         return "callback"
 
@@ -200,12 +204,12 @@ class BaseNamespace(socketio.AsyncNamespace):
         # current_user = await check_token_against_guards(token_payload, self.guards)
         # print("=== base - on_connect - sid - current_user ===")
         # print(current_user, flush=True)
-        await self.server.emit(
-            "demo_message",
-            f"Started session with id: {sid}",
-            namespace=self.namespace,
-            callback=self.callback,
-        )
+        # await self.server.emit(
+        #     "demo_message",
+        #     f"Started session with id: {sid}",
+        #     namespace=self.namespace,
+        #     callback=self.callback_in_base_namespace,
+        # )
         # TBD: should not return anything or potentially true?
         # return "OK from server"
 
