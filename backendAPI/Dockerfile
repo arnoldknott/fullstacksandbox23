@@ -21,7 +21,7 @@ RUN pip install --upgrade pip && \
 #         --no-create-home \
 #         backend-user
 # USER backend-user
-CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "main:app", "--reload", "--log-level", "'warning'" ,"--host", "0.0.0.0", "--port", "80"]
 
 FROM base AS prod
 LABEL org.opencontainers.image.source https://github.com/arnoldknott/fullstacksandbox23

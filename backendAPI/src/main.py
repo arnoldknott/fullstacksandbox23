@@ -62,19 +62,20 @@ async def lifespan(app: FastAPI):
 #     scopes={
 #         f"api://{config.API_SCOPE}/api.read": "Read API",
 #         f"api://{config.API_SCOPE}/api.write": "Write API",
+#         f"api://{config.API_SCOPE}/socketio": "Socket.io",
 #     },
 #     scheme_name="OAuth2 Authorization Code",
 #     description="OAuth2 Authorization Code Bearer implementation for Swagger UI - identity provider is Microsoft Azure AD",
 # )
 
 # swagger_ui_parameters = {
-#     "oauth2RedirectUrl": "http://localhost:8000/oauth/callback",  # replace with your actual callback URL
+#     "oauth2RedirectUrl": "http://localhost:8000/docs/oauth2-redirect",  # replace with your actual callback URL
 # }
 
 # or:
 # swagger_ui_parameters = {
 #     "network": {
-#         "oauth2RedirectUrl": "http://localhost:8000/oauth/callback",  # replace with your actual callback URL
+#         "oauth2RedirectUrl": "http://localhost:8000/docs/oauth2-redirect",  # replace with your actual callback URL
 #     }
 # }
 

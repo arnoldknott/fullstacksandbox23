@@ -192,8 +192,8 @@ class BaseNamespace(socketio.AsyncNamespace):
                 )
             except Exception as err:
                 logger.error(f"Client with session id {sid} failed to authenticate.")
-                print("=== base - on_connect - Exception ===")
-                print(err, flush=True)
+                # print("=== base - on_connect - Exception ===")
+                # print(err, flush=True)
                 raise ConnectionRefusedError("Authorization failed")
         else:
             current_user = None
