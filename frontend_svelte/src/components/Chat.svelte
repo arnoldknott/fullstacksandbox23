@@ -55,6 +55,6 @@
 
 <ul>
 	{#each old_messages as old_message}
-		<li>{old_message}</li>
+		<li>➡️ {old_message}</li>
 	{/each}
 </ul>

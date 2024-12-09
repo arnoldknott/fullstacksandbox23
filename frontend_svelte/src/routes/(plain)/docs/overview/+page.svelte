@@ -21,6 +21,7 @@
 	const connection: SocketioConnection = {
 		event: 'does_not_matter_here',
 		namespace: '/presentation_interests',
+		// namespace: '/interactive-documentation',
 		room: 'does_not_matter_here_either'
 	};
 

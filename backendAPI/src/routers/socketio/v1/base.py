@@ -23,22 +23,21 @@ socketio_server = socketio.AsyncServer(
 @socketio_server.event
 async def connect(sid):
     """Connect event for socket.io."""
-    logger.info(f"Client connected with session id: {sid} outside namespaces.")
+    logger.warning(f"Client connected with session id: {sid} outside namespaces.")
     print(f"=== routers - socketio - v1 - connect - sid {sid} / outside namespaces ===")
 
 
 @socketio_server.event
 async def disconnect(sid):
     """Disconnect event for socket.io."""
-    logger.info(f"Client with session id {sid} disconnected / outside namespaces.")
+    logger.warning(f"Client with session id {sid} disconnected / outside namespaces.")
 
 
-# TBD: don't log the data, as it may contain sensitive information!
 @socketio_server.on("*")
 async def catch_all(event, sid, data):
     """Catch all events for socket.io, that don't have an event handler defined."""
-    logger.info(
-        f"Caught an event from client {sid} to unassigned event outside namespaces."
+    logger.warning(
+        f"Caught an event from client {sid} to event {event} in unassigned namespace."
     )
     print("=== routers - socketio - v1 - catch_all - event ===")
     print(event)
@@ -139,6 +138,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         self.server = socketio_server
         self.namespace = namespace
         self.room = room
+        print("=== base - __init__ - callback_on_connect ===")
+        print(callback_on_connect)
         self.callback_on_connect = callback_on_connect
         self.callback_on_disconnect = callback_on_disconnect
 
@@ -159,6 +160,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Connect event for socket.io namespaces."""
         logger.info(f"Client connected with session id: {sid}.")
         guards = self.guards
+        # print("=== base - on_connect - self.namespace ===")
+        # print(self.namespace, flush=True)
         # print("=== base - on_connect - guards ===")
         # print(guards, flush=True)
         # print("=== base - on_connect - auth ===")
@@ -190,7 +193,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 logger.info(
                     f"Client authenticated to access protected namespace {self.namespace}."
                 )
-            except Exception as err:
+            except Exception:
                 logger.error(f"Client with session id {sid} failed to authenticate.")
                 # print("=== base - on_connect - Exception ===")
                 # print(err, flush=True)
@@ -199,6 +202,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             current_user = None
             logger.info(f"Client authenticated to public namespace {self.namespace}.")
         if self.callback_on_connect is not None:
+            print("=== base - on_connect - callback_on_connect ===")
             await self.callback_on_connect(sid)
 
         # current_user = await check_token_against_guards(token_payload, self.guards)
