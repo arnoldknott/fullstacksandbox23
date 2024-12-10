@@ -16,15 +16,9 @@ vi.mock('$app/stores', () => ({
 const protectedContent: Snippet = createRawSnippet(() => {
 	return {
 		render: () => `<span>Protected Content</span>`
+		// setup: (element: Element) => {}
 	};
 });
-
-// const createRawSnippet<Params extends unknown[]>(
-// 	fn: (...params: Getters<Params>) => {
-// 		render: () => string;
-// 		setup?: (element: Element) => void | (() => void);
-// 	}
-// ): Snippet<Params>;
 
 describe('Guard', () => {
 	test('should not show content as user is not logged in', () => {

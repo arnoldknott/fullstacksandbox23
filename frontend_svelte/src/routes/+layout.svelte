@@ -40,24 +40,39 @@
 	// })
 	setContext('backendAPIConfiguration', $page.data.backendAPIConfiguration);
 
-
-	// const initFlyonui = async () => {
-	// 	const {HSStaticMethods} = await import('flyonui/flyonui.js');
-	// 	console.log('layout - client - initFlyonui - HSStaticMethods -autoInit')
-	// 	HSStaticMethods.autoInit();
-	// }
-
 	const loadHSStaticMethods = async () => {
 		const {HSStaticMethods} = await import('flyonui/flyonui.js')
 		return HSStaticMethods;
 	}
 
-	$effect(()=> {
+	const initFlyonui = (_node: HTMLElement) => {
 		loadHSStaticMethods().then((loadedHSStaticMethods) => {
-			console.log('layout - client - -effect calling - autoInit')
+			// console.log('layout - client - -effect calling - autoInit')
 			loadedHSStaticMethods.autoInit();
 		})
-	})
+	}
+
+	// const initFlyonui = async (_node: HTMLElement) => {
+	// 	const {HSStaticMethods} = await import('flyonui/flyonui.js')
+	// 	HSStaticMethods.autoInit();
+	// }
+
+
+	// const foo = () => console.log('foo triggered')
+	// start works: 
+	// const loadHSStaticMethods = async () => {
+	// 	const {HSStaticMethods} = await import('flyonui/flyonui.js')
+	// 	return HSStaticMethods;
+	// }
+
+	// $effect(()=> {
+	// 	loadHSStaticMethods().then((loadedHSStaticMethods) => {
+	// 		// console.log('layout - client - -effect calling - autoInit')
+	// 		loadedHSStaticMethods.autoInit();
+	// 	})
+	// })
+
+	// end - works
 	
 	// $effect(async () => {
 	// 	// console.log('layout - client - $page.data')
@@ -75,7 +90,8 @@
 	// });
 </script>
 
-<!-- <svelte:window onload={initFlyonui} /> -->
+<!-- <svelte:window onload={foo} /> -->
+<svelte:window use:initFlyonui />
 
 <main>
 	<!-- {initFlyonui()} -->
