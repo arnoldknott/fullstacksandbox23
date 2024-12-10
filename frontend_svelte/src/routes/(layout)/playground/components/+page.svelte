@@ -28,13 +28,13 @@
 	// };
 	// });
 
-	let isDrawerOpen = $state(false);
+	// let isDrawerOpen = $state(false);
 
-	const toggleDrawer = () => {
-		isDrawerOpen = !isDrawerOpen;
-		console.log('Drawer toggled to ' + isDrawerOpen);
-	};
-	const closeDrawer = () => (isDrawerOpen = false);
+	// const toggleDrawer = () => {
+	// 	isDrawerOpen = !isDrawerOpen;
+	// 	console.log('Drawer toggled to ' + isDrawerOpen);
+	// }
+	// const closeDrawer = () => isDrawerOpen = false;
 
 	const loadHSOverlay = async () => {
 		const { HSOverlay } = await import('flyonui/flyonui.js');
@@ -51,7 +51,6 @@
 	});
 
 	const openModal = () => {
-		// modal
 		overlay?.open();
 	};
 
