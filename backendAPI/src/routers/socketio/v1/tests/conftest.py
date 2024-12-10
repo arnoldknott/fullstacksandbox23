@@ -11,12 +11,14 @@ import uvicorn
 async def mock_token_payload(request):
     """Returns a mocked token payload."""
 
-    print("=== mock_token_payload ===")
-    print(request.param)
+    # print("=== mock_token_payload ===")
+    # print(request.param)
 
     with patch("core.security.decode_token") as mock:
         mock.return_value = request.param
-        yield mock
+        # yield mock
+        yield request.param
+    # return request.param
 
 
 @pytest.fixture(scope="function")

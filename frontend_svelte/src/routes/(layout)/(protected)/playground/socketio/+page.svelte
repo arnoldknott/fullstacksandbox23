@@ -13,13 +13,13 @@
 
 	const public_message_connection = {
 		event: 'public_message',
-		namespace: '/public_namespace',
+		namespace: '/public-namespace',
 		room: '',
 		cookie_session_id: $page.data.session.sessionId
 	};
 	const demo_message_connection = {
 		event: 'demo_message',
-		namespace: '/demo_namespace',
+		namespace: '/demo-namespace',
 		// namespace: '',
 		room: '',
 		cookie_session_id: $page.data.session.sessionId

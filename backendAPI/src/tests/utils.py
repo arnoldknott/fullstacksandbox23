@@ -50,12 +50,15 @@ many_test_azure_users = [
 # Mocks payload to detect scope api.write:
 token_payload_user_id = {
     "oid": many_test_azure_users[0]["azure_user_id"],
+    "name": "Test User",
 }
 token_payload_another_user_id = {
     "oid": many_test_azure_users[1]["azure_user_id"],
+    "name": "Another Test User",
 }
 token_payload_random_user_id = {
     "oid": many_test_azure_users[2]["azure_user_id"],
+    "name": "Random Test User",
 }
 token_payload_tenant_id = {
     "tid": many_test_azure_users[0]["azure_tenant_id"],

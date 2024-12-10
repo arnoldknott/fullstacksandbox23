@@ -31,21 +31,23 @@ async def test_on_connect_invalid_token():
     indirect=True,
 )
 async def test_demo_message_with_test_server(
+    mock_token_payload,
     socketio_test_server,
     socketio_test_client,
 ):
     """Test the demo socket.io message event."""
+    mocked_token_payload = mock_token_payload
 
     sio = socketio_test_server
 
-    sio.register_namespace(DemoNamespace("/demo_namespace"))
+    sio.register_namespace(DemoNamespace("/demo-namespace"))
 
-    async for client in socketio_test_client(["/demo_namespace"]):
-        await client.emit("demo_message", "Something", namespace="/demo_namespace")
+    async for client in socketio_test_client(["/demo-namespace"]):
+        await client.emit("demo_message", "Something", namespace="/demo-namespace")
 
         response = ""
 
-        @client.event(namespace="/demo_namespace")
+        @client.event(namespace="/demo-namespace")
         async def demo_message(data):
 
             nonlocal response
@@ -54,7 +56,7 @@ async def test_demo_message_with_test_server(
         # Wait for the response to be set
         await client.sleep(1)
 
-        assert response == "Demo message received from client: Something"
+        assert response == f"{mocked_token_payload["name"]}: Something"
 
         await client.disconnect()
 
@@ -67,22 +69,20 @@ async def test_demo_message_with_production_server_fails_without_token(
 
     try:
         async for client in socketio_test_client(
-            ["/demo_namespace"], "http://127.0.0.1:80"
+            ["/demo-namespace"], "http://127.0.0.1:80"
         ):
             response = None
 
-            @client.on("demo_message", namespace="/demo_namespace")
+            @client.on("demo_message", namespace="/demo-namespace")
             async def handler(data):
                 nonlocal response
                 response = data
 
             await client.emit(
-                "demo_message", "Hello, world!", namespace="/demo_namespace"
+                "demo_message", "Hello, world!", namespace="/demo-namespace"
             )
 
             await client.sleep(1)
-
-            assert response == "Demo message received from client: Hello, world!"
 
             raise Exception(
                 "This should have failed due to missing authentication in on_connect."
