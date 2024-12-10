@@ -14,7 +14,7 @@
 				{#if type === 'signup'}
 					<div class="relative mb-6">
 						<md-filled-text-field
-							label="Full Name"
+							label="Full name"
 							type="input"
 							name="name"
 							role="textbox"
@@ -28,7 +28,7 @@
 				<!-- Email input -->
 				<div class="relative mb-6">
 					<md-filled-text-field
-						label="Email"
+						label="Email address"
 						type="email"
 						name="email"
 						role="textbox"
