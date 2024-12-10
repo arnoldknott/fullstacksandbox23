@@ -1,3 +1,6 @@
+<!-- <script context="module" lang="ts">
+	declare function $effect(fn: () => void | (() => void) | Promise<void>): void;
+</script> -->
 <script lang="ts">
 	import '../app.css';
 	// import { onMount } from 'svelte';
@@ -5,6 +8,9 @@
 	// import type { LayoutData } from './$types';
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/stores';
+	// import 'flyonui/flyonui.js';
+	// import { HSStaticMethods } from 'flyonui/flyonui.js';
+	// import { afterNavigate } from "$app/navigation";
 	// import JsonData from '$components/JsonData.svelte';
 	// import Guard from '$components/Guard.svelte';
 	// import type { User } from 'src/types.d.ts';
@@ -33,9 +39,46 @@
 	// 	setContext('backendAPIConfiguration', data.backendAPIConfiguration);
 	// })
 	setContext('backendAPIConfiguration', $page.data.backendAPIConfiguration);
+
+
+	// const initFlyonui = async () => {
+	// 	const {HSStaticMethods} = await import('flyonui/flyonui.js');
+	// 	console.log('layout - client - initFlyonui - HSStaticMethods -autoInit')
+	// 	HSStaticMethods.autoInit();
+	// }
+
+	const loadHSStaticMethods = async () => {
+		const {HSStaticMethods} = await import('flyonui/flyonui.js')
+		return HSStaticMethods;
+	}
+
+	$effect(()=> {
+		loadHSStaticMethods().then((loadedHSStaticMethods) => {
+			console.log('layout - client - -effect calling - autoInit')
+			loadedHSStaticMethods.autoInit();
+		})
+	})
+	
+	// $effect(async () => {
+	// 	// console.log('layout - client - $page.data')
+	// 	// console.log($page.data)
+	// 	const {HStaticMethods} = await import('flyonui/flyonui.js');
+	// 	console.log('layout - client - -effect calling - initFlyonui')
+	// 	HSStaticMethods.autoInit();
+	// })
+	// onMount(async () => {
+	// 	const {HSStaticMethods} = await import('flyonui/flyonui.js');
+	// 	afterNavigate(() => {
+	// 	// Runs after navigating between pages
+	// 	HSStaticMethods.autoInit();
+	// 	});
+	// });
 </script>
 
+<!-- <svelte:window onload={initFlyonui} /> -->
+
 <main>
+	<!-- {initFlyonui()} -->
 	{@render children?.()}
 	<!-- <slot /> -->
 	<!-- <JsonData data={ data?.body?.loggedIn }/> -->

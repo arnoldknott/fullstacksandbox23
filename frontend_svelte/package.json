@@ -56,6 +56,7 @@
 		"@azure/msal-node": "^2.15.0",
 		"@material/web": "^2.2.0",
 		"dotenv": "^16.4.5",
+		"flyonui": "^1.1.0",
 		"redis": "^4.7.0",
 		"reveal.js": "^5.1.0",
 		"socket.io-client": "^4.8.1",

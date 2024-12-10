@@ -18,6 +18,14 @@
 			active: true
 		}
 	];
+
+	let isDrawerOpen = $state(false);
+
+	const toggleDrawer = () => {
+		isDrawerOpen = !isDrawerOpen;
+		console.log('Drawer toggled to ' + isDrawerOpen);
+	}
+	const closeDrawer = () => isDrawerOpen = false;	
 </script>
 
 <div class="mx-5">
@@ -40,4 +48,43 @@
 	<Title>Card</Title>
 	<Card title="Title of Card" description="Some text inside the card to describe what's going on here. The button links to this page." href=""></Card>
 	<HorizontalRule	/>
+
+	<Title>Stuff from Flyonui</Title>
+
+
+	<Title>Drawer (Sidebar)</Title>
+	<button type="button" class="btn btn-primary" aria-haspopup="dialog" aria-expanded="false" aria-controls="overlay-example" data-overlay="#overlay-example">Open drawer</button>
+
+	
+	<div id="overlay-example" class="overlay overlay-open:translate-x-0 drawer drawer-start hidden" role="dialog" tabindex="-1">
+		<div class="drawer-header">
+			<h3 class="drawer-title">Drawer Title</h3>
+			<button type="button" class="btn btn-text btn-circle btn-sm absolute end-3 top-3" aria-label="Close" data-overlay="#overlay-example">
+			<span class="icon-[tabler--x] size-5"></span>
+			</button>
+		</div>
+		<div class="drawer-body">
+			<p>
+			Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
+			</p>
+		</div>
+		<div class="drawer-footer">
+			<button type="button" class="btn btn-soft btn-secondary" data-overlay="#overlay-example">Close</button>
+			<button type="button" class="btn btn-primary">Save changes</button>
+		</div>
+	</div>
+
+	<HorizontalRule />
+
+	<Title>Card</Title>
+	<div class="card sm:max-w-sm">
+		<div class="card-body">
+			<h5 class="card-title mb-2.5">Welcome to Our Service</h5>
+			<p class="mb-4">Discover the features and benefits that our service offers. Enhance your experience with our user-friendly platform designed to meet all your needs.</p>
+			<div class="card-actions">
+				<button class="btn btn-primary">Learn More</button>
+			</div>
+		</div>
+	</div>
+	<HorizontalRule />
 </div>
