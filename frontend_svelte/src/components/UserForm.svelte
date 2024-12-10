@@ -8,7 +8,7 @@
 
 <section class="flex h-full w-full justify-center">
 	<div class="center py-12 md:w-8/12 lg:ml-6 lg:w-5/12">
-		<div class="rounded-2xl border-4 border-primary-400 bg-blue-50 p-6">
+		<div class="border-primary-400 rounded-2xl border-4 bg-blue-50 p-6">
 			<form method="POST">
 				<!-- Name input -->
 				{#if type === 'signup'}

@@ -6,8 +6,5 @@ module.exports = {
 		extend: {}
 	},
 	darkMode: 'media',
-	plugins: [
-		require('flyonui'),
-		require('flyonui/plugin'),
-	],
+	plugins: [require('flyonui'), require('flyonui/plugin')]
 };

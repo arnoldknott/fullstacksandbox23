@@ -7,7 +7,6 @@
 	import '@material/web/tabs/secondary-tab.js';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 
-
 	let sliderValue = $state(0);
 	const color = $derived(`hsl(${sliderValue * 1.2}, 80%, 80%)`);
 
@@ -63,7 +62,6 @@
 <HorizontalRule />
 
 <Title>Status slider</Title>
-
 
 <p class="text-center text-2xl">Status: {sliderValue}</p>
 <!-- TBD refactor into bindable prop! -->

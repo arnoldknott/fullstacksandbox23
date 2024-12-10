@@ -1,7 +1,7 @@
 <script lang="ts">
 	// /** @type {import('./$types').PageData} */
 	import Title from '$components/Title.svelte';
-import type { PageData } from './$types';
+	import type { PageData } from './$types';
 	export let data: PageData;
 	const schema = data.body;
 </script>

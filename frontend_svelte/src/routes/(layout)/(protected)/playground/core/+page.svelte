@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Title from '$components/Title.svelte';
-import type { PageData } from './$types';
+	import type { PageData } from './$types';
 	let { data, urlClient }: { data: PageData; urlClient: string } = $props();
 	// export let data: PageData;
 	const backendInformation = data.body;

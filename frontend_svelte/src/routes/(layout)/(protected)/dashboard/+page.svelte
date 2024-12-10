@@ -6,5 +6,7 @@
 </script>
 
 <Guard>
-	<Title>Welcome inside {$page.data.session.microsoftProfile.displayName} - this is your Dashboard</Title>
+	<Title
+		>Welcome inside {$page.data.session.microsoftProfile.displayName} - this is your Dashboard</Title
+	>
 </Guard>
