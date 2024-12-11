@@ -43,12 +43,12 @@ export const actions = {
 	default: async ({ locals, request }) => {
 		const data = await request.formData();
 
-		console.log('=== data ===');
-		console.log(data);
+		// console.log('=== data ===');
+		// console.log(data);
 		// const payload =  JSON.stringify(data);
 		const payload = JSON.stringify(Object.fromEntries(data));
-		console.log('=== payload ===');
-		console.log(payload);
+		// console.log('=== payload ===');
+		// console.log(payload);
 
 		// const sessionId = cookies.get('session_id');
 		const sessionId = locals.sessionData.sessionId;
