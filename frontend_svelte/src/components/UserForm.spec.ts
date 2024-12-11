@@ -15,12 +15,12 @@ describe('Register form', () => {
 		// expect(email).toBeTruthy();
 		// expect(password).toBeTruthy();
 		const name = screen.queryByText('Full name');
-        const email = screen.queryByText('Email address');
-        const password = screen.queryByText('Password');
+		const email = screen.queryByText('Email address');
+		const password = screen.queryByText('Password');
 
-        expect(name).toContain('Full name');
-        expect(email).toContain('Email address');
-        expect(password).toContain('Password');
+		expect(name).toContain('Full name');
+		expect(email).toContain('Email address');
+		expect(password).toContain('Password');
 	});
 	it.todo('should have a register button', async () => {
 		render(UserForm, { type: 'signup' });

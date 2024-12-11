@@ -120,8 +120,8 @@ class Config(BaseSettings):
     REDIS_PASSWORD: str = get_variable("REDIS_PASSWORD")
 
     # Socket.io configuration:
-    SOCKETIO_ADMIN_USERNAME: str = get_variable("SOCKETIO_ADMIN_USERNAME")
-    SOCKETIO_ADMIN_PASSWORD: str = get_variable("SOCKETIO_ADMIN_PASSWORD")
+    SOCKETIO_ADMIN_USERNAME: Optional[str] = get_variable("SOCKETIO_ADMIN_USERNAME")
+    SOCKETIO_ADMIN_PASSWORD: Optional[str] = get_variable("SOCKETIO_ADMIN_PASSWORD")
 
 
 def update_config(tries=0):

@@ -22,6 +22,7 @@ from models.identity import (
     Group,
     GroupCreate,
     GroupRead,
+    Me,
     SubGroup,
     SubGroupCreate,
     SubGroupRead,
@@ -97,6 +98,23 @@ async def post_add_user_to_group(
         token_payload,
         guards,
         inherit,
+    )
+
+
+@user_router.get("/me", status_code=200)
+async def get_current_user(
+    token_payload=Depends(get_http_access_token_payload),
+    guards=Depends(Guards(roles=["User"])),
+) -> Me:
+    """Returns the current user."""
+    current_user = await check_token_against_guards(token_payload, guards)
+    userInDatabase = await user_view.get_by_id(
+        current_user.user_id, token_payload, guards
+    )
+    return Me(
+        **userInDatabase.model_dump(),
+        azureTokenRoles=current_user.roles,
+        azureTokenGroups=current_user.groups,
     )
 
 

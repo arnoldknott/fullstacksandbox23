@@ -1261,10 +1261,6 @@ class BaseHierarchyCRUD(
             if child_id:
                 statement = statement.where(self.model.child_id == child_id)
 
-            # print("=== BaseHierarchyCRUD.read_children - statement ===")
-            # print(statement.compile())
-            # pprint(statement.compile().params)
-
             response = await self.session.exec(statement)
             results = response.all()
 
@@ -1272,7 +1268,7 @@ class BaseHierarchyCRUD(
             # pprint(results)
 
             if not results:
-                raise HTTPException(status_code=404, detail="No children not found.")
+                raise HTTPException(status_code=404, detail="No children found.")
 
             return results
         except Exception as err:

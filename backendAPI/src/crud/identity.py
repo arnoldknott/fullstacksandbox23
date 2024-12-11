@@ -146,7 +146,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     groups=groups,
                 )
         except HTTPException as err:
-            if err.status_code == 404:
+            if err.status_code == 404 and err.detail == "User not found":
                 try:
                     user_create = UserCreate(
                         azure_user_id=azure_user_id,
@@ -264,7 +264,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             #     "===  user crud - create_azure_user_and_groups_if_not_exist - current_user_data ==="
             # )
             # print(current_user_data)
-
             try:
                 async with self.hierarchy_CRUD as hierarchy_CRUD:
                     await hierarchy_CRUD.read(

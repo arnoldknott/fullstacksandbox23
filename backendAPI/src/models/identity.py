@@ -242,6 +242,11 @@ class UserRead(UserCreate):
     sub_sub_groups: Optional[List["SubSubGroupRead"]] = None
 
 
+class Me(UserRead):
+    azureTokenRoles: Optional[list[str]] = None
+    azureTokenGroups: Optional[list[uuid.UUID]] = None
+
+
 class UserUpdate(UserCreate):
     """Schema for updating a user."""
 

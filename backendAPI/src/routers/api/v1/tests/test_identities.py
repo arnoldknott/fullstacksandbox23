@@ -394,6 +394,59 @@ async def test_post_user_invalid_token(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
+    [token_user1_read_groups, token_admin_read],
+    # here the admin get's itself => last_accessed_at should change!
+    indirect=True,
+)
+async def test_user_gets_own_user_through_me_endpoint(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_one_azure_test_user: List[User],
+    mocked_provide_http_token_payload,
+):
+    """Test a user GETs it's own user by id"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    # the target user:
+    user_in_database = await add_one_azure_test_user(0)
+
+    before_time = datetime.now()
+    response = await async_client.get("/api/v1/user/me")
+    after_time = datetime.now()
+
+    assert response.status_code == 200
+    user = response.json()
+    modelled_response_user = UserRead(**user)
+    assert user["azureTokenRoles"] == mocked_provide_http_token_payload["roles"]
+    if "groups" in mocked_provide_http_token_payload:
+        assert user["azureTokenGroups"] == mocked_provide_http_token_payload["groups"]
+        assert len(user["azureTokenGroups"]) == len(
+            mocked_provide_http_token_payload["groups"]
+        )
+    assert "id" in user
+    assert user["azure_user_id"] == str(mocked_provide_http_token_payload["oid"])
+    assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time > created_at
+    assert last_accessed_at.status_code == 200
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
     [token_admin_read],
     indirect=True,
 )
