@@ -119,6 +119,10 @@ class Config(BaseSettings):
     REDIS_SESSION_DB: int = int(get_variable("REDIS_SESSION_DB"))
     REDIS_PASSWORD: str = get_variable("REDIS_PASSWORD")
 
+    # Socket.io configuration:
+    SOCKETIO_ADMIN_USERNAME: str = get_variable("SOCKETIO_ADMIN_USERNAME")
+    SOCKETIO_ADMIN_PASSWORD: str = get_variable("SOCKETIO_ADMIN_PASSWORD")
+
 
 def update_config(tries=0):
     """Updates the configuration instance waits 5 seconds and retries 10 times if necessary."""

@@ -113,6 +113,11 @@ app.add_middleware(
             if config.FRONTEND_SVELTE_FQDN
             else None
         ),
+        (
+            "https://admin.socket.io"
+            if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD
+            else None
+        ),
     ],
     allow_credentials=True,
     allow_methods=["POST", "GET", "PUT", "DELETE"],  # or ["*"],
