@@ -409,7 +409,7 @@ async def test_user_gets_own_user_through_me_endpoint(
     # mocks the access token:
     app_override_provide_http_token_payload
     # the target user:
-    user_in_database = await add_one_azure_test_user(0)
+    await add_one_azure_test_user(0)
 
     before_time = datetime.now()
     response = await async_client.get("/api/v1/user/me")
