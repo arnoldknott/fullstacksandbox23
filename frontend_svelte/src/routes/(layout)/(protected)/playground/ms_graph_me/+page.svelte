@@ -7,10 +7,10 @@
 	// TBD refactor using sessionData
 	const account = data.account;
 	const userProfile = data.userProfile;
-	// const userPicture = data.userPicture;
+	const userPicture = data.userPicture;
 	//  This is the raw data fo the file - try demonstrating with a text file or md-file!
-	// console.log('ms_graph_me - userPicture');
-	// console.log(userPicture);
+	console.log('ms_graph_me - userPicture');
+	console.log(userPicture);
 
 	let userPictureURL: string | undefined = $state(undefined);
 	onMount(async () => {

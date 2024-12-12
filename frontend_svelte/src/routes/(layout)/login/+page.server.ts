@@ -18,7 +18,8 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		const sessionData: Session = {
 			status: 'authentication_pending',
 			loggedIn: false,
-			userAgent: userAgent || ''
+			userAgent: userAgent || '',
+			sessionId: sessionId
 		};
 
 		await redisCache.setSession(

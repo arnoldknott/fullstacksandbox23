@@ -1,5 +1,5 @@
 import AppConfig from '$lib/server/config';
-import { msalAuthProvider } from '$lib/server/oauth';
+import { msalAuthProvider, type BaseOauthProvider } from '$lib/server/oauth';
 
 const appConfig = await AppConfig.getInstance();
 
@@ -14,14 +14,11 @@ type RequestBody =
 	| ReadableStream<Uint8Array>;
 
 class BaseAPI {
-	_getAccessToken: (sessionId: string, scopes: string[]) => Promise<string>;
+	oauthProvider: BaseOauthProvider;
 	apiBaseURL: string;
 
-	constructor(
-		getAccessToken: (sessionId: string, scopes: string[]) => Promise<string>,
-		apiBaseURL: string
-	) {
-		this._getAccessToken = getAccessToken;
+	constructor(oauthProvider: BaseOauthProvider, apiBaseURL: string) {
+		this.oauthProvider = oauthProvider;
 		this.apiBaseURL = apiBaseURL;
 	}
 
@@ -34,9 +31,9 @@ class BaseAPI {
 		return new Request(`${this.apiBaseURL}${path}`, {
 			...requestOptions,
 			headers: {
-				'Content-Type': 'application/json',
+				'content-type': 'application/json',
 				Authorization: `Bearer ${accessToken}`,
-                ...requestOptions.headers,
+				...requestOptions.headers,
 				...headers
 			}
 		});
@@ -59,8 +56,17 @@ class BaseAPI {
 		headers: HeadersInit = {}
 	): Promise<Response> {
 		try {
-			const accessToken = await this._getAccessToken(session_id, scopes);
-			options.body = JSON.stringify(body);
+			// TBD: add a try catch block here!
+			const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
+			// options.body = JSON.stringify(body);
+			if (body instanceof FormData) {
+				options.body = JSON.stringify(Object.fromEntries(body));
+			} else {
+				console.error('Invalid body type or not yet implemented: ' + typeof body);
+				throw new Error('Invalid body type');
+			}
+			// options.body = body;
+			options.method = 'POST';
 			const request = this.constructRequest(path, accessToken, options, headers);
 			return await fetch(request);
 			// const response = await fetch(`${this.apiBaseURL}${path}`, {
@@ -85,7 +91,9 @@ class BaseAPI {
 		headers: HeadersInit
 	): Promise<Response> {
 		try {
-			const accessToken = await this._getAccessToken(sessionId, scopes);
+			// TBD: add a try catch block here!
+			const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
+			options.method = 'GET';
 			const request = this.constructRequest(path, accessToken, options, headers);
 			return await fetch(request);
 			// const response = await fetch(`${this.apiBaseURL}${path}`, {
@@ -105,7 +113,7 @@ class BackendAPI extends BaseAPI {
 	static pathPrefix = '/api/v1';
 
 	constructor() {
-		super(msalAuthProvider.getAccessToken, `${appConfig.backend_origin}${BackendAPI.pathPrefix}`);
+		super(msalAuthProvider, `${appConfig.backend_origin}${BackendAPI.pathPrefix}`);
 		this.appConfig = appConfig;
 	}
 
@@ -117,6 +125,7 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
+		console.log('=== src -lib - server - backendAPI - post - called ===');
 		return await super.post(session_id, path, body, scopes, options, headers);
 	}
 
@@ -137,7 +146,7 @@ class MicrosoftGraph extends BaseAPI {
 	appConfig: AppConfig;
 
 	constructor() {
-		super(msalAuthProvider.getAccessToken, appConfig.ms_graph_base_uri);
+		super(msalAuthProvider, appConfig.ms_graph_base_uri);
 		this.appConfig = appConfig;
 	}
 
