@@ -67,6 +67,11 @@
 			name: 'Socket.IO',
 			description: 'Establishing various Socket.IO connections to backend and using them',
 			url: '/socketio'
+		},
+		{
+			name: 'Application Roles',
+			description: 'User signup for application roles',
+			url: '/approles'
 		}
 	];
 </script>
