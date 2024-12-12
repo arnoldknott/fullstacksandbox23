@@ -31,6 +31,8 @@
 	<JsonData data={demo_resource} />
 {/each}
 
+<!-- Form not available without JavaScript. -->
+
 <md-filled-button
 	onclick={() => demo_resource_dialog.show()}
 	role="button"
