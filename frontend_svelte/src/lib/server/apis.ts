@@ -121,7 +121,7 @@ class BackendAPI extends BaseAPI {
 		session_id: string,
 		path: string,
 		body: RequestBody,
-		scopes: string[] = [`${appConfig.api_scope}/api.write`],
+		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {

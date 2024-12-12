@@ -1,10 +1,10 @@
 import type { Actions, PageServerLoad } from './$types';
 // import { msalAuthProvider } from '$lib/server/oauth';
-// import AppConfig from '$lib/server/config';
+import AppConfig from '$lib/server/config';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis';
 
-// const appConfig = await AppConfig.getInstance();
+const appConfig = await AppConfig.getInstance();
 
 // function removeEmpty( object: Object ): Object {
 // 	console.log("=== object ===");
