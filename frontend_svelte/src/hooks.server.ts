@@ -51,7 +51,7 @@ export const handle = async ({ event, resolve }) => {
 				}
 			}
 		}
-	} catch (error) {
+	} catch {
 		console.error(
 			'🔥 🎣 hooks - server - access to this protected route failed (potentially session expired):'
 		);

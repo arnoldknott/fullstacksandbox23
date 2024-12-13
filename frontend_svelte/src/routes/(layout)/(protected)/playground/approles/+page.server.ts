@@ -1,6 +1,6 @@
 import type { Actions } from './$types';
 // import { ClientSecretCredential, DeviceCodeCredential} from '@azure/identity';
-import AppConfig from '$lib/server/config';
+// import AppConfig from '$lib/server/config';
 // import { AZURE_TENANT_ID, APP_REG_CLIENT_ID, APP_CLIENT_SECRET } from '$env/static/private';
 // TBD: rename the BACKEND_SERVICE_PRINCIPLE_ID into whatever it's called elsewhere!
 // TBD: change dynamic into static!:
@@ -9,10 +9,10 @@ import AppConfig from '$lib/server/config';
 // import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
 // import '@microsoft/microsoft-graph-client//'
 // import { SecretClient } from '@azure/keyvault-secrets';
-const appConfig = await AppConfig.getInstance();
+// const appConfig = await AppConfig.getInstance();
 
 export const actions = {
-	toggleAIuser: async ({ locals, request }) => {
+	toggleAIuser: async ({ request }) => {
 		// const azureUserId = locals.sessionData.microsoftAccount?.localAccountId;
 		// if (!azureUserId) {
 		//     return {

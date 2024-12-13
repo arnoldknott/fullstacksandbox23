@@ -1,12 +1,12 @@
 import type { PageServerLoad } from './$types';
 // import { msalAuthProvider } from '$lib/server/oauth';
-import AppConfig from '$lib/server/config';
+// import AppConfig from '$lib/server/config';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis';
 
-const appConfig = await AppConfig.getInstance();
+// const appConfig = await AppConfig.getInstance();
 
-export const load: PageServerLoad = async ({ fetch, locals }) => {
+export const load: PageServerLoad = async ({ locals }) => {
 	// const sessionId = locals.sessionData.sessionId;
 	// // const sessionId = cookies.get('session_id');
 	// if (!sessionId) {
