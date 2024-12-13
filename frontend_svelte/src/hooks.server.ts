@@ -44,10 +44,8 @@ export const handle = async ({ event, resolve }) => {
 						);
 						redirectTarget = `/`;
 						throw new Error('User is not admin');
-						// redirect(307, `/`);
+						// redirect(307, `/`);// redirects are caught in catch block!
 					}
-					// Add check if user is admin in backend here
-					// thrown another redirect here, if user is not admin!
 				}
 			}
 		}
