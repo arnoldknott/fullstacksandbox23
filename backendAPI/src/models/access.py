@@ -227,6 +227,7 @@ class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
     relations: ClassVar = {
         ResourceType.demo_resource: [
             ResourceType.tag,
+            ResourceType.demo_file,
         ],
         ResourceType.category: [
             ResourceType.demo_resource,

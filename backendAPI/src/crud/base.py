@@ -57,7 +57,7 @@ class BaseCRUD(
         self,
         base_model: Type[BaseModelType],
         directory: str = None,
-        allow_everyone: Optional[List[str]] = None,
+        allow_everyone: Optional[List[str]] = [],
     ):
         """Provides a database session for CRUD operations."""
         self.session = None
@@ -277,6 +277,9 @@ class BaseCRUD(
                     allow_everyone=True if "create" in self.allow_everyone else False,
                 )
             # await self._write_log(database_object.id, own, current_user, 201)
+
+            print("=== CRUD - base - create - policy created ===")
+
             if parent_id:
                 await self.add_child_to_parent(
                     parent_id=parent_id,
