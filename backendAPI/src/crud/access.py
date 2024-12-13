@@ -228,7 +228,9 @@ class AccessPolicyCRUD:
             # TBD: avoid a return in the the middle of the function!
             return statement
         # Admins can access everything:
-        elif current_user.roles and "Admin" in current_user.roles:
+        elif (
+            current_user.azure_token_roles and "Admin" in current_user.azure_token_roles
+        ):
             # TBD: avoid a return in the the middle of the function!
             return statement
         # Users can access the resources, they have permission for including public resources:
@@ -556,14 +558,16 @@ class AccessPolicyCRUD:
         access_request: AccessRequest,
     ) -> bool:
         """Checks if the user has permission including inheritance to perform the action on the resource"""
-        # print("=== AccessPolicyCRUD.allows - access_request ===")
-        # print(access_request)
         resource_id = access_request.resource_id
         action = access_request.action
         current_user = access_request.current_user
 
         # Necessary as otherwise an empty database could never get data into it.
-        if current_user and current_user.roles and "Admin" in current_user.roles:
+        if (
+            current_user
+            and current_user.azure_token_roles
+            and "Admin" in current_user.azure_token_roles
+        ):
             return True
 
         try:
@@ -617,16 +621,15 @@ class AccessPolicyCRUD:
             # current_user needs to the be the owner of the resource
             # to create a new policy for it - or admin. Inheritance is handled inside the allows method.
 
-            # if policy.identity_id != current_user.user_id:
             # Current user creates a policy for another identity.
             # Current user needs to own the resource to grant others access (share) it.
             # inheritance is handled inside the allows method.
             # if not await self.allows(
             #     current_user=current_user,
             #     resource_id=policy.resource_id,
-            #     # resource_type=policy.resource_type,
             #     action=own,
             # ):
+            #     raise HTTPException(status_code=403, detail="Forbidden.")
 
             # Hmmm - How could there ever get a policy created for a newly created resource?
             # Does this only come to life after hierarchies are implemented?
@@ -635,17 +638,39 @@ class AccessPolicyCRUD:
             # create_as_child(object, parent) -> where the parent access gets checked.
             # Furthermore the instantiation of BaseCRUD needs
             # to get all possible parent models as List[SQLModel]
-            # access_request = AccessRequest(
-            #     resource_id=policy.resource_id,
-            #     action=own,
-            #     current_user=current_user,
-            # )
-            # await self.allows(access_request)
+
+            # TBD: refactor into using filters_allowed method!
+            print("=== AccessPolicyCRUD.create - policy ===")
+            print(policy)
+            print("=== AccessPolicyCRUD.create - current_user ===")
+            print(current_user)
+            if policy.resource_id != current_user.user_id:
+                response = await self.read(
+                    current_user=current_user,
+                    resource_id=policy.resource_id,
+                    action=own,
+                    public=policy.public,
+                )
+                print("=== AccessPolicyCRUD.create - response ===")
+                print(response)
+                # if not response:
+                #     raise HTTPException(
+                #         status_code=404, detail="Access policy not found."
+                #     )
+                # query.session = self.filters_allowed(query.session, own, current_user=current_user)
+                # access_request = AccessRequest(
+                #     resource_id=policy.resource_id,
+                #     action=own,
+                #     current_user=current_user,
+                # )
+                # await self.allows(access_request)
 
             # if not await self.allows(access_request):
             # except Exception as e:
             #     logger.error(f"Error in creating policy: {e}")
             #     raise HTTPException(status_code=403, detail="Forbidden.")
+
+            # Works:
             self.session.add(policy)
             await self.session.commit()
             await self.session.refresh(policy)
@@ -717,10 +742,13 @@ class AccessPolicyCRUD:
             response = await self.session.exec(query)
             results = response.all()
 
-            # print("=== AccessPolicyCRUD.read - results ===")
-            # pprint(results)
+            print("=== AccessPolicyCRUD.read - results ===")
+            print(results)
 
-            if not results:
+            if "Admin" in current_user.azure_token_roles:
+                print("=== AccessPolicyCRUD.read - Admin ===")
+                return results
+            elif not results:
                 raise HTTPException(status_code=404, detail="Access policy not found.")
 
             return results

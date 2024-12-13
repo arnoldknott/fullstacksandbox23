@@ -706,8 +706,6 @@ async def add_many_test_sub_sub_groups(
     yield _add_many_test_sub_sub_groups
 
 
-# TBD: refactor add_test_policies_for_resources from endpoint conftest file into this:
-# also consider using the post functions for the actual creation of resources!
 @pytest.fixture(scope="function")
 async def add_one_test_access_policy():
     """Fixture for adding test policies."""

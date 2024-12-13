@@ -122,8 +122,6 @@ async def add_test_categories(
 
     # TBD: add checks if token payload is not provided!
     # could be a public resource then?
-    # maybe just using the add_test_policies_for_resources fixture?
-    # or just failing?
     async def _add_test_categories(token_payload: dict = None):
         categories = []
         current_user = await current_user_from_azure_token(token_payload)
@@ -144,7 +142,6 @@ async def add_test_categories(
 async def add_test_demo_resources(
     current_user_from_azure_token: User,
     add_test_categories: list[Category],
-    # add_test_policies_for_resources: list[AccessPolicy],
 ):
     """Adds demo resources to the database."""
     # TBD, when refactoring add_test_demo_resources, the mocked token should be available here and

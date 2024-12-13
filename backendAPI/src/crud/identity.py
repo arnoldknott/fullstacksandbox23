@@ -142,8 +142,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     await log_CRUD.create(access_log)
                 current_user_data = CurrentUserData(
                     user_id=current_user.id,
-                    roles=[],  # Roles are coming from the token - but this information is not available here!
-                    groups=groups,
+                    azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
+                    azure_token_groups=groups,
                 )
         except HTTPException as err:
             if err.status_code == 404 and err.detail == "User not found":
@@ -168,8 +168,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     current_user = database_user
                     current_user_data = CurrentUserData(
                         user_id=current_user.id,
-                        roles=[],  # Roles are coming from the token - but this information is not available here!
-                        groups=groups,
+                        azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
+                        azure_token_groups=groups,
                     )
                     # User is owner of itself:
                     access_policy = AccessPolicyCreate(

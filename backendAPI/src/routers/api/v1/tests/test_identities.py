@@ -418,10 +418,10 @@ async def test_user_gets_own_user_through_me_endpoint(
     assert response.status_code == 200
     user = response.json()
     modelled_response_user = UserRead(**user)
-    assert user["azureTokenRoles"] == mocked_provide_http_token_payload["roles"]
+    assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
     if "groups" in mocked_provide_http_token_payload:
-        assert user["azureTokenGroups"] == mocked_provide_http_token_payload["groups"]
-        assert len(user["azureTokenGroups"]) == len(
+        assert user["azure_token_groups"] == mocked_provide_http_token_payload["groups"]
+        assert len(user["azure_token_groups"]) == len(
             mocked_provide_http_token_payload["groups"]
         )
     assert "id" in user

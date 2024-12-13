@@ -464,8 +464,8 @@ class CurrentAccessToken:
         # TBD: use CurrentUserData class instead of dict for type safety!
         current_user = CurrentUserData(
             user_id=user_in_database.id,
-            roles=roles,
-            groups=groups,
+            azure_token_roles=roles,
+            azure_token_groups=groups,
         )
         # current_user = {
         #     # TBD: every check needs to call the gets_or_signs_up_current_user method
@@ -478,9 +478,9 @@ class CurrentAccessToken:
         # }
         # current_user = CurrentUserData()
         # current_user.azure_user_id = self.payload["oid"]
-        # current_user.roles = self.payload["roles"]
-        # current_user.groups = self.payload["groups"]
-        # current_user.scopes = self.payload["scp"]
+        # current_user.azure_token_roles = self.payload["roles"]
+        # current_user.azure_token_groups = self.payload["groups"]
+        # current_user.azure_token_scopes = self.payload["scp"]
         # return CurrentUserData(**current_user)
         return current_user
 

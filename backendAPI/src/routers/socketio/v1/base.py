@@ -214,7 +214,8 @@ class BaseNamespace(socketio.AsyncNamespace):
             current_user = None
             logger.info(f"Client authenticated to public namespace {self.namespace}.")
         if self.callback_on_connect is not None:
-            print("=== base - on_connect - callback_on_connect ===")
+            # This works:
+            # print("=== base - on_connect - callback_on_connect ===")
             await self.callback_on_connect(sid)
 
         # current_user = await check_token_against_guards(token_payload, self.guards)

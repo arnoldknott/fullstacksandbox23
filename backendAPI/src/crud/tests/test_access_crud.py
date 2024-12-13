@@ -44,6 +44,7 @@ from tests.utils import (
     one_test_policy_own,
     one_test_policy_public_read,
     one_test_policy_read,
+    one_test_policy_write,
     one_test_policy_share,
     resource_id1,
     resource_id2,
@@ -90,9 +91,6 @@ async def test_owner_creates_access_policy(
     sharing_user = await register_current_user(current_user_data_user1)
     await register_current_user(current_user_data_user3)
 
-    # resources need to be registered for the policies to be created:
-    policy = AccessPolicy(**one_test_policy_own)
-
     # Admin needs to register the first resource - owned by user 1:
     current_admin_user = await register_current_user(current_user_data_admin)
     await add_one_test_access_policy(one_test_policy_own, current_admin_user)
@@ -107,6 +105,62 @@ async def test_owner_creates_access_policy(
     assert created_policy.identity_id == modelled_test_policy.identity_id
     assert created_policy.resource_id == modelled_test_policy.resource_id
     assert created_policy.action == modelled_test_policy.action
+
+
+@pytest.mark.anyio
+async def test_reader_creates_access_policy_fails(
+    register_current_user,
+    add_one_test_access_policy,
+):
+    """Test creating an access policy."""
+
+    # users need to be registered for the policies to be created:
+    sharing_user = await register_current_user(current_user_data_user1)
+    await register_current_user(current_user_data_user3)
+
+    # # resources need to be registered for the policies to be created:
+    # policy = AccessPolicy(**one_test_policy_share)
+
+    # Admin needs to register the first resource - owned by user 1:
+    current_admin_user = await register_current_user(current_user_data_admin)
+    await add_one_test_access_policy(one_test_policy_read, current_admin_user)
+
+    try:
+        # User 1 (with read-only permissions) tries to share with user 3:
+        async with AccessPolicyCRUD() as policy_crud:
+            policy = AccessPolicy(**one_test_policy_share)
+            await policy_crud.create(policy, sharing_user)
+    except Exception as err:
+        assert err.status_code == 403
+        assert err.detail == "Forbidden."
+
+
+@pytest.mark.anyio
+async def test_writer_creates_access_policy_fails(
+    register_current_user,
+    add_one_test_access_policy,
+):
+    """Test creating an access policy."""
+
+    # users need to be registered for the policies to be created:
+    sharing_user = await register_current_user(current_user_data_user1)
+    await register_current_user(current_user_data_user3)
+
+    # # resources need to be registered for the policies to be created:
+    # policy = AccessPolicy(**one_test_policy_share)
+
+    # Admin needs to register the first resource - owned by user 1:
+    current_admin_user = await register_current_user(current_user_data_admin)
+    await add_one_test_access_policy(one_test_policy_write, current_admin_user)
+
+    try:
+        # User 1 (with read-only permissions) tries to share with user 3:
+        async with AccessPolicyCRUD() as policy_crud:
+            policy = AccessPolicy(**one_test_policy_share)
+            await policy_crud.create(policy, sharing_user)
+    except Exception as err:
+        assert err.status_code == 403
+        assert err.detail == "Forbidden."
 
 
 @pytest.mark.anyio

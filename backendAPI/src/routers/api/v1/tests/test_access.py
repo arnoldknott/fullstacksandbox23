@@ -58,6 +58,7 @@ from tests.utils import (
 # ✔︎ delete (unshare)
 
 # region: ## POST tests:
+# more detailed tests are done on CRUD level in test_access_crud.py
 
 
 @pytest.mark.anyio

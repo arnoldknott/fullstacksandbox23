@@ -113,8 +113,8 @@ async def get_current_user(
     )
     return Me(
         **userInDatabase.model_dump(),
-        azureTokenRoles=current_user.roles,
-        azureTokenGroups=current_user.groups,
+        azure_token_roles=current_user.azure_token_roles,
+        azure_token_groups=current_user.azure_token_groups,
     )
 
 

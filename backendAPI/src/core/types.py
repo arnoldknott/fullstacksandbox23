@@ -26,6 +26,16 @@ class GuardTypes(BaseModel):
     groups: Optional[List[UUID]] = []
 
 
+class AppRoles(str, Enum):
+    """Enum for the roles that can be self-assigned to a user inside the app; Note: consent is required for some roles, handled by frontend!"""
+
+    # This is for services only, that don't require an account linking.
+    # For services that require an account linking, a linked account counts as an assigned role.
+
+    publicAIuser = "publicAIuser"
+    privateAIuser = "privateAIuser"
+
+
 class CurrentUserData(BaseModel):
     """Model for the current user data - acts as interface for the request from endpoint to crud."""
 
@@ -34,8 +44,8 @@ class CurrentUserData(BaseModel):
     # Class Access needs to resolve that from database. Consider caching in Redis!
     # azure_user_id: UUID
     user_id: UUID
-    roles: Optional[List[str]] = []
-    groups: Optional[List[UUID]] = []
+    azure_token_roles: Optional[List[str]] = []
+    azure_token_groups: Optional[List[UUID]] = []
     # scopes: List[str]# should not be relevant for access control?
 
 
