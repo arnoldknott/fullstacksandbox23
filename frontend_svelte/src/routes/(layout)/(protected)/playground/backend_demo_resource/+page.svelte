@@ -37,7 +37,8 @@
 	onclick={() => demo_resource_dialog.show()}
 	role="button"
 	tabindex="0"
-	onkeydown={(event: KeyboardEvent) => event.key === 'Enter' && demo_resource_dialog.show()}>New</md-filled-button
+	onkeydown={(event: KeyboardEvent) => event.key === 'Enter' && demo_resource_dialog.show()}
+	>New</md-filled-button
 >
 
 <md-dialog id="demo_resource_dialog" bind:this={demo_resource_dialog} class="w-fill">

@@ -2,12 +2,11 @@
 	import Title from '$components/Title.svelte';
 	import type { PageData } from './$types';
 
-	let {data }: {data: PageData} = $props();
+	let { data }: { data: PageData } = $props();
 	const apiLink = data.body;
 </script>
 
 <Title>Admin dashboard</Title>
-
 
 <h3 class="mb-2 mt-0 text-3xl font-medium leading-tight text-primary">
 	Update environmental variables

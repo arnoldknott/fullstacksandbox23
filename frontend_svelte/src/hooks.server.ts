@@ -17,7 +17,6 @@ const getSession = async (sessionId: string): Promise<Session | void> => {
 	}
 };
 
-
 export const handle = async ({ event, resolve }) => {
 	const sessionId = event.cookies.get('session_id');
 	const session = sessionId ? await getSession(sessionId) : undefined;
@@ -25,7 +24,7 @@ export const handle = async ({ event, resolve }) => {
 		event.locals.sessionData = session;
 	}
 
-	let redirectTarget = `/login?targetURL=${event.url.href}`
+	let redirectTarget = `/login?targetURL=${event.url.href}`;
 	try {
 		if (event.route.id?.includes('(protected)')) {
 			if (event.locals.sessionData.loggedIn !== true) {

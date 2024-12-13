@@ -29,7 +29,6 @@ export const GET: RequestHandler = async ({ locals, setHeaders }): Promise<Respo
 		const sessionId = locals.sessionData.sessionId;
 		const response = await microsoftGraph.get(sessionId, '/me/photo/$value');
 
-
 		if (
 			response &&
 			response.status === 200 &&

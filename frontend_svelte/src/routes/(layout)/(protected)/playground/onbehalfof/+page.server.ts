@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		// 	}
 		// });
 		const sessionId = locals.sessionData.sessionId;
-		const response = await backendAPI.get(sessionId, '/core/onbehalfof');// add scopes = ["https://management.azure.com/user_impersonation"] ["api.read"]  ["User.Read"] ???
+		const response = await backendAPI.get(sessionId, '/core/onbehalfof'); // add scopes = ["https://management.azure.com/user_impersonation"] ["api.read"]  ["User.Read"] ???
 		const schema = await response.json();
 		return { schema };
 	} catch (err) {
