@@ -1493,7 +1493,6 @@ async def test_user_reads_resource_hierarchy_all_allowed_children_of_a_parent(
                 "resource_id": child_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
 
     # async with AccessPolicyCRUD() as policy_crud:
@@ -1625,7 +1624,6 @@ async def test_user_reads_resource_hierarchy_all_allowed_parents_of_a_child(
                 "resource_id": parent_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
 
     await add_one_test_access_policy(
@@ -1634,7 +1632,6 @@ async def test_user_reads_resource_hierarchy_all_allowed_parents_of_a_child(
             "resource_id": str(child_id),
             "action": Action.read,
         },
-        current_user=current_user,
     )
     for parent in many_resource_ids:
         await add_one_parent_child_resource_relationship(
@@ -1676,7 +1673,6 @@ async def test_user_reads_resource_hierarchy_all_allowed_parents_without_access_
                 "resource_id": parent_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
     for parent in many_resource_ids:
         await add_one_parent_child_resource_relationship(
@@ -1709,7 +1705,6 @@ async def test_user_reads_resource_hierarchy_all_allowed_parents_without_access_
             "resource_id": str(child_id),
             "action": Action.read,
         },
-        current_user=current_user,
     )
     for parent in many_resource_ids:
         await add_one_parent_child_resource_relationship(
@@ -1794,7 +1789,6 @@ async def test_user_deletes_resource_hierarchy_child_with_owner_rights(
             "resource_id": child_resource_id8,
             "action": Action.own,
         },
-        current_user=current_user,
     )
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
@@ -2009,7 +2003,6 @@ async def test_user_create_identity_hierarchy(
             "resource_id": str(parent_identity.id),
             "action": Action.own,
         },
-        current_user=current_user_data,
     )
 
     new_child_id = uuid.uuid4()
@@ -2073,7 +2066,6 @@ async def test_user_create_identity_hierarchy_without_access_to_child(
             "resource_id": str(parent_identity.id),
             "action": Action.own,
         },
-        current_user=current_user_data,
     )
 
     new_child_id = uuid.uuid4()
@@ -2164,7 +2156,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_children_of_a_parent(
                 "resource_id": child_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
     await add_one_test_access_policy(
         {
@@ -2172,7 +2163,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_children_of_a_parent(
             "resource_id": identity_id_group2,
             "action": Action.read,
         },
-        current_user=current_user,
     )
 
     async with AccessPolicyCRUD() as policy_crud:
@@ -2305,7 +2295,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_parents_of_a_child(
                 "resource_id": parent_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
 
     await add_one_test_access_policy(
@@ -2314,7 +2303,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_parents_of_a_child(
             "resource_id": str(child_id),
             "action": Action.read,
         },
-        current_user=current_user,
     )
     for parent in access_to_parent_ids:
         await add_one_parent_child_identity_relationship(
@@ -2354,7 +2342,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_parents_without_access_
                 "resource_id": parent_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
     for parent in access_to_parent_ids:
         await add_one_parent_child_identity_relationship(
@@ -2391,7 +2378,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_parents_without_access_
             "resource_id": str(child_id),
             "action": Action.read,
         },
-        current_user=current_user,
     )
     for parent in parent_ids:
         await add_one_parent_child_identity_relationship(
@@ -2481,7 +2467,6 @@ async def test_user_deletes_identity_hierarchy_child_with_owner_rights(
             "resource_id": child_identity_id5,
             "action": Action.own,
         },
-        current_user=current_user,
     )
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:

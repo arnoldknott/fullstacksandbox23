@@ -640,19 +640,27 @@ class AccessPolicyCRUD:
             # to get all possible parent models as List[SQLModel]
 
             # TBD: refactor into using filters_allowed method!
-            print("=== AccessPolicyCRUD.create - policy ===")
-            print(policy)
-            print("=== AccessPolicyCRUD.create - current_user ===")
-            print(current_user)
-            if policy.resource_id != current_user.user_id:
-                response = await self.read(
-                    current_user=current_user,
-                    resource_id=policy.resource_id,
-                    action=own,
-                    public=policy.public,
-                )
-                print("=== AccessPolicyCRUD.create - response ===")
-                print(response)
+            # print("=== AccessPolicyCRUD.create - policy ===")
+            # print(policy)
+            # print("=== AccessPolicyCRUD.create - current_user ===")
+            # print(current_user)
+            if "Admin" not in current_user.azure_token_roles:
+                if policy.resource_id != current_user.user_id:
+                    try:
+                        response = await self.read(
+                            current_user=current_user,
+                            resource_id=policy.resource_id,
+                            action=own,
+                            public=policy.public,
+                        )
+                        print("=== AccessPolicyCRUD.create - response ===")
+                        print(response)
+                    except Exception as e:
+                        logger.error(f"Error in reading policy: {e}")
+                        raise HTTPException(
+                            status_code=404, detail="Access policy not found."
+                        )
+
                 # if not response:
                 #     raise HTTPException(
                 #         status_code=404, detail="Access policy not found."
@@ -742,13 +750,10 @@ class AccessPolicyCRUD:
             response = await self.session.exec(query)
             results = response.all()
 
-            print("=== AccessPolicyCRUD.read - results ===")
-            print(results)
+            # print("=== AccessPolicyCRUD.read - results ===")
+            # print(results)
 
-            if "Admin" in current_user.azure_token_roles:
-                print("=== AccessPolicyCRUD.read - Admin ===")
-                return results
-            elif not results:
+            if not results:
                 raise HTTPException(status_code=404, detail="Access policy not found.")
 
             return results
