@@ -115,8 +115,8 @@ async def decode_token(token: str, jwks: dict) -> dict:
             "validate_iat": True,
         },
     )
-    print("=== decode_token - payload ===")
-    print(payload)
+    # print("=== decode_token - payload ===")
+    # print(payload)
     logger.info("Token decoded successfully")
     return payload
 

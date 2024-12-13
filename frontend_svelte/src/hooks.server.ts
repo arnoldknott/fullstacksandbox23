@@ -32,7 +32,6 @@ export const handle = async ({ event, resolve }) => {
 					'🔥 🎣 hooks - server - access attempt to protected route with invalid session'
 				);
 				throw new Error('Invalid session');
-				// redirect(307, `/login?targetURL=${event.url.href}`);
 			} else {
 				if (event.route.id?.includes('(admin)')) {
 					console.log('🎣 hooks - server - access to admin route');
@@ -44,7 +43,6 @@ export const handle = async ({ event, resolve }) => {
 						);
 						redirectTarget = `/`;
 						throw new Error('User is not admin');
-						// redirect(307, `/`);// redirects are caught in catch block!
 					}
 				}
 			}
@@ -54,7 +52,6 @@ export const handle = async ({ event, resolve }) => {
 			'🔥 🎣 hooks - server - access to this protected route failed (potentially session expired):'
 		);
 		console.log(event.url.href);
-		// redirect(307, `/login?targetURL=${event.url.href}`);
 		redirect(307, redirectTarget);
 	}
 	return await resolve(event);
