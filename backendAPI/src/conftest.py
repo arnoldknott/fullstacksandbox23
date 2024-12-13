@@ -351,6 +351,222 @@ async def register_many_entities(get_async_test_session: AsyncSession):
 # yield many_entity_type_links
 
 
+async def add_test_access_policy(policy: dict, current_user: CurrentUserData = None):
+    """Adds a test policy to the database."""
+    async with AccessPolicyCRUD() as crud:
+        if current_user is None:
+            current_user = CurrentUserData(**current_user_data_admin)
+        await register_entity_to_identity_type_link_table(
+            UUID(policy["resource_id"]), ProtectedResource
+        )
+        policy = await crud.create(AccessPolicyCreate(**policy), current_user)
+        return policy
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_access_policy():
+    """Fixture for adding test policies."""
+
+    async def _add_one_test_access_policy(
+        policy: dict, current_user: CurrentUserData = None
+    ):
+        """Adds test policies to the database."""
+
+        return await add_test_access_policy(policy, current_user)
+        # async with AccessPolicyCRUD() as crud:
+        #     if current_user is None:
+        #         current_user = CurrentUserData(**current_user_data_admin)
+        #     await register_entity_to_identity_type_link_table(
+        #         UUID(policy["resource_id"]), ProtectedResource
+        #     )
+        #     policy = await crud.create(AccessPolicyCreate(**policy), current_user)
+        #     return policy
+
+    yield _add_one_test_access_policy
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_access_policies(
+    register_many_current_users,
+    register_many_resources,
+) -> list[AccessPolicyRead]:
+    """Adds a category to the database."""
+    mocked_admin_user = CurrentUserData(**current_user_data_admin)
+    async with AccessPolicyCRUD() as crud:
+        policies = []
+        for policy in many_test_policies:
+            added_policy = await crud.create(
+                AccessPolicyCreate(**policy), mocked_admin_user
+            )
+            policies.append(added_policy)
+    policies = sorted(policies, key=lambda x: x.id)
+
+    yield policies
+
+
+async def add_test_access_log(access_log: dict) -> AccessLogRead:
+    """Adds a test access log to the database."""
+    async with AccessLoggingCRUD() as crud:
+        access_log_instance = AccessLogCreate(**access_log)
+        created_access_log = await crud.create(access_log_instance)
+        return created_access_log
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_access_log():
+    """Adds a test access log to the database."""
+
+    async def _add_one_test_access_log(access_log: dict) -> AccessLogRead:
+        access_log_instance = await add_test_access_log(access_log)
+        return access_log_instance
+
+    yield _add_one_test_access_log
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_access_logs(
+    register_many_current_users,
+    register_many_resources,
+) -> list[AccessLogRead]:
+    """Adds many test access logs to the database."""
+
+    access_logs = []
+    for access_log in many_test_access_logs:
+        access_log_instance = await add_test_access_log(access_log)
+        access_logs.append(access_log_instance)
+
+    access_logs = sorted(access_logs, key=lambda x: x.id)
+
+    yield access_logs
+
+
+async def add_parent_child_resource_relationship(
+    parent_id: UUID,
+    child_id: UUID,
+    child_type: ResourceType = ResourceType.protected_child,
+    inherit: bool = False,
+):
+    """Adds a parent-child relationship to the resource hierarchy table."""
+    await register_entity_to_identity_type_link_table(
+        child_id
+    )  # TBD: pass the model here - or refactor register_entity_to_identity_type_link_table() to use type
+    async with ResourceHierarchyCRUD() as crud:
+        created_relationship = await crud.create(
+            current_user=CurrentUserData(**current_user_data_admin),
+            parent_id=parent_id,
+            child_type=child_type,
+            child_id=child_id,
+            inherit=inherit,
+        )
+    return created_relationship
+
+
+@pytest.fixture(scope="function")
+async def add_one_parent_child_resource_relationship(
+    register_many_resources: list[UUID],
+):
+    """Adds a parent-child resource relationship to the database."""
+
+    registered_resources = register_many_resources
+
+    async def _add_one_parent_child_resource_relationship(
+        child_id: UUID,
+        parent_id: UUID = registered_resources[0],
+        type: ResourceType = ResourceType.protected_child,
+        inherit: bool = False,
+    ):
+        """Adds a parent-child relationship to the database."""
+        return await add_parent_child_resource_relationship(
+            parent_id, child_id, type, inherit
+        )
+
+    yield _add_one_parent_child_resource_relationship
+
+
+@pytest.fixture(scope="function")
+async def add_many_parent_child_resource_relationships(
+    register_many_resources: list[UUID],
+):
+    """Adds many parent-child relationships to the resource hierarchy table."""
+
+    parent_id = resource_id3
+    relationships = []
+    for child in many_test_child_resource_entities:
+        relationship = await add_parent_child_resource_relationship(
+            parent_id, UUID(child["id"]), child["type"]
+        )
+        relationships.append(relationship)
+    yield relationships
+
+
+async def add_parent_child_identity_relationship(
+    parent_id: UUID,
+    child_id: UUID,
+    child_type: IdentityType = IdentityType.sub_group,
+    inherit: bool = False,
+):
+    """Adds a parent-child relationship to the identity hierarchy table."""
+    await register_entity_to_identity_type_link_table(
+        child_id, IdentityType.get_model(child_type)
+    )
+
+    async with IdentityHierarchyCRUD() as crud:
+        created_relationship = await crud.create(
+            current_user=CurrentUserData(**current_user_data_admin),
+            parent_id=parent_id,
+            child_type=child_type,
+            child_id=child_id,
+            inherit=inherit,
+        )
+    return created_relationship
+
+
+@pytest.fixture(scope="function")
+async def add_one_parent_child_identity_relationship(
+    register_many_entities: list[{UUID, str}],
+):
+    """Adds a parent-child identity relationship to the database."""
+
+    registered_identities = register_many_entities[10:]
+    parent_id = registered_identities[1].id
+
+    async def _add_one_parent_child_identity_relationship(
+        child_id: UUID,
+        parent_id: UUID = parent_id,
+        type: IdentityType = IdentityType.sub_group,
+        inherit: bool = False,
+    ):
+        """Adds a parent-child relationship to the database."""
+        return await add_parent_child_identity_relationship(
+            parent_id, child_id, type, inherit
+        )
+
+    yield _add_one_parent_child_identity_relationship
+
+
+@pytest.fixture(scope="function")
+async def add_many_parent_child_identity_relationships(
+    register_many_entities: list[{UUID, str}],
+):
+    """Adds many parent-child relationships to the identity hierarchy table."""
+
+    parent_id = identity_id_group2
+    relationships = []
+    children_for_group = [
+        many_test_child_identities[0],
+        many_test_child_identities[3],
+        many_test_child_identities[4],
+        many_test_child_identities[8],
+    ]
+    for child in children_for_group:
+        relationship = await add_parent_child_identity_relationship(
+            parent_id, UUID(child["id"]), child["type"]
+        )
+        relationships.append(relationship)
+    # TBD: add more hierarchy levels!
+    yield relationships
+
+
 # Adds a test user based on identity provider token payload to database and returns the user
 @pytest.fixture(scope="function")
 # async def add_one_azure_test_user(current_user_from_azure_token: User):
@@ -361,7 +577,15 @@ async def add_one_azure_test_user(current_user_from_azure_token: User):
     #     user_number: int = None, token_payload: dict = None
     # ) -> UserRead:
     async def _add_one_azure_test_user(user_number: int = None) -> UserRead:
-        # current_user = await current_user_from_azure_token(token_payload)
+        # await add_test_access_policy(
+        #     {
+        #         "identity_id": current_user_from_azure_token().user_id,
+        #         "resource_id": **many_test_azure_users[user_number]["id"],
+        #         "action": "own",
+        #     }
+        # )
+        # TBD: Fix that the current_user is not the same as the many_test_azure_users[user_number]!
+        # therefore access policy missing form current_user to the created user.
         async with UserCRUD() as crud:
             user = await crud.create_azure_user_and_groups_if_not_exist(
                 **many_test_azure_users[user_number]
@@ -386,71 +610,6 @@ async def add_many_azure_test_users():
         return users
 
     yield _add_many_azure_test_users
-
-
-# @pytest.fixture(scope="function")
-# async def add_test_tags(
-#     mock_current_user: User,
-# ):  # (get_async_test_session: AsyncSession):
-#     """Adds tags to the database."""
-#     # session = get_async_test_session
-#     # tag_instances = []
-#     # for tag in many_test_tags:
-#     #     tag_instance = Tag(**tag)
-#     #     session.add(tag_instance)
-#     #     await session.commit()
-#     #     await session.refresh(tag_instance)
-#     #     tag_instances.append(tag_instance)
-
-#     # yield tag_instances
-
-#     async def _add_test_tags(token_payload: dict = None):
-#         tag_instances = []
-#         for tag in many_test_tags:
-#             current_user = await mock_current_user(token_payload)
-#             async with TagCRUD() as crud:
-#                 tag_instance = await crud.create_public(tag, current_user)
-#             tag_instances.append(tag_instance)
-
-#         return tag_instances
-
-#     yield _add_test_tags
-
-# @pytest.fixture(scope="function")
-# async def add_many_test_azure_users(get_async_test_session: AsyncSession):
-#     """Adds test users to the database."""
-#     session = get_async_test_session
-#     users = []
-#     for user in many_test_azure_users:
-#         this_user = User(**user)
-#         session.add(this_user)
-#         await session.commit()
-#         await session.refresh(this_user)
-#         users.append(this_user)
-
-#     yield users
-
-
-# @pytest.fixture(scope="function")
-# async def add_many_test_azure_users_with_groups() -> list[User]:
-#     """Adds many test users with group membership to the database."""
-#     async with UserCRUD() as crud:
-#         users = []
-#         for user in many_test_azure_users:
-#             added_user = await crud.create_azure_user_and_groups_if_not_exist(
-#                 user["azure_user_id"],
-#                 user["azure_tenant_id"],
-#                 token_payload_many_groups["groups"],
-#             )
-#             users.append(added_user)
-
-#     yield users
-
-
-# @pytest.fixture(scope="function")
-# async def current_test_user():
-#     """Returns the current test user."""
-#     yield CurrentUserData(**)
 
 
 async def add_test_ueber_group(
@@ -704,206 +863,3 @@ async def add_many_test_sub_sub_groups(
         return sub_sub_groups
 
     yield _add_many_test_sub_sub_groups
-
-
-@pytest.fixture(scope="function")
-async def add_one_test_access_policy():
-    """Fixture for adding test policies."""
-
-    async def _add_one_test_access_policy(
-        policy: dict, current_user: CurrentUserData = None
-    ):
-        """Adds test policies to the database."""
-
-        async with AccessPolicyCRUD() as crud:
-            if current_user is None:
-                current_user = CurrentUserData(**current_user_data_admin)
-            await register_entity_to_identity_type_link_table(
-                UUID(policy["resource_id"]), ProtectedResource
-            )
-            policy = await crud.create(AccessPolicyCreate(**policy), current_user)
-            return policy
-
-    yield _add_one_test_access_policy
-
-
-@pytest.fixture(scope="function")
-async def add_many_test_access_policies(
-    register_many_current_users,
-    register_many_resources,
-) -> list[AccessPolicyRead]:
-    """Adds a category to the database."""
-    mocked_admin_user = CurrentUserData(**current_user_data_admin)
-    async with AccessPolicyCRUD() as crud:
-        policies = []
-        for policy in many_test_policies:
-            added_policy = await crud.create(
-                AccessPolicyCreate(**policy), mocked_admin_user
-            )
-            policies.append(added_policy)
-    policies = sorted(policies, key=lambda x: x.id)
-
-    yield policies
-
-
-async def add_test_access_log(access_log: dict) -> AccessLogRead:
-    """Adds a test access log to the database."""
-    async with AccessLoggingCRUD() as crud:
-        access_log_instance = AccessLogCreate(**access_log)
-        created_access_log = await crud.create(access_log_instance)
-        return created_access_log
-
-
-@pytest.fixture(scope="function")
-async def add_one_test_access_log():
-    """Adds a test access log to the database."""
-
-    async def _add_one_test_access_log(access_log: dict) -> AccessLogRead:
-        access_log_instance = await add_test_access_log(access_log)
-        return access_log_instance
-
-    yield _add_one_test_access_log
-
-
-@pytest.fixture(scope="function")
-async def add_many_test_access_logs(
-    register_many_current_users,
-    register_many_resources,
-) -> list[AccessLogRead]:
-    """Adds many test access logs to the database."""
-
-    access_logs = []
-    for access_log in many_test_access_logs:
-        access_log_instance = await add_test_access_log(access_log)
-        access_logs.append(access_log_instance)
-
-    access_logs = sorted(access_logs, key=lambda x: x.id)
-
-    yield access_logs
-
-
-async def add_parent_child_resource_relationship(
-    parent_id: UUID,
-    child_id: UUID,
-    child_type: ResourceType = ResourceType.protected_child,
-    inherit: bool = False,
-):
-    """Adds a parent-child relationship to the resource hierarchy table."""
-    await register_entity_to_identity_type_link_table(
-        child_id
-    )  # TBD: pass the model here - or refactor register_entity_to_identity_type_link_table() to use type
-    async with ResourceHierarchyCRUD() as crud:
-        created_relationship = await crud.create(
-            current_user=CurrentUserData(**current_user_data_admin),
-            parent_id=parent_id,
-            child_type=child_type,
-            child_id=child_id,
-            inherit=inherit,
-        )
-    return created_relationship
-
-
-@pytest.fixture(scope="function")
-async def add_one_parent_child_resource_relationship(
-    register_many_resources: list[UUID],
-):
-    """Adds a parent-child resource relationship to the database."""
-
-    registered_resources = register_many_resources
-
-    async def _add_one_parent_child_resource_relationship(
-        child_id: UUID,
-        parent_id: UUID = registered_resources[0],
-        type: ResourceType = ResourceType.protected_child,
-        inherit: bool = False,
-    ):
-        """Adds a parent-child relationship to the database."""
-        return await add_parent_child_resource_relationship(
-            parent_id, child_id, type, inherit
-        )
-
-    yield _add_one_parent_child_resource_relationship
-
-
-@pytest.fixture(scope="function")
-async def add_many_parent_child_resource_relationships(
-    register_many_resources: list[UUID],
-):
-    """Adds many parent-child relationships to the resource hierarchy table."""
-
-    parent_id = resource_id3
-    relationships = []
-    for child in many_test_child_resource_entities:
-        relationship = await add_parent_child_resource_relationship(
-            parent_id, UUID(child["id"]), child["type"]
-        )
-        relationships.append(relationship)
-    yield relationships
-
-
-async def add_parent_child_identity_relationship(
-    parent_id: UUID,
-    child_id: UUID,
-    child_type: IdentityType = IdentityType.sub_group,
-    inherit: bool = False,
-):
-    """Adds a parent-child relationship to the identity hierarchy table."""
-    await register_entity_to_identity_type_link_table(
-        child_id, IdentityType.get_model(child_type)
-    )
-
-    async with IdentityHierarchyCRUD() as crud:
-        created_relationship = await crud.create(
-            current_user=CurrentUserData(**current_user_data_admin),
-            parent_id=parent_id,
-            child_type=child_type,
-            child_id=child_id,
-            inherit=inherit,
-        )
-    return created_relationship
-
-
-@pytest.fixture(scope="function")
-async def add_one_parent_child_identity_relationship(
-    register_many_entities: list[{UUID, str}],
-):
-    """Adds a parent-child identity relationship to the database."""
-
-    registered_identities = register_many_entities[10:]
-    parent_id = registered_identities[1].id
-
-    async def _add_one_parent_child_identity_relationship(
-        child_id: UUID,
-        parent_id: UUID = parent_id,
-        type: IdentityType = IdentityType.sub_group,
-        inherit: bool = False,
-    ):
-        """Adds a parent-child relationship to the database."""
-        return await add_parent_child_identity_relationship(
-            parent_id, child_id, type, inherit
-        )
-
-    yield _add_one_parent_child_identity_relationship
-
-
-@pytest.fixture(scope="function")
-async def add_many_parent_child_identity_relationships(
-    register_many_entities: list[{UUID, str}],
-):
-    """Adds many parent-child relationships to the identity hierarchy table."""
-
-    parent_id = identity_id_group2
-    relationships = []
-    children_for_group = [
-        many_test_child_identities[0],
-        many_test_child_identities[3],
-        many_test_child_identities[4],
-        many_test_child_identities[8],
-    ]
-    for child in children_for_group:
-        relationship = await add_parent_child_identity_relationship(
-            parent_id, UUID(child["id"]), child["type"]
-        )
-        relationships.append(relationship)
-    # TBD: add more hierarchy levels!
-    yield relationships

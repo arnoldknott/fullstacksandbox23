@@ -60,7 +60,6 @@ class AccessPolicyCRUD:
         """Closes the database session."""
         await self.session.close()
 
-    # TBD: change back into double underscore __:
     def __get_resource_inheritance_common_table_expression(
         self,
         base_resource_ids: select,  # TBD: change this to List[UUID]?
@@ -154,6 +153,29 @@ class AccessPolicyCRUD:
         # return final_query
 
         return hierarchy_cte
+
+    def __always_allow(
+        self,
+        policy: AccessPolicyCreate,
+        current_user: CurrentUserData,
+    ):
+        if "Admin" in current_user.azure_token_roles:
+            return True
+        # users can always create access policy for their own user object:
+        elif policy.resource_id == current_user.user_id:
+            return True
+        # users can always create read access policy for azure groups, they are member of:
+        elif (
+            policy.resource_id in current_user.azure_token_groups
+            and policy.action == write
+        ):
+            return True
+        else:
+            print("=== AccessPolicyCRUD.__always_allow - policy ===")
+            print(policy)
+            print("=== AccessPolicyCRUD.__always_allow - current_user ===")
+            print(current_user)
+            return False
 
     def filters_allowed(
         self,
@@ -644,34 +666,34 @@ class AccessPolicyCRUD:
             # print(policy)
             # print("=== AccessPolicyCRUD.create - current_user ===")
             # print(current_user)
-            if "Admin" not in current_user.azure_token_roles:
-                if policy.resource_id != current_user.user_id:
-                    try:
-                        response = await self.read(
-                            current_user=current_user,
-                            resource_id=policy.resource_id,
-                            action=own,
-                            public=policy.public,
-                        )
-                        print("=== AccessPolicyCRUD.create - response ===")
-                        print(response)
-                    except Exception as e:
-                        logger.error(f"Error in reading policy: {e}")
-                        raise HTTPException(
-                            status_code=404, detail="Access policy not found."
-                        )
 
-                # if not response:
-                #     raise HTTPException(
-                #         status_code=404, detail="Access policy not found."
-                #     )
-                # query.session = self.filters_allowed(query.session, own, current_user=current_user)
-                # access_request = AccessRequest(
-                #     resource_id=policy.resource_id,
-                #     action=own,
-                #     current_user=current_user,
-                # )
-                # await self.allows(access_request)
+            if not self.__always_allow(policy, current_user):
+                try:
+                    await self.read(
+                        current_user=current_user,
+                        resource_id=policy.resource_id,
+                        action=own,
+                        public=policy.public,
+                    )
+                    # print("=== AccessPolicyCRUD.create - response ===")
+                    # print(response)
+                except Exception as e:
+                    logger.error(f"Error in reading policy: {e}")
+                    raise HTTPException(
+                        status_code=404, detail="Access policy not found."
+                    )
+
+            # if not response:
+            #     raise HTTPException(
+            #         status_code=404, detail="Access policy not found."
+            #     )
+            # query.session = self.filters_allowed(query.session, own, current_user=current_user)
+            # access_request = AccessRequest(
+            #     resource_id=policy.resource_id,
+            #     action=own,
+            #     current_user=current_user,
+            # )
+            # await self.allows(access_request)
 
             # if not await self.allows(access_request):
             # except Exception as e:

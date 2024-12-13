@@ -275,10 +275,18 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 async with self.policy_CRUD as policy_CRUD:
                     access_policy = AccessPolicyCreate(
                         resource_id=azure_group_id,
-                        action=Action.write,
+                        action=Action.write,  # needs write access to parent to add itself to the group -> BaseHierarchyCRUD.create()!
                         identity_id=current_user_data.user_id,
                     )
+                    print(
+                        "=== user crud - create_azure_user_and_groups_if_not_exist - for groups - access_policy ==="
+                    )
+                    print(access_policy)
+                    # TBD: fix this: what writes should a user have to a newly created group_group?
                     await policy_CRUD.create(access_policy, current_user_data)
+                    print(
+                        "=== well, the group doesn't exist, therefore none has policy owner rights for the group either."
+                    )
                 await self.add_child_to_parent(
                     parent_id=azure_group_id,
                     child_id=current_user_data.user_id,
