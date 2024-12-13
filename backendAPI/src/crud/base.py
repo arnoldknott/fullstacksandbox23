@@ -53,11 +53,17 @@ class BaseCRUD(
 ):
     """Base class for CRUD operations."""
 
-    def __init__(self, base_model: Type[BaseModelType], directory: str = None):
+    def __init__(
+        self,
+        base_model: Type[BaseModelType],
+        directory: str = None,
+        allow_everyone: Optional[List[str]] = None,
+    ):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
         self.data_directory = directory
+        self.allow_everyone = allow_everyone
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType
@@ -263,8 +269,13 @@ class BaseCRUD(
                 action=own,
                 identity_id=current_user.user_id,
             )
+
             async with self.policy_CRUD as policy_CRUD:
-                await policy_CRUD.create(access_policy, current_user)
+                await policy_CRUD.create(
+                    access_policy,
+                    current_user,
+                    allow_everyone=True if "create" in self.allow_everyone else False,
+                )
             # await self._write_log(database_object.id, own, current_user, 201)
             if parent_id:
                 await self.add_child_to_parent(
@@ -353,7 +364,11 @@ class BaseCRUD(
             public=True,
         )
         async with self.policy_CRUD as policy_CRUD:
-            await policy_CRUD.create(public_access_policy, current_user)
+            await policy_CRUD.create(
+                public_access_policy,
+                current_user,
+                allow_everyone=True if "create" in self.allow_everyone else False,
+            )
 
         return database_object
 

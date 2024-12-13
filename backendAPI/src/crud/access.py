@@ -159,6 +159,10 @@ class AccessPolicyCRUD:
         policy: AccessPolicyCreate,
         current_user: CurrentUserData,
     ):
+        # print("=== AccessPolicyCRUD.__always_allow - policy ===")
+        # print(policy)
+        # print("=== AccessPolicyCRUD.__always_allow - current_user ===")
+        # print(current_user)
         if "Admin" in current_user.azure_token_roles:
             return True
         # users can always create access policy for their own user object:
@@ -166,15 +170,16 @@ class AccessPolicyCRUD:
             return True
         # users can always create read access policy for azure groups, they are member of:
         elif (
-            policy.resource_id in current_user.azure_token_groups
+            current_user.azure_token_groups
+            and policy.resource_id in current_user.azure_token_groups
             and policy.action == write
         ):
             return True
         else:
-            print("=== AccessPolicyCRUD.__always_allow - policy ===")
-            print(policy)
-            print("=== AccessPolicyCRUD.__always_allow - current_user ===")
-            print(current_user)
+            # print("=== AccessPolicyCRUD.__always_allow - policy ===")
+            # print(policy)
+            # print("=== AccessPolicyCRUD.__always_allow - current_user ===")
+            # print(current_user)
             return False
 
     def filters_allowed(
@@ -620,7 +625,11 @@ class AccessPolicyCRUD:
         return False
 
     async def create(
-        self, policy: AccessPolicyCreate, current_user: CurrentUserData, *args
+        self,
+        policy: AccessPolicyCreate,
+        current_user: CurrentUserData,
+        allow_everyone: bool = False,
+        *args,
     ) -> AccessPolicyRead:
         """Creates a new access control policy."""
         # Note: the current_user is the one who creates the policy for the identity_id in the policy!
@@ -667,7 +676,24 @@ class AccessPolicyCRUD:
             # print("=== AccessPolicyCRUD.create - current_user ===")
             # print(current_user)
 
-            if not self.__always_allow(policy, current_user):
+            # print("=== AccessPolicyCRUD.create - policy ===")
+            # print(policy)
+            # print("=== AccessPolicyCRUD.create - current_user ===")
+            # print(current_user)
+
+            # print("=== AccessPolicyCRUD.create - allow_everyone ===")
+            # print(allow_everyone)
+            # print(
+            #     "=== AccessPolicyCRUD.create - self.__always_allow(policy, current_user) ==="
+            # )
+            # print(self.__always_allow(policy, current_user))
+
+            if allow_everyone or self.__always_allow(policy, current_user):
+                # print("=== access check skipped ===")
+                pass
+            else:
+                # print("=== access check not skipped ===")
+                # if not self.__always_allow(policy, current_user):
                 try:
                     await self.read(
                         current_user=current_user,
@@ -699,6 +725,9 @@ class AccessPolicyCRUD:
             # except Exception as e:
             #     logger.error(f"Error in creating policy: {e}")
             #     raise HTTPException(status_code=403, detail="Forbidden.")
+
+            # print("=== AccessPolicyCRUD.create - policy ===")
+            # print(policy)
 
             # Works:
             self.session.add(policy)
@@ -772,8 +801,8 @@ class AccessPolicyCRUD:
             response = await self.session.exec(query)
             results = response.all()
 
-            # print("=== AccessPolicyCRUD.read - results ===")
-            # print(results)
+            print("=== AccessPolicyCRUD.read - results ===")
+            print(results)
 
             if not results:
                 raise HTTPException(status_code=404, detail="Access policy not found.")

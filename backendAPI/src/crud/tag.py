@@ -9,7 +9,7 @@ from .base import BaseCRUD
 
 class TagCRUD(BaseCRUD[Tag, TagCreate, TagRead, TagUpdate]):
     def __init__(self):
-        super().__init__(Tag)
+        super().__init__(Tag, allow_everyone=["create"])
 
     # # TBD: add access control and access logging for this - use self.read()!
     # # Move to DemoResourceCRUD?

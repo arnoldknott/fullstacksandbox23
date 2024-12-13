@@ -23,7 +23,7 @@ class DemoResourceCRUD(
     BaseCRUD[DemoResource, DemoResourceCreate, DemoResourceRead, DemoResourceUpdate]
 ):
     def __init__(self):
-        super().__init__(DemoResource)
+        super().__init__(DemoResource, allow_everyone=["create"])
 
     # TBD: turn into list of tag-Ids, to allow multiple tags
     # TBD: refactor into access control - this might include the hierarchy of the resources!
