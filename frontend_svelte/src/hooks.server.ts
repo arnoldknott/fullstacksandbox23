@@ -37,7 +37,7 @@ export const handle = async ({ event, resolve }) => {
 					console.log('🎣 hooks - server - access to admin route');
 					const userResponse = await backendAPI.get(event.locals.sessionData.sessionId, '/user/me');
 					const user = await userResponse.json();
-					if (!user.azureTokenRoles.includes('Admin')) {
+					if (!user.azure_token_roles.includes('Admin')) {
 						console.error(
 							'🔥 🎣 hooks - server - access to admin route failed (user is not admin)'
 						);

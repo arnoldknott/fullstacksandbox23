@@ -7,8 +7,8 @@ resource "random_uuid" "UuidScope4" {}
 # resource "random_uuid" "UuidScope6" {}
 resource "random_uuid" "UuidRole1" {}     # Used for admins in backend
 resource "random_uuid" "userGroupUUID" {} # Used for users in backend
-resource "random_uuid" "AIpublicRoleUUID" {}
-resource "random_uuid" "AIprivateRoleUUID" {}
+# resource "random_uuid" "AIpublicRoleUUID" {}
+# resource "random_uuid" "AIprivateRoleUUID" {}
 # resource "random_uuid" "GitHubUserRoleUUID" {} # manage through account linking!
 # resource "random_uuid" "DiscordUserRoleUUID" {} # manage through account linking!
 # resource "random_uuid" "UuidRole5" {}
@@ -60,7 +60,7 @@ resource "azuread_application" "backendAPI" {
     # }
 
     oauth2_permission_scope {
-      admin_consent_description  = "Gives the users of Fullstack Sandox Application read rights to its REST API."
+      admin_consent_description  = "Gives the users of Fullstack Sandbox Application read rights to its REST API."
       admin_consent_display_name = "Users can read from Fullstack Sandbox REST API"
       enabled                    = true
       id                         = random_uuid.UuidScope2.result
@@ -71,7 +71,7 @@ resource "azuread_application" "backendAPI" {
     }
 
     oauth2_permission_scope {
-      admin_consent_description  = "Gives the users of Fullstack Sandox Application write rights to its REST API."
+      admin_consent_description  = "Gives the users of Fullstack Sandbox Application write rights to its REST API."
       admin_consent_display_name = "Users can write to Fullstack Sandbox application's REST API"
       enabled                    = true
       id                         = random_uuid.UuidScope3.result
@@ -82,8 +82,8 @@ resource "azuread_application" "backendAPI" {
     }
 
     oauth2_permission_scope {
-      admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to interact with Fullstack application via websockets."
-      admin_consent_display_name = "Users can interact with Fullstack Sandbox via websockets"
+      admin_consent_description  = "Gives the users of Fullstack Sandbox Application rights to interact with Fullstack application via socket.io."
+      admin_consent_display_name = "Users can interact with Fullstack Sandbox via socket.io"
       enabled                    = true
       id                         = random_uuid.UuidScope4.result
       type                       = "User"
@@ -120,8 +120,8 @@ resource "azuread_application" "backendAPI" {
 
   }
 
-  # can be used to add groups to tokens and assign roles - but no correleation between role and group!
-  # Defines roles within the app - mainnly required for the backend,
+  # can be used to add groups to tokens and assign roles - but no correlation between role and group!
+  # Defines roles within the app - mainly required for the backend,
   # but also used by the backendAPI to impersonate the user to access the Microsoft Graph API
   # and/or to access the backendAPI from postman/thunderclient:
   app_role {
@@ -142,23 +142,26 @@ resource "azuread_application" "backendAPI" {
     value                = "User" # could be comething like "User.Write" or "User.Read"
   }
 
-  app_role {
-    allowed_member_types = ["User"]
-    description          = "Users can access the public artificial intelligence"
-    display_name         = "Public Artificial Intelligence Users"
-    enabled              = true
-    id                   = random_uuid.AIpublicRoleUUID.result
-    value                = "publicAIuser"
-  }
-
-  app_role {
-    allowed_member_types = ["User"]
-    description          = "Users can access the private artificial intelligence"
-    display_name         = "Private Artificial Intelligence Users"
-    enabled              = true
-    id                   = random_uuid.AIprivateRoleUUID.result
-    value                = "privateAIuser"
-  }
+  # User self-sign-up (after consent) - not possible without giving the
+  # frontend app 'AppRoleAssignment.ReadWrite.All' and 'Application.Read.All'"
+  # permissions, which appear overkill and need Admin consent.
+  # app_role {
+  #   allowed_member_types = ["User"]
+  #   description          = "Users can access the public artificial intelligence"
+  #   display_name         = "Public Artificial Intelligence Users"
+  #   enabled              = true
+  #   id                   = random_uuid.AIpublicRoleUUID.result
+  #   value                = "publicAIuser"
+  # }
+  #
+  # app_role {
+  #   allowed_member_types = ["User"]
+  #   description          = "Users can access the private artificial intelligence"
+  #   display_name         = "Private Artificial Intelligence Users"
+  #   enabled              = true
+  #   id                   = random_uuid.AIprivateRoleUUID.result
+  #   value                = "privateAIuser"
+  # }
 
   # app_role {
   #   allowed_member_types = ["User"]
