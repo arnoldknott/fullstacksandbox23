@@ -281,7 +281,7 @@ async def register_one_resource():
     """Registers a resource id and its type in the database."""
 
     async def _register_one_resource(resource_id: UUID, model: ResourceType):
-        register_one_resource_helper(resource_id, model)
+        await register_one_resource_helper(resource_id, model)
 
     yield _register_one_resource
 
