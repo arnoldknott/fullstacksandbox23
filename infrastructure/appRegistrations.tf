@@ -200,19 +200,103 @@ resource "azuread_application" "backendAPI" {
   required_resource_access {
     resource_app_id = "00000003-0000-0000-c000-000000000000"
 
+    ### Those are absolutely mandatory:
+    # openid:
     resource_access {
       id   = "37f7f235-527c-4136-accd-4a02d197296e"
       type = "Scope"
     }
+
+    # profile:
     resource_access {
       id   = "14dad69e-099b-42c9-810b-d002981feec1"
       type = "Scope"
     }
+
+    # User.Read:
     resource_access {
       id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d"
       type = "Scope"
     }
+
+    # Additional:
+    # Calendars.ReadWrite - delegated
+    resource_access {
+      id = "1ec239c2-d7c9-4623-a91a-a9775856bb36"
+      type = "Scope"
+    }
+
+    # Calendars.ReadWrite.Shared - delegated
+    resource_access {
+      id   = "12466101-c9b8-439a-8589-dd09ee67e8e9"
+      type = "Scope"
+    }
+
+    # Files.Read.All - delegated
+    resource_access {
+      id   = "df85f4d6-205c-4ac5-a5ea-6bf408dba283"
+      type = "Scope"
+    }
+
+    # Files.ReadWrite.All - delegated
+    resource_access {
+      id   = "863451e7-0667-486c-a5d6-d135439485f0"
+      type = "Scope"
+    }
+
+    # # Mail including the shared mailboxes - delegated:
+    # # Mail.Read.Shared - delegated
+    # resource_access {
+    #   id   = "7b9103a5-4610-446b-9670-80643382c1fa"
+    #   type = "Scope"
+    # }
+
+    # # Mail.ReadWrite.Shared - delegated
+    # resource_access {
+    #   id   = "5df07973-7d5d-46ed-9847-1271055cbd51"
+    #   type = "Scope"
+    # }
+
+    # # Mail.Send.Shared - delegated
+    # resource_access{
+    #   id   = "a367ab51-6b49-43bf-a716-a1fb06d2a174"
+    #   type = "Scope"
+    # }
+
+    # # Mail (only the users own) - delegated:
+    # # Mail.Read - delegated
+    # resource_access {
+    #   id   = "570282fd-fa5c-430d-a7fd-fc8dc98a9dca"
+    #   type = "Scope"
+    # }
+
+    # # Mail.ReadWrite - delegated
+    # resource_access {
+    #   id   = "024d486e-b451-40bb-833d-3e66d98c5c73"
+    #   type = "Scope"
+    # }
+
+    # # Mail.Send - delegated
+    # resource_access {
+    #   id   = "e383f46e-2787-4529-855e-0e479a3ffac0"
+    #   type = "Scope"
+    # }
+
+    # consider adding notes - for OneNote access
+
+    # User.ReadBasic.All - delegated
+    resource_access {
+      id = "b340eb25-3456-403f-be2f-af7a0d370277"
+      type = "Scope"
+    }
+
+    # Team.ReadBasic.All - delegated
+    resource_access {
+      id = "485be79e-c497-4b35-9400-0e3fa7f2a5d4"
+      type = "Scope"
+    }
   }
+
 
   # TBD: consider adding for enabling swaggerUI authentication - change the host names for stage and prod:
   # Example on how to connect SwaggerUI to AzureAD:
