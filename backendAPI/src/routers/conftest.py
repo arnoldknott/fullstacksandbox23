@@ -16,14 +16,14 @@ from crud.protected_resource import (
 )
 from crud.public_resource import PublicResourceCRUD
 from crud.tag import TagCRUD
-from models.demo_resource import DemoResource
-from models.protected_resource import ProtectedResource, ProtectedChild
 from models.category import Category
+from models.demo_resource import DemoResource
 from models.identity import User
+from models.protected_resource import ProtectedChild, ProtectedResource
 from tests.utils import (
+    current_user_data_admin,
     many_test_categories,
     many_test_demo_resources,
-    current_user_data_admin,
     many_test_protected_child_resources,
     many_test_protected_grandchild_resources,
     many_test_protected_resources,

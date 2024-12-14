@@ -1,9 +1,9 @@
 from os import path, remove
+from uuid import uuid4
 
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
-from uuid import uuid4
 
 from models.demo_file import DemoFile
 from models.demo_resource import DemoResource

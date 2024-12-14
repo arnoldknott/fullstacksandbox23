@@ -222,7 +222,7 @@ resource "azuread_application" "backendAPI" {
     # Additional:
     # Calendars.ReadWrite - delegated
     resource_access {
-      id = "1ec239c2-d7c9-4623-a91a-a9775856bb36"
+      id   = "1ec239c2-d7c9-4623-a91a-a9775856bb36"
       type = "Scope"
     }
 
@@ -286,13 +286,13 @@ resource "azuread_application" "backendAPI" {
 
     # User.ReadBasic.All - delegated
     resource_access {
-      id = "b340eb25-3456-403f-be2f-af7a0d370277"
+      id   = "b340eb25-3456-403f-be2f-af7a0d370277"
       type = "Scope"
     }
 
     # Team.ReadBasic.All - delegated
     resource_access {
-      id = "485be79e-c497-4b35-9400-0e3fa7f2a5d4"
+      id   = "485be79e-c497-4b35-9400-0e3fa7f2a5d4"
       type = "Scope"
     }
   }

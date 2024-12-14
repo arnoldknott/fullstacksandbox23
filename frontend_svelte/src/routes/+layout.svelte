@@ -117,7 +117,8 @@
 <!-- <svelte:window onload={foo} /> -->
 <!-- <svelte:window use:initFlyonui /> -->
 
-<main>
+<!-- TBD: add toggle switch for light and dark mode -->
+<main data-theme="dark">
 	<!-- {initFlyonui()} -->
 	{@render children?.()}
 	<!-- <slot /> -->

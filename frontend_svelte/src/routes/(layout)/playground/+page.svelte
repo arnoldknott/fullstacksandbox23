@@ -43,8 +43,6 @@
 	];
 </script>
 
-Version 3:
-
 <div class="grid grid-cols-3 gap-4">
 	{#each links as link}
 		<div>

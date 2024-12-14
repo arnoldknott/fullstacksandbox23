@@ -11,7 +11,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from core.cache import redis_session_client
 from core.databases import postgres_async_engine  # should be SQLite here only!
 from core.security import CurrentAccessToken, Guards, provide_http_token_payload
-from core.types import CurrentUserData, IdentityType, ResourceType, Action
+from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
@@ -34,7 +34,7 @@ from models.access import (
     AccessPolicyRead,
     IdentifierTypeLink,
 )
-from models.identity import Group, User, UserRead, SubGroup
+from models.identity import Group, SubGroup, User, UserRead
 from models.protected_resource import ProtectedResource
 from tests.utils import (
     current_user_data_admin,
