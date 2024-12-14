@@ -572,6 +572,7 @@ async def test_all_protected_grandchild_endpoints(
 # region ## resource hierarchy tests:
 
 
+# TBD: is this one still relevant, as now all protected children are created with a parent?
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
@@ -583,6 +584,7 @@ async def test_post_protected_child_resource_and_add_to_parent(
     app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     add_many_test_protected_resources,
+    add_one_test_access_policy,
     mocked_provide_http_token_payload,
 ):
     """Tests the add protected_child to parent endpoint of the API."""
@@ -596,10 +598,19 @@ async def test_post_protected_child_resource_and_add_to_parent(
         if protected_resources.name == "First Protected Resource"
     ][0]
 
+    await add_one_test_access_policy(
+        {
+            "identity_id": str(current_test_user.user_id),
+            "resource_id": str(test_parent.id),
+            "action": Action.write,
+        },
+        current_test_user,
+    )
+
     # Make a POST request to create the protected child as a child of a protected resource
     before_time = datetime.now()
     response = await async_client.post(
-        f"/api/v1/protected/child/?parent_id={test_parent.id}",
+        f"/api/v1/protected/resource/{test_parent.id}/child",
         json=many_test_protected_child_resources[0],
     )
     after_time = datetime.now()
