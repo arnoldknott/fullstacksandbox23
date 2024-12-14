@@ -22,7 +22,15 @@ const scopesBackend = [
 	`api://${appConfig.api_scope}/api.read`,
 	`api://${appConfig.api_scope}/api.write`
 ];
-const scopesMsGraph = ['User.Read', 'openid', 'profile', 'offline_access'];
+const scopesMsGraph = [
+	'User.Read',
+	'openid',
+	'profile',
+	'offline_access',
+	'Calendars.ReadWrite.Shared',
+	'Files.ReadWrite.All',
+	'User.ReadBasic.All'
+];
 const scoepsAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
 
 class BaseOauthProvider {
