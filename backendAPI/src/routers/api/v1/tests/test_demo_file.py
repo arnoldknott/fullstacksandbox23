@@ -63,7 +63,7 @@ async def test_post_demo_files(
 
     # Make a POST request to upload the demo file
     response = await async_client.post(
-        f"/api/v1/demo/{str(parent_id)}/files", files=demo_files
+        f"/api/v1/demo/resource/{str(parent_id)}/files", files=demo_files
     )
 
     assert response.status_code == 201
@@ -125,7 +125,7 @@ async def test_post_demo_files_without_access_to_parent(
 
     # Make a POST request to upload the demo file
     response = await async_client.post(
-        f"/api/v1/demo/{str(parent_id)}/files", files=demo_files
+        f"/api/v1/demo/resource/{str(parent_id)}/files", files=demo_files
     )
 
     assert response.status_code == 403
@@ -178,7 +178,7 @@ async def test_post_demo_files_without_existing_parent(
 
     # Make a POST request to upload the demo file
     response = await async_client.post(
-        f"/api/v1/demo/{str(parent_id)}/files", files=demo_files
+        f"/api/v1/demo/resource/{str(parent_id)}/files", files=demo_files
     )
 
     assert response.status_code == 403
@@ -230,7 +230,7 @@ async def test_post_demo_files_uniqueness(
 
     # Make a POST request to upload the demo file
     response = await async_client.post(
-        f"/api/v1/demo/{str(parent_id)}/files", files=demo_files
+        f"/api/v1/demo/resource/{str(parent_id)}/files", files=demo_files
     )
 
     assert response.status_code == 403

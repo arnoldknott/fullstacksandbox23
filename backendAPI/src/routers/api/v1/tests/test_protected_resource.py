@@ -348,15 +348,18 @@ async def test_delete_protected_resource(
 async def test_all_protected_child_endpoints(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    access_to_one_parent,
     mocked_provide_http_token_payload,
     add_many_test_protected_children,
 ):
     """Tests the post_protected_child endpoint of the API."""
     app_override_provide_http_token_payload
 
+    parent_protected_resource_id = await access_to_one_parent(ProtectedResource)
+
     # Make a POST request to create the protected child
     response = await async_client.post(
-        "/api/v1/protected/child/",
+        f"/api/v1/protected/resource/{parent_protected_resource_id}/child",
         json=many_test_protected_child_resources[0],
     )
 

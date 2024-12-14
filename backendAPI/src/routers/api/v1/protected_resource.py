@@ -102,17 +102,18 @@ async def delete_protected_resource(
 protected_child_view = BaseView(ProtectedChildCRUD)
 
 
-@router.post("/child/", status_code=201)
+@router.post("/resource/{protected_resource_id}/child", status_code=201)
 async def post_protected_child(
     protected_child: ProtectedChildCreate,
-    parent_id: Annotated[UUID | None, Query()] = None,
+    # parent_id: Annotated[UUID | None, Query()] = None,
+    protected_resource_id: UUID,
     inherit: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedChild:
     """Creates a new protected child."""
     return await protected_child_view.post(
-        protected_child, token_payload, guards, parent_id, inherit
+        protected_child, token_payload, guards, protected_resource_id, inherit
     )
 
 

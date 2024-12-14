@@ -404,6 +404,7 @@ async def add_test_access_policy(policy: dict, current_user: CurrentUserData = N
 async def add_one_test_access_policy():
     """Fixture for adding test policies."""
 
+    # TBD: refactor policy from type dict to AccessPolicyCreate
     async def _add_one_test_access_policy(
         policy: dict, current_user: CurrentUserData = None
     ):

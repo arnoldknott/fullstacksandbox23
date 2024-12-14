@@ -22,6 +22,7 @@ from models.identity import User
 from tests.utils import (
     many_test_categories,
     many_test_demo_resources,
+    current_user_data_admin,
     many_test_protected_child_resources,
     many_test_protected_grandchild_resources,
     many_test_protected_resources,
@@ -259,11 +260,20 @@ async def add_test_protected_child(
     current_user: CurrentUserData = None,
     parent_id: UUID = None,
     inherit: bool = False,
+    # add_one_test_access_policy=None,
 ):
     """Adds a test protected child to the database."""
 
     if not current_user:
         current_user = await current_user_from_azure_token()
+    # access_policy = {
+    #     "resource_id": parent_id,
+    #     "resource_type": "ProtectedResource",
+    #     "identity_id": current_user.user_id,
+    #     "action": "write",
+    #     "role": "owner",
+    # }
+    # await add_one_test_access_policy(access_policy, current_user_data_admin)
     async with ProtectedChildCRUD() as crud:
         added_protected_child = await crud.create(
             protected_child, current_user, parent_id, inherit

@@ -19,7 +19,7 @@ demo_file_view = BaseView(DemoFileCRUD)
 # roles = ["User"] is required for the whole router in main.py!
 
 
-@router.post("/{demo_resource_id}/files", status_code=201)
+@router.post("/resource/{demo_resource_id}/files", status_code=201)
 async def post_demo_file(
     demo_resource_id: UUID,
     files: List[UploadFile] = File(...),
