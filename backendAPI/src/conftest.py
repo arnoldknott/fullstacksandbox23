@@ -356,10 +356,10 @@ async def register_many_entities(get_async_test_session: AsyncSession):
 
 
 @pytest.fixture(scope="function")
-async def register_one_parent(current_user_from_azure_token):
+async def access_to_one_parent(current_user_from_azure_token):
     """Fixture for registering a parent and adds a write policy for a the current user token to the database."""
 
-    async def _register_one_parent(
+    async def _access_to_one_parent(
         # model: Union["ResourceType", "IdentityType"], current_user: CurrentUserData
         model: Union["ResourceType", "IdentityType"],
         token_payload: dict,
@@ -382,7 +382,7 @@ async def register_one_parent(current_user_from_azure_token):
 
         return parent_id
 
-    yield _register_one_parent
+    yield _access_to_one_parent
 
 
 async def add_test_access_policy(policy: dict, current_user: CurrentUserData = None):

@@ -281,22 +281,22 @@ class BaseCRUD(
                     action=write,
                     current_user=current_user,
                 )
-                print("=== CRUD - base - create - parent_access_request ===")
-                print(parent_access_request)
+                # print("=== CRUD - base - create - parent_access_request ===")
+                # print(parent_access_request)
                 if not await self.policy_CRUD.allows(parent_access_request):
                     raise HTTPException(status_code=403, detail="Forbidden.")
                 async with self.policy_CRUD as policy_CRUD:
                     await policy_CRUD.create(
                         access_policy, current_user, allow_override=True
                     )
-                print("=== CRUD - base - create - before adding child to parent ===")
+                # print("=== CRUD - base - create - before adding child to parent ===")
                 await self.add_child_to_parent(
                     parent_id=parent_id,
                     child_id=database_object.id,
                     current_user=current_user,
                     inherit=inherit,
                 )
-                print("=== CRUD - base - create - after adding child to parent ===")
+                # print("=== CRUD - base - create - after adding child to parent ===")
                 # async with self.hierarchy_CRUD as hierarchy_CRUD:
                 #     await hierarchy_CRUD.create(
                 #         current_user=current_user,
@@ -319,8 +319,12 @@ class BaseCRUD(
                     )
             else:
                 # TBD: is this only admin that can create stand-alone resources?
-                async with self.policy_CRUD as policy_CRUD:
-                    await policy_CRUD.create(access_policy, current_user)
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"{self.model.__name__} - Forbidden.",
+                )
+                # async with self.policy_CRUD as policy_CRUD:
+                #     await policy_CRUD.create(access_policy, current_user)
 
             # print("=== CRUD - base - create - database_object ===")
             # pprint(database_object)
