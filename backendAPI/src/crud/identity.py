@@ -89,7 +89,7 @@ class AzureGroupCRUD(
 class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     def __init__(self):
         # super().__init__(User, IdentityType.user)
-        super().__init__(User)
+        super().__init__(User, allow_standalone=True)
 
     # def _add_identity_type_link_to_session(self, user_id: UUID):
     #     session = self.session
@@ -374,7 +374,7 @@ class UeberGroupCRUD(
     BaseCRUD[UeberGroup, UeberGroupCreate, UeberGroupRead, UeberGroupUpdate]
 ):
     def __init__(self):
-        super().__init__(UeberGroup)
+        super().__init__(UeberGroup, allow_standalone=True)
 
 
 class GroupCRUD(BaseCRUD[Group, GroupCreate, GroupRead, GroupUpdate]):
