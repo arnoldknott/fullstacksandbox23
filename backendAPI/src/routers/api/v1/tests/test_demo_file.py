@@ -35,9 +35,7 @@ async def test_post_demo_files(
     demo_file_names = ["demo_file_00.txt", "demo_file_01.txt"]
     appdata_path = "/data/appdata/demo_files"
 
-    parent_id = await access_to_one_parent(
-        DemoResource, mocked_provide_http_token_payload
-    )
+    parent_id = await access_to_one_parent(DemoResource)
 
     # Make sure the demo files do not exist before the test on disk:
     for demo_file_name in demo_file_names:
@@ -209,9 +207,7 @@ async def test_post_demo_files_uniqueness(
     if path.exists(f"{appdata_path}/{demo_file_name}"):
         remove(f"{appdata_path}/{demo_file_name}")
 
-    parent_id = await access_to_one_parent(
-        DemoResource, mocked_provide_http_token_payload
-    )
+    parent_id = await access_to_one_parent(DemoResource)
 
     demo_files = [
         (

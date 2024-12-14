@@ -356,15 +356,18 @@ async def register_many_entities(get_async_test_session: AsyncSession):
 
 
 @pytest.fixture(scope="function")
-async def access_to_one_parent(current_user_from_azure_token):
+async def access_to_one_parent(
+    current_user_from_azure_token, mocked_provide_http_token_payload
+):
     """Fixture for registering a parent and adds a write policy for a the current user token to the database."""
 
     async def _access_to_one_parent(
         # model: Union["ResourceType", "IdentityType"], current_user: CurrentUserData
         model: Union["ResourceType", "IdentityType"],
-        token_payload: dict,
+        token_payload: dict = None,
     ):
         """Registers a parent and adds a write policy for a the current user token to the database."""
+        token_payload = token_payload or mocked_provide_http_token_payload
         current_user = await current_user_from_azure_token(token_payload)
 
         parent_id = uuid4()

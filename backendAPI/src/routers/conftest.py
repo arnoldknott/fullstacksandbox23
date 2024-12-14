@@ -16,6 +16,7 @@ from crud.protected_resource import (
 )
 from crud.public_resource import PublicResourceCRUD
 from crud.tag import TagCRUD
+from models.demo_resource import DemoResource
 from models.category import Category
 from models.identity import User
 from tests.utils import (
@@ -169,7 +170,7 @@ async def add_test_demo_resources(
 
 @pytest.fixture(scope="function")
 async def add_many_test_demo_files(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: User, access_to_one_parent: UUID
 ):
     """Adds test demo files to the database and the appdata on disk."""
 
@@ -185,10 +186,14 @@ async def add_many_test_demo_files(
 
     async def _add_many_test_demo_files(token_payload: dict = None):
         demo_files_metadata = []
+
         for demo_file in test_demo_files:
             current_user = await current_user_from_azure_token(token_payload)
+            parent_demo_resource_id = await access_to_one_parent(DemoResource)
             async with DemoFileCRUD() as crud:
-                added_demo_file = await crud.create_file(demo_file, current_user)
+                added_demo_file = await crud.create_file(
+                    demo_file, current_user, parent_demo_resource_id
+                )
             demo_files_metadata.append(added_demo_file)
 
         demo_files_metadata = sorted(demo_files_metadata, key=lambda x: x.id)
