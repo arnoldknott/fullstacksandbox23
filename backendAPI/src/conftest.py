@@ -34,7 +34,7 @@ from models.access import (
     AccessPolicyRead,
     IdentifierTypeLink,
 )
-from models.identity import Group, User, UserRead
+from models.identity import Group, User, UserRead, SubGroup
 from models.protected_resource import ProtectedResource
 from tests.utils import (
     current_user_data_admin,
@@ -821,15 +821,19 @@ async def add_one_test_sub_group(
 @pytest.fixture(scope="function")
 async def add_many_test_sub_groups(
     current_user_from_azure_token: User,
+    access_to_one_parent: UUID,
 ):
     """Adds test sub-groups to the database."""
 
     async def _add_many_test_sub_groups(token_payload: dict = None):
         sub_groups = []
+        parent_identity_id = await access_to_one_parent(Group)
         for sub_group in many_test_sub_groups:
             current_user = await current_user_from_azure_token(token_payload)
             async with SubGroupCRUD() as crud:
-                added_sub_group = await crud.create(sub_group, current_user)
+                added_sub_group = await crud.create(
+                    sub_group, current_user, parent_identity_id
+                )
             sub_groups.append(added_sub_group)
 
         sub_groups = sorted(sub_groups, key=lambda x: x.id)
@@ -885,15 +889,19 @@ async def add_one_test_sub_sub_group(
 @pytest.fixture(scope="function")
 async def add_many_test_sub_sub_groups(
     current_user_from_azure_token: User,
+    access_to_one_parent: UUID,
 ):
     """Adds test sub-sub-groups to the database."""
 
     async def _add_many_test_sub_sub_groups(token_payload: dict = None):
         sub_sub_groups = []
+        parent_identity_id = await access_to_one_parent(SubGroup)
         for sub_sub_group in many_test_sub_sub_groups:
             current_user = await current_user_from_azure_token(token_payload)
             async with SubSubGroupCRUD() as crud:
-                added_sub_sub_group = await crud.create(sub_sub_group, current_user)
+                added_sub_sub_group = await crud.create(
+                    sub_sub_group, current_user, parent_identity_id
+                )
             sub_sub_groups.append(added_sub_sub_group)
 
         sub_sub_groups = sorted(sub_sub_groups, key=lambda x: x.id)
