@@ -9,33 +9,20 @@
 			url: '/components'
 		},
 		{
+			name: 'User interface',
+			description: 'play with elements of the user interface',
+			url: '/user_interface'
+		},
+		{
 			name: 'Backend - Schema',
 			description: 'The openapi schema of the backend API',
 			url: '/backend_schema'
-		},
-		{
-			// TBD: don't do "_" in URLs, ideally just "/", but "-" is also ok.
-			name: 'Backend - Demo Resources',
-			description:
-				'The demo resources of the backend API, retrieved through the backend API from the postgres database',
-			url: '/backend_demo_resource'
-		},
-		{
-			name: 'Microsoft Graph - Me',
-			description: 'The Microsoft Graph API - Me endpoint, all data in json',
-			url: '/ms_graph_me'
 		},
 		{
 			name: 'Counter',
 			description:
 				'A simple counter, stored in a svelte store. Works well to try  page reloads: the counter gets reset every time.',
 			url: '/counter'
-		},
-		{
-			name: 'Session data',
-			description:
-				'Session data including userprofile stores in $page data: contains json data of the logged in user',
-			url: '/sessiondata'
 		},
 		{
 			name: 'Core',
@@ -49,30 +36,10 @@
 			url: '/user_agent'
 		},
 		{
-			name: 'On behalf of user acceess',
-			description: 'TBD: On behalf of user access to the Microsoft Graph API',
-			url: '/onbehalfof'
-		},
-		{
-			name: 'User interface',
-			description: 'play with elements of the user interface',
-			url: '/user_interface'
-		},
-		{
 			name: 'Websockets',
 			description: 'Establishing various websocket connections to backend and using them',
 			url: '/websockets'
 		},
-		{
-			name: 'Socket.IO',
-			description: 'Establishing various Socket.IO connections to backend and using them',
-			url: '/socketio'
-		},
-		{
-			name: 'Application Roles',
-			description: 'User signup for application roles',
-			url: '/approles'
-		}
 	];
 </script>
 

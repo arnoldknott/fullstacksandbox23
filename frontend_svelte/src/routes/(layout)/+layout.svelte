@@ -41,9 +41,9 @@
 		<div class="flex-grow space-x-4">
 			<NavButton url="/" link="Home" />
 			<NavButton url="/docs" link="Docs" />
+			<NavButton url="/playground" link="Playground" />
 			<Guard>
-				<NavButton url="/playground" link="Playground" />
-				<NavButton url="/protectedResource" link="Protected" />
+				<NavButton url="/protected" link="Protected" />
 				<NavButton url="/dashboard" link="Dashboard" />
 			</Guard>
 		</div>
