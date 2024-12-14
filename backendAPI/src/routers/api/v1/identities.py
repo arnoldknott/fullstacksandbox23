@@ -22,10 +22,12 @@ from models.identity import (
     Group,
     GroupCreate,
     GroupRead,
+    Me,
     SubGroup,
     SubGroupCreate,
     SubGroupRead,
     SubGroupUpdate,
+    SubSubGroupCreate,
     UeberGroup,
     UeberGroupCreate,
     UeberGroupRead,
@@ -82,7 +84,7 @@ async def post_user(
 
 
 @user_router.post("/{user_id}/group/{group_id}", status_code=201)
-async def post_add_user_to_group(
+async def post_existing_user_to_group(
     user_id: UUID,
     group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
@@ -97,6 +99,23 @@ async def post_add_user_to_group(
         token_payload,
         guards,
         inherit,
+    )
+
+
+@user_router.get("/me", status_code=200)
+async def get_current_user(
+    token_payload=Depends(get_http_access_token_payload),
+    guards=Depends(Guards(roles=["User"])),
+) -> Me:
+    """Returns the current user."""
+    current_user = await check_token_against_guards(token_payload, guards)
+    userInDatabase = await user_view.get_by_id(
+        current_user.user_id, token_payload, guards
+    )
+    return Me(
+        **userInDatabase.model_dump(),
+        azure_token_roles=current_user.azure_token_roles,
+        azure_token_groups=current_user.azure_token_groups,
     )
 
 
@@ -204,7 +223,7 @@ async def post_ueber_group(
 
 
 @ueber_group_router.post("/{ueber_group_id}/users", status_code=201)
-async def post_add_users_to_uebergroup(
+async def post_existing_users_to_uebergroup(
     ueber_group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
@@ -226,8 +245,23 @@ async def post_add_users_to_uebergroup(
     return hierarchy_response
 
 
+@ueber_group_router.post("/{ueber_group_id}/group", status_code=201)
+async def post_group_to_uebergroup(
+    group: GroupCreate,
+    ueber_group_id: UUID,
+    inherit: Annotated[bool, Query()] = True,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+) -> SubGroup:
+    """Creates a new group as a child of an ueber_group with ueber_group_id."""
+    logger.info("POST group to ueber_group")
+    return await group_view.post(
+        group, token_payload, guards, ueber_group_id, inherit=inherit
+    )
+
+
 @ueber_group_router.post("/{ueber_group_id}/groups", status_code=201)
-async def post_add_groups_to_uebergroup(
+async def post_existing_groups_to_uebergroup(
     ueber_group_id: UUID,
     group_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
@@ -349,7 +383,7 @@ async def post_group(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> Group:
-    """Creates a new group."""
+    """Creates a new group without a parent ueber-group."""
     logger.info("POST group")
     return await group_view.post(
         group,
@@ -359,14 +393,14 @@ async def post_group(
 
 
 @group_router.post("/{group_id}/uebergroup/{ueber_group_id}", status_code=201)
-async def post_add_group_to_uebergroup(
+async def post_group_to_existing_uebergroup(
     group_id: UUID,
     ueber_group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> BaseHierarchyModelRead:
-    """Adds a group to an ueber_group."""
+    """Adds an existing group to an ueber_group."""
     logger.info("POST group to ueber_group")
     return await group_view.post_add_child_to_parent(
         group_id,
@@ -378,14 +412,14 @@ async def post_add_group_to_uebergroup(
 
 
 @group_router.post("/{group_id}/users", status_code=201)
-async def post_add_users_to_group(
+async def post_existing_users_to_group(
     group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> list[BaseHierarchyModelRead]:
-    """Adds bulk of users to a group."""
+    """Adds bulk of existing users to a group."""
     logger.info("POST users to group")
     hierarchy_response = []
     for user_id in user_ids:
@@ -400,15 +434,30 @@ async def post_add_users_to_group(
     return hierarchy_response
 
 
+@group_router.post("/{group_id}/subgroup", status_code=201)
+async def post_sub_group_to_group(
+    sub_group: SubGroupCreate,
+    group_id: UUID,
+    inherit: Annotated[bool, Query()] = True,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+) -> SubGroup:
+    """Creates a new sub_group as a child of group with group_id."""
+    logger.info("POST sub_group to group")
+    return await sub_group_view.post(
+        sub_group, token_payload, guards, group_id, inherit=inherit
+    )
+
+
 @group_router.post("/{group_id}/subgroups", status_code=201)
-async def post_add_subgroups_to_group(
+async def post_existing_subgroups_to_group(
     group_id: UUID,
     sub_group_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> list[BaseHierarchyModelRead]:
-    """Adds bulk of sub-groups to a group."""
+    """Adds bulk of existing sub-groups by their id to a group."""
     logger.info("POST sub-groups to group")
     hierarchy_response = []
     for sub_group_id in sub_group_ids:
@@ -433,7 +482,7 @@ async def get_all_groups(
 
 
 @group_router.get("/{group_id}", status_code=200)
-async def getgroup_by_id(
+async def get_group_by_id(
     group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(roles=["User"])),
@@ -533,30 +582,33 @@ sub_group_router = APIRouter()
 sub_group_view = BaseView(SubGroupCRUD)
 
 
-@sub_group_router.post("/", status_code=201)
-async def post_sub_group(
-    sub_group: SubGroupCreate,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
-) -> SubGroup:
-    """Creates a new sub_group."""
-    logger.info("POST sub_group")
-    return await sub_group_view.post(
-        sub_group,
-        token_payload,
-        guards,
-    )
+# Since stand-alone sub_groups are no longer allowed, this route is not needed anymore.
+# Get back in again,if the CRUD for sub_groups initializes
+# the super.__init__ with the allow_standalone=True!
+# @sub_group_router.post("/", status_code=201)
+# async def post_sub_group(
+#     sub_group: SubGroupCreate,
+#     token_payload=Depends(get_http_access_token_payload),
+#     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+# ) -> SubGroup:
+#     """Creates a new sub_group."""
+#     logger.info("POST sub_group")
+#     return await sub_group_view.post(
+#         sub_group,
+#         token_payload,
+#         guards,
+#     )
 
 
 @sub_group_router.post("/{sub_group_id}/group/{group_id}", status_code=201)
-async def post_add_subgroup_to_group(
+async def post_existing_subgroup_to_group(
     sub_group_id: UUID,
     group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> BaseHierarchyModelRead:
-    """Adds a sub_group to a group."""
+    """Adds an existing sub_group to a group."""
     logger.info("POST sub_group to group")
     return await sub_group_view.post_add_child_to_parent(
         sub_group_id,
@@ -568,7 +620,7 @@ async def post_add_subgroup_to_group(
 
 
 @sub_group_router.post("/{sub_group_id}/users", status_code=201)
-async def post_add_users_to_subgroup(
+async def post_existing_users_to_subgroup(
     sub_group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
@@ -590,8 +642,23 @@ async def post_add_users_to_subgroup(
     return hierarchy_response
 
 
+@sub_group_router.post("/{sub_group_id}/subsubgroup", status_code=201)
+async def post_sub_sub_group_to_sub_group(
+    sub_sub_group: SubSubGroupCreate,
+    sub_group_id: UUID,
+    inherit: Annotated[bool, Query()] = True,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+) -> SubGroup:
+    """Creates a new sub_sub_group as a child of sub_group with sub_group_id."""
+    logger.info("POST sub_sub_group to sub_group")
+    return await sub_sub_group_view.post(
+        sub_sub_group, token_payload, guards, sub_group_id, inherit=inherit
+    )
+
+
 @sub_group_router.post("/{sub_group_id}/subsubgroups", status_code=201)
-async def post_add_subsubgroups_to_subgroup(
+async def post_existing_subsubgroups_to_subgroup(
     sub_group_id: UUID,
     sub_sub_group_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
@@ -723,32 +790,35 @@ sub_sub_group_router = APIRouter()
 sub_sub_group_view = BaseView(SubSubGroupCRUD)
 
 
-@sub_sub_group_router.post("/", status_code=201)
-async def post_sub_sub_group(
-    sub_sub_group: SubGroupCreate,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
-) -> SubGroup:
-    """Creates a new sub_sub_group."""
-    logger.info("POST sub_sub_group")
-    return await sub_sub_group_view.post(
-        sub_sub_group,
-        token_payload,
-        guards,
-    )
+# Since stand-alone sub_sub_groups are no longer allowed, this route is not needed anymore.
+# Get back in again,if the CRUD for sub_sub_groups initializes
+# the super.__init__ with the allow_standalone=True!
+# @sub_sub_group_router.post("/", status_code=201)
+# async def post_sub_sub_group(
+#     sub_sub_group: SubGroupCreate,
+#     token_payload=Depends(get_http_access_token_payload),
+#     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+# ) -> SubGroup:
+#     """Creates a new sub_sub_group."""
+#     logger.info("POST sub_sub_group")
+#     return await sub_sub_group_view.post(
+#         sub_sub_group,
+#         token_payload,
+#         guards,
+#     )
 
 
 @sub_sub_group_router.post(
     "/{sub_sub_group_id}/subgroup/{sub_group_id}", status_code=201
 )
-async def post_add_subsubgroup_to_subgroup(
+async def post_existing_subsubgroup_to_subgroup(
     sub_sub_group_id: UUID,
     sub_group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> BaseHierarchyModelRead:
-    """Adds a sub_sub_group to a sub_group."""
+    """Adds an existing sub_sub_group to a sub_group."""
     logger.info("POST sub_sub_group to sub_group")
     return await sub_sub_group_view.post_add_child_to_parent(
         sub_sub_group_id,
@@ -760,7 +830,7 @@ async def post_add_subsubgroup_to_subgroup(
 
 
 @sub_sub_group_router.post("/{sub_sub_group_id}/users", status_code=201)
-async def post_add_users_to_subsubgroup(
+async def post_existing_users_to_subsubgroup(
     sub_sub_group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,

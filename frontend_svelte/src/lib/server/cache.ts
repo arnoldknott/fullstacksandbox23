@@ -159,7 +159,8 @@ class RedisCache {
 
 export const redisCache = new RedisCache();
 
-process.on('exit', () => redisCache?.stopClient());
+// TBD: consider getting this back in?
+// process.on('exit', () => redisCache?.stopClient());
 
 // OLD CODE:
 

@@ -19,7 +19,7 @@
 	// let keyboard = false
 
 	const connection: SocketioConnection = {
-		event: 'comments',// does not really matter here, I guess?
+		event: 'comments', // does not really matter here, I guess?
 		// namespace: '/presentation_interests',
 		namespace: '/interactive-documentation',
 		room: 'does_not_matter_here_either'

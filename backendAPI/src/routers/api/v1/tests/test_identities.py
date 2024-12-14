@@ -24,9 +24,10 @@ from models.protected_resource import ProtectedResourceRead
 from routers.api.v1.identities import (
     delete_group,
     get_user_by_id,
-    post_add_group_to_uebergroup,
-    post_add_subgroup_to_group,
-    post_add_user_to_group,
+    post_existing_groups_to_uebergroup,
+    post_existing_subgroup_to_group,
+    post_existing_user_to_group,
+    post_existing_users_to_subgroup,
 )
 from tests.utils import (
     current_user_data_admin,
@@ -389,6 +390,59 @@ async def test_post_user_invalid_token(
 # endregion: ## POST tests
 
 # region: ## GET tests:
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_groups, token_admin_read],
+    # here the admin get's itself => last_accessed_at should change!
+    indirect=True,
+)
+async def test_user_gets_own_user_through_me_endpoint(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_one_azure_test_user: List[User],
+    mocked_provide_http_token_payload,
+):
+    """Test a user GETs it's own user by id"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    # the target user:
+    await add_one_azure_test_user(0)
+
+    before_time = datetime.now()
+    response = await async_client.get("/api/v1/user/me")
+    after_time = datetime.now()
+
+    assert response.status_code == 200
+    user = response.json()
+    modelled_response_user = UserRead(**user)
+    assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
+    if "groups" in mocked_provide_http_token_payload:
+        assert user["azure_token_groups"] == mocked_provide_http_token_payload["groups"]
+        assert len(user["azure_token_groups"]) == len(
+            mocked_provide_http_token_payload["groups"]
+        )
+    assert "id" in user
+    assert user["azure_user_id"] == str(mocked_provide_http_token_payload["oid"])
+    assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time > created_at
+    assert last_accessed_at.status_code == 200
 
 
 @pytest.mark.anyio
@@ -1619,16 +1673,19 @@ async def test_all_group_endpoints(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
     mocked_provide_http_token_payload,
+    access_to_one_parent,
     add_many_test_groups,
 ):
     """Tests the group endpoints of the API."""
     app_override_provide_http_token_payload
 
-    # Make a POST request to create the group
+    # Make a POST request to create a standalone group
     response = await async_client.post(
         "/api/v1/group/",
         json=many_test_groups[0],
     )
+
+    parent_identity_id = await access_to_one_parent(UeberGroup)
 
     assert response.status_code == 201
     created_group = Group(**response.json())
@@ -1636,11 +1693,24 @@ async def test_all_group_endpoints(
     assert created_group.name == many_test_groups[0]["name"]
     assert created_group.description == many_test_groups[0]["description"]
 
+    # Make a POST request to create a group as child of existing ueber-group
+    response = await async_client.post(
+        f"/api/v1/uebergroup/{parent_identity_id}/group",
+        json=many_test_groups[0],
+    )
+
+    assert response.status_code == 201
+    created_group_as_child = Group(**response.json())
+    assert created_group_as_child.id is not None
+    assert created_group_as_child.name == many_test_groups[0]["name"]
+    assert created_group_as_child.description == many_test_groups[0]["description"]
+
     # add some more groups:
     # note: the first one is going to be double with different id's
     mocked_groups = await add_many_test_groups(mocked_provide_http_token_payload)
     created_group.id = uuid.UUID(created_group.id)
-    expected_groups = [created_group] + mocked_groups
+    created_group_as_child.id = uuid.UUID(created_group_as_child.id)
+    expected_groups = [created_group, created_group_as_child] + mocked_groups
     expected_groups = sorted(expected_groups, key=lambda x: x.id)
 
     # Make a GET request to get all groups
@@ -1709,17 +1779,25 @@ async def test_all_group_endpoints(
 async def test_all_sub_group_endpoints(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    access_to_one_parent,
     mocked_provide_http_token_payload,
     add_many_test_sub_groups,
 ):
     """Tests the sub_group endpoints of the API."""
     app_override_provide_http_token_payload
 
+    parent_identity_id = await access_to_one_parent(Group)
+
     # Make a POST request to create the sub-group
     response = await async_client.post(
-        "/api/v1/subgroup/",
+        f"/api/v1/group/{parent_identity_id}/subgroup",
         json=many_test_sub_groups[0],
     )
+    # Addition for standalone sub-groups:
+    # response = await async_client.post(
+    #     "/api/v1/subgroup/",
+    #     json=many_test_sub_groups[0],
+    # )
 
     assert response.status_code == 201
     created_sub_group = SubGroup(**response.json())
@@ -1803,17 +1881,25 @@ async def test_all_sub_group_endpoints(
 async def test_all_sub_sub_group_endpoints(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    access_to_one_parent,
     mocked_provide_http_token_payload,
     add_many_test_sub_sub_groups,
 ):
     """Tests the sub_sub_group endpoints of the API."""
     app_override_provide_http_token_payload
 
+    subgroup_id = await access_to_one_parent(SubGroup)
+
     # Make a POST request to create the sub-sub-group
     response = await async_client.post(
-        "/api/v1/subsubgroup/",
+        f"/api/v1/subgroup/{subgroup_id}/subsubgroup",
         json=many_test_sub_sub_groups[0],
     )
+    # Addition for stand-alone sub-sub-groups:
+    # response = await async_client.post(
+    #     "/api/v1/subsubgroup/",
+    #     json=many_test_sub_sub_groups[0],
+    # )
 
     assert response.status_code == 201
     created_sub_sub_group = SubSubGroup(**response.json())
@@ -2991,15 +3077,15 @@ async def test_user_access_through_inheritance_from_direct_group_membership(
 
     mocked_groups = await add_many_test_groups()
 
-    created_hierarchy = await post_add_user_to_group(
-        str(current_user.user_id),
-        str(mocked_groups[1].id),
+    created_hierarchy = await post_existing_user_to_group(
+        current_user.user_id,
+        mocked_groups[1].id,
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_hierarchy.parent_id == str(mocked_groups[1].id)
-    assert created_hierarchy.child_id == str(current_user.user_id)
+    assert created_hierarchy.parent_id == mocked_groups[1].id
+    assert created_hierarchy.child_id == current_user.user_id
     assert created_hierarchy.inherit is True
 
     mocked_protected_resources = await add_many_test_protected_resources()
@@ -3008,7 +3094,7 @@ async def test_user_access_through_inheritance_from_direct_group_membership(
     policy = {
         "resource_id": str(mocked_protected_resources[2].id),
         "identity_id": str(mocked_groups[1].id),
-        "action": "read",
+        "action": Action.read,
     }
     await add_one_test_access_policy(policy)
 
@@ -3056,15 +3142,15 @@ async def test_user_access_prohibited_through_inheritance_missing_group_membersh
 
     mocked_groups = await add_many_test_groups()
 
-    created_hierarchy = await post_add_user_to_group(
-        str(current_user.user_id),
-        str(mocked_groups[1].id),
+    created_hierarchy = await post_existing_user_to_group(
+        current_user.user_id,
+        mocked_groups[1].id,
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_hierarchy.parent_id == str(mocked_groups[1].id)
-    assert created_hierarchy.child_id == str(current_user.user_id)
+    assert created_hierarchy.parent_id == mocked_groups[1].id
+    assert created_hierarchy.child_id == current_user.user_id
     assert created_hierarchy.inherit is True
 
     mocked_protected_resources = await add_many_test_protected_resources()
@@ -3104,42 +3190,42 @@ async def test_user_access_through_inheritance_from_indirect_group_membership(
     mocked_sub_groups = await add_many_test_sub_groups()
 
     # Adding user to sub-group:
-    created_user_sub_group_membership = await post_add_user_to_group(
-        str(current_user.user_id),
-        str(mocked_sub_groups[2].id),
+    created_user_sub_group_membership = await post_existing_users_to_subgroup(
+        mocked_sub_groups[2].id,
+        [current_user.user_id],
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_user_sub_group_membership.parent_id == str(mocked_sub_groups[2].id)
-    assert created_user_sub_group_membership.child_id == str(current_user.user_id)
-    assert created_user_sub_group_membership.inherit is True
+    assert created_user_sub_group_membership[0].parent_id == mocked_sub_groups[2].id
+    assert created_user_sub_group_membership[0].child_id == current_user.user_id
+    assert created_user_sub_group_membership[0].inherit is True
 
     # Adding sub-group to group:
-    created_sub_group_group_membership = await post_add_subgroup_to_group(
-        str(mocked_sub_groups[2].id),
-        str(mocked_groups[1].id),
+    created_sub_group_group_membership = await post_existing_subgroup_to_group(
+        mocked_sub_groups[2].id,
+        mocked_groups[1].id,
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_sub_group_group_membership.parent_id == str(mocked_groups[1].id)
-    assert created_sub_group_group_membership.child_id == str(mocked_sub_groups[2].id)
+    assert created_sub_group_group_membership.parent_id == mocked_groups[1].id
+    assert created_sub_group_group_membership.child_id == mocked_sub_groups[2].id
     assert created_sub_group_group_membership.inherit is True
 
     # Adding group to ueber-group:
-    created_group_ueber_group_membership = await post_add_group_to_uebergroup(
-        str(mocked_groups[1].id),
-        str(mocked_ueber_groups[0].id),
+    created_group_ueber_group_membership = await post_existing_groups_to_uebergroup(
+        mocked_ueber_groups[0].id,
+        [mocked_groups[1].id],
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_group_ueber_group_membership.parent_id == str(
-        mocked_ueber_groups[0].id
+    assert (
+        created_group_ueber_group_membership[0].parent_id == mocked_ueber_groups[0].id
     )
-    assert created_group_ueber_group_membership.child_id == str(mocked_groups[1].id)
-    assert created_group_ueber_group_membership.inherit is True
+    assert created_group_ueber_group_membership[0].child_id == mocked_groups[1].id
+    assert created_group_ueber_group_membership[0].inherit is True
 
     mocked_protected_resources = await add_many_test_protected_resources()
 
@@ -3200,42 +3286,42 @@ async def test_user_access_prohibited_from_indirect_group_membership_missing_inh
     mocked_sub_groups = await add_many_test_sub_groups()
 
     # Adding user to sub-group:
-    created_user_sub_group_membership = await post_add_user_to_group(
-        str(current_user.user_id),
-        str(mocked_sub_groups[2].id),
+    created_user_sub_group_membership = await post_existing_user_to_group(
+        current_user.user_id,
+        mocked_sub_groups[2].id,
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_user_sub_group_membership.parent_id == str(mocked_sub_groups[2].id)
-    assert created_user_sub_group_membership.child_id == str(current_user.user_id)
+    assert created_user_sub_group_membership.parent_id == mocked_sub_groups[2].id
+    assert created_user_sub_group_membership.child_id == current_user.user_id
     assert created_user_sub_group_membership.inherit is True
 
     # Adding sub-group to group:
-    created_sub_group_group_membership = await post_add_subgroup_to_group(
-        str(mocked_sub_groups[2].id),
-        str(mocked_groups[1].id),
+    created_sub_group_group_membership = await post_existing_subgroup_to_group(
+        mocked_sub_groups[2].id,
+        mocked_groups[1].id,
         inherit=False,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_sub_group_group_membership.parent_id == str(mocked_groups[1].id)
-    assert created_sub_group_group_membership.child_id == str(mocked_sub_groups[2].id)
+    assert created_sub_group_group_membership.parent_id == mocked_groups[1].id
+    assert created_sub_group_group_membership.child_id == mocked_sub_groups[2].id
     assert created_sub_group_group_membership.inherit is False
 
     # Adding group to ueber-group:
-    created_group_ueber_group_membership = await post_add_group_to_uebergroup(
-        str(mocked_groups[1].id),
-        str(mocked_ueber_groups[0].id),
+    created_group_ueber_group_membership = await post_existing_groups_to_uebergroup(
+        mocked_ueber_groups[0].id,
+        [mocked_groups[1].id],
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_group_ueber_group_membership.parent_id == str(
-        mocked_ueber_groups[0].id
+    assert (
+        created_group_ueber_group_membership[0].parent_id == mocked_ueber_groups[0].id
     )
-    assert created_group_ueber_group_membership.child_id == str(mocked_groups[1].id)
-    assert created_group_ueber_group_membership.inherit is True
+    assert created_group_ueber_group_membership[0].child_id == mocked_groups[1].id
+    assert created_group_ueber_group_membership[0].inherit is True
 
     mocked_protected_resources = await add_many_test_protected_resources()
 
@@ -3277,7 +3363,7 @@ async def test_user_access_prohibited_after_deleting_group_with_direct_group_mem
 
     mocked_groups = await add_many_test_groups()
 
-    created_hierarchy = await post_add_user_to_group(
+    created_hierarchy = await post_existing_user_to_group(
         str(current_user.user_id),
         str(mocked_groups[1].id),
         inherit=True,

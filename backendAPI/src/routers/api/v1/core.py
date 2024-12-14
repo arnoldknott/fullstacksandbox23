@@ -59,16 +59,29 @@ confClientApp = ConfidentialClientApplication(
 # TBD: refactor to use dependency injection
 # might require a working on-behalf-of workflow?
 def get_users_groups_ms_graph(access_token: str):
-    """Dummy function to try if access token works from backend"""
+    """Dummy function to try if access token works from backend: getting transistiveMemberOf"""
     # response = httpx.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
     response = httpx.get(
         "https://graph.microsoft.com/v1.0/me/transitiveMemberOf",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     groups = response.json()
-    print("=== groups ===")
-    print(groups)
+
+    # print("=== groups ===")
+    # print(groups)
     return groups
+
+
+def get_me_ms_graph(access_token: str):
+    """Dummy function to try if access token works from backend"""
+    # response = httpx.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
+    response = httpx.get(
+        "https://graph.microsoft.com/v1.0/me",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    # print("=== response of onbehalfof me")
+    # print(response)
+    return response.json()
 
 
 @router.get("/health")
@@ -147,13 +160,15 @@ async def get_onbehalfof(authorization: Annotated[str | None, Header()] = None):
         #     "api.read"
         # ],  # ["User.Read", "https://management.azure.com/user_impersonation"],
     )
-    print("=== result ===")
-    print(result)
+    # print("=== token from on-behalf-of ===")
+    # print(result)
     try:
         if "access_token" in result:
             logger.info("🔑 Getting user information on behalf of")
             on_behalf_of_token = result["access_token"]
-            response = get_users_groups_ms_graph(on_behalf_of_token)
+            # Seems to work:
+            # response = get_users_groups_ms_graph(on_behalf_of_token)
+            response = get_me_ms_graph(on_behalf_of_token)
             logger.info("On behalf of access to Microsoft Graph")
             return {"body": response}
     except Exception as err:

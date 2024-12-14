@@ -89,7 +89,7 @@ class AzureGroupCRUD(
 class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     def __init__(self):
         # super().__init__(User, IdentityType.user)
-        super().__init__(User)
+        super().__init__(User, allow_standalone=True)
 
     # def _add_identity_type_link_to_session(self, user_id: UUID):
     #     session = self.session
@@ -142,11 +142,11 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     await log_CRUD.create(access_log)
                 current_user_data = CurrentUserData(
                     user_id=current_user.id,
-                    roles=[],  # Roles are coming from the token - but this information is not available here!
-                    groups=groups,
+                    azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
+                    azure_token_groups=groups,
                 )
         except HTTPException as err:
-            if err.status_code == 404:
+            if err.status_code == 404 and err.detail == "User not found":
                 try:
                     user_create = UserCreate(
                         azure_user_id=azure_user_id,
@@ -168,8 +168,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     current_user = database_user
                     current_user_data = CurrentUserData(
                         user_id=current_user.id,
-                        roles=[],  # Roles are coming from the token - but this information is not available here!
-                        groups=groups,
+                        azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
+                        azure_token_groups=groups,
                     )
                     # User is owner of itself:
                     access_policy = AccessPolicyCreate(
@@ -264,7 +264,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             #     "===  user crud - create_azure_user_and_groups_if_not_exist - current_user_data ==="
             # )
             # print(current_user_data)
-
             try:
                 async with self.hierarchy_CRUD as hierarchy_CRUD:
                     await hierarchy_CRUD.read(
@@ -276,10 +275,18 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 async with self.policy_CRUD as policy_CRUD:
                     access_policy = AccessPolicyCreate(
                         resource_id=azure_group_id,
-                        action=Action.write,
+                        action=Action.write,  # needs write access to parent to add itself to the group -> BaseHierarchyCRUD.create()!
                         identity_id=current_user_data.user_id,
                     )
+                    print(
+                        "=== user crud - create_azure_user_and_groups_if_not_exist - for groups - access_policy ==="
+                    )
+                    print(access_policy)
+                    # TBD: fix this: what writes should a user have to a newly created group_group?
                     await policy_CRUD.create(access_policy, current_user_data)
+                    print(
+                        "=== well, the group doesn't exist, therefore none has policy owner rights for the group either."
+                    )
                 await self.add_child_to_parent(
                     parent_id=azure_group_id,
                     child_id=current_user_data.user_id,
@@ -367,12 +374,12 @@ class UeberGroupCRUD(
     BaseCRUD[UeberGroup, UeberGroupCreate, UeberGroupRead, UeberGroupUpdate]
 ):
     def __init__(self):
-        super().__init__(UeberGroup)
+        super().__init__(UeberGroup, allow_standalone=True)
 
 
 class GroupCRUD(BaseCRUD[Group, GroupCreate, GroupRead, GroupUpdate]):
     def __init__(self):
-        super().__init__(Group)
+        super().__init__(Group, allow_standalone=True)
 
 
 class SubGroupCRUD(BaseCRUD[SubGroup, SubGroupCreate, SubGroupRead, SubGroupUpdate]):

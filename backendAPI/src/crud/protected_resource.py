@@ -30,7 +30,7 @@ class ProtectedResourceCRUD(
     ]
 ):
     def __init__(self):
-        super().__init__(ProtectedResource)
+        super().__init__(ProtectedResource, allow_standalone=True)
 
 
 class ProtectedChildCRUD(

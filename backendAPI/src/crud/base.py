@@ -22,6 +22,7 @@ from models.access import (
     AccessLogCreate,
     AccessPolicyCreate,
     AccessPolicyDelete,
+    AccessRequest,
     IdentifierTypeLink,
     IdentityHierarchy,
     ResourceHierarchy,
@@ -53,11 +54,18 @@ class BaseCRUD(
 ):
     """Base class for CRUD operations."""
 
-    def __init__(self, base_model: Type[BaseModelType], directory: str = None):
+    def __init__(
+        self,
+        base_model: Type[BaseModelType],
+        directory: str = None,
+        allow_standalone: Optional[List[str]] = [],
+    ):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
         self.data_directory = directory
+        # TBD: move in the definition of the model, either in types or in access
+        self.allow_standalone = allow_standalone
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType
@@ -217,18 +225,28 @@ class BaseCRUD(
         """Creates a new object."""
         logger.info("BaseCRUD.create")
         try:
-            # TBD: refactor into hierarchy check
-            # requires hierarchy checks to be in place: otherwise a user can never create a resource
-            # as the AccessPolicy CRUD create checks, if the user is owner of the resource (that's not created yet)
-            # needs to be fixed in the core access control by implementing a hierarchy check
+
+            # print("=== CRUD - base - create - object ===")
+            # print(object)
+
             if inherit and not parent_id:
                 raise HTTPException(
                     status_code=400,
                     detail="Cannot inherit permissions without a parent.",
                 )
             database_object = self.model.model_validate(object)
+
+            # print("=== CRUD - base - create - current_user ===")
+            # print(current_user)
+            # print("=== CRUD - base - create - parent_id ===")
+            # print(parent_id)
+            # print("=== CRUD - base - create - inherit ===")
+            # print(inherit)
             # print("=== CRUD - base - create - database_object ===")
-            # pprint(database_object)
+            # print(database_object)
+
+            # print("\n")
+
             await self._write_identifier_type_link(database_object.id)
             self.session.add(database_object)
             # await self.session.commit()
@@ -253,8 +271,7 @@ class BaseCRUD(
             # TBD: add creating the ResourceTypeLink entry with object_id and self.entity_type
             # this should be doable in the same database call as the access policy and the access log creation.
             # self._add_identifier_type_link_to_session(database_object.id)
-            await self.session.commit()
-            await self.session.refresh(database_object)
+
             # TBD: create the statements in the methods, but execute together - less round-trips to database
             # await self._write_identifier_type_link(database_object.id)
             # await self._write_policy(database_object.id, own, current_user)
@@ -263,16 +280,35 @@ class BaseCRUD(
                 action=own,
                 identity_id=current_user.user_id,
             )
-            async with self.policy_CRUD as policy_CRUD:
-                await policy_CRUD.create(access_policy, current_user)
+
             # await self._write_log(database_object.id, own, current_user, 201)
+
+            # print("=== CRUD - base - create - policy created ===")
+            # print(access_policy)
+
             if parent_id:
+                parent_access_request = AccessRequest(
+                    resource_id=parent_id,
+                    action=write,
+                    current_user=current_user,
+                )
+                # print("=== CRUD - base - create - parent_access_request ===")
+                # print(parent_access_request)
+                if not await self.policy_CRUD.allows(parent_access_request):
+                    logger.error(f"Parent {parent_id} does not allow write access.")
+                    raise HTTPException(status_code=403, detail="Forbidden.")
+                async with self.policy_CRUD as policy_CRUD:
+                    await policy_CRUD.create(
+                        access_policy, current_user, allow_override=True
+                    )
+                # print("=== CRUD - base - create - before adding child to parent ===")
                 await self.add_child_to_parent(
                     parent_id=parent_id,
                     child_id=database_object.id,
                     current_user=current_user,
                     inherit=inherit,
                 )
+                # print("=== CRUD - base - create - after adding child to parent ===")
                 # async with self.hierarchy_CRUD as hierarchy_CRUD:
                 #     await hierarchy_CRUD.create(
                 #         current_user=current_user,
@@ -281,9 +317,35 @@ class BaseCRUD(
                 #         child_id=database_object.id,
                 #         inherit=inherit,
                 #     )
+            elif self.allow_standalone:
+                async with self.policy_CRUD as policy_CRUD:
+                    await policy_CRUD.create(
+                        access_policy, current_user, allow_override=True
+                    )
+                if parent_id:
+                    await self.add_child_to_parent(
+                        parent_id=parent_id,
+                        child_id=database_object.id,
+                        current_user=current_user,
+                        inherit=inherit,
+                    )
+            else:
+                # TBD: is this only admin that can create stand-alone resources?
+                logger.error(f"Resource {database_object.id} is not allowed.")
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"{self.model.__name__} - Forbidden.",
+                )
+                # async with self.policy_CRUD as policy_CRUD:
+                #     await policy_CRUD.create(access_policy, current_user)
 
             # print("=== CRUD - base - create - database_object ===")
-            # pprint(database_object)
+            # print(database_object)
+
+            # After all checks have passed: commit the object to the database
+
+            await self.session.commit()
+            await self.session.refresh(database_object)
 
             return database_object
 
@@ -353,7 +415,11 @@ class BaseCRUD(
             public=True,
         )
         async with self.policy_CRUD as policy_CRUD:
-            await policy_CRUD.create(public_access_policy, current_user)
+            await policy_CRUD.create(
+                public_access_policy,
+                current_user,
+                allow_override=self.allow_standalone,
+            )
 
         return database_object
 
@@ -708,6 +774,12 @@ class BaseCRUD(
                     status_code=404, detail=f"{self.model.__name__} not found."
                 )
             await self.session.commit()
+
+            # TBD: delete AccessPolicies for the object_id!
+            # TBD: implement to delete orphaned children,
+            # either in the model or in the CRUD
+            # if CRUD: don't delete the object,
+            # if the child type is allowed standalone!
 
             access_log = AccessLogCreate(
                 resource_id=object_id,

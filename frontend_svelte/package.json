@@ -15,7 +15,6 @@
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.1.0",
 		"@eslint/js": "^9.13.0",
-		"@microsoft/microsoft-graph-types": "^2.40.0",
 		"@sveltejs/adapter-node": "^5.2.9",
 		"@sveltejs/kit": "^2.7.3",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
@@ -56,10 +55,10 @@
 		"@azure/msal-node": "^2.15.0",
 		"@material/web": "^2.2.0",
 		"dotenv": "^16.4.5",
+		"flyonui": "^1.1.0",
 		"redis": "^4.7.0",
 		"reveal.js": "^5.1.0",
 		"socket.io-client": "^4.8.1",
-		"tw-elements": "^2.0.0",
 		"uuid": "^11.0.2"
 	},
 	"optionalDependencies": {

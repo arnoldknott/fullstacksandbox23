@@ -102,17 +102,18 @@ async def delete_protected_resource(
 protected_child_view = BaseView(ProtectedChildCRUD)
 
 
-@router.post("/child/", status_code=201)
+@router.post("/resource/{protected_resource_id}/child", status_code=201)
 async def post_protected_child(
     protected_child: ProtectedChildCreate,
-    parent_id: Annotated[UUID | None, Query()] = None,
+    # parent_id: Annotated[UUID | None, Query()] = None,
+    protected_resource_id: UUID,
     inherit: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedChild:
     """Creates a new protected child."""
     return await protected_child_view.post(
-        protected_child, token_payload, guards, parent_id, inherit
+        protected_child, token_payload, guards, protected_resource_id, inherit
     )
 
 
@@ -193,17 +194,18 @@ async def remove_child_from_parent(
 protected_grand_child_view = BaseView(ProtectedGrandChildCRUD)
 
 
-@router.post("/grandchild/", status_code=201)
+@router.post("/child/{protected_child_id}/grandchild", status_code=201)
 async def post_protected_grandchild(
     protected_grandchild: ProtectedGrandChildCreate,
-    parent_id: Annotated[UUID | None, Query()] = None,
+    protected_child_id: UUID,
+    # parent_id: Annotated[UUID | None, Query()] = None,
     inherit: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> ProtectedGrandChild:
     """Creates a new protected grandchild."""
     return await protected_grand_child_view.post(
-        protected_grandchild, token_payload, guards, parent_id, inherit
+        protected_grandchild, token_payload, guards, protected_child_id, inherit
     )
 
 

@@ -5,7 +5,7 @@
 <!-- TBD: update to md-card -->
 
 <!-- Card -->
-<div class="block rounded-lg bg-white text-left shadow-lg dark:bg-neutral-700">
+<div class="block rounded-lg bg-white text-left shadow-lg dark:bg-neutral-600">
 	<!-- Card body -->
 	<div class="p-6">
 		<!-- Button -->

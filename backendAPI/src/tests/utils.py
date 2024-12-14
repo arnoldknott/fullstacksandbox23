@@ -253,20 +253,20 @@ many_azure_group_ids = [
 
 current_user_data_admin = {
     "user_id": identity_id_admin,
-    "roles": ["Admin"],
+    "azure_token_roles": ["Admin"],
 }
 current_user_data_user1 = {
     "user_id": identity_id_user1,
-    "roles": ["User"],
+    "azure_token_roles": ["User"],
 }
 current_user_data_user2 = {
     "user_id": identity_id_user2,
-    "roles": ["User"],
+    "azure_token_roles": ["User"],
 }
 current_user_data_user3 = {
     "user_id": identity_id_user3,
-    "roles": ["User"],
-    "groups": [str(uuid4()), str(uuid4())],
+    "azure_token_roles": ["User"],
+    "azure_token_groups": [str(uuid4()), str(uuid4())],
 }
 
 many_current_users_data = [

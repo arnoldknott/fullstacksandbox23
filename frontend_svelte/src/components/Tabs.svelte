@@ -34,7 +34,7 @@
 
 <style>
 	md-filled-card {
-		width: 80%;
+		width: 90%;
 		padding: 10px;
 		margin: 20px;
 		text-align: center;
