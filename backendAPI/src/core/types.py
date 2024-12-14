@@ -26,14 +26,14 @@ class GuardTypes(BaseModel):
     groups: Optional[List[UUID]] = []
 
 
-class AppRoles(str, Enum):
-    """Enum for the roles that can be self-assigned to a user inside the app; Note: consent is required for some roles, handled by frontend!"""
+# class AppRoles(str, Enum):
+#     """Enum for the roles that can be self-assigned to a user inside the app; Note: consent is required for some roles, handled by frontend!"""
 
-    # This is for services only, that don't require an account linking.
-    # For services that require an account linking, a linked account counts as an assigned role.
+#     # This is for services only, that don't require an account linking.
+#     # For services that require an account linking, a linked account counts as an assigned role.
 
-    publicAIuser = "publicAIuser"
-    privateAIuser = "privateAIuser"
+#     publicAIuser = "publicAIuser"
+#     privateAIuser = "privateAIuser"
 
 
 class CurrentUserData(BaseModel):
