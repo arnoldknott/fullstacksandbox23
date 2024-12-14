@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi import FastAPI
@@ -355,11 +355,11 @@ async def test_all_protected_child_endpoints(
     """Tests the post_protected_child endpoint of the API."""
     app_override_provide_http_token_payload
 
-    parent_protected_resource_id = await access_to_one_parent(ProtectedResource)
+    parent_resource_id = await access_to_one_parent(ProtectedResource)
 
     # Make a POST request to create the protected child
     response = await async_client.post(
-        f"/api/v1/protected/resource/{parent_protected_resource_id}/child",
+        f"/api/v1/protected/resource/{parent_resource_id}/child",
         json=many_test_protected_child_resources[0],
     )
 
@@ -368,6 +368,17 @@ async def test_all_protected_child_endpoints(
     assert (
         created_protected_child.title == many_test_protected_child_resources[0]["title"]
     )
+
+    # Make a POST request to create the protected child without access to parent
+    parent_resource_id = uuid4()
+
+    response = await async_client.post(
+        f"/api/v1/protected/resource/{parent_resource_id}/child",
+        json=many_test_protected_child_resources[0],
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "ProtectedChild - Forbidden."}
 
     # add some more protected children:
     # note: the first one is going to be double with different id's
@@ -440,15 +451,18 @@ async def test_all_protected_child_endpoints(
 async def test_all_protected_grandchild_endpoints(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    access_to_one_parent,
     mocked_provide_http_token_payload,
     add_many_test_protected_grandchildren,
 ):
     """Tests the all protected_child endpoints of the API."""
     app_override_provide_http_token_payload
 
-    # Make a POST request to create the protected child
+    parent_resource_id = await access_to_one_parent(ProtectedChild)
+
+    # Make a POST request to create the protected grandchild of parent protected child
     response = await async_client.post(
-        "/api/v1/protected/grandchild/",
+        f"/api/v1/protected/child/{parent_resource_id}/grandchild",
         json=many_test_protected_grandchild_resources[0],
     )
 
@@ -459,14 +473,44 @@ async def test_all_protected_grandchild_endpoints(
         == many_test_protected_grandchild_resources[0]["text"]
     )
 
+    parent_resource_id = await access_to_one_parent(ProtectedResource)
+
+    # Make a POST request to create the protected grandchild of parent resource
+    response = await async_client.post(
+        f"/api/v1/protected/child/{parent_resource_id}/grandchild",
+        json=many_test_protected_grandchild_resources[0],
+    )
+
+    assert response.status_code == 201
+    created_protected_grandchild_of_resource = ProtectedGrandChild(**response.json())
+    assert (
+        created_protected_grandchild_of_resource.text
+        == many_test_protected_grandchild_resources[0]["text"]
+    )
+
+    # Make a POST request to create the protected grandchild without access to parent
+    parent_resource_id = uuid4()
+
+    response = await async_client.post(
+        f"/api/v1/protected/child/{parent_resource_id}/grandchild",
+        json=many_test_protected_grandchild_resources[0],
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "ProtectedGrandChild - Forbidden."}
+
     # add some more protected children:
     # note: the first one is going to be double with different id's
     mocked_protected_grandchildren = await add_many_test_protected_grandchildren(
         mocked_provide_http_token_payload
     )
     created_protected_grandchild.id = UUID(created_protected_grandchild.id)
+    created_protected_grandchild_of_resource.id = UUID(
+        created_protected_grandchild_of_resource.id
+    )
     expected_protected_grandchildren = [
-        created_protected_grandchild
+        created_protected_grandchild,
+        created_protected_grandchild_of_resource,
     ] + mocked_protected_grandchildren
     expected_protected_grandchildren = sorted(
         expected_protected_grandchildren, key=lambda x: x.id

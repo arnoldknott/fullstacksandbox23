@@ -225,18 +225,16 @@ class BaseCRUD(
         """Creates a new object."""
         logger.info("BaseCRUD.create")
         try:
-            # TBD: refactor into hierarchy check
-            # requires hierarchy checks to be in place: otherwise a user can never create a resource
-            # as the AccessPolicy CRUD create checks, if the user is owner of the resource (that's not created yet)
-            # needs to be fixed in the core access control by implementing a hierarchy check
             if inherit and not parent_id:
                 raise HTTPException(
                     status_code=400,
                     detail="Cannot inherit permissions without a parent.",
                 )
             database_object = self.model.model_validate(object)
+
             # print("=== CRUD - base - create - database_object ===")
-            # pprint(database_object)
+            # print(database_object)
+
             await self._write_identifier_type_link(database_object.id)
             self.session.add(database_object)
             # await self.session.commit()
@@ -261,8 +259,7 @@ class BaseCRUD(
             # TBD: add creating the ResourceTypeLink entry with object_id and self.entity_type
             # this should be doable in the same database call as the access policy and the access log creation.
             # self._add_identifier_type_link_to_session(database_object.id)
-            await self.session.commit()
-            await self.session.refresh(database_object)
+
             # TBD: create the statements in the methods, but execute together - less round-trips to database
             # await self._write_identifier_type_link(database_object.id)
             # await self._write_policy(database_object.id, own, current_user)
@@ -275,6 +272,7 @@ class BaseCRUD(
             # await self._write_log(database_object.id, own, current_user, 201)
 
             # print("=== CRUD - base - create - policy created ===")
+            # print(access_policy)
 
             if parent_id:
                 parent_access_request = AccessRequest(
@@ -328,7 +326,12 @@ class BaseCRUD(
                 #     await policy_CRUD.create(access_policy, current_user)
 
             # print("=== CRUD - base - create - database_object ===")
-            # pprint(database_object)
+            # print(database_object)
+
+            # After all checks have passed: commit the object to the database
+
+            await self.session.commit()
+            await self.session.refresh(database_object)
 
             return database_object
 
