@@ -379,7 +379,7 @@ class UeberGroupCRUD(
 
 class GroupCRUD(BaseCRUD[Group, GroupCreate, GroupRead, GroupUpdate]):
     def __init__(self):
-        super().__init__(Group)
+        super().__init__(Group, allow_standalone=True)
 
 
 class SubGroupCRUD(BaseCRUD[SubGroup, SubGroupCreate, SubGroupRead, SubGroupUpdate]):

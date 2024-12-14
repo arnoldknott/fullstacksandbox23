@@ -384,7 +384,7 @@ async def post_add_group_to_uebergroup(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> BaseHierarchyModelRead:
-    """Adds a group to an ueber_group."""
+    """Adds an existing group to an ueber_group."""
     logger.info("POST group to ueber_group")
     return await group_view.post_add_child_to_parent(
         group_id,
@@ -574,7 +574,7 @@ async def post_add_subgroup_to_group(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> BaseHierarchyModelRead:
-    """Adds a sub_group to a group."""
+    """Adds an existing sub_group to a group."""
     logger.info("POST sub_group to group")
     return await sub_group_view.post_add_child_to_parent(
         sub_group_id,
@@ -766,7 +766,7 @@ async def post_add_subsubgroup_to_subgroup(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> BaseHierarchyModelRead:
-    """Adds a sub_sub_group to a sub_group."""
+    """Adds an existing sub_sub_group to a sub_group."""
     logger.info("POST sub_sub_group to sub_group")
     return await sub_sub_group_view.post_add_child_to_parent(
         sub_sub_group_id,
