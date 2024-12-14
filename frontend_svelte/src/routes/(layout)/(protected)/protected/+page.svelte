@@ -21,7 +21,8 @@
 		},
 		{
 			name: 'Protected Hierarchy',
-			description: 'The protected hierarchy family consisting of protected resource, protected child and protected grandchild',
+			description:
+				'The protected hierarchy family consisting of protected resource, protected child and protected grandchild',
 			url: '/backend-protected-hierarchy'
 		},
 		{
@@ -39,8 +40,7 @@
 			name: 'On behalf of user acceess',
 			description: 'TBD: On behalf of user access to the Microsoft Graph API',
 			url: '/onbehalfof'
-		},
-
+		}
 	];
 </script>
 

@@ -66,6 +66,7 @@ def get_users_groups_ms_graph(access_token: str):
         headers={"Authorization": f"Bearer {access_token}"},
     )
     groups = response.json()
+
     # print("=== groups ===")
     # print(groups)
     return groups
@@ -75,7 +76,7 @@ def get_me_ms_graph(access_token: str):
     """Dummy function to try if access token works from backend"""
     # response = httpx.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
     response = httpx.get(
-        "https://graph.microsoft.com/v1.0/me/",
+        "https://graph.microsoft.com/v1.0/me",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     # print("=== response of onbehalfof me")

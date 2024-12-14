@@ -39,7 +39,7 @@
 			name: 'Websockets',
 			description: 'Establishing various websocket connections to backend and using them',
 			url: '/websockets'
-		},
+		}
 	];
 </script>
 
