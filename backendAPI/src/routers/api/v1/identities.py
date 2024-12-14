@@ -84,7 +84,7 @@ async def post_user(
 
 
 @user_router.post("/{user_id}/group/{group_id}", status_code=201)
-async def post__user_to_group(
+async def post_existing_user_to_group(
     user_id: UUID,
     group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
@@ -223,7 +223,7 @@ async def post_ueber_group(
 
 
 @ueber_group_router.post("/{ueber_group_id}/users", status_code=201)
-async def post_users_to_uebergroup(
+async def post_existing_users_to_uebergroup(
     ueber_group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
@@ -249,16 +249,19 @@ async def post_users_to_uebergroup(
 async def post_group_to_uebergroup(
     group: GroupCreate,
     ueber_group_id: UUID,
+    inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> SubGroup:
     """Creates a new group as a child of an ueber_group with ueber_group_id."""
     logger.info("POST group to ueber_group")
-    return await group_view.post(group, token_payload, guards, ueber_group_id)
+    return await group_view.post(
+        group, token_payload, guards, ueber_group_id, inherit=inherit
+    )
 
 
 @ueber_group_router.post("/{ueber_group_id}/groups", status_code=201)
-async def post_groups_to_uebergroup(
+async def post_existing_groups_to_uebergroup(
     ueber_group_id: UUID,
     group_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
@@ -390,7 +393,7 @@ async def post_group(
 
 
 @group_router.post("/{group_id}/uebergroup/{ueber_group_id}", status_code=201)
-async def post_group_to_uebergroup(
+async def post_group_to_existing_uebergroup(
     group_id: UUID,
     ueber_group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
@@ -409,7 +412,7 @@ async def post_group_to_uebergroup(
 
 
 @group_router.post("/{group_id}/users", status_code=201)
-async def post_users_to_group(
+async def post_existing_users_to_group(
     group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
@@ -435,16 +438,19 @@ async def post_users_to_group(
 async def post_sub_group_to_group(
     sub_group: SubGroupCreate,
     group_id: UUID,
+    inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> SubGroup:
     """Creates a new sub_group as a child of group with group_id."""
     logger.info("POST sub_group to group")
-    return await sub_group_view.post(sub_group, token_payload, guards, group_id)
+    return await sub_group_view.post(
+        sub_group, token_payload, guards, group_id, inherit=inherit
+    )
 
 
 @group_router.post("/{group_id}/subgroups", status_code=201)
-async def post_subgroups_to_group(
+async def post_existing_subgroups_to_group(
     group_id: UUID,
     sub_group_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
@@ -595,7 +601,7 @@ sub_group_view = BaseView(SubGroupCRUD)
 
 
 @sub_group_router.post("/{sub_group_id}/group/{group_id}", status_code=201)
-async def post_subgroup_to_group(
+async def post_existing_subgroup_to_group(
     sub_group_id: UUID,
     group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
@@ -614,7 +620,7 @@ async def post_subgroup_to_group(
 
 
 @sub_group_router.post("/{sub_group_id}/users", status_code=201)
-async def post_users_to_subgroup(
+async def post_existing_users_to_subgroup(
     sub_group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
@@ -640,18 +646,19 @@ async def post_users_to_subgroup(
 async def post_sub_sub_group_to_sub_group(
     sub_sub_group: SubSubGroupCreate,
     sub_group_id: UUID,
+    inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> SubGroup:
     """Creates a new sub_sub_group as a child of sub_group with sub_group_id."""
     logger.info("POST sub_sub_group to sub_group")
     return await sub_sub_group_view.post(
-        sub_sub_group, token_payload, guards, sub_group_id
+        sub_sub_group, token_payload, guards, sub_group_id, inherit=inherit
     )
 
 
 @sub_group_router.post("/{sub_group_id}/subsubgroups", status_code=201)
-async def post_subsubgroups_to_subgroup(
+async def post_existing_subsubgroups_to_subgroup(
     sub_group_id: UUID,
     sub_sub_group_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,
@@ -783,25 +790,28 @@ sub_sub_group_router = APIRouter()
 sub_sub_group_view = BaseView(SubSubGroupCRUD)
 
 
-@sub_sub_group_router.post("/", status_code=201)
-async def post_sub_sub_group(
-    sub_sub_group: SubGroupCreate,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
-) -> SubGroup:
-    """Creates a new sub_sub_group."""
-    logger.info("POST sub_sub_group")
-    return await sub_sub_group_view.post(
-        sub_sub_group,
-        token_payload,
-        guards,
-    )
+# Since stand-alone sub_sub_groups are no longer allowed, this route is not needed anymore.
+# Get back in again,if the CRUD for sub_sub_groups initializes
+# the super.__init__ with the allow_standalone=True!
+# @sub_sub_group_router.post("/", status_code=201)
+# async def post_sub_sub_group(
+#     sub_sub_group: SubGroupCreate,
+#     token_payload=Depends(get_http_access_token_payload),
+#     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+# ) -> SubGroup:
+#     """Creates a new sub_sub_group."""
+#     logger.info("POST sub_sub_group")
+#     return await sub_sub_group_view.post(
+#         sub_sub_group,
+#         token_payload,
+#         guards,
+#     )
 
 
 @sub_sub_group_router.post(
     "/{sub_sub_group_id}/subgroup/{sub_group_id}", status_code=201
 )
-async def post_subsubgroup_to_subgroup(
+async def post_existing_subsubgroup_to_subgroup(
     sub_sub_group_id: UUID,
     sub_group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
@@ -820,7 +830,7 @@ async def post_subsubgroup_to_subgroup(
 
 
 @sub_sub_group_router.post("/{sub_sub_group_id}/users", status_code=201)
-async def post__users_to_subsubgroup(
+async def post_existing_users_to_subsubgroup(
     sub_sub_group_id: UUID,
     user_ids: list[UUID],
     inherit: Annotated[bool, Query()] = True,

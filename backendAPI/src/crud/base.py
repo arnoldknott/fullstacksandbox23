@@ -225,6 +225,10 @@ class BaseCRUD(
         """Creates a new object."""
         logger.info("BaseCRUD.create")
         try:
+
+            # print("=== CRUD - base - create - object ===")
+            # print(object)
+
             if inherit and not parent_id:
                 raise HTTPException(
                     status_code=400,
@@ -232,8 +236,16 @@ class BaseCRUD(
                 )
             database_object = self.model.model_validate(object)
 
+            # print("=== CRUD - base - create - current_user ===")
+            # print(current_user)
+            # print("=== CRUD - base - create - parent_id ===")
+            # print(parent_id)
+            # print("=== CRUD - base - create - inherit ===")
+            # print(inherit)
             # print("=== CRUD - base - create - database_object ===")
             # print(database_object)
+
+            # print("\n")
 
             await self._write_identifier_type_link(database_object.id)
             self.session.add(database_object)
