@@ -58,13 +58,14 @@ class BaseCRUD(
         self,
         base_model: Type[BaseModelType],
         directory: str = None,
-        allow_everyone: Optional[List[str]] = [],
+        allow_standalone: Optional[List[str]] = [],
     ):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
         self.data_directory = directory
-        self.allow_everyone = allow_everyone
+        # TBD: move in the definition of the model, either in types or in access
+        self.allow_standalone = allow_standalone
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType
@@ -305,7 +306,7 @@ class BaseCRUD(
                 #         child_id=database_object.id,
                 #         inherit=inherit,
                 #     )
-            elif "create" in self.allow_everyone:
+            elif self.allow_standalone:
                 async with self.policy_CRUD as policy_CRUD:
                     await policy_CRUD.create(
                         access_policy, current_user, allow_override=True
@@ -400,7 +401,7 @@ class BaseCRUD(
             await policy_CRUD.create(
                 public_access_policy,
                 current_user,
-                allow_override=True if "create" in self.allow_everyone else False,
+                allow_override=self.allow_standalone,
             )
 
         return database_object
@@ -756,6 +757,12 @@ class BaseCRUD(
                     status_code=404, detail=f"{self.model.__name__} not found."
                 )
             await self.session.commit()
+
+            # TBD: delete AccessPolicies for the object_id!
+            # TBD: implement to delete orphaned children,
+            # either in the model or in the CRUD
+            # if CRUD: don't delete the object,
+            # if the child type is allowed standalone!
 
             access_log = AccessLogCreate(
                 resource_id=object_id,

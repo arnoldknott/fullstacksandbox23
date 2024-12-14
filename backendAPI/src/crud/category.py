@@ -5,7 +5,7 @@ from .base import BaseCRUD
 
 class CategoryCRUD(BaseCRUD[Category, CategoryCreate, CategoryRead, CategoryUpdate]):
     def __init__(self):
-        super().__init__(Category, allow_everyone=["create"])
+        super().__init__(Category, allow_standalone=True)
 
     # Moved to DemoResourceCRUD
     # # TBD: add access control and access logging for this - use self.read()!

@@ -65,7 +65,7 @@ async def test_post_demo_files(
 
     # Make a POST request to upload the demo file
     response = await async_client.post(
-        f"/api/v1/demo/files/{str(parent_id)}", files=demo_files
+        f"/api/v1/demo/{str(parent_id)}/files", files=demo_files
     )
 
     assert response.status_code == 201
@@ -127,7 +127,7 @@ async def test_post_demo_files_without_access_to_parent(
 
     # Make a POST request to upload the demo file
     response = await async_client.post(
-        f"/api/v1/demo/files/{str(parent_id)}", files=demo_files
+        f"/api/v1/demo/{str(parent_id)}/files", files=demo_files
     )
 
     assert response.status_code == 403
@@ -180,7 +180,7 @@ async def test_post_demo_files_without_existing_parent(
 
     # Make a POST request to upload the demo file
     response = await async_client.post(
-        f"/api/v1/demo/files/{str(parent_id)}", files=demo_files
+        f"/api/v1/demo/{str(parent_id)}/files", files=demo_files
     )
 
     assert response.status_code == 403
@@ -196,6 +196,8 @@ async def test_post_demo_files_without_existing_parent(
 async def test_post_demo_files_uniqueness(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    access_to_one_parent,
+    mocked_provide_http_token_payload,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_provide_http_token_payload
@@ -206,6 +208,10 @@ async def test_post_demo_files_uniqueness(
     # Make sure the demo files do not exist before the test on disk:
     if path.exists(f"{appdata_path}/{demo_file_name}"):
         remove(f"{appdata_path}/{demo_file_name}")
+
+    parent_id = await access_to_one_parent(
+        DemoResource, mocked_provide_http_token_payload
+    )
 
     demo_files = [
         (
@@ -227,7 +233,9 @@ async def test_post_demo_files_uniqueness(
     ]
 
     # Make a POST request to upload the demo file
-    response = await async_client.post("/api/v1/demo/files/", files=demo_files)
+    response = await async_client.post(
+        f"/api/v1/demo/{str(parent_id)}/files", files=demo_files
+    )
 
     assert response.status_code == 403
     assert response.json() == {"detail": "DemoFile - Forbidden."}

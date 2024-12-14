@@ -681,8 +681,8 @@ class AccessPolicyCRUD:
             # print("=== AccessPolicyCRUD.create - current_user ===")
             # print(current_user)
 
-            # print("=== AccessPolicyCRUD.create - allow_everyone ===")
-            # print(allow_everyone)
+            # print("=== AccessPolicyCRUD.create - allow_standalone ===")
+            # print(allow_standalone)
             # print(
             #     "=== AccessPolicyCRUD.create - self.__always_allow(policy, current_user) ==="
             # )
