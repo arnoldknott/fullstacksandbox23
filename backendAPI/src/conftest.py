@@ -11,7 +11,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from core.cache import redis_session_client
 from core.databases import postgres_async_engine  # should be SQLite here only!
 from core.security import CurrentAccessToken, Guards, provide_http_token_payload
-from core.types import CurrentUserData, IdentityType, ResourceType
+from core.types import CurrentUserData, IdentityType, ResourceType, Action
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
@@ -267,17 +267,21 @@ async def register_many_current_users():
     yield current_users
 
 
+async def register_one_resource_helper(
+    resource_id: UUID, model: ResourceType = ProtectedResource
+):
+    """Registers a resource id and its type in the database."""
+    await register_entity_to_identity_type_link_table(resource_id, model)
+    return resource_id
+
+
 # TBD: turn input into dict? But what about the model?
 @pytest.fixture(scope="function")
 async def register_one_resource():
     """Registers a resource id and its type in the database."""
 
-    async def _register_one_resource(
-        resource_id: UUID, model: ResourceType = ProtectedResource
-    ):
-        """Registers a resource id and its type in the database."""
-        await register_entity_to_identity_type_link_table(resource_id, model)
-        return resource_id
+    async def _register_one_resource(resource_id: UUID, model: ResourceType):
+        register_one_resource_helper(resource_id, model)
 
     yield _register_one_resource
 
@@ -349,6 +353,36 @@ async def register_many_entities(get_async_test_session: AsyncSession):
 #     )
 
 # yield many_entity_type_links
+
+
+@pytest.fixture(scope="function")
+async def register_one_parent(current_user_from_azure_token):
+    """Fixture for registering a parent and adds a write policy for a the current user token to the database."""
+
+    async def _register_one_parent(
+        # model: Union["ResourceType", "IdentityType"], current_user: CurrentUserData
+        model: Union["ResourceType", "IdentityType"],
+        token_payload: dict,
+    ):
+        """Registers a parent and adds a write policy for a the current user token to the database."""
+        current_user = await current_user_from_azure_token(token_payload)
+
+        parent_id = uuid4()
+
+        await register_one_resource_helper(parent_id, model)
+        if "Admin" not in current_user.azure_token_roles:
+            access_policy = {
+                "resource_id": str(parent_id),
+                "identity_id": str(current_user.user_id),
+                "action": Action.write,
+            }
+            await add_test_access_policy(
+                access_policy, CurrentUserData(**current_user_data_admin)
+            )
+
+        return parent_id
+
+    yield _register_one_parent
 
 
 async def add_test_access_policy(policy: dict, current_user: CurrentUserData = None):

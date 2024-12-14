@@ -19,8 +19,9 @@ demo_file_view = BaseView(DemoFileCRUD)
 # roles = ["User"] is required for the whole router in main.py!
 
 
-@router.post("/files/", status_code=201)
+@router.post("/files/{demo_resource_id}", status_code=201)
 async def post_demo_file(
+    demo_resource_id: UUID,
     files: List[UploadFile] = File(...),
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"])),
@@ -29,7 +30,9 @@ async def post_demo_file(
     files_metadata = []
     for file in files:
         files_metadata.append(
-            await demo_file_view.post_file(file, token_payload, guards)
+            await demo_file_view.post_file(
+                file, token_payload, guards, demo_resource_id
+            )
         )
     return files_metadata
 

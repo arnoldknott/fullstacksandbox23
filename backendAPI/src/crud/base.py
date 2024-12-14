@@ -22,6 +22,7 @@ from models.access import (
     AccessLogCreate,
     AccessPolicyCreate,
     AccessPolicyDelete,
+    AccessRequest,
     IdentifierTypeLink,
     IdentityHierarchy,
     ResourceHierarchy,
@@ -270,23 +271,32 @@ class BaseCRUD(
                 identity_id=current_user.user_id,
             )
 
-            async with self.policy_CRUD as policy_CRUD:
-                await policy_CRUD.create(
-                    access_policy,
-                    current_user,
-                    allow_everyone=True if "create" in self.allow_everyone else False,
-                )
             # await self._write_log(database_object.id, own, current_user, 201)
 
-            print("=== CRUD - base - create - policy created ===")
+            # print("=== CRUD - base - create - policy created ===")
 
             if parent_id:
+                parent_access_request = AccessRequest(
+                    resource_id=parent_id,
+                    action=write,
+                    current_user=current_user,
+                )
+                print("=== CRUD - base - create - parent_access_request ===")
+                print(parent_access_request)
+                if not await self.policy_CRUD.allows(parent_access_request):
+                    raise HTTPException(status_code=403, detail="Forbidden.")
+                async with self.policy_CRUD as policy_CRUD:
+                    await policy_CRUD.create(
+                        access_policy, current_user, allow_override=True
+                    )
+                print("=== CRUD - base - create - before adding child to parent ===")
                 await self.add_child_to_parent(
                     parent_id=parent_id,
                     child_id=database_object.id,
                     current_user=current_user,
                     inherit=inherit,
                 )
+                print("=== CRUD - base - create - after adding child to parent ===")
                 # async with self.hierarchy_CRUD as hierarchy_CRUD:
                 #     await hierarchy_CRUD.create(
                 #         current_user=current_user,
@@ -295,6 +305,22 @@ class BaseCRUD(
                 #         child_id=database_object.id,
                 #         inherit=inherit,
                 #     )
+            elif "create" in self.allow_everyone:
+                async with self.policy_CRUD as policy_CRUD:
+                    await policy_CRUD.create(
+                        access_policy, current_user, allow_override=True
+                    )
+                if parent_id:
+                    await self.add_child_to_parent(
+                        parent_id=parent_id,
+                        child_id=database_object.id,
+                        current_user=current_user,
+                        inherit=inherit,
+                    )
+            else:
+                # TBD: is this only admin that can create stand-alone resources?
+                async with self.policy_CRUD as policy_CRUD:
+                    await policy_CRUD.create(access_policy, current_user)
 
             # print("=== CRUD - base - create - database_object ===")
             # pprint(database_object)
@@ -370,7 +396,7 @@ class BaseCRUD(
             await policy_CRUD.create(
                 public_access_policy,
                 current_user,
-                allow_everyone=True if "create" in self.allow_everyone else False,
+                allow_override=True if "create" in self.allow_everyone else False,
             )
 
         return database_object

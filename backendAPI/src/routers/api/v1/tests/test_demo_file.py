@@ -3,8 +3,11 @@ from os import path, remove
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
+from uuid import uuid4
 
+from core.types import Action
 from models.demo_file import DemoFile
+from models.demo_resource import DemoResource
 from tests.utils import (
     token_admin_read,
     token_admin_read_write,
@@ -22,12 +25,29 @@ from tests.utils import (
 async def test_post_demo_files(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    register_one_parent,
+    current_user_from_azure_token,
+    # register_one_resource,
+    # add_one_test_access_policy,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_provide_http_token_payload
 
     demo_file_names = ["demo_file_00.txt", "demo_file_01.txt"]
     appdata_path = "/data/appdata/demo_files"
+
+    # TBD: put into a fixture register_one_parent(mocked_token, parent_model) -> parent_id
+    # current_user = await current_user_from_azure_token(
+    #     mocked_provide_http_token_payload
+    # )
+    # parent_id = await register_one_parent(DemoResource, current_user)
+    # current_user = await current_user_from_azure_token(
+    #     mocked_provide_http_token_payload
+    # )
+    parent_id = await register_one_parent(
+        DemoResource, mocked_provide_http_token_payload
+    )
 
     # Make sure the demo files do not exist before the test on disk:
     for demo_file_name in demo_file_names:
@@ -54,7 +74,9 @@ async def test_post_demo_files(
     ]
 
     # Make a POST request to upload the demo file
-    response = await async_client.post("/api/v1/demo/files/", files=demo_files)
+    response = await async_client.post(
+        f"/api/v1/demo/files/{str(parent_id)}", files=demo_files
+    )
 
     assert response.status_code == 201
     created_files_metadata = [DemoFile(**file) for file in response.json()]

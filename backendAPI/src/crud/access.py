@@ -628,7 +628,7 @@ class AccessPolicyCRUD:
         self,
         policy: AccessPolicyCreate,
         current_user: CurrentUserData,
-        allow_everyone: bool = False,
+        allow_override: bool = False,
         *args,
     ) -> AccessPolicyRead:
         """Creates a new access control policy."""
@@ -688,7 +688,7 @@ class AccessPolicyCRUD:
             # )
             # print(self.__always_allow(policy, current_user))
 
-            if allow_everyone or self.__always_allow(policy, current_user):
+            if allow_override or self.__always_allow(policy, current_user):
                 # print("=== access check skipped ===")
                 pass
             else:
@@ -801,8 +801,8 @@ class AccessPolicyCRUD:
             response = await self.session.exec(query)
             results = response.all()
 
-            print("=== AccessPolicyCRUD.read - results ===")
-            print(results)
+            # print("=== AccessPolicyCRUD.read - results ===")
+            # print(results)
 
             if not results:
                 raise HTTPException(status_code=404, detail="Access policy not found.")
@@ -1251,6 +1251,14 @@ class BaseHierarchyCRUD(
     ) -> BaseHierarchyModelRead:
         """Checks access and type matching and potentially creates parent-child relationship."""
         try:
+            # print("=== BaseHierarchyCRUD.create - parent_id ===")
+            # print(parent_id)
+
+            # query = select(IdentifierTypeLink)
+            # results = await self.session.exec(query)
+            # print("=== BaseHierarchyCRUD.create - results ===")
+            # print(results.all())
+
             child_access_request = AccessRequest(
                 resource_id=child_id,
                 action=Action.own,
@@ -1259,10 +1267,7 @@ class BaseHierarchyCRUD(
             if not await self.policy_crud.allows(child_access_request):
                 raise HTTPException(status_code=403, detail="Forbidden.")
             statement = select(IdentifierTypeLink.type)
-            # only selects, the IdentifierTypeLinks, that the user has access to.
-            # statement = self.policy_crud.filters_allowed(
-            #     statement, Action.own, IdentifierTypeLink, current_user
-            # )
+            # only selects, the IdentifierTypeLinks, that the user has write access to.
             statement = self.policy_crud.filters_allowed(
                 statement, Action.write, IdentifierTypeLink, current_user
             )
