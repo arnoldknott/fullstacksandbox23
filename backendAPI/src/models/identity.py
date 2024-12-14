@@ -5,7 +5,7 @@ from typing import List, Optional
 from sqlalchemy import Column, ForeignKey, Uuid
 from sqlmodel import Field, Relationship, SQLModel
 
-from core.types import AppRoles
+# from core.types import AppRoles
 from core.config import config
 from models.access import IdentityHierarchy
 

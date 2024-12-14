@@ -5,7 +5,6 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 from uuid import uuid4
 
-from core.types import Action
 from models.demo_file import DemoFile
 from models.demo_resource import DemoResource
 from tests.utils import (
