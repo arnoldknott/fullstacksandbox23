@@ -283,6 +283,7 @@ class BaseCRUD(
                 # print("=== CRUD - base - create - parent_access_request ===")
                 # print(parent_access_request)
                 if not await self.policy_CRUD.allows(parent_access_request):
+                    logger.error(f"Parent {parent_id} does not allow write access.")
                     raise HTTPException(status_code=403, detail="Forbidden.")
                 async with self.policy_CRUD as policy_CRUD:
                     await policy_CRUD.create(
@@ -318,6 +319,7 @@ class BaseCRUD(
                     )
             else:
                 # TBD: is this only admin that can create stand-alone resources?
+                logger.error(f"Resource {database_object.id} is not allowed.")
                 raise HTTPException(
                     status_code=403,
                     detail=f"{self.model.__name__} - Forbidden.",
