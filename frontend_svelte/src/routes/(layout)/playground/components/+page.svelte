@@ -7,7 +7,6 @@
 	import type { Tab } from '$lib/types';
 	// import { createRawSnippet, type Snippet } from 'svelte';
 	import UserForm from '$components/UserForm.svelte';
-	import type { IOverlay } from 'flyonui/flyonui';
 
 	const tabs: Tab[] = [
 		{
@@ -35,24 +34,6 @@
 	// 	console.log('Drawer toggled to ' + isDrawerOpen);
 	// }
 	// const closeDrawer = () => isDrawerOpen = false;
-
-	const loadHSOverlay = async () => {
-		const { HSOverlay } = await import('flyonui/flyonui.js');
-		return HSOverlay;
-	};
-
-	let myModal: HTMLElement;
-	let overlay: IOverlay | undefined = $state();
-
-	$effect(() => {
-		loadHSOverlay().then((loadHSOverlay) => {
-			overlay = new loadHSOverlay(myModal);
-		});
-	});
-
-	const openModal = () => {
-		overlay?.open();
-	};
 
 	// let myTemperature: HTMLElement
 </script>
