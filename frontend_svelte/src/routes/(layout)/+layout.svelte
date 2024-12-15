@@ -81,6 +81,7 @@
 
 <!-- <JsonData data={$page}></JsonData> -->
 
-<main>
+<div >
 	{@render children?.()}
-</main>
+</div>
+

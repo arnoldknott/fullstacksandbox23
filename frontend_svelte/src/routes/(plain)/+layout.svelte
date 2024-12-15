@@ -5,6 +5,6 @@
 	let { children }: { children: Snippet } = $props();
 </script>
 
-<main>
+<main data-theme="dark">
 	{@render children?.()}
 </main>
