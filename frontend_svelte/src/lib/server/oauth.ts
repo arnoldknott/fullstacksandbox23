@@ -31,7 +31,7 @@ const scopesMsGraph = [
 	'Files.ReadWrite.All',
 	'User.ReadBasic.All'
 ];
-const scoepsAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
+const scopesAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
 
 class BaseOauthProvider {
 	constructor() {}
@@ -165,7 +165,7 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 		sessionId: string,
 		origin: string,
 		targetUrl: string = '/',
-		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scoepsAzure]
+		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scopesAzure]
 	): Promise<string> {
 		try {
 			// console.log('🔑 oauth - Authentication - signIn ');
