@@ -190,18 +190,21 @@ class BaseNamespace(socketio.AsyncNamespace):
                 token_payload = await get_azure_token_payload(token)
                 # print("=== base - on_connect - token_payload ===")
                 # print(token_payload, flush=True)
-                # print("=== base - on_connect - token_payload - name ===")
-                # print(token_payload["name"], flush=True)
+                print("=== base - on_connect - token_payload - name ===")
+                print(token_payload["name"], flush=True)
                 current_user = await check_token_against_guards(token_payload, guards)
                 session_data = {
                     "user_name": token_payload["name"],
                     "current_user": current_user,
                 }
+                print("=== base - on_connect - session_data ===")
+                print(session_data, flush=True)
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
                 )
                 # print("=== base - on_connect - current_user ===")
                 # print(current_user, flush=True)
+                print("=== base - on_connect - session saved ===", flush=True)
                 logger.info(
                     f"Client authenticated to access protected namespace {self.namespace}."
                 )
