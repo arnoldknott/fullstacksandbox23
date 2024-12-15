@@ -156,6 +156,7 @@ async def get_onbehalfof(authorization: Annotated[str | None, Header()] = None):
     result = confClientApp.acquire_token_on_behalf_of(
         token,
         scopes=["User.Read"],
+        # scopes=[".default"],
         # scopes=[
         #     "api.read"
         # ],  # ["User.Read", "https://management.azure.com/user_impersonation"],
