@@ -313,6 +313,21 @@ resource "azurerm_key_vault_secret" "redisSessionDb" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+# Socket.io admin interface - user name and password to non-zero values,
+# enables the admin interface through https://admin.socket.io/#/
+# use advanced settings options at log in to set the correct path to the socket.io server
+resource "azurerm_key_vault_secret" "socketioAdminUsername" {
+  name         = "socketio-admin-username"
+  value        = ""
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+resource "azurerm_key_vault_secret" "socketioAdminPassword" {
+  name         = "socketio-admin-password"
+  value        = ""
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
 # APP_REG_CLIENT_ID: is FRONTEND!
 resource "azurerm_key_vault_secret" "app-reg-client-id" {
   name         = "app-reg-client-id"
