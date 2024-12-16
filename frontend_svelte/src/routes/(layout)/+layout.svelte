@@ -44,7 +44,8 @@
 	// });
 </script>
 
-<div class="h-full" data-theme={mode}>
+<!-- The class switches material design 3, whereas data-theme switches FlyonUI -->
+<div class={`h-full ${mode}`} data-theme={mode}>
 <nav class="mx-2 p-2">
 	<div class="flex w-full flex-wrap items-center justify-between">
 		<div class="flex-grow space-x-4">
@@ -101,4 +102,13 @@
 	{@render children?.()}
 </div>
 </div>
+
+<style>
+	@import './dark.css';
+	@import './dark-hc.css';
+	@import './dark-mc.css';
+	@import './light.css';
+	@import './light-hc.css';
+	@import './light-mc.css';
+</style>
 
