@@ -76,6 +76,8 @@
 <HorizontalRule />
 
 <Title>User Form</Title>
+<!-- Applying TailwindCSS classes formats the following paragraph: -->
+<p class="text-2xl text-center">(Only the text fields are material design - the div's around are tailwind CSS)</p>
 
 <section class="flex h-full w-full justify-center">
 	<div class="center py-12 md:w-8/12 lg:ml-6 lg:w-5/12">
@@ -141,10 +143,11 @@
 <HorizontalRule />
 
 <style>
-	#demo_resource_dialog {
+    /* Local override works:  */
+	/* #demo_resource_dialog {
 		--md-dialog-headline-color: #e4a112;
 		--md-dialog-container-color: #e5deb9;
-	}
+	} */
 	#post-demo-resource {
 		display: flex;
 		flex-direction: column;

@@ -13,6 +13,14 @@
 	const { loggedIn } = $page.data.session || false;
 	// const { session } = $page.data;
 
+
+	let mode = $state('light');
+
+	const toggleMode = () => {
+		mode = mode === 'dark' ? 'light' : 'dark';
+		console.log('mode toggled to ' + mode);
+	};
+
 	// let userPictureURL: URL | undefined = $state(undefined);
 	// onMount(async () => {
 	// 	// this call does not have any authentication - remove it!
@@ -36,6 +44,8 @@
 	// });
 </script>
 
+<!-- The class switches material design 3, whereas data-theme switches FlyonUI -->
+<div class={`h-full ${mode}`} data-theme={mode}>
 <nav class="mx-2 p-2">
 	<div class="flex w-full flex-wrap items-center justify-between">
 		<div class="flex-grow space-x-4">
@@ -60,6 +70,13 @@
 					<img class="h-12 w-12 rounded-full" src={userPictureURL} alt="you" />
 				{/if} -->
 			</Guard>
+			<button aria-label="modeToggler" >
+				<label id="modeToggler" class="swap swap-rotate">
+					<input type="checkbox" onclick={toggleMode}/>
+					<span class="icon-[tabler--sun] swap-on size-6"></span>
+					<span class="icon-[tabler--moon] swap-off size-6"></span>
+				</label>
+			</button>
 			<!-- {/if} -->
 			<!-- Change this to using $page.data -> user -->
 			{#if !loggedIn}
@@ -81,7 +98,17 @@
 
 <!-- <JsonData data={$page}></JsonData> -->
 
-<div >
+<div>
 	{@render children?.()}
 </div>
+</div>
+
+<style>
+	@import './dark.css';
+	@import './dark-hc.css';
+	@import './dark-mc.css';
+	@import './light.css';
+	@import './light-hc.css';
+	@import './light-mc.css';
+</style>
 
