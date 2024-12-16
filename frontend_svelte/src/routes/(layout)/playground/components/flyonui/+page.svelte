@@ -142,6 +142,63 @@
 
 	<HorizontalRule />
 
+    <Title>Drawer (Sidebar)</Title>
+	<button
+		type="button"
+		class="btn btn-primary"
+		aria-haspopup="dialog"
+		aria-expanded="false"
+		aria-controls="overlay-example"
+		data-overlay="#overlay-example">Open drawer</button
+	>
+
+	<div
+		id="overlay-example"
+		class="overlay drawer drawer-start hidden overlay-open:translate-x-0"
+		role="dialog"
+		tabindex="-1"
+	>
+		<div class="drawer-header">
+			<h3 class="drawer-title">Drawer Title</h3>
+			<button
+				type="button"
+				class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+				aria-label="Close"
+				data-overlay="#overlay-example"
+			>
+				<span class="icon-[tabler--x] size-5"></span>
+			</button>
+		</div>
+		<div class="drawer-body">
+			<p>
+				Some text as placeholder. In real life you can have the elements you have chosen. Like,
+				text, images, lists, etc.
+			</p>
+		</div>
+		<div class="drawer-footer">
+			<button type="button" class="btn btn-secondary btn-soft" data-overlay="#overlay-example"
+				>Close</button
+			>
+			<button type="button" class="btn btn-primary">Save changes</button>
+		</div>
+	</div>
+
+	<HorizontalRule />
+
+	<Title>Card</Title>
+	<div class="card sm:max-w-sm">
+		<div class="card-body">
+			<h5 class="card-title mb-2.5">Body of a Card here</h5>
+			<p class="mb-4">
+				Soe text to fill in the body fo the card. This could be anything here. But for now just text
+				filling in here.
+			</p>
+			<div class="card-actions">
+				<button class="btn btn-primary">Card button</button>
+			</div>
+		</div>
+	</div>
+
 	<!-- <Title>Menus</Title>
     <div class="grid grid-cols-6 gap-4">
         <div>
