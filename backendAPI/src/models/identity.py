@@ -5,6 +5,7 @@ from typing import List, Optional
 from sqlalchemy import Column, ForeignKey, Uuid
 from sqlmodel import Field, Relationship, SQLModel
 
+# from core.types import AppRoles
 from core.config import config
 from models.access import IdentityHierarchy
 
@@ -127,8 +128,10 @@ class UserCreate(SQLModel):
     azure_user_id: Optional[uuid.UUID] = None
     # # enables multi-tenancy, if None, then it's the internal tenant:
     azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
-    # last_accessed_at: Optional[datetime] = datetime.now()
+    # Could be an option in future to implement roles for the app:
+    # app_roles: Optional[List[AppRoles]] = None
     is_active: bool = True
+    is_publicAIuser: bool = False
 
 
 class User(UserCreate, table=True):
@@ -240,6 +243,11 @@ class UserRead(UserCreate):
     groups: Optional[List["GroupRead"]] = None
     sub_groups: Optional[List["SubGroupRead"]] = None
     sub_sub_groups: Optional[List["SubSubGroupRead"]] = None
+
+
+class Me(UserRead):
+    azure_token_roles: Optional[list[str]] = None
+    azure_token_groups: Optional[list[uuid.UUID]] = None
 
 
 class UserUpdate(UserCreate):

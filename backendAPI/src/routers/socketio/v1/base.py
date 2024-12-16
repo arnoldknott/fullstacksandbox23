@@ -19,6 +19,14 @@ socketio_server = socketio.AsyncServer(
     engineio_logger=False,  # prevents the ping and pong messages from being logged
 )
 
+if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD:
+    socketio_server.instrument(
+        auth={
+            "username": config.SOCKETIO_ADMIN_USERNAME,
+            "password": config.SOCKETIO_ADMIN_PASSWORD,
+        }
+    )
+
 
 @socketio_server.event
 async def connect(sid):
@@ -143,7 +151,13 @@ class BaseNamespace(socketio.AsyncNamespace):
 
     async def _get_session_data(self, sid):
         """Get socketio session data from the socketio server."""
-        return await self.server.get_session(sid, namespace=self.namespace)
+        try:
+            return await self.server.get_session(sid, namespace=self.namespace)
+        except Exception as err:
+            logger.error(
+                f"Failed to get session data for client with session id {sid}."
+            )
+            logger.error(err)
 
     async def callback_in_base_namespace(self):
         print("=== base - callback ===")
@@ -176,18 +190,21 @@ class BaseNamespace(socketio.AsyncNamespace):
                 token_payload = await get_azure_token_payload(token)
                 # print("=== base - on_connect - token_payload ===")
                 # print(token_payload, flush=True)
-                # print("=== base - on_connect - token_payload - name ===")
-                # print(token_payload["name"], flush=True)
+                print("=== base - on_connect - token_payload - name ===")
+                print(token_payload["name"], flush=True)
                 current_user = await check_token_against_guards(token_payload, guards)
                 session_data = {
                     "user_name": token_payload["name"],
                     "current_user": current_user,
                 }
+                print("=== base - on_connect - session_data ===")
+                print(session_data, flush=True)
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
                 )
                 # print("=== base - on_connect - current_user ===")
                 # print(current_user, flush=True)
+                print("=== base - on_connect - session saved ===", flush=True)
                 logger.info(
                     f"Client authenticated to access protected namespace {self.namespace}."
                 )
@@ -199,10 +216,9 @@ class BaseNamespace(socketio.AsyncNamespace):
         else:
             current_user = None
             logger.info(f"Client authenticated to public namespace {self.namespace}.")
-        print("=== base - on_connect - callback_on_connect ===")
-        print(self.callback_on_connect)
         if self.callback_on_connect is not None:
-            print("=== base - on_connect - callback_on_connect ===")
+            # This works:
+            # print("=== base - on_connect - callback_on_connect ===")
             await self.callback_on_connect(sid)
 
         # current_user = await check_token_against_guards(token_payload, self.guards)

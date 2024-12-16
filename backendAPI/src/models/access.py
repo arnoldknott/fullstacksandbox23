@@ -224,9 +224,11 @@ class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
 
     __table_args__ = (UniqueConstraint("parent_id", "child_id"),)
 
+    # TBD: add the required relations: children, that cannot be standalone, but need a parent.
     relations: ClassVar = {
         ResourceType.demo_resource: [
             ResourceType.tag,
+            ResourceType.demo_file,
         ],
         ResourceType.category: [
             ResourceType.demo_resource,

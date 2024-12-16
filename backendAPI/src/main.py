@@ -27,10 +27,10 @@ from routers.api.v1.tag import router as tag_router
 # from routers.socketio.v1.base import presentation_interests_router, socketio_server
 from routers.socketio.v1.base import socketio_server
 from routers.socketio.v1.demo_namespace import demo_namespace_router
-from routers.socketio.v1.public_namespace import public_namespace_router
 from routers.socketio.v1.interactive_documentation import (
     interactive_documentation_router,
 )
+from routers.socketio.v1.public_namespace import public_namespace_router
 from routers.ws.v1.websockets import router as websocket_router
 
 # print("Current directory:", os.getcwd())
@@ -111,6 +111,11 @@ app.add_middleware(
         (
             f"https://{config.FRONTEND_SVELTE_FQDN}"
             if config.FRONTEND_SVELTE_FQDN
+            else None
+        ),
+        (
+            "https://admin.socket.io"
+            if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD
             else None
         ),
     ],

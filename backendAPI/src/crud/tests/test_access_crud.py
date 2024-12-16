@@ -45,6 +45,7 @@ from tests.utils import (
     one_test_policy_public_read,
     one_test_policy_read,
     one_test_policy_share,
+    one_test_policy_write,
     resource_id1,
     resource_id2,
     resource_id3,
@@ -90,9 +91,6 @@ async def test_owner_creates_access_policy(
     sharing_user = await register_current_user(current_user_data_user1)
     await register_current_user(current_user_data_user3)
 
-    # resources need to be registered for the policies to be created:
-    policy = AccessPolicy(**one_test_policy_own)
-
     # Admin needs to register the first resource - owned by user 1:
     current_admin_user = await register_current_user(current_user_data_admin)
     await add_one_test_access_policy(one_test_policy_own, current_admin_user)
@@ -107,6 +105,62 @@ async def test_owner_creates_access_policy(
     assert created_policy.identity_id == modelled_test_policy.identity_id
     assert created_policy.resource_id == modelled_test_policy.resource_id
     assert created_policy.action == modelled_test_policy.action
+
+
+@pytest.mark.anyio
+async def test_reader_creates_access_policy_fails(
+    register_current_user,
+    add_one_test_access_policy,
+):
+    """Test creating an access policy."""
+
+    # users need to be registered for the policies to be created:
+    sharing_user = await register_current_user(current_user_data_user1)
+    await register_current_user(current_user_data_user3)
+
+    # # resources need to be registered for the policies to be created:
+    # policy = AccessPolicy(**one_test_policy_share)
+
+    # Admin needs to register the first resource - owned by user 1:
+    current_admin_user = await register_current_user(current_user_data_admin)
+    await add_one_test_access_policy(one_test_policy_read, current_admin_user)
+
+    try:
+        # User 1 (with read-only permissions) tries to share with user 3:
+        async with AccessPolicyCRUD() as policy_crud:
+            policy = AccessPolicy(**one_test_policy_share)
+            await policy_crud.create(policy, sharing_user)
+    except Exception as err:
+        assert err.status_code == 403
+        assert err.detail == "Forbidden."
+
+
+@pytest.mark.anyio
+async def test_writer_creates_access_policy_fails(
+    register_current_user,
+    add_one_test_access_policy,
+):
+    """Test creating an access policy."""
+
+    # users need to be registered for the policies to be created:
+    sharing_user = await register_current_user(current_user_data_user1)
+    await register_current_user(current_user_data_user3)
+
+    # # resources need to be registered for the policies to be created:
+    # policy = AccessPolicy(**one_test_policy_share)
+
+    # Admin needs to register the first resource - owned by user 1:
+    current_admin_user = await register_current_user(current_user_data_admin)
+    await add_one_test_access_policy(one_test_policy_write, current_admin_user)
+
+    try:
+        # User 1 (with read-only permissions) tries to share with user 3:
+        async with AccessPolicyCRUD() as policy_crud:
+            policy = AccessPolicy(**one_test_policy_share)
+            await policy_crud.create(policy, sharing_user)
+    except Exception as err:
+        assert err.status_code == 403
+        assert err.detail == "Forbidden."
 
 
 @pytest.mark.anyio
@@ -1439,7 +1493,6 @@ async def test_user_reads_resource_hierarchy_all_allowed_children_of_a_parent(
                 "resource_id": child_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
 
     # async with AccessPolicyCRUD() as policy_crud:
@@ -1571,7 +1624,6 @@ async def test_user_reads_resource_hierarchy_all_allowed_parents_of_a_child(
                 "resource_id": parent_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
 
     await add_one_test_access_policy(
@@ -1580,7 +1632,6 @@ async def test_user_reads_resource_hierarchy_all_allowed_parents_of_a_child(
             "resource_id": str(child_id),
             "action": Action.read,
         },
-        current_user=current_user,
     )
     for parent in many_resource_ids:
         await add_one_parent_child_resource_relationship(
@@ -1622,7 +1673,6 @@ async def test_user_reads_resource_hierarchy_all_allowed_parents_without_access_
                 "resource_id": parent_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
     for parent in many_resource_ids:
         await add_one_parent_child_resource_relationship(
@@ -1655,7 +1705,6 @@ async def test_user_reads_resource_hierarchy_all_allowed_parents_without_access_
             "resource_id": str(child_id),
             "action": Action.read,
         },
-        current_user=current_user,
     )
     for parent in many_resource_ids:
         await add_one_parent_child_resource_relationship(
@@ -1740,7 +1789,6 @@ async def test_user_deletes_resource_hierarchy_child_with_owner_rights(
             "resource_id": child_resource_id8,
             "action": Action.own,
         },
-        current_user=current_user,
     )
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
@@ -1955,7 +2003,6 @@ async def test_user_create_identity_hierarchy(
             "resource_id": str(parent_identity.id),
             "action": Action.own,
         },
-        current_user=current_user_data,
     )
 
     new_child_id = uuid.uuid4()
@@ -2019,7 +2066,6 @@ async def test_user_create_identity_hierarchy_without_access_to_child(
             "resource_id": str(parent_identity.id),
             "action": Action.own,
         },
-        current_user=current_user_data,
     )
 
     new_child_id = uuid.uuid4()
@@ -2110,7 +2156,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_children_of_a_parent(
                 "resource_id": child_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
     await add_one_test_access_policy(
         {
@@ -2118,7 +2163,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_children_of_a_parent(
             "resource_id": identity_id_group2,
             "action": Action.read,
         },
-        current_user=current_user,
     )
 
     async with AccessPolicyCRUD() as policy_crud:
@@ -2251,7 +2295,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_parents_of_a_child(
                 "resource_id": parent_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
 
     await add_one_test_access_policy(
@@ -2260,7 +2303,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_parents_of_a_child(
             "resource_id": str(child_id),
             "action": Action.read,
         },
-        current_user=current_user,
     )
     for parent in access_to_parent_ids:
         await add_one_parent_child_identity_relationship(
@@ -2300,7 +2342,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_parents_without_access_
                 "resource_id": parent_id,
                 "action": Action.read,
             },
-            current_user=current_user,
         )
     for parent in access_to_parent_ids:
         await add_one_parent_child_identity_relationship(
@@ -2337,7 +2378,6 @@ async def test_user_reads_identity_hierarchy_all_allowed_parents_without_access_
             "resource_id": str(child_id),
             "action": Action.read,
         },
-        current_user=current_user,
     )
     for parent in parent_ids:
         await add_one_parent_child_identity_relationship(
@@ -2427,7 +2467,6 @@ async def test_user_deletes_identity_hierarchy_child_with_owner_rights(
             "resource_id": child_identity_id5,
             "action": Action.own,
         },
-        current_user=current_user,
     )
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:

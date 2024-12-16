@@ -26,6 +26,12 @@
 				<li><em>OAuth2</em> for authentication and authorization</li>
 				<li><em>Access Control</em> for fine grained access permissions</li>
 				<li><em>Logging</em> for tracking access</li>
+				<li><em>CORS</em> configuration in backend for REST API, websockets and socket.io</li>
+				<li><em>CSRF</em> in redirect OAuth2 authentication process in frontend</li>
+				<li>
+					<em>Cookies</em> for session management in frontend secured with HttpOnly, Secure, SameSite,
+					and expiry settings
+				</li>
 			</ul>
 		</section>
 	</section>

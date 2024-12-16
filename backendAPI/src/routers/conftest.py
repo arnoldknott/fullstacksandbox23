@@ -17,8 +17,11 @@ from crud.protected_resource import (
 from crud.public_resource import PublicResourceCRUD
 from crud.tag import TagCRUD
 from models.category import Category
+from models.demo_resource import DemoResource
 from models.identity import User
+from models.protected_resource import ProtectedChild, ProtectedResource
 from tests.utils import (
+    current_user_data_admin,
     many_test_categories,
     many_test_demo_resources,
     many_test_protected_child_resources,
@@ -122,8 +125,6 @@ async def add_test_categories(
 
     # TBD: add checks if token payload is not provided!
     # could be a public resource then?
-    # maybe just using the add_test_policies_for_resources fixture?
-    # or just failing?
     async def _add_test_categories(token_payload: dict = None):
         categories = []
         current_user = await current_user_from_azure_token(token_payload)
@@ -144,7 +145,6 @@ async def add_test_categories(
 async def add_test_demo_resources(
     current_user_from_azure_token: User,
     add_test_categories: list[Category],
-    # add_test_policies_for_resources: list[AccessPolicy],
 ):
     """Adds demo resources to the database."""
     # TBD, when refactoring add_test_demo_resources, the mocked token should be available here and
@@ -172,7 +172,7 @@ async def add_test_demo_resources(
 
 @pytest.fixture(scope="function")
 async def add_many_test_demo_files(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: User, access_to_one_parent: UUID
 ):
     """Adds test demo files to the database and the appdata on disk."""
 
@@ -188,10 +188,14 @@ async def add_many_test_demo_files(
 
     async def _add_many_test_demo_files(token_payload: dict = None):
         demo_files_metadata = []
+
         for demo_file in test_demo_files:
             current_user = await current_user_from_azure_token(token_payload)
+            parent_demo_resource_id = await access_to_one_parent(DemoResource)
             async with DemoFileCRUD() as crud:
-                added_demo_file = await crud.create_file(demo_file, current_user)
+                added_demo_file = await crud.create_file(
+                    demo_file, current_user, parent_demo_resource_id
+                )
             demo_files_metadata.append(added_demo_file)
 
         demo_files_metadata = sorted(demo_files_metadata, key=lambda x: x.id)
@@ -257,11 +261,21 @@ async def add_test_protected_child(
     current_user: CurrentUserData = None,
     parent_id: UUID = None,
     inherit: bool = False,
+    add_one_test_access_policy=None,
 ):
     """Adds a test protected child to the database."""
 
     if not current_user:
         current_user = await current_user_from_azure_token()
+    access_policy = {
+        "resource_id": parent_id,
+        "resource_type": "ProtectedResource",
+        "identity_id": current_user.user_id,
+        "action": "write",
+    }
+    print("=== conftest - add_test_protected_child - access_policy ===")
+    print(access_policy)
+    await add_one_test_access_policy(access_policy, current_user_data_admin)
     async with ProtectedChildCRUD() as crud:
         added_protected_child = await crud.create(
             protected_child, current_user, parent_id, inherit
@@ -296,15 +310,19 @@ async def add_one_test_protected_child(
 @pytest.fixture(scope="function")
 async def add_many_test_protected_children(
     current_user_from_azure_token: User,
+    access_to_one_parent: UUID,
 ):
     """Adds test protected children to the database."""
 
     async def _add_many_test_protected_children(token_payload: dict = None):
+        current_user = await current_user_from_azure_token(token_payload)
         protected_children = []
+        parent_resource_id = await access_to_one_parent(ProtectedResource)
         for protected_child in many_test_protected_child_resources:
-            current_user = await current_user_from_azure_token(token_payload)
             async with ProtectedChildCRUD() as crud:
-                added_protected_child = await crud.create(protected_child, current_user)
+                added_protected_child = await crud.create(
+                    protected_child, current_user, parent_resource_id
+                )
             protected_children.append(added_protected_child)
 
         protected_children = sorted(protected_children, key=lambda x: x.id)
@@ -358,17 +376,18 @@ async def add_one_test_protected_grandchild(
 
 @pytest.fixture(scope="function")
 async def add_many_test_protected_grandchildren(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: User, access_to_one_parent: UUID
 ):
     """Adds test protected grandchildren to the database."""
 
     async def _add_many_test_protected_grandchildren(token_payload: dict = None):
+        current_user = await current_user_from_azure_token(token_payload)
         protected_grandchildren = []
+        parent_resource_id = await access_to_one_parent(ProtectedChild)
         for protected_grandchild in many_test_protected_grandchild_resources:
-            current_user = await current_user_from_azure_token(token_payload)
             async with ProtectedGrandChildCRUD() as crud:
                 added_protected_grandchild = await crud.create(
-                    protected_grandchild, current_user
+                    protected_grandchild, current_user, parent_resource_id
                 )
             protected_grandchildren.append(added_protected_grandchild)
 

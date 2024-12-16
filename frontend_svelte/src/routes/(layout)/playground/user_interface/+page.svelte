@@ -1,21 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import Title from '$components/Title.svelte';
-	// import { MultiRangeSlider, initTWE } from 'tw-elements';
-	// import { MdSlider } from '@material/web/slider/slider.js';
 	import '@material/web/slider/slider.js';
 	import '@material/web/labs/card/filled-card.js';
 	import '@material/web/tabs/tabs.js';
 	import '@material/web/tabs/primary-tab.js';
 	import '@material/web/tabs/secondary-tab.js';
-
-	onMount(async () => {
-		const te = await import('tw-elements');
-		te.initTWE(
-			{ MultiRangeSlider: te.MultiRangeSlider },
-			{ allowReinits: true, checkOtherImports: true }
-		);
-	});
+	import HorizontalRule from '$components/HorizontalRule.svelte';
 
 	let sliderValue = $state(0);
 	const color = $derived(`hsl(${sliderValue * 1.2}, 80%, 80%)`);
@@ -69,20 +59,9 @@
 	<div class="text-2xl"><Title>{cardContent}</Title></div>
 </md-filled-card>
 
+<HorizontalRule />
+
 <Title>Status slider</Title>
-
-<!-- <div
-	data-twe-multi-range-slider-init
-	data-twe-tooltip="true"
-	data-twe-number-of-ranges="1"
-	on:valueChanged.te.multiRangeSlider={(e) => (sliderValue = e.values.rounded)}
-	class="p-10"
->
-	{sliderValue}
-</div> -->
-
-<!-- <md-slider min="0" max="100" value="50"></md-slider>
-<md-slider value="10" on:input={(e) => (console.log(e.target.value))}></md-slider> -->
 
 <p class="text-center text-2xl">Status: {sliderValue}</p>
 <!-- TBD refactor into bindable prop! -->
@@ -96,17 +75,11 @@
 	STATUS: {sliderValue}
 </div>
 
-<Title>Multiple status sliders</Title>
+<hr class="mx-5 my-12 h-2 bg-neutral-500 opacity-100 dark:opacity-50" />
 
-<!-- <div
-	data-twe-multi-range-slider-init
-	data-twe-tooltip="true"
-	data-twe-number-of-ranges="1"
-	on:valueChanged.te.multiRangeSlider={(e) => (sliders[0] = e.values.rounded)}
-	class="p-10"
->
-	Left of Topic 1: {sliders[0]}
-</div> -->
+<HorizontalRule />
+
+<Title>Multiple status sliders</Title>
 
 <table class="w-full">
 	<thead>
@@ -220,6 +193,10 @@
 	</div>
 </div>
 
+<HorizontalRule />
+
 <Title>Nice Tailwind CSS gradient</Title>
 
 <div class="w-100 m-10 bg-gradient-to-r from-cyan-500 to-blue-500 p-10">STATUS:</div>
+
+<HorizontalRule />

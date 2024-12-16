@@ -1,11 +1,10 @@
 # fmt: off
 # ruff: noqa
-# isort:skip_file
-""""7d01d9fd1d6ad8ab087bc2a8035ff607f0675ab8"
+""""4a35b61ba87e370d8017b6c269e4e4bebf4e6579"
 
-Revision ID: a127d6490978
+Revision ID: a097a5ebb41d
 Revises: 
-Create Date: 2024-09-09 15:31:52.861851+02:00
+Create Date: 2024-12-15 10:19:21.246606+01:00
 
 """
 from typing import Sequence, Union
@@ -16,7 +15,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'a127d6490978'
+revision: str = 'a097a5ebb41d'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -88,6 +87,13 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['id'], ['identifiertypelink.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('demofile',
+    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.ForeignKeyConstraint(['id'], ['identifiertypelink.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_demofile_name'), 'demofile', ['name'], unique=True)
     op.create_table('group',
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(length=150), nullable=False),
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(length=500), nullable=True),
@@ -153,6 +159,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_uebergroup_name'), 'uebergroup', ['name'], unique=False)
     op.create_table('user',
     sa.Column('azure_tenant_id', sa.Uuid(), nullable=True),
+    sa.Column('is_publicAIuser', sa.Boolean(), nullable=True),
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('azure_user_id', sa.Uuid(), nullable=True),
@@ -207,6 +214,8 @@ def downgrade() -> None:
     op.drop_table('protectedchild')
     op.drop_index(op.f('ix_group_name'), table_name='group')
     op.drop_table('group')
+    op.drop_index(op.f('ix_demofile_name'), table_name='demofile')
+    op.drop_table('demofile')
     op.drop_table('category')
     op.drop_index(op.f('ix_azuregroup_id'), table_name='azuregroup')
     op.drop_table('azuregroup')

@@ -7,8 +7,8 @@ resource "random_uuid" "UuidScope4" {}
 # resource "random_uuid" "UuidScope6" {}
 resource "random_uuid" "UuidRole1" {}     # Used for admins in backend
 resource "random_uuid" "userGroupUUID" {} # Used for users in backend
-resource "random_uuid" "AIpublicRoleUUID" {}
-resource "random_uuid" "AIprivateRoleUUID" {}
+# resource "random_uuid" "AIpublicRoleUUID" {}
+# resource "random_uuid" "AIprivateRoleUUID" {}
 # resource "random_uuid" "GitHubUserRoleUUID" {} # manage through account linking!
 # resource "random_uuid" "DiscordUserRoleUUID" {} # manage through account linking!
 # resource "random_uuid" "UuidRole5" {}
@@ -60,7 +60,7 @@ resource "azuread_application" "backendAPI" {
     # }
 
     oauth2_permission_scope {
-      admin_consent_description  = "Gives the users of Fullstack Sandox Application read rights to its REST API."
+      admin_consent_description  = "Gives the users of Fullstack Sandbox Application read rights to its REST API."
       admin_consent_display_name = "Users can read from Fullstack Sandbox REST API"
       enabled                    = true
       id                         = random_uuid.UuidScope2.result
@@ -71,7 +71,7 @@ resource "azuread_application" "backendAPI" {
     }
 
     oauth2_permission_scope {
-      admin_consent_description  = "Gives the users of Fullstack Sandox Application write rights to its REST API."
+      admin_consent_description  = "Gives the users of Fullstack Sandbox Application write rights to its REST API."
       admin_consent_display_name = "Users can write to Fullstack Sandbox application's REST API"
       enabled                    = true
       id                         = random_uuid.UuidScope3.result
@@ -82,8 +82,8 @@ resource "azuread_application" "backendAPI" {
     }
 
     oauth2_permission_scope {
-      admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to interact with Fullstack application via websockets."
-      admin_consent_display_name = "Users can interact with Fullstack Sandbox via websockets"
+      admin_consent_description  = "Gives the users of Fullstack Sandbox Application rights to interact with Fullstack application via socket.io."
+      admin_consent_display_name = "Users can interact with Fullstack Sandbox via socket.io"
       enabled                    = true
       id                         = random_uuid.UuidScope4.result
       type                       = "User"
@@ -120,8 +120,8 @@ resource "azuread_application" "backendAPI" {
 
   }
 
-  # can be used to add groups to tokens and assign roles - but no correleation between role and group!
-  # Defines roles within the app - mainnly required for the backend,
+  # can be used to add groups to tokens and assign roles - but no correlation between role and group!
+  # Defines roles within the app - mainly required for the backend,
   # but also used by the backendAPI to impersonate the user to access the Microsoft Graph API
   # and/or to access the backendAPI from postman/thunderclient:
   app_role {
@@ -142,23 +142,26 @@ resource "azuread_application" "backendAPI" {
     value                = "User" # could be comething like "User.Write" or "User.Read"
   }
 
-  app_role {
-    allowed_member_types = ["User"]
-    description          = "Users can access the public artificial intelligence"
-    display_name         = "Public Artificial Intelligence Users"
-    enabled              = true
-    id                   = random_uuid.AIpublicRoleUUID.result
-    value                = "publicAIuser"
-  }
-
-  app_role {
-    allowed_member_types = ["User"]
-    description          = "Users can access the private artificial intelligence"
-    display_name         = "Private Artificial Intelligence Users"
-    enabled              = true
-    id                   = random_uuid.AIprivateRoleUUID.result
-    value                = "privateAIuser"
-  }
+  # User self-sign-up (after consent) - not possible without giving the
+  # frontend app 'AppRoleAssignment.ReadWrite.All' and 'Application.Read.All'"
+  # permissions, which appear overkill and need Admin consent.
+  # app_role {
+  #   allowed_member_types = ["User"]
+  #   description          = "Users can access the public artificial intelligence"
+  #   display_name         = "Public Artificial Intelligence Users"
+  #   enabled              = true
+  #   id                   = random_uuid.AIpublicRoleUUID.result
+  #   value                = "publicAIuser"
+  # }
+  #
+  # app_role {
+  #   allowed_member_types = ["User"]
+  #   description          = "Users can access the private artificial intelligence"
+  #   display_name         = "Private Artificial Intelligence Users"
+  #   enabled              = true
+  #   id                   = random_uuid.AIprivateRoleUUID.result
+  #   value                = "privateAIuser"
+  # }
 
   # app_role {
   #   allowed_member_types = ["User"]
@@ -197,19 +200,103 @@ resource "azuread_application" "backendAPI" {
   required_resource_access {
     resource_app_id = "00000003-0000-0000-c000-000000000000"
 
+    ### Those are absolutely mandatory:
+    # openid:
     resource_access {
       id   = "37f7f235-527c-4136-accd-4a02d197296e"
       type = "Scope"
     }
+
+    # profile:
     resource_access {
       id   = "14dad69e-099b-42c9-810b-d002981feec1"
       type = "Scope"
     }
+
+    # User.Read:
     resource_access {
       id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d"
       type = "Scope"
     }
+
+    # Additional:
+    # Calendars.ReadWrite - delegated
+    resource_access {
+      id   = "1ec239c2-d7c9-4623-a91a-a9775856bb36"
+      type = "Scope"
+    }
+
+    # Calendars.ReadWrite.Shared - delegated
+    resource_access {
+      id   = "12466101-c9b8-439a-8589-dd09ee67e8e9"
+      type = "Scope"
+    }
+
+    # Files.Read.All - delegated
+    resource_access {
+      id   = "df85f4d6-205c-4ac5-a5ea-6bf408dba283"
+      type = "Scope"
+    }
+
+    # Files.ReadWrite.All - delegated
+    resource_access {
+      id   = "863451e7-0667-486c-a5d6-d135439485f0"
+      type = "Scope"
+    }
+
+    # # Mail including the shared mailboxes - delegated:
+    # # Mail.Read.Shared - delegated
+    # resource_access {
+    #   id   = "7b9103a5-4610-446b-9670-80643382c1fa"
+    #   type = "Scope"
+    # }
+
+    # # Mail.ReadWrite.Shared - delegated
+    # resource_access {
+    #   id   = "5df07973-7d5d-46ed-9847-1271055cbd51"
+    #   type = "Scope"
+    # }
+
+    # # Mail.Send.Shared - delegated
+    # resource_access{
+    #   id   = "a367ab51-6b49-43bf-a716-a1fb06d2a174"
+    #   type = "Scope"
+    # }
+
+    # # Mail (only the users own) - delegated:
+    # # Mail.Read - delegated
+    # resource_access {
+    #   id   = "570282fd-fa5c-430d-a7fd-fc8dc98a9dca"
+    #   type = "Scope"
+    # }
+
+    # # Mail.ReadWrite - delegated
+    # resource_access {
+    #   id   = "024d486e-b451-40bb-833d-3e66d98c5c73"
+    #   type = "Scope"
+    # }
+
+    # # Mail.Send - delegated
+    # resource_access {
+    #   id   = "e383f46e-2787-4529-855e-0e479a3ffac0"
+    #   type = "Scope"
+    # }
+
+    # consider adding notes - for OneNote access
+
+    # User.ReadBasic.All - delegated
+    resource_access {
+      id   = "b340eb25-3456-403f-be2f-af7a0d370277"
+      type = "Scope"
+    }
+
+    # Team.ReadBasic.All - delegated
+    resource_access {
+      id   = "485be79e-c497-4b35-9400-0e3fa7f2a5d4"
+      type = "Scope"
+    }
   }
+
 
   # TBD: consider adding for enabling swaggerUI authentication - change the host names for stage and prod:
   # Example on how to connect SwaggerUI to AzureAD:

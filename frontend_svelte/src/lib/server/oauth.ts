@@ -22,8 +22,26 @@ const scopesBackend = [
 	`api://${appConfig.api_scope}/api.read`,
 	`api://${appConfig.api_scope}/api.write`
 ];
-const scopesMsGraph = ['User.Read', 'openid', 'profile', 'offline_access'];
-const scoepsAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
+const scopesMsGraph = [
+	'User.Read',
+	'openid',
+	'profile',
+	'offline_access',
+	'Calendars.ReadWrite.Shared',
+	'Files.ReadWrite.All',
+	'User.ReadBasic.All'
+];
+const scopesAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
+
+class BaseOauthProvider {
+	constructor() {}
+
+	async getAccessToken(_sessionId: string, _scopes: string[]): Promise<string> {
+		throw new Error('Method not implemented.');
+	}
+}
+
+export type { BaseOauthProvider };
 
 class RedisClientWrapper implements ICacheClient {
 	private redisClient: RedisClientType;
@@ -91,12 +109,13 @@ class RedisPartitionManager implements IPartitionManager {
 	}
 }
 
-class MicrosoftAuthenticationProvider {
+class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 	private msalCommonConfig;
 	private redisClientWrapper: RedisClientWrapper;
 	private cryptoProvider: CryptoProvider;
 
 	constructor(redisClient: RedisClientType) {
+		super();
 		// Common configuration for all users:
 		this.msalCommonConfig = {
 			auth: {
@@ -146,7 +165,7 @@ class MicrosoftAuthenticationProvider {
 		sessionId: string,
 		origin: string,
 		targetUrl: string = '/',
-		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scoepsAzure]
+		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scopesAzure]
 	): Promise<string> {
 		try {
 			// console.log('🔑 oauth - Authentication - signIn ');

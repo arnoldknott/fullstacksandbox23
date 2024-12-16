@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi import FastAPI
@@ -348,15 +348,18 @@ async def test_delete_protected_resource(
 async def test_all_protected_child_endpoints(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    access_to_one_parent,
     mocked_provide_http_token_payload,
     add_many_test_protected_children,
 ):
     """Tests the post_protected_child endpoint of the API."""
     app_override_provide_http_token_payload
 
+    parent_resource_id = await access_to_one_parent(ProtectedResource)
+
     # Make a POST request to create the protected child
     response = await async_client.post(
-        "/api/v1/protected/child/",
+        f"/api/v1/protected/resource/{parent_resource_id}/child",
         json=many_test_protected_child_resources[0],
     )
 
@@ -365,6 +368,17 @@ async def test_all_protected_child_endpoints(
     assert (
         created_protected_child.title == many_test_protected_child_resources[0]["title"]
     )
+
+    # Make a POST request to create the protected child without access to parent
+    parent_resource_id = uuid4()
+
+    response = await async_client.post(
+        f"/api/v1/protected/resource/{parent_resource_id}/child",
+        json=many_test_protected_child_resources[0],
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "ProtectedChild - Forbidden."}
 
     # add some more protected children:
     # note: the first one is going to be double with different id's
@@ -437,15 +451,18 @@ async def test_all_protected_child_endpoints(
 async def test_all_protected_grandchild_endpoints(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    access_to_one_parent,
     mocked_provide_http_token_payload,
     add_many_test_protected_grandchildren,
 ):
     """Tests the all protected_child endpoints of the API."""
     app_override_provide_http_token_payload
 
-    # Make a POST request to create the protected child
+    parent_resource_id = await access_to_one_parent(ProtectedChild)
+
+    # Make a POST request to create the protected grandchild of parent protected child
     response = await async_client.post(
-        "/api/v1/protected/grandchild/",
+        f"/api/v1/protected/child/{parent_resource_id}/grandchild",
         json=many_test_protected_grandchild_resources[0],
     )
 
@@ -456,14 +473,44 @@ async def test_all_protected_grandchild_endpoints(
         == many_test_protected_grandchild_resources[0]["text"]
     )
 
+    parent_resource_id = await access_to_one_parent(ProtectedResource)
+
+    # Make a POST request to create the protected grandchild of parent resource
+    response = await async_client.post(
+        f"/api/v1/protected/child/{parent_resource_id}/grandchild",
+        json=many_test_protected_grandchild_resources[0],
+    )
+
+    assert response.status_code == 201
+    created_protected_grandchild_of_resource = ProtectedGrandChild(**response.json())
+    assert (
+        created_protected_grandchild_of_resource.text
+        == many_test_protected_grandchild_resources[0]["text"]
+    )
+
+    # Make a POST request to create the protected grandchild without access to parent
+    parent_resource_id = uuid4()
+
+    response = await async_client.post(
+        f"/api/v1/protected/child/{parent_resource_id}/grandchild",
+        json=many_test_protected_grandchild_resources[0],
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "ProtectedGrandChild - Forbidden."}
+
     # add some more protected children:
     # note: the first one is going to be double with different id's
     mocked_protected_grandchildren = await add_many_test_protected_grandchildren(
         mocked_provide_http_token_payload
     )
     created_protected_grandchild.id = UUID(created_protected_grandchild.id)
+    created_protected_grandchild_of_resource.id = UUID(
+        created_protected_grandchild_of_resource.id
+    )
     expected_protected_grandchildren = [
-        created_protected_grandchild
+        created_protected_grandchild,
+        created_protected_grandchild_of_resource,
     ] + mocked_protected_grandchildren
     expected_protected_grandchildren = sorted(
         expected_protected_grandchildren, key=lambda x: x.id
@@ -525,6 +572,7 @@ async def test_all_protected_grandchild_endpoints(
 # region ## resource hierarchy tests:
 
 
+# TBD: is this one still relevant, as now all protected children are created with a parent?
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
@@ -536,6 +584,7 @@ async def test_post_protected_child_resource_and_add_to_parent(
     app_override_provide_http_token_payload: FastAPI,
     current_test_user,
     add_many_test_protected_resources,
+    add_one_test_access_policy,
     mocked_provide_http_token_payload,
 ):
     """Tests the add protected_child to parent endpoint of the API."""
@@ -549,10 +598,19 @@ async def test_post_protected_child_resource_and_add_to_parent(
         if protected_resources.name == "First Protected Resource"
     ][0]
 
+    await add_one_test_access_policy(
+        {
+            "identity_id": str(current_test_user.user_id),
+            "resource_id": str(test_parent.id),
+            "action": Action.write,
+        },
+        current_test_user,
+    )
+
     # Make a POST request to create the protected child as a child of a protected resource
     before_time = datetime.now()
     response = await async_client.post(
-        f"/api/v1/protected/child/?parent_id={test_parent.id}",
+        f"/api/v1/protected/resource/{test_parent.id}/child",
         json=many_test_protected_child_resources[0],
     )
     after_time = datetime.now()
@@ -786,14 +844,23 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance(
         == many_test_protected_resources[0]["description"]
     )
 
+    await add_one_test_access_policy(
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": str(created_protected_resource.id),
+            "action": Action.write,
+        },
+        current_user,
+    )
+
     # Make a POST request to create the protected child as a child of a protected resource
     response = await async_client.post(
-        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=True",
+        f"/api/v1/protected/resource/{created_protected_resource.id}/child?inherit=True",
         json=many_test_protected_child_resources[0],
     )
 
-    assert response.status_code == 201
     created_protected_child = ProtectedChild(**response.json())
+    assert response.status_code == 201
     assert (
         created_protected_child.title == many_test_protected_child_resources[0]["title"]
     )
@@ -888,9 +955,18 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance_mi
         == many_test_protected_resources[0]["description"]
     )
 
+    await add_one_test_access_policy(
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": str(created_protected_resource.id),
+            "action": Action.write,
+        },
+        current_user,
+    )
+
     # Make a POST request to create the protected child as a child of a protected resource
     response = await async_client.post(
-        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=True",
+        f"/api/v1/protected/resource/{created_protected_resource.id}/child?inherit=True",
         json=many_test_protected_child_resources[0],
     )
 
@@ -960,9 +1036,18 @@ async def test_get_protected_child_resource_from_a_parent_missing_inheritance(
         == many_test_protected_resources[0]["description"]
     )
 
+    await add_one_test_access_policy(
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": str(created_protected_resource.id),
+            "action": Action.write,
+        },
+        current_user,
+    )
+
     # Make a POST request to create the protected child as a child of a protected resource
     response = await async_client.post(
-        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=False",
+        f"/api/v1/protected/resource/{created_protected_resource.id}/child?inherit=False",
         json=many_test_protected_child_resources[0],
     )
 
@@ -1043,6 +1128,8 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
         json=many_test_protected_resources[0],
     )
 
+    current_user = current_test_user
+
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
     assert created_protected_resource.name == many_test_protected_resources[0]["name"]
@@ -1051,17 +1138,36 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
         == many_test_protected_resources[0]["description"]
     )
 
+    await add_one_test_access_policy(
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": str(created_protected_resource.id),
+            "action": Action.write,
+        },
+        current_user,
+    )
+
     # Make a POST request to create the protected child as a child of a protected resource
     response_child = await async_client.post(
-        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=True",
+        f"/api/v1/protected/resource/{created_protected_resource.id}/child?inherit=True",
         json=many_test_protected_child_resources[0],
     )
     assert response.status_code == 201
     created_protected_child = ProtectedChild(**response_child.json())
 
+    # TBD: investigate if the write shouldn't be inherited to here as well?
+    await add_one_test_access_policy(
+        {
+            "identity_id": str(current_user.user_id),
+            "resource_id": str(created_protected_child.id),
+            "action": Action.write,
+        },
+        current_user,
+    )
+
     # Make a POST request to create the protected grandchild as a child of a protected child resource
     response_grandchild = await async_client.post(
-        f"/api/v1/protected/grandchild/?parent_id={created_protected_child.id}&inherit=True",
+        f"/api/v1/protected/child/{created_protected_child.id}/grandchild?inherit=True",
         json=many_test_protected_grandchild_resources[0],
     )
     assert response.status_code == 201

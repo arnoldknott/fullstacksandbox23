@@ -9,6 +9,6 @@
 	// console.log(keyboard);
 </script>
 
-<div class="h-screen w-screen">
+<div class="h-screen w-screen" data-theme="dark">
 	{@render children?.()}
 </div>

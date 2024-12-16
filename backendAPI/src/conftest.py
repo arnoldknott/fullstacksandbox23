@@ -11,7 +11,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from core.cache import redis_session_client
 from core.databases import postgres_async_engine  # should be SQLite here only!
 from core.security import CurrentAccessToken, Guards, provide_http_token_payload
-from core.types import CurrentUserData, IdentityType, ResourceType
+from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
@@ -34,7 +34,7 @@ from models.access import (
     AccessPolicyRead,
     IdentifierTypeLink,
 )
-from models.identity import Group, User, UserRead
+from models.identity import Group, SubGroup, User, UserRead
 from models.protected_resource import ProtectedResource
 from tests.utils import (
     current_user_data_admin,
@@ -267,17 +267,21 @@ async def register_many_current_users():
     yield current_users
 
 
+async def register_one_resource_helper(
+    resource_id: UUID, model: ResourceType = ProtectedResource
+):
+    """Registers a resource id and its type in the database."""
+    await register_entity_to_identity_type_link_table(resource_id, model)
+    return resource_id
+
+
 # TBD: turn input into dict? But what about the model?
 @pytest.fixture(scope="function")
 async def register_one_resource():
     """Registers a resource id and its type in the database."""
 
-    async def _register_one_resource(
-        resource_id: UUID, model: ResourceType = ProtectedResource
-    ):
-        """Registers a resource id and its type in the database."""
-        await register_entity_to_identity_type_link_table(resource_id, model)
-        return resource_id
+    async def _register_one_resource(resource_id: UUID, model: ResourceType):
+        await register_one_resource_helper(resource_id, model)
 
     yield _register_one_resource
 
@@ -351,380 +355,70 @@ async def register_many_entities(get_async_test_session: AsyncSession):
 # yield many_entity_type_links
 
 
-# Adds a test user based on identity provider token payload to database and returns the user
 @pytest.fixture(scope="function")
-# async def add_one_azure_test_user(current_user_from_azure_token: User):
-async def add_one_azure_test_user(current_user_from_azure_token: User):
-    """Adds many test users to the database."""
+async def access_to_one_parent(
+    current_user_from_azure_token, mocked_provide_http_token_payload
+):
+    """Fixture for registering a parent and adds a write policy for a the current user token to the database."""
 
-    # async def _add_one_azure_test_user(
-    #     user_number: int = None, token_payload: dict = None
-    # ) -> UserRead:
-    async def _add_one_azure_test_user(user_number: int = None) -> UserRead:
-        # current_user = await current_user_from_azure_token(token_payload)
-        async with UserCRUD() as crud:
-            user = await crud.create_azure_user_and_groups_if_not_exist(
-                **many_test_azure_users[user_number]
+    async def _access_to_one_parent(
+        # model: Union["ResourceType", "IdentityType"], current_user: CurrentUserData
+        model: Union["ResourceType", "IdentityType"],
+        token_payload: dict = None,
+    ):
+        """Registers a parent and adds a write policy for a the current user token to the database."""
+        token_payload = token_payload or mocked_provide_http_token_payload
+        current_user = await current_user_from_azure_token(token_payload)
+
+        parent_id = uuid4()
+
+        await register_one_resource_helper(parent_id, model)
+        if "Admin" not in current_user.azure_token_roles:
+            access_policy = {
+                "resource_id": str(parent_id),
+                "identity_id": str(current_user.user_id),
+                "action": Action.write,
+            }
+            await add_test_access_policy(
+                access_policy, CurrentUserData(**current_user_data_admin)
             )
-        return user
 
-    yield _add_one_azure_test_user
+        return parent_id
 
-
-# Adds many test users based on identity provider token payloads to database and returns the users
-@pytest.fixture(scope="function")
-async def add_many_azure_test_users():
-    """Adds many test users to the database."""
-
-    async def _add_many_azure_test_users() -> List[UserRead]:
-        users = []
-        for user in many_test_azure_users:
-            async with UserCRUD() as crud:
-                user = await crud.create_azure_user_and_groups_if_not_exist(**user)
-            users.append(user)
-        users = sorted(users, key=lambda x: x.id)
-        return users
-
-    yield _add_many_azure_test_users
+    yield _access_to_one_parent
 
 
-# @pytest.fixture(scope="function")
-# async def add_test_tags(
-#     mock_current_user: User,
-# ):  # (get_async_test_session: AsyncSession):
-#     """Adds tags to the database."""
-#     # session = get_async_test_session
-#     # tag_instances = []
-#     # for tag in many_test_tags:
-#     #     tag_instance = Tag(**tag)
-#     #     session.add(tag_instance)
-#     #     await session.commit()
-#     #     await session.refresh(tag_instance)
-#     #     tag_instances.append(tag_instance)
-
-#     # yield tag_instances
-
-#     async def _add_test_tags(token_payload: dict = None):
-#         tag_instances = []
-#         for tag in many_test_tags:
-#             current_user = await mock_current_user(token_payload)
-#             async with TagCRUD() as crud:
-#                 tag_instance = await crud.create_public(tag, current_user)
-#             tag_instances.append(tag_instance)
-
-#         return tag_instances
-
-#     yield _add_test_tags
-
-# @pytest.fixture(scope="function")
-# async def add_many_test_azure_users(get_async_test_session: AsyncSession):
-#     """Adds test users to the database."""
-#     session = get_async_test_session
-#     users = []
-#     for user in many_test_azure_users:
-#         this_user = User(**user)
-#         session.add(this_user)
-#         await session.commit()
-#         await session.refresh(this_user)
-#         users.append(this_user)
-
-#     yield users
-
-
-# @pytest.fixture(scope="function")
-# async def add_many_test_azure_users_with_groups() -> list[User]:
-#     """Adds many test users with group membership to the database."""
-#     async with UserCRUD() as crud:
-#         users = []
-#         for user in many_test_azure_users:
-#             added_user = await crud.create_azure_user_and_groups_if_not_exist(
-#                 user["azure_user_id"],
-#                 user["azure_tenant_id"],
-#                 token_payload_many_groups["groups"],
-#             )
-#             users.append(added_user)
-
-#     yield users
-
-
-# @pytest.fixture(scope="function")
-# async def current_test_user():
-#     """Returns the current test user."""
-#     yield CurrentUserData(**)
-
-
-async def add_test_ueber_group(
-    current_user_from_azure_token: User,
-    ueber_group: dict,
-    current_user: CurrentUserData = None,
-    # parent_id: UUID = None,
-    # inherit: bool = False,
-):
-    """Adds a test ueber-group to the database."""
-
-    if not current_user:
-        current_user = await current_user_from_azure_token()
-    async with UeberGroupCRUD() as crud:
-        added_ueber_group = await crud.create(
-            ueber_group,
-            current_user,  # , parent_id, inherit
+async def add_test_access_policy(policy: dict, current_user: CurrentUserData = None):
+    """Adds a test policy to the database."""
+    async with AccessPolicyCRUD() as crud:
+        if current_user is None:
+            current_user = CurrentUserData(**current_user_data_admin)
+        await register_entity_to_identity_type_link_table(
+            UUID(policy["resource_id"]), ProtectedResource
         )
-
-    return added_ueber_group
-
-
-@pytest.fixture(scope="function")
-async def add_one_test_ueber_group(
-    current_user_from_azure_token: User,
-):
-    """Adds a test ueber-group to the database."""
-
-    async def _add_one_test_ueber_group(
-        ueber_group: dict,
-        current_user: CurrentUserData = None,
-        # parent_id: UUID = None,
-        # inherit: bool = False,
-    ):
-        return await add_test_ueber_group(
-            current_user_from_azure_token,
-            ueber_group,
-            current_user,
-            # parent_id,
-            # inherit,
-        )
-
-    yield _add_one_test_ueber_group
+        policy = await crud.create(AccessPolicyCreate(**policy), current_user)
+        return policy
 
 
-@pytest.fixture(scope="function")
-async def add_many_test_ueber_groups(
-    current_user_from_azure_token: User,
-):
-    """Adds test ueber-groups to the database."""
-
-    async def _add_many_test_ueber_groups(token_payload: dict = None):
-        ueber_groups = []
-        for ueber_group in many_test_ueber_groups:
-            current_user = await current_user_from_azure_token(token_payload)
-            async with UeberGroupCRUD() as crud:
-                added_ueber_group = await crud.create(ueber_group, current_user)
-            ueber_groups.append(added_ueber_group)
-
-        ueber_groups = sorted(ueber_groups, key=lambda x: x.id)
-
-        return ueber_groups
-
-    yield _add_many_test_ueber_groups
-
-
-async def add_test_group(
-    current_user_from_azure_token: User,
-    group: dict,
-    current_user: CurrentUserData = None,
-    # parent_id: UUID = None,
-    # inherit: bool = False,
-):
-    """Adds a test group to the database."""
-
-    if not current_user:
-        current_user = await current_user_from_azure_token()
-    async with GroupCRUD() as crud:
-        added_group = await crud.create(group, current_user)  # , parent_id, inherit
-
-    return added_group
-
-
-@pytest.fixture(scope="function")
-async def add_one_test_group(
-    current_user_from_azure_token: User,
-):
-    """Adds a test group to the database."""
-
-    async def _add_one_test_group(
-        group: dict,
-        current_user: CurrentUserData = None,
-        # parent_id: UUID = None,
-        # inherit: bool = False,
-    ):
-        return await add_test_group(
-            current_user_from_azure_token,
-            group,
-            current_user,
-            # parent_id,
-            # inherit,
-        )
-
-    yield _add_one_test_group
-
-
-@pytest.fixture(scope="function")
-async def add_many_test_groups(
-    current_user_from_azure_token: User,
-):
-    """Adds test groups to the database."""
-
-    async def _add_many_test_groups(token_payload: dict = None):
-        groups = []
-        for group in many_test_groups:
-            current_user = await current_user_from_azure_token(token_payload)
-            async with GroupCRUD() as crud:
-                added_group = await crud.create(group, current_user)
-            groups.append(added_group)
-
-        groups = sorted(groups, key=lambda x: x.id)
-
-        return groups
-
-    yield _add_many_test_groups
-
-
-async def add_test_sub_group(
-    current_user_from_azure_token: User,
-    sub_group: dict,
-    current_user: CurrentUserData = None,
-    # parent_id: UUID = None,
-    # inherit: bool = False,
-):
-    """Adds a test sub-group to the database."""
-
-    if not current_user:
-        current_user = await current_user_from_azure_token()
-    async with SubGroupCRUD() as crud:
-        added_sub_group = await crud.create(
-            sub_group,
-            current_user,  # , parent_id, inherit
-        )
-
-    return added_sub_group
-
-
-@pytest.fixture(scope="function")
-async def add_one_test_sub_group(
-    current_user_from_azure_token: User,
-):
-    """Adds a test sub-group to the database."""
-
-    async def _add_one_test_sub_group(
-        sub_group: dict,
-        current_user: CurrentUserData = None,
-        # parent_id: UUID = None,
-        # inherit: bool = False,
-    ):
-        return await add_test_sub_group(
-            current_user_from_azure_token,
-            sub_group,
-            current_user,
-            # parent_id,
-            # inherit,
-        )
-
-    yield _add_one_test_sub_group
-
-
-@pytest.fixture(scope="function")
-async def add_many_test_sub_groups(
-    current_user_from_azure_token: User,
-):
-    """Adds test sub-groups to the database."""
-
-    async def _add_many_test_sub_groups(token_payload: dict = None):
-        sub_groups = []
-        for sub_group in many_test_sub_groups:
-            current_user = await current_user_from_azure_token(token_payload)
-            async with SubGroupCRUD() as crud:
-                added_sub_group = await crud.create(sub_group, current_user)
-            sub_groups.append(added_sub_group)
-
-        sub_groups = sorted(sub_groups, key=lambda x: x.id)
-
-        return sub_groups
-
-    yield _add_many_test_sub_groups
-
-
-async def add_test_sub_sub_group(
-    current_user_from_azure_token: User,
-    sub_sub_group: dict,
-    current_user: CurrentUserData = None,
-    # parent_id: UUID = None,
-    # inherit: bool = False,
-):
-    """Adds a test sub-sub-group to the database."""
-
-    if not current_user:
-        current_user = await current_user_from_azure_token()
-    async with SubSubGroupCRUD() as crud:
-        added_sub_sub_group = await crud.create(
-            sub_sub_group,
-            current_user,  # , parent_id, inherit
-        )
-
-    return added_sub_sub_group
-
-
-@pytest.fixture(scope="function")
-async def add_one_test_sub_sub_group(
-    current_user_from_azure_token: User,
-):
-    """Adds a test sub-sub-group to the database."""
-
-    async def _add_one_test_sub_sub_group(
-        sub_sub_group: dict,
-        current_user: CurrentUserData = None,
-        # parent_id: UUID = None,
-        # inherit: bool = False,
-    ):
-        return await add_test_sub_sub_group(
-            current_user_from_azure_token,
-            sub_sub_group,
-            current_user,
-            # parent_id,
-            # inherit,
-        )
-
-    yield _add_one_test_sub_sub_group
-
-
-@pytest.fixture(scope="function")
-async def add_many_test_sub_sub_groups(
-    current_user_from_azure_token: User,
-):
-    """Adds test sub-sub-groups to the database."""
-
-    async def _add_many_test_sub_sub_groups(token_payload: dict = None):
-        sub_sub_groups = []
-        for sub_sub_group in many_test_sub_sub_groups:
-            current_user = await current_user_from_azure_token(token_payload)
-            async with SubSubGroupCRUD() as crud:
-                added_sub_sub_group = await crud.create(sub_sub_group, current_user)
-            sub_sub_groups.append(added_sub_sub_group)
-
-        sub_sub_groups = sorted(sub_sub_groups, key=lambda x: x.id)
-
-        return sub_sub_groups
-
-    yield _add_many_test_sub_sub_groups
-
-
-# TBD: refactor add_test_policies_for_resources from endpoint conftest file into this:
-# also consider using the post functions for the actual creation of resources!
 @pytest.fixture(scope="function")
 async def add_one_test_access_policy():
     """Fixture for adding test policies."""
 
+    # TBD: refactor policy from type dict to AccessPolicyCreate
     async def _add_one_test_access_policy(
         policy: dict, current_user: CurrentUserData = None
     ):
         """Adds test policies to the database."""
 
-        async with AccessPolicyCRUD() as crud:
-            if current_user is None:
-                current_user = CurrentUserData(**current_user_data_admin)
-            await register_entity_to_identity_type_link_table(
-                UUID(policy["resource_id"]), ProtectedResource
-            )
-            policy = await crud.create(AccessPolicyCreate(**policy), current_user)
-            return policy
+        return await add_test_access_policy(policy, current_user)
+        # async with AccessPolicyCRUD() as crud:
+        #     if current_user is None:
+        #         current_user = CurrentUserData(**current_user_data_admin)
+        #     await register_entity_to_identity_type_link_table(
+        #         UUID(policy["resource_id"]), ProtectedResource
+        #     )
+        #     policy = await crud.create(AccessPolicyCreate(**policy), current_user)
+        #     return policy
 
     yield _add_one_test_access_policy
 
@@ -909,3 +603,309 @@ async def add_many_parent_child_identity_relationships(
         relationships.append(relationship)
     # TBD: add more hierarchy levels!
     yield relationships
+
+
+# Adds a test user based on identity provider token payload to database and returns the user
+@pytest.fixture(scope="function")
+# async def add_one_azure_test_user(current_user_from_azure_token: User):
+async def add_one_azure_test_user(current_user_from_azure_token: User):
+    """Adds many test users to the database."""
+
+    # async def _add_one_azure_test_user(
+    #     user_number: int = None, token_payload: dict = None
+    # ) -> UserRead:
+    async def _add_one_azure_test_user(user_number: int = None) -> UserRead:
+        # await add_test_access_policy(
+        #     {
+        #         "identity_id": current_user_from_azure_token().user_id,
+        #         "resource_id": **many_test_azure_users[user_number]["id"],
+        #         "action": "own",
+        #     }
+        # )
+        # TBD: Fix that the current_user is not the same as the many_test_azure_users[user_number]!
+        # therefore access policy missing form current_user to the created user.
+        async with UserCRUD() as crud:
+            user = await crud.create_azure_user_and_groups_if_not_exist(
+                **many_test_azure_users[user_number]
+            )
+        return user
+
+    yield _add_one_azure_test_user
+
+
+# Adds many test users based on identity provider token payloads to database and returns the users
+@pytest.fixture(scope="function")
+async def add_many_azure_test_users():
+    """Adds many test users to the database."""
+
+    async def _add_many_azure_test_users() -> List[UserRead]:
+        users = []
+        for user in many_test_azure_users:
+            async with UserCRUD() as crud:
+                user = await crud.create_azure_user_and_groups_if_not_exist(**user)
+            users.append(user)
+        users = sorted(users, key=lambda x: x.id)
+        return users
+
+    yield _add_many_azure_test_users
+
+
+async def add_test_ueber_group(
+    current_user_from_azure_token: User,
+    ueber_group: dict,
+    current_user: CurrentUserData = None,
+    # parent_id: UUID = None,
+    # inherit: bool = False,
+):
+    """Adds a test ueber-group to the database."""
+
+    if not current_user:
+        current_user = await current_user_from_azure_token()
+    async with UeberGroupCRUD() as crud:
+        added_ueber_group = await crud.create(
+            ueber_group,
+            current_user,  # , parent_id, inherit
+        )
+
+    return added_ueber_group
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_ueber_group(
+    current_user_from_azure_token: User,
+):
+    """Adds a test ueber-group to the database."""
+
+    async def _add_one_test_ueber_group(
+        ueber_group: dict,
+        current_user: CurrentUserData = None,
+        # parent_id: UUID = None,
+        # inherit: bool = False,
+    ):
+        return await add_test_ueber_group(
+            current_user_from_azure_token,
+            ueber_group,
+            current_user,
+            # parent_id,
+            # inherit,
+        )
+
+    yield _add_one_test_ueber_group
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_ueber_groups(
+    current_user_from_azure_token: User,
+):
+    """Adds test ueber-groups to the database."""
+
+    async def _add_many_test_ueber_groups(token_payload: dict = None):
+        ueber_groups = []
+        for ueber_group in many_test_ueber_groups:
+            current_user = await current_user_from_azure_token(token_payload)
+            async with UeberGroupCRUD() as crud:
+                added_ueber_group = await crud.create(ueber_group, current_user)
+            ueber_groups.append(added_ueber_group)
+
+        ueber_groups = sorted(ueber_groups, key=lambda x: x.id)
+
+        return ueber_groups
+
+    yield _add_many_test_ueber_groups
+
+
+async def add_test_group(
+    current_user_from_azure_token: User,
+    group: dict,
+    current_user: CurrentUserData = None,
+    # parent_id: UUID = None,
+    # inherit: bool = False,
+):
+    """Adds a test group to the database."""
+
+    if not current_user:
+        current_user = await current_user_from_azure_token()
+    async with GroupCRUD() as crud:
+        added_group = await crud.create(group, current_user)  # , parent_id, inherit
+
+    return added_group
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_group(
+    current_user_from_azure_token: User,
+):
+    """Adds a test group to the database."""
+
+    async def _add_one_test_group(
+        group: dict,
+        current_user: CurrentUserData = None,
+        # parent_id: UUID = None,
+        # inherit: bool = False,
+    ):
+        return await add_test_group(
+            current_user_from_azure_token,
+            group,
+            current_user,
+            # parent_id,
+            # inherit,
+        )
+
+    yield _add_one_test_group
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_groups(
+    current_user_from_azure_token: User,
+):
+    """Adds test groups to the database."""
+
+    async def _add_many_test_groups(token_payload: dict = None):
+        groups = []
+        for group in many_test_groups:
+            current_user = await current_user_from_azure_token(token_payload)
+            async with GroupCRUD() as crud:
+                added_group = await crud.create(group, current_user)
+            groups.append(added_group)
+
+        groups = sorted(groups, key=lambda x: x.id)
+
+        return groups
+
+    yield _add_many_test_groups
+
+
+async def add_test_sub_group(
+    current_user_from_azure_token: User,
+    sub_group: dict,
+    current_user: CurrentUserData = None,
+    # parent_id: UUID = None,
+    # inherit: bool = False,
+):
+    """Adds a test sub-group to the database."""
+
+    if not current_user:
+        current_user = await current_user_from_azure_token()
+    async with SubGroupCRUD() as crud:
+        added_sub_group = await crud.create(
+            sub_group,
+            current_user,  # , parent_id, inherit
+        )
+
+    return added_sub_group
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_sub_group(
+    current_user_from_azure_token: User,
+):
+    """Adds a test sub-group to the database."""
+
+    async def _add_one_test_sub_group(
+        sub_group: dict,
+        current_user: CurrentUserData = None,
+        # parent_id: UUID = None,
+        # inherit: bool = False,
+    ):
+        return await add_test_sub_group(
+            current_user_from_azure_token,
+            sub_group,
+            current_user,
+            # parent_id,
+            # inherit,
+        )
+
+    yield _add_one_test_sub_group
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_sub_groups(
+    current_user_from_azure_token: User,
+    access_to_one_parent: UUID,
+):
+    """Adds test sub-groups to the database."""
+
+    async def _add_many_test_sub_groups(token_payload: dict = None):
+        sub_groups = []
+        parent_identity_id = await access_to_one_parent(Group)
+        for sub_group in many_test_sub_groups:
+            current_user = await current_user_from_azure_token(token_payload)
+            async with SubGroupCRUD() as crud:
+                added_sub_group = await crud.create(
+                    sub_group, current_user, parent_identity_id
+                )
+            sub_groups.append(added_sub_group)
+
+        sub_groups = sorted(sub_groups, key=lambda x: x.id)
+
+        return sub_groups
+
+    yield _add_many_test_sub_groups
+
+
+async def add_test_sub_sub_group(
+    current_user_from_azure_token: User,
+    sub_sub_group: dict,
+    current_user: CurrentUserData = None,
+    # parent_id: UUID = None,
+    # inherit: bool = False,
+):
+    """Adds a test sub-sub-group to the database."""
+
+    if not current_user:
+        current_user = await current_user_from_azure_token()
+    async with SubSubGroupCRUD() as crud:
+        added_sub_sub_group = await crud.create(
+            sub_sub_group,
+            current_user,  # , parent_id, inherit
+        )
+
+    return added_sub_sub_group
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_sub_sub_group(
+    current_user_from_azure_token: User,
+):
+    """Adds a test sub-sub-group to the database."""
+
+    async def _add_one_test_sub_sub_group(
+        sub_sub_group: dict,
+        current_user: CurrentUserData = None,
+        # parent_id: UUID = None,
+        # inherit: bool = False,
+    ):
+        return await add_test_sub_sub_group(
+            current_user_from_azure_token,
+            sub_sub_group,
+            current_user,
+            # parent_id,
+            # inherit,
+        )
+
+    yield _add_one_test_sub_sub_group
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_sub_sub_groups(
+    current_user_from_azure_token: User,
+    access_to_one_parent: UUID,
+):
+    """Adds test sub-sub-groups to the database."""
+
+    async def _add_many_test_sub_sub_groups(token_payload: dict = None):
+        sub_sub_groups = []
+        parent_identity_id = await access_to_one_parent(SubGroup)
+        for sub_sub_group in many_test_sub_sub_groups:
+            current_user = await current_user_from_azure_token(token_payload)
+            async with SubSubGroupCRUD() as crud:
+                added_sub_sub_group = await crud.create(
+                    sub_sub_group, current_user, parent_identity_id
+                )
+            sub_sub_groups.append(added_sub_sub_group)
+
+        sub_sub_groups = sorted(sub_sub_groups, key=lambda x: x.id)
+
+        return sub_sub_groups
+
+    yield _add_many_test_sub_sub_groups

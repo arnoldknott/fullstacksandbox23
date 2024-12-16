@@ -36,7 +36,7 @@ export type Session = {
 	microsoftAccount?: AccountInfo; // TBD: change to MicrosoftAccount, containing Account, IdToken, AccessToken, RefreshToken, AppMetadata
 	microsoftProfile?: MicrosoftProfile;
 	userAgent?: string;
-	sessionId?: string;
+	sessionId: string;
 };
 
 export type ClientSession = {

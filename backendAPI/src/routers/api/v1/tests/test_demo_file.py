@@ -1,15 +1,18 @@
 from os import path, remove
+from uuid import uuid4
 
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 
 from models.demo_file import DemoFile
+from models.demo_resource import DemoResource
 from tests.utils import (
     token_admin_read,
     token_admin_read_write,
     token_user1_read,
     token_user1_read_write,
+    token_user2_read_write,
 )
 
 
@@ -22,12 +25,16 @@ from tests.utils import (
 async def test_post_demo_files(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    access_to_one_parent,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_provide_http_token_payload
 
     demo_file_names = ["demo_file_00.txt", "demo_file_01.txt"]
     appdata_path = "/data/appdata/demo_files"
+
+    parent_id = await access_to_one_parent(DemoResource)
 
     # Make sure the demo files do not exist before the test on disk:
     for demo_file_name in demo_file_names:
@@ -54,7 +61,9 @@ async def test_post_demo_files(
     ]
 
     # Make a POST request to upload the demo file
-    response = await async_client.post("/api/v1/demo/files/", files=demo_files)
+    response = await async_client.post(
+        f"/api/v1/demo/resource/{str(parent_id)}/files", files=demo_files
+    )
 
     assert response.status_code == 201
     created_files_metadata = [DemoFile(**file) for file in response.json()]
@@ -72,12 +81,120 @@ async def test_post_demo_files(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
+    [token_user1_read_write, token_user2_read_write],
+    indirect=True,
+)
+async def test_post_demo_files_without_access_to_parent(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    register_one_resource,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_provide_http_token_payload
+
+    demo_file_names = ["demo_file_00.txt", "demo_file_01.txt"]
+    appdata_path = "/data/appdata/demo_files"
+
+    parent_id = uuid4()
+    await register_one_resource(parent_id, DemoResource)
+
+    # Make sure the demo files do not exist before the test on disk:
+    for demo_file_name in demo_file_names:
+        if path.exists(f"{appdata_path}/{demo_file_name}"):
+            remove(f"{appdata_path}/{demo_file_name}")
+
+    demo_files = [
+        (
+            "files",
+            (
+                demo_file_names[0],
+                open(f"src/tests/{demo_file_names[0]}", "rb"),
+                "text/plain",
+            ),
+        ),
+        (
+            "files",
+            (
+                demo_file_names[1],
+                open(f"src/tests/{demo_file_names[1]}", "rb"),
+                "text/plain",
+            ),
+        ),
+    ]
+
+    # Make a POST request to upload the demo file
+    response = await async_client.post(
+        f"/api/v1/demo/resource/{str(parent_id)}/files", files=demo_files
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "DemoFile - Forbidden."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write, token_user1_read_write, token_user2_read_write],
+    indirect=True,
+)
+async def test_post_demo_files_without_existing_parent(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    register_one_resource,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_provide_http_token_payload
+
+    demo_file_names = ["demo_file_00.txt", "demo_file_01.txt"]
+    appdata_path = "/data/appdata/demo_files"
+
+    parent_id = uuid4()
+
+    # Make sure the demo files do not exist before the test on disk:
+    for demo_file_name in demo_file_names:
+        if path.exists(f"{appdata_path}/{demo_file_name}"):
+            remove(f"{appdata_path}/{demo_file_name}")
+
+    demo_files = [
+        (
+            "files",
+            (
+                demo_file_names[0],
+                open(f"src/tests/{demo_file_names[0]}", "rb"),
+                "text/plain",
+            ),
+        ),
+        (
+            "files",
+            (
+                demo_file_names[1],
+                open(f"src/tests/{demo_file_names[1]}", "rb"),
+                "text/plain",
+            ),
+        ),
+    ]
+
+    # Make a POST request to upload the demo file
+    response = await async_client.post(
+        f"/api/v1/demo/resource/{str(parent_id)}/files", files=demo_files
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "DemoFile - Forbidden."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
 async def test_post_demo_files_uniqueness(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    access_to_one_parent,
+    mocked_provide_http_token_payload,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_provide_http_token_payload
@@ -88,6 +205,8 @@ async def test_post_demo_files_uniqueness(
     # Make sure the demo files do not exist before the test on disk:
     if path.exists(f"{appdata_path}/{demo_file_name}"):
         remove(f"{appdata_path}/{demo_file_name}")
+
+    parent_id = await access_to_one_parent(DemoResource)
 
     demo_files = [
         (
@@ -109,7 +228,9 @@ async def test_post_demo_files_uniqueness(
     ]
 
     # Make a POST request to upload the demo file
-    response = await async_client.post("/api/v1/demo/files/", files=demo_files)
+    response = await async_client.post(
+        f"/api/v1/demo/resource/{str(parent_id)}/files", files=demo_files
+    )
 
     assert response.status_code == 403
     assert response.json() == {"detail": "DemoFile - Forbidden."}

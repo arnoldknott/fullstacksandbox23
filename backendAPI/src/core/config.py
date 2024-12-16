@@ -41,10 +41,16 @@ def get_variable(variable_name):
         )
 
         def get_variable_inner(variable_name):
-            """Returns a variable from the environment."""
-            logger.info(f"Getting variable ${variable_name} from keyvault")
-            variable_name = variable_name.replace("_", "-").lower()
-            return client.get_secret(variable_name).value
+            try:
+                """Returns a variable from the environment."""
+                logger.info(f"Getting variable ${variable_name} from keyvault")
+                variable_name = variable_name.replace("_", "-").lower()
+                return client.get_secret(variable_name).value
+            except Exception as err:
+                logger.error(
+                    f"Failed to get variable ${variable_name} from keyvault: {err}"
+                )
+                return ""
 
     else:
 
@@ -118,6 +124,10 @@ class Config(BaseSettings):
     # print(get_variable("REDIS_SESSION_DB"))
     REDIS_SESSION_DB: int = int(get_variable("REDIS_SESSION_DB"))
     REDIS_PASSWORD: str = get_variable("REDIS_PASSWORD")
+
+    # Socket.io configuration:
+    SOCKETIO_ADMIN_USERNAME: Optional[str] = get_variable("SOCKETIO_ADMIN_USERNAME")
+    SOCKETIO_ADMIN_PASSWORD: Optional[str] = get_variable("SOCKETIO_ADMIN_PASSWORD")
 
 
 def update_config(tries=0):

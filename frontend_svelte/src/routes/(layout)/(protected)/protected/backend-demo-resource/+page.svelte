@@ -18,6 +18,10 @@
 	// let name = $state('');
 	// let description = $state('');
 	// let language = $state('en-US');
+	const cancelForm = (event: Event) => {
+		event.preventDefault();
+		demo_resource_dialog.close();
+	};
 </script>
 
 <!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->
@@ -27,11 +31,14 @@
 	<JsonData data={demo_resource} />
 {/each}
 
+<!-- Form not available without JavaScript. -->
+
 <md-filled-button
 	onclick={() => demo_resource_dialog.show()}
 	role="button"
 	tabindex="0"
-	onkeydown={(e) => e.key === 'Enter' && demo_resource_dialog.show()}>New</md-filled-button
+	onkeydown={(event: KeyboardEvent) => event.key === 'Enter' && demo_resource_dialog.show()}
+	>New</md-filled-button
 >
 
 <md-dialog id="demo_resource_dialog" bind:this={demo_resource_dialog} class="w-fill">
@@ -65,8 +72,8 @@
 			<md-filled-tonal-button
 				role="button"
 				tabindex="0"
-				onclick={() => demo_resource_dialog.close()}
-				onkeydown={(e) => e.key === 'Enter' && demo_resource_dialog.close()}
+				onclick={(event: Event) => cancelForm(event)}
+				onkeydown={(event: KeyboardEvent) => event.key === 'Enter' && cancelForm(event)}
 				>Cancel</md-filled-tonal-button
 			>
 		</div>
