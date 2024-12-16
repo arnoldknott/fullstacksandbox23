@@ -131,8 +131,7 @@ class UserCreate(SQLModel):
     # Could be an option in future to implement roles for the app:
     # app_roles: Optional[List[AppRoles]] = None
     is_active: bool = True
-    # TBDD: make this a mandatory field, once all databases have updated!
-    is_publicAIuser: Optional[bool] = False
+    is_publicAIuser: bool = False
 
 
 class User(UserCreate, table=True):
