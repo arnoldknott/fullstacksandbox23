@@ -8,6 +8,9 @@
 	import '@material/web/select/select-option.js';
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
+    import '@material/web/labs/card/elevated-card.js';
+    import '@material/web/labs/card/filled-card.js';
+    import '@material/web/labs/card/outlined-card.js';
 	import Title from '$components/Title.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 
@@ -141,6 +144,23 @@
 </section>
 
 <HorizontalRule />
+
+<Title>Card</Title>
+
+<div class="grid grid-cols-3 gap-4">
+    <md-elevated-card>
+        <Title>Elevated Card</Title>
+        <p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
+    </md-elevated-card>
+    <md-filled-card>
+        <Title>Filled Card</Title>
+        <p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
+    </md-filled-card>
+    <md-outlined-card>
+        <Title>Filled Card</Title>
+        <p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
+    </md-outlined-card>
+</div>
 
 <style>
     /* Local override works:  */
