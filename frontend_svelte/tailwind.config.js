@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 
 import flyonui from 'flyonui';
-import { lightFlyonUI, darkFlyonUI } from 'flyonui/src/theming/themes';
+// import { lightFlyonUI, darkFlyonUI } from 'flyonui/src/theming/themes';
 import flyonuiPlugin from 'flyonui/plugin';
 
 module.exports = {
@@ -11,15 +11,14 @@ module.exports = {
 			fontFamily: {
 				// 'sans': ['Roboto', 'sans-serif'],
 				// Works: switching to Work Sans:
-				'sans': ['Work Sans', 'sans-serif'],
-				'serif': ['Merriweather', 'serif'],
+				sans: ['Work Sans', 'sans-serif'],
+				serif: ['Merriweather', 'serif']
 			}
-		},
+		}
 		// colors: {
 		// 	// This sets the default colors from TailwindCSS:
 		// 	'blue-400': '#794DFF',
 		// }
-
 	},
 	darkMode: 'media',
 	plugins: [flyonui, flyonuiPlugin],
@@ -37,11 +36,11 @@ module.exports = {
 			// 		// 'primary-content': rgb(255, 255, 255),
 			// 	},
 			// },
-			"light",
-			"dark",
+			'light',
+			'dark',
 			{
 				darkhc: {
-					primary: '#f44336',
+					primary: '#f44336'
 					// Additional customizations from FlyonUI
 					// "--rounded-box": "1rem", // border-radius for large boxes
 					// "--rounded-btn": "0.5rem", // border-radius for buttons
@@ -53,7 +52,7 @@ module.exports = {
 					// "--tab-border": "1px", // tab border width
 					// "--tab-radius": "0.5rem" // tab border-radius
 				}
-			},
+			}
 		]
 	}
 };

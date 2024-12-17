@@ -8,9 +8,9 @@
 	import '@material/web/select/select-option.js';
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
-    import '@material/web/labs/card/elevated-card.js';
-    import '@material/web/labs/card/filled-card.js';
-    import '@material/web/labs/card/outlined-card.js';
+	import '@material/web/labs/card/elevated-card.js';
+	import '@material/web/labs/card/filled-card.js';
+	import '@material/web/labs/card/outlined-card.js';
 	import Title from '$components/Title.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 
@@ -80,7 +80,9 @@
 
 <Title>User Form</Title>
 <!-- Applying TailwindCSS classes formats the following paragraph: -->
-<p class="text-2xl text-center">(Only the text fields are material design - the div's around are tailwind CSS)</p>
+<p class="text-center text-2xl">
+	(Only the text fields are material design - the div's around are tailwind CSS)
+</p>
 
 <section class="flex h-full w-full justify-center">
 	<div class="center py-12 md:w-8/12 lg:ml-6 lg:w-5/12">
@@ -148,22 +150,22 @@
 <Title>Card</Title>
 
 <div class="grid grid-cols-3 gap-4">
-    <md-elevated-card>
-        <Title>Elevated Card</Title>
-        <p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
-    </md-elevated-card>
-    <md-filled-card>
-        <Title>Filled Card</Title>
-        <p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
-    </md-filled-card>
-    <md-outlined-card>
-        <Title>Filled Card</Title>
-        <p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
-    </md-outlined-card>
+	<md-elevated-card>
+		<Title>Elevated Card</Title>
+		<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
+	</md-elevated-card>
+	<md-filled-card>
+		<Title>Filled Card</Title>
+		<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
+	</md-filled-card>
+	<md-outlined-card>
+		<Title>Filled Card</Title>
+		<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
+	</md-outlined-card>
 </div>
 
 <style>
-    /* Local override works:  */
+	/* Local override works:  */
 	/* #demo_resource_dialog {
 		--md-dialog-headline-color: #e4a112;
 		--md-dialog-container-color: #e5deb9;

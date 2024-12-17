@@ -50,10 +50,10 @@
 		href={`/playground/components/materialdesign`}
 	></Card>
 	<Card
-	title="TailwindCSS"
-	description="Formating playground for styling with TailwindCSS utility classes"
-	href={`/playground/components/tailwindcss`}
-></Card>
+		title="TailwindCSS"
+		description="Formating playground for styling with TailwindCSS utility classes"
+		href={`/playground/components/tailwindcss`}
+	></Card>
 </div>
 
 <div class="mx-5">
@@ -80,7 +80,4 @@
 		href=""
 	></Card>
 	<HorizontalRule />
-
-
-
 </div>
