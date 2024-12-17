@@ -8,21 +8,22 @@
 @tailwind utilities;
 */
 
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
+html,
+body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
 }
 
 body {
-    display: flex;
-    flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 
 main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
 }
 
 /* Generated from Material Theme Builder Figma plugin
@@ -35,5 +36,7 @@ or `material-color-utilities`. */
     --md-sys-color-on-primary-container: #002020;
     
 } */
-/* TBD: add all the other colors, see here::afterhttps://github.com/material-components/material-web/blob/main/tokens/_md-sys-color.scss
+/*
+TBD: add all the other colors, see here::after
+https://github.com/material-components/material-web/blob/main/tokens/_md-sys-color.scss
  */

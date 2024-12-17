@@ -38,7 +38,7 @@
 	// let myTemperature: HTMLElement
 </script>
 
-<div class="grid grid-cols-2 gap-4">
+<div class="grid grid-cols-3 gap-4">
 	<Card
 		title="FlyonUI 1"
 		description="Playground and showcase for flyonUI components and design"
@@ -48,6 +48,11 @@
 		title="Material Design 3"
 		description="Playground and showcase for Material Design 3 components and design"
 		href={`/playground/components/materialdesign`}
+	></Card>
+	<Card
+		title="TailwindCSS"
+		description="Formating playground for styling with TailwindCSS utility classes"
+		href={`/playground/components/tailwindcss`}
 	></Card>
 </div>
 
@@ -75,7 +80,4 @@
 		href=""
 	></Card>
 	<HorizontalRule />
-
-
-
 </div>
