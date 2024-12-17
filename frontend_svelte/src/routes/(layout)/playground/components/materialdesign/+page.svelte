@@ -28,19 +28,42 @@
 	const button = type === 'signup' ? 'Sign up' : 'Log in'; // untested!
 </script>
 
-
 <div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
 	<div>
 		<Title>Colors</Title>
 		<div class="grid grid-cols-12 gap-4">
 			<p class="col-span-12">Sys color primary:</p>
-			<div class="flex h-12 w-12 items-center justify-center" style="background-color: var(--md-sys-color-primary);"><p class="text-center text-xl">1</p></div>
-			<div class="flex h-12 w-12 items-center justify-center" style="background-color: var(--md-sys-color-surface-tint);"><p class="text-center text-xl">2</p></div>
-			<div class="flex h-12 w-12 items-center justify-center" style="background-color: var(--md-sys-color-on-primary);"><p class="text-center text-xl">3</p></div>
-			<div class="flex h-12 w-12 items-center justify-center" style="background-color: var(--md-sys-color-primary-container);"><p class="text-center text-xl">4</p></div>
-			<div class="flex h-12 w-12 items-center justify-center" style="background-color: var(--md-sys-color-on-primary-container);"><p class="text-center text-xl">5</p></div>
+			<div
+				class="flex h-12 w-12 items-center justify-center"
+				style="background-color: var(--md-sys-color-primary);"
+			>
+				<p class="text-center text-xl">1</p>
+			</div>
+			<div
+				class="flex h-12 w-12 items-center justify-center"
+				style="background-color: var(--md-sys-color-surface-tint);"
+			>
+				<p class="text-center text-xl">2</p>
+			</div>
+			<div
+				class="flex h-12 w-12 items-center justify-center"
+				style="background-color: var(--md-sys-color-on-primary);"
+			>
+				<p class="text-center text-xl">3</p>
+			</div>
+			<div
+				class="flex h-12 w-12 items-center justify-center"
+				style="background-color: var(--md-sys-color-primary-container);"
+			>
+				<p class="text-center text-xl">4</p>
+			</div>
+			<div
+				class="flex h-12 w-12 items-center justify-center"
+				style="background-color: var(--md-sys-color-on-primary-container);"
+			>
+				<p class="text-center text-xl">5</p>
+			</div>
 		</div>
-		
 	</div>
 
 	<div>
@@ -164,7 +187,6 @@
 		</section>
 
 		<HorizontalRule />
-
 	</div>
 
 	<div>
