@@ -138,12 +138,12 @@
 </div>
 
 <style>
-	/* @import './dark.css';
+	@import './dark.css';
 	@import './dark-hc.css';
 	@import './dark-mc.css';
 	@import './light.css';
 	@import './light-hc.css';
-	@import './light-mc.css'; */
+	@import './light-mc.css';
 
 	/* body {
 		--p: rgb(65, 95, 145);
