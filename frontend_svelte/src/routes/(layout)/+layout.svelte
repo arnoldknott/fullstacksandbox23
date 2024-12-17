@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { argbFromHex, themeFromSourceColor, applyTheme } from "@material/material-color-utilities";
+	import type { Action } from 'svelte/action';
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
 	// import type { LayoutData } from '../$types';
@@ -8,6 +10,32 @@
 
 	// let { data, children }: { data: LayoutData; children: Snippet } = $props();
 	let { children }: { children: Snippet } = $props();
+
+	let mainContent: HTMLDivElement;
+	// Get the theme from a hex color
+	const theme = themeFromSourceColor(argbFromHex('#415f91'), [
+	// {
+	// 	name: "custom-1",
+	// 	value: argbFromHex("#ff0000"),
+	// 	blend: true,
+	// },
+	]);
+
+	// Print out the theme as JSON
+	console.log(JSON.stringify(theme, null, 2));
+
+	const applyMaterialDesignTheme: Action = (node) => {
+		// read system setting dark / light mode on client side only - not during serve side rendering.
+		const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+		console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
+		console.log(systemDark);
+		// Apply the theme to the body by updating custom properties for material tokens
+		// applyTheme(theme, {target: document.body, dark: systemDark});
+		applyTheme(theme, {target: mainContent, dark: systemDark});
+	};
+
+
 	// const session = data?.sessionData;
 	// const loggedIn = session?.loggedIn || false;
 	const { loggedIn } = $page.data.session || false;
@@ -17,7 +45,10 @@
 
 	const toggleMode = () => {
 		mode = mode === 'dark' ? 'light' : 'dark';
+		// applyTheme(theme, {target: document.body, dark: mode === "dark"});
+		applyTheme(theme, {target: mainContent, dark: mode === 'dark'});
 		console.log('mode toggled to ' + mode);
+
 	};
 
 	// let userPictureURL: URL | undefined = $state(undefined);
@@ -43,8 +74,10 @@
 	// });
 </script>
 
+<svelte:window use:applyMaterialDesignTheme />
+
 <!-- The class switches material design 3, whereas data-theme switches FlyonUI -->
-<div class={`h-full ${mode}`} data-theme={mode}>
+<div bind:this={mainContent}  class={`h-full ${mode}`} data-theme={mode}>
 	<nav class="mx-2 p-2">
 		<div class="flex w-full flex-wrap items-center justify-between">
 			<div class="flex-grow space-x-4">
@@ -103,12 +136,12 @@
 </div>
 
 <style>
-	@import './dark.css';
+	/* @import './dark.css';
 	@import './dark-hc.css';
 	@import './dark-mc.css';
 	@import './light.css';
 	@import './light-hc.css';
-	@import './light-mc.css';
+	@import './light-mc.css'; */
 
 	/* body {
 		--p: rgb(65, 95, 145);
