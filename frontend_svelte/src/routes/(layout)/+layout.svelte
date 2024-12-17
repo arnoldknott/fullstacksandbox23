@@ -110,5 +110,9 @@
 	@import './light.css';
 	@import './light-hc.css';
 	@import './light-mc.css';
+
+	body{
+		--p: rgb(65,95,145);
+	}
 </style>
 

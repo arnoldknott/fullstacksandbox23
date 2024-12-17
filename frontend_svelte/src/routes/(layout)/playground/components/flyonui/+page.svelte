@@ -38,7 +38,7 @@
 	};
 </script>
 
-<div class="grid grid-cols-2 gap-4 mx-5">
+<div class="grid grid-cols-1 xl:grid-cols-2  gap-4 mx-5">
 
     <div>
         <Title>Colors</Title>
@@ -79,6 +79,15 @@
             <div class="skeleton bg-base-content/90 w-12 h-12 flex items-center justify-center"><p class="text-center text-xl">/90</p></div>
             <div class="skeleton bg-base-content/100 w-12 h-12 flex items-center justify-center"><p class="text-center text-xl">/100</p></div>
         </div>
+    </div>
+
+
+    <div>
+        <Title>Fonts</Title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <p class="font-sans">Some text in <em>sans</em> font family, should be using <b>Robot</b> Google Fonts</p>
+        <p class="font-serif">Some  text in <em>serif</em> font family, should be using <b>Merriweather</b> Google Fonts</p>
+        <p class="font-mono">Some text in <em>mono</em> font family, still <b>TailwindCSS</b> default, not overwritten in <code>tailwindcss.config.js</code> yet</p>
     </div>
 
     <div>
