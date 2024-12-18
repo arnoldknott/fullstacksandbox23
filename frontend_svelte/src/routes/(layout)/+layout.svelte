@@ -4,7 +4,7 @@
 		hexFromArgb,
 		// Hct,
 		themeFromSourceColor,
-		applyTheme,
+		applyTheme
 		// DynamicScheme,
 	} from '@material/material-color-utilities';
 	// import { Variant } from '@material/material-color-utilities/dynamiccolor/variant';
@@ -16,7 +16,7 @@
 	import { page } from '$app/stores';
 	import Guard from '$components/Guard.svelte';
 
-	// copy & paste from: https://github.com/material-foundation/material-color-utilities/blob/9889de141b3b5194b8574f9e378e55f4428bdb5e/typescript/dynamiccolor/variant.ts#L23C8-L33C2 
+	// copy & paste from: https://github.com/material-foundation/material-color-utilities/blob/9889de141b3b5194b8574f9e378e55f4428bdb5e/typescript/dynamiccolor/variant.ts#L23C8-L33C2
 	// as the export is missing in the package '@material/material-color-utilities'
 	// enum Variant {
 	// 	MONOCHROME,
@@ -45,7 +45,7 @@
 	const sourceColorArgb = argbFromHex(sourceColor);
 	// const sourceColorHct = Hct.fromInt(sourceColorArgb);
 	console.log('=== src - routes - (layout) - layout.svelte - sourceColor Hex / Argb ===');
-	console.log(sourceColor, ' / ', sourceColorArgb); ;
+	console.log(sourceColor, ' / ', sourceColorArgb);
 	const theme = themeFromSourceColor(sourceColorArgb, [
 		// {
 		// 	name: "custom-1",
@@ -54,7 +54,6 @@
 		// },
 	]);
 
-	
 	// Print out the theme as JSON
 	console.log('=== src - routes - (layout) - layout.svelte - themes ===');
 	console.log(JSON.stringify(theme, null, 2));
@@ -65,7 +64,7 @@
 	// From manually export from material theme builder:
 	// const primaryColor = theme['schemes']['light']['primary'];
 	// const seedColor = theme['seed'];
-	console.log("primary: ", primaryColor);
+	console.log('primary: ', primaryColor);
 	// console.log("source: ", sourceColor);
 	// console.log("seedColor: ", seedColor);
 	// console.log(theme);
@@ -73,16 +72,16 @@
 	// create a dynamic scheme:
 	// from defintion:
 	// const dynamicScheme = new DynamicScheme(
-		// sourceColorHct: Hct;
-		// variant: Variant;
-		// contrastLevel: number;
-		// isDark: boolean;
-		// primaryPalette: TonalPalette;
-		// secondaryPalette: TonalPalette;
-		// tertiaryPalette: TonalPalette;
-		// neutralPalette: TonalPalette;
-		// neutralVariantPalette: TonalPalette;
-		// errorPalette?: TonalPalette;
+	// sourceColorHct: Hct;
+	// variant: Variant;
+	// contrastLevel: number;
+	// isDark: boolean;
+	// primaryPalette: TonalPalette;
+	// secondaryPalette: TonalPalette;
+	// tertiaryPalette: TonalPalette;
+	// neutralPalette: TonalPalette;
+	// neutralVariantPalette: TonalPalette;
+	// errorPalette?: TonalPalette;
 	// );
 	// const dynamicScheme = new DynamicScheme(
 	// 	{
@@ -108,7 +107,7 @@
 		console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
 		console.log(systemDark);
 		// Apply the theme to the body by updating custom properties for material tokens
-		applyTheme(theme, { target: mainContent, dark: systemDark});
+		applyTheme(theme, { target: mainContent, dark: systemDark });
 		// applyTheme(theme, { target: mainContent, dark: systemDark, brightnessSuffix: true });
 	};
 
