@@ -1,12 +1,12 @@
-@import 'tailwindcss/base';
+/* @import 'tailwindcss/base';
 @import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import 'tailwindcss/utilities'; */
 
-/* Before update:
+/* Before update: */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-*/
+
 
 html,
 body {
@@ -40,3 +40,12 @@ or `material-color-utilities`. */
 TBD: add all the other colors, see here::after
 https://github.com/material-components/material-web/blob/main/tokens/_md-sys-color.scss
  */
+
+/* :root {
+    --color-primary: rgb(255 115 179);
+    --color-primary-content: rgb(111 114 185);
+} */
+
+/* :root {
+    --my-color: #394DFF;
+} */

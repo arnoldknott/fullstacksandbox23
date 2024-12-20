@@ -39,108 +39,210 @@
 </script>
 
 <div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
-	<div>
+	<div class="col-span-2">
 		<Title>Colors</Title>
-		<div class="grid grid-cols-12 gap-4">
-			<p class="col-span-12">Semantic colors FlyonUI:</p>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary">
-				<p class="text-center text-xl">1</p>
+        <p class="text-center text-2xl">Semantic colors FlyonUI:</p>
+		<div class="grid grid-cols-4 xl:grid-cols-8 gap-4">
+            <div>
+                <div class="skeleton flex h-24 w-36 items-center justify-center bg-primary">
+                    <p class="text-center text-xl text-primary-content">primary</p>
+                    <!-- <p class="text-center text-xl">primary</p> -->
+                </div>
+                <div class="skeleton flex h-24 w-36 items-center justify-center bg-primary-content">
+                    <p class="text-center text-xl text-primary">primary content</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-secondary">
+                    <p class="text-center text-xl text-secondary-content">secondary</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-secondary-content">
+                    <p class="text-center text-xl text-secondary">secondary-content</p>
+                </div>
+            </div>
+            <!-- <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-tertiary">
+                    <p class="text-center text-xl text-tertiary-content">tertiary</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-tertiary-content">
+                    <p class="text-center text-xl text-tertiary">tertiary-content</p>
+                </div>
+            </div> -->
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-accent">
+                    <p class="text-center text-xl text-accent-content">accent</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-accent-content">
+                    <p class="text-center text-xl text-accent">accent-content</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-neutral">
+                    <p class="text-center text-xl text-neutral-content">neutral</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-neutral-content">
+                    <p class="text-center text-xl text-neutral">neutral-content</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-info">
+                    <p class="text-center text-xl text-info-content">info</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-info-content">
+                    <p class="text-center text-xl text-info">info-content</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-success">
+                    <p class="text-center text-xl text-success-content">success</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-success-content">
+                    <p class="text-center text-xl text-success">success-content</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-warning">
+                    <p class="text-center text-xl text-warning-content">warning</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-warning-content">
+                    <p class="text-center text-xl text-warning">waring-content</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-error">
+                    <p class="text-center text-xl text-error-content">error</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-error-content">
+                    <p class="text-center text-xl text-error">error-content</p>
+                </div>
+            </div>
+        </div>
+        <p class="text-center text-2xl">Added to FlyonUI to match Material UI:</p>
+		<div class="grid grid-cols-4 xl:grid-cols-8 gap-4">
+            <div>
+                <div class="skeleton flex h-24 w-36 items-center justify-center bg-primary-container">
+                    <p class="text-center text-xl text-primary-content-container">primary container</p>
+                </div>
+                <div class="skeleton flex h-24 w-36 items-center justify-center bg-primary-content-container">
+                    <p class="text-center text-xl text-primary-container">primary content container</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-secondary">
+                    <p class="text-center text-xl text-secondary-content">secondary</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-secondary-content">
+                    <p class="text-center text-xl text-secondary">secondary-content</p>
+                </div>
+            </div>
+            <!-- <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-tertiary">
+                    <p class="text-center text-xl text-tertiary-content">tertiary</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-tertiary-content">
+                    <p class="text-center text-xl text-tertiary">tertiary-content</p>
+                </div>
+            </div> -->
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-accent">
+                    <p class="text-center text-xl text-accent-content">accent</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-accent-content">
+                    <p class="text-center text-xl text-accent">accent-content</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-neutral">
+                    <p class="text-center text-xl text-neutral-content">neutral</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-neutral-content">
+                    <p class="text-center text-xl text-neutral">neutral-content</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-info">
+                    <p class="text-center text-xl text-info-content">info</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-info-content">
+                    <p class="text-center text-xl text-info">info-content</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-success">
+                    <p class="text-center text-xl text-success-content">success</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-success-content">
+                    <p class="text-center text-xl text-success">success-content</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-warning">
+                    <p class="text-center text-xl text-warning-content">warning</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-warning-content">
+                    <p class="text-center text-xl text-warning">waring-content</p>
+                </div>
+            </div>
+            <div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-error">
+                    <p class="text-center text-xl text-error-content">error</p>
+                </div>
+                <div class="skeleton flex h-12 w-36 items-center justify-center bg-error-content">
+                    <p class="text-center text-xl text-error">error-content</p>
+                </div>
+            </div>
+        </div>
+        <p class="text-center text-2xl">Background colors FlyonUI:</p>
+        <div class="grid grid-cols-5 gap-4">
+            <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-100">
+                <p class="text-center text-xl">base-100</p>
+            </div>
+            <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-200">
+                <p class="text-center text-xl">base-200</p>
+            </div>
+            <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-300">
+                <p class="text-center text-xl">base-300</p>
+            </div>
+			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-content">
+				<p class="text-center text-xl text-secondary-content">base-content</p>
 			</div>
+			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-shadow">
+				<p class="text-center text-xl text-secondary-content">base-shadow</p>
+			</div>
+        </div>
+        <p class="text-center text-2xl">Background base colors with /x argument:</p>
+        <div class="grid grid-cols-11 gap-4">
 			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
-				<p class="text-center text-xl">2</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-secondary">
-				<p class="text-center text-xl">3</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-secondary-content">
-				<p class="text-center text-xl">4</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-accent">
-				<p class="text-center text-xl">5</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-accent-content">
-				<p class="text-center text-xl">6</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-neutral">
-				<p class="text-center text-xl">7</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-neutral-content">
-				<p class="text-center text-xl">8</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-100">
-				<p class="text-center text-xl">9</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-200">
-				<p class="text-center text-xl">10</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-300">
-				<p class="text-center text-xl">11</p>
-			</div>
-			<div class="bg-base-400 skeleton flex h-12 w-12 items-center justify-center">
-				<p class="text-center text-xl">12</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content">
-				<p class="text-center text-xl">13</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-shadow">
-				<p class="text-center text-xl">14</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-info">
-				<p class="text-center text-xl">15</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-info-content">
-				<p class="text-center text-xl">16</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-success">
-				<p class="text-center text-xl">17</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-success-content">
-				<p class="text-center text-xl">18</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-warning">
-				<p class="text-center text-xl">19</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-warning-content">
-				<p class="text-center text-xl">20</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-error">
-				<p class="text-center text-xl">21</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-error-content">
-				<p class="text-center text-xl">22</p>
-			</div>
-			<p class="col-span-12">Background base content colors with /x argument:</p>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content">
 				<p class="text-center text-xl"></p>
 			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content/10">
+			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/10">
 				<p class="text-center text-xl">/10</p>
 			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content/20">
+			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/20">
 				<p class="text-center text-xl">/20</p>
 			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content/30">
+			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/30">
 				<p class="text-center text-xl">/30</p>
 			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content/40">
+			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/40">
 				<p class="text-center text-xl">/40</p>
 			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content/50">
+			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/50">
 				<p class="text-center text-xl">/50</p>
 			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content/60">
+			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/60">
 				<p class="text-center text-xl">/60</p>
 			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content/70">
+			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/70">
 				<p class="text-center text-xl">/70</p>
 			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content/80">
+			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/80">
 				<p class="text-center text-xl">/80</p>
 			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content/90">
+			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/90">
 				<p class="text-center text-xl">/90</p>
 			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-base-content/100">
+			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/100">
 				<p class="text-center text-xl">/100</p>
 			</div>
 		</div>
@@ -165,7 +267,7 @@
 		<Title>Modal</Title>
 		<button
 			type="button"
-			class="btn btn-primary"
+			class="btn btn-accent"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="basic-modal"
@@ -268,6 +370,8 @@
 		<HorizontalRule />
 	</div>
 
+    <!-- This local override works:
+    style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
 	<div>
 		<Title>Drawer (Sidebar)</Title>
 		<button
@@ -341,7 +445,7 @@
                     </a>
                     </li>
                     <li class="space-y-0.5">
-                    <a class="collapse-toggle collapse-open:bg-base-content/10 open" id="menu-app" data-collapse="#menu-app-collapse">
+                    <a class="collapse-toggle collapse-open:bg-primary-content/10 open" id="menu-app" data-collapse="#menu-app-collapse">
                         <span class="icon-[tabler--apps] size-5"></span>
                         Apps
                         <span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"></span>
@@ -408,3 +512,44 @@
         </div>
     </div> -->
 </div>
+
+<style>
+/* body, html {
+    --p: var(--md-sys-color-primary);
+    --pc: var(--md-sys-color-on-primary);
+} */
+
+/* Applying material design colors to new classes works: */
+/* .primary {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+} */
+
+.bg-primary, .btn-primary {
+    background-color: var(--md-sys-color-primary);
+    /* color: var(--md-sys-color-on-primary); */
+}
+.text-primary {
+    /* background-color: var(--md-sys-color-on-primary); */
+    color: var(--md-sys-color-primary);
+}
+.bg-primary-content, .btn-primary-content {
+    background-color: var(--md-sys-color-on-primary);
+}
+.text-primary-content {
+    color: var(--md-sys-color-on-primary);
+}
+
+.bg-primary-container, .btn-primary-container {
+    background-color: var(--md-sys-color-primary-container);
+}
+.text-primary-container {
+    color: var(--md-sys-color-primary-container);
+}
+.bg-primary-content-container, .btn-primary-content-container {
+    background-color: var(--md-sys-color-on-primary-container);
+}
+.text-primary-content-container {
+    color: var(--md-sys-color-on-primary-container);
+}
+</style>

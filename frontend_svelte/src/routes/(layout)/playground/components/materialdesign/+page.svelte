@@ -31,8 +31,197 @@
 </script>
 
 <div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
-	<div>
+	<div class="col-span-2">
 		<Title>Colors</Title>
+		<p class="text-center text-2xl">Dynamic colors Material Color Utilities:</p>
+		<div class="grid grid-cols-4 xl:grid-cols-8 gap-4">
+			<div>
+				<div
+					class="skeleton flex h-24 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-primary);"
+					>
+                    <p
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-on-primary);"
+					>
+						primary
+					</p>
+                </div>
+                <div
+					class="skeleton flex h-12 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-on-primary);"
+				>
+					<p 
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-primary);"
+					>
+						on primary
+					</p>
+                </div>
+				<div
+					class="skeleton flex h-24 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-primary-container);"
+				>
+					<p 
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-on-primary-container);"
+					>
+						primary container
+					</p>
+                </div>
+				<div
+					class="skeleton flex h-12 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-on-primary-container);"
+				>
+					<p 
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-primary-container);"
+					>
+						on primary container
+					</p>
+                </div>
+            </div>
+            <div>
+                <div
+					class="skeleton flex h-24 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-secondary);"
+					>
+                    <p
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-on-secondary);"
+					>
+					secondary
+					</p>
+                </div>
+                <div
+					class="skeleton flex h-12 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-on-secondary);"
+				>
+					<p 
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-secondary);"
+					>
+						on secondary
+					</p>
+                </div>
+				<div
+					class="skeleton flex h-24 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-on-secondary-container);"
+				>
+					<p 
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-secondary-container);"
+					>
+					secondary container
+					</p>
+                </div>
+				<div
+					class="skeleton flex h-12 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-secondary-container);"
+				>
+					<p 
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-on-secondary-container);"
+					>
+						on secondary container
+					</p>
+                </div>
+			</div>
+            <div>
+                <div
+					class="skeleton flex h-24 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-tertiary);"
+					>
+                    <p
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-on-tertiary);"
+					>
+					tertiary
+					</p>
+                </div>
+                <div
+					class="skeleton flex h-12 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-on-tertiary);"
+				>
+					<p 
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-tertiary);"
+					>
+						on tertiary
+					</p>
+                </div>
+				<div
+					class="skeleton flex h-24 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-on-tertiary-container);"
+				>
+					<p 
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-tertiary-container);"
+					>
+					tertiary container
+					</p>
+                </div>
+				<div
+					class="skeleton flex h-12 w-36 items-center justify-center"
+					style="background-color: var(--md-sys-color-tertiary-container);"
+				>
+					<p 
+						class="text-center text-xl"
+						style="color: var(--md-sys-color-on-tertiary-container);"
+					>
+						on tertiary container
+					</p>
+                </div>
+			</div>
+			<div class="grid grid-cols-4 xl:grid-cols-8 gap-4">
+				<div>
+					<div
+						class="skeleton flex h-24 w-36 items-center justify-center"
+						style="background-color: var(--md-sys-color-error);"
+						>
+						<p
+							class="text-center text-xl"
+							style="color: var(--md-sys-color-on-error);"
+						>
+							error
+						</p>
+					</div>
+					<div
+						class="skeleton flex h-12 w-36 items-center justify-center"
+						style="background-color: var(--md-sys-color-on-error);"
+					>
+						<p 
+							class="text-center text-xl"
+							style="color: var(--md-sys-color-error);"
+						>
+							on error
+						</p>
+					</div>
+					<div
+						class="skeleton flex h-24 w-36 items-center justify-center"
+						style="background-color: var(--md-sys-color-on-error-container);"
+					>
+						<p 
+							class="text-center text-xl"
+							style="color: var(--md-sys-color-error-container);"
+						>
+							error container
+						</p>
+					</div>
+					<div
+						class="skeleton flex h-12 w-36 items-center justify-center"
+						style="background-color: var(--md-sys-color-error-container);"
+					>
+						<p 
+							class="text-center text-xl"
+							style="color: var(--md-sys-color-on-error-container);"
+						>
+							on error container
+						</p>
+					</div>
+				</div>
+			</div>
+        </div>
 		<p class="text-center text-2xl">(autogenerated from from Material theme color utilities)</p>
 		<div class="grid grid-cols-12 gap-4">
 			<p class="col-span-12">Sys color primary:</p>
