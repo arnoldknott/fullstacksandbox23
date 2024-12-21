@@ -34,10 +34,10 @@
 	<div class="col-span-2">
 		<Title>Colors</Title>
 		<p class="text-center text-2xl">Dynamic colors Material Color Utilities:</p>
-		<div class="grid grid-cols-4 xl:grid-cols-8 gap-4">
+		<div class="grid grid-cols-4 gap-4">
 			<div>
 				<div
-					class="skeleton flex h-24 w-36 items-center justify-center"
+					class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-primary);"
 					>
                     <p
@@ -48,7 +48,7 @@
 					</p>
                 </div>
                 <div
-					class="skeleton flex h-12 w-36 items-center justify-center"
+					class="skeleton flex h-12 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-on-primary);"
 				>
 					<p 
@@ -59,7 +59,7 @@
 					</p>
                 </div>
 				<div
-					class="skeleton flex h-24 w-36 items-center justify-center"
+					class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-primary-container);"
 				>
 					<p 
@@ -70,7 +70,7 @@
 					</p>
                 </div>
 				<div
-					class="skeleton flex h-12 w-36 items-center justify-center"
+					class="skeleton flex h-12 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-on-primary-container);"
 				>
 					<p 
@@ -83,7 +83,7 @@
             </div>
             <div>
                 <div
-					class="skeleton flex h-24 w-36 items-center justify-center"
+					class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-secondary);"
 					>
                     <p
@@ -94,7 +94,7 @@
 					</p>
                 </div>
                 <div
-					class="skeleton flex h-12 w-36 items-center justify-center"
+					class="skeleton flex h-12 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-on-secondary);"
 				>
 					<p 
@@ -105,7 +105,7 @@
 					</p>
                 </div>
 				<div
-					class="skeleton flex h-24 w-36 items-center justify-center"
+					class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-on-secondary-container);"
 				>
 					<p 
@@ -116,7 +116,7 @@
 					</p>
                 </div>
 				<div
-					class="skeleton flex h-12 w-36 items-center justify-center"
+					class="skeleton flex h-12 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-secondary-container);"
 				>
 					<p 
@@ -129,7 +129,7 @@
 			</div>
             <div>
                 <div
-					class="skeleton flex h-24 w-36 items-center justify-center"
+					class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-tertiary);"
 					>
                     <p
@@ -140,7 +140,7 @@
 					</p>
                 </div>
                 <div
-					class="skeleton flex h-12 w-36 items-center justify-center"
+					class="skeleton flex h-12 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-on-tertiary);"
 				>
 					<p 
@@ -151,7 +151,7 @@
 					</p>
                 </div>
 				<div
-					class="skeleton flex h-24 w-36 items-center justify-center"
+					class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-on-tertiary-container);"
 				>
 					<p 
@@ -162,7 +162,7 @@
 					</p>
                 </div>
 				<div
-					class="skeleton flex h-12 w-36 items-center justify-center"
+					class="skeleton flex h-12 w-36 xl:w-64 items-center justify-center"
 					style="background-color: var(--md-sys-color-tertiary-container);"
 				>
 					<p 
@@ -173,10 +173,10 @@
 					</p>
                 </div>
 			</div>
-			<div class="grid grid-cols-4 xl:grid-cols-8 gap-4">
+			<div>
 				<div>
 					<div
-						class="skeleton flex h-24 w-36 items-center justify-center"
+						class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
 						style="background-color: var(--md-sys-color-error);"
 						>
 						<p
@@ -187,7 +187,7 @@
 						</p>
 					</div>
 					<div
-						class="skeleton flex h-12 w-36 items-center justify-center"
+						class="skeleton flex h-12 w-36 xl:w-64 items-center justify-center"
 						style="background-color: var(--md-sys-color-on-error);"
 					>
 						<p 
@@ -198,7 +198,7 @@
 						</p>
 					</div>
 					<div
-						class="skeleton flex h-24 w-36 items-center justify-center"
+						class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
 						style="background-color: var(--md-sys-color-on-error-container);"
 					>
 						<p 
@@ -209,7 +209,7 @@
 						</p>
 					</div>
 					<div
-						class="skeleton flex h-12 w-36 items-center justify-center"
+						class="skeleton flex h-12 w-36 xl:w-64 items-center justify-center"
 						style="background-color: var(--md-sys-color-error-container);"
 					>
 						<p 
@@ -222,38 +222,210 @@
 				</div>
 			</div>
         </div>
-		<p class="text-center text-2xl">(autogenerated from from Material theme color utilities)</p>
-		<div class="grid grid-cols-12 gap-4">
-			<p class="col-span-12">Sys color primary:</p>
+		<div class="grid grid-cols-5 gap-4">
 			<div
-				class="flex h-12 w-12 items-center justify-center"
-				style="background-color: var(--md-sys-color-primary);"
-			>
-				<p class="text-center text-xl">1</p>
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-surface-container-lowest);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					surface container lowest
+				</p>
 			</div>
 			<div
-				class="flex h-12 w-12 items-center justify-center"
-				style="background-color: var(--md-sys-color-surface-tint);"
-			>
-				<p class="text-center text-xl">2</p>
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-surface-container-low);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					surface container low
+				</p>
 			</div>
 			<div
-				class="flex h-12 w-12 items-center justify-center"
-				style="background-color: var(--md-sys-color-on-primary);"
-			>
-				<p class="text-center text-xl">3</p>
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-surface-container);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					surface container
+				</p>
 			</div>
 			<div
-				class="flex h-12 w-12 items-center justify-center"
-				style="background-color: var(--md-sys-color-primary-container);"
-			>
-				<p class="text-center text-xl">4</p>
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-surface-container-high);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					surface container high
+				</p>
 			</div>
 			<div
-				class="flex h-12 w-12 items-center justify-center"
-				style="background-color: var(--md-sys-color-on-primary-container);"
-			>
-				<p class="text-center text-xl">5</p>
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-surface-container-highest);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					surface container highest
+				</p>
+			</div>
+		</div>
+		<div class="grid grid-cols-4 gap-4">
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-on-surface);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					on surface
+				</p>
+			</div>
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-surface-variant);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					on surface variant
+				</p>
+			</div>
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-outline);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					outline
+				</p>
+			</div>
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-outline-variant);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					outline variant
+				</p>
+			</div>
+		</div>
+		<div class="grid grid-cols-5 gap-4">
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-inverse-surface);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-inverse-on-surface);"
+				>
+					inverse surface
+				</p>
+			</div>
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-inverse-on-surface);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-inverse-on-surface);"
+				>
+					inverse on surface variant
+				</p>
+			</div>
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-inverse-primary);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					inverse primary
+				</p>
+			</div>
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-scrim);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					scrim
+				</p>
+			</div>
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-shadow);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-surface);"
+				>
+					shadow
+				</p>
+			</div>
+		</div>
+		<div class="grid grid-cols-4 gap-4">
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-background);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-on-background);"
+				>
+					background
+				</p>
+			</div>
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-on-background);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-background);"
+				>
+					on background
+				</p>
+			</div>
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-neutral-palette-key-color);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-neutral-variant-palette-key-color);"
+				>
+					neutral palette key color
+				</p>
+			</div>
+			<div
+				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				style="background-color: var(--md-sys-neutral-variant-palette-key-color);"
+				>
+				<p
+					class="text-center text-xl"
+					style="color: var(--md-sys-color-neutral-palette-key-color);"
+				>
+					neutral variant palette key color
+				</p>
 			</div>
 		</div>
 		<HorizontalRule />

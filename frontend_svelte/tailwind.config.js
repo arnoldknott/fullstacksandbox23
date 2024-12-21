@@ -66,8 +66,8 @@ module.exports = {
 			{
 				dark: {
 					// ...dark,
-					transparent: 'transparent',
-					current: 'currentColor',
+					// transparent: 'transparent',
+					// current: 'currentColor',
 					info: dark.info,
 					'info-content': dark['info-content'],
 					success: dark.success,

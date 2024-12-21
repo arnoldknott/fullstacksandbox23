@@ -5,16 +5,30 @@
 		Hct,
 		themeFromSourceColor,
 		applyTheme,
+		type Theme,
 		// lstarFromArgb,
-		labFromArgb,
-		xyzFromArgb,
+		// labFromArgb,
+		// xyzFromArgb,
 		alphaFromArgb,
 		blueFromArgb,
 		greenFromArgb,
 		redFromArgb,
-		// DynamicScheme,
+		customColor,
+		DynamicScheme,
+		SchemeContent,
+		SchemeExpressive,
+		SchemeFidelity,
+		SchemeFruitSalad,
+		SchemeMonochrome,
+		SchemeNeutral,
+		SchemeRainbow,
+		SchemeTonalSpot,
+		SchemeVibrant,
 	} from '@material/material-color-utilities';
 	import Color from 'colorjs.io'
+	import flyonUIThemes from 'flyonui/src/theming/themes';
+	const { light: lightFlyonUI, dark: darkFlyonUI } = flyonUIThemes;
+	// import { light as lightFlyonUI, dark as darkFlyonUI } from 'flyonui/src/theming/themes';
 	// import { Variant } from '@material/material-color-utilities/dynamiccolor/variant';
 	import type { Action } from 'svelte/action';
 	import NavButton from '$components/NavButton.svelte';
@@ -26,17 +40,31 @@
 
 	// copy & paste from: https://github.com/material-foundation/material-color-utilities/blob/9889de141b3b5194b8574f9e378e55f4428bdb5e/typescript/dynamiccolor/variant.ts#L23C8-L33C2
 	// as the export is missing in the package '@material/material-color-utilities'
-	// enum Variant {
-	// 	MONOCHROME,
-	// 	NEUTRAL,
-	// 	TONAL_SPOT,
-	// 	VIBRANT,
-	// 	EXPRESSIVE,
-	// 	FIDELITY,
-	// 	CONTENT,
-	// 	RAINBOW,
-	// 	FRUIT_SALAD
-	// 	}
+	// switch to import { Variant } from '@material/material-color-utilities/dynamiccolor/variant';
+	// from material-color-utilities version 0.3.1 onwards!
+	enum Variant {
+		MONOCHROME,
+		NEUTRAL,
+		TONAL_SPOT,
+		VIBRANT,
+		EXPRESSIVE,
+		FIDELITY,
+		CONTENT,
+		RAINBOW,
+		FRUIT_SALAD,
+		}
+	// function (Variant: any) {
+    // Variant[Variant["MONOCHROME"] = 0] = "MONOCHROME";
+    // Variant[Variant["NEUTRAL"] = 1] = "NEUTRAL";
+    // Variant[Variant["TONAL_SPOT"] = 2] = "TONAL_SPOT";
+    // Variant[Variant["VIBRANT"] = 3] = "VIBRANT";
+    // Variant[Variant["EXPRESSIVE"] = 4] = "EXPRESSIVE";
+    // Variant[Variant["FIDELITY"] = 5] = "FIDELITY";
+    // Variant[Variant["CONTENT"] = 6] = "CONTENT";
+    // Variant[Variant["RAINBOW"] = 7] = "RAINBOW";
+    // Variant[Variant["FRUIT_SALAD"] = 8] = "FRUIT_SALAD";
+	// }
+	// console.log(Variant)
 
 	// import theme from './material-theme.json'
 
@@ -51,6 +79,7 @@
 	// Get the theme from a hex color
 	const sourceColor = '#769CDF';
 	const sourceColorArgb = argbFromHex(sourceColor);
+	const sourceColorHct = Hct.fromInt(sourceColorArgb);
 	// const sourceColorHct = Hct.fromInt(sourceColorArgb);
 
 	// console.log('=== src - routes - (layout) - layout.svelte - sourceColor Hex / Argb ===');
@@ -96,11 +125,25 @@
 	// neutralVariantPalette: TonalPalette;
 	// errorPalette?: TonalPalette;
 	// );
-	// const dynamicScheme = new DynamicScheme(
+	let contrast = $state(1);
+	// const dynamicSchemeLightNormalContrast = new DynamicScheme(
 	// 	{
 	// 		sourceColorArgb: sourceColorArgb,
+	// 		// MONOCHROME,
+	// 		// NEUTRAL,
+	// 		// TONAL_SPOT,
+	// 		// VIBRANT,
+	// 		// EXPRESSIVE,
+	// 		// FIDELITY,
+	// 		// CONTENT,
+	// 		// RAINBOW,
+	// 		// FRUIT_SALAD,
 	// 		variant: Variant.NEUTRAL,
-	// 		contrastLevel: 1,
+	// 		// 0.0 for default contrast.
+	// 		// 0.5 for higher contrast.
+	// 		// 1.0 for highest contrast.
+	// 		// -1.0 for reduced contrast.
+	// 		contrastLevel: 0.0,
 	// 		isDark: false,
 	// 		primaryPalette: theme['palettes']['primary'],
 	// 		secondaryPalette: theme['palettes']['secondary'],
@@ -110,18 +153,124 @@
 	// 		// errorPalette: theme['palettes']['error'],
 	// 	}
 	// );
-	// console.log('=== src - routes - (layout) - layout.svelte - dynamicScheme ===');
-	// console.log(dynamicScheme);
+	const dynamicSchemeLightNormalContrast = new SchemeTonalSpot(sourceColorHct, false, 0.0)
+	// const dynamicSchemeDarkNormalContrast = new DynamicScheme(
+	// 	{
+	// 		sourceColorArgb: sourceColorArgb,
+	// 		variant: Variant.NEUTRAL,
+	// 		contrastLevel: 1,
+	// 		isDark: true,
+	// 		primaryPalette: theme['palettes']['primary'],
+	// 		secondaryPalette: theme['palettes']['secondary'],
+	// 		tertiaryPalette: theme['palettes']['tertiary'],
+	// 		neutralPalette: theme['palettes']['neutral'],
+	// 		neutralVariantPalette: theme['palettes']['neutralVariant'],
+	// 		// errorPalette: theme['palettes']['error'],
+	// 	}
+	// );
+	const dynamicSchemeDarkNormalContrast = new SchemeTonalSpot(sourceColorHct, true, 1.0)
+	console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeLightNormalContrast ===');
+	console.log(dynamicSchemeLightNormalContrast);
+	console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeDarkNormalContrast ===');
+	console.log(dynamicSchemeDarkNormalContrast);
+
+	console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeLightNormalContrast[primary] ===');
+	console.log(dynamicSchemeLightNormalContrast.primary);
+
+
+	// let successFlyonUI = $state(new Color("oklch", parseFloat(lightFlyonUI.success.split(" "))));
+
+	// let customColorSuccessGroup = $state(customColor(sourceColorArgb, {
+	// 	value: lightFlyonUI.success,
+	// 	name: 'custom-success',
+	// 	blend: true,
+	// }))
+
+	// let themeNormalContrast = $state({
+	// 	source: sourceColorArgb,
+	// 	schemes: {
+	// 		light: dynamicSchemeLightNormalContrast,
+	// 		dark: dynamicSchemeDarkNormalContrast,
+	// 	},
+	// 	palettes: {
+	// 		primary: dynamicSchemeLightNormalContrast.primaryPalette,
+	// 		secondary: dynamicSchemeLightNormalContrast.secondaryPalette,
+	// 		tertiary: dynamicSchemeLightNormalContrast.tertiaryPalette,
+	// 		neutral: dynamicSchemeLightNormalContrast.neutralPalette,
+	// 		neutralVariant: dynamicSchemeLightNormalContrast.neutralVariantPalette,
+	// 		error: dynamicSchemeLightNormalContrast.errorPalette,
+	// 	},
+	// 	customColors: []
+	// });
+
+	// console.log('=== src - routes - (layout) - layout.svelte - themeNormalContrast ===');
+	// console.log(themeNormalContrast);
+
+	let systemDark = $state(false);
+
+
+	/* eslint-disable */
+	/* prettier-ignore */
+	const materialDesignSystemTokenNames = [
+		"primary", "on-primary", "primary-container", "on-primary-container", 
+		"secondary", "on-secondary", "secondary-container", "on-secondary-container",
+		"tertiary", "on-tertiary", "tertiary-container", "on-tertiary-container",
+		"error", "on-error", "error-container", "on-error-container",
+		"primary-fixed", "primary-fixed-dim", "on-primary-fixed", "on-primary-fixed-variant", // avoid using those
+		"secondary-fixed", "secondary-fixed-dim", "on-secondary-fixed", "on-secondary-fixed-variant", // avoid using those
+		"tertiary-fixed", "tertiary-fixed-dim", "on-tertiary-fixed", "on-tertiary-fixed-variant", // avoid using those
+		"surface-container-lowest", "surface-container-low", "surface-container", "surface-container-high", "surface-container-highest",
+		"surface-dim", "surface", "surface-bright", // avoid using those
+		"on-surface", "on-surface-variant",
+		"outline", "outline-variant",
+		"inverse-surface", "inverse-on-surface", "inverse-primary",
+		"scrim", "shadow",
+		"neutral-palette-key-color", "neutral-variant-palette-key-color", // might be useful for mapping with FlyonUI
+		"primary-palette-key-color", "secondary-palette-key-color", "tertiary-palette-key-color", "error-palette-key-color", // avoid using those
+		"background", "on-background", // seems to be legacy
+	]
+	/* eslint enable */
+
+	type MaterialDesignToken = {
+		[key: string]: number;
+	}
+
+	let materialDesignTokensLightNormalContrast: MaterialDesignToken = $state({})
+	let materialDesignTokensDarkNormalContrast: MaterialDesignToken = $state({})
+	for (const token of materialDesignSystemTokenNames) {
+		const tokenNameCamelCase = token.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+		const colorLight = dynamicSchemeLightNormalContrast[tokenNameCamelCase as keyof SchemeContent];
+		const colorDark = dynamicSchemeDarkNormalContrast[tokenNameCamelCase as keyof SchemeContent];
+		if (typeof colorLight === 'number') {
+			materialDesignTokensLightNormalContrast[token] = colorLight;
+		}
+		if (typeof colorDark === 'number') {
+			materialDesignTokensDarkNormalContrast[token] = colorDark;
+		}
+	}
+	console.log('=== src - routes - (layout) - layout.svelte - materialDesignTokens ===');
+	console.log(materialDesignTokensLightNormalContrast);
+
 
 	const applyMaterialDesignTheme: Action = (_node) => {
 		// read system setting dark / light mode on client side only - not during serve side rendering.
-		const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		// const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-		// console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
-		// console.log(systemDark);
+		console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
+		console.log(systemDark);
+
+		const materialDesignTokens = systemDark ? materialDesignTokensDarkNormalContrast : materialDesignTokensLightNormalContrast;
+
+		for (const token in materialDesignTokens) {
+			console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
+			document.documentElement.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
+		}
+
+		// applyTheme(themeNormalContrast, { target: mainContent, dark: systemDark });
 
 		// Apply the theme to the body by updating custom properties for material tokens
-		applyTheme(theme, { target: mainContent, dark: systemDark });
+		// applyTheme(theme, { target: mainContent, dark: systemDark });
 		// applyTheme(theme, { target: mainContent, dark: systemDark, brightnessSuffix: true });
 	};
 
@@ -182,14 +331,13 @@
 	// 	overrideFlyonUIColors(document.documentElement);
 	// });
 
-	// const session = data?.sessionData;
-	// const loggedIn = session?.loggedIn || false;
-	const { loggedIn } = $page.data.session || false;
-	// const { session } = $page.data;
+
 
 	// let mode = $state('light-high-contrast');
 	// let mode = $state('light-hc');
 	let mode = $state('light');
+
+	// use MaterialDynamicColors to get colors from DynamicScheme to apply to FlyonUI
 
 	const materialDesignPrimaryArgb = $state(theme['schemes']['light']['primary'])
 	const materialDesignPrimaryHct = $derived(Hct.fromInt(materialDesignPrimaryArgb))
@@ -201,29 +349,29 @@
 	// 		alpha: alphaFromArgb(materialDesignPrimary),
 	// 	};
 	let primaryFromMaterialDesign = $derived(colorjsPrimary.to("oklch").coords.join(" "));
-	$effect(() => {
-		console.log("=== src - routes - (layout) - layout.svelte - materialDesignPrimaryHct ===");
-		console.log(materialDesignPrimaryHct);
-		console.log("=== src - routes - (layout) - layout.svelte - colorjsPrimary.to(oklch) ===");
-		console.log(colorjsPrimary.to("oklch"));
-		console.log(colorjsPrimary.to("oklch").coords);
-		console.log('=== src - routes - (layout) - layout.svelte - primaryFromMaterialDesign ===');
-		console.log(primaryFromMaterialDesign);
+	// $effect(() => {
+	// 	console.log("=== src - routes - (layout) - layout.svelte - materialDesignPrimaryHct ===");
+	// 	console.log(materialDesignPrimaryHct);
+	// 	console.log("=== src - routes - (layout) - layout.svelte - colorjsPrimary.to(oklch) ===");
+	// 	console.log(colorjsPrimary.to("oklch"));
+	// 	console.log(colorjsPrimary.to("oklch").coords);
+	// 	console.log('=== src - routes - (layout) - layout.svelte - primaryFromMaterialDesign ===');
+	// 	console.log(primaryFromMaterialDesign);
 
-		console.log(" ")
+	// 	console.log(" ")
 
-		const primaryRGBalpha = {
-			red: redFromArgb(materialDesignPrimaryArgb),
-			green: greenFromArgb(materialDesignPrimaryArgb),
-			blue: blueFromArgb(materialDesignPrimaryArgb),
-			alpha: alphaFromArgb(materialDesignPrimaryArgb),
-		};
-		console.log("=== src - routes - (layout) - layout.svelte - primaryRGBalpha - from MaterialColor Utilities ===");
-		console.log(primaryRGBalpha);
-		console.log("=== src - routes - (layout) - layout.svelte - primaryRGBalpha - from Colorjs ===");
-		console.log(colorjsPrimary.to("srgb").coords[0] * 255, colorjsPrimary.to("srgb").coords[1] * 255, colorjsPrimary.to("srgb").coords[2] * 255);
+	// 	const primaryRGBalpha = {
+	// 		red: redFromArgb(materialDesignPrimaryArgb),
+	// 		green: greenFromArgb(materialDesignPrimaryArgb),
+	// 		blue: blueFromArgb(materialDesignPrimaryArgb),
+	// 		alpha: alphaFromArgb(materialDesignPrimaryArgb),
+	// 	};
+	// 	console.log("=== src - routes - (layout) - layout.svelte - primaryRGBalpha - from MaterialColor Utilities ===");
+	// 	console.log(primaryRGBalpha);
+	// 	console.log("=== src - routes - (layout) - layout.svelte - primaryRGBalpha - from Colorjs ===");
+	// 	console.log(colorjsPrimary.to("srgb").coords[0] * 255, colorjsPrimary.to("srgb").coords[1] * 255, colorjsPrimary.to("srgb").coords[2] * 255);
 
-	});
+	// });
 
 
 	let primaryManual = $state("77.5934% 0.247012 287.240256;")
@@ -232,8 +380,16 @@
 		// mode = mode === 'dark-high-contrast' ? 'light-high-contrast' : 'dark-high-contrast';
 		// mode = mode === 'dark-hc' ? 'light-hc' : 'dark-hc';
 		mode = mode === 'dark' ? 'light' : 'dark';
+
+		const materialDesignTokens = mode === "dark" ? materialDesignTokensDarkNormalContrast : materialDesignTokensLightNormalContrast;
+
+		for (const token in materialDesignTokens) {
+			console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
+			document.documentElement.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
+		}
 		// TBD: This one applies the material design theme on a div inside main!
-		applyTheme(theme, { target: mainContent, dark: mode === 'dark' });
+		// applyTheme(theme, { target: mainContent, dark: mode === 'dark' });
+		// applyTheme(themeNormalContrast, { target: mainContent, dark: mode === 'dark' });
 		console.log('mode toggled to ' + mode);
 		// document.documentElement.style.setProperty('--p', '(0.5 0.1 100)');
 		// console.log('=== src - routes - (layout) - layout.svelte - changed --p ===');
@@ -242,11 +398,16 @@
 		console.log(mdSysColorPrimary);
 		// console.log('=== src - routes - (layout) - layout.svelte - document ===');
 		// console.log(document)
-		primaryManual = mode === 'dark' ? "77.5934% 0.247012 287.240256;" : "37.5934% 0.247012 287.240256;";
+		// primaryManual = mode === 'dark' ? "77.5934% 0.247012 287.240256;" : "37.5934% 0.247012 287.240256;";
 		// primaryManual = mode === 'dark' ? "oklch(from #aac7ff l c h);" : "oklch(from #2a5ea7 l c h);";
 	};
 
 	// const primaryManual = "(50% 0.2 0);"
+
+	// const session = data?.sessionData;
+	// const loggedIn = session?.loggedIn || false;
+	const { loggedIn } = $page.data.session || false;
+	// const { session } = $page.data;
 
 	// let userPictureURL: URL | undefined = $state(undefined);
 	// onMount(async () => {
