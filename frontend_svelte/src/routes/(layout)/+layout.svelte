@@ -264,8 +264,12 @@
 
 		for (const token in materialDesignTokens) {
 			console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
+			// TBD: change to mainElement
 			document.documentElement.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
 		}
+		console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
+		console.log(hexFromArgb(materialDesignTokens['surface-container']));
+		mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['surface-container']);
 
 		// applyTheme(themeNormalContrast, { target: mainContent, dark: systemDark });
 
@@ -338,7 +342,6 @@
 	let mode = $state('light');
 
 	// use MaterialDynamicColors to get colors from DynamicScheme to apply to FlyonUI
-
 	const materialDesignPrimaryArgb = $state(theme['schemes']['light']['primary'])
 	const materialDesignPrimaryHct = $derived(Hct.fromInt(materialDesignPrimaryArgb))
 	const colorjsPrimary = $derived(new Color("hct", [materialDesignPrimaryHct.internalHue, materialDesignPrimaryHct.internalChroma, materialDesignPrimaryHct.internalTone]))
@@ -396,10 +399,16 @@
 		console.log('=== src - routes - (layout) - layout.svelte - toggle - var --md-sys-color-primary ===');
 		const mdSysColorPrimary = mainContent.style.getPropertyValue('--md-sys-color-primary')
 		console.log(mdSysColorPrimary);
+
+		
 		// console.log('=== src - routes - (layout) - layout.svelte - document ===');
 		// console.log(document)
 		// primaryManual = mode === 'dark' ? "77.5934% 0.247012 287.240256;" : "37.5934% 0.247012 287.240256;";
 		// primaryManual = mode === 'dark' ? "oklch(from #aac7ff l c h);" : "oklch(from #2a5ea7 l c h);";
+
+		console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
+		console.log(hexFromArgb(materialDesignTokens['surface-container']));
+		mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['surface-container']);
 	};
 
 	// const primaryManual = "(50% 0.2 0);"
