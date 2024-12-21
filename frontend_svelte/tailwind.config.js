@@ -41,7 +41,7 @@ module.exports = {
 		themes: [
 			{
 				light: {
-					// ...light,
+					...light,
 					transparent: 'transparent',
 					current: 'currentColor',
 					info: light.info,
@@ -64,7 +64,7 @@ module.exports = {
 			},
 			{
 				dark: {
-					// ...dark,
+					...dark,
 					transparent: 'transparent',
 					current: 'currentColor',
 					info: dark.info,
@@ -81,8 +81,8 @@ module.exports = {
 			// 		//
 			// 	}
 			// },
-			'light',
-			'dark',
+			// 'light',
+			// 'dark',
 			// {
 			// 	light: {
 			// 		transparent: 'transparent',

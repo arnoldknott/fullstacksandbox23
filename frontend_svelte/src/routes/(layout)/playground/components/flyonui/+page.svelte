@@ -525,12 +525,18 @@
   color: var(--md-sys-color-on-primary);
 } */
 
-.bg-primary, .btn-primary {
+/* Consider merging text and background into one: */
+/* color: var(--md-sys-color-on-primary); */
+
+/* Consider merging text and background into one: */
+/* background-color: var(--md-sys-color-on-primary); */
+
+/* .bg-primary, .btn-primary {
     background-color: var(--md-sys-color-primary);
-    /* color: var(--md-sys-color-on-primary); */
+    
 }
 .text-primary {
-    /* background-color: var(--md-sys-color-on-primary); */
+    
     color: var(--md-sys-color-primary);
 }
 .bg-primary-content, .btn-primary-content {
@@ -551,5 +557,5 @@
 }
 .text-primary-content-container {
     color: var(--md-sys-color-on-primary-container);
-}
+} */
 </style>

@@ -2,9 +2,12 @@
 	import {
 		argbFromHex,
 		hexFromArgb,
-		// Hct,
+		Hct,
 		themeFromSourceColor,
-		applyTheme
+		applyTheme,
+		lstarFromArgb,
+		labFromArgb,
+		xyzFromArgb,
 		// DynamicScheme,
 	} from '@material/material-color-utilities';
 	// import { Variant } from '@material/material-color-utilities/dynamiccolor/variant';
@@ -117,9 +120,39 @@
 		// applyTheme(theme, { target: mainContent, dark: systemDark, brightnessSuffix: true });
 	};
 
+	$effect(() => {
+		// console.log('=== src - routes - (layout) - layout.svelte - var --p - priority ===');
+		// console.log(document.documentElement.style.getPropertyPriority('var(--p)'))
+		console.log('=== src - routes - (layout) - layout.svelte - var --p - value ===');
+		console.log(document.documentElement.style.getPropertyValue('oklch(var(--p))'))
+		console.log('=== src - routes - (layout) - layout.svelte - var --md-sys-color-primary ===');
+		console.log(mainContent.style.getPropertyValue('--md-sys-color-primary'))
+		const primaryInt = theme['schemes']['light']['primary']
+		console.log("=== src - routes - (layout) - layout.svelte - theme['schemes']['light']['primary'] ===");
+		console.log(primaryInt);
+		const primaryHct = Hct.fromInt(primaryInt);
+		console.log("=== src - routes - (layout) - layout.svelte - primary Hct ===");
+		console.log(primaryHct);
+		// const primaryLstar = lstarFromArgb(primaryInt);
+		// console.log("=== src - routes - (layout) - layout.svelte - primaryLstar ===");
+		// console.log(primaryLstar);
+		const primaryLab = labFromArgb(primaryInt);
+		console.log("=== src - routes - (layout) - layout.svelte - primaryLab ===");
+		console.log(primaryLab);
+		const primaryXyz = xyzFromArgb(primaryInt);
+		console.log("=== src - routes - (layout) - layout.svelte - primaryXyz ===");
+		console.log(primaryXyz);
+		const primaryRgb = hexFromArgb(primaryInt);
+		console.log("=== src - routes - (layout) - layout.svelte - primaryRgb ===");
+		console.log(primaryRgb);
+		console.log('=== src - routes - (layout) - layout.svelte - oklch(from rgb) ===');
+	});
+	
+
+
 	const overrideFlyonUIColors: Action = (_node) => {
-		console.log('=== src - routes - (layout) - layout.svelte - overrideFlyonUIColors ===');
-		document.documentElement.style.setProperty('--p', '(0.5 0.1 100)');
+		// console.log('=== src - routes - (layout) - layout.svelte - overrideFlyonUIColors ===');
+		// document.documentElement.style.setProperty('--p', '(0.5 0.1 100)');
 		
 	}
 	
@@ -140,10 +173,16 @@
 		// mode = mode === 'dark-high-contrast' ? 'light-high-contrast' : 'dark-high-contrast';
 		// mode = mode === 'dark-hc' ? 'light-hc' : 'dark-hc';
 		mode = mode === 'dark' ? 'light' : 'dark';
+		// TBD: This one applies the material design theme on a div inside main!
 		applyTheme(theme, { target: mainContent, dark: mode === 'dark' });
 		console.log('mode toggled to ' + mode);
 		// document.documentElement.style.setProperty('--p', '(0.5 0.1 100)');
 		// console.log('=== src - routes - (layout) - layout.svelte - changed --p ===');
+		console.log('=== src - routes - (layout) - layout.svelte - toggle - var --md-sys-color-primary ===');
+		const mdSysColorPrimary = mainContent.style.getPropertyValue('--md-sys-color-primary')
+		console.log(mdSysColorPrimary);
+		// console.log('=== src - routes - (layout) - layout.svelte - document ===');
+		// console.log(document)
 	};
 
 	// let userPictureURL: URL | undefined = $state(undefined);
@@ -169,7 +208,9 @@
 	// });
 </script>
 
-<svelte:window use:applyMaterialDesignTheme use:overrideFlyonUIColors style="--p: 0.45 .2 125"/>
+<!-- style="--p: 0.45 .2 125" -->
+<!-- TBD: this one applies the Material Design variables on the body! -->
+<svelte:window use:applyMaterialDesignTheme use:overrideFlyonUIColors />
 
 <!-- The class switches material design 3, whereas data-theme switches FlyonUI -->
 <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode}>
@@ -256,4 +297,77 @@
 	:global(.bg-primary) {
 		background-color: var(--p);
 	} */
+
+	[data-theme=light] {
+		color-scheme: light;
+		--rounded-box: 0.5rem ;
+		--rounded-btn: 0.375rem;
+		--rounded-tooltip: 0.25rem;
+		--animation-btn: 0.25s;
+		--animation-input: .2s;
+		--btn-focus-scale: 0.95;
+		--border-btn: 1px;
+		--tab-border: 1px;
+		--tab-radius: 0.5rem;
+		--p: 57.5934% 0.247012 287.240256;
+		--pc: 93.7482% 0.032368 291.504163;
+		--s: 55.7871% 0.022138 301.905408;
+		--sc: 95.0453% 0.002858 308.427423;
+		--a: 62.3083% 0.188015 259.814527;
+		--ac: 93.1918% 0.031591 255.585479;
+		--n: 40.6559% 0.025056 282.210785;
+		--nc: 97.6419% 0.001323 286.375536;
+		--b1: 100% 0 0;
+		--b2: 94.7244% 0.005338 286.297402;
+		--b3: 88.6277% 0.008239 278.622785;
+		--bc: 37.567% 0.022158 281.800147;
+		--bs: 37.567% 0.022158 281.800147;
+		--in: 71.4837% 0.125737 215.220903;
+		--inc: 95.6262% 0.044329 203.387778;
+		--su: 73.1062% 0.216656 147.043973;
+		--suc: 96.444% 0.02867 172.082912;
+		--wa: 79.8713% 0.164239 73.09399;
+		--wac: 98.4165% 0.02418 94.061776;
+		--er: 65.3932% 0.222085 25.863858;
+		--erc: 97.5752% 0.015143 61.349242;
+		transparent: transparent;
+		current: currentColor;
+	}
+
+	[data-theme=dark] {
+		color-scheme: dark;
+		--rounded-box: 0.5rem ;
+		--rounded-btn: 0.375rem;
+		--rounded-tooltip: 0.25rem;
+		--animation-btn: 0.25s;
+		--animation-input: .2s;
+		--btn-focus-scale: 0.95;
+		--border-btn: 1px;
+		--tab-border: 1px;
+		--tab-radius: 0.5rem;
+		--p: 57.5934% 0.247012 287.240256;
+		/* --p: oklch(from #2a5ea7 calc(l + 0.1) c h); */
+		--pc: 93.7482% 0.032368 291.504163;
+		--s: 55.7871% 0.022138 301.905408;
+		--sc: 100% 0 0;
+		--a: 62.3083% 0.188015 259.814527;
+		--ac: 93.1918% 0.031591 255.585479;
+		--n: 65.7482% 0.022235 294.952787;
+		--nc: 18.5128% 0.016696 301.919165;
+		--b1: 26.8442% 0.028285 299.769973;
+		--b2: 22.6865% 0.023344 295.952775;
+		--b3: 39.9632% 0.030791 300.243852;
+		--bc: 78.094% 0.014175 295.24394;
+		--bs: 18.5128% 0.016696 301.919165;
+		--in: 71.4837% 0.125737 215.220903;
+		--inc: 95.6262% 0.044329 203.387778;
+		--su: 73.1062% 0.216656 147.043973;
+		--suc: 96.444% 0.02867 172.082912;
+		--wa: 79.8713% 0.164239 73.09399;
+		--wac: 98.4165% 0.02418 94.061776;
+		--er: 65.3932% 0.222085 25.863858;
+		--erc: 97.5752% 0.015143 61.349242;
+		transparent: transparent;
+		current: currentColor;
+	}
 </style>
