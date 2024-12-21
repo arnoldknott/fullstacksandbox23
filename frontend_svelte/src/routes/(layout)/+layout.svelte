@@ -24,6 +24,7 @@
 		SchemeRainbow,
 		SchemeTonalSpot,
 		SchemeVibrant,
+
 	} from '@material/material-color-utilities';
 	import Color from 'colorjs.io'
 	import flyonUIThemes from 'flyonui/src/theming/themes';
@@ -125,7 +126,7 @@
 	// neutralVariantPalette: TonalPalette;
 	// errorPalette?: TonalPalette;
 	// );
-	let contrast = $state(1);
+	let contrast = $state(0.0);
 	// const dynamicSchemeLightNormalContrast = new DynamicScheme(
 	// 	{
 	// 		sourceColorArgb: sourceColorArgb,
@@ -153,7 +154,7 @@
 	// 		// errorPalette: theme['palettes']['error'],
 	// 	}
 	// );
-	const dynamicSchemeLightNormalContrast = new SchemeTonalSpot(sourceColorHct, false, 0.0)
+	const dynamicSchemeLightNormalContrast = $derived(new SchemeTonalSpot(sourceColorHct, false, contrast))
 	// const dynamicSchemeDarkNormalContrast = new DynamicScheme(
 	// 	{
 	// 		sourceColorArgb: sourceColorArgb,
@@ -168,18 +169,28 @@
 	// 		// errorPalette: theme['palettes']['error'],
 	// 	}
 	// );
-	const dynamicSchemeDarkNormalContrast = new SchemeTonalSpot(sourceColorHct, true, 1.0)
-	console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeLightNormalContrast ===');
-	console.log(dynamicSchemeLightNormalContrast);
-	console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeDarkNormalContrast ===');
-	console.log(dynamicSchemeDarkNormalContrast);
+	const dynamicSchemeDarkNormalContrast = $derived(new SchemeTonalSpot(sourceColorHct, true, contrast))
+	// console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeLightNormalContrast ===');
+	// console.log(dynamicSchemeLightNormalContrast);
+	// console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeDarkNormalContrast ===');
+	// console.log(dynamicSchemeDarkNormalContrast);
 
-	console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeLightNormalContrast[primary] ===');
-	console.log(dynamicSchemeLightNormalContrast.primary);
+	// console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeLightNormalContrast[primary] ===');
+	// console.log(dynamicSchemeLightNormalContrast.primary);
 
+
+	console.log('=== src - routes - (layout) - layout.svelte - lightFlyonUI.success ===');
+	console.log(lightFlyonUI.success);
 
 	// let successFlyonUI = $state(new Color("oklch", parseFloat(lightFlyonUI.success.split(" "))));
 
+	const infoColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.info), name: 'flyonui-info', blend: true});
+	const successColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.success), name: 'flyonui-success', blend: true});
+	const warningColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.warning), name: 'flyonui-success', blend: true});
+	console.log('=== src - routes - (layout) - layout.svelte - successColorGroup ===');
+	console.log(successColorGroup);
+
+	// TBD: remove:
 	// let customColorSuccessGroup = $state(customColor(sourceColorArgb, {
 	// 	value: lightFlyonUI.success,
 	// 	name: 'custom-success',
@@ -248,8 +259,8 @@
 			materialDesignTokensDarkNormalContrast[token] = colorDark;
 		}
 	}
-	console.log('=== src - routes - (layout) - layout.svelte - materialDesignTokens ===');
-	console.log(materialDesignTokensLightNormalContrast);
+	// console.log('=== src - routes - (layout) - layout.svelte - materialDesignTokens ===');
+	// console.log(materialDesignTokensLightNormalContrast);
 
 
 	const applyMaterialDesignTheme: Action = (_node) => {
@@ -257,19 +268,19 @@
 		// const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-		console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
-		console.log(systemDark);
+		// console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
+		// console.log(systemDark);
 
 		const materialDesignTokens = systemDark ? materialDesignTokensDarkNormalContrast : materialDesignTokensLightNormalContrast;
 
 		for (const token in materialDesignTokens) {
-			console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
+			// console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
 			// TBD: change to mainElement
 			document.documentElement.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
 		}
-		console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
-		console.log(hexFromArgb(materialDesignTokens['surface-container']));
-		mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['surface-container']);
+		// console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
+		// console.log(hexFromArgb(materialDesignTokens['surface-container']));
+		mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
 
 		// applyTheme(themeNormalContrast, { target: mainContent, dark: systemDark });
 
@@ -339,7 +350,7 @@
 
 	// let mode = $state('light-high-contrast');
 	// let mode = $state('light-hc');
-	let mode = $state('light');
+	let mode = $state('dark');
 
 	// use MaterialDynamicColors to get colors from DynamicScheme to apply to FlyonUI
 	const materialDesignPrimaryArgb = $state(theme['schemes']['light']['primary'])
@@ -377,7 +388,7 @@
 	// });
 
 
-	let primaryManual = $state("77.5934% 0.247012 287.240256;")
+	// let primaryManual = $state("77.5934% 0.247012 287.240256;")
 
 	const toggleMode = () => {
 		// mode = mode === 'dark-high-contrast' ? 'light-high-contrast' : 'dark-high-contrast';
@@ -387,7 +398,7 @@
 		const materialDesignTokens = mode === "dark" ? materialDesignTokensDarkNormalContrast : materialDesignTokensLightNormalContrast;
 
 		for (const token in materialDesignTokens) {
-			console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
+			// console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
 			document.documentElement.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
 		}
 		// TBD: This one applies the material design theme on a div inside main!
@@ -396,9 +407,9 @@
 		console.log('mode toggled to ' + mode);
 		// document.documentElement.style.setProperty('--p', '(0.5 0.1 100)');
 		// console.log('=== src - routes - (layout) - layout.svelte - changed --p ===');
-		console.log('=== src - routes - (layout) - layout.svelte - toggle - var --md-sys-color-primary ===');
-		const mdSysColorPrimary = mainContent.style.getPropertyValue('--md-sys-color-primary')
-		console.log(mdSysColorPrimary);
+		// console.log('=== src - routes - (layout) - layout.svelte - toggle - var --md-sys-color-primary ===');
+		// const mdSysColorPrimary = mainContent.style.getPropertyValue('--md-sys-color-primary')
+		// console.log(mdSysColorPrimary);
 
 		
 		// console.log('=== src - routes - (layout) - layout.svelte - document ===');
@@ -406,9 +417,9 @@
 		// primaryManual = mode === 'dark' ? "77.5934% 0.247012 287.240256;" : "37.5934% 0.247012 287.240256;";
 		// primaryManual = mode === 'dark' ? "oklch(from #aac7ff l c h);" : "oklch(from #2a5ea7 l c h);";
 
-		console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
-		console.log(hexFromArgb(materialDesignTokens['surface-container']));
-		mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['surface-container']);
+		// console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
+		// console.log(hexFromArgb(materialDesignTokens['surface-container']));
+		mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
 	};
 
 	// const primaryManual = "(50% 0.2 0);"
