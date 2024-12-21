@@ -209,6 +209,20 @@
 		console.log(colorjsPrimary.to("oklch").coords);
 		console.log('=== src - routes - (layout) - layout.svelte - primaryFromMaterialDesign ===');
 		console.log(primaryFromMaterialDesign);
+
+		console.log(" ")
+
+		const primaryRGBalpha = {
+			red: redFromArgb(materialDesignPrimaryArgb),
+			green: greenFromArgb(materialDesignPrimaryArgb),
+			blue: blueFromArgb(materialDesignPrimaryArgb),
+			alpha: alphaFromArgb(materialDesignPrimaryArgb),
+		};
+		console.log("=== src - routes - (layout) - layout.svelte - primaryRGBalpha - from MaterialColor Utilities ===");
+		console.log(primaryRGBalpha);
+		console.log("=== src - routes - (layout) - layout.svelte - primaryRGBalpha - from Colorjs ===");
+		console.log(colorjsPrimary.to("srgb").coords[0] * 255, colorjsPrimary.to("srgb").coords[1] * 255, colorjsPrimary.to("srgb").coords[2] * 255);
+
 	});
 
 

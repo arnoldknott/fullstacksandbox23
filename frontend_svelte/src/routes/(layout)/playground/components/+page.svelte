@@ -54,6 +54,11 @@
 		description="Formating playground for styling with TailwindCSS utility classes"
 		href={`/playground/components/tailwindcss`}
 	></Card>
+	<Card
+	title="Comparison"
+	description="Directly putting components right next to each other to compare them"
+	href={`/playground/components/comparison`}
+	></Card>
 </div>
 
 <div class="mx-5">
