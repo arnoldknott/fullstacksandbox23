@@ -38,10 +38,11 @@ module.exports = {
 		// leave it to Material Design assisted by TailwindCSS
 		// styled: false,
 		vendors: true,
+		// themeRoot: "TBD", // consider passing the theme root element here, so not all elements get themed!
 		themes: [
 			{
 				light: {
-					...light,
+					// ...light,
 					transparent: 'transparent',
 					current: 'currentColor',
 					info: light.info,
@@ -64,7 +65,7 @@ module.exports = {
 			},
 			{
 				dark: {
-					...dark,
+					// ...dark,
 					transparent: 'transparent',
 					current: 'currentColor',
 					info: dark.info,

@@ -55,6 +55,7 @@
 		"@azure/msal-node": "^2.15.0",
 		"@material/material-color-utilities": "^0.3.0",
 		"@material/web": "^2.2.0",
+		"colorjs.io": "^0.5.2",
 		"dotenv": "^16.4.5",
 		"flyonui": "^1.1.0",
 		"redis": "^4.7.0",

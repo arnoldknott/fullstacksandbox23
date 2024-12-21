@@ -8,8 +8,13 @@
 		// lstarFromArgb,
 		labFromArgb,
 		xyzFromArgb,
+		alphaFromArgb,
+		blueFromArgb,
+		greenFromArgb,
+		redFromArgb,
 		// DynamicScheme,
 	} from '@material/material-color-utilities';
+	import Color from 'colorjs.io'
 	// import { Variant } from '@material/material-color-utilities/dynamiccolor/variant';
 	import type { Action } from 'svelte/action';
 	import NavButton from '$components/NavButton.svelte';
@@ -120,52 +125,58 @@
 		// applyTheme(theme, { target: mainContent, dark: systemDark, brightnessSuffix: true });
 	};
 
-	$effect(() => {
-		// console.log('=== src - routes - (layout) - layout.svelte - var --p - priority ===');
-		// console.log(document.documentElement.style.getPropertyPriority('var(--p)'))
-		console.log('=== src - routes - (layout) - layout.svelte - var --p - value ===');
-		console.log(document.documentElement.style.getPropertyValue('oklch(var(--p))'))
-		console.log('=== src - routes - (layout) - layout.svelte - var --md-sys-color-primary ===');
-		console.log(mainContent.style.getPropertyValue('--md-sys-color-primary'))
-		const primaryInt = theme['schemes']['light']['primary']
-		console.log("=== src - routes - (layout) - layout.svelte - theme['schemes']['light']['primary'] ===");
-		console.log(primaryInt);
-		const primaryHct = Hct.fromInt(primaryInt);
-		console.log("=== src - routes - (layout) - layout.svelte - primary Hct ===");
-		console.log(primaryHct);
-		// const primaryLstar = lstarFromArgb(primaryInt);
-		// console.log("=== src - routes - (layout) - layout.svelte - primaryLstar ===");
-		// console.log(primaryLstar);
-		const primaryLab = labFromArgb(primaryInt);
-		console.log("=== src - routes - (layout) - layout.svelte - primaryLab ===");
-		console.log(primaryLab);
-		const primaryXyz = xyzFromArgb(primaryInt);
-		console.log("=== src - routes - (layout) - layout.svelte - primaryXyz ===");
-		console.log(primaryXyz);
-		const primaryRgb = hexFromArgb(primaryInt);
-		console.log("=== src - routes - (layout) - layout.svelte - primaryRgb ===");
-		console.log(primaryRgb);
-		console.log('=== src - routes - (layout) - layout.svelte - oklch(from rgb) ===');
+	// $effect(() => {
+	// 	// console.log('=== src - routes - (layout) - layout.svelte - var --p - priority ===');
+	// 	// console.log(document.documentElement.style.getPropertyPriority('var(--p)'))
+	// 	console.log('=== src - routes - (layout) - layout.svelte - var --p - value ===');
+	// 	console.log(document.documentElement.style.getPropertyValue('oklch(var(--p))'))
+	// 	console.log('=== src - routes - (layout) - layout.svelte - var --md-sys-color-primary ===');
+	// 	console.log(mainContent.style.getPropertyValue('--md-sys-color-primary'))
+	// 	const primaryInt = theme['schemes']['light']['primary']
+	// 	console.log("=== src - routes - (layout) - layout.svelte - theme['schemes']['light']['primary'] ===");
+	// 	console.log(primaryInt);
+	// 	const primaryHct = Hct.fromInt(primaryInt);
+	// 	console.log("=== src - routes - (layout) - layout.svelte - primary Hct ===");
+	// 	console.log(primaryHct);
+	// 	// const primaryLstar = lstarFromArgb(primaryInt);
+	// 	// console.log("=== src - routes - (layout) - layout.svelte - primaryLstar ===");
+	// 	// console.log(primaryLstar);
+	// 	const primaryLab = labFromArgb(primaryInt);
+	// 	console.log("=== src - routes - (layout) - layout.svelte - primaryLab ===");
+	// 	console.log(primaryLab);
+	// 	const primaryXyz = xyzFromArgb(primaryInt);
+	// 	console.log("=== src - routes - (layout) - layout.svelte - primaryXyz ===");
+	// 	console.log(primaryXyz);
+	// 	const primaryRgb = hexFromArgb(primaryInt);
+	// 	console.log("=== src - routes - (layout) - layout.svelte - primaryRgb ===");
+	// 	console.log(primaryRgb);
+	// 	// const primaryRGBalpha = {
+	// 	// 	red: redFromArgb(primaryInt),
+	// 	// 	green: greenFromArgb(primaryInt),
+	// 	// 	blue: blueFromArgb(primaryInt),
+	// 	// 	alpha: alphaFromArgb(primaryInt),
+	// 	// };
+	// 	// console.log("=== src - routes - (layout) - layout.svelte - primaryRGBalpha ===");
+	// 	// console.log(primaryRGBalpha);
 
-		// get the element with the data-theme attribute:
-		const dataThemeElement = document.querySelector('[data-theme]');
-		console.log('=== src - routes - (layout) - layout.svelte - dataThemeElement ===');
-		console.log(dataThemeElement);
-		console.log('=== src - routes - (layout) - layout.svelte - mainContent ===');
-		console.log(mainContent);
+	// 	// get the element with the data-theme attribute:
+	// 	const dataThemeElement = document.querySelector('[data-theme]');
+	// 	console.log('=== src - routes - (layout) - layout.svelte - dataThemeElement ===');
+	// 	console.log(dataThemeElement);
+	// 	console.log('=== src - routes - (layout) - layout.svelte - mainContent ===');
+	// 	console.log(mainContent);
 
-		const originalValue = mainContent.style.getPropertyValue('--p');
-		console.log('=== src - routes - (layout) - layout.svelte - originalValue ===');
-		console.log(originalValue);
-	});
+	// 	const originalValue = mainContent.style.getPropertyValue('--p');
+	// 	console.log('=== src - routes - (layout) - layout.svelte - originalValue ===');
+	// 	console.log(originalValue);
+	// });
 	
 
 
-	const overrideFlyonUIColors: Action = (_node) => {
-		// console.log('=== src - routes - (layout) - layout.svelte - overrideFlyonUIColors ===');
-		// document.documentElement.style.setProperty('--p', '(0.5 0.1 100)');
-		
-	}
+	// const overrideFlyonUIColors: Action = (_node) => {
+	// 	// console.log('=== src - routes - (layout) - layout.svelte - overrideFlyonUIColors ===');
+	// 	// document.documentElement.style.setProperty('--p', '(0.5 0.1 100)');
+	// }
 	
 	// $effect(() => {
 	// 	overrideFlyonUIColors(document.documentElement);
@@ -179,6 +190,27 @@
 	// let mode = $state('light-high-contrast');
 	// let mode = $state('light-hc');
 	let mode = $state('light');
+
+	const materialDesignPrimaryArgb = $state(theme['schemes']['light']['primary'])
+	const materialDesignPrimaryHct = $derived(Hct.fromInt(materialDesignPrimaryArgb))
+	const colorjsPrimary = $derived(new Color("hct", [materialDesignPrimaryHct.internalHue, materialDesignPrimaryHct.internalChroma, materialDesignPrimaryHct.internalTone]))
+	// const primaryRGBalpha = {
+	// 		red: redFromArgb(materialDesignPrimary),
+	// 		green: greenFromArgb(materialDesignPrimary),
+	// 		blue: blueFromArgb(materialDesignPrimary),
+	// 		alpha: alphaFromArgb(materialDesignPrimary),
+	// 	};
+	let primaryFromMaterialDesign = $derived(colorjsPrimary.to("oklch").coords.join(" "));
+	$effect(() => {
+		console.log("=== src - routes - (layout) - layout.svelte - materialDesignPrimaryHct ===");
+		console.log(materialDesignPrimaryHct);
+		console.log("=== src - routes - (layout) - layout.svelte - colorjsPrimary.to(oklch) ===");
+		console.log(colorjsPrimary.to("oklch"));
+		console.log(colorjsPrimary.to("oklch").coords);
+		console.log('=== src - routes - (layout) - layout.svelte - primaryFromMaterialDesign ===');
+		console.log(primaryFromMaterialDesign);
+	});
+
 
 	let primaryManual = $state("77.5934% 0.247012 287.240256;")
 
@@ -227,10 +259,12 @@
 
 <!-- style="--p: 0.45 .2 125" -->
 <!-- TBD: this one applies the Material Design variables on the body! -->
-<svelte:window use:applyMaterialDesignTheme use:overrideFlyonUIColors />
+<!-- <svelte:window use:applyMaterialDesignTheme use:overrideFlyonUIColors /> -->
+<svelte:window use:applyMaterialDesignTheme />
 
 <!-- The class switches material design 3, whereas data-theme switches FlyonUI -->
-<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryManual};">
+<!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryManual};"> -->
+<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryFromMaterialDesign};">
 	<nav class="mx-2 p-2">
 		<div class="flex w-full flex-wrap items-center justify-between">
 			<div class="flex-grow space-x-4">
@@ -315,7 +349,7 @@
 		background-color: var(--p);
 	} */
 
-	[data-theme=light] {
+	/* [data-theme=light] {
 		color-scheme: light;
 		--rounded-box: 0.5rem ;
 		--rounded-btn: 0.375rem;
@@ -327,7 +361,6 @@
 		--tab-border: 1px;
 		--tab-radius: 0.5rem;
 		--p: 57.5934% 0.247012 287.240256;
-		/* --p: calc( var (--primaryManual)); */
 		--pc: 93.7482% 0.032368 291.504163;
 		--s: 55.7871% 0.022138 301.905408;
 		--sc: 95.0453% 0.002858 308.427423;
@@ -364,8 +397,6 @@
 		--tab-border: 1px;
 		--tab-radius: 0.5rem;
 		--p: 57.5934% 0.247012 287.240256;
-		/* --p: calc( var (--primaryManual)); */
-		/* --p: oklch(from #2a5ea7 calc(l + 0.1) c h); */
 		--pc: 93.7482% 0.032368 291.504163;
 		--s: 55.7871% 0.022138 301.905408;
 		--sc: 100% 0 0;
@@ -388,5 +419,5 @@
 		--erc: 97.5752% 0.015143 61.349242;
 		transparent: transparent;
 		current: currentColor;
-	}
+	} */
 </style>
