@@ -5,7 +5,7 @@
 		Hct,
 		themeFromSourceColor,
 		applyTheme,
-		lstarFromArgb,
+		// lstarFromArgb,
 		labFromArgb,
 		xyzFromArgb,
 		// DynamicScheme,
@@ -146,6 +146,17 @@
 		console.log("=== src - routes - (layout) - layout.svelte - primaryRgb ===");
 		console.log(primaryRgb);
 		console.log('=== src - routes - (layout) - layout.svelte - oklch(from rgb) ===');
+
+		// get the element with the data-theme attribute:
+		const dataThemeElement = document.querySelector('[data-theme]');
+		console.log('=== src - routes - (layout) - layout.svelte - dataThemeElement ===');
+		console.log(dataThemeElement);
+		console.log('=== src - routes - (layout) - layout.svelte - mainContent ===');
+		console.log(mainContent);
+
+		const originalValue = mainContent.style.getPropertyValue('--p');
+		console.log('=== src - routes - (layout) - layout.svelte - originalValue ===');
+		console.log(originalValue);
 	});
 	
 
@@ -169,6 +180,8 @@
 	// let mode = $state('light-hc');
 	let mode = $state('light');
 
+	let primaryManual = $state("77.5934% 0.247012 287.240256;")
+
 	const toggleMode = () => {
 		// mode = mode === 'dark-high-contrast' ? 'light-high-contrast' : 'dark-high-contrast';
 		// mode = mode === 'dark-hc' ? 'light-hc' : 'dark-hc';
@@ -183,7 +196,11 @@
 		console.log(mdSysColorPrimary);
 		// console.log('=== src - routes - (layout) - layout.svelte - document ===');
 		// console.log(document)
+		primaryManual = mode === 'dark' ? "77.5934% 0.247012 287.240256;" : "37.5934% 0.247012 287.240256;";
+		// primaryManual = mode === 'dark' ? "oklch(from #aac7ff l c h);" : "oklch(from #2a5ea7 l c h);";
 	};
+
+	// const primaryManual = "(50% 0.2 0);"
 
 	// let userPictureURL: URL | undefined = $state(undefined);
 	// onMount(async () => {
@@ -213,7 +230,7 @@
 <svelte:window use:applyMaterialDesignTheme use:overrideFlyonUIColors />
 
 <!-- The class switches material design 3, whereas data-theme switches FlyonUI -->
-<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode}>
+<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryManual};">
 	<nav class="mx-2 p-2">
 		<div class="flex w-full flex-wrap items-center justify-between">
 			<div class="flex-grow space-x-4">
@@ -310,6 +327,7 @@
 		--tab-border: 1px;
 		--tab-radius: 0.5rem;
 		--p: 57.5934% 0.247012 287.240256;
+		/* --p: calc( var (--primaryManual)); */
 		--pc: 93.7482% 0.032368 291.504163;
 		--s: 55.7871% 0.022138 301.905408;
 		--sc: 95.0453% 0.002858 308.427423;
@@ -346,6 +364,7 @@
 		--tab-border: 1px;
 		--tab-radius: 0.5rem;
 		--p: 57.5934% 0.247012 287.240256;
+		/* --p: calc( var (--primaryManual)); */
 		/* --p: oklch(from #2a5ea7 calc(l + 0.1) c h); */
 		--pc: 93.7482% 0.032368 291.504163;
 		--s: 55.7871% 0.022138 301.905408;
