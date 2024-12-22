@@ -76,7 +76,7 @@
 				<ColorTileMaterialUi background="--md-sys-color-success-container" color="--md-sys-color-on-success-container" />
 				<ColorTileMaterialUi background="--md-sys-color-on-success-container" color="--md-sys-color-success-container" />
 			</div>
-			<div>
+			<div> 
 				<ColorTileMaterialUi background="--md-sys-color-info" color="--md-sys-color-on-info" />
 				<ColorTileMaterialUi background="--md-sys-color-on-info" color="--md-sys-color-info" />
 				<ColorTileMaterialUi background="--md-sys-color-info-container" color="--md-sys-color-on-info-container" />
@@ -303,6 +303,7 @@
 				</p>
 			</div>
 		</div>
+		<p>Add all the palettes as a sweep of tone from all available palettes: primary, secondary, </p>
 		<HorizontalRule />
 	</div>
 
