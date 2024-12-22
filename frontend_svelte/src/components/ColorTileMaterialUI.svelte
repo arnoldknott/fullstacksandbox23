@@ -4,7 +4,7 @@
 </script>
 
 <div
-    class="flex h-24 grow  p-2"
+    class="flex h-24 grow p-2"
     style="background-color: var({background});"
     >
     <p

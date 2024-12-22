@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ColorTileMaterialUi from '$components/ColorTileMaterialUI.svelte';
+	import '@material/web/icon/icon.js';
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
 	import '@material/web/dialog/dialog.js';
@@ -431,12 +432,27 @@
 
 	<div>
         <Title>Icons</Title>
-        <p>Google Fonts - icons:</p>
+		<div class="grid grid-cols-5 gap-4">
+			<div>
+				<p class="text-center text-2xl">Supported tokens:</p>
+				<ul>
+					<li>--md-icon-font: 'Material Symbols Rounded'</li>
+					<li>--md-icon-size: 24px</li>
+				</ul>
+			</div>
+			<div class="col-span-4">
+				<p class="text-center text-2xl">Material Symbols examples:</p>
+				<md-icon>settings</md-icon>
+				<md-icon>palette</md-icon>
+				<md-icon>home</md-icon>
+				<md-icon>person</md-icon>
+			</div>
+		</div>
     </div>
 
 	<div>
 		<Title>List</Title>
-		<md-list style="max-width: 300px;">
+		<md-list class="w-full">
 			<md-list-item> Fruits </md-list-item>
 			<md-divider></md-divider>
 			<md-list-item> Apple </md-list-item>
@@ -619,6 +635,11 @@
 		@import './light-hc.css';
 		@import './light-mc.css';
 	} */
+
+	md-icon{
+		--md-icon-font: 'Material Symbols Rounded';
+		--md-icon-size: 48px;
+	}
 
 	#post-demo-resource {
 		display: flex;

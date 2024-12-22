@@ -290,7 +290,24 @@
 
     <div>
         <Title>Icons</Title>
-        <p>Integrated with FlyonUI: </p>
+        <p class="text-center text-xl">Iconify with FlyonUI</p>
+        <div class="grid grid-cols-5 gap-4">
+            <div>
+                <p class="text-center text-xl">Default library "tablers"</p>
+                <span class="icon-[tabler--settings] size-12"></span>
+                <span class="icon-[tabler--palette] size-12"></span>
+                <span class="icon-[tabler--home] size-12"></span>
+                <span class="icon-[tabler--user] size-12"></span>
+
+            </div>
+            <div>
+                <p class="text-center text-xl">Extension library "google symbols"</p>
+                <md-icon>palette</md-icon>
+            </div>
+            <div>
+                <md-icon>home</md-icon>
+            </div>
+        </div>
     </div>
 
     <div>
