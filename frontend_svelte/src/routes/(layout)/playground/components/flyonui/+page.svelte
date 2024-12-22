@@ -23,10 +23,10 @@
     let variant = $state('TONAL_SPOT');
     const contrastMin = -1.0
     const contrastMax = 1.0
-    const contrastStep = 0.1
+    const contrastStep = 0.2
     const allContrasts = Array.from({ length: (contrastMax - contrastMin) / contrastStep + 1 }, (_, i) => contrastMin + i * contrastStep);
     let contrast = $state(0.0);
-    // $effect(() => console.log('sourceColor:', sourceColor, 'variant:', variant));
+    // $effect(() => console.log('sourceColor:', sourceColor, 'variant:', variant, 'contrast:', contrast));
 
 	const loadHSOverlay = async () => {
 		const { HSOverlay } = await import('flyonui/flyonui.js');
@@ -46,6 +46,45 @@
 		overlay?.open();
 	};
 </script>
+
+
+<!-- // based on https://github.com/themeselection/flyonui/blob/bdbdaeec6b575b80283f5fda51abd3981a168fca/src/theming/index.js#L2
+// match with Material Designs color palette
+// export const flyonUIColorObject = {
+//     transparent: 'transparent',
+//     current: 'currentColor',
+
+//     primary: '#794DFF',
+//     'primary-content': '#794DFF',
+
+//     secondary: 'var(--fallback-s,oklch(var(--s)/<alpha-value>))',
+//     'secondary-content': 'var(--fallback-sc,oklch(var(--sc)/<alpha-value>))',
+
+//     accent: 'var(--fallback-a,oklch(var(--a)/<alpha-value>))',
+//     'accent-content': 'var(--fallback-ac,oklch(var(--ac)/<alpha-value>))',
+
+//     neutral: 'var(--fallback-n,oklch(var(--n)/<alpha-value>))',
+//     'neutral-content': 'var(--fallback-nc,oklch(var(--nc)/<alpha-value>))',
+
+//     'base-100': 'var(--fallback-b1,oklch(var(--b1)/<alpha-value>))',
+//     'base-200': 'var(--fallback-b2,oklch(var(--b2)/<alpha-value>))',
+//     'base-300': 'var(--fallback-b3,oklch(var(--b3)/<alpha-value>))',
+//     'base-content': 'var(--fallback-bc,oklch(var(--bc)/<alpha-value>))',
+
+//     'base-shadow': 'var(--fallback-bs,oklch(var(--bs)/<alpha-value>))',
+
+//     info: 'var(--fallback-in,oklch(var(--in)/<alpha-value>))',
+//     'info-content': 'var(--fallback-inc,oklch(var(--inc)/<alpha-value>))',
+
+//     success: 'var(--fallback-su,oklch(var(--su)/<alpha-value>))',
+//     'success-content': 'var(--fallback-suc,oklch(var(--suc)/<alpha-value>))',
+
+//     warning: 'var(--fallback-wa,oklch(var(--wa)/<alpha-value>))',
+//     'warning-content': 'var(--fallback-wac,oklch(var(--wac)/<alpha-value>))',
+//     error: 'var(--fallback-er,oklch(var(--er)/<alpha-value>))',
+
+//     'error-content': 'var(--fallback-erc,oklch(var(--erc)/<alpha-value>))'
+// } -->
 
 <div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="col-span-2">

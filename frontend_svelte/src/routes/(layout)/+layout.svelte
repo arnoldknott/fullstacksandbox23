@@ -1,18 +1,17 @@
 <script lang="ts">
+	import { Variant, Theming, type ColorConfig } from "$lib/theming";
+
+	// clean this mess up - mainly by moving to $lib/theming.ts
 	import {
 		argbFromHex,
 		hexFromArgb,
 		Hct,
-		themeFromSourceColor,
-		applyTheme,
-		type Theme,
+		// themeFromSourceColor,
+		// applyTheme,
+		// type Theme,
 		// lstarFromArgb,
 		// labFromArgb,
 		// xyzFromArgb,
-		alphaFromArgb,
-		blueFromArgb,
-		greenFromArgb,
-		redFromArgb,
 		TonalPalette,
 		customColor,
 		DynamicScheme,
@@ -39,22 +38,42 @@
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/stores';
 	import Guard from '$components/Guard.svelte';
+	import ThemePicker from '$components/ThemePicker.svelte';
 
+	const theming = new Theming()
+
+	let themeConfiguration: ColorConfig = $state({
+		sourceColor: '#369CDF',
+		variant: Variant.TONAL_SPOT,
+		contrast: 0.5,
+	});
+	$effect(() => console.log('themeConfiguration:', themeConfiguration));
+
+	
+	let tenFold = $derived(theming.manipulateContrast(themeConfiguration.contrast))
+	$effect(() => console.log('tenFold:', tenFold));
+	// let tenFold = $state(0.0);
+	// $effect(() => {tenFold = theming.manipulateContrast()});
+
+
+	// clean this mess up - mainly by moving to $lib/theming.ts:
 	// copy & paste from: https://github.com/material-foundation/material-color-utilities/blob/9889de141b3b5194b8574f9e378e55f4428bdb5e/typescript/dynamiccolor/variant.ts#L23C8-L33C2
 	// as the export is missing in the package '@material/material-color-utilities'
 	// switch to import { Variant } from '@material/material-color-utilities/dynamiccolor/variant';
 	// from material-color-utilities version 0.3.1 onwards!
-	enum Variant {
-		MONOCHROME,
-		NEUTRAL,
-		TONAL_SPOT,
-		VIBRANT,
-		EXPRESSIVE,
-		FIDELITY,
-		CONTENT,
-		RAINBOW,
-		FRUIT_SALAD,
-		}
+	// enum Variant {
+	// 	MONOCHROME,
+	// 	NEUTRAL,
+	// 	TONAL_SPOT,
+	// 	VIBRANT,
+	// 	EXPRESSIVE,
+	// 	FIDELITY,
+	// 	CONTENT,
+	// 	RAINBOW,
+	// 	FRUIT_SALAD,
+	// 	}
+
+
 	// function (Variant: any) {
     // Variant[Variant["MONOCHROME"] = 0] = "MONOCHROME";
     // Variant[Variant["NEUTRAL"] = 1] = "NEUTRAL";
@@ -519,6 +538,9 @@
 					<img class="h-12 w-12 rounded-full" src={userPictureURL} alt="you" />
 				{/if} -->
 				</Guard>
+				{themeConfiguration.contrast}
+				<ThemePicker bind:values={themeConfiguration} />
+				{tenFold}
 				<button aria-label="modeToggler">
 					<label id="modeToggler" class="swap swap-rotate">
 						<input type="checkbox" onclick={toggleMode} />
