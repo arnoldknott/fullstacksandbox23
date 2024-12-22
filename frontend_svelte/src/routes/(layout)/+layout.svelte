@@ -296,6 +296,7 @@
 		// console.log(systemDark);
 
 		const materialDesignTokens = systemDark ? materialDesignTokensDarkNormalContrast : materialDesignTokensLightNormalContrast;
+		mode = systemDark ? 'dark' : 'light';
 
 		for (const token in materialDesignTokens) {
 			// console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
@@ -304,8 +305,8 @@
 		}
 		// console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
 		// console.log(hexFromArgb(materialDesignTokens['surface-container']));
-		document.documentElement.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
-		// mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
+		// document.documentElement.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
+		mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
 
 		// applyTheme(themeNormalContrast, { target: mainContent, dark: systemDark });
 
@@ -489,11 +490,11 @@
 <!-- style="--p: 0.45 .2 125" -->
 <!-- TBD: this one applies the Material Design variables on the body! -->
 <!-- <svelte:window use:applyMaterialDesignTheme use:overrideFlyonUIColors /> -->
-<svelte:window use:applyMaterialDesignTheme />
+<!-- <svelte:window use:applyMaterialDesignTheme /> -->
 
 <!-- The class switches material design 3, whereas data-theme switches FlyonUI -->
 <!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryManual};"> -->
-<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryFromMaterialDesign};">
+<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryFromMaterialDesign};" use:applyMaterialDesignTheme>
 	<nav class="mx-2 p-2">
 		<div class="flex w-full flex-wrap items-center justify-between">
 			<div class="flex-grow space-x-4">
