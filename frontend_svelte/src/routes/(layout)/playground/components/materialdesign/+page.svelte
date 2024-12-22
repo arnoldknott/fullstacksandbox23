@@ -432,6 +432,7 @@
 
 	<div>
         <Title>Icons</Title>
+		<p>Don't use - iconify has them as well and well integrated with FlyonUI</p>
 		<div class="grid grid-cols-5 gap-4">
 			<div>
 				<p class="text-center text-2xl">Supported tokens:</p>

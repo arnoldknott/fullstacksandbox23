@@ -301,11 +301,43 @@
 
             </div>
             <div>
-                <p class="text-center text-xl">Extension library "google symbols"</p>
-                <md-icon>palette</md-icon>
+                <p class="text-center text-xl">Extension library "Material Symbols"</p>
+                <span class="icon-[material-symbols--settings-outline-rounded] size-12"></span>
+                <span class="icon-[material-symbols--palette-outline] size-12"></span>
+                <span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
+                <span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
             </div>
             <div>
-                <md-icon>home</md-icon>
+                <p class="text-center text-xl">Extension library "SVG spinners"</p>
+                <span class="icon-[svg-spinners--12-dots-scale-rotate] size-12"></span>
+                <span class="icon-[svg-spinners--3-dots-bounce] size-12"></span>
+                <span class="icon-[svg-spinners--6-dots-rotate] size-12"></span>
+                <span class="icon-[svg-spinners--90-ring-with-bg] size-12"></span>
+                <span class="icon-[svg-spinners--clock] size-12"></span>
+                <span class="icon-[svg-spinners--bars-scale] size-12"></span>
+                <span class="icon-[svg-spinners--wifi] size-12"></span>
+                <span class="icon-[svg-spinners--wifi-fade] size-12"></span>
+            </div>
+            <div>
+                <p class="text-center text-xl">Extension library "Font Awesome Solid</p>
+                <span class="icon-[fa6-solid--droplet] size-12"></span>
+                <span class="icon-[fa6-solid--comments] size-12"></span>
+                <p class="text-center text-xl">Extension library "Font Awesome Brands</p>
+                <span class="icon-[fa6-brands--discord] size-12"></span>
+                <span class="icon-[fa6-brands--youtube] size-12"></span>
+                <span class="icon-[fa6-brands--linux] size-12"></span>
+                <span class="icon-[fa6-brands--github] size-12"></span>
+            </div>
+            <div>
+                <p class="text-center text-xl">Extension library "Noto emoji</p>
+                <span class="icon-[noto--folded-hands] size-12"></span>
+                <span class="icon-[noto--folded-hands-medium-dark-skin-tone] size-12"></span>
+                <span class="icon-[noto--heart-hands] size-12"></span>
+                <span class="icon-[noto--heart-hands-dark-skin-tone] size-12"></span>
+                <span class="icon-[noto--fire] size-12"></span>
+                <span class="icon-[noto--smiling-face-with-sunglasses] size-12"></span>
+                <span class="icon-[noto--check-mark-button] size-12"></span>
+                <span class="icon-[noto--cross-mark] size-12"></span>
             </div>
         </div>
     </div>

@@ -3,6 +3,7 @@
 import flyonui from 'flyonui';
 import { light, dark } from 'flyonui/src/theming/themes';
 import flyonuiPlugin from 'flyonui/plugin';
+import  {addDynamicIconSelectors}  from '@iconify/tailwind'
 
 module.exports = {
 	content: ['./src/**/*.{html,js,svelte,ts}', './node_modules/flyonui/dist/js/*.js'],
@@ -32,7 +33,7 @@ module.exports = {
 		// }
 	},
 	darkMode: 'media',
-	plugins: [flyonui, flyonuiPlugin],
+	plugins: [flyonui, flyonuiPlugin, addDynamicIconSelectors()],
 	flyonui: {
 		// consider adding this to disable all flyonUI formating and
 		// leave it to Material Design assisted by TailwindCSS
