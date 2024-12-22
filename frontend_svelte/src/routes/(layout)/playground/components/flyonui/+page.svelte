@@ -19,6 +19,15 @@
 	// }
 	// const closeDrawer = () => isDrawerOpen = false;
 
+    let sourceColor = $state('#769CDF');
+    let variant = $state('TONAL_SPOT');
+    const contrastMin = -1.0
+    const contrastMax = 1.0
+    const contrastStep = 0.1
+    const allContrasts = Array.from({ length: (contrastMax - contrastMin) / contrastStep + 1 }, (_, i) => contrastMin + i * contrastStep);
+    let contrast = $state(0.0);
+    // $effect(() => console.log('sourceColor:', sourceColor, 'variant:', variant));
+
 	const loadHSOverlay = async () => {
 		const { HSOverlay } = await import('flyonui/flyonui.js');
 		return HSOverlay;
@@ -277,6 +286,54 @@
             <li>--tab-border: 1px;</li>
             <li>--tab-radius: 0.5rem;</li>
         </ul>
+    </div>
+
+    <div>
+        <Title>Icons</Title>
+        <p>Integrated with FlyonUI: </p>
+    </div>
+
+    <div>
+        <Title>Theme Picker</Title>
+        <div class="grid grid-cols-3 gap-4">
+            <div class="w-48">
+                <label class="label label-text" for="colorPicker">Source color
+                    <span class="label">
+                        <code class="label-text-alt">{sourceColor}</code>
+                    </span>
+                </label>
+                <input class="input" type="color" id="colorPicker" name="color-picker" bind:value={sourceColor} />
+                
+            </div>
+            <div class="relative w-48">
+                <label class="label label-text" for="themeVariant">Variant</label>
+                <select class="select select-floating max-w-sm" aria-label="Select variant" id="themeVariant" bind:value={variant}>
+                    <option value="TONAL_SPOT">Tonal Spot</option>
+                    <option value="MONOCHROME">Monochrome</option>
+                    <option value="NEUTRAL">Neutral</option>
+                    <option value="VIBRANT">Vibrant</option>
+                    <option value="EXPRESSIVE">Expressive</option>
+                    <option value="FIDELITY">Fidelity</option>
+                    <option value="CONTENT">Content</option>
+                    <option value="RAINBOW">Rainbow</option>
+                    <option value="FRUIT_SALAD">Fruit Salad</option>
+                </select>
+            </div>
+            <div class="w-48">
+                <label class="label label-text" for="contrast">Contrast: <span class="label">
+                    <code class="label-text-alt">{contrast}</code>
+                </span></label>
+                
+                <input type="range" min={contrastMin} max={contrastMax} step={contrastStep} class="range w-full"  aria-label="contrast" id="contrast" bind:value={contrast}/>
+                <div class="w-full flex justify-between text-xs px-2">
+                    
+                    {#each allContrasts as _}
+                        <span>|</span>
+                    {/each}
+                </div>
+                
+            </div>
+        </div>
     </div>
 
 	<div>

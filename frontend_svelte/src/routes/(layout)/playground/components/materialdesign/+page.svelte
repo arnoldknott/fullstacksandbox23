@@ -430,6 +430,11 @@
 	</div>
 
 	<div>
+        <Title>Icons</Title>
+        <p>Google Fonts - icons:</p>
+    </div>
+
+	<div>
 		<Title>List</Title>
 		<md-list style="max-width: 300px;">
 			<md-list-item> Fruits </md-list-item>

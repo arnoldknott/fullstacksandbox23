@@ -42,7 +42,7 @@ module.exports = {
 		themes: [
 			{
 				light: {
-					// ...light,
+					...light, // TBD: remove the themes, when Material Color synchronization is fully implemented
 					transparent: 'transparent',
 					current: 'currentColor',
 					info: light.info,
@@ -65,9 +65,9 @@ module.exports = {
 			},
 			{
 				dark: {
-					// ...dark,
-					// transparent: 'transparent',
-					// current: 'currentColor',
+					...dark, // TBD: remove the themes, when Material Color synchronization is fully implemented
+					transparent: 'transparent',
+					current: 'currentColor',
 					info: dark.info,
 					'info-content': dark['info-content'],
 					success: dark.success,
