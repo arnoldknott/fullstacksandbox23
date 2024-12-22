@@ -252,10 +252,10 @@
 		<Title>Fonts</Title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<p class="font-sans">
-			Some text in <em>sans</em> font family, should be using <b>Robot</b> Google Fonts
+			Some text in <em>sans</em> font family, should be using <b>Robot</b> Google Fonts extending default theme in <code>tailwindcss.config.js</code>.
 		</p>
 		<p class="font-serif">
-			Some text in <em>serif</em> font family, should be using <b>Merriweather</b> Google Fonts
+			Some text in <em>serif</em> font family, should be using <b>Merriweather</b> Google Fonts, extending default theme in <code>tailwindcss.config.js</code>.
 		</p>
 		<p class="font-mono">
 			Some text in <em>mono</em> font family, still <b>TailwindCSS</b> default, not overwritten in

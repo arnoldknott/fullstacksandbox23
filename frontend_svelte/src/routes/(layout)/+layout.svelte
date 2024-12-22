@@ -184,11 +184,17 @@
 
 	// let successFlyonUI = $state(new Color("oklch", parseFloat(lightFlyonUI.success.split(" "))));
 
+	// TBD. consider deriving this info from the material design "neutral" or "neutral-vaiant" palette!
+	const neutralColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.neutral), name: 'flyonui-neutral', blend: true});
 	const infoColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.info), name: 'flyonui-info', blend: true});
 	const successColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.success), name: 'flyonui-success', blend: true});
 	const warningColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.warning), name: 'flyonui-success', blend: true});
 	console.log('=== src - routes - (layout) - layout.svelte - successColorGroup ===');
 	console.log(successColorGroup);
+
+	// TBD. create a customized theme here, that includes both light and dark mode as well as the custom colors  for it.
+	// use that theme to map the tokens to the DOM
+	// include the styling and font options there as well!
 
 	// TBD: remove:
 	// let customColorSuccessGroup = $state(customColor(sourceColorArgb, {
@@ -240,6 +246,11 @@
 		"primary-palette-key-color", "secondary-palette-key-color", "tertiary-palette-key-color", "error-palette-key-color", // avoid using those
 		"background", "on-background", // seems to be legacy
 	]
+	const customExtensionTokens = [
+		"info", "on-info", "info-container", "on-info-container", // added to match FlyonUI
+		"success", "on-success", "success-container", "on-success-container",// added to match FlyonUI
+		"warning", "on-warning", "warning-container", "on-warning-container", // added to match FlyonUI
+	]
 	/* eslint enable */
 
 	type MaterialDesignToken = {
@@ -280,7 +291,8 @@
 		}
 		// console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
 		// console.log(hexFromArgb(materialDesignTokens['surface-container']));
-		mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
+		document.documentElement.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
+		// mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
 
 		// applyTheme(themeNormalContrast, { target: mainContent, dark: systemDark });
 
@@ -419,7 +431,9 @@
 
 		// console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
 		// console.log(hexFromArgb(materialDesignTokens['surface-container']));
+		// TBD: should be implemented through the mode variable!
 		mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
+		// document.documentElement.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
 	};
 
 	// const primaryManual = "(50% 0.2 0);"
