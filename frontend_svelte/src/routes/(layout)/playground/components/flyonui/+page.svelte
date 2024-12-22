@@ -263,6 +263,22 @@
 		</p>
 	</div>
 
+    <div>
+        <Title>Styles</Title>
+        Targets with their default values:
+        <ul>
+            <li>--rounded-box: 0.5rem ;</li>
+            <li>--rounded-btn: 0.375rem;</li>
+            <li>--rounded-tooltip: 0.25rem;</li>
+            <li>--animation-btn: 0.25s;</li>
+            <li>--animation-input: .2s;</li>
+            <li>--btn-focus-scale: 0.95;</li>
+            <li>--border-btn: 1px;</li>
+            <li>--tab-border: 1px;</li>
+            <li>--tab-radius: 0.5rem;</li>
+        </ul>
+    </div>
+
 	<div>
 		<Title>Modal</Title>
 		<button

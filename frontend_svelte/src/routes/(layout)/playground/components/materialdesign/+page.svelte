@@ -349,6 +349,87 @@
 	</div> -->
 
 	<div>
+		<Title>Typography</Title>
+		<p class="text-center text-2xl">Type face:</p>
+		<ul>
+			<li>
+				Brand
+				<ul>
+					<li>--md-ref-typeface-brand</li>
+				</ul>
+			</li>
+			<li>
+				Plain
+				<ul>
+					<li>--md-ref-typeface-plain</li>
+				</ul>
+			</li>
+		</ul>
+		<p class="text-center text-2xl">Type scale:</p>
+		<ul>
+			<li>
+				Display
+				<ul>
+					<li>--md-sys-typescale-display-medium-font</li>
+					<li>--md-sys-typescale-display-medium-size</li>
+					<li>--md-sys-typescale-display-medium-line-height</li>
+					<li>--md-sys-typescale-display-medium-weight</li>
+				</ul>
+			</li>
+			<li>
+				Headline
+				<ul>
+					<li>--md-sys-typescale-headline-medium-font</li>
+					<li>--md-sys-typescale-headline-medium-size</li>
+					<li>--md-sys-typescale-headline-medium-line-height</li>
+					<li>--md-sys-typescale-headline-medium-weight</li>
+				</ul>
+			</li>
+			<li>
+				Title
+				<ul>
+					<li>--md-sys-typescale-title-medium-font</li>
+					<li>--md-sys-typescale-title-medium-size</li>
+					<li>--md-sys-typescale-title-medium-line-height</li>
+					<li>--md-sys-typescale-title-medium-weight</li>
+				</ul>
+			</li>
+			<li>
+				Body
+				<ul>
+					<li>--md-sys-typescale-body-medium-font</li>
+					<li>--md-sys-typescale-body-medium-size</li>
+					<li>--md-sys-typescale-body-medium-line-height</li>
+					<li>--md-sys-typescale-body-medium-weight</li>
+				</ul>
+			</li>
+			<li>
+				Label
+				<ul>
+					<li>--md-sys-typescale-label-medium-font</li>
+					<li>--md-sys-typescale-label-medium-size</li>
+					<li>--md-sys-typescale-label-medium-line-height</li>
+					<li>--md-sys-typescale-label-medium-weight</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+
+	<div>
+		<Title>Shapes (styles)</Title>
+		<p class="text-center text-2xl">Supported tokens:</p>
+		<ul>
+			<li>--md-sys-shape-corner-none</li>
+			<li>--md-sys-shape-corner-extra-small</li>
+			<li>--md-sys-shape-corner-small</li>
+			<li>--md-sys-shape-corner-medium</li>
+			<li>--md-sys-shape-corner-large</li>
+			<li>--md-sys-shape-corner-extra-large</li>
+			<li>--md-sys-shape-corner-full</li>
+		</ul>
+	</div>
+
+	<div>
 		<Title>List</Title>
 		<md-list style="max-width: 300px;">
 			<md-list-item> Fruits </md-list-item>
