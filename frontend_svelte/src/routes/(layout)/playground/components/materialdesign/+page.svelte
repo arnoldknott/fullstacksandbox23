@@ -36,7 +36,7 @@
 	<div class="col-span-2">
 		<Title>Colors</Title>
 		<p class="text-center text-2xl">Dynamic colors Material Color Utilities:</p>
-		<div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4 m-2 w-full">
+		<div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4 m-3 w-full">
 			<p class="col-span-2 md:col-span-4 xl:col-span-4 text-center text-xl">Default Foreground Material Design</p>
 			<p class="hidden xl:block xl:col-span-4 text-center text-xl">Extended Foreground to match FlyonUI (8 columns)</p>
 			<div>
@@ -89,9 +89,15 @@
 				<ColorTileMaterialUi background="--md-sys-color-on-neutral-container" color="--md-sys-color-neutral-container" />
 			</div>
         </div>
-		<div class="grid grid-cols-5 gap-4 m-2 w-full">
-			<p class="col-span-2 md:col-span-4 text-center text-xl">Default Background Material Design</p>
-			
+		<div class="grid grid-cols-2 md:grid-cols-5 gap-4 m-3 mt-8 w-full">
+			<p class="col-span-2 md:col-span-5 text-center text-xl">Default Background Material Design</p>
+			<ColorTileMaterialUi background="--md-sys-color-surface-container-lowest" color="--md-sys-color-on-surface" />
+			<ColorTileMaterialUi background="--md-sys-color-surface-container-low" color="--md-sys-color-on-surface" />
+			<ColorTileMaterialUi background="--md-sys-color-surface-container" color="--md-sys-color-on-surface" />
+			<ColorTileMaterialUi background="--md-sys-color-surface-container-high" color="--md-sys-color-on-surface" />
+			<ColorTileMaterialUi background="--md-sys-color-surface-container-highest" color="--md-sys-color-on-surface" />
+		</div>
+<!-- 		
 			<div
 				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
 				style="background-color: var(--md-sys-color-surface-container-lowest);"
@@ -147,7 +153,7 @@
 					surface container highest
 				</p>
 			</div>
-		</div>
+		</div> -->
 		<div class="grid grid-cols-4 gap-4 m-2 w-full">
 			<div
 				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
