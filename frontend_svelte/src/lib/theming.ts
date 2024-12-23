@@ -445,7 +445,7 @@ class Colorization {
         const warningFromFlyonUI = this.createCustomColors(sourceColorArgb, lightFlyonUI.warning, 'flyonui-warning');
         // console.log("=== lib - theming - createAppColors - neutralFromFlyonUI ===");
         // console.log(neutralFromFlyonUI.light);
-        const light = {
+        const light: { [key: string]: any } = {
             ...lightMaterial,// materialDesignPalettes and contrastLevel, isDark, sourceColorArgb, sourceColorHct, and variant
             neutral: neutralFromFlyonUI.light.color,
             onNeutral: neutralFromFlyonUI.light.onColor,
@@ -469,8 +469,8 @@ class Colorization {
             warningPalette: warningFromFlyonUI.light.colorPalette,
         }
     
-        const dark = {
-            ...darkMaterial,
+        const dark: { [key: string]: any } = {
+            ...darkMaterial,// materialDesignPalettes and contrastLevel, isDark, sourceColorArgb, sourceColorHct, and variant
             neutral: neutralFromFlyonUI.dark.color,
             onNeutral: neutralFromFlyonUI.dark.onColor,
             neutralContainer: neutralFromFlyonUI.dark.colorContainer,
@@ -493,17 +493,22 @@ class Colorization {
             warningPalette: warningFromFlyonUI.dark.colorPalette,
         }
         materialDesignColors.forEach(token => {
-            const key = token as keyof DynamicScheme;
-            Object.defineProperty(light, token, { value: lightMaterial[key] });
-            Object.defineProperty(dark, token, { value: darkMaterial[key] });
+            // const keyMaterialDesignColor = token as keyof MaterialDesignColor;
+            const keyDynamicScheme = token as keyof DynamicScheme;
+            light[token] = lightMaterial[keyDynamicScheme];
+            dark[token] = darkMaterial[keyDynamicScheme];
+            // Object.defineProperty(light, token, { value: lightMaterial[key] });
+            // Object.defineProperty(dark, token, { value: darkMaterial[key] });
         });
 
         console.log("=== lib - theming - createAppColors - light ===");
         console.log(light);
 
         return {
-            light: light,
-            dark: dark
+            // maybe return the colors, the palettes and meta data separately?
+            // like that: light: { colors: light, palettes: lightPalettes, meta: lightMeta }
+            light: light as AppColorSchemeForMode,
+            dark: dark as AppColorSchemeForMode
         };
     }
 
