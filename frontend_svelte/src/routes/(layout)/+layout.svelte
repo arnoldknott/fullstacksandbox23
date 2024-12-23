@@ -43,18 +43,18 @@
 	const theming = new Theming()
 
 	let themeConfiguration: ColorConfig = $state({
-		sourceColor: '#369CDF',
+		sourceColor: '#769CDF',
 		variant: Variant.TONAL_SPOT,
 		contrast: 0.5,
 	});
 	$effect(() => console.log('themeConfiguration:', themeConfiguration));
 
+	// works:
+	// let tenFold = $derived(theming.manipulateContrast(themeConfiguration.contrast))
+	// $effect(() => console.log('tenFold:', tenFold));
 	
-	let tenFold = $derived(theming.manipulateContrast(themeConfiguration.contrast))
-	$effect(() => console.log('tenFold:', tenFold));
-	// let tenFold = $state(0.0);
-	// $effect(() => {tenFold = theming.manipulateContrast()});
-
+	let scheme = $derived(theming.createScheme(themeConfiguration))
+	$effect(() => console.log('scheme:', scheme));
 
 	// clean this mess up - mainly by moving to $lib/theming.ts:
 	// copy & paste from: https://github.com/material-foundation/material-color-utilities/blob/9889de141b3b5194b8574f9e378e55f4428bdb5e/typescript/dynamiccolor/variant.ts#L23C8-L33C2
@@ -199,8 +199,8 @@
 	// console.log(dynamicSchemeLightNormalContrast.primary);
 
 
-	console.log('=== src - routes - (layout) - layout.svelte - lightFlyonUI.success ===');
-	console.log(lightFlyonUI.success);
+	// console.log('=== src - routes - (layout) - layout.svelte - lightFlyonUI.success ===');
+	// console.log(lightFlyonUI.success);
 
 	// let successFlyonUI = $state(new Color("oklch", parseFloat(lightFlyonUI.success.split(" "))));
 
@@ -221,8 +221,11 @@
 	const successPaletteDark = TonalPalette.fromInt(successColorGroup.dark.color);
 	const warningPaletteLight = TonalPalette.fromInt(warningColorGroup.light.color);
 	const warningPaletteDark = TonalPalette.fromInt(warningColorGroup.dark.color);
-	console.log('=== src - routes - (layout) - layout.svelte - successColorGroup ===');
-	console.log(successColorGroup);
+	// console.log('=== src - routes - (layout) - layout.svelte - successColorGroup ===');
+	// console.log(successColorGroup);
+	// console.log('=== src - routes - (layout) - layout.svelte - neutralPaletteLight ===');
+	// console.log(neutralPaletteLight);
+
 
 	// TBD. create a customized theme here, that includes both light and dark mode as well as the custom colors  for it.
 	// use that theme to map the tokens to the DOM
@@ -405,10 +408,11 @@
 
 	// use MaterialDynamicColors to get colors from DynamicScheme to apply to FlyonUI:
 	const materialDesignPrimaryArgb = $derived(dynamicSchemeLightNormalContrast["primary" as keyof SchemeContent] as number);
+	// or maybe hexFromArgb and feed hex to new Color()? - saves a conversion step.
 	const materialDesignPrimaryHct = $derived(Hct.fromInt(materialDesignPrimaryArgb));
-	const colorjsPrimary = $derived(new Color("hct", [materialDesignPrimaryHct.internalHue, materialDesignPrimaryHct.internalChroma, materialDesignPrimaryHct.internalTone]))
-	const primaryFromMaterialDesign = $derived(colorjsPrimary.to("oklch").coords.join(" "));
-
+	// const colorjsPrimary = $derived(new Color("hct", [materialDesignPrimaryHct.internalHue, materialDesignPrimaryHct.internalChroma, materialDesignPrimaryHct.internalTone]))
+	const colorjsPrimary = $derived(new Color("hct", [materialDesignPrimaryHct.hue, materialDesignPrimaryHct.chroma, materialDesignPrimaryHct.tone]))
+	const primaryFromMaterialDesign = $derived(colorjsPrimary.to("oklch").coords.join(" "))
 	// const primaryRGBalpha = {
 	// 		red: redFromArgb(materialDesignPrimary),
 	// 		green: greenFromArgb(materialDesignPrimary),
@@ -540,7 +544,7 @@
 				</Guard>
 				{themeConfiguration.contrast}
 				<ThemePicker bind:values={themeConfiguration} />
-				{tenFold}
+				<!-- {tenFold} -->
 				<button aria-label="modeToggler">
 					<label id="modeToggler" class="swap swap-rotate">
 						<input type="checkbox" onclick={toggleMode} />
