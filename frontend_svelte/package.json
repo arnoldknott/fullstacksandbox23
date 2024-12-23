@@ -15,6 +15,8 @@
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.1.0",
 		"@eslint/js": "^9.13.0",
+		"@iconify/json": "^2.2.287",
+		"@iconify/tailwind": "^1.2.0",
 		"@sveltejs/adapter-node": "^5.2.9",
 		"@sveltejs/kit": "^2.7.3",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
@@ -55,6 +57,7 @@
 		"@azure/msal-node": "^2.15.0",
 		"@material/material-color-utilities": "^0.3.0",
 		"@material/web": "^2.2.0",
+		"colorjs.io": "^0.5.2",
 		"dotenv": "^16.4.5",
 		"flyonui": "^1.1.0",
 		"redis": "^4.7.0",
