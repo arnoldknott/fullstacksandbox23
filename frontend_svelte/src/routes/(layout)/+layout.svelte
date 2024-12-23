@@ -43,7 +43,7 @@
 	const theming = new Theming();
 
 	let themeConfiguration: ColorConfig = $state({
-		sourceColor: '#769CDF',
+		sourceColor: "#353c6e", // <= That's a good color!// '#769CDF',
 		variant: Variant.TONAL_SPOT,
 		contrast: 0.0
 	});
