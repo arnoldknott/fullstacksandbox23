@@ -47,7 +47,7 @@
 		variant: Variant.TONAL_SPOT,
 		contrast: 0.5,
 	});
-	$effect(() => console.log('themeConfiguration:', themeConfiguration));
+	// $effect(() => console.log('themeConfiguration:', themeConfiguration));
 
 	// works:
 	// let tenFold = $derived(theming.manipulateContrast(themeConfiguration.contrast))
