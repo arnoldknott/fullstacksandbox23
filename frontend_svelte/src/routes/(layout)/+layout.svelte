@@ -53,8 +53,7 @@
 	// let tenFold = $derived(theming.manipulateContrast(themeConfiguration.contrast))
 	// $effect(() => console.log('tenFold:', tenFold));
 	
-	let scheme = $derived(theming.createScheme(themeConfiguration))
-	$effect(() => console.log('scheme:', scheme));
+	
 
 	// clean this mess up - mainly by moving to $lib/theming.ts:
 	// copy & paste from: https://github.com/material-foundation/material-color-utilities/blob/9889de141b3b5194b8574f9e378e55f4428bdb5e/typescript/dynamiccolor/variant.ts#L23C8-L33C2
@@ -307,12 +306,15 @@
 	}
 	// console.log('=== src - routes - (layout) - layout.svelte - materialDesignTokens ===');
 	// console.log(materialDesignTokensLightNormalContrast);
+	let mode: "light" | "dark" = $state('dark');
 
-
-	const applyMaterialDesignTheme: Action = (_node) => {
+	const applyTheming: Action = (_node) => {
 		// read system setting dark / light mode on client side only - not during serve side rendering.
 		// const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		mode = systemDark ? 'dark' : 'light';
+		let scheme = $derived(theming.applyTheme(themeConfiguration, mode, mainContent))
+		$effect(() => console.log('scheme:', scheme));
 
 		// console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
 		// console.log(systemDark);
@@ -323,7 +325,9 @@
 		for (const token in materialDesignTokens) {
 			// console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
 			// TBD: change to mainElement
-			document.documentElement.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
+			// document.documentElement.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
+			// mainContent.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
+
 		}
 		// console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
 		// console.log(hexFromArgb(materialDesignTokens['surface-container']));
@@ -398,7 +402,7 @@
 
 	// let mode = $state('light-high-contrast');
 	// let mode = $state('light-hc');
-	let mode = $state('dark');
+
 
 	
 	// static colors from Material 3:
@@ -517,7 +521,7 @@
 
 <!-- The class switches material design 3, whereas data-theme switches FlyonUI -->
 <!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryManual};"> -->
-<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryFromMaterialDesign};" use:applyMaterialDesignTheme>
+<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryFromMaterialDesign};" use:applyTheming>
 	<nav class="mx-2 p-2">
 		<div class="flex w-full flex-wrap items-center justify-between">
 			<div class="flex-grow space-x-4">

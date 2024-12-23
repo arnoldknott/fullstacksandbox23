@@ -14,6 +14,7 @@ import {
     TonalPalette,
     type DynamicScheme,
     type ColorGroup,
+    hexFromArgb,
 } from "@material/material-color-utilities";
 import flyonUIThemes from 'flyonui/src/theming/themes';
 const { light: lightFlyonUI, dark: darkFlyonUI } = flyonUIThemes;
@@ -218,6 +219,12 @@ const additionalFlyonUIColorsOn = additionalFlyonUIColors.map(color => `on${colo
 const additionalFlyonUIColorsContainer = additionalFlyonUIColors.map(color => `${color}Container` as const);
 const additionalFlyonUIColorsOnContainer = additionalFlyonUIColors.map(color => `on${color.charAt(0).toUpperCase() + color.slice(1)}Container` as const);
 const additionalFlyonUIColorsPalette = additionalFlyonUIColors.map(color => `${color}Palette` as const);
+const additionalFlyonUIColorsAll = [
+    ...additionalFlyonUIColors,
+    ...additionalFlyonUIColorsOn,
+    ...additionalFlyonUIColorsContainer,
+    ...additionalFlyonUIColorsOnContainer
+];
 type AdditionalFlyonUIColors = Record<typeof additionalFlyonUIColors[number], number>;
 type AdditionalFlyonUIColorsOn = Record<typeof additionalFlyonUIColorsOn[number], number>;
 type AdditionalFlyonUIColorsContainer = Record<typeof additionalFlyonUIColorsContainer[number], number>;
@@ -266,6 +273,7 @@ export interface ColorConfig {
 //     get onWarningContainer(): number
 // }
 
+export const appColorNames = [ ...materialDesignColors, ...additionalFlyonUIColorsAll ] as const;
 type AppColorSchemeForMode = MaterialDesignScheme & AdditionalFlyonUIScheme;
 
 // const sampleAppColorSchemeForMode: AppColorSchemeForMode = {
@@ -589,13 +597,28 @@ export class Theming {
     //     return tenFoldContrast
     // }
 
-    public createScheme( colorConfig: ColorConfig ):  AppColors {
+    public applyTheme( colorConfig: ColorConfig, mode: "light" | "dark", targetElement: HTMLElement ):  AppColors {
         const colorization = new Colorization(colorConfig.sourceColor, colorConfig.variant, colorConfig.contrast);
-        return colorization.createAppColors(colorConfig);
+        const colorScheme = colorization.createAppColors(colorConfig);
+        this.applyMaterialTokens(colorScheme, mode, targetElement);
+        return colorScheme;
     }
 
-    public applyMaterialTokens( appColors: AppColors): void {
-        const materialDesignColorsKebabCase = materialDesignColors.map(token => token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase());
+    public applyMaterialTokens( appColors: AppColors, mode: "light" | "dark", targetElement: HTMLElement): void {
+        const colors = mode === "dark" ? appColors.dark.colors : appColors.light.colors;
+        console.log("=== lib - theming - applyMaterialTokens - colors[warning] ===");
+        console.log(hexFromArgb(colors.warning));
+        console.log("=== lib - theming - applyMaterialTokens - colors[onWarning] ===");
+        console.log(hexFromArgb(colors.onWarning));
+        console.log("=== lib - theming - applyMaterialTokens - colors[warningContainer] ===");
+        console.log(hexFromArgb(colors.warningContainer));
+        console.log("=== lib - theming - applyMaterialTokens - colors[onWarningContainer] ===");
+        console.log(hexFromArgb(colors.onWarningContainer));
+        appColorNames.forEach(token => {
+            const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+            targetElement.style.setProperty(`--md-sys-color-${tokenKebabCase}`, hexFromArgb(colors[token]))
+        });
+        targetElement.style.backgroundColor = hexFromArgb(colors['background']);
     }
 
 
