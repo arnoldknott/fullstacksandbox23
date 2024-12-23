@@ -15,7 +15,6 @@ import {
     type DynamicScheme,
 } from "@material/material-color-utilities";
 import flyonUIThemes from 'flyonui/src/theming/themes';
-import { on } from "svelte/events";
 const { light: lightFlyonUI, dark: darkFlyonUI } = flyonUIThemes;
 
 export enum Variant {
@@ -30,38 +29,163 @@ export enum Variant {
     FRUIT_SALAD = "Fruit salad",
     }
 
-export interface ColorConfig {
-    sourceColor: string;
-    variant: Variant;
-    contrast: number;
+// these are all the fixed colors from the DynamicScheme:
+/* eslint-disable */
+/* prettier-ignore */
+// const materialDesignColorCSSTokens= [
+//     "primary", "on-primary", "primary-container", "on-primary-container", 
+//     "secondary", "on-secondary", "secondary-container", "on-secondary-container",
+//     "tertiary", "on-tertiary", "tertiary-container", "on-tertiary-container",
+//     "error", "on-error", "error-container", "on-error-container",
+//     "primary-fixed", "primary-fixed-dim", "on-primary-fixed", "on-primary-fixed-variant", // avoid using those
+//     "secondary-fixed", "secondary-fixed-dim", "on-secondary-fixed", "on-secondary-fixed-variant", // avoid using those
+//     "tertiary-fixed", "tertiary-fixed-dim", "on-tertiary-fixed", "on-tertiary-fixed-variant", // avoid using those
+//     "surface-container-lowest", "surface-container-low", "surface-container", "surface-container-high", "surface-container-highest",
+//     "surface-dim", "surface", "surface-bright", // avoid using those
+//     "on-surface", "on-surface-variant",
+//     "outline", "outline-variant",
+//     "inverse-surface", "inverse-on-surface", "inverse-primary",
+//     "scrim", "shadow",
+//     "neutral-palette-key-color", "neutral-variant-palette-key-color", // might be useful for mapping with FlyonUI
+//     "primary-palette-key-color", "secondary-palette-key-color", "tertiary-palette-key-color", "error-palette-key-color", // avoid using those
+//     "background", "on-background", // seems to be legacy
+// ]
+const materialDesignColors = [
+    "primary", "onPrimary", "primaryContainer", "onPrimaryContainer", 
+    "secondary", "onSecondary", "secondaryContainer", "onSecondaryContainer",
+    "tertiary", "onTertiary", "tertiaryContainer", "onTertiaryContainer",
+    "error", "onError", "errorContainer", "onErrorContainer",
+    "primaryFixed", "primaryFixedDim", "onPrimaryFixed", "onPrimaryFixedVariant", // avoid using those
+    "secondaryFixed", "secondaryFixedDim", "onSecondaryFixed", "onSecondaryFixedVariant", // avoid using those
+    "tertiaryFixed", "tertiaryFixedDim", "onTertiaryFixed", "onTertiaryFixedVariant", // avoid using those
+    "surfaceContainerLowest", "surfaceContainerLow", "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest",
+    "surfaceDim", "surface", "surfaceBright", // avoid using those
+    "onSurface", "onSurfaceVariant",
+    "outline", "outlineVariant",
+    "inverseSurface", "inverseOnSurface", "inversePrimary",
+    "scrim", "shadow",
+    "neutralPaletteKeyColor", "neutralVariantPaletteKeyColor", // might be useful for mapping with FlyonUI
+    "primaryPaletteKeyColor", "secondaryPaletteKeyColor", "tertiaryPaletteKeyColor",// missing in DynamicScheme: "errorPaletteKeyColor", // avoid using those
+    "background", "onBackground", // seems to be legacy
+] as const;
+/* eslint enable */
+// const materialDesignColors = materialDesignColorCSSTokens.map(token => token.replace(/-([a-z])/g, (g) => g[1].toUpperCase())) as unknown as readonly string[];
+// console.log("=== lib - theming - materialDesignColorCamelCaseTokens ===");
+// console.log(materialDesignColors);
+
+
+// these are all the palettes with fixed hue anc chrome but varying tone from the DynamicScheme:
+const materialDesignPalettes = [
+    "primaryPalette", "secondaryPalette", "tertiaryPalette", "errorPalette", "neutralPalette", "neutralVariantPalette"
+] as const;
+
+type MaterialDesignColor = Record<typeof materialDesignColors[number], number>;
+type MaterialDesignPalette = Record<typeof materialDesignPalettes[number], TonalPalette>;
+type MaterialDesignMeta = {
+    contrastLevel: string;
+    isDark: boolean;
+    sourceColorArgb: number;
+    sourceColorHct: Hct;
+    variant: number;
 }
 
-interface AppColorSchemeForMode extends DynamicScheme {
-    // note: neutralPalette and neutralVariantPalette already exist in DynamicScheme!
-    // TBD: decide wether to use tehe neutral colors from Material or from FlyonUI!
-    readonly neutralPalette: TonalPalette;
-    readonly infoPalette: TonalPalette;
-    readonly successPalette: TonalPalette;
-    readonly warningPalette: TonalPalette;
-    get neutral(): number
-    get onNeutral(): number
-    get neutralContainer(): number
-    get onNeutralContainer(): number
-    get info(): number
-    get onInfo(): number
-    get infoContainer(): number
-    get onInfoContainer(): number
-    get success(): number
-    get onSuccess(): number
-    get successContainer(): number
-    get onSuccessContainer(): number
-    get warning(): number
-    get onWarning(): number
-    get warningContainer(): number
-    get onWarningContainer(): number
-}
+type MaterialDesignScheme = MaterialDesignColor & MaterialDesignPalette & MaterialDesignMeta;
 
-type FlyonAddition = {
+// interface MaterialDesignScheme {
+// type MaterialDesignScheme = {
+    // Record<typeof materialDesignColorCamelCaseTokens[number], number>;
+    // Record<typeof materialDesignPalettes[number], TonalPalette> & 
+    // [K in typeof materialDesignColorCamelCaseTokens[number]]: number;
+// } & {
+//     [K in typeof materialDesignPalettes[number]]: TonalPalette;
+// } & {
+    // [K in typeof materialDesignPalettes[number]]: TonalPalette } & {
+    //     // ...MaterialDesignPalette
+    //     // MaterialDesignColor: number;
+    //     // primaryPalette: TonalPalette;
+    //     // secondaryPalette: TonalPalette;
+    //     // tertiaryPalette: TonalPalette;
+    //     // errorPalette: TonalPalette;
+    //     // neutralPalette: TonalPalette;
+    //     // neutralVariantPalette: TonalPalette;
+    //     contrastLevel: string;
+    //     isDark: boolean;
+    //     sourceColorArgb: number;
+    //     sourceColorHct: Hct;
+    //     variant: number;
+    // }
+
+    const sampleMaterialDesignScheme: MaterialDesignScheme = {
+        // Fill in with sample data
+        primary: 0,
+        onPrimary: 0,
+        primaryContainer: 0,
+        onPrimaryContainer: 0,
+        secondary: 0,
+        onSecondary: 0,
+        secondaryContainer: 0,
+        onSecondaryContainer: 0,
+        tertiary: 0,
+        onTertiary: 0,
+        tertiaryContainer: 0,
+        onTertiaryContainer: 0,
+        error: 0,
+        onError: 0,
+        errorContainer: 0,
+        onErrorContainer: 0,
+        primaryFixed: 0,
+        primaryFixedDim: 0,
+        onPrimaryFixed: 0,
+        onPrimaryFixedVariant: 0,
+        secondaryFixed: 0,
+        secondaryFixedDim: 0,
+        onSecondaryFixed: 0,
+        onSecondaryFixedVariant: 0,
+        tertiaryFixed: 0,
+        tertiaryFixedDim: 0,
+        onTertiaryFixed: 0,
+        onTertiaryFixedVariant: 0,
+        surfaceContainerLowest: 0,
+        surfaceContainerLow: 0,
+        surfaceContainer: 0,
+        surfaceContainerHigh: 0,
+        surfaceContainerHighest: 0,
+        surfaceDim: 0,
+        surface: 0,
+        surfaceBright: 0,
+        onSurface: 0,
+        onSurfaceVariant: 0,
+        outline: 0,
+        outlineVariant: 0,
+        inverseSurface: 0,
+        inverseOnSurface: 0,
+        inversePrimary: 0,
+        scrim: 0,
+        shadow: 0,
+        neutralPaletteKeyColor: 0,
+        neutralVariantPaletteKeyColor: 0,
+        primaryPaletteKeyColor: 0,
+        secondaryPaletteKeyColor: 0,
+        tertiaryPaletteKeyColor: 0,
+        // errorPaletteKeyColor: 0,
+        background: 0,
+        onBackground: 0,
+        primaryPalette: {} as TonalPalette,
+        secondaryPalette: {} as TonalPalette,
+        tertiaryPalette: {} as TonalPalette,
+        errorPalette: {} as TonalPalette,
+        neutralPalette: {} as TonalPalette,
+        neutralVariantPalette: {} as TonalPalette,
+        contrastLevel: "0",
+        isDark: true,
+        sourceColorArgb: 0,
+        sourceColorHct: Hct.fromInt(0),
+        variant: 0,
+    }
+// console.log("=== lib - theming - sampleMaterialDesignScheme ===");
+// console.log(sampleMaterialDesignScheme);
+
+type CustomColors = {
     light: {
         color: number;
         onColor: number;
@@ -77,6 +201,150 @@ type FlyonAddition = {
         colorPalette: TonalPalette
     },
 }
+
+
+const additionalFlyonUIColors = [ "neutral", "info", "success", "warning" ] as const;
+const additionalFlyonUIColorsOn = additionalFlyonUIColors.map(color => `on${color.charAt(0).toUpperCase() + color.slice(1)}` as const);
+const additionalFlyonUIColorsContainer = additionalFlyonUIColors.map(color => `${color}Container` as const);
+const additionalFlyonUIColorsOnContainer = additionalFlyonUIColors.map(color => `on${color.charAt(0).toUpperCase() + color.slice(1)}Container` as const);
+const additionalFlyonUIColorsPalette = additionalFlyonUIColors.map(color => `${color}Palette` as const);
+type AdditionalFlyonUIColors = Record<typeof additionalFlyonUIColors[number], number>;
+type AdditionalFlyonUIColorsOn = Record<typeof additionalFlyonUIColorsOn[number], number>;
+type AdditionalFlyonUIColorsContainer = Record<typeof additionalFlyonUIColorsContainer[number], number>;
+type AdditionalFlyonUIColorsOnContainer = Record<typeof additionalFlyonUIColorsOnContainer[number], number>;
+type AdditionalFlyonUIColorsPalette = Record<typeof additionalFlyonUIColorsPalette[number], TonalPalette>;
+// type AdditionalFlyonUIColors = typeof additionalFlyonUIColors[number]; // creates a union type
+type AdditionalFlyonUIScheme = 
+    AdditionalFlyonUIColors &
+    AdditionalFlyonUIColorsOn &
+    AdditionalFlyonUIColorsContainer &
+    AdditionalFlyonUIColorsOnContainer &
+    AdditionalFlyonUIColorsPalette;
+
+
+export interface ColorConfig {
+    sourceColor: string;
+    variant: Variant;
+    contrast: number;
+}
+
+// interface AppColorSchemeForMode extends DynamicScheme {
+//     // note: neutralPalette and neutralVariantPalette already exist in DynamicScheme!
+//     // TBD: decide wether to use tehe neutral colors from Material or from FlyonUI!
+//     readonly neutralPalette: TonalPalette;
+//     readonly infoPalette: TonalPalette;
+//     readonly successPalette: TonalPalette;
+//     readonly warningPalette: TonalPalette;
+//     get neutral(): number
+//     get onNeutral(): number
+//     get neutralContainer(): number
+//     get onNeutralContainer(): number
+//     get info(): number
+//     get onInfo(): number
+//     get infoContainer(): number
+//     get onInfoContainer(): number
+//     get success(): number
+//     get onSuccess(): number
+//     get successContainer(): number
+//     get onSuccessContainer(): number
+//     get warning(): number
+//     get onWarning(): number
+//     get warningContainer(): number
+//     get onWarningContainer(): number
+// }
+
+type AppColorSchemeForMode = MaterialDesignScheme & AdditionalFlyonUIScheme;
+
+// const sampleAppColorSchemeForMode: AppColorSchemeForMode = {
+//     // Fill in with sample data
+//     primary: 0,
+//     onPrimary: 0,
+//     primaryContainer: 0,
+//     onPrimaryContainer: 0,
+//     secondary: 0,
+//     onSecondary: 0,
+//     secondaryContainer: 0,
+//     onSecondaryContainer: 0,
+//     tertiary: 0,
+//     onTertiary: 0,
+//     tertiaryContainer: 0,
+//     onTertiaryContainer: 0,
+//     error: 0,
+//     onError: 0,
+//     errorContainer: 0,
+//     onErrorContainer: 0,
+//     primaryFixed: 0,
+//     primaryFixedDim: 0,
+//     onPrimaryFixed: 0,
+//     onPrimaryFixedVariant: 0,
+//     secondaryFixed: 0,
+//     secondaryFixedDim: 0,
+//     onSecondaryFixed: 0,
+//     onSecondaryFixedVariant: 0,
+//     tertiaryFixed: 0,
+//     tertiaryFixedDim: 0,
+//     onTertiaryFixed: 0,
+//     onTertiaryFixedVariant: 0,
+//     surfaceContainerLowest: 0,
+//     surfaceContainerLow: 0,
+//     surfaceContainer: 0,
+//     surfaceContainerHigh: 0,
+//     surfaceContainerHighest: 0,
+//     surfaceDim: 0,
+//     surface: 0,
+//     surfaceBright: 0,
+//     onSurface: 0,
+//     onSurfaceVariant: 0,
+//     outline: 0,
+//     outlineVariant: 0,
+//     inverseSurface: 0,
+//     inverseOnSurface: 0,
+//     inversePrimary: 0,
+//     scrim: 0,
+//     shadow: 0,
+//     neutralPaletteKeyColor: 0,
+//     neutralVariantPaletteKeyColor: 0,
+//     primaryPaletteKeyColor: 0,
+//     secondaryPaletteKeyColor: 0,
+//     tertiaryPaletteKeyColor: 0,
+//     // errorPaletteKeyColor: 0,
+//     background: 0,
+//     onBackground: 0,
+//     primaryPalette: {} as TonalPalette,
+//     secondaryPalette: {} as TonalPalette,
+//     tertiaryPalette: {} as TonalPalette,
+//     errorPalette: {} as TonalPalette,
+//     neutralPalette: {} as TonalPalette,
+//     neutralVariantPalette: {} as TonalPalette,
+//     contrastLevel: '',
+//     isDark: false,
+//     sourceColorArgb: 0,
+//     sourceColorHct: {} as Hct,
+//     variant: 0,
+//     neutral: 0,
+//     onNeutral: 0,
+//     neutralContainer: 0,
+//     onNeutralContainer: 0,
+//     info: 0,
+//     onInfo: 0,
+//     infoContainer: 0,
+//     onInfoContainer: 0,
+//     success: 0,
+//     onSuccess: 0,
+//     successContainer: 0,
+//     onSuccessContainer: 0,
+//     warning: 0,
+//     onWarning: 0,
+//     warningContainer: 0,
+//     onWarningContainer: 0,
+//     infoPalette: {} as TonalPalette,
+//     successPalette: {} as TonalPalette,
+//     warningPalette: {} as TonalPalette,
+// };
+
+// console.log("=== lib - theming - sampleAppColorSchemeForMode ===");
+// console.log(sampleAppColorSchemeForMode);
+
 
 export interface AppColors {
     light: AppColorSchemeForMode;
@@ -143,31 +411,20 @@ class Colorization {
         return { light: lightScheme, dark: darkScheme };
     }
 
-    private createFlyonUIadditions( sourceColor: number, flyonUIcolor: string, colorName: string): FlyonAddition  {
-        const colorGroup = customColor(sourceColor, {value: argbFromHex(flyonUIcolor), name: `flyonui-${colorName}`, blend: true});
+    private createCustomColors( sourceColor: number, flyonUIcolor: string, colorName: string): CustomColors {
+        const colorGroup = customColor(sourceColor, {value: argbFromHex(flyonUIcolor), name: colorName, blend: true});
         const lightPalette = TonalPalette.fromInt(colorGroup.light.color);
         // console.log("=== lib - theming - createFlyonUIadditions - lightPalette ===");
         // console.log(lightPalette);
         const darkPalette = TonalPalette.fromInt(colorGroup.dark.color);
         const light = {
             ...colorGroup.light,
-            ...lightPalette
+            colorPalette: lightPalette
         }
         const dark = {
             ...colorGroup.dark,
-            ...darkPalette
+            colorPalette: darkPalette
         }
-
-        // Object.defineProperty(light, colorName, { get: () => colorGroup.light.color });
-        // Object.defineProperty(light, `on${capitalizedColorName}`, { get: () => colorGroup.light.onColor });
-        // Object.defineProperty(light, `${colorName}Container`, { get: () => colorGroup.light.colorContainer });
-        // Object.defineProperty(light, `on${capitalizedColorName}Container`, { get: () => colorGroup.light.onColorContainer });
-        // Object.defineProperty(light, `${colorName}Palette}`,  lightPalette );
-        // Object.defineProperty(dark, colorName, { get: () => colorGroup.dark.color });
-        // Object.defineProperty(dark, `on${capitalizedColorName}`, { get: () => colorGroup.dark.onColor });
-        // Object.defineProperty(dark, `${colorName}Container`, { get: () => colorGroup.dark.colorContainer });
-        // Object.defineProperty(dark, `on${capitalizedColorName}Container`, { get: () => colorGroup.dark.onColorContainer });
-        // Object.defineProperty(dark, `${colorName}Palette}`,  darkPalette );
 
         // console.log("=== lib - theming - createFlyonUIadditions - light ===");
         // console.log(light);
@@ -175,7 +432,6 @@ class Colorization {
             light: light,
             dark: dark,
         }
-
     }
 
     public createAppColors( colorConfig: ColorConfig):  AppColors {
@@ -183,50 +439,14 @@ class Colorization {
         const sourceColorArgb = argbFromHex(colorConfig.sourceColor);
         const sourceColorHct = Hct.fromInt(sourceColorArgb);
         const { light: lightMaterial, dark: darkMaterial } = this.createMaterialSchemes(sourceColorHct, colorConfig.variant, colorConfig.contrast);
-        console.log("=== lib - theming - createAppColors - lightMaterial ===");
-        console.log(lightMaterial);
-        const neutralFromFlyonUI = this.createFlyonUIadditions(sourceColorArgb, lightFlyonUI.neutral, 'neutral');
-        const infoFromFlyonUI = this.createFlyonUIadditions(sourceColorArgb, lightFlyonUI.info, 'info');
-        const successFromFlyonUI = this.createFlyonUIadditions(sourceColorArgb, lightFlyonUI.success, 'success');
-        const warningFromFlyonUI = this.createFlyonUIadditions(sourceColorArgb, lightFlyonUI.warning, 'warning');
+        const neutralFromFlyonUI = this.createCustomColors(sourceColorArgb, lightFlyonUI.neutral, 'flyonui-neutral');
+        const infoFromFlyonUI = this.createCustomColors(sourceColorArgb, lightFlyonUI.info, 'flyonui-info');
+        const successFromFlyonUI = this.createCustomColors(sourceColorArgb, lightFlyonUI.success, 'flyonui-success');
+        const warningFromFlyonUI = this.createCustomColors(sourceColorArgb, lightFlyonUI.warning, 'flyonui-warning');
         // console.log("=== lib - theming - createAppColors - neutralFromFlyonUI ===");
         // console.log(neutralFromFlyonUI.light);
         const light = {
-            ...lightMaterial,
-            primary: lightMaterial.primary,
-            onPrimary: lightMaterial.onPrimary,
-            primaryContainer: lightMaterial.primaryContainer,
-            onPrimaryContainer: lightMaterial.onPrimaryContainer,
-            secondary: lightMaterial.secondary,
-            onSecondary: lightMaterial.onSecondary,
-            secondaryContainer: lightMaterial.secondaryContainer,
-            onSecondaryContainer: lightMaterial.onSecondaryContainer,
-            tertiary: lightMaterial.tertiary,
-            onTertiary: lightMaterial.onTertiary,
-            tertiaryContainer: lightMaterial.tertiaryContainer,
-            onTertiaryContainer: lightMaterial.onTertiaryContainer,
-            error: lightMaterial.error,
-            onError: lightMaterial.onError,
-            errorContainer: lightMaterial.errorContainer,
-            onErrorContainer: lightMaterial.onErrorContainer,
-            primaryFixed: lightMaterial.primaryFixed,
-            primaryFixedDim: lightMaterial.primaryFixedDim,
-            onPrimaryFixed: lightMaterial.onPrimaryFixed,
-            onPrimaryFixedVariant: lightMaterial.onPrimaryFixedVariant,
-            secondaryFixed: lightMaterial.secondaryFixed,
-            secondaryFixedDim: lightMaterial.secondaryFixedDim,
-            onSecondaryFixed: lightMaterial.onSecondaryFixed,
-            onSecondaryFixedVariant: lightMaterial.onSecondaryFixedVariant,
-            tertiaryFixed: lightMaterial.tertiaryFixed,
-            tertiaryFixedDim: lightMaterial.tertiaryFixedDim,
-            onTertiaryFixed: lightMaterial.onTertiaryFixed,
-            onTertiaryFixedVariant: lightMaterial.onTertiaryFixedVariant,
-            surfaceContainerLowest: lightMaterial.surfaceContainerLowest,
-            surfaceContainerLow: lightMaterial.surfaceContainerLow,
-            surfaceContainer: lightMaterial.surfaceContainer,
-            surfaceContainerHigh: lightMaterial.surfaceContainerHigh,
-            surfaceContainerHighest: lightMaterial.surfaceContainerHighest,
-
+            ...lightMaterial,// materialDesignPalettes and contrastLevel, isDark, sourceColorArgb, sourceColorHct, and variant
             neutral: neutralFromFlyonUI.light.color,
             onNeutral: neutralFromFlyonUI.light.onColor,
             neutralContainer: neutralFromFlyonUI.light.colorContainer,
@@ -248,6 +468,7 @@ class Colorization {
             onWarningContainer: warningFromFlyonUI.light.onColorContainer,
             warningPalette: warningFromFlyonUI.light.colorPalette,
         }
+    
         const dark = {
             ...darkMaterial,
             neutral: neutralFromFlyonUI.dark.color,
@@ -271,9 +492,14 @@ class Colorization {
             onWarningContainer: warningFromFlyonUI.dark.onColorContainer,
             warningPalette: warningFromFlyonUI.dark.colorPalette,
         }
+        materialDesignColors.forEach(token => {
+            const key = token as keyof DynamicScheme;
+            Object.defineProperty(light, token, { value: lightMaterial[key] });
+            Object.defineProperty(dark, token, { value: darkMaterial[key] });
+        });
 
-        // console.log("=== lib - theming - createAppColors - light ===");
-        // console.log(light);
+        console.log("=== lib - theming - createAppColors - light ===");
+        console.log(light);
 
         return {
             light: light,
@@ -324,9 +550,12 @@ export class Theming {
     // }
 
     public createScheme( colorConfig: ColorConfig ):  AppColors {
-        console.log("=== lib - theming - createMaterialSchemeFrom ===");
         const colorization = new Colorization(colorConfig.sourceColor, colorConfig.variant, colorConfig.contrast);
         return colorization.createAppColors(colorConfig);
+    }
+
+    public applyMaterialTokens( appColors: AppColors): void {
+        const materialDesignColorsKebabCase = materialDesignColors.map(token => token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase());
     }
 
 
