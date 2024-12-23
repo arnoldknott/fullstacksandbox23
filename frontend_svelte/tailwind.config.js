@@ -3,7 +3,7 @@
 import flyonui from 'flyonui';
 import { light, dark } from 'flyonui/src/theming/themes';
 import flyonuiPlugin from 'flyonui/plugin';
-import  {addDynamicIconSelectors}  from '@iconify/tailwind'
+import { addDynamicIconSelectors } from '@iconify/tailwind';
 
 module.exports = {
 	content: ['./src/**/*.{html,js,svelte,ts}', './node_modules/flyonui/dist/js/*.js'],
@@ -18,7 +18,7 @@ module.exports = {
 			// set the color object for Tailwind programmatically here - matching output from Material Dynamic Color:
 			colors: {
 				transparent: 'transparent',
-				current: 'currentColor',
+				current: 'currentColor'
 				// "primary": '#F94DFF',
 				// primary: 'var(--p)',
 				// 'primary-content': '#9AE7FF',
@@ -49,20 +49,20 @@ module.exports = {
 					info: light.info,
 					'info-content': light['info-content'],
 					success: light.success,
-					'success-content': light['success-content'],
-			// // 		// lightFlyonUI,
-			// // 		// lightFlyonUI,// the default FlyonUI theme
-			// // 		// set the color object for Tailwind programmatically here - matching output from Material Dynamic Color:
-			// // 		// https://github.com/themeselection/flyonui/blob/bdbdaeec6b575b80283f5fda51abd3981a168fca/src/theming/index.js#L2
-			// 		transparent: 'transparent',
-			// 		current: 'currentColor',
-			// 		primary: '#394DFF',
-			// 		// primary: 'var(--my-color)',
-			// 		'primary-content': '#9AE7FF',
-			// // 		// Match accent into tertiary!
-			// // 		// tertiary: '#1B82F6',
-			// // 		// 'tertiary-content': '#0BEAFE',
-				},
+					'success-content': light['success-content']
+					// // 		// lightFlyonUI,
+					// // 		// lightFlyonUI,// the default FlyonUI theme
+					// // 		// set the color object for Tailwind programmatically here - matching output from Material Dynamic Color:
+					// // 		// https://github.com/themeselection/flyonui/blob/bdbdaeec6b575b80283f5fda51abd3981a168fca/src/theming/index.js#L2
+					// 		transparent: 'transparent',
+					// 		current: 'currentColor',
+					// 		primary: '#394DFF',
+					// 		// primary: 'var(--my-color)',
+					// 		'primary-content': '#9AE7FF',
+					// // 		// Match accent into tertiary!
+					// // 		// tertiary: '#1B82F6',
+					// // 		// 'tertiary-content': '#0BEAFE',
+				}
 			},
 			{
 				dark: {
@@ -72,9 +72,9 @@ module.exports = {
 					info: dark.info,
 					'info-content': dark['info-content'],
 					success: dark.success,
-					'success-content': dark['success-content'],
+					'success-content': dark['success-content']
 				}
-			},
+			}
 			// {
 			// 	dark: {
 			// 		darkFlyonUI,

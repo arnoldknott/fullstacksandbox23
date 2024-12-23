@@ -7,7 +7,6 @@
 @tailwind components;
 @tailwind utilities; */
 
-
 html,
 body {
 	height: 100%;
@@ -50,7 +49,6 @@ https://github.com/material-components/material-web/blob/main/tokens/_md-sys-col
     --my-color: #394DFF;
 } */
 
-
 /* Copy and paste from root in resulting html:
 :root {
     color-scheme: light;
@@ -87,7 +85,6 @@ https://github.com/material-components/material-web/blob/main/tokens/_md-sys-col
     transparent: transparent;
     current: currentColor;
   } */
-
 
 /* Make sure those get romved from final HTML: */
 /* :root {

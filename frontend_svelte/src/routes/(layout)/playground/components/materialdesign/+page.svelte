@@ -18,7 +18,6 @@
 	import Title from '$components/Title.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 
-
 	let demoResourceDialog: Dialog;
 	// let name = $state('');
 	// let description = $state('');
@@ -37,68 +36,173 @@
 	<div class="col-span-2">
 		<Title>Colors</Title>
 		<p class="text-center text-2xl">Dynamic colors Material Color Utilities:</p>
-		<div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4 m-3 w-full">
-			<p class="col-span-2 md:col-span-4 xl:col-span-4 text-center text-xl">Default Foreground Material Design</p>
-			<p class="hidden xl:block xl:col-span-4 text-center text-xl">Extended Foreground to match FlyonUI (8 columns)</p>
+		<div class="m-3 grid w-full grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
+			<p class="col-span-2 text-center text-xl md:col-span-4 xl:col-span-4">
+				Default Foreground Material Design
+			</p>
+			<p class="hidden text-center text-xl xl:col-span-4 xl:block">
+				Extended Foreground to match FlyonUI (8 columns)
+			</p>
 			<div>
-				<ColorTileMaterialUi background="--md-sys-color-primary" color="--md-sys-color-on-primary" />
-				<ColorTileMaterialUi background="--md-sys-color-on-primary" color="--md-sys-color-primary" />
-				<ColorTileMaterialUi background="--md-sys-color-primary-container" color="--md-sys-color-on-primary-container" />
-				<ColorTileMaterialUi background="--md-sys-color-on-primary-container" color="--md-sys-color-primary-container" />
-            </div>
-            <div>
-				<ColorTileMaterialUi background="--md-sys-color-secondary" color="--md-sys-color-on-secondary" />
-				<ColorTileMaterialUi background="--md-sys-color-on-secondary" color="--md-sys-color-secondary" />
-				<ColorTileMaterialUi background="--md-sys-color-secondary-container" color="--md-sys-color-on-secondary-container" />
-				<ColorTileMaterialUi background="--md-sys-color-on-secondary-container" color="--md-sys-color-secondary-container" />
+				<ColorTileMaterialUi
+					background="--md-sys-color-primary"
+					color="--md-sys-color-on-primary"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-primary"
+					color="--md-sys-color-primary"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-primary-container"
+					color="--md-sys-color-on-primary-container"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-primary-container"
+					color="--md-sys-color-primary-container"
+				/>
 			</div>
 			<div>
-				<ColorTileMaterialUi background="--md-sys-color-tertiary" color="--md-sys-color-on-tertiary" />
-				<ColorTileMaterialUi background="--md-sys-color-on-tertiary" color="--md-sys-color-tertiary" />
-				<ColorTileMaterialUi background="--md-sys-color-tertiary-container" color="--md-sys-color-on-tertiary-container" />
-				<ColorTileMaterialUi background="--md-sys-color-on-tertiary-container" color="--md-sys-color-tertiary-container" />
+				<ColorTileMaterialUi
+					background="--md-sys-color-secondary"
+					color="--md-sys-color-on-secondary"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-secondary"
+					color="--md-sys-color-secondary"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-secondary-container"
+					color="--md-sys-color-on-secondary-container"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-secondary-container"
+					color="--md-sys-color-secondary-container"
+				/>
 			</div>
-            <div>
+			<div>
+				<ColorTileMaterialUi
+					background="--md-sys-color-tertiary"
+					color="--md-sys-color-on-tertiary"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-tertiary"
+					color="--md-sys-color-tertiary"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-tertiary-container"
+					color="--md-sys-color-on-tertiary-container"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-tertiary-container"
+					color="--md-sys-color-tertiary-container"
+				/>
+			</div>
+			<div>
 				<ColorTileMaterialUi background="--md-sys-color-error" color="--md-sys-color-on-error" />
 				<ColorTileMaterialUi background="--md-sys-color-on-error" color="--md-sys-color-error" />
-				<ColorTileMaterialUi background="--md-sys-color-error-container" color="--md-sys-color-on-error-container" />
-				<ColorTileMaterialUi background="--md-sys-color-on-error-container" color="--md-sys-color-error-container" />
+				<ColorTileMaterialUi
+					background="--md-sys-color-error-container"
+					color="--md-sys-color-on-error-container"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-error-container"
+					color="--md-sys-color-error-container"
+				/>
 			</div>
-			<p class="col-span-2 md:col-span-4 xl:col-span-4 text-center text-xl xl:hidden">Extended Foreground to match FlyonUI</p>
+			<p class="col-span-2 text-center text-xl md:col-span-4 xl:col-span-4 xl:hidden">
+				Extended Foreground to match FlyonUI
+			</p>
 			<div>
-				<ColorTileMaterialUi background="--md-sys-color-warning" color="--md-sys-color-on-warning" />
-				<ColorTileMaterialUi background="--md-sys-color-on-warning" color="--md-sys-color-warning" />
-				<ColorTileMaterialUi background="--md-sys-color-warning-container" color="--md-sys-color-on-warning-container" />
-				<ColorTileMaterialUi background="--md-sys-color-on-warning-container" color="--md-sys-color-warning-container" />
+				<ColorTileMaterialUi
+					background="--md-sys-color-warning"
+					color="--md-sys-color-on-warning"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-warning"
+					color="--md-sys-color-warning"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-warning-container"
+					color="--md-sys-color-on-warning-container"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-warning-container"
+					color="--md-sys-color-warning-container"
+				/>
 			</div>
 			<div>
-				<ColorTileMaterialUi background="--md-sys-color-success" color="--md-sys-color-on-success" />
-				<ColorTileMaterialUi background="--md-sys-color-on-success" color="--md-sys-color-success" />
-				<ColorTileMaterialUi background="--md-sys-color-success-container" color="--md-sys-color-on-success-container" />
-				<ColorTileMaterialUi background="--md-sys-color-on-success-container" color="--md-sys-color-success-container" />
+				<ColorTileMaterialUi
+					background="--md-sys-color-success"
+					color="--md-sys-color-on-success"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-success"
+					color="--md-sys-color-success"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-success-container"
+					color="--md-sys-color-on-success-container"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-success-container"
+					color="--md-sys-color-success-container"
+				/>
 			</div>
-			<div> 
+			<div>
 				<ColorTileMaterialUi background="--md-sys-color-info" color="--md-sys-color-on-info" />
 				<ColorTileMaterialUi background="--md-sys-color-on-info" color="--md-sys-color-info" />
-				<ColorTileMaterialUi background="--md-sys-color-info-container" color="--md-sys-color-on-info-container" />
-				<ColorTileMaterialUi background="--md-sys-color-on-info-container" color="--md-sys-color-info-container" />
+				<ColorTileMaterialUi
+					background="--md-sys-color-info-container"
+					color="--md-sys-color-on-info-container"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-info-container"
+					color="--md-sys-color-info-container"
+				/>
 			</div>
 			<div>
-				<ColorTileMaterialUi background="--md-sys-color-neutral" color="--md-sys-color-on-neutral" />
-				<ColorTileMaterialUi background="--md-sys-color-on-neutral" color="--md-sys-color-neutral" />
-				<ColorTileMaterialUi background="--md-sys-color-neutral-container" color="--md-sys-color-on-neutral-container" />
-				<ColorTileMaterialUi background="--md-sys-color-on-neutral-container" color="--md-sys-color-neutral-container" />
+				<ColorTileMaterialUi
+					background="--md-sys-color-neutral"
+					color="--md-sys-color-on-neutral"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-neutral"
+					color="--md-sys-color-neutral"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-neutral-container"
+					color="--md-sys-color-on-neutral-container"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-neutral-container"
+					color="--md-sys-color-neutral-container"
+				/>
 			</div>
-        </div>
-		<div class="grid grid-cols-2 md:grid-cols-5 gap-4 m-3 mt-8 w-full">
-			<p class="col-span-2 md:col-span-5 text-center text-xl">Default Background Material Design</p>
-			<ColorTileMaterialUi background="--md-sys-color-surface-container-lowest" color="--md-sys-color-on-surface" />
-			<ColorTileMaterialUi background="--md-sys-color-surface-container-low" color="--md-sys-color-on-surface" />
-			<ColorTileMaterialUi background="--md-sys-color-surface-container" color="--md-sys-color-on-surface" />
-			<ColorTileMaterialUi background="--md-sys-color-surface-container-high" color="--md-sys-color-on-surface" />
-			<ColorTileMaterialUi background="--md-sys-color-surface-container-highest" color="--md-sys-color-on-surface" />
 		</div>
-<!-- 		
+		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
+			<p class="col-span-2 text-center text-xl md:col-span-5">Default Background Material Design</p>
+			<ColorTileMaterialUi
+				background="--md-sys-color-surface-container-lowest"
+				color="--md-sys-color-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-surface-container-low"
+				color="--md-sys-color-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-surface-container"
+				color="--md-sys-color-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-surface-container-high"
+				color="--md-sys-color-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-surface-container-highest"
+				color="--md-sys-color-on-surface"
+			/>
+		</div>
+		<!-- 		
 			<div
 				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
 				style="background-color: var(--md-sys-color-surface-container-lowest);"
@@ -155,156 +259,113 @@
 				</p>
 			</div>
 		</div> -->
-		<div class="grid grid-cols-4 gap-4 m-2 w-full">
+		<div class="m-2 grid w-full grid-cols-4 gap-4">
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-on-surface);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-inverse-on-surface);"
-				>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-inverse-on-surface);">
 					on surface
 				</p>
 			</div>
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-surface-variant);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-on-surface);"
-				>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-on-surface);">
 					on surface variant
 				</p>
 			</div>
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-outline);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-inverse-on-surface);"
-				>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-inverse-on-surface);">
 					outline
 				</p>
 			</div>
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-outline-variant);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-inverse-on-surface);"
-				>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-inverse-on-surface);">
 					outline variant
 				</p>
 			</div>
 		</div>
-		<div class="grid grid-cols-5 gap-4 m-2 w-full">
+		<div class="m-2 grid w-full grid-cols-5 gap-4">
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-inverse-surface);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-inverse-on-surface);"
-				>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-inverse-on-surface);">
 					inverse surface
 				</p>
 			</div>
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-inverse-on-surface);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-on-surface);"
-				>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-on-surface);">
 					inverse on surface variant
 				</p>
 			</div>
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-inverse-primary);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-on-surface);"
-				>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-on-surface);">
 					inverse primary
 				</p>
 			</div>
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-scrim);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-on-surface);"
-				>
-					scrim
-				</p>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-on-surface);">scrim</p>
 			</div>
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-shadow);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-on-surface);"
-				>
-					shadow
-				</p>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-on-surface);">shadow</p>
 			</div>
 		</div>
-		<div class="grid grid-cols-4 gap-4 m-2 w-full">
+		<div class="m-2 grid w-full grid-cols-4 gap-4">
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-background);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-on-background);"
-				>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-on-background);">
 					background
 				</p>
 			</div>
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-on-background);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-background);"
-				>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-background);">
 					on background
 				</p>
 			</div>
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-neutral-palette-key-color);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-inverse-on-surface);"
-				>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-inverse-on-surface);">
 					neutral palette key color
 				</p>
 			</div>
 			<div
-				class="skeleton flex h-24 w-36 xl:w-64 items-center justify-center"
+				class="skeleton flex h-24 w-36 items-center justify-center xl:w-64"
 				style="background-color: var(--md-sys-color-neutral-variant-palette-key-color);"
-				>
-				<p
-					class="text-center text-xl"
-					style="color: var(--md-sys-color-inverse-on-surface);"
-				>
+			>
+				<p class="text-center text-xl" style="color: var(--md-sys-color-inverse-on-surface);">
 					neutral variant palette key color
 				</p>
 			</div>
 		</div>
-		<p>Add all the palettes as a sweep of tone from all available palettes: primary, secondary, </p>
+		<p>Add all the palettes as a sweep of tone from all available palettes: primary, secondary,</p>
 		<HorizontalRule />
 	</div>
 
@@ -431,7 +492,7 @@
 	</div>
 
 	<div>
-        <Title>Icons</Title>
+		<Title>Icons</Title>
 		<p>Don't use - iconify has them as well and well integrated with FlyonUI</p>
 		<div class="grid grid-cols-5 gap-4">
 			<div>
@@ -449,7 +510,7 @@
 				<md-icon>person</md-icon>
 			</div>
 		</div>
-    </div>
+	</div>
 
 	<div>
 		<Title>List</Title>
@@ -637,7 +698,7 @@
 		@import './light-mc.css';
 	} */
 
-	md-icon{
+	md-icon {
 		--md-icon-font: 'Material Symbols Rounded';
 		--md-icon-size: 48px;
 	}

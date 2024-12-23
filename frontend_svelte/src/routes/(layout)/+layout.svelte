@@ -1,34 +1,34 @@
 <script lang="ts">
-	import { Variant, Theming, type ColorConfig } from "$lib/theming";
+	import { Variant, Theming, type ColorConfig } from '$lib/theming';
 
-	// clean this mess up - mainly by moving to $lib/theming.ts
-	import {
-		argbFromHex,
-		hexFromArgb,
-		Hct,
-		// themeFromSourceColor,
-		// applyTheme,
-		// type Theme,
-		// lstarFromArgb,
-		// labFromArgb,
-		// xyzFromArgb,
-		TonalPalette,
-		customColor,
-		DynamicScheme,
-		SchemeContent,
-		SchemeExpressive,
-		SchemeFidelity,
-		SchemeFruitSalad,
-		SchemeMonochrome,
-		SchemeNeutral,
-		SchemeRainbow,
-		SchemeTonalSpot,
-		SchemeVibrant,
+	// // clean this mess up - mainly by moving to $lib/theming.ts
+	// import {
+	// 	argbFromHex,
+	// 	hexFromArgb,
+	// 	Hct,
+	// 	// themeFromSourceColor,
+	// 	// applyTheme,
+	// 	// type Theme,
+	// 	// lstarFromArgb,
+	// 	// labFromArgb,
+	// 	// xyzFromArgb,
+	// 	TonalPalette,
+	// 	customColor,
+	// 	DynamicScheme,
+	// 	SchemeContent,
+	// 	SchemeExpressive,
+	// 	SchemeFidelity,
+	// 	SchemeFruitSalad,
+	// 	SchemeMonochrome,
+	// 	SchemeNeutral,
+	// 	SchemeRainbow,
+	// 	SchemeTonalSpot,
+	// 	SchemeVibrant,
 
-	} from '@material/material-color-utilities';
-	import Color from 'colorjs.io'
-	import flyonUIThemes from 'flyonui/src/theming/themes';
-	const { light: lightFlyonUI, dark: darkFlyonUI } = flyonUIThemes;
+	// } from '@material/material-color-utilities';
+	// import Color from 'colorjs.io'
+	// import flyonUIThemes from 'flyonui/src/theming/themes';
+	// const { light: lightFlyonUI, dark: darkFlyonUI } = flyonUIThemes;
 	// import { light as lightFlyonUI, dark as darkFlyonUI } from 'flyonui/src/theming/themes';
 	// import { Variant } from '@material/material-color-utilities/dynamiccolor/variant';
 	import type { Action } from 'svelte/action';
@@ -40,20 +40,18 @@
 	import Guard from '$components/Guard.svelte';
 	import ThemePicker from '$components/ThemePicker.svelte';
 
-	const theming = new Theming()
+	const theming = new Theming();
 
 	let themeConfiguration: ColorConfig = $state({
 		sourceColor: '#769CDF',
 		variant: Variant.TONAL_SPOT,
-		contrast: 0.5,
+		contrast: 0.0
 	});
 	// $effect(() => console.log('themeConfiguration:', themeConfiguration));
 
 	// works:
 	// let tenFold = $derived(theming.manipulateContrast(themeConfiguration.contrast))
 	// $effect(() => console.log('tenFold:', tenFold));
-	
-	
 
 	// clean this mess up - mainly by moving to $lib/theming.ts:
 	// copy & paste from: https://github.com/material-foundation/material-color-utilities/blob/9889de141b3b5194b8574f9e378e55f4428bdb5e/typescript/dynamiccolor/variant.ts#L23C8-L33C2
@@ -72,17 +70,16 @@
 	// 	FRUIT_SALAD,
 	// 	}
 
-
 	// function (Variant: any) {
-    // Variant[Variant["MONOCHROME"] = 0] = "MONOCHROME";
-    // Variant[Variant["NEUTRAL"] = 1] = "NEUTRAL";
-    // Variant[Variant["TONAL_SPOT"] = 2] = "TONAL_SPOT";
-    // Variant[Variant["VIBRANT"] = 3] = "VIBRANT";
-    // Variant[Variant["EXPRESSIVE"] = 4] = "EXPRESSIVE";
-    // Variant[Variant["FIDELITY"] = 5] = "FIDELITY";
-    // Variant[Variant["CONTENT"] = 6] = "CONTENT";
-    // Variant[Variant["RAINBOW"] = 7] = "RAINBOW";
-    // Variant[Variant["FRUIT_SALAD"] = 8] = "FRUIT_SALAD";
+	// Variant[Variant["MONOCHROME"] = 0] = "MONOCHROME";
+	// Variant[Variant["NEUTRAL"] = 1] = "NEUTRAL";
+	// Variant[Variant["TONAL_SPOT"] = 2] = "TONAL_SPOT";
+	// Variant[Variant["VIBRANT"] = 3] = "VIBRANT";
+	// Variant[Variant["EXPRESSIVE"] = 4] = "EXPRESSIVE";
+	// Variant[Variant["FIDELITY"] = 5] = "FIDELITY";
+	// Variant[Variant["CONTENT"] = 6] = "CONTENT";
+	// Variant[Variant["RAINBOW"] = 7] = "RAINBOW";
+	// Variant[Variant["FRUIT_SALAD"] = 8] = "FRUIT_SALAD";
 	// }
 	// console.log(Variant)
 
@@ -96,135 +93,133 @@
 	// Developer guide: https://github.com/material-foundation/material-color-utilities/tree/main/dev_guide
 	// TBD: Add contrast this way: https://github.com/material-foundation/material-color-utilities/blob/main/dev_guide/refining_contrast.md
 	let mainContent: HTMLDivElement;
-	// Get the theme from a hex color
-	const sourceColor = '#769CDF';
-	const sourceColorArgb = argbFromHex(sourceColor);
-	const sourceColorHct = Hct.fromInt(sourceColorArgb);
+	// // Get the theme from a hex color
+	// const sourceColor = '#769CDF';
+	// const sourceColorArgb = argbFromHex(sourceColor);
 	// const sourceColorHct = Hct.fromInt(sourceColorArgb);
+	// // const sourceColorHct = Hct.fromInt(sourceColorArgb);
 
-	// console.log('=== src - routes - (layout) - layout.svelte - sourceColor Hex / Argb ===');
-	// console.log(sourceColor, ' / ', sourceColorArgb);
+	// // console.log('=== src - routes - (layout) - layout.svelte - sourceColor Hex / Argb ===');
+	// // console.log(sourceColor, ' / ', sourceColorArgb);
 
-	// const theme = themeFromSourceColor(sourceColorArgb, [
-		// {
-		// 	name: "custom-1",
-		// 	value: argbFromHex("#ff0000"),
-		// 	blend: true,
-		// },
-	// ]);
+	// // const theme = themeFromSourceColor(sourceColorArgb, [
+	// 	// {
+	// 	// 	name: "custom-1",
+	// 	// 	value: argbFromHex("#ff0000"),
+	// 	// 	blend: true,
+	// 	// },
+	// // ]);
 
-	// Print out the theme as JSON
-	// console.log('=== src - routes - (layout) - layout.svelte - themes ===');
-	// console.log(JSON.stringify(theme, null, 2));
-	// console.log('=== src - routes - (layout) - layout.svelte - hexFromArgb ===');
+	// // Print out the theme as JSON
+	// // console.log('=== src - routes - (layout) - layout.svelte - themes ===');
+	// // console.log(JSON.stringify(theme, null, 2));
+	// // console.log('=== src - routes - (layout) - layout.svelte - hexFromArgb ===');
 
-	// From autogenerated color utilities:
-	// const primaryColor = hexFromArgb(theme['schemes']['light']['primary']);
-	// const sourceColor = hexFromArgb(theme['source']);
-	// From manually export from material theme builder:
-	// const primaryColor = theme['schemes']['light']['primary'];
-	// const seedColor = theme['seed'];
+	// // From autogenerated color utilities:
+	// // const primaryColor = hexFromArgb(theme['schemes']['light']['primary']);
+	// // const sourceColor = hexFromArgb(theme['source']);
+	// // From manually export from material theme builder:
+	// // const primaryColor = theme['schemes']['light']['primary'];
+	// // const seedColor = theme['seed'];
 
-	// console.log('primary: ', primaryColor);
+	// // console.log('primary: ', primaryColor);
 
-	// console.log("source: ", sourceColor);
-	// console.log("seedColor: ", seedColor);
-	// console.log(theme);
+	// // console.log("source: ", sourceColor);
+	// // console.log("seedColor: ", seedColor);
+	// // console.log(theme);
 
-	// create a dynamic scheme:
-	// from defintion:
-	// const dynamicScheme = new DynamicScheme(
-	// sourceColorHct: Hct;
-	// variant: Variant;
-	// contrastLevel: number;
-	// isDark: boolean;
-	// primaryPalette: TonalPalette;
-	// secondaryPalette: TonalPalette;
-	// tertiaryPalette: TonalPalette;
-	// neutralPalette: TonalPalette;
-	// neutralVariantPalette: TonalPalette;
-	// errorPalette?: TonalPalette;
-	// );
-	let contrast = $state(0.0);
-	// const dynamicSchemeLightNormalContrast = new DynamicScheme(
-	// 	{
-	// 		sourceColorArgb: sourceColorArgb,
-	// 		// MONOCHROME,
-	// 		// NEUTRAL,
-	// 		// TONAL_SPOT,
-	// 		// VIBRANT,
-	// 		// EXPRESSIVE,
-	// 		// FIDELITY,
-	// 		// CONTENT,
-	// 		// RAINBOW,
-	// 		// FRUIT_SALAD,
-	// 		variant: Variant.NEUTRAL,
-	// 		// 0.0 for default contrast.
-	// 		// 0.5 for higher contrast.
-	// 		// 1.0 for highest contrast.
-	// 		// -1.0 for reduced contrast.
-	// 		contrastLevel: 0.0,
-	// 		isDark: false,
-	// 		primaryPalette: theme['palettes']['primary'],
-	// 		secondaryPalette: theme['palettes']['secondary'],
-	// 		tertiaryPalette: theme['palettes']['tertiary'],
-	// 		neutralPalette: theme['palettes']['neutral'],
-	// 		neutralVariantPalette: theme['palettes']['neutralVariant'],
-	// 		// errorPalette: theme['palettes']['error'],
-	// 	}
-	// );
-	const dynamicSchemeLightNormalContrast = $derived(new SchemeTonalSpot(sourceColorHct, false, contrast))
-	// const dynamicSchemeDarkNormalContrast = new DynamicScheme(
-	// 	{
-	// 		sourceColorArgb: sourceColorArgb,
-	// 		variant: Variant.NEUTRAL,
-	// 		contrastLevel: 1,
-	// 		isDark: true,
-	// 		primaryPalette: theme['palettes']['primary'],
-	// 		secondaryPalette: theme['palettes']['secondary'],
-	// 		tertiaryPalette: theme['palettes']['tertiary'],
-	// 		neutralPalette: theme['palettes']['neutral'],
-	// 		neutralVariantPalette: theme['palettes']['neutralVariant'],
-	// 		// errorPalette: theme['palettes']['error'],
-	// 	}
-	// );
-	const dynamicSchemeDarkNormalContrast = $derived(new SchemeTonalSpot(sourceColorHct, true, contrast))
-	// console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeLightNormalContrast ===');
-	// console.log(dynamicSchemeLightNormalContrast);
-	// console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeDarkNormalContrast ===');
-	// console.log(dynamicSchemeDarkNormalContrast);
+	// // create a dynamic scheme:
+	// // from defintion:
+	// // const dynamicScheme = new DynamicScheme(
+	// // sourceColorHct: Hct;
+	// // variant: Variant;
+	// // contrastLevel: number;
+	// // isDark: boolean;
+	// // primaryPalette: TonalPalette;
+	// // secondaryPalette: TonalPalette;
+	// // tertiaryPalette: TonalPalette;
+	// // neutralPalette: TonalPalette;
+	// // neutralVariantPalette: TonalPalette;
+	// // errorPalette?: TonalPalette;
+	// // );
+	// let contrast = $state(0.0);
+	// // const dynamicSchemeLightNormalContrast = new DynamicScheme(
+	// // 	{
+	// // 		sourceColorArgb: sourceColorArgb,
+	// // 		// MONOCHROME,
+	// // 		// NEUTRAL,
+	// // 		// TONAL_SPOT,
+	// // 		// VIBRANT,
+	// // 		// EXPRESSIVE,
+	// // 		// FIDELITY,
+	// // 		// CONTENT,
+	// // 		// RAINBOW,
+	// // 		// FRUIT_SALAD,
+	// // 		variant: Variant.NEUTRAL,
+	// // 		// 0.0 for default contrast.
+	// // 		// 0.5 for higher contrast.
+	// // 		// 1.0 for highest contrast.
+	// // 		// -1.0 for reduced contrast.
+	// // 		contrastLevel: 0.0,
+	// // 		isDark: false,
+	// // 		primaryPalette: theme['palettes']['primary'],
+	// // 		secondaryPalette: theme['palettes']['secondary'],
+	// // 		tertiaryPalette: theme['palettes']['tertiary'],
+	// // 		neutralPalette: theme['palettes']['neutral'],
+	// // 		neutralVariantPalette: theme['palettes']['neutralVariant'],
+	// // 		// errorPalette: theme['palettes']['error'],
+	// // 	}
+	// // );
+	// const dynamicSchemeLightNormalContrast = $derived(new SchemeTonalSpot(sourceColorHct, false, contrast))
+	// // const dynamicSchemeDarkNormalContrast = new DynamicScheme(
+	// // 	{
+	// // 		sourceColorArgb: sourceColorArgb,
+	// // 		variant: Variant.NEUTRAL,
+	// // 		contrastLevel: 1,
+	// // 		isDark: true,
+	// // 		primaryPalette: theme['palettes']['primary'],
+	// // 		secondaryPalette: theme['palettes']['secondary'],
+	// // 		tertiaryPalette: theme['palettes']['tertiary'],
+	// // 		neutralPalette: theme['palettes']['neutral'],
+	// // 		neutralVariantPalette: theme['palettes']['neutralVariant'],
+	// // 		// errorPalette: theme['palettes']['error'],
+	// // 	}
+	// // );
+	// const dynamicSchemeDarkNormalContrast = $derived(new SchemeTonalSpot(sourceColorHct, true, contrast))
+	// // console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeLightNormalContrast ===');
+	// // console.log(dynamicSchemeLightNormalContrast);
+	// // console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeDarkNormalContrast ===');
+	// // console.log(dynamicSchemeDarkNormalContrast);
 
 	// console.log('=== src - routes - (layout) - layout.svelte - dynamicSchemeLightNormalContrast[primary] ===');
 	// console.log(dynamicSchemeLightNormalContrast.primary);
-
 
 	// console.log('=== src - routes - (layout) - layout.svelte - lightFlyonUI.success ===');
 	// console.log(lightFlyonUI.success);
 
 	// let successFlyonUI = $state(new Color("oklch", parseFloat(lightFlyonUI.success.split(" "))));
 
-	// TBD. consider deriving this info from the material design "neutral" or "neutral-variant" palette!
-	// theses colors are generated from the old static part of Material 3, but they give a good correlation with the source Color:
-	const neutralColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.neutral), name: 'flyonui-neutral', blend: true});
-	const infoColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.info), name: 'flyonui-info', blend: true});
-	const successColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.success), name: 'flyonui-success', blend: true});
-	const warningColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.warning), name: 'flyonui-warning', blend: true});
-	// now creating a palette out of those to use with dynamic colors:
-	// TBD: consider feeding in the color from FlyonUI directly here, without the customColor function!
-	// Then create the colorGroup from the palette's key color!
-	const neutralPaletteLight = TonalPalette.fromInt(neutralColorGroup.light.color);
-	const neutralPaletteDark = TonalPalette.fromInt(neutralColorGroup.dark.color);
-	const infoPaletteLight = TonalPalette.fromInt(infoColorGroup.light.color);
-	const infoPaletteDark = TonalPalette.fromInt(infoColorGroup.dark.color);
-	const successPaletteLight = TonalPalette.fromInt(successColorGroup.light.color);
-	const successPaletteDark = TonalPalette.fromInt(successColorGroup.dark.color);
-	const warningPaletteLight = TonalPalette.fromInt(warningColorGroup.light.color);
-	const warningPaletteDark = TonalPalette.fromInt(warningColorGroup.dark.color);
+	// // TBD. consider deriving this info from the material design "neutral" or "neutral-variant" palette!
+	// // theses colors are generated from the old static part of Material 3, but they give a good correlation with the source Color:
+	// const neutralColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.neutral), name: 'flyonui-neutral', blend: true});
+	// const infoColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.info), name: 'flyonui-info', blend: true});
+	// const successColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.success), name: 'flyonui-success', blend: true});
+	// const warningColorGroup = customColor(sourceColorArgb, {value: argbFromHex(lightFlyonUI.warning), name: 'flyonui-warning', blend: true});
+	// // now creating a palette out of those to use with dynamic colors:
+	// // TBD: consider feeding in the color from FlyonUI directly here, without the customColor function!
+	// // Then create the colorGroup from the palette's key color!
+	// const neutralPaletteLight = TonalPalette.fromInt(neutralColorGroup.light.color);
+	// const neutralPaletteDark = TonalPalette.fromInt(neutralColorGroup.dark.color);
+	// const infoPaletteLight = TonalPalette.fromInt(infoColorGroup.light.color);
+	// const infoPaletteDark = TonalPalette.fromInt(infoColorGroup.dark.color);
+	// const successPaletteLight = TonalPalette.fromInt(successColorGroup.light.color);
+	// const successPaletteDark = TonalPalette.fromInt(successColorGroup.dark.color);
+	// const warningPaletteLight = TonalPalette.fromInt(warningColorGroup.light.color);
+	// const warningPaletteDark = TonalPalette.fromInt(warningColorGroup.dark.color);
 	// console.log('=== src - routes - (layout) - layout.svelte - successColorGroup ===');
 	// console.log(successColorGroup);
 	// console.log('=== src - routes - (layout) - layout.svelte - neutralPaletteLight ===');
 	// console.log(neutralPaletteLight);
-
 
 	// TBD. create a customized theme here, that includes both light and dark mode as well as the custom colors  for it.
 	// use that theme to map the tokens to the DOM
@@ -259,51 +254,48 @@
 
 	let systemDark = $state(false);
 
-
-	/* eslint-disable */
 	/* prettier-ignore */
-	const materialDesignSystemTokenNames = [
-		"primary", "on-primary", "primary-container", "on-primary-container", 
-		"secondary", "on-secondary", "secondary-container", "on-secondary-container",
-		"tertiary", "on-tertiary", "tertiary-container", "on-tertiary-container",
-		"error", "on-error", "error-container", "on-error-container",
-		"primary-fixed", "primary-fixed-dim", "on-primary-fixed", "on-primary-fixed-variant", // avoid using those
-		"secondary-fixed", "secondary-fixed-dim", "on-secondary-fixed", "on-secondary-fixed-variant", // avoid using those
-		"tertiary-fixed", "tertiary-fixed-dim", "on-tertiary-fixed", "on-tertiary-fixed-variant", // avoid using those
-		"surface-container-lowest", "surface-container-low", "surface-container", "surface-container-high", "surface-container-highest",
-		"surface-dim", "surface", "surface-bright", // avoid using those
-		"on-surface", "on-surface-variant",
-		"outline", "outline-variant",
-		"inverse-surface", "inverse-on-surface", "inverse-primary",
-		"scrim", "shadow",
-		"neutral-palette-key-color", "neutral-variant-palette-key-color", // might be useful for mapping with FlyonUI
-		"primary-palette-key-color", "secondary-palette-key-color", "tertiary-palette-key-color", "error-palette-key-color", // avoid using those
-		"background", "on-background", // seems to be legacy
-	]
-	const customExtensionTokens = [
-		"info", "on-info", "info-container", "on-info-container", // added to match FlyonUI
-		"success", "on-success", "success-container", "on-success-container",// added to match FlyonUI
-		"warning", "on-warning", "warning-container", "on-warning-container", // added to match FlyonUI
-	]
-	/* eslint enable */
+	// const materialDesignSystemTokenNames = [
+	// 	"primary", "on-primary", "primary-container", "on-primary-container",
+	// 	"secondary", "on-secondary", "secondary-container", "on-secondary-container",
+	// 	"tertiary", "on-tertiary", "tertiary-container", "on-tertiary-container",
+	// 	"error", "on-error", "error-container", "on-error-container",
+	// 	"primary-fixed", "primary-fixed-dim", "on-primary-fixed", "on-primary-fixed-variant", // avoid using those
+	// 	"secondary-fixed", "secondary-fixed-dim", "on-secondary-fixed", "on-secondary-fixed-variant", // avoid using those
+	// 	"tertiary-fixed", "tertiary-fixed-dim", "on-tertiary-fixed", "on-tertiary-fixed-variant", // avoid using those
+	// 	"surface-container-lowest", "surface-container-low", "surface-container", "surface-container-high", "surface-container-highest",
+	// 	"surface-dim", "surface", "surface-bright", // avoid using those
+	// 	"on-surface", "on-surface-variant",
+	// 	"outline", "outline-variant",
+	// 	"inverse-surface", "inverse-on-surface", "inverse-primary",
+	// 	"scrim", "shadow",
+	// 	"neutral-palette-key-color", "neutral-variant-palette-key-color", // might be useful for mapping with FlyonUI
+	// 	"primary-palette-key-color", "secondary-palette-key-color", "tertiary-palette-key-color", "error-palette-key-color", // avoid using those
+	// 	"background", "on-background", // seems to be legacy
+	// ]
+	// const customExtensionTokens = [
+	// 	"info", "on-info", "info-container", "on-info-container", // added to match FlyonUI
+	// 	"success", "on-success", "success-container", "on-success-container",// added to match FlyonUI
+	// 	"warning", "on-warning", "warning-container", "on-warning-container", // added to match FlyonUI
+	// ]
 
-	type MaterialDesignToken = {
-		[key: string]: number;
-	}
+	// type MaterialDesignToken = {
+	// 	[key: string]: number;
+	// }
 
-	let materialDesignTokensLightNormalContrast: MaterialDesignToken = $state({})
-	let materialDesignTokensDarkNormalContrast: MaterialDesignToken = $state({})
-	for (const token of materialDesignSystemTokenNames) {
-		const tokenNameCamelCase = token.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-		const colorLight = dynamicSchemeLightNormalContrast[tokenNameCamelCase as keyof SchemeContent] as number;
-		const colorDark = dynamicSchemeDarkNormalContrast[tokenNameCamelCase as keyof SchemeContent] as number;
-		// if (typeof colorLight === 'number') {
-		materialDesignTokensLightNormalContrast[token] = colorLight;
-		// }
-		// if (typeof colorDark === 'number') {
-		materialDesignTokensDarkNormalContrast[token] = colorDark;
-		// }
-	}
+	// let materialDesignTokensLightNormalContrast: MaterialDesignToken = $state({})
+	// let materialDesignTokensDarkNormalContrast: MaterialDesignToken = $state({})
+	// for (const token of materialDesignSystemTokenNames) {
+	// 	const tokenNameCamelCase = token.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+	// 	const colorLight = dynamicSchemeLightNormalContrast[tokenNameCamelCase as keyof SchemeContent] as number;
+	// 	const colorDark = dynamicSchemeDarkNormalContrast[tokenNameCamelCase as keyof SchemeContent] as number;
+	// 	// if (typeof colorLight === 'number') {
+	// 	materialDesignTokensLightNormalContrast[token] = colorLight;
+	// 	// }
+	// 	// if (typeof colorDark === 'number') {
+	// 	materialDesignTokensDarkNormalContrast[token] = colorDark;
+	// 	// }
+	// }
 	// console.log('=== src - routes - (layout) - layout.svelte - materialDesignTokens ===');
 	// console.log(materialDesignTokensLightNormalContrast);
 	let mode: "light" | "dark" = $state('dark');
@@ -313,26 +305,32 @@
 		// const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 		mode = systemDark ? 'dark' : 'light';
-		let scheme = $derived(theming.applyTheme(themeConfiguration, mode, mainContent))
-		$effect(() => console.log('scheme:', scheme));
+		// let scheme = $derived(theming.applyTheme(themeConfiguration, mode, mainContent))
+		// Works reactive:
+		// $effect(() => console.log('scheme:', scheme));
+		// necessary to apply the theme to the mainContent div:
+		// $effect(() => { scheme })
+		$effect(() => {
+			theming.applyTheme(themeConfiguration, mode, mainContent);
+		});
 
 		// console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
 		// console.log(systemDark);
 
-		const materialDesignTokens = systemDark ? materialDesignTokensDarkNormalContrast : materialDesignTokensLightNormalContrast;
-		mode = systemDark ? 'dark' : 'light';
+		// const materialDesignTokens = systemDark ? materialDesignTokensDarkNormalContrast : materialDesignTokensLightNormalContrast;
+		// mode = systemDark ? 'dark' : 'light';
 
-		for (const token in materialDesignTokens) {
-			// console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
-			// TBD: change to mainElement
-			// document.documentElement.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
-			// mainContent.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
+		// for (const token in materialDesignTokens) {
+		// console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
+		// TBD: change to mainElement
+		// document.documentElement.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
+		// mainContent.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
 
-		}
+		// }
 		// console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
 		// console.log(hexFromArgb(materialDesignTokens['surface-container']));
 		// document.documentElement.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
-		mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
+		// mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
 
 		// applyTheme(themeNormalContrast, { target: mainContent, dark: systemDark });
 
@@ -386,37 +384,31 @@
 	// 	console.log('=== src - routes - (layout) - layout.svelte - originalValue ===');
 	// 	console.log(originalValue);
 	// });
-	
-
 
 	// const overrideFlyonUIColors: Action = (_node) => {
 	// 	// console.log('=== src - routes - (layout) - layout.svelte - overrideFlyonUIColors ===');
 	// 	// document.documentElement.style.setProperty('--p', '(0.5 0.1 100)');
 	// }
-	
+
 	// $effect(() => {
 	// 	overrideFlyonUIColors(document.documentElement);
 	// });
 
-
-
 	// let mode = $state('light-high-contrast');
 	// let mode = $state('light-hc');
 
-
-	
 	// static colors from Material 3:
 	// const materialDesignPrimaryArgb = $state(theme['schemes']['light']['primary'])
 	// const materialDesignPrimaryHct = $derived(Hct.fromInt(materialDesignPrimaryArgb))
 	// const colorjsPrimary = $derived(new Color("hct", [materialDesignPrimaryHct.internalHue, materialDesignPrimaryHct.internalChroma, materialDesignPrimaryHct.internalTone]))
 
-	// use MaterialDynamicColors to get colors from DynamicScheme to apply to FlyonUI:
-	const materialDesignPrimaryArgb = $derived(dynamicSchemeLightNormalContrast["primary" as keyof SchemeContent] as number);
-	// or maybe hexFromArgb and feed hex to new Color()? - saves a conversion step.
-	const materialDesignPrimaryHct = $derived(Hct.fromInt(materialDesignPrimaryArgb));
-	// const colorjsPrimary = $derived(new Color("hct", [materialDesignPrimaryHct.internalHue, materialDesignPrimaryHct.internalChroma, materialDesignPrimaryHct.internalTone]))
-	const colorjsPrimary = $derived(new Color("hct", [materialDesignPrimaryHct.hue, materialDesignPrimaryHct.chroma, materialDesignPrimaryHct.tone]))
-	const primaryFromMaterialDesign = $derived(colorjsPrimary.to("oklch").coords.join(" "))
+	// // use MaterialDynamicColors to get colors from DynamicScheme to apply to FlyonUI:
+	// const materialDesignPrimaryArgb = $derived(dynamicSchemeLightNormalContrast["primary" as keyof SchemeContent] as number);
+	// // or maybe hexFromArgb and feed hex to new Color()? - saves a conversion step.
+	// const materialDesignPrimaryHct = $derived(Hct.fromInt(materialDesignPrimaryArgb));
+	// // const colorjsPrimary = $derived(new Color("hct", [materialDesignPrimaryHct.internalHue, materialDesignPrimaryHct.internalChroma, materialDesignPrimaryHct.internalTone]))
+	// const colorjsPrimary = $derived(new Color("hct", [materialDesignPrimaryHct.hue, materialDesignPrimaryHct.chroma, materialDesignPrimaryHct.tone]))
+	// const primaryFromMaterialDesign = $derived(colorjsPrimary.to("oklch").coords.join(" "))
 	// const primaryRGBalpha = {
 	// 		red: redFromArgb(materialDesignPrimary),
 	// 		green: greenFromArgb(materialDesignPrimary),
@@ -447,7 +439,6 @@
 
 	// });
 
-
 	// let primaryManual = $state("77.5934% 0.247012 287.240256;")
 
 	const toggleMode = () => {
@@ -455,23 +446,22 @@
 		// mode = mode === 'dark-hc' ? 'light-hc' : 'dark-hc';
 		mode = mode === 'dark' ? 'light' : 'dark';
 
-		const materialDesignTokens = mode === "dark" ? materialDesignTokensDarkNormalContrast : materialDesignTokensLightNormalContrast;
+		// const materialDesignTokens = mode === "dark" ? materialDesignTokensDarkNormalContrast : materialDesignTokensLightNormalContrast;
 
-		for (const token in materialDesignTokens) {
-			// console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
-			document.documentElement.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
-		}
+		// for (const token in materialDesignTokens) {
+		// 	// console.log(token + ": " + hexFromArgb(materialDesignTokens[token]));
+		// 	document.documentElement.style.setProperty(`--md-sys-color-${token}`, hexFromArgb(materialDesignTokens[token]));
+		// }
 		// TBD: This one applies the material design theme on a div inside main!
 		// applyTheme(theme, { target: mainContent, dark: mode === 'dark' });
 		// applyTheme(themeNormalContrast, { target: mainContent, dark: mode === 'dark' });
-		console.log('mode toggled to ' + mode);
+		// console.log('mode toggled to ' + mode);
 		// document.documentElement.style.setProperty('--p', '(0.5 0.1 100)');
 		// console.log('=== src - routes - (layout) - layout.svelte - changed --p ===');
 		// console.log('=== src - routes - (layout) - layout.svelte - toggle - var --md-sys-color-primary ===');
 		// const mdSysColorPrimary = mainContent.style.getPropertyValue('--md-sys-color-primary')
 		// console.log(mdSysColorPrimary);
 
-		
 		// console.log('=== src - routes - (layout) - layout.svelte - document ===');
 		// console.log(document)
 		// primaryManual = mode === 'dark' ? "77.5934% 0.247012 287.240256;" : "37.5934% 0.247012 287.240256;";
@@ -480,7 +470,7 @@
 		// console.log('=== src - routes - (layout) - layout.svelte - applyMaterialDesignTheme - hexFromArgb(materialDesignTokens["surface-container"]) ===');
 		// console.log(hexFromArgb(materialDesignTokens['surface-container']));
 		// TBD: should be implemented through the mode variable!
-		mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
+		// mainContent.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
 		// document.documentElement.style.backgroundColor = hexFromArgb(materialDesignTokens['background']);
 	};
 
@@ -521,7 +511,8 @@
 
 <!-- The class switches material design 3, whereas data-theme switches FlyonUI -->
 <!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryManual};"> -->
-<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryFromMaterialDesign};" use:applyTheming>
+<!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryFromMaterialDesign};" use:applyTheming> -->
+<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} use:applyTheming>
 	<nav class="mx-2 p-2">
 		<div class="flex w-full flex-wrap items-center justify-between">
 			<div class="flex-grow space-x-4">
@@ -596,7 +587,7 @@
 	/* :root {
     --my-color: #394DFF;
 	} */
-	 /* background: #169C0F; */
+	/* background: #169C0F; */
 	/* :root{
 		--p: oklch(0.85 0.1 100);
 	}
