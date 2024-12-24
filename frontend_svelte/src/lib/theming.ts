@@ -432,18 +432,25 @@ export interface AppColors {
 }
 
 class Colorization {
-	sourceColor: string;
+	sourceColor: {
+        hex: string,
+        argb: number,
+        hct: Hct
+    }
 	variant: Variant;
 	contrast: number;
 
-	constructor(sourceColor: string, variant: Variant, contrast: number) {
-		this.sourceColor = sourceColor;
+	constructor(sourceColorHex: string, variant: Variant, contrast: number) {
+		this.sourceColor = {
+            hex: sourceColorHex,
+            argb: argbFromHex(sourceColorHex),
+            hct: Hct.fromInt(argbFromHex(sourceColorHex)),
+        }
 		this.variant = variant;
 		this.contrast = contrast;
 	}
 
 	private createMaterialSchemes(
-		sourceColor: Hct,
 		variant: Variant,
 		contrast: number
 	): { light: DynamicScheme; dark: DynamicScheme } {
@@ -451,40 +458,40 @@ class Colorization {
 		let darkScheme: DynamicScheme;
 		switch (variant) {
 			case Variant.MONOCHROME:
-				lightScheme = new SchemeMonochrome(sourceColor, false, contrast);
-				darkScheme = new SchemeMonochrome(sourceColor, true, contrast);
+				lightScheme = new SchemeMonochrome(this.sourceColor.hct, false, contrast);
+				darkScheme = new SchemeMonochrome(this.sourceColor.hct, true, contrast);
 				break;
 			case Variant.NEUTRAL:
-				lightScheme = new SchemeNeutral(sourceColor, false, contrast);
-				darkScheme = new SchemeNeutral(sourceColor, true, contrast);
+				lightScheme = new SchemeNeutral(this.sourceColor.hct, false, contrast);
+				darkScheme = new SchemeNeutral(this.sourceColor.hct, true, contrast);
 				break;
 			case Variant.TONAL_SPOT:
-				lightScheme = new SchemeTonalSpot(sourceColor, false, contrast);
-				darkScheme = new SchemeTonalSpot(sourceColor, true, contrast);
+				lightScheme = new SchemeTonalSpot(this.sourceColor.hct, false, contrast);
+				darkScheme = new SchemeTonalSpot(this.sourceColor.hct, true, contrast);
 				break;
 			case Variant.VIBRANT:
-				lightScheme = new SchemeVibrant(sourceColor, false, contrast);
-				darkScheme = new SchemeVibrant(sourceColor, true, contrast);
+				lightScheme = new SchemeVibrant(this.sourceColor.hct, false, contrast);
+				darkScheme = new SchemeVibrant(this.sourceColor.hct, true, contrast);
 				break;
 			case Variant.EXPRESSIVE:
-				lightScheme = new SchemeExpressive(sourceColor, false, contrast);
-				darkScheme = new SchemeExpressive(sourceColor, true, contrast);
+				lightScheme = new SchemeExpressive(this.sourceColor.hct, false, contrast);
+				darkScheme = new SchemeExpressive(this.sourceColor.hct, true, contrast);
 				break;
 			case Variant.FIDELITY:
-				lightScheme = new SchemeFidelity(sourceColor, false, contrast);
-				darkScheme = new SchemeFidelity(sourceColor, true, contrast);
+				lightScheme = new SchemeFidelity(this.sourceColor.hct, false, contrast);
+				darkScheme = new SchemeFidelity(this.sourceColor.hct, true, contrast);
 				break;
 			case Variant.CONTENT:
-				lightScheme = new SchemeContent(sourceColor, false, contrast);
-				darkScheme = new SchemeContent(sourceColor, true, contrast);
+				lightScheme = new SchemeContent(this.sourceColor.hct, false, contrast);
+				darkScheme = new SchemeContent(this.sourceColor.hct, true, contrast);
 				break;
 			case Variant.RAINBOW:
-				lightScheme = new SchemeRainbow(sourceColor, false, contrast);
-				darkScheme = new SchemeRainbow(sourceColor, true, contrast);
+				lightScheme = new SchemeRainbow(this.sourceColor.hct, false, contrast);
+				darkScheme = new SchemeRainbow(this.sourceColor.hct, true, contrast);
 				break;
 			case Variant.FRUIT_SALAD:
-				lightScheme = new SchemeFruitSalad(sourceColor, false, contrast);
-				darkScheme = new SchemeFruitSalad(sourceColor, true, contrast);
+				lightScheme = new SchemeFruitSalad(this.sourceColor.hct, false, contrast);
+				darkScheme = new SchemeFruitSalad(this.sourceColor.hct, true, contrast);
 				break;
 			default:
 				throw new Error('Unsupported variant');
@@ -493,15 +500,11 @@ class Colorization {
 	}
 
 	private createCustomColors(
-		sourceColor: number,
-		flyonUIcolor: string,
+		color: string,
 		colorName: string
 	): CustomColors {
-		const colorGroup = customColor(sourceColor, {
-			value: argbFromHex(flyonUIcolor),
-			name: colorName,
-			blend: true
-		});
+		const colorGroup = customColor(this.sourceColor.argb, { value: argbFromHex(color), name: colorName, blend: true });
+
 		const lightPalette = TonalPalette.fromInt(colorGroup.light.color);
 		const darkPalette = TonalPalette.fromInt(colorGroup.dark.color);
 		const light = {
@@ -520,10 +523,7 @@ class Colorization {
 	}
 
 	public createAppColors(colorConfig: ColorConfig): AppColors {
-		const sourceColorArgb = argbFromHex(colorConfig.sourceColor);
-		const sourceColorHct = Hct.fromInt(sourceColorArgb);
 		const { light: lightMaterial, dark: darkMaterial } = this.createMaterialSchemes(
-			sourceColorHct,
 			colorConfig.variant,
 			colorConfig.contrast
 		);
@@ -531,22 +531,18 @@ class Colorization {
 		console.log(lightFlyonUI);
 		console.log(darkFlyonUI);
 		const neutralFromFlyonUI = this.createCustomColors(
-			sourceColorArgb,
 			darkFlyonUI.neutral,
 			'flyonui-neutral'
 		);
 		const infoFromFlyonUI = this.createCustomColors(
-			sourceColorArgb,
 			darkFlyonUI.info,
 			'flyonui-info'
 		);
 		const successFromFlyonUI = this.createCustomColors(
-			sourceColorArgb,
 			darkFlyonUI.success,
 			'flyonui-success'
 		);
 		const warningFromFlyonUI = this.createCustomColors(
-			sourceColorArgb,
 			darkFlyonUI.warning,
 			'flyonui-warning'
 		);
