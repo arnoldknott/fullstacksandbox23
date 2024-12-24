@@ -207,23 +207,56 @@
 			/>
 		</div>
 		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-			<ColorTileMaterialUi background="--md-sys-color-on-surface" color="--md-sys-color-inverse-on-surface" />
-			<ColorTileMaterialUi background="--md-sys-color-surface-variant" color="--md-sys-color-on-surface" />
-			<ColorTileMaterialUi background="--md-sys-color-outline" color="--md-sys-color-inverse-on-surface" />
-			<ColorTileMaterialUi background="--md-sys-color-outline-variant" color="--md-sys-color-inverse-on-surface" />
+			<ColorTileMaterialUi
+				background="--md-sys-color-on-surface"
+				color="--md-sys-color-inverse-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-surface-variant"
+				color="--md-sys-color-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-outline"
+				color="--md-sys-color-inverse-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-outline-variant"
+				color="--md-sys-color-inverse-on-surface"
+			/>
 		</div>
 		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
-			<ColorTileMaterialUi background="--md-sys-color-inverse-surface" color="--md-sys-color-inverse-on-surface" />
-			<ColorTileMaterialUi background="--md-sys-color-inverse-on-surface" color="--md-sys-color-on-surface" />
-			<ColorTileMaterialUi background="--md-sys-color-inverse-primary" color="--md-sys-color-on-surface"/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-inverse-surface"
+				color="--md-sys-color-inverse-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-inverse-on-surface"
+				color="--md-sys-color-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-inverse-primary"
+				color="--md-sys-color-on-surface"
+			/>
 			<ColorTileMaterialUi background="--md-sys-color-scrim" color="--md-sys-color-on-surface" />
 			<ColorTileMaterialUi background="--md-sys-color-shadow" color="--md-sys-color-on-surface" />
 		</div>
 		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-			<ColorTileMaterialUi background="--md-sys-color-background" color="--md-sys-color-on-background" />
-			<ColorTileMaterialUi background="--md-sys-color-on-background" color="--md-sys-color-background" />
-			<ColorTileMaterialUi background="--md-sys-color-neutral-palette-key-color" color="--md-sys-color-inverse-on-surface" />
-			<ColorTileMaterialUi background="--md-sys-color-neutral-variant-palette-key-color" color="-md-sys-color-inverse-on-surface" />
+			<ColorTileMaterialUi
+				background="--md-sys-color-background"
+				color="--md-sys-color-on-background"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-on-background"
+				color="--md-sys-color-background"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-neutral-palette-key-color"
+				color="--md-sys-color-inverse-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-neutral-variant-palette-key-color"
+				color="-md-sys-color-inverse-on-surface"
+			/>
 		</div>
 		<p>Add all the palettes as a sweep of tone from all available palettes: primary, secondary,</p>
 		<HorizontalRule />
@@ -544,7 +577,6 @@
 </div>
 
 <JsonData data={theme}></JsonData>
-
 
 <style>
 	/* Local override works:  */

@@ -35,17 +35,17 @@
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
 	// import type { LayoutData } from '../$types';
-	import { setContext, type Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
 	import { page } from '$app/stores';
 	import Guard from '$components/Guard.svelte';
 	import ThemePicker from '$components/ThemePicker.svelte';
-	import JsonData from '$components/JsonData.svelte';
+	// import JsonData from '$components/JsonData.svelte';
 
 	const theming = new Theming();
 
 	let themeConfiguration: ColorConfig = $state({
 		sourceColor: '#353c6e', // <= That's a good color!// '#769CDF',
-		variant: Variant.TONAL_SPOT,// Variant.FIDELITY,// 
+		variant: Variant.TONAL_SPOT, // Variant.FIDELITY,//
 		contrast: 0.0
 	});
 	// $effect(() => console.log('themeConfiguration:', themeConfiguration));
@@ -305,7 +305,6 @@
 
 	// $effect(() => {setContext('theme', theme)});
 
-
 	const applyTheming: Action = (_node) => {
 		// read system setting dark / light mode on client side only - not during serve side rendering.
 		// const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -323,8 +322,6 @@
 			// console.log('=== src - routes - (layout) - layout.svelte - theme ===');
 			// console.log(theme);
 		});
-
-		
 
 		// console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
 		// console.log(systemDark);
@@ -350,7 +347,6 @@
 		// applyTheme(theme, { target: mainContent, dark: systemDark });
 		// applyTheme(theme, { target: mainContent, dark: systemDark, brightnessSuffix: true });
 	};
-
 
 	// $effect(() => {
 	// 	// console.log('=== src - routes - (layout) - layout.svelte - var --p - priority ===');
@@ -578,8 +574,6 @@
 			</div>
 		</div>
 	</nav>
-
-	
 
 	<div>
 		{@render children?.()}
