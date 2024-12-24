@@ -68,7 +68,7 @@ const materialDesignColors = [
     "secondaryFixed", "secondaryFixedDim", "onSecondaryFixed", "onSecondaryFixedVariant", // avoid using those
     "tertiaryFixed", "tertiaryFixedDim", "onTertiaryFixed", "onTertiaryFixedVariant", // avoid using those
     "surfaceContainerLowest", "surfaceContainerLow", "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest",
-    "surfaceDim", "surface", "surfaceBright", // avoid using those
+    "surfaceDim", "surface", "surfaceBright", "surfaceVariant", "surfaceTint", // avoid using those
     "onSurface", "onSurfaceVariant",
     "outline", "outlineVariant",
     "inverseSurface", "inverseOnSurface", "inversePrimary",
@@ -515,6 +515,8 @@ class Colorization {
 			default:
 				throw new Error('Unsupported variant');
 		}
+        console.log("=== lib - theming - createMaterialSchemes - lightScheme ===");
+        console.log(lightScheme);
 		return { light: lightScheme, dark: darkScheme };
 	}
 

@@ -212,8 +212,8 @@
 				color="--md-sys-color-inverse-on-surface"
 			/>
 			<ColorTileMaterialUi
-				background="--md-sys-color-surface-variant"
-				color="--md-sys-color-on-surface"
+				background="--md-sys-color-on-surface-variant"
+				color="--md-sys-color-inverse-on-surface"
 			/>
 			<ColorTileMaterialUi
 				background="--md-sys-color-outline"
@@ -258,8 +258,89 @@
 				color="-md-sys-color-inverse-on-surface"
 			/>
 		</div>
-		<p>Add all the palettes as a sweep of tone from all available palettes: primary, secondary,</p>
+		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+			<p class="col-span-2 text-center text-xl md:col-span-4">Avoid using those - the fixed colors don't switch from light to dark mode</p>
+			<ColorTileMaterialUi
+				background="--md-sys-color-primary-fixed"
+				color="--md-sys-color-on-primary-fixed"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-primary-fixed-dim"
+				color="--md-sys-color-on-primary-fixed"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-on-primary-fixed"
+				color="--md-sys-color-primary-fixed"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-on-primary-fixed-variant"
+				color="--md-sys-color-primary-fixed"
+			/>
+		</div>
+		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+			<ColorTileMaterialUi
+				background="--md-sys-color-secondary-fixed"
+				color="--md-sys-color-on-secondary-fixed"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-secondary-fixed-dim"
+				color="--md-sys-color-on-secondary-fixed"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-on-secondary-fixed"
+				color="--md-sys-color-secondary-fixed"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-on-secondary-fixed-variant"
+				color="--md-sys-color-secondary-fixed"
+			/>
+		</div>
+		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+			<ColorTileMaterialUi
+				background="--md-sys-color-tertiary-fixed"
+				color="--md-sys-color-on-tertiary-fixed"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-tertiary-fixed-dim"
+				color="--md-sys-color-on-tertiary-fixed"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-on-tertiary-fixed"
+				color="--md-sys-color-tertiary-fixed"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-on-tertiary-fixed-variant"
+				color="--md-sys-color-tertiary-fixed"
+			/>
+		</div>
+		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
+			<ColorTileMaterialUi
+				background="--md-sys-color-surface-dim"
+				color="--md-sys-color-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-surface"
+				color="--md-sys-color-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-surface-bright"
+				color="--md-sys-color-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-surface-variant"
+				color="--md-sys-color-on-surface"
+			/>
+			<ColorTileMaterialUi
+				background="--md-sys-color-surface-tint"
+				color="--md-sys-color-inverse-on-surface"
+			/>
+		</div>
 		<HorizontalRule />
+	</div>
+
+	<div class="col-span-2">
+		<Title>Palettes</Title>
+		<p>Add all the palettes as a sweep of tone from all available palettes: primary, secondary, with a slider controlling the tone</p>
 	</div>
 
 	<!-- <div class="staticMaterialThemeBuilder">
