@@ -44,7 +44,7 @@
 
 	let themeConfiguration: ColorConfig = $state({
 		sourceColor: '#353c6e', // <= That's a good color!// '#769CDF',
-		variant: Variant.TONAL_SPOT,
+		variant: Variant.FIDELITY,// Variant.TONAL_SPOT,
 		contrast: 0.0
 	});
 	// $effect(() => console.log('themeConfiguration:', themeConfiguration));
