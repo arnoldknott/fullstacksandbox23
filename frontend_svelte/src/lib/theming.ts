@@ -515,8 +515,6 @@ class Colorization {
 			default:
 				throw new Error('Unsupported variant');
 		}
-        console.log("=== lib - theming - createMaterialSchemes - lightScheme ===");
-        console.log(lightScheme);
 		return { light: lightScheme, dark: darkScheme };
 	}
 

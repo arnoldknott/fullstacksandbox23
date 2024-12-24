@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Variant, Theming, type ColorConfig } from '$lib/theming';
-
 	// // clean this mess up - mainly by moving to $lib/theming.ts
 	// import {
 	// 	argbFromHex,
@@ -40,6 +39,7 @@
 	import Guard from '$components/Guard.svelte';
 	import ThemePicker from '$components/ThemePicker.svelte';
 	// import JsonData from '$components/JsonData.svelte';
+	import { theme } from './layout.svelte';
 
 	const theming = new Theming();
 
@@ -316,8 +316,9 @@
 		// necessary to apply the theme to the mainContent div:
 		// $effect(() => { scheme })
 		$effect(() => {
-			theming.applyTheme(themeConfiguration, mode, mainContent);
-			// theme = theming.applyTheme(themeConfiguration, mode, mainContent);
+			// theming.applyTheme(themeConfiguration, mode, mainContent);
+			theme.set(theming.applyTheme(themeConfiguration, mode, mainContent));
+			// $page.data.theme = theme;
 			// setContext('theme', theme)
 			// console.log('=== src - routes - (layout) - layout.svelte - theme ===');
 			// console.log(theme);
@@ -546,7 +547,7 @@
 					<img class="h-12 w-12 rounded-full" src={userPictureURL} alt="you" />
 				{/if} -->
 				</Guard>
-				{themeConfiguration.contrast}
+				<!-- {themeConfiguration.contrast} -->
 				<ThemePicker bind:values={themeConfiguration} />
 				<!-- {tenFold} -->
 				<button aria-label="modeToggler">
