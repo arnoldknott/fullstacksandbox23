@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Variant, Theming, type ColorConfig } from '$lib/theming';
-
 	// // clean this mess up - mainly by moving to $lib/theming.ts
 	// import {
 	// 	argbFromHex,
@@ -35,16 +34,18 @@
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
 	// import type { LayoutData } from '../$types';
-	import type { Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
 	import { page } from '$app/stores';
 	import Guard from '$components/Guard.svelte';
 	import ThemePicker from '$components/ThemePicker.svelte';
+	// import JsonData from '$components/JsonData.svelte';
+	// import { theme } from './layout.svelte';
 
 	const theming = new Theming();
 
 	let themeConfiguration: ColorConfig = $state({
-		sourceColor: "#353c6e", // <= That's a good color!// '#769CDF',
-		variant: Variant.TONAL_SPOT,
+		sourceColor: '#353c6e', // <= That's a good color!// '#769CDF',
+		variant: Variant.TONAL_SPOT, // Variant.FIDELITY,//
 		contrast: 0.0
 	});
 	// $effect(() => console.log('themeConfiguration:', themeConfiguration));
@@ -300,6 +301,10 @@
 	// console.log(materialDesignTokensLightNormalContrast);
 	let mode: "light" | "dark" = $state('dark');
 
+	// let theme = $state({})
+
+	// $effect(() => {setContext('theme', theme)});
+
 	const applyTheming: Action = (_node) => {
 		// read system setting dark / light mode on client side only - not during serve side rendering.
 		// const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -312,6 +317,11 @@
 		// $effect(() => { scheme })
 		$effect(() => {
 			theming.applyTheme(themeConfiguration, mode, mainContent);
+			// theme.set(theming.applyTheme(themeConfiguration, mode, mainContent));
+			// $page.data.theme = theme;
+			// setContext('theme', theme)
+			// console.log('=== src - routes - (layout) - layout.svelte - theme ===');
+			// console.log(theme);
 		});
 
 		// console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
@@ -537,7 +547,7 @@
 					<img class="h-12 w-12 rounded-full" src={userPictureURL} alt="you" />
 				{/if} -->
 				</Guard>
-				{themeConfiguration.contrast}
+				<!-- {themeConfiguration.contrast} -->
 				<ThemePicker bind:values={themeConfiguration} />
 				<!-- {tenFold} -->
 				<button aria-label="modeToggler">
@@ -566,11 +576,11 @@
 		</div>
 	</nav>
 
-	<!-- <JsonData data={$page}></JsonData> -->
-
 	<div>
 		{@render children?.()}
 	</div>
+
+	<!-- <JsonData data={theme}></JsonData> -->
 </div>
 
 <style>
