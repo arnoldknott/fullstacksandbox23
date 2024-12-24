@@ -434,6 +434,15 @@ export interface AppColors {
 	dark: AppColorSchemeForMode;
 }
 
+export interface AppTheme {
+    configuration: ColorConfig;
+    currentMode: 'light' | 'dark';
+    light: AppColorSchemeForMode;
+    dark: AppColorSchemeForMode;
+    // fonts: AppFonts;
+    // styles: AppStyles;
+}
+
 class Colorization {
 	sourceColor: {
 		hex: string;
@@ -635,26 +644,42 @@ class Colorization {
 			background: (_schemeDark) => customPrimaryContainerDark, //MaterialDynamicColors.primaryContainer,
 			contrastCurve: new ContrastCurve(3, 4.5, 7, 11)
 		});
-		const lightPalette = TonalPalette.fromInt(colorGroup.light.color); // must be the scheme.primaryPalette now?
-		const darkPalette = TonalPalette.fromInt(colorGroup.dark.color);
+        // // before applying dynamic colors to custom colors:
+		// const lightPalette = TonalPalette.fromInt(colorGroup.light.color);
+		// const darkPalette = TonalPalette.fromInt(colorGroup.dark.color);
+        // after applying dynamic colors to custom colors:
+        const lightPalette = schemeLight.primaryPalette;
+        const darkPalette = schemeDark.primaryPalette;
 		const light = {
-			colors: colorGroup.light,
+            /// / before applying dynamic colors to custom colors:
+			// colors: colorGroup.light,
+            colors: {
+                color: customPrimaryLight.getArgb(schemeLight),
+                onColor: customOnPrimaryLight.getArgb(schemeLight),
+                colorContainer: customPrimaryContainerLight.getArgb(schemeLight),
+                onColorContainer: customOnPrimaryContainerLight.getArgb(schemeLight)
+            },
 			palette: lightPalette
 		};
 		const dark = {
-			colors: colorGroup.dark,
+            // // before applying dynamic colors to custom colors:
+			// colors: colorGroup.dark,
+            colors: {
+                color: customPrimaryDark.getArgb(schemeDark),
+                onColor: customOnPrimaryDark.getArgb(schemeDark),
+                colorContainer: customPrimaryContainerDark.getArgb(schemeDark),
+                onColorContainer: customOnPrimaryContainerDark.getArgb(schemeDark)
+            },
 			palette: darkPalette
 		};
-		light.colors.color = customPrimaryLight.getArgb(schemeLight);
-		dark.colors.color = customPrimaryDark.getArgb(schemeDark);
-		light.colors.onColor = customOnPrimaryLight.getArgb(schemeLight);
-		dark.colors.onColor = customOnPrimaryDark.getArgb(schemeDark);
-		// light.colors.colorContainer = Contrast.darker(customPrimaryContainerLight.getArgb(schemeLight), 7.0);
-		// dark.colors.colorContainer = Contrast.darker(customPrimaryContainerDark.getArgb(schemeDark), 3.0);
-		light.colors.colorContainer = customPrimaryContainerLight.getArgb(schemeLight);
-		dark.colors.colorContainer = customPrimaryContainerDark.getArgb(schemeDark);
-		light.colors.onColorContainer = customOnPrimaryContainerLight.getArgb(schemeLight);
-		dark.colors.onColorContainer = customOnPrimaryContainerDark.getArgb(schemeDark);
+		// light.colors.color = customPrimaryLight.getArgb(schemeLight);
+		// dark.colors.color = customPrimaryDark.getArgb(schemeDark);
+		// light.colors.onColor = customOnPrimaryLight.getArgb(schemeLight);
+		// dark.colors.onColor = customOnPrimaryDark.getArgb(schemeDark);
+		// light.colors.colorContainer = customPrimaryContainerLight.getArgb(schemeLight);
+		// dark.colors.colorContainer = customPrimaryContainerDark.getArgb(schemeDark);
+		// light.colors.onColorContainer = customOnPrimaryContainerLight.getArgb(schemeLight);
+		// dark.colors.onColorContainer = customOnPrimaryContainerDark.getArgb(schemeDark);
 
 		return {
 			light: light,
@@ -664,9 +689,8 @@ class Colorization {
 
 	public createAppColors(): AppColors {
 		const { light: lightMaterial, dark: darkMaterial } = this.createMaterialSchemes();
-		console.log('=== lib - theming - createAppColors - lightFlyonUI and darkFlyonUI ===');
-		console.log(lightFlyonUI);
-		console.log(darkFlyonUI);
+        // those 4 colors are the same in lightFlyonUI and darkFlyonUI
+        // so no need for two inputs here - the colors are differentiated by Material Design Dynamic Colors:
 		const neutralFromFlyonUI = this.createCustomColors(darkFlyonUI.neutral, 'flyonui-neutral');
 		const infoFromFlyonUI = this.createCustomColors(darkFlyonUI.info, 'flyonui-info');
 		const successFromFlyonUI = this.createCustomColors(darkFlyonUI.success, 'flyonui-success');
@@ -814,7 +838,7 @@ export class Theming {
 		colorConfig: ColorConfig,
 		mode: 'light' | 'dark',
 		targetElement: HTMLElement
-	): AppColors {
+	): AppTheme {
 		const colorization = new Colorization(
 			colorConfig.sourceColor,
 			colorConfig.variant,
@@ -824,7 +848,11 @@ export class Theming {
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
 		this.applyMaterialTokens(colors, targetElement);
 		this.applyFlyonUITokens(colors, targetElement);
-		return colorScheme;
+		return {
+            configuration: colorConfig,
+            currentMode: mode,
+            ...colorScheme,
+        }
 	}
 
 	private applyMaterialTokens(
