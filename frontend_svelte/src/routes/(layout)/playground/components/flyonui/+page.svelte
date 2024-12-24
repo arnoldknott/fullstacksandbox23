@@ -4,7 +4,6 @@
 	// import { createRawSnippet, type Snippet } from 'svelte';
 	import type { IOverlay } from 'flyonui/flyonui';
 	import ColorTileFlyonUi from '$components/ColorTileFlyonUI.svelte';
-	import ColorTileMaterialUi from '$components/ColorTileMaterialUI.svelte';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
 	// return {
