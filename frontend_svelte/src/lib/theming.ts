@@ -12,9 +12,8 @@ import {
 	Hct,
 	customColor,
 	TonalPalette,
-    DynamicColor,
-    MaterialDynamicColors,
-    Contrast,
+	DynamicColor,
+	MaterialDynamicColors,
 	type DynamicScheme,
 	type ColorGroup,
 	hexFromArgb
@@ -438,31 +437,31 @@ export interface AppColors {
 
 class Colorization {
 	sourceColor: {
-        hex: string,
-        argb: number,
-        hct: Hct
-    }
+		hex: string;
+		argb: number;
+		hct: Hct;
+	};
 	variant: Variant;
 	contrast: number;
-    isFidelity: boolean = false;
-    isMonochrome: boolean = false;
+	isFidelity: boolean = false;
+	isMonochrome: boolean = false;
 
 	constructor(sourceColorHex: string, variant: Variant, contrast: number) {
 		this.sourceColor = {
-            hex: sourceColorHex,
-            argb: argbFromHex(sourceColorHex),
-            hct: Hct.fromInt(argbFromHex(sourceColorHex)),
-        }
+			hex: sourceColorHex,
+			argb: argbFromHex(sourceColorHex),
+			hct: Hct.fromInt(argbFromHex(sourceColorHex))
+		};
 		this.variant = variant;
 		this.contrast = contrast;
-        this.isFidelity = variant === Variant.FIDELITY || variant === Variant.CONTENT;
-        this.isMonochrome = variant === Variant.MONOCHROME;
+		this.isFidelity = variant === Variant.FIDELITY || variant === Variant.CONTENT;
+		this.isMonochrome = variant === Variant.MONOCHROME;
 	}
 
 	private createMaterialSchemes(
-        sourceColor: Hct = this.sourceColor.hct,
+		sourceColor: Hct = this.sourceColor.hct,
 		variant: Variant = this.variant,
-		contrast: number = this.contrast,
+		contrast: number = this.contrast
 	): { light: DynamicScheme; dark: DynamicScheme } {
 		let lightScheme: DynamicScheme;
 		let darkScheme: DynamicScheme;
@@ -509,133 +508,129 @@ class Colorization {
 		return { light: lightScheme, dark: darkScheme };
 	}
 
-	private createCustomColors(
-		color: string,
-		colorName: string
-	): CustomColors {
-        const colorNameCapitalized = colorName.charAt(0).toUpperCase() + colorName.slice(1);
-        // mixing with the primary color of the app scheme:
-		const colorGroup = customColor(this.sourceColor.argb, { value: argbFromHex(color), name: colorName, blend: true });
-        // using the mixed color as input:
-        const schemeLight = this.createMaterialSchemes(Hct.fromInt(colorGroup.light.color)).light;
-        const schemeDark = this.createMaterialSchemes(Hct.fromInt(colorGroup.dark.color)).dark;
-        // // using the input color as primary color - colors are pretty disconnected  - so don't use this:
-        // const schemeLight = this.createMaterialSchemes(Hct.fromInt(argbFromHex(color))).light;
-        // const schemeDark = this.createMaterialSchemes(Hct.fromInt(argbFromHex(color))).dark;
+	private createCustomColors(color: string, colorName: string): CustomColors {
+		const colorNameCapitalized = colorName.charAt(0).toUpperCase() + colorName.slice(1);
+		// mixing with the primary color of the app scheme:
+		const colorGroup = customColor(this.sourceColor.argb, {
+			value: argbFromHex(color),
+			name: colorName,
+			blend: true
+		});
+		// using the mixed color as input:
+		const schemeLight = this.createMaterialSchemes(Hct.fromInt(colorGroup.light.color)).light;
+		const schemeDark = this.createMaterialSchemes(Hct.fromInt(colorGroup.dark.color)).dark;
+		// // using the input color as primary color - colors are pretty disconnected  - so don't use this:
+		// const schemeLight = this.createMaterialSchemes(Hct.fromInt(argbFromHex(color))).light;
+		// const schemeDark = this.createMaterialSchemes(Hct.fromInt(argbFromHex(color))).dark;
 
-        const surfaceContainerHighestLight = DynamicColor.fromPalette({
-            name: 'surfaceContainerHighestLight',
-            palette: (schemeLight) => schemeLight.neutralPalette,
-            tone: (schemeLight) => new ContrastCurve(90, 90, 84, 80).get(schemeLight.contrastLevel),
-            isBackground: true,
-        });
+		const surfaceContainerHighestLight = DynamicColor.fromPalette({
+			name: 'surfaceContainerHighestLight',
+			palette: (schemeLight) => schemeLight.neutralPalette,
+			tone: (schemeLight) => new ContrastCurve(90, 90, 84, 80).get(schemeLight.contrastLevel),
+			isBackground: true
+		});
 
-        const customPrimaryLight = DynamicColor.fromPalette(
-            { 
-                name: colorName, 
-                palette: (schemeLight) => schemeLight.primaryPalette,
-                tone: (schemeLight) => this.isMonochrome ? 0 : 40,
-                // consider using options from primary instead of error"
-                background: (schemeLight) => surfaceContainerHighestLight,//MaterialDynamicColors.highestSurface(schemeLight),
-                contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
-                toneDeltaPair: (schemeLight) => new ToneDeltaPair(
-                    customPrimaryContainerLight, customPrimaryContainerLight, 10, 'nearer', false
-                ),
-            },
-        )
-        const customOnPrimaryLight = DynamicColor.fromPalette(
-            { 
-                name: `on${colorNameCapitalized}`, 
-                palette: (schemeLight) => schemeLight.primaryPalette,
-                tone: (schemeLight) => this.isMonochrome ? 10 : 20,
-                // consider using options from primary instead of error"
-                background: (schemeLight) => MaterialDynamicColors.primary,
-                contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
-            },
-        )
-        const customPrimaryContainerLight = DynamicColor.fromPalette(
-            { 
-                name: `${colorName}Container`, 
-                palette: (schemeLight) => schemeLight.primaryPalette,
-                tone: (schemeLight) => 90, //this.isMonochrome ? 25 : 90,
-                isBackground: true,
-                // consider using options from primary instead of error"
-                background: (schemeLight) => surfaceContainerHighestLight,// MaterialDynamicColors.highestSurface(schemeLight),
-                contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
-                toneDeltaPair: (schemeLight) => new ToneDeltaPair(
-                    customPrimaryContainerLight, customPrimaryContainerLight, 10, 'nearer', false
-                ),
-            },
-        )
-        const customOnPrimaryContainerLight = DynamicColor.fromPalette(
-            { 
-                name: `on${colorNameCapitalized}Container`, 
-                palette: (schemeLight) => schemeLight.primaryPalette,
-                tone: (schemeLight) => this.isMonochrome ? 10 : 30,
-                // consider using options from primary instead of error"
-                background: (schemeLight) => MaterialDynamicColors.primaryContainer,
-                contrastCurve: new ContrastCurve(3, 4.5, 7, 11),
-            },
-        )
+		const customPrimaryLight = DynamicColor.fromPalette({
+			name: colorName,
+			palette: (schemeLight) => schemeLight.primaryPalette,
+			tone: (_schemeLight) => (this.isMonochrome ? 0 : 40),
+			// consider using options from primary instead of error"
+			background: (_schemeLight) => surfaceContainerHighestLight, //MaterialDynamicColors.highestSurface(schemeLight),
+			contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
+			toneDeltaPair: (_schemeLight) =>
+				new ToneDeltaPair(
+					customPrimaryContainerLight,
+					customPrimaryContainerLight,
+					10,
+					'nearer',
+					false
+				)
+		});
+		const customOnPrimaryLight = DynamicColor.fromPalette({
+			name: `on${colorNameCapitalized}`,
+			palette: (schemeLight) => schemeLight.primaryPalette,
+			tone: (_schemeLight) => (this.isMonochrome ? 10 : 20),
+			// consider using options from primary instead of error"
+			background: (_schemeLight) => MaterialDynamicColors.primary,
+			contrastCurve: new ContrastCurve(4.5, 7, 11, 21)
+		});
+		const customPrimaryContainerLight = DynamicColor.fromPalette({
+			name: `${colorName}Container`,
+			palette: (schemeLight) => schemeLight.primaryPalette,
+			tone: (_schemeLight) => 90, //this.isMonochrome ? 25 : 90,
+			isBackground: true,
+			// consider using options from primary instead of error"
+			background: (_schemeLight) => surfaceContainerHighestLight, // MaterialDynamicColors.highestSurface(schemeLight),
+			contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
+			toneDeltaPair: (_schemeLight) =>
+				new ToneDeltaPair(
+					customPrimaryContainerLight,
+					customPrimaryContainerLight,
+					10,
+					'nearer',
+					false
+				)
+		});
+		const customOnPrimaryContainerLight = DynamicColor.fromPalette({
+			name: `on${colorNameCapitalized}Container`,
+			palette: (schemeLight) => schemeLight.primaryPalette,
+			tone: (_schemeLight) => (this.isMonochrome ? 10 : 30),
+			// consider using options from primary instead of error"
+			background: (_schemeLight) => MaterialDynamicColors.primaryContainer,
+			contrastCurve: new ContrastCurve(3, 4.5, 7, 11)
+		});
 
-        const surfaceContainerHighestDark = DynamicColor.fromPalette({
-            name: 'surfaceContainerHighestDark',
-            palette: (schemeDark) => schemeDark.neutralPalette,
-            tone: (schemeDark) => new ContrastCurve(22, 22, 26, 30).get(schemeDark.contrastLevel), // for light: new ContrastCurve(90, 90, 84, 80).get(s.contrastLevel),
-            isBackground: true,
-        });
+		const surfaceContainerHighestDark = DynamicColor.fromPalette({
+			name: 'surfaceContainerHighestDark',
+			palette: (schemeDark) => schemeDark.neutralPalette,
+			tone: (schemeDark) => new ContrastCurve(22, 22, 26, 30).get(schemeDark.contrastLevel), // for light: new ContrastCurve(90, 90, 84, 80).get(s.contrastLevel),
+			isBackground: true
+		});
 
-        const customPrimaryDark = DynamicColor.fromPalette(
-            { 
-                name: colorName, 
-                palette: (schemeDark) => schemeDark.primaryPalette,
-                tone: (schemeDark) => this.isMonochrome ? 100: 80,
-                // consider using options from primary instead of error"
-                background: (s) => surfaceContainerHighestDark,//MaterialDynamicColors.highestSurface(schemeDark),// 
-                contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
-                toneDeltaPair: (s) => new ToneDeltaPair(
-                    customPrimaryContainerDark, customPrimaryDark, 10, 'nearer', false
-                ),
-            },
-        )
-        const customOnPrimaryDark = DynamicColor.fromPalette(
-            { 
-                name: `on${colorName}`, 
-                palette: (schemeDark) => schemeDark.primaryPalette,
-                tone: (schemeDark) => this.isMonochrome ? 90 : 100, // from error // consider making 90 in Monochrome!
-                // consider using options from primary instead of error"
-                background: (schemeDark) => MaterialDynamicColors.primary,
-                contrastCurve: new ContrastCurve(4.5, 7, 11, 21),
-            },
-        )
-        const customPrimaryContainerDark = DynamicColor.fromPalette(
-            { 
-                name: `${colorName}Container`, 
-                palette: (schemeDark) => schemeDark.primaryPalette,
-                tone: (schemeDark) => this.isMonochrome ? 85 : 30, // this.sourceColor.hct.tone,// 
-                isBackground: true,
-                // consider using options from primary instead of error"
-                background: (schemeDark) => surfaceContainerHighestDark,//MaterialDynamicColors.highestSurface(schemeDark),// 
-                contrastCurve: new ContrastCurve(1, 1, 3, 4.5), // new ContrastCurve(1, 4.5, 7, 11),// new ContrastCurve(3, 4.5, 7, 7),
-                toneDeltaPair: (schemeDark) => new ToneDeltaPair(
-                    customPrimaryContainerDark, customPrimaryDark, 10, 'nearer', false
-                ),
-            },
-        )
-        const customOnPrimaryContainerDark = DynamicColor.fromPalette(
-            { 
-                name: `on${colorNameCapitalized}Container`, 
-                palette: (schemeDark) => schemeDark.primaryPalette,
-                // tone: (schemeDark) => this.isMonochrome ? 0 : 90,
-                tone: (schemeDark) => { return DynamicColor.foregroundTone(
-                    MaterialDynamicColors.primaryContainer.tone(schemeDark), 4.5);
-                },
-                // consider using options from primary instead of error"
-                background: (schemeDark) => MaterialDynamicColors.primaryContainer,
-                contrastCurve: new ContrastCurve(3, 4.5, 7, 11),
-            },
-        )
-		const lightPalette = TonalPalette.fromInt(colorGroup.light.color);// must be the scheme.primaryPalette now?
+		const customPrimaryDark = DynamicColor.fromPalette({
+			name: colorName,
+			palette: (schemeDark) => schemeDark.primaryPalette,
+			tone: (_schemeDark) => (this.isMonochrome ? 100 : 80),
+			// consider using options from primary instead of error"
+			background: (_schemeDark) => surfaceContainerHighestDark, //MaterialDynamicColors.highestSurface(schemeDark),//
+			contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
+			toneDeltaPair: (_schemeDark) =>
+				new ToneDeltaPair(customPrimaryContainerDark, customPrimaryDark, 10, 'nearer', false)
+		});
+		const customOnPrimaryDark = DynamicColor.fromPalette({
+			name: `on${colorName}`,
+			palette: (schemeDark) => schemeDark.primaryPalette,
+			tone: (_schemeDark) => (this.isMonochrome ? 90 : 100), // from error // consider making 90 in Monochrome!
+			// consider using options from primary instead of error"
+			background: (_schemeDark) => MaterialDynamicColors.primary,
+			contrastCurve: new ContrastCurve(4.5, 7, 11, 21)
+		});
+		const customPrimaryContainerDark = DynamicColor.fromPalette({
+			name: `${colorName}Container`,
+			palette: (schemeDark) => schemeDark.primaryPalette,
+			tone: (_schemeDark) => (this.isMonochrome ? 85 : 30), // this.sourceColor.hct.tone,//
+			isBackground: true,
+			// consider using options from primary instead of error"
+			background: (_schemeDark) => surfaceContainerHighestDark, //MaterialDynamicColors.highestSurface(schemeDark),//
+			contrastCurve: new ContrastCurve(1, 1, 3, 4.5), // new ContrastCurve(1, 4.5, 7, 11),// new ContrastCurve(3, 4.5, 7, 7),
+			toneDeltaPair: (_schemeDark) =>
+				new ToneDeltaPair(customPrimaryContainerDark, customPrimaryDark, 10, 'nearer', false)
+		});
+		const customOnPrimaryContainerDark = DynamicColor.fromPalette({
+			name: `on${colorNameCapitalized}Container`,
+			palette: (schemeDark) => schemeDark.primaryPalette,
+			// tone: (schemeDark) => this.isMonochrome ? 0 : 90,
+			tone: (schemeDark) => {
+				return DynamicColor.foregroundTone(
+					MaterialDynamicColors.primaryContainer.tone(schemeDark),
+					4.5
+				);
+			},
+			// consider using options from primary instead of error"
+			background: (_schemeDark) => MaterialDynamicColors.primaryContainer,
+			contrastCurve: new ContrastCurve(3, 4.5, 7, 11)
+		});
+		const lightPalette = TonalPalette.fromInt(colorGroup.light.color); // must be the scheme.primaryPalette now?
 		const darkPalette = TonalPalette.fromInt(colorGroup.dark.color);
 		const light = {
 			colors: colorGroup.light,
@@ -645,16 +640,16 @@ class Colorization {
 			colors: colorGroup.dark,
 			palette: darkPalette
 		};
-        light.colors.color = customPrimaryLight.getArgb(schemeLight);
-        dark.colors.color = customPrimaryDark.getArgb(schemeDark);
-        light.colors.onColor = customOnPrimaryLight.getArgb(schemeLight);
-        dark.colors.onColor = customOnPrimaryDark.getArgb(schemeDark);
-        // light.colors.colorContainer = Contrast.darker(customPrimaryContainerLight.getArgb(schemeLight), 7.0);
-        // dark.colors.colorContainer = Contrast.darker(customPrimaryContainerDark.getArgb(schemeDark), 3.0);
-        light.colors.colorContainer = customPrimaryContainerLight.getArgb(schemeLight);
-        dark.colors.colorContainer = customPrimaryContainerDark.getArgb(schemeDark);
-        light.colors.onColorContainer = customOnPrimaryContainerLight.getArgb(schemeLight);
-        dark.colors.onColorContainer = customOnPrimaryContainerDark.getArgb(schemeDark);
+		light.colors.color = customPrimaryLight.getArgb(schemeLight);
+		dark.colors.color = customPrimaryDark.getArgb(schemeDark);
+		light.colors.onColor = customOnPrimaryLight.getArgb(schemeLight);
+		dark.colors.onColor = customOnPrimaryDark.getArgb(schemeDark);
+		// light.colors.colorContainer = Contrast.darker(customPrimaryContainerLight.getArgb(schemeLight), 7.0);
+		// dark.colors.colorContainer = Contrast.darker(customPrimaryContainerDark.getArgb(schemeDark), 3.0);
+		light.colors.colorContainer = customPrimaryContainerLight.getArgb(schemeLight);
+		dark.colors.colorContainer = customPrimaryContainerDark.getArgb(schemeDark);
+		light.colors.onColorContainer = customOnPrimaryContainerLight.getArgb(schemeLight);
+		dark.colors.onColorContainer = customOnPrimaryContainerDark.getArgb(schemeDark);
 
 		return {
 			light: light,
@@ -662,27 +657,15 @@ class Colorization {
 		};
 	}
 
-	public createAppColors(colorConfig: ColorConfig): AppColors {
+	public createAppColors(): AppColors {
 		const { light: lightMaterial, dark: darkMaterial } = this.createMaterialSchemes();
 		console.log('=== lib - theming - createAppColors - lightFlyonUI and darkFlyonUI ===');
 		console.log(lightFlyonUI);
 		console.log(darkFlyonUI);
-		const neutralFromFlyonUI = this.createCustomColors(
-			darkFlyonUI.neutral,
-			'flyonui-neutral'
-		);
-		const infoFromFlyonUI = this.createCustomColors(
-			darkFlyonUI.info,
-			'flyonui-info'
-		);
-		const successFromFlyonUI = this.createCustomColors(
-			darkFlyonUI.success,
-			'flyonui-success'
-		);
-		const warningFromFlyonUI = this.createCustomColors(
-			darkFlyonUI.warning,
-			'flyonui-warning'
-		);
+		const neutralFromFlyonUI = this.createCustomColors(darkFlyonUI.neutral, 'flyonui-neutral');
+		const infoFromFlyonUI = this.createCustomColors(darkFlyonUI.info, 'flyonui-info');
+		const successFromFlyonUI = this.createCustomColors(darkFlyonUI.success, 'flyonui-success');
+		const warningFromFlyonUI = this.createCustomColors(darkFlyonUI.warning, 'flyonui-warning');
 		let light: {
 			colors: Partial<AppColorSchemeForMode['colors']>;
 			palettes: Partial<AppColorSchemeForMode['palettes']>;
@@ -832,7 +815,7 @@ export class Theming {
 			colorConfig.variant,
 			colorConfig.contrast
 		);
-		const colorScheme = colorization.createAppColors(colorConfig);
+		const colorScheme = colorization.createAppColors();
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
 		this.applyMaterialTokens(colors, targetElement);
 		this.applyFlyonUITokens(colors, targetElement);
