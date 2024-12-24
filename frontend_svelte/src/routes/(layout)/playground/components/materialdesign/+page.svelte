@@ -259,7 +259,9 @@
 			/>
 		</div>
 		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-			<p class="col-span-2 text-center text-xl md:col-span-4">Avoid using those - the fixed colors don't switch from light to dark mode</p>
+			<p class="col-span-2 text-center text-xl md:col-span-4">
+				Avoid using those - the fixed colors don't switch from light to dark mode
+			</p>
 			<ColorTileMaterialUi
 				background="--md-sys-color-primary-fixed"
 				color="--md-sys-color-on-primary-fixed"
@@ -318,10 +320,7 @@
 				background="--md-sys-color-surface-dim"
 				color="--md-sys-color-on-surface"
 			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-surface"
-				color="--md-sys-color-on-surface"
-			/>
+			<ColorTileMaterialUi background="--md-sys-color-surface" color="--md-sys-color-on-surface" />
 			<ColorTileMaterialUi
 				background="--md-sys-color-surface-bright"
 				color="--md-sys-color-on-surface"
@@ -340,7 +339,10 @@
 
 	<div class="col-span-2">
 		<Title>Palettes</Title>
-		<p>Add all the palettes as a sweep of tone from all available palettes: primary, secondary, with a slider controlling the tone</p>
+		<p>
+			Add all the palettes as a sweep of tone from all available palettes: primary, secondary, with
+			a slider controlling the tone
+		</p>
 	</div>
 
 	<!-- <div class="staticMaterialThemeBuilder">

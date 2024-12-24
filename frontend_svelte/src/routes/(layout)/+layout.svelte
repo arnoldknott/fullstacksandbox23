@@ -39,7 +39,7 @@
 	import Guard from '$components/Guard.svelte';
 	import ThemePicker from '$components/ThemePicker.svelte';
 	// import JsonData from '$components/JsonData.svelte';
-	import { theme } from './layout.svelte';
+	// import { theme } from './layout.svelte';
 
 	const theming = new Theming();
 
@@ -316,8 +316,8 @@
 		// necessary to apply the theme to the mainContent div:
 		// $effect(() => { scheme })
 		$effect(() => {
-			// theming.applyTheme(themeConfiguration, mode, mainContent);
-			theme.set(theming.applyTheme(themeConfiguration, mode, mainContent));
+			theming.applyTheme(themeConfiguration, mode, mainContent);
+			// theme.set(theming.applyTheme(themeConfiguration, mode, mainContent));
 			// $page.data.theme = theme;
 			// setContext('theme', theme)
 			// console.log('=== src - routes - (layout) - layout.svelte - theme ===');
