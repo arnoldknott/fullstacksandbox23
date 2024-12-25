@@ -9,7 +9,7 @@
 	</p>
 </div>
 
-<style>
+<style scoped>
 	/* .bg-primary-container {
 		background-color: var(--md-sys-color-primary-container);
 	}

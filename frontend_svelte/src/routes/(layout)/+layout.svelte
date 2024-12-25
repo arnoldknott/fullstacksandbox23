@@ -317,10 +317,14 @@
 		// $effect(() => { scheme })
 		$effect(() => {
 			// theming.applyTheme(themeConfiguration, mode, mainContent);
+			// const mainElement = document.documentElement.querySelector('main');
 			theming.applyTheme(themeConfiguration, mode, document.documentElement);
+			// if (mainElement)
+			// theming.applyTheme(themeConfiguration, mode, mainElement);
 			const styleElement = document.createElement('style');
 			styleElement.textContent =
-				'.bg-primary-container { background-color: var(--md-sys-color-primary-container); } .text-primary-container { color: var(--md-sys-color-primary-container); }';
+				`.bg-secondary { background-color: var(--md-sys-color-secondary); } .text-secondary { color: var(--md-sys-color-secondary); }
+				.bg-primary-container { background-color: var(--md-sys-color-primary-container); } .text-primary-container { color: var(--md-sys-color-primary-container); }`;
 			document.head.appendChild(styleElement);
 			// theme.set(theming.applyTheme(themeConfiguration, mode, mainContent));
 			// $page.data.theme = theme;
@@ -588,112 +592,3 @@
 
 	<!-- <JsonData data={theme}></JsonData> -->
 </div>
-
-<style>
-	/* :global {
-
-		.bg-primary-container {
-			background-color: var(--md-sys-color-primary-container);
-		}
-		.text-primary-container {
-			color: var(--md-sys-color-primary-container);
-		}
-	} */
-	/* @import './dark.css';
-	@import './dark-hc.css';
-	@import './dark-mc.css';
-	@import './light.css';
-	@import './light-hc.css';
-	@import './light-mc.css'; */
-
-	/* body {
-		--p: rgb(65, 95, 145);
-	} */
-	/* :root {
-    --my-color: #394DFF;
-	} */
-	/* background: #169C0F; */
-	/* :root{
-		--p: oklch(0.85 0.1 100);
-	}
-
-	:global(html, body) {
-		
-		--p: (0.7 0.1 100);
-	}
-	:global(.bg-primary) {
-		background-color: var(--p);
-	} */
-
-	/* [data-theme=light] {
-		color-scheme: light;
-		--rounded-box: 0.5rem ;
-		--rounded-btn: 0.375rem;
-		--rounded-tooltip: 0.25rem;
-		--animation-btn: 0.25s;
-		--animation-input: .2s;
-		--btn-focus-scale: 0.95;
-		--border-btn: 1px;
-		--tab-border: 1px;
-		--tab-radius: 0.5rem;
-		--p: 57.5934% 0.247012 287.240256;
-		--pc: 93.7482% 0.032368 291.504163;
-		--s: 55.7871% 0.022138 301.905408;
-		--sc: 95.0453% 0.002858 308.427423;
-		--a: 62.3083% 0.188015 259.814527;
-		--ac: 93.1918% 0.031591 255.585479;
-		--n: 40.6559% 0.025056 282.210785;
-		--nc: 97.6419% 0.001323 286.375536;
-		--b1: 100% 0 0;
-		--b2: 94.7244% 0.005338 286.297402;
-		--b3: 88.6277% 0.008239 278.622785;
-		--bc: 37.567% 0.022158 281.800147;
-		--bs: 37.567% 0.022158 281.800147;
-		--in: 71.4837% 0.125737 215.220903;
-		--inc: 95.6262% 0.044329 203.387778;
-		--su: 73.1062% 0.216656 147.043973;
-		--suc: 96.444% 0.02867 172.082912;
-		--wa: 79.8713% 0.164239 73.09399;
-		--wac: 98.4165% 0.02418 94.061776;
-		--er: 65.3932% 0.222085 25.863858;
-		--erc: 97.5752% 0.015143 61.349242;
-		transparent: transparent;
-		current: currentColor;
-	}
-
-	[data-theme=dark] {
-		color-scheme: dark;
-		--rounded-box: 0.5rem ;
-		--rounded-btn: 0.375rem;
-		--rounded-tooltip: 0.25rem;
-		--animation-btn: 0.25s;
-		--animation-input: .2s;
-		--btn-focus-scale: 0.95;
-		--border-btn: 1px;
-		--tab-border: 1px;
-		--tab-radius: 0.5rem;
-		--p: 57.5934% 0.247012 287.240256;
-		--pc: 93.7482% 0.032368 291.504163;
-		--s: 55.7871% 0.022138 301.905408;
-		--sc: 100% 0 0;
-		--a: 62.3083% 0.188015 259.814527;
-		--ac: 93.1918% 0.031591 255.585479;
-		--n: 65.7482% 0.022235 294.952787;
-		--nc: 18.5128% 0.016696 301.919165;
-		--b1: 26.8442% 0.028285 299.769973;
-		--b2: 22.6865% 0.023344 295.952775;
-		--b3: 39.9632% 0.030791 300.243852;
-		--bc: 78.094% 0.014175 295.24394;
-		--bs: 18.5128% 0.016696 301.919165;
-		--in: 71.4837% 0.125737 215.220903;
-		--inc: 95.6262% 0.044329 203.387778;
-		--su: 73.1062% 0.216656 147.043973;
-		--suc: 96.444% 0.02867 172.082912;
-		--wa: 79.8713% 0.164239 73.09399;
-		--wac: 98.4165% 0.02418 94.061776;
-		--er: 65.3932% 0.222085 25.863858;
-		--erc: 97.5752% 0.015143 61.349242;
-		transparent: transparent;
-		current: currentColor;
-	} */
-</style>

@@ -636,8 +636,8 @@
     </div> -->
 </div>
 
-<style>
-	:global {
+<!-- <style>
+	/* :global {
 		.bg-primary-container {
 			background-color: var(--md-sys-color-primary-container);
 		}
@@ -650,7 +650,7 @@
 		.text-primary-container-content {
 			color: var(--md-sys-color-on-primary-container);
 		}
-	}
+	} */
 
 	/* body, html {
     --p: var(--md-sys-color-primary);
@@ -696,4 +696,4 @@
 .text-primary-content-container {
     color: var(--md-sys-color-on-primary-container);
 } */
-</style>
+</style> -->
