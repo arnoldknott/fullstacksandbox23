@@ -281,6 +281,7 @@ type AdditionalFlyonUIScheme = {
 // AdditionalFlyonUIColorsPalette;
 
 // TBD: check how to do all the containers programmatically for providing the container classes (extensions of FlyonUI to match Material Design)
+// TBD: Map matched colors to both class names, e.g. onPrimary primary-container bcomse a class definition of ".on-primary, .primary-container"
 const flyonUImaterialDesignMapping = new Map([
 	['p', 'primary'],
 	['pc', 'onPrimary'],
@@ -829,10 +830,12 @@ export class Theming {
 	//     return tenFoldContrast
 	// }
 
+	// Note, where this is called, the document needs to be available
+	// so don't call on server in server side rendering scenarios!
 	public applyTheme(
 		colorConfig: ColorConfig,
 		mode: 'light' | 'dark',
-		targetElement: HTMLElement
+		targetElement: HTMLElement = document.documentElement
 	): AppTheme {
 		const colorization = new Colorization(
 			colorConfig.sourceColor,
@@ -854,13 +857,30 @@ export class Theming {
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
 		targetElement: HTMLElement
 	): void {
-		appColors.forEach((token) => {
-			const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-			targetElement.style.setProperty(
-				`--md-sys-color-${tokenKebabCase}`,
-				hexFromArgb(colors[token])
-			);
-		});
+		if (targetElement === document.documentElement) {
+			const styleElementId = 'md_sys_dynamic_color_tokens';
+			let styles = '';
+			appColors.forEach((token) => {
+				const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+				styles += `--md-sys-color-${tokenKebabCase}: ${hexFromArgb(colors[token])};\n`;
+			});
+			let styleElement = document.getElementById(styleElementId);
+			if (!styleElement) {
+				styleElement = document.createElement('style');
+				styleElement.setAttribute('type', 'text/css');
+				styleElement.setAttribute('id', 'md_sys_dynamic_color_tokens');
+			}
+			styleElement.textContent = `:root {\n${styles}}`;
+			document.head.appendChild(styleElement);
+		} else {
+			appColors.forEach((token) => {
+				const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+				targetElement.style.setProperty(
+					`--md-sys-color-${tokenKebabCase}`,
+					hexFromArgb(colors[token])
+				);
+			});
+		}
 		targetElement.style.backgroundColor = hexFromArgb(colors['background']);
 	}
 
@@ -875,9 +895,30 @@ export class Theming {
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
 		targetElement: HTMLElement
 	): void {
-		flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
-			const oklchColor = this.oklchFromArgb(colors[materialDesignToken as keyof typeof colors]);
-			targetElement.style.setProperty(`--${flyonUIToken}`, oklchColor);
-		});
+		if (targetElement === document.documentElement) {
+			const styleElementId = 'flyonUI_extenstion_material_design';
+			let styles = '';
+			flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
+				const materialTokenKey = materialDesignToken as keyof typeof colors;
+				const oklchColor = this.oklchFromArgb(colors[materialTokenKey]);
+				styles += `--${flyonUIToken}: ${oklchColor};\n`;
+				styles += `.bg-${materialDesignToken} {background-color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
+				styles += `.text-${materialDesignToken} {color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
+			});
+			let styleElement = document.getElementById(styleElementId);
+			if (!styleElement) {
+				styleElement = document.createElement('style');
+				styleElement.setAttribute('type', 'text/css');
+				styleElement.setAttribute('id', styleElementId);
+			}
+			styleElement.textContent = `:root {\n${styles}}`;
+			document.head.appendChild(styleElement);
+		} else {
+			flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
+				const oklchColor = this.oklchFromArgb(colors[materialDesignToken as keyof typeof colors]);
+				targetElement.style.setProperty(`--${flyonUIToken}`, oklchColor);
+				// TBD: also set the classes as property on the targetElement?
+			});
+		}
 	}
 }

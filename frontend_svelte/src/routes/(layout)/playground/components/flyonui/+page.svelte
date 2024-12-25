@@ -102,7 +102,14 @@
 			</div>
 			<div>
 				<ColorTileFlyonUi background="secondary" content="secondary-content" />
+				<!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
 				<ColorTileFlyonUi background="secondary-content" content="secondary" />
+				<hr />
+				<div class="flex h-24 grow bg-secondary-content p-2">
+					<p class="text-left text-base text-secondary md:text-xl">secondary content direct</p>
+				</div>
+				<hr />
+				<ColorTileFlyonUi background="onSecondary" content="secondary" />
 			</div>
 			<div>
 				<ColorTileFlyonUi background="accent" content="accent-content" />
@@ -196,7 +203,7 @@
 				<p class="text-center text-xl text-secondary-content">base-content</p>
 			</div>
 			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-shadow">
-				<p class="text-center text-xl text-secondary-content">base-shadow</p>
+				<p class="text-center text-xl text-base-content">base-shadow</p>
 			</div>
 		</div>
 		<p class="mt-8 text-center text-2xl">Background base colors with /x argument:</p>
@@ -235,6 +242,27 @@
 				<p class="text-center text-xl">/100</p>
 			</div>
 		</div>
+	</div>
+
+	<div class="col-span-2">
+		<Title>Utility classes</Title>
+		<div>bg-"COLOR_NAME"</div>
+		<div>to-"COLOR-NAME"</div>
+		<div>via-"COLOR-NAME"</div>
+		<div>from-"COLOR-NAME"</div>
+		<div>text-"COLOR-NAME"</div>
+		<div>ring-"COLOR-NAME"</div>
+		<div>fill-"COLOR-NAME"</div>
+		<div>caret-"COLOR-NAME"</div>
+		<div>stroke-"COLOR-NAME"</div>
+		<div>border-"COLOR-NAME"</div>
+		<div>divide-"COLOR-NAME"</div>
+		<div>accent-"COLOR-NAME"</div>
+		<div>shadow-"COLOR-NAME"</div>
+		<div>outline-"COLOR-NAME"</div>
+		<div>decoration-"COLOR-NAME"</div>
+		<div>placeholder-"COLOR-NAME"</div>
+		<div>ring-offset-"COLOR-NAME"</div>
 	</div>
 
 	<div>
@@ -409,7 +437,7 @@
 			tabindex="-1"
 		>
 			<div class="modal-dialog overlay-open:opacity-100">
-				<div class="modal-content">
+				<div class="modal-content bg-base-300">
 					<div class="modal-header">
 						<h3 class="modal-title">Dialog Title</h3>
 						<button
@@ -635,65 +663,3 @@
         </div>
     </div> -->
 </div>
-
-<style>
-	:global {
-		.bg-primary-container {
-			background-color: var(--md-sys-color-primary-container);
-		}
-		.text-primary-container {
-			color: var(--md-sys-color-primary-container);
-		}
-		.bg-primary-container-content {
-			background-color: var(--md-sys-color-on-primary-container);
-		}
-		.text-primary-container-content {
-			color: var(--md-sys-color-on-primary-container);
-		}
-	}
-
-	/* body, html {
-    --p: var(--md-sys-color-primary);
-    --pc: var(--md-sys-color-on-primary);
-} */
-
-	/* Applying material design colors to new classes works: */
-	/* .primary {
-  background: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
-} */
-
-	/* Consider merging text and background into one: */
-	/* color: var(--md-sys-color-on-primary); */
-
-	/* Consider merging text and background into one: */
-	/* background-color: var(--md-sys-color-on-primary); */
-
-	/* .bg-primary, .btn-primary {
-    background-color: var(--md-sys-color-primary);
-    
-}
-.text-primary {
-    
-    color: var(--md-sys-color-primary);
-}
-.bg-primary-content, .btn-primary-content {
-    background-color: var(--md-sys-color-on-primary);
-}
-.text-primary-content {
-    color: var(--md-sys-color-on-primary);
-}
-
-.bg-primary-container, .btn-primary-container {
-    background-color: var(--md-sys-color-primary-container);
-}
-.text-primary-container {
-    color: var(--md-sys-color-primary-container);
-}
-.bg-primary-content-container, .btn-primary-content-container {
-    background-color: var(--md-sys-color-on-primary-container);
-}
-.text-primary-content-container {
-    color: var(--md-sys-color-on-primary-container);
-} */
-</style>

@@ -19,12 +19,6 @@ module.exports = {
 			colors: {
 				transparent: 'transparent',
 				current: 'currentColor'
-				// "primary": '#F94DFF',
-				// primary: 'var(--p)',
-				// 'primary-content': '#9AE7FF',
-				// Match accent into tertiary!
-				// tertiary: '#1B82F6',
-				// 'tertiary-content': '#0BEAFE',
 			}
 		}
 		// colors: {
