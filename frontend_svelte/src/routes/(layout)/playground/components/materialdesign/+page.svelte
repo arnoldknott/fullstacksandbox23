@@ -48,10 +48,10 @@
 	let palettesArray = $derived(
 		palettes
 			? Object.entries(palettes).map(([key, value]) => {
-					const currentTone = value.keyColor.tone;
+					// const currentTone = value.keyColor.tone;
 					// toneValues[key] = value.keyColor.tone;
-					return { name: key, currentTone: currentTone, ...value };
-					// return { name: key, ...value };
+					// return { name: key, currentTone: currentTone, ...value };
+					return { name: key, ...value };
 				})
 			: []
 	);
