@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 
 import flyonui from 'flyonui';
-import { light, dark } from 'flyonui/src/theming/themes';
+// import { light, dark } from 'flyonui/src/theming/themes';
 import flyonuiPlugin from 'flyonui/plugin';
 import { addDynamicIconSelectors } from '@iconify/tailwind';
 

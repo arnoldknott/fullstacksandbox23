@@ -58,5 +58,4 @@
 	.text-neutral-container-content {
 		color: var(--md-sys-color-on-neutral-container);
 	}
-
 </style>
