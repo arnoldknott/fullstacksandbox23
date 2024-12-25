@@ -843,16 +843,8 @@ export class Theming {
 		);
 		const colorScheme = colorization.createAppColors();
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
-        // console.log("=== lib - theming - applyTheme - mode ===");
-        // console.log(mode);
-        // console.log("=== lib - theming - applyTheme - colors[] ===");
 		this.applyMaterialTokens(colors, targetElement);
 		this.applyFlyonUITokens(colors, targetElement);
-        // targetElement.style.backgroundColor = hexFromArgb(colors['background']);
-        // console.log("=== lib - theming - applyTheme - colors[background] ===");
-        // console.log(hexFromArgb(colors["background"]));
-        // targetElement.style.backgroundColor = hexFromArgb(colors['background']);
-        // targetElement.style.setProperty("background-color", `${hexFromArgb(colors['background'])} !important`);
 		return {
 			configuration: colorConfig,
 			currentMode: mode,
@@ -904,7 +896,6 @@ export class Theming {
 	): void {
         if (targetElement === document.documentElement) {
             const styleElementId = 'flyonUI_extenstion_material_design';
-            // TBD: remove the previous styleElement if it exists!
             let styles = '';
             flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
                 const materialTokenKey = materialDesignToken as keyof typeof colors
@@ -920,7 +911,6 @@ export class Theming {
                 styleElement.setAttribute('id', styleElementId);
             }
             styleElement.textContent = `:root {\n${styles}}`;
-            // styleElement.textContent = styles
             document.head.appendChild(styleElement);
         } else {
             flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
