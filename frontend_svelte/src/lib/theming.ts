@@ -843,8 +843,16 @@ export class Theming {
 		);
 		const colorScheme = colorization.createAppColors();
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
+        console.log("=== lib - theming - applyTheme - mode ===");
+        console.log(mode);
+        console.log("=== lib - theming - applyTheme - colors[] ===");
 		this.applyMaterialTokens(colors, targetElement);
 		this.applyFlyonUITokens(colors, targetElement);
+        // targetElement.style.backgroundColor = hexFromArgb(colors['background']);
+        // console.log("=== lib - theming - applyTheme - colors[background] ===");
+        // console.log(hexFromArgb(colors["background"]));
+        // targetElement.style.backgroundColor = hexFromArgb(colors['background']);
+        targetElement.style.setProperty("background-color", `${hexFromArgb(colors['background'])} !important`);
 		return {
 			configuration: colorConfig,
 			currentMode: mode,
@@ -856,17 +864,20 @@ export class Theming {
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
 		targetElement: HTMLElement
 	): void {
-        let styles = '';
         if (targetElement === document.documentElement) {
+            const styleElementId = 'md_sys_dynamic_color_tokens';
             let styles = '';
             appColors.forEach((token) => {
                 const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
                 styles += `--md-sys-color-${tokenKebabCase}: ${hexFromArgb(colors[token])};\n`;
             });
-            const styleElement = document.createElement('style');
-            styleElement.setAttribute('type', 'text/css');
-            styleElement.setAttribute('id', 'md_sys_dynamic_color_tokens');
-            styleElement.innerHTML = `:root {\n${styles}}`;
+            let styleElement = document.getElementById(styleElementId);
+            if(!styleElement) {
+                styleElement = document.createElement('style');
+                styleElement.setAttribute('type', 'text/css');
+                styleElement.setAttribute('id', 'md_sys_dynamic_color_tokens');
+            }
+            styleElement.textContent = `:root {\n${styles}}`;
             document.head.appendChild(styleElement);
         } else {
             appColors.forEach((token) => {
@@ -892,15 +903,24 @@ export class Theming {
 		targetElement: HTMLElement
 	): void {
         if (targetElement === document.documentElement) {
+            const styleElementId = 'flyonUI_extenstion_material_design';
+            // TBD: remove the previous styleElement if it exists!
             let styles = '';
             flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
-                const oklchColor = this.oklchFromArgb(colors[materialDesignToken as keyof typeof colors]);
+                const materialTokenKey = materialDesignToken as keyof typeof colors
+                const oklchColor = this.oklchFromArgb(colors[materialTokenKey]);
                 styles += `--${flyonUIToken}: ${oklchColor}};\n`;
+                styles += `.bg-${materialDesignToken} {background-color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
+                styles += `.text-${materialDesignToken} {color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
             });
-            const styleElement = document.createElement('style');
-            styleElement.setAttribute('type', 'text/css');
-            styleElement.setAttribute('id', 'flyonUI_extenstion_material_design');
-            styleElement.innerHTML = `:root {\n${styles}}`;
+            let styleElement = document.getElementById(styleElementId);
+            if(!styleElement) {
+                styleElement = document.createElement('style');
+                styleElement.setAttribute('type', 'text/css');
+                styleElement.setAttribute('id', styleElementId);
+            }
+            styleElement.textContent = `:root {\n${styles}}`;
+            // styleElement.textContent = styles
             document.head.appendChild(styleElement);
         } else {
             flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {

@@ -97,7 +97,8 @@
 		</p>
 		<div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
 			<div>
-				<ColorTileFlyonUi background="primary" content="primary-content" />
+                <ColorTileFlyonUi background="primary" content="primary-content" />
+				<!-- <ColorTileFlyonUi class="bg-primary text-primary-content" background="primary" content="primary-content" /> -->
 				<ColorTileFlyonUi background="primary-content" content="primary" />
 			</div>
 			<div>

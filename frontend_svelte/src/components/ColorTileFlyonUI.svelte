@@ -9,13 +9,13 @@
 	</p>
 </div>
 
-<style scoped>
+<!-- <style scoped>
 	/* .bg-primary-container {
 		background-color: var(--md-sys-color-primary-container);
 	}
 	.text-primary-container {
 		color: var(--md-sys-color-primary-container);
-	} */
+	}
 	.bg-primary-container-content {
 		background-color: var(--md-sys-color-on-primary-container);
 	}
@@ -57,5 +57,5 @@
 	}
 	.text-neutral-container-content {
 		color: var(--md-sys-color-on-neutral-container);
-	}
-</style>
+	}*/
+</style> -->
