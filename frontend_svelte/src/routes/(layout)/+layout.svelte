@@ -316,7 +316,12 @@
 		// necessary to apply the theme to the mainContent div:
 		// $effect(() => { scheme })
 		$effect(() => {
-			theming.applyTheme(themeConfiguration, mode, mainContent);
+			// theming.applyTheme(themeConfiguration, mode, mainContent);
+			theming.applyTheme(themeConfiguration, mode, document.documentElement);
+			const styleElement = document.createElement('style');
+			styleElement.textContent =
+				'.bg-primary-container { background-color: var(--md-sys-color-primary-container); } .text-primary-container { color: var(--md-sys-color-primary-container); }';
+			document.head.appendChild(styleElement);
 			// theme.set(theming.applyTheme(themeConfiguration, mode, mainContent));
 			// $page.data.theme = theme;
 			// setContext('theme', theme)
@@ -522,7 +527,8 @@
 <!-- The class switches material design 3, whereas data-theme switches FlyonUI -->
 <!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryManual};"> -->
 <!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryFromMaterialDesign};" use:applyTheming> -->
-<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} use:applyTheming>
+<!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} use:applyTheming> -->
+<div bind:this={mainContent} class="h-full {mode}" data-theme={mode} use:applyTheming>
 	<nav class="mx-2 p-2">
 		<div class="flex w-full flex-wrap items-center justify-between">
 			<div class="flex-grow space-x-4">
@@ -584,6 +590,15 @@
 </div>
 
 <style>
+	/* :global {
+
+		.bg-primary-container {
+			background-color: var(--md-sys-color-primary-container);
+		}
+		.text-primary-container {
+			color: var(--md-sys-color-primary-container);
+		}
+	} */
 	/* @import './dark.css';
 	@import './dark-hc.css';
 	@import './dark-mc.css';

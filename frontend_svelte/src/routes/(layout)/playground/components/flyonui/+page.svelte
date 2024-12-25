@@ -3,6 +3,7 @@
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	// import { createRawSnippet, type Snippet } from 'svelte';
 	import type { IOverlay } from 'flyonui/flyonui';
+	import ColorTileFlyonUi from '$components/ColorTileFlyonUI.svelte';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
 	// return {
@@ -91,49 +92,62 @@
 <div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="col-span-2">
 		<Title>Colors</Title>
-		<p class="text-center text-2xl">Semantic colors FlyonUI:</p>
+		<p class="col-span-2 text-center text-xl md:col-span-4 xl:col-span-8">
+			Semantic colors FlyonUI
+		</p>
+		<div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
+			<div>
+				<ColorTileFlyonUi background="primary" content="primary-content" />
+				<ColorTileFlyonUi background="primary-content" content="primary" />
+			</div>
+			<div>
+				<ColorTileFlyonUi background="secondary" content="secondary-content" />
+				<ColorTileFlyonUi background="secondary-content" content="secondary" />
+			</div>
+			<div>
+				<ColorTileFlyonUi background="accent" content="accent-content" />
+				<ColorTileFlyonUi background="accent-content" content="accent" />
+			</div>
+			<div>
+				<ColorTileFlyonUi background="neutral" content="neutral-content" />
+				<ColorTileFlyonUi background="neutral-content" content="neutral" />
+			</div>
+			<div>
+				<ColorTileFlyonUi background="info" content="info-content" />
+				<ColorTileFlyonUi background="info-content" content="info" />
+			</div>
+			<div>
+				<ColorTileFlyonUi background="success" content="success-content" />
+				<ColorTileFlyonUi background="success-content" content="success" />
+			</div>
+			<div>
+				<ColorTileFlyonUi background="warning" content="warning-content" />
+				<ColorTileFlyonUi background="warning-content" content="warning" />
+			</div>
+			<div>
+				<ColorTileFlyonUi background="error" content="error-content" />
+				<ColorTileFlyonUi background="error-content" content="error" />
+			</div>
+		</div>
+		<p class="mt-8 text-center text-2xl">Added to FlyonUI to match Material UI:</p>
 		<div class="grid grid-cols-4 gap-4 xl:grid-cols-8">
 			<div>
-				<div class="skeleton flex h-24 w-36 items-center justify-center bg-primary">
-					<p class="text-center text-xl text-primary-content">primary</p>
-					<!-- <p class="text-center text-xl">primary</p> -->
-				</div>
-				<div class="skeleton flex h-24 w-36 items-center justify-center bg-primary-content">
-					<p class="text-center text-xl text-primary">primary content</p>
-				</div>
+				<ColorTileFlyonUi background="primary-container" content="primary-container-content" />
+				<ColorTileFlyonUi background="primary-container-content" content="primary-container" />
 			</div>
 			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-secondary">
-					<p class="text-center text-xl text-secondary-content">secondary</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-secondary-content">
-					<p class="text-center text-xl text-secondary">secondary-content</p>
-				</div>
-			</div>
-			<!-- <div>
-                <div class="skeleton flex h-12 w-36 items-center justify-center bg-tertiary">
-                    <p class="text-center text-xl text-tertiary-content">tertiary</p>
-                </div>
-                <div class="skeleton flex h-12 w-36 items-center justify-center bg-tertiary-content">
-                    <p class="text-center text-xl text-tertiary">tertiary-content</p>
-                </div>
-            </div> -->
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-accent">
-					<p class="text-center text-xl text-accent-content">accent</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-accent-content">
-					<p class="text-center text-xl text-accent">accent-content</p>
-				</div>
+				<ColorTileFlyonUi background="secondary-container" content="secondary-container-content" />
+				<ColorTileFlyonUi background="secondary-container-content" content="secondary-container" />
 			</div>
 			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-neutral">
-					<p class="text-center text-xl text-neutral-content">neutral</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-neutral-content">
-					<p class="text-center text-xl text-neutral">neutral-content</p>
-				</div>
+				<ColorTileFlyonUi background="accent-container" content="accent-container-content" />
+				<ColorTileFlyonUi background="accent-container-content" content="accent-container" />
 			</div>
+			<div>
+				<ColorTileFlyonUi background="neutral-container" content="neutral-container-content" />
+				<ColorTileFlyonUi background="neutral-container-content" content="neutral-container" />
+			</div>
+
 			<div>
 				<div class="skeleton flex h-12 w-36 items-center justify-center bg-info">
 					<p class="text-center text-xl text-info-content">info</p>
@@ -167,84 +181,7 @@
 				</div>
 			</div>
 		</div>
-		<p class="text-center text-2xl">Added to FlyonUI to match Material UI:</p>
-		<div class="grid grid-cols-4 gap-4 xl:grid-cols-8">
-			<div>
-				<div class="bg-primary-container skeleton flex h-24 w-36 items-center justify-center">
-					<p class="text-primary-content-container text-center text-xl">primary container</p>
-				</div>
-				<div
-					class="bg-primary-content-container skeleton flex h-24 w-36 items-center justify-center"
-				>
-					<p class="text-primary-container text-center text-xl">primary content container</p>
-				</div>
-			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-secondary">
-					<p class="text-center text-xl text-secondary-content">secondary</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-secondary-content">
-					<p class="text-center text-xl text-secondary">secondary-content</p>
-				</div>
-			</div>
-			<!-- <div>
-                <div class="skeleton flex h-12 w-36 items-center justify-center bg-tertiary">
-                    <p class="text-center text-xl text-tertiary-content">tertiary</p>
-                </div>
-                <div class="skeleton flex h-12 w-36 items-center justify-center bg-tertiary-content">
-                    <p class="text-center text-xl text-tertiary">tertiary-content</p>
-                </div>
-            </div> -->
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-accent">
-					<p class="text-center text-xl text-accent-content">accent</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-accent-content">
-					<p class="text-center text-xl text-accent">accent-content</p>
-				</div>
-			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-neutral">
-					<p class="text-center text-xl text-neutral-content">neutral</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-neutral-content">
-					<p class="text-center text-xl text-neutral">neutral-content</p>
-				</div>
-			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-info">
-					<p class="text-center text-xl text-info-content">info</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-info-content">
-					<p class="text-center text-xl text-info">info-content</p>
-				</div>
-			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-success">
-					<p class="text-center text-xl text-success-content">success</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-success-content">
-					<p class="text-center text-xl text-success">success-content</p>
-				</div>
-			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-warning">
-					<p class="text-center text-xl text-warning-content">warning</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-warning-content">
-					<p class="text-center text-xl text-warning">waring-content</p>
-				</div>
-			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-error">
-					<p class="text-center text-xl text-error-content">error</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-error-content">
-					<p class="text-center text-xl text-error">error-content</p>
-				</div>
-			</div>
-		</div>
-		<p class="text-center text-2xl">Background colors FlyonUI:</p>
+		<p class="mt-8 text-center text-2xl">Background colors FlyonUI:</p>
 		<div class="grid grid-cols-5 gap-4">
 			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-100">
 				<p class="text-center text-xl">base-100</p>
@@ -262,7 +199,7 @@
 				<p class="text-center text-xl text-secondary-content">base-shadow</p>
 			</div>
 		</div>
-		<p class="text-center text-2xl">Background base colors with /x argument:</p>
+		<p class="mt-8 text-center text-2xl">Background base colors with /x argument:</p>
 		<div class="grid grid-cols-11 gap-4">
 			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
 				<p class="text-center text-xl"></p>
@@ -700,6 +637,21 @@
 </div>
 
 <style>
+	:global {
+		.bg-primary-container {
+			background-color: var(--md-sys-color-primary-container);
+		}
+		.text-primary-container {
+			color: var(--md-sys-color-primary-container);
+		}
+		.bg-primary-container-content {
+			background-color: var(--md-sys-color-on-primary-container);
+		}
+		.text-primary-container-content {
+			color: var(--md-sys-color-on-primary-container);
+		}
+	}
+
 	/* body, html {
     --p: var(--md-sys-color-primary);
     --pc: var(--md-sys-color-on-primary);

@@ -40,7 +40,7 @@
 	<div class="col-span-2">
 		<Title>Colors</Title>
 		<p class="text-center text-2xl">Dynamic colors Material Color Utilities:</p>
-		<div class="m-3 grid w-full grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
+		<div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
 			<p class="col-span-2 text-center text-xl md:col-span-4 xl:col-span-4">
 				Default Foreground Material Design
 			</p>
@@ -183,7 +183,7 @@
 				/>
 			</div>
 		</div>
-		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
+		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
 			<p class="col-span-2 text-center text-xl md:col-span-5">Default Background Material Design</p>
 			<ColorTileMaterialUi
 				background="--md-sys-color-surface-container-lowest"
@@ -206,7 +206,7 @@
 				color="--md-sys-color-on-surface"
 			/>
 		</div>
-		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
 			<ColorTileMaterialUi
 				background="--md-sys-color-on-surface"
 				color="--md-sys-color-inverse-on-surface"
@@ -224,7 +224,7 @@
 				color="--md-sys-color-inverse-on-surface"
 			/>
 		</div>
-		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
+		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
 			<ColorTileMaterialUi
 				background="--md-sys-color-inverse-surface"
 				color="--md-sys-color-inverse-on-surface"
@@ -240,7 +240,7 @@
 			<ColorTileMaterialUi background="--md-sys-color-scrim" color="--md-sys-color-on-surface" />
 			<ColorTileMaterialUi background="--md-sys-color-shadow" color="--md-sys-color-on-surface" />
 		</div>
-		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
 			<ColorTileMaterialUi
 				background="--md-sys-color-background"
 				color="--md-sys-color-on-background"
@@ -258,7 +258,7 @@
 				color="-md-sys-color-inverse-on-surface"
 			/>
 		</div>
-		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
 			<p class="col-span-2 text-center text-xl md:col-span-4">
 				Avoid using those - the fixed colors don't switch from light to dark mode
 			</p>
@@ -279,7 +279,7 @@
 				color="--md-sys-color-primary-fixed"
 			/>
 		</div>
-		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
 			<ColorTileMaterialUi
 				background="--md-sys-color-secondary-fixed"
 				color="--md-sys-color-on-secondary-fixed"
@@ -297,7 +297,7 @@
 				color="--md-sys-color-secondary-fixed"
 			/>
 		</div>
-		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
 			<ColorTileMaterialUi
 				background="--md-sys-color-tertiary-fixed"
 				color="--md-sys-color-on-tertiary-fixed"
@@ -315,7 +315,7 @@
 				color="--md-sys-color-tertiary-fixed"
 			/>
 		</div>
-		<div class="m-3 mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
+		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
 			<ColorTileMaterialUi
 				background="--md-sys-color-surface-dim"
 				color="--md-sys-color-on-surface"
