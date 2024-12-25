@@ -843,16 +843,16 @@ export class Theming {
 		);
 		const colorScheme = colorization.createAppColors();
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
-        console.log("=== lib - theming - applyTheme - mode ===");
-        console.log(mode);
-        console.log("=== lib - theming - applyTheme - colors[] ===");
+        // console.log("=== lib - theming - applyTheme - mode ===");
+        // console.log(mode);
+        // console.log("=== lib - theming - applyTheme - colors[] ===");
 		this.applyMaterialTokens(colors, targetElement);
 		this.applyFlyonUITokens(colors, targetElement);
         // targetElement.style.backgroundColor = hexFromArgb(colors['background']);
         // console.log("=== lib - theming - applyTheme - colors[background] ===");
         // console.log(hexFromArgb(colors["background"]));
         // targetElement.style.backgroundColor = hexFromArgb(colors['background']);
-        targetElement.style.setProperty("background-color", `${hexFromArgb(colors['background'])} !important`);
+        // targetElement.style.setProperty("background-color", `${hexFromArgb(colors['background'])} !important`);
 		return {
 			configuration: colorConfig,
 			currentMode: mode,
