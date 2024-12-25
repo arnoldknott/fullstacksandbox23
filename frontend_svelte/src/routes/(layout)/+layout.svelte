@@ -39,7 +39,7 @@
 	import { page } from '$app/stores';
 	import Guard from '$components/Guard.svelte';
 	import ThemePicker from '$components/ThemePicker.svelte';
-	import { theme } from './layout.svelte';
+	// import { theme } from './layout.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 	// import { theme } from './layout.svelte';
 
@@ -324,7 +324,6 @@
 
 			// Target is to use this one:
 			theming.applyTheme(themeConfiguration, mode);
-
 
 			// if (mainElement);
 			// const styleElement = document.createElement('style');
