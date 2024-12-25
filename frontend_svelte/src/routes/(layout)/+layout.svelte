@@ -316,13 +316,17 @@
 		// necessary to apply the theme to the mainContent div:
 		// $effect(() => { scheme })
 		$effect(() => {
-			theming.applyTheme(themeConfiguration, mode, mainContent);
-			// theming.applyTheme(themeConfiguration, mode, document.documentElement);
+			// theming.applyTheme(themeConfiguration, mode, mainContent);
+			theming.applyTheme(themeConfiguration, mode, document.documentElement);
+			const styleElement = document.createElement('style');
+			styleElement.textContent = ".bg-primary-container { background-color: var(--md-sys-color-primary-container); } .text-primary-container { color: var(--md-sys-color-primary-container); }";
+			document.head.appendChild(styleElement);
 			// theme.set(theming.applyTheme(themeConfiguration, mode, mainContent));
 			// $page.data.theme = theme;
 			// setContext('theme', theme)
 			// console.log('=== src - routes - (layout) - layout.svelte - theme ===');
 			// console.log(theme);
+
 		});
 
 		// console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
@@ -586,6 +590,15 @@
 </div>
 
 <style>
+	/* :global {
+
+		.bg-primary-container {
+			background-color: var(--md-sys-color-primary-container);
+		}
+		.text-primary-container {
+			color: var(--md-sys-color-primary-container);
+		}
+	} */
 	/* @import './dark.css';
 	@import './dark-hc.css';
 	@import './dark-mc.css';

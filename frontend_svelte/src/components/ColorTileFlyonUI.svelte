@@ -10,32 +10,12 @@
 </div>
 
 <style>
-    /* This should not be necessary - note primary is not here either! FlyonUI should use it's standard classes for trhat, but they get applied to the wrong chunk in css.*/
-    /* .bg-secondary {
-		background-color: var(--md-sys-color-secondary);
-	}
-    .bg-secondary-content {
-		background-color: var(--md-sys-color-on-secondary);
-	}
-    .bg-accent {
-        background-color: var(--md-sys-color-tertiary);
-    }
-    .bg-accent-content {
-        background-color: var(--md-sys-color-on-tertiary);
-    }
-    .bg-neutral {
-        background-color: var(--md-sys-color-neutral);
-    }
-    .bg-neutral-content {
-        background-color: var(--md-sys-color-on-neutral);
-    } */
-
-	.bg-primary-container {
+	/* .bg-primary-container {
 		background-color: var(--md-sys-color-primary-container);
 	}
 	.text-primary-container {
 		color: var(--md-sys-color-primary-container);
-	}
+	} */
 	.bg-primary-container-content {
 		background-color: var(--md-sys-color-on-primary-container);
 	}
@@ -78,4 +58,5 @@
 	.text-neutral-container-content {
 		color: var(--md-sys-color-on-neutral-container);
 	}
+
 </style>
