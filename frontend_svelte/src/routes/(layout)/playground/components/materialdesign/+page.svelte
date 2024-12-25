@@ -24,7 +24,7 @@
 	// import { get } from 'svelte/store';
 	// import { currentTheme } from '(layout)/layout.svelte';
 	import { onDestroy } from 'svelte';
-	import { hexFromArgb } from '@material/material-color-utilities';
+	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 
 	let showSections = $state({
 		colors: false,
@@ -55,12 +55,13 @@
 				})
 			: []
 	);
-	// let toneValues = $state({} as { string: string });
-	// $effect(() => {
-	// 	palettesArray.forEach((palette) => {
-	// 		toneValues[palette.name] = palette.keyColor.tone;
-	// 	});
-	// });
+	let toneValues = $state({} as Record<string, number>);
+	$effect(() => {
+		palettesArray.forEach((palette) => {
+			const key = palette.name as keyof typeof toneValues;
+			toneValues[key] = palette.keyColor.tone;
+		});
+	});
 	// $effect(() => {console.log('palettes:', palettesArray)})
 	// console.log('themeStore:', $themeStore);
 	// console.log(getContext('theme'))
@@ -431,7 +432,7 @@
 							</div>
 							<div
 								class="flex h-24 grow p-2"
-								style="background-color: {hexFromArgb(palette.keyColor.toInt())};"
+								style="background-color: {hexFromArgb(Hct.from(palette.keyColor.hue, palette.keyColor.chroma, toneValues[palette.name]).toInt())};"
 							>
 								<p class="text-center text-2xl">Current Tone</p>
 							</div>
@@ -443,11 +444,11 @@
 								type="range"
 								min="0"
 								max="100"
-								bind:value={palette.currentTone}
+								bind:value={toneValues[palette.name]}
 								aria-label="range"
 							/>
 							<p class="basis-1/12 text-right text-xl">
-								{Math.round(palette.currentTone * 100) / 100} %
+								{Math.round(toneValues[palette.name] * 100) / 100} %
 							</p>
 						</div>
 					</div>
