@@ -900,7 +900,7 @@ export class Theming {
 			flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
 				const materialTokenKey = materialDesignToken as keyof typeof colors;
 				const oklchColor = this.oklchFromArgb(colors[materialTokenKey]);
-				styles += `--${flyonUIToken}: ${oklchColor}};\n`;
+				styles += `--${flyonUIToken}: ${oklchColor};\n`;
 				styles += `.bg-${materialDesignToken} {background-color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
 				styles += `.text-${materialDesignToken} {color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
 			});
