@@ -432,7 +432,13 @@
 							</div>
 							<div
 								class="flex h-24 grow p-2"
-								style="background-color: {hexFromArgb(Hct.from(palette.keyColor.hue, palette.keyColor.chroma, toneValues[palette.name]).toInt())};"
+								style="background-color: {hexFromArgb(
+									Hct.from(
+										palette.keyColor.hue,
+										palette.keyColor.chroma,
+										toneValues[palette.name]
+									).toInt()
+								)};"
 							>
 								<p class="text-center text-2xl">Current Tone</p>
 							</div>

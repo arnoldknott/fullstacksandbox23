@@ -5,7 +5,7 @@
 	import { hexFromArgb } from '@material/material-color-utilities';
 	// import { theme } from '../routes/(layout)/layout.svelte'; // TBD: consider moving to $lib/stores?
 	import { themeStore } from '$lib/stores';
-    import { onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 
 	let { background, color }: { background: string; color: string } = $props();
 	const text = background.replace('--md-sys-color-', '').replaceAll('-', ' ');
@@ -28,7 +28,7 @@
 		}
 	});
 
-    onDestroy(() => {
+	onDestroy(() => {
 		unsubscribeThemeStore();
 	});
 
