@@ -102,16 +102,14 @@
 			</div>
 			<div>
 				<ColorTileFlyonUi background="secondary" content="secondary-content" />
-                <!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
+				<!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
 				<ColorTileFlyonUi background="secondary-content" content="secondary" />
-                <hr />
-                <div class="flex h-24 grow p-2 bg-secondary-content">
-                    <p class="text-left text-base md:text-xl text-secondary">
-                        secondary content direct
-                    </p>
-                </div>
-                <hr />
-                <ColorTileFlyonUi background="onSecondary" content="secondary" />
+				<hr />
+				<div class="flex h-24 grow bg-secondary-content p-2">
+					<p class="text-left text-base text-secondary md:text-xl">secondary content direct</p>
+				</div>
+				<hr />
+				<ColorTileFlyonUi background="onSecondary" content="secondary" />
 			</div>
 			<div>
 				<ColorTileFlyonUi background="accent" content="accent-content" />

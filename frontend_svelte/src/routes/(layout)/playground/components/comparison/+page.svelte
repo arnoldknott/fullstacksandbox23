@@ -12,12 +12,7 @@
 					class="w-84 skeleton flex h-24 items-center justify-center"
 					style="background-color: var(--md-sys-color-primary);"
 				>
-					<p
-						class="text-center text-xl"
-						style="color: var(--md-sys-color-on-primary);"
-					>
-						primary
-					</p>
+					<p class="text-center text-xl" style="color: var(--md-sys-color-on-primary);">primary</p>
 				</div>
 			</div>
 			<div class="w-84 skeleton flex h-24 items-center justify-center bg-primary">
@@ -30,12 +25,7 @@
 					class="w-84 skeleton flex h-24 items-center justify-center"
 					style="background-color: var(--md-sys-color-on-primary);"
 				>
-					<p
-						class="text-center text-xl"
-						style="color: var(--md-sys-color-primary);"
-					>
-						onPrimary
-					</p>
+					<p class="text-center text-xl" style="color: var(--md-sys-color-primary);">onPrimary</p>
 				</div>
 			</div>
 			<div class="w-84 skeleton flex h-24 items-center justify-center bg-primary-content">
