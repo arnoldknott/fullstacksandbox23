@@ -102,7 +102,16 @@
 			</div>
 			<div>
 				<ColorTileFlyonUi background="secondary" content="secondary-content" />
+                <!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
 				<ColorTileFlyonUi background="secondary-content" content="secondary" />
+                <hr />
+                <div class="flex h-24 grow p-2 bg-secondary-content">
+                    <p class="text-left text-base md:text-xl text-secondary">
+                        secondary content direct
+                    </p>
+                </div>
+                <hr />
+                <ColorTileFlyonUi background="onSecondary" content="secondary" />
 			</div>
 			<div>
 				<ColorTileFlyonUi background="accent" content="accent-content" />
@@ -196,7 +205,7 @@
 				<p class="text-center text-xl text-secondary-content">base-content</p>
 			</div>
 			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-shadow">
-				<p class="text-center text-xl text-secondary-content">base-shadow</p>
+				<p class="text-center text-xl text-base-content">base-shadow</p>
 			</div>
 		</div>
 		<p class="mt-8 text-center text-2xl">Background base colors with /x argument:</p>
@@ -409,7 +418,7 @@
 			tabindex="-1"
 		>
 			<div class="modal-dialog overlay-open:opacity-100">
-				<div class="modal-content">
+				<div class="modal-content bg-base-300">
 					<div class="modal-header">
 						<h3 class="modal-title">Dialog Title</h3>
 						<button
