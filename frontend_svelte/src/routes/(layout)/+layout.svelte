@@ -36,16 +36,18 @@
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
 	// import type { LayoutData } from '../$types';
-	import { setContext } from 'svelte';
+	// import { setContext } from 'svelte';
 	import { type Snippet } from 'svelte';
 	import { page } from '$app/stores';
 	import Guard from '$components/Guard.svelte';
 	import ThemePicker from '$components/ThemePicker.svelte';
+	import { themeStore } from '$lib/stores';
 	// import { theme } from './layout.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 	// import { theme } from './layout.svelte';
 
-	const theming = new Theming();
+	const theming = $state(new Theming());
+
 
 	// export const theme = $state({} as AppTheme);
 	// let theme = $state({} as AppTheme);
@@ -322,35 +324,38 @@
 		// $effect(() => console.log('scheme:', scheme));
 		// necessary to apply the theme to the mainContent div:
 		// $effect(() => { scheme })
-		$effect(() => {
-			// theming.applyTheme(themeConfiguration, mode, mainContent);
-			// const mainElement = document.documentElement.querySelector('main');
-			// theming.applyTheme(themeConfiguration, mode, document.documentElement);
+		// $effect(() => {
+		// 	// theming.applyTheme(themeConfiguration, mode, mainContent);
+		// 	// const mainElement = document.documentElement.querySelector('main');
+		// 	// theming.applyTheme(themeConfiguration, mode, document.documentElement);
 
-			// Target is to use this one:
-			theming.applyTheme(themeConfiguration, mode);
-			// themeStore.set(theming.applyTheme(themeConfiguration, mode));
-			// theme = theming.applyTheme(themeConfiguration, mode)
+		// 	// Target is to use this one:
+		// 	theming.applyTheme(themeConfiguration, mode);
+		// 	// themeStore.set(theming.applyTheme(themeConfiguration, mode));
+		// 	// theme = theming.applyTheme(themeConfiguration, mode)
 
-			// setContext('theme', theme)
-			// themeStore.set(theme);
+		// 	// setContext('theme', theme)
+		// 	// themeStore.set(theme);
 
 			
 
-			// if (mainElement);
-			// const styleElement = document.createElement('style');
-			// styleElement.textContent =
-			// 	`.bg-secondary { background-color: var(--md-sys-color-secondary); } .text-secondary { color: var(--md-sys-color-secondary); }
-			// 	.bg-primary-container { background-color: var(--md-sys-color-primary-container); } .text-primary-container { color: var(--md-sys-color-primary-container); }`;
-			// document.head.appendChild(styleElement);
-			// theme.set(theming.applyTheme(themeConfiguration, mode, mainContent));
-			// $page.data.theme = theme;
-			// setContext('theme', theme)
-			// console.log('=== src - routes - (layout) - layout.svelte - theme ===');
-			// console.log(theme);
-		});
+		// 	// if (mainElement);
+		// 	// const styleElement = document.createElement('style');
+		// 	// styleElement.textContent =
+		// 	// 	`.bg-secondary { background-color: var(--md-sys-color-secondary); } .text-secondary { color: var(--md-sys-color-secondary); }
+		// 	// 	.bg-primary-container { background-color: var(--md-sys-color-primary-container); } .text-primary-container { color: var(--md-sys-color-primary-container); }`;
+		// 	// document.head.appendChild(styleElement);
+		// 	// theme.set(theming.applyTheme(themeConfiguration, mode, mainContent));
+		// 	// $page.data.theme = theme;
+		// 	// setContext('theme', theme)
+		// 	// console.log('=== src - routes - (layout) - layout.svelte - theme ===');
+		// 	// console.log(theme);
+		// });
 
-		
+		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
+		// $effect(() => { console.log('theme:', theme) });
+		// $effect(() => { setContext('currentTheme', theme) });
+		$effect(() => {themeStore.set(theme)});
 
 		// console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
 		// console.log(systemDark);
