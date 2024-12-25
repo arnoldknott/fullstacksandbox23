@@ -25,7 +25,10 @@
 	// import { currentTheme } from '(layout)/layout.svelte';
 	import { onDestroy } from 'svelte';
 
-	
+	let showSections = $state({
+		colors: true,
+		palettes: true,		
+	})
 	// let theme = $state(getContext('theme'));
 	// let palettes = $themeStore.light.palettes;
 	// console.log('palettes:', palettes);
@@ -35,10 +38,10 @@
 	});
 	let palettes = $derived(theme?.light?.palettes);
 	// $effect(() => {console.log('palettes:', palettes)})
-	let palettesArray = $derived(Object.entries(palettes).map(([key, value]) => {
+	let palettesArray = $derived(palettes ? Object.entries(palettes).map(([key, value]) => {
             return { name: key, ...value };
-    }));
-	$effect(() => {console.log('palettes:', palettesArray)})
+    } ): []);
+	// $effect(() => {console.log('palettes:', palettesArray)})
 	// console.log('themeStore:', $themeStore);
 	// console.log(getContext('theme'))
 	// let theme = $state(getContext('theme'));
@@ -68,7 +71,13 @@
 <div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="col-span-2">
 		<Title>Colors</Title>
-		<p class="text-center text-2xl">Dynamic colors Material Color Utilities:</p>
+		<div class="flex items-center gap-1">
+			<label class="label label-text text-base" for="switchColors">Hide</label>
+			<input type="checkbox" class="switch switch-primary"  bind:checked={showSections.colors} id="switchColors" />
+			<label class="label label-text text-base" for="switchColors">Show</label>
+		</div>
+		<div class= {showSections.colors ?  '' : 'hidden'}>
+		<p class="text-center text-2xl">Dynamic colors Material Color Utilities</p>
 		<div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
 			<p class="col-span-2 text-center text-xl md:col-span-4 xl:col-span-4">
 				Default Foreground Material Design
@@ -364,17 +373,25 @@
 			/>
 		</div>
 		<HorizontalRule />
+		</div>
 	</div>
 
 	<div class="col-span-2">
 		<Title>Palettes</Title>
-		{#each palettesArray as palette}
-			<JsonData data={palette} />
-		{/each}
-		<p>
-			Add all the palettes as a sweep of tone from all available palettes: primary, secondary, with
-			a slider controlling the tone
-		</p>
+		<div class="flex items-center gap-1">
+			<label class="label label-text text-base" for="switchColors">Hide</label>
+			<input type="checkbox" class="switch switch-primary"  bind:checked={showSections.palettes} id="switchColors" />
+			<label class="label label-text text-base" for="switchColors">Show</label>
+		</div>
+		<div class= {showSections.palettes ?  '' : 'hidden'}>
+			{#each palettesArray as palette}
+				<JsonData data={palette} />
+			{/each}
+			<p>
+				Add all the palettes as a sweep of tone from all available palettes: primary, secondary, with
+				a slider controlling the tone
+			</p>
+		</div>
 	</div>
 
 	<!-- <div class="staticMaterialThemeBuilder">

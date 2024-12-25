@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Variant, Theming, type ColorConfig, type AppTheme } from '$lib/theming';
+	import { Variant, Theming, type ColorConfig } from '$lib/theming';
 	// // clean this mess up - mainly by moving to $lib/theming.ts
 	// import {
 	// 	argbFromHex,
