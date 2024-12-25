@@ -864,6 +864,7 @@ export class Theming {
                 styles += `--md-sys-color-${tokenKebabCase}: ${hexFromArgb(colors[token])};\n`;
             });
             const styleElement = document.createElement('style');
+            styleElement.setAttribute('type', 'text/css');
             styleElement.setAttribute('id', 'md_sys_dynamic_color_tokens');
             styleElement.innerHTML = `:root {\n${styles}}`;
             document.head.appendChild(styleElement);
@@ -897,6 +898,7 @@ export class Theming {
                 styles += `--${flyonUIToken}: ${oklchColor}};\n`;
             });
             const styleElement = document.createElement('style');
+            styleElement.setAttribute('type', 'text/css');
             styleElement.setAttribute('id', 'flyonUI_extenstion_material_design');
             styleElement.innerHTML = `:root {\n${styles}}`;
             document.head.appendChild(styleElement);
