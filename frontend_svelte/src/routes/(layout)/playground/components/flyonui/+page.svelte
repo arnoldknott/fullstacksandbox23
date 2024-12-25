@@ -98,7 +98,6 @@
 		<div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
 			<div>
 				<ColorTileFlyonUi background="primary" content="primary-content" />
-				<!-- <ColorTileFlyonUi class="bg-primary text-primary-content" background="primary" content="primary-content" /> -->
 				<ColorTileFlyonUi background="primary-content" content="primary" />
 			</div>
 			<div>
@@ -106,10 +105,7 @@
 				<ColorTileFlyonUi background="secondary-content" content="secondary" />
 			</div>
 			<div>
-				<!-- <ColorTileFlyonUi background="accent" content="accent-content" /> -->
-				<div class="flex h-24 grow bg-accent p-2">
-					<p class="text-left text-base text-accent-content md:text-xl">accent</p>
-				</div>
+				<ColorTileFlyonUi background="accent" content="accent-content" />
 				<ColorTileFlyonUi background="accent-content" content="accent" />
 			</div>
 			<div>

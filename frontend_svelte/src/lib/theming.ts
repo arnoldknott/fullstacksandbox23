@@ -916,6 +916,7 @@ export class Theming {
 			flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
 				const oklchColor = this.oklchFromArgb(colors[materialDesignToken as keyof typeof colors]);
 				targetElement.style.setProperty(`--${flyonUIToken}`, oklchColor);
+                // TBD: also set the classes as property on the targetElement?
 			});
 		}
 	}
