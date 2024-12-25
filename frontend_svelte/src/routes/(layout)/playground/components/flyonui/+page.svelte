@@ -105,7 +105,12 @@
 				<ColorTileFlyonUi background="secondary-content" content="secondary" />
 			</div>
 			<div>
-				<ColorTileFlyonUi background="accent" content="accent-content" />
+				<!-- <ColorTileFlyonUi background="accent" content="accent-content" /> -->
+                <div class="flex h-24 grow p-2 bg-accent">
+                    <p class="text-left text-base md:text-xl text-accent-content">
+                        accent
+                    </p>
+                </div>
 				<ColorTileFlyonUi background="accent-content" content="accent" />
 			</div>
 			<div>

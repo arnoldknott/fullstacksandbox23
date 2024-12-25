@@ -829,10 +829,12 @@ export class Theming {
 	//     return tenFoldContrast
 	// }
 
+    // Note, where this is called, the document needs to be available
+    // so don't call on server in server side rendering scenarios!
 	public applyTheme(
 		colorConfig: ColorConfig,
 		mode: 'light' | 'dark',
-		targetElement: HTMLElement
+		targetElement: HTMLElement = document.documentElement
 	): AppTheme {
 		const colorization = new Colorization(
 			colorConfig.sourceColor,
@@ -854,13 +856,26 @@ export class Theming {
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
 		targetElement: HTMLElement
 	): void {
-		appColors.forEach((token) => {
-			const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-			targetElement.style.setProperty(
-				`--md-sys-color-${tokenKebabCase}`,
-				hexFromArgb(colors[token])
-			);
-		});
+        let styles = '';
+        if (targetElement === document.documentElement) {
+            let styles = '';
+            appColors.forEach((token) => {
+                const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+                styles += `--md-sys-color-${tokenKebabCase}: ${hexFromArgb(colors[token])};\n`;
+            });
+            const styleElement = document.createElement('style');
+            styleElement.setAttribute('id', 'md_sys_dynamic_color_tokens');
+            styleElement.innerHTML = `:root {\n${styles}}`;
+            document.head.appendChild(styleElement);
+        } else {
+            appColors.forEach((token) => {
+                const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+                targetElement.style.setProperty(
+                    `--md-sys-color-${tokenKebabCase}`,
+                    hexFromArgb(colors[token])
+                );
+            })
+        }
 		targetElement.style.backgroundColor = hexFromArgb(colors['background']);
 	}
 
@@ -875,9 +890,21 @@ export class Theming {
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
 		targetElement: HTMLElement
 	): void {
-		flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
-			const oklchColor = this.oklchFromArgb(colors[materialDesignToken as keyof typeof colors]);
-			targetElement.style.setProperty(`--${flyonUIToken}`, oklchColor);
-		});
+        if (targetElement === document.documentElement) {
+            let styles = '';
+            flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
+                const oklchColor = this.oklchFromArgb(colors[materialDesignToken as keyof typeof colors]);
+                styles += `--${flyonUIToken}: ${oklchColor}};\n`;
+            });
+            const styleElement = document.createElement('style');
+            styleElement.setAttribute('id', 'flyonUI_extenstion_material_design');
+            styleElement.innerHTML = `:root {\n${styles}}`;
+            document.head.appendChild(styleElement);
+        } else {
+            flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
+                const oklchColor = this.oklchFromArgb(colors[materialDesignToken as keyof typeof colors]);
+                targetElement.style.setProperty(`--${flyonUIToken}`, oklchColor);
+            });
+        }
 	}
 }

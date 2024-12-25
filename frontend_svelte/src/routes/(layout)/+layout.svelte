@@ -318,9 +318,9 @@
 		$effect(() => {
 			// theming.applyTheme(themeConfiguration, mode, mainContent);
 			// const mainElement = document.documentElement.querySelector('main');
-			theming.applyTheme(themeConfiguration, mode, document.documentElement);
-			// if (mainElement)
-			// theming.applyTheme(themeConfiguration, mode, mainElement);
+			// theming.applyTheme(themeConfiguration, mode, document.documentElement);
+			theming.applyTheme(themeConfiguration, mode);
+			// if (mainElement);
 			const styleElement = document.createElement('style');
 			styleElement.textContent =
 				`.bg-secondary { background-color: var(--md-sys-color-secondary); } .text-secondary { color: var(--md-sys-color-secondary); }
