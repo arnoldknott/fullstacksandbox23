@@ -17,10 +17,24 @@
 	import '@material/web/labs/card/outlined-card.js';
 	import Title from '$components/Title.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
-	import JsonData from '$components/JsonData.svelte';
-	import { getContext } from 'svelte';
+	// import JsonData from '$components/JsonData.svelte';
+	// import { getContext } from 'svelte';
+	// import { themeStore } from '$lib/stores';
+	// import type { AppTheme } from '$lib/theming';
+	// import { get } from 'svelte/store';
+	// import { currentTheme } from '(layout)/layout.svelte';
 
-	let theme = $state(getContext('theme'));
+	
+	// let theme = $state(getContext('theme'));
+	// let palettes = $themeStore.light.palettes;
+	// let theme = $state({} as AppTheme);
+	// const unsbscribeThemeStore = themeStore.subscribe((value) => {
+	// 	theme = value;
+	// });
+	// console.log('themeStore:', $themeStore);
+	// console.log(getContext('theme'))
+	// let theme = $state(getContext('theme'));
+	// console.log('theme:', theme);
 
 	let demoResourceDialog: Dialog;
 	// let name = $state('');
@@ -35,6 +49,9 @@
 	let { type }: Props = $props();
 	const button = type === 'signup' ? 'Sign up' : 'Log in'; // untested!
 </script>
+
+
+<!-- <JsonData data={palettes} /> -->
 
 <div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="col-span-2">
@@ -339,6 +356,9 @@
 
 	<div class="col-span-2">
 		<Title>Palettes</Title>
+		<!-- {#each palettes as palette}
+			
+		{/each} -->
 		<p>
 			Add all the palettes as a sweep of tone from all available palettes: primary, secondary, with
 			a slider controlling the tone
@@ -659,7 +679,7 @@
 	</div>
 </div>
 
-<JsonData data={theme}></JsonData>
+<!-- <JsonData data={theme}></JsonData> -->
 
 <style>
 	/* Local override works:  */

@@ -281,6 +281,7 @@ type AdditionalFlyonUIScheme = {
 // AdditionalFlyonUIColorsPalette;
 
 // TBD: check how to do all the containers programmatically for providing the container classes (extensions of FlyonUI to match Material Design)
+// TBD: Map matched colors to both class names, e.g. onPrimary primary-container bcomse a class definition of ".on-primary, .primary-container"
 const flyonUImaterialDesignMapping = new Map([
 	['p', 'primary'],
 	['pc', 'onPrimary'],

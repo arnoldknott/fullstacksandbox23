@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Variant, Theming, type ColorConfig } from '$lib/theming';
+	import { Variant, Theming, type ColorConfig, type AppTheme } from '$lib/theming';
 	// // clean this mess up - mainly by moving to $lib/theming.ts
 	// import {
 	// 	argbFromHex,
@@ -32,9 +32,11 @@
 	// import { light as lightFlyonUI, dark as darkFlyonUI } from 'flyonui/src/theming/themes';
 	// import { Variant } from '@material/material-color-utilities/dynamiccolor/variant';
 	import type { Action } from 'svelte/action';
+	// import { themeStore } from '$lib/stores';
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
 	// import type { LayoutData } from '../$types';
+	import { setContext } from 'svelte';
 	import { type Snippet } from 'svelte';
 	import { page } from '$app/stores';
 	import Guard from '$components/Guard.svelte';
@@ -44,6 +46,9 @@
 	// import { theme } from './layout.svelte';
 
 	const theming = new Theming();
+
+	// export const theme = $state({} as AppTheme);
+	// let theme = $state({} as AppTheme);
 
 	let themeConfiguration: ColorConfig = $state({
 		sourceColor: '#353c6e', // <= That's a good color!// '#769CDF',
@@ -324,6 +329,13 @@
 
 			// Target is to use this one:
 			theming.applyTheme(themeConfiguration, mode);
+			// themeStore.set(theming.applyTheme(themeConfiguration, mode));
+			// theme = theming.applyTheme(themeConfiguration, mode)
+
+			// setContext('theme', theme)
+			// themeStore.set(theme);
+
+			
 
 			// if (mainElement);
 			// const styleElement = document.createElement('style');
@@ -337,6 +349,8 @@
 			// console.log('=== src - routes - (layout) - layout.svelte - theme ===');
 			// console.log(theme);
 		});
+
+		
 
 		// console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
 		// console.log(systemDark);
@@ -362,6 +376,12 @@
 		// applyTheme(theme, { target: mainContent, dark: systemDark });
 		// applyTheme(theme, { target: mainContent, dark: systemDark, brightnessSuffix: true });
 	};
+
+
+	// let theme = $derived(theming.applyTheme(themeConfiguration, mode));
+
+	// $effect(() => { themeStore.set(theme)} );
+	// $effect(() => { setContext('currentTheme', theme) });
 
 	// $effect(() => {
 	// 	// console.log('=== src - routes - (layout) - layout.svelte - var --p - priority ===');
@@ -526,6 +546,7 @@
 	// 		}
 	// 	}
 	// });
+	// export const currentTheme = () => theme;
 </script>
 
 <!-- style="--p: 0.45 .2 125" -->
@@ -538,6 +559,9 @@
 <!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryFromMaterialDesign};" use:applyTheming> -->
 <!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} use:applyTheming> -->
 <!-- <div bind:this={mainContent} class="h-full {mode}" data-theme={mode} use:applyTheming> -->
+
+<!-- <JsonData data={theme.configuration}></JsonData> -->
+
 <div bind:this={mainContent} class="h-full" use:applyTheming>
 	<nav class="mx-2 p-2">
 		<div class="flex w-full flex-wrap items-center justify-between">
