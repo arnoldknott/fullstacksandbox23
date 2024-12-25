@@ -28,8 +28,8 @@
 
 	let showSections = $state({
 		colors: false,
-		palettes: true,		
-	})
+		palettes: true
+	});
 	// let theme = $state(getContext('theme'));
 	// let palettes = $themeStore.light.palettes;
 	// console.log('palettes:', palettes);
@@ -41,16 +41,26 @@
 	// $effect(() => {console.log('palettes:', palettes)})
 	// let toneValues = $state({} as {key: string})
 	// let toneValues = $derived(
-    //     Object.fromEntries(
-    //         Object.entries(palettes).map(([key, value]) => [key, value.keyColor.tone])
-    //     )
-    // );
-	let palettesArray = $derived(palettes ? Object.entries(palettes).map(([key, value]) => {
-			const currentTone = value.keyColor.tone;
-			// toneValues[key] = value.keyColor.tone;
-            return { name: key, currentTone: currentTone ,...value };
-			// return { name: key, ...value };
-    } ): []);
+	//     Object.fromEntries(
+	//         Object.entries(palettes).map(([key, value]) => [key, value.keyColor.tone])
+	//     )
+	// );
+	let palettesArray = $derived(
+		palettes
+			? Object.entries(palettes).map(([key, value]) => {
+					const currentTone = value.keyColor.tone;
+					// toneValues[key] = value.keyColor.tone;
+					return { name: key, currentTone: currentTone, ...value };
+					// return { name: key, ...value };
+				})
+			: []
+	);
+	// let toneValues = $state({} as { string: string });
+	// $effect(() => {
+	// 	palettesArray.forEach((palette) => {
+	// 		toneValues[palette.name] = palette.keyColor.tone;
+	// 	});
+	// });
 	// $effect(() => {console.log('palettes:', palettesArray)})
 	// console.log('themeStore:', $themeStore);
 	// console.log(getContext('theme'))
@@ -74,7 +84,6 @@
 	});
 </script>
 
-
 <!-- <JsonData data={palettesArray} /> -->
 <!-- <JsonData data={theme} /> -->
 
@@ -83,306 +92,316 @@
 		<Title>Colors</Title>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
-			<input type="checkbox" class="switch switch-primary"  bind:checked={showSections.colors} id="switchColors" />
+			<input
+				type="checkbox"
+				class="switch switch-primary"
+				bind:checked={showSections.colors}
+				id="switchColors"
+			/>
 			<label class="label label-text text-base" for="switchColors">Show</label>
 		</div>
-		<div class= {showSections.colors ?  '' : 'hidden'}>
-		<p class="text-center text-2xl">Dynamic colors Material Color Utilities</p>
-		<div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
-			<p class="col-span-2 text-center text-xl md:col-span-4 xl:col-span-4">
-				Default Foreground Material Design
-			</p>
-			<p class="hidden text-center text-xl xl:col-span-4 xl:block">
-				Extended Foreground to match FlyonUI (8 columns)
-			</p>
-			<div>
+		<div class={showSections.colors ? '' : 'hidden'}>
+			<p class="text-center text-2xl">Dynamic colors Material Color Utilities</p>
+			<div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
+				<p class="col-span-2 text-center text-xl md:col-span-4 xl:col-span-4">
+					Default Foreground Material Design
+				</p>
+				<p class="hidden text-center text-xl xl:col-span-4 xl:block">
+					Extended Foreground to match FlyonUI (8 columns)
+				</p>
+				<div>
+					<ColorTileMaterialUi
+						background="--md-sys-color-primary"
+						color="--md-sys-color-on-primary"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-primary"
+						color="--md-sys-color-primary"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-primary-container"
+						color="--md-sys-color-on-primary-container"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-primary-container"
+						color="--md-sys-color-primary-container"
+					/>
+				</div>
+				<div>
+					<ColorTileMaterialUi
+						background="--md-sys-color-secondary"
+						color="--md-sys-color-on-secondary"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-secondary"
+						color="--md-sys-color-secondary"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-secondary-container"
+						color="--md-sys-color-on-secondary-container"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-secondary-container"
+						color="--md-sys-color-secondary-container"
+					/>
+				</div>
+				<div>
+					<ColorTileMaterialUi
+						background="--md-sys-color-tertiary"
+						color="--md-sys-color-on-tertiary"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-tertiary"
+						color="--md-sys-color-tertiary"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-tertiary-container"
+						color="--md-sys-color-on-tertiary-container"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-tertiary-container"
+						color="--md-sys-color-tertiary-container"
+					/>
+				</div>
+				<div>
+					<ColorTileMaterialUi background="--md-sys-color-error" color="--md-sys-color-on-error" />
+					<ColorTileMaterialUi background="--md-sys-color-on-error" color="--md-sys-color-error" />
+					<ColorTileMaterialUi
+						background="--md-sys-color-error-container"
+						color="--md-sys-color-on-error-container"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-error-container"
+						color="--md-sys-color-error-container"
+					/>
+				</div>
+				<p class="col-span-2 text-center text-xl md:col-span-4 xl:col-span-4 xl:hidden">
+					Extended Foreground to match FlyonUI
+				</p>
+				<div>
+					<ColorTileMaterialUi
+						background="--md-sys-color-warning"
+						color="--md-sys-color-on-warning"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-warning"
+						color="--md-sys-color-warning"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-warning-container"
+						color="--md-sys-color-on-warning-container"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-warning-container"
+						color="--md-sys-color-warning-container"
+					/>
+				</div>
+				<div>
+					<ColorTileMaterialUi
+						background="--md-sys-color-success"
+						color="--md-sys-color-on-success"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-success"
+						color="--md-sys-color-success"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-success-container"
+						color="--md-sys-color-on-success-container"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-success-container"
+						color="--md-sys-color-success-container"
+					/>
+				</div>
+				<div>
+					<ColorTileMaterialUi background="--md-sys-color-info" color="--md-sys-color-on-info" />
+					<ColorTileMaterialUi background="--md-sys-color-on-info" color="--md-sys-color-info" />
+					<ColorTileMaterialUi
+						background="--md-sys-color-info-container"
+						color="--md-sys-color-on-info-container"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-info-container"
+						color="--md-sys-color-info-container"
+					/>
+				</div>
+				<div>
+					<ColorTileMaterialUi
+						background="--md-sys-color-neutral"
+						color="--md-sys-color-on-neutral"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-neutral"
+						color="--md-sys-color-neutral"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-neutral-container"
+						color="--md-sys-color-on-neutral-container"
+					/>
+					<ColorTileMaterialUi
+						background="--md-sys-color-on-neutral-container"
+						color="--md-sys-color-neutral-container"
+					/>
+				</div>
+			</div>
+			<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
+				<p class="col-span-2 text-center text-xl md:col-span-5">
+					Default Background Material Design
+				</p>
 				<ColorTileMaterialUi
-					background="--md-sys-color-primary"
-					color="--md-sys-color-on-primary"
+					background="--md-sys-color-surface-container-lowest"
+					color="--md-sys-color-on-surface"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-on-primary"
-					color="--md-sys-color-primary"
+					background="--md-sys-color-surface-container-low"
+					color="--md-sys-color-on-surface"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-primary-container"
-					color="--md-sys-color-on-primary-container"
+					background="--md-sys-color-surface-container"
+					color="--md-sys-color-on-surface"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-on-primary-container"
-					color="--md-sys-color-primary-container"
+					background="--md-sys-color-surface-container-high"
+					color="--md-sys-color-on-surface"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-surface-container-highest"
+					color="--md-sys-color-on-surface"
 				/>
 			</div>
-			<div>
+			<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
 				<ColorTileMaterialUi
-					background="--md-sys-color-secondary"
-					color="--md-sys-color-on-secondary"
+					background="--md-sys-color-on-surface"
+					color="--md-sys-color-inverse-on-surface"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-on-secondary"
-					color="--md-sys-color-secondary"
+					background="--md-sys-color-on-surface-variant"
+					color="--md-sys-color-inverse-on-surface"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-secondary-container"
-					color="--md-sys-color-on-secondary-container"
+					background="--md-sys-color-outline"
+					color="--md-sys-color-inverse-on-surface"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-on-secondary-container"
-					color="--md-sys-color-secondary-container"
-				/>
-			</div>
-			<div>
-				<ColorTileMaterialUi
-					background="--md-sys-color-tertiary"
-					color="--md-sys-color-on-tertiary"
-				/>
-				<ColorTileMaterialUi
-					background="--md-sys-color-on-tertiary"
-					color="--md-sys-color-tertiary"
-				/>
-				<ColorTileMaterialUi
-					background="--md-sys-color-tertiary-container"
-					color="--md-sys-color-on-tertiary-container"
-				/>
-				<ColorTileMaterialUi
-					background="--md-sys-color-on-tertiary-container"
-					color="--md-sys-color-tertiary-container"
+					background="--md-sys-color-outline-variant"
+					color="--md-sys-color-inverse-on-surface"
 				/>
 			</div>
-			<div>
-				<ColorTileMaterialUi background="--md-sys-color-error" color="--md-sys-color-on-error" />
-				<ColorTileMaterialUi background="--md-sys-color-on-error" color="--md-sys-color-error" />
+			<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
 				<ColorTileMaterialUi
-					background="--md-sys-color-error-container"
-					color="--md-sys-color-on-error-container"
+					background="--md-sys-color-inverse-surface"
+					color="--md-sys-color-inverse-on-surface"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-on-error-container"
-					color="--md-sys-color-error-container"
+					background="--md-sys-color-inverse-on-surface"
+					color="--md-sys-color-on-surface"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-inverse-primary"
+					color="--md-sys-color-on-surface"
+				/>
+				<ColorTileMaterialUi background="--md-sys-color-scrim" color="--md-sys-color-on-surface" />
+				<ColorTileMaterialUi background="--md-sys-color-shadow" color="--md-sys-color-on-surface" />
+			</div>
+			<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+				<ColorTileMaterialUi
+					background="--md-sys-color-background"
+					color="--md-sys-color-on-background"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-background"
+					color="--md-sys-color-background"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-neutral-palette-key-color"
+					color="--md-sys-color-inverse-on-surface"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-neutral-variant-palette-key-color"
+					color="-md-sys-color-inverse-on-surface"
 				/>
 			</div>
-			<p class="col-span-2 text-center text-xl md:col-span-4 xl:col-span-4 xl:hidden">
-				Extended Foreground to match FlyonUI
-			</p>
-			<div>
+			<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+				<p class="col-span-2 text-center text-xl md:col-span-4">
+					Avoid using those - the fixed colors don't switch from light to dark mode
+				</p>
 				<ColorTileMaterialUi
-					background="--md-sys-color-warning"
-					color="--md-sys-color-on-warning"
+					background="--md-sys-color-primary-fixed"
+					color="--md-sys-color-on-primary-fixed"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-on-warning"
-					color="--md-sys-color-warning"
+					background="--md-sys-color-primary-fixed-dim"
+					color="--md-sys-color-on-primary-fixed"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-warning-container"
-					color="--md-sys-color-on-warning-container"
+					background="--md-sys-color-on-primary-fixed"
+					color="--md-sys-color-primary-fixed"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-on-warning-container"
-					color="--md-sys-color-warning-container"
-				/>
-			</div>
-			<div>
-				<ColorTileMaterialUi
-					background="--md-sys-color-success"
-					color="--md-sys-color-on-success"
-				/>
-				<ColorTileMaterialUi
-					background="--md-sys-color-on-success"
-					color="--md-sys-color-success"
-				/>
-				<ColorTileMaterialUi
-					background="--md-sys-color-success-container"
-					color="--md-sys-color-on-success-container"
-				/>
-				<ColorTileMaterialUi
-					background="--md-sys-color-on-success-container"
-					color="--md-sys-color-success-container"
+					background="--md-sys-color-on-primary-fixed-variant"
+					color="--md-sys-color-primary-fixed"
 				/>
 			</div>
-			<div>
-				<ColorTileMaterialUi background="--md-sys-color-info" color="--md-sys-color-on-info" />
-				<ColorTileMaterialUi background="--md-sys-color-on-info" color="--md-sys-color-info" />
+			<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
 				<ColorTileMaterialUi
-					background="--md-sys-color-info-container"
-					color="--md-sys-color-on-info-container"
+					background="--md-sys-color-secondary-fixed"
+					color="--md-sys-color-on-secondary-fixed"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-on-info-container"
-					color="--md-sys-color-info-container"
-				/>
-			</div>
-			<div>
-				<ColorTileMaterialUi
-					background="--md-sys-color-neutral"
-					color="--md-sys-color-on-neutral"
+					background="--md-sys-color-secondary-fixed-dim"
+					color="--md-sys-color-on-secondary-fixed"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-on-neutral"
-					color="--md-sys-color-neutral"
+					background="--md-sys-color-on-secondary-fixed"
+					color="--md-sys-color-secondary-fixed"
 				/>
 				<ColorTileMaterialUi
-					background="--md-sys-color-neutral-container"
-					color="--md-sys-color-on-neutral-container"
-				/>
-				<ColorTileMaterialUi
-					background="--md-sys-color-on-neutral-container"
-					color="--md-sys-color-neutral-container"
+					background="--md-sys-color-on-secondary-fixed-variant"
+					color="--md-sys-color-secondary-fixed"
 				/>
 			</div>
-		</div>
-		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
-			<p class="col-span-2 text-center text-xl md:col-span-5">Default Background Material Design</p>
-			<ColorTileMaterialUi
-				background="--md-sys-color-surface-container-lowest"
-				color="--md-sys-color-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-surface-container-low"
-				color="--md-sys-color-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-surface-container"
-				color="--md-sys-color-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-surface-container-high"
-				color="--md-sys-color-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-surface-container-highest"
-				color="--md-sys-color-on-surface"
-			/>
-		</div>
-		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-			<ColorTileMaterialUi
-				background="--md-sys-color-on-surface"
-				color="--md-sys-color-inverse-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-on-surface-variant"
-				color="--md-sys-color-inverse-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-outline"
-				color="--md-sys-color-inverse-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-outline-variant"
-				color="--md-sys-color-inverse-on-surface"
-			/>
-		</div>
-		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
-			<ColorTileMaterialUi
-				background="--md-sys-color-inverse-surface"
-				color="--md-sys-color-inverse-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-inverse-on-surface"
-				color="--md-sys-color-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-inverse-primary"
-				color="--md-sys-color-on-surface"
-			/>
-			<ColorTileMaterialUi background="--md-sys-color-scrim" color="--md-sys-color-on-surface" />
-			<ColorTileMaterialUi background="--md-sys-color-shadow" color="--md-sys-color-on-surface" />
-		</div>
-		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-			<ColorTileMaterialUi
-				background="--md-sys-color-background"
-				color="--md-sys-color-on-background"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-on-background"
-				color="--md-sys-color-background"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-neutral-palette-key-color"
-				color="--md-sys-color-inverse-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-neutral-variant-palette-key-color"
-				color="-md-sys-color-inverse-on-surface"
-			/>
-		</div>
-		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-			<p class="col-span-2 text-center text-xl md:col-span-4">
-				Avoid using those - the fixed colors don't switch from light to dark mode
-			</p>
-			<ColorTileMaterialUi
-				background="--md-sys-color-primary-fixed"
-				color="--md-sys-color-on-primary-fixed"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-primary-fixed-dim"
-				color="--md-sys-color-on-primary-fixed"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-on-primary-fixed"
-				color="--md-sys-color-primary-fixed"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-on-primary-fixed-variant"
-				color="--md-sys-color-primary-fixed"
-			/>
-		</div>
-		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-			<ColorTileMaterialUi
-				background="--md-sys-color-secondary-fixed"
-				color="--md-sys-color-on-secondary-fixed"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-secondary-fixed-dim"
-				color="--md-sys-color-on-secondary-fixed"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-on-secondary-fixed"
-				color="--md-sys-color-secondary-fixed"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-on-secondary-fixed-variant"
-				color="--md-sys-color-secondary-fixed"
-			/>
-		</div>
-		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-			<ColorTileMaterialUi
-				background="--md-sys-color-tertiary-fixed"
-				color="--md-sys-color-on-tertiary-fixed"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-tertiary-fixed-dim"
-				color="--md-sys-color-on-tertiary-fixed"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-on-tertiary-fixed"
-				color="--md-sys-color-tertiary-fixed"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-on-tertiary-fixed-variant"
-				color="--md-sys-color-tertiary-fixed"
-			/>
-		</div>
-		<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
-			<ColorTileMaterialUi
-				background="--md-sys-color-surface-dim"
-				color="--md-sys-color-on-surface"
-			/>
-			<ColorTileMaterialUi background="--md-sys-color-surface" color="--md-sys-color-on-surface" />
-			<ColorTileMaterialUi
-				background="--md-sys-color-surface-bright"
-				color="--md-sys-color-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-surface-variant"
-				color="--md-sys-color-on-surface"
-			/>
-			<ColorTileMaterialUi
-				background="--md-sys-color-surface-tint"
-				color="--md-sys-color-inverse-on-surface"
-			/>
-		</div>
-		<HorizontalRule />
+			<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+				<ColorTileMaterialUi
+					background="--md-sys-color-tertiary-fixed"
+					color="--md-sys-color-on-tertiary-fixed"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-tertiary-fixed-dim"
+					color="--md-sys-color-on-tertiary-fixed"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-tertiary-fixed"
+					color="--md-sys-color-tertiary-fixed"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-on-tertiary-fixed-variant"
+					color="--md-sys-color-tertiary-fixed"
+				/>
+			</div>
+			<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-5">
+				<ColorTileMaterialUi
+					background="--md-sys-color-surface-dim"
+					color="--md-sys-color-on-surface"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-surface"
+					color="--md-sys-color-on-surface"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-surface-bright"
+					color="--md-sys-color-on-surface"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-surface-variant"
+					color="--md-sys-color-on-surface"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-surface-tint"
+					color="--md-sys-color-inverse-on-surface"
+				/>
+			</div>
+			<HorizontalRule />
 		</div>
 	</div>
 
@@ -390,34 +409,54 @@
 		<Title>Palettes</Title>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
-			<input type="checkbox" class="switch switch-primary"  bind:checked={showSections.palettes} id="switchColors" />
+			<input
+				type="checkbox"
+				class="switch switch-primary"
+				bind:checked={showSections.palettes}
+				id="switchColors"
+			/>
 			<label class="label label-text text-base" for="switchColors">Show</label>
 		</div>
-		<div class= {showSections.palettes ?  '' : 'hidden'}>
+		<div class={showSections.palettes ? '' : 'hidden'}>
 			{#each palettesArray as palette}
 				<div class="mb-5 flex w-full grid-cols-2 gap-4">
 					<div class="grow">
 						<p class="text-center text-2xl">{palette.name}</p>
 						<div class="grid grid-cols-2">
-							<div class="flex h-24 grow p-2" style="background-color: {hexFromArgb(palette.keyColor.toInt())};">
-								<p class="text-2xl text-center">Key Color</p>
+							<div
+								class="flex h-24 grow p-2"
+								style="background-color: {hexFromArgb(palette.keyColor.toInt())};"
+							>
+								<p class="text-center text-2xl">Key Color</p>
 							</div>
-							<div class="flex h-24 grow p-2" style="background-color: {hexFromArgb(palette.keyColor.toInt())};">
-								<p class="text-2xl text-center">Current Tone</p>
+							<div
+								class="flex h-24 grow p-2"
+								style="background-color: {hexFromArgb(palette.keyColor.toInt())};"
+							>
+								<p class="text-center text-2xl">Current Tone</p>
 							</div>
 						</div>
 						<div class="mt-5 flex flex-row">
-							<p class="basis-1/12 text-xl">Tone: </p>
-							<input class="basis-10/12 range" type="range" min="0" max="100" bind:value={palette.currentTone} aria-label="range" />
-							<p class="basis-1/12 text-xl text-right">{Math.round(palette.currentTone * 100) / 100} %</p>
+							<p class="basis-1/12 text-xl">Tone:</p>
+							<input
+								class="range basis-10/12"
+								type="range"
+								min="0"
+								max="100"
+								bind:value={palette.currentTone}
+								aria-label="range"
+							/>
+							<p class="basis-1/12 text-right text-xl">
+								{Math.round(palette.currentTone * 100) / 100} %
+							</p>
 						</div>
 					</div>
 					<JsonData data={palette} />
 				</div>
 			{/each}
 			<p>
-				Add all the palettes as a sweep of tone from all available palettes: primary, secondary, with
-				a slider controlling the tone
+				Add all the palettes as a sweep of tone from all available palettes: primary, secondary,
+				with a slider controlling the tone
 			</p>
 		</div>
 	</div>

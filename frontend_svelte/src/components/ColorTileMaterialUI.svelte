@@ -4,26 +4,33 @@
 	import { type AppTheme } from '$lib/theming';
 	import { hexFromArgb } from '@material/material-color-utilities';
 	// import { theme } from '../routes/(layout)/layout.svelte'; // TBD: consider moving to $lib/stores?
-    import { themeStore } from '$lib/stores';
+	import { themeStore } from '$lib/stores';
+    import { onDestroy } from 'svelte';
 
 	let { background, color }: { background: string; color: string } = $props();
 	const text = background.replace('--md-sys-color-', '').replaceAll('-', ' ');
 
-	let theme = $state({} as AppTheme)
-	const unsubscribe = themeStore.subscribe(value => {
-	    // console.log('themeStore:', value);
-        theme = value;
+	let theme = $state({} as AppTheme);
+	const unsubscribeThemeStore = themeStore.subscribe((value) => {
+		// console.log('themeStore:', value);
+		theme = value;
 	});
 
-    let colorValue = $derived.by(() => {
-        if (!theme.currentMode) { 
-            return "" 
-        } else {
-            let colors = theme[theme.currentMode].colors
-            const variable = background.replace('--md-sys-color-', '').replace(/-./g, x => x.toUpperCase()[1]) as keyof typeof colors;
-            return hexFromArgb(colors[variable])
-        }
-    });
+	let colorValue = $derived.by(() => {
+		if (!theme.currentMode) {
+			return '';
+		} else {
+			let colors = theme[theme.currentMode].colors;
+			const variable = background
+				.replace('--md-sys-color-', '')
+				.replace(/-./g, (x) => x.toUpperCase()[1]) as keyof typeof colors;
+			return hexFromArgb(colors[variable]);
+		}
+	});
+
+    onDestroy(() => {
+		unsubscribeThemeStore();
+	});
 
 	// //     // console.log('themeStore:', themeStore[themeStore.currentMode].colors['primary']);
 	// // });

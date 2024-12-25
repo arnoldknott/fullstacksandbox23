@@ -48,7 +48,6 @@
 
 	const theming = $state(new Theming());
 
-
 	// export const theme = $state({} as AppTheme);
 	// let theme = $state({} as AppTheme);
 
@@ -337,8 +336,6 @@
 		// 	// setContext('theme', theme)
 		// 	// themeStore.set(theme);
 
-			
-
 		// 	// if (mainElement);
 		// 	// const styleElement = document.createElement('style');
 		// 	// styleElement.textContent =
@@ -355,7 +352,9 @@
 		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
 		// $effect(() => { console.log('theme:', theme) });
 		// $effect(() => { setContext('currentTheme', theme) });
-		$effect(() => {themeStore.set(theme)});
+		$effect(() => {
+			themeStore.set(theme);
+		});
 
 		// console.log('=== src -routes - (layout) - applyMaterialDesignTheme - systemDark ===');
 		// console.log(systemDark);
@@ -381,7 +380,6 @@
 		// applyTheme(theme, { target: mainContent, dark: systemDark });
 		// applyTheme(theme, { target: mainContent, dark: systemDark, brightnessSuffix: true });
 	};
-
 
 	// let theme = $derived(theming.applyTheme(themeConfiguration, mode));
 
