@@ -24,9 +24,10 @@
 	// import { get } from 'svelte/store';
 	// import { currentTheme } from '(layout)/layout.svelte';
 	import { onDestroy } from 'svelte';
+	import { hexFromArgb } from '@material/material-color-utilities';
 
 	let showSections = $state({
-		colors: true,
+		colors: false,
 		palettes: true,		
 	})
 	// let theme = $state(getContext('theme'));
@@ -38,8 +39,17 @@
 	});
 	let palettes = $derived(theme?.light?.palettes);
 	// $effect(() => {console.log('palettes:', palettes)})
+	// let toneValues = $state({} as {key: string})
+	// let toneValues = $derived(
+    //     Object.fromEntries(
+    //         Object.entries(palettes).map(([key, value]) => [key, value.keyColor.tone])
+    //     )
+    // );
 	let palettesArray = $derived(palettes ? Object.entries(palettes).map(([key, value]) => {
-            return { name: key, ...value };
+			const currentTone = value.keyColor.tone;
+			// toneValues[key] = value.keyColor.tone;
+            return { name: key, currentTone: currentTone ,...value };
+			// return { name: key, ...value };
     } ): []);
 	// $effect(() => {console.log('palettes:', palettesArray)})
 	// console.log('themeStore:', $themeStore);
@@ -385,7 +395,25 @@
 		</div>
 		<div class= {showSections.palettes ?  '' : 'hidden'}>
 			{#each palettesArray as palette}
-				<JsonData data={palette} />
+				<div class="mb-5 flex w-full grid-cols-2 gap-4">
+					<div class="grow">
+						<p class="text-center text-2xl">{palette.name}</p>
+						<div class="grid grid-cols-2">
+							<div class="flex h-24 grow p-2" style="background-color: {hexFromArgb(palette.keyColor.toInt())};">
+								<p class="text-2xl text-center">Key Color</p>
+							</div>
+							<div class="flex h-24 grow p-2" style="background-color: {hexFromArgb(palette.keyColor.toInt())};">
+								<p class="text-2xl text-center">Current Tone</p>
+							</div>
+						</div>
+						<div class="mt-5 flex flex-row">
+							<p class="basis-1/12 text-xl">Tone: </p>
+							<input class="basis-10/12 range" type="range" min="0" max="100" bind:value={palette.currentTone} aria-label="range" />
+							<p class="basis-1/12 text-xl text-right">{Math.round(palette.currentTone * 100) / 100} %</p>
+						</div>
+					</div>
+					<JsonData data={palette} />
+				</div>
 			{/each}
 			<p>
 				Add all the palettes as a sweep of tone from all available palettes: primary, secondary, with
