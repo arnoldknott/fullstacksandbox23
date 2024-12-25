@@ -244,6 +244,27 @@
 		</div>
 	</div>
 
+	<div class="col-span-2">
+		<Title>Utility classes</Title>
+        <div>bg-"COLOR_NAME"</div>
+        <div>to-"COLOR-NAME"</div>
+        <div>via-"COLOR-NAME"</div>
+        <div>from-"COLOR-NAME"</div>
+        <div>text-"COLOR-NAME"</div>
+        <div>ring-"COLOR-NAME"</div>
+        <div>fill-"COLOR-NAME"</div>
+        <div>caret-"COLOR-NAME"</div>
+        <div>stroke-"COLOR-NAME"</div>
+        <div>border-"COLOR-NAME"</div>
+        <div>divide-"COLOR-NAME"</div>
+        <div>accent-"COLOR-NAME"</div>
+        <div>shadow-"COLOR-NAME"</div>
+        <div>outline-"COLOR-NAME"</div>
+        <div>decoration-"COLOR-NAME"</div>
+        <div>placeholder-"COLOR-NAME"</div>
+        <div>ring-offset-"COLOR-NAME"</div>
+    </div>
+
 	<div>
 		<Title>Fonts</Title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
