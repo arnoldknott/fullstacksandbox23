@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Presentation from '$components/Presentation.svelte';
-	// export const ssr = false;
 
 	const presentations = [
 		{

@@ -41,40 +41,40 @@ module.exports = {
 		vendors: true,
 		// themeRoot: "TBD", // consider passing the theme root element here, so not all elements get themed!
 		themes: [
-			{
-				light: {
-					...light, // TBD: remove the themes, when Material Color synchronization is fully implemented
-					transparent: 'transparent',
-					current: 'currentColor',
-					info: light.info,
-					'info-content': light['info-content'],
-					success: light.success,
-					'success-content': light['success-content']
-					// // 		// lightFlyonUI,
-					// // 		// lightFlyonUI,// the default FlyonUI theme
-					// // 		// set the color object for Tailwind programmatically here - matching output from Material Dynamic Color:
-					// // 		// https://github.com/themeselection/flyonui/blob/bdbdaeec6b575b80283f5fda51abd3981a168fca/src/theming/index.js#L2
-					// 		transparent: 'transparent',
-					// 		current: 'currentColor',
-					// 		primary: '#394DFF',
-					// 		// primary: 'var(--my-color)',
-					// 		'primary-content': '#9AE7FF',
-					// // 		// Match accent into tertiary!
-					// // 		// tertiary: '#1B82F6',
-					// // 		// 'tertiary-content': '#0BEAFE',
-				}
-			},
-			{
-				dark: {
-					...dark, // TBD: remove the themes, when Material Color synchronization is fully implemented
-					transparent: 'transparent',
-					current: 'currentColor',
-					info: dark.info,
-					'info-content': dark['info-content'],
-					success: dark.success,
-					'success-content': dark['success-content']
-				}
-			}
+			// {
+			// 	light: {
+			// 		...light, // TBD: remove the themes, when Material Color synchronization is fully implemented
+			// 		transparent: 'transparent',
+			// 		current: 'currentColor',
+			// 		info: light.info,
+			// 		'info-content': light['info-content'],
+			// 		success: light.success,
+			// 		'success-content': light['success-content']
+			// 		// // 		// lightFlyonUI,
+			// 		// // 		// lightFlyonUI,// the default FlyonUI theme
+			// 		// // 		// set the color object for Tailwind programmatically here - matching output from Material Dynamic Color:
+			// 		// // 		// https://github.com/themeselection/flyonui/blob/bdbdaeec6b575b80283f5fda51abd3981a168fca/src/theming/index.js#L2
+			// 		// 		transparent: 'transparent',
+			// 		// 		current: 'currentColor',
+			// 		// 		primary: '#394DFF',
+			// 		// 		// primary: 'var(--my-color)',
+			// 		// 		'primary-content': '#9AE7FF',
+			// 		// // 		// Match accent into tertiary!
+			// 		// // 		// tertiary: '#1B82F6',
+			// 		// // 		// 'tertiary-content': '#0BEAFE',
+			// 	}
+			// },
+			// {
+			// 	dark: {
+			// 		...dark, // TBD: remove the themes, when Material Color synchronization is fully implemented
+			// 		transparent: 'transparent',
+			// 		current: 'currentColor',
+			// 		info: dark.info,
+			// 		'info-content': dark['info-content'],
+			// 		success: dark.success,
+			// 		'success-content': dark['success-content']
+			// 	}
+			// }
 			// {
 			// 	dark: {
 			// 		darkFlyonUI,

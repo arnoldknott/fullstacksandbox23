@@ -317,6 +317,7 @@
 		// $effect(() => { scheme })
 		$effect(() => {
 			theming.applyTheme(themeConfiguration, mode, mainContent);
+			// theming.applyTheme(themeConfiguration, mode, document.documentElement);
 			// theme.set(theming.applyTheme(themeConfiguration, mode, mainContent));
 			// $page.data.theme = theme;
 			// setContext('theme', theme)
@@ -522,7 +523,8 @@
 <!-- The class switches material design 3, whereas data-theme switches FlyonUI -->
 <!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryManual};"> -->
 <!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} style="--p: {primaryFromMaterialDesign};" use:applyTheming> -->
-<div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} use:applyTheming>
+<!-- <div bind:this={mainContent} class={`h-full ${mode}`} data-theme={mode} use:applyTheming> -->
+<div bind:this={mainContent} class="h-full {mode}" data-theme={mode} use:applyTheming>
 	<nav class="mx-2 p-2">
 		<div class="flex w-full flex-wrap items-center justify-between">
 			<div class="flex-grow space-x-4">

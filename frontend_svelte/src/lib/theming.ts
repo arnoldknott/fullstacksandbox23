@@ -280,13 +280,12 @@ type AdditionalFlyonUIScheme = {
 // AdditionalFlyonUIColorsOnContainer &
 // AdditionalFlyonUIColorsPalette;
 
+// TBD: check how to do all the containers programmatically for providing the container classes (extensions of FlyonUI to match Material Design)
 const flyonUImaterialDesignMapping = new Map([
 	['p', 'primary'],
 	['pc', 'onPrimary'],
-	// check how to do the primaryContainer and onPrimaryContainer
 	['s', 'secondary'],
 	['sc', 'onSecondary'],
-	// check how to do the secondaryContainer and onSecondaryContainer,...
 	['a', 'tertiary'], // accent
 	['ac', 'onTertiary'],
 	['n', 'neutral'],
