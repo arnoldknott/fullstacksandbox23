@@ -659,11 +659,11 @@
 			</label>
 
 			<div class="ml-5 col-span-5 text-2xl font-semibold">ring-offset-"COLOR-NAME"</div>
-			<span class="badge ring-2 ring-red-300 ring-offset-4 ring-offset-primary">primary</span>
-			<span class="badge ring-2 ring-red-300 ring-offset-4 ring-offset-inverse-primary">inverse primary</span>
-			<span class="badge ring-2 ring-red-300 ring-offset-4 ring-offset-surface-tint">surface tint</span>
-			<span class="badge ring-2 ring-blue-300 ring-offset-4 ring-offset-error">error</span>
-			<span class="badge ring-2 ring-blue-300 ring-offset-4 ring-offset-error/50">error/50</span>
+			<span class="badge ring-2 ring-red-300 ring-offset-4 ring-offset-primary col-span-5 md:col-span-1">primary</span>
+			<span class="badge ring-2 ring-red-300 ring-offset-4 ring-offset-inverse-primary col-span-5 md:col-span-1">inverse primary</span>
+			<span class="badge ring-2 ring-red-300 ring-offset-4 ring-offset-surface-tint col-span-5 md:col-span-1">surface tint</span>
+			<span class="badge ring-2 ring-blue-300 ring-offset-4 ring-offset-error col-span-5 md:col-span-1">error</span>
+			<span class="badge ring-2 ring-blue-300 ring-offset-4 ring-offset-error/50 col-span-5 md:col-span-1">error/50</span>
 		</div>
 	</div>
 
