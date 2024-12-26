@@ -60,6 +60,9 @@
 	// 	Theming.addStyle('.bg-inverse-primary', ['background-color: var(--md-sys-color-inverse-primary)'])
 	// 	Theming.addStyle('.fill-inverse-primary', ['fill: var(--md-sys-color-inverse-primary)'])
 	// 	});// wouldn't it be the same as just using the scoped style further down?
+
+	const colorTileClasses = "h-full w-full p-2"
+	const colorLabelClasses = "text-left text-xs md:text-lg xl:text-xl"
 </script>
 
 <!-- // based on https://github.com/themeselection/flyonui/blob/bdbdaeec6b575b80283f5fda51abd3981a168fca/src/theming/index.js#L2
@@ -114,14 +117,26 @@
                 </button>
                 <div id="default-foreground-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="default-foreground-colors" role="region">
                     <div class="m-5 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
-                        <div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-primary {colorTileClasses}">
+									<p class="text-primary-content {colorLabelClasses}">primary</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-primary-content {colorTileClasses}">
+									<p class="text-primary {colorLabelClasses}">primary-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+                        <!-- <div>
                             <ColorTileFlyonUi background="primary" content="primary-content" />
                             <ColorTileFlyonUi background="primary-content" content="primary" />
-                        </div>
+                        </div> -->
                         <div>
-                            <ColorTileFlyonUi background="secondary" content="secondary-content" />
+                            <!-- <ColorTileFlyonUi background="secondary" content="secondary-content" /> -->
+							<!-- <ColorTileFlyonUi background="secondary-content" content="secondary" /> -->
                             <!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
-                            <ColorTileFlyonUi background="secondary-content" content="secondary" />
                             <!-- <hr /> -->
                             <!-- <div class="flex h-24 grow bg-secondary-content p-2">
                                 <p class="text-left text-base text-secondary md:text-xl">secondary content direct</p>
@@ -129,7 +144,7 @@
                             <hr /> -->
                             <!-- <ColorTileFlyonUi background="onSecondary" content="secondary" /> -->
                         </div>
-                        <div>
+                        <!-- <div>
                             <ColorTileFlyonUi background="accent" content="accent-content" />
 							<div class="bg-accent">TEST</div>
                             <ColorTileFlyonUi background="accent-content" content="accent" />
@@ -153,7 +168,7 @@
                         <div>
                             <ColorTileFlyonUi background="error" content="error-content" />
                             <ColorTileFlyonUi background="error-content" content="error" />
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -164,11 +179,11 @@
                 </button>
                 <div id="default-background-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="default-background-colors" role="region">
                     <div class="m-5 grid grid-cols-2 md:grid-cols-5 gap-4">
-                        <ColorTileFlyonUi background="base-100" />
+                        <!-- <ColorTileFlyonUi background="base-100" />
                         <ColorTileFlyonUi background="base-200" />
                         <ColorTileFlyonUi background="base-300" />
                         <ColorTileFlyonUi background="base-content" content="onSecondary" />
-                        <ColorTileFlyonUi background="base-shadow" />
+                        <ColorTileFlyonUi background="base-shadow" /> -->
                         <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-100">
                             <p class="text-center text-xl">base-100</p>
                         </div>
@@ -275,7 +290,7 @@
                 </button>
                 <div id="extension-materialui-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="extension-materialui-colors" role="region">
                     <div class="m-5 grid grid-cols-4 gap-4 xl:grid-cols-8">
-                        <div>
+                        <!-- <div>
                             <ColorTileFlyonUi background="primary-container" content="primary-container-content" />
                             <ColorTileFlyonUi background="primary-container-content" content="primary-container" />
                         </div>
@@ -306,7 +321,7 @@
                         <div>
                             <ColorTileFlyonUi background="error-container" content="error-container-content" />
                             <ColorTileFlyonUi background="error-container-content" content="error-container" />
-                        </div>
+                        </div> -->
 						<p class="text-2xl">TBD: Others: background and more</p>
                         <div>surface container low - between b1 and b2</div>
 						<div>surface container high - between b2 and b3</div>

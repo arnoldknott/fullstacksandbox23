@@ -1,13 +1,20 @@
 <script lang="ts">
-	let { background, content="" }: { background: string; content?: string } = $props();
-	const text = background.replaceAll('-', ' ');
+	// let { background, content="" }: { background: string; content?: string } = $props();
+	// const text = background.replaceAll('-', ' ');
+	import { type Snippet } from "svelte";
+	let { children }: {children: Snippet} = $props();
 </script>
 
-<div class="flex h-18 md:h-20 xl:24 grow p-2 bg-{background}">
-	<!-- <p class="text-left text-base md:text-xl text-{content}"> -->
+<!-- <div class="flex h-18 md:h-20 xl:24 grow p-2 bg-{background}">
     <p class="text-left text-xs md:text-lg xl:text-xl {content ? 'text-' + content : "" } ">
 		{text}
 	</p>
+</div> -->
+
+<!-- <p class="text-left text-base md:text-xl text-{content}"> -->
+
+<div class="flex h-18 md:h-20 xl:24 grow">
+	{@render children?.()}
 </div>
 
 <!-- <style scoped>
