@@ -455,6 +455,14 @@
 							/>
 							<p class="basis-1/12 text-right text-xl">
 								{Math.round(toneValues[palette.name] * 100) / 100} %
+								<md-filled-button
+									onclick={() => toneValues[palette.name] = palette.keyColor.tone}
+									role="button"
+									tabindex="0"
+									onkeydown={(event: KeyboardEvent) => event.key === 'Enter' ? toneValues[palette.name] = palette.keyColor.tone : null}
+									>
+									Reset
+								</md-filled-button>
 							</p>
 						</div>
 					</div>
