@@ -27,7 +27,7 @@
 	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 
 	let showSections = $state({
-		colors: false,
+		colors: true,
 		palettes: true
 	});
 	// let theme = $state(getContext('theme'));
