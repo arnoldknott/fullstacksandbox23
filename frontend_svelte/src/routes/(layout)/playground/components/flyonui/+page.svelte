@@ -53,6 +53,8 @@
 
     // This is getting the resolved CSS after FlyonUI, Tailwind CSS and so on processing - don't alter that."
     $effect(() => Theming.addBackgroundUtilityClass('primary-container', ['var(--md-sys-color-primary-container)']));
+	$effect(() => Theming.addBackgroundUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
+	$effect(() => Theming.addFillUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
 </script>
 
 <!-- // based on https://github.com/themeselection/flyonui/blob/bdbdaeec6b575b80283f5fda51abd3981a168fca/src/theming/index.js#L2
@@ -187,42 +189,42 @@
                 <div id="opacity-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="opacity-colors" role="region">
 					<p class="ml-5">Primary:</p>
                     <div class="m-5 grid grid-cols-11 gap-4">
-                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary">
                             <p class="text-center text-xl"></p>
                         </div>
-                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/10">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/10">
                             <p class="text-center text-xl">/10</p>
                         </div>
-                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/20">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/20">
                             <p class="text-center text-xl">/20</p>
                         </div>
-                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/30">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/30">
                             <p class="text-center text-xl">/30</p>
                         </div>
-                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/40">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/40">
                             <p class="text-center text-xl">/40</p>
                         </div>
-                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/50">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/50">
                             <p class="text-center text-xl">/50</p>
                         </div>
-                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/60">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/60">
                             <p class="text-center text-xl">/60</p>
                         </div>
-                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/70">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/70">
                             <p class="text-center text-xl">/70</p>
                         </div>
-                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/80">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/80">
                             <p class="text-center text-xl">/80</p>
                         </div>
-                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/90">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/90">
                             <p class="text-center text-xl">/90</p>
                         </div>
-                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/100">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/100">
                             <p class="text-center text-xl">/100</p>
                         </div>
                     </div>
 					<br />
-					<p class="ml-5">Primary:</p>
+					<p class="ml-5">Primary content:</p>
                     <div class="m-5 grid grid-cols-11 gap-4">
                         <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
                             <p class="text-center text-xl"></p>
@@ -339,40 +341,156 @@
 
 	<div class="col-span-2">
 		<Title>Utility classes</Title>
-		<p>Mainly playing with primary (native in both FlyonUI and Material Design), inverse primary (native only in Material Design) and surface tint (aviod using)</p>
-		<div class="w-full grid grid-cols-3 gap-4">
-			<div class="col-span-3 text-center">bg-"COLOR-NAME"</div>
+		<div>Mainly playing with:
+			<ul>
+				<li>primary (native in both FlyonUI and Material Design),</li>
+				<li>inverse primary (native only in Material Design),</li>
+				<li>surface tint (avoid using),</li>
+				<li>error (also native in both - showing it works)</li>
+				<li>error/50 (checking transparency from Tailwind)</li>
+			</ul>
+		</div>
+		<div class="w-full mt-5 grid grid-cols-5 gap-4">
+			<div class="ml-5 col-span-5 text-2xl font-semibold">bg-"COLOR-NAME"</div>
 			<div class="bg-primary h-24">bg-primary</div>
 			<div class="bg-inverse-primary h-24">bg-inverse-primary</div>
 			<div class="bg-surface-tint h-24">bg-surface-tint</div>
+			<div class="bg-error h-24">bg-error</div>
+			<div class="bg-error/50 h-24">bg-error/50</div>
 
-			<div class="col-span-3 text-center">from-"COLOR-NAME" via-"COLOR-NAME" to-"COLOR-NAME"</div>
+			<div class="ml-5 col-span-5 text-2xl font-semibold">from-"COLOR-NAME" via-"COLOR-NAME" to-"COLOR-NAME"</div>
+			<div class="bg-gradient-to-r from-primary via-secondary to-accent h-24">from-primary via-scondary to-accent</div>
 			<div class="bg-gradient-to-r from-success via-warning to-error h-24">from-success via-warning to-error</div>
 			<div class="bg-gradient-to-r from-success via-warning to-error bg-clip-text text-transparent font-black text-xl w-fit h-24">from-success via-warning to-error applied to text</div>
-			<div class="to-inverse-primary h-24">to-inverse-primary</div>
-			<div class="to-surface-tint h-24">to-surface-tint</div>
+			<div class="bg-gradient-to-r from-primary via-inverse-primary to-surface-tint h-24">from-primary via-inverse-primary to-surface-tint</div>
+			<div class="bg-gradient-to-r from-primary/50 via-secondary/50 to-accent/50 h-24">from-primary/50 via-scondary/50 to-accent/50</div>
 			
-			<div>via-"COLOR-NAME"</div>
-			<div>from-"COLOR-NAME"</div>
-			<div>text-"COLOR-NAME"</div>
-			<div>ring-"COLOR-NAME"</div>
-			<div>fill-"COLOR-NAME"</div>
-			<div>caret-"COLOR-NAME"</div>
-			<div>stroke-"COLOR-NAME"</div>
-			<div>border-"COLOR-NAME"</div>
-			<div>divide-"COLOR-NAME"</div>
-			<div>accent-"COLOR-NAME"</div>
-			<div>shadow-"COLOR-NAME"</div>
-			<div>outline-"COLOR-NAME"</div>
-			<div>decoration-"COLOR-NAME"</div>
-			<div>placeholder-"COLOR-NAME"</div>
-			<div>ring-offset-"COLOR-NAME"</div>
+			<div class="ml-5 col-span-5 text-2xl font-semibold">text-"COLOR-NAME"</div>
+			<div class="text-primary text-4xl font-bold h-24 ">text-primary</div>
+			<div class="text-inverse-primary text-4xl font-bold h-24">text-inverse-primary</div>
+			<div class="text-surface-tint text-4xl font-bold h-24">text-surface-tint</div>
+			<div class="text-error text-4xl font-bold h-24">text-error</div>
+			<div class="text-error/50 text-4xl font-bold h-24">text-error/50</div>
+
+			<div class="ml-5 col-span-5 text-2xl font-semibold">ring-"COLOR-NAME"</div>
+			<div><input type="radio" name="radioPrimary" class="radio radio-primary" id="radioPrimary" checked/>Radio primary</div>
+			<div><input type="radio" name="radioInversePrimary" class="radio radio-inverse-primary" id="radioInversePrimary" checked/>Radio inverse primary</div>
+			<div><input type="radio" name="radioSurfaceTint" class="radio radio-surface-tint" id="radioSurfaceTint" checked/>Radio surface tint</div>
+			<div><input type="radio" name="radioError" class="radio radio-error" id="radioError" checked/>Radio error</div>
+			<div><input type="radio" name="radioError50" class="radio radio-error/50" id="radioError50" checked/>Radio error/50</div>
+			<button class="button ring ring-primary">ring-primary</button>
+			<button class="button ring ring-inverse-primary">ring-inverse-primary</button>
+			<button class="button ring ring-surface-tint">ring-surface-tint</button>
+			<button class="button ring ring-error">ring-error</button>
+			<button class="button ring ring-error/50">ring-error/50</button>
+
+			<div class="ml-5 col-span-5 text-2xl font-semibold">fill-"COLOR-NAME"</div>
+			<svg class="fill-primary h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"></path></svg>
+			<svg class="fill-inverse-primary h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"></path></svg>
+			<svg class="fill-surface-tint h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"></path></svg>
+			<svg class="fill-error h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"></path></svg>
+			<svg class="fill-error/50 h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"></path></svg>
+			
+			<div class="ml-5 col-span-5 text-2xl font-semibold">caret-"COLOR-NAME"</div>
+			<textarea class="caret-primary h-24">caret-primary: cursor color!</textarea>
+			<textarea class="caret-inverse-primary h-24">caret-invserse-primary: cursor color!</textarea>
+			<textarea class="caret-surface-tint h-24">caret-surface-tint: cursor color!</textarea>
+			<textarea class="caret-error h-24">caret-error: cursor color!</textarea>
+			<textarea class="caret-error/50 h-24">caret-error/50: cursor color!</textarea>
+			
+			<div class="ml-5 col-span-5 text-2xl font-semibold">stroke-"COLOR-NAME"</div>
+			<svg class="stroke-primary h-10" viewBox="0 0 48 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M1 13C1 10.2386 3.23858 8 6 8H13.4914C14.3844 8 15.1691 7.40805 15.4144 6.54944L16.5856 2.45056C16.8309 1.59196 17.6156 1 18.5086 1H29.4914C30.3844 1 31.1691 1.59195 31.4144 2.45056L32.5856 6.54944C32.8309 7.40804 33.6156 8 34.5086 8H42C44.7614 8 47 10.2386 47 13V34C47 36.7614 44.7614 39 42 39H6C3.23858 39 1 36.7614 1 34V13Z" stroke-width="2"></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
+			</svg>
+			<svg class="stroke-inverse-primary h-10" viewBox="0 0 48 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M1 13C1 10.2386 3.23858 8 6 8H13.4914C14.3844 8 15.1691 7.40805 15.4144 6.54944L16.5856 2.45056C16.8309 1.59196 17.6156 1 18.5086 1H29.4914C30.3844 1 31.1691 1.59195 31.4144 2.45056L32.5856 6.54944C32.8309 7.40804 33.6156 8 34.5086 8H42C44.7614 8 47 10.2386 47 13V34C47 36.7614 44.7614 39 42 39H6C3.23858 39 1 36.7614 1 34V13Z" stroke-width="2"></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
+			</svg>
+			<svg class="stroke-surface-tint h-10" viewBox="0 0 48 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M1 13C1 10.2386 3.23858 8 6 8H13.4914C14.3844 8 15.1691 7.40805 15.4144 6.54944L16.5856 2.45056C16.8309 1.59196 17.6156 1 18.5086 1H29.4914C30.3844 1 31.1691 1.59195 31.4144 2.45056L32.5856 6.54944C32.8309 7.40804 33.6156 8 34.5086 8H42C44.7614 8 47 10.2386 47 13V34C47 36.7614 44.7614 39 42 39H6C3.23858 39 1 36.7614 1 34V13Z" stroke-width="2"></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
+			</svg>
+			<svg class="stroke-error h-10" viewBox="0 0 48 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M1 13C1 10.2386 3.23858 8 6 8H13.4914C14.3844 8 15.1691 7.40805 15.4144 6.54944L16.5856 2.45056C16.8309 1.59196 17.6156 1 18.5086 1H29.4914C30.3844 1 31.1691 1.59195 31.4144 2.45056L32.5856 6.54944C32.8309 7.40804 33.6156 8 34.5086 8H42C44.7614 8 47 10.2386 47 13V34C47 36.7614 44.7614 39 42 39H6C3.23858 39 1 36.7614 1 34V13Z" stroke-width="2"></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
+			</svg>
+			<svg class="stroke-error/50 h-10" viewBox="0 0 48 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M1 13C1 10.2386 3.23858 8 6 8H13.4914C14.3844 8 15.1691 7.40805 15.4144 6.54944L16.5856 2.45056C16.8309 1.59196 17.6156 1 18.5086 1H29.4914C30.3844 1 31.1691 1.59195 31.4144 2.45056L32.5856 6.54944C32.8309 7.40804 33.6156 8 34.5086 8H42C44.7614 8 47 10.2386 47 13V34C47 36.7614 44.7614 39 42 39H6C3.23858 39 1 36.7614 1 34V13Z" stroke-width="2"></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
+			</svg>
+
+
+			<div class="ml-5 col-span-5 text-2xl font-semibold">border-"COLOR-NAME"</div>
+			<div class="border-4 border-primary h-24">border-primary</div>
+			<div class="border-4 border-inverse-primary h-24">border-inverse-primary</div>
+			<div class="border-4 border-surface-tint h-24">border-surface-tint</div>
+			<div class="border-4 border-error h-24">border-error</div>
+			<div class="border-4 border-error/50 h-24">border-error/50</div>
+
+			<div class="ml-5 col-span-5 text-2xl font-semibold">divide-"COLOR-NAME"</div>
+			<div class="divide-y divide-primary h-24"><div>divide</div><div>between</div><div>elements</div></div>
+			<div class="divide-y divide-inverse-primary h-24"><div>divide</div><div>between</div><div>elements</div></div>
+			<div class="divide-y divide-surface-tint h-24"><div>divide</div><div>between</div><div>elements</div></div>
+			<div class="divide-y divide-error h-24"><div>divide</div><div>between</div><div>elements</div></div>
+			<div class="divide-y divide-error/50 h-24"><div>divide</div><div>between</div><div>elements</div></div>
+
+			<div class="ml-5 col-span-5 text-2xl font-semibold">accent-"COLOR-NAME"</div>
+			<label>
+				<input type="checkbox" class="accent-primary" checked> primary
+			</label>
+			<label>
+				<input type="checkbox" class="accent-inverse-primary" checked> inverse primary
+			</label>
+			<label>
+				<input type="checkbox" class="accent-surface-tint" checked> surface tint
+			</label>
+			<label>
+				<input type="checkbox" class="accent-error" checked> error
+			</label>
+			<label>
+				<input type="checkbox" class="accent-error/50" checked> error/50
+			</label>
+			<label>
+				<input type="checkbox" class="checkbox checkbox-primary" checked> primary
+			</label>
+			<label>
+				<input type="checkbox" class="checkbox checkbox-inverse-primary" checked> inverse primary
+			</label>
+			<label>
+				<input type="checkbox" class="checkbox checkbox-surface-tint" checked> surface tint
+			</label>
+			<label>
+				<input type="checkbox" class="checkbox checkbox-error" checked> error
+			</label>
+			<label>
+				<input type="checkbox" class="checkbox checkbox-error/50" checked> error/50
+			</label>
+
+			<div class="ml-5 col-span-5 text-2xl font-semibold">shadow-"COLOR-NAME"</div>
+			<button class="btn btn-primary shadow-lg shadow-primary">Shadow primary</button>
+			<button class="btn btn-inverse-primary shadow-lg shadow-inverse-primary">Shadow inverse primary</button>
+			<button class="btn btn-surface-tint shadow-lg shadow-surface-tint">Shadow surface tint</button>
+			<button class="btn btn-error shadow-lg shadow-error">Shadow error</button>
+			<button class="btn btn-error/50 shadow-lg shadow-error/50">Shadow error/50</button>
+
+
+			<div class="ml-5 col-span-5 text-2xl font-semibold">outline-"COLOR-NAME"</div>
+			<div class="ml-5 col-span-5 text-2xl font-semibold">decoration-"COLOR-NAME"</div>
+			<div class="ml-5 col-span-5 text-2xl font-semibold">placeholder-"COLOR-NAME"</div>
+			<div class="ml-5 col-span-5 text-2xl font-semibold">ring-offset-"COLOR-NAME"</div>
 		</div>
 	</div>
 
 	<div>
-		<Title>Fonts</Title>
+		<Title>Components with utility classes</Title>
+		<p>Badges:</p>
+		<span class="badge badge-primary">Badge primary</span>
+		<span class="badge badge-secondary">Badge secondary</span>
+		<span class="badge badge-tertiary">Badge tertiary (Material notation)</span>
+		<span class="badge badge-accent">Badge accent (same in FlyonUI notation)</span>
+		<br />
+	</div>
+
+	<div>
+		<Title>Typography</Title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<p>Fonts:</p>
 		<p class="font-sans">
 			Some text in <em>sans</em> font family, should be using <b>Robot</b> Google Fonts extending
 			default theme in <code>tailwindcss.config.js</code>.

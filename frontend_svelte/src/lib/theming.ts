@@ -901,64 +901,41 @@ export class Theming {
 	}
 
     private static addFlyonuiUtilityClassToStyle( type: string, name: string, styles: string[]): void {
-        // console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - inputs ===");
-        // console.log(type);
-        // console.log(name);
-        // console.log(styles);
-        // console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - existing stylesSheets ===");
-        // const styleSheets = document.styleSheets;
-        // for (const styleSheet of styleSheets) {
-        //     console.log("=== styleSheet.title: ", styleSheet.title);
-        //     console.log(styleSheet);
-        // }
-        // const styleElement = document.getElementById('flyonUI_variables');
         const styleElement = Theming.createStyleElementInDocument('flyonUI_classes');
 
-
-        
-		const rootStartIndex = styleElement.textContent?.indexOf(':root {') ?? -1;
-		const rootEndIndex = styleElement.textContent?.lastIndexOf('}') ?? -1;
-
-        let rules = `.${type}-${name} {\n`;
+		let rules = `.${type}-${name} {\n`;
         styles.forEach((style) => {
             rules += `    ${style}\n`;
         });
         rules += '}\n';
 
-
+		// check if pseudoelement :root already exists in styleElement
+		const rootStartIndex = styleElement.textContent?.indexOf(':root {') ?? -1;
+		const rootEndIndex = styleElement.textContent?.lastIndexOf('}') ?? -1;
 
         if (rootStartIndex !== -1 && rootEndIndex !== -1) {
 			// Check if the rules already exist
 			const rulesStartIndex = styleElement.textContent?.indexOf(rules);
-			console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - rulesStartIndex ===");
-			console.log(rulesStartIndex);
 			if (rulesStartIndex === -1) {
 				// Insert styles before the closing }
 				const beforeRoot = styleElement.textContent?.substring(0, rootEndIndex);
 				const afterRoot = styleElement.textContent?.substring(rootEndIndex);
-				// console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - beforeRoot ===");
-				// console.log(beforeRoot);
-				// console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - rules ===");
-				// console.log(rules);
-				// console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - afterRoot ===");
 				styleElement.textContent = `${beforeRoot}\n${rules}\n${afterRoot}`;
-				console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - styleElement.textContent ===");
-				console.log(styleElement.textContent);
-				// console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - modifiedStyleElement ===");
-				// console.log(styleElement)
 			}
 			} else {
             // If :root is not found, create it
-            console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - rules - WHERE STYLE TAG DID NOT EXIST! ===");
             styleElement.textContent += `\n:root {\n${rules}\n}`;
-            console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - styleElement.textContent ==="); 
-            console.log(styleElement)
         }
     }
 
-    static addBackgroundUtilityClass( name: string, specifivValue1: string[]): void {
-        Theming.addFlyonuiUtilityClassToStyle('bg', name, [`background-color: ${specifivValue1}`]);
+    static addBackgroundUtilityClass( name: string, backgroundColor: string[]): void {
+        Theming.addFlyonuiUtilityClassToStyle('bg', name, [`background-color: ${backgroundColor}`]);
     }
+
+	static addFillUtilityClass( name: string, fill: string[]): void {
+        Theming.addFlyonuiUtilityClassToStyle('fill', name, [`fill: ${fill}`]);
+    }
+
 
 	private applyFlyonUITokens(
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
