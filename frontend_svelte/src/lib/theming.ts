@@ -281,7 +281,8 @@ type AdditionalFlyonUIScheme = {
 // AdditionalFlyonUIColorsPalette;
 
 // TBD: check how to do all the containers programmatically for providing the container classes (extensions of FlyonUI to match Material Design)
-// TBD: Map matched colors to both class names, e.g. onPrimary primary-container bcomse a class definition of ".on-primary, .primary-container"
+// TBD: Map matched colors to both class names, e.g. onPrimary primary-container becomes a class definition of ".on-primary, .primary-container"
+// Material design tokens become FlyonUI variables (both technically CSS variables)
 const flyonUIVariablesMaterialDesignMapping = new Map([
     ['primary', 'p'],
     ['onPrimary', 'pc'],
@@ -307,8 +308,11 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
     ['onError', 'erc']
 ]);
 
-
-const flyonUIClassesMaterialDesignMapping = new Map([])
+// add missing material design tokens as utility classes for flyonUI
+// with both material design and flyonUI syntax:
+const additionalMaterialDesignUtilityClasses = new Map([
+	['primaryContainer', []],
+])
 
 export interface ColorConfig {
 	sourceColor: string;
@@ -900,10 +904,10 @@ export class Theming {
 		return colorJs.to('oklch').coords.join(' ');
 	}
 
-    private static addFlyonuiUtilityClassToStyle( type: string, name: string, styles: string[]): void {
-        const styleElement = Theming.createStyleElementInDocument('flyonUI_classes');
+    static addUtilityClass( className: string, styles: string[]): void {
+        const styleElement = Theming.createStyleElementInDocument('utility_classes');
 
-		let rules = `.${type}-${name} {\n`;
+		let rules = `.${className} {\n`;
         styles.forEach((style) => {
             rules += `    ${style}\n`;
         });
@@ -929,11 +933,11 @@ export class Theming {
     }
 
     static addBackgroundUtilityClass( name: string, backgroundColor: string[]): void {
-        Theming.addFlyonuiUtilityClassToStyle('bg', name, [`background-color: ${backgroundColor}`]);
+        Theming.addUtilityClass(`bg-${name}`, [`background-color: ${backgroundColor}`]);
     }
 
 	static addFillUtilityClass( name: string, fill: string[]): void {
-        Theming.addFlyonuiUtilityClassToStyle('fill', name, [`fill: ${fill}`]);
+        Theming.addUtilityClass(`fill-${name}`, [`fill: ${fill}`]);
     }
 
 
@@ -949,8 +953,8 @@ export class Theming {
 				const materialTokenKey = materialDesignToken as keyof typeof colors;
 				const oklchColor = this.oklchFromArgb(colors[materialTokenKey]);
 				styles += `--${flyonUIVariable}: ${oklchColor};\n`;
-				styles += `.bg-${materialDesignToken} {background-color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
-				styles += `.text-${materialDesignToken} {color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
+				// styles += `.bg-${materialDesignToken} {background-color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
+				// styles += `.text-${materialDesignToken} {color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
 			});
 			const styleElement = Theming.createStyleElementInDocument(styleElementId);
 			styleElement.textContent = `:root {\n${styles}}`;

@@ -53,7 +53,7 @@
 
     // This is getting the resolved CSS after FlyonUI, Tailwind CSS and so on processing - don't alter that."
     $effect(() => Theming.addBackgroundUtilityClass('primary-container', ['var(--md-sys-color-primary-container)']));
-	// $effect(() => Theming.addBackgroundUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
+	$effect(() => Theming.addBackgroundUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
 	$effect(() => Theming.addFillUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
 </script>
 
@@ -126,6 +126,7 @@
                         </div>
                         <div>
                             <ColorTileFlyonUi background="accent" content="accent-content" />
+							<div class="bg-accent">TEST</div>
                             <ColorTileFlyonUi background="accent-content" content="accent" />
                         </div>
                         <div>
@@ -337,6 +338,9 @@
                 </div>
             </div>
         </div>
+	</div>
+	<div class="col-span-2">
+		<p class="italic text-xl">Note, for programmatically applied classes, add the utility class also programmatically via <code>Theming.addUtilityClass( className, styles)</code> </p>
 	</div>
 
 	<div class="col-span-2">
