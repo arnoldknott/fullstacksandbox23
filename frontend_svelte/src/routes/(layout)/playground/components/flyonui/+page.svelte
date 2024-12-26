@@ -52,9 +52,14 @@
 	};
 
     // This is getting the resolved CSS after FlyonUI, Tailwind CSS and so on processing - don't alter that."
-    $effect(() => Theming.addBackgroundUtilityClass('primary-container', ['var(--md-sys-color-primary-container)']));
-	$effect(() => Theming.addBackgroundUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
-	$effect(() => Theming.addFillUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
+    // $effect(() => Theming.addBackgroundUtilityClass('primary-container', ['var(--md-sys-color-primary-container)']));
+	// $effect(() => Theming.addBackgroundUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
+	// $effect(() => Theming.addFillUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
+	// $effect(() => {
+	// 	Theming.addStyle('.bg-primary-container', ['background-color: var(--md-sys-color-primary-container)'])
+	// 	Theming.addStyle('.bg-inverse-primary', ['background-color: var(--md-sys-color-inverse-primary)'])
+	// 	Theming.addStyle('.fill-inverse-primary', ['fill: var(--md-sys-color-inverse-primary)'])
+	// 	});// wouldn't it be the same as just using the scoped style further down?
 </script>
 
 <!-- // based on https://github.com/themeselection/flyonui/blob/bdbdaeec6b575b80283f5fda51abd3981a168fca/src/theming/index.js#L2
@@ -340,7 +345,7 @@
         </div>
 	</div>
 	<div class="col-span-2">
-		<p class="italic text-xl">Note, for programmatically applied classes, add the utility class also programmatically via <code>Theming.addUtilityClass( className, styles)</code> </p>
+		<p class="italic text-xl">Note, for programmatically applied classes, add the utility class either programmatically via <code>Theming.addStyle( styleName, styles)</code> or as (scoped) <code>&ltstyle&gt</code> tag.</p>
 	</div>
 
 	<div class="col-span-2">
@@ -944,3 +949,21 @@
         </div>
     </div> -->
 </div>
+
+<style>
+
+	.bg-primary-container {
+		background-color: var(--md-sys-color-primary-container)
+	}
+	
+	
+	.bg-inverse-primary {
+		background-color: var(--md-sys-color-inverse-primary)
+	}
+	
+	
+	.fill-inverse-primary {
+		fill: var(--md-sys-color-inverse-primary)
+	}
+	
+	</style>

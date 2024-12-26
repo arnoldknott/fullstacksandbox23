@@ -311,7 +311,7 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 // add missing material design tokens as utility classes for flyonUI
 // with both material design and flyonUI syntax:
 const additionalMaterialDesignUtilityClasses = new Map([
-	['primaryContainer', []],
+	['primaryContainer', [{}]],
 ])
 
 export interface ColorConfig {
@@ -904,10 +904,10 @@ export class Theming {
 		return colorJs.to('oklch').coords.join(' ');
 	}
 
-    static addUtilityClass( className: string, styles: string[]): void {
+    static addStyle( styleName: string, styles: string[]): void {
         const styleElement = Theming.createStyleElementInDocument('utility_classes');
 
-		let rules = `.${className} {\n`;
+		let rules = `${styleName} {\n`;
         styles.forEach((style) => {
             rules += `    ${style}\n`;
         });
@@ -933,11 +933,11 @@ export class Theming {
     }
 
     static addBackgroundUtilityClass( name: string, backgroundColor: string[]): void {
-        Theming.addUtilityClass(`bg-${name}`, [`background-color: ${backgroundColor}`]);
+        Theming.addStyle(`bg-${name}`, [`background-color: ${backgroundColor}`]);
     }
 
 	static addFillUtilityClass( name: string, fill: string[]): void {
-        Theming.addUtilityClass(`fill-${name}`, [`fill: ${fill}`]);
+        Theming.addStyle(`fill-${name}`, [`fill: ${fill}`]);
     }
 
 
