@@ -111,9 +111,7 @@
             <div class="accordion-item active" id="default-colors">
                 <button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="default-foreground-colors-collapse" aria-expanded="true">
                     <span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
-                    <p class="ml-10 text-xl">
-                        Default foreground colors FlyonUI
-                    </p>
+                    <p class="ml-10 text-base md:text-xl">Default foreground colors FlyonUI</p>
                 </button>
                 <div id="default-foreground-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="default-foreground-colors" role="region">
                     <div class="m-5 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
@@ -264,7 +262,7 @@
             <div class="accordion-item active" id="default-background-colors">
                 <button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="default-background-colors-collapse" aria-expanded="true">
                     <span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
-                    <p class="ml-10 text-xl">Default background colors FlyonU</p>
+                    <p class="ml-10 text-base md:text-xl">Default background colors FlyonU</p>
                 </button>
                 <div id="default-background-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="default-background-colors" role="region">
                     <div class="m-5 grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -319,7 +317,7 @@
             <div class="accordion-item active" id="opacity-colors">
                 <button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="opacity-colors-collapse" aria-expanded="true">
                     <span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
-                    <p class="ml-10 text-xl">Applying tailwind /x argument for opacity</p>
+                    <p class="ml-10 text-base md:text-xl">Applying tailwind /x argument for opacity</p>
                 </button>
                 <div id="opacity-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="opacity-colors" role="region">
 					<p class="ml-5">Primary:</p>
@@ -360,7 +358,7 @@
                     </div>
 					<br />
 					<p class="ml-5">Primary content:</p>
-                    <div class="m-5 grid grid-cols-11 gap-4">
+                    <div class="m-5 grid grid-cols-4 md:grid-cols-11 gap-4">
                         <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
                             <p class="text-center text-xl"></p>
                         </div>
@@ -400,7 +398,7 @@
             <div class="accordion-item active" id="extension-materialui-colors">
                 <button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="extension-materialui-colors-collapse" aria-expanded="true">
                     <span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
-                    <p class="ml-10 text-xl">Extensions for foreground to FlyonUI with extra Material UI colors</p>
+                    <p class="ml-10 text-base md:text-xl">Extensions for foreground to FlyonUI with extra Material UI colors</p>
                 </button>
                 <div id="extension-materialui-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="extension-materialui-colors" role="region">
                     <div class="m-5 grid grid-cols-4 gap-4 xl:grid-cols-8">
@@ -488,7 +486,7 @@
 				<li>error/50 (checking transparency from Tailwind)</li>
 			</ul>
 		</div>
-		<div class="w-full mt-5 grid grid-cols-5 gap-4">
+		<div class="mt-5 grid grid-cols-5 gap-4">
 			<div class="ml-5 col-span-5 text-2xl font-semibold">bg-"COLOR-NAME"</div>
 			<div class="bg-primary h-24">bg-primary</div>
 			<div class="bg-inverse-primary h-24">bg-inverse-primary</div>
@@ -504,11 +502,11 @@
 			<div class="bg-gradient-to-r from-primary/50 via-secondary/50 to-accent/50 h-24">from-primary/50 via-scondary/50 to-accent/50</div>
 			
 			<div class="ml-5 col-span-5 text-2xl font-semibold">text-"COLOR-NAME"</div>
-			<div class="text-primary text-4xl font-bold h-24 ">text-primary</div>
-			<div class="text-inverse-primary text-4xl font-bold h-24">text-inverse-primary</div>
-			<div class="text-surface-tint text-4xl font-bold h-24">text-surface-tint</div>
-			<div class="text-error text-4xl font-bold h-24">text-error</div>
-			<div class="text-error/50 text-4xl font-bold h-24">text-error/50</div>
+			<div class="text-primary text-xl md:text-3xl font-bold h-24 ">text-primary</div>
+			<div class="text-inverse-primary text-xl md:text-3xl font-bold h-24">text-inverse-primary</div>
+			<div class="text-surface-tint text-xl md:text-3xl font-bold h-24">text-surface-tint</div>
+			<div class="text-error text-xl md:text-3xl font-bold h-24">text-error</div>
+			<div class="text-error/50 text-xl md:text-3xl font-bold h-24">text-error/50</div>
 
 			<div class="ml-5 col-span-5 text-2xl font-semibold">ring-"COLOR-NAME"</div>
 			<div><input type="radio" name="radioPrimary" class="radio radio-primary" id="radioPrimary" checked/>Radio primary</div>
@@ -614,23 +612,23 @@
 			<button class="btn btn-outline btn-surface-tint">surface tint</button>
 			<button class="btn btn-outline btn-error">error</button>
 			<button class="btn btn-outline btn-error/50">error/50</button>
-			<div class="flex items-center gap-1">
+			<div class="items-center gap-1">
 				<input type="checkbox" class="switch switch-outline switch-primary" id="switchPrimary" />
 				<label class="label label-text text-base" for="switchPrimary"> Default </label>
 			</div>
-			<div class="flex items-center gap-1">
+			<div class="items-center gap-1">
 				<input type="checkbox" class="switch switch-outline switch-inverse-primary" id="switchInversePrimary" />
 				<label class="label label-text text-base" for="switchInversePrimary"> Inverse </label>
 			</div>
-			<div class="flex items-center gap-1">
+			<div class="items-center gap-1">
 				<input type="checkbox" class="switch switch-outline switch-surface-tint" id="switchSurfaceTint" />
 				<label class="label label-text text-base" for="switchSurfaceTint"> Surface tint </label>
 			</div>
-			<div class="flex items-center gap-1">
+			<div class="items-center gap-1">
 				<input type="checkbox" class="switch switch-outline switch-error" id="switchError" />
 				<label class="label label-text text-base" for="switchError"> Error </label>
 			</div>
-			<div class="flex items-center gap-1">
+			<div class="items-center gap-1">
 				<input type="checkbox" class="switch switch-outline switch-error/50" id="switchError50" />
 				<label class="label label-text text-base" for="switchError50"> Error/50 </label>
 			</div>
@@ -768,7 +766,7 @@
 
 	<div>
 		<Title>Theme Picker</Title>
-		<div class="grid grid-cols-3 gap-4">
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 			<div class="w-48">
 				<label class="label label-text" for="colorPicker"
 					>Source color
