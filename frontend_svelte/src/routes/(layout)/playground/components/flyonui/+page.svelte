@@ -53,7 +53,7 @@
 
     // This is getting the resolved CSS after FlyonUI, Tailwind CSS and so on processing - don't alter that."
     $effect(() => Theming.addBackgroundUtilityClass('primary-container', ['var(--md-sys-color-primary-container)']));
-	$effect(() => Theming.addBackgroundUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
+	// $effect(() => Theming.addBackgroundUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
 	$effect(() => Theming.addFillUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
 </script>
 
@@ -471,9 +471,63 @@
 
 
 			<div class="ml-5 col-span-5 text-2xl font-semibold">outline-"COLOR-NAME"</div>
+			<button class="btn btn-outline btn-primary">primary</button>
+			<button class="btn btn-outline btn-inverse-primary">inverse primary</button>
+			<button class="btn btn-outline btn-surface-tint">surface tint</button>
+			<button class="btn btn-outline btn-error">error</button>
+			<button class="btn btn-outline btn-error/50">error/50</button>
+			<div class="flex items-center gap-1">
+				<input type="checkbox" class="switch switch-outline switch-primary" id="switchPrimary" />
+				<label class="label label-text text-base" for="switchPrimary"> Default </label>
+			</div>
+			<div class="flex items-center gap-1">
+				<input type="checkbox" class="switch switch-outline switch-inverse-primary" id="switchInversePrimary" />
+				<label class="label label-text text-base" for="switchInversePrimary"> Inverse </label>
+			</div>
+			<div class="flex items-center gap-1">
+				<input type="checkbox" class="switch switch-outline switch-surface-tint" id="switchSurfaceTint" />
+				<label class="label label-text text-base" for="switchSurfaceTint"> Surface tint </label>
+			</div>
+			<div class="flex items-center gap-1">
+				<input type="checkbox" class="switch switch-outline switch-error" id="switchError" />
+				<label class="label label-text text-base" for="switchError"> Error </label>
+			</div>
+			<div class="flex items-center gap-1">
+				<input type="checkbox" class="switch switch-outline switch-error/50" id="switchError50" />
+				<label class="label label-text text-base" for="switchError50"> Error/50 </label>
+			</div>
+
+
 			<div class="ml-5 col-span-5 text-2xl font-semibold">decoration-"COLOR-NAME"</div>
+			<div class="underline decoration-primary h-24">decoration-primary</div>
+			<div class="underline decoration-inverse-primary h-24">decoration-inverse-primary</div>
+			<div class="underline decoration-surface-tint h-24">decoration-surface-tint</div>
+			<div class="underline decoration-error h-24">decoration-error</div>
+			<div class="underline decoration-error/50 h-24">decoration-error/50</div>
+
 			<div class="ml-5 col-span-5 text-2xl font-semibold">placeholder-"COLOR-NAME"</div>
+			<label class="relative block">
+				<input class="input placeholder:text-primary" placeholder="Placeholder primary" type="text" name="search"/>
+			</label>
+			<label class="relative block">
+				<input class="input placeholder:text-inverse-primary" placeholder="Placeholder inverse primary" type="text" name="search"/>
+			</label>
+			<label class="relative block">
+				<input class="input placeholder:text-surface-tint" placeholder="Placeholder surface tint" type="text" name="search"/>
+			</label>
+			<label class="relative block">
+				<input class="input placeholder:text-error" placeholder="Placeholder error" type="text" name="search"/>
+			</label>
+			<label class="relative block">
+				<input class="input placeholder:text-error/50" placeholder="Placeholder error/50" type="text" name="search"/>
+			</label>
+
 			<div class="ml-5 col-span-5 text-2xl font-semibold">ring-offset-"COLOR-NAME"</div>
+			<span class="badge ring-2 ring-red-300 ring-offset-4 ring-offset-primary">primary</span>
+			<span class="badge ring-2 ring-red-300 ring-offset-4 ring-offset-inverse-primary">inverse primary</span>
+			<span class="badge ring-2 ring-red-300 ring-offset-4 ring-offset-surface-tint">surface tint</span>
+			<span class="badge ring-2 ring-blue-300 ring-offset-4 ring-offset-error">error</span>
+			<span class="badge ring-2 ring-blue-300 ring-offset-4 ring-offset-error/50">error/50</span>
 		</div>
 	</div>
 
@@ -585,7 +639,7 @@
 					</span>
 				</label>
 				<input
-					class="input"
+					class="w-full"
 					type="color"
 					id="colorPicker"
 					name="color-picker"
