@@ -619,7 +619,7 @@
 		</div>
 	</nav>
 
-	<div>
+	<div class="mx-5">
 		{@render children?.()}
 	</div>
 

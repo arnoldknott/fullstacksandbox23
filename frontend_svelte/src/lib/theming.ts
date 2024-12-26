@@ -891,6 +891,10 @@ export class Theming {
 		return colorJs.to('oklch').coords.join(' ');
 	}
 
+    static addflyonuiUtilityClassToDocument( utilityClass: string, value: string): void {
+
+    }
+
 	private applyFlyonUITokens(
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
 		targetElement: HTMLElement

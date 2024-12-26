@@ -88,7 +88,7 @@
 <!-- <JsonData data={palettesArray} /> -->
 <!-- <JsonData data={theme} /> -->
 
-<div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
+<div class="w-full grid grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="col-span-2">
 		<Title>Colors</Title>
 		<div class="flex items-center gap-1">

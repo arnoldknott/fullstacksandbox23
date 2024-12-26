@@ -89,7 +89,7 @@
 //     'error-content': 'var(--fallback-erc,oklch(var(--erc)/<alpha-value>))'
 // } -->
 
-<div class="mx-5 xl:grid xl:gap-4 xl:grid-cols-2">
+<div class="w-full xl:grid xl:gap-4 xl:grid-cols-2">
 	<div class="col-span-2">
 		<Title>Colors</Title>
         <div class="accordion accordion-bordered divide-y" data-accordion-always-open="">
@@ -112,11 +112,11 @@
                             <!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
                             <ColorTileFlyonUi background="secondary-content" content="secondary" />
                             <hr />
-                            <div class="flex h-24 grow bg-secondary-content p-2">
+                            <!-- <div class="flex h-24 grow bg-secondary-content p-2">
                                 <p class="text-left text-base text-secondary md:text-xl">secondary content direct</p>
                             </div>
-                            <hr />
-                            <ColorTileFlyonUi background="onSecondary" content="secondary" />
+                            <hr /> -->
+                            <!-- <ColorTileFlyonUi background="onSecondary" content="secondary" /> -->
                         </div>
                         <div>
                             <ColorTileFlyonUi background="accent" content="accent-content" />
@@ -151,7 +151,12 @@
                     <p class="ml-10 text-xl">Default background colors FlyonU</p>
                 </button>
                 <div id="default-background-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="default-background-colors" role="region">
-                    <div class="m-5 grid grid-cols-5 gap-4">
+                    <div class="m-5 grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <ColorTileFlyonUi background="base-100" />
+                        <ColorTileFlyonUi background="base-200" />
+                        <ColorTileFlyonUi background="base-300" />
+                        <ColorTileFlyonUi background="base-content" content="onSecondary" />
+                        <ColorTileFlyonUi background="base-shadow" />
                         <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-100">
                             <p class="text-center text-xl">base-100</p>
                         </div>
