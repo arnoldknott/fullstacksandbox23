@@ -89,159 +89,190 @@
 //     'error-content': 'var(--fallback-erc,oklch(var(--erc)/<alpha-value>))'
 // } -->
 
-<div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
+<div class="mx-5 xl:grid xl:gap-4 xl:grid-cols-2">
 	<div class="col-span-2">
 		<Title>Colors</Title>
-		<p class="col-span-2 text-center text-xl md:col-span-4 xl:col-span-8">
-			Semantic colors FlyonUI
-		</p>
-		<div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
-			<div>
-				<ColorTileFlyonUi background="primary" content="primary-content" />
-				<ColorTileFlyonUi background="primary-content" content="primary" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="secondary" content="secondary-content" />
-				<!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
-				<ColorTileFlyonUi background="secondary-content" content="secondary" />
-				<hr />
-				<div class="flex h-24 grow bg-secondary-content p-2">
-					<p class="text-left text-base text-secondary md:text-xl">secondary content direct</p>
-				</div>
-				<hr />
-				<ColorTileFlyonUi background="onSecondary" content="secondary" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="accent" content="accent-content" />
-				<ColorTileFlyonUi background="accent-content" content="accent" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="neutral" content="neutral-content" />
-				<ColorTileFlyonUi background="neutral-content" content="neutral" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="info" content="info-content" />
-				<ColorTileFlyonUi background="info-content" content="info" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="success" content="success-content" />
-				<ColorTileFlyonUi background="success-content" content="success" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="warning" content="warning-content" />
-				<ColorTileFlyonUi background="warning-content" content="warning" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="error" content="error-content" />
-				<ColorTileFlyonUi background="error-content" content="error" />
-			</div>
-		</div>
-		<p class="mt-8 text-center text-2xl">Added to FlyonUI to match Material UI:</p>
-		<div class="grid grid-cols-4 gap-4 xl:grid-cols-8">
-			<div>
-				<ColorTileFlyonUi background="primary-container" content="primary-container-content" />
-				<ColorTileFlyonUi background="primary-container-content" content="primary-container" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="secondary-container" content="secondary-container-content" />
-				<ColorTileFlyonUi background="secondary-container-content" content="secondary-container" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="accent-container" content="accent-container-content" />
-				<ColorTileFlyonUi background="accent-container-content" content="accent-container" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="neutral-container" content="neutral-container-content" />
-				<ColorTileFlyonUi background="neutral-container-content" content="neutral-container" />
-			</div>
+        <div class="accordion accordion-bordered divide-y" data-accordion-always-open="">
+            <!-- <div class="accordion-item accordion-item-active:scale-[1.05] accordion-item-active:mb-3 ease-in duration-300 delay-[1ms] active" id="default-colors"> -->
+            <div class="accordion-item active" id="default-colors">
+                <button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="default-foreground-colors-collapse" aria-expanded="true">
+                    <span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
+                    <p class="ml-10 text-xl">
+                        Default foreground colors FlyonUI
+                    </p>
+                </button>
+                <div id="default-foreground-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="default-foreground-colors" role="region">
+                    <div class="m-5 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
+                        <div>
+                            <ColorTileFlyonUi background="primary" content="primary-content" />
+                            <ColorTileFlyonUi background="primary-content" content="primary" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="secondary" content="secondary-content" />
+                            <!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
+                            <ColorTileFlyonUi background="secondary-content" content="secondary" />
+                            <hr />
+                            <div class="flex h-24 grow bg-secondary-content p-2">
+                                <p class="text-left text-base text-secondary md:text-xl">secondary content direct</p>
+                            </div>
+                            <hr />
+                            <ColorTileFlyonUi background="onSecondary" content="secondary" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="accent" content="accent-content" />
+                            <ColorTileFlyonUi background="accent-content" content="accent" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="neutral" content="neutral-content" />
+                            <ColorTileFlyonUi background="neutral-content" content="neutral" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="info" content="info-content" />
+                            <ColorTileFlyonUi background="info-content" content="info" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="success" content="success-content" />
+                            <ColorTileFlyonUi background="success-content" content="success" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="warning" content="warning-content" />
+                            <ColorTileFlyonUi background="warning-content" content="warning" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="error" content="error-content" />
+                            <ColorTileFlyonUi background="error-content" content="error" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item active" id="default-background-colors">
+                <button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="default-background-colors-collapse" aria-expanded="true">
+                    <span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
+                    <p class="ml-10 text-xl">Default background colors FlyonU</p>
+                </button>
+                <div id="default-background-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="default-background-colors" role="region">
+                    <div class="m-5 grid grid-cols-5 gap-4">
+                        <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-100">
+                            <p class="text-center text-xl">base-100</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-200">
+                            <p class="text-center text-xl">base-200</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-300">
+                            <p class="text-center text-xl">base-300</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-content">
+                            <p class="text-center text-xl text-secondary-content">base-content</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-shadow">
+                            <p class="text-center text-xl text-base-content">base-shadow</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item active" id="opacity-colors">
+                <button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="opacity-colors-collapse" aria-expanded="true">
+                    <span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
+                    <p class="ml-10 text-xl">Applying tailwind /x argument for opacity</p>
+                </button>
+                <div id="opacity-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="opacity-colors" role="region">
+                    <div class="m-5 grid grid-cols-11 gap-4">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
+                            <p class="text-center text-xl"></p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/10">
+                            <p class="text-center text-xl">/10</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/20">
+                            <p class="text-center text-xl">/20</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/30">
+                            <p class="text-center text-xl">/30</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/40">
+                            <p class="text-center text-xl">/40</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/50">
+                            <p class="text-center text-xl">/50</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/60">
+                            <p class="text-center text-xl">/60</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/70">
+                            <p class="text-center text-xl">/70</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/80">
+                            <p class="text-center text-xl">/80</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/90">
+                            <p class="text-center text-xl">/90</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/100">
+                            <p class="text-center text-xl">/100</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item active" id="extension-materialui-colors">
+                <button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="extension-materialui-colors-collapse" aria-expanded="true">
+                    <span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
+                    <p class="ml-10 text-xl">Extensions to FlyonUI with extra Material UI colors</p>
+                </button>
+                <div id="extension-materialui-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="extension-materialui-colors" role="region">
+                    <div class="m-5 grid grid-cols-4 gap-4 xl:grid-cols-8">
+                        <div>
+                            <ColorTileFlyonUi background="primary-container" content="primary-container-content" />
+                            <ColorTileFlyonUi background="primary-container-content" content="primary-container" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="secondary-container" content="secondary-container-content" />
+                            <ColorTileFlyonUi background="secondary-container-content" content="secondary-container" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="accent-container" content="accent-container-content" />
+                            <ColorTileFlyonUi background="accent-container-content" content="accent-container" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="neutral-container" content="neutral-container-content" />
+                            <ColorTileFlyonUi background="neutral-container-content" content="neutral-container" />
+                        </div>
 
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-info">
-					<p class="text-center text-xl text-info-content">info</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-info-content">
-					<p class="text-center text-xl text-info">info-content</p>
-				</div>
-			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-success">
-					<p class="text-center text-xl text-success-content">success</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-success-content">
-					<p class="text-center text-xl text-success">success-content</p>
-				</div>
-			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-warning">
-					<p class="text-center text-xl text-warning-content">warning</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-warning-content">
-					<p class="text-center text-xl text-warning">waring-content</p>
-				</div>
-			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-error">
-					<p class="text-center text-xl text-error-content">error</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-error-content">
-					<p class="text-center text-xl text-error">error-content</p>
-				</div>
-			</div>
-		</div>
-		<p class="mt-8 text-center text-2xl">Background colors FlyonUI:</p>
-		<div class="grid grid-cols-5 gap-4">
-			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-100">
-				<p class="text-center text-xl">base-100</p>
-			</div>
-			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-200">
-				<p class="text-center text-xl">base-200</p>
-			</div>
-			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-300">
-				<p class="text-center text-xl">base-300</p>
-			</div>
-			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-content">
-				<p class="text-center text-xl text-secondary-content">base-content</p>
-			</div>
-			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-shadow">
-				<p class="text-center text-xl text-base-content">base-shadow</p>
-			</div>
-		</div>
-		<p class="mt-8 text-center text-2xl">Background base colors with /x argument:</p>
-		<div class="grid grid-cols-11 gap-4">
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
-				<p class="text-center text-xl"></p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/10">
-				<p class="text-center text-xl">/10</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/20">
-				<p class="text-center text-xl">/20</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/30">
-				<p class="text-center text-xl">/30</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/40">
-				<p class="text-center text-xl">/40</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/50">
-				<p class="text-center text-xl">/50</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/60">
-				<p class="text-center text-xl">/60</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/70">
-				<p class="text-center text-xl">/70</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/80">
-				<p class="text-center text-xl">/80</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/90">
-				<p class="text-center text-xl">/90</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/100">
-				<p class="text-center text-xl">/100</p>
-			</div>
-		</div>
+                        <div>
+                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-info">
+                                <p class="text-center text-xl text-info-content">info</p>
+                            </div>
+                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-info-content">
+                                <p class="text-center text-xl text-info">info-content</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-success">
+                                <p class="text-center text-xl text-success-content">success</p>
+                            </div>
+                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-success-content">
+                                <p class="text-center text-xl text-success">success-content</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-warning">
+                                <p class="text-center text-xl text-warning-content">warning</p>
+                            </div>
+                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-warning-content">
+                                <p class="text-center text-xl text-warning">waring-content</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-error">
+                                <p class="text-center text-xl text-error-content">error</p>
+                            </div>
+                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-error-content">
+                                <p class="text-center text-xl text-error">error-content</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 	</div>
 
 	<div class="col-span-2">
