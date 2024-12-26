@@ -7,11 +7,14 @@
 		<Title>Colors</Title>
 		<div class="grid grid-cols-4 gap-4 xl:grid-cols-8">
 			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-primary">
-					<p class="text-center text-xl text-primary-content">primary</p>
+				<div class="skeleton flex h-36 w-36 items-center justify-center bg-orange-500">
+					<p class="text-center text-xl text-green-800">bg-orange-500, text-green-800</p>
 				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-primary-content">
-					<p class="text-center text-xl text-primary">primary-content</p>
+				<div class="skeleton flex h-12 w-36 items-center justify-center bg-sky-500">
+					<p class="text-center text-xl text-black">bg-sky-500</p>
+				</div>
+				<div class="skeleton flex h-12 w-36 items-center justify-center bg-sky-500/50">
+					<p class="text-center text-xl text-black">bg-sky-500/50</p>
 				</div>
 			</div>
 		</div>

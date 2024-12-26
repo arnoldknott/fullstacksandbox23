@@ -1,9 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 
 import flyonui from 'flyonui';
-// import { light, dark } from 'flyonui/src/theming/themes';
+import { light, dark } from 'flyonui/src/theming/themes';
 import flyonuiPlugin from 'flyonui/plugin';
 import { addDynamicIconSelectors } from '@iconify/tailwind';
+
+// TBD: only to prevent linting errors - remove when the themes are fully implemented
+light === dark
 
 module.exports = {
 	content: ['./src/**/*.{html,js,svelte,ts}', './node_modules/flyonui/dist/js/*.js'],

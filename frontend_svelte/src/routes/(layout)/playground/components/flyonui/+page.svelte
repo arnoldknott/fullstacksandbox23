@@ -4,6 +4,7 @@
 	// import { createRawSnippet, type Snippet } from 'svelte';
 	import type { IOverlay } from 'flyonui/flyonui';
 	import ColorTileFlyonUi from '$components/ColorTileFlyonUI.svelte';
+    import { Theming } from '$lib/theming';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
 	// return {
@@ -49,6 +50,9 @@
 	const openModal = () => {
 		overlay?.open();
 	};
+
+    // This is getting the resolved CSS after FlyonUI, Tailwind CSS and so on processing - don't alter that."
+    $effect(() => Theming.addBackgroundUtilityClass('primary-container', ['var(--md-sys-color-primary-container)']));
 </script>
 
 <!-- // based on https://github.com/themeselection/flyonui/blob/bdbdaeec6b575b80283f5fda51abd3981a168fca/src/theming/index.js#L2
@@ -111,7 +115,7 @@
                             <ColorTileFlyonUi background="secondary" content="secondary-content" />
                             <!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
                             <ColorTileFlyonUi background="secondary-content" content="secondary" />
-                            <hr />
+                            <!-- <hr /> -->
                             <!-- <div class="flex h-24 grow bg-secondary-content p-2">
                                 <p class="text-left text-base text-secondary md:text-xl">secondary content direct</p>
                             </div>
@@ -181,6 +185,44 @@
                     <p class="ml-10 text-xl">Applying tailwind /x argument for opacity</p>
                 </button>
                 <div id="opacity-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="opacity-colors" role="region">
+					<p class="ml-5">Primary:</p>
+                    <div class="m-5 grid grid-cols-11 gap-4">
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
+                            <p class="text-center text-xl"></p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/10">
+                            <p class="text-center text-xl">/10</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/20">
+                            <p class="text-center text-xl">/20</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/30">
+                            <p class="text-center text-xl">/30</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/40">
+                            <p class="text-center text-xl">/40</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/50">
+                            <p class="text-center text-xl">/50</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/60">
+                            <p class="text-center text-xl">/60</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/70">
+                            <p class="text-center text-xl">/70</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/80">
+                            <p class="text-center text-xl">/80</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/90">
+                            <p class="text-center text-xl">/90</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/100">
+                            <p class="text-center text-xl">/100</p>
+                        </div>
+                    </div>
+					<br />
+					<p class="ml-5">Primary:</p>
                     <div class="m-5 grid grid-cols-11 gap-4">
                         <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
                             <p class="text-center text-xl"></p>
@@ -221,7 +263,7 @@
             <div class="accordion-item active" id="extension-materialui-colors">
                 <button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="extension-materialui-colors-collapse" aria-expanded="true">
                     <span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
-                    <p class="ml-10 text-xl">Extensions to FlyonUI with extra Material UI colors</p>
+                    <p class="ml-10 text-xl">Extensions for foreground to FlyonUI with extra Material UI colors</p>
                 </button>
                 <div id="extension-materialui-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="extension-materialui-colors" role="region">
                     <div class="m-5 grid grid-cols-4 gap-4 xl:grid-cols-8">
@@ -241,39 +283,54 @@
                             <ColorTileFlyonUi background="neutral-container" content="neutral-container-content" />
                             <ColorTileFlyonUi background="neutral-container-content" content="neutral-container" />
                         </div>
-
-                        <div>
-                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-info">
-                                <p class="text-center text-xl text-info-content">info</p>
-                            </div>
-                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-info-content">
-                                <p class="text-center text-xl text-info">info-content</p>
-                            </div>
+						<div>
+                            <ColorTileFlyonUi background="info-container" content="info-container-content" />
+                            <ColorTileFlyonUi background="info-container-content" content="info-container" />
                         </div>
                         <div>
-                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-success">
-                                <p class="text-center text-xl text-success-content">success</p>
-                            </div>
-                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-success-content">
-                                <p class="text-center text-xl text-success">success-content</p>
-                            </div>
+                            <ColorTileFlyonUi background="success-container" content="success-container-content" />
+                            <ColorTileFlyonUi background="success-container-content" content="success-container" />
                         </div>
                         <div>
-                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-warning">
-                                <p class="text-center text-xl text-warning-content">warning</p>
-                            </div>
-                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-warning-content">
-                                <p class="text-center text-xl text-warning">waring-content</p>
-                            </div>
+                            <ColorTileFlyonUi background="warning-container" content="warning-container-content" />
+                            <ColorTileFlyonUi background="warning-container-content" content="warning-container" />
                         </div>
                         <div>
-                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-error">
-                                <p class="text-center text-xl text-error-content">error</p>
-                            </div>
-                            <div class="skeleton flex h-12 w-36 items-center justify-center bg-error-content">
-                                <p class="text-center text-xl text-error">error-content</p>
-                            </div>
+                            <ColorTileFlyonUi background="error-container" content="error-container-content" />
+                            <ColorTileFlyonUi background="error-container-content" content="error-container" />
                         </div>
+						<p class="text-2xl">TBD: Others: background and more</p>
+                        <div>surface container low - between b1 and b2</div>
+						<div>surface container high - between b2 and b3</div>
+						<div>on surface variant</div>
+						<div>outline</div>
+						<div>outline variant</div>
+						<div>inverse surface</div>
+						<div>inverse on surface</div>
+						<div>inverse primary</div>
+						<div>scrim</div>
+						<div>background - might not be necessary?</div>
+						<div>on background</div>
+						<div>neutral palette key color - not the neutral from above, as the color input is coming from flyonUI, but this one is material designs own</div>
+						<div>neutral variant palette key color</div>
+						<p class="text-2xl">Avoid the following - fixed is not switching between light and dark</p>
+						<div>primary fixed</div>
+						<div>primary variant dim</div>
+						<div>on primary variant</div>
+						<div>on primary fixed variant</div>
+						<div>secondary fixed</div>
+						<div>secondary fixed dim</div>
+						<div>on secondary fixed</div>
+						<div>on secondary fixed variant</div>
+						<div>tertiary fixed</div>
+						<div>tertiary fixed dim</div>
+						<div>on tertiary fixed</div>
+						<div>on tertiary fixed variant</div>
+						<div>surface dim</div>
+						<div>surface</div>
+						<div>surface bright</div>
+						<div>surface variant</div>
+						<div>surface tint</div>
                     </div>
                 </div>
             </div>
@@ -282,23 +339,35 @@
 
 	<div class="col-span-2">
 		<Title>Utility classes</Title>
-		<div>bg-"COLOR_NAME"</div>
-		<div>to-"COLOR-NAME"</div>
-		<div>via-"COLOR-NAME"</div>
-		<div>from-"COLOR-NAME"</div>
-		<div>text-"COLOR-NAME"</div>
-		<div>ring-"COLOR-NAME"</div>
-		<div>fill-"COLOR-NAME"</div>
-		<div>caret-"COLOR-NAME"</div>
-		<div>stroke-"COLOR-NAME"</div>
-		<div>border-"COLOR-NAME"</div>
-		<div>divide-"COLOR-NAME"</div>
-		<div>accent-"COLOR-NAME"</div>
-		<div>shadow-"COLOR-NAME"</div>
-		<div>outline-"COLOR-NAME"</div>
-		<div>decoration-"COLOR-NAME"</div>
-		<div>placeholder-"COLOR-NAME"</div>
-		<div>ring-offset-"COLOR-NAME"</div>
+		<p>Mainly playing with primary (native in both FlyonUI and Material Design), inverse primary (native only in Material Design) and surface tint (aviod using)</p>
+		<div class="w-full grid grid-cols-3 gap-4">
+			<div class="col-span-3 text-center">bg-"COLOR-NAME"</div>
+			<div class="bg-primary h-24">bg-primary</div>
+			<div class="bg-inverse-primary h-24">bg-inverse-primary</div>
+			<div class="bg-surface-tint h-24">bg-surface-tint</div>
+
+			<div class="col-span-3 text-center">from-"COLOR-NAME" via-"COLOR-NAME" to-"COLOR-NAME"</div>
+			<div class="bg-gradient-to-r from-success via-warning to-error h-24">from-success via-warning to-error</div>
+			<div class="bg-gradient-to-r from-success via-warning to-error bg-clip-text text-transparent font-black text-xl w-fit h-24">from-success via-warning to-error applied to text</div>
+			<div class="to-inverse-primary h-24">to-inverse-primary</div>
+			<div class="to-surface-tint h-24">to-surface-tint</div>
+			
+			<div>via-"COLOR-NAME"</div>
+			<div>from-"COLOR-NAME"</div>
+			<div>text-"COLOR-NAME"</div>
+			<div>ring-"COLOR-NAME"</div>
+			<div>fill-"COLOR-NAME"</div>
+			<div>caret-"COLOR-NAME"</div>
+			<div>stroke-"COLOR-NAME"</div>
+			<div>border-"COLOR-NAME"</div>
+			<div>divide-"COLOR-NAME"</div>
+			<div>accent-"COLOR-NAME"</div>
+			<div>shadow-"COLOR-NAME"</div>
+			<div>outline-"COLOR-NAME"</div>
+			<div>decoration-"COLOR-NAME"</div>
+			<div>placeholder-"COLOR-NAME"</div>
+			<div>ring-offset-"COLOR-NAME"</div>
+		</div>
 	</div>
 
 	<div>

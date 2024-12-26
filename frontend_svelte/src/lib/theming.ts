@@ -282,30 +282,33 @@ type AdditionalFlyonUIScheme = {
 
 // TBD: check how to do all the containers programmatically for providing the container classes (extensions of FlyonUI to match Material Design)
 // TBD: Map matched colors to both class names, e.g. onPrimary primary-container bcomse a class definition of ".on-primary, .primary-container"
-const flyonUImaterialDesignMapping = new Map([
-	['p', 'primary'],
-	['pc', 'onPrimary'],
-	['s', 'secondary'],
-	['sc', 'onSecondary'],
-	['a', 'tertiary'], // accent
-	['ac', 'onTertiary'],
-	['n', 'neutral'],
-	['nc', 'onNeutral'],
-	['b1', 'surfaceContainerLowest'],
-	// think about implementing the other 2 surfaceContainer colors
-	['b2', 'surfaceContainer'],
-	['b3', 'surfaceContainerHighest'],
-	['bc', 'onSurface'],
-	['bs', 'shadow'],
-	['in', 'info'],
-	['inc', 'onInfo'],
-	['su', 'success'],
-	['suc', 'onSuccess'],
-	['wa', 'warning'],
-	['wac', 'onWarning'],
-	['er', 'error'],
-	['erc', 'onError']
+const flyonUIVariablesMaterialDesignMapping = new Map([
+    ['primary', 'p'],
+    ['onPrimary', 'pc'],
+    ['secondary', 's'],
+    ['onSecondary', 'sc'],
+    ['tertiary', 'a'], // accent
+    ['onTertiary', 'ac'],
+    ['neutral', 'n'],
+    ['onNeutral', 'nc'],
+    ['surfaceContainerLowest', 'b1'],
+    // think about implementing the other 2 surfaceContainer colors
+    ['surfaceContainer', 'b2'],
+    ['surfaceContainerHighest', 'b3'],
+    ['onSurface', 'bc'],
+    ['shadow', 'bs'],
+    ['info', 'in'],
+    ['onInfo', 'inc'],
+    ['success', 'su'],
+    ['onSuccess', 'suc'],
+    ['warning', 'wa'],
+    ['onWarning', 'wac'],
+    ['error', 'er'],
+    ['onError', 'erc']
 ]);
+
+
+const flyonUIClassesMaterialDesignMapping = new Map([])
 
 export interface ColorConfig {
 	sourceColor: string;
@@ -853,6 +856,17 @@ export class Theming {
 		};
 	}
 
+    private static createStyleElementInDocument(styleElementId: string): HTMLStyleElement {
+        let styleElement = document.getElementById(styleElementId) as HTMLStyleElement;
+        if (!styleElement) {
+            styleElement = document.createElement('style');
+            styleElement.setAttribute('type', 'text/css');
+            styleElement.setAttribute('id', styleElementId);
+        }
+        document.head.appendChild(styleElement);
+        return styleElement;
+    }
+
 	private applyMaterialTokens(
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
 		targetElement: HTMLElement
@@ -864,14 +878,9 @@ export class Theming {
 				const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 				styles += `--md-sys-color-${tokenKebabCase}: ${hexFromArgb(colors[token])};\n`;
 			});
-			let styleElement = document.getElementById(styleElementId);
-			if (!styleElement) {
-				styleElement = document.createElement('style');
-				styleElement.setAttribute('type', 'text/css');
-				styleElement.setAttribute('id', 'md_sys_dynamic_color_tokens');
-			}
+            const styleElement = Theming.createStyleElementInDocument(styleElementId);
 			styleElement.textContent = `:root {\n${styles}}`;
-			document.head.appendChild(styleElement);
+			// document.head.appendChild(styleElement);
 		} else {
 			appColors.forEach((token) => {
 				const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
@@ -891,8 +900,64 @@ export class Theming {
 		return colorJs.to('oklch').coords.join(' ');
 	}
 
-    static addflyonuiUtilityClassToDocument( utilityClass: string, value: string): void {
+    private static addFlyonuiUtilityClassToStyle( type: string, name: string, styles: string[]): void {
+        // console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - inputs ===");
+        // console.log(type);
+        // console.log(name);
+        // console.log(styles);
+        // console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - existing stylesSheets ===");
+        // const styleSheets = document.styleSheets;
+        // for (const styleSheet of styleSheets) {
+        //     console.log("=== styleSheet.title: ", styleSheet.title);
+        //     console.log(styleSheet);
+        // }
+        // const styleElement = document.getElementById('flyonUI_variables');
+        const styleElement = Theming.createStyleElementInDocument('flyonUI_classes');
 
+
+        
+		const rootStartIndex = styleElement.textContent?.indexOf(':root {') ?? -1;
+		const rootEndIndex = styleElement.textContent?.lastIndexOf('}') ?? -1;
+
+        let rules = `.${type}-${name} {\n`;
+        styles.forEach((style) => {
+            rules += `    ${style}\n`;
+        });
+        rules += '}\n';
+
+
+
+        if (rootStartIndex !== -1 && rootEndIndex !== -1) {
+			// Check if the rules already exist
+			const rulesStartIndex = styleElement.textContent?.indexOf(rules);
+			console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - rulesStartIndex ===");
+			console.log(rulesStartIndex);
+			if (rulesStartIndex === -1) {
+				// Insert styles before the closing }
+				const beforeRoot = styleElement.textContent?.substring(0, rootEndIndex);
+				const afterRoot = styleElement.textContent?.substring(rootEndIndex);
+				// console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - beforeRoot ===");
+				// console.log(beforeRoot);
+				// console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - rules ===");
+				// console.log(rules);
+				// console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - afterRoot ===");
+				styleElement.textContent = `${beforeRoot}\n${rules}\n${afterRoot}`;
+				console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - styleElement.textContent ===");
+				console.log(styleElement.textContent);
+				// console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - modifiedStyleElement ===");
+				// console.log(styleElement)
+			}
+			} else {
+            // If :root is not found, create it
+            console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - rules - WHERE STYLE TAG DID NOT EXIST! ===");
+            styleElement.textContent += `\n:root {\n${rules}\n}`;
+            console.log("=== lib - theming - addFlyonuiUtilityClassToDocument - styleElement.textContent ==="); 
+            console.log(styleElement)
+        }
+    }
+
+    static addBackgroundUtilityClass( name: string, specifivValue1: string[]): void {
+        Theming.addFlyonuiUtilityClassToStyle('bg', name, [`background-color: ${specifivValue1}`]);
     }
 
 	private applyFlyonUITokens(
@@ -900,27 +965,23 @@ export class Theming {
 		targetElement: HTMLElement
 	): void {
 		if (targetElement === document.documentElement) {
-			const styleElementId = 'flyonUI_extenstion_material_design';
+			const styleElementId = 'flyonUI_variables';
 			let styles = '';
-			flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
+            // match tokens from material design to flyonUI tokens:
+			flyonUIVariablesMaterialDesignMapping.forEach((flyonUIVariable, materialDesignToken) => {
 				const materialTokenKey = materialDesignToken as keyof typeof colors;
 				const oklchColor = this.oklchFromArgb(colors[materialTokenKey]);
-				styles += `--${flyonUIToken}: ${oklchColor};\n`;
+				styles += `--${flyonUIVariable}: ${oklchColor};\n`;
 				styles += `.bg-${materialDesignToken} {background-color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
 				styles += `.text-${materialDesignToken} {color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
 			});
-			let styleElement = document.getElementById(styleElementId);
-			if (!styleElement) {
-				styleElement = document.createElement('style');
-				styleElement.setAttribute('type', 'text/css');
-				styleElement.setAttribute('id', styleElementId);
-			}
+			const styleElement = Theming.createStyleElementInDocument(styleElementId);
 			styleElement.textContent = `:root {\n${styles}}`;
-			document.head.appendChild(styleElement);
+			// document.head.appendChild(styleElement);
 		} else {
-			flyonUImaterialDesignMapping.forEach((materialDesignToken, flyonUIToken) => {
+			flyonUIVariablesMaterialDesignMapping.forEach((flyonUIVariable, materialDesignToken) => {
 				const oklchColor = this.oklchFromArgb(colors[materialDesignToken as keyof typeof colors]);
-				targetElement.style.setProperty(`--${flyonUIToken}`, oklchColor);
+				targetElement.style.setProperty(`--${flyonUIVariable}`, oklchColor);
 				// TBD: also set the classes as property on the targetElement?
 			});
 		}
