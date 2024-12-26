@@ -129,11 +129,100 @@
 								</div>
 							</ColorTileFlyonUi>
 						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-secondary {colorTileClasses}">
+									<p class="text-secondary-content {colorLabelClasses}">secondary</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-secondary-content {colorTileClasses}">
+									<p class="text-secondary {colorLabelClasses}">secondary-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-accent {colorTileClasses}">
+									<p class="text-accent-content {colorLabelClasses}">accent</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-accent-content {colorTileClasses}">
+									<p class="text-accent {colorLabelClasses}">accent-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-neutral {colorTileClasses}">
+									<p class="text-neutral-content {colorLabelClasses}">neutral</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-neutral-content {colorTileClasses}">
+									<p class="text-neutral {colorLabelClasses}">neutral-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-info {colorTileClasses}">
+									<p class="text-info-content {colorLabelClasses}">info</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-info-content {colorTileClasses}">
+									<p class="text-info {colorLabelClasses}">info-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-success {colorTileClasses}">
+									<p class="text-success-content {colorLabelClasses}">success</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-success-content {colorTileClasses}">
+									<p class="text-success {colorLabelClasses}">success-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-warning {colorTileClasses}">
+									<p class="text-warning-content {colorLabelClasses}">warning</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-warning-content {colorTileClasses}">
+									<p class="text-warning {colorLabelClasses}">warning-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-error {colorTileClasses}">
+									<p class="text-error-content {colorLabelClasses}">error</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-error-content {colorTileClasses}">
+									<p class="text-error {colorLabelClasses}">error-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+					</div>
+				</div>
+
+
+
                         <!-- <div>
                             <ColorTileFlyonUi background="primary" content="primary-content" />
                             <ColorTileFlyonUi background="primary-content" content="primary" />
                         </div> -->
-                        <div>
+                        <!-- <div> -->
                             <!-- <ColorTileFlyonUi background="secondary" content="secondary-content" /> -->
 							<!-- <ColorTileFlyonUi background="secondary-content" content="secondary" /> -->
                             <!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
@@ -143,7 +232,7 @@
                             </div>
                             <hr /> -->
                             <!-- <ColorTileFlyonUi background="onSecondary" content="secondary" /> -->
-                        </div>
+                        <!-- </div> -->
                         <!-- <div>
                             <ColorTileFlyonUi background="accent" content="accent-content" />
 							<div class="bg-accent">TEST</div>
@@ -169,8 +258,8 @@
                             <ColorTileFlyonUi background="error" content="error-content" />
                             <ColorTileFlyonUi background="error-content" content="error" />
                         </div> -->
-                    </div>
-                </div>
+                    <!-- </div>
+                </div> -->
             </div>
             <div class="accordion-item active" id="default-background-colors">
                 <button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="default-background-colors-collapse" aria-expanded="true">
@@ -179,12 +268,37 @@
                 </button>
                 <div id="default-background-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="default-background-colors" role="region">
                     <div class="m-5 grid grid-cols-2 md:grid-cols-5 gap-4">
+						<ColorTileFlyonUi>
+							<div class="bg-base-100 {colorTileClasses}">
+								<p class="{colorLabelClasses}">base-100</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-base-200 {colorTileClasses}">
+								<p class="{colorLabelClasses}">base-200</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-base-300 {colorTileClasses}">
+								<p class="{colorLabelClasses}">base-300</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-base-content {colorTileClasses}">
+								<p class="text-secondary-content {colorLabelClasses}">base-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-base-shadow {colorTileClasses}">
+								<p class="text-base-content {colorLabelClasses}">base-shadow</p>
+							</div>
+						</ColorTileFlyonUi>
                         <!-- <ColorTileFlyonUi background="base-100" />
                         <ColorTileFlyonUi background="base-200" />
                         <ColorTileFlyonUi background="base-300" />
                         <ColorTileFlyonUi background="base-content" content="onSecondary" />
                         <ColorTileFlyonUi background="base-shadow" /> -->
-                        <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-100">
+                        <!-- <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-100">
                             <p class="text-center text-xl">base-100</p>
                         </div>
                         <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-200">
@@ -198,7 +312,7 @@
                         </div>
                         <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-shadow">
                             <p class="text-center text-xl text-base-content">base-shadow</p>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -209,7 +323,7 @@
                 </button>
                 <div id="opacity-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="opacity-colors" role="region">
 					<p class="ml-5">Primary:</p>
-                    <div class="m-5 grid grid-cols-11 gap-4">
+                    <div class="m-5 grid grid-cols-4 md:grid-cols-11 gap-4">
                         <div class="skeleton flex h-12 w-12 items-center justify-center bg-primary">
                             <p class="text-center text-xl"></p>
                         </div>
