@@ -9,6 +9,7 @@
 	// import { hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import {Theming }from '$lib/theming';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
 	// return {
@@ -151,6 +152,20 @@
 	// 		// ]);
 	// 	});
 	// });
+
+	$effect(()=> {
+		console.log("=== Theming for utility classes is triggered ===")
+		Theming.addStyle(".badge-inverse-primary", ["background-color: var(--md-sys-color-inverse-primary);", "color: var(--md-sys-color-on-primary);"])
+		Theming.addStyle(".btn-inverse-primary", ["--btn-color: var(--ip);"])
+	})
+			/* .badge-inverse-primary {
+		background-color: var(--md-sys-color-inverse-primary);
+		color: var(--md-sys-color-on-primary);
+	}
+
+	.btn-inverse-primary {
+		--btn-color: var(--ip);
+	} */
 
 	const colorTileClasses = 'h-full w-full p-2';
 	const colorLabelClasses = 'text-left text-xs md:text-lg xl:text-xl';
@@ -1248,7 +1263,7 @@
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">outline-"COLOR-NAME"</div>
 			<button class="btn btn-primary btn-outline">primary</button>
-			<button class="btn-inverse-primary btn btn-outline">inverse primary</button>
+			<button class="btn btn-inverse-primary btn-outline">inverse primary</button>
 			<button class="btn-surface-tint btn btn-outline">surface tint</button>
 			<button class="btn btn-error btn-outline">error</button>
 			<button class="btn-error/50 btn btn-outline">error/50</button>
@@ -1380,12 +1395,11 @@
 		<span class="badge badge-inverse-primary">Badge inverse primary</span>
 		<br />
 		<p>Glass effect on button:</p>
-		<button class="btn btn-primary glass ">Shadow primary</button>
+		<button class="btn btn-primary glass ">Glass on primary</button>
 		<button class="btn btn-inverse-primary glass">Glass on inverse primary</button>
-		<button class="btn btn-surface-tint  glass">Shadow surface tint</button>
-		<button class="btn btn-error glass">Shadow error</button>
-		<button class="btn btn-error/50 glass">Shadow error/50</button>
-	>
+		<button class="btn btn-surface-tint  glass">Glass on surface tint</button>
+		<button class="btn btn-error glass">Glass on error</button>
+		<button class="btn btn-error/50 glass">Glass on error/50</button>
 	</div>
 
 	<div>
@@ -1808,16 +1822,16 @@
 	}
 	
 	</style> -->
-
+<!-- 
 <style>
-:root{
-	.badge-inverse-primary {
+
+	/* .badge-inverse-primary {
 		background-color: var(--md-sys-color-inverse-primary);
 		color: var(--md-sys-color-on-primary);
 	}
 
 	.btn-inverse-primary {
 		--btn-color: var(--ip);
-	}
-}
-</style>
+	} */
+
+</style> -->
