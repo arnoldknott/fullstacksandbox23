@@ -4,7 +4,7 @@
 	// import { createRawSnippet, type Snippet } from 'svelte';
 	import type { IOverlay } from 'flyonui/flyonui';
 	import ColorTileFlyonUi from '$components/ColorTileFlyonUI.svelte';
-	import { Theming, type AppTheme } from '$lib/theming';
+	import { type AppTheme } from '$lib/theming';
 	import { themeStore } from '$lib/stores';
 	import { hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
@@ -75,24 +75,24 @@
 		theme = value;
 	});
 
-	let inversePrimaryHex = $derived.by(() => {
-		if (!theme.currentMode) {
-			return '';
-		} else {
-			let colors = theme[theme.currentMode].colors;
-			return hexFromArgb(colors['inversePrimary']);
-		}
-	});
-	let surfaceTintHex = $derived.by(() => {
-		if (!theme.currentMode) {
-			console.log('=== no-theme ===');
-			return '';
-		} else {
-			let colors = theme[theme.currentMode].colors;
-			const color = hexFromArgb(colors['surfaceTint']);
-			return color;
-		}
-	});
+	// let inversePrimaryHex = $derived.by(() => {
+	// 	if (!theme.currentMode) {
+	// 		return '';
+	// 	} else {
+	// 		let colors = theme[theme.currentMode].colors;
+	// 		return hexFromArgb(colors['inversePrimary']);
+	// 	}
+	// });
+	// let surfaceTintHex = $derived.by(() => {
+	// 	if (!theme.currentMode) {
+	// 		console.log('=== no-theme ===');
+	// 		return '';
+	// 	} else {
+	// 		let colors = theme[theme.currentMode].colors;
+	// 		const color = hexFromArgb(colors['surfaceTint']);
+	// 		return color;
+	// 	}
+	// });
 
 	onDestroy(() => {
 		unsubscribeThemeStore();
@@ -206,7 +206,10 @@
 			/>
 			<label class="label label-text text-base" for="switchColors">Show</label>
 		</div>
-		<div class="accordion accordion-bordered divide-y {showSections.colors ? '' : 'hidden'}" data-accordion-always-open="">
+		<div
+			class="accordion accordion-bordered divide-y {showSections.colors ? '' : 'hidden'}"
+			data-accordion-always-open=""
+		>
 			<!-- <div class="accordion-item accordion-item-active:scale-[1.05] accordion-item-active:mb-3 ease-in duration-300 delay-[1ms] active" id="default-colors"> -->
 			<div class="active accordion-item" id="default-colors">
 				<button
@@ -946,14 +949,12 @@
 		</div>
 		<div class="col-span-2">
 			<p class="text-xl italic">
-				Note, for programmatically applied classes, add the utility class either programmatically via <code
-					>Theming.addStyle( styleName, styles)</code
-				>
+				Note, for programmatically applied classes, add the utility class either programmatically
+				via <code>Theming.addStyle( styleName, styles)</code>
 				or as (scoped) <code>&ltstyle&gt</code> tag.
 			</p>
 		</div>
 	</div>
-
 
 	<div class="col-span-2">
 		<Title>Utility classes</Title>
@@ -967,7 +968,7 @@
 			/>
 			<label class="label label-text text-base" for="switchColors">Show</label>
 		</div>
-		<div class="{showSections.utilityClasses ? '' : 'hidden'}">
+		<div class={showSections.utilityClasses ? '' : 'hidden'}>
 			Mainly playing with:
 			<ul>
 				<li>primary (native in both FlyonUI and Material Design),</li>
@@ -1222,10 +1223,10 @@
 				<input type="checkbox" class="checkbox checkbox-primary" checked /> primary
 			</label>
 			<label>
-				<input type="checkbox" class="checkbox checkbox-inverse-primary" checked /> inverse primary
+				<input type="checkbox" class="checkbox-inverse-primary checkbox" checked /> inverse primary
 			</label>
 			<label>
-				<input type="checkbox" class="checkbox checkbox-surface-tint" checked /> surface tint
+				<input type="checkbox" class="checkbox-surface-tint checkbox" checked /> surface tint
 			</label>
 			<label>
 				<input type="checkbox" class="checkbox checkbox-error" checked /> error
@@ -1236,22 +1237,27 @@
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">shadow-"COLOR-NAME"</div>
 			<button class="btn btn-primary shadow-lg shadow-primary">Shadow primary</button>
-			<button class="btn btn-inverse-primary shadow-lg shadow-inverse-primary"
+			<button class="btn-inverse-primary shadow-inverse-primary btn shadow-lg"
 				>Shadow inverse primary</button
 			>
-			<button class="btn btn-surface-tint shadow-lg shadow-surface-tint">Shadow surface tint</button
+			<button class="btn-surface-tint shadow-surface-tint btn shadow-lg">Shadow surface tint</button
 			>
 			<button class="btn btn-error shadow-lg shadow-error">Shadow error</button>
 			<button class="btn-error/50 btn shadow-lg shadow-error/50">Shadow error/50</button>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">outline-"COLOR-NAME"</div>
 			<button class="btn btn-primary btn-outline">primary</button>
-			<button class="btn btn-inverse-primary btn-outline">inverse primary</button>
-			<button class="btn btn-surface-tint btn-outline">surface tint</button>
+			<button class="btn-inverse-primary btn btn-outline">inverse primary</button>
+			<button class="btn-surface-tint btn btn-outline">surface tint</button>
 			<button class="btn btn-error btn-outline">error</button>
 			<button class="btn-error/50 btn btn-outline">error/50</button>
 			<div class="items-center gap-1">
-				<input type="checkbox" class="switch switch-primary switch-outline" id="switchPrimary" checked/>
+				<input
+					type="checkbox"
+					class="switch switch-primary switch-outline"
+					id="switchPrimary"
+					checked
+				/>
 				<label class="label label-text text-base" for="switchPrimary"> Default </label>
 			</div>
 			<div class="items-center gap-1">
@@ -1273,11 +1279,21 @@
 				<label class="label label-text text-base" for="switchSurfaceTint"> Surface tint </label>
 			</div>
 			<div class="items-center gap-1">
-				<input type="checkbox" class="switch switch-error switch-outline" id="switchError" checked/>
+				<input
+					type="checkbox"
+					class="switch switch-error switch-outline"
+					id="switchError"
+					checked
+				/>
 				<label class="label label-text text-base" for="switchError"> Error </label>
 			</div>
 			<div class="items-center gap-1">
-				<input type="checkbox" class="switch-error/50 switch switch-outline" id="switchError50" checked/>
+				<input
+					type="checkbox"
+					class="switch-error/50 switch switch-outline"
+					id="switchError50"
+					checked
+				/>
 				<label class="label label-text text-base" for="switchError50"> Error/50 </label>
 			</div>
 

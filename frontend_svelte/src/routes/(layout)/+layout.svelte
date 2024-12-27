@@ -434,7 +434,7 @@
 		// // 		const rootStyles = getComputedStyle(document.documentElement);
 		// // 		const value =  rootStyles.getPropertyValue(variableName).trim();
 		// // 		console.log(`${variableName}: ${value}`);
-		// // 	}; 
+		// // 	};
 
 		// // 	const printCSSRule = (className: string) => {
 		// // 		for (const sheet of document.styleSheets) {
@@ -460,7 +460,6 @@
 		// // 		// 	.filter(rule => rule.cssText === selector);
 		// // 		// rules.forEach(rule => console.log(`${selector}: `, rule.cssText));
 		// 	});
-
 
 		// 	printCSSPropertyValue('--md-sys-color-primary');
 		// 	printCSSPropertyValue('--p');
