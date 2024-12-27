@@ -4,7 +4,11 @@
 	// import { createRawSnippet, type Snippet } from 'svelte';
 	import type { IOverlay } from 'flyonui/flyonui';
 	import ColorTileFlyonUi from '$components/ColorTileFlyonUI.svelte';
-	// import { Theming } from '$lib/theming';
+	import { Theming, type AppTheme } from '$lib/theming';
+	import { themeStore } from '$lib/stores';
+	import { hexFromArgb } from '@material/material-color-utilities';
+	import { onDestroy } from 'svelte';
+
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
 	// return {
@@ -60,6 +64,79 @@
 	// 	Theming.addStyle('.bg-inverse-primary', ['background-color: var(--md-sys-color-inverse-primary)'])
 	// 	Theming.addStyle('.fill-inverse-primary', ['fill: var(--md-sys-color-inverse-primary)'])
 	// 	});// wouldn't it be the same as just using the scoped style further down?
+
+	let theme = $state({} as AppTheme);
+	const unsubscribeThemeStore = themeStore.subscribe((value) => {
+		// console.log('themeStore:', value);
+		theme = value;
+	});
+
+	let inversePrimaryHex = $derived.by(() => {
+		if (!theme.currentMode) {
+			return '';
+		} else {
+			let colors = theme[theme.currentMode].colors;
+			return hexFromArgb(colors["inversePrimary"]);
+		}
+	});
+	let surfaceTintHex = $derived.by(() => {
+		if (!theme.currentMode) {
+			return '';
+		} else {
+			let colors = theme[theme.currentMode].colors;
+			return hexFromArgb(colors["surfaceTint"]);
+		}
+	});
+
+
+	onDestroy(() => {
+		unsubscribeThemeStore();
+	});
+
+	const additionalColors = $derived([
+		{
+			name: "inverse-primary",
+			value: inversePrimaryHex
+		},
+		{
+			name: "surface-tint",
+			value: surfaceTintHex
+		}
+	])
+
+	$effect(() => {
+		additionalColors.forEach((color) => {
+			// TBD: check .ring
+				Theming.addStyle(`.fill-${color.name}`, [
+			`fill: ${color.value};`
+			]);
+			Theming.addStyle(`.caret-${color.name}`, [
+				`caret-color: ${color.value};`
+			]);
+			Theming.addStyle(`.stroke-${color.name}`, [
+				`stroke: ${color.value};`
+			]);
+			Theming.addStyle(`.border-${color.name}`, [
+				`border-color: ${color.value};`
+			]);
+			Theming.addStyle(`.accent-${color.name}`, [
+				`accent-color: ${color.value};`
+			]);
+			// TBD: check shadow!
+			// TBD: check possibilities for applying opacity to those colors!
+			Theming.addStyle(`.accent-${color.name}`, [
+				`accent-color: ${color.value};`
+			]);
+			Theming.addStyle(`.decoration-${color.name}`, [
+				`text-decoration-color: ${color.value};`
+			]);
+			// TBD: causes trouble on all browsers on iPad
+			// Theming.addStyle(`.placeholder:text-${color.name}`, [
+			// 	`color: ${color.value};`
+			// ]);
+			// TBD: check .ring-offset
+		});
+	})
 
 	const colorTileClasses = 'h-full w-full p-2';
 	const colorLabelClasses = 'text-left text-xs md:text-lg xl:text-xl';

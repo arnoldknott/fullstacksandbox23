@@ -912,30 +912,33 @@ export class Theming {
 				Theming.addStyle(`.text-${utilityClass}`, [
 					`color: ${colorHex};`
 				]);
-				// TBD: check .ring
-				Theming.addStyle(`.fill-${utilityClass}`, [
-					`fill: ${colorHex};`
-				]);
-				Theming.addStyle(`.caret-${utilityClass}`, [
-					`caret-color: ${colorHex};`
-				]);
-				Theming.addStyle(`.stroke-${utilityClass}`, [
-					`stroke: ${colorHex};`
-				]);
-				Theming.addStyle(`.border-${utilityClass}`, [
-					`border-color: ${colorHex};`
-				]);
-				Theming.addStyle(`.accent-${utilityClass}`, [
-					`accent-color: ${colorHex};`
-				]);
-				// TBD: check shadow!
-				// TBD: check possibilities for applying opacity to those colors!
-				Theming.addStyle(`.accent-${utilityClass}`, [
-					`accent-color: ${colorHex};`
-				]);
-				Theming.addStyle(`.decoration-${utilityClass}`, [
-					`text-decoration-color: ${colorHex};`
-				]);
+
+				// // remove - takes so much computation - add when needed:
+				// // TBD: check .ring
+				// Theming.addStyle(`.fill-${utilityClass}`, [
+				// 	`fill: ${colorHex};`
+				// ]);
+				// Theming.addStyle(`.caret-${utilityClass}`, [
+				// 	`caret-color: ${colorHex};`
+				// ]);
+				// Theming.addStyle(`.stroke-${utilityClass}`, [
+				// 	`stroke: ${colorHex};`
+				// ]);
+				// Theming.addStyle(`.border-${utilityClass}`, [
+				// 	`border-color: ${colorHex};`
+				// ]);
+				// Theming.addStyle(`.accent-${utilityClass}`, [
+				// 	`accent-color: ${colorHex};`
+				// ]);
+				// // TBD: check shadow!
+				// // TBD: check possibilities for applying opacity to those colors!
+				// Theming.addStyle(`.accent-${utilityClass}`, [
+				// 	`accent-color: ${colorHex};`
+				// ]);
+				// Theming.addStyle(`.decoration-${utilityClass}`, [
+				// 	`text-decoration-color: ${colorHex};`
+				// ]);
+
 				// TBD: causes trouble on all browsers on iPad
 				// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
 				// 	`color: ${colorHex};`
