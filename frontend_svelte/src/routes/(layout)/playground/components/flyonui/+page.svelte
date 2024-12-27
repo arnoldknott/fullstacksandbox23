@@ -507,7 +507,6 @@
 							<p class="text-center text-xl">/100</p>
 						</div>
 					</div>
-					<br />
 					<p class="ml-5">Primary content:</p>
 					<div class="m-5 grid grid-cols-4 gap-4 md:grid-cols-11">
 						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
@@ -543,6 +542,49 @@
 						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/100">
 							<p class="text-center text-xl">/100</p>
 						</div>
+					</div>
+					<p class="ml-5">Primary container - this is an extension from material UI to flyonUI:</p>
+					<div class="m-5 grid grid-cols-4 gap-4 md:grid-cols-11">
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container">
+							<p class="text-center text-xl"></p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/10">
+							<p class="text-center text-xl">/10</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/20">
+							<p class="text-center text-xl">/20</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/30">
+							<p class="text-center text-xl">/30</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/40">
+							<p class="text-center text-xl">/40</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/50">
+							<p class="text-center text-xl">/50</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/60">
+							<p class="text-center text-xl">/60</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/70">
+							<p class="text-center text-xl">/70</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/80">
+							<p class="text-center text-xl">/80</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/90">
+							<p class="text-center text-xl">/90</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/100">
+							<p class="text-center text-xl">/100</p>
+						</div>
+						<!-- Programmatically applying for the first time doesn't work - if it's the only applying of this color.
+						But once applied there is some caching on the server side - shared between clients. -->
+						<!-- {#each ["/10", "/20", "/30", "/40", "/50", "/60", "/70", "/80", "/90", "/100"] as opacity}
+							<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container{opacity}">
+								<p class="text-center text-xl">{opacity}</p>
+							</div>
+						{/each} -->
 					</div>
 				</div>
 			</div>

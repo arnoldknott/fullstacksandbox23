@@ -36,8 +36,9 @@ module.exports = {
 				// "primary-container": "var(var(--md-sys-color-primary-container)/var(--tw-bg-opacity))",
 				// "primary-container": "var(--md-sys-color-primary-container)",
 				// "primary-container": "var(var(--md-hex-color-primary-container)/<alpha-value>)",
+				// This one works also with opacity:
 				"primary-container": "rgb(var(--md-rgb-color-primary-container))",
-				"primary-container-content": 'var(--md-sys-color-on-primary-container)',
+				"primary-container-content": 'rgb(var(--md-rgb-color-on-primary-container))',
 			}
 		}
 		// colors: {
