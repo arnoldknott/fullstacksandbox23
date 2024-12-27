@@ -6,8 +6,9 @@
 	import ColorTileFlyonUi from '$components/ColorTileFlyonUI.svelte';
 	import { type AppTheme } from '$lib/theming';
 	import { themeStore } from '$lib/stores';
-	import { hexFromArgb } from '@material/material-color-utilities';
+	// import { hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
+	import JsonData from '$components/JsonData.svelte';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
 	// return {
@@ -1779,6 +1780,9 @@
         </div>
     </div> -->
 </div>
+
+<Title>Current theme as JSON:</Title>
+<JsonData data={theme} />
 
 <!-- <style>
 
