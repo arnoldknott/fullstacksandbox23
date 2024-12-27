@@ -1238,7 +1238,7 @@
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">shadow-"COLOR-NAME"</div>
 			<button class="btn btn-primary shadow-lg shadow-primary">Shadow primary</button>
-			<button class="btn-inverse-primary shadow-inverse-primary btn shadow-lg"
+			<button class="btn btn-inverse-primary shadow-inverse-primary shadow-lg"
 				>Shadow inverse primary</button
 			>
 			<button class="btn-surface-tint shadow-surface-tint btn shadow-lg">Shadow surface tint</button
@@ -1376,9 +1376,16 @@
 		<p>Badges:</p>
 		<span class="badge badge-primary">Badge primary</span>
 		<span class="badge badge-secondary">Badge secondary</span>
-		<span class="badge-tertiary badge">Badge tertiary (Material notation)</span>
-		<span class="badge badge-accent">Badge accent (same in FlyonUI notation)</span>
+		<span class="badge badge-accent">Badge accent</span>
+		<span class="badge badge-inverse-primary">Badge inverse primary</span>
 		<br />
+		<p>Glass effect on button:</p>
+		<button class="btn btn-primary glass ">Shadow primary</button>
+		<button class="btn btn-inverse-primary glass">Glass on inverse primary</button>
+		<button class="btn btn-surface-tint  glass">Shadow surface tint</button>
+		<button class="btn btn-error glass">Shadow error</button>
+		<button class="btn btn-error/50 glass">Shadow error/50</button>
+	>
 	</div>
 
 	<div>
@@ -1801,3 +1808,16 @@
 	}
 	
 	</style> -->
+
+<style>
+:root{
+	.badge-inverse-primary {
+		background-color: var(--md-sys-color-inverse-primary);
+		color: var(--md-sys-color-on-primary);
+	}
+
+	.btn-inverse-primary {
+		--btn-color: var(--ip);
+	}
+}
+</style>
