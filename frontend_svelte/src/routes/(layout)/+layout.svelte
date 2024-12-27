@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { Variant, Theming, extendingFlyonUIwithAdditionalMaterialDesignColors, type ColorConfig } from '$lib/theming';
+	import {
+		Variant,
+		Theming,
+		extendingFlyonUIwithAdditionalMaterialDesignColors,
+		type ColorConfig
+	} from '$lib/theming';
 	// // clean this mess up - mainly by moving to $lib/theming.ts
 	// import {
 	// 	argbFromHex,
@@ -312,7 +317,6 @@
 	// let theme = $state({})
 
 	// $effect(() => {setContext('theme', theme)});
-	
 
 	const applyTheming: Action = (_node) => {
 		// console.log("===applyTheming got triggered ===")
@@ -325,7 +329,9 @@
 
 		extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
 			(utilityClass, materialDesignToken) => {
-				const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+				const tokenKebabCase = materialDesignToken
+					.replace(/([a-z])([A-Z])/g, '$1-$2')
+					.toLowerCase();
 				// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
 				Theming.addStyle(`.bg-${utilityClass}`, [
 					`background-color: var(--md-sys-color-${tokenKebabCase});`
@@ -334,9 +340,7 @@
 					`color: var(--md-sys-color-${tokenKebabCase});`
 				]);
 				// TBD: check .ring
-				Theming.addStyle(`.fill-${utilityClass}`, [
-					`fill: var(--md-sys-color-${tokenKebabCase});`
-				]);
+				Theming.addStyle(`.fill-${utilityClass}`, [`fill: var(--md-sys-color-${tokenKebabCase});`]);
 				Theming.addStyle(`.caret-${utilityClass}`, [
 					`caret-color: var(--md-sys-color-${tokenKebabCase});`
 				]);

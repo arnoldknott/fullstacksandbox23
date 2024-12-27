@@ -9,7 +9,6 @@
 	import { hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
 
-
 	// const createdComponent: Snippet = createRawSnippet(() => {
 	// return {
 	// 	render: () => ``
@@ -24,6 +23,11 @@
 	// 	console.log('Drawer toggled to ' + isDrawerOpen);
 	// }
 	// const closeDrawer = () => isDrawerOpen = false;
+
+	let showSections = $state({
+		colors: true,
+		utilityClasses: true
+	});
 
 	let sourceColor = $state('#769CDF');
 	let variant = $state('TONAL_SPOT');
@@ -76,20 +80,19 @@
 			return '';
 		} else {
 			let colors = theme[theme.currentMode].colors;
-			return hexFromArgb(colors["inversePrimary"]);
+			return hexFromArgb(colors['inversePrimary']);
 		}
 	});
 	let surfaceTintHex = $derived.by(() => {
 		if (!theme.currentMode) {
-			console.log('=== no-theme ===')
+			console.log('=== no-theme ===');
 			return '';
 		} else {
 			let colors = theme[theme.currentMode].colors;
-			const color = hexFromArgb(colors["surfaceTint"]);
+			const color = hexFromArgb(colors['surfaceTint']);
 			return color;
 		}
 	});
-
 
 	onDestroy(() => {
 		unsubscribeThemeStore();
@@ -97,21 +100,20 @@
 
 	const additionalColors = $derived([
 		{
-			name: "inverse-primary",
+			name: 'inverse-primary',
 			value: inversePrimaryHex
 		},
 		{
-			name: "surface-tint",
+			name: 'surface-tint',
 			value: surfaceTintHex
 		}
-	])
+	]);
 
 	$effect(() => {
 		// TBD: consider applying variables instead of values?
 		// and only once - then the content of the variables get updated
 		// from applyTheme in (layout)/layout.svelte, but not the utility classes
 		additionalColors.forEach((color) => {
-
 			// // utlitity classes:
 			// // TBD: check .ring
 			// Theming.addStyle(`.fill-${color.name}`, [
@@ -147,7 +149,7 @@
 			// 	`--btn-color: ${color.value};`
 			// ]);
 		});
-	})
+	});
 
 	const colorTileClasses = 'h-full w-full p-2';
 	const colorLabelClasses = 'text-left text-xs md:text-lg xl:text-xl';
@@ -194,7 +196,17 @@
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div class="col-span-2">
 		<Title>Colors</Title>
-		<div class="accordion accordion-bordered divide-y" data-accordion-always-open="">
+		<div class="flex items-center gap-1">
+			<label class="label label-text text-base" for="switchColors">Hide</label>
+			<input
+				type="checkbox"
+				class="switch switch-primary"
+				bind:checked={showSections.colors}
+				id="switchColors"
+			/>
+			<label class="label label-text text-base" for="switchColors">Show</label>
+		</div>
+		<div class="accordion accordion-bordered divide-y {showSections.colors ? '' : 'hidden'}" data-accordion-always-open="">
 			<!-- <div class="accordion-item accordion-item-active:scale-[1.05] accordion-item-active:mb-3 ease-in duration-300 delay-[1ms] active" id="default-colors"> -->
 			<div class="active accordion-item" id="default-colors">
 				<button
@@ -918,7 +930,8 @@
 						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
 					></span>
 					<p class="ml-10 text-base md:text-xl">
-						TBD: remove! no extra style sheets! Aliases: material design - flyonui: same color, different utility class names
+						TBD: remove! no extra style sheets! Aliases: material design - flyonui: same color,
+						different utility class names
 					</p>
 				</button>
 				<div
@@ -931,19 +944,30 @@
 				</div>
 			</div>
 		</div>
+		<div class="col-span-2">
+			<p class="text-xl italic">
+				Note, for programmatically applied classes, add the utility class either programmatically via <code
+					>Theming.addStyle( styleName, styles)</code
+				>
+				or as (scoped) <code>&ltstyle&gt</code> tag.
+			</p>
+		</div>
 	</div>
-	<div class="col-span-2">
-		<p class="text-xl italic">
-			Note, for programmatically applied classes, add the utility class either programmatically via <code
-				>Theming.addStyle( styleName, styles)</code
-			>
-			or as (scoped) <code>&ltstyle&gt</code> tag.
-		</p>
-	</div>
+
 
 	<div class="col-span-2">
 		<Title>Utility classes</Title>
-		<div>
+		<div class="flex items-center gap-1">
+			<label class="label label-text text-base" for="switchColors">Hide</label>
+			<input
+				type="checkbox"
+				class="switch switch-primary"
+				bind:checked={showSections.utilityClasses}
+				id="switchColors"
+			/>
+			<label class="label label-text text-base" for="switchColors">Show</label>
+		</div>
+		<div class="{showSections.utilityClasses ? '' : 'hidden'}">
 			Mainly playing with:
 			<ul>
 				<li>primary (native in both FlyonUI and Material Design),</li>
@@ -953,7 +977,7 @@
 				<li>error/50 (checking transparency from Tailwind)</li>
 			</ul>
 		</div>
-		<div class="mt-5 grid grid-cols-5 gap-4">
+		<div class="mt-5 grid grid-cols-5 gap-4 {showSections.utilityClasses ? '' : 'hidden'}">
 			<div class="col-span-5 ml-5 text-2xl font-semibold">bg-"COLOR-NAME"</div>
 			<div class="h-24 bg-primary">bg-primary</div>
 			<div class="bg-inverse-primary h-24">bg-inverse-primary</div>
