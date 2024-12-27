@@ -308,7 +308,9 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 	['onError', 'erc'],
 	// extension from material design to flyonUI:
 	['inversePrimary', 'ip'],
-	['surfaceTint', 'st']
+	['surfaceTint', 'st'],
+	['primaryContainer', 'pcontainer'],
+	['onPrimaryContainer', 'pcontainercontent'],
 ]);
 
 // add missing material design tokens as utility classes for flyonUI

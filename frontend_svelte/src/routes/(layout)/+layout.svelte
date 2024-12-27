@@ -337,54 +337,50 @@
 		// ]);
 
 
-		// This works - leave it in:
-		extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
-			(utilityClass, materialDesignToken) => {
-				const tokenKebabCase = materialDesignToken
-					.replace(/([a-z])([A-Z])/g, '$1-$2')
-					.toLowerCase();
-				// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
-				// utility classes:
-				Theming.addStyle(`.bg-${utilityClass}`, [
-					`background-color: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				Theming.addStyle(`.text-${utilityClass}`, [
-					`color: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				// TBD: check .ring
-				Theming.addStyle(`.fill-${utilityClass}`, [`fill: var(--md-sys-color-${tokenKebabCase});`]);
-				Theming.addStyle(`.caret-${utilityClass}`, [
-					`caret-color: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				Theming.addStyle(`.stroke-${utilityClass}`, [
-					`stroke: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				Theming.addStyle(`.border-${utilityClass}`, [
-					`border-color: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				Theming.addStyle(`.accent-${utilityClass}`, [
-					`accent-color: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				// TBD: check shadow!
-				// TBD: check possibilities for applying opacity to those colors!
-				Theming.addStyle(`.accent-${utilityClass}`, [
-					`accent-color: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				Theming.addStyle(`.decoration-${utilityClass}`, [
-					`text-decoration-color: var(--md-sys-color-${tokenKebabCase});`
-				]);
+		// // This works - leave it in:
+		// extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
+		// 	(utilityClass, materialDesignToken) => {
+		// 		const tokenKebabCase = materialDesignToken
+		// 			.replace(/([a-z])([A-Z])/g, '$1-$2')
+		// 			.toLowerCase();
+		// 		// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
+		// 		// utility classes:
+		// 		Theming.addStyle(`.bg-${utilityClass}`, [
+		// 			`background-color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		Theming.addStyle(`.text-${utilityClass}`, [
+		// 			`color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		// TBD: check .ring
+		// 		Theming.addStyle(`.fill-${utilityClass}`, [`fill: var(--md-sys-color-${tokenKebabCase});`]);
+		// 		Theming.addStyle(`.caret-${utilityClass}`, [
+		// 			`caret-color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		Theming.addStyle(`.stroke-${utilityClass}`, [
+		// 			`stroke: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		Theming.addStyle(`.border-${utilityClass}`, [
+		// 			`border-color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		Theming.addStyle(`.accent-${utilityClass}`, [
+		// 			`accent-color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		// TBD: check shadow!
+		// 		// TBD: check possibilities for applying opacity to those colors!
+		// 		Theming.addStyle(`.accent-${utilityClass}`, [
+		// 			`accent-color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		Theming.addStyle(`.decoration-${utilityClass}`, [
+		// 			`text-decoration-color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
 
-				// // TBD: causes trouble on all browsers on iPad
-				// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
-				// 	`color: var(--md-sys-color-${tokenKebabCase});`
-				// ]);
-				// TBD: check .ring-offset
-				// component classes:
-				// Theming.addStyle(`.btn-${utilityClass}`, [
-				// 	`--btn-color: var(--md-sys-color-${tokenKebabCase});`
-				// ]);
-			}
-		);
+		// 		// // TBD: causes trouble on all browsers on iPad
+		// 		// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
+		// 		// 	`color: var(--md-sys-color-${tokenKebabCase});`
+		// 		// ]);
+		// 		// TBD: check .ring-offset
+		// 	}
+		// );
 
 		// Theming.addStyle(".bg-accent-container", ["background-color: var(--md-sys-color-tertiary-container);"]);
 		// let scheme = $derived(theming.applyTheme(themeConfiguration, mode, mainContent))

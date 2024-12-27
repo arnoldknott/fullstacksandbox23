@@ -18,7 +18,13 @@ module.exports = {
 			// set the color object for Tailwind programmatically here - matching output from Material Dynamic Color:
 			colors: {
 				transparent: 'transparent',
-				current: 'currentColor'
+				current: 'currentColor',
+				// this works:
+				// "primary-container": "#FF0000",
+				// this also works - great!
+				"primary-container": "var(--md-sys-color-primary-container)",
+				// "primary-container": "var(var(--md-sys-color-primary-container)/var(--tw-bg-opacity))",
+				"primary-container-content": 'var(--md-sys-color-on-primary-container)',
 			}
 		}
 		// colors: {

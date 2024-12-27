@@ -9,7 +9,7 @@
 	// import { hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
 	import JsonData from '$components/JsonData.svelte';
-	import {Theming }from '$lib/theming';
+	// import {Theming }from '$lib/theming';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
 	// return {
@@ -27,7 +27,7 @@
 	// const closeDrawer = () => isDrawerOpen = false;
 
 	let showSections = $state({
-		colors: false,
+		colors: true,
 		utilityClasses: true
 	});
 
@@ -1401,6 +1401,8 @@
 		<button class="btn btn-surface-tint  glass">Glass on surface tint</button>
 		<button class="btn btn-error glass">Glass on error</button>
 		<button class="btn btn-error/50 glass">Glass on error/50</button>
+		<p>Using postCSS created components:</p>
+		<span class="badge badge-primary-container">Badge primary-container</span>
 	</div>
 
 	<div>
