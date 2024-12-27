@@ -284,6 +284,7 @@ type AdditionalFlyonUIScheme = {
 // TBD: Map matched colors to both class names, e.g. onPrimary primary-container becomes a class definition of ".on-primary, .primary-container"
 // Material design tokens become FlyonUI variables (both technically CSS variables)
 const flyonUIVariablesMaterialDesignMapping = new Map([
+	// default FlyonUI tokens:
 	['primary', 'p'],
 	['onPrimary', 'pc'],
 	['secondary', 's'],
@@ -293,7 +294,6 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 	['neutral', 'n'],
 	['onNeutral', 'nc'],
 	['surfaceContainerLowest', 'b1'],
-	// think about implementing the other 2 surfaceContainer colors
 	['surfaceContainer', 'b2'],
 	['surfaceContainerHighest', 'b3'],
 	['onSurface', 'bc'],
@@ -305,7 +305,10 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 	['warning', 'wa'],
 	['onWarning', 'wac'],
 	['error', 'er'],
-	['onError', 'erc']
+	['onError', 'erc'],
+	// extension from material design to flyonUI:
+	['inversePrimary', 'ip'],
+	['surfaceTint', 'st']
 ]);
 
 // add missing material design tokens as utility classes for flyonUI
@@ -900,6 +903,10 @@ export class Theming {
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
 		this.applyMaterialTokens(colors, targetElement);
 		this.applyFlyonUITokens(colors, targetElement);
+		// Theming.addStyle(`.btn-inverse-primary`, [
+		// 	// "--btn-color: var(--md-sys-color-inverse-primary);"
+		// 	"--btn-color: #535a92;"
+		// ]);
 		// extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
 		// 	(utilityClass, materialDesignToken) => {
 		// 		// const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();

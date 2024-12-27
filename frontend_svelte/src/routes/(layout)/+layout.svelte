@@ -326,6 +326,15 @@
 		mode = systemDark ? 'dark' : 'light';
 
 		// Theming.addStyle(".bg-accent-container", ["background-color: var(--md-sys-color-tertiary-container);"]);
+		// Theming.addStyle(`.checkbox-inverse-primary`, [
+		// 	"--chkbg: 0.8326626828187514 0.08441887404599768 279.2305339932651;",
+		// 	"--chkfg: 0.3154821851849956 0.0950938022598709 274.08875028302316;"
+		// ]);
+		// Theming.addStyle(`.btn-inverse-primary`, [
+		// 	// "--btn-color: var(--md-sys-color-inverse-primary);"
+		// 	// "--btn-color: 0.8362757038340962 0.06305885959381759 339.06697306846456;"
+		// 	"--btn-color: --var(--ip);"
+		// ]);
 
 		extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
 			(utilityClass, materialDesignToken) => {
@@ -333,6 +342,7 @@
 					.replace(/([a-z])([A-Z])/g, '$1-$2')
 					.toLowerCase();
 				// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
+				// utility classes:
 				Theming.addStyle(`.bg-${utilityClass}`, [
 					`background-color: var(--md-sys-color-${tokenKebabCase});`
 				]);
@@ -367,6 +377,10 @@
 				// 	`color: var(--md-sys-color-${tokenKebabCase});`
 				// ]);
 				// TBD: check .ring-offset
+				// component classes:
+				// Theming.addStyle(`.btn-${utilityClass}`, [
+				// 	`--btn-color: var(--md-sys-color-${tokenKebabCase});`
+				// ]);
 			}
 		);
 
@@ -403,6 +417,61 @@
 		// });
 
 		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
+
+		// $effect(() => {
+		// // 	console.log(theme)
+		// // 	// Theming.addStyle(".bg-accent-container", ["background-color: var(--md-sys-color-tertiary-container);"]);
+		// // 	// Theming.addStyle(`.checkbox-inverse-primary`, [
+		// // 	// 	"--chkbg: 0.8326626828187514 0.08441887404599768 279.2305339932651;",
+		// // 	// 	"--chkfg: 0.3154821851849956 0.0950938022598709 274.08875028302316;"
+		// // 	// ]);
+		// 	// Theming.addStyle(`.btn-inverse-primary`, [
+		// 	// 	// "--btn-color: var(--md-sys-color-inverse-primary);"
+		// 	// 	// "--btn-color: 0.8362757038340962 0.06305885959381759 339.06697306846456;"
+		// 	// 	"--btn-color: --var(--p);"
+		// 	// ]);
+		// // 	const printCSSPropertyValue = (variableName: string) => {
+		// // 		const rootStyles = getComputedStyle(document.documentElement);
+		// // 		const value =  rootStyles.getPropertyValue(variableName).trim();
+		// // 		console.log(`${variableName}: ${value}`);
+		// // 	}; 
+
+		// // 	const printCSSRule = (className: string) => {
+		// // 		for (const sheet of document.styleSheets) {
+		// // 			try {
+		// // 				for (const rule of sheet.cssRules) {
+		// // 					// console.log('rule:', rule);
+		// // 					if (rule instanceof CSSStyleRule && rule.selectorText.includes(className)) {
+		// // 						console.log(`${className}: `, rule.cssText);
+		// // 					}
+		// // 				}
+		// // 			} catch (e) {
+		// // 				if (e instanceof DOMException && e.name === 'SecurityError') {
+		// // 					// Ignore the stylesheet that cannot be accessed
+		// // 					continue;
+		// // 				} else {
+		// // 					throw e;
+		// // 				}
+		// // 			}
+		// // 		}
+		// // 		// const rules = Array.from(document.styleSheets)
+		// // 		// // console.log('rules:', rules);
+		// // 		// 	.flatMap(sheet => Array.from(sheet.cssRules))
+		// // 		// 	.filter(rule => rule.cssText === selector);
+		// // 		// rules.forEach(rule => console.log(`${selector}: `, rule.cssText));
+		// 	});
+
+
+		// 	printCSSPropertyValue('--md-sys-color-primary');
+		// 	printCSSPropertyValue('--p');
+		// 	printCSSRule('.btn-inverse-primary');
+		// 	Theming.addStyle(`.bg-inverse-primary`, [
+		// 		// "--btn-color: var(--md-sys-color-inverse-primary);"
+		// 		// "--btn-color: 0.8362757038340962 0.06305885959381759 339.06697306846456;"
+		// 		"--btn-color: --var(--ip);"
+		// 	]);
+		// 	printCSSRule('.btn-inverse-primary');
+		// });
 		// $effect(() => { console.log('theme:', theme) });
 		// $effect(() => { setContext('currentTheme', theme) });
 		$effect(() => {
