@@ -310,8 +310,56 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 
 // add missing material design tokens as utility classes for flyonUI
 // with both material design and flyonUI syntax:
-const additionalMaterialDesignUtilityClasses = new Map([
-	['primaryContainer', [{}]],
+const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
+	['primaryContainer', "primary-container"],
+	['onPrimaryContainer', "primary-container-content"],
+	['secondaryContainer', "secondary-container"],
+	['onSecondaryContainer', "secondary-container-content"],
+	['tertiaryContainer', "accent-container"],
+	['onTertiaryContainer', "accent-container-content"],
+	['neutralContainer', "neutral-container"],
+	['onNeutralContainer', "neutral-container-content"],
+	['errorContainer', "error-container"],
+	['onErrorContainer', "error-container-content"],
+	['warningContainer', "warning-container"],
+	['onWarningContainer', "warning-container-content"],
+	['successContainer', "success-container"],
+	['onSuccessContainer', "success-container-content"],
+	['infoContainer', "info-container"],
+	['onInfoContainer', "info-container-content"],
+	['surfaceContainerLow', "base-50"],
+	['surfaceContainerHigh', "base-150"],
+	['outline', "outline"],
+	['outlineVariant', "outline-variant"],
+	['inverseSurface', "inverse-surface"],
+	['inverseOnSurface', "inverse-surface-content"],
+	['inversePrimary', "inverse-primary"],
+	['scrim', "scrim"],
+	['background', "background"],
+	['onBackground', "background-content"],
+	['neutralPaletteKeyColor', "neutral-palette-key-color"],
+	['neutralVariantPaletteKeyColor', "neutral-variant-palette-key-color"],
+	['primaryPaletteKeyColor', "primary-palette-key-color"],
+	['secondaryPaletteKeyColor', "secondary-palette-key-color"],
+	['tertiaryPaletteKeyColor', "accent-palette-key-color"],
+	['primaryFixed', "primary-fixed"],
+	['primaryFixedDim', "primary-fixed-dim"],
+	['onPrimaryFixed', "primary-fixed-content"],
+	['onPrimaryFixedVariant', "primary-fixed-variant-content"],
+	['secondaryFixed', "secondary-fixed"],
+	['secondaryFixedDim', "secondary-fixed-dim"],
+	['onSecondaryFixed', "secondary-fixed-content"],
+	['onSecondaryFixedVariant', "secondary-fixed-variant-content"],
+	['tertiaryFixed', "accent-fixed"],
+	['tertiaryFixedDim', "accent-fixed-dim"],
+	['onTertiaryFixed', "accent-fixed-content"],
+	['onTertiaryFixedVariant', "accent-fixed-variant-content"],
+	['surfaceDim', "surface-dim"],
+	['surface', "surface"],
+	['surfaceBright', "surface-bright"],
+	['surfaceVariant', "surface-variant"],
+	['surfaceTint', "surface-tint"],
+
 ])
 
 export interface ColorConfig {
@@ -853,6 +901,25 @@ export class Theming {
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
 		this.applyMaterialTokens(colors, targetElement);
 		this.applyFlyonUITokens(colors, targetElement);
+		extendingFlyonUIwithAdditionalMaterialDesignColors.forEach((utilityClass, materialDesignToken) => {
+			// const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+			const materialTokenKey = materialDesignToken as keyof typeof colors;
+			// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
+			Theming.addStyle( `.bg-${utilityClass}`, [`background-color: ${hexFromArgb(colors[materialTokenKey])};`] )
+			Theming.addStyle( `.text-${utilityClass}`, [`color: ${hexFromArgb(colors[materialTokenKey])};`] )
+			// TBD: check .ring
+			Theming.addStyle( `.fill-${utilityClass}`, [`fill: ${hexFromArgb(colors[materialTokenKey])};`] )
+			Theming.addStyle( `.caret-${utilityClass}`, [`caret-color: ${hexFromArgb(colors[materialTokenKey])};`] )
+			Theming.addStyle( `.stroke-${utilityClass}`, [`stroke: ${hexFromArgb(colors[materialTokenKey])};`] )
+			Theming.addStyle( `.border-${utilityClass}`, [`border-color: ${hexFromArgb(colors[materialTokenKey])};`] )
+			Theming.addStyle( `.accent-${utilityClass}`, [`accent-color: ${hexFromArgb(colors[materialTokenKey])};`] )
+			// TBD: check shadow!
+			// TBD: check possibilities for applying opacity to those colors!
+			Theming.addStyle( `.accent-${utilityClass}`, [`accent-color: ${hexFromArgb(colors[materialTokenKey])};`] )
+			Theming.addStyle( `.decoration-${utilityClass}`, [`text-decoration-color: ${hexFromArgb(colors[materialTokenKey])};`] )
+			Theming.addStyle( `.placeholder:text-${utilityClass}`, [`color: ${hexFromArgb(colors[materialTokenKey])};`] )
+			// TBD: check .ring-offset
+		})
 		return {
 			configuration: colorConfig,
 			currentMode: mode,
@@ -932,13 +999,13 @@ export class Theming {
         }
     }
 
-    static addBackgroundUtilityClass( name: string, backgroundColor: string[]): void {
-        Theming.addStyle(`bg-${name}`, [`background-color: ${backgroundColor}`]);
-    }
+    // static addBackgroundUtilityClass( name: string, backgroundColor: string[]): void {
+    //     Theming.addStyle(`bg-${name}`, [`background-color: ${backgroundColor}`]);
+    // }
 
-	static addFillUtilityClass( name: string, fill: string[]): void {
-        Theming.addStyle(`fill-${name}`, [`fill: ${fill}`]);
-    }
+	// static addFillUtilityClass( name: string, fill: string[]): void {
+    //     Theming.addStyle(`fill-${name}`, [`fill: ${fill}`]);
+    // }
 
 
 	private applyFlyonUITokens(

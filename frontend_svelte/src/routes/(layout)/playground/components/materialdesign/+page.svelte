@@ -323,6 +323,20 @@
 					color="-md-sys-color-inverse-on-surface"
 				/>
 			</div>
+			<div class="mt-8 grid w-full grid-cols-3 gap-4">
+				<ColorTileMaterialUi
+					background="--md-sys-color-primary-palette-key-color"
+					color="--md-sys-color-on-background"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-secondary-palette-key-color"
+					color="--md-sys-color-background"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-tertiary-palette-key-color"
+					color="--md-sys-color-inverse-on-surface"
+				/>
+			</div>
 			<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
 				<p class="col-span-2 text-center text-xl md:col-span-4">
 					Avoid using those - the fixed colors don't switch from light to dark mode
@@ -469,10 +483,6 @@
 					<JsonData data={palette} />
 				</div>
 			{/each}
-			<p>
-				Add all the palettes as a sweep of tone from all available palettes: primary, secondary,
-				with a slider controlling the tone
-			</p>
 		</div>
 	</div>
 

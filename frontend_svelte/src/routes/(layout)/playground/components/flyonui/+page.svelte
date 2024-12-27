@@ -5,6 +5,7 @@
 	import type { IOverlay } from 'flyonui/flyonui';
 	import ColorTileFlyonUi from '$components/ColorTileFlyonUI.svelte';
     import { Theming } from '$lib/theming';
+	import ColorTileMaterialUi from '$components/ColorTileMaterialUI.svelte';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
 	// return {
@@ -402,40 +403,194 @@
                 </button>
                 <div id="extension-materialui-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="extension-materialui-colors" role="region">
                     <div class="m-5 grid grid-cols-4 gap-4 xl:grid-cols-8">
-                        <!-- <div>
-                            <ColorTileFlyonUi background="primary-container" content="primary-container-content" />
-                            <ColorTileFlyonUi background="primary-container-content" content="primary-container" />
-                        </div>
-                        <div>
-                            <ColorTileFlyonUi background="secondary-container" content="secondary-container-content" />
-                            <ColorTileFlyonUi background="secondary-container-content" content="secondary-container" />
-                        </div>
-                        <div>
-                            <ColorTileFlyonUi background="accent-container" content="accent-container-content" />
-                            <ColorTileFlyonUi background="accent-container-content" content="accent-container" />
-                        </div>
-                        <div>
-                            <ColorTileFlyonUi background="neutral-container" content="neutral-container-content" />
-                            <ColorTileFlyonUi background="neutral-container-content" content="neutral-container" />
-                        </div>
 						<div>
-                            <ColorTileFlyonUi background="info-container" content="info-container-content" />
-                            <ColorTileFlyonUi background="info-container-content" content="info-container" />
-                        </div>
-                        <div>
-                            <ColorTileFlyonUi background="success-container" content="success-container-content" />
-                            <ColorTileFlyonUi background="success-container-content" content="success-container" />
-                        </div>
-                        <div>
-                            <ColorTileFlyonUi background="warning-container" content="warning-container-content" />
-                            <ColorTileFlyonUi background="warning-container-content" content="warning-container" />
-                        </div>
-                        <div>
-                            <ColorTileFlyonUi background="error-container" content="error-container-content" />
-                            <ColorTileFlyonUi background="error-container-content" content="error-container" />
-                        </div> -->
+							<ColorTileFlyonUi>
+								<div class="bg-primary-container {colorTileClasses}">
+									<p class="text-primary-container-content {colorLabelClasses}">primary-container</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-primary-container-content {colorTileClasses}">
+									<p class="text-primary-container {colorLabelClasses}">primary-container-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-secondary-container {colorTileClasses}">
+									<p class="text-secondary-container-content {colorLabelClasses}">secondary-container</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-secondary-container-content {colorTileClasses}">
+									<p class="text-secondary-container {colorLabelClasses}">secondary-container-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-accent-container {colorTileClasses}">
+									<p class="text-accent-container-content {colorLabelClasses}">accent-container</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-accent-container-content {colorTileClasses}">
+									<p class="text-accent-container {colorLabelClasses}">accent-container-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-neutral-container {colorTileClasses}">
+									<p class="text-neutral-container-content {colorLabelClasses}">neutral-container</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-neutral-container-content {colorTileClasses}">
+									<p class="text-neutral-container {colorLabelClasses}">neutral-container-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-info-container {colorTileClasses}">
+									<p class="text-info-container-content {colorLabelClasses}">info-container</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-info-container-content {colorTileClasses}">
+									<p class="text-info-container {colorLabelClasses}">info-container-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-success-container {colorTileClasses}">
+									<p class="text-success-container-content {colorLabelClasses}">success-container</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-success-container-content {colorTileClasses}">
+									<p class="text-success-container {colorLabelClasses}">success-container-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-warning-container {colorTileClasses}">
+									<p class="text-warning-container-content {colorLabelClasses}">warning-container</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-warning-container-content {colorTileClasses}">
+									<p class="text-warning-container {colorLabelClasses}">warning-container-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-error-container {colorTileClasses}">
+									<p class="text-error-container-content {colorLabelClasses}">error-container</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-error-container-content {colorTileClasses}">
+									<p class="text-error-container {colorLabelClasses}">error-container-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="accordion-item active" id="extension-materialui-colors">
+				<button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="extension-background-materialui-colors-collapse" aria-expanded="true">
+					<span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
+					<p class="ml-10 text-base md:text-xl">Extensions for background to FlyonUI with extra Material UI colors</p>
+				</button>
+				<div id="extension-background-materialui-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="extension-background-materialui-colors" role="region">
+					<div class="m-5 grid grid-cols-4 gap-4 xl:grid-cols-8">
+						<ColorTileFlyonUi>
+							<div class="bg-base-50 {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">base-50</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-base-150 {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">base-150</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-outline {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">outline</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-outline-variant {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">outline-variant</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-inverse-surface {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">inverse-surface</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-inverse-surface-content {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">inverse-surface-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-inverse-primary {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">inverse-primary</p>
+							</div>
+						</ColorTileFlyonUi>
+					</div>
+					<div class="m-5 grid grid-cols-2 md:grid-cols-3 gap-4">
+						<ColorTileFlyonUi>
+							<div class="bg-scrim {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">scrim</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-background {colorTileClasses}">
+								<p class="text-background-content {colorLabelClasses}">background</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-background-content {colorTileClasses}">
+								<p class="text-background {colorLabelClasses}">background-content</p>
+							</div>
+						</ColorTileFlyonUi>
+					</div>
+					<div class="m-5 grid grid-cols-2 md:grid-cols-5 gap-4">
+						<ColorTileFlyonUi>
+							<div class="bg-neutral-palette-key-color {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">neutral-palette-key</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-neutral-variant-palette-key-color {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">neutral-variant-palette-key</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-primary-palette-key-color {colorTileClasses}">
+								<p class="text-background-content {colorLabelClasses}">primary-palette-key</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-secondary-palette-key-color {colorTileClasses}">
+								<p class="text-background {colorLabelClasses}">secondary-palette-key</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-accent-palette-key-color {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">accent-palette-key</p>
+							</div>
+						</ColorTileFlyonUi>
+
 						<p class="text-2xl">TBD: Others: background and more</p>
-                        <div>surface container low - between b1 and b2</div>
+						<div>surface container low - between b1 and b2</div>
 						<div>surface container high - between b2 and b3</div>
 						<div>on surface variant</div>
 						<div>outline</div>
@@ -448,6 +603,104 @@
 						<div>on background</div>
 						<div>neutral palette key color - not the neutral from above, as the color input is coming from flyonUI, but this one is material designs own</div>
 						<div>neutral variant palette key color</div>
+					</div>
+				</div>
+			</div>
+			<div class="accordion-item active" id="avoid-colors">
+				<button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="avoid-colors-collapse" aria-expanded="true">
+					<span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
+					<p class="ml-10 text-base md:text-xl">Avoid using those extensions FlyonUI with extra Material UI colors</p>
+				</button>
+				<div id="avoid-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="avoid-materialui-colors" role="region">
+					<div class="m-5 grid grid-cols-4 gap-4">
+						<ColorTileFlyonUi>
+							<div class="bg-primary-fixed {colorTileClasses}">
+								<p class="text-primary-fixed-content {colorLabelClasses}">primary-fixed</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-primary-fixed-dim {colorTileClasses}">
+								<p class="text-primary-fixed-content {colorLabelClasses}">primary-fixed-dim</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-primary-fixed-content {colorTileClasses}">
+								<p class="text-primary-fixed {colorLabelClasses}">primary-fixed-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-primary-fixed-variant-content {colorTileClasses}">
+								<p class="text-primary-fixed {colorLabelClasses}">primary-fixed-variant-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-secondary-fixed {colorTileClasses}">
+								<p class="text-secondary-fixed-content {colorLabelClasses}">secondary-fixed</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-secondary-fixed-dim {colorTileClasses}">
+								<p class="text-secondary-fixed-content {colorLabelClasses}">secondary-fixed-dim</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-secondary-fixed-content {colorTileClasses}">
+								<p class="text-secondary-fixed {colorLabelClasses}">secondary-fixed-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-secondary-fixed-variant-content {colorTileClasses}">
+								<p class="text-secondary-fixed {colorLabelClasses}">secondary-fixed-variant-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-accent-fixed {colorTileClasses}">
+								<p class="text-accent-fixed-content {colorLabelClasses}">accent-fixed</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-accent-fixed-dim {colorTileClasses}">
+								<p class="text-accent-fixed-content {colorLabelClasses}">accent-fixed-dim</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-accent-fixed-content {colorTileClasses}">
+								<p class="text-accent-fixed {colorLabelClasses}">accent-fixed-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-accent-fixed-variant-content {colorTileClasses}">
+								<p class="text-accent-fixed {colorLabelClasses}">accent-fixed-variant-content</p>
+							</div>
+						</ColorTileFlyonUi>
+					</div>
+					<div class="m-5 grid grid-cols-5 gap-4 xl:grid-cols-8">
+						<ColorTileFlyonUi>
+							<div class="bg-surface-dim {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">surface-dim</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-surface {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">surface</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-surface-bright {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">surface-bright</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-surface-variant {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">surface-variant</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-surface-tint {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">surface-tint</p>
+							</div>
+						</ColorTileFlyonUi>
+
 						<p class="text-2xl">Avoid the following - fixed is not switching between light and dark</p>
 						<div>primary fixed</div>
 						<div>primary variant dim</div>
@@ -466,9 +719,19 @@
 						<div>surface bright</div>
 						<div>surface variant</div>
 						<div>surface tint</div>
-                    </div>
-                </div>
+					</div>
+				</div>
             </div>
+			<div class="accordion-item active" id="aliases-colors">
+                <button class="accordion-toggle inline-flex items-center gap-x-4 text-start" aria-controls="aliases-colors-collapse" aria-expanded="true">
+                    <span class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180" ></span>
+                    <p class="ml-10 text-base md:text-xl">Aliases: material design - flyonui: same color, different utility class names</p>
+                </button>
+                <div id="aliases-colors-collapse" class="accordion-content w-full overflow-hidden transition-[height] duration-300" aria-labelledby="aliases-colors" role="region">
+                    <div class="m-5 grid grid-cols-4 gap-4 xl:grid-cols-8">
+					</div>
+				</div>
+			</div>
         </div>
 	</div>
 	<div class="col-span-2">
@@ -1077,7 +1340,7 @@
     </div> -->
 </div>
 
-<style>
+<!-- <style>
 
 	.bg-primary-container {
 		background-color: var(--md-sys-color-primary-container)
@@ -1093,4 +1356,4 @@
 		fill: var(--md-sys-color-inverse-primary)
 	}
 	
-	</style>
+	</style> -->
