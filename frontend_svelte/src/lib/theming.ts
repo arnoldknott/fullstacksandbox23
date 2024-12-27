@@ -904,40 +904,41 @@ export class Theming {
 			(utilityClass, materialDesignToken) => {
 				// const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 				const materialTokenKey = materialDesignToken as keyof typeof colors;
+				const colorHex = hexFromArgb(colors[materialTokenKey])
 				// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
 				Theming.addStyle(`.bg-${utilityClass}`, [
-					`background-color: ${hexFromArgb(colors[materialTokenKey])};`
+					`background-color: ${colorHex};`
 				]);
 				Theming.addStyle(`.text-${utilityClass}`, [
-					`color: ${hexFromArgb(colors[materialTokenKey])};`
+					`color: ${colorHex};`
 				]);
 				// TBD: check .ring
 				Theming.addStyle(`.fill-${utilityClass}`, [
-					`fill: ${hexFromArgb(colors[materialTokenKey])};`
+					`fill: ${colorHex};`
 				]);
 				Theming.addStyle(`.caret-${utilityClass}`, [
-					`caret-color: ${hexFromArgb(colors[materialTokenKey])};`
+					`caret-color: ${colorHex};`
 				]);
 				Theming.addStyle(`.stroke-${utilityClass}`, [
-					`stroke: ${hexFromArgb(colors[materialTokenKey])};`
+					`stroke: ${colorHex};`
 				]);
 				Theming.addStyle(`.border-${utilityClass}`, [
-					`border-color: ${hexFromArgb(colors[materialTokenKey])};`
+					`border-color: ${colorHex};`
 				]);
 				Theming.addStyle(`.accent-${utilityClass}`, [
-					`accent-color: ${hexFromArgb(colors[materialTokenKey])};`
+					`accent-color: ${colorHex};`
 				]);
 				// TBD: check shadow!
 				// TBD: check possibilities for applying opacity to those colors!
 				Theming.addStyle(`.accent-${utilityClass}`, [
-					`accent-color: ${hexFromArgb(colors[materialTokenKey])};`
+					`accent-color: ${colorHex};`
 				]);
 				Theming.addStyle(`.decoration-${utilityClass}`, [
-					`text-decoration-color: ${hexFromArgb(colors[materialTokenKey])};`
+					`text-decoration-color: ${colorHex};`
 				]);
 				// TBD: causes trouble on all browsers on iPad
 				// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
-				// 	`color: ${hexFromArgb(colors[materialTokenKey])};`
+				// 	`color: ${colorHex};`
 				// ]);
 				// TBD: check .ring-offset
 			}
