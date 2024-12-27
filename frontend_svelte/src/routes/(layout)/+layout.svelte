@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Variant, Theming, type ColorConfig } from '$lib/theming';
+	import { Variant, Theming, extendingFlyonUIwithAdditionalMaterialDesignColors, type ColorConfig } from '$lib/theming';
 	// // clean this mess up - mainly by moving to $lib/theming.ts
 	// import {
 	// 	argbFromHex,
@@ -312,12 +312,61 @@
 	// let theme = $state({})
 
 	// $effect(() => {setContext('theme', theme)});
+	
 
 	const applyTheming: Action = (_node) => {
+		// console.log("===applyTheming got triggered ===")
 		// read system setting dark / light mode on client side only - not during serve side rendering.
 		// const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 		mode = systemDark ? 'dark' : 'light';
+
+		// Theming.addStyle(".bg-accent-container", ["background-color: var(--md-sys-color-tertiary-container);"]);
+
+		extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
+			(utilityClass, materialDesignToken) => {
+				const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+				// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
+				Theming.addStyle(`.bg-${utilityClass}`, [
+					`background-color: var(--md-sys-color-${tokenKebabCase});`
+				]);
+				Theming.addStyle(`.text-${utilityClass}`, [
+					`color: var(--md-sys-color-${tokenKebabCase});`
+				]);
+				// TBD: check .ring
+				Theming.addStyle(`.fill-${utilityClass}`, [
+					`fill: var(--md-sys-color-${tokenKebabCase});`
+				]);
+				Theming.addStyle(`.caret-${utilityClass}`, [
+					`caret-color: var(--md-sys-color-${tokenKebabCase});`
+				]);
+				Theming.addStyle(`.stroke-${utilityClass}`, [
+					`stroke: var(--md-sys-color-${tokenKebabCase});`
+				]);
+				Theming.addStyle(`.border-${utilityClass}`, [
+					`border-color: var(--md-sys-color-${tokenKebabCase});`
+				]);
+				Theming.addStyle(`.accent-${utilityClass}`, [
+					`accent-color: var(--md-sys-color-${tokenKebabCase});`
+				]);
+				// TBD: check shadow!
+				// TBD: check possibilities for applying opacity to those colors!
+				Theming.addStyle(`.accent-${utilityClass}`, [
+					`accent-color: var(--md-sys-color-${tokenKebabCase});`
+				]);
+				Theming.addStyle(`.decoration-${utilityClass}`, [
+					`text-decoration-color: var(--md-sys-color-${tokenKebabCase});`
+				]);
+
+				// // TBD: causes trouble on all browsers on iPad
+				// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
+				// 	`color: var(--md-sys-color-${tokenKebabCase});`
+				// ]);
+				// TBD: check .ring-offset
+			}
+		);
+
+		// Theming.addStyle(".bg-accent-container", ["background-color: var(--md-sys-color-tertiary-container);"]);
 		// let scheme = $derived(theming.applyTheme(themeConfiguration, mode, mainContent))
 		// Works reactive:
 		// $effect(() => console.log('scheme:', scheme));

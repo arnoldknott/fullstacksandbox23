@@ -81,10 +81,12 @@
 	});
 	let surfaceTintHex = $derived.by(() => {
 		if (!theme.currentMode) {
+			console.log('=== no-theme ===')
 			return '';
 		} else {
 			let colors = theme[theme.currentMode].colors;
-			return hexFromArgb(colors["surfaceTint"]);
+			const color = hexFromArgb(colors["surfaceTint"]);
+			return color;
 		}
 	});
 
@@ -105,36 +107,45 @@
 	])
 
 	$effect(() => {
+		// TBD: consider applying variables instead of values?
+		// and only once - then the content of the variables get updated
+		// from applyTheme in (layout)/layout.svelte, but not the utility classes
 		additionalColors.forEach((color) => {
-			// TBD: check .ring
-				Theming.addStyle(`.fill-${color.name}`, [
-			`fill: ${color.value};`
-			]);
-			Theming.addStyle(`.caret-${color.name}`, [
-				`caret-color: ${color.value};`
-			]);
-			Theming.addStyle(`.stroke-${color.name}`, [
-				`stroke: ${color.value};`
-			]);
-			Theming.addStyle(`.border-${color.name}`, [
-				`border-color: ${color.value};`
-			]);
-			Theming.addStyle(`.accent-${color.name}`, [
-				`accent-color: ${color.value};`
-			]);
-			// TBD: check shadow!
-			// TBD: check possibilities for applying opacity to those colors!
-			Theming.addStyle(`.accent-${color.name}`, [
-				`accent-color: ${color.value};`
-			]);
-			Theming.addStyle(`.decoration-${color.name}`, [
-				`text-decoration-color: ${color.value};`
-			]);
-			// TBD: causes trouble on all browsers on iPad
-			// Theming.addStyle(`.placeholder:text-${color.name}`, [
-			// 	`color: ${color.value};`
+
+			// // utlitity classes:
+			// // TBD: check .ring
+			// Theming.addStyle(`.fill-${color.name}`, [
+			// `fill: ${color.value};`
 			// ]);
-			// TBD: check .ring-offset
+			// Theming.addStyle(`.caret-${color.name}`, [
+			// 	`caret-color: ${color.value};`
+			// ]);
+			// Theming.addStyle(`.stroke-${color.name}`, [
+			// 	`stroke: ${color.value};`
+			// ]);
+			// Theming.addStyle(`.border-${color.name}`, [
+			// 	`border-color: ${color.value};`
+			// ]);
+			// Theming.addStyle(`.accent-${color.name}`, [
+			// 	`accent-color: ${color.value};`
+			// ]);
+			// // TBD: check shadow!
+			// // TBD: check possibilities for applying opacity to those colors!
+			// Theming.addStyle(`.accent-${color.name}`, [
+			// 	`accent-color: ${color.value};`
+			// ]);
+			// Theming.addStyle(`.decoration-${color.name}`, [
+			// 	`text-decoration-color: ${color.value};`
+			// ]);
+			// // TBD: causes trouble on all browsers on iPad
+			// // Theming.addStyle(`.placeholder:text-${color.name}`, [
+			// // 	`color: ${color.value};`
+			// // ]);
+			// // TBD: check .ring-offset
+			// // component classes:
+			// Theming.addStyle(`.btn-${color.name}`, [
+			// 	`--btn-color: ${color.value};`
+			// ]);
 		});
 	})
 

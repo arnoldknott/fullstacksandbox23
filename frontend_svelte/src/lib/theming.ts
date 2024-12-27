@@ -310,7 +310,7 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 
 // add missing material design tokens as utility classes for flyonUI
 // with both material design and flyonUI syntax:
-const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
+export const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
 	['primaryContainer', 'primary-container'],
 	['onPrimaryContainer', 'primary-container-content'],
 	['secondaryContainer', 'secondary-container'],
@@ -900,52 +900,53 @@ export class Theming {
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
 		this.applyMaterialTokens(colors, targetElement);
 		this.applyFlyonUITokens(colors, targetElement);
-		extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
-			(utilityClass, materialDesignToken) => {
-				// const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-				const materialTokenKey = materialDesignToken as keyof typeof colors;
-				const colorHex = hexFromArgb(colors[materialTokenKey])
-				// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
-				Theming.addStyle(`.bg-${utilityClass}`, [
-					`background-color: ${colorHex};`
-				]);
-				Theming.addStyle(`.text-${utilityClass}`, [
-					`color: ${colorHex};`
-				]);
+		// extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
+		// 	(utilityClass, materialDesignToken) => {
+		// 		// const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+		// 		const materialTokenKey = materialDesignToken as keyof typeof colors;
+		// 		const colorHex = hexFromArgb(colors[materialTokenKey])
+		// 		// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
+		// 		Theming.addStyle(`.bg-${utilityClass}`, [
+		// 			`background-color: ${colorHex};`
+		// 		]);
+		// 		Theming.addStyle(`.text-${utilityClass}`, [
+		// 			`color: ${colorHex};`
+		// 		]);
 
-				// // remove - takes so much computation - add when needed:
-				// // TBD: check .ring
-				// Theming.addStyle(`.fill-${utilityClass}`, [
-				// 	`fill: ${colorHex};`
-				// ]);
-				// Theming.addStyle(`.caret-${utilityClass}`, [
-				// 	`caret-color: ${colorHex};`
-				// ]);
-				// Theming.addStyle(`.stroke-${utilityClass}`, [
-				// 	`stroke: ${colorHex};`
-				// ]);
-				// Theming.addStyle(`.border-${utilityClass}`, [
-				// 	`border-color: ${colorHex};`
-				// ]);
-				// Theming.addStyle(`.accent-${utilityClass}`, [
-				// 	`accent-color: ${colorHex};`
-				// ]);
-				// // TBD: check shadow!
-				// // TBD: check possibilities for applying opacity to those colors!
-				// Theming.addStyle(`.accent-${utilityClass}`, [
-				// 	`accent-color: ${colorHex};`
-				// ]);
-				// Theming.addStyle(`.decoration-${utilityClass}`, [
-				// 	`text-decoration-color: ${colorHex};`
-				// ]);
+		// 		// TBD: consider applying variables instead of colors and don't reapply when the color is changed. only the variable changes!
+		// 		// // remove - takes so much computation - add when needed:
+		// 		// // TBD: check .ring
+		// 		// Theming.addStyle(`.fill-${utilityClass}`, [
+		// 		// 	`fill: ${colorHex};`
+		// 		// ]);
+		// 		// Theming.addStyle(`.caret-${utilityClass}`, [
+		// 		// 	`caret-color: ${colorHex};`
+		// 		// ]);
+		// 		// Theming.addStyle(`.stroke-${utilityClass}`, [
+		// 		// 	`stroke: ${colorHex};`
+		// 		// ]);
+		// 		// Theming.addStyle(`.border-${utilityClass}`, [
+		// 		// 	`border-color: ${colorHex};`
+		// 		// ]);
+		// 		// Theming.addStyle(`.accent-${utilityClass}`, [
+		// 		// 	`accent-color: ${colorHex};`
+		// 		// ]);
+		// 		// // TBD: check shadow!
+		// 		// // TBD: check possibilities for applying opacity to those colors!
+		// 		// Theming.addStyle(`.accent-${utilityClass}`, [
+		// 		// 	`accent-color: ${colorHex};`
+		// 		// ]);
+		// 		// Theming.addStyle(`.decoration-${utilityClass}`, [
+		// 		// 	`text-decoration-color: ${colorHex};`
+		// 		// ]);
 
-				// TBD: causes trouble on all browsers on iPad
-				// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
-				// 	`color: ${colorHex};`
-				// ]);
-				// TBD: check .ring-offset
-			}
-		);
+		// 		// TBD: causes trouble on all browsers on iPad
+		// 		// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
+		// 		// 	`color: ${colorHex};`
+		// 		// ]);
+		// 		// TBD: check .ring-offset
+		// 	}
+		// );
 		return {
 			configuration: colorConfig,
 			currentMode: mode,
