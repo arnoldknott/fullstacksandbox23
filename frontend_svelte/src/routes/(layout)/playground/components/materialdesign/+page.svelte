@@ -27,7 +27,7 @@
 	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 
 	let showSections = $state({
-		colors: false,
+		colors: true,
 		palettes: true
 	});
 	// let theme = $state(getContext('theme'));
@@ -48,10 +48,10 @@
 	let palettesArray = $derived(
 		palettes
 			? Object.entries(palettes).map(([key, value]) => {
-					const currentTone = value.keyColor.tone;
+					// const currentTone = value.keyColor.tone;
 					// toneValues[key] = value.keyColor.tone;
-					return { name: key, currentTone: currentTone, ...value };
-					// return { name: key, ...value };
+					// return { name: key, currentTone: currentTone, ...value };
+					return { name: key, ...value };
 				})
 			: []
 	);
@@ -88,7 +88,7 @@
 <!-- <JsonData data={palettesArray} /> -->
 <!-- <JsonData data={theme} /> -->
 
-<div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
+<div class="grid w-full grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="col-span-2">
 		<Title>Colors</Title>
 		<div class="flex items-center gap-1">
@@ -323,6 +323,20 @@
 					color="-md-sys-color-inverse-on-surface"
 				/>
 			</div>
+			<div class="mt-8 grid w-full grid-cols-3 gap-4">
+				<ColorTileMaterialUi
+					background="--md-sys-color-primary-palette-key-color"
+					color="--md-sys-color-on-background"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-secondary-palette-key-color"
+					color="--md-sys-color-background"
+				/>
+				<ColorTileMaterialUi
+					background="--md-sys-color-tertiary-palette-key-color"
+					color="--md-sys-color-inverse-on-surface"
+				/>
+			</div>
 			<div class="mt-8 grid w-full grid-cols-2 gap-4 md:grid-cols-4">
 				<p class="col-span-2 text-center text-xl md:col-span-4">
 					Avoid using those - the fixed colors don't switch from light to dark mode
@@ -455,16 +469,23 @@
 							/>
 							<p class="basis-1/12 text-right text-xl">
 								{Math.round(toneValues[palette.name] * 100) / 100} %
+								<md-filled-button
+									onclick={() => (toneValues[palette.name] = palette.keyColor.tone)}
+									role="button"
+									tabindex="0"
+									onkeydown={(event: KeyboardEvent) =>
+										event.key === 'Enter'
+											? (toneValues[palette.name] = palette.keyColor.tone)
+											: null}
+								>
+									Reset
+								</md-filled-button>
 							</p>
 						</div>
 					</div>
 					<JsonData data={palette} />
 				</div>
 			{/each}
-			<p>
-				Add all the palettes as a sweep of tone from all available palettes: primary, secondary,
-				with a slider controlling the tone
-			</p>
 		</div>
 	</div>
 

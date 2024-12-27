@@ -18,8 +18,8 @@
 	// $effect(() => console.log('sourceColor:', sourceColor, 'variant:', variant, 'contrast:', contrast));
 </script>
 
-<div class="grid grid-cols-3 gap-4">
-	<div class="w-48">
+<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+	<div class="w-36 md:w-48">
 		<label class="label label-text" for="colorPicker"
 			>Source color
 			<span class="label">
@@ -34,7 +34,7 @@
 			bind:value={values.sourceColor}
 		/>
 	</div>
-	<div class="relative w-48">
+	<div class="relative w-36 md:w-48">
 		<label class="label label-text" for="themeVariant">Variant</label>
 		<select
 			class="select select-floating max-w-sm"
@@ -56,7 +56,7 @@
             <option value="FRUIT_SALAD">Fruit Salad</option> -->
 		</select>
 	</div>
-	<div class="w-48">
+	<div class="w-36 md:w-48">
 		<label class="label label-text" for="contrast"
 			>Contrast: <span class="label">
 				<code class="label-text-alt">{values.contrast}</code>

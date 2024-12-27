@@ -4,6 +4,7 @@
 	// import { createRawSnippet, type Snippet } from 'svelte';
 	import type { IOverlay } from 'flyonui/flyonui';
 	import ColorTileFlyonUi from '$components/ColorTileFlyonUI.svelte';
+	// import { Theming } from '$lib/theming';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
 	// return {
@@ -49,6 +50,19 @@
 	const openModal = () => {
 		overlay?.open();
 	};
+
+	// This is getting the resolved CSS after FlyonUI, Tailwind CSS and so on processing - don't alter that."
+	// $effect(() => Theming.addBackgroundUtilityClass('primary-container', ['var(--md-sys-color-primary-container)']));
+	// $effect(() => Theming.addBackgroundUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
+	// $effect(() => Theming.addFillUtilityClass('inverse-primary', ['var(--md-sys-color-inverse-primary)']));
+	// $effect(() => {
+	// 	Theming.addStyle('.bg-primary-container', ['background-color: var(--md-sys-color-primary-container)'])
+	// 	Theming.addStyle('.bg-inverse-primary', ['background-color: var(--md-sys-color-inverse-primary)'])
+	// 	Theming.addStyle('.fill-inverse-primary', ['fill: var(--md-sys-color-inverse-primary)'])
+	// 	});// wouldn't it be the same as just using the scoped style further down?
+
+	const colorTileClasses = 'h-full w-full p-2';
+	const colorLabelClasses = 'text-left text-xs md:text-lg xl:text-xl';
 </script>
 
 <!-- // based on https://github.com/themeselection/flyonui/blob/bdbdaeec6b575b80283f5fda51abd3981a168fca/src/theming/index.js#L2
@@ -89,185 +103,1157 @@
 //     'error-content': 'var(--fallback-erc,oklch(var(--erc)/<alpha-value>))'
 // } -->
 
-<div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
+<div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div class="col-span-2">
 		<Title>Colors</Title>
-		<p class="col-span-2 text-center text-xl md:col-span-4 xl:col-span-8">
-			Semantic colors FlyonUI
-		</p>
-		<div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
-			<div>
-				<ColorTileFlyonUi background="primary" content="primary-content" />
-				<ColorTileFlyonUi background="primary-content" content="primary" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="secondary" content="secondary-content" />
-				<!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
-				<ColorTileFlyonUi background="secondary-content" content="secondary" />
-				<hr />
-				<div class="flex h-24 grow bg-secondary-content p-2">
-					<p class="text-left text-base text-secondary md:text-xl">secondary content direct</p>
+		<div class="accordion accordion-bordered divide-y" data-accordion-always-open="">
+			<!-- <div class="accordion-item accordion-item-active:scale-[1.05] accordion-item-active:mb-3 ease-in duration-300 delay-[1ms] active" id="default-colors"> -->
+			<div class="active accordion-item" id="default-colors">
+				<button
+					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
+					aria-controls="default-foreground-colors-collapse"
+					aria-expanded="true"
+				>
+					<span
+						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+					></span>
+					<p class="ml-10 text-base md:text-xl">Default foreground colors FlyonUI</p>
+				</button>
+				<div
+					id="default-foreground-colors-collapse"
+					class="accordion-content w-full overflow-hidden transition-[height] duration-300"
+					aria-labelledby="default-foreground-colors"
+					role="region"
+				>
+					<div class="m-5 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-primary {colorTileClasses}">
+									<p class="text-primary-content {colorLabelClasses}">primary</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-primary-content {colorTileClasses}">
+									<p class="text-primary {colorLabelClasses}">primary-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-secondary {colorTileClasses}">
+									<p class="text-secondary-content {colorLabelClasses}">secondary</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-secondary-content {colorTileClasses}">
+									<p class="text-secondary {colorLabelClasses}">secondary-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-accent {colorTileClasses}">
+									<p class="text-accent-content {colorLabelClasses}">accent</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-accent-content {colorTileClasses}">
+									<p class="text-accent {colorLabelClasses}">accent-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-neutral {colorTileClasses}">
+									<p class="text-neutral-content {colorLabelClasses}">neutral</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-neutral-content {colorTileClasses}">
+									<p class="text-neutral {colorLabelClasses}">neutral-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-info {colorTileClasses}">
+									<p class="text-info-content {colorLabelClasses}">info</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-info-content {colorTileClasses}">
+									<p class="text-info {colorLabelClasses}">info-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-success {colorTileClasses}">
+									<p class="text-success-content {colorLabelClasses}">success</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-success-content {colorTileClasses}">
+									<p class="text-success {colorLabelClasses}">success-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-warning {colorTileClasses}">
+									<p class="text-warning-content {colorLabelClasses}">warning</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-warning-content {colorTileClasses}">
+									<p class="text-warning {colorLabelClasses}">warning-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-error {colorTileClasses}">
+									<p class="text-error-content {colorLabelClasses}">error</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-error-content {colorTileClasses}">
+									<p class="text-error {colorLabelClasses}">error-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+					</div>
 				</div>
-				<hr />
-				<ColorTileFlyonUi background="onSecondary" content="secondary" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="accent" content="accent-content" />
-				<ColorTileFlyonUi background="accent-content" content="accent" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="neutral" content="neutral-content" />
-				<ColorTileFlyonUi background="neutral-content" content="neutral" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="info" content="info-content" />
-				<ColorTileFlyonUi background="info-content" content="info" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="success" content="success-content" />
-				<ColorTileFlyonUi background="success-content" content="success" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="warning" content="warning-content" />
-				<ColorTileFlyonUi background="warning-content" content="warning" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="error" content="error-content" />
-				<ColorTileFlyonUi background="error-content" content="error" />
-			</div>
-		</div>
-		<p class="mt-8 text-center text-2xl">Added to FlyonUI to match Material UI:</p>
-		<div class="grid grid-cols-4 gap-4 xl:grid-cols-8">
-			<div>
-				<ColorTileFlyonUi background="primary-container" content="primary-container-content" />
-				<ColorTileFlyonUi background="primary-container-content" content="primary-container" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="secondary-container" content="secondary-container-content" />
-				<ColorTileFlyonUi background="secondary-container-content" content="secondary-container" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="accent-container" content="accent-container-content" />
-				<ColorTileFlyonUi background="accent-container-content" content="accent-container" />
-			</div>
-			<div>
-				<ColorTileFlyonUi background="neutral-container" content="neutral-container-content" />
-				<ColorTileFlyonUi background="neutral-container-content" content="neutral-container" />
-			</div>
 
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-info">
-					<p class="text-center text-xl text-info-content">info</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-info-content">
-					<p class="text-center text-xl text-info">info-content</p>
+				<!-- <div>
+                            <ColorTileFlyonUi background="primary" content="primary-content" />
+                            <ColorTileFlyonUi background="primary-content" content="primary" />
+                        </div> -->
+				<!-- <div> -->
+				<!-- <ColorTileFlyonUi background="secondary" content="secondary-content" /> -->
+				<!-- <ColorTileFlyonUi background="secondary-content" content="secondary" /> -->
+				<!-- Programmatically applied classes don't show up, unless they are references elsewhere in the DOM due to Svelte's tree-shaking -->
+				<!-- <hr /> -->
+				<!-- <div class="flex h-24 grow bg-secondary-content p-2">
+                                <p class="text-left text-base text-secondary md:text-xl">secondary content direct</p>
+                            </div>
+                            <hr /> -->
+				<!-- <ColorTileFlyonUi background="onSecondary" content="secondary" /> -->
+				<!-- </div> -->
+				<!-- <div>
+                            <ColorTileFlyonUi background="accent" content="accent-content" />
+							<div class="bg-accent">TEST</div>
+                            <ColorTileFlyonUi background="accent-content" content="accent" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="neutral" content="neutral-content" />
+                            <ColorTileFlyonUi background="neutral-content" content="neutral" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="info" content="info-content" />
+                            <ColorTileFlyonUi background="info-content" content="info" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="success" content="success-content" />
+                            <ColorTileFlyonUi background="success-content" content="success" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="warning" content="warning-content" />
+                            <ColorTileFlyonUi background="warning-content" content="warning" />
+                        </div>
+                        <div>
+                            <ColorTileFlyonUi background="error" content="error-content" />
+                            <ColorTileFlyonUi background="error-content" content="error" />
+                        </div> -->
+				<!-- </div>
+                </div> -->
+			</div>
+			<div class="active accordion-item" id="default-background-colors">
+				<button
+					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
+					aria-controls="default-background-colors-collapse"
+					aria-expanded="true"
+				>
+					<span
+						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+					></span>
+					<p class="ml-10 text-base md:text-xl">Default background colors FlyonU</p>
+				</button>
+				<div
+					id="default-background-colors-collapse"
+					class="accordion-content w-full overflow-hidden transition-[height] duration-300"
+					aria-labelledby="default-background-colors"
+					role="region"
+				>
+					<div class="m-5 grid grid-cols-2 gap-4 md:grid-cols-5">
+						<ColorTileFlyonUi>
+							<div class="bg-base-100 {colorTileClasses}">
+								<p class={colorLabelClasses}>base-100</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-base-200 {colorTileClasses}">
+								<p class={colorLabelClasses}>base-200</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-base-300 {colorTileClasses}">
+								<p class={colorLabelClasses}>base-300</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-base-content {colorTileClasses}">
+								<p class="text-secondary-content {colorLabelClasses}">base-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-base-shadow {colorTileClasses}">
+								<p class="text-base-content {colorLabelClasses}">base-shadow</p>
+							</div>
+						</ColorTileFlyonUi>
+						<!-- <ColorTileFlyonUi background="base-100" />
+                        <ColorTileFlyonUi background="base-200" />
+                        <ColorTileFlyonUi background="base-300" />
+                        <ColorTileFlyonUi background="base-content" content="onSecondary" />
+                        <ColorTileFlyonUi background="base-shadow" /> -->
+						<!-- <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-100">
+                            <p class="text-center text-xl">base-100</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-200">
+                            <p class="text-center text-xl">base-200</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-300">
+                            <p class="text-center text-xl">base-300</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-content">
+                            <p class="text-center text-xl text-secondary-content">base-content</p>
+                        </div>
+                        <div class="skeleton flex h-12 w-36 items-center justify-center bg-base-shadow">
+                            <p class="text-center text-xl text-base-content">base-shadow</p>
+                        </div> -->
+					</div>
 				</div>
 			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-success">
-					<p class="text-center text-xl text-success-content">success</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-success-content">
-					<p class="text-center text-xl text-success">success-content</p>
+			<div class="active accordion-item" id="opacity-colors">
+				<button
+					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
+					aria-controls="opacity-colors-collapse"
+					aria-expanded="true"
+				>
+					<span
+						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+					></span>
+					<p class="ml-10 text-base md:text-xl">Applying tailwind /x argument for opacity</p>
+				</button>
+				<div
+					id="opacity-colors-collapse"
+					class="accordion-content w-full overflow-hidden transition-[height] duration-300"
+					aria-labelledby="opacity-colors"
+					role="region"
+				>
+					<p class="ml-5">Primary:</p>
+					<div class="m-5 grid grid-cols-4 gap-4 md:grid-cols-11">
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary">
+							<p class="text-center text-xl"></p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/10">
+							<p class="text-center text-xl">/10</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/20">
+							<p class="text-center text-xl">/20</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/30">
+							<p class="text-center text-xl">/30</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/40">
+							<p class="text-center text-xl">/40</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/50">
+							<p class="text-center text-xl">/50</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/60">
+							<p class="text-center text-xl">/60</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/70">
+							<p class="text-center text-xl">/70</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/80">
+							<p class="text-center text-xl">/80</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/90">
+							<p class="text-center text-xl">/90</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/100">
+							<p class="text-center text-xl">/100</p>
+						</div>
+					</div>
+					<br />
+					<p class="ml-5">Primary content:</p>
+					<div class="m-5 grid grid-cols-4 gap-4 md:grid-cols-11">
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
+							<p class="text-center text-xl"></p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/10">
+							<p class="text-center text-xl">/10</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/20">
+							<p class="text-center text-xl">/20</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/30">
+							<p class="text-center text-xl">/30</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/40">
+							<p class="text-center text-xl">/40</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/50">
+							<p class="text-center text-xl">/50</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/60">
+							<p class="text-center text-xl">/60</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/70">
+							<p class="text-center text-xl">/70</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/80">
+							<p class="text-center text-xl">/80</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/90">
+							<p class="text-center text-xl">/90</p>
+						</div>
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/100">
+							<p class="text-center text-xl">/100</p>
+						</div>
+					</div>
 				</div>
 			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-warning">
-					<p class="text-center text-xl text-warning-content">warning</p>
-				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-warning-content">
-					<p class="text-center text-xl text-warning">waring-content</p>
+			<div class="active accordion-item" id="extension-materialui-colors">
+				<button
+					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
+					aria-controls="extension-materialui-colors-collapse"
+					aria-expanded="true"
+				>
+					<span
+						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+					></span>
+					<p class="ml-10 text-base md:text-xl">
+						Extensions for foreground to FlyonUI with extra Material UI colors
+					</p>
+				</button>
+				<div
+					id="extension-materialui-colors-collapse"
+					class="accordion-content w-full overflow-hidden transition-[height] duration-300"
+					aria-labelledby="extension-materialui-colors"
+					role="region"
+				>
+					<div class="m-5 grid grid-cols-4 gap-4 xl:grid-cols-8">
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-primary-container {colorTileClasses}">
+									<p class="text-primary-container-content {colorLabelClasses}">
+										primary-container
+									</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-primary-container-content {colorTileClasses}">
+									<p class="text-primary-container {colorLabelClasses}">
+										primary-container-content
+									</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-secondary-container {colorTileClasses}">
+									<p class="text-secondary-container-content {colorLabelClasses}">
+										secondary-container
+									</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-secondary-container-content {colorTileClasses}">
+									<p class="text-secondary-container {colorLabelClasses}">
+										secondary-container-content
+									</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-accent-container {colorTileClasses}">
+									<p class="text-accent-container-content {colorLabelClasses}">accent-container</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-accent-container-content {colorTileClasses}">
+									<p class="text-accent-container {colorLabelClasses}">accent-container-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-neutral-container {colorTileClasses}">
+									<p class="text-neutral-container-content {colorLabelClasses}">
+										neutral-container
+									</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-neutral-container-content {colorTileClasses}">
+									<p class="text-neutral-container {colorLabelClasses}">
+										neutral-container-content
+									</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-info-container {colorTileClasses}">
+									<p class="text-info-container-content {colorLabelClasses}">info-container</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-info-container-content {colorTileClasses}">
+									<p class="text-info-container {colorLabelClasses}">info-container-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-success-container {colorTileClasses}">
+									<p class="text-success-container-content {colorLabelClasses}">
+										success-container
+									</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-success-container-content {colorTileClasses}">
+									<p class="text-success-container {colorLabelClasses}">
+										success-container-content
+									</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-warning-container {colorTileClasses}">
+									<p class="text-warning-container-content {colorLabelClasses}">
+										warning-container
+									</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-warning-container-content {colorTileClasses}">
+									<p class="text-warning-container {colorLabelClasses}">
+										warning-container-content
+									</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+						<div>
+							<ColorTileFlyonUi>
+								<div class="bg-error-container {colorTileClasses}">
+									<p class="text-error-container-content {colorLabelClasses}">error-container</p>
+								</div>
+							</ColorTileFlyonUi>
+							<ColorTileFlyonUi>
+								<div class="bg-error-container-content {colorTileClasses}">
+									<p class="text-error-container {colorLabelClasses}">error-container-content</p>
+								</div>
+							</ColorTileFlyonUi>
+						</div>
+					</div>
 				</div>
 			</div>
-			<div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-error">
-					<p class="text-center text-xl text-error-content">error</p>
+			<div class="active accordion-item" id="extension-materialui-colors">
+				<button
+					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
+					aria-controls="extension-background-materialui-colors-collapse"
+					aria-expanded="true"
+				>
+					<span
+						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+					></span>
+					<p class="ml-10 text-base md:text-xl">
+						Extensions for background to FlyonUI with extra Material UI colors
+					</p>
+				</button>
+				<div
+					id="extension-background-materialui-colors-collapse"
+					class="accordion-content w-full overflow-hidden transition-[height] duration-300"
+					aria-labelledby="extension-background-materialui-colors"
+					role="region"
+				>
+					<div class="m-5 grid grid-cols-4 gap-4 xl:grid-cols-8">
+						<ColorTileFlyonUi>
+							<div class="bg-base-50 {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">base-50</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-base-150 {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">base-150</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-outline {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">outline</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-outline-variant {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">outline-variant</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-inverse-surface {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">inverse-surface</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-inverse-surface-content {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">inverse-surface-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-inverse-primary {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">inverse-primary</p>
+							</div>
+						</ColorTileFlyonUi>
+					</div>
+					<div class="m-5 grid grid-cols-2 gap-4 md:grid-cols-3">
+						<ColorTileFlyonUi>
+							<div class="bg-scrim {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">scrim</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-background {colorTileClasses}">
+								<p class="text-background-content {colorLabelClasses}">background</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-background-content {colorTileClasses}">
+								<p class="text-background {colorLabelClasses}">background-content</p>
+							</div>
+						</ColorTileFlyonUi>
+					</div>
+					<div class="m-5 grid grid-cols-2 gap-4 md:grid-cols-5">
+						<ColorTileFlyonUi>
+							<div class="bg-neutral-palette-key-color {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">neutral-palette-key</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-neutral-variant-palette-key-color {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">
+									neutral-variant-palette-key
+								</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-primary-palette-key-color {colorTileClasses}">
+								<p class="text-background-content {colorLabelClasses}">primary-palette-key</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-secondary-palette-key-color {colorTileClasses}">
+								<p class="text-background {colorLabelClasses}">secondary-palette-key</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-accent-palette-key-color {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">accent-palette-key</p>
+							</div>
+						</ColorTileFlyonUi>
+
+						<p class="text-2xl">TBD: Others: background and more</p>
+						<div>surface container low - between b1 and b2</div>
+						<div>surface container high - between b2 and b3</div>
+						<div>on surface variant</div>
+						<div>outline</div>
+						<div>outline variant</div>
+						<div>inverse surface</div>
+						<div>inverse on surface</div>
+						<div>inverse primary</div>
+						<div>scrim</div>
+						<div>background - might not be necessary?</div>
+						<div>on background</div>
+						<div>
+							neutral palette key color - not the neutral from above, as the color input is coming
+							from flyonUI, but this one is material designs own
+						</div>
+						<div>neutral variant palette key color</div>
+					</div>
 				</div>
-				<div class="skeleton flex h-12 w-36 items-center justify-center bg-error-content">
-					<p class="text-center text-xl text-error">error-content</p>
+			</div>
+			<div class="active accordion-item" id="avoid-colors">
+				<button
+					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
+					aria-controls="avoid-colors-collapse"
+					aria-expanded="true"
+				>
+					<span
+						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+					></span>
+					<p class="ml-10 text-base md:text-xl">
+						Avoid using those extensions FlyonUI with extra Material UI colors
+					</p>
+				</button>
+				<div
+					id="avoid-colors-collapse"
+					class="accordion-content w-full overflow-hidden transition-[height] duration-300"
+					aria-labelledby="avoid-materialui-colors"
+					role="region"
+				>
+					<div class="m-5 grid grid-cols-4 gap-4">
+						<ColorTileFlyonUi>
+							<div class="bg-primary-fixed {colorTileClasses}">
+								<p class="text-primary-fixed-content {colorLabelClasses}">primary-fixed</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-primary-fixed-dim {colorTileClasses}">
+								<p class="text-primary-fixed-content {colorLabelClasses}">primary-fixed-dim</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-primary-fixed-content {colorTileClasses}">
+								<p class="text-primary-fixed {colorLabelClasses}">primary-fixed-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-primary-fixed-variant-content {colorTileClasses}">
+								<p class="text-primary-fixed {colorLabelClasses}">primary-fixed-variant-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-secondary-fixed {colorTileClasses}">
+								<p class="text-secondary-fixed-content {colorLabelClasses}">secondary-fixed</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-secondary-fixed-dim {colorTileClasses}">
+								<p class="text-secondary-fixed-content {colorLabelClasses}">secondary-fixed-dim</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-secondary-fixed-content {colorTileClasses}">
+								<p class="text-secondary-fixed {colorLabelClasses}">secondary-fixed-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-secondary-fixed-variant-content {colorTileClasses}">
+								<p class="text-secondary-fixed {colorLabelClasses}">
+									secondary-fixed-variant-content
+								</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-accent-fixed {colorTileClasses}">
+								<p class="text-accent-fixed-content {colorLabelClasses}">accent-fixed</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-accent-fixed-dim {colorTileClasses}">
+								<p class="text-accent-fixed-content {colorLabelClasses}">accent-fixed-dim</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-accent-fixed-content {colorTileClasses}">
+								<p class="text-accent-fixed {colorLabelClasses}">accent-fixed-content</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-accent-fixed-variant-content {colorTileClasses}">
+								<p class="text-accent-fixed {colorLabelClasses}">accent-fixed-variant-content</p>
+							</div>
+						</ColorTileFlyonUi>
+					</div>
+					<div class="m-5 grid grid-cols-5 gap-4 xl:grid-cols-8">
+						<ColorTileFlyonUi>
+							<div class="bg-surface-dim {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">surface-dim</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-surface {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">surface</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-surface-bright {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">surface-bright</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-surface-variant {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">surface-variant</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
+							<div class="bg-surface-tint {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">surface-tint</p>
+							</div>
+						</ColorTileFlyonUi>
+
+						<p class="text-2xl">
+							Avoid the following - fixed is not switching between light and dark
+						</p>
+						<div>primary fixed</div>
+						<div>primary variant dim</div>
+						<div>on primary variant</div>
+						<div>on primary fixed variant</div>
+						<div>secondary fixed</div>
+						<div>secondary fixed dim</div>
+						<div>on secondary fixed</div>
+						<div>on secondary fixed variant</div>
+						<div>tertiary fixed</div>
+						<div>tertiary fixed dim</div>
+						<div>on tertiary fixed</div>
+						<div>on tertiary fixed variant</div>
+						<div>surface dim</div>
+						<div>surface</div>
+						<div>surface bright</div>
+						<div>surface variant</div>
+						<div>surface tint</div>
+					</div>
+				</div>
+			</div>
+			<div class="active accordion-item" id="aliases-colors">
+				<button
+					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
+					aria-controls="aliases-colors-collapse"
+					aria-expanded="true"
+				>
+					<span
+						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+					></span>
+					<p class="ml-10 text-base md:text-xl">
+						Aliases: material design - flyonui: same color, different utility class names
+					</p>
+				</button>
+				<div
+					id="aliases-colors-collapse"
+					class="accordion-content w-full overflow-hidden transition-[height] duration-300"
+					aria-labelledby="aliases-colors"
+					role="region"
+				>
+					<div class="m-5 grid grid-cols-4 gap-4 xl:grid-cols-8"></div>
 				</div>
 			</div>
 		</div>
-		<p class="mt-8 text-center text-2xl">Background colors FlyonUI:</p>
-		<div class="grid grid-cols-5 gap-4">
-			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-100">
-				<p class="text-center text-xl">base-100</p>
-			</div>
-			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-200">
-				<p class="text-center text-xl">base-200</p>
-			</div>
-			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-300">
-				<p class="text-center text-xl">base-300</p>
-			</div>
-			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-content">
-				<p class="text-center text-xl text-secondary-content">base-content</p>
-			</div>
-			<div class="skeleton flex h-12 w-36 items-center justify-center bg-base-shadow">
-				<p class="text-center text-xl text-base-content">base-shadow</p>
-			</div>
-		</div>
-		<p class="mt-8 text-center text-2xl">Background base colors with /x argument:</p>
-		<div class="grid grid-cols-11 gap-4">
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
-				<p class="text-center text-xl"></p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/10">
-				<p class="text-center text-xl">/10</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/20">
-				<p class="text-center text-xl">/20</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/30">
-				<p class="text-center text-xl">/30</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/40">
-				<p class="text-center text-xl">/40</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/50">
-				<p class="text-center text-xl">/50</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/60">
-				<p class="text-center text-xl">/60</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/70">
-				<p class="text-center text-xl">/70</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/80">
-				<p class="text-center text-xl">/80</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/90">
-				<p class="text-center text-xl">/90</p>
-			</div>
-			<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/100">
-				<p class="text-center text-xl">/100</p>
-			</div>
-		</div>
+	</div>
+	<div class="col-span-2">
+		<p class="text-xl italic">
+			Note, for programmatically applied classes, add the utility class either programmatically via <code
+				>Theming.addStyle( styleName, styles)</code
+			>
+			or as (scoped) <code>&ltstyle&gt</code> tag.
+		</p>
 	</div>
 
 	<div class="col-span-2">
 		<Title>Utility classes</Title>
-		<div>bg-"COLOR_NAME"</div>
-		<div>to-"COLOR-NAME"</div>
-		<div>via-"COLOR-NAME"</div>
-		<div>from-"COLOR-NAME"</div>
-		<div>text-"COLOR-NAME"</div>
-		<div>ring-"COLOR-NAME"</div>
-		<div>fill-"COLOR-NAME"</div>
-		<div>caret-"COLOR-NAME"</div>
-		<div>stroke-"COLOR-NAME"</div>
-		<div>border-"COLOR-NAME"</div>
-		<div>divide-"COLOR-NAME"</div>
-		<div>accent-"COLOR-NAME"</div>
-		<div>shadow-"COLOR-NAME"</div>
-		<div>outline-"COLOR-NAME"</div>
-		<div>decoration-"COLOR-NAME"</div>
-		<div>placeholder-"COLOR-NAME"</div>
-		<div>ring-offset-"COLOR-NAME"</div>
+		<div>
+			Mainly playing with:
+			<ul>
+				<li>primary (native in both FlyonUI and Material Design),</li>
+				<li>inverse primary (native only in Material Design),</li>
+				<li>surface tint (avoid using),</li>
+				<li>error (also native in both - showing it works)</li>
+				<li>error/50 (checking transparency from Tailwind)</li>
+			</ul>
+		</div>
+		<div class="mt-5 grid grid-cols-5 gap-4">
+			<div class="col-span-5 ml-5 text-2xl font-semibold">bg-"COLOR-NAME"</div>
+			<div class="h-24 bg-primary">bg-primary</div>
+			<div class="bg-inverse-primary h-24">bg-inverse-primary</div>
+			<div class="bg-surface-tint h-24">bg-surface-tint</div>
+			<div class="h-24 bg-error">bg-error</div>
+			<div class="h-24 bg-error/50">bg-error/50</div>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">
+				from-"COLOR-NAME" via-"COLOR-NAME" to-"COLOR-NAME"
+			</div>
+			<div class="h-24 bg-gradient-to-r from-primary via-secondary to-accent">
+				from-primary via-scondary to-accent
+			</div>
+			<div class="h-24 bg-gradient-to-r from-success via-warning to-error">
+				from-success via-warning to-error
+			</div>
+			<div
+				class="h-24 w-fit bg-gradient-to-r from-success via-warning to-error bg-clip-text text-xl font-black text-transparent"
+			>
+				from-success via-warning to-error applied to text
+			</div>
+			<div class="via-inverse-primary to-surface-tint h-24 bg-gradient-to-r from-primary">
+				from-primary via-inverse-primary to-surface-tint
+			</div>
+			<div class="h-24 bg-gradient-to-r from-primary/50 via-secondary/50 to-accent/50">
+				from-primary/50 via-scondary/50 to-accent/50
+			</div>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">text-"COLOR-NAME"</div>
+			<div class="h-24 text-xl font-bold text-primary md:text-3xl">text-primary</div>
+			<div class="text-inverse-primary h-24 text-xl font-bold md:text-3xl">
+				text-inverse-primary
+			</div>
+			<div class="text-surface-tint h-24 text-xl font-bold md:text-3xl">text-surface-tint</div>
+			<div class="h-24 text-xl font-bold text-error md:text-3xl">text-error</div>
+			<div class="h-24 text-xl font-bold text-error/50 md:text-3xl">text-error/50</div>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">ring-"COLOR-NAME"</div>
+			<div>
+				<input
+					type="radio"
+					name="radioPrimary"
+					class="radio radio-primary"
+					id="radioPrimary"
+					checked
+				/>Radio primary
+			</div>
+			<div>
+				<input
+					type="radio"
+					name="radioInversePrimary"
+					class="radio-inverse-primary radio"
+					id="radioInversePrimary"
+					checked
+				/>Radio inverse primary
+			</div>
+			<div>
+				<input
+					type="radio"
+					name="radioSurfaceTint"
+					class="radio-surface-tint radio"
+					id="radioSurfaceTint"
+					checked
+				/>Radio surface tint
+			</div>
+			<div>
+				<input
+					type="radio"
+					name="radioError"
+					class="radio radio-error"
+					id="radioError"
+					checked
+				/>Radio error
+			</div>
+			<div>
+				<input
+					type="radio"
+					name="radioError50"
+					class="radio-error/50 radio"
+					id="radioError50"
+					checked
+				/>Radio error/50
+			</div>
+			<button class="button ring ring-primary">ring-primary</button>
+			<button class="button ring-inverse-primary ring">ring-inverse-primary</button>
+			<button class="button ring-surface-tint ring">ring-surface-tint</button>
+			<button class="button ring ring-error">ring-error</button>
+			<button class="button ring ring-error/50">ring-error/50</button>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">fill-"COLOR-NAME"</div>
+			<svg class="h-14 fill-primary" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+				><path
+					fill-rule="evenodd"
+					clip-rule="evenodd"
+					d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"
+				></path></svg
+			>
+			<svg class="fill-inverse-primary h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+				><path
+					fill-rule="evenodd"
+					clip-rule="evenodd"
+					d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"
+				></path></svg
+			>
+			<svg class="fill-surface-tint h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+				><path
+					fill-rule="evenodd"
+					clip-rule="evenodd"
+					d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"
+				></path></svg
+			>
+			<svg class="h-14 fill-error" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+				><path
+					fill-rule="evenodd"
+					clip-rule="evenodd"
+					d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"
+				></path></svg
+			>
+			<svg class="h-14 fill-error/50" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+				><path
+					fill-rule="evenodd"
+					clip-rule="evenodd"
+					d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"
+				></path></svg
+			>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">caret-"COLOR-NAME"</div>
+			<textarea class="h-24 caret-primary">caret-primary: cursor color!</textarea>
+			<textarea class="caret-inverse-primary h-24">caret-invserse-primary: cursor color!</textarea>
+			<textarea class="caret-surface-tint h-24">caret-surface-tint: cursor color!</textarea>
+			<textarea class="h-24 caret-error">caret-error: cursor color!</textarea>
+			<textarea class="h-24 caret-error/50">caret-error/50: cursor color!</textarea>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">stroke-"COLOR-NAME"</div>
+			<svg
+				class="h-10 stroke-primary"
+				viewBox="0 0 48 40"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M1 13C1 10.2386 3.23858 8 6 8H13.4914C14.3844 8 15.1691 7.40805 15.4144 6.54944L16.5856 2.45056C16.8309 1.59196 17.6156 1 18.5086 1H29.4914C30.3844 1 31.1691 1.59195 31.4144 2.45056L32.5856 6.54944C32.8309 7.40804 33.6156 8 34.5086 8H42C44.7614 8 47 10.2386 47 13V34C47 36.7614 44.7614 39 42 39H6C3.23858 39 1 36.7614 1 34V13Z"
+					stroke-width="2"
+				></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
+			</svg>
+			<svg
+				class="stroke-inverse-primary h-10"
+				viewBox="0 0 48 40"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M1 13C1 10.2386 3.23858 8 6 8H13.4914C14.3844 8 15.1691 7.40805 15.4144 6.54944L16.5856 2.45056C16.8309 1.59196 17.6156 1 18.5086 1H29.4914C30.3844 1 31.1691 1.59195 31.4144 2.45056L32.5856 6.54944C32.8309 7.40804 33.6156 8 34.5086 8H42C44.7614 8 47 10.2386 47 13V34C47 36.7614 44.7614 39 42 39H6C3.23858 39 1 36.7614 1 34V13Z"
+					stroke-width="2"
+				></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
+			</svg>
+			<svg
+				class="stroke-surface-tint h-10"
+				viewBox="0 0 48 40"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M1 13C1 10.2386 3.23858 8 6 8H13.4914C14.3844 8 15.1691 7.40805 15.4144 6.54944L16.5856 2.45056C16.8309 1.59196 17.6156 1 18.5086 1H29.4914C30.3844 1 31.1691 1.59195 31.4144 2.45056L32.5856 6.54944C32.8309 7.40804 33.6156 8 34.5086 8H42C44.7614 8 47 10.2386 47 13V34C47 36.7614 44.7614 39 42 39H6C3.23858 39 1 36.7614 1 34V13Z"
+					stroke-width="2"
+				></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
+			</svg>
+			<svg
+				class="h-10 stroke-error"
+				viewBox="0 0 48 40"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M1 13C1 10.2386 3.23858 8 6 8H13.4914C14.3844 8 15.1691 7.40805 15.4144 6.54944L16.5856 2.45056C16.8309 1.59196 17.6156 1 18.5086 1H29.4914C30.3844 1 31.1691 1.59195 31.4144 2.45056L32.5856 6.54944C32.8309 7.40804 33.6156 8 34.5086 8H42C44.7614 8 47 10.2386 47 13V34C47 36.7614 44.7614 39 42 39H6C3.23858 39 1 36.7614 1 34V13Z"
+					stroke-width="2"
+				></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
+			</svg>
+			<svg
+				class="h-10 stroke-error/50"
+				viewBox="0 0 48 40"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M1 13C1 10.2386 3.23858 8 6 8H13.4914C14.3844 8 15.1691 7.40805 15.4144 6.54944L16.5856 2.45056C16.8309 1.59196 17.6156 1 18.5086 1H29.4914C30.3844 1 31.1691 1.59195 31.4144 2.45056L32.5856 6.54944C32.8309 7.40804 33.6156 8 34.5086 8H42C44.7614 8 47 10.2386 47 13V34C47 36.7614 44.7614 39 42 39H6C3.23858 39 1 36.7614 1 34V13Z"
+					stroke-width="2"
+				></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
+			</svg>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">border-"COLOR-NAME"</div>
+			<div class="h-24 border-4 border-primary">border-primary</div>
+			<div class="border-inverse-primary h-24 border-4">border-inverse-primary</div>
+			<div class="border-surface-tint h-24 border-4">border-surface-tint</div>
+			<div class="h-24 border-4 border-error">border-error</div>
+			<div class="h-24 border-4 border-error/50">border-error/50</div>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">divide-"COLOR-NAME"</div>
+			<div class="h-24 divide-y divide-primary">
+				<div>divide</div>
+				<div>between</div>
+				<div>elements</div>
+			</div>
+			<div class="divide-inverse-primary h-24 divide-y">
+				<div>divide</div>
+				<div>between</div>
+				<div>elements</div>
+			</div>
+			<div class="divide-surface-tint h-24 divide-y">
+				<div>divide</div>
+				<div>between</div>
+				<div>elements</div>
+			</div>
+			<div class="h-24 divide-y divide-error">
+				<div>divide</div>
+				<div>between</div>
+				<div>elements</div>
+			</div>
+			<div class="h-24 divide-y divide-error/50">
+				<div>divide</div>
+				<div>between</div>
+				<div>elements</div>
+			</div>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">accent-"COLOR-NAME"</div>
+			<label>
+				<input type="checkbox" class="accent-primary" checked /> primary
+			</label>
+			<label>
+				<input type="checkbox" class="accent-inverse-primary" checked /> inverse primary
+			</label>
+			<label>
+				<input type="checkbox" class="accent-surface-tint" checked /> surface tint
+			</label>
+			<label>
+				<input type="checkbox" class="accent-error" checked /> error
+			</label>
+			<label>
+				<input type="checkbox" class="accent-error/50" checked /> error/50
+			</label>
+			<label>
+				<input type="checkbox" class="checkbox checkbox-primary" checked /> primary
+			</label>
+			<label>
+				<input type="checkbox" class="checkbox-inverse-primary checkbox" checked /> inverse primary
+			</label>
+			<label>
+				<input type="checkbox" class="checkbox-surface-tint checkbox" checked /> surface tint
+			</label>
+			<label>
+				<input type="checkbox" class="checkbox checkbox-error" checked /> error
+			</label>
+			<label>
+				<input type="checkbox" class="checkbox-error/50 checkbox" checked /> error/50
+			</label>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">shadow-"COLOR-NAME"</div>
+			<button class="btn btn-primary shadow-lg shadow-primary">Shadow primary</button>
+			<button class="btn-inverse-primary shadow-inverse-primary btn shadow-lg"
+				>Shadow inverse primary</button
+			>
+			<button class="btn-surface-tint shadow-surface-tint btn shadow-lg">Shadow surface tint</button
+			>
+			<button class="btn btn-error shadow-lg shadow-error">Shadow error</button>
+			<button class="btn-error/50 btn shadow-lg shadow-error/50">Shadow error/50</button>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">outline-"COLOR-NAME"</div>
+			<button class="btn btn-primary btn-outline">primary</button>
+			<button class="btn-inverse-primary btn btn-outline">inverse primary</button>
+			<button class="btn-surface-tint btn btn-outline">surface tint</button>
+			<button class="btn btn-error btn-outline">error</button>
+			<button class="btn-error/50 btn btn-outline">error/50</button>
+			<div class="items-center gap-1">
+				<input type="checkbox" class="switch switch-primary switch-outline" id="switchPrimary" />
+				<label class="label label-text text-base" for="switchPrimary"> Default </label>
+			</div>
+			<div class="items-center gap-1">
+				<input
+					type="checkbox"
+					class="switch-inverse-primary switch switch-outline"
+					id="switchInversePrimary"
+				/>
+				<label class="label label-text text-base" for="switchInversePrimary"> Inverse </label>
+			</div>
+			<div class="items-center gap-1">
+				<input
+					type="checkbox"
+					class="switch-surface-tint switch switch-outline"
+					id="switchSurfaceTint"
+				/>
+				<label class="label label-text text-base" for="switchSurfaceTint"> Surface tint </label>
+			</div>
+			<div class="items-center gap-1">
+				<input type="checkbox" class="switch switch-error switch-outline" id="switchError" />
+				<label class="label label-text text-base" for="switchError"> Error </label>
+			</div>
+			<div class="items-center gap-1">
+				<input type="checkbox" class="switch-error/50 switch switch-outline" id="switchError50" />
+				<label class="label label-text text-base" for="switchError50"> Error/50 </label>
+			</div>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">decoration-"COLOR-NAME"</div>
+			<div class="h-24 underline decoration-primary">decoration-primary</div>
+			<div class="decoration-inverse-primary h-24 underline">decoration-inverse-primary</div>
+			<div class="decoration-surface-tint h-24 underline">decoration-surface-tint</div>
+			<div class="h-24 underline decoration-error">decoration-error</div>
+			<div class="h-24 underline decoration-error/50">decoration-error/50</div>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">placeholder-"COLOR-NAME"</div>
+			<label class="relative block">
+				<input
+					class="input placeholder:text-primary"
+					placeholder="Placeholder primary"
+					type="text"
+					name="search"
+				/>
+			</label>
+			<label class="relative block">
+				<input
+					class="placeholder:text-inverse-primary input"
+					placeholder="Placeholder inverse primary"
+					type="text"
+					name="search"
+				/>
+			</label>
+			<label class="relative block">
+				<input
+					class="placeholder:text-surface-tint input"
+					placeholder="Placeholder surface tint"
+					type="text"
+					name="search"
+				/>
+			</label>
+			<label class="relative block">
+				<input
+					class="input placeholder:text-error"
+					placeholder="Placeholder error"
+					type="text"
+					name="search"
+				/>
+			</label>
+			<label class="relative block">
+				<input
+					class="input placeholder:text-error/50"
+					placeholder="Placeholder error/50"
+					type="text"
+					name="search"
+				/>
+			</label>
+
+			<div class="col-span-5 ml-5 text-2xl font-semibold">ring-offset-"COLOR-NAME"</div>
+			<span
+				class="badge col-span-5 ring-2 ring-red-300 ring-offset-4 ring-offset-primary md:col-span-1"
+				>primary</span
+			>
+			<span
+				class="ring-offset-inverse-primary badge col-span-5 ring-2 ring-red-300 ring-offset-4 md:col-span-1"
+				>inverse primary</span
+			>
+			<span
+				class="ring-offset-surface-tint badge col-span-5 ring-2 ring-red-300 ring-offset-4 md:col-span-1"
+				>surface tint</span
+			>
+			<span
+				class="badge col-span-5 ring-2 ring-blue-300 ring-offset-4 ring-offset-error md:col-span-1"
+				>error</span
+			>
+			<span
+				class="badge col-span-5 ring-2 ring-blue-300 ring-offset-4 ring-offset-error/50 md:col-span-1"
+				>error/50</span
+			>
+		</div>
 	</div>
 
 	<div>
-		<Title>Fonts</Title>
+		<Title>Components with utility classes</Title>
+		<p>Badges:</p>
+		<span class="badge badge-primary">Badge primary</span>
+		<span class="badge badge-secondary">Badge secondary</span>
+		<span class="badge-tertiary badge">Badge tertiary (Material notation)</span>
+		<span class="badge badge-accent">Badge accent (same in FlyonUI notation)</span>
+		<br />
+	</div>
+
+	<div>
+		<Title>Typography</Title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<p>Fonts:</p>
 		<p class="font-sans">
 			Some text in <em>sans</em> font family, should be using <b>Robot</b> Google Fonts extending
 			default theme in <code>tailwindcss.config.js</code>.
@@ -353,7 +1339,7 @@
 
 	<div>
 		<Title>Theme Picker</Title>
-		<div class="grid grid-cols-3 gap-4">
+		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div class="w-48">
 				<label class="label label-text" for="colorPicker"
 					>Source color
@@ -362,7 +1348,7 @@
 					</span>
 				</label>
 				<input
-					class="input"
+					class="w-full"
 					type="color"
 					id="colorPicker"
 					name="color-picker"
@@ -663,3 +1649,21 @@
         </div>
     </div> -->
 </div>
+
+<!-- <style>
+
+	.bg-primary-container {
+		background-color: var(--md-sys-color-primary-container)
+	}
+	
+	
+	.bg-inverse-primary {
+		background-color: var(--md-sys-color-inverse-primary)
+	}
+	
+	
+	.fill-inverse-primary {
+		fill: var(--md-sys-color-inverse-primary)
+	}
+	
+	</style> -->
