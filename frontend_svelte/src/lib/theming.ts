@@ -935,9 +935,10 @@ export class Theming {
 				Theming.addStyle(`.decoration-${utilityClass}`, [
 					`text-decoration-color: ${hexFromArgb(colors[materialTokenKey])};`
 				]);
-				Theming.addStyle(`.placeholder:text-${utilityClass}`, [
-					`color: ${hexFromArgb(colors[materialTokenKey])};`
-				]);
+				// TBD: causes trouble on all browsers on iPad
+				// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
+				// 	`color: ${hexFromArgb(colors[materialTokenKey])};`
+				// ]);
 				// TBD: check .ring-offset
 			}
 		);
@@ -999,7 +1000,7 @@ export class Theming {
 		styles.forEach((style) => {
 			rules += `    ${style}\n`;
 		});
-		rules += '}\n';
+		rules += '}';
 
 		// check if pseudoelement :root already exists in styleElement
 		const rootStartIndex = styleElement.textContent?.indexOf(':root {') ?? -1;
