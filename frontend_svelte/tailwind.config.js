@@ -5,6 +5,15 @@ import flyonui from 'flyonui';
 import flyonuiPlugin from 'flyonui/plugin';
 import { addDynamicIconSelectors } from '@iconify/tailwind';
 
+// const convertHexToRgb = (hex) => {
+// 	const hexValue = hex.replace('#', '');
+// 	const r = parseInt(hexValue.substring(0, 2), 16);
+// 	const g = parseInt(hexValue.substring(2, 4), 16);
+// 	const b = parseInt(hexValue.substring(4, 6), 16);
+// 	console.log(`Converted hex ${hex} to rgb ${r} ${g} ${b}`);
+// 	return `${r} ${g} ${b}`;
+// }
+
 module.exports = {
 	content: ['./src/**/*.{html,js,svelte,ts}', './node_modules/flyonui/dist/js/*.js'],
 	theme: {
@@ -22,8 +31,12 @@ module.exports = {
 				// this works:
 				// "primary-container": "#FF0000",
 				// this also works - great!
-				"primary-container": "var(--md-sys-color-primary-container)",
+				// "primary-container": "var(--md-sys-color-primary-container)",
+				// TBD: opacity does not work yet - format needs to be 255 146 17 - no parentheses!
 				// "primary-container": "var(var(--md-sys-color-primary-container)/var(--tw-bg-opacity))",
+				// "primary-container": "var(--md-sys-color-primary-container)",
+				// "primary-container": "var(var(--md-hex-color-primary-container)/<alpha-value>)",
+				"primary-container": "rgb(var(--md-rgb-color-primary-container))",
 				"primary-container-content": 'var(--md-sys-color-on-primary-container)',
 			}
 		}

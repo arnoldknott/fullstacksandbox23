@@ -247,8 +247,8 @@
 				>
 					<div class="m-5 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
 						<div>
-							<ColorTileFlyonUi>
-								<div class="bg-primary {colorTileClasses}">
+							<ColorTileFlyonUi classes="bg-primary">
+								<div class=" {colorTileClasses}">
 									<p class="text-primary-content {colorLabelClasses}">primary</p>
 								</div>
 							</ColorTileFlyonUi>

@@ -974,6 +974,15 @@ export class Theming {
 		return styleElement;
 	}
 
+	static rgbFromHex = (hex:string) => {
+		const hexValue = hex.replace('#', '');
+		const r = parseInt(hexValue.substring(0, 2), 16);
+		const g = parseInt(hexValue.substring(2, 4), 16);
+		const b = parseInt(hexValue.substring(4, 6), 16);
+		console.log(`Converted hex ${hex} to rgb ${r} ${g} ${b}`);
+		return `${r} ${g} ${b}`;
+	}
+
 	private applyMaterialTokens(
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
 		targetElement: HTMLElement
@@ -981,9 +990,13 @@ export class Theming {
 		if (targetElement === document.documentElement) {
 			const styleElementId = 'md_sys_dynamic_color_tokens';
 			let styles = '';
+			console.log("=== lib - theming - applyMaterialTokens ===");
 			appColors.forEach((token) => {
 				const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 				styles += `--md-sys-color-${tokenKebabCase}: ${hexFromArgb(colors[token])};\n`;
+				styles += `--md-rgb-color-${tokenKebabCase}: ${Theming.rgbFromHex(hexFromArgb(colors[token]))};\n`;
+				// console.log(tokenKebabCase)
+				// console.log(Theming.rgbFromHex(hexFromArgb(colors[token])))
 			});
 			const styleElement = Theming.createStyleElementInDocument(styleElementId);
 			styleElement.textContent = `:root {\n${styles}}`;
@@ -1043,6 +1056,7 @@ export class Theming {
 	//     Theming.addStyle(`fill-${name}`, [`fill: ${fill}`]);
 	// }
 
+	// TBD: might not be necessary any more, when refactored into Tailwind variables!
 	private applyFlyonUITokens(
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
 		targetElement: HTMLElement
