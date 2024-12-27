@@ -18,7 +18,7 @@
 	// $effect(() => console.log('sourceColor:', sourceColor, 'variant:', variant, 'contrast:', contrast));
 </script>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 	<div class="w-36 md:w-48">
 		<label class="label label-text" for="colorPicker"
 			>Source color

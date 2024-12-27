@@ -88,7 +88,7 @@
 <!-- <JsonData data={palettesArray} /> -->
 <!-- <JsonData data={theme} /> -->
 
-<div class="w-full grid grid-cols-1 gap-4 xl:grid-cols-2">
+<div class="grid w-full grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="col-span-2">
 		<Title>Colors</Title>
 		<div class="flex items-center gap-1">
@@ -470,11 +470,14 @@
 							<p class="basis-1/12 text-right text-xl">
 								{Math.round(toneValues[palette.name] * 100) / 100} %
 								<md-filled-button
-									onclick={() => toneValues[palette.name] = palette.keyColor.tone}
+									onclick={() => (toneValues[palette.name] = palette.keyColor.tone)}
 									role="button"
 									tabindex="0"
-									onkeydown={(event: KeyboardEvent) => event.key === 'Enter' ? toneValues[palette.name] = palette.keyColor.tone : null}
-									>
+									onkeydown={(event: KeyboardEvent) =>
+										event.key === 'Enter'
+											? (toneValues[palette.name] = palette.keyColor.tone)
+											: null}
+								>
 									Reset
 								</md-filled-button>
 							</p>

@@ -284,83 +284,82 @@ type AdditionalFlyonUIScheme = {
 // TBD: Map matched colors to both class names, e.g. onPrimary primary-container becomes a class definition of ".on-primary, .primary-container"
 // Material design tokens become FlyonUI variables (both technically CSS variables)
 const flyonUIVariablesMaterialDesignMapping = new Map([
-    ['primary', 'p'],
-    ['onPrimary', 'pc'],
-    ['secondary', 's'],
-    ['onSecondary', 'sc'],
-    ['tertiary', 'a'], // accent
-    ['onTertiary', 'ac'],
-    ['neutral', 'n'],
-    ['onNeutral', 'nc'],
-    ['surfaceContainerLowest', 'b1'],
-    // think about implementing the other 2 surfaceContainer colors
-    ['surfaceContainer', 'b2'],
-    ['surfaceContainerHighest', 'b3'],
-    ['onSurface', 'bc'],
-    ['shadow', 'bs'],
-    ['info', 'in'],
-    ['onInfo', 'inc'],
-    ['success', 'su'],
-    ['onSuccess', 'suc'],
-    ['warning', 'wa'],
-    ['onWarning', 'wac'],
-    ['error', 'er'],
-    ['onError', 'erc']
+	['primary', 'p'],
+	['onPrimary', 'pc'],
+	['secondary', 's'],
+	['onSecondary', 'sc'],
+	['tertiary', 'a'], // accent
+	['onTertiary', 'ac'],
+	['neutral', 'n'],
+	['onNeutral', 'nc'],
+	['surfaceContainerLowest', 'b1'],
+	// think about implementing the other 2 surfaceContainer colors
+	['surfaceContainer', 'b2'],
+	['surfaceContainerHighest', 'b3'],
+	['onSurface', 'bc'],
+	['shadow', 'bs'],
+	['info', 'in'],
+	['onInfo', 'inc'],
+	['success', 'su'],
+	['onSuccess', 'suc'],
+	['warning', 'wa'],
+	['onWarning', 'wac'],
+	['error', 'er'],
+	['onError', 'erc']
 ]);
 
 // add missing material design tokens as utility classes for flyonUI
 // with both material design and flyonUI syntax:
 const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
-	['primaryContainer', "primary-container"],
-	['onPrimaryContainer', "primary-container-content"],
-	['secondaryContainer', "secondary-container"],
-	['onSecondaryContainer', "secondary-container-content"],
-	['tertiaryContainer', "accent-container"],
-	['onTertiaryContainer', "accent-container-content"],
-	['neutralContainer', "neutral-container"],
-	['onNeutralContainer', "neutral-container-content"],
-	['errorContainer', "error-container"],
-	['onErrorContainer', "error-container-content"],
-	['warningContainer', "warning-container"],
-	['onWarningContainer', "warning-container-content"],
-	['successContainer', "success-container"],
-	['onSuccessContainer', "success-container-content"],
-	['infoContainer', "info-container"],
-	['onInfoContainer', "info-container-content"],
-	['surfaceContainerLow', "base-50"],
-	['surfaceContainerHigh', "base-150"],
-	['outline', "outline"],
-	['outlineVariant', "outline-variant"],
-	['inverseSurface', "inverse-surface"],
-	['inverseOnSurface', "inverse-surface-content"],
-	['inversePrimary', "inverse-primary"],
-	['scrim', "scrim"],
-	['background', "background"],
-	['onBackground', "background-content"],
-	['neutralPaletteKeyColor', "neutral-palette-key-color"],
-	['neutralVariantPaletteKeyColor', "neutral-variant-palette-key-color"],
-	['primaryPaletteKeyColor', "primary-palette-key-color"],
-	['secondaryPaletteKeyColor', "secondary-palette-key-color"],
-	['tertiaryPaletteKeyColor', "accent-palette-key-color"],
-	['primaryFixed', "primary-fixed"],
-	['primaryFixedDim', "primary-fixed-dim"],
-	['onPrimaryFixed', "primary-fixed-content"],
-	['onPrimaryFixedVariant', "primary-fixed-variant-content"],
-	['secondaryFixed', "secondary-fixed"],
-	['secondaryFixedDim', "secondary-fixed-dim"],
-	['onSecondaryFixed', "secondary-fixed-content"],
-	['onSecondaryFixedVariant', "secondary-fixed-variant-content"],
-	['tertiaryFixed', "accent-fixed"],
-	['tertiaryFixedDim', "accent-fixed-dim"],
-	['onTertiaryFixed', "accent-fixed-content"],
-	['onTertiaryFixedVariant', "accent-fixed-variant-content"],
-	['surfaceDim', "surface-dim"],
-	['surface', "surface"],
-	['surfaceBright', "surface-bright"],
-	['surfaceVariant', "surface-variant"],
-	['surfaceTint', "surface-tint"],
-
-])
+	['primaryContainer', 'primary-container'],
+	['onPrimaryContainer', 'primary-container-content'],
+	['secondaryContainer', 'secondary-container'],
+	['onSecondaryContainer', 'secondary-container-content'],
+	['tertiaryContainer', 'accent-container'],
+	['onTertiaryContainer', 'accent-container-content'],
+	['neutralContainer', 'neutral-container'],
+	['onNeutralContainer', 'neutral-container-content'],
+	['errorContainer', 'error-container'],
+	['onErrorContainer', 'error-container-content'],
+	['warningContainer', 'warning-container'],
+	['onWarningContainer', 'warning-container-content'],
+	['successContainer', 'success-container'],
+	['onSuccessContainer', 'success-container-content'],
+	['infoContainer', 'info-container'],
+	['onInfoContainer', 'info-container-content'],
+	['surfaceContainerLow', 'base-50'],
+	['surfaceContainerHigh', 'base-150'],
+	['outline', 'outline'],
+	['outlineVariant', 'outline-variant'],
+	['inverseSurface', 'inverse-surface'],
+	['inverseOnSurface', 'inverse-surface-content'],
+	['inversePrimary', 'inverse-primary'],
+	['scrim', 'scrim'],
+	['background', 'background'],
+	['onBackground', 'background-content'],
+	['neutralPaletteKeyColor', 'neutral-palette-key-color'],
+	['neutralVariantPaletteKeyColor', 'neutral-variant-palette-key-color'],
+	['primaryPaletteKeyColor', 'primary-palette-key-color'],
+	['secondaryPaletteKeyColor', 'secondary-palette-key-color'],
+	['tertiaryPaletteKeyColor', 'accent-palette-key-color'],
+	['primaryFixed', 'primary-fixed'],
+	['primaryFixedDim', 'primary-fixed-dim'],
+	['onPrimaryFixed', 'primary-fixed-content'],
+	['onPrimaryFixedVariant', 'primary-fixed-variant-content'],
+	['secondaryFixed', 'secondary-fixed'],
+	['secondaryFixedDim', 'secondary-fixed-dim'],
+	['onSecondaryFixed', 'secondary-fixed-content'],
+	['onSecondaryFixedVariant', 'secondary-fixed-variant-content'],
+	['tertiaryFixed', 'accent-fixed'],
+	['tertiaryFixedDim', 'accent-fixed-dim'],
+	['onTertiaryFixed', 'accent-fixed-content'],
+	['onTertiaryFixedVariant', 'accent-fixed-variant-content'],
+	['surfaceDim', 'surface-dim'],
+	['surface', 'surface'],
+	['surfaceBright', 'surface-bright'],
+	['surfaceVariant', 'surface-variant'],
+	['surfaceTint', 'surface-tint']
+]);
 
 export interface ColorConfig {
 	sourceColor: string;
@@ -901,25 +900,47 @@ export class Theming {
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
 		this.applyMaterialTokens(colors, targetElement);
 		this.applyFlyonUITokens(colors, targetElement);
-		extendingFlyonUIwithAdditionalMaterialDesignColors.forEach((utilityClass, materialDesignToken) => {
-			// const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-			const materialTokenKey = materialDesignToken as keyof typeof colors;
-			// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
-			Theming.addStyle( `.bg-${utilityClass}`, [`background-color: ${hexFromArgb(colors[materialTokenKey])};`] )
-			Theming.addStyle( `.text-${utilityClass}`, [`color: ${hexFromArgb(colors[materialTokenKey])};`] )
-			// TBD: check .ring
-			Theming.addStyle( `.fill-${utilityClass}`, [`fill: ${hexFromArgb(colors[materialTokenKey])};`] )
-			Theming.addStyle( `.caret-${utilityClass}`, [`caret-color: ${hexFromArgb(colors[materialTokenKey])};`] )
-			Theming.addStyle( `.stroke-${utilityClass}`, [`stroke: ${hexFromArgb(colors[materialTokenKey])};`] )
-			Theming.addStyle( `.border-${utilityClass}`, [`border-color: ${hexFromArgb(colors[materialTokenKey])};`] )
-			Theming.addStyle( `.accent-${utilityClass}`, [`accent-color: ${hexFromArgb(colors[materialTokenKey])};`] )
-			// TBD: check shadow!
-			// TBD: check possibilities for applying opacity to those colors!
-			Theming.addStyle( `.accent-${utilityClass}`, [`accent-color: ${hexFromArgb(colors[materialTokenKey])};`] )
-			Theming.addStyle( `.decoration-${utilityClass}`, [`text-decoration-color: ${hexFromArgb(colors[materialTokenKey])};`] )
-			Theming.addStyle( `.placeholder:text-${utilityClass}`, [`color: ${hexFromArgb(colors[materialTokenKey])};`] )
-			// TBD: check .ring-offset
-		})
+		extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
+			(utilityClass, materialDesignToken) => {
+				// const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+				const materialTokenKey = materialDesignToken as keyof typeof colors;
+				// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
+				Theming.addStyle(`.bg-${utilityClass}`, [
+					`background-color: ${hexFromArgb(colors[materialTokenKey])};`
+				]);
+				Theming.addStyle(`.text-${utilityClass}`, [
+					`color: ${hexFromArgb(colors[materialTokenKey])};`
+				]);
+				// TBD: check .ring
+				Theming.addStyle(`.fill-${utilityClass}`, [
+					`fill: ${hexFromArgb(colors[materialTokenKey])};`
+				]);
+				Theming.addStyle(`.caret-${utilityClass}`, [
+					`caret-color: ${hexFromArgb(colors[materialTokenKey])};`
+				]);
+				Theming.addStyle(`.stroke-${utilityClass}`, [
+					`stroke: ${hexFromArgb(colors[materialTokenKey])};`
+				]);
+				Theming.addStyle(`.border-${utilityClass}`, [
+					`border-color: ${hexFromArgb(colors[materialTokenKey])};`
+				]);
+				Theming.addStyle(`.accent-${utilityClass}`, [
+					`accent-color: ${hexFromArgb(colors[materialTokenKey])};`
+				]);
+				// TBD: check shadow!
+				// TBD: check possibilities for applying opacity to those colors!
+				Theming.addStyle(`.accent-${utilityClass}`, [
+					`accent-color: ${hexFromArgb(colors[materialTokenKey])};`
+				]);
+				Theming.addStyle(`.decoration-${utilityClass}`, [
+					`text-decoration-color: ${hexFromArgb(colors[materialTokenKey])};`
+				]);
+				Theming.addStyle(`.placeholder:text-${utilityClass}`, [
+					`color: ${hexFromArgb(colors[materialTokenKey])};`
+				]);
+				// TBD: check .ring-offset
+			}
+		);
 		return {
 			configuration: colorConfig,
 			currentMode: mode,
@@ -927,16 +948,16 @@ export class Theming {
 		};
 	}
 
-    private static createStyleElementInDocument(styleElementId: string): HTMLStyleElement {
-        let styleElement = document.getElementById(styleElementId) as HTMLStyleElement;
-        if (!styleElement) {
-            styleElement = document.createElement('style');
-            styleElement.setAttribute('type', 'text/css');
-            styleElement.setAttribute('id', styleElementId);
-        }
-        document.head.appendChild(styleElement);
-        return styleElement;
-    }
+	private static createStyleElementInDocument(styleElementId: string): HTMLStyleElement {
+		let styleElement = document.getElementById(styleElementId) as HTMLStyleElement;
+		if (!styleElement) {
+			styleElement = document.createElement('style');
+			styleElement.setAttribute('type', 'text/css');
+			styleElement.setAttribute('id', styleElementId);
+		}
+		document.head.appendChild(styleElement);
+		return styleElement;
+	}
 
 	private applyMaterialTokens(
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
@@ -949,7 +970,7 @@ export class Theming {
 				const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 				styles += `--md-sys-color-${tokenKebabCase}: ${hexFromArgb(colors[token])};\n`;
 			});
-            const styleElement = Theming.createStyleElementInDocument(styleElementId);
+			const styleElement = Theming.createStyleElementInDocument(styleElementId);
 			styleElement.textContent = `:root {\n${styles}}`;
 			// document.head.appendChild(styleElement);
 		} else {
@@ -971,20 +992,20 @@ export class Theming {
 		return colorJs.to('oklch').coords.join(' ');
 	}
 
-    static addStyle( styleName: string, styles: string[]): void {
-        const styleElement = Theming.createStyleElementInDocument('utility_classes');
+	static addStyle(styleName: string, styles: string[]): void {
+		const styleElement = Theming.createStyleElementInDocument('utility_classes');
 
 		let rules = `${styleName} {\n`;
-        styles.forEach((style) => {
-            rules += `    ${style}\n`;
-        });
-        rules += '}\n';
+		styles.forEach((style) => {
+			rules += `    ${style}\n`;
+		});
+		rules += '}\n';
 
 		// check if pseudoelement :root already exists in styleElement
 		const rootStartIndex = styleElement.textContent?.indexOf(':root {') ?? -1;
 		const rootEndIndex = styleElement.textContent?.lastIndexOf('}') ?? -1;
 
-        if (rootStartIndex !== -1 && rootEndIndex !== -1) {
+		if (rootStartIndex !== -1 && rootEndIndex !== -1) {
 			// Check if the rules already exist
 			const rulesStartIndex = styleElement.textContent?.indexOf(rules);
 			if (rulesStartIndex === -1) {
@@ -993,20 +1014,19 @@ export class Theming {
 				const afterRoot = styleElement.textContent?.substring(rootEndIndex);
 				styleElement.textContent = `${beforeRoot}\n${rules}\n${afterRoot}`;
 			}
-			} else {
-            // If :root is not found, create it
-            styleElement.textContent += `\n:root {\n${rules}\n}`;
-        }
-    }
+		} else {
+			// If :root is not found, create it
+			styleElement.textContent += `\n:root {\n${rules}\n}`;
+		}
+	}
 
-    // static addBackgroundUtilityClass( name: string, backgroundColor: string[]): void {
-    //     Theming.addStyle(`bg-${name}`, [`background-color: ${backgroundColor}`]);
-    // }
+	// static addBackgroundUtilityClass( name: string, backgroundColor: string[]): void {
+	//     Theming.addStyle(`bg-${name}`, [`background-color: ${backgroundColor}`]);
+	// }
 
 	// static addFillUtilityClass( name: string, fill: string[]): void {
-    //     Theming.addStyle(`fill-${name}`, [`fill: ${fill}`]);
-    // }
-
+	//     Theming.addStyle(`fill-${name}`, [`fill: ${fill}`]);
+	// }
 
 	private applyFlyonUITokens(
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
@@ -1015,7 +1035,7 @@ export class Theming {
 		if (targetElement === document.documentElement) {
 			const styleElementId = 'flyonUI_variables';
 			let styles = '';
-            // match tokens from material design to flyonUI tokens:
+			// match tokens from material design to flyonUI tokens:
 			flyonUIVariablesMaterialDesignMapping.forEach((flyonUIVariable, materialDesignToken) => {
 				const materialTokenKey = materialDesignToken as keyof typeof colors;
 				const oklchColor = this.oklchFromArgb(colors[materialTokenKey]);

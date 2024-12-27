@@ -1,8 +1,8 @@
 <script lang="ts">
 	// let { background, content="" }: { background: string; content?: string } = $props();
 	// const text = background.replaceAll('-', ' ');
-	import { type Snippet } from "svelte";
-	let { children }: {children: Snippet} = $props();
+	import { type Snippet } from 'svelte';
+	let { children }: { children: Snippet } = $props();
 </script>
 
 <!-- <div class="flex h-18 md:h-20 xl:24 grow p-2 bg-{background}">
@@ -13,7 +13,7 @@
 
 <!-- <p class="text-left text-base md:text-xl text-{content}"> -->
 
-<div class="flex h-18 md:h-20 xl:24 grow">
+<div class="h-18 xl:24 flex grow md:h-20">
 	{@render children?.()}
 </div>
 
