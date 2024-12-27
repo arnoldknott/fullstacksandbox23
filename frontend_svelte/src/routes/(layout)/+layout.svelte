@@ -425,11 +425,11 @@
 		// // 	// 	"--chkbg: 0.8326626828187514 0.08441887404599768 279.2305339932651;",
 		// // 	// 	"--chkfg: 0.3154821851849956 0.0950938022598709 274.08875028302316;"
 		// // 	// ]);
-		// 	// Theming.addStyle(`.btn-inverse-primary`, [
-		// 	// 	// "--btn-color: var(--md-sys-color-inverse-primary);"
-		// 	// 	// "--btn-color: 0.8362757038340962 0.06305885959381759 339.06697306846456;"
-		// 	// 	"--btn-color: --var(--p);"
-		// 	// ]);
+		// 	Theming.addStyle(`.btn-inverse-primary`, [
+		// 		// "--btn-color: var(--md-sys-color-inverse-primary);"
+		// 		"--btn-color: 0.8362757038340962 0.06305885959381759 339.06697306846456;"
+		// 		// "--btn-color: --var(--p);"
+		// 	]);
 		// // 	const printCSSPropertyValue = (variableName: string) => {
 		// // 		const rootStyles = getComputedStyle(document.documentElement);
 		// // 		const value =  rootStyles.getPropertyValue(variableName).trim();
