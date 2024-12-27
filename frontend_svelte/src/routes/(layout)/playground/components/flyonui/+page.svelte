@@ -153,19 +153,20 @@
 	// 	});
 	// });
 
-	$effect(()=> {
-		console.log("=== Theming for utility classes is triggered ===")
-		Theming.addStyle(".badge-inverse-primary", ["background-color: var(--md-sys-color-inverse-primary);", "color: var(--md-sys-color-on-primary);"])
-		Theming.addStyle(".btn-inverse-primary", ["--btn-color: var(--ip);"])
-	})
-			/* .badge-inverse-primary {
-		background-color: var(--md-sys-color-inverse-primary);
-		color: var(--md-sys-color-on-primary);
-	}
-
-	.btn-inverse-primary {
-		--btn-color: var(--ip);
-	} */
+	// // When applying to another variable, the flyonUI variables work, like --p, --pc, ... - they are oklch values!
+	// // When assigning static, the material design tokens work, like primary, primary-content, ... - they are hex values!
+	// // is this true?
+	// $effect(()=> {
+	// 	console.log("=== Theming for utility classes is triggered ===")
+	// 	Theming.addStyle(".badge-inverse-primary", ["background-color: var(--md-sys-color-inverse-primary);", "color: var(--md-sys-color-on-primary);"])
+	// 	Theming.addStyle(".btn-inverse-primary", ["--btn-color: var(--ip);"])
+	// 	// Theming.addStyle(".btn-inverse-primary", ["--btn-color: var(--md-sys-color-inverse-primary);"])
+	// 	Theming.addStyle(".accent-inverse-primary", ["accent-color: var(--ip);"])// note: this is a color utility, not a component utility!
+	// 	Theming.addStyle(".checkbox-inverse-primary", ["--chkbg: var(--md-sys-color-inverse-primary);", "--chkfg: var(--md-sys-color-on-primary);"])
+	// 	// Theming.addStyle(".checkbox-inverse-primary", ["--chkbg: var(--ip);", "--chkfg: var(--pc);", "outline-color:"])
+	// 	// not working:
+	// 	Theming.addStyle(".checkbox-inverse-primary:checked:focus-visible, .checkbox-inverse-primary[checked='true']:focus-visible, .checkbox-inverse-primary[aria-checked='true']:focus-visible", ["outline-color: var(--md-sys-color-inverse-primary);"])
+	// })
 
 	const colorTileClasses = 'h-full w-full p-2';
 	const colorLabelClasses = 'text-left text-xs md:text-lg xl:text-xl';
