@@ -284,6 +284,7 @@ type AdditionalFlyonUIScheme = {
 // TBD: Map matched colors to both class names, e.g. onPrimary primary-container becomes a class definition of ".on-primary, .primary-container"
 // Material design tokens become FlyonUI variables (both technically CSS variables)
 const flyonUIVariablesMaterialDesignMapping = new Map([
+	// default FlyonUI tokens:
 	['primary', 'p'],
 	['onPrimary', 'pc'],
 	['secondary', 's'],
@@ -293,7 +294,6 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 	['neutral', 'n'],
 	['onNeutral', 'nc'],
 	['surfaceContainerLowest', 'b1'],
-	// think about implementing the other 2 surfaceContainer colors
 	['surfaceContainer', 'b2'],
 	['surfaceContainerHighest', 'b3'],
 	['onSurface', 'bc'],
@@ -305,12 +305,15 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 	['warning', 'wa'],
 	['onWarning', 'wac'],
 	['error', 'er'],
-	['onError', 'erc']
+	['onError', 'erc'],
+	// extension from material design to flyonUI:
+	['inversePrimary', 'ip'],
+	['surfaceTint', 'st']
 ]);
 
 // add missing material design tokens as utility classes for flyonUI
 // with both material design and flyonUI syntax:
-const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
+export const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
 	['primaryContainer', 'primary-container'],
 	['onPrimaryContainer', 'primary-container-content'],
 	['secondaryContainer', 'secondary-container'],
@@ -900,47 +903,57 @@ export class Theming {
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
 		this.applyMaterialTokens(colors, targetElement);
 		this.applyFlyonUITokens(colors, targetElement);
-		extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
-			(utilityClass, materialDesignToken) => {
-				// const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-				const materialTokenKey = materialDesignToken as keyof typeof colors;
-				// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
-				Theming.addStyle(`.bg-${utilityClass}`, [
-					`background-color: ${hexFromArgb(colors[materialTokenKey])};`
-				]);
-				Theming.addStyle(`.text-${utilityClass}`, [
-					`color: ${hexFromArgb(colors[materialTokenKey])};`
-				]);
-				// TBD: check .ring
-				Theming.addStyle(`.fill-${utilityClass}`, [
-					`fill: ${hexFromArgb(colors[materialTokenKey])};`
-				]);
-				Theming.addStyle(`.caret-${utilityClass}`, [
-					`caret-color: ${hexFromArgb(colors[materialTokenKey])};`
-				]);
-				Theming.addStyle(`.stroke-${utilityClass}`, [
-					`stroke: ${hexFromArgb(colors[materialTokenKey])};`
-				]);
-				Theming.addStyle(`.border-${utilityClass}`, [
-					`border-color: ${hexFromArgb(colors[materialTokenKey])};`
-				]);
-				Theming.addStyle(`.accent-${utilityClass}`, [
-					`accent-color: ${hexFromArgb(colors[materialTokenKey])};`
-				]);
-				// TBD: check shadow!
-				// TBD: check possibilities for applying opacity to those colors!
-				Theming.addStyle(`.accent-${utilityClass}`, [
-					`accent-color: ${hexFromArgb(colors[materialTokenKey])};`
-				]);
-				Theming.addStyle(`.decoration-${utilityClass}`, [
-					`text-decoration-color: ${hexFromArgb(colors[materialTokenKey])};`
-				]);
-				Theming.addStyle(`.placeholder:text-${utilityClass}`, [
-					`color: ${hexFromArgb(colors[materialTokenKey])};`
-				]);
-				// TBD: check .ring-offset
-			}
-		);
+		// Theming.addStyle(`.btn-inverse-primary`, [
+		// 	// "--btn-color: var(--md-sys-color-inverse-primary);"
+		// 	"--btn-color: #535a92;"
+		// ]);
+		// extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
+		// 	(utilityClass, materialDesignToken) => {
+		// 		// const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+		// 		const materialTokenKey = materialDesignToken as keyof typeof colors;
+		// 		const colorHex = hexFromArgb(colors[materialTokenKey])
+		// 		// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
+		// 		Theming.addStyle(`.bg-${utilityClass}`, [
+		// 			`background-color: ${colorHex};`
+		// 		]);
+		// 		Theming.addStyle(`.text-${utilityClass}`, [
+		// 			`color: ${colorHex};`
+		// 		]);
+
+		// 		// TBD: consider applying variables instead of colors and don't reapply when the color is changed. only the variable changes!
+		// 		// // remove - takes so much computation - add when needed:
+		// 		// // TBD: check .ring
+		// 		// Theming.addStyle(`.fill-${utilityClass}`, [
+		// 		// 	`fill: ${colorHex};`
+		// 		// ]);
+		// 		// Theming.addStyle(`.caret-${utilityClass}`, [
+		// 		// 	`caret-color: ${colorHex};`
+		// 		// ]);
+		// 		// Theming.addStyle(`.stroke-${utilityClass}`, [
+		// 		// 	`stroke: ${colorHex};`
+		// 		// ]);
+		// 		// Theming.addStyle(`.border-${utilityClass}`, [
+		// 		// 	`border-color: ${colorHex};`
+		// 		// ]);
+		// 		// Theming.addStyle(`.accent-${utilityClass}`, [
+		// 		// 	`accent-color: ${colorHex};`
+		// 		// ]);
+		// 		// // TBD: check shadow!
+		// 		// // TBD: check possibilities for applying opacity to those colors!
+		// 		// Theming.addStyle(`.accent-${utilityClass}`, [
+		// 		// 	`accent-color: ${colorHex};`
+		// 		// ]);
+		// 		// Theming.addStyle(`.decoration-${utilityClass}`, [
+		// 		// 	`text-decoration-color: ${colorHex};`
+		// 		// ]);
+
+		// 		// TBD: causes trouble on all browsers on iPad
+		// 		// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
+		// 		// 	`color: ${colorHex};`
+		// 		// ]);
+		// 		// TBD: check .ring-offset
+		// 	}
+		// );
 		return {
 			configuration: colorConfig,
 			currentMode: mode,
@@ -999,7 +1012,7 @@ export class Theming {
 		styles.forEach((style) => {
 			rules += `    ${style}\n`;
 		});
-		rules += '}\n';
+		rules += '}';
 
 		// check if pseudoelement :root already exists in styleElement
 		const rootStartIndex = styleElement.textContent?.indexOf(':root {') ?? -1;

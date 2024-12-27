@@ -5,7 +5,6 @@ import flyonui from 'flyonui';
 import flyonuiPlugin from 'flyonui/plugin';
 import { addDynamicIconSelectors } from '@iconify/tailwind';
 
-
 module.exports = {
 	content: ['./src/**/*.{html,js,svelte,ts}', './node_modules/flyonui/dist/js/*.js'],
 	theme: {
