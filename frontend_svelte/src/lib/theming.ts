@@ -307,10 +307,28 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 	['onSurface', 'bc'],
 	['shadow', 'bs'],
 	// extension from material design to flyonUI:
+	// Foreground extensions:
+	['primaryContainer', 'pcontainer'],
+	['onPrimaryContainer', 'pcontainercontent'],
+	['secondaryContainer', 'scontainer'],
+	['onSecondaryContainer', 'scontainercontent'],
+	// Background and other extensions:
 	['inversePrimary', 'ip'],
 	['surfaceTint', 'st'],
-	['primaryContainer', 'pcontainer'],
-	['onPrimaryContainer', 'pcontainercontent']
+	// TBD: add tertiary -> accent, netral, info, success, warning, error containers
+	// Avoid using those colors:
+	['primaryFixed', 'pf'],
+	['primaryFixedDim', 'pfdim'],
+	['onPrimaryFixed', 'pfcontent'],
+	['onPrimaryFixedVariant', 'pfvariantcontent'],
+	['secondaryFixed', 'sf'],
+	['secondaryFixedDim', 'sfdim'],
+	['onSecondaryFixed', 'sfcontent'],
+	['onSecondaryFixedVariant', 'sfvariantcontent'],
+	['tertiaryFixed', 'af'],
+	['tertiaryFixedDim', 'afdim'],
+	['onTertiaryFixed', 'afcontent'],
+	['onTertiaryFixedVariant', 'afvariantcontent']
 ]);
 
 // add missing material design tokens as utility classes for flyonUI
@@ -581,6 +599,9 @@ class Colorization {
 	private createCustomColors(color: string, colorName: string): CustomColors {
 		const colorNameCapitalized = colorName.charAt(0).toUpperCase() + colorName.slice(1);
 		// mixing with the primary color of the app scheme:
+		// TBD: consider creating warning and success as a fixed tonal palette
+		// with TonalPalette.fromHueAndChrome(hue, chroma) - error has parameters 25, 84!
+		// potentially fix to yellow-ish and greeen-ish color?
 		const colorGroup = customColor(this.sourceColor.argb, {
 			value: argbFromHex(color),
 			name: colorName,
