@@ -18,10 +18,4 @@
 	@apply h-16 bg-primary-container text-primary-container-content;
 }
 
-.mybadge {
-	@apply bg-green-500;
 
-	&-blue {
-		@apply text-blue-500;
-	}
-}
