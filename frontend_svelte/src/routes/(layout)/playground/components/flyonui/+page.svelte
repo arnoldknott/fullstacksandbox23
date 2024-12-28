@@ -982,8 +982,8 @@
 		</div>
 		<div class="mt-5 grid grid-cols-5 gap-4 {showSections.utilityClasses ? '' : 'hidden'}">
 			<div class="col-span-5 ml-5 text-2xl font-semibold">bg-"COLOR-NAME"</div>
-			<div class="h-24 p-4 bg-primary text-primary-content">bg-primary</div>
-			<div class="h-24 p-4 bg-inverse-primary">bg-inverse-primary</div>
+			<div class="h-24 bg-primary p-4 text-primary-content">bg-primary</div>
+			<div class="h-24 bg-inverse-primary p-4">bg-inverse-primary</div>
 			<div class="h-24 bg-surface-tint p-4 text-primary-content">bg-surface-tint</div>
 			<div class="h-24 bg-error p-4 text-error-content">bg-error</div>
 			<div class="h-24 bg-error/50 p-4">bg-error/50</div>
