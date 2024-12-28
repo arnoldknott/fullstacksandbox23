@@ -1,28 +1,27 @@
-
 .checkbox-inverse-primary {
-    --chkbg: theme(colors.inverse-primary);
-    --chkfg: theme(colors.inverse-surface);
-    /* --chkbg: theme(colors.inverse-primary);
+	--chkbg: theme(colors.inverse-primary);
+	--chkfg: theme(colors.inverse-surface);
+	/* --chkbg: theme(colors.inverse-primary);
     --chkfg: theme(colors.inverse-surface); */
-    &:checked,
-    &[checked="true"],
-    &[aria-checked="true"] {
-    &:focus-visible {
-        @apply outline-accent/30;
-    }
-    }
+	&:checked,
+	&[checked='true'],
+	&[aria-checked='true'] {
+		&:focus-visible {
+			@apply outline-accent/30;
+		}
+	}
 }
 
 .checkbox-primary-fixed-dim {
-    --chkbg: theme(colors.primary-fixed-dim);
-    --chkfg: theme(colors.primary-fixed-content);
-    /* --chkbg: theme(colors.inverse-primary);
+	--chkbg: theme(colors.primary-fixed-dim);
+	--chkfg: theme(colors.primary-fixed-content);
+	/* --chkbg: theme(colors.inverse-primary);
     --chkfg: theme(colors.inverse-surface); */
-    &:checked,
-    &[checked="true"],
-    &[aria-checked="true"] {
-    &:focus-visible {
-        @apply outline-accent/30;
-    }
-    }
+	&:checked,
+	&[checked='true'],
+	&[aria-checked='true'] {
+		&:focus-visible {
+			@apply outline-accent/30;
+		}
+	}
 }

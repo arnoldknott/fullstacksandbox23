@@ -328,7 +328,7 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 	['tertiaryFixed', 'af'],
 	['tertiaryFixedDim', 'afdim'],
 	['onTertiaryFixed', 'afcontent'],
-	['onTertiaryFixedVariant', 'afvariantcontent'],
+	['onTertiaryFixedVariant', 'afvariantcontent']
 ]);
 
 // add missing material design tokens as utility classes for flyonUI

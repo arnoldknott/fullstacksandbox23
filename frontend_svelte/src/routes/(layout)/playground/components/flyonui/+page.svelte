@@ -991,7 +991,9 @@
 			<div class="h-24 text-xl font-bold text-inverse-primary md:text-3xl">
 				text-inverse-primary
 			</div>
-			<div class="h-24 text-xl font-bold text-primary-fixed-dim md:text-3xl">text-primary-fixed-dim</div>
+			<div class="h-24 text-xl font-bold text-primary-fixed-dim md:text-3xl">
+				text-primary-fixed-dim
+			</div>
 			<div class="h-24 text-xl font-bold text-error md:text-3xl">text-error</div>
 			<div class="h-24 text-xl font-bold text-error/50 md:text-3xl">text-error/50</div>
 
@@ -1062,7 +1064,10 @@
 					d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"
 				></path></svg
 			>
-			<svg class="h-14 fill-primary-fixed-dim" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+			<svg
+				class="h-14 fill-primary-fixed-dim"
+				viewBox="0 0 46 48"
+				xmlns="http://www.w3.org/2000/svg"
 				><path
 					fill-rule="evenodd"
 					clip-rule="evenodd"
@@ -1087,7 +1092,9 @@
 			<div class="col-span-5 ml-5 text-2xl font-semibold">caret-"COLOR-NAME"</div>
 			<textarea class="h-24 caret-primary">caret-primary: cursor color!</textarea>
 			<textarea class="h-24 caret-inverse-primary">caret-inverse-primary: cursor color!</textarea>
-			<textarea class="h-24 caret-primary-fixed-dim">caret-primary-fixed-dim: cursor color!</textarea>
+			<textarea class="h-24 caret-primary-fixed-dim"
+				>caret-primary-fixed-dim: cursor color!</textarea
+			>
 			<textarea class="h-24 caret-error">caret-error: cursor color!</textarea>
 			<textarea class="h-24 caret-error/50">caret-error/50: cursor color!</textarea>
 
@@ -1219,7 +1226,8 @@
 			<button class="btn-inverse-primary btn shadow-lg shadow-inverse-primary"
 				>Shadow inverse primary</button
 			>
-			<button class="btn-primary-fixed-dim btn shadow-lg shadow-primary-fixed-dim">Shadow primary fixed dim</button
+			<button class="btn-primary-fixed-dim btn shadow-lg shadow-primary-fixed-dim"
+				>Shadow primary fixed dim</button
 			>
 			<button class="btn btn-error shadow-lg shadow-error">Shadow error</button>
 			<button class="btn-error/50 btn shadow-lg shadow-error/50">Shadow error/50</button>
@@ -1255,7 +1263,9 @@
 					id="switchPrimaryFixedDim"
 					checked
 				/>
-				<label class="label label-text text-base" for="switchPrimaryFixedDim"> Primary fixed dim </label>
+				<label class="label label-text text-base" for="switchPrimaryFixedDim">
+					Primary fixed dim
+				</label>
 			</div>
 			<div class="items-center gap-1">
 				<input
@@ -1375,41 +1385,41 @@
 			<input type="checkbox" class="checkbox-inverse-primary checkbox" checked /> inverse primary
 		</label>
 		<p>Buttons - default</p>
-		<button class="btn-primary btn">primary</button>
+		<button class="btn btn-primary">primary</button>
 		<button class="btn-inverse-primary btn">inverse primary</button>
 		<button class="btn-primary-fixed-dim btn">primary fixed dim</button>
-		<button class="btn-error btn">error</button>
+		<button class="btn btn-error">error</button>
 		<button class="btn-error/50 btn">error/50</button>
 		<p>Buttons - soft</p>
-		<button class="btn-soft btn-primary btn">soft primary</button>
-		<button class="btn-soft btn-inverse-primary btn">soft inverse primary</button>
-		<button class="btn-soft btn-primary-fixed-dim btn">soft primary fixed dim</button>
-		<button class="btn-soft btn-error btn">soft error</button>
-		<button class="btn-soft btn-error/50 btn">soft error/50</button>
+		<button class="btn btn-primary btn-soft">soft primary</button>
+		<button class="btn-inverse-primary btn btn-soft">soft inverse primary</button>
+		<button class="btn-primary-fixed-dim btn btn-soft">soft primary fixed dim</button>
+		<button class="btn btn-error btn-soft">soft error</button>
+		<button class="btn-error/50 btn btn-soft">soft error/50</button>
 		<p>Buttons - outline</p>
-		<button class="btn-outline btn-primary btn">outline primary</button>
-		<button class="btn-outline btn-inverse-primary btn">outline inverse primary</button>
-		<button class="btn-outline btn-primary-fixed-dim btn">outline primary fixed dim</button>
-		<button class="btn-outline btn-error btn">outline error</button>
-		<button class="btn-outline btn-error/50 btn">outline error/50</button>
+		<button class="btn btn-primary btn-outline">outline primary</button>
+		<button class="btn-inverse-primary btn btn-outline">outline inverse primary</button>
+		<button class="btn-primary-fixed-dim btn btn-outline">outline primary fixed dim</button>
+		<button class="btn btn-error btn-outline">outline error</button>
+		<button class="btn-error/50 btn btn-outline">outline error/50</button>
 		<p>Buttons - text</p>
-		<button class="btn-text btn-primary btn">text primary</button>
-		<button class="btn-text btn-inverse-primary btn">text inverse primary</button>
-		<button class="btn-text btn-primary-fixed-dim btn">text primary fixed dim</button>
-		<button class="btn-text btn-error btn">text error</button>
-		<button class="btn-text btn-error/50 btn">text error/50</button>
+		<button class="btn btn-primary btn-text">text primary</button>
+		<button class="btn-inverse-primary btn btn-text">text inverse primary</button>
+		<button class="btn-primary-fixed-dim btn btn-text">text primary fixed dim</button>
+		<button class="btn btn-error btn-text">text error</button>
+		<button class="btn-error/50 btn btn-text">text error/50</button>
 		<p>Buttons - gradient</p>
-		<button class="btn-gradient btn-primary btn">gradient primary</button>
-		<button class="btn-gradient btn-inverse-primary btn">gradient inverse primary</button>
-		<button class="btn-gradient btn-primary-fixed-dim btn">gradient primary fixed dim</button>
-		<button class="btn-gradient btn-error btn">gradient error</button>
-		<button class="btn-gradient btn-error/50 btn">gradient error/50</button>
+		<button class="btn btn-primary btn-gradient">gradient primary</button>
+		<button class="btn-inverse-primary btn btn-gradient">gradient inverse primary</button>
+		<button class="btn-primary-fixed-dim btn btn-gradient">gradient primary fixed dim</button>
+		<button class="btn btn-error btn-gradient">gradient error</button>
+		<button class="btn-error/50 btn btn-gradient">gradient error/50</button>
 		<p>Buttons - rounded-full</p>
-		<button class="rounded-full btn-primary btn">rounded-full primary</button>
-		<button class="rounded-full btn-inverse-primary btn">rounded-full inverse primary</button>
-		<button class="rounded-full btn-primary-fixed-dim btn">rounded-full primary fixed dim</button>
-		<button class="rounded-full btn-error btn">rounded-full error</button>
-		<button class="rounded-full btn-error/50 btn">rounded-full error/50</button>
+		<button class="btn btn-primary rounded-full">rounded-full primary</button>
+		<button class="btn-inverse-primary btn rounded-full">rounded-full inverse primary</button>
+		<button class="btn-primary-fixed-dim btn rounded-full">rounded-full primary fixed dim</button>
+		<button class="btn btn-error rounded-full">rounded-full error</button>
+		<button class="btn-error/50 btn rounded-full">rounded-full error/50</button>
 	</div>
 
 	<div>

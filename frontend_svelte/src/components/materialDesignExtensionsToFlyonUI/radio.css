@@ -1,21 +1,21 @@
 .radio-inverse-primary {
-    &:checked,
-    &[aria-checked="true"] {
-        @apply border-inverse-primary bg-inverse-primary;
+	&:checked,
+	&[aria-checked='true'] {
+		@apply border-inverse-primary bg-inverse-primary;
 
-    &:focus-visible {
-        @apply outline-inverse-primary/30;
-    }
-    }
+		&:focus-visible {
+			@apply outline-inverse-primary/30;
+		}
+	}
 }
 
 .radio-primary-fixed-dim {
-    &:checked,
-    &[aria-checked="true"] {
-        @apply border-primary-fixed-dim bg-primary-fixed-dim;
+	&:checked,
+	&[aria-checked='true'] {
+		@apply border-primary-fixed-dim bg-primary-fixed-dim;
 
-        &:focus-visible {
-        @apply outline-primary-fixed-dim/30;
-        }
-    }
+		&:focus-visible {
+			@apply outline-primary-fixed-dim/30;
+		}
+	}
 }
