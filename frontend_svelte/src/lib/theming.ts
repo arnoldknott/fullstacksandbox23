@@ -599,6 +599,9 @@ class Colorization {
 	private createCustomColors(color: string, colorName: string): CustomColors {
 		const colorNameCapitalized = colorName.charAt(0).toUpperCase() + colorName.slice(1);
 		// mixing with the primary color of the app scheme:
+		// TBD: consider creating warning and success as a fixed tonal palette
+		// with TonalPalette.fromHueAndChrome(hue, chroma) - error has parameters 25, 84!
+		// potentially fix to yellow-ish and greeen-ish color?
 		const colorGroup = customColor(this.sourceColor.argb, {
 			value: argbFromHex(color),
 			name: colorName,
