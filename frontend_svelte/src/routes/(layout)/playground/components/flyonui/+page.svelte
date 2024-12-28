@@ -9,6 +9,7 @@
 	// import { hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
 	import JsonData from '$components/JsonData.svelte';
+	// import {Theming }from '$lib/theming';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
 	// return {
@@ -26,7 +27,7 @@
 	// const closeDrawer = () => isDrawerOpen = false;
 
 	let showSections = $state({
-		colors: false,
+		colors: true,
 		utilityClasses: true
 	});
 
@@ -152,47 +153,24 @@
 	// 	});
 	// });
 
+	// // When applying to another variable, the flyonUI variables work, like --p, --pc, ... - they are oklch values!
+	// // When assigning static, the material design tokens work, like primary, primary-content, ... - they are hex values!
+	// // is this true?
+	// $effect(()=> {
+	// 	console.log("=== Theming for utility classes is triggered ===")
+	// 	Theming.addStyle(".badge-inverse-primary", ["background-color: var(--md-sys-color-inverse-primary);", "color: var(--md-sys-color-on-primary);"])
+	// 	Theming.addStyle(".btn-inverse-primary", ["--btn-color: var(--ip);"])
+	// 	// Theming.addStyle(".btn-inverse-primary", ["--btn-color: var(--md-sys-color-inverse-primary);"])
+	// 	Theming.addStyle(".accent-inverse-primary", ["accent-color: var(--ip);"])// note: this is a color utility, not a component utility!
+	// 	Theming.addStyle(".checkbox-inverse-primary", ["--chkbg: var(--md-sys-color-inverse-primary);", "--chkfg: var(--md-sys-color-on-primary);"])
+	// 	// Theming.addStyle(".checkbox-inverse-primary", ["--chkbg: var(--ip);", "--chkfg: var(--pc);", "outline-color:"])
+	// 	// not working:
+	// 	Theming.addStyle(".checkbox-inverse-primary:checked:focus-visible, .checkbox-inverse-primary[checked='true']:focus-visible, .checkbox-inverse-primary[aria-checked='true']:focus-visible", ["outline-color: var(--md-sys-color-inverse-primary);"])
+	// })
+
 	const colorTileClasses = 'h-full w-full p-2';
 	const colorLabelClasses = 'text-left text-xs md:text-lg xl:text-xl';
 </script>
-
-<!-- // based on https://github.com/themeselection/flyonui/blob/bdbdaeec6b575b80283f5fda51abd3981a168fca/src/theming/index.js#L2
-// match with Material Designs color palette
-// export const flyonUIColorObject = {
-//     transparent: 'transparent',
-//     current: 'currentColor',
-
-//     primary: '#794DFF',
-//     'primary-content': '#794DFF',
-
-//     secondary: 'var(--fallback-s,oklch(var(--s)/<alpha-value>))',
-//     'secondary-content': 'var(--fallback-sc,oklch(var(--sc)/<alpha-value>))',
-
-//     accent: 'var(--fallback-a,oklch(var(--a)/<alpha-value>))',
-//     'accent-content': 'var(--fallback-ac,oklch(var(--ac)/<alpha-value>))',
-
-//     neutral: 'var(--fallback-n,oklch(var(--n)/<alpha-value>))',
-//     'neutral-content': 'var(--fallback-nc,oklch(var(--nc)/<alpha-value>))',
-
-//     'base-100': 'var(--fallback-b1,oklch(var(--b1)/<alpha-value>))',
-//     'base-200': 'var(--fallback-b2,oklch(var(--b2)/<alpha-value>))',
-//     'base-300': 'var(--fallback-b3,oklch(var(--b3)/<alpha-value>))',
-//     'base-content': 'var(--fallback-bc,oklch(var(--bc)/<alpha-value>))',
-
-//     'base-shadow': 'var(--fallback-bs,oklch(var(--bs)/<alpha-value>))',
-
-//     info: 'var(--fallback-in,oklch(var(--in)/<alpha-value>))',
-//     'info-content': 'var(--fallback-inc,oklch(var(--inc)/<alpha-value>))',
-
-//     success: 'var(--fallback-su,oklch(var(--su)/<alpha-value>))',
-//     'success-content': 'var(--fallback-suc,oklch(var(--suc)/<alpha-value>))',
-
-//     warning: 'var(--fallback-wa,oklch(var(--wa)/<alpha-value>))',
-//     'warning-content': 'var(--fallback-wac,oklch(var(--wac)/<alpha-value>))',
-//     error: 'var(--fallback-er,oklch(var(--er)/<alpha-value>))',
-
-//     'error-content': 'var(--fallback-erc,oklch(var(--erc)/<alpha-value>))'
-// } -->
 
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div class="col-span-2">
@@ -491,7 +469,6 @@
 							<p class="text-center text-xl">/100</p>
 						</div>
 					</div>
-					<br />
 					<p class="ml-5">Primary content:</p>
 					<div class="m-5 grid grid-cols-4 gap-4 md:grid-cols-11">
 						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
@@ -527,6 +504,69 @@
 						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/100">
 							<p class="text-center text-xl">/100</p>
 						</div>
+					</div>
+					<p class="ml-5">Primary container - this is an extension from material UI to flyonUI:</p>
+					<div class="m-5 grid grid-cols-4 gap-4 md:grid-cols-11">
+						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container">
+							<p class="text-center text-xl"></p>
+						</div>
+						<div
+							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/10"
+						>
+							<p class="text-center text-xl">/10</p>
+						</div>
+						<div
+							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/20"
+						>
+							<p class="text-center text-xl">/20</p>
+						</div>
+						<div
+							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/30"
+						>
+							<p class="text-center text-xl">/30</p>
+						</div>
+						<div
+							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/40"
+						>
+							<p class="text-center text-xl">/40</p>
+						</div>
+						<div
+							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/50"
+						>
+							<p class="text-center text-xl">/50</p>
+						</div>
+						<div
+							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/60"
+						>
+							<p class="text-center text-xl">/60</p>
+						</div>
+						<div
+							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/70"
+						>
+							<p class="text-center text-xl">/70</p>
+						</div>
+						<div
+							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/80"
+						>
+							<p class="text-center text-xl">/80</p>
+						</div>
+						<div
+							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/90"
+						>
+							<p class="text-center text-xl">/90</p>
+						</div>
+						<div
+							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/100"
+						>
+							<p class="text-center text-xl">/100</p>
+						</div>
+						<!-- Programmatically applying for the first time doesn't work - if it's the only applying of this color.
+						But once applied there is some caching on the server side - shared between clients. -->
+						<!-- {#each ["/10", "/20", "/30", "/40", "/50", "/60", "/70", "/80", "/90", "/100"] as opacity}
+							<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container{opacity}">
+								<p class="text-center text-xl">{opacity}</p>
+							</div>
+						{/each} -->
 					</div>
 				</div>
 			</div>
@@ -770,24 +810,6 @@
 								<p class="text-inverse-surface-content {colorLabelClasses}">accent-palette-key</p>
 							</div>
 						</ColorTileFlyonUi>
-
-						<p class="text-2xl">TBD: Others: background and more</p>
-						<div>surface container low - between b1 and b2</div>
-						<div>surface container high - between b2 and b3</div>
-						<div>on surface variant</div>
-						<div>outline</div>
-						<div>outline variant</div>
-						<div>inverse surface</div>
-						<div>inverse on surface</div>
-						<div>inverse primary</div>
-						<div>scrim</div>
-						<div>background - might not be necessary?</div>
-						<div>on background</div>
-						<div>
-							neutral palette key color - not the neutral from above, as the color input is coming
-							from flyonUI, but this one is material designs own
-						</div>
-						<div>neutral variant palette key color</div>
 					</div>
 				</div>
 			</div>
@@ -900,27 +922,6 @@
 								<p class="text-inverse-surface-content {colorLabelClasses}">surface-tint</p>
 							</div>
 						</ColorTileFlyonUi>
-
-						<p class="text-2xl">
-							Avoid the following - fixed is not switching between light and dark
-						</p>
-						<div>primary fixed</div>
-						<div>primary variant dim</div>
-						<div>on primary variant</div>
-						<div>on primary fixed variant</div>
-						<div>secondary fixed</div>
-						<div>secondary fixed dim</div>
-						<div>on secondary fixed</div>
-						<div>on secondary fixed variant</div>
-						<div>tertiary fixed</div>
-						<div>tertiary fixed dim</div>
-						<div>on tertiary fixed</div>
-						<div>on tertiary fixed variant</div>
-						<div>surface dim</div>
-						<div>surface</div>
-						<div>surface bright</div>
-						<div>surface variant</div>
-						<div>surface tint</div>
 					</div>
 				</div>
 			</div>
@@ -981,11 +982,11 @@
 		</div>
 		<div class="mt-5 grid grid-cols-5 gap-4 {showSections.utilityClasses ? '' : 'hidden'}">
 			<div class="col-span-5 ml-5 text-2xl font-semibold">bg-"COLOR-NAME"</div>
-			<div class="h-24 bg-primary">bg-primary</div>
-			<div class="bg-inverse-primary h-24">bg-inverse-primary</div>
-			<div class="bg-surface-tint h-24">bg-surface-tint</div>
-			<div class="h-24 bg-error">bg-error</div>
-			<div class="h-24 bg-error/50">bg-error/50</div>
+			<div class="h-24 bg-primary p-4 text-primary-content">bg-primary</div>
+			<div class="h-24 bg-inverse-primary p-4">bg-inverse-primary</div>
+			<div class="h-24 bg-surface-tint p-4 text-primary-content">bg-surface-tint</div>
+			<div class="h-24 bg-error p-4 text-error-content">bg-error</div>
+			<div class="h-24 bg-error/50 p-4">bg-error/50</div>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">
 				from-"COLOR-NAME" via-"COLOR-NAME" to-"COLOR-NAME"
@@ -1001,7 +1002,7 @@
 			>
 				from-success via-warning to-error applied to text
 			</div>
-			<div class="via-inverse-primary to-surface-tint h-24 bg-gradient-to-r from-primary">
+			<div class="h-24 bg-gradient-to-r from-primary via-inverse-primary to-surface-tint">
 				from-primary via-inverse-primary to-surface-tint
 			</div>
 			<div class="h-24 bg-gradient-to-r from-primary/50 via-secondary/50 to-accent/50">
@@ -1010,10 +1011,10 @@
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">text-"COLOR-NAME"</div>
 			<div class="h-24 text-xl font-bold text-primary md:text-3xl">text-primary</div>
-			<div class="text-inverse-primary h-24 text-xl font-bold md:text-3xl">
+			<div class="h-24 text-xl font-bold text-inverse-primary md:text-3xl">
 				text-inverse-primary
 			</div>
-			<div class="text-surface-tint h-24 text-xl font-bold md:text-3xl">text-surface-tint</div>
+			<div class="h-24 text-xl font-bold text-surface-tint md:text-3xl">text-surface-tint</div>
 			<div class="h-24 text-xl font-bold text-error md:text-3xl">text-error</div>
 			<div class="h-24 text-xl font-bold text-error/50 md:text-3xl">text-error/50</div>
 
@@ -1064,8 +1065,8 @@
 				/>Radio error/50
 			</div>
 			<button class="button ring ring-primary">ring-primary</button>
-			<button class="button ring-inverse-primary ring">ring-inverse-primary</button>
-			<button class="button ring-surface-tint ring">ring-surface-tint</button>
+			<button class="button ring ring-inverse-primary">ring-inverse-primary</button>
+			<button class="button ring ring-surface-tint">ring-surface-tint</button>
 			<button class="button ring ring-error">ring-error</button>
 			<button class="button ring ring-error/50">ring-error/50</button>
 
@@ -1077,14 +1078,14 @@
 					d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"
 				></path></svg
 			>
-			<svg class="fill-inverse-primary h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+			<svg class="h-14 fill-inverse-primary" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
 				><path
 					fill-rule="evenodd"
 					clip-rule="evenodd"
 					d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"
 				></path></svg
 			>
-			<svg class="fill-surface-tint h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+			<svg class="h-14 fill-surface-tint" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
 				><path
 					fill-rule="evenodd"
 					clip-rule="evenodd"
@@ -1108,8 +1109,8 @@
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">caret-"COLOR-NAME"</div>
 			<textarea class="h-24 caret-primary">caret-primary: cursor color!</textarea>
-			<textarea class="caret-inverse-primary h-24">caret-inverse-primary: cursor color!</textarea>
-			<textarea class="caret-surface-tint h-24">caret-surface-tint: cursor color!</textarea>
+			<textarea class="h-24 caret-inverse-primary">caret-inverse-primary: cursor color!</textarea>
+			<textarea class="h-24 caret-surface-tint">caret-surface-tint: cursor color!</textarea>
 			<textarea class="h-24 caret-error">caret-error: cursor color!</textarea>
 			<textarea class="h-24 caret-error/50">caret-error/50: cursor color!</textarea>
 
@@ -1126,7 +1127,7 @@
 				></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
 			</svg>
 			<svg
-				class="stroke-inverse-primary h-10"
+				class="h-10 stroke-inverse-primary"
 				viewBox="0 0 48 40"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -1137,7 +1138,7 @@
 				></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
 			</svg>
 			<svg
-				class="stroke-surface-tint h-10"
+				class="h-10 stroke-surface-tint"
 				viewBox="0 0 48 40"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -1172,8 +1173,8 @@
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">border-"COLOR-NAME"</div>
 			<div class="h-24 border-4 border-primary">border-primary</div>
-			<div class="border-inverse-primary h-24 border-4">border-inverse-primary</div>
-			<div class="border-surface-tint h-24 border-4">border-surface-tint</div>
+			<div class="h-24 border-4 border-inverse-primary">border-inverse-primary</div>
+			<div class="h-24 border-4 border-surface-tint">border-surface-tint</div>
 			<div class="h-24 border-4 border-error">border-error</div>
 			<div class="h-24 border-4 border-error/50">border-error/50</div>
 
@@ -1183,12 +1184,12 @@
 				<div>between</div>
 				<div>elements</div>
 			</div>
-			<div class="divide-inverse-primary h-24 divide-y">
+			<div class="h-24 divide-y divide-inverse-primary">
 				<div>divide</div>
 				<div>between</div>
 				<div>elements</div>
 			</div>
-			<div class="divide-surface-tint h-24 divide-y">
+			<div class="h-24 divide-y divide-surface-tint">
 				<div>divide</div>
 				<div>between</div>
 				<div>elements</div>
@@ -1238,10 +1239,10 @@
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">shadow-"COLOR-NAME"</div>
 			<button class="btn btn-primary shadow-lg shadow-primary">Shadow primary</button>
-			<button class="btn-inverse-primary shadow-inverse-primary btn shadow-lg"
+			<button class="btn-inverse-primary btn shadow-lg shadow-inverse-primary"
 				>Shadow inverse primary</button
 			>
-			<button class="btn-surface-tint shadow-surface-tint btn shadow-lg">Shadow surface tint</button
+			<button class="btn-surface-tint btn shadow-lg shadow-surface-tint">Shadow surface tint</button
 			>
 			<button class="btn btn-error shadow-lg shadow-error">Shadow error</button>
 			<button class="btn-error/50 btn shadow-lg shadow-error/50">Shadow error/50</button>
@@ -1300,8 +1301,8 @@
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">decoration-"COLOR-NAME"</div>
 			<div class="h-24 underline decoration-primary">decoration-primary</div>
-			<div class="decoration-inverse-primary h-24 underline">decoration-inverse-primary</div>
-			<div class="decoration-surface-tint h-24 underline">decoration-surface-tint</div>
+			<div class="h-24 underline decoration-inverse-primary">decoration-inverse-primary</div>
+			<div class="h-24 underline decoration-surface-tint">decoration-surface-tint</div>
 			<div class="h-24 underline decoration-error">decoration-error</div>
 			<div class="h-24 underline decoration-error/50">decoration-error/50</div>
 
@@ -1316,7 +1317,7 @@
 			</label>
 			<label class="relative block">
 				<input
-					class="placeholder:text-inverse-primary input"
+					class="input placeholder:text-inverse-primary"
 					placeholder="Placeholder inverse primary"
 					type="text"
 					name="search"
@@ -1324,7 +1325,7 @@
 			</label>
 			<label class="relative block">
 				<input
-					class="placeholder:text-surface-tint input"
+					class="input placeholder:text-surface-tint"
 					placeholder="Placeholder surface tint"
 					type="text"
 					name="search"
@@ -1353,11 +1354,11 @@
 				>primary</span
 			>
 			<span
-				class="ring-offset-inverse-primary badge col-span-5 ring-2 ring-red-300 ring-offset-4 md:col-span-1"
+				class="badge col-span-5 ring-2 ring-red-300 ring-offset-4 ring-offset-inverse-primary md:col-span-1"
 				>inverse primary</span
 			>
 			<span
-				class="ring-offset-surface-tint badge col-span-5 ring-2 ring-red-300 ring-offset-4 md:col-span-1"
+				class="badge col-span-5 ring-2 ring-red-300 ring-offset-4 ring-offset-surface-tint md:col-span-1"
 				>surface tint</span
 			>
 			<span
@@ -1376,9 +1377,19 @@
 		<p>Badges:</p>
 		<span class="badge badge-primary">Badge primary</span>
 		<span class="badge badge-secondary">Badge secondary</span>
-		<span class="badge-tertiary badge">Badge tertiary (Material notation)</span>
-		<span class="badge badge-accent">Badge accent (same in FlyonUI notation)</span>
+		<span class="badge badge-accent">Badge accent</span>
+		<span class="badge-inverse-primary badge">Badge inverse primary</span>
+		<span class="badge-primary-container badge">Badge primary container</span>
 		<br />
+		<p>Glass effect on button:</p>
+		<button class="btn btn-primary glass">Glass on primary</button>
+		<button class="btn-inverse-primary btn glass">Glass on inverse primary</button>
+		<button class="btn-surface-tint btn glass">Glass on surface tint</button>
+		<button class="btn btn-error glass">Glass on error</button>
+		<button class="btn-error/50 btn glass">Glass on error/50</button>
+		<p>Using postCSS created components:</p>
+		<span class="badge-primary-container badge">Badge primary-container</span>
+		<span class="badge-my-personal badge">Badge my personal badge</span>
 	</div>
 
 	<div>
@@ -1801,3 +1812,16 @@
 	}
 	
 	</style> -->
+<!-- 
+<style>
+
+	/* .badge-inverse-primary {
+		background-color: var(--md-sys-color-inverse-primary);
+		color: var(--md-sys-color-on-primary);
+	}
+
+	.btn-inverse-primary {
+		--btn-color: var(--ip);
+	} */
+
+</style> -->
