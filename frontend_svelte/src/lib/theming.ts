@@ -307,10 +307,28 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 	['onSurface', 'bc'],
 	['shadow', 'bs'],
 	// extension from material design to flyonUI:
+	// Foreground extensions:
+	['primaryContainer', 'pcontainer'],
+	['onPrimaryContainer', 'pcontainercontent'],
+	['secondaryContainer', 'scontainer'],
+	['onSecondaryContainer', 'scontainercontent'],
+	// Background and other extensions:
 	['inversePrimary', 'ip'],
 	['surfaceTint', 'st'],
-	['primaryContainer', 'pcontainer'],
-	['onPrimaryContainer', 'pcontainercontent']
+	// TBD: add tertiary -> accent, netral, info, success, warning, error containers
+	// Avoid using those colors:
+	['primaryFixed', 'pf'],
+	['primaryFixedDim', 'pfdim'],
+	['onPrimaryFixed', 'pfcontent'],
+	['onPrimaryFixedVariant', 'pfvariantcontent'],
+	['secondaryFixed', 'sf'],
+	['secondaryFixedDim', 'sfdim'],
+	['onSecondaryFixed', 'sfcontent'],
+	['onSecondaryFixedVariant', 'sfvariantcontent'],
+	['tertiaryFixed', 'af'],
+	['tertiaryFixedDim', 'afdim'],
+	['onTertiaryFixed', 'afcontent'],
+	['onTertiaryFixedVariant', 'afvariantcontent'],
 ]);
 
 // add missing material design tokens as utility classes for flyonUI
