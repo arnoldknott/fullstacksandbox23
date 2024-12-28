@@ -1,0 +1,136 @@
+.btn-inverse-primary{
+    @apply text-inverse-surface outline-inverse-primary/30;
+    @supports (color: oklch(0% 0 0)) {
+        --btn-color: var(--ip);
+    }
+    @supports not (color: oklch(0% 0 0)) {
+        --btn-color: var(--fallback-p);
+    }
+}
+
+.btn-primary-fixed-dim{
+    @apply text-primary-fixed-content outline-primary-fixed-dim/30;
+    @supports (color: oklch(0% 0 0)) {
+        --btn-color: var(--pf);
+    }
+    @supports not (color: oklch(0% 0 0)) {
+        --btn-color: var(--fallback-p);
+    }
+}
+
+.btn-soft.btn-inverse-primary {
+    @apply text-inverse-primary bg-inverse-primary/20 outline-inverse-primary/50;
+    @media (hover: hover) {
+        &:hover {
+        @apply bg-inverse-primary/30;
+        }
+    }
+    &.btn-active {
+        @apply bg-inverse-primary/30;
+    }
+    &:focus-visible {
+        @apply bg-inverse-primary/30 outline-inverse-primary/50;
+    }
+}
+
+.btn-soft.btn-primary-fixed-dim {
+    @apply text-primary-fixed-dim bg-primary-fixed-dim/20 outline-primary-fixed-dim/50;
+    @media (hover: hover) {
+        &:hover {
+        @apply bg-primary-fixed-dim/30;
+        }
+    }
+    &.btn-active {
+        @apply bg-primary-fixed-dim/30;
+    }
+    &:focus-visible {
+        @apply bg-primary-fixed-dim/30 outline-primary-fixed-dim/50;
+    }
+}
+
+.btn-outline.btn-inverse-primary {
+    @apply text-inverse-primary;
+    @media (hover: hover) {
+      &:hover {
+        @apply bg-inverse-primary/10 border-inverse-primary;
+      }
+    }
+
+    &.btn-active {
+      @apply bg-inverse-primary/10 border-inverse-primary;
+    }
+    &:focus-visible {
+      @apply bg-inverse-primary/10;
+    }
+  }
+
+.btn-outline.btn-primary-fixed-dim {
+    @apply text-primary-fixed-dim;
+    @media (hover: hover) {
+      &:hover {
+        @apply bg-primary-fixed-dim/10 border-primary-fixed-dim;
+      }
+    }
+
+    &.btn-active {
+      @apply bg-primary-fixed-dim/10 border-primary-fixed-dim;
+    }
+    &:focus-visible {
+      @apply bg-primary-fixed-dim/10;
+    }
+  }
+
+.btn-text.btn-inverse-primary {
+    @apply text-inverse-primary;
+    @media (hover: hover) {
+      &:hover {
+        @apply bg-inverse-primary/10;
+      }
+    }
+
+    &.btn-active {
+      @apply bg-inverse-primary/10;
+    }
+    &:focus-visible {
+      @apply bg-inverse-primary/10;
+    }
+  }
+
+  .btn-text.btn-primary-fixed-dim {
+    @apply text-primary-fixed-dim;
+    @media (hover: hover) {
+      &:hover {
+        @apply bg-primary-fixed-dim/10;
+      }
+    }
+
+    &.btn-active {
+      @apply bg-primary-fixed-dim/10;
+    }
+    &:focus-visible {
+      @apply bg-primary-fixed-dim/10;
+    }
+  }
+
+
+.btn-gradient.btn-inverse-primary {
+    @apply text-inverse-surface border-inverse-primary shadow-inverse-primary/26 hover:shadow-inverse-primary/20;
+    @supports (color: oklch(0% 0 0)) {
+      --light-shade: var(--ip);
+    }
+    &:focus-visible {
+      @apply outline-inverse-primary/30;
+      border-color: transparent;
+    }
+  }
+
+.btn-gradient.btn-primary-fixed-dim {
+    @apply text-primary-fixed-content border-primary-fixed-dim shadow-primary-fixed-dim/26 hover:shadow-primary-fixed-dim/20;
+    @supports (color: oklch(0% 0 0)) {
+      --light-shade: var(--ip);
+    }
+    &:focus-visible {
+      @apply outline-primary-fixed-dim/30;
+      border-color: transparent;
+    }
+  }
