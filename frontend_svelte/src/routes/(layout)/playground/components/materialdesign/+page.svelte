@@ -434,7 +434,7 @@
 		</div>
 		<div class={showSections.palettes ? '' : 'hidden'}>
 			{#each palettesArray as palette}
-				<div class="mb-5 w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+				<div class="mb-5 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
 					<div class="flex flex-col">
 						<p class="text-center text-2xl">{palette.name}</p>
 						<div class="grid grid-cols-2">
@@ -619,11 +619,12 @@
 			<li>--md-sys-shape-corner-full</li>
 		</ul>
 		<p>The 7 values are not available - demonstrating the 9 steps of tailwindsCSS instead:</p>
-		<div class="p-4 grid grid-cols-2 md:grid-cols-5 gap-4">
-			{#each ["none", "sm", "", "md", "lg", "xl", "2xl", "3xl", "full"] as style}
+		<div class="grid grid-cols-2 gap-4 p-4 md:grid-cols-5">
+			{#each ['none', 'sm', '', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] as style}
 				<div
-					class="p-2 m-2 w-24 text-center text-base md:text-xl bg-primary-container rounded-{style}">
-						{style}
+					class="m-2 w-24 bg-primary-container p-2 text-center text-base md:text-xl rounded-{style}"
+				>
+					{style}
 				</div>
 			{/each}
 		</div>
