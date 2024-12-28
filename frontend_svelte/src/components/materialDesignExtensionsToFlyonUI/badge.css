@@ -6,7 +6,6 @@
 	@apply bg-inverse-primary text-inverse-surface;
 }
 
-
 /* .badge {
 	@apply rounded-btn bg-base-200 text-base-content;
 
@@ -20,9 +19,9 @@
 }
 
 .mybadge {
-    @apply bg-green-500;
+	@apply bg-green-500;
 
-    &-blue {
-        @apply text-blue-500
-    }
+	&-blue {
+		@apply text-blue-500;
+	}
 }
