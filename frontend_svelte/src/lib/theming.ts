@@ -293,11 +293,6 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 	['onTertiary', 'ac'],
 	['neutral', 'n'],
 	['onNeutral', 'nc'],
-	['surfaceContainerLowest', 'b1'],
-	['surfaceContainer', 'b2'],
-	['surfaceContainerHighest', 'b3'],
-	['onSurface', 'bc'],
-	['shadow', 'bs'],
 	['info', 'in'],
 	['onInfo', 'inc'],
 	['success', 'su'],
@@ -306,11 +301,16 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 	['onWarning', 'wac'],
 	['error', 'er'],
 	['onError', 'erc'],
+	['surfaceContainerLowest', 'b1'],
+	['surfaceContainer', 'b2'],
+	['surfaceContainerHighest', 'b3'],
+	['onSurface', 'bc'],
+	['shadow', 'bs'],
 	// extension from material design to flyonUI:
 	['inversePrimary', 'ip'],
 	['surfaceTint', 'st'],
 	['primaryContainer', 'pcontainer'],
-	['onPrimaryContainer', 'pcontainercontent'],
+	['onPrimaryContainer', 'pcontainercontent']
 ]);
 
 // add missing material design tokens as utility classes for flyonUI
@@ -974,14 +974,14 @@ export class Theming {
 		return styleElement;
 	}
 
-	static rgbFromHex = (hex:string) => {
+	static rgbFromHex = (hex: string) => {
 		const hexValue = hex.replace('#', '');
 		const r = parseInt(hexValue.substring(0, 2), 16);
 		const g = parseInt(hexValue.substring(2, 4), 16);
 		const b = parseInt(hexValue.substring(4, 6), 16);
 		console.log(`Converted hex ${hex} to rgb ${r} ${g} ${b}`);
 		return `${r} ${g} ${b}`;
-	}
+	};
 
 	private applyMaterialTokens(
 		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
@@ -990,7 +990,7 @@ export class Theming {
 		if (targetElement === document.documentElement) {
 			const styleElementId = 'md_sys_dynamic_color_tokens';
 			let styles = '';
-			console.log("=== lib - theming - applyMaterialTokens ===");
+			console.log('=== lib - theming - applyMaterialTokens ===');
 			appColors.forEach((token) => {
 				const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 				styles += `--md-sys-color-${tokenKebabCase}: ${hexFromArgb(colors[token])};\n`;

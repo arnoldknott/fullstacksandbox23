@@ -2,7 +2,7 @@
 	// let { background, content="" }: { background: string; content?: string } = $props();
 	// const text = background.replaceAll('-', ' ');
 	import { type Snippet } from 'svelte';
-	let { children, classes = "" }: { children: Snippet, classes?: string } = $props();
+	let { children, classes = '' }: { children: Snippet; classes?: string } = $props();
 </script>
 
 <!-- <div class="flex h-18 md:h-20 xl:24 grow p-2 bg-{background}">
