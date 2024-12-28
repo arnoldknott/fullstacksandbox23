@@ -81,10 +81,11 @@
 </md-dialog>
 
 <style>
-	#demo_resource_dialog {
+	/* Works - overriding local variables, but ugly! */
+	/* #demo_resource_dialog {
 		--md-dialog-headline-color: #e4a112;
 		--md-dialog-container-color: #e5deb9;
-	}
+	} */
 	#post-demo-resource {
 		display: flex;
 		flex-direction: column;

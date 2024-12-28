@@ -11,6 +11,9 @@ export default defineConfig({
 		},
 		port: 80 // prod is still on 3000, which is the default port in /app/index.js (look at the end). TBD (less urgent): review build process.
 	},
+	// css: {
+	// 	postcss: './postcss.config.js'
+	// },
 	test: {
 		environment: 'jsdom',
 		setupFiles: ['./vitest-setup.js'],
