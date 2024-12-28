@@ -434,8 +434,8 @@
 		</div>
 		<div class={showSections.palettes ? '' : 'hidden'}>
 			{#each palettesArray as palette}
-				<div class="mb-5 flex w-full grid-cols-2 gap-4">
-					<div class="grow">
+				<div class="mb-5 w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div class="flex flex-col">
 						<p class="text-center text-2xl">{palette.name}</p>
 						<div class="grid grid-cols-2">
 							<div
@@ -483,7 +483,9 @@
 							</p>
 						</div>
 					</div>
-					<JsonData data={palette} />
+					<div>
+						<JsonData data={palette} />
+					</div>
 				</div>
 			{/each}
 		</div>
@@ -599,6 +601,13 @@
 
 	<div>
 		<Title>Shapes (styles)</Title>
+
+		<!-- <div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-none);">
+			corner-none
+		</div>
+		<div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-full);">
+			corner-full
+		</div> -->
 		<p class="text-center text-2xl">Supported tokens:</p>
 		<ul>
 			<li>--md-sys-shape-corner-none</li>
@@ -609,6 +618,15 @@
 			<li>--md-sys-shape-corner-extra-large</li>
 			<li>--md-sys-shape-corner-full</li>
 		</ul>
+		<p>The 7 values are not available - demonstrating the 9 steps of tailwindsCSS instead:</p>
+		<div class="p-4 grid grid-cols-2 md:grid-cols-5 gap-4">
+			{#each ["none", "sm", "", "md", "lg", "xl", "2xl", "3xl", "full"] as style}
+				<div
+					class="p-2 m-2 w-24 text-center text-base md:text-xl bg-primary-container rounded-{style}">
+						{style}
+				</div>
+			{/each}
+		</div>
 	</div>
 
 	<div>
