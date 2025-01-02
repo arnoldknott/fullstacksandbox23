@@ -28,7 +28,10 @@
 
 	let showSections = $state({
 		colors: true,
-		palettes: true
+		palettes: true,
+		typography: true,
+		shapes: true,
+		sliders: true
 	});
 	// let theme = $state(getContext('theme'));
 	// let palettes = $themeStore.light.palettes;
@@ -37,7 +40,13 @@
 	const unsbscribeThemeStore = themeStore.subscribe((value) => {
 		theme = value;
 	});
-	let palettes = $derived(theme?.light?.palettes);
+	let palettes = $derived.by(() => {
+		if (!theme.currentMode) {
+			return '';
+		} else {
+			return theme[theme.currentMode].palettes;
+		}
+	});
 	// $effect(() => {console.log('palettes:', palettes)})
 	// let toneValues = $state({} as {key: string})
 	// let toneValues = $derived(
@@ -68,6 +77,99 @@
 	// let theme = $state(getContext('theme'));
 	// $effect(() => { console.log('theme:', theme)} );
 
+	// for HCT:
+	// red: hue = 25,
+	// (yellow: hue = 104,)
+	// green: hue = 130
+	// use chroma and tone from error container - always keeps the color!
+	// text on it:
+	// chorma and tone always from "on error container"
+	let errorContainerHct = $derived.by(() => {
+		if (!theme.currentMode) {
+			return Hct.from(25, 80, 30);
+		} else {
+			return Hct.fromInt(theme[theme.currentMode].colors['error']);
+		}
+	});
+	let onErrorContainerHct = $derived.by(() => {
+		if (!theme.currentMode) {
+			return Hct.from(24, 13, 90);
+		} else {
+			return Hct.fromInt(theme[theme.currentMode].colors['onError']);
+		}
+	});
+	// console.log('errorContainerHct:', errorContainerHct);
+	let status = $state([50, 0, 100]);
+	let statusColorsHue = $derived([
+		{
+			background: status[0] * 1.05 + 25,
+			text: status[0] * 1.05 + 25
+		},
+		{
+			background: status[1] * 1.05 + 25,
+			text: status[0] * 1.05 + 25
+		},
+		{
+			background: status[2] * 1.05 + 25,
+			text: status[0] * 1.05 + 25
+		}
+	]);
+	let statusColors = $derived([
+		{
+			background: hexFromArgb(
+				Hct.from(
+					statusColorsHue[0].background,
+					errorContainerHct.chroma,
+					errorContainerHct.tone
+				).toInt()
+			),
+			text: hexFromArgb(
+				Hct.from(
+					statusColorsHue[0].text,
+					onErrorContainerHct.chroma,
+					onErrorContainerHct.tone
+				).toInt()
+			)
+		},
+		{
+			background: hexFromArgb(
+				Hct.from(
+					statusColorsHue[1].background,
+					errorContainerHct.chroma,
+					errorContainerHct.tone
+				).toInt()
+			),
+			text: hexFromArgb(
+				Hct.from(
+					statusColorsHue[1].text,
+					onErrorContainerHct.chroma,
+					onErrorContainerHct.tone
+				).toInt()
+			)
+		},
+		{
+			background: hexFromArgb(
+				Hct.from(
+					statusColorsHue[2].background,
+					errorContainerHct.chroma,
+					errorContainerHct.tone
+				).toInt()
+			),
+			text: hexFromArgb(
+				Hct.from(
+					statusColorsHue[2].text,
+					onErrorContainerHct.chroma,
+					onErrorContainerHct.tone
+				).toInt()
+			)
+		}
+	]);
+	// let statusColors = $derived([
+	// 	`hsl(${status[0] * 1.2}, 80%, 80%)`,
+	// 	`hsl(${status[1] * 1.2}, 80%, 80%)`,
+	// 	`hsl(${status[2] * 1.2}, 80%, 80%)`,
+	// ]);
+
 	let demoResourceDialog: Dialog;
 	// let name = $state('');
 	// let description = $state('');
@@ -89,7 +191,7 @@
 <!-- <JsonData data={theme} /> -->
 
 <div class="grid w-full grid-cols-1 gap-4 xl:grid-cols-2">
-	<div class="col-span-2">
+	<div class="xl:col-span-2">
 		<Title>Colors</Title>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
@@ -420,7 +522,7 @@
 		</div>
 	</div>
 
-	<div class="col-span-2">
+	<div class="xl:col-span-2">
 		<Title>Palettes</Title>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
@@ -534,99 +636,207 @@
 
 	<div>
 		<Title>Typography</Title>
-		<p class="text-center text-2xl">Type face:</p>
-		<ul>
-			<li>
-				Brand
-				<ul>
-					<li>--md-ref-typeface-brand</li>
-				</ul>
-			</li>
-			<li>
-				Plain
-				<ul>
-					<li>--md-ref-typeface-plain</li>
-				</ul>
-			</li>
-		</ul>
-		<p class="text-center text-2xl">Type scale:</p>
-		<ul>
-			<li>
-				Display
-				<ul>
-					<li>--md-sys-typescale-display-medium-font</li>
-					<li>--md-sys-typescale-display-medium-size</li>
-					<li>--md-sys-typescale-display-medium-line-height</li>
-					<li>--md-sys-typescale-display-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Headline
-				<ul>
-					<li>--md-sys-typescale-headline-medium-font</li>
-					<li>--md-sys-typescale-headline-medium-size</li>
-					<li>--md-sys-typescale-headline-medium-line-height</li>
-					<li>--md-sys-typescale-headline-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Title
-				<ul>
-					<li>--md-sys-typescale-title-medium-font</li>
-					<li>--md-sys-typescale-title-medium-size</li>
-					<li>--md-sys-typescale-title-medium-line-height</li>
-					<li>--md-sys-typescale-title-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Body
-				<ul>
-					<li>--md-sys-typescale-body-medium-font</li>
-					<li>--md-sys-typescale-body-medium-size</li>
-					<li>--md-sys-typescale-body-medium-line-height</li>
-					<li>--md-sys-typescale-body-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Label
-				<ul>
-					<li>--md-sys-typescale-label-medium-font</li>
-					<li>--md-sys-typescale-label-medium-size</li>
-					<li>--md-sys-typescale-label-medium-line-height</li>
-					<li>--md-sys-typescale-label-medium-weight</li>
-				</ul>
-			</li>
-		</ul>
+		<div class="flex items-center gap-1">
+			<label class="label label-text text-base" for="switchTypography">Hide</label>
+			<input
+				type="checkbox"
+				class="switch switch-primary"
+				bind:checked={showSections.typography}
+				id="switchTypography"
+			/>
+			<label class="label label-text text-base" for="switchTypography">Show</label>
+		</div>
+		<div class={showSections.typography ? '' : 'hidden'}>
+			<p class="text-center text-2xl">Type face:</p>
+			<ul>
+				<li>
+					Brand
+					<ul>
+						<li>--md-ref-typeface-brand</li>
+					</ul>
+				</li>
+				<li>
+					Plain
+					<ul>
+						<li>--md-ref-typeface-plain</li>
+					</ul>
+				</li>
+			</ul>
+			<p class="text-center text-2xl">Type scale:</p>
+			<ul>
+				<li>
+					Display
+					<ul>
+						<li>--md-sys-typescale-display-medium-font</li>
+						<li>--md-sys-typescale-display-medium-size</li>
+						<li>--md-sys-typescale-display-medium-line-height</li>
+						<li>--md-sys-typescale-display-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Headline
+					<ul>
+						<li>--md-sys-typescale-headline-medium-font</li>
+						<li>--md-sys-typescale-headline-medium-size</li>
+						<li>--md-sys-typescale-headline-medium-line-height</li>
+						<li>--md-sys-typescale-headline-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Title
+					<ul>
+						<li>--md-sys-typescale-title-medium-font</li>
+						<li>--md-sys-typescale-title-medium-size</li>
+						<li>--md-sys-typescale-title-medium-line-height</li>
+						<li>--md-sys-typescale-title-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Body
+					<ul>
+						<li>--md-sys-typescale-body-medium-font</li>
+						<li>--md-sys-typescale-body-medium-size</li>
+						<li>--md-sys-typescale-body-medium-line-height</li>
+						<li>--md-sys-typescale-body-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Label
+					<ul>
+						<li>--md-sys-typescale-label-medium-font</li>
+						<li>--md-sys-typescale-label-medium-size</li>
+						<li>--md-sys-typescale-label-medium-line-height</li>
+						<li>--md-sys-typescale-label-medium-weight</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
 	</div>
 
 	<div>
 		<Title>Shapes (styles)</Title>
-
-		<!-- <div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-none);">
-			corner-none
+		<div class="flex items-center gap-1">
+			<label class="label label-text text-base" for="switchShapes">Hide</label>
+			<input
+				type="checkbox"
+				class="switch switch-primary"
+				bind:checked={showSections.shapes}
+				id="switchShapes"
+			/>
+			<label class="label label-text text-base" for="switchshapes">Show</label>
 		</div>
-		<div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-full);">
-			corner-full
-		</div> -->
-		<p class="text-center text-2xl">Supported tokens:</p>
-		<ul>
-			<li>--md-sys-shape-corner-none</li>
-			<li>--md-sys-shape-corner-extra-small</li>
-			<li>--md-sys-shape-corner-small</li>
-			<li>--md-sys-shape-corner-medium</li>
-			<li>--md-sys-shape-corner-large</li>
-			<li>--md-sys-shape-corner-extra-large</li>
-			<li>--md-sys-shape-corner-full</li>
-		</ul>
-		<p>The 7 values are not available - demonstrating the 9 steps of tailwindsCSS instead:</p>
-		<div class="grid grid-cols-2 gap-4 p-4 md:grid-cols-5">
-			{#each ['none', 'sm', '', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] as style}
-				<div
-					class="m-2 w-24 bg-primary-container p-2 text-center text-base md:text-xl rounded-{style}"
+		<div class={showSections.shapes ? '' : 'hidden'}>
+			<!-- <div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-none);">
+				corner-none
+			</div>
+			<div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-full);">
+				corner-full
+			</div> -->
+			<p class="text-center text-2xl">Supported tokens:</p>
+			<ul>
+				<li>--md-sys-shape-corner-none</li>
+				<li>--md-sys-shape-corner-extra-small</li>
+				<li>--md-sys-shape-corner-small</li>
+				<li>--md-sys-shape-corner-medium</li>
+				<li>--md-sys-shape-corner-large</li>
+				<li>--md-sys-shape-corner-extra-large</li>
+				<li>--md-sys-shape-corner-full</li>
+			</ul>
+			<p>The 7 values are not available - demonstrating the 9 steps of tailwindsCSS instead:</p>
+			<div class="grid grid-cols-2 gap-4 p-4 md:grid-cols-5">
+				{#each ['none', 'sm', '', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] as style}
+					<div
+						class="m-2 w-24 bg-primary-container p-2 text-center text-base md:text-xl rounded-{style}"
+					>
+						{style}
+					</div>
+				{/each}
+			</div>
+		</div>
+	</div>
+
+	<div>
+		<Title>Status sliders with HCT</Title>
+
+		<div class="grid grid-cols-3 gap-4">
+			<div class="w-full">
+				<label class="label label-text" for="leftStatus"
+					>Left Color: <span class="label">
+						<code class="label-text-alt">{status[0]}</code>
+					</span></label
 				>
-					{style}
-				</div>
-			{/each}
+				<input
+					type="range"
+					min="0"
+					max="100"
+					step="1"
+					class="range w-full"
+					aria-label="left Status"
+					id="leftStatus"
+					bind:value={status[0]}
+				/>
+			</div>
+			<div class="w-full">
+				<label class="label label-text" for="leftStatus"
+					>Center Color: <span class="label">
+						<code class="label-text-alt">{status[1]}</code>
+					</span></label
+				>
+				<input
+					type="range"
+					min="0"
+					max="100"
+					step="1"
+					class="range w-full"
+					aria-label="left Status"
+					id="leftStatus"
+					bind:value={status[1]}
+				/>
+			</div>
+			<div class="w-full">
+				<label class="label label-text" for="leftStatus"
+					>Right Color: <span class="label">
+						<code class="label-text-alt">{status[2]}</code>
+					</span></label
+				>
+				<input
+					type="range"
+					min="0"
+					max="100"
+					step="1"
+					class="range w-full"
+					aria-label="left Status"
+					id="leftStatus"
+					bind:value={status[2]}
+				/>
+			</div>
+		</div>
+		<div class="grid grid-cols-3">
+			<div
+				class="flex h-20 w-full items-center justify-center text-2xl"
+				style="background: linear-gradient(to right, {statusColors[0].background}, {statusColors[0]
+					.background}, {statusColors[1].background});"
+			>
+				Left
+			</div>
+			<div
+				class="flex h-20 w-full items-center justify-center text-2xl"
+				style="background: linear-gradient(to right, {statusColors[1].background}, {statusColors[1]
+					.background}, {statusColors[1].background});"
+			>
+				Center
+			</div>
+			<div
+				class="flex h-20 w-full items-center justify-center text-2xl"
+				style="background: linear-gradient(to right, {statusColors[1].background}, {statusColors[2]
+					.background}, {statusColors[2].background});"
+			>
+				Right
+			</div>
+			<!-- <div
+				class="flex h-20 w-full items-center justify-center text-2xl"
+				style="background: linear-gradient(to right, {statusColors[1]}, {statusColors[2]});"
+			></div> -->
 		</div>
 	</div>
 

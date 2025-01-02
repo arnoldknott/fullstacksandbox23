@@ -925,13 +925,13 @@
 					</div>
 				</div>
 			</div>
-		</div>
-		<div class="col-span-2">
-			<p class="text-xl italic">
-				Note, for programmatically applied classes, add the utility class either programmatically
-				via <code>Theming.addStyle( styleName, styles)</code>
-				or as (scoped) <code>&ltstyle&gt</code> tag.
-			</p>
+			<div>
+				<p class="text-xl italic">
+					Note, for programmatically applied classes, add the utility class either programmatically
+					via <code>Theming.addStyle( styleName, styles)</code>
+					or as (scoped) <code>&ltstyle&gt</code> tag.
+				</p>
+			</div>
 		</div>
 	</div>
 
@@ -1425,19 +1425,91 @@
 	<div>
 		<Title>Typography</Title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<p>Fonts:</p>
-		<p class="font-sans">
-			Some text in <em>sans</em> font family, should be using <b>Robot</b> Google Fonts extending
-			default theme in <code>tailwindcss.config.js</code>.
-		</p>
-		<p class="font-serif">
-			Some text in <em>serif</em> font family, should be using <b>Merriweather</b> Google Fonts,
-			extending default theme in <code>tailwindcss.config.js</code>.
-		</p>
-		<p class="font-mono">
-			Some text in <em>mono</em> font family, still <b>TailwindCSS</b> default, not overwritten in
-			<code>tailwindcss.config.js</code> yet
-		</p>
+		<p class="text-center">Fonts families</p>
+		<div class="grid grid-cols-1 gap-4 divide-y-4">
+			<div class="font-sans">
+				Some text in <em>sans</em> font family, should be using <b>Robot</b> Google Fonts extending
+				default theme in <code>tailwindcss.config.js</code>.
+			</div>
+			<div class="font-serif">
+				Some text in <em>serif</em> font family, should be using <b>Merriweather</b> Google Fonts,
+				extending default theme in <code>tailwindcss.config.js</code>.
+			</div>
+			<div class="font-mono">
+				Some text in <em>mono</em> font family, still <b>TailwindCSS</b> default, not overwritten in
+				<code>tailwindcss.config.js</code> yet
+			</div>
+		</div>
+		<p class="pt-5 text-center">Typography styles for Display</p>
+		<div class="grid grid-cols-1 gap-8 divide-y-4">
+			<p class="display-large display">
+				Some long eyecatcher in <i>Display - large</i> typography.
+			</p>
+			<p class="display">Another eyecatcher in <i>Display</i> typography.</p>
+			<p class="display-small display">
+				And a third eyecatcher in <i>Display - small</i> typography.
+			</p>
+		</div>
+		<p class="pt-5 text-center">Typography styles for Heading</p>
+		<div class="grid grid-cols-1 gap-8 divide-y-4">
+			<p class="heading-large heading">
+				A <i>Heading - large</i> typography with long enough text to get a line break.
+			</p>
+			<p class="heading">
+				Another <i>Heading</i> typography with long enough text to get a line break.
+			</p>
+			<p class="heading heading-small">
+				And a third <i>Heading - small</i> typography with long enough text to get a line break.
+			</p>
+		</div>
+		<p class="pt-5 text-center">Typography styles for Title</p>
+		<div class="grid grid-cols-1 gap-8 divide-y-4">
+			<p class="title-large title">
+				This is a <i>Title - large</i> typography with some extended text to be long enough to create
+				a line break.
+			</p>
+			<p class="title">
+				And that is another <i>Title</i> typography with some text to fill the line, so we can get a
+				line break, which requires long enough text get the line breaking over into a new line.
+			</p>
+			<p class="title title-small">
+				And the third <i>Title - small</i> typography needs quite some extra meaningless text, just to
+				demonstrate the line break even on larger screens, where it might get hard to provoke a line
+				break with such small text, but we'll get there with to make the text long enough text to get
+				a line break.
+			</p>
+		</div>
+		<p class="pt-5 text-center">Typography styles for Body</p>
+		<div class="grid grid-cols-1 gap-8 divide-y-4">
+			<p class="body-large body">
+				This is a longer text in <i>Body - large</i> typography with long enough text to get more than
+				a line break. Note that the font changed to a serif font, which should make it easier to read
+				for longer text on a screen.
+			</p>
+			<p class="body">
+				And that is another <i>Body</i> typography with even more text to fill the line, so we can get
+				a line break, which requires long enough text get the line breaking over into a new line.
+			</p>
+			<p class="body body-small">
+				And a third <i>Body - small</i> typography which needs even more meaningless text to make sure,
+				the line is eventually breaking, even on larger screens, where it might get hard to provoke a
+				line break with such small text, but we'll get there with to make the text long enough text to
+				get a line break.
+			</p>
+		</div>
+		<p class="pt-5 text-center">Typography styles for Labels - demonstrated in a badge</p>
+		<div class="grid grid-cols-2 gap-4">
+			<div class="label-large badge label badge-xl rounded-full">Label large</div>
+			<div class="label-large label-prominent badge label badge-xl rounded-full">
+				Label large prominent
+			</div>
+			<span class="badge label badge-lg rounded-full">Label</span>
+			<span class="label-prominent badge label badge-lg rounded-full">Label prominent</span>
+			<span class="label-small badge label rounded-full px-4">Label small</span>
+			<span class="label-small label-prominent badge label rounded-full px-4"
+				>Label small prominent</span
+			>
+		</div>
 	</div>
 
 	<div>

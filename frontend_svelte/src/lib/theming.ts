@@ -625,9 +625,19 @@ class Colorization {
 			isBackground: true
 		});
 
+		// let primaryPalette: TonalPalette;
+		// if (colorName === 'warning') {
+		// 	primaryPalette = TonalPalette.fromHueAndChroma(104, 84);
+		// } else if ( colorName === 'success') {
+		// 	primaryPalette = TonalPalette.fromHueAndChroma(130, 84);
+		// } else {
+		// 	primaryPalette = schemeLight.primaryPalette;
+		// }
+
 		const customPrimaryLight = DynamicColor.fromPalette({
 			name: colorName,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) => (this.isMonochrome ? 0 : 40),
 			// consider using options from primary instead of error"
 			background: (_schemeLight) => surfaceContainerHighestLight, //MaterialDynamicColors.highestSurface(schemeLight),
@@ -638,6 +648,7 @@ class Colorization {
 		const customOnPrimaryLight = DynamicColor.fromPalette({
 			name: `on${colorNameCapitalized}`,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) => (this.isMonochrome ? 10 : 20),
 			// consider using options from primary instead of error"
 			background: (_schemeLight) => customPrimaryLight, //MaterialDynamicColors.primary,
@@ -646,6 +657,7 @@ class Colorization {
 		const customPrimaryContainerLight = DynamicColor.fromPalette({
 			name: `${colorName}Container`,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) =>
 				this.isFidelity ? customColorHct.dark.tone : this.isMonochrome ? 25 : 90,
 			isBackground: true,
@@ -658,6 +670,7 @@ class Colorization {
 		const customOnPrimaryContainerLight = DynamicColor.fromPalette({
 			name: `on${colorNameCapitalized}Container`,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) =>
 				this.isFidelity
 					? DynamicColor.foregroundTone(customPrimaryContainerLight.tone(schemeLight), 4.5)
@@ -1000,7 +1013,7 @@ export class Theming {
 		const r = parseInt(hexValue.substring(0, 2), 16);
 		const g = parseInt(hexValue.substring(2, 4), 16);
 		const b = parseInt(hexValue.substring(4, 6), 16);
-		console.log(`Converted hex ${hex} to rgb ${r} ${g} ${b}`);
+		// console.log(`Converted hex ${hex} to rgb ${r} ${g} ${b}`);
 		return `${r} ${g} ${b}`;
 	};
 
@@ -1011,7 +1024,7 @@ export class Theming {
 		if (targetElement === document.documentElement) {
 			const styleElementId = 'md_sys_dynamic_color_tokens';
 			let styles = '';
-			console.log('=== lib - theming - applyMaterialTokens ===');
+			// console.log('=== lib - theming - applyMaterialTokens ===');
 			appColors.forEach((token) => {
 				const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 				styles += `--md-sys-color-${tokenKebabCase}: ${hexFromArgb(colors[token])};\n`;

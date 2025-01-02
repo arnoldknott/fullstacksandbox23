@@ -45,7 +45,7 @@
 
 <div class="grid grid-cols-3 gap-4">
 	{#each links as link}
-		<div>
+		<div class="m-4">
 			<Card title={link.name} description={link.description} href={`playground${link.url}`}></Card>
 		</div>
 	{/each}
