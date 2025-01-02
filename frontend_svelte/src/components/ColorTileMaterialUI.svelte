@@ -74,7 +74,7 @@
 	// console.log('theme:', $theme);
 </script>
 
-<div class="flex h-24 grow p-2" style="background-color: var({background});">
+<div class="flex h-32 md:h-24 grow p-2" style="background-color: var({background});">
 	<p class="text-left text-sm md:text-base" style="color: var({color});">
 		{text}
 		<br />
