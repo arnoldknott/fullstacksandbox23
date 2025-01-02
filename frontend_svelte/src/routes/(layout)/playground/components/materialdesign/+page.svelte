@@ -37,7 +37,13 @@
 	const unsbscribeThemeStore = themeStore.subscribe((value) => {
 		theme = value;
 	});
-	let palettes = $derived(theme?.light?.palettes);
+	let palettes = $derived.by(() => {
+		if (!theme.currentMode) {
+			return '';
+		} else {
+			return theme[theme.currentMode].palettes
+		}
+	});
 	// $effect(() => {console.log('palettes:', palettes)})
 	// let toneValues = $state({} as {key: string})
 	// let toneValues = $derived(
@@ -74,13 +80,57 @@
 	// green: hue = 130
 	// use chroma and tone from error container - always keeps the color!
 	// text on it:
-	// choram and tone always from "on error container"
-	let status = $state([0, 0, 0])
-	let statusBackgroundColors = $derived([
-		`hsl(${status[0] * 1.2}, 80%, 80%)`,
-		`hsl(${status[1] * 1.2}, 80%, 80%)`,
-		`hsl(${status[2] * 1.2}, 80%, 80%)`,
-	]);
+	// chorma and tone always from "on error container"
+	let errorContainerHct = $derived.by(() => {
+		if (!theme.currentMode) {
+			return Hct.from(25,80,30)
+		} else {
+			return Hct.fromInt(theme[theme.currentMode].colors['error']) }
+		});
+	let onErrorContainerHct = $derived.by(() => {
+		if (!theme.currentMode){
+			return Hct.from(24,13,90)
+		} else {
+			return Hct.fromInt(theme[theme.currentMode].colors['onError'])
+		}
+	});
+	// console.log('errorContainerHct:', errorContainerHct);
+	let status = $state([50, 0, 100])
+	let statusColorsHue = $derived(
+		[
+			{
+				background: status[0] * 1.05 + 25,
+				text: status[0] * 1.05 + 25,
+			},
+			{
+				background: status[1] * 1.05 + 25,
+				text: status[0] * 1.05 + 25,
+			},
+			{
+				background: status[2] * 1.05 + 25,
+				text: status[0] * 1.05 + 25,
+			},
+		]
+	)
+	let statusColors = $derived([
+		{
+			background: hexFromArgb(Hct.from( statusColorsHue[0].background, errorContainerHct.chroma, errorContainerHct.tone).toInt()),
+			text: hexFromArgb(Hct.from( statusColorsHue[0].text, onErrorContainerHct.chroma, onErrorContainerHct.tone).toInt()),
+		},
+		{
+			background: hexFromArgb(Hct.from( statusColorsHue[1].background, errorContainerHct.chroma, errorContainerHct.tone).toInt()),
+			text: hexFromArgb(Hct.from( statusColorsHue[1].text, onErrorContainerHct.chroma, onErrorContainerHct.tone).toInt()),
+		},
+		{
+			background: hexFromArgb(Hct.from( statusColorsHue[2].background, errorContainerHct.chroma, errorContainerHct.tone).toInt()),
+			text: hexFromArgb(Hct.from( statusColorsHue[2].text, onErrorContainerHct.chroma, onErrorContainerHct.tone).toInt()),
+		},
+	])
+	// let statusColors = $derived([
+	// 	`hsl(${status[0] * 1.2}, 80%, 80%)`,
+	// 	`hsl(${status[1] * 1.2}, 80%, 80%)`,
+	// 	`hsl(${status[2] * 1.2}, 80%, 80%)`,
+	// ]);
 
 	let demoResourceDialog: Dialog;
 	// let name = $state('');
@@ -703,15 +753,15 @@
 		<div class="grid grid-cols-3">
 			<div
 				class="flex h-20 w-full items-center justify-center text-2xl"
-				style="background: linear-gradient(to right, {statusBackgroundColors[0]}, {statusBackgroundColors[0]}, {statusBackgroundColors[1]});"
+				style="background: linear-gradient(to right, {statusColors[0].background}, {statusColors[0].background}, {statusColors[1].background});"
 			>Left</div>
 			<div
 				class="flex h-20 w-full items-center justify-center text-2xl"
-				style="background: linear-gradient(to right, {statusBackgroundColors[1]}, {statusBackgroundColors[1]}, {statusBackgroundColors[1]});"
+				style="background: linear-gradient(to right, {statusColors[1].background}, {statusColors[1].background}, {statusColors[1].background});"
 			>Center</div>
 			<div
 				class="flex h-20 w-full items-center justify-center text-2xl"
-				style="background: linear-gradient(to right, {statusBackgroundColors[1]}, {statusBackgroundColors[2]}, {statusBackgroundColors[2]});"
+				style="background: linear-gradient(to right, {statusColors[1].background}, {statusColors[2].background}, {statusColors[2].background});"
 			>Right</div>
 			<!-- <div
 				class="flex h-20 w-full items-center justify-center text-2xl"
