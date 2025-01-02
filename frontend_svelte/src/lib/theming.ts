@@ -625,9 +625,19 @@ class Colorization {
 			isBackground: true
 		});
 
+		// let primaryPalette: TonalPalette;
+		// if (colorName === 'warning') {
+		// 	primaryPalette = TonalPalette.fromHueAndChroma(104, 84);
+		// } else if ( colorName === 'success') {
+		// 	primaryPalette = TonalPalette.fromHueAndChroma(130, 84);
+		// } else {
+		// 	primaryPalette = schemeLight.primaryPalette;
+		// }
+
 		const customPrimaryLight = DynamicColor.fromPalette({
 			name: colorName,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) => (this.isMonochrome ? 0 : 40),
 			// consider using options from primary instead of error"
 			background: (_schemeLight) => surfaceContainerHighestLight, //MaterialDynamicColors.highestSurface(schemeLight),
@@ -638,6 +648,7 @@ class Colorization {
 		const customOnPrimaryLight = DynamicColor.fromPalette({
 			name: `on${colorNameCapitalized}`,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) => (this.isMonochrome ? 10 : 20),
 			// consider using options from primary instead of error"
 			background: (_schemeLight) => customPrimaryLight, //MaterialDynamicColors.primary,
@@ -646,6 +657,7 @@ class Colorization {
 		const customPrimaryContainerLight = DynamicColor.fromPalette({
 			name: `${colorName}Container`,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) =>
 				this.isFidelity ? customColorHct.dark.tone : this.isMonochrome ? 25 : 90,
 			isBackground: true,
@@ -658,6 +670,7 @@ class Colorization {
 		const customOnPrimaryContainerLight = DynamicColor.fromPalette({
 			name: `on${colorNameCapitalized}Container`,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) =>
 				this.isFidelity
 					? DynamicColor.foregroundTone(customPrimaryContainerLight.tone(schemeLight), 4.5)

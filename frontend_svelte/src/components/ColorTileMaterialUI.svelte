@@ -2,7 +2,7 @@
 	// import type { AppTheme } from '$lib/theming';
 	// import { getContext } from 'svelte';
 	import { type AppTheme } from '$lib/theming';
-	import { hexFromArgb } from '@material/material-color-utilities';
+	import { hexFromArgb, Hct } from '@material/material-color-utilities';
 	// import { theme } from '../routes/(layout)/layout.svelte'; // TBD: consider moving to $lib/stores?
 	import { themeStore } from '$lib/stores';
 	import { onDestroy } from 'svelte';
@@ -16,7 +16,7 @@
 		theme = value;
 	});
 
-	let colorValue = $derived.by(() => {
+	let colorValueHex = $derived.by(() => {
 		if (!theme.currentMode) {
 			return '';
 		} else {
@@ -25,6 +25,28 @@
 				.replace('--md-sys-color-', '')
 				.replace(/-./g, (x) => x.toUpperCase()[1]) as keyof typeof colors;
 			return hexFromArgb(colors[variable]);
+		}
+	});
+	let colorValueHct = $derived.by(() => {
+		if (!theme.currentMode) {
+			return {
+				hue: NaN,
+				chroma: NaN,
+				tone: NaN,
+			};
+		} else {
+			let colors = theme[theme.currentMode].colors;
+			const variable = background
+				.replace('--md-sys-color-', '')
+				.replace(/-./g, (x) => x.toUpperCase()[1]) as keyof typeof colors;
+			const chroma = Math.round(Hct.fromInt(colors[variable]).chroma);
+			const hue = Math.round(Hct.fromInt(colors[variable]).hue);
+			const tone = Math.round(Hct.fromInt(colors[variable]).tone);
+			return {
+				hue: hue,
+				chroma: chroma,
+				tone: tone,
+			};
 		}
 	});
 
@@ -53,11 +75,13 @@
 </script>
 
 <div class="flex h-24 grow p-2" style="background-color: var({background});">
-	<p class="text-left text-base md:text-xl" style="color: var({color});">
+	<p class="text-left text-sm md:text-base" style="color: var({color});">
 		{text}
 		<br />
 		<!-- Works, but laggy, when dragging the colors: -->
-		<code class="text-sm">{colorValue}</code>
+		<code class="text-xs">{colorValueHex}</code>
+		<br />
+		<span class="text-xs">H: <code>{colorValueHct.hue}</code>, C: <code>{colorValueHct.chroma}</code>, T: <code>{colorValueHct.tone}</code></span>
 		<!-- <code class="text-base">{hexFromArgb(themestore.[themeStore.currentMode]colors[variable])}</code> -->
 	</p>
 </div>
