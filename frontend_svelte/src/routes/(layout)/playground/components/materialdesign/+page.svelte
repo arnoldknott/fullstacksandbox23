@@ -28,7 +28,10 @@
 
 	let showSections = $state({
 		colors: true,
-		palettes: true
+		palettes: true,
+		typography: true,
+		shapes: true,
+		sliders: true,
 	});
 	// let theme = $state(getContext('theme'));
 	// let palettes = $themeStore.light.palettes;
@@ -598,99 +601,122 @@
 
 	<div>
 		<Title>Typography</Title>
-		<p class="text-center text-2xl">Type face:</p>
-		<ul>
-			<li>
-				Brand
-				<ul>
-					<li>--md-ref-typeface-brand</li>
-				</ul>
-			</li>
-			<li>
-				Plain
-				<ul>
-					<li>--md-ref-typeface-plain</li>
-				</ul>
-			</li>
-		</ul>
-		<p class="text-center text-2xl">Type scale:</p>
-		<ul>
-			<li>
-				Display
-				<ul>
-					<li>--md-sys-typescale-display-medium-font</li>
-					<li>--md-sys-typescale-display-medium-size</li>
-					<li>--md-sys-typescale-display-medium-line-height</li>
-					<li>--md-sys-typescale-display-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Headline
-				<ul>
-					<li>--md-sys-typescale-headline-medium-font</li>
-					<li>--md-sys-typescale-headline-medium-size</li>
-					<li>--md-sys-typescale-headline-medium-line-height</li>
-					<li>--md-sys-typescale-headline-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Title
-				<ul>
-					<li>--md-sys-typescale-title-medium-font</li>
-					<li>--md-sys-typescale-title-medium-size</li>
-					<li>--md-sys-typescale-title-medium-line-height</li>
-					<li>--md-sys-typescale-title-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Body
-				<ul>
-					<li>--md-sys-typescale-body-medium-font</li>
-					<li>--md-sys-typescale-body-medium-size</li>
-					<li>--md-sys-typescale-body-medium-line-height</li>
-					<li>--md-sys-typescale-body-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Label
-				<ul>
-					<li>--md-sys-typescale-label-medium-font</li>
-					<li>--md-sys-typescale-label-medium-size</li>
-					<li>--md-sys-typescale-label-medium-line-height</li>
-					<li>--md-sys-typescale-label-medium-weight</li>
-				</ul>
-			</li>
-		</ul>
+		<div class="flex items-center gap-1">
+			<label class="label label-text text-base" for="switchTypography">Hide</label>
+			<input
+				type="checkbox"
+				class="switch switch-primary"
+				bind:checked={showSections.typography}
+				id="switchTypography"
+			/>
+			<label class="label label-text text-base" for="switchTypography">Show</label>
+		</div>
+		<div class={showSections.typography ? '' : 'hidden'}>
+			<p class="text-center text-2xl">Type face:</p>
+			<ul>
+				<li>
+					Brand
+					<ul>
+						<li>--md-ref-typeface-brand</li>
+					</ul>
+				</li>
+				<li>
+					Plain
+					<ul>
+						<li>--md-ref-typeface-plain</li>
+					</ul>
+				</li>
+			</ul>
+			<p class="text-center text-2xl">Type scale:</p>
+			<ul>
+				<li>
+					Display
+					<ul>
+						<li>--md-sys-typescale-display-medium-font</li>
+						<li>--md-sys-typescale-display-medium-size</li>
+						<li>--md-sys-typescale-display-medium-line-height</li>
+						<li>--md-sys-typescale-display-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Headline
+					<ul>
+						<li>--md-sys-typescale-headline-medium-font</li>
+						<li>--md-sys-typescale-headline-medium-size</li>
+						<li>--md-sys-typescale-headline-medium-line-height</li>
+						<li>--md-sys-typescale-headline-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Title
+					<ul>
+						<li>--md-sys-typescale-title-medium-font</li>
+						<li>--md-sys-typescale-title-medium-size</li>
+						<li>--md-sys-typescale-title-medium-line-height</li>
+						<li>--md-sys-typescale-title-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Body
+					<ul>
+						<li>--md-sys-typescale-body-medium-font</li>
+						<li>--md-sys-typescale-body-medium-size</li>
+						<li>--md-sys-typescale-body-medium-line-height</li>
+						<li>--md-sys-typescale-body-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Label
+					<ul>
+						<li>--md-sys-typescale-label-medium-font</li>
+						<li>--md-sys-typescale-label-medium-size</li>
+						<li>--md-sys-typescale-label-medium-line-height</li>
+						<li>--md-sys-typescale-label-medium-weight</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
 	</div>
 
 	<div>
 		<Title>Shapes (styles)</Title>
-
-		<!-- <div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-none);">
-			corner-none
+		<div class="flex items-center gap-1">
+			<label class="label label-text text-base" for="switchShapes">Hide</label>
+			<input
+				type="checkbox"
+				class="switch switch-primary"
+				bind:checked={showSections.shapes}
+				id="switchShapes"
+			/>
+			<label class="label label-text text-base" for="switchshapes">Show</label>
 		</div>
-		<div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-full);">
-			corner-full
-		</div> -->
-		<p class="text-center text-2xl">Supported tokens:</p>
-		<ul>
-			<li>--md-sys-shape-corner-none</li>
-			<li>--md-sys-shape-corner-extra-small</li>
-			<li>--md-sys-shape-corner-small</li>
-			<li>--md-sys-shape-corner-medium</li>
-			<li>--md-sys-shape-corner-large</li>
-			<li>--md-sys-shape-corner-extra-large</li>
-			<li>--md-sys-shape-corner-full</li>
-		</ul>
-		<p>The 7 values are not available - demonstrating the 9 steps of tailwindsCSS instead:</p>
-		<div class="grid grid-cols-2 gap-4 p-4 md:grid-cols-5">
-			{#each ['none', 'sm', '', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] as style}
-				<div
-					class="m-2 w-24 bg-primary-container p-2 text-center text-base md:text-xl rounded-{style}"
-				>
-					{style}
-				</div>
-			{/each}
+		<div class={showSections.shapes ? '' : 'hidden'}>
+			<!-- <div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-none);">
+				corner-none
+			</div>
+			<div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-full);">
+				corner-full
+			</div> -->
+			<p class="text-center text-2xl">Supported tokens:</p>
+			<ul>
+				<li>--md-sys-shape-corner-none</li>
+				<li>--md-sys-shape-corner-extra-small</li>
+				<li>--md-sys-shape-corner-small</li>
+				<li>--md-sys-shape-corner-medium</li>
+				<li>--md-sys-shape-corner-large</li>
+				<li>--md-sys-shape-corner-extra-large</li>
+				<li>--md-sys-shape-corner-full</li>
+			</ul>
+			<p>The 7 values are not available - demonstrating the 9 steps of tailwindsCSS instead:</p>
+			<div class="grid grid-cols-2 gap-4 p-4 md:grid-cols-5">
+				{#each ['none', 'sm', '', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] as style}
+					<div
+						class="m-2 w-24 bg-primary-container p-2 text-center text-base md:text-xl rounded-{style}"
+					>
+						{style}
+					</div>
+				{/each}
+			</div>
 		</div>
 	</div>
 
