@@ -68,6 +68,20 @@
 	// let theme = $state(getContext('theme'));
 	// $effect(() => { console.log('theme:', theme)} );
 
+	// for HCT:
+	// red: hue = 25,
+	// (yellow: hue = 104,)
+	// green: hue = 130
+	// use chroma and tone from error container - always keeps the color!
+	// text on it:
+	// choram and tone always from "on error container"
+	let status = $state([0, 0, 0])
+	let statusBackgroundColors = $derived([
+		`hsl(${status[0] * 1.2}, 80%, 80%)`,
+		`hsl(${status[1] * 1.2}, 80%, 80%)`,
+		`hsl(${status[2] * 1.2}, 80%, 80%)`,
+	]);
+
 	let demoResourceDialog: Dialog;
 	// let name = $state('');
 	// let description = $state('');
@@ -627,6 +641,82 @@
 					{style}
 				</div>
 			{/each}
+		</div>
+	</div>
+
+	<div>
+		<Title>Status sliders with HCT</Title>
+
+		<div class="grid grid-cols-3 gap-4">
+			<div class="w-full">
+				<label class="label label-text" for="leftStatus"
+					>Left Color: <span class="label">
+						<code class="label-text-alt">{status[0]}</code>
+					</span></label
+				>
+				<input
+					type="range"
+					min=0
+					max=100
+					step=1
+					class="range w-full"
+					aria-label="left Status"
+					id="leftStatus"
+					bind:value={status[0]}
+				/>
+			</div>
+			<div class="w-full">
+				<label class="label label-text" for="leftStatus"
+					>Center Color: <span class="label">
+						<code class="label-text-alt">{status[1]}</code>
+					</span></label
+				>
+				<input
+					type="range"
+					min=0
+					max=100
+					step=1
+					class="range w-full"
+					aria-label="left Status"
+					id="leftStatus"
+					bind:value={status[1]}
+				/>
+			</div>
+			<div class="w-full">
+				<label class="label label-text" for="leftStatus"
+					>Right Color: <span class="label">
+						<code class="label-text-alt">{status[2]}</code>
+					</span></label
+				>
+				<input
+					type="range"
+					min=0
+					max=100
+					step=1
+					class="range w-full"
+					aria-label="left Status"
+					id="leftStatus"
+					bind:value={status[2]}
+				/>
+			</div>
+		</div>
+		<div class="grid grid-cols-3">
+			<div
+				class="flex h-20 w-full items-center justify-center text-2xl"
+				style="background: linear-gradient(to right, {statusBackgroundColors[0]}, {statusBackgroundColors[0]}, {statusBackgroundColors[1]});"
+			>Left</div>
+			<div
+				class="flex h-20 w-full items-center justify-center text-2xl"
+				style="background: linear-gradient(to right, {statusBackgroundColors[1]}, {statusBackgroundColors[1]}, {statusBackgroundColors[1]});"
+			>Center</div>
+			<div
+				class="flex h-20 w-full items-center justify-center text-2xl"
+				style="background: linear-gradient(to right, {statusBackgroundColors[1]}, {statusBackgroundColors[2]}, {statusBackgroundColors[2]});"
+			>Right</div>
+			<!-- <div
+				class="flex h-20 w-full items-center justify-center text-2xl"
+				style="background: linear-gradient(to right, {statusColors[1]}, {statusColors[2]});"
+			></div> -->
 		</div>
 	</div>
 
