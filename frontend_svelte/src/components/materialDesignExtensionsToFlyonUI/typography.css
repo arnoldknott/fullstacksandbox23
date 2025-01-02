@@ -1,0 +1,7 @@
+.display{
+    @apply font-sans text-6xl
+
+    /* &-large {
+        @apply text-7xl
+    } */
+}

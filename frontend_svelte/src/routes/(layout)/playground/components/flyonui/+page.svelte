@@ -1438,6 +1438,10 @@
 			Some text in <em>mono</em> font family, still <b>TailwindCSS</b> default, not overwritten in
 			<code>tailwindcss.config.js</code> yet
 		</p>
+		<hr />
+		<p class="display display-large">Display - Large</p>
+		<p class="display">Display</p>
+
 	</div>
 
 	<div>
