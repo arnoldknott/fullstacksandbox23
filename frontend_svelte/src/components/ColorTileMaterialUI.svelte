@@ -32,7 +32,7 @@
 			return {
 				hue: NaN,
 				chroma: NaN,
-				tone: NaN,
+				tone: NaN
 			};
 		} else {
 			let colors = theme[theme.currentMode].colors;
@@ -45,7 +45,7 @@
 			return {
 				hue: hue,
 				chroma: chroma,
-				tone: tone,
+				tone: tone
 			};
 		}
 	});
@@ -74,14 +74,17 @@
 	// console.log('theme:', $theme);
 </script>
 
-<div class="flex h-32 md:h-24 grow p-2" style="background-color: var({background});">
+<div class="flex h-32 grow p-2 md:h-24" style="background-color: var({background});">
 	<p class="text-left text-sm md:text-base" style="color: var({color});">
 		{text}
 		<br />
 		<!-- Works, but laggy, when dragging the colors: -->
 		<code class="text-xs">{colorValueHex}</code>
 		<br />
-		<span class="text-xs">H: <code>{colorValueHct.hue}</code>, C: <code>{colorValueHct.chroma}</code>, T: <code>{colorValueHct.tone}</code></span>
+		<span class="text-xs"
+			>H: <code>{colorValueHct.hue}</code>, C: <code>{colorValueHct.chroma}</code>, T:
+			<code>{colorValueHct.tone}</code></span
+		>
 		<!-- <code class="text-base">{hexFromArgb(themestore.[themeStore.currentMode]colors[variable])}</code> -->
 	</p>
 </div>

@@ -1439,9 +1439,8 @@
 			<code>tailwindcss.config.js</code> yet
 		</p>
 		<hr />
-		<p class="display display-large">Display - Large</p>
+		<p class="display-large display">Display - Large</p>
 		<p class="display">Display</p>
-
 	</div>
 
 	<div>
