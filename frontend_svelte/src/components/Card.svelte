@@ -4,25 +4,21 @@
 
 <!-- TBD: update to md-card -->
 
-
 <div class="block rounded-lg bg-white text-left shadow-lg dark:bg-neutral-600">
 	<!-- Card body -->
 
-
 	<div class="card sm:max-w-sm">
 		<div class="card-body rounded-2xl bg-primary-container">
-			<h5 class="card-title heading text-primary-container-content">{title}</h5>
+			<h5 class="heading card-title text-primary-container-content">{title}</h5>
 			<p class="body text-primary-container-content">
 				{description}
 			</p>
-			<div class="mt-4 card-actions">
-				<a {href}><button class="btn btn-primary label">Link to {title.toLowerCase()}</button></a>
+			<div class="card-actions mt-4">
+				<a {href}><button class="btn label btn-primary">Link to {title.toLowerCase()}</button></a>
 			</div>
 		</div>
 	</div>
 </div>
-
-
 
 <!-- Card -->
 <!-- <div class="p-6">
