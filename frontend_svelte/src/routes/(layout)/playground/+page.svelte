@@ -3,6 +3,12 @@
 
 	export const links = [
 		{
+			name: 'Layout',
+			description:
+				'Playground for layouting components, using grid, flex, etc.',
+			url: '/layout'
+		},
+		{
 			name: 'Components',
 			description:
 				'Prototypes of components with applied design - candidates to become Svelte components',
