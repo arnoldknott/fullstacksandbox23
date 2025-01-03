@@ -38,7 +38,7 @@
 	// let myTemperature: HTMLElement
 </script>
 
-<div class="grid grid-cols-3 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 	<Card
 		title="FlyonUI 1"
 		description="Playground and showcase for flyonUI components and design"
