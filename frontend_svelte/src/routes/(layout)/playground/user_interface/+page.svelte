@@ -66,6 +66,23 @@
         id="customRange1" />
 </div> -->
 
+<div>
+	<Title>Card</Title>
+	<div class="card sm:max-w-sm">
+		<div class="card-body bg-primary-container text-primary-container-content shadow-primary">
+			<h5 class="card-title mb-2.5">Body of a Card here</h5>
+			<p class="mb-4">
+				Soe text to fill in the body fo the card. This could be anything here. But for now just
+				text filling in here.
+			</p>
+			<div class="card-actions">
+				<button class="btn btn-primary">Card button</button>
+			</div>
+		</div>
+	</div>
+</div>
+<HorizontalRule />
+
 <Title>Tabs</Title>
 <Tabs {tabs}>Some Text common to all tabs</Tabs>
 <HorizontalRule />

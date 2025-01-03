@@ -2,8 +2,8 @@
 	let { title, description, href } = $props();
 </script>
 
-<div class="shadow-prinary card">
-	<div class="card-body rounded-2xl bg-primary-container">
+<div class="card">
+	<div class="card-body rounded-2xl bg-primary-container ">
 		<h5 class="title title-large card-title mb-2.5 text-primary-container-content">{title}</h5>
 		<p class="body body-small mb-2.5 text-primary-container-content">
 			{description}
