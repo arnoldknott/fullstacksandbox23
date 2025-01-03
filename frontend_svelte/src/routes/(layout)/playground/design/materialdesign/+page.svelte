@@ -77,99 +77,6 @@
 	// let theme = $state(getContext('theme'));
 	// $effect(() => { console.log('theme:', theme)} );
 
-	// for HCT:
-	// red: hue = 25,
-	// (yellow: hue = 104,)
-	// green: hue = 130
-	// use chroma and tone from error container - always keeps the color!
-	// text on it:
-	// chorma and tone always from "on error container"
-	let errorContainerHct = $derived.by(() => {
-		if (!theme.currentMode) {
-			return Hct.from(25, 80, 30);
-		} else {
-			return Hct.fromInt(theme[theme.currentMode].colors['error']);
-		}
-	});
-	let onErrorContainerHct = $derived.by(() => {
-		if (!theme.currentMode) {
-			return Hct.from(24, 13, 90);
-		} else {
-			return Hct.fromInt(theme[theme.currentMode].colors['onError']);
-		}
-	});
-	// console.log('errorContainerHct:', errorContainerHct);
-	let status = $state([50, 0, 100]);
-	let statusColorsHue = $derived([
-		{
-			background: status[0] * 1.05 + 25,
-			text: status[0] * 1.05 + 25
-		},
-		{
-			background: status[1] * 1.05 + 25,
-			text: status[0] * 1.05 + 25
-		},
-		{
-			background: status[2] * 1.05 + 25,
-			text: status[0] * 1.05 + 25
-		}
-	]);
-	let statusColors = $derived([
-		{
-			background: hexFromArgb(
-				Hct.from(
-					statusColorsHue[0].background,
-					errorContainerHct.chroma,
-					errorContainerHct.tone
-				).toInt()
-			),
-			text: hexFromArgb(
-				Hct.from(
-					statusColorsHue[0].text,
-					onErrorContainerHct.chroma,
-					onErrorContainerHct.tone
-				).toInt()
-			)
-		},
-		{
-			background: hexFromArgb(
-				Hct.from(
-					statusColorsHue[1].background,
-					errorContainerHct.chroma,
-					errorContainerHct.tone
-				).toInt()
-			),
-			text: hexFromArgb(
-				Hct.from(
-					statusColorsHue[1].text,
-					onErrorContainerHct.chroma,
-					onErrorContainerHct.tone
-				).toInt()
-			)
-		},
-		{
-			background: hexFromArgb(
-				Hct.from(
-					statusColorsHue[2].background,
-					errorContainerHct.chroma,
-					errorContainerHct.tone
-				).toInt()
-			),
-			text: hexFromArgb(
-				Hct.from(
-					statusColorsHue[2].text,
-					onErrorContainerHct.chroma,
-					onErrorContainerHct.tone
-				).toInt()
-			)
-		}
-	]);
-	// let statusColors = $derived([
-	// 	`hsl(${status[0] * 1.2}, 80%, 80%)`,
-	// 	`hsl(${status[1] * 1.2}, 80%, 80%)`,
-	// 	`hsl(${status[2] * 1.2}, 80%, 80%)`,
-	// ]);
-
 	let demoResourceDialog: Dialog;
 	// let name = $state('');
 	// let description = $state('');
@@ -744,99 +651,45 @@
 			</ul>
 			<p>The 7 values are not available - demonstrating the 9 steps of tailwindsCSS instead:</p>
 			<div class="grid grid-cols-2 gap-4 p-4 md:grid-cols-5">
-				{#each ['none', 'sm', '', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] as style}
+				<!-- {#each ['none', 'sm', '', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] as style}
 					<div
 						class="m-2 w-24 bg-primary-container p-2 text-center text-base md:text-xl rounded-{style}"
 					>
 						{style}
 					</div>
-				{/each}
-			</div>
-		</div>
-	</div>
-
-	<div>
-		<Title>Status sliders with HCT</Title>
-
-		<div class="grid grid-cols-3 gap-4">
-			<div class="w-full">
-				<label class="label label-text" for="leftStatus"
-					>Left Color: <span class="label">
-						<code class="label-text-alt">{status[0]}</code>
-					</span></label
+				{/each} -->
+				<div
+					class="m-2 w-24 rounded-none bg-primary-container p-2 text-center text-base md:text-xl"
 				>
-				<input
-					type="range"
-					min="0"
-					max="100"
-					step="1"
-					class="range w-full"
-					aria-label="left Status"
-					id="leftStatus"
-					bind:value={status[0]}
-				/>
-			</div>
-			<div class="w-full">
-				<label class="label label-text" for="leftStatus"
-					>Center Color: <span class="label">
-						<code class="label-text-alt">{status[1]}</code>
-					</span></label
+					none
+				</div>
+				<div class="m-2 w-24 rounded-sm bg-primary-container p-2 text-center text-base md:text-xl">
+					sm
+				</div>
+				<div
+					class="m-2 w-24 rounded bg-primary-container p-2 text-center text-base md:text-xl"
+				></div>
+				<div class="m-2 w-24 rounded-md bg-primary-container p-2 text-center text-base md:text-xl">
+					md
+				</div>
+				<div class="m-2 w-24 rounded-lg bg-primary-container p-2 text-center text-base md:text-xl">
+					lg
+				</div>
+				<div class="m-2 w-24 rounded-xl bg-primary-container p-2 text-center text-base md:text-xl">
+					xl
+				</div>
+				<div class="m-2 w-24 rounded-2xl bg-primary-container p-2 text-center text-base md:text-xl">
+					2xl
+				</div>
+				<div class="m-2 w-24 rounded-3xl bg-primary-container p-2 text-center text-base md:text-xl">
+					3xl
+				</div>
+				<div
+					class="m-2 w-24 rounded-full bg-primary-container p-2 text-center text-base md:text-xl"
 				>
-				<input
-					type="range"
-					min="0"
-					max="100"
-					step="1"
-					class="range w-full"
-					aria-label="left Status"
-					id="leftStatus"
-					bind:value={status[1]}
-				/>
+					full
+				</div>
 			</div>
-			<div class="w-full">
-				<label class="label label-text" for="leftStatus"
-					>Right Color: <span class="label">
-						<code class="label-text-alt">{status[2]}</code>
-					</span></label
-				>
-				<input
-					type="range"
-					min="0"
-					max="100"
-					step="1"
-					class="range w-full"
-					aria-label="left Status"
-					id="leftStatus"
-					bind:value={status[2]}
-				/>
-			</div>
-		</div>
-		<div class="grid grid-cols-3">
-			<div
-				class="flex h-20 w-full items-center justify-center text-2xl"
-				style="background: linear-gradient(to right, {statusColors[0].background}, {statusColors[0]
-					.background}, {statusColors[1].background});"
-			>
-				Left
-			</div>
-			<div
-				class="flex h-20 w-full items-center justify-center text-2xl"
-				style="background: linear-gradient(to right, {statusColors[1].background}, {statusColors[1]
-					.background}, {statusColors[1].background});"
-			>
-				Center
-			</div>
-			<div
-				class="flex h-20 w-full items-center justify-center text-2xl"
-				style="background: linear-gradient(to right, {statusColors[1].background}, {statusColors[2]
-					.background}, {statusColors[2].background});"
-			>
-				Right
-			</div>
-			<!-- <div
-				class="flex h-20 w-full items-center justify-center text-2xl"
-				style="background: linear-gradient(to right, {statusColors[1]}, {statusColors[2]});"
-			></div> -->
 		</div>
 	</div>
 
