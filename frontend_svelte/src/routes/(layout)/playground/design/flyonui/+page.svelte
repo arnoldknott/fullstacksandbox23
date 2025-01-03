@@ -545,13 +545,13 @@
 				>
 					<div class="m-5 grid grid-cols-4 gap-4 xl:grid-cols-8">
 						<ColorTileFlyonUi>
-							<div class="bg-base-50 {colorTileClasses}">
-								<p class="text-surface-content {colorLabelClasses}">base-50</p>
+							<div class="bg-base-150 {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">base-150</p>
 							</div>
 						</ColorTileFlyonUi>
 						<ColorTileFlyonUi>
-							<div class="bg-base-150 {colorTileClasses}">
-								<p class="text-surface-content {colorLabelClasses}">base-150</p>
+							<div class="bg-base-250 {colorTileClasses}">
+								<p class="text-surface-content {colorLabelClasses}">base-250</p>
 							</div>
 						</ColorTileFlyonUi>
 						<ColorTileFlyonUi>

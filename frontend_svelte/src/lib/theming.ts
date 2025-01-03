@@ -261,6 +261,7 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 
 // add missing material design tokens as utility classes for flyonUI
 // with both material design and flyonUI syntax:
+// TBD: does this have an impact at all, after tailwind extensions are mapped to material design colors?
 export const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
 	['primaryContainer', 'primary-container'],
 	['onPrimaryContainer', 'primary-container-content'],
@@ -278,8 +279,8 @@ export const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
 	['onSuccessContainer', 'success-container-content'],
 	['infoContainer', 'info-container'],
 	['onInfoContainer', 'info-container-content'],
-	['surfaceContainerLow', 'base-50'],
-	['surfaceContainerHigh', 'base-150'],
+	['surfaceContainerLow', 'base-150'],
+	['surfaceContainerHigh', 'base-250'],
 	['outline', 'outline'],
 	['outlineVariant', 'outline-variant'],
 	['inverseSurface', 'inverse-surface'],
