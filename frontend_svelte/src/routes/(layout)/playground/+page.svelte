@@ -5,12 +5,19 @@
 		{
 			name: 'Components',
 			description:
-				'Svelte components to play around with various Tailwind CSS features and Tailwind elements',
+				'Prototypes of components with applied design - candidates to become Svelte components',
 			url: '/components'
 		},
 		{
+			name: 'Design',
+			description:
+				'Design adaption of Material Design 3 principles to FlyonUI components supported by TailwindCSS',
+			url: '/design'
+		},
+		{
 			name: 'User interface',
-			description: 'play with elements of the user interface',
+			description:
+				'Playground for elements of the user interface, before turing into Svelte components',
 			url: '/user_interface'
 		},
 		{
@@ -43,7 +50,7 @@
 	];
 </script>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
 	{#each links as link}
 		<Card title={link.name} description={link.description} href={`playground${link.url}`}></Card>
 	{/each}

@@ -2,22 +2,22 @@
 	let { title, description, href } = $props();
 </script>
 
-
-
-<div class="card shadow-prinary">
-	<div class="card-body relative rounded-2xl bg-primary-container">
-		<h5 class="card-title title title-large text-primary-container-content">{title}</h5>
-		<p class="card-body body body-small text-primary-container-content">
+<div class="shadow-prinary card">
+	<div class="card-body rounded-2xl bg-primary-container">
+		<h5 class="title title-large card-title mb-2.5 text-primary-container-content">{title}</h5>
+		<p class="body body-small mb-2.5 text-primary-container-content">
 			{description}
 		</p>
-		<div class="card-actions place-content-end">
-			<a {href}><button class="btn label label-small rounded-full px-3 btn-primary text-primary-content shadow-primary">Link to {title.toLowerCase()}</button></a>
+		<div class="card-actions text-center">
+			<a {href}
+				><button
+					class="label-small btn label btn-primary rounded-full px-3 text-primary-content shadow-primary"
+					>Link to {title.toLowerCase()}</button
+				></a
+			>
 		</div>
 	</div>
 </div>
-
-
-
 
 <!--
 <div class="block rounded-lg bg-white text-left shadow-lg dark:bg-neutral-600">
