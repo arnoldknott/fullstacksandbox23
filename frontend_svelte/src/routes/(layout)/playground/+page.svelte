@@ -4,8 +4,7 @@
 	export const links = [
 		{
 			name: 'Layout',
-			description:
-				'Playground for layouting components, using grid, flex, etc.',
+			description: 'Playground for layouting components, using grid, flex, etc.',
 			url: '/layout'
 		},
 		{

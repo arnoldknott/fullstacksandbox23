@@ -167,7 +167,7 @@
 				style="background: linear-gradient(to right, {statusColors[1]}, {statusColors[2]});"
 			></div> -->
 		</div>
-        <HorizontalRule />
+		<HorizontalRule />
 	</div>
 
 	<div>
@@ -221,7 +221,7 @@
 				<span class="icon-[noto--cross-mark] size-12"></span>
 			</div>
 		</div>
-        <HorizontalRule />
+		<HorizontalRule />
 	</div>
 
 	<div>
@@ -285,7 +285,7 @@
 				</div>
 			</div>
 		</div>
-        <HorizontalRule />
+		<HorizontalRule />
 	</div>
 
 	<div>
@@ -441,6 +441,4 @@
 
 		<HorizontalRule />
 	</div>
-
-
 </div>

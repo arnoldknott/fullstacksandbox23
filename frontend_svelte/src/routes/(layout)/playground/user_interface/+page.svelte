@@ -72,8 +72,8 @@
 		<div class="card-body bg-primary-container text-primary-container-content shadow-primary">
 			<h5 class="card-title mb-2.5">Body of a Card here</h5>
 			<p class="mb-4">
-				Soe text to fill in the body fo the card. This could be anything here. But for now just
-				text filling in here.
+				Soe text to fill in the body fo the card. This could be anything here. But for now just text
+				filling in here.
 			</p>
 			<div class="card-actions">
 				<button class="btn btn-primary">Card button</button>

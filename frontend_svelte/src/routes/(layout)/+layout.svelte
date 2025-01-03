@@ -27,7 +27,7 @@
 
 	let mainContent: HTMLDivElement;
 	let systemDark = $state(false);
-	let mode: "light" | "dark" = $state('dark');
+	let mode: 'light' | 'dark' = $state('dark');
 
 	const applyTheming: Action = (_node) => {
 		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

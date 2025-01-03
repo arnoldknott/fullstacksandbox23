@@ -59,7 +59,6 @@ const materialDesignColors = [
     "background", "onBackground", // seems to be legacy
 ] as const;
 
-
 type MaterialDesignColor = Record<(typeof materialDesignColors)[number], number>;
 // type MaterialDesignPalette = Record<(typeof materialDesignPalettes)[number], TonalPalette>;
 type MaterialDesignPalette = {
