@@ -4,8 +4,8 @@
 
 <div class="card">
 	<div class="card-body rounded-2xl bg-base-300">
-		<h5 class="text-title-large card-title mb-2.5 text-primary">{title}</h5>
-		<p class="text-body text-body-small mb-2.5 text-primary-container-content">
+		<h5 class="text-title-small md:text-title lg:text-title-large card-title mb-2.5 text-primary">{title}</h5>
+		<p class="text-body-small md:text-body mb-2.5 text-primary-container-content">
 			{description}
 		</p>
 		<div class="card-actions text-center">

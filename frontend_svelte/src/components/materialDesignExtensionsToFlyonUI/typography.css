@@ -16,11 +16,11 @@
 	.text-heading {
 		@apply font-sans text-[28pt] leading-[36pt];
 
-		&.-large {
+		&-large {
 			@apply font-sans text-[32pt] leading-[40pt];
 		}
 
-		&.-small {
+		&-small {
 			@apply font-sans text-[24pt] leading-[32pt];
 		}
 	}
