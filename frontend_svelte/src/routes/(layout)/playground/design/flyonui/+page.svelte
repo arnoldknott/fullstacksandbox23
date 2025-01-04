@@ -2,7 +2,7 @@
 	import Title from '$components/Title.svelte';
 	// import { createRawSnippet, type Snippet } from 'svelte';
 
-	import ColorTileFlyonUi from '$components/ColorTileFlyonUI.svelte';
+	import ColorTileFlyonUi from './ColorTileFlyonUI.svelte';
 	import { type AppTheme } from '$lib/theming';
 	import { themeStore } from '$lib/stores';
 	// import { hexFromArgb } from '@material/material-color-utilities';

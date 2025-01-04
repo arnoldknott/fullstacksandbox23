@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ColorTileMaterialUi from '$components/ColorTileMaterialUI.svelte';
+	import ColorTileMaterialUi from './ColorTileMaterialUI.svelte';
 	import '@material/web/icon/icon.js';
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
