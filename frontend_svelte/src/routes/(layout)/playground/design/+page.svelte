@@ -4,9 +4,10 @@
 	import AccordionItem from './AccordionItem.svelte';
 	import ContentText from './ContentText.svelte';
 	import AppText from './AppText.svelte';
-	import ContentButtons from './ContentButtons.svelte';
-	import AppButtons from './AppButtons.svelte';
+	import ContentInteraction from './ContentInteraction.svelte';
+	import AppInteraction from './AppInteraction.svelte';
 	import BackgroundRows from './BackgroundRows.svelte';
+	import Notifications from './Notifications.svelte';
 </script>
 
 <Heading>🚧 Construction sites for design experiments 🚧</Heading>
@@ -36,7 +37,7 @@
 
 <Heading>👍 Results, ready for use 👍</Heading>
 
-<div class="accordion accordion-bordered divide-y" data-accordion-always-open="">
+<div class="accordion accordion-bordered" data-accordion-always-open="">
 	<AccordionItem title="Backgrounds">
 		<div class="flex h-screen min-h-fit w-full flex-col bg-background text-base-content">
 			<div class="flex h-screen min-h-fit w-full flex-col bg-background text-base-content">
@@ -57,12 +58,15 @@
 		<BackgroundRows><AppText /></BackgroundRows>
 		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
 	</AccordionItem>
-	<AccordionItem title="Buttons for content control">
-		<BackgroundRows><ContentButtons /></BackgroundRows>
+	<AccordionItem title="Interactions for content control">
+		<BackgroundRows><ContentInteraction /></BackgroundRows>
 		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
 	</AccordionItem>
-	<AccordionItem title="Buttons for app functionality">
-		<BackgroundRows><AppButtons /></BackgroundRows>
+	<AccordionItem title="Interactions for app functionality">
+		<BackgroundRows><AppInteraction /></BackgroundRows>
 		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
+	</AccordionItem>
+	<AccordionItem title="Notifications">
+		<BackgroundRows><Notifications /></BackgroundRows>
 	</AccordionItem>
 </div>
