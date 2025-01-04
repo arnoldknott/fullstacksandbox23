@@ -38,14 +38,14 @@
 
 <div class="accordion accordion-bordered divide-y" data-accordion-always-open="">
 	<AccordionItem title="Backgrounds">
-		<div class="h-screen min-h-fit w-full flex flex-col bg-background text-base-content">
-			<div class="h-screen min-h-fit w-full flex flex-col bg-background text-base-content">
-				<div class="h-1/6 min-h-fit bg-background p-4">Background<br></div>
-				<div class="w-5/6 h-1/6 min-h-fit bg-base-100 p-4">base-100<br></div>
-				<div class="w-4/6 h-1/6 min-h-fit bg-base-150 p-4">base-150<br></div>
-				<div class="w-3/6 h-1/6 min-h-fit bg-base-200 p-4">base-200<br></div>
-				<div class="w-2/6 h-1/6 min-h-fit bg-base-250 p-4">base-250<br></div>
-				<div class="w-1/6 h-1/6 min-h-fit bg-base-300 p-4">base-300<br></div>
+		<div class="flex h-screen min-h-fit w-full flex-col bg-background text-base-content">
+			<div class="flex h-screen min-h-fit w-full flex-col bg-background text-base-content">
+				<div class="h-1/6 min-h-fit bg-background p-4">Background<br /></div>
+				<div class="h-1/6 min-h-fit w-5/6 bg-base-100 p-4">base-100<br /></div>
+				<div class="h-1/6 min-h-fit w-4/6 bg-base-150 p-4">base-150<br /></div>
+				<div class="h-1/6 min-h-fit w-3/6 bg-base-200 p-4">base-200<br /></div>
+				<div class="h-1/6 min-h-fit w-2/6 bg-base-250 p-4">base-250<br /></div>
+				<div class="h-1/6 min-h-fit w-1/6 bg-base-300 p-4">base-300<br /></div>
 			</div>
 		</div>
 	</AccordionItem>
