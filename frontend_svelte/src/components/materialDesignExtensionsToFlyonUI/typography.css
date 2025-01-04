@@ -2,23 +2,23 @@
 	@apply font-sans text-[45pt] leading-[52pt];
 
 	&-large {
-		@apply text-[57pt] leading-[64pt] tracking-[-0.25pt];
+		@apply font-sans text-[57pt] leading-[64pt] tracking-[-0.25pt];
 	}
 
 	&-small {
-		@apply text-[36pt] leading-[44pt];
+		@apply font-sans text-[36pt] leading-[44pt];
 	}
 }
 
 .heading {
 	@apply font-sans text-[28pt] leading-[36pt];
 
-	&-large {
-		@apply text-[32pt] leading-[40pt];
+	&.-large {
+		@apply font-sans text-[32pt] leading-[40pt];
 	}
 
-	&-small {
-		@apply text-[24pt] leading-[32pt];
+	&.-small {
+		@apply font-sans text-[24pt] leading-[32pt];
 	}
 }
 
@@ -26,11 +26,11 @@
 	@apply font-sans text-[16pt] leading-[24pt] tracking-[0.15pt];
 
 	&-large {
-		@apply text-[22pt] leading-[28pt] tracking-normal;
+		@apply font-sans text-[22pt] leading-[28pt] tracking-normal;
 	}
 
 	&-small {
-		@apply text-[14pt] leading-[20pt] tracking-[0.1pt];
+		@apply font-sans text-[14pt] leading-[20pt] tracking-[0.1pt];
 	}
 }
 
@@ -38,11 +38,11 @@
 	@apply font-serif text-[14pt] leading-[20pt] tracking-[0.25pt];
 
 	&-large {
-		@apply text-[16pt] leading-[24pt] tracking-[0.5pt];
+		@apply font-serif text-[16pt] leading-[24pt] tracking-[0.5pt];
 	}
 
 	&-small {
-		@apply text-[12pt] leading-[16pt] tracking-[0.4pt];
+		@apply font-serif text-[12pt] leading-[16pt] tracking-[0.4pt];
 	}
 }
 
@@ -50,14 +50,14 @@
 	@apply font-sans text-[12pt] font-[500] leading-[16pt] tracking-[0.5pt];
 
 	&-prominent {
-		@apply font-[700];
+		@apply font-sans font-[700];
 	}
 
 	&-large {
-		@apply text-[14pt] leading-[20pt] tracking-[0.1pt];
+		@apply font-sans text-[14pt] leading-[20pt] tracking-[0.1pt];
 	}
 
 	&-small {
-		@apply text-[11pt] leading-[16pt] tracking-[0.5pt];
+		@apply font-sans text-[11pt] leading-[16pt] tracking-[0.5pt];
 	}
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Heading from '$components/Heading.svelte';
-	import AccordionColorMapping from './AccordionColorMapping.svelte';
+	import AccordionItem from '../AccordionItem.svelte';
 	import ColorTiles from './ColorTiles.svelte';
 </script>
 
@@ -11,7 +11,8 @@
 		<div
 		class="accordion accordion-bordered divide-y"
 		data-accordion-always-open="">
-			<AccordionColorMapping title="Foreground Colors">
+			<AccordionItem title="Foreground Colors">
+				<div class="grid grid-cols-2 gap-2">
 				<ColorTiles
 					materialVariables={{
 						background: '--md-sys-color-primary',
@@ -403,8 +404,10 @@
 						name: 'error-container-content'
 					}}
 				/>
-			</AccordionColorMapping>
-			<AccordionColorMapping title="Background Colors">
+			</div>
+			</AccordionItem>
+			<AccordionItem title="Background Colors">
+				<div class="grid grid-cols-2 gap-2">
 				<ColorTiles
 					materialVariables={{
 						background: '--md-sys-color-surface-container-lowest',
@@ -538,8 +541,10 @@
 						name: 'background'
 					}}
 				/>
-			</AccordionColorMapping>
-			<AccordionColorMapping title="Other Colors">
+				</div>
+			</AccordionItem>
+			<AccordionItem title="Other Colors">
+				<div class="grid grid-cols-2 gap-2">
 				<ColorTiles
 					materialVariables={{
 						background: '--md-sys-color-inverse-primary',
@@ -744,7 +749,8 @@
 						name: 'surface-tint'
 					}}
 				/>
-			</AccordionColorMapping>
+				</div>
+			</AccordionItem>
 		</div>
 	</div>
 </div>
