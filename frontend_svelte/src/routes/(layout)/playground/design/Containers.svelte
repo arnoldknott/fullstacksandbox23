@@ -1,53 +1,61 @@
 <div class="flex flex-row">
-	<div class="grow gap-4 container bg-primary-container border-outline-variant border-2 rounded-xl p-4">
-        <h3 class="text-primary-container-content text-title-small md:text-title">Title</h3>
-        <p class="text-body text-primary-container-content mt-2">Some text here</p>
-        <button
-			class="text-label-small md:text-label btn btn-primary max-w-16 rounded-full bg-primary text-primary-content mt-2"
+	<div
+		class="container grow gap-4 rounded-xl border-2 border-outline-variant bg-primary-container p-4"
+	>
+		<h3 class="text-title-small md:text-title text-primary-container-content">Title</h3>
+		<p class="text-body mt-2 text-primary-container-content">Some text here</p>
+		<button
+			class="text-label-small md:text-label btn btn-primary mt-2 max-w-16 rounded-full bg-primary text-primary-content"
 			>Ok</button
 		>
-        <button
+		<button
 			class="text-label-small md:text-label btn btn-primary max-w-24 rounded-full bg-secondary text-secondary-content"
 			>Cancel</button
 		>
-    </div>
-    <div class="divider-outline-variant divider divider-horizontal"></div>
-	<div class="grow gap-4 container bg-secondary-container border-outline-variant border-2 rounded-xl p-4">
-        <h3 class="text-secondary-container-content text-title-small md:text-title">Title</h3>
-        <p class="text-body text-secondary-container-content mt-2">Some text here</p>
-        <button
-			class="text-label-small md:text-label btn btn-primary max-w-16 rounded-full bg-primary text-primary-content mt-2"
+	</div>
+	<div class="divider-outline-variant divider divider-horizontal"></div>
+	<div
+		class="container grow gap-4 rounded-xl border-2 border-outline-variant bg-secondary-container p-4"
+	>
+		<h3 class="text-title-small md:text-title text-secondary-container-content">Title</h3>
+		<p class="text-body mt-2 text-secondary-container-content">Some text here</p>
+		<button
+			class="text-label-small md:text-label btn btn-primary mt-2 max-w-16 rounded-full bg-primary text-primary-content"
 			>Ok</button
 		>
-        <button
+		<button
 			class="text-label-small md:text-label btn btn-primary max-w-24 rounded-full bg-secondary text-secondary-content"
 			>Cancel</button
 		>
-    </div>
+	</div>
 	<div class="divider-outline-variant divider divider-horizontal"></div>
-	<div class="grow gap-4 container bg-accent-container border-outline-variant border-2 rounded-xl p-4">
-        <h3 class="text-accent-container-content text-title-small md:text-title">Title</h3>
-        <p class="text-body text-accent-container-content mt-2">Some text here</p>
-        <button
-			class="text-label-small md:text-label btn btn-accent max-w-16 rounded-full bg-accent text-accent-content mt-2"
+	<div
+		class="container grow gap-4 rounded-xl border-2 border-outline-variant bg-accent-container p-4"
+	>
+		<h3 class="text-title-small md:text-title text-accent-container-content">Title</h3>
+		<p class="text-body mt-2 text-accent-container-content">Some text here</p>
+		<button
+			class="text-label-small md:text-label btn btn-accent mt-2 max-w-16 rounded-full bg-accent text-accent-content"
 			>Ok</button
 		>
-        <button
-			class="text-label-small md:text-label btn btn-neutral max-w-24 rounded-full bg-neutral text-neutral-content"
+		<button
+			class="text-label-small md:text-label btn-neutral btn max-w-24 rounded-full bg-neutral text-neutral-content"
 			>Cancel</button
 		>
-    </div>
+	</div>
 	<div class="divider-outline-variant divider divider-horizontal"></div>
-	<div class="grow gap-4 container bg-neutral-container border-outline-variant border-2 rounded-xl p-4">
-        <h3 class="text-neutral-container-content text-title-small md:text-title">Title</h3>
-        <p class="text-body text-neutral-container-content mt-2">Some text here</p>
-        <button
-			class="text-label-small md:text-label btn btn-accent max-w-16 rounded-full bg-accent text-accent-content mt-2"
+	<div
+		class="container grow gap-4 rounded-xl border-2 border-outline-variant bg-neutral-container p-4"
+	>
+		<h3 class="text-title-small md:text-title text-neutral-container-content">Title</h3>
+		<p class="text-body mt-2 text-neutral-container-content">Some text here</p>
+		<button
+			class="text-label-small md:text-label btn btn-accent mt-2 max-w-16 rounded-full bg-accent text-accent-content"
 			>Ok</button
 		>
-        <button
-			class="text-label-small md:text-label btn btn-neutral max-w-24 rounded-full bg-neutral text-neutral-content"
+		<button
+			class="text-label-small md:text-label btn-neutral btn max-w-24 rounded-full bg-neutral text-neutral-content"
 			>Cancel</button
 		>
-    </div>
+	</div>
 </div>

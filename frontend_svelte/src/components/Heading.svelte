@@ -6,7 +6,9 @@
 </script>
 
 <div class="mx-5">
-	<h1 class="text-heading-small md:text-heading lg:text-heading-large mx-5 mb-2 mt-0 text-center text-primary">
+	<h1
+		class="text-heading-small md:text-heading lg:text-heading-large mx-5 mb-2 mt-0 text-center text-primary"
+	>
 		{@render children?.()}
 	</h1>
 </div>
