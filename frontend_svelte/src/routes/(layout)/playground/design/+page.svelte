@@ -35,64 +35,64 @@
 
 <div class="accordion accordion-bordered divide-y" data-accordion-always-open="">
 	<AccordionItem title="Backgrounds">
-		<div class="bg-background h-screen w-full text-base-content grid grid-cols-5">
+		<div class="grid h-screen w-full grid-cols-5 bg-background text-base-content">
 			<div class="bg-background p-4 text-center">Background</div>
-			<div class="bg-base-100 min-h-fit h-2/5 p-4 text-center">base-100</div>
-			<div class="bg-base-150 min-h-fit h-3/5 p-4 text-center">base-150</div>
-			<div class="bg-base-200 min-h-fit h-4/5 p-4  text-center">base-200</div>
-			<div class="bg-base-300 min-h-fit h-5/5 p-4 text-center">base-300</div>
+			<div class="h-2/5 min-h-fit bg-base-100 p-4 text-center">base-100</div>
+			<div class="h-3/5 min-h-fit bg-base-150 p-4 text-center">base-150</div>
+			<div class="h-4/5 min-h-fit bg-base-200 p-4 text-center">base-200</div>
+			<div class="h-5/5 min-h-fit bg-base-300 p-4 text-center">base-300</div>
 		</div>
 	</AccordionItem>
 	<AccordionItem title="Text and colors for content">
-		<div class="bg-background h-screen w-full text-base-content grid grid-cols-5">
+		<div class="grid h-screen w-full grid-cols-5 bg-background text-base-content">
 			<div class="p-4">
 				Background
 				<ContentText />
 			</div>
-			<div class="bg-base-100 min-h-fit h-2/5 p-4">
+			<div class="h-2/5 min-h-fit bg-base-100 p-4">
 				base-100
 				<ContentText />
 			</div>
-			<div class="bg-base-150 min-h-fit h-3/5 p-4">
+			<div class="h-3/5 min-h-fit bg-base-150 p-4">
 				base-150
 				<ContentText />
 			</div>
-			<div class="bg-base-200 min-h-fit h-4/5 p-4">
+			<div class="h-4/5 min-h-fit bg-base-200 p-4">
 				base-200
 				<ContentText />
 			</div>
-			<div class="bg-base-300 min-h-fit h-5/5 p-4">
+			<div class="h-5/5 min-h-fit bg-base-300 p-4">
 				base-300
 				<ContentText />
 			</div>
 		</div>
 	</AccordionItem>
 	<AccordionItem title="Text and colors for app functionality">
-		<div class="bg-background h-screen w-full text-base-content grid grid-cols-5">
+		<div class="grid h-screen w-full grid-cols-5 bg-background text-base-content">
 			<div class="p-4">
 				Background
 				<AppText />
 			</div>
-			<div class="bg-base-100 min-h-fit h-2/5 p-4">
-			base-100
+			<div class="h-2/5 min-h-fit bg-base-100 p-4">
+				base-100
 				<AppText />
 			</div>
-			<div class="bg-base-150 min-h-fit h-3/5 p-4">
+			<div class="h-3/5 min-h-fit bg-base-150 p-4">
 				base-150
 				<AppText />
 			</div>
-			<div class="bg-base-200 min-h-fit h-4/5 p-4">
+			<div class="h-4/5 min-h-fit bg-base-200 p-4">
 				base-200
 				<AppText />
 			</div>
-			<div class="bg-base-300 min-h-fit h-5/5 p-4">
+			<div class="h-5/5 min-h-fit bg-base-300 p-4">
 				base-300
 				<AppText />
 			</div>
 		</div>
 	</AccordionItem>
 	<AccordionItem title="Colors">
-		<div class="bg-base-100 skeleton h-screen w-full text-base-content">
+		<div class="skeleton h-screen w-full bg-base-100 text-base-content">
 			<div class="flex flex-col gap-2 p-4">
 				<p class="body-small">Base-100 background with base-content text</p>
 				<div class="flex flex-row flex-wrap gap-4 pl-6">

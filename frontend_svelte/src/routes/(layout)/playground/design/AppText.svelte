@@ -1,8 +1,8 @@
-<h3 class="title md:title-large text-info mt-4">Info Title</h3>
-<p class="text-info body md:body-small">Info body text</p>
-<h3 class="title md:title-large text-success mt-4">Success Title</h3>
-<p class="text-success body md:body-small">Success body text</p>
-<h3 class="title md:title-large text-warning mt-4">Warning Title</h3>
-<p class="text-warning body md:body-small">Warning body text</p>
-<h3 class="title md:title-large text-error mt-4">Error Title</h3>
-<p class="text-error body md:body-small">Error body text</p>
+<h3 class="title md:title-large mt-4 text-info">Info Title</h3>
+<p class="body-small md:body text-info">Info body text</p>
+<h3 class="title md:title-large mt-4 text-success">Success Title</h3>
+<p class="body-small md:body text-success">Success body text</p>
+<h3 class="title md:title-large mt-4 text-warning">Warning Title</h3>
+<p class="body-small md:body text-warning">Warning body text</p>
+<h3 class="title md:title-large mt-4 text-error">Error Title</h3>
+<p class="body-small md:body text-error">Error body text</p>
