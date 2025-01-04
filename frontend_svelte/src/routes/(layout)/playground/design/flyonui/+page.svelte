@@ -565,6 +565,11 @@
 							</div>
 						</ColorTileFlyonUi>
 						<ColorTileFlyonUi>
+							<div class="bg-base-content-variant {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">base-content-variant</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
 							<div class="bg-inverse-surface {colorTileClasses}">
 								<p class="text-inverse-surface-content {colorLabelClasses}">inverse-surface</p>
 							</div>

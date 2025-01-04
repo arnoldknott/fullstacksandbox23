@@ -292,6 +292,7 @@ export const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
 	['onInfoContainer', 'info-container-content'],
 	['surfaceContainerLow', 'base-150'],
 	['surfaceContainerHigh', 'base-250'],
+	['onSurfaceVariant', 'base-content-variant'],
 	['outline', 'outline'],
 	['outlineVariant', 'outline-variant'],
 	['inverseSurface', 'inverse-surface'],

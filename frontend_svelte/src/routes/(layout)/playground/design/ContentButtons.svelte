@@ -1,5 +1,10 @@
 <div class="flex flex-row">
 	<div class="flex grow flex-col gap-4">
+        <div class="relative min-w-56">
+            <input type="text" placeholder="Add your input here" class="input input-filled peer border-primary" id="primaryInput" />
+            <label class="input-filled-label text-label-small md:text-label" style="color: oklch(var(--p));" for="primaryInput">Full Name</label>
+            <span class="input-filled-focused" style="background-color: oklch(var(--p));"></span>
+        </div>
 		<button
 			class="text-label-small md:text-label btn btn-primary max-w-52 rounded-full bg-primary text-primary-content"
 			>Primary</button
@@ -11,6 +16,11 @@
 	</div>
 	<div class="divider-outline-variant divider divider-horizontal"></div>
 	<div class="flex grow flex-col gap-4">
+        <div class="relative min-w-56">
+            <input type="text" placeholder="Add your input here" class="input input-filled peer border-secondary" id="secondaryInput" />
+            <label class="input-filled-label text-label-small md:text-label" style="color: oklch(var(--s));" for="secondaryInput">Full Name</label>
+            <span class="input-filled-focused" style="background-color: oklch(var(--s));"></span>
+        </div>
 		<button
 			class="text-label-small md:text-label btn btn-secondary max-w-52 rounded-full bg-secondary text-secondary-content"
 			>Secondary</button
@@ -22,6 +32,11 @@
 	</div>
 	<div class="divider-outline-variant divider divider-horizontal"></div>
 	<div class="flex grow flex-col gap-4">
+        <div class="relative min-w-56">
+            <input type="text" placeholder="Add your input here" class="input input-filled peer border-accent" id="accentInput" />
+            <label class="input-filled-label text-label-small text-accent md:text-label" style="color: oklch(var(--a));" for="accentInput">Full Name</label>
+            <span class="input-filled-focused" style="background-color: oklch(var(--a));"></span>
+        </div>
 		<button
 			class="text-label-small md:text-label btn btn-accent max-w-52 rounded-full bg-accent text-accent-content"
 			>Accent</button
@@ -33,6 +48,11 @@
 	</div>
 	<div class="divider-outline-variant divider divider-horizontal"></div>
 	<div class="flex grow flex-col gap-4">
+        <div class="relative min-w-56">
+            <input type="text" placeholder="Add your input here" class="input input-filled peer border-neutral" id="accentInput" />
+            <label class="input-filled-label text-label-small text-neutral md:text-label" style="color: oklch(var(--n));" for="accentInput">Full Name</label>
+            <span class="input-filled-focused" style="background-color: oklch(var(--n));"></span>
+        </div>
 		<button
 			class="btn-neutral text-label-small md:text-label btn max-w-52 rounded-full bg-neutral text-neutral-content"
 			>Neutral</button
