@@ -1472,12 +1472,12 @@
 			<div class="label-large label-prominent badge badge-xl rounded-full">
 				Label large prominent
 			</div>
-			<span class="badge label badge-lg text-primary rounded-full">Label</span>
-			<span class="label-prominent badge label badge-lg text-primary rounded-full">Label prominent</span>
-			<span class="label-small badge rounded-full px-4">Label small</span>
-			<span class="label-small label-prominent badge rounded-full px-4"
-				>Label small prominent</span
+			<span class="badge label badge-lg rounded-full text-primary">Label</span>
+			<span class="label-prominent badge label badge-lg rounded-full text-primary"
+				>Label prominent</span
 			>
+			<span class="label-small badge rounded-full px-4">Label small</span>
+			<span class="label-small label-prominent badge rounded-full px-4">Label small prominent</span>
 		</div>
 	</div>
 
