@@ -1,5 +1,5 @@
 @layer utilities {
-	.display {
+	.text-display {
 		@apply font-sans text-[45pt] leading-[52pt];
 
 		&-large {
@@ -13,7 +13,7 @@
 }
 
 @layer utilities {
-	.heading {
+	.text-heading {
 		@apply font-sans text-[28pt] leading-[36pt];
 
 		&.-large {
@@ -27,7 +27,7 @@
 }
 
 @layer utilities {
-	.title {
+	.text-title {
 		@apply font-sans text-[16pt] leading-[24pt] tracking-[0.15pt];
 
 		&-large {
@@ -41,7 +41,7 @@
 }
 
 @layer utilities {
-	.body {
+	.text-body {
 		@apply font-serif text-[14pt] leading-[20pt] tracking-[0.25pt];
 
 		&-large {
@@ -55,7 +55,7 @@
 }
 
 @layer utilities {
-	.label {
+	.text-label {
 		@apply font-sans text-[12pt] font-[500] leading-[16pt] tracking-[0.5pt];
 
 		&-prominent {

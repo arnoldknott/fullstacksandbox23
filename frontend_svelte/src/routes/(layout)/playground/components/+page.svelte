@@ -172,7 +172,7 @@
 
 	<div>
 		<Heading>Icons</Heading>
-		<p class="title-large text-center text-xl">Iconify with FlyonUI</p>
+		<p class="text-title-large text-center text-xl">Iconify with FlyonUI</p>
 		<div class="grid grid-cols-5 gap-4">
 			<div>
 				<p class="text-center text-xl">Default library "tablers"</p>
@@ -313,7 +313,7 @@
 			<div class="modal-dialog overlay-open:opacity-100">
 				<div class="modal-content bg-base-300">
 					<div class="modal-header">
-						<h3 class="modal-title">Dialog Title</h3>
+						<h3 class="modal-text-title">Dialog Title</h3>
 						<button
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
@@ -415,7 +415,7 @@
 			tabindex="-1"
 		>
 			<div class="drawer-header">
-				<h3 class="drawer-title">Drawer Title</h3>
+				<h3 class="drawer-text-title">Drawer Title</h3>
 				<button
 					type="button"
 					class="btn btn-circle btn-text btn-sm absolute end-3 top-3"

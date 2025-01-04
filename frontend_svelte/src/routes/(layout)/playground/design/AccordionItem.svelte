@@ -13,7 +13,7 @@
 		<span
 			class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
 		></span>
-		<p class="title md:title-large ml-10">{title}</p>
+		<p class="text-title md:text-title-large ml-10">{title}</p>
 	</button>
 	<div
 		id="{id}-collapse"

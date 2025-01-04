@@ -7,7 +7,7 @@
 <div class="grid w-full grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="col-span-2">
 		<Heading>Colors</Heading>
-		<p class="title text-center text-2xl">Color matching Material Design => FlyonUI:</p>
+		<p class="text-title text-center text-2xl">Color matching Material Design => FlyonUI:</p>
 		<div class="accordion accordion-bordered divide-y" data-accordion-always-open="">
 			<AccordionItem title="Foreground Colors">
 				<div class="grid grid-cols-2 gap-2">

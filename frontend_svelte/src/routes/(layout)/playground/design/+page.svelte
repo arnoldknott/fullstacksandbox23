@@ -4,6 +4,7 @@
 	import AccordionItem from './AccordionItem.svelte';
 	import ContentText from './ContentText.svelte';
 	import AppText from './AppText.svelte';
+	import ContentButtons from './ContentButtons.svelte';
 </script>
 
 <Heading>🚧 Construction sites for design experiments 🚧</Heading>
@@ -91,35 +92,34 @@
 			</div>
 		</div>
 	</AccordionItem>
-	<AccordionItem title="Colors">
+	<AccordionItem title="Buttons">
+		<div class="grid h-screen w-full grid-cols-5 bg-background text-base-content">
+			<div class="p-4">
+				Background
+				<ContentButtons />
+			</div>
+			<div class="h-2/5 min-h-fit bg-base-100 p-4">
+				base-100
+				<ContentButtons />
+			</div>
+			<div class="h-3/5 min-h-fit bg-base-150 p-4">
+				base-150
+				<ContentButtons />
+			</div>
+			<div class="h-4/5 min-h-fit bg-base-200 p-4">
+				base-200
+				<ContentButtons />
+			</div>
+			<div class="h-5/5 min-h-fit bg-base-300 p-4">
+				base-300
+				<ContentButtons />
+			</div>
+		</div>
 		<div class="skeleton h-screen w-full bg-base-100 text-base-content">
 			<div class="flex flex-col gap-2 p-4">
 				<p class="body-small">Base-100 background with base-content text</p>
 				<div class="flex flex-row flex-wrap gap-4 pl-6">
-					<div class="flex flex-col gap-2">
-						<!-- <p class="text-primary body-small">Primary text on base-100 background</p> -->
-						<button class="btn btn-primary rounded-full bg-primary text-primary-content"
-							>Primary</button
-						>
-						<button class="btn-primary-container btn rounded-full">Primary Container</button>
-					</div>
-					<div class="flex flex-col gap-2">
-						<button class="btn btn-secondary rounded-full bg-secondary text-secondary-content"
-							>Secondary</button
-						>
-						<button class="btn-secondary-container btn rounded-full">Secondary Container</button>
-					</div>
-					<div class="flex flex-col gap-2">
-						<button class="btn btn-accent rounded-full bg-accent text-accent-content">Accent</button
-						>
-						<button class="btn-accent-container btn rounded-full">Accent Container</button>
-					</div>
-					<div class="flex flex-col gap-2">
-						<button class="btn-neutral btn rounded-full bg-neutral text-neutral-content"
-							>Neutral</button
-						>
-						<button class="btn-neutral-container btn rounded-full">Neutral Container</button>
-					</div>
+					
 				</div>
 				<div class="flex flex-row flex-wrap gap-4 pl-6">
 					<div class="flex flex-col gap-2">
