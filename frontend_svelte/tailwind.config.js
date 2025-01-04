@@ -81,6 +81,7 @@ module.exports = {
 				'info-container-content': 'rgb(var(--md-rgb-color-on-info-container))',
 				'base-150': 'rgb(var(--md-rgb-color-surface-container-low))',
 				'base-250': 'rgb(var(--md-rgb-color-surface-container-high))',
+				'base-content-variant': 'rgb(var(--md-rgb-color-on-surface-variant))',
 				outline: 'rgb(var(--md-rgb-color-outline))',
 				'outline-variant': 'rgb(var(--md-rgb-color-outline-variant))',
 				'inverse-surface': 'rgb(var(--md-rgb-color-inverse-surface))',

@@ -4,14 +4,16 @@
 
 <div class="card">
 	<div class="card-body rounded-2xl bg-base-300">
-		<h5 class="title title-large card-title mb-2.5 text-primary">{title}</h5>
-		<p class="body body-small mb-2.5 text-primary-container-content">
+		<h5 class="text-title-small md:text-title lg:text-title-large card-title mb-2.5 text-primary">
+			{title}
+		</h5>
+		<p class="text-body-small md:text-body mb-2.5 text-primary-container-content">
 			{description}
 		</p>
 		<div class="card-actions text-center">
 			<a {href}
 				><button
-					class="label-small btn label btn-primary rounded-full px-3 text-primary-content shadow-primary"
+					class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
 					>Link to {title.toLowerCase()}</button
 				></a
 			>

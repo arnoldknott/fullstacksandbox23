@@ -3,7 +3,7 @@
 	import type { AppTheme } from '$lib/theming';
 	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import type { IOverlay } from 'flyonui/flyonui';
 
@@ -85,7 +85,7 @@
 
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div>
-		<Title>Status sliders with Hue-Chroma-Tone</Title>
+		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
 
 		<div class="grid grid-cols-3 gap-4">
 			<div class="w-full">
@@ -171,9 +171,9 @@
 	</div>
 
 	<div>
-		<Title>Icons</Title>
-		<p class="title title-large text-center text-xl">Iconify with FlyonUI</p>
-		<div class="grid grid-cols-5 gap-4">
+		<Heading>Icons</Heading>
+		<p class="text-title-large text-center text-xl">Iconify with FlyonUI</p>
+		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
 				<p class="text-center text-xl">Default library "tablers"</p>
 				<span class="icon-[tabler--settings] size-12"></span>
@@ -225,7 +225,7 @@
 	</div>
 
 	<div>
-		<Title>Theme Picker</Title>
+		<Heading>Theme Picker</Heading>
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div class="w-48">
 				<label class="label label-text" for="colorPicker"
@@ -289,7 +289,7 @@
 	</div>
 
 	<div>
-		<Title>Modal</Title>
+		<Heading>Modal</Heading>
 		<button
 			type="button"
 			class="btn btn-accent"
@@ -313,7 +313,7 @@
 			<div class="modal-dialog overlay-open:opacity-100">
 				<div class="modal-content bg-base-300">
 					<div class="modal-header">
-						<h3 class="modal-title">Dialog Title</h3>
+						<h3 class="modal-text-title">Dialog Title</h3>
 						<button
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
@@ -343,7 +343,7 @@
 	</div>
 
 	<div>
-		<Title>Swaps</Title>
+		<Heading>Swaps</Heading>
 		<div class="grid grid-cols-12 gap-4">
 			<div>
 				<label class="swap">
@@ -398,7 +398,7 @@
 	<!-- This local override works:
     style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
 	<div>
-		<Title>Drawer (Sidebar)</Title>
+		<Heading>Drawer (Sidebar)</Heading>
 		<button
 			type="button"
 			class="btn btn-primary"
@@ -415,7 +415,7 @@
 			tabindex="-1"
 		>
 			<div class="drawer-header">
-				<h3 class="drawer-title">Drawer Title</h3>
+				<h3 class="drawer-text-title">Drawer Title</h3>
 				<button
 					type="button"
 					class="btn btn-circle btn-text btn-sm absolute end-3 top-3"

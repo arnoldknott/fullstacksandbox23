@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import '@material/web/textfield/filled-text-field.js';
 	import '@material/web/button/filled-button.js';
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 
 	let { data }: { data: PageData } = $props();
 	const backend_fqdn = data.backend_fqdn;
@@ -72,5 +72,5 @@
 </div>
 
 {#each old_messages as old_message}
-	<Title>{old_message}</Title>
+	<Heading>{old_message}</Heading>
 {/each}

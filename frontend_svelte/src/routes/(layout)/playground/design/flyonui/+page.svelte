@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	// import { createRawSnippet, type Snippet } from 'svelte';
 
-	import ColorTileFlyonUi from '$components/ColorTileFlyonUI.svelte';
+	import ColorTileFlyonUi from './ColorTileFlyonUI.svelte';
 	import { type AppTheme } from '$lib/theming';
 	import { themeStore } from '$lib/stores';
 	// import { hexFromArgb } from '@material/material-color-utilities';
@@ -143,7 +143,7 @@
 
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div class="col-span-2">
-		<Title>Colors</Title>
+		<Heading>Colors</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -565,6 +565,11 @@
 							</div>
 						</ColorTileFlyonUi>
 						<ColorTileFlyonUi>
+							<div class="bg-base-content-variant {colorTileClasses}">
+								<p class="text-inverse-surface-content {colorLabelClasses}">base-content-variant</p>
+							</div>
+						</ColorTileFlyonUi>
+						<ColorTileFlyonUi>
 							<div class="bg-inverse-surface {colorTileClasses}">
 								<p class="text-inverse-surface-content {colorLabelClasses}">inverse-surface</p>
 							</div>
@@ -905,7 +910,7 @@
 	</div>
 
 	<div class="col-span-2">
-		<Title>Utility classes</Title>
+		<Heading>Utility classes</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -1329,7 +1334,7 @@
 	</div>
 
 	<div>
-		<Title>Components with utility classes</Title>
+		<Heading>Components with utility classes</Heading>
 		<p>Badges:</p>
 		<span class="badge badge-primary">Badge primary</span>
 		<span class="badge badge-secondary">Badge secondary</span>
@@ -1392,7 +1397,7 @@
 	</div>
 
 	<div>
-		<Title>Typography</Title>
+		<Heading>Typography</Heading>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<p class="text-center">Fonts families</p>
 		<div class="grid grid-cols-1 gap-4 divide-y-4">
@@ -1411,37 +1416,37 @@
 		</div>
 		<p class="pt-5 text-center">Typography styles for Display</p>
 		<div class="grid grid-cols-1 gap-8 divide-y-4">
-			<p class="display-large display">
+			<p class="text-display-large">
 				Some long eyecatcher in <i>Display - large</i> typography.
 			</p>
-			<p class="display">Another eyecatcher in <i>Display</i> typography.</p>
-			<p class="display-small display">
+			<p class="text-display">Another eyecatcher in <i>Display</i> typography.</p>
+			<p class="text-display-small">
 				And a third eyecatcher in <i>Display - small</i> typography.
 			</p>
 		</div>
 		<p class="pt-5 text-center">Typography styles for Heading</p>
 		<div class="grid grid-cols-1 gap-8 divide-y-4">
-			<p class="heading-large heading">
+			<p class="text-heading-large">
 				A <i>Heading - large</i> typography with long enough text to get a line break.
 			</p>
-			<p class="heading">
+			<p class="text-heading">
 				Another <i>Heading</i> typography with long enough text to get a line break.
 			</p>
-			<p class="heading heading-small">
+			<p class="text-heading-small">
 				And a third <i>Heading - small</i> typography with long enough text to get a line break.
 			</p>
 		</div>
 		<p class="pt-5 text-center">Typography styles for Title</p>
 		<div class="grid grid-cols-1 gap-8 divide-y-4">
-			<p class="title-large title">
+			<p class="text-title-large">
 				This is a <i>Title - large</i> typography with some extended text to be long enough to create
 				a line break.
 			</p>
-			<p class="title">
+			<p class="text-title">
 				And that is another <i>Title</i> typography with some text to fill the line, so we can get a
 				line break, which requires long enough text get the line breaking over into a new line.
 			</p>
-			<p class="title title-small">
+			<p class="text-title-small">
 				And the third <i>Title - small</i> typography needs quite some extra meaningless text, just to
 				demonstrate the line break even on larger screens, where it might get hard to provoke a line
 				break with such small text, but we'll get there with to make the text long enough text to get
@@ -1450,16 +1455,16 @@
 		</div>
 		<p class="pt-5 text-center">Typography styles for Body</p>
 		<div class="grid grid-cols-1 gap-8 divide-y-4">
-			<p class="body-large body">
+			<p class="text-body-large">
 				This is a longer text in <i>Body - large</i> typography with long enough text to get more than
 				a line break. Note that the font changed to a serif font, which should make it easier to read
 				for longer text on a screen.
 			</p>
-			<p class="body">
+			<p class="text-body">
 				And that is another <i>Body</i> typography with even more text to fill the line, so we can get
 				a line break, which requires long enough text get the line breaking over into a new line.
 			</p>
-			<p class="body body-small">
+			<p class="text-body-small">
 				And a third <i>Body - small</i> typography which needs even more meaningless text to make sure,
 				the line is eventually breaking, even on larger screens, where it might get hard to provoke a
 				line break with such small text, but we'll get there with to make the text long enough text to
@@ -1468,21 +1473,23 @@
 		</div>
 		<p class="pt-5 text-center">Typography styles for Labels - demonstrated in a badge</p>
 		<div class="grid grid-cols-2 gap-4">
-			<div class="label-large badge label badge-xl rounded-full">Label large</div>
-			<div class="label-large label-prominent badge label badge-xl rounded-full">
+			<div class="text-label-large badge badge-xl rounded-full">Label large</div>
+			<div class="text-label-large text-label-prominent badge badge-xl rounded-full">
 				Label large prominent
 			</div>
-			<span class="badge label badge-lg rounded-full">Label</span>
-			<span class="label-prominent badge label badge-lg rounded-full">Label prominent</span>
-			<span class="label-small badge label rounded-full px-4">Label small</span>
-			<span class="label-small label-prominent badge label rounded-full px-4"
+			<span class="text-label badge badge-lg rounded-full text-primary">Label</span>
+			<span class="text-label-prominent text-label badge badge-lg rounded-full text-primary"
+				>Label prominent</span
+			>
+			<span class="text-label-small badge rounded-full px-4">Label small</span>
+			<span class="text-label-small text-label-prominent badge rounded-full px-4"
 				>Label small prominent</span
 			>
 		</div>
 	</div>
 
 	<div>
-		<Title>Styles</Title>
+		<Heading>Styles</Heading>
 		Targets with their default values:
 		<ul>
 			<li>--rounded-box: 0.5rem ;</li>
@@ -1498,7 +1505,7 @@
 	</div>
 
 	<!-- <div>
-        <Title>Menus</Title>
+        <Heading>Menus</Heading>
         <div class="grid grid-cols-6 gap-4">
             <div>
                 <ul class="menu w-64 space-y-0.5 [&_.nested-collapse-wrapper]:space-y-0.5 [&_ul]:space-y-0.5">
@@ -1577,7 +1584,7 @@
     </div> -->
 </div>
 
-<Title>Current theme as JSON:</Title>
+<Heading>Current theme as JSON:</Heading>
 <JsonData data={theme} />
 
 <!-- <style>

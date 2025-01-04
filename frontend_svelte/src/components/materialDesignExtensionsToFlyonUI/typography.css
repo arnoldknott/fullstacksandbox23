@@ -1,63 +1,73 @@
-.display {
-	@apply font-sans text-[45pt] leading-[52pt];
+@layer utilities {
+	.text-display {
+		@apply font-sans text-[45pt] leading-[52pt];
 
-	&.display-large {
-		@apply text-[57pt] leading-[64pt] tracking-[-0.25pt];
-	}
+		&-large {
+			@apply font-sans text-[57pt] leading-[64pt] tracking-[-0.25pt];
+		}
 
-	&.display-small {
-		@apply text-[36pt] leading-[44pt];
-	}
-}
-
-.heading {
-	@apply font-sans text-[28pt] leading-[36pt];
-
-	&.heading-large {
-		@apply text-[32pt] leading-[40pt];
-	}
-
-	&.heading-small {
-		@apply text-[24pt] leading-[32pt];
+		&-small {
+			@apply font-sans text-[36pt] leading-[44pt];
+		}
 	}
 }
 
-.title {
-	@apply font-sans text-[16pt] leading-[24pt] tracking-[0.15pt];
+@layer utilities {
+	.text-heading {
+		@apply font-sans text-[28pt] leading-[36pt];
 
-	&.title-large {
-		@apply text-[22pt] leading-[28pt] tracking-normal;
-	}
+		&-large {
+			@apply font-sans text-[32pt] leading-[40pt];
+		}
 
-	&.title-small {
-		@apply text-[14pt] leading-[20pt] tracking-[0.1pt];
-	}
-}
-
-.body {
-	@apply font-serif text-[14pt] leading-[20pt] tracking-[0.25pt];
-
-	&.body-large {
-		@apply text-[16pt] leading-[24pt] tracking-[0.5pt];
-	}
-
-	&.body-small {
-		@apply text-[12pt] leading-[16pt] tracking-[0.4pt];
+		&-small {
+			@apply font-sans text-[24pt] leading-[32pt];
+		}
 	}
 }
 
-.label {
-	@apply font-sans text-[12pt] font-[500] leading-[16pt] tracking-[0.5pt];
+@layer utilities {
+	.text-title {
+		@apply font-sans text-[16pt] leading-[24pt] tracking-[0.15pt];
 
-	&.label-prominent {
-		@apply font-[700];
+		&-large {
+			@apply font-sans text-[22pt] leading-[28pt] tracking-normal;
+		}
+
+		&-small {
+			@apply font-sans text-[14pt] leading-[20pt] tracking-[0.1pt];
+		}
 	}
+}
 
-	&.label-large {
-		@apply text-[14pt] leading-[20pt] tracking-[0.1pt];
+@layer utilities {
+	.text-body {
+		@apply font-serif text-[14pt] leading-[20pt] tracking-[0.25pt];
+
+		&-large {
+			@apply font-serif text-[16pt] leading-[24pt] tracking-[0.5pt];
+		}
+
+		&-small {
+			@apply font-serif text-[12pt] leading-[16pt] tracking-[0.4pt];
+		}
 	}
+}
 
-	&.label-small {
-		@apply text-[11pt] leading-[16pt] tracking-[0.5pt];
+@layer utilities {
+	.text-label {
+		@apply font-sans text-[12pt] font-[500] leading-[16pt] tracking-[0.5pt];
+
+		&-prominent {
+			@apply font-sans font-[700];
+		}
+
+		&-large {
+			@apply font-sans text-[14pt] leading-[20pt] tracking-[0.1pt];
+		}
+
+		&-small {
+			@apply font-sans text-[11pt] leading-[16pt] tracking-[0.5pt];
+		}
 	}
 }

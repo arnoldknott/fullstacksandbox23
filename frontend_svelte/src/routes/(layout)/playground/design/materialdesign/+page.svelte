@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ColorTileMaterialUi from '$components/ColorTileMaterialUI.svelte';
+	import ColorTileMaterialUi from './ColorTileMaterialUI.svelte';
 	import '@material/web/icon/icon.js';
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
@@ -15,7 +15,7 @@
 	import '@material/web/labs/card/elevated-card.js';
 	import '@material/web/labs/card/filled-card.js';
 	import '@material/web/labs/card/outlined-card.js';
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	// import { getContext } from 'svelte';
@@ -99,7 +99,7 @@
 
 <div class="grid w-full grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="xl:col-span-2">
-		<Title>Colors</Title>
+		<Heading>Colors</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -430,7 +430,7 @@
 	</div>
 
 	<div class="xl:col-span-2">
-		<Title>Palettes</Title>
+		<Heading>Palettes</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -501,7 +501,7 @@
 	</div>
 
 	<!-- <div class="staticMaterialThemeBuilder">
-		<Title>Colors</Title>
+		<Heading>Colors</Heading>
 		<p class="text-center text-2xl">
 			(static generated on Material Theme Builder homepage and exported as css variables)
 		</p>
@@ -542,7 +542,7 @@
 	</div> -->
 
 	<div>
-		<Title>Typography</Title>
+		<Heading>Typography</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchTypography">Hide</label>
 			<input
@@ -621,7 +621,7 @@
 	</div>
 
 	<div>
-		<Title>Shapes (styles)</Title>
+		<Heading>Shapes (styles)</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchShapes">Hide</label>
 			<input
@@ -694,7 +694,7 @@
 	</div>
 
 	<div>
-		<Title>Icons</Title>
+		<Heading>Icons</Heading>
 		<p>Don't use - iconify has them as well and well integrated with FlyonUI</p>
 		<div class="grid grid-cols-5 gap-4">
 			<div>
@@ -715,7 +715,7 @@
 	</div>
 
 	<div>
-		<Title>List</Title>
+		<Heading>List</Heading>
 		<md-list class="w-full">
 			<md-list-item> Fruits </md-list-item>
 			<md-divider></md-divider>
@@ -741,7 +741,7 @@
 	</div>
 
 	<div>
-		<Title>Open Modal with dialog</Title>
+		<Heading>Open Modal with dialog</Heading>
 		<md-filled-button
 			onclick={() => demoResourceDialog.show()}
 			role="button"
@@ -793,7 +793,7 @@
 	</div>
 
 	<div>
-		<Title>User Form</Title>
+		<Heading>User Form</Heading>
 		<!-- Applying TailwindCSS classes formats the following paragraph: -->
 		<p class="text-center text-2xl">
 			(Only the text fields are material design - the div's around are tailwind CSS)
@@ -864,19 +864,19 @@
 	</div>
 
 	<div>
-		<Title>Card</Title>
+		<Heading>Card</Heading>
 
 		<div class="grid grid-cols-3 gap-4">
 			<md-elevated-card>
-				<Title>Elevated Card</Title>
+				<Heading>Elevated Card</Heading>
 				<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
 			</md-elevated-card>
 			<md-filled-card>
-				<Title>Filled Card</Title>
+				<Heading>Filled Card</Heading>
 				<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
 			</md-filled-card>
 			<md-outlined-card>
-				<Title>Filled Card</Title>
+				<Heading>Filled Card</Heading>
 				<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
 			</md-outlined-card>
 		</div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import { page } from '$app/stores';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
@@ -13,12 +13,12 @@
 	>Current $page.data.sessionData -> console</button
 >
 
-<Title>$page data session data</Title>
+<Heading>$page data session data</Heading>
 <JsonData data={$page.data.session} />
 
 <HorizontalRule />
 
-<Title>Page</Title>
+<Heading>Page</Heading>
 <JsonData data={$page} />
 
 <HorizontalRule />
