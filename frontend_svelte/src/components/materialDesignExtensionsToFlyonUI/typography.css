@@ -1,11 +1,11 @@
 .display {
 	@apply font-sans text-[45pt] leading-[52pt];
 
-	&.display-large {
+	&-large {
 		@apply text-[57pt] leading-[64pt] tracking-[-0.25pt];
 	}
 
-	&.display-small {
+	&-small {
 		@apply text-[36pt] leading-[44pt];
 	}
 }
@@ -13,11 +13,11 @@
 .heading {
 	@apply font-sans text-[28pt] leading-[36pt];
 
-	&.heading-large {
+	&-large {
 		@apply text-[32pt] leading-[40pt];
 	}
 
-	&.heading-small {
+	&-small {
 		@apply text-[24pt] leading-[32pt];
 	}
 }
@@ -25,11 +25,11 @@
 .title {
 	@apply font-sans text-[16pt] leading-[24pt] tracking-[0.15pt];
 
-	&.title-large {
+	&-large {
 		@apply text-[22pt] leading-[28pt] tracking-normal;
 	}
 
-	&.title-small {
+	&-small {
 		@apply text-[14pt] leading-[20pt] tracking-[0.1pt];
 	}
 }
@@ -37,11 +37,11 @@
 .body {
 	@apply font-serif text-[14pt] leading-[20pt] tracking-[0.25pt];
 
-	&.body-large {
+	&-large {
 		@apply text-[16pt] leading-[24pt] tracking-[0.5pt];
 	}
 
-	&.body-small {
+	&-small {
 		@apply text-[12pt] leading-[16pt] tracking-[0.4pt];
 	}
 }
@@ -49,15 +49,15 @@
 .label {
 	@apply font-sans text-[12pt] font-[500] leading-[16pt] tracking-[0.5pt];
 
-	&.label-prominent {
+	&-prominent {
 		@apply font-[700];
 	}
 
-	&.label-large {
+	&-large {
 		@apply text-[14pt] leading-[20pt] tracking-[0.1pt];
 	}
 
-	&.label-small {
+	&-small {
 		@apply text-[11pt] leading-[16pt] tracking-[0.5pt];
 	}
 }

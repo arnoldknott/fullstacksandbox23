@@ -172,7 +172,7 @@
 
 	<div>
 		<Title>Icons</Title>
-		<p class="title title-large text-center text-xl">Iconify with FlyonUI</p>
+		<p class="title-large text-center text-xl">Iconify with FlyonUI</p>
 		<div class="grid grid-cols-5 gap-4">
 			<div>
 				<p class="text-center text-xl">Default library "tablers"</p>
