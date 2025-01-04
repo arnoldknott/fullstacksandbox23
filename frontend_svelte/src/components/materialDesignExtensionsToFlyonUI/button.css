@@ -1,7 +1,7 @@
 .btn-primary-container {
 	@apply text-primary-container-content outline-primary-container/30;
 	@supports (color: oklch(0% 0 0)) {
-		--btn-color: var(--pccontainer);
+		--btn-color: var(--pcontainer);
 	}
 	@supports not (color: oklch(0% 0 0)) {
 		--btn-color: var(--fallback-p);

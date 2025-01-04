@@ -7,7 +7,7 @@
 	import ContentInteraction from './ContentInteraction.svelte';
 	import AppInteraction from './AppInteraction.svelte';
 	import BackgroundRows from './BackgroundRows.svelte';
-	import Notifications from './Notifications.svelte';
+	import Containers from './Containers.svelte';
 </script>
 
 <Heading>🚧 Construction sites for design experiments 🚧</Heading>
@@ -67,6 +67,6 @@
 		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
 	</AccordionItem>
 	<AccordionItem title="Notifications">
-		<BackgroundRows><Notifications /></BackgroundRows>
+		<BackgroundRows><Containers /></BackgroundRows>
 	</AccordionItem>
 </div>
