@@ -14,7 +14,7 @@
 		href={`/playground/design/materialdesign`}
 	></Card>
 	<Card
-		title="TailwindCSS"
+		title="TailwindCSS 3"
 		description="Formating playground for styling with TailwindCSS utility classes"
 		href={`/playground/design/tailwindcss`}
 	></Card>
