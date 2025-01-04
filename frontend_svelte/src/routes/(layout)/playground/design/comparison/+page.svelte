@@ -1,12 +1,12 @@
 <script lang="ts">
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	import AccordionColorMapping from './AccordionColorMapping.svelte';
 	import ColorTiles from './ColorTiles.svelte';
 </script>
 
 <div class="grid w-full grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="col-span-2">
-		<Title>Colors</Title>
+		<Heading>Colors</Heading>
 		<p class="text-center title text-2xl">Color matching Material Design => FlyonUI:</p>
 		<div
 		class="accordion accordion-bordered divide-y"

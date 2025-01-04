@@ -5,7 +5,7 @@
 	// import { io } from 'socket.io-client';
 	import '@material/web/textfield/filled-text-field.js';
 	import '@material/web/button/filled-button.js';
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	import Chat from '$components/Chat.svelte';
 	import { page } from '$app/stores';
 
@@ -104,10 +104,10 @@
 
 <div class="m-5 grid grid-cols-2 gap-8">
 	<div>
-		<Chat connection={public_message_connection}><Title>Public Message Namespace</Title></Chat>
+		<Chat connection={public_message_connection}><Heading>Public Message Namespace</Heading></Chat>
 	</div>
 	<div>
-		<Chat connection={demo_message_connection}><Title>Demo Message Namespace</Title></Chat>
+		<Chat connection={demo_message_connection}><Heading>Demo Message Namespace</Heading></Chat>
 	</div>
 </div>
 
@@ -135,7 +135,7 @@
 	</form>
 </div>
 
-<Title>Socket.IO message history</Title>
+<Heading>Socket.IO message history</Heading>
 
 {#each old_messages as old_message}
 	<p>{old_message}</p>

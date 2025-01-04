@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	import '@material/web/slider/slider.js';
 	import '@material/web/labs/card/filled-card.js';
 	import '@material/web/tabs/tabs.js';
@@ -67,7 +67,7 @@
 </div> -->
 
 <div>
-	<Title>Card</Title>
+	<Heading>Card</Heading>
 	<div class="card sm:max-w-sm">
 		<div class="card-body bg-primary-container text-primary-container-content shadow-primary">
 			<h5 class="card-title mb-2.5">Body of a Card here</h5>
@@ -83,11 +83,11 @@
 </div>
 <HorizontalRule />
 
-<Title>Tabs</Title>
+<Heading>Tabs</Heading>
 <Tabs {tabs}>Some Text common to all tabs</Tabs>
 <HorizontalRule />
 
-<Title>Card with tabs</Title>
+<Heading>Card with tabs</Heading>
 <md-filled-card class="w-100 m-10 p-10">
 	<md-tabs onchange={tabChange}>
 		<md-primary-tab active={activeTab == 0}>Tab 1</md-primary-tab>
@@ -98,22 +98,22 @@
 		<md-secondary-tab>Tab A</md-secondary-tab>
 		<md-secondary-tab>Tab B</md-secondary-tab>
 	</md-tabs>
-	<div class="text-2xl"><Title>{cardContent}</Title></div>
+	<div class="text-2xl"><Heading>{cardContent}</Heading></div>
 </md-filled-card>
 <HorizontalRule />
 
-<Title>Vertical Tabs</Title>
+<Heading>Vertical Tabs</Heading>
 <VerticalTabs />
 <HorizontalRule />
 
-<Title>User Form</Title>
+<Heading>User Form</Heading>
 <div class="flex justify-center">
 	<UserForm type="signup" />
 	<UserForm type="login" />
 </div>
 <HorizontalRule />
 
-<Title>Card</Title>
+<Heading>Card</Heading>
 <Card
 	title="Title of Card"
 	description="Some text inside the card to describe what's going on here. The button links to this page."
@@ -121,7 +121,7 @@
 ></Card>
 <HorizontalRule />
 
-<Title>Status slider</Title>
+<Heading>Status slider</Heading>
 <p class="text-center text-2xl">Status: {sliderValue}</p>
 <!-- TBD refactor into bindable prop! -->
 <md-slider
@@ -136,7 +136,7 @@
 <hr class="mx-5 my-12 h-2 bg-neutral-500 opacity-100 dark:opacity-50" />
 <HorizontalRule />
 
-<Title>Multiple status sliders</Title>
+<Heading>Multiple status sliders</Heading>
 
 <table class="w-full">
 	<thead>
@@ -252,7 +252,7 @@
 
 <HorizontalRule />
 
-<Title>Tailwind CSS gradient</Title>
+<Heading>Tailwind CSS gradient</Heading>
 
 <div class="w-100 m-10 bg-gradient-to-r from-cyan-500 to-blue-500 p-10">STATUS:</div>
 

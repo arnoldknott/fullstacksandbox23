@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	// import { createRawSnippet, type Snippet } from 'svelte';
 
 	import ColorTileFlyonUi from './ColorTileFlyonUI.svelte';
@@ -143,7 +143,7 @@
 
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div class="col-span-2">
-		<Title>Colors</Title>
+		<Heading>Colors</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -905,7 +905,7 @@
 	</div>
 
 	<div class="col-span-2">
-		<Title>Utility classes</Title>
+		<Heading>Utility classes</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -1329,7 +1329,7 @@
 	</div>
 
 	<div>
-		<Title>Components with utility classes</Title>
+		<Heading>Components with utility classes</Heading>
 		<p>Badges:</p>
 		<span class="badge badge-primary">Badge primary</span>
 		<span class="badge badge-secondary">Badge secondary</span>
@@ -1392,7 +1392,7 @@
 	</div>
 
 	<div>
-		<Title>Typography</Title>
+		<Heading>Typography</Heading>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<p class="text-center">Fonts families</p>
 		<div class="grid grid-cols-1 gap-4 divide-y-4">
@@ -1482,7 +1482,7 @@
 	</div>
 
 	<div>
-		<Title>Styles</Title>
+		<Heading>Styles</Heading>
 		Targets with their default values:
 		<ul>
 			<li>--rounded-box: 0.5rem ;</li>
@@ -1498,7 +1498,7 @@
 	</div>
 
 	<!-- <div>
-        <Title>Menus</Title>
+        <Heading>Menus</Heading>
         <div class="grid grid-cols-6 gap-4">
             <div>
                 <ul class="menu w-64 space-y-0.5 [&_.nested-collapse-wrapper]:space-y-0.5 [&_ul]:space-y-0.5">
@@ -1577,7 +1577,7 @@
     </div> -->
 </div>
 
-<Title>Current theme as JSON:</Title>
+<Heading>Current theme as JSON:</Heading>
 <JsonData data={theme} />
 
 <!-- <style>
