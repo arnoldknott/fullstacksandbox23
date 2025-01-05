@@ -305,7 +305,7 @@
 			</div>
 			<div>
 				<p class="text-label text-center">
-					Extension library <span class="text-label-prominent badge min-h-fit">Noto emoji</span>
+					Emoji library <span class="text-label-prominent badge min-h-fit">Noto emoji</span>
 				</p>
 				<span class="icon-[noto--folded-hands] size-12"></span>
 				<span class="icon-[noto--folded-hands-medium-dark-skin-tone] size-12"></span>
@@ -315,6 +315,13 @@
 				<span class="icon-[noto--smiling-face-with-sunglasses] size-12"></span>
 				<span class="icon-[noto--check-mark-button] size-12"></span>
 				<span class="icon-[noto--cross-mark] size-12"></span>
+			</div>
+			<div>
+				<p class="text-label text-center">
+					Emoji library <span class="text-label-prominent badge min-h-fit">Openmoji</span>
+				</p>
+				<span class="icon-[openmoji--check-mark] size-12"></span>
+				<span class="icon-[openmoji--cross-mark] size-12"></span>
 			</div>
 		</div>
 		<HorizontalRule />

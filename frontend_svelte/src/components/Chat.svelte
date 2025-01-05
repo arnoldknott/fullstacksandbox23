@@ -10,6 +10,20 @@
 
 	const socketio = new SocketIO(connection);
 
+	let status = $state(false);
+	$effect(() => {
+		const updateStatus = () => {
+			status = socketio.client.connected ? true : false;
+			// console.log(`socketio status: ${status}`);
+		};
+
+		socketio.client.on('connect', updateStatus);
+		socketio.client.on('disconnect', updateStatus);
+		socketio.client.on(connection.event, updateStatus);
+		updateStatus();
+	});
+
+
 	let new_message = $state('');
 
 	let old_messages: string[] = $state([]);
@@ -29,7 +43,7 @@
 	});
 </script>
 
-{@render children?.()} in Chat
+{@render children?.()} in Chat / Connection <span class={`icon-[openmoji--${status ? 'check-mark': 'cross-mark'}] size-4`} ></span>
 
 <div class="w-50">
 	<form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
