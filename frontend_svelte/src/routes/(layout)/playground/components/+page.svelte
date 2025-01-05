@@ -100,7 +100,7 @@
 						<div class="chat chat-receiver">
 							<div class="avatar chat-avatar">
 								<div class="size-10 rounded-full">
-									<span class="icon-[tabler--man] size-8 text-primary"></span>
+									<span class="icon-[tabler--man] size-8 m-1 text-primary"></span>
 								</div>
 							</div>
 							<div class="chat-header text-base-content">
@@ -115,7 +115,7 @@
 						<div class="chat chat-receiver">
 							<div class="avatar chat-avatar">
 								<div class="size-10 rounded-full">
-									<span class="icon-[tabler--user] size-8 text-primary"></span>
+									<span class="icon-[tabler--user] size-8 m-1 text-primary"></span>
 								</div>
 							</div>
 							<div class="chat-header text-base-content">

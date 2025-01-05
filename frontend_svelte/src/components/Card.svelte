@@ -5,7 +5,7 @@
 </script>
 
 <div
-	class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant sm:max-w-sm"
+	class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
 >
 	<div class="card-header">
 		<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
