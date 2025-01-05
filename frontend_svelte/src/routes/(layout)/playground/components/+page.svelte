@@ -86,8 +86,8 @@
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div>
 		<Heading>Card with chat</Heading>
-		<div class="grid justify-items-center">
-			<div class="card bg-base-250 rounded-xl border-[1px] border-outline-variant shadow-outline-variant shadow-lg sm:max-w-sm">
+		<div class="grid justify-items-center mb-5">
+			<div class="card bg-base-250 rounded-xl border-[1px] border-outline-variant shadow-outline-variant shadow-lg w-4/5">
 				<div class="card-header">
 					<h5 class="text-title md:text-title-large card-title">Chat card</h5>
 				</div>
@@ -140,7 +140,7 @@
 						<input
 							type="text"
 							placeholder="Send a message here"
-							class="input input-filled peer grow border-secondary shadow-md shadow-outline"
+							class="input input-filled peer grow border-secondary shadow-sm shadow-outline"
 							id="chattMessage"
 						/>
 						<label
