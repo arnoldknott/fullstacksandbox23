@@ -46,7 +46,7 @@
 
 <div class="grid grid-cols-1 gap-8 md:grid-cols-3 mb-5">
 	{#each links as link}
-		<Card title={link.name} description={link.description} href={`protected${link.url}`}></Card>
+		<Card title={link.name} href={`protected${link.url}`}>{link.description}</Card>
 	{/each}
 </div>
 

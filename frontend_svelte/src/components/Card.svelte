@@ -1,16 +1,18 @@
 <script lang="ts">
-	let { title, description, href } = $props();
+	import type { Snippet } from "svelte";
+
+	let { title, children, href }: {title:string, children: Snippet, href:string}  = $props();
 </script>
 
 <div class="card bg-base-250 rounded-xl border-[1px] border-outline-variant shadow-outline-variant shadow-lg">
 	<div class="card-header">
-		<h5 class="text-title-small md:text-title lg:text-title-large card-title mb-2.5 text-primary">
+		<h5 class="text-title-small md:text-title lg:text-title-large card-title text-primary">
 			{title}
 		</h5>
 	</div>
 	<div class="card-body">
-		<p class="text-body-small md:text-body mb-2.5 text-primary-container-content">
-			{description}
+		<p class="text-body-small md:text-body text-primary-container-content">
+			{@render children?.()}
 		</p>
 	</div>
 	<div class="card-footer">
