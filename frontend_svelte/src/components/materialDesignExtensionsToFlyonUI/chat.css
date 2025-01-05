@@ -1,68 +1,67 @@
 @layer components {
-    .chat {
+	.chat {
+		&-bubble-primary.chat-bubble {
+			@apply bg-primary text-primary-content;
+		}
 
-        &-bubble-primary.chat-bubble {
-            @apply bg-primary text-primary-content;
-        }
+		&-bubble-primary-container.chat-bubble {
+			@apply bg-primary-container text-primary-container-content;
+		}
 
-        &-bubble-primary-container.chat-bubble {
-            @apply bg-primary-container text-primary-container-content;
-        }
+		&-bubble-secondary.chat-bubble {
+			@apply bg-secondary text-secondary-content;
+		}
 
-        &-bubble-secondary.chat-bubble {
-            @apply bg-secondary text-secondary-content;
-        }
+		&-bubble-secondary-container.chat-bubble {
+			@apply bg-secondary-container text-secondary-container-content;
+		}
 
-        &-bubble-secondary-container.chat-bubble {
-            @apply bg-secondary-container text-secondary-container-content;
-        }
+		&-bubble-accent.chat-bubble {
+			@apply bg-accent text-accent-content;
+		}
 
-        &-bubble-accent.chat-bubble {
-            @apply bg-accent text-accent-content;
-        }
+		&-bubble-accent-container.chat-bubble {
+			@apply bg-accent-container text-accent-container-content;
+		}
 
-        &-bubble-accent-container.chat-bubble {
-            @apply bg-accent-container text-accent-container-content;
-        }
+		&-bubble-neutral.chat-bubble {
+			@apply bg-neutral text-neutral-content;
+		}
 
-        &-bubble-neutral.chat-bubble {
-            @apply bg-neutral text-neutral-content;
-        }
+		&-bubble-neutral-container.chat-bubble {
+			@apply bg-neutral-container text-neutral-container-content;
+		}
 
-        &-bubble-neutral-container.chat-bubble {
-            @apply bg-neutral-container text-neutral-container-content;
-        }
+		&-bubble-info.chat-bubble {
+			@apply bg-info text-info-content;
+		}
 
-        &-bubble-info.chat-bubble {
-            @apply bg-info text-info-content;
-        }
+		&-bubble-info-container.chat-bubble {
+			@apply bg-info-container text-info-container-content;
+		}
 
-        &-bubble-info-container.chat-bubble {
-            @apply bg-info-container text-info-container-content;
-        }
+		&-bubble-success.chat-bubble {
+			@apply bg-success text-success-content;
+		}
 
-        &-bubble-success.chat-bubble {
-            @apply bg-success text-success-content;
-        }
+		&-bubble-success-container.chat-bubble {
+			@apply bg-success-container text-success-container-content;
+		}
 
-        &-bubble-success-container.chat-bubble {
-            @apply bg-success-container text-success-container-content;
-        }
+		&-bubble-warning.chat-bubble {
+			@apply bg-warning text-warning-content;
+		}
 
-        &-bubble-warning.chat-bubble {
-            @apply bg-warning text-warning-content;
-        }
+		&-bubble-warning-container.chat-bubble {
+			@apply bg-warning-container text-warning-container-content;
+		}
 
-        &-bubble-warning-container.chat-bubble {
-            @apply bg-warning-container text-warning-container-content;
-        }
+		&-bubble-error.chat-bubble {
+			@apply bg-error text-error-content;
+		}
 
-        &-bubble-error.chat-bubble {
-            @apply bg-error text-error-content;
-        }
-
-        &-bubble-error-container.chat-bubble {
-            @apply bg-error-container text-error-container-content;
-        }
-    }
+		&-bubble-error-container.chat-bubble {
+			@apply bg-error-container text-error-container-content;
+		}
+	}
 }

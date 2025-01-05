@@ -2,8 +2,9 @@
 	<div class="w-full md:flex md:items-center md:gap-2">
 		<div class="flex items-center justify-between">
 			<div class="navbar-start items-center justify-between max-md:w-full">
-				<a class="link link-neutral text-xl font-semibold text-base-content no-underline" href="#top"
-					>FullStackSandbox23</a
+				<a
+					class="link link-neutral text-xl font-semibold text-base-content no-underline"
+					href="#top">FullStackSandbox23</a
 				>
 				<div class="md:hidden">
 					<button

@@ -1,8 +1,6 @@
 <div class="flex flex-row">
 	<div class="container grow">
-		<div
-			class="gap-4 rounded-xl border-2 border-outline-variant bg-primary-container p-4"
-		>
+		<div class="gap-4 rounded-xl border-2 border-outline-variant bg-primary-container p-4">
 			<h3 class="text-title-small md:text-title text-primary-container-content">Title</h3>
 			<p class="text-body mt-2 text-primary-container-content">Some text here</p>
 			<button
@@ -15,15 +13,18 @@
 			>
 		</div>
 		<div class="p-4 text-right">
-			<button class="btn btn-circle btn-gradient btn-primary-container" aria-label="Add Icon Button"><span class="icon-[fa6-solid--plus]"></span></button>
-			<button class="btn btn-circle btn-gradient btn-error-container" aria-label="Delete Icon Button"><span class="icon-[tabler--trash]"></span></button>
+			<button class="btn-primary-container btn btn-circle btn-gradient" aria-label="Add Icon Button"
+				><span class="icon-[fa6-solid--plus]"></span></button
+			>
+			<button
+				class="btn-error-container btn btn-circle btn-gradient"
+				aria-label="Delete Icon Button"><span class="icon-[tabler--trash]"></span></button
+			>
 		</div>
 	</div>
 	<div class="divider-outline-variant divider divider-horizontal"></div>
 	<div class="container grow">
-		<div
-			class="gap-4 rounded-xl border-2 border-outline-variant bg-secondary-container p-4"
-		>
+		<div class="gap-4 rounded-xl border-2 border-outline-variant bg-secondary-container p-4">
 			<h3 class="text-title-small md:text-title text-secondary-container-content">Title</h3>
 			<p class="text-body mt-2 text-secondary-container-content">Some text here</p>
 			<button
@@ -36,15 +37,19 @@
 			>
 		</div>
 		<div class="p-4 text-right">
-			<button class="btn btn-circle btn-gradient btn-secondary-container" aria-label="Add Icon Button"><span class="icon-[fa6-solid--plus]"></span></button>
-			<button class="btn btn-circle btn-gradient btn-error-container" aria-label="Delete Icon Button"><span class="icon-[tabler--trash]"></span></button>
+			<button
+				class="btn-secondary-container btn btn-circle btn-gradient"
+				aria-label="Add Icon Button"><span class="icon-[fa6-solid--plus]"></span></button
+			>
+			<button
+				class="btn-error-container btn btn-circle btn-gradient"
+				aria-label="Delete Icon Button"><span class="icon-[tabler--trash]"></span></button
+			>
 		</div>
 	</div>
 	<div class="divider-outline-variant divider divider-horizontal"></div>
 	<div class="container grow">
-		<div
-			class="gap-4 rounded-xl border-2 border-outline-variant bg-accent-container p-4"
-		>
+		<div class="gap-4 rounded-xl border-2 border-outline-variant bg-accent-container p-4">
 			<h3 class="text-title-small md:text-title text-accent-container-content">Title</h3>
 			<p class="text-body mt-2 text-accent-container-content">Some text here</p>
 			<button
@@ -57,8 +62,13 @@
 			>
 		</div>
 		<div class="p-4 text-right">
-			<button class="btn btn-circle btn-gradient btn-accent-container" aria-label="Add Icon Button"><span class="icon-[fa6-solid--plus]"></span></button>
-			<button class="btn btn-circle btn-gradient btn-error-container" aria-label="Delete Icon Button"><span class="icon-[tabler--trash]"></span></button>
+			<button class="btn-accent-container btn btn-circle btn-gradient" aria-label="Add Icon Button"
+				><span class="icon-[fa6-solid--plus]"></span></button
+			>
+			<button
+				class="btn-error-container btn btn-circle btn-gradient"
+				aria-label="Delete Icon Button"><span class="icon-[tabler--trash]"></span></button
+			>
 		</div>
 	</div>
 	<div class="divider-outline-variant divider divider-horizontal"></div>
@@ -78,8 +88,13 @@
 			>
 		</div>
 		<div class="p-4 text-right">
-			<button class="btn btn-circle btn-gradient btn-neutral-container" aria-label="Add Icon Button"><span class="icon-[fa6-solid--plus]"></span></button>
-			<button class="btn btn-circle btn-gradient btn-error-container" aria-label="Delete Icon Button"><span class="icon-[tabler--trash]"></span></button>
+			<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add Icon Button"
+				><span class="icon-[fa6-solid--plus]"></span></button
+			>
+			<button
+				class="btn-error-container btn btn-circle btn-gradient"
+				aria-label="Delete Icon Button"><span class="icon-[tabler--trash]"></span></button
+			>
 		</div>
 	</div>
 </div>
