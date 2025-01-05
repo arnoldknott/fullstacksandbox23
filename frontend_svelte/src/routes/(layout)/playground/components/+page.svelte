@@ -85,7 +85,44 @@
 
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div>
-		<Heading>Chat interface</Heading>
+		<Heading>Card with chat</Heading>
+		<div>
+			<div class="card sm:max-w-sm bg-base-250 shadow-lg">
+				<div class="card-header">
+					<h5 class="card-title text-title">Chat card</h5>
+				</div>
+				<div class="card-body">
+					<div class="overflow-y-auto  bg-base-200 min-h-44 max-h-96">
+						<div class="chat chat-receiver  text-primary-content">
+							<div class="chat-bubble chat-bubble-primary">Message from user 1.</div>
+						</div>
+						<div class="chat chat-receiver">
+							<div class="chat-bubble chat-bubble-primary">User 2 also had something to say.</div>
+						</div>
+						<div class="chat chat-sender">
+							<div class="chat-bubble chat-bubble-secondary">And I have replied to that.</div>
+						</div>
+					</div>
+				</div>
+				<div class="card-footer flex flex-row gap-2 items-center">
+					<div class="grow relative">
+						<input
+							type="text"
+							placeholder="Send a message here"
+							class="grow input input-filled peer border-secondary"
+							id="chattMessage"
+						/>
+						<label
+							class="grow text-label-small md:text-label input-filled-label"
+							style="color: oklch(var(--s));"
+							for="chatMessage">What's on your heart ♡?</label
+						>
+						<span class="grow input-filled-focused" style="background-color: oklch(var(--s));"></span>
+					</div>
+					<button class="btn btn-circle btn-gradient btn-secondary-container" aria-label="Add Icon Button"><span class="icon-[tabler--send-2]"></span></button>
+				</div>
+			</div>
+		</div>
 		
 	</div>
 
@@ -185,6 +222,7 @@
 				<span class="icon-[tabler--home] size-12"></span>
 				<span class="icon-[tabler--user] size-12"></span>
 				<span class="icon-[tabler--trash] size-12"></span>
+				<span class="icon-[tabler--send-2] size-12"></span>
 			</div>
 			<div>
 				<p class="text-center text-label">Extension library <span class="badge min-h-fit text-label-prominent">Material Symbols</span></p>

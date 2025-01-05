@@ -37,7 +37,7 @@
 
 <Heading>👍 Results - ready for use 👍</Heading>
 
-<div class="accordion accordion-bordered" data-accordion-always-open="">
+<div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
 	<AccordionItem title="Backgrounds">
 		<div class="flex h-screen min-h-fit w-full flex-col bg-background text-base-content">
 			<div class="flex h-screen min-h-fit w-full flex-col bg-background text-base-content">
