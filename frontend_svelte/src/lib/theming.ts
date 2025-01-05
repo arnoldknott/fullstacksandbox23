@@ -39,25 +39,6 @@ export enum Variant {
 }
 
 // these are all the fixed colors from the DynamicScheme:
-// const materialDesignColorCSSTokens= [
-//     "primary", "on-primary", "primary-container", "on-primary-container",
-//     "secondary", "on-secondary", "secondary-container", "on-secondary-container",
-//     "tertiary", "on-tertiary", "tertiary-container", "on-tertiary-container",
-//     "error", "on-error", "error-container", "on-error-container",
-//     "primary-fixed", "primary-fixed-dim", "on-primary-fixed", "on-primary-fixed-variant", // avoid using those
-//     "secondary-fixed", "secondary-fixed-dim", "on-secondary-fixed", "on-secondary-fixed-variant", // avoid using those
-//     "tertiary-fixed", "tertiary-fixed-dim", "on-tertiary-fixed", "on-tertiary-fixed-variant", // avoid using those
-//     "surface-container-lowest", "surface-container-low", "surface-container", "surface-container-high", "surface-container-highest",
-//     "surface-dim", "surface", "surface-bright", // avoid using those
-//     "on-surface", "on-surface-variant",
-//     "outline", "outline-variant",
-//     "inverse-surface", "inverse-on-surface", "inverse-primary",
-//     "scrim", "shadow",
-//     "neutral-palette-key-color", "neutral-variant-palette-key-color", // might be useful for mapping with FlyonUI
-//     "primary-palette-key-color", "secondary-palette-key-color", "tertiary-palette-key-color", "error-palette-key-color", // avoid using those
-//     "background", "on-background", // seems to be legacy
-// ]
-// these are all the fixed colors from the DynamicScheme:
 /* prettier-ignore */
 const materialDesignColors = [
     "primary", "onPrimary", "primaryContainer", "onPrimaryContainer", 
@@ -77,19 +58,6 @@ const materialDesignColors = [
     "primaryPaletteKeyColor", "secondaryPaletteKeyColor", "tertiaryPaletteKeyColor",// missing in DynamicScheme: "errorPaletteKeyColor", // avoid using those
     "background", "onBackground", // seems to be legacy
 ] as const;
-// const materialDesignColors = materialDesignColorCSSTokens.map(token => token.replace(/-([a-z])/g, (g) => g[1].toUpperCase())) as unknown as readonly string[];
-// console.log("=== lib - theming - materialDesignColorCamelCaseTokens ===");
-// console.log(materialDesignColors);
-
-// these are all the palettes with fixed hue anc chrome but varying tone from the DynamicScheme:
-// const materialDesignPalettes = [
-// 	'primaryPalette',
-// 	'secondaryPalette',
-// 	'tertiaryPalette',
-// 	'errorPalette',
-// 	'neutralPalette',
-// 	'neutralVariantPalette'
-// ] as const;
 
 type MaterialDesignColor = Record<(typeof materialDesignColors)[number], number>;
 // type MaterialDesignPalette = Record<(typeof materialDesignPalettes)[number], TonalPalette>;
@@ -114,31 +82,6 @@ type MaterialDesignScheme = {
 	palettes: MaterialDesignPalette;
 	meta: MaterialDesignMeta;
 };
-//  MaterialDesignColor & MaterialDesignPalette & MaterialDesignMeta;
-
-// interface MaterialDesignScheme {
-// type MaterialDesignScheme = {
-// Record<typeof materialDesignColorCamelCaseTokens[number], number>;
-// Record<typeof materialDesignPalettes[number], TonalPalette> &
-// [K in typeof materialDesignColorCamelCaseTokens[number]]: number;
-// } & {
-//     [K in typeof materialDesignPalettes[number]]: TonalPalette;
-// } & {
-// [K in typeof materialDesignPalettes[number]]: TonalPalette } & {
-//     // ...MaterialDesignPalette
-//     // MaterialDesignColor: number;
-//     // primaryPalette: TonalPalette;
-//     // secondaryPalette: TonalPalette;
-//     // tertiaryPalette: TonalPalette;
-//     // errorPalette: TonalPalette;
-//     // neutralPalette: TonalPalette;
-//     // neutralVariantPalette: TonalPalette;
-//     contrastLevel: string;
-//     isDark: boolean;
-//     sourceColorArgb: number;
-//     sourceColorHct: Hct;
-//     variant: number;
-// }
 
 // const sampleMaterialDesignScheme: MaterialDesignScheme = {
 //     // Fill in with sample data
@@ -214,20 +157,10 @@ type CustomColors = {
 	light: {
 		colors: ColorGroup;
 		palette: TonalPalette;
-		// color: number;
-		// onColor: number;
-		// colorContainer: number;
-		// onColorContainer: number;
-		// colorPalette: TonalPalette
 	};
 	dark: {
 		colors: ColorGroup;
 		palette: TonalPalette;
-		// color: number;
-		// onColor: number;
-		// colorContainer: number;
-		// onColorContainer: number;
-		// colorPalette: TonalPalette
 	};
 };
 
@@ -266,7 +199,6 @@ type AdditionalFlyonUIColorsPalette = Record<
 	(typeof additionalFlyonUIColorsPalette)[number],
 	TonalPalette
 >;
-// type AdditionalFlyonUIColors = typeof additionalFlyonUIColors[number]; // creates a union type
 type AdditionalFlyonUIScheme = {
 	colors: AdditionalFlyonUIColors &
 		AdditionalFlyonUIColorsOn &
@@ -274,14 +206,9 @@ type AdditionalFlyonUIScheme = {
 		AdditionalFlyonUIColorsOnContainer;
 	palettes: AdditionalFlyonUIColorsPalette;
 };
-// AdditionalFlyonUIColors &
-// AdditionalFlyonUIColorsOn &
-// AdditionalFlyonUIColorsContainer &
-// AdditionalFlyonUIColorsOnContainer &
-// AdditionalFlyonUIColorsPalette;
 
 // TBD: check how to do all the containers programmatically for providing the container classes (extensions of FlyonUI to match Material Design)
-// TBD: Map matched colors to both class names, e.g. onPrimary primary-container becomes a class definition of ".on-primary, .primary-container"
+// Map matched colors to both class names, e.g. onPrimary primary-container becomes a class definition of ".on-primary, .primary-container"
 // Material design tokens become FlyonUI variables (both technically CSS variables)
 const flyonUIVariablesMaterialDesignMapping = new Map([
 	// default FlyonUI tokens:
@@ -312,6 +239,18 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 	['onPrimaryContainer', 'pcontainercontent'],
 	['secondaryContainer', 'scontainer'],
 	['onSecondaryContainer', 'scontainercontent'],
+	['tertiaryContainer', 'acontainer'],
+	['onTertiaryContainer', 'acontainercontent'],
+	['neutralContainer', 'ncontainer'],
+	['onNeutralContainer', 'ncontainercontent'],
+	['infoContainer', 'incontainer'],
+	['onInfoContainer', 'incontainercontent'],
+	['successContainer', 'sucontainer'],
+	['onSuccessContainer', 'sucontainercontent'],
+	['warningContainer', 'wacontainer'],
+	['onWarningContainer', 'wacontainercontent'],
+	['errorContainer', 'ercontainer'],
+	['onErrorContainer', 'ercontainercontent'],
 	// Background and other extensions:
 	['inversePrimary', 'ip'],
 	['surfaceTint', 'st'],
@@ -333,6 +272,7 @@ const flyonUIVariablesMaterialDesignMapping = new Map([
 
 // add missing material design tokens as utility classes for flyonUI
 // with both material design and flyonUI syntax:
+// TBD: does this have an impact at all, after tailwind extensions are mapped to material design colors?
 export const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
 	['primaryContainer', 'primary-container'],
 	['onPrimaryContainer', 'primary-container-content'],
@@ -350,8 +290,9 @@ export const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
 	['onSuccessContainer', 'success-container-content'],
 	['infoContainer', 'info-container'],
 	['onInfoContainer', 'info-container-content'],
-	['surfaceContainerLow', 'base-50'],
-	['surfaceContainerHigh', 'base-150'],
+	['surfaceContainerLow', 'base-150'],
+	['surfaceContainerHigh', 'base-250'],
+	['onSurfaceVariant', 'base-content-variant'],
 	['outline', 'outline'],
 	['outlineVariant', 'outline-variant'],
 	['inverseSurface', 'inverse-surface'],
@@ -625,9 +566,19 @@ class Colorization {
 			isBackground: true
 		});
 
+		// let primaryPalette: TonalPalette;
+		// if (colorName === 'warning') {
+		// 	primaryPalette = TonalPalette.fromHueAndChroma(104, 84);
+		// } else if ( colorName === 'success') {
+		// 	primaryPalette = TonalPalette.fromHueAndChroma(130, 84);
+		// } else {
+		// 	primaryPalette = schemeLight.primaryPalette;
+		// }
+
 		const customPrimaryLight = DynamicColor.fromPalette({
 			name: colorName,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) => (this.isMonochrome ? 0 : 40),
 			// consider using options from primary instead of error"
 			background: (_schemeLight) => surfaceContainerHighestLight, //MaterialDynamicColors.highestSurface(schemeLight),
@@ -638,6 +589,7 @@ class Colorization {
 		const customOnPrimaryLight = DynamicColor.fromPalette({
 			name: `on${colorNameCapitalized}`,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) => (this.isMonochrome ? 10 : 20),
 			// consider using options from primary instead of error"
 			background: (_schemeLight) => customPrimaryLight, //MaterialDynamicColors.primary,
@@ -646,6 +598,7 @@ class Colorization {
 		const customPrimaryContainerLight = DynamicColor.fromPalette({
 			name: `${colorName}Container`,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) =>
 				this.isFidelity ? customColorHct.dark.tone : this.isMonochrome ? 25 : 90,
 			isBackground: true,
@@ -658,6 +611,7 @@ class Colorization {
 		const customOnPrimaryContainerLight = DynamicColor.fromPalette({
 			name: `on${colorNameCapitalized}Container`,
 			palette: (schemeLight) => schemeLight.primaryPalette,
+			// palette: (schemeLight) => primaryPalette,
 			tone: (_schemeLight) =>
 				this.isFidelity
 					? DynamicColor.foregroundTone(customPrimaryContainerLight.tone(schemeLight), 4.5)
@@ -926,57 +880,7 @@ export class Theming {
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
 		this.applyMaterialTokens(colors, targetElement);
 		this.applyFlyonUITokens(colors, targetElement);
-		// Theming.addStyle(`.btn-inverse-primary`, [
-		// 	// "--btn-color: var(--md-sys-color-inverse-primary);"
-		// 	"--btn-color: #535a92;"
-		// ]);
-		// extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
-		// 	(utilityClass, materialDesignToken) => {
-		// 		// const tokenKebabCase = materialDesignToken.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-		// 		const materialTokenKey = materialDesignToken as keyof typeof colors;
-		// 		const colorHex = hexFromArgb(colors[materialTokenKey])
-		// 		// TBD: consider using --tw-classes, wherever applicable to enable opacity and Tailwind CSS compatibility
-		// 		Theming.addStyle(`.bg-${utilityClass}`, [
-		// 			`background-color: ${colorHex};`
-		// 		]);
-		// 		Theming.addStyle(`.text-${utilityClass}`, [
-		// 			`color: ${colorHex};`
-		// 		]);
 
-		// 		// TBD: consider applying variables instead of colors and don't reapply when the color is changed. only the variable changes!
-		// 		// // remove - takes so much computation - add when needed:
-		// 		// // TBD: check .ring
-		// 		// Theming.addStyle(`.fill-${utilityClass}`, [
-		// 		// 	`fill: ${colorHex};`
-		// 		// ]);
-		// 		// Theming.addStyle(`.caret-${utilityClass}`, [
-		// 		// 	`caret-color: ${colorHex};`
-		// 		// ]);
-		// 		// Theming.addStyle(`.stroke-${utilityClass}`, [
-		// 		// 	`stroke: ${colorHex};`
-		// 		// ]);
-		// 		// Theming.addStyle(`.border-${utilityClass}`, [
-		// 		// 	`border-color: ${colorHex};`
-		// 		// ]);
-		// 		// Theming.addStyle(`.accent-${utilityClass}`, [
-		// 		// 	`accent-color: ${colorHex};`
-		// 		// ]);
-		// 		// // TBD: check shadow!
-		// 		// // TBD: check possibilities for applying opacity to those colors!
-		// 		// Theming.addStyle(`.accent-${utilityClass}`, [
-		// 		// 	`accent-color: ${colorHex};`
-		// 		// ]);
-		// 		// Theming.addStyle(`.decoration-${utilityClass}`, [
-		// 		// 	`text-decoration-color: ${colorHex};`
-		// 		// ]);
-
-		// 		// TBD: causes trouble on all browsers on iPad
-		// 		// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
-		// 		// 	`color: ${colorHex};`
-		// 		// ]);
-		// 		// TBD: check .ring-offset
-		// 	}
-		// );
 		return {
 			configuration: colorConfig,
 			currentMode: mode,
@@ -1000,7 +904,6 @@ export class Theming {
 		const r = parseInt(hexValue.substring(0, 2), 16);
 		const g = parseInt(hexValue.substring(2, 4), 16);
 		const b = parseInt(hexValue.substring(4, 6), 16);
-		console.log(`Converted hex ${hex} to rgb ${r} ${g} ${b}`);
 		return `${r} ${g} ${b}`;
 	};
 
@@ -1011,13 +914,10 @@ export class Theming {
 		if (targetElement === document.documentElement) {
 			const styleElementId = 'md_sys_dynamic_color_tokens';
 			let styles = '';
-			console.log('=== lib - theming - applyMaterialTokens ===');
 			appColors.forEach((token) => {
 				const tokenKebabCase = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 				styles += `--md-sys-color-${tokenKebabCase}: ${hexFromArgb(colors[token])};\n`;
 				styles += `--md-rgb-color-${tokenKebabCase}: ${Theming.rgbFromHex(hexFromArgb(colors[token]))};\n`;
-				// console.log(tokenKebabCase)
-				// console.log(Theming.rgbFromHex(hexFromArgb(colors[token])))
 			});
 			const styleElement = Theming.createStyleElementInDocument(styleElementId);
 			styleElement.textContent = `:root {\n${styles}}`;
@@ -1068,14 +968,6 @@ export class Theming {
 			styleElement.textContent += `\n:root {\n${rules}\n}`;
 		}
 	}
-
-	// static addBackgroundUtilityClass( name: string, backgroundColor: string[]): void {
-	//     Theming.addStyle(`bg-${name}`, [`background-color: ${backgroundColor}`]);
-	// }
-
-	// static addFillUtilityClass( name: string, fill: string[]): void {
-	//     Theming.addStyle(`fill-${name}`, [`fill: ${fill}`]);
-	// }
 
 	// TBD: might not be necessary any more, when refactored into Tailwind variables!
 	private applyFlyonUITokens(

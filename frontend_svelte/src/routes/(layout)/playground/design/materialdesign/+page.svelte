@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ColorTileMaterialUi from '$components/ColorTileMaterialUI.svelte';
+	import ColorTileMaterialUi from './ColorTileMaterialUI.svelte';
 	import '@material/web/icon/icon.js';
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
@@ -15,7 +15,7 @@
 	import '@material/web/labs/card/elevated-card.js';
 	import '@material/web/labs/card/filled-card.js';
 	import '@material/web/labs/card/outlined-card.js';
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	// import { getContext } from 'svelte';
@@ -28,7 +28,10 @@
 
 	let showSections = $state({
 		colors: true,
-		palettes: true
+		palettes: true,
+		typography: true,
+		shapes: true,
+		sliders: true
 	});
 	// let theme = $state(getContext('theme'));
 	// let palettes = $themeStore.light.palettes;
@@ -37,7 +40,13 @@
 	const unsbscribeThemeStore = themeStore.subscribe((value) => {
 		theme = value;
 	});
-	let palettes = $derived(theme?.light?.palettes);
+	let palettes = $derived.by(() => {
+		if (!theme.currentMode) {
+			return '';
+		} else {
+			return theme[theme.currentMode].palettes;
+		}
+	});
 	// $effect(() => {console.log('palettes:', palettes)})
 	// let toneValues = $state({} as {key: string})
 	// let toneValues = $derived(
@@ -89,8 +98,8 @@
 <!-- <JsonData data={theme} /> -->
 
 <div class="grid w-full grid-cols-1 gap-4 xl:grid-cols-2">
-	<div class="col-span-2">
-		<Title>Colors</Title>
+	<div class="xl:col-span-2">
+		<Heading>Colors</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -420,8 +429,8 @@
 		</div>
 	</div>
 
-	<div class="col-span-2">
-		<Title>Palettes</Title>
+	<div class="xl:col-span-2">
+		<Heading>Palettes</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -492,7 +501,7 @@
 	</div>
 
 	<!-- <div class="staticMaterialThemeBuilder">
-		<Title>Colors</Title>
+		<Heading>Colors</Heading>
 		<p class="text-center text-2xl">
 			(static generated on Material Theme Builder homepage and exported as css variables)
 		</p>
@@ -533,105 +542,159 @@
 	</div> -->
 
 	<div>
-		<Title>Typography</Title>
-		<p class="text-center text-2xl">Type face:</p>
-		<ul>
-			<li>
-				Brand
-				<ul>
-					<li>--md-ref-typeface-brand</li>
-				</ul>
-			</li>
-			<li>
-				Plain
-				<ul>
-					<li>--md-ref-typeface-plain</li>
-				</ul>
-			</li>
-		</ul>
-		<p class="text-center text-2xl">Type scale:</p>
-		<ul>
-			<li>
-				Display
-				<ul>
-					<li>--md-sys-typescale-display-medium-font</li>
-					<li>--md-sys-typescale-display-medium-size</li>
-					<li>--md-sys-typescale-display-medium-line-height</li>
-					<li>--md-sys-typescale-display-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Headline
-				<ul>
-					<li>--md-sys-typescale-headline-medium-font</li>
-					<li>--md-sys-typescale-headline-medium-size</li>
-					<li>--md-sys-typescale-headline-medium-line-height</li>
-					<li>--md-sys-typescale-headline-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Title
-				<ul>
-					<li>--md-sys-typescale-title-medium-font</li>
-					<li>--md-sys-typescale-title-medium-size</li>
-					<li>--md-sys-typescale-title-medium-line-height</li>
-					<li>--md-sys-typescale-title-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Body
-				<ul>
-					<li>--md-sys-typescale-body-medium-font</li>
-					<li>--md-sys-typescale-body-medium-size</li>
-					<li>--md-sys-typescale-body-medium-line-height</li>
-					<li>--md-sys-typescale-body-medium-weight</li>
-				</ul>
-			</li>
-			<li>
-				Label
-				<ul>
-					<li>--md-sys-typescale-label-medium-font</li>
-					<li>--md-sys-typescale-label-medium-size</li>
-					<li>--md-sys-typescale-label-medium-line-height</li>
-					<li>--md-sys-typescale-label-medium-weight</li>
-				</ul>
-			</li>
-		</ul>
+		<Heading>Typography</Heading>
+		<div class="flex items-center gap-1">
+			<label class="label label-text text-base" for="switchTypography">Hide</label>
+			<input
+				type="checkbox"
+				class="switch switch-primary"
+				bind:checked={showSections.typography}
+				id="switchTypography"
+			/>
+			<label class="label label-text text-base" for="switchTypography">Show</label>
+		</div>
+		<div class={showSections.typography ? '' : 'hidden'}>
+			<p class="text-center text-2xl">Type face:</p>
+			<ul>
+				<li>
+					Brand
+					<ul>
+						<li>--md-ref-typeface-brand</li>
+					</ul>
+				</li>
+				<li>
+					Plain
+					<ul>
+						<li>--md-ref-typeface-plain</li>
+					</ul>
+				</li>
+			</ul>
+			<p class="text-center text-2xl">Type scale:</p>
+			<ul>
+				<li>
+					Display
+					<ul>
+						<li>--md-sys-typescale-display-medium-font</li>
+						<li>--md-sys-typescale-display-medium-size</li>
+						<li>--md-sys-typescale-display-medium-line-height</li>
+						<li>--md-sys-typescale-display-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Headline
+					<ul>
+						<li>--md-sys-typescale-headline-medium-font</li>
+						<li>--md-sys-typescale-headline-medium-size</li>
+						<li>--md-sys-typescale-headline-medium-line-height</li>
+						<li>--md-sys-typescale-headline-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Title
+					<ul>
+						<li>--md-sys-typescale-title-medium-font</li>
+						<li>--md-sys-typescale-title-medium-size</li>
+						<li>--md-sys-typescale-title-medium-line-height</li>
+						<li>--md-sys-typescale-title-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Body
+					<ul>
+						<li>--md-sys-typescale-body-medium-font</li>
+						<li>--md-sys-typescale-body-medium-size</li>
+						<li>--md-sys-typescale-body-medium-line-height</li>
+						<li>--md-sys-typescale-body-medium-weight</li>
+					</ul>
+				</li>
+				<li>
+					Label
+					<ul>
+						<li>--md-sys-typescale-label-medium-font</li>
+						<li>--md-sys-typescale-label-medium-size</li>
+						<li>--md-sys-typescale-label-medium-line-height</li>
+						<li>--md-sys-typescale-label-medium-weight</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
 	</div>
 
 	<div>
-		<Title>Shapes (styles)</Title>
-
-		<!-- <div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-none);">
-			corner-none
+		<Heading>Shapes (styles)</Heading>
+		<div class="flex items-center gap-1">
+			<label class="label label-text text-base" for="switchShapes">Hide</label>
+			<input
+				type="checkbox"
+				class="switch switch-primary"
+				bind:checked={showSections.shapes}
+				id="switchShapes"
+			/>
+			<label class="label label-text text-base" for="switchshapes">Show</label>
 		</div>
-		<div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-full);">
-			corner-full
-		</div> -->
-		<p class="text-center text-2xl">Supported tokens:</p>
-		<ul>
-			<li>--md-sys-shape-corner-none</li>
-			<li>--md-sys-shape-corner-extra-small</li>
-			<li>--md-sys-shape-corner-small</li>
-			<li>--md-sys-shape-corner-medium</li>
-			<li>--md-sys-shape-corner-large</li>
-			<li>--md-sys-shape-corner-extra-large</li>
-			<li>--md-sys-shape-corner-full</li>
-		</ul>
-		<p>The 7 values are not available - demonstrating the 9 steps of tailwindsCSS instead:</p>
-		<div class="grid grid-cols-2 gap-4 p-4 md:grid-cols-5">
-			{#each ['none', 'sm', '', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] as style}
+		<div class={showSections.shapes ? '' : 'hidden'}>
+			<!-- <div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-none);">
+				corner-none
+			</div>
+			<div class="text-left text-base md:text-xl bg-primary" style="border-radius: var(--md-sys-shape-corner-full);">
+				corner-full
+			</div> -->
+			<p class="text-center text-2xl">Supported tokens:</p>
+			<ul>
+				<li>--md-sys-shape-corner-none</li>
+				<li>--md-sys-shape-corner-extra-small</li>
+				<li>--md-sys-shape-corner-small</li>
+				<li>--md-sys-shape-corner-medium</li>
+				<li>--md-sys-shape-corner-large</li>
+				<li>--md-sys-shape-corner-extra-large</li>
+				<li>--md-sys-shape-corner-full</li>
+			</ul>
+			<p>The 7 values are not available - demonstrating the 9 steps of tailwindsCSS instead:</p>
+			<div class="grid grid-cols-2 gap-4 p-4 md:grid-cols-5">
+				<!-- {#each ['none', 'sm', '', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] as style}
+					<div
+						class="m-2 w-24 bg-primary-container p-2 text-center text-base md:text-xl rounded-{style}"
+					>
+						{style}
+					</div>
+				{/each} -->
 				<div
-					class="m-2 w-24 bg-primary-container p-2 text-center text-base md:text-xl rounded-{style}"
+					class="m-2 w-24 rounded-none bg-primary-container p-2 text-center text-base md:text-xl"
 				>
-					{style}
+					none
 				</div>
-			{/each}
+				<div class="m-2 w-24 rounded-sm bg-primary-container p-2 text-center text-base md:text-xl">
+					sm
+				</div>
+				<div
+					class="m-2 w-24 rounded bg-primary-container p-2 text-center text-base md:text-xl"
+				></div>
+				<div class="m-2 w-24 rounded-md bg-primary-container p-2 text-center text-base md:text-xl">
+					md
+				</div>
+				<div class="m-2 w-24 rounded-lg bg-primary-container p-2 text-center text-base md:text-xl">
+					lg
+				</div>
+				<div class="m-2 w-24 rounded-xl bg-primary-container p-2 text-center text-base md:text-xl">
+					xl
+				</div>
+				<div class="m-2 w-24 rounded-2xl bg-primary-container p-2 text-center text-base md:text-xl">
+					2xl
+				</div>
+				<div class="m-2 w-24 rounded-3xl bg-primary-container p-2 text-center text-base md:text-xl">
+					3xl
+				</div>
+				<div
+					class="m-2 w-24 rounded-full bg-primary-container p-2 text-center text-base md:text-xl"
+				>
+					full
+				</div>
+			</div>
 		</div>
 	</div>
 
 	<div>
-		<Title>Icons</Title>
+		<Heading>Icons</Heading>
 		<p>Don't use - iconify has them as well and well integrated with FlyonUI</p>
 		<div class="grid grid-cols-5 gap-4">
 			<div>
@@ -652,7 +715,7 @@
 	</div>
 
 	<div>
-		<Title>List</Title>
+		<Heading>List</Heading>
 		<md-list class="w-full">
 			<md-list-item> Fruits </md-list-item>
 			<md-divider></md-divider>
@@ -678,7 +741,7 @@
 	</div>
 
 	<div>
-		<Title>Open Modal with dialog</Title>
+		<Heading>Open Modal with dialog</Heading>
 		<md-filled-button
 			onclick={() => demoResourceDialog.show()}
 			role="button"
@@ -730,7 +793,7 @@
 	</div>
 
 	<div>
-		<Title>User Form</Title>
+		<Heading>User Form</Heading>
 		<!-- Applying TailwindCSS classes formats the following paragraph: -->
 		<p class="text-center text-2xl">
 			(Only the text fields are material design - the div's around are tailwind CSS)
@@ -801,19 +864,19 @@
 	</div>
 
 	<div>
-		<Title>Card</Title>
+		<Heading>Card</Heading>
 
 		<div class="grid grid-cols-3 gap-4">
 			<md-elevated-card>
-				<Title>Elevated Card</Title>
+				<Heading>Elevated Card</Heading>
 				<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
 			</md-elevated-card>
 			<md-filled-card>
-				<Title>Filled Card</Title>
+				<Heading>Filled Card</Heading>
 				<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
 			</md-filled-card>
 			<md-outlined-card>
-				<Title>Filled Card</Title>
+				<Heading>Filled Card</Heading>
 				<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
 			</md-outlined-card>
 		</div>

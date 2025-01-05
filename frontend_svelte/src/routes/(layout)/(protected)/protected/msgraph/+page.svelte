@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 
 	let { data }: { data: PageData } = $props();
 	// TBD refactor using sessionData
@@ -29,8 +29,8 @@
 	});
 </script>
 
-<Title>First: Directly from SvelteAPI (works also without client side JavaScript):</Title>
-<Title>Second: Passed through server load function and uses client side JavaScript:</Title>
+<Heading>First: Directly from SvelteAPI (works also without client side JavaScript):</Heading>
+<Heading>Second: Passed through server load function and uses client side JavaScript:</Heading>
 <!-- TBD: needs a check if user is logged in -> using store data?  -->
 <img class="rounded-full" src="/api/v1/user/me/picture" alt="you" />
 
@@ -39,8 +39,8 @@
 	<img class="h-100 w-100" src={userPictureURL} alt="you" />
 {/if}
 
-<Title>Microsoft User Profile on DTU Tenant</Title>
+<Heading>Microsoft User Profile on DTU Tenant</Heading>
 <code><pre>{JSON.stringify(userProfile, null, ' ')}</pre></code>
 
-<Title>Azure Account</Title>
+<Heading>Azure Account</Heading>
 <code><pre>{JSON.stringify(account, null, ' ')}</pre></code>

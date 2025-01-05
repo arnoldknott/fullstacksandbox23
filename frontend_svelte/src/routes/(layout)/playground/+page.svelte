@@ -3,14 +3,26 @@
 
 	export const links = [
 		{
+			name: 'Layout',
+			description: 'Playground for layouting components, using grid, flex, etc.',
+			url: '/layout'
+		},
+		{
 			name: 'Components',
 			description:
-				'Svelte components to play around with various Tailwind CSS features and Tailwind elements',
+				'Prototypes of components with applied design - candidates to become Svelte components',
 			url: '/components'
 		},
 		{
+			name: 'Design',
+			description:
+				'Design adaption of Material Design 3 principles to FlyonUI components supported by TailwindCSS',
+			url: '/design'
+		},
+		{
 			name: 'User interface',
-			description: 'play with elements of the user interface',
+			description:
+				'Playground for elements of the user interface, before turing into Svelte components',
 			url: '/user_interface'
 		},
 		{
@@ -43,11 +55,9 @@
 	];
 </script>
 
-<div class="grid grid-cols-3 gap-4">
+<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 	{#each links as link}
-		<div>
-			<Card title={link.name} description={link.description} href={`playground${link.url}`}></Card>
-		</div>
+		<Card title={link.name} href={`playground${link.url}`}>{link.description}</Card>
 	{/each}
 </div>
 

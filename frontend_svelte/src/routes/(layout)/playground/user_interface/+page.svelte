@@ -1,11 +1,28 @@
 <script lang="ts">
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	import '@material/web/slider/slider.js';
 	import '@material/web/labs/card/filled-card.js';
 	import '@material/web/tabs/tabs.js';
 	import '@material/web/tabs/primary-tab.js';
 	import '@material/web/tabs/secondary-tab.js';
+	import Tabs from './Tabs.svelte';
+	import type { Tab } from '$lib/types';
+	import VerticalTabs from './VerticalTabs.svelte';
+	import UserForm from './UserForm.svelte';
+	import Card from '$components/Card.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
+
+	const tabs: Tab[] = [
+		{
+			header: 'Left Tab',
+			content: 'Some content in the left tab.'
+		},
+		{
+			header: 'Right Tag',
+			content: 'The tab, that is activated by default is the one on the right side.',
+			active: true
+		}
+	];
 
 	let sliderValue = $state(0);
 	const color = $derived(`hsl(${sliderValue * 1.2}, 80%, 80%)`);
@@ -18,12 +35,17 @@
 		`hsl(${sliders[3] * 1.2}, 80%, 80%)`
 	]);
 
+	interface TabChangeEventTarget extends EventTarget {
+		activeTabIndex: number;
+	}
+
 	let activeTab = $state(1);
 	const tabChange = (event: Event) => {
-		console.log(`Primary tab changed to ${event.target.activeTabIndex}`);
+		const target = event.target as unknown as TabChangeEventTarget;
+		console.log(`Primary tab changed to ${target.activeTabIndex}`);
 		// console.log("=== playground - user-interface - tabChange - event ===");
 		// console.log(event)
-		activeTab = event.target.activeTabIndex;
+		activeTab = target.activeTabIndex;
 	};
 
 	const tabContent = ['Tab content 1', 'Tab content 2', 'Tab content 3'];
@@ -44,8 +66,28 @@
         id="customRange1" />
 </div> -->
 
-<Title>Card with tabs</Title>
+<div>
+	<Heading>Card</Heading>
+	<div class="card sm:max-w-sm">
+		<div class="card-text-body bg-primary-container text-primary-container-content shadow-primary">
+			<h5 class="card-title mb-2.5">Body of a Card here</h5>
+			<p class="mb-4">
+				Soe text to fill in the body fo the card. This could be anything here. But for now just text
+				filling in here.
+			</p>
+			<div class="card-actions">
+				<button class="btn btn-primary">Card button</button>
+			</div>
+		</div>
+	</div>
+</div>
+<HorizontalRule />
 
+<Heading>Tabs</Heading>
+<Tabs {tabs}>Some Text common to all tabs</Tabs>
+<HorizontalRule />
+
+<Heading>Card with tabs</Heading>
 <md-filled-card class="w-100 m-10 p-10">
 	<md-tabs onchange={tabChange}>
 		<md-primary-tab active={activeTab == 0}>Tab 1</md-primary-tab>
@@ -56,30 +98,45 @@
 		<md-secondary-tab>Tab A</md-secondary-tab>
 		<md-secondary-tab>Tab B</md-secondary-tab>
 	</md-tabs>
-	<div class="text-2xl"><Title>{cardContent}</Title></div>
+	<div class="text-2xl"><Heading>{cardContent}</Heading></div>
 </md-filled-card>
-
 <HorizontalRule />
 
-<Title>Status slider</Title>
+<Heading>Vertical Tabs</Heading>
+<VerticalTabs />
+<HorizontalRule />
 
+<Heading>User Form</Heading>
+<div class="flex justify-center">
+	<UserForm type="signup" />
+	<UserForm type="login" />
+</div>
+<HorizontalRule />
+
+<Heading>Card</Heading>
+<Card
+	title="Title of Card"
+	description="Some text inside the card to describe what's going on here. The button links to this page."
+	href=""
+></Card>
+<HorizontalRule />
+
+<Heading>Status slider</Heading>
 <p class="text-center text-2xl">Status: {sliderValue}</p>
 <!-- TBD refactor into bindable prop! -->
 <md-slider
 	class="w-full p-10"
 	value={sliderValue}
-	oninput={(e: Event) => (sliderValue = e.target?.value)}
+	oninput={(e: Event) => (sliderValue = parseInt((e.target as HTMLInputElement).value))}
 ></md-slider>
 
 <div class="w-100 m-10 p-10" style="background-color: {color};">
 	STATUS: {sliderValue}
 </div>
-
 <hr class="mx-5 my-12 h-2 bg-neutral-500 opacity-100 dark:opacity-50" />
-
 <HorizontalRule />
 
-<Title>Multiple status sliders</Title>
+<Heading>Multiple status sliders</Heading>
 
 <table class="w-full">
 	<thead>
@@ -96,7 +153,7 @@
 				<md-slider
 					class="w-full p-1"
 					value={sliders[0]}
-					oninput={(e: Event) => (sliders[0] = e.target?.value)}
+					oninput={(e: Event) => (sliders[0] = parseInt((e.target as HTMLInputElement).value))}
 				></md-slider>
 				{sliders[0]}
 			</td>
@@ -104,7 +161,7 @@
 				<md-slider
 					class="w-full p-1"
 					value={sliders[1]}
-					oninput={(e: Event) => (sliders[1] = e.target?.value)}
+					oninput={(e: Event) => (sliders[1] = parseInt((e.target as HTMLInputElement).value))}
 				></md-slider>
 				{sliders[1]}
 			</td>
@@ -112,7 +169,7 @@
 				<md-slider
 					class="w-full p-1"
 					value={sliders[2]}
-					oninput={(e: Event) => (sliders[2] = e.target?.value)}
+					oninput={(e: Event) => (sliders[2] = parseInt((e.target as HTMLInputElement).value))}
 				></md-slider>
 				{sliders[2]}
 			</td>
@@ -120,7 +177,7 @@
 				<md-slider
 					class="w-full p-1"
 					value={sliders[3]}
-					oninput={(e: Event) => (sliders[3] = e.target?.value)}
+					oninput={(e: Event) => (sliders[3] = parseInt((e.target as HTMLInputElement).value))}
 				></md-slider>
 				{sliders[3]}
 			</td>
@@ -195,7 +252,7 @@
 
 <HorizontalRule />
 
-<Title>Nice Tailwind CSS gradient</Title>
+<Heading>Tailwind CSS gradient</Heading>
 
 <div class="w-100 m-10 bg-gradient-to-r from-cyan-500 to-blue-500 p-10">STATUS:</div>
 

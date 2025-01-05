@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 </script>
 
 <div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
 	<div>
-		<Title>Colors</Title>
+		<Heading>Colors</Heading>
 		<div class="grid grid-cols-4 gap-4 xl:grid-cols-8">
 			<div>
 				<div class="skeleton flex h-36 w-36 items-center justify-center bg-orange-500">

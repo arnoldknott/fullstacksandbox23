@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import JsonData from '$components/JsonData.svelte';
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	import '@material/web/dialog/dialog.js';
 	import type { Dialog } from '@material/web/dialog/internal/dialog';
 	import '@material/web/textfield/filled-text-field.js';
@@ -27,7 +27,7 @@
 <!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->
 
 {#each demo_resources as demo_resource}
-	<Title>{demo_resource.name}</Title>
+	<Heading>{demo_resource.name}</Heading>
 	<JsonData data={demo_resource} />
 {/each}
 

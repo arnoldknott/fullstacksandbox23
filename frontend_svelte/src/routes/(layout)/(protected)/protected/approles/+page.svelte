@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Title from '$components/Title.svelte';
+	import Heading from '$components/Heading.svelte';
 	import '@material/web/button/filled-button.js';
 	import '@material/web/switch/switch.js';
 
@@ -10,7 +10,7 @@
 	// }
 </script>
 
-<Title>Assign roles</Title>
+<Heading>Assign roles</Heading>
 <form method="POST" action="?/toggleAIuser">
 	<label for="publicAIswitch"> Assign "publicAIuser" role in backendAPI to signed in user:</label>
 	<!-- <input type="switch"  value={selected ? 'on': 'off' } /> -->

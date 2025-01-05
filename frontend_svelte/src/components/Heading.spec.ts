@@ -1,10 +1,10 @@
 import { describe, test } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import Title from './Title.svelte';
+import Heading from './Heading.svelte';
 
 describe('Title', () => {
 	test('should contain an h1 header', async () => {
-		render(Title);
+		render(Heading);
 
 		screen.getByRole('heading', { level: 1 });
 
