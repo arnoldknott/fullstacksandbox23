@@ -55,7 +55,7 @@
 	];
 </script>
 
-<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+<div class="grid grid-cols-1 gap-8 md:grid-cols-3 mb-5">
 	{#each links as link}
 		<Card title={link.name} description={link.description} href={`playground${link.url}`}></Card>
 	{/each}

@@ -12,7 +12,7 @@
 
 <Heading>🚧 Construction sites - for design experiments 🚧</Heading>
 
-<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+<div class="grid grid-cols-1 gap-8 md:grid-cols-3 mb-5">
 	<Card
 		title="FlyonUI 1"
 		description="Playground and showcase for flyonUI components and design"
