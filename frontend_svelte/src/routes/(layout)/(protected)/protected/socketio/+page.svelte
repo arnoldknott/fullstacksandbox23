@@ -6,7 +6,7 @@
 	import '@material/web/textfield/filled-text-field.js';
 	import '@material/web/button/filled-button.js';
 	import Heading from '$components/Heading.svelte';
-	import Chat from '$components/Chat.svelte';
+	import Chat from './Chat.svelte';
 	import { page } from '$app/stores';
 
 	// const socketio_client_from_lib = new SocketIO();

@@ -86,7 +86,7 @@
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div>
 		<Heading>Card with chat</Heading>
-		<div>
+		<div class="grid justify-items-center">
 			<div class="card bg-base-250 shadow-lg sm:max-w-sm">
 				<div class="card-header">
 					<h5 class="text-title card-title">Chat card</h5>
