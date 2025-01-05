@@ -87,12 +87,12 @@
 	<div>
 		<Heading>Card with chat</Heading>
 		<div class="grid justify-items-center">
-			<div class="card bg-base-250 shadow-lg sm:max-w-sm">
+			<div class="card bg-base-250 rounded-xl border-[1px] border-outline-variant shadow-outline-variant shadow-lg sm:max-w-sm">
 				<div class="card-header">
-					<h5 class="text-title card-title">Chat card</h5>
+					<h5 class="text-title md:text-title-large card-title">Chat card</h5>
 				</div>
 				<div class="card-body">
-					<div class="max-h-96 min-h-44 overflow-y-auto bg-base-200">
+					<div class="max-h-96 min-h-44 p-2 overflow-y-auto bg-base-200 rounded-lg shadow-inner shadow-outline">
 						<div class="chat chat-receiver">
 							<div class="avatar chat-avatar">
 								<div class="size-10 rounded-full">
@@ -140,7 +140,7 @@
 						<input
 							type="text"
 							placeholder="Send a message here"
-							class="input input-filled peer grow border-secondary"
+							class="input input-filled peer grow border-secondary shadow-md shadow-outline"
 							id="chattMessage"
 						/>
 						<label

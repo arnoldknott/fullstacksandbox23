@@ -2,14 +2,18 @@
 	let { title, description, href } = $props();
 </script>
 
-<div class="card">
-	<div class="card-body rounded-2xl bg-base-300">
+<div class="card bg-base-250 rounded-xl border-[1px] border-outline-variant shadow-outline-variant shadow-lg">
+	<div class="card-header">
 		<h5 class="text-title-small md:text-title lg:text-title-large card-title mb-2.5 text-primary">
 			{title}
 		</h5>
+	</div>
+	<div class="card-body">
 		<p class="text-body-small md:text-body mb-2.5 text-primary-container-content">
 			{description}
 		</p>
+	</div>
+	<div class="card-footer">
 		<div class="card-actions text-center">
 			<a {href}
 				><button
