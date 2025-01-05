@@ -8,15 +8,11 @@
 				id="primaryInput"
 			/>
 			<label
-				class="text-label-small md:text-label input-filled-label input-filled-label-primary"
+				class="text-label-small md:text-label input-filled-label"
 				style="color: oklch(var(--p));"
 				for="primaryInput">Full Name</label
 			>
 			<span class="input-filled-focused" style="background-color: oklch(var(--p));"></span>
-		</div>
-		<div class="relative min-w-56">
-			<input type="text" placeholder="John Doe" class="input input-floating peer" id="floatingInput" />
-			<label class="input-floating-label input-floating-label-primary" for="floatingInput">Full name</label>
 		</div>
 		<button
 			class="text-label-small md:text-label btn btn-primary max-w-52 rounded-full bg-primary text-primary-content"
@@ -62,15 +58,11 @@
 				id="accentInput"
 			/>
 			<label
-				class="text-label-small md:text-label input-filled-label input-filled-label-accent"
+				class="text-label-small md:text-label input-filled-label"
 				style="color: oklch(var(--a));"
 				for="accentInput">Full Name</label
 			>
 			<span class="input-filled-focused" style="background-color: oklch(var(--a));"></span>
-		</div>
-		<div class="relative min-w-56">
-			<input type="text" placeholder="John Doe" class="input input-floating input-floating-accent peer border-accent" id="floatingInput" />
-			<label class="input-floating-label input-floating-label-accent" style="color: oklch(var(--a));" for="floatingInput">Full name</label>
 		</div>
 		<button
 			class="text-label-small md:text-label btn btn-accent max-w-52 rounded-full bg-accent text-accent-content"
