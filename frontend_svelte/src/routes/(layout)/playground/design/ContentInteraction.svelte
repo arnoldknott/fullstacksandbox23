@@ -69,7 +69,7 @@
 			<span class="input-filled-focused" style="background-color: oklch(var(--a));"></span>
 		</div>
 		<div class="relative min-w-56">
-			<input type="text" placeholder="John Doe" class="input input-floating peer border-accent" id="floatingInput" />
+			<input type="text" placeholder="John Doe" class="input input-floating input-floating-accent peer border-accent" id="floatingInput" />
 			<label class="input-floating-label input-floating-label-accent" style="color: oklch(var(--a));" for="floatingInput">Full name</label>
 		</div>
 		<button
