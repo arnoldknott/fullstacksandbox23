@@ -239,6 +239,17 @@
 	}
 }
 
+.btn-gradient.btn-neutral {
+	@apply border-neutral text-neutral-content shadow-neutral/26 hover:shadow-neutral/20;
+	@supports (color: oklch(0% 0 0)) {
+		--light-shade: var(--n);
+	}
+	&:focus-visible {
+		@apply outline-neutral/30;
+		border-color: transparent;
+	}
+}
+
 .btn-gradient.btn-primary-container {
 	@apply border-primary-container text-primary-container-content shadow-primary-container/26 hover:shadow-primary-container/20;
 	@supports (color: oklch(0% 0 0)) {
@@ -246,6 +257,50 @@
 	}
 	&:focus-visible {
 		@apply outline-primary-container/30;
+		border-color: transparent;
+	}
+}
+
+.btn-gradient.btn-secondary-container {
+	@apply border-secondary-container text-secondary-container-content shadow-secondary-container/26 hover:shadow-secondary-container/20;
+	@supports (color: oklch(0% 0 0)) {
+		--light-shade: var(--sc);
+	}
+	&:focus-visible {
+		@apply outline-secondary-container/30;
+		border-color: transparent;
+	}
+}
+
+.btn-gradient.btn-accent-container {
+	@apply border-accent-container text-accent-container-content shadow-accent-container/26 hover:shadow-accent-container/20;
+	@supports (color: oklch(0% 0 0)) {
+		--light-shade: var(--ac);
+	}
+	&:focus-visible {
+		@apply outline-accent-container/30;
+		border-color: transparent;
+	}
+}
+
+.btn-gradient.btn-neutral-container {
+	@apply border-neutral-container text-neutral-container-content shadow-neutral-container/26 hover:shadow-neutral-container/20;
+	@supports (color: oklch(0% 0 0)) {
+		--light-shade: var(--nc);
+	}
+	&:focus-visible {
+		@apply outline-neutral-container/30;
+		border-color: transparent;
+	}
+}
+
+.btn-gradient.btn-error-container {
+	@apply border-error-container text-error-container-content shadow-error-container/26 hover:shadow-error-container/20;
+	@supports (color: oklch(0% 0 0)) {
+		--light-shade: var(--erc);
+	}
+	&:focus-visible {
+		@apply outline-error-container/30;
 		border-color: transparent;
 	}
 }

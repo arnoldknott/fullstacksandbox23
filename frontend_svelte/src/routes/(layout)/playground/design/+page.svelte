@@ -10,34 +10,26 @@
 	import Containers from './Containers.svelte';
 </script>
 
-<Heading>🚧 Construction sites for design experiments 🚧</Heading>
+<Heading>🚧 Construction sites - for design experiments 🚧</Heading>
 
-<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-	<Card
-		title="FlyonUI 1"
-		description="Playground and showcase for flyonUI components and design"
-		href={`/playground/design/flyonui`}
-	></Card>
-	<Card
-		title="Material Design 3"
-		description="Playground and showcase for Material Design 3 components and design"
-		href={`/playground/design/materialdesign`}
-	></Card>
-	<Card
-		title="TailwindCSS 3"
-		description="Formating playground for styling with TailwindCSS utility classes"
-		href={`/playground/design/tailwindcss`}
-	></Card>
-	<Card
-		title="Comparison"
-		description="Directly putting components right next to each other to compare them"
-		href={`/playground/design/comparison`}
-	></Card>
+<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
+	<Card title="FlyonUI 1" href={`/playground/design/flyonui`}>
+		"Playground and showcase for flyonUI components and design"
+	</Card>
+	<Card title="Material Design 3" href={`/playground/design/materialdesign`}>
+		Playground and showcase for Material Design 3 components and design
+	</Card>
+	<Card title="TailwindCSS 3" href={`/playground/design/tailwindcss`}>
+		Formating playground for styling with TailwindCSS utility classes
+	</Card>
+	<Card title="Comparison" href={`/playground/design/comparison`}>
+		Directly putting components right next to each other to compare them
+	</Card>
 </div>
 
-<Heading>👍 Results, ready for use 👍</Heading>
+<Heading>👍 Results - ready for use 👍</Heading>
 
-<div class="accordion accordion-bordered" data-accordion-always-open="">
+<div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
 	<AccordionItem title="Backgrounds">
 		<div class="flex h-screen min-h-fit w-full flex-col bg-background text-base-content">
 			<div class="flex h-screen min-h-fit w-full flex-col bg-background text-base-content">
@@ -52,21 +44,23 @@
 	</AccordionItem>
 	<AccordionItem title="Text and colors for content">
 		<BackgroundRows><ContentText /></BackgroundRows>
-		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
+		<p class="text-body-small text-outline-variant">The dividers are outline-variant.</p>
 	</AccordionItem>
 	<AccordionItem title="Text and colors for app functionality">
 		<BackgroundRows><AppText /></BackgroundRows>
-		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
+		<p class="text-body-small text-outline-variant">The dividers are outline-variant.</p>
 	</AccordionItem>
 	<AccordionItem title="Interactions for content control">
 		<BackgroundRows><ContentInteraction /></BackgroundRows>
-		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
+		<p class="text-body-small text-outline-variant">The dividers are outline-variant.</p>
 	</AccordionItem>
 	<AccordionItem title="Interactions for app functionality">
 		<BackgroundRows><AppInteraction /></BackgroundRows>
-		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
+		<p class="text-body-small text-outline-variant">The dividers are outline-variant.</p>
 	</AccordionItem>
-	<AccordionItem title="Notifications">
+	<AccordionItem title="Containers">
 		<BackgroundRows><Containers /></BackgroundRows>
+		<p class="text-body-small text-outline-variant">The dividers are outline-variant.</p>
+		<p class="text-body-small text-outline">Borders of boxes outline.</p>
 	</AccordionItem>
 </div>

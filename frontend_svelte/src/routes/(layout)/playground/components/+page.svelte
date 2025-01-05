@@ -85,8 +85,87 @@
 
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div>
-		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
+		<Heading>Card with chat</Heading>
+		<div class="mb-5 grid justify-items-center">
+			<div
+				class="card w-4/5 rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+			>
+				<div class="card-header">
+					<h5 class="text-title md:text-title-large card-title">Chat card</h5>
+				</div>
+				<div class="card-body">
+					<div
+						class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
+					>
+						<div class="chat chat-receiver">
+							<div class="avatar chat-avatar">
+								<div class="size-10 rounded-full">
+									<span class="icon-[tabler--man] size-8 text-primary"></span>
+								</div>
+							</div>
+							<div class="chat-header text-base-content">
+								User 1
+								<time class="text-base-content/50">12:45</time>
+							</div>
+							<div class="chat-bubble-primary chat-bubble">Message from user 1.</div>
+							<div class="chat-footer text-base-content/50">
+								<div>Read</div>
+							</div>
+						</div>
+						<div class="chat chat-receiver">
+							<div class="avatar chat-avatar">
+								<div class="size-10 rounded-full">
+									<span class="icon-[tabler--user] size-8 text-primary"></span>
+								</div>
+							</div>
+							<div class="chat-header text-base-content">
+								User 2
+								<time class="text-base-content/50">12:57</time>
+							</div>
+							<div class="chat-bubble-primary chat-bubble">User 2 also had something to say.</div>
+							<div class="chat-footer text-base-content/50">
+								<div>Read</div>
+							</div>
+						</div>
+						<div class="chat chat-sender">
+							<div class="chat-header text-base-content">
+								You
+								<time class="text-base-content/50">13:27</time>
+							</div>
+							<div class="chat-bubble-secondary chat-bubble">And I have replied to that.</div>
+							<div class="chat-footer text-base-content/50">
+								<div>Delivered</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="card-footer flex flex-row items-center gap-2">
+					<div class="relative grow">
+						<input
+							type="text"
+							placeholder="Send a message here"
+							class="input input-filled peer grow border-secondary shadow-sm shadow-outline"
+							id="chattMessage"
+						/>
+						<label
+							class="text-label-small md:text-label input-filled-label grow"
+							style="color: oklch(var(--s));"
+							for="chatMessage">♡ What's on your heart?</label
+						>
+						<span class="input-filled-focused grow" style="background-color: oklch(var(--s));"
+						></span>
+					</div>
+					<button
+						class="btn-secondary-container btn btn-circle btn-gradient"
+						aria-label="Add Icon Button"><span class="icon-[tabler--send-2]"></span></button
+					>
+				</div>
+			</div>
+		</div>
+	</div>
 
+	<div>
+		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
 		<div class="grid grid-cols-3 gap-4">
 			<div class="w-full">
 				<label class="label label-text" for="leftStatus"
@@ -175,21 +254,31 @@
 		<p class="text-title-large text-center text-xl">Iconify with FlyonUI</p>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
-				<p class="text-center text-xl">Default library "tablers"</p>
+				<p class="text-label text-center">
+					Default library <span class="text-label-prominent badge min-h-fit">Tablers</span>
+				</p>
 				<span class="icon-[tabler--settings] size-12"></span>
 				<span class="icon-[tabler--palette] size-12"></span>
 				<span class="icon-[tabler--home] size-12"></span>
 				<span class="icon-[tabler--user] size-12"></span>
+				<span class="icon-[tabler--trash] size-12"></span>
+				<span class="icon-[tabler--send-2] size-12"></span>
 			</div>
 			<div>
-				<p class="text-center text-xl">Extension library "Material Symbols"</p>
+				<p class="text-label text-center">
+					Extension library <span class="text-label-prominent badge min-h-fit"
+						>Material Symbols</span
+					>
+				</p>
 				<span class="icon-[material-symbols--settings-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--palette-outline] size-12"></span>
 				<span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
 			</div>
 			<div>
-				<p class="text-center text-xl">Extension library "SVG spinners"</p>
+				<p class="text-label text-center">
+					Extension library <span class="text-label-prominent badge min-h-fit">SVG spinners</span>
+				</p>
 				<span class="icon-[svg-spinners--12-dots-scale-rotate] size-12"></span>
 				<span class="icon-[svg-spinners--3-dots-bounce] size-12"></span>
 				<span class="icon-[svg-spinners--6-dots-rotate] size-12"></span>
@@ -200,17 +289,28 @@
 				<span class="icon-[svg-spinners--wifi-fade] size-12"></span>
 			</div>
 			<div>
-				<p class="text-center text-xl">Extension library "Font Awesome Solid</p>
+				<p class="text-label text-center">
+					Extension library <span class="text-label-prominent badge min-h-fit"
+						>Font Awesome Solid</span
+					>
+				</p>
 				<span class="icon-[fa6-solid--droplet] size-12"></span>
 				<span class="icon-[fa6-solid--comments] size-12"></span>
-				<p class="text-center text-xl">Extension library "Font Awesome Brands</p>
+				<span class="icon-[fa6-solid--plus] size-12"></span>
+				<p class="text-label text-center">
+					Extension library <span class="text-label-prominent badge min-h-fit"
+						>Font Awesome Brands</span
+					>
+				</p>
 				<span class="icon-[fa6-brands--discord] size-12"></span>
 				<span class="icon-[fa6-brands--youtube] size-12"></span>
 				<span class="icon-[fa6-brands--linux] size-12"></span>
 				<span class="icon-[fa6-brands--github] size-12"></span>
 			</div>
 			<div>
-				<p class="text-center text-xl">Extension library "Noto emoji</p>
+				<p class="text-label text-center">
+					Emoji library <span class="text-label-prominent badge min-h-fit">Noto emoji</span>
+				</p>
 				<span class="icon-[noto--folded-hands] size-12"></span>
 				<span class="icon-[noto--folded-hands-medium-dark-skin-tone] size-12"></span>
 				<span class="icon-[noto--heart-hands] size-12"></span>
@@ -219,6 +319,13 @@
 				<span class="icon-[noto--smiling-face-with-sunglasses] size-12"></span>
 				<span class="icon-[noto--check-mark-button] size-12"></span>
 				<span class="icon-[noto--cross-mark] size-12"></span>
+			</div>
+			<div>
+				<p class="text-label text-center">
+					Emoji library <span class="text-label-prominent badge min-h-fit">Openmoji</span>
+				</p>
+				<span class="icon-[openmoji--check-mark] size-12"></span>
+				<span class="icon-[openmoji--cross-mark] size-12"></span>
 			</div>
 		</div>
 		<HorizontalRule />

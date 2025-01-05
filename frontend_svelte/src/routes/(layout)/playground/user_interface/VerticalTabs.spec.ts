@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import VerticalTabs from '$components/VerticalTabs.svelte';
+import VerticalTabs from './VerticalTabs.svelte';
 
 describe('VerticalTabs Component', () => {
 	it('should render the component', () => {

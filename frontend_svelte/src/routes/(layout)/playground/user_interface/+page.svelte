@@ -5,10 +5,10 @@
 	import '@material/web/tabs/tabs.js';
 	import '@material/web/tabs/primary-tab.js';
 	import '@material/web/tabs/secondary-tab.js';
-	import Tabs from '$components/Tabs.svelte';
+	import Tabs from './Tabs.svelte';
 	import type { Tab } from '$lib/types';
-	import VerticalTabs from '$components/VerticalTabs.svelte';
-	import UserForm from '$components/UserForm.svelte';
+	import VerticalTabs from './VerticalTabs.svelte';
+	import UserForm from './UserForm.svelte';
 	import Card from '$components/Card.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 

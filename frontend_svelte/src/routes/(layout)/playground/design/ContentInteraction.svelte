@@ -58,7 +58,7 @@
 				id="accentInput"
 			/>
 			<label
-				class="text-label-small md:text-label input-filled-label text-accent"
+				class="text-label-small md:text-label input-filled-label"
 				style="color: oklch(var(--a));"
 				for="accentInput">Full Name</label
 			>
