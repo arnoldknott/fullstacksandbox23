@@ -4,9 +4,9 @@
 	let { title, children, href }: {title:string, children: Snippet, href:string}  = $props();
 </script>
 
-<div class="card bg-base-250 rounded-xl border-[1px] border-outline-variant shadow-outline-variant shadow-lg">
+<div class="card bg-base-250 rounded-xl border-[1px] border-outline-variant shadow-outline-variant shadow-lg sm:max-w-sm">
 	<div class="card-header">
-		<h5 class="text-title-small md:text-title lg:text-title-large card-title text-primary">
+		<h5 class="text-title-small md:text-title lg:text-title-large card-title base-content">
 			{title}
 		</h5>
 	</div>
