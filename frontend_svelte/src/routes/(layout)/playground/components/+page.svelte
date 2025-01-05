@@ -93,14 +93,46 @@
 				</div>
 				<div class="card-body">
 					<div class="overflow-y-auto  bg-base-200 min-h-44 max-h-96">
-						<div class="chat chat-receiver  text-primary-content">
+						<div class="chat chat-receiver">
+							<div class="chat-avatar avatar">
+									<div class="size-10 rounded-full">
+										<span class="text-primary icon-[tabler--man] size-8"></span>
+									</div>
+							</div>
+							<div class="chat-header text-base-content">
+								User 1
+								<time class="text-base-content/50">12:45</time>
+							</div>
 							<div class="chat-bubble chat-bubble-primary">Message from user 1.</div>
+							<div class="chat-footer text-base-content/50">
+								<div>Read</div>
+							</div>
 						</div>
 						<div class="chat chat-receiver">
+							<div class="chat-avatar avatar">
+								<div class="size-10 rounded-full">
+									
+									<span class="text-primary icon-[tabler--user] size-8"></span>
+								</div>
+							</div>
+							<div class="chat-header text-base-content">
+								User 2
+								<time class="text-base-content/50">12:57</time>
+							</div>
 							<div class="chat-bubble chat-bubble-primary">User 2 also had something to say.</div>
+							<div class="chat-footer text-base-content/50">
+								<div>Read</div>
+							</div>
 						</div>
 						<div class="chat chat-sender">
+							<div class="chat-header text-base-content">
+								You
+								<time class="text-base-content/50">13:27</time>
+							</div>
 							<div class="chat-bubble chat-bubble-secondary">And I have replied to that.</div>
+							<div class="chat-footer text-base-content/50">
+								<div>Delivered</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -115,7 +147,7 @@
 						<label
 							class="grow text-label-small md:text-label input-filled-label"
 							style="color: oklch(var(--s));"
-							for="chatMessage">What's on your heart ♡?</label
+							for="chatMessage">♡ What's on your heart?</label
 						>
 						<span class="grow input-filled-focused" style="background-color: oklch(var(--s));"></span>
 					</div>
