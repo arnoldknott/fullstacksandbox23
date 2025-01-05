@@ -23,7 +23,6 @@
 		updateStatus();
 	});
 
-
 	let new_message = $state('');
 
 	let old_messages: string[] = $state([]);
@@ -43,7 +42,8 @@
 	});
 </script>
 
-{@render children?.()} in Chat / Connection <span class={`icon-[openmoji--${status ? 'check-mark': 'cross-mark'}] size-4`} ></span>
+{@render children?.()} in Chat / Connection
+<span class={`icon-[openmoji--${status ? 'check-mark' : 'cross-mark'}] size-4`}></span>
 
 <div class="w-50">
 	<form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
