@@ -88,7 +88,7 @@
 		<Heading>Card with chat</Heading>
 		<div class="mb-5 grid justify-items-center">
 			<div
-				class="card w-4/5 rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+				class="card w-full md:w-4/5 rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
 			>
 				<div class="card-header">
 					<h5 class="text-title md:text-title-large card-title">Chat card</h5>
@@ -100,7 +100,7 @@
 						<div class="chat chat-receiver">
 							<div class="avatar chat-avatar">
 								<div class="size-10 rounded-full">
-									<span class="icon-[tabler--man] size-8 text-primary"></span>
+									<span class="icon-[tabler--man] m-1 size-8 text-primary"></span>
 								</div>
 							</div>
 							<div class="chat-header text-base-content">
@@ -115,7 +115,7 @@
 						<div class="chat chat-receiver">
 							<div class="avatar chat-avatar">
 								<div class="size-10 rounded-full">
-									<span class="icon-[tabler--user] size-8 text-primary"></span>
+									<span class="icon-[tabler--user] m-1 size-8 text-primary"></span>
 								</div>
 							</div>
 							<div class="chat-header text-base-content">
