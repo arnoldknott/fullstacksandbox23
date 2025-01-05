@@ -86,13 +86,17 @@
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div>
 		<Heading>Card with chat</Heading>
-		<div class="grid justify-items-center mb-5">
-			<div class="card bg-base-250 rounded-xl border-[1px] border-outline-variant shadow-outline-variant shadow-lg w-4/5">
+		<div class="mb-5 grid justify-items-center">
+			<div
+				class="card w-4/5 rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+			>
 				<div class="card-header">
 					<h5 class="text-title md:text-title-large card-title">Chat card</h5>
 				</div>
 				<div class="card-body">
-					<div class="max-h-96 min-h-44 p-2 overflow-y-auto bg-base-200 rounded-lg shadow-inner shadow-outline">
+					<div
+						class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
+					>
 						<div class="chat chat-receiver">
 							<div class="avatar chat-avatar">
 								<div class="size-10 rounded-full">

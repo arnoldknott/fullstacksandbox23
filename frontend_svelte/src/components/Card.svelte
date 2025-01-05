@@ -1,12 +1,14 @@
 <script lang="ts">
-	import type { Snippet } from "svelte";
+	import type { Snippet } from 'svelte';
 
-	let { title, children, href }: {title:string, children: Snippet, href:string}  = $props();
+	let { title, children, href }: { title: string; children: Snippet; href: string } = $props();
 </script>
 
-<div class="card bg-base-250 rounded-xl border-[1px] border-outline-variant shadow-outline-variant shadow-lg sm:max-w-sm">
+<div
+	class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant sm:max-w-sm"
+>
 	<div class="card-header">
-		<h5 class="text-title-small md:text-title lg:text-title-large card-title base-content">
+		<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
 			{title}
 		</h5>
 	</div>
