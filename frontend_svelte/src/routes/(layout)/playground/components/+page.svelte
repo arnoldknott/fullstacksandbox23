@@ -175,21 +175,22 @@
 		<p class="text-title-large text-center text-xl">Iconify with FlyonUI</p>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
-				<p class="text-center text-xl">Default library "tablers"</p>
+				<p class="text-center text-label">Default library <span class="badge text-label-prominent">tablers</span></p>
 				<span class="icon-[tabler--settings] size-12"></span>
 				<span class="icon-[tabler--palette] size-12"></span>
 				<span class="icon-[tabler--home] size-12"></span>
 				<span class="icon-[tabler--user] size-12"></span>
+				<span class="icon-[tabler--trash] size-12"></span>
 			</div>
 			<div>
-				<p class="text-center text-xl">Extension library "Material Symbols"</p>
+				<p class="text-center text-label">Extension library <span class="badge text-label-prominent">Material Symbols</span></p>
 				<span class="icon-[material-symbols--settings-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--palette-outline] size-12"></span>
 				<span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
 			</div>
 			<div>
-				<p class="text-center text-xl">Extension library "SVG spinners"</p>
+				<p class="text-center text-label">Extension library <span class="badge text-label-prominent">SVG spinners</span></p>
 				<span class="icon-[svg-spinners--12-dots-scale-rotate] size-12"></span>
 				<span class="icon-[svg-spinners--3-dots-bounce] size-12"></span>
 				<span class="icon-[svg-spinners--6-dots-rotate] size-12"></span>
@@ -200,17 +201,18 @@
 				<span class="icon-[svg-spinners--wifi-fade] size-12"></span>
 			</div>
 			<div>
-				<p class="text-center text-xl">Extension library "Font Awesome Solid</p>
+				<p class="text-center text-label">Extension library <span class="badge text-label-prominent">Font Awesome Solid</span></p>
 				<span class="icon-[fa6-solid--droplet] size-12"></span>
 				<span class="icon-[fa6-solid--comments] size-12"></span>
-				<p class="text-center text-xl">Extension library "Font Awesome Brands</p>
+				<span class="icon-[fa6-solid--plus] size-12"></span>
+				<p class="text-center text-label">Extension library <span class="badge text-label-prominent">Font Awesome Brands</span></p>
 				<span class="icon-[fa6-brands--discord] size-12"></span>
 				<span class="icon-[fa6-brands--youtube] size-12"></span>
 				<span class="icon-[fa6-brands--linux] size-12"></span>
 				<span class="icon-[fa6-brands--github] size-12"></span>
 			</div>
 			<div>
-				<p class="text-center text-xl">Extension library "Noto emoji</p>
+				<p class="text-center text-label">Extension library <span class="badge text-label-prominent">Noto emoji</span></p>
 				<span class="icon-[noto--folded-hands] size-12"></span>
 				<span class="icon-[noto--folded-hands-medium-dark-skin-tone] size-12"></span>
 				<span class="icon-[noto--heart-hands] size-12"></span>

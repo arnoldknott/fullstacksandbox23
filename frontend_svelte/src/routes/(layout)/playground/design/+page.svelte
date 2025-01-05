@@ -52,21 +52,23 @@
 	</AccordionItem>
 	<AccordionItem title="Text and colors for content">
 		<BackgroundRows><ContentText /></BackgroundRows>
-		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
+		<p class="text-body-small text-outline-variant">The dividers are outline-variant.</p>
 	</AccordionItem>
 	<AccordionItem title="Text and colors for app functionality">
 		<BackgroundRows><AppText /></BackgroundRows>
-		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
+		<p class="text-body-small text-outline-variant">The dividers are outline-variant.</p>
 	</AccordionItem>
 	<AccordionItem title="Interactions for content control">
 		<BackgroundRows><ContentInteraction /></BackgroundRows>
-		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
+		<p class="text-body-small text-outline-variant">The dividers are outline-variant.</p>
 	</AccordionItem>
 	<AccordionItem title="Interactions for app functionality">
 		<BackgroundRows><AppInteraction /></BackgroundRows>
-		<p class="text-body-small text-outline-variant">The dividers are outline-variant</p>
+		<p class="text-body-small text-outline-variant">The dividers are outline-variant.</p>
 	</AccordionItem>
-	<AccordionItem title="Notifications">
+	<AccordionItem title="Containers">
 		<BackgroundRows><Containers /></BackgroundRows>
+		<p class="text-body-small text-outline-variant">The dividers are outline-variant.</p>
+		<p class="text-body-small text-outline">Borders of boxes outline.</p>
 	</AccordionItem>
 </div>
