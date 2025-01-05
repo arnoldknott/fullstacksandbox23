@@ -10,7 +10,7 @@
 	import Containers from './Containers.svelte';
 </script>
 
-<Heading>🚧 Construction sites for design experiments 🚧</Heading>
+<Heading>🚧 Construction sites - for design experiments 🚧</Heading>
 
 <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
 	<Card
@@ -35,7 +35,7 @@
 	></Card>
 </div>
 
-<Heading>👍 Results, ready for use 👍</Heading>
+<Heading>👍 Results - ready for use 👍</Heading>
 
 <div class="accordion accordion-bordered" data-accordion-always-open="">
 	<AccordionItem title="Backgrounds">
