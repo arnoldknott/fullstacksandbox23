@@ -36,8 +36,8 @@
 	);
 	let card: Card;
 
-    const deleteResource = () => {
-        card.remove()
+    const deleteResource = ( ) => {
+        card.remove();
     }
 
 </script>
@@ -85,7 +85,12 @@
             >
                 <span class="icon-[tabler--share-2]"></span>
             </button>
-            <form action="?/delete" method="POST" use:enhance={() => deleteResource()}>
+            <form action="?/delete" method="POST" use:enhance={() => 
+                    {
+                        deleteResource()
+                        return async ({update}) => await update()
+                    }
+                }>
                 <input type="hidden" name="id" value={id} /> 
                 <button 
                     class="btn-error-container btn btn-circle btn-gradient"

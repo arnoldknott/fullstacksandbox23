@@ -92,5 +92,7 @@ export const actions = {
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
 		await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
+		console.log('=== data ===');
+		console.log(data);
 	}
 } satisfies Actions;
