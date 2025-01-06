@@ -10,7 +10,7 @@
 		category?: string;
 		category_id?: string;
 		tags: string[];
-	}
+	};
 	// let {
 	// 	id,
 	// 	name,
@@ -29,13 +29,13 @@
 	// 	tags: string[];
 	// } = $props();
 	let { demoResource }: { demoResource: DemoResource } = $props();
-    let id = $state(demoResource.id);
-    let name = $state(demoResource.name);
-    let description = $state(demoResource.description);
-    let language = $state(demoResource.language);
-    let category = $state(demoResource.category);
-    let category_id = $state(demoResource.category_id);
-    let tags = $state(demoResource.tags);
+	let id = $state(demoResource.id);
+	let name = $state(demoResource.name);
+	let description = $state(demoResource.description);
+	let language = $state(demoResource.language);
+	let category = $state(demoResource.category);
+	let category_id = $state(demoResource.category_id);
+	let tags = $state(demoResource.tags);
 
 	let edit = $state(false);
 	let flag = $state(
@@ -49,26 +49,26 @@
 	);
 	let card: Card;
 
-    const updateResource = async () => {
-        console.log('=== updateResource ===');
-        console.log(name);
-        const formData = new FormData();
-        formData.append('id', id);
-        formData.append('name', name);
-        description ? formData.append('description', description) : null;
-        formData.append('language', language);
-        const response = await fetch(`?/put`, {
-            method: 'POST',
-            body: formData
-        });
-        if (response.status === 200) {
-            console.log('=== response ===');
-            console.log(response);
-            // await update();
-        } else {
-            throw error(response.status || 404, 'Failed to update resource');
-        }
-    }
+	const updateResource = async () => {
+		console.log('=== updateResource ===');
+		console.log(name);
+		const formData = new FormData();
+		formData.append('id', id);
+		formData.append('name', name);
+		description ? formData.append('description', description) : null;
+		formData.append('language', language);
+		const response = await fetch(`?/put`, {
+			method: 'POST',
+			body: formData
+		});
+		if (response.status === 200) {
+			console.log('=== response ===');
+			console.log(response);
+			// await update();
+		} else {
+			throw error(response.status || 404, 'Failed to update resource');
+		}
+	};
 
 	// const deleteResource = ( ) => {
 	//     card.remove();
@@ -96,7 +96,7 @@
 					? `ring-2 ring-info`
 					: ``}"
 				contenteditable="true"
-				oninput={(event: Event) => name = (event.target as HTMLElement).innerText}
+				oninput={(event: Event) => (name = (event.target as HTMLElement).innerText)}
 				onblur={() => updateResource()}
 			>
 				{name}
@@ -170,7 +170,10 @@
 					></span>
 				</span>
 			</button>
-			<button class="btn-success-container btn btn-circle btn-gradient" onclick={() => console.log(name)} aria-label="Share Button">
+			<button
+				class="btn-success-container btn btn-circle btn-gradient"
+				aria-label="Share Button"
+			>
 				<span class="icon-[tabler--share-2]"></span>
 			</button>
 			<!-- <form action="?/delete" method="POST" use:enhance={() => 

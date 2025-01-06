@@ -99,7 +99,7 @@ export const actions = {
 		console.log('=== response ===');
 		console.log(response);
 		if (response.status !== 200) {
-			return fail(response.status, {error: response.statusText});
+			return fail(response.status, { error: response.statusText });
 		}
 	},
 	delete: async ({ locals, request }) => {
