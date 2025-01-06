@@ -354,6 +354,7 @@
 				<span class="icon-[material-symbols--palette-outline] size-12"></span>
 				<span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
+				<span class="icon-[material-symbols--edit-outline-rounded] size-12"></span>
 			</div>
 			<div>
 				<p class="text-label text-center">
@@ -407,8 +408,58 @@
 				<span class="icon-[openmoji--check-mark] size-12"></span>
 				<span class="icon-[openmoji--cross-mark] size-12"></span>
 			</div>
+			<div>
+				<p class="text-label text-center">
+					Emoji library <span class="text-label-prominent badge min-h-fit">Twitter Emoji</span>
+				</p>
+				<span class="icon-[twemoji--flag-denmark] size-12"></span>
+				<span class="icon-[twemoji--flag-germany] size-12"></span>
+				<span class="icon-[twemoji--flag-united-states] size-12"></span>
+			</div>
 		</div>
 		<HorizontalRule />
+	</div>
+
+	<div>
+		<Heading>Buttons</Heading>
+		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
+			<div>
+				<p class="text-label text-center">Action Buttons</p>
+				<button
+					class="btn-neutral-container btn btn-circle btn-gradient"
+					aria-label="Add Button"
+				>
+					<span class="icon-[fa6-solid--plus]"></span>
+				</button>
+				<button 
+					class="btn-info-container btn btn-circle btn-gradient"
+					aria-label="Edit Button">
+					<span class="icon-[material-symbols--edit-outline-rounded]"></span>
+				</button>
+				<button
+					class="btn-error-container btn btn-circle btn-gradient"
+					aria-label="Delete Button"
+				>
+					<span class="icon-[tabler--trash]"></span>
+				</button>
+				<button
+					class="btn-secondary-container btn btn-circle btn-gradient"
+					aria-label="Send Button"
+				>
+					<span class="icon-[tabler--send-2]"></span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<div>
+		<Heading>Badges</Heading>
+		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
+			<div>
+				<p class="text-label text-center">Text Badges</p>
+				
+			</div>
+		</div>
 	</div>
 
 	<div>

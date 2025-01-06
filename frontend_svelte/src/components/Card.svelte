@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	let { header, children, footer }: { header?: Snippet; children: Snippet; footer?: Snippet } =
+	let { id, header, children, footer }: { id: string, header?: Snippet; children: Snippet; footer?: Snippet } =
 		$props();
 </script>
 
 <div
-	class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+	class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant" {id}
 >
 	{#if header}
 		<div class="card-header">

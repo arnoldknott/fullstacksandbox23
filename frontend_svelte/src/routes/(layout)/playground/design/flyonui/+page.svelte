@@ -1351,9 +1351,6 @@
 		<p>Using postCSS created components:</p>
 		<span class="badge-primary-container badge">Badge primary-container</span>
 		<span class="badge-my-personal badge">Badge my personal badge</span>
-		<span class="mybadge">mybadge</span>
-		<span class="mybadge-blue">mybadge-blue</span>
-		<span class="mybadge-blue mybadge">mybadge mybadge-blue</span>
 		<span class="mycheckbox">mycheckbox</span>
 		<label>
 			<input type="checkbox" class="checkbox-inverse-primary checkbox" checked /> inverse primary
