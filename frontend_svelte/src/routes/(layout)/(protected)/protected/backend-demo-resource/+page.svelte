@@ -11,6 +11,7 @@
 	import '@material/web/select/select-option.js';
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
+	import DemoResourceCard from './DemoResourceCard.svelte';
 	let { data }: { data: PageData } = $props();
 	const demo_resources = data.demoResources;
 
@@ -26,10 +27,17 @@
 
 <!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->
 
-{#each demo_resources as demo_resource}
-	<Heading>{demo_resource.name}</Heading>
-	<JsonData data={demo_resource} />
-{/each}
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-5">
+	{#each demo_resources as demo_resource}
+		<DemoResourceCard {...demo_resource} />
+		<div>
+			<Heading>{demo_resource.name}</Heading>
+			<JsonData data={demo_resource} />
+		</div>
+	{/each}
+</div>
+
 
 <!-- Form not available without JavaScript. -->
 
