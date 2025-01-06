@@ -89,12 +89,18 @@ export const actions = {
 		// console.log("=== payload ===");
 		// console.log(payload);
 	},
+	put: async ({ locals, request }) => {
+		const data = await request.formData();
+		const sessionId = locals.sessionData.sessionId;
+		// const response = await backendAPI.put(sessionId, `/demoresource/${data.get('id')}`, data);
+		// if (response.status !== 200) {
+		// 	return fail(response.status, {error: response.statusText});
+		// }
+	},
 	delete: async ({ locals, request }) => {
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
 		const response = await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
-		console.log("=== response ===");
-		console.log(response);
 		if (response.status !== 200) {
 			return fail(response.status, {error: response.statusText});
 		}

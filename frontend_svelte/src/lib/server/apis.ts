@@ -105,6 +105,30 @@ class BaseAPI {
 		}
 	}
 
+	async put(
+		session_id: string,
+		path: string,
+		body: RequestBody,
+		scopes: string[] = [],
+		options: RequestInit = {},
+		headers: HeadersInit = {}
+	): Promise<Response> {
+		try {
+			const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
+			if (body instanceof FormData) {
+				options.body = JSON.stringify(Object.fromEntries(body));
+			} else {
+				console.error('Invalid body type or not yet implemented: ' + typeof body);
+				throw new Error('Invalid body type');
+			}
+			options.method = 'PUT';
+			const request = this.constructRequest(path, accessToken, options, headers);
+			return await fetch(request);
+		} catch (error) {
+			return this.errorHandler(error);
+		}
+	}
+
 	async delete(
 		sessionId: string,
 		path: string,
@@ -159,6 +183,17 @@ class BackendAPI extends BaseAPI {
 		headers: HeadersInit = {}
 	) {
 		return await super.get(session_id, path, scopes, options, headers);
+	}
+
+	async put(
+		session_id: string,
+		path: string,
+		body: RequestBody,
+		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
+		options: RequestInit = {},
+		headers: HeadersInit = {}
+	) {
+		return await super.put(session_id, path, body, scopes, options, headers);
 	}
 
 	async delete(

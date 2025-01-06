@@ -26,6 +26,7 @@
 		tags: string[];
 	} = $props();
 	// let { id, name, description, language, category, category_id, tags }: { id: string, name: string; description: string, language: string; category?: string, category_id?: string, tags: string[] } = $props();
+    let edit = $state(false);
 	let flag = $state(
 		language === 'en-US'
 			? 'united-states'
@@ -46,7 +47,7 @@
 {#snippet header()}
 	<div class="flex justify-between">
 		<div>
-			<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+			<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title" contenteditable={edit}>
 				{name}
 			</h5>
 		</div>
@@ -77,9 +78,24 @@
 			{/each}
 		</div>
 		<div class="flex gap-2">
-			<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit Button">
-				<span class="icon-[material-symbols--edit-outline-rounded]"></span>
-			</button>
+            <form action="?/put" method="POST" use:enhance={() => 
+                    {
+                        return async ({result, update}) => {
+                            console.log("=== result ===")
+                            console.log(result)
+                            if (result.status === 204){
+                                await update()
+                            } else {
+                                throw  error(result.status || 404, 'Failed to update resource')
+                            }
+                        }
+                    }
+                }>
+                <input type="hidden" name="id" value={id} />
+                <button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit Button">
+                    <span class="icon-[material-symbols--edit-outline-rounded]"></span>
+                </button>
+            </form>
             <button
                 class="btn-success-container btn btn-circle btn-gradient"
                 aria-label="Share Button"
@@ -103,7 +119,7 @@
                     class="btn-error-container btn btn-circle btn-gradient"
                     type="submit"
                     aria-label="Delete Button"
-                    
+                    formaction="?/delete"
                 >
                     <span class="icon-[tabler--trash]"></span>
                 </button>
