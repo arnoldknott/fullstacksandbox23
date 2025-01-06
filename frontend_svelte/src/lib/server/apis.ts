@@ -56,7 +56,6 @@ class BaseAPI {
 		headers: HeadersInit = {}
 	): Promise<Response> {
 		try {
-			// TBD: add a try catch block here!
 			const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
 			// options.body = JSON.stringify(body);
 			if (body instanceof FormData) {
@@ -91,7 +90,6 @@ class BaseAPI {
 		headers: HeadersInit
 	): Promise<Response> {
 		try {
-			// TBD: add a try catch block here!
 			const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
 			options.method = 'GET';
 			const request = this.constructRequest(path, accessToken, options, headers);
@@ -115,7 +113,6 @@ class BaseAPI {
 		headers: HeadersInit
 	): Promise<Response> {
 		try {
-			// TBD: add a try catch block here!
 			const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
 			options.method = 'DELETE';
 			const request = this.constructRequest(path, accessToken, options, headers);
@@ -127,6 +124,8 @@ class BaseAPI {
 			// });
 			// return response;
 		} catch (error) {
+			console.error('=== src - lib - server - apis - delete - error ===');
+			console.error(error);
 			return this.errorHandler(error);
 		}
 	}
@@ -149,7 +148,6 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		console.log('=== src -lib - server - backendAPI - post - called ===');
 		return await super.post(session_id, path, body, scopes, options, headers);
 	}
 

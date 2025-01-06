@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 // import AppConfig from '$lib/server/config';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis';
+import { fail } from '@sveltejs/kit';
 
 // const appConfig = await AppConfig.getInstance();
 
@@ -91,8 +92,11 @@ export const actions = {
 	delete: async ({ locals, request }) => {
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
-		await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
-		console.log('=== data ===');
-		console.log(data);
+		const response = await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
+		console.log("=== response ===");
+		console.log(response);
+		if (response.status !== 200) {
+			return fail(response.status, {error: response.statusText});
+		}
 	}
 } satisfies Actions;

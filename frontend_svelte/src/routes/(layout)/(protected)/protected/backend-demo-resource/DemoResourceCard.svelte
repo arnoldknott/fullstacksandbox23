@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {  enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
+	import { error } from '@sveltejs/kit';
 	// type DemoResource = {
 	//     id: string;
 	//     name: string;
@@ -87,8 +88,14 @@
             </button>
             <form action="?/delete" method="POST" use:enhance={() => 
                     {
-                        deleteResource()
-                        return async ({update}) => await update()
+                        return async ({result, update}) => {
+                            if (result.status === 204){
+                                deleteResource()
+                                await update()
+                            } else {
+                                throw  error(result.status || 404, 'Failed to delete resource')
+                            }
+                        }
                     }
                 }>
                 <input type="hidden" name="id" value={id} /> 
