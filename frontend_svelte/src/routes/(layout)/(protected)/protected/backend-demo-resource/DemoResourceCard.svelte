@@ -95,7 +95,8 @@
 				class="text-title-small md:text-title lg:text-title-large base-content card-title {edit
 					? `ring-2 ring-info`
 					: ``}"
-				contenteditable={edit}
+				contenteditable="true"
+				oninput={(event: Event) => name = (event.target as HTMLElement).innerText}
 				onblur={() => updateResource()}
 			>
 				{name}
