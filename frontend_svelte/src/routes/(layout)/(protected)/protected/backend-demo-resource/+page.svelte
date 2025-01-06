@@ -15,6 +15,8 @@
 	let { data }: { data: PageData } = $props();
 	const demo_resources = data.demoResources;
 
+	let debug = $state(false);
+
 	let demo_resource_dialog: Dialog;
 	// let name = $state('');
 	// let description = $state('');
@@ -27,11 +29,20 @@
 
 <!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->
 
+<div class="flex items-center gap-1 mb-5">
+	<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
+	<input
+		type="checkbox"
+		class="switch switch-neutral"
+		bind:checked={debug}
+		id="debugSwitcher"
+	/>
+</div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-5">
 	{#each demo_resources as demo_resource}
 		<DemoResourceCard {...demo_resource} />
-		<div>
+		<div class={debug ? "block": "hidden"}>
 			<Heading>{demo_resource.name}</Heading>
 			<JsonData data={demo_resource} />
 		</div>
