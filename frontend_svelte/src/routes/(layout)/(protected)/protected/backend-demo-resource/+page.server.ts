@@ -45,7 +45,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions = {
-	default: async ({ locals, request }) => {
+	post: async ({ locals, request }) => {
 		const data = await request.formData();
 
 		// before creating a class for backend access:
@@ -87,5 +87,12 @@ export const actions = {
 		// const payload = removeEmpty(data);
 		// console.log("=== payload ===");
 		// console.log(payload);
+	},
+	delete: async ({ locals, request }) => {
+		const data = await request.formData();
+
+		// before creating a class for backend
+		console.log('=== data ===');
+		console.log(data);
 	}
 } satisfies Actions;

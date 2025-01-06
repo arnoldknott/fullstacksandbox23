@@ -61,7 +61,7 @@
 
 <md-dialog id="demo_resource_dialog" bind:this={demo_resource_dialog} class="w-fill">
 	<div slot="headline" class="w-64">Demo Resource</div>
-	<form slot="content" id="post-demo-resource" method="POST" class="flex flex-col">
+	<form slot="content" id="post-demo-resource" method="POST" action="?/post" class="flex flex-col">
 		<md-filled-text-field label="Name" name="name" class="w-full"> </md-filled-text-field>
 		<br />
 		<md-filled-text-field

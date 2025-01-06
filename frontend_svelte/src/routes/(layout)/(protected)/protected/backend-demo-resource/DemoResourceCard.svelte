@@ -37,8 +37,6 @@
 	let card: Card;
 
     const deleteResource = () => {
-        console.log("=== deleteResource - card ===")
-        console.log(card)
         card.remove()
     }
 
@@ -87,13 +85,16 @@
             >
                 <span class="icon-[tabler--share-2]"></span>
             </button>
-			<button 
-                class="btn-error-container btn btn-circle btn-gradient"
-                aria-label="Delete Button"
-                onclick={() => deleteResource()}
-            >
-				<span class="icon-[tabler--trash]"></span>
-			</button>
+            <form action="?/delete" method="POST"> 
+                <button 
+                    class="btn-error-container btn btn-circle btn-gradient"
+                    type="submit"
+                    aria-label="Delete Button"
+                    
+                >
+                    <span class="icon-[tabler--trash]"></span>
+                </button>
+            </form>
 		</div>
 	</div>
 {/snippet}
