@@ -91,6 +91,9 @@ export const actions = {
 	delete: async ({ locals, request }) => {
 		const data = await request.formData();
 
+		const sessionId = locals.sessionData.sessionId;
+		await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
+
 		// before creating a class for backend
 		console.log('=== data ===');
 		console.log(data);

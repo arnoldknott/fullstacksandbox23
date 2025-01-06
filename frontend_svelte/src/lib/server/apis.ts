@@ -106,6 +106,30 @@ class BaseAPI {
 			return this.errorHandler(error);
 		}
 	}
+
+	async delete(
+		sessionId: string,
+		path: string,
+		scopes: string[] = [],
+		options: RequestInit,
+		headers: HeadersInit
+	): Promise<Response> {
+		try {
+			// TBD: add a try catch block here!
+			const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
+			options.method = 'DELETE';
+			const request = this.constructRequest(path, accessToken, options, headers);
+			return await fetch(request);
+			// const response = await fetch(`${this.apiBaseURL}${path}`, {
+			// 	headers: {
+			// 		Authorization: `Bearer ${accessToken}`
+			// 	}
+			// });
+			// return response;
+		} catch (error) {
+			return this.errorHandler(error);
+		}
+	}
 }
 
 class BackendAPI extends BaseAPI {
@@ -137,6 +161,16 @@ class BackendAPI extends BaseAPI {
 		headers: HeadersInit = {}
 	) {
 		return await super.get(session_id, path, scopes, options, headers);
+	}
+
+	async delete(
+		session_id: string,
+		path: string,
+		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
+		options: RequestInit = {},
+		headers: HeadersInit = {}
+	) {
+		return await super.delete(session_id, path, scopes, options, headers);
 	}
 }
 
