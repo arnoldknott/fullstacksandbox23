@@ -1,32 +1,26 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	let { title, children, href }: { title: string; children: Snippet; href: string } = $props();
+	let { header, children, footer }: { header?: Snippet; children: Snippet; footer?: Snippet } =
+		$props();
 </script>
 
 <div
 	class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
 >
-	<div class="card-header">
-		<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
-			{title}
-		</h5>
-	</div>
-	<div class="card-body">
-		<p class="text-body-small md:text-body text-primary-container-content">
-			{@render children?.()}
-		</p>
-	</div>
-	<div class="card-footer">
-		<div class="card-actions text-center">
-			<a {href}
-				><button
-					class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
-					>Link to {title.toLowerCase()}</button
-				></a
-			>
+	{#if header}
+		<div class="card-header">
+			{@render header()}
 		</div>
+	{/if}
+	<div class="card-body">
+		{@render children()}
 	</div>
+	{#if footer}
+		<div class="card-footer">
+			{@render footer()}
+		</div>
+	{/if}
 </div>
 
 <!--

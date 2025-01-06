@@ -88,7 +88,7 @@
 		<Heading>Card with chat</Heading>
 		<div class="mb-5 grid justify-items-center">
 			<div
-				class="card w-full md:w-4/5 rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+				class="card w-full rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant md:w-4/5"
 			>
 				<div class="card-header">
 					<h5 class="text-title md:text-title-large card-title">Chat card</h5>
@@ -159,6 +159,86 @@
 						class="btn-secondary-container btn btn-circle btn-gradient"
 						aria-label="Add Icon Button"><span class="icon-[tabler--send-2]"></span></button
 					>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div>
+		<Heading>Card with text and navigation</Heading>
+		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
+			<div
+				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+			>
+				<div class="card-header">
+					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+						Here's a title
+					</h5>
+				</div>
+				<div class="card-body">
+					<p class="text-body-small md:text-body text-primary-container-content">
+						Some test text, here. Can go over several lines. And if it does, the cards in the same
+						line will adjust to the longest card. This is a good way to keep the layout clean and
+						consistent.
+					</p>
+				</div>
+				<div class="card-footer">
+					<div class="card-actions text-center">
+						<a href="#top"
+							><button
+								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
+								>Link to top of page</button
+							></a
+						>
+					</div>
+				</div>
+			</div>
+			<div
+				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+			>
+				<div class="card-header">
+					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+						One more title
+					</h5>
+				</div>
+				<div class="card-body">
+					<p class="text-body-small md:text-body text-primary-container-content">
+						Some shorter text here - but adjusts to the height of the neigour card
+					</p>
+				</div>
+				<div class="card-footer">
+					<div class="card-actions text-center">
+						<a href="#top"
+							><button
+								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
+								>Link to top of page</button
+							></a
+						>
+					</div>
+				</div>
+			</div>
+			<div
+				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+			>
+				<div class="card-header">
+					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+						A third title
+					</h5>
+				</div>
+				<div class="card-body">
+					<p class="text-body-small md:text-body text-primary-container-content">
+						This one is meant to fill the row. Note how the cards are responsive on smaller screens.
+					</p>
+				</div>
+				<div class="card-footer">
+					<div class="card-actions text-center">
+						<a href="#top"
+							><button
+								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
+								>Link to top of page</button
+							></a
+						>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -242,9 +322,9 @@
 				Right
 			</div>
 			<!-- <div
-				class="flex h-20 w-full items-center justify-center text-2xl"
-				style="background: linear-gradient(to right, {statusColors[1]}, {statusColors[2]});"
-			></div> -->
+					class="flex h-20 w-full items-center justify-center text-2xl"
+					style="background: linear-gradient(to right, {statusColors[1]}, {statusColors[2]});"
+				></div> -->
 		</div>
 		<HorizontalRule />
 	</div>
@@ -481,15 +561,15 @@
 				</label>
 			</div>
 			<!-- <div>
-                <label bind:this={myTemperature} class="swap swap-js text-6xl">
-                    <span class="swap-on">🥵</span>
-                    <span class="swap-off">🥶</span>
-                </label>
-                <label class="swap swap-js text-6xl">
-                    <span class="swap-on">🥳</span>
-                    <span class="swap-off">😭</span>
-                </label>
-            </div> -->
+					<label bind:this={myTemperature} class="swap swap-js text-6xl">
+						<span class="swap-on">🥵</span>
+						<span class="swap-off">🥶</span>
+					</label>
+					<label class="swap swap-js text-6xl">
+						<span class="swap-on">🥳</span>
+						<span class="swap-off">😭</span>
+					</label>
+				</div> -->
 			<div>
 				<label class="btn btn-circle swap swap-rotate">
 					<input type="checkbox" />
@@ -503,7 +583,7 @@
 	</div>
 
 	<!-- This local override works:
-    style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
+		style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
 	<div>
 		<Heading>Drawer (Sidebar)</Heading>
 		<button
