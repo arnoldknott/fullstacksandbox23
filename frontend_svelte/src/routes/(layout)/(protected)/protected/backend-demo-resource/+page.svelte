@@ -29,7 +29,7 @@
 
 <!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->
 
-<div class="flex items-center gap-1 mb-5">
+<div class="flex items-center gap-1 mb-2">
 	<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
 	<input
 		type="checkbox"
@@ -37,6 +37,14 @@
 		bind:checked={debug}
 		id="debugSwitcher"
 	/>
+</div>
+<div class="mb-5">
+	<button
+	class="btn-neutral-container btn btn-circle btn-gradient"
+	aria-label="Add Button"
+	>
+	<span class="icon-[fa6-solid--plus]"></span>
+	</button>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-5">

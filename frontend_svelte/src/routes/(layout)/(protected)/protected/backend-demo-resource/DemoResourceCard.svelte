@@ -42,7 +42,7 @@
                 <span class="text-label-small md:text-label lg:text-label-large badge badge-neutral shadow-sm shadow-neutral">{tag}</span>
             {/each}
         </div>
-        <div>
+        <div class="flex gap-2">
             <button 
                 class="btn-info-container btn btn-circle btn-gradient"
                 aria-label="Edit Button">
