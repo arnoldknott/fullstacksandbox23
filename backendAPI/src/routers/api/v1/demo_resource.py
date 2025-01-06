@@ -71,7 +71,9 @@ async def put_demo_resource(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResource:
-    """Updates a category."""
+    """Updates a demo resource by id."""
+    print("=== put_demo_resource - demo_resource ===")
+    print(demo_resource)
     return await demo_resource_view.put(
         demo_resource_id, demo_resource, token_payload, guards
     )

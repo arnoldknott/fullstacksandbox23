@@ -40,11 +40,11 @@
 </div>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2">
-	{#each demo_resources as demo_resource}
-		<DemoResourceCard {...demo_resource} />
+	{#each demo_resources as demoResource}
+		<DemoResourceCard {demoResource} />
 		<div class={debug ? 'block' : 'hidden'}>
-			<Heading>{demo_resource.name}</Heading>
-			<JsonData data={demo_resource} />
+			<Heading>{demoResource.name}</Heading>
+			<JsonData data={demoResource} />
 		</div>
 	{/each}
 </div>

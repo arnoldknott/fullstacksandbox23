@@ -1,22 +1,8 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
 	import { error } from '@sveltejs/kit';
-	// type DemoResource = {
-	//     id: string;
-	//     name: string;
-	//     description?: string;
-	//     language?: string;
-	// }
-	let {
-		id,
-		name,
-		description,
-		language,
-		category,
-		category_id,
-		tags
-	}: {
+	type DemoResource = {
 		id: string;
 		name: string;
 		description?: string;
@@ -24,8 +10,33 @@
 		category?: string;
 		category_id?: string;
 		tags: string[];
-	} = $props();
-	// let { id, name, description, language, category, category_id, tags }: { id: string, name: string; description: string, language: string; category?: string, category_id?: string, tags: string[] } = $props();
+	}
+	// let {
+	// 	id,
+	// 	name,
+	// 	description,
+	// 	language,
+	// 	category,
+	// 	category_id,
+	// 	tags
+	// }: {
+	// 	id: string;
+	// 	name: string;
+	// 	description?: string;
+	// 	language: string;
+	// 	category?: string;
+	// 	category_id?: string;
+	// 	tags: string[];
+	// } = $props();
+	let { demoResource }: { demoResource: DemoResource } = $props();
+    let id = $state(demoResource.id);
+    let name = $state(demoResource.name);
+    let description = $state(demoResource.description);
+    let language = $state(demoResource.language);
+    let category = $state(demoResource.category);
+    let category_id = $state(demoResource.category_id);
+    let tags = $state(demoResource.tags);
+
 	let edit = $state(false);
 	let flag = $state(
 		language === 'en-US'
@@ -38,6 +49,27 @@
 	);
 	let card: Card;
 
+    const updateResource = async () => {
+        console.log('=== updateResource ===');
+        console.log(name);
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('name', name);
+        description ? formData.append('description', description) : null;
+        formData.append('language', language);
+        const response = await fetch(`?/put`, {
+            method: 'POST',
+            body: formData
+        });
+        if (response.status === 200) {
+            console.log('=== response ===');
+            console.log(response);
+            // await update();
+        } else {
+            throw error(response.status || 404, 'Failed to update resource');
+        }
+    }
+
 	// const deleteResource = ( ) => {
 	//     card.remove();
 	// }
@@ -48,8 +80,6 @@
 			method: 'POST',
 			body: formData
 		});
-		console.log('=== response ===');
-		console.log(response);
 		if (response.status === 200) {
 			card.remove();
 		} else {
@@ -66,6 +96,7 @@
 					? `ring-2 ring-info`
 					: ``}"
 				contenteditable={edit}
+				onblur={() => updateResource()}
 			>
 				{name}
 			</h5>
@@ -126,19 +157,19 @@
 					</span>
 				</button>
 			</form> -->
-            <button
-                class="btn-info-container btn btn-circle btn-gradient"
-                onclick={() => (edit ? (edit = false) : (edit = true))}
-                aria-label="Edit Button"
-            >
-                <span class="grid place-items-center">
-                    <span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
-                    ></span>
-                    <span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
-                    ></span>
-                </span>
-            </button>
-			<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share Button">
+			<button
+				class="btn-info-container btn btn-circle btn-gradient"
+				onclick={() => (edit ? (edit = false) : (edit = true))}
+				aria-label="Edit Button"
+			>
+				<span class="grid place-items-center">
+					<span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
+					></span>
+					<span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
+					></span>
+				</span>
+			</button>
+			<button class="btn-success-container btn btn-circle btn-gradient" onclick={() => console.log(name)} aria-label="Share Button">
 				<span class="icon-[tabler--share-2]"></span>
 			</button>
 			<!-- <form action="?/delete" method="POST" use:enhance={() => 
