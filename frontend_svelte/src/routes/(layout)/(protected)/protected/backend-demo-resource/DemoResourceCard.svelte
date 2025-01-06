@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Card from '$components/Card.svelte';
-	import type { Snippet } from 'svelte';
+	import { unmount } from 'svelte';
 	// type DemoResource = {
 	//     id: string;
 	//     name: string;
@@ -34,6 +34,14 @@
 					? 'germany'
 					: false
 	);
+	let card: Card;
+
+    const deleteResource = () => {
+        console.log("=== deleteResource - card ===")
+        console.log(card)
+        card.remove()
+    }
+
 </script>
 
 {#snippet header()}
@@ -73,14 +81,25 @@
 			<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit Button">
 				<span class="icon-[material-symbols--edit-outline-rounded]"></span>
 			</button>
-			<button class="btn-error-container btn btn-circle btn-gradient" aria-label="Delete Button">
+            <button
+                class="btn-success-container btn btn-circle btn-gradient"
+                aria-label="Share Button"
+            >
+                <span class="icon-[tabler--share-2]"></span>
+            </button>
+			<button 
+                class="btn-error-container btn btn-circle btn-gradient"
+                aria-label="Delete Button"
+                onclick={() => deleteResource()}
+            >
 				<span class="icon-[tabler--trash]"></span>
 			</button>
 		</div>
 	</div>
 {/snippet}
 
-<Card {id} {header} {footer}>
+
+<Card bind:this={card} {id} {header} {footer}>
 	<p class="text-body-small md:text-body text-primary-container-content">
 		{description || 'No description available'}
 	</p>

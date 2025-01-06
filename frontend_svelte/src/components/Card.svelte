@@ -7,6 +7,11 @@
 		children,
 		footer
 	}: { id: string; header?: Snippet; children: Snippet; footer?: Snippet } = $props();
+
+	export const remove = () => {
+		const card = document.getElementById(id);
+		card?.remove();
+	}
 </script>
 
 <div

@@ -343,6 +343,7 @@
 				<span class="icon-[tabler--user] size-12"></span>
 				<span class="icon-[tabler--trash] size-12"></span>
 				<span class="icon-[tabler--send-2] size-12"></span>
+				<span class="icon-[tabler--share-2] size-12"></span>
 			</div>
 			<div>
 				<p class="text-label text-center">
@@ -439,6 +440,12 @@
 					aria-label="Send Button"
 				>
 					<span class="icon-[tabler--send-2]"></span>
+				</button>
+				<button
+					class="btn-success-container btn btn-circle btn-gradient"
+					aria-label="Share Button"
+				>
+					<span class="icon-[tabler--share-2]"></span>
 				</button>
 			</div>
 		</div>
