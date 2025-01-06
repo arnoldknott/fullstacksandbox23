@@ -102,7 +102,7 @@ export const actions = {
 		const sessionId = locals.sessionData.sessionId;
 		const response = await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
 		if (response.status !== 200) {
-			return fail(response.status, {error: response.statusText});
+			return fail(response.status, { error: response.statusText });
 		}
 	}
 } satisfies Actions;

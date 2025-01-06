@@ -11,7 +11,7 @@
 	export const remove = () => {
 		const card = document.getElementById(id);
 		card?.remove();
-	}
+	};
 </script>
 
 <div

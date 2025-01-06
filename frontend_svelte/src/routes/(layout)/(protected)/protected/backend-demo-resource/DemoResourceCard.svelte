@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {  enhance } from '$app/forms';
+	import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
 	import { error } from '@sveltejs/kit';
 	// type DemoResource = {
@@ -26,7 +26,7 @@
 		tags: string[];
 	} = $props();
 	// let { id, name, description, language, category, category_id, tags }: { id: string, name: string; description: string, language: string; category?: string, category_id?: string, tags: string[] } = $props();
-    let edit = $state(false);
+	let edit = $state(false);
 	let flag = $state(
 		language === 'en-US'
 			? 'united-states'
@@ -38,31 +38,35 @@
 	);
 	let card: Card;
 
-    // const deleteResource = ( ) => {    
-    //     card.remove();
-    // }
-    const deleteResource = async () => {
-        const formData = new FormData();
-        formData.append('id', id);
-        const response = await fetch(`?/delete`, {
-            method: 'POST',
-            body: formData
-        });
-        console.log("=== response ===")
-        console.log(response)
-        if (response.status === 200) {
-            card.remove();
-        } else {
-            throw error(response.status || 404, 'Failed to delete resource');
-        }
-    }
-
+	// const deleteResource = ( ) => {
+	//     card.remove();
+	// }
+	const deleteResource = async () => {
+		const formData = new FormData();
+		formData.append('id', id);
+		const response = await fetch(`?/delete`, {
+			method: 'POST',
+			body: formData
+		});
+		console.log('=== response ===');
+		console.log(response);
+		if (response.status === 200) {
+			card.remove();
+		} else {
+			throw error(response.status || 404, 'Failed to delete resource');
+		}
+	};
 </script>
 
 {#snippet header()}
 	<div class="flex justify-between">
 		<div>
-			<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title {edit ? `ring-2 ring-info` : ``}" contenteditable={edit}>
+			<h5
+				class="text-title-small md:text-title lg:text-title-large base-content card-title {edit
+					? `ring-2 ring-info`
+					: ``}"
+				contenteditable={edit}
+			>
 				{name}
 			</h5>
 		</div>
@@ -93,34 +97,51 @@
 			{/each}
 		</div>
 		<div class="flex gap-2">
-            <form action="?/put" method="POST" use:enhance={() => 
-                    {
-                        return async ({result, update}) => {
-                            console.log("=== result ===")
-                            console.log(result)
-                            if (result.status === 204){
-                                await update()
-                            } else {
-                                throw  error(result.status || 404, 'Failed to update resource')
-                            }
-                        }
-                    }
-                }>
-                <input type="hidden" name="id" value={id} />
-                <button class="btn-info-container btn btn-circle btn-gradient" onclick={() => edit ? edit = false : edit = true} aria-label="Edit Button">
-                    <span class="grid place-items-center">
-                        <span class="row-start-1 col-start-1 icon-[material-symbols--edit-outline-rounded] "></span>
-                        <span class="row-start-1 col-start-1 icon-[fe--disabled] size-6 {edit ? '': 'hidden' }"></span>
-                    </span>
-                </button>
-            </form>
+			<!-- <form
+				action="?/put"
+				method="POST"
+				use:enhance={() => {
+					return async ({ result, update }) => {
+						console.log('=== result ===');
+						console.log(result);
+						if (result.status === 204) {
+							await update();
+						} else {
+							throw error(result.status || 404, 'Failed to update resource');
+						}
+					};
+				}}
+			>
+				<input type="hidden" name="id" value={id} />
+				<button
+					class="btn-info-container btn btn-circle btn-gradient"
+					onclick={() => (edit ? (edit = false) : (edit = true))}
+					aria-label="Edit Button"
+				>
+					<span class="grid place-items-center">
+						<span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
+						></span>
+						<span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
+						></span>
+					</span>
+				</button>
+			</form> -->
             <button
-                class="btn-success-container btn btn-circle btn-gradient"
-                aria-label="Share Button"
+                class="btn-info-container btn btn-circle btn-gradient"
+                onclick={() => (edit ? (edit = false) : (edit = true))}
+                aria-label="Edit Button"
             >
-                <span class="icon-[tabler--share-2]"></span>
+                <span class="grid place-items-center">
+                    <span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
+                    ></span>
+                    <span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
+                    ></span>
+                </span>
             </button>
-            <!-- <form action="?/delete" method="POST" use:enhance={() => 
+			<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share Button">
+				<span class="icon-[tabler--share-2]"></span>
+			</button>
+			<!-- <form action="?/delete" method="POST" use:enhance={() => 
                     {
                         return async ({result, update}) => {
                             if (result.status === 204){
@@ -142,20 +163,24 @@
                     <span class="icon-[tabler--trash]"></span>
                 </button>
             </form> -->
-            <button 
-                class="btn-error-container btn btn-circle btn-gradient"
-                aria-label="Delete Button"
-                onclick={deleteResource}
-            >
-            <span class="icon-[tabler--trash]"></span>
-        </button>
+			<button
+				class="btn-error-container btn btn-circle btn-gradient"
+				aria-label="Delete Button"
+				onclick={deleteResource}
+			>
+				<span class="icon-[tabler--trash]"></span>
+			</button>
 		</div>
 	</div>
 {/snippet}
 
-
 <Card bind:this={card} {id} {header} {footer}>
-	<p class="text-body-small md:text-body text-primary-container-content {edit ? `ring-2 ring-info` : ``}" contenteditable={edit}>
+	<p
+		class="text-body-small md:text-body text-primary-container-content {edit
+			? `ring-2 ring-info`
+			: ``}"
+		contenteditable={edit}
+	>
 		{description || 'No description available'}
 	</p>
 </Card>

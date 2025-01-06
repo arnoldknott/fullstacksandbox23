@@ -396,8 +396,8 @@
 				<span class="icon-[fe--bell] size-12"></span>
 				<span class="icon-[fe--disabled] size-12"></span>
 				<span class="grid place-items-center">
-					<span class="row-start-1 col-start-1 icon-[fe--bell] size-8 "></span>
-					<span class="row-start-1 col-start-1 icon-[fe--disabled] size-12"></span>
+					<span class="icon-[fe--bell] col-start-1 row-start-1 size-8"></span>
+					<span class="icon-[fe--disabled] col-start-1 row-start-1 size-12"></span>
 				</span>
 			</div>
 			<div>
@@ -452,10 +452,7 @@
 				>
 					<span class="icon-[tabler--send-2]"></span>
 				</button>
-				<button
-					class="btn-success-container btn btn-circle btn-gradient"
-					aria-label="Share Button"
-				>
+				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share Button">
 					<span class="icon-[tabler--share-2]"></span>
 				</button>
 			</div>
