@@ -391,6 +391,17 @@
 			</div>
 			<div>
 				<p class="text-label text-center">
+					Extension library <span class="text-label-prominent badge min-h-fit">Feather Icon</span>
+				</p>
+				<span class="icon-[fe--bell] size-12"></span>
+				<span class="icon-[fe--disabled] size-12"></span>
+				<span class="grid place-items-center">
+					<span class="row-start-1 col-start-1 icon-[fe--bell] size-8 "></span>
+					<span class="row-start-1 col-start-1 icon-[fe--disabled] size-12"></span>
+				</span>
+			</div>
+			<div>
+				<p class="text-label text-center">
 					Emoji library <span class="text-label-prominent badge min-h-fit">Noto emoji</span>
 				</p>
 				<span class="icon-[noto--folded-hands] size-12"></span>

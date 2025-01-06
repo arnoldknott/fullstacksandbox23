@@ -38,8 +38,23 @@
 	);
 	let card: Card;
 
-    const deleteResource = ( ) => {
-        card.remove();
+    // const deleteResource = ( ) => {    
+    //     card.remove();
+    // }
+    const deleteResource = async () => {
+        const formData = new FormData();
+        formData.append('id', id);
+        const response = await fetch(`?/delete`, {
+            method: 'POST',
+            body: formData
+        });
+        console.log("=== response ===")
+        console.log(response)
+        if (response.status === 200) {
+            card.remove();
+        } else {
+            throw error(response.status || 404, 'Failed to delete resource');
+        }
     }
 
 </script>
@@ -47,7 +62,7 @@
 {#snippet header()}
 	<div class="flex justify-between">
 		<div>
-			<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title" contenteditable={edit}>
+			<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title {edit ? `ring-2 ring-info` : ``}" contenteditable={edit}>
 				{name}
 			</h5>
 		</div>
@@ -92,8 +107,11 @@
                     }
                 }>
                 <input type="hidden" name="id" value={id} />
-                <button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit Button">
-                    <span class="icon-[material-symbols--edit-outline-rounded]"></span>
+                <button class="btn-info-container btn btn-circle btn-gradient" onclick={() => edit ? edit = false : edit = true} aria-label="Edit Button">
+                    <span class="grid place-items-center">
+                        <span class="row-start-1 col-start-1 icon-[material-symbols--edit-outline-rounded] "></span>
+                        <span class="row-start-1 col-start-1 icon-[fe--disabled] size-6 {edit ? '': 'hidden' }"></span>
+                    </span>
                 </button>
             </form>
             <button
@@ -102,7 +120,7 @@
             >
                 <span class="icon-[tabler--share-2]"></span>
             </button>
-            <form action="?/delete" method="POST" use:enhance={() => 
+            <!-- <form action="?/delete" method="POST" use:enhance={() => 
                     {
                         return async ({result, update}) => {
                             if (result.status === 204){
@@ -123,14 +141,21 @@
                 >
                     <span class="icon-[tabler--trash]"></span>
                 </button>
-            </form>
+            </form> -->
+            <button 
+                class="btn-error-container btn btn-circle btn-gradient"
+                aria-label="Delete Button"
+                onclick={deleteResource}
+            >
+            <span class="icon-[tabler--trash]"></span>
+        </button>
 		</div>
 	</div>
 {/snippet}
 
 
 <Card bind:this={card} {id} {header} {footer}>
-	<p class="text-body-small md:text-body text-primary-container-content">
+	<p class="text-body-small md:text-body text-primary-container-content {edit ? `ring-2 ring-info` : ``}" contenteditable={edit}>
 		{description || 'No description available'}
 	</p>
 </Card>
