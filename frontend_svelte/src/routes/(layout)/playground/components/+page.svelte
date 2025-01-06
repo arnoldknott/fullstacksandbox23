@@ -425,21 +425,13 @@
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
 				<p class="text-label text-center">Action Buttons</p>
-				<button
-					class="btn-neutral-container btn btn-circle btn-gradient"
-					aria-label="Add Button"
-				>
+				<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add Button">
 					<span class="icon-[fa6-solid--plus]"></span>
 				</button>
-				<button 
-					class="btn-info-container btn btn-circle btn-gradient"
-					aria-label="Edit Button">
+				<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit Button">
 					<span class="icon-[material-symbols--edit-outline-rounded]"></span>
 				</button>
-				<button
-					class="btn-error-container btn btn-circle btn-gradient"
-					aria-label="Delete Button"
-				>
+				<button class="btn-error-container btn btn-circle btn-gradient" aria-label="Delete Button">
 					<span class="icon-[tabler--trash]"></span>
 				</button>
 				<button
@@ -457,7 +449,6 @@
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
 				<p class="text-label text-center">Text Badges</p>
-				
 			</div>
 		</div>
 	</div>

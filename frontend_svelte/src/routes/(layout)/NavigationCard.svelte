@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Card from '$components/Card.svelte';
-    import { v4 } from 'uuid';
+	import { v4 } from 'uuid';
 	import type { Snippet } from 'svelte';
 	let { title, href, children }: { title: string; href: string; children: Snippet } = $props();
 </script>
