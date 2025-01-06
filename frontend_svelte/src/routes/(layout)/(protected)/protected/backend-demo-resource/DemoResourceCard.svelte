@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { applyAction, enhance } from '$app/forms';
+	import {  enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
-	import { unmount } from 'svelte';
 	// type DemoResource = {
 	//     id: string;
 	//     name: string;
@@ -86,7 +85,7 @@
             >
                 <span class="icon-[tabler--share-2]"></span>
             </button>
-            <form action="?/delete" method="POST">
+            <form action="?/delete" method="POST" use:enhance={() => deleteResource()}>
                 <input type="hidden" name="id" value={id} /> 
                 <button 
                     class="btn-error-container btn btn-circle btn-gradient"
