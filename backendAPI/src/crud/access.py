@@ -1132,6 +1132,7 @@ class AccessLoggingCRUD:
                 descending_order_by=AccessLog.time,
                 limit=1,
                 status_code=None,
+                required_action=Action.read,
             )
             return last_accessed_entry[0]
         except Exception as err:

@@ -2907,15 +2907,14 @@ async def test_get_last_access_datetime_for_resource(
     }
     await add_one_test_access_policy(policy)
 
-    database_logs = add_many_test_access_logs
-
     response = await async_client.get(
         f"/api/v1/access/log/{resource_id3}/last-accessed"
     )
     payload = response.json()
 
-    assert response.status_code == 200
+    database_logs = add_many_test_access_logs
 
+    assert response.status_code == 200
     returned = AccessLogRead(**payload)
     assert int(returned.id)
     assert returned.resource_id == database_logs[11].resource_id
@@ -2960,8 +2959,17 @@ async def test_get_last_access_datetime_for_resource_only_write_permission(
     )
     payload = response.json()
 
-    assert response.status_code == 404
-    assert payload == {"detail": "Access logs not found."}
+    database_logs = add_many_test_access_logs
+
+    assert response.status_code == 200
+    returned = AccessLogRead(**payload)
+    assert int(returned.id)
+    assert returned.resource_id == database_logs[11].resource_id
+    assert returned.identity_id == database_logs[11].identity_id
+    assert returned.action == database_logs[11].action
+    assert returned.status_code == database_logs[11].status_code
+    # TBD: debug time offset
+    assert returned.time == database_logs[11].time
 
 
 @pytest.mark.anyio
@@ -2990,6 +2998,40 @@ async def test_get_last_access_datetime_for_resource_only_read_permission(
         "action": Action.read,
     }
     await add_one_test_access_policy(policy)
+
+    add_many_test_access_logs
+
+    response = await async_client.get(
+        f"/api/v1/access/log/{resource_id3}/last-accessed"
+    )
+    payload = response.json()
+
+    database_logs = add_many_test_access_logs
+
+    assert response.status_code == 200
+    returned = AccessLogRead(**payload)
+    assert int(returned.id)
+    assert returned.resource_id == database_logs[11].resource_id
+    assert returned.identity_id == database_logs[11].identity_id
+    assert returned.action == database_logs[11].action
+    assert returned.status_code == database_logs[11].status_code
+    # TBD: debug time offset
+    assert returned.time == database_logs[11].time
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_get_last_access_datetime_for_resource_missing_access(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
 
     add_many_test_access_logs
 
