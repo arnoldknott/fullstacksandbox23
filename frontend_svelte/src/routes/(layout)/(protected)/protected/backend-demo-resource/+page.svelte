@@ -76,8 +76,8 @@
 			<md-select-option value="en-US">
 				<div slot="headline">en-US</div>
 			</md-select-option>
-			<md-select-option value="dk-DK">
-				<div slot="headline">dk-DK</div>
+			<md-select-option value="da-DK">
+				<div slot="headline">da-DK</div>
 			</md-select-option>
 			<md-select-option value="de-DE">
 				<div slot="headline">de-DE</div>
