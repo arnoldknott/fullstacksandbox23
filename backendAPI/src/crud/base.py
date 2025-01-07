@@ -442,6 +442,25 @@ class BaseCRUD(
 
         return hierarchy
 
+    # TBD: implement tests for this!
+    async def reorder_children(
+        self,
+        parent_id: uuid.UUID,
+        child_old_position: int,
+        child_new_position: int,
+        current_user: "CurrentUserData",
+    ) -> None:
+        """Reorders the children of a parent."""
+        async with self.hierarchy_CRUD as hierarchy_CRUD:
+            hierarchy = await hierarchy_CRUD.reorder_children(
+                current_user=current_user,
+                parent_id=parent_id,
+                old_position=child_old_position,
+                new_position=child_new_position,
+            )
+
+        return hierarchy
+
     # TBD: implement a create_if_not_exists method
 
     # TBD: add skip and limit
@@ -504,7 +523,11 @@ class BaseCRUD(
                         statement = statement.outerjoin(
                             related_model,
                             related_model.id == foreign(aliased_hierarchy.child_id),
-                        ).order_by(asc(related_model.id))
+                        )
+                        if self.hierarchy == ResourceHierarchy:
+                            statement = statement.order_by(asc(aliased_hierarchy.order))
+                        else:
+                            statement = statement.order_by(asc(related_model.id))
                     elif self.entity_type in children and related_type == parent:
                         # self.model is a child, join on child_id
                         statement = statement.outerjoin(
@@ -514,7 +537,8 @@ class BaseCRUD(
                         statement = statement.outerjoin(
                             related_model,
                             related_model.id == foreign(aliased_hierarchy.parent_id),
-                        ).order_by(asc(related_model.id))
+                        )
+                        statement = statement.order_by(asc(related_model.id))
 
                 count_related_statement = select(func.count()).select_from(
                     related_statement.alias()

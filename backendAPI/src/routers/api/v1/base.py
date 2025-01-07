@@ -97,6 +97,22 @@ class BaseView:
             )
         return created_hierarchy
 
+    async def post_reorder_children(
+        self,
+        parent_id,
+        old_position,
+        new_position,
+        token_payload=None,
+        guards=None,
+    ):
+        logger.info("POST view to add child to parent calls add_child_to_parent CRUD")
+        # user in child router for consistency
+        current_user = await check_token_against_guards(token_payload, guards)
+        async with self.crud() as crud:
+            await crud.reorder_children(
+                parent_id, old_position, new_position, current_user
+            )
+
     async def post_file(
         self,
         file,

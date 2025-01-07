@@ -616,7 +616,7 @@ class AccessPolicyCRUD:
                 results = response.all()
 
             for result in results:
-                if result.resource_id == resource_id and result.action == action:
+                if result.resource_id == resource_id:
                     return True
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
@@ -1441,6 +1441,70 @@ class ResourceHierarchyCRUD(
     def __init__(self):
         # super().__init__(ResourceHierarchy, ResourceHierarchyTable)
         super().__init__(ResourceHierarchy, ResourceHierarchy)
+
+    async def reorder_children(
+        self,
+        current_user: CurrentUserData,
+        parent_id: UUID,
+        old_position: int,
+        new_position: int,
+    ) -> None:
+        """Reorders the children of a parent resource."""
+        try:
+            # Ensure user has write permissions on parent resource:
+            parent_access_request = AccessRequest(
+                resource_id=parent_id,
+                action=Action.write,
+                current_user=current_user,
+            )
+            if not await self.policy_crud.allows(parent_access_request):
+                raise HTTPException(status_code=403, detail="Forbidden.")
+            # Alternative - same as above in create()
+            # TBD: decide which one to use and consider replacing the above with this one!
+            # it's anyways making another round trip to the database!
+            # statement = select(IdentifierTypeLink.type)
+            # statement = self.policy_crud.filters_allowed(
+            #     statement, Action.write, IdentifierTypeLink, current_user
+            # )
+            # statement = statement.where(IdentifierTypeLink.id == parent_id)
+
+            # result = await self.session.exec(statement)
+            # parent_type = result.one()
+
+            # parent_model = ResourceType.get_model(parent_type)
+
+            # Fetch the children of the parent resource
+            # TBD: add check if current_user has access to the children!
+            children = await self.session.exec(
+                select(self.model)
+                .where(self.model.parent_id == parent_id)
+                .order_by(self.model.order)
+            )
+            children = children.all()
+
+            # Validate positions
+            if (
+                old_position < 0
+                or old_position >= len(children)
+                or new_position < 0
+                or new_position >= len(children)
+            ):
+                raise HTTPException(status_code=400, detail="Invalid positions.")
+
+            # Reorder the children
+            if old_position < new_position:
+                for i in range(old_position, new_position):
+                    children[i].order = i + 1
+            else:
+                for i in range(new_position + 1, old_position + 1):
+                    children[i].order = i - 1
+
+            # Update the database
+            await self.session.commit()
+
+        except Exception as err:
+            logger.error(f"Error in reordering children: {err}")
+            raise HTTPException(status_code=403, detail="Forbidden.")
 
 
 class IdentityHierarchyCRUD(

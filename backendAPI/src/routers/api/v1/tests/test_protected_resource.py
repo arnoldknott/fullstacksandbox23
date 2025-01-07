@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 
+
+from pprint import pprint
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -739,7 +741,6 @@ async def test_user_adds_child_to_parent(
 async def test_user_adds_child_to_parent_without_access(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
-    # mocked_provide_http_token_payload,
     add_many_test_protected_resources,
     add_many_test_protected_children,
 ):
@@ -810,6 +811,91 @@ async def test_user_adds_child_to_parent_without_access_to_child(
     )
     assert response.status_code == 403
     assert response.json() == {"detail": "Forbidden."}
+
+
+# @pytest.mark.anyio
+# @pytest.mark.parametrize(
+#     "mocked_provide_http_token_payload",
+#     [token_user1_read_write],
+#     indirect=True,
+# )
+# async def test_user_moves_child_order(
+#     async_client: AsyncClient,
+#     app_override_provide_http_token_payload: FastAPI,
+#     mocked_provide_http_token_payload,
+#     current_user_from_azure_token,
+#     add_one_test_access_policy,
+#     add_many_test_protected_resources,
+#     add_many_test_protected_children,
+#     add_one_parent_child_resource_relationship,
+# ):
+#     """Tests if children get reordered and returned correctly from read afterwards."""
+
+#     app_override_provide_http_token_payload
+
+#     mocked_protected_resources = await add_many_test_protected_resources()
+#     mocked_protected_children = await add_many_test_protected_children()
+
+#     for protected_child in mocked_protected_children:
+#         await add_one_parent_child_resource_relationship(
+#             child_id=protected_child.id,
+#             parent_id=mocked_protected_resources[0].id,
+#             inherit=True,
+#         )
+
+#     parent_resource_id = mocked_protected_resources[0].id
+
+#     current_user = await current_user_from_azure_token(
+#         mocked_provide_http_token_payload
+#     )
+#     policy = {
+#         "resource_id": str(parent_resource_id),
+#         "identity_id": str(current_user.user_id),
+#         "action": Action.write,
+#     }
+#     await add_one_test_access_policy(policy)
+
+#     response_before_moving_forward = await async_client.get(
+#         f"/api/v1/protected/resource/{str(parent_resource_id)}",
+#     )
+#     parent_before_moving_forward = ProtectedResourceRead(
+#         **response_before_moving_forward.json()
+#     )
+#     print("=== ProtectedResource before moving children ===")
+#     pprint(parent_before_moving_forward.model_dump())
+
+#     # Move the order of a protected child forward:
+#     response = await async_client.post(
+#         f"/api/v1/protected/resource/{str(parent_resource_id)}/move/1/to/2"
+#     )
+#     payload = response.json()
+
+#     assert response.status_code == 201
+#     assert payload is None
+
+#     response_after_moving_forward = await async_client.get(
+#         f"/api/v1/protected/resource/{str(parent_resource_id)}",
+#     )
+#     parent_after_moving_forward = ProtectedResourceRead(
+#         **response_after_moving_forward.json()
+#     )
+#     print("=== ProtectedResource before moving children ===")
+#     pprint(parent_after_moving_forward.model_dump())
+
+#     assert 0
+
+#     # Move the order of a protected child backward:
+#     response = await async_client.post(
+#         f"/api/v1/protected/{str(parent_resource_id)}/move/2/to/5"
+#     )
+
+#     assert response.status_code == 201
+
+#     assert False
+
+#     # Move the order of a protected child beyond the end - fails:
+
+#     assert 0
 
 
 @pytest.mark.anyio

@@ -203,6 +203,7 @@ class ResourceHierarchyCreate(SQLModel):
         default=False,
         description="Set to true, if the child inherits permissions from this parent.",
     )
+    order: Optional[int] = Field(default=None, sa_column_kwargs={"autoincrement": True})
 
     @model_validator(mode="after")
     def not_child_to_self(self):
@@ -222,7 +223,10 @@ class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
         primary_key=True
     )  # foreign_key="identifiertypelink.id",
 
-    __table_args__ = (UniqueConstraint("parent_id", "child_id"),)
+    __table_args__ = (
+        UniqueConstraint("parent_id", "child_id"),
+        UniqueConstraint("parent_id", "order"),
+    )
 
     # TBD: add the required relations: children, that cannot be standalone, but need a parent.
     relations: ClassVar = {
