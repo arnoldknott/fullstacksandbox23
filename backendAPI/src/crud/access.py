@@ -1,8 +1,8 @@
 import logging
+from pprint import pprint
 from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
 
-from pprint import pprint
 from fastapi import HTTPException
 from sqlalchemy.orm import aliased
 from sqlmodel import SQLModel, and_, delete, or_, select

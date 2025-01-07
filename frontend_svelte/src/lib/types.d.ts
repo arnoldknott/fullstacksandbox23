@@ -68,9 +68,8 @@ export interface DemoResource {
 	category_id?: string;
 	tags: string[];
 	creation_date: Date;
-};
+}
 
-
-export interface DemoResourceWithCreationDate extends DemoResource  {
+export interface DemoResourceWithCreationDate extends DemoResource {
 	creation_date: Date;
-};
+}

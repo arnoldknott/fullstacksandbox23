@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import HTTPException
+
 from core.security import check_token_against_guards  # CurrentAccessToken
 from core.types import GuardTypes
 

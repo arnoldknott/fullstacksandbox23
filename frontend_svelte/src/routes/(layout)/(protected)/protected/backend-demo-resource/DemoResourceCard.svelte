@@ -2,7 +2,7 @@
 	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
 	import { error } from '@sveltejs/kit';
-	import type {  DemoResourceWithCreationDate} from '$lib/types';
+	import type { DemoResourceWithCreationDate } from '$lib/types';
 
 	// let {
 	// 	id,
@@ -29,7 +29,7 @@
 	let category = $state(demoResource.category);
 	let category_id = $state(demoResource.category_id);
 	let tags = $state(demoResource.tags);
-    const creation_date = demoResource.creation_date;
+	const creation_date = demoResource.creation_date;
 
 	let edit = $state(false);
 	let flag = $state(
@@ -85,33 +85,31 @@
 {#snippet header()}
 	<div class="flex justify-between">
 		<div>
-            {#if edit}
-                <div class="relative">
-                    <input
-                        type="text"
-                        class="input input-filled peer border-content text-title-small md:text-title lg:text-title-large base-content card-title"
-                        id="name_{id}"
-                        onblur={() => updateResource()}
-                        bind:value={name}
-                        placeholder="Name the demo resource"
-                    />
-                    <label
-                        class="text-label-small md:text-label input-filled-label"
-                        style="color: oklch(var(--bc));"
-                        for="name_{id}">Name</label
-                    >
-                    <span class="input-filled-focused" style="background-color: oklch(var(--bc));"></span>
-                </div>
-            {:else}
-                <h5
-                    class="text-title-small md:text-title lg:text-title-large base-content card-title"
-                >
-                    {name}
-                </h5>
-                <p class="text-label-small md:text-label text-secondary">
-                    {creation_date.toLocaleString('da-DK', { timeZone: 'CET' })}
-                </p>
-            {/if}
+			{#if edit}
+				<div class="relative">
+					<input
+						type="text"
+						class="border-content text-title-small md:text-title lg:text-title-large base-content card-title input input-filled peer"
+						id="name_{id}"
+						onblur={() => updateResource()}
+						bind:value={name}
+						placeholder="Name the demo resource"
+					/>
+					<label
+						class="text-label-small md:text-label input-filled-label"
+						style="color: oklch(var(--bc));"
+						for="name_{id}">Name</label
+					>
+					<span class="input-filled-focused" style="background-color: oklch(var(--bc));"></span>
+				</div>
+			{:else}
+				<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+					{name}
+				</h5>
+				<p class="text-label-small md:text-label text-secondary">
+					{creation_date.toLocaleString('da-DK', { timeZone: 'CET' })}
+				</p>
+			{/if}
 			<!-- <h5
 				class="text-title-small md:text-title lg:text-title-large base-content card-title {edit
 					? `ring-2 ring-info`
@@ -228,25 +226,25 @@
 {/snippet}
 
 <Card bind:this={card} {id} {header} {footer}>
-    {#if edit}
-        <div class="relative">
-            <textarea
-                class="textarea textarea-filled peer border-primary text-body-small md:text-body text-primary-container-content"
-                id="description_{id}"
-                onblur={() => updateResource()}
-                bind:value={description}
-                placeholder="Describe the demo resource here."
-            ></textarea>
-            <label
-                class="text-label-small md:text-label textarea-filled-label"
-                style="color: oklch(var(--p));"
-                for="description_{id}">Description</label
-            >
-            <span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
-        </div>
-    {:else}
-	<p class="text-body-small md:text-body text-primary-container-content">
-		{description || 'No description available'}
-	</p>
-    {/if}
+	{#if edit}
+		<div class="relative">
+			<textarea
+				class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
+				id="description_{id}"
+				onblur={() => updateResource()}
+				bind:value={description}
+				placeholder="Describe the demo resource here."
+			></textarea>
+			<label
+				class="text-label-small md:text-label textarea-filled-label"
+				style="color: oklch(var(--p));"
+				for="description_{id}">Description</label
+			>
+			<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
+		</div>
+	{:else}
+		<p class="text-body-small md:text-body text-primary-container-content">
+			{description || 'No description available'}
+		</p>
+	{/if}
 </Card>

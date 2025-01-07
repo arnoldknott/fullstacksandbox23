@@ -308,7 +308,7 @@
 			<div class="relative sm:w-56">
 				<textarea
 					placeholder="Primary colored input"
-					class="textarea textarea-filled peer border-primary max-h-44"
+					class="textarea peer textarea-filled max-h-44 border-primary"
 					id="primaryInput"
 				></textarea>
 				<label
@@ -321,7 +321,7 @@
 			<div class="relative sm:w-56">
 				<textarea
 					placeholder="Secondary colored input"
-					class="textarea textarea-filled peer border-secondary max-h-44"
+					class="textarea peer textarea-filled max-h-44 border-secondary"
 					id="secondaryTextarea"
 				></textarea>
 				<label
@@ -334,7 +334,7 @@
 			<div class="relative sm:w-56">
 				<textarea
 					placeholder="Accent colored input"
-					class="textarea textarea-filled peer border-accent max-h-44"
+					class="textarea peer textarea-filled max-h-44 border-accent"
 					id="accentTextarea"
 				></textarea>
 				<label
@@ -347,7 +347,7 @@
 			<div class="relative sm:w-56">
 				<textarea
 					placeholder="Neutral colored input"
-					class="textarea textarea-filled peer border-neutral max-h-44"
+					class="textarea peer textarea-filled max-h-44 border-neutral"
 					id="neutraTextarea"
 				></textarea>
 				<label

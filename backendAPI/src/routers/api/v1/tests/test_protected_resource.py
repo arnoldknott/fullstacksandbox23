@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta
+from pprint import pprint
 from uuid import UUID, uuid4
 
-
-from pprint import pprint
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient

@@ -3,8 +3,9 @@ from datetime import datetime
 from typing import ClassVar, List, Optional
 
 from pydantic import BaseModel, model_validator  # , create_model
-from sqlalchemy import UniqueConstraint, Column, Integer
-from sqlmodel import Field, SQLModel, select, func
+from sqlalchemy import Column, Integer, UniqueConstraint
+from sqlmodel import Field, SQLModel, func, select
+
 from core.databases import SynchronSession
 
 # if TYPE_CHECKING:
