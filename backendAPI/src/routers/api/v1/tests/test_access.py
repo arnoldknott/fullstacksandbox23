@@ -2621,6 +2621,169 @@ async def test_get_creation_datetime_for_resource_with_only_read_permission(
     [token_admin_read, token_user1_read, token_user2_read],
     indirect=True,
 )
+async def test_get_creation_datetime_for_resources(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policies = [
+        {
+            "resource_id": resource_id1,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+        {
+            "resource_id": resource_id2,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+        {
+            "resource_id": resource_id3,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+    ]
+    for policy in policies:
+        await add_one_test_access_policy(policy)
+
+    database_logs = add_many_test_access_logs
+
+    response = await async_client.post(
+        "/api/v1/access/log/created", json=[resource_id1, resource_id2, resource_id3]
+    )
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert (
+        (database_logs[0].time - timedelta(seconds=1)).isoformat()
+        < payload[0]
+        < (database_logs[0].time + timedelta(seconds=1)).isoformat()
+    )
+    assert (
+        (database_logs[1].time - timedelta(seconds=1)).isoformat()
+        < payload[1]
+        < (database_logs[1].time + timedelta(seconds=1)).isoformat()
+    )
+    assert (
+        (database_logs[2].time - timedelta(seconds=1)).isoformat()
+        < payload[2]
+        < (database_logs[2].time + timedelta(seconds=1)).isoformat()
+    )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_get_creation_datetime_for_resources_with_write_permission_on_one_resource_only_fails(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policies = [
+        {
+            "resource_id": resource_id1,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+        {
+            "resource_id": resource_id2,
+            "identity_id": str(current_user.user_id),
+            "action": Action.write,
+        },
+        {
+            "resource_id": resource_id3,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+    ]
+    for policy in policies:
+        await add_one_test_access_policy(policy)
+
+    response = await async_client.post(
+        "/api/v1/access/log/created", json=[resource_id1, resource_id2, resource_id3]
+    )
+    payload = response.json()
+
+    assert response.status_code == 404
+    assert payload == {"detail": "Access logs not found."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_get_creation_datetime_for_resources_with_read_permission_on_resources_fails(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policies = [
+        {
+            "resource_id": resource_id1,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+        {
+            "resource_id": resource_id2,
+            "identity_id": str(current_user.user_id),
+            "action": Action.read,
+        },
+        {
+            "resource_id": resource_id3,
+            "identity_id": str(current_user.user_id),
+            "action": Action.read,
+        },
+    ]
+    for policy in policies:
+        await add_one_test_access_policy(policy)
+
+    response = await async_client.post(
+        "/api/v1/access/log/created", json=[resource_id1, resource_id2, resource_id3]
+    )
+    payload = response.json()
+
+    assert response.status_code == 404
+    assert payload == {"detail": "Access logs not found."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read, token_user1_read, token_user2_read],
+    indirect=True,
+)
 async def test_get_last_access_datetime_for_resource(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,

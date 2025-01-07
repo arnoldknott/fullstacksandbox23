@@ -242,6 +242,26 @@ async def get_creation_date_for_resource(
         )
 
 
+@router.post("/log/created", status_code=200)
+async def get_creation_date_for_resources(
+    resource_ids: list[UUID],
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[datetime]:
+    """Returns creation information for a list of resources."""
+    logger.info("GET access log information for resource")
+    current_user = await check_token_against_guards(token_payload, guards)
+    async with access_log_view.crud() as crud:
+        creation_dates = []
+        for resource_id in resource_ids:
+            creation_date = await crud.read_resource_created_at(
+                current_user,
+                resource_id=resource_id,
+            )
+            creation_dates.append(creation_date)
+        return creation_dates
+
+
 @router.get("/log/{resource_id}/last-accessed", status_code=200)
 async def get_last_accessed_for_resource(
     resource_id: UUID,
