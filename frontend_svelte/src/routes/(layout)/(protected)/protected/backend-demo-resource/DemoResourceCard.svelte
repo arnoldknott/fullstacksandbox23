@@ -55,7 +55,9 @@
 		const formData = new FormData();
 		formData.append('id', id);
 		formData.append('name', name);
-		description ? formData.append('description', description) : null;
+		if (description) {
+			formData.append('description', description);
+		}
 		formData.append('language', language);
 		const response = await fetch(`?/put`, {
 			method: 'POST',
@@ -170,10 +172,7 @@
 					></span>
 				</span>
 			</button>
-			<button
-				class="btn-success-container btn btn-circle btn-gradient"
-				aria-label="Share Button"
-			>
+			<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share Button">
 				<span class="icon-[tabler--share-2]"></span>
 			</button>
 			<!-- <form action="?/delete" method="POST" use:enhance={() => 
