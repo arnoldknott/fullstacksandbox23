@@ -4,6 +4,8 @@ import type { Actions, PageServerLoad } from './$types';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis';
 import { fail } from '@sveltejs/kit';
+import type {  DemoResource, DemoResourceWithCreationDate} from '$lib/types';
+
 
 // const appConfig = await AppConfig.getInstance();
 
@@ -42,7 +44,19 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const response = await backendAPI.get(sessionId, '/demoresource');
 	const demoResources = await response.json();
-	return { demoResources };
+	const resourceIds = demoResources.map((resource: DemoResource) => resource.id);
+	const creationDataResponse = await backendAPI.post(sessionId, '/access/log/created', JSON.stringify(resourceIds));
+	const creationDates = await creationDataResponse.json();
+	const demoResourcesWithCreationDates = demoResources.map((resource: DemoResourceWithCreationDate, index: number) => {
+		resource = {...resource};
+		resource.creation_date = new Date( creationDates[index] );
+		return resource;
+	})
+	demoResourcesWithCreationDates.sort((a: DemoResource, b: DemoResource) => {
+		return a.creation_date < b.creation_date ? 1 : -1;
+	})
+
+	return { demoResourcesWithCreationDates };
 };
 
 export const actions = {

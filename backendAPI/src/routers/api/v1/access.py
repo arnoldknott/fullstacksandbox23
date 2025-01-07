@@ -268,7 +268,7 @@ async def get_last_accessed_for_resource(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> AccessLogRead:
-    """Returns creation information for a resource."""
+    """Returns the log for the latest access of a resource."""
     logger.info("GET access log information for resource")
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:
@@ -284,7 +284,7 @@ async def get_last_accessed_for_resources(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[datetime]:
-    """Returns creation information for a resource."""
+    """Returns latest access time for resources."""
     logger.info("GET access log information for resource")
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:

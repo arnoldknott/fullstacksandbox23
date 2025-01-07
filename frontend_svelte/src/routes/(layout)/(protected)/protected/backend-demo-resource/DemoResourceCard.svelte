@@ -2,15 +2,8 @@
 	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
 	import { error } from '@sveltejs/kit';
-	type DemoResource = {
-		id: string;
-		name: string;
-		description?: string;
-		language: string;
-		category?: string;
-		category_id?: string;
-		tags: string[];
-	};
+	import type {  DemoResourceWithCreationDate} from '$lib/types';
+
 	// let {
 	// 	id,
 	// 	name,
@@ -28,7 +21,7 @@
 	// 	category_id?: string;
 	// 	tags: string[];
 	// } = $props();
-	let { demoResource }: { demoResource: DemoResource } = $props();
+	let { demoResource }: { demoResource: DemoResourceWithCreationDate } = $props();
 	let id = $state(demoResource.id);
 	let name = $state(demoResource.name);
 	let description = $state(demoResource.description);
@@ -36,6 +29,7 @@
 	let category = $state(demoResource.category);
 	let category_id = $state(demoResource.category_id);
 	let tags = $state(demoResource.tags);
+    const creation_date = demoResource.creation_date;
 
 	let edit = $state(false);
 	let flag = $state(
@@ -50,8 +44,6 @@
 	let card: Card;
 
 	const updateResource = async () => {
-		console.log('=== updateResource ===');
-		console.log(name);
 		const formData = new FormData();
 		formData.append('id', id);
 		formData.append('name', name);
@@ -116,6 +108,9 @@
                 >
                     {name}
                 </h5>
+                <p class="text-label-small md:text-label text-secondary">
+                    {creation_date.toLocaleString('da-DK', { timeZone: 'CET' })}
+                </p>
             {/if}
 			<!-- <h5
 				class="text-title-small md:text-title lg:text-title-large base-content card-title {edit

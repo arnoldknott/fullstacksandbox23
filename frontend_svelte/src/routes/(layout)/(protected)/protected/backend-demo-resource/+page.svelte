@@ -13,7 +13,7 @@
 	import '@material/web/list/list-item.js';
 	import DemoResourceCard from './DemoResourceCard.svelte';
 	let { data }: { data: PageData } = $props();
-	const demo_resources = data.demoResources;
+	const demo_resources = data.demoResourcesWithCreationDates;
 
 	let debug = $state(false);
 

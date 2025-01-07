@@ -2,7 +2,6 @@ import uuid
 from datetime import datetime, timedelta
 
 
-from pprint import pprint
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient

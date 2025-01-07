@@ -60,6 +60,8 @@ class BaseAPI {
 			// options.body = JSON.stringify(body);
 			if (body instanceof FormData) {
 				options.body = JSON.stringify(Object.fromEntries(body));
+			} else if (typeof body === 'string') {
+				options.body = body;
 			} else {
 				console.error('Invalid body type or not yet implemented: ' + typeof body);
 				throw new Error('Invalid body type');
@@ -117,6 +119,8 @@ class BaseAPI {
 			const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
 			if (body instanceof FormData) {
 				options.body = JSON.stringify(Object.fromEntries(body));
+			} else if (typeof body === 'string') {
+				options.body = body;
 			} else {
 				console.error('Invalid body type or not yet implemented: ' + typeof body);
 				throw new Error('Invalid body type');
