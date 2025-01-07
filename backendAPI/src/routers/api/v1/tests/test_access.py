@@ -1923,11 +1923,19 @@ async def test_admin_tries_to_delete_all_access_policy_wit_owner_rights(
 # ✔︎ User reads access by identity for own identity
 # ✔︎ User reads access by identity for other identity fails (consider if access policies can change that?)
 # ✔︎ Admin / Users read resources first "own" log (created_at): corresponds to create
-# ✔︎ Users read resources first "own" log (created_at) with write permission from access policies only fails
-# ✔︎ Users read resources first "own" log (created_at) with read permission from access policies only fails
+# ✔︎ Users read resources first "own" log (created_at) with write permission from access policies - date only, so everyone is allowed
+# ✔︎ Users read resources first "own" log (created_at) with read permission from access policies - date only, so everyone is allowed
+# ✔︎ Admin / Users read multiple resources first "own" log (created_at)
+# ✔︎ Users read multiple resources first "own" log (created_at) - with write permissions only
+# ✔︎ Users read multiple resources first "own" log (created_at) - with read permissions only
+# ✔︎ Users read multiple resources first "own" log (created_at) - without permissions fails
 # ✔︎ Admin / Users read resources latest access log (last_accessed)
-# ✔︎ Users read resources latest access log (last_accessed) with write permission from access policies only fails
-# ✔︎ Users read resources latest access log (last_accessed) with read permission from access policies only fails
+# ✔︎ Users read resources latest access log (last_accessed) with write permission from access policies only fails - full access log - needs owner
+# ✔︎ Users read resources latest access log (last_accessed) with read permission from access policies only fails - full access log - needs owner
+# ✔︎ Admin / Users read multiple resources latest access log (last_accessed)
+# ✔︎ Users read multiple resources latest access log (last_accessed) - with write permissions only fails - date-only, so everyone is allowed
+# ✔︎ Users read multiple resources latest access log (last_accessed) - with read permissions only fails - date-only, so everyone is allowed
+# ✔︎ Users read multiple resources latest access log (last_accessed) - without permissions fails
 # ✔︎ Admin / User read access count - use func.count/len
 
 # region: ## GET tests:
