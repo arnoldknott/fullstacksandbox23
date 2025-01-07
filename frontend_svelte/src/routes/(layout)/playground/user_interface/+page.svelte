@@ -9,7 +9,7 @@
 	import type { Tab } from '$lib/types';
 	import VerticalTabs from './VerticalTabs.svelte';
 	import UserForm from './UserForm.svelte';
-	import Card from '$components/Card.svelte';
+	import NavigationCard from '../../NavigationCard.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 
 	const tabs: Tab[] = [
@@ -66,23 +66,6 @@
         id="customRange1" />
 </div> -->
 
-<div>
-	<Heading>Card</Heading>
-	<div class="card sm:max-w-sm">
-		<div class="card-text-body bg-primary-container text-primary-container-content shadow-primary">
-			<h5 class="card-title mb-2.5">Body of a Card here</h5>
-			<p class="mb-4">
-				Soe text to fill in the body fo the card. This could be anything here. But for now just text
-				filling in here.
-			</p>
-			<div class="card-actions">
-				<button class="btn btn-primary">Card button</button>
-			</div>
-		</div>
-	</div>
-</div>
-<HorizontalRule />
-
 <Heading>Tabs</Heading>
 <Tabs {tabs}>Some Text common to all tabs</Tabs>
 <HorizontalRule />
@@ -114,11 +97,9 @@
 <HorizontalRule />
 
 <Heading>Card</Heading>
-<Card
-	title="Title of Card"
-	description="Some text inside the card to describe what's going on here. The button links to this page."
-	href=""
-></Card>
+<NavigationCard title="Title of Card" href="">
+	Some text inside the card to describe what's going on here. The button links to this page.
+</NavigationCard>
 <HorizontalRule />
 
 <Heading>Status slider</Heading>

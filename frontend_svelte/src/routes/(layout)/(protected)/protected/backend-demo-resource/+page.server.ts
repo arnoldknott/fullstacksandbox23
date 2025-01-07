@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 // import AppConfig from '$lib/server/config';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis';
+import { fail } from '@sveltejs/kit';
 
 // const appConfig = await AppConfig.getInstance();
 
@@ -45,7 +46,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions = {
-	default: async ({ locals, request }) => {
+	post: async ({ locals, request }) => {
 		const data = await request.formData();
 
 		// before creating a class for backend access:
@@ -87,5 +88,26 @@ export const actions = {
 		// const payload = removeEmpty(data);
 		// console.log("=== payload ===");
 		// console.log(payload);
+	},
+	put: async ({ locals, request }) => {
+		const data = await request.formData();
+		// const payload = JSON.parse(Object.fromEntries(data));
+		// console.log('=== payload ===');
+		// console.log(payload);
+		const sessionId = locals.sessionData.sessionId;
+		const response = await backendAPI.put(sessionId, `/demoresource/${data.get('id')}`, data);
+		console.log('=== response ===');
+		console.log(response);
+		if (response.status !== 200) {
+			return fail(response.status, { error: response.statusText });
+		}
+	},
+	delete: async ({ locals, request }) => {
+		const data = await request.formData();
+		const sessionId = locals.sessionData.sessionId;
+		const response = await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
+		if (response.status !== 200) {
+			return fail(response.status, { error: response.statusText });
+		}
 	}
 } satisfies Actions;

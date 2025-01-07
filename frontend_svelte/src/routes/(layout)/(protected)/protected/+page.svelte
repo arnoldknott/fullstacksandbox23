@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Card from '$components/Card.svelte';
+	import NavigationCard from '../../NavigationCard.svelte';
 
 	export const links = [
 		{
@@ -46,7 +46,9 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 	{#each links as link}
-		<Card title={link.name} href={`protected${link.url}`}>{link.description}</Card>
+		<NavigationCard title={link.name} href={`protected${link.url}`}
+			>{link.description}</NavigationCard
+		>
 	{/each}
 </div>
 

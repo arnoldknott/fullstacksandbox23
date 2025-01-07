@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Card from '$components/Card.svelte';
+	import NavigationCard from '../../NavigationCard.svelte';
 	import Heading from '$components/Heading.svelte';
 	import AccordionItem from './AccordionItem.svelte';
 	import ContentText from './ContentText.svelte';
@@ -13,18 +13,18 @@
 <Heading>🚧 Construction sites - for design experiments 🚧</Heading>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
-	<Card title="FlyonUI 1" href={`/playground/design/flyonui`}>
+	<NavigationCard title="FlyonUI 1" href={`/playground/design/flyonui`}>
 		"Playground and showcase for flyonUI components and design"
-	</Card>
-	<Card title="Material Design 3" href={`/playground/design/materialdesign`}>
+	</NavigationCard>
+	<NavigationCard title="Material Design 3" href={`/playground/design/materialdesign`}>
 		Playground and showcase for Material Design 3 components and design
-	</Card>
-	<Card title="TailwindCSS 3" href={`/playground/design/tailwindcss`}>
+	</NavigationCard>
+	<NavigationCard title="TailwindCSS 3" href={`/playground/design/tailwindcss`}>
 		Formating playground for styling with TailwindCSS utility classes
-	</Card>
-	<Card title="Comparison" href={`/playground/design/comparison`}>
+	</NavigationCard>
+	<NavigationCard title="Comparison" href={`/playground/design/comparison`}>
 		Directly putting components right next to each other to compare them
-	</Card>
+	</NavigationCard>
 </div>
 
 <Heading>👍 Results - ready for use 👍</Heading>

@@ -11,8 +11,11 @@
 	import '@material/web/select/select-option.js';
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
+	import DemoResourceCard from './DemoResourceCard.svelte';
 	let { data }: { data: PageData } = $props();
 	const demo_resources = data.demoResources;
+
+	let debug = $state(false);
 
 	let demo_resource_dialog: Dialog;
 	// let name = $state('');
@@ -26,10 +29,25 @@
 
 <!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->
 
-{#each demo_resources as demo_resource}
-	<Heading>{demo_resource.name}</Heading>
-	<JsonData data={demo_resource} />
-{/each}
+<div class="mb-2 flex items-center gap-1">
+	<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
+	<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
+</div>
+<div class="mb-5">
+	<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add Button">
+		<span class="icon-[fa6-solid--plus]"></span>
+	</button>
+</div>
+
+<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2">
+	{#each demo_resources as demoResource}
+		<DemoResourceCard {demoResource} />
+		<div class={debug ? 'block' : 'hidden'}>
+			<Heading>{demoResource.name}</Heading>
+			<JsonData data={demoResource} />
+		</div>
+	{/each}
+</div>
 
 <!-- Form not available without JavaScript. -->
 
@@ -43,7 +61,7 @@
 
 <md-dialog id="demo_resource_dialog" bind:this={demo_resource_dialog} class="w-fill">
 	<div slot="headline" class="w-64">Demo Resource</div>
-	<form slot="content" id="post-demo-resource" method="POST" class="flex flex-col">
+	<form slot="content" id="post-demo-resource" method="POST" action="?/post" class="flex flex-col">
 		<md-filled-text-field label="Name" name="name" class="w-full"> </md-filled-text-field>
 		<br />
 		<md-filled-text-field

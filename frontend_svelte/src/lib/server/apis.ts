@@ -56,7 +56,6 @@ class BaseAPI {
 		headers: HeadersInit = {}
 	): Promise<Response> {
 		try {
-			// TBD: add a try catch block here!
 			const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
 			// options.body = JSON.stringify(body);
 			if (body instanceof FormData) {
@@ -91,7 +90,6 @@ class BaseAPI {
 		headers: HeadersInit
 	): Promise<Response> {
 		try {
-			// TBD: add a try catch block here!
 			const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
 			options.method = 'GET';
 			const request = this.constructRequest(path, accessToken, options, headers);
@@ -103,6 +101,55 @@ class BaseAPI {
 			// });
 			// return response;
 		} catch (error) {
+			return this.errorHandler(error);
+		}
+	}
+
+	async put(
+		session_id: string,
+		path: string,
+		body: RequestBody,
+		scopes: string[] = [],
+		options: RequestInit = {},
+		headers: HeadersInit = {}
+	): Promise<Response> {
+		try {
+			const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
+			if (body instanceof FormData) {
+				options.body = JSON.stringify(Object.fromEntries(body));
+			} else {
+				console.error('Invalid body type or not yet implemented: ' + typeof body);
+				throw new Error('Invalid body type');
+			}
+			options.method = 'PUT';
+			const request = this.constructRequest(path, accessToken, options, headers);
+			return await fetch(request);
+		} catch (error) {
+			return this.errorHandler(error);
+		}
+	}
+
+	async delete(
+		sessionId: string,
+		path: string,
+		scopes: string[] = [],
+		options: RequestInit,
+		headers: HeadersInit
+	): Promise<Response> {
+		try {
+			const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
+			options.method = 'DELETE';
+			const request = this.constructRequest(path, accessToken, options, headers);
+			return await fetch(request);
+			// const response = await fetch(`${this.apiBaseURL}${path}`, {
+			// 	headers: {
+			// 		Authorization: `Bearer ${accessToken}`
+			// 	}
+			// });
+			// return response;
+		} catch (error) {
+			console.error('=== src - lib - server - apis - delete - error ===');
+			console.error(error);
 			return this.errorHandler(error);
 		}
 	}
@@ -125,7 +172,6 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		console.log('=== src -lib - server - backendAPI - post - called ===');
 		return await super.post(session_id, path, body, scopes, options, headers);
 	}
 
@@ -137,6 +183,27 @@ class BackendAPI extends BaseAPI {
 		headers: HeadersInit = {}
 	) {
 		return await super.get(session_id, path, scopes, options, headers);
+	}
+
+	async put(
+		session_id: string,
+		path: string,
+		body: RequestBody,
+		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
+		options: RequestInit = {},
+		headers: HeadersInit = {}
+	) {
+		return await super.put(session_id, path, body, scopes, options, headers);
+	}
+
+	async delete(
+		session_id: string,
+		path: string,
+		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
+		options: RequestInit = {},
+		headers: HeadersInit = {}
+	) {
+		return await super.delete(session_id, path, scopes, options, headers);
 	}
 }
 

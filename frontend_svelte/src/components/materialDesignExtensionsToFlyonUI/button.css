@@ -294,6 +294,39 @@
 	}
 }
 
+.btn-gradient.btn-info-container {
+	@apply border-info-container text-info-container-content shadow-info-container/26 hover:shadow-info-container/20;
+	@supports (color: oklch(0% 0 0)) {
+		--light-shade: var(--inc);
+	}
+	&:focus-visible {
+		@apply outline-info-container/30;
+		border-color: transparent;
+	}
+}
+
+.btn-gradient.btn-success-container {
+	@apply border-success-container text-success-container-content shadow-success-container/26 hover:shadow-success-container/20;
+	@supports (color: oklch(0% 0 0)) {
+		--light-shade: var(--suc);
+	}
+	&:focus-visible {
+		@apply outline-success-container/30;
+		border-color: transparent;
+	}
+}
+
+.btn-gradient.btn-warning-container {
+	@apply border-warning-container text-warning-container-content shadow-warning-container/26 hover:shadow-warning-container/20;
+	@supports (color: oklch(0% 0 0)) {
+		--light-shade: var(--wac);
+	}
+	&:focus-visible {
+		@apply outline-warning-container/30;
+		border-color: transparent;
+	}
+}
+
 .btn-gradient.btn-error-container {
 	@apply border-error-container text-error-container-content shadow-error-container/26 hover:shadow-error-container/20;
 	@supports (color: oklch(0% 0 0)) {
