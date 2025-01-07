@@ -2,6 +2,7 @@ import logging
 from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
 
+from pprint import pprint
 from fastapi import HTTPException
 from sqlalchemy.orm import aliased
 from sqlmodel import SQLModel, and_, delete, or_, select
@@ -1446,11 +1447,13 @@ class ResourceHierarchyCRUD(
         self,
         current_user: CurrentUserData,
         parent_id: UUID,
-        old_position: int,
-        new_position: int,
+        child_id: UUID,
+        position: str,
+        other_child_id: Optional[UUID] = None,
     ) -> None:
         """Reorders the children of a parent resource."""
         try:
+
             # Ensure user has write permissions on parent resource:
             parent_access_request = AccessRequest(
                 resource_id=parent_id,
@@ -1475,29 +1478,65 @@ class ResourceHierarchyCRUD(
 
             # Fetch the children of the parent resource
             # TBD: add check if current_user has access to the children!
-            children = await self.session.exec(
-                select(self.model)
-                .where(self.model.parent_id == parent_id)
-                .order_by(self.model.order)
+            child_access_request = AccessRequest(
+                resource_id=child_id,
+                action=Action.write,
+                current_user=current_user,
             )
+            if not await self.policy_crud.allows(child_access_request):
+                raise HTTPException(status_code=403, detail="Forbidden.")
+
+            if other_child_id:
+                other_child_access_request = AccessRequest(
+                    resource_id=other_child_id,
+                    action=Action.write,
+                    current_user=current_user,
+                )
+                if not await self.policy_crud.allows(other_child_access_request):
+                    raise HTTPException(status_code=403, detail="Forbidden.")
+
+            # Get all children of the parent resource - no matter the access rights:
+            statement = select(self.model)
+            statement = statement.where(self.model.parent_id == parent_id)
+            statement = statement.order_by(self.model.order)
+            children = await self.session.exec(statement)
             children = children.all()
 
-            # Validate positions
-            if (
-                old_position < 0
-                or old_position >= len(children)
-                or new_position < 0
-                or new_position >= len(children)
-            ):
-                raise HTTPException(status_code=400, detail="Invalid positions.")
+            debug_children = children
+            print("=== all children ===")
+            pprint(debug_children)
 
-            # Reorder the children
+            # Find the old and new positions of the child
+            old_position = None
+            new_position = None
+            # for i, child in enumerate(children):
+            for child in children:
+                if child.child_id == child_id:
+                    print("=== moving child ===")
+                    print(child)
+                    # old_position = i
+                    old_position = child.order
+                if other_child_id and child.child_id == other_child_id:
+                    print("=== target child ===")
+                    print(child)
+                    if position == "before":
+                        new_position = child.order
+                        # new_position = i
+                    elif position == "after":
+                        new_position = child.order + 1
+                        # new_position = i + 1
+
             if old_position < new_position:
                 for i in range(old_position, new_position):
-                    children[i].order = i + 1
+                    print("==== iiiiiiii ====")
+                    print(i)
+                    children[i].order = old_position + i - 1
             else:
                 for i in range(new_position + 1, old_position + 1):
                     children[i].order = i - 1
+
+            print("=== all children - ready for database ===")
+            pprint(children)
 
             # Update the database
             await self.session.commit()

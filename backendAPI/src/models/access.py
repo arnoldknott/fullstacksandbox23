@@ -3,8 +3,9 @@ from datetime import datetime
 from typing import ClassVar, List, Optional
 
 from pydantic import BaseModel, model_validator  # , create_model
-from sqlalchemy import UniqueConstraint
-from sqlmodel import Field, SQLModel
+from sqlalchemy import UniqueConstraint, Column, Integer
+from sqlmodel import Field, SQLModel, select, func
+from core.databases import SynchronSession
 
 # if TYPE_CHECKING:
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
@@ -203,7 +204,8 @@ class ResourceHierarchyCreate(SQLModel):
         default=False,
         description="Set to true, if the child inherits permissions from this parent.",
     )
-    order: Optional[int] = Field(default=None, sa_column_kwargs={"autoincrement": True})
+    # order: Optional[int] = None
+    # = Field(default=None, sa_column_kwargs={"autoincrement": True})
 
     @model_validator(mode="after")
     def not_child_to_self(self):
@@ -211,6 +213,17 @@ class ResourceHierarchyCreate(SQLModel):
         if self.parent_id == self.child_id:
             raise ValueError("A resource cannot be its own child.")
         return self
+
+
+def get_next_order(context):
+    parent_id = context.get_current_parameters()["parent_id"]
+    with SynchronSession() as session:
+        max_order = session.execute(
+            select(func.max(ResourceHierarchy.order)).where(
+                ResourceHierarchy.parent_id == parent_id
+            )
+        ).scalar()
+    return (max_order or 0) + 1
 
 
 class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
@@ -222,6 +235,16 @@ class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
     child_id: uuid.UUID = Field(
         primary_key=True
     )  # foreign_key="identifiertypelink.id",
+    # order: Optional[int] = Field(
+    #     sa_column=Column(
+    #         Integer,
+    #         Sequence("order_seq", start=1, increment=1),
+    #         # autoincrement=True,
+    #     )
+    # )
+    order: Optional[int] = Field(
+        sa_column=Column(Integer, default=get_next_order, index=True)
+    )
 
     __table_args__ = (
         UniqueConstraint("parent_id", "child_id"),

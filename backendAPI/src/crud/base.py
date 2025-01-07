@@ -446,8 +446,9 @@ class BaseCRUD(
     async def reorder_children(
         self,
         parent_id: uuid.UUID,
-        child_old_position: int,
-        child_new_position: int,
+        child_id: uuid.UUID,
+        position: str,
+        other_child_id: Optional[uuid.UUID],
         current_user: "CurrentUserData",
     ) -> None:
         """Reorders the children of a parent."""
@@ -455,8 +456,9 @@ class BaseCRUD(
             hierarchy = await hierarchy_CRUD.reorder_children(
                 current_user=current_user,
                 parent_id=parent_id,
-                old_position=child_old_position,
-                new_position=child_new_position,
+                child_id=child_id,
+                position=position,
+                other_child_id=other_child_id,
             )
 
         return hierarchy

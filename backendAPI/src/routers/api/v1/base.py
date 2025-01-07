@@ -1,5 +1,6 @@
 import logging
 
+from fastapi import HTTPException
 from core.security import check_token_against_guards  # CurrentAccessToken
 from core.types import GuardTypes
 
@@ -100,17 +101,24 @@ class BaseView:
     async def post_reorder_children(
         self,
         parent_id,
-        old_position,
-        new_position,
+        child_id,
+        position,
+        other_child_id,
         token_payload=None,
         guards=None,
     ):
-        logger.info("POST view to add child to parent calls add_child_to_parent CRUD")
-        # user in child router for consistency
+        logger.info("POST reorder children view calls reorder_children CRUD")
         current_user = await check_token_against_guards(token_payload, guards)
+        if position not in ["start", "end"]:
+            if not other_child_id:
+                raise HTTPException(status_code=400, detail="Bad request.")
+            elif position not in ["before", "after"]:
+                raise HTTPException(status_code=400, detail="Bad request.")
+        else:
+            raise HTTPException(status_code=400, detail="Bad request.")
         async with self.crud() as crud:
             await crud.reorder_children(
-                parent_id, old_position, new_position, current_user
+                parent_id, child_id, position, other_child_id, current_user
             )
 
     async def post_file(
