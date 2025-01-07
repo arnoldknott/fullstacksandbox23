@@ -1112,6 +1112,7 @@ class AccessLoggingCRUD:
                 action=Action.own,
                 ascending_order_by=AccessLog.time,
                 limit=1,
+                required_action=Action.read,
             )
             return first_owner_entry[0].time
         except Exception as err:
