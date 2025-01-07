@@ -245,6 +245,122 @@
 	</div>
 
 	<div>
+		<Heading>Inputs</Heading>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="relative sm:w-56">
+				<input
+					type="text"
+					placeholder="Primary colored input"
+					class="input input-filled peer border-primary"
+					id="primaryInput"
+				/>
+				<label
+					class="text-label-small md:text-label input-filled-label"
+					style="color: oklch(var(--p));"
+					for="primaryInput">Full Name</label
+				>
+				<span class="input-filled-focused" style="background-color: oklch(var(--p));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<input
+					type="text"
+					placeholder="Secondary colored input"
+					class="input input-filled peer border-secondary"
+					id="secondaryInput"
+				/>
+				<label
+					class="text-label-small md:text-label input-filled-label"
+					style="color: oklch(var(--s));"
+					for="secondaryInput">Full Name</label
+				>
+				<span class="input-filled-focused" style="background-color: oklch(var(--s));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<input
+					type="text"
+					placeholder="Accent colored input"
+					class="input input-filled peer border-accent"
+					id="accentInput"
+				/>
+				<label
+					class="text-label-small md:text-label input-filled-label"
+					style="color: oklch(var(--a));"
+					for="secondaryInput">Full Name</label
+				>
+				<span class="input-filled-focused" style="background-color: oklch(var(--a));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<input
+					type="text"
+					placeholder="Neutral colored input"
+					class="input input-filled peer border-neutral"
+					id="accentInput"
+				/>
+				<label
+					class="text-label-small md:text-label input-filled-label"
+					style="color: oklch(var(--n));"
+					for="secondaryInput">Full Name</label
+				>
+				<span class="input-filled-focused" style="background-color: oklch(var(--n));"></span>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row flex-wrap gap-4">
+			<div class="relative sm:w-56">
+				<textarea
+					placeholder="Primary colored input"
+					class="textarea textarea-filled peer border-primary max-h-44"
+					id="primaryInput"
+				></textarea>
+				<label
+					class="text-label-small md:text-label textarea-filled-label"
+					style="color: oklch(var(--p));"
+					for="primaryInput">Description</label
+				>
+				<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<textarea
+					placeholder="Secondary colored input"
+					class="textarea textarea-filled peer border-secondary max-h-44"
+					id="secondaryTextarea"
+				></textarea>
+				<label
+					class="text-label-small md:text-label textarea-filled-label"
+					style="color: oklch(var(--s));"
+					for="secondaryTextarea">Description</label
+				>
+				<span class="textarea-filled-focused" style="background-color: oklch(var(--s));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<textarea
+					placeholder="Accent colored input"
+					class="textarea textarea-filled peer border-accent max-h-44"
+					id="accentTextarea"
+				></textarea>
+				<label
+					class="text-label-small md:text-label textarea-filled-label"
+					style="color: oklch(var(--a));"
+					for="accentTextarea">Description</label
+				>
+				<span class="textarea-filled-focused" style="background-color: oklch(var(--a));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<textarea
+					placeholder="Neutral colored input"
+					class="textarea textarea-filled peer border-neutral max-h-44"
+					id="neutraTextarea"
+				></textarea>
+				<label
+					class="text-label-small md:text-label textarea-filled-label"
+					style="color: oklch(var(--n));"
+					for="secondaryTextarea">Description</label
+				>
+				<span class="textarea-filled-focused" style="background-color: oklch(var(--n));"></span>
+			</div>
+		</div>
+	</div>
+
+	<div>
 		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
 		<div class="grid grid-cols-3 gap-4">
 			<div class="w-full">
