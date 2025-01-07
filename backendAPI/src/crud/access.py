@@ -1123,6 +1123,7 @@ class AccessLoggingCRUD:
         self,
         current_user: CurrentUserData,
         resource_id: UUID,
+        action: Action = Action.own,
     ) -> AccessLogRead:
         """Reads the last access log for a resource id."""
         try:
@@ -1132,7 +1133,7 @@ class AccessLoggingCRUD:
                 descending_order_by=AccessLog.time,
                 limit=1,
                 status_code=None,
-                required_action=Action.read,
+                required_action=action,
             )
             return last_accessed_entry[0]
         except Exception as err:
