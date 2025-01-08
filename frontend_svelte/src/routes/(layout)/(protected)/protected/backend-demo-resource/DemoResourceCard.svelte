@@ -1,8 +1,9 @@
 <script lang="ts">
 	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
-	import { error } from '@sveltejs/kit';
+	import { error, type ActionResult } from '@sveltejs/kit';
 	import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
+	import { deserialize } from '$app/forms';
 
 	// let {
 	// 	id,
@@ -51,24 +52,63 @@
 
 	const createResource = async () => {
 		// check if all required fields are filled
-        if (name) {
-            const formData = new FormData();
-            formData.append('name', name);
-            description ? formData.append('description', description) : null;
-            language ? formData.append('language', language) : null;
-            category_id ? formData.append('category_id', category_id) : null;
-            const response = await fetch(`?/post`, {
-                method: 'POST',
-                body: formData
-            });
-            if (response.status === 201) {
-                console.log('=== response ===');
-                console.log(response);
-                // await update();
-            } else {
-                throw error(response.status || 404, 'Failed to create resource');
-            }
-        }
+		if (name) {
+			const formData = new FormData();
+			formData.append('name', name);
+			description ? formData.append('description', description) : null;
+			language ? formData.append('language', language) : null;
+			category_id ? formData.append('category_id', category_id) : null;
+			const response = await fetch(`?/post`, {
+				method: 'POST',
+				body: formData
+			});
+			// if (response.status === 200) {
+			// console.log('=== response ===');
+			// console.log(response);
+			const result = deserialize(await response.text());
+			if (result.type === 'success') {
+				// console.log('=== result.data?.id ===');
+				// console.log(result.data?.id);
+				// console.log('=== typeof result.data?.id ===');
+				// console.log(typeof result.data?.id);
+				id = result.data?.id as string;
+
+				// result.data?.id ? id = result.data.id : null;
+			} else {
+				card.remove();
+				throw error(response.status || 404, 'Failed to create resource');
+			}
+
+			// const payload = await response.json();
+			// console.log('=== payload ===');
+			// console.log(payload);
+			// console.log('=== typeof payload.data ===');
+			// console.log(typeof payload.data);
+			// console.log('=== payload.data ===');
+			// console.log(payload.data);
+
+			// const data = JSON.parse(payload.data);
+			// console.log('=== data ===');
+			// console.log(data);
+			// const data = await response.formData();
+			// const payload = Object.fromEntries(data.entries());
+			// console.log('=== payload ===');
+			// console.log(payload);
+			// const payload = await response.json();
+			// console.log('=== payload ===');
+			// console.log(payload);
+			// id = payload[0]
+			// console.log('=== id ===');
+			// console.log(id);
+			// console.log('=== payload ===');
+			// console.log(payload);
+			// console.log('=== payload.data ===');
+			// console.log(JSON.parse(payload.data));
+			// await update();
+			// } else {
+			//     throw error(response.status || 404, 'Failed to create resource');
+			// }
+		}
 	};
 
 	const createOrUpdateResource = async () => {
@@ -86,8 +126,8 @@
 				body: formData
 			});
 			if (response.status === 200) {
-				console.log('=== response ===');
-				console.log(response);
+				// console.log('=== response ===');
+				// console.log(response);
 				// await update();
 			} else {
 				throw error(response.status || 404, 'Failed to update resource');

@@ -12,7 +12,7 @@
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
 	import DemoResourceCard from './DemoResourceCard.svelte';
-	import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
+	import type { DemoResource } from '$lib/types';
 	let { data }: { data: PageData } = $props();
 	const demo_resources = data.demoResourcesWithCreationDates;
 
@@ -24,7 +24,7 @@
 		id: '',
 		name: '',
 		description: '',
-		language: '',
+		language: ''
 	};
 
 	let demo_resource_dialog: Dialog;
@@ -46,7 +46,7 @@
 <div class="mb-5">
 	<button
 		class="btn-neutral-container btn btn-circle btn-gradient"
-		onclick={() => (newDemoResources.push(demoResourceTemplate))}
+		onclick={() => newDemoResources.push(demoResourceTemplate)}
 		aria-label="Add Button"
 	>
 		<span class="icon-[fa6-solid--plus]"></span>
