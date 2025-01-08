@@ -1443,7 +1443,7 @@ class ResourceHierarchyCRUD(
         # super().__init__(ResourceHierarchy, ResourceHierarchyTable)
         super().__init__(ResourceHierarchy, ResourceHierarchy)
 
-    async def reorder_children(
+    async def reorder_children(  # noqa: C901
         self,
         current_user: CurrentUserData,
         parent_id: UUID,
