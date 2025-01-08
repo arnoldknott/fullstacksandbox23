@@ -58,3 +58,17 @@ type Tab = {
 	content: string;
 	active?: boolean;
 };
+
+export interface DemoResource {
+	id?: string;
+	name: string;
+	description?: string;
+	language?: string;
+	category?: string;
+	category_id?: string;
+	tags?: string[];
+}
+
+export interface DemoResourceWithCreationDate extends DemoResource {
+	creation_date: Date;
+}

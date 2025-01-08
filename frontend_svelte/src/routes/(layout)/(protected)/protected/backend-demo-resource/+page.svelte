@@ -12,10 +12,20 @@
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
 	import DemoResourceCard from './DemoResourceCard.svelte';
+	import type { DemoResource } from '$lib/types';
 	let { data }: { data: PageData } = $props();
-	const demo_resources = data.demoResources;
+	const demo_resources = data.demoResourcesWithCreationDates;
 
 	let debug = $state(false);
+
+	let newDemoResources = $state<DemoResource[]>([]);
+
+	const demoResourceTemplate: DemoResource = {
+		id: '',
+		name: '',
+		description: '',
+		language: ''
+	};
 
 	let demo_resource_dialog: Dialog;
 	// let name = $state('');
@@ -34,12 +44,19 @@
 	<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
 </div>
 <div class="mb-5">
-	<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add Button">
+	<button
+		class="btn-neutral-container btn btn-circle btn-gradient"
+		onclick={() => newDemoResources.push(demoResourceTemplate)}
+		aria-label="Add Button"
+	>
 		<span class="icon-[fa6-solid--plus]"></span>
 	</button>
 </div>
 
-<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2">
+<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
+	{#each newDemoResources as _newDemoResource}
+		<DemoResourceCard demoResource={demoResourceTemplate} edit={true} />
+	{/each}
 	{#each demo_resources as demoResource}
 		<DemoResourceCard {demoResource} />
 		<div class={debug ? 'block' : 'hidden'}>
@@ -76,8 +93,8 @@
 			<md-select-option value="en-US">
 				<div slot="headline">en-US</div>
 			</md-select-option>
-			<md-select-option value="dk-DK">
-				<div slot="headline">dk-DK</div>
+			<md-select-option value="da-DK">
+				<div slot="headline">da-DK</div>
 			</md-select-option>
 			<md-select-option value="de-DE">
 				<div slot="headline">de-DE</div>

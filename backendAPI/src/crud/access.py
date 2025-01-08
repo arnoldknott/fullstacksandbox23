@@ -1,4 +1,5 @@
 import logging
+from pprint import pprint
 from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
 
@@ -616,7 +617,7 @@ class AccessPolicyCRUD:
                 results = response.all()
 
             for result in results:
-                if result.resource_id == resource_id and result.action == action:
+                if result.resource_id == resource_id:
                     return True
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
@@ -1112,6 +1113,7 @@ class AccessLoggingCRUD:
                 action=Action.own,
                 ascending_order_by=AccessLog.time,
                 limit=1,
+                required_action=Action.read,
             )
             return first_owner_entry[0].time
         except Exception as err:
@@ -1122,6 +1124,7 @@ class AccessLoggingCRUD:
         self,
         current_user: CurrentUserData,
         resource_id: UUID,
+        action: Action = Action.own,
     ) -> AccessLogRead:
         """Reads the last access log for a resource id."""
         try:
@@ -1131,6 +1134,7 @@ class AccessLoggingCRUD:
                 descending_order_by=AccessLog.time,
                 limit=1,
                 status_code=None,
+                required_action=action,
             )
             return last_accessed_entry[0]
         except Exception as err:
@@ -1438,6 +1442,120 @@ class ResourceHierarchyCRUD(
     def __init__(self):
         # super().__init__(ResourceHierarchy, ResourceHierarchyTable)
         super().__init__(ResourceHierarchy, ResourceHierarchy)
+
+    async def reorder_children(  # noqa: C901
+        self,
+        current_user: CurrentUserData,
+        parent_id: UUID,
+        child_id: UUID,
+        position: str,
+        other_child_id: Optional[UUID] = None,
+    ) -> None:
+        """Reorders the children of a parent resource."""
+        try:
+            print("=== other_child_id ===")
+            print(other_child_id)
+
+            # Ensure user has write permissions on parent resource:
+            parent_access_request = AccessRequest(
+                resource_id=parent_id,
+                action=Action.write,
+                current_user=current_user,
+            )
+            if not await self.policy_crud.allows(parent_access_request):
+                raise HTTPException(status_code=403, detail="Forbidden.")
+            # Alternative - same as above in create()
+            # TBD: decide which one to use and consider replacing the above with this one!
+            # it's anyways making another round trip to the database!
+            # statement = select(IdentifierTypeLink.type)
+            # statement = self.policy_crud.filters_allowed(
+            #     statement, Action.write, IdentifierTypeLink, current_user
+            # )
+            # statement = statement.where(IdentifierTypeLink.id == parent_id)
+
+            # result = await self.session.exec(statement)
+            # parent_type = result.one()
+
+            # parent_model = ResourceType.get_model(parent_type)
+
+            # Fetch the children of the parent resource
+            # TBD: add check if current_user has access to the children!
+            child_access_request = AccessRequest(
+                resource_id=child_id,
+                action=Action.write,
+                current_user=current_user,
+            )
+            if not await self.policy_crud.allows(child_access_request):
+                raise HTTPException(status_code=403, detail="Forbidden.")
+
+            if other_child_id:
+                other_child_access_request = AccessRequest(
+                    resource_id=other_child_id,
+                    action=Action.write,
+                    current_user=current_user,
+                )
+                if not await self.policy_crud.allows(other_child_access_request):
+                    raise HTTPException(status_code=403, detail="Forbidden.")
+
+            # Get all children of the parent resource - no matter the access rights:
+            statement = select(self.model)
+            statement = statement.where(self.model.parent_id == parent_id)
+            statement = statement.order_by(self.model.order)
+            children = await self.session.exec(statement)
+            children = children.all()
+
+            debug_children = children
+            print("=== all children ===")
+            pprint(debug_children)
+
+            # Find the old and new positions of the child
+            old_position = None
+            moving_child = None
+            new_position = None
+            # for i, child in enumerate(children):
+            for child in children:
+                if child.child_id == child_id:
+                    print("=== moving child ===")
+                    print(child)
+                    # old_position = i
+                    old_position = child.order
+                    moving_child = child
+                if other_child_id and child.child_id == other_child_id:
+                    print("=== target child ===")
+                    print(child)
+                    if position == "before":
+                        new_position = child.order - 1
+                        # new_position = i
+                    elif position == "after":
+                        new_position = child.order
+                        # new_position = i + 1
+
+            if old_position < new_position:
+                moving_child.order = new_position
+                for i in range(old_position, new_position):
+                    print("==== iiiiiiii ====")
+                    print(i)
+                    print("=== children[i] ===")
+                    print(children[i])
+                    children[i].order = i
+            else:
+                moving_child.order = new_position + 1
+                for i in range(new_position, old_position - 1):
+                    print("==== iiiiiiii ====")
+                    print(i)
+                    print("=== children[i] ===")
+                    print(children[i])
+                    children[i].order += 1
+
+            print("=== all children - ready for database ===")
+            pprint(children)
+
+            # Update the database
+            await self.session.commit()
+
+        except Exception as err:
+            logger.error(f"Error in reordering children: {err}")
+            raise HTTPException(status_code=403, detail="Forbidden.")
 
 
 class IdentityHierarchyCRUD(
