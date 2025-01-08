@@ -12,21 +12,20 @@
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
 	import DemoResourceCard from './DemoResourceCard.svelte';
-	import type { DemoResourceWithCreationDate } from '$lib/types';
+	import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
 	let { data }: { data: PageData } = $props();
 	const demo_resources = data.demoResourcesWithCreationDates;
 
 	let debug = $state(false);
 
-	let createNew = $state(false);
+	let newDemoResources = $state<DemoResource[]>([]);
 
-	const demoResourceTemplate: DemoResourceWithCreationDate = {
+	const demoResourceTemplate: DemoResource = {
 		id: '',
 		name: '',
 		description: '',
 		language: '',
-		creation_date: new Date(),
-	}
+	};
 
 	let demo_resource_dialog: Dialog;
 	// let name = $state('');
@@ -45,15 +44,19 @@
 	<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
 </div>
 <div class="mb-5">
-	<button class="btn-neutral-container btn btn-circle btn-gradient" onclick={() => createNew=true} aria-label="Add Button">
+	<button
+		class="btn-neutral-container btn btn-circle btn-gradient"
+		onclick={() => (newDemoResources.push(demoResourceTemplate))}
+		aria-label="Add Button"
+	>
 		<span class="icon-[fa6-solid--plus]"></span>
 	</button>
 </div>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
-	{#if createNew}
-		<DemoResourceCard demoResource={demoResourceTemplate} edit={true}/>
-	{/if}
+	{#each newDemoResources as newDemoResource}
+		<DemoResourceCard demoResource={demoResourceTemplate} edit={true} />
+	{/each}
 	{#each demo_resources as demoResource}
 		<DemoResourceCard {demoResource} />
 		<div class={debug ? 'block' : 'hidden'}>
