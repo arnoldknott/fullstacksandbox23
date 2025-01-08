@@ -21,17 +21,17 @@
 	// 	category_id?: string;
 	// 	tags: string[];
 	// } = $props();
-	let { demoResource }: { demoResource: DemoResourceWithCreationDate } = $props();
+	let { demoResource, edit = false }: { demoResource: DemoResourceWithCreationDate, edit?: boolean } = $props();
 	let id = $state(demoResource.id);
-	let name = $state(demoResource.name);
+	let name = $state(demoResource.name); ;
 	let description = $state(demoResource.description);
 	let language = $state(demoResource.language);
-	let category = $state(demoResource.category);
+	let category = $state(demoResource?.category);
 	let category_id = $state(demoResource.category_id);
 	let tags = $state(demoResource.tags);
 	const creation_date = demoResource.creation_date;
 
-	let edit = $state(false);
+	// let edit = $state(false);
 	let flag = $state(
 		language === 'en-US'
 			? 'united-states'
@@ -43,25 +43,47 @@
 	);
 	let card: Card;
 
-	const updateResource = async () => {
-		const formData = new FormData();
-		formData.append('id', id);
-		formData.append('name', name);
-		if (description) {
-			formData.append('description', description);
-		}
-		formData.append('language', language);
-		const response = await fetch(`?/put`, {
-			method: 'POST',
-			body: formData
-		});
-		if (response.status === 200) {
-			console.log('=== response ===');
-			console.log(response);
-			// await update();
-		} else {
-			throw error(response.status || 404, 'Failed to update resource');
-		}
+    const createResource = async () => {
+        // check if all required fields are filled
+        const formData = new FormData();
+        formData.append('name', name);
+        description ? formData.append('description', description) : null;
+        language ? formData.append('language', language) : null;
+        category_id ? formData.append('category_id', category_id) : null;
+        const response = await fetch(`?/post`, {
+            method: 'POST',
+            body: formData
+        });
+        if (response.status === 201) {
+            console.log('=== response ===');
+            console.log(response);
+            // await update();
+        } else {
+            throw error(response.status || 404, 'Failed to create resource');
+        }
+    };
+
+	const createOrUpdateResource = async () => {
+        if (!id){ createResource()}
+        else{
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('name', name);
+            description ? formData.append('description', description) : null;
+            language ? formData.append('language', language) : null;
+            category_id ? formData.append('category_id', category_id) : null;
+            const response = await fetch(`?/put`, {
+                method: 'POST',
+                body: formData
+            });
+            if (response.status === 200) {
+                console.log('=== response ===');
+                console.log(response);
+                // await update();
+            } else {
+                throw error(response.status || 404, 'Failed to update resource');
+            }
+        }
 	};
 
 	// const deleteResource = ( ) => {
@@ -69,16 +91,20 @@
 	// }
 	const deleteResource = async () => {
 		const formData = new FormData();
-		formData.append('id', id);
-		const response = await fetch(`?/delete`, {
-			method: 'POST',
-			body: formData
-		});
-		if (response.status === 200) {
-			card.remove();
-		} else {
-			throw error(response.status || 404, 'Failed to delete resource');
-		}
+        if (!id ){
+            throw error(404, 'No id available') 
+        } else {
+            formData.append('id', id);
+            const response = await fetch(`?/delete`, {
+                method: 'POST',
+                body: formData
+            });
+            if (response.status === 200) {
+                card.remove();
+            } else {
+                throw error(response.status || 404, 'Failed to delete resource');
+            }
+        }
 	};
 </script>
 
@@ -89,9 +115,9 @@
 				<div class="relative">
 					<input
 						type="text"
-						class="border-content text-title-small md:text-title lg:text-title-large base-content card-title input input-filled peer"
+						class="border-content text-title-small md:text-title base-content card-title input input-filled peer"
 						id="name_{id}"
-						onblur={() => updateResource()}
+						onblur={(event: Event) => createOrUpdateResource()}
 						bind:value={name}
 						placeholder="Name the demo resource"
 					/>
@@ -107,7 +133,7 @@
 					{name}
 				</h5>
 				<p class="text-label-small md:text-label text-secondary">
-					{creation_date.toLocaleString('da-DK', { timeZone: 'CET' })}
+					{creation_date?.toLocaleString('da-DK', { timeZone: 'CET' })}
 				</p>
 			{/if}
 			<!-- <h5
@@ -116,7 +142,7 @@
 					: ``}"
 				contenteditable="true"
 				oninput={(event: Event) => (name = (event.target as HTMLElement).innerText)}
-				onblur={() => updateResource()}
+				onblur={() => createOrUpdateResource()}
 			>
 				{name}
 			</h5> -->
@@ -231,7 +257,7 @@
 			<textarea
 				class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
 				id="description_{id}"
-				onblur={() => updateResource()}
+				onblur={() => createOrUpdateResource()}
 				bind:value={description}
 				placeholder="Describe the demo resource here."
 			></textarea>

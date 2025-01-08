@@ -60,14 +60,13 @@ type Tab = {
 };
 
 export interface DemoResource {
-	id: string;
+	id?: string;
 	name: string;
 	description?: string;
-	language: string;
+	language?: string;
 	category?: string;
 	category_id?: string;
-	tags: string[];
-	creation_date: Date;
+	tags?: string[];
 }
 
 export interface DemoResourceWithCreationDate extends DemoResource {

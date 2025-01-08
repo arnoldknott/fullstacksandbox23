@@ -57,7 +57,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			return resource;
 		}
 	);
-	demoResourcesWithCreationDates.sort((a: DemoResource, b: DemoResource) => {
+	demoResourcesWithCreationDates.sort((a: DemoResourceWithCreationDate, b: DemoResourceWithCreationDate) => {
 		return a.creation_date < b.creation_date ? 1 : -1;
 	});
 
