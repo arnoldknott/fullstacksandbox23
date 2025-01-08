@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from pprint import pprint
 from uuid import UUID, uuid4
 
 import pytest
