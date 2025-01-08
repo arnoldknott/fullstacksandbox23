@@ -1,7 +1,7 @@
 <script lang="ts">
 	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
-	import { error, type ActionResult } from '@sveltejs/kit';
+	import { error } from '@sveltejs/kit';
 	import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
 	import { deserialize } from '$app/forms';
 
@@ -55,9 +55,15 @@
 		if (name) {
 			const formData = new FormData();
 			formData.append('name', name);
-			description ? formData.append('description', description) : null;
-			language ? formData.append('language', language) : null;
-			category_id ? formData.append('category_id', category_id) : null;
+			if (description) {
+				formData.append('description', description);
+			}
+			if (language) {
+				formData.append('language', language);
+			}
+			if (category_id) {
+				formData.append('category_id', category_id);
+			}
 			const response = await fetch(`?/post`, {
 				method: 'POST',
 				body: formData
@@ -118,9 +124,13 @@
 			const formData = new FormData();
 			formData.append('id', id);
 			formData.append('name', name);
-			description ? formData.append('description', description) : null;
-			language ? formData.append('language', language) : null;
-			category_id ? formData.append('category_id', category_id) : null;
+			if (description) {
+				formData.append('description', description);
+			}
+			if (language) {
+				formData.append('language', language);
+			}
+			if (category_id) formData.append('category_id', category_id);
 			const response = await fetch(`?/put`, {
 				method: 'POST',
 				body: formData
@@ -166,7 +176,7 @@
 						type="text"
 						class="border-content text-title-small md:text-title base-content card-title input input-filled peer"
 						id="name_{id}"
-						onblur={(event: Event) => createOrUpdateResource()}
+						onblur={() => createOrUpdateResource()}
 						bind:value={name}
 						placeholder="Name the demo resource"
 					/>

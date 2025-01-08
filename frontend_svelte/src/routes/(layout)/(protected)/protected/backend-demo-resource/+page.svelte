@@ -54,7 +54,7 @@
 </div>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
-	{#each newDemoResources as newDemoResource}
+	{#each newDemoResources as _newDemoResource}
 		<DemoResourceCard demoResource={demoResourceTemplate} edit={true} />
 	{/each}
 	{#each demo_resources as demoResource}
