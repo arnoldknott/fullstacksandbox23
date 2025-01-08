@@ -121,7 +121,7 @@ async def post_protected_child(
     "/resource/{protected_resource_id}/move/{child_id}/before/{other_child_id}",
     status_code=201,
 )
-async def post_reorder_child(
+async def post_reorder_child_insert_before(
     protected_resource_id: UUID,
     child_id: UUID,
     other_child_id: UUID,
@@ -131,6 +131,23 @@ async def post_reorder_child(
     """Changes the order of the children."""
     return await protected_child_view.post_reorder_children(
         protected_resource_id, child_id, "before", other_child_id, token_payload, guards
+    )
+
+
+@router.post(
+    "/resource/{protected_resource_id}/move/{child_id}/after/{other_child_id}",
+    status_code=201,
+)
+async def post_reorder_child_insert_after(
+    protected_resource_id: UUID,
+    child_id: UUID,
+    other_child_id: UUID,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> None:
+    """Changes the order of the children."""
+    return await protected_child_view.post_reorder_children(
+        protected_resource_id, child_id, "after", other_child_id, token_payload, guards
     )
 
 
