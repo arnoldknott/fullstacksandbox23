@@ -818,7 +818,7 @@ async def test_user_adds_child_to_parent_without_access_to_child(
     [token_user1_read_write],
     indirect=True,
 )
-async def test_user_moves_child_order(
+async def test_user_moves_child_order_down_insert_before(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
     mocked_provide_http_token_payload,
@@ -854,47 +854,115 @@ async def test_user_moves_child_order(
     }
     await add_one_test_access_policy(policy)
 
-    response_before_moving_forward = await async_client.get(
-        f"/api/v1/protected/resource/{str(parent_resource_id)}",
-    )
-    parent_before_moving_forward = ProtectedResourceRead(
-        **response_before_moving_forward.json()
-    )
-    print("=== ProtectedResource before moving children ===")
-    pprint(parent_before_moving_forward.model_dump())
-
     # Move the order of a protected child forward:
-    response = await async_client.post(
+    response_moving = await async_client.post(
         f"/api/v1/protected/resource/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/before/{str(mocked_protected_children[4].id)}"
     )
-    payload = response.json()
+    payload_moving = response_moving.json()
 
-    assert response.status_code == 201
-    assert payload is None
+    assert response_moving.status_code == 201
+    assert payload_moving is None
 
-    response_after_moving_forward = await async_client.get(
+    # Assert the new order of the children:
+    response_new_parent = await async_client.get(
         f"/api/v1/protected/resource/{str(parent_resource_id)}",
     )
-    parent_after_moving_forward = ProtectedResourceRead(
-        **response_after_moving_forward.json()
+    parent_new = ProtectedResourceRead(**response_new_parent.json())
+
+    assert parent_new.protected_children[0].id == mocked_protected_children[0].id
+    assert parent_new.protected_children[0].title == mocked_protected_children[0].title
+    assert parent_new.protected_children[1].id == mocked_protected_children[2].id
+    assert parent_new.protected_children[1].title == mocked_protected_children[2].title
+    assert parent_new.protected_children[2].id == mocked_protected_children[3].id
+    assert parent_new.protected_children[2].title == mocked_protected_children[3].title
+    assert parent_new.protected_children[3].id == mocked_protected_children[1].id
+    assert parent_new.protected_children[3].title == mocked_protected_children[1].title
+    assert parent_new.protected_children[4].id == mocked_protected_children[4].id
+    assert parent_new.protected_children[4].title == mocked_protected_children[4].title
+    assert parent_new.protected_children[5].id == mocked_protected_children[5].id
+    assert parent_new.protected_children[5].title == mocked_protected_children[5].title
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_moves_child_order_up_insert_before(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if children get reordered and returned correctly from read afterwards."""
+
+    app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+    mocked_protected_children = await add_many_test_protected_children()
+
+    for protected_child in mocked_protected_children:
+        await add_one_parent_child_resource_relationship(
+            child_id=protected_child.id,
+            parent_id=mocked_protected_resources[0].id,
+            inherit=True,
+        )
+
+    parent_resource_id = mocked_protected_resources[0].id
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
     )
+    policy = {
+        "resource_id": str(parent_resource_id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    # TBD: remove this  - just for debugging:
+    response_old_parent = await async_client.get(
+        f"/api/v1/protected/resource/{str(parent_resource_id)}",
+    )
+    parent_old = ProtectedResourceRead(**response_old_parent.json())
     print("=== ProtectedResource before moving children ===")
-    pprint(parent_after_moving_forward.model_dump())
+    pprint(parent_old.model_dump())
 
-    # assert 0
+    # Move the order of a protected child forward:
+    response_moving = await async_client.post(
+        f"/api/v1/protected/resource/{str(parent_resource_id)}/move/{str(mocked_protected_children[5].id)}/before/{str(mocked_protected_children[2].id)}"
+    )
+    payload_moving = response_moving.json()
 
-    # # Move the order of a protected child backward:
-    # response = await async_client.post(
-    #     f"/api/v1/protected/{str(parent_resource_id)}/move/2/to/5"
-    # )
+    assert response_moving.status_code == 201
+    assert payload_moving is None
 
-    # assert response.status_code == 201
+    # Assert the new order of the children:
+    response_new_parent = await async_client.get(
+        f"/api/v1/protected/resource/{str(parent_resource_id)}",
+    )
+    parent_new = ProtectedResourceRead(**response_new_parent.json())
 
-    # assert False
+    print("=== ProtectedResource before moving children ===")
+    pprint(parent_new.model_dump())
 
-    # # Move the order of a protected child beyond the end - fails:
-
-    # assert 0
+    assert parent_new.protected_children[0].id == mocked_protected_children[0].id
+    assert parent_new.protected_children[0].title == mocked_protected_children[0].title
+    assert parent_new.protected_children[1].id == mocked_protected_children[1].id
+    assert parent_new.protected_children[1].title == mocked_protected_children[1].title
+    assert parent_new.protected_children[2].id == mocked_protected_children[5].id
+    assert parent_new.protected_children[2].title == mocked_protected_children[5].title
+    assert parent_new.protected_children[3].id == mocked_protected_children[2].id
+    assert parent_new.protected_children[3].title == mocked_protected_children[2].title
+    assert parent_new.protected_children[4].id == mocked_protected_children[3].id
+    assert parent_new.protected_children[4].title == mocked_protected_children[3].title
+    assert parent_new.protected_children[5].id == mocked_protected_children[4].id
+    assert parent_new.protected_children[5].title == mocked_protected_children[4].title
 
 
 @pytest.mark.anyio

@@ -249,7 +249,7 @@ class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
 
     __table_args__ = (
         UniqueConstraint("parent_id", "child_id"),
-        UniqueConstraint("parent_id", "order"),
+        # UniqueConstraint("parent_id", "order"),# TBD: causes issues during reordering
     )
 
     # TBD: add the required relations: children, that cannot be standalone, but need a parent.

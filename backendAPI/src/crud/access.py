@@ -1453,6 +1453,8 @@ class ResourceHierarchyCRUD(
     ) -> None:
         """Reorders the children of a parent resource."""
         try:
+            print("=== other_child_id ===")
+            print(other_child_id)
 
             # Ensure user has write permissions on parent resource:
             parent_access_request = AccessRequest(
@@ -1508,6 +1510,7 @@ class ResourceHierarchyCRUD(
 
             # Find the old and new positions of the child
             old_position = None
+            moving_child = None
             new_position = None
             # for i, child in enumerate(children):
             for child in children:
@@ -1516,24 +1519,33 @@ class ResourceHierarchyCRUD(
                     print(child)
                     # old_position = i
                     old_position = child.order
+                    moving_child = child
                 if other_child_id and child.child_id == other_child_id:
                     print("=== target child ===")
                     print(child)
                     if position == "before":
-                        new_position = child.order
+                        new_position = child.order - 1
                         # new_position = i
                     elif position == "after":
-                        new_position = child.order + 1
+                        new_position = child.order
                         # new_position = i + 1
 
             if old_position < new_position:
+                moving_child.order = new_position
                 for i in range(old_position, new_position):
                     print("==== iiiiiiii ====")
                     print(i)
-                    children[i].order = old_position + i - 1
+                    print("=== children[i] ===")
+                    print(children[i])
+                    children[i].order = i
             else:
-                for i in range(new_position + 1, old_position + 1):
-                    children[i].order = i - 1
+                moving_child.order = new_position + 1
+                for i in range(new_position, old_position - 1):
+                    print("==== iiiiiiii ====")
+                    print(i)
+                    print("=== children[i] ===")
+                    print(children[i])
+                    children[i].order += 1
 
             print("=== all children - ready for database ===")
             pprint(children)
