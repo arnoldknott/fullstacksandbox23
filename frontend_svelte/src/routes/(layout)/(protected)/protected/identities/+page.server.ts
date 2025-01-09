@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { microsoftGraph } from '$lib/server/apis';
-
+import type { MicrosoftTeamBasicInformation } from './IdentityAccordion.svelte';
 // const getAllMicrosoftTeams = async (sessionId: string, azureGroups: string[]) => {
 
 // }
@@ -10,11 +10,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	// const responseMe = await backendAPI.get(sessionId, '/user/me');
 	// const me = await responseMe.json();
-    interface MicrosoftTeamBasicInformation {
-        id: string;
-        displayName: string;
-        description: string;
-    }
+
 
     let myTeams: MicrosoftTeamBasicInformation[] = [];
 	if (locals.sessionData.userProfile) {

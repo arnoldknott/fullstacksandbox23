@@ -2,13 +2,22 @@
 	import type { PageData } from './$types';
 	import JsonData from '$components/JsonData.svelte';
 	import Heading from '$components/Heading.svelte';
-
+    import IdentityAccordion from './IdentityAccordion.svelte';
 	let { data }: { data: PageData } = $props();
 </script>
 
-<Heading>My user Profile in this app</Heading>
-<JsonData data={data.session?.userProfile} />
+<div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
+    {#if data.session?.userProfile}
+        <IdentityAccordion title="My user Profile in this app" id={data.session.userProfile.id} >
+            <JsonData data={data.session?.userProfile} />
+        </IdentityAccordion>
+    {/if}
 
+    <Heading>Microsoft Teams associated with this fullstack sandbox application:</Heading>
 
-<Heading>My Microsoft Teams associated with this app - delivered in token content</Heading>
-<JsonData data={data.microsoftTeams} />
+    {#each data.microsoftTeams as microsoftTeam}
+        <IdentityAccordion title={microsoftTeam.displayName} id={microsoftTeam.id} >
+            <JsonData data={microsoftTeam} />
+        </IdentityAccordion>
+    {/each}
+</div>
