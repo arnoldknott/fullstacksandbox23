@@ -17,7 +17,7 @@
 	</button>
 	<div
 		id="{id}-collapse"
-		class="accordion-content w-full overflow-scroll transition-[height] duration-300"
+		class="accordion-content w-full overflow-scroll transition-[height] duration-300 bg-neutral text-neutral-content"
 		aria-labelledby={id}
 		role="region"
 	>
