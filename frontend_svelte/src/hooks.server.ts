@@ -35,6 +35,7 @@ export const handle = async ({ event, resolve }) => {
 			} else {
 				if (event.route.id?.includes('(admin)')) {
 					console.log('🎣 hooks - server - access to admin route');
+					// TBD: refactor to retrieve this information from the session: it's avaliable in userProfile.
 					const userResponse = await backendAPI.get(event.locals.sessionData.sessionId, '/user/me');
 					const user = await userResponse.json();
 					if (!user.azure_token_roles.includes('Admin')) {
