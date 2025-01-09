@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	let { title, id, children }: { title: string; id: string, children: Snippet } = $props();
+	let { title, id, children }: { title: string; id: string; children: Snippet } = $props();
 
-    export interface MicrosoftTeamBasicInformation {
-        id: string;
-        displayName: string;
-        description: string;
-    }
+	export interface MicrosoftTeamBasicInformation {
+		id: string;
+		displayName: string;
+		description: string;
+	}
 </script>
 
 <div class="accordion-item" {id}>
@@ -22,7 +22,7 @@
 	</button>
 	<div
 		id="{id}-collapse"
-		class="accordion-content w-full p-4 overflow-scroll transition-[height] duration-300 hidden"
+		class="accordion-content hidden w-full overflow-scroll p-4 transition-[height] duration-300"
 		aria-labelledby={id}
 		role="region"
 	>
