@@ -4,7 +4,7 @@
 	const id = title.toLowerCase().replaceAll(' ', '-');
 </script>
 
-<div class="active accordion-item" {id}>
+<div class="active accordion-item bg-neutral-container text-neutral-container-content" {id}>
 	<button
 		class="accordion-toggle inline-flex items-center gap-x-4 text-start"
 		aria-controls="{id}-collapse"

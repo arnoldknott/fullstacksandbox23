@@ -9,7 +9,7 @@
 	}
 </script>
 
-<div class="accordion-item" {id}>
+<div class="accordion-item bg-neutral-container text-neutral-container-content" {id}>
 	<button
 		class="accordion-toggle inline-flex items-center gap-x-4 text-start"
 		aria-controls="{id}-collapse"
