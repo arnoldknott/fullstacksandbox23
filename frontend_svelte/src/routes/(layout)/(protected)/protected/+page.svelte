@@ -10,9 +10,10 @@
 			url: '/backend-demo-resource'
 		},
 		{
-			name: 'Microsoft Graph',
-			description: 'The Microsoft Graph API endpoint, all data in json',
-			url: '/msgraph'
+			name: 'Protected Hierarchy',
+			description:
+				'The protected hierarchy family consisting of protected resource, protected child and protected grandchild',
+			url: '/backend-protected-hierarchy'
 		},
 		{
 			name: 'Socket.IO',
@@ -20,10 +21,14 @@
 			url: '/socketio'
 		},
 		{
-			name: 'Protected Hierarchy',
-			description:
-				'The protected hierarchy family consisting of protected resource, protected child and protected grandchild',
-			url: '/backend-protected-hierarchy'
+			name: 'Identities',
+			description: 'Identities: various kinds of groups and relationship to users from the backend API',
+			url: '/identities'
+		},
+		{
+			name: 'Microsoft Graph',
+			description: 'The Microsoft Graph API endpoint, all data in json',
+			url: '/msgraph'
 		},
 		{
 			name: 'Session data',
