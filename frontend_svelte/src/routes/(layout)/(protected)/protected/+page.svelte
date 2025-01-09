@@ -22,7 +22,8 @@
 		},
 		{
 			name: 'Identities',
-			description: 'Identities: various kinds of groups and relationship to users from the backend API',
+			description:
+				'Identities: various kinds of groups and relationship to users from the backend API',
 			url: '/identities'
 		},
 		{

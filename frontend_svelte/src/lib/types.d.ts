@@ -11,13 +11,13 @@ export type BackendAPIConfiguration = {
 // matches Me in models/identities/backend API
 export type UserProfile = {
 	id: string;
-	azureGroups?: string[];// TBD: fix
-	ueberGroups?: string[];// TBD: fix
-	groups?: string[];// TBD: fix
-	subGroups?: string[];// TBD: fix
-	subSubGroups?: string[];// TBD: fix
-	azure_token_roles?: string[];// TBD: fix
-	azure_token_groups?: string[];// TBD: fix
+	azureGroups?: string[]; // TBD: fix
+	ueberGroups?: string[]; // TBD: fix
+	groups?: string[]; // TBD: fix
+	subGroups?: string[]; // TBD: fix
+	subSubGroups?: string[]; // TBD: fix
+	azure_token_roles?: string[]; // TBD: fix
+	azure_token_groups?: string[]; // TBD: fix
 }; // TBD: remove
 
 // export type Configuration = {

@@ -29,7 +29,8 @@ const scopesMsGraph = [
 	'offline_access',
 	'Calendars.ReadWrite.Shared',
 	'Files.ReadWrite.All',
-	'User.ReadBasic.All'
+	'User.ReadBasic.All',
+	'Team.ReadBasic.All',
 ];
 const scopesAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
 
