@@ -8,3 +8,7 @@
 
 <Heading>My user Profile in this app</Heading>
 <JsonData data={data.session?.userProfile} />
+
+
+<Heading>My Microsoft Teams associated with this app - delivered in token content</Heading>
+<JsonData data={data.microsoftTeams} />
