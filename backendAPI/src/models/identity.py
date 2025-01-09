@@ -61,10 +61,6 @@ class AzureGroupRead(AzureGroupCreate):
 class AzureGroup(AzureGroupCreate, table=True):
     """Schema for a group in the database."""
 
-    # dropping id for now - this is just too confusing during early stages and not needed
-    # if other sources than Azure AD are used, then this potentially needs to be re-added
-    # careful when doing that - take production database offline first!
-    #  id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     id: uuid.UUID = Field(
         index=True,
         primary_key=True,

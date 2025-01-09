@@ -1,4 +1,6 @@
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.orm import sessionmaker
+from sqlmodel import create_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.config import config
@@ -17,6 +19,9 @@ async def get_async_session() -> AsyncSession:
     )
     return async_session()
 
+
+engine = create_engine(config.POSTGRES_URL.unicode_string())
+SynchronSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # # This is handled by __aenter__ and __aexit__ in BaseCRUD
 # # in case a session is required elsewhere, use this function!

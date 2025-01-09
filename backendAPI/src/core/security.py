@@ -136,8 +136,8 @@ async def get_azure_token_payload(token: str) -> Optional[dict]:
         logger.info("🔑 Failed to validate token, fetching new JWKS and trying again.")
         jwks = await get_azure_jwks(no_cache=True)
         payload = await decode_token(token, jwks)
-        print("=== get_azure_token_payload - payload ===")
-        print(payload)
+        # print("=== get_azure_token_payload - payload ===")
+        # print(payload)
         return payload
 
 

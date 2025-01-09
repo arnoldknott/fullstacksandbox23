@@ -242,13 +242,33 @@ async def get_creation_date_for_resource(
         )
 
 
+@router.post("/log/created", status_code=200)
+async def get_creation_date_for_resources(
+    resource_ids: list[UUID],
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[datetime]:
+    """Returns creation information for a list of resources."""
+    logger.info("GET access log information for resource")
+    current_user = await check_token_against_guards(token_payload, guards)
+    async with access_log_view.crud() as crud:
+        creation_dates = []
+        for resource_id in resource_ids:
+            creation_date = await crud.read_resource_created_at(
+                current_user,
+                resource_id=resource_id,
+            )
+            creation_dates.append(creation_date)
+    return creation_dates
+
+
 @router.get("/log/{resource_id}/last-accessed", status_code=200)
 async def get_last_accessed_for_resource(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> AccessLogRead:
-    """Returns creation information for a resource."""
+    """Returns the log for the latest access of a resource."""
     logger.info("GET access log information for resource")
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:
@@ -256,6 +276,27 @@ async def get_last_accessed_for_resource(
             current_user,
             resource_id=resource_id,
         )
+
+
+@router.post("/log/last-accessed", status_code=200)
+async def get_last_accessed_for_resources(
+    resource_ids: list[UUID],
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[datetime]:
+    """Returns latest access time for resources."""
+    logger.info("GET access log information for resource")
+    current_user = await check_token_against_guards(token_payload, guards)
+    async with access_log_view.crud() as crud:
+        last_accessed_dates = []
+        for resource_id in resource_ids:
+            last_accessed = await crud.read_resource_last_accessed_at(
+                current_user,
+                resource_id=resource_id,
+                action=Action.read,
+            )
+            last_accessed_dates.append(last_accessed.time)
+    return last_accessed_dates
 
 
 @router.get("/log/{resource_id}/count", status_code=200)

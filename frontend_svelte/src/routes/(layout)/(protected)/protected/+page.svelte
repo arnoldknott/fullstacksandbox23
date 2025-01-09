@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Card from '$components/Card.svelte';
+	import NavigationCard from '../../NavigationCard.svelte';
 
 	export const links = [
 		{
@@ -10,9 +10,10 @@
 			url: '/backend-demo-resource'
 		},
 		{
-			name: 'Microsoft Graph',
-			description: 'The Microsoft Graph API endpoint, all data in json',
-			url: '/msgraph'
+			name: 'Protected Hierarchy',
+			description:
+				'The protected hierarchy family consisting of protected resource, protected child and protected grandchild',
+			url: '/backend-protected-hierarchy'
 		},
 		{
 			name: 'Socket.IO',
@@ -20,10 +21,15 @@
 			url: '/socketio'
 		},
 		{
-			name: 'Protected Hierarchy',
+			name: 'Identities',
 			description:
-				'The protected hierarchy family consisting of protected resource, protected child and protected grandchild',
-			url: '/backend-protected-hierarchy'
+				'Identities: various kinds of groups and relationship to users from the backend API',
+			url: '/identities'
+		},
+		{
+			name: 'Microsoft Graph',
+			description: 'The Microsoft Graph API endpoint, all data in json',
+			url: '/msgraph'
 		},
 		{
 			name: 'Session data',
@@ -46,7 +52,9 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 	{#each links as link}
-		<Card title={link.name} href={`protected${link.url}`}>{link.description}</Card>
+		<NavigationCard title={link.name} href={`protected${link.url}`}
+			>{link.description}</NavigationCard
+		>
 	{/each}
 </div>
 

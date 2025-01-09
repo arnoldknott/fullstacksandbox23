@@ -325,7 +325,7 @@ async def add_many_test_protected_children(
                 )
             protected_children.append(added_protected_child)
 
-        protected_children = sorted(protected_children, key=lambda x: x.id)
+        # protected_children = sorted(protected_children, key=lambda x: x.id)
 
         return protected_children
 

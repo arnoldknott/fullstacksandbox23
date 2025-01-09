@@ -88,7 +88,7 @@
 		<Heading>Card with chat</Heading>
 		<div class="mb-5 grid justify-items-center">
 			<div
-				class="card w-full md:w-4/5 rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+				class="card w-full rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant md:w-4/5"
 			>
 				<div class="card-header">
 					<h5 class="text-title md:text-title-large card-title">Chat card</h5>
@@ -160,6 +160,202 @@
 						aria-label="Add Icon Button"><span class="icon-[tabler--send-2]"></span></button
 					>
 				</div>
+			</div>
+		</div>
+	</div>
+
+	<div>
+		<Heading>Card with text and navigation</Heading>
+		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
+			<div
+				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+			>
+				<div class="card-header">
+					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+						Here's a title
+					</h5>
+				</div>
+				<div class="card-body">
+					<p class="text-body-small md:text-body text-primary-container-content">
+						Some test text, here. Can go over several lines. And if it does, the cards in the same
+						line will adjust to the longest card. This is a good way to keep the layout clean and
+						consistent.
+					</p>
+				</div>
+				<div class="card-footer">
+					<div class="card-actions text-center">
+						<a href="#top"
+							><button
+								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
+								>Link to top of page</button
+							></a
+						>
+					</div>
+				</div>
+			</div>
+			<div
+				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+			>
+				<div class="card-header">
+					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+						One more title
+					</h5>
+				</div>
+				<div class="card-body">
+					<p class="text-body-small md:text-body text-primary-container-content">
+						Some shorter text here - but adjusts to the height of the neigour card
+					</p>
+				</div>
+				<div class="card-footer">
+					<div class="card-actions text-center">
+						<a href="#top"
+							><button
+								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
+								>Link to top of page</button
+							></a
+						>
+					</div>
+				</div>
+			</div>
+			<div
+				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+			>
+				<div class="card-header">
+					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+						A third title
+					</h5>
+				</div>
+				<div class="card-body">
+					<p class="text-body-small md:text-body text-primary-container-content">
+						This one is meant to fill the row. Note how the cards are responsive on smaller screens.
+					</p>
+				</div>
+				<div class="card-footer">
+					<div class="card-actions text-center">
+						<a href="#top"
+							><button
+								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
+								>Link to top of page</button
+							></a
+						>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div>
+		<Heading>Inputs</Heading>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="relative sm:w-56">
+				<input
+					type="text"
+					placeholder="Primary colored input"
+					class="input input-filled peer border-primary"
+					id="primaryInput"
+				/>
+				<label
+					class="text-label-small md:text-label input-filled-label"
+					style="color: oklch(var(--p));"
+					for="primaryInput">Full Name</label
+				>
+				<span class="input-filled-focused" style="background-color: oklch(var(--p));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<input
+					type="text"
+					placeholder="Secondary colored input"
+					class="input input-filled peer border-secondary"
+					id="secondaryInput"
+				/>
+				<label
+					class="text-label-small md:text-label input-filled-label"
+					style="color: oklch(var(--s));"
+					for="secondaryInput">Full Name</label
+				>
+				<span class="input-filled-focused" style="background-color: oklch(var(--s));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<input
+					type="text"
+					placeholder="Accent colored input"
+					class="input input-filled peer border-accent"
+					id="accentInput"
+				/>
+				<label
+					class="text-label-small md:text-label input-filled-label"
+					style="color: oklch(var(--a));"
+					for="secondaryInput">Full Name</label
+				>
+				<span class="input-filled-focused" style="background-color: oklch(var(--a));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<input
+					type="text"
+					placeholder="Neutral colored input"
+					class="input input-filled peer border-neutral"
+					id="accentInput"
+				/>
+				<label
+					class="text-label-small md:text-label input-filled-label"
+					style="color: oklch(var(--n));"
+					for="secondaryInput">Full Name</label
+				>
+				<span class="input-filled-focused" style="background-color: oklch(var(--n));"></span>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row flex-wrap gap-4">
+			<div class="relative sm:w-56">
+				<textarea
+					placeholder="Primary colored input"
+					class="textarea peer textarea-filled max-h-44 border-primary"
+					id="primaryInput"
+				></textarea>
+				<label
+					class="text-label-small md:text-label textarea-filled-label"
+					style="color: oklch(var(--p));"
+					for="primaryInput">Description</label
+				>
+				<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<textarea
+					placeholder="Secondary colored input"
+					class="textarea peer textarea-filled max-h-44 border-secondary"
+					id="secondaryTextarea"
+				></textarea>
+				<label
+					class="text-label-small md:text-label textarea-filled-label"
+					style="color: oklch(var(--s));"
+					for="secondaryTextarea">Description</label
+				>
+				<span class="textarea-filled-focused" style="background-color: oklch(var(--s));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<textarea
+					placeholder="Accent colored input"
+					class="textarea peer textarea-filled max-h-44 border-accent"
+					id="accentTextarea"
+				></textarea>
+				<label
+					class="text-label-small md:text-label textarea-filled-label"
+					style="color: oklch(var(--a));"
+					for="accentTextarea">Description</label
+				>
+				<span class="textarea-filled-focused" style="background-color: oklch(var(--a));"></span>
+			</div>
+			<div class="relative sm:w-56">
+				<textarea
+					placeholder="Neutral colored input"
+					class="textarea peer textarea-filled max-h-44 border-neutral"
+					id="neutraTextarea"
+				></textarea>
+				<label
+					class="text-label-small md:text-label textarea-filled-label"
+					style="color: oklch(var(--n));"
+					for="secondaryTextarea">Description</label
+				>
+				<span class="textarea-filled-focused" style="background-color: oklch(var(--n));"></span>
 			</div>
 		</div>
 	</div>
@@ -242,9 +438,9 @@
 				Right
 			</div>
 			<!-- <div
-				class="flex h-20 w-full items-center justify-center text-2xl"
-				style="background: linear-gradient(to right, {statusColors[1]}, {statusColors[2]});"
-			></div> -->
+					class="flex h-20 w-full items-center justify-center text-2xl"
+					style="background: linear-gradient(to right, {statusColors[1]}, {statusColors[2]});"
+				></div> -->
 		</div>
 		<HorizontalRule />
 	</div>
@@ -263,6 +459,7 @@
 				<span class="icon-[tabler--user] size-12"></span>
 				<span class="icon-[tabler--trash] size-12"></span>
 				<span class="icon-[tabler--send-2] size-12"></span>
+				<span class="icon-[tabler--share-2] size-12"></span>
 			</div>
 			<div>
 				<p class="text-label text-center">
@@ -274,6 +471,7 @@
 				<span class="icon-[material-symbols--palette-outline] size-12"></span>
 				<span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
+				<span class="icon-[material-symbols--edit-outline-rounded] size-12"></span>
 			</div>
 			<div>
 				<p class="text-label text-center">
@@ -309,6 +507,17 @@
 			</div>
 			<div>
 				<p class="text-label text-center">
+					Extension library <span class="text-label-prominent badge min-h-fit">Feather Icon</span>
+				</p>
+				<span class="icon-[fe--bell] size-12"></span>
+				<span class="icon-[fe--disabled] size-12"></span>
+				<span class="grid place-items-center">
+					<span class="icon-[fe--bell] col-start-1 row-start-1 size-8"></span>
+					<span class="icon-[fe--disabled] col-start-1 row-start-1 size-12"></span>
+				</span>
+			</div>
+			<div>
+				<p class="text-label text-center">
 					Emoji library <span class="text-label-prominent badge min-h-fit">Noto emoji</span>
 				</p>
 				<span class="icon-[noto--folded-hands] size-12"></span>
@@ -327,8 +536,52 @@
 				<span class="icon-[openmoji--check-mark] size-12"></span>
 				<span class="icon-[openmoji--cross-mark] size-12"></span>
 			</div>
+			<div>
+				<p class="text-label text-center">
+					Emoji library <span class="text-label-prominent badge min-h-fit">Twitter Emoji</span>
+				</p>
+				<span class="icon-[twemoji--flag-denmark] size-12"></span>
+				<span class="icon-[twemoji--flag-germany] size-12"></span>
+				<span class="icon-[twemoji--flag-united-states] size-12"></span>
+			</div>
 		</div>
 		<HorizontalRule />
+	</div>
+
+	<div>
+		<Heading>Buttons</Heading>
+		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
+			<div>
+				<p class="text-label text-center">Action Buttons</p>
+				<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add Button">
+					<span class="icon-[fa6-solid--plus]"></span>
+				</button>
+				<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit Button">
+					<span class="icon-[material-symbols--edit-outline-rounded]"></span>
+				</button>
+				<button class="btn-error-container btn btn-circle btn-gradient" aria-label="Delete Button">
+					<span class="icon-[tabler--trash]"></span>
+				</button>
+				<button
+					class="btn-secondary-container btn btn-circle btn-gradient"
+					aria-label="Send Button"
+				>
+					<span class="icon-[tabler--send-2]"></span>
+				</button>
+				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share Button">
+					<span class="icon-[tabler--share-2]"></span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<div>
+		<Heading>Badges</Heading>
+		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
+			<div>
+				<p class="text-label text-center">Text Badges</p>
+			</div>
+		</div>
 	</div>
 
 	<div>
@@ -481,15 +734,15 @@
 				</label>
 			</div>
 			<!-- <div>
-                <label bind:this={myTemperature} class="swap swap-js text-6xl">
-                    <span class="swap-on">🥵</span>
-                    <span class="swap-off">🥶</span>
-                </label>
-                <label class="swap swap-js text-6xl">
-                    <span class="swap-on">🥳</span>
-                    <span class="swap-off">😭</span>
-                </label>
-            </div> -->
+					<label bind:this={myTemperature} class="swap swap-js text-6xl">
+						<span class="swap-on">🥵</span>
+						<span class="swap-off">🥶</span>
+					</label>
+					<label class="swap swap-js text-6xl">
+						<span class="swap-on">🥳</span>
+						<span class="swap-off">😭</span>
+					</label>
+				</div> -->
 			<div>
 				<label class="btn btn-circle swap swap-rotate">
 					<input type="checkbox" />
@@ -503,7 +756,7 @@
 	</div>
 
 	<!-- This local override works:
-    style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
+		style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
 	<div>
 		<Heading>Drawer (Sidebar)</Heading>
 		<button
