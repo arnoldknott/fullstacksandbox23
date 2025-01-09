@@ -17,6 +17,7 @@
 		"@eslint/js": "^9.17.0",
 		"@iconify/json": "^2.2.293",
 		"@iconify/tailwind": "^1.2.0",
+		"@microsoft/microsoft-graph-types": "^2.40.0",
 		"@sveltejs/adapter-node": "^5.2.11",
 		"@sveltejs/kit": "^2.15.2",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",

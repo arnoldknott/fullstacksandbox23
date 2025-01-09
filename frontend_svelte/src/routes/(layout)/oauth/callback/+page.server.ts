@@ -5,7 +5,7 @@ import { redirect } from '@sveltejs/kit';
 import AppConfig from '$lib/server/config';
 import { redisCache } from '$lib/server/cache';
 import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
-import type { AuthenticationResult } from '@azure/msal-node';
+// import type { AuthenticationResult } from '@azure/msal-node';
 import { backendAPI, microsoftGraph } from '$lib/server/apis';
 
 const appConfig = await AppConfig.getInstance();
@@ -23,8 +23,8 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			}
 			// TBD: authenticationResult not used any more
 			// but still needs to execute, as this sets the access token in cache!
-			const authenticationResult: AuthenticationResult =
-				await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
+			// const _authenticationResult: AuthenticationResult =
+			await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
 			cookies.set('session_id', sessionId, {
 				path: '/',
 				...appConfig.session_cookie_options
