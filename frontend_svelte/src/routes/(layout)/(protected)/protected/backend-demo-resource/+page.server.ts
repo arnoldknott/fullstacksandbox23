@@ -24,7 +24,7 @@ import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
 // }
 
 export const load: PageServerLoad = async ({ locals }) => {
-	// either send a token or make the demo resource publically accessable by adding an access policy with flag public=True
+	// either send a token or make the demo resource publicly accessible by adding an access policy with flag public=True
 	// const sessionId = cookies.get('session_id');
 	const sessionId = locals.sessionData.sessionId;
 

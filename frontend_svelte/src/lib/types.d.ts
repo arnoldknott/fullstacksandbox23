@@ -8,10 +8,16 @@ export type BackendAPIConfiguration = {
 	socketIOPath: string | null;
 };
 
-export type User = {
-	email: string;
-	name?: string;
-	loggedIn?: boolean;
+// matches Me in models/identities/backend API
+export type UserProfile = {
+	id: string;
+	azureGroups?: string[]; // TBD: fix
+	ueberGroups?: string[]; // TBD: fix
+	groups?: string[]; // TBD: fix
+	subGroups?: string[]; // TBD: fix
+	subSubGroups?: string[]; // TBD: fix
+	azure_token_roles?: string[]; // TBD: fix
+	azure_token_groups?: string[]; // TBD: fix
 }; // TBD: remove
 
 // export type Configuration = {
@@ -36,6 +42,7 @@ export type Session = {
 	microsoftAccount?: AccountInfo; // TBD: change to MicrosoftAccount, containing Account, IdToken, AccessToken, RefreshToken, AppMetadata
 	microsoftProfile?: MicrosoftProfile;
 	userAgent?: string;
+	userProfile?: UserProfile;
 	sessionId: string;
 };
 
