@@ -594,23 +594,23 @@
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
 				<p class="text-label text-center">Action Buttons</p>
-				<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add Button">
+				<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add">
 					<span class="icon-[fa6-solid--plus]"></span>
 				</button>
-				<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit Button">
+				<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit">
 					<span class="icon-[material-symbols--edit-outline-rounded]"></span>
 				</button>
-				<button class="btn-error-container btn btn-circle btn-gradient" aria-label="Delete Button">
+				<button class="btn-error-container btn btn-circle btn-gradient" aria-label="Delete">
 					<span class="icon-[tabler--trash]"></span>
 				</button>
-				<button
-					class="btn-secondary-container btn btn-circle btn-gradient"
-					aria-label="Send Button"
-				>
+				<button class="btn-secondary-container btn btn-circle btn-gradient" aria-label="Send">
 					<span class="icon-[tabler--send-2]"></span>
 				</button>
-				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share Button">
+				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share">
 					<span class="icon-[tabler--share-2]"></span>
+				</button>
+				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Done">
+					<span class="icon-[mingcute--check-2-fill]"></span>
 				</button>
 				<p class="text-label text-center">State changing buttons</p>
 				<button

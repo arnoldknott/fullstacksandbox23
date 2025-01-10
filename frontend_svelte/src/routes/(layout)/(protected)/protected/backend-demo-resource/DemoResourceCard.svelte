@@ -225,13 +225,14 @@
 				</button> -->
 				<ul class="dropdown-menu dropdown-open:opacity-100 bg-base-300 shadow-sm shadow-outline hidden" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-menu-icon">
 					<li class=" items-center">
-						<button class="dropdown-item btn btn-text justify-start"><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button>
+						<button class="dropdown-item btn btn-text justify-start" aria-label="Edit Button" onclick={() => (edit ? (edit = false) : (edit = true))}><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button>
 					</li>
 					<li class="items-center">
 						<button class="dropdown-item btn btn-text justify-start"><span class="icon-[tabler--share-2]"></span>Share</button>
 					</li>
 					<li class="dropdown-footer gap-2">
-						<button class="dropdown-item btn btn-text btn-error justify-start"><span class="icon-[tabler--trash]"></span>Delete</button>
+						<button class="dropdown-item btn btn-text btn-error justify-start" aria-label="Delete Button"
+						onclick={deleteResource}><span class="icon-[tabler--trash]"></span>Delete</button>
 					</li>
 				</ul>
 			</div>
@@ -305,7 +306,7 @@
 					</span>
 				</button>
 			</form> -->
-			<button
+			<!-- <button
 				class="btn-info-container btn btn-circle btn-gradient"
 				onclick={() => (edit ? (edit = false) : (edit = true))}
 				aria-label="Edit Button"
@@ -319,7 +320,7 @@
 			</button>
 			<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share Button">
 				<span class="icon-[tabler--share-2]"></span>
-			</button>
+			</button> -->
 			<!-- <form action="?/delete" method="POST" use:enhance={() => 
                     {
                         return async ({result, update}) => {
@@ -342,13 +343,18 @@
                     <span class="icon-[tabler--trash]"></span>
                 </button>
             </form> -->
-			<button
+			<!-- <button
 				class="btn-error-container btn btn-circle btn-gradient"
 				aria-label="Delete Button"
 				onclick={deleteResource}
 			>
 				<span class="icon-[tabler--trash]"></span>
-			</button>
+			</button> -->
+			{#if edit}
+				<button class="btn-success-container btn btn-circle btn-gradient" onclick={() => edit=false} aria-label="Done">
+					<span class="icon-[mingcute--check-2-fill]"></span>
+				</button>
+			{/if}
 		</div>
 	</div>
 {/snippet}
