@@ -5,7 +5,8 @@
 	import { onDestroy } from 'svelte';
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
-	import type { IOverlay } from 'flyonui/flyonui';
+	// import type { IOverlay } from 'flyonui/flyonui';
+	import Card from '$components/Card.svelte';
 
 	// for status sliders:
 	let theme = $state({} as AppTheme);
@@ -51,6 +52,9 @@
 		unsbscribeThemeStore();
 	});
 
+	// for edit button:
+	let edit = $state(false);
+
 	// for theme picker:
 	let sourceColor = $state('#769CDF');
 	let variant = $state('TONAL_SPOT');
@@ -63,83 +67,81 @@
 	);
 	let contrast = $state(0.0);
 
-	// for modal and drawer:
-	const loadHSOverlay = async () => {
-		const { HSOverlay } = await import('flyonui/flyonui.js');
-		return HSOverlay;
-	};
+	// // for modal and drawer:
+	// const loadHSOverlay = async () => {
+	// 	const { HSOverlay } = await import('flyonui/flyonui.js');
+	// 	return HSOverlay;
+	// };
 
-	let myModal: HTMLElement;
-	let overlay: IOverlay | undefined = $state();
+	// let myModal: HTMLElement;
+	// let overlay: IOverlay | undefined = $state();
 
-	$effect(() => {
-		loadHSOverlay().then((loadHSOverlay) => {
-			overlay = new loadHSOverlay(myModal);
-		});
-	});
+	// $effect(() => {
+	// 	loadHSOverlay().then((loadHSOverlay) => {
+	// 		overlay = new loadHSOverlay(myModal);
+	// 	});
+	// });
 
-	const openModal = () => {
-		overlay?.open();
-	};
+	// const openModal = () => {
+	// 	overlay?.open();
+	// };
 </script>
 
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div>
 		<Heading>Card with chat</Heading>
 		<div class="mb-5 grid justify-items-center">
-			<div
-				class="card w-full rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant md:w-4/5"
-			>
-				<div class="card-header">
-					<h5 class="text-title md:text-title-large card-title">Chat card</h5>
-				</div>
-				<div class="card-body">
-					<div
-						class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
-					>
-						<div class="chat chat-receiver">
-							<div class="avatar chat-avatar">
-								<div class="size-10 rounded-full">
-									<span class="icon-[tabler--man] m-1 size-8 text-primary"></span>
-								</div>
-							</div>
-							<div class="chat-header text-base-content">
-								User 1
-								<time class="text-base-content/50">12:45</time>
-							</div>
-							<div class="chat-bubble-primary chat-bubble">Message from user 1.</div>
-							<div class="chat-footer text-base-content/50">
-								<div>Read</div>
+			{#snippet headerChat()}
+				<h5 class="text-title md:text-title-large card-title">Chat card</h5>
+			{/snippet}
+			<Card id="chatCard" extraClasses="md:w-4/5" header={headerChat} footer={footerChat}>
+				<div
+					class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
+				>
+					<div class="chat chat-receiver">
+						<div class="avatar chat-avatar">
+							<div class="size-10 rounded-full">
+								<span class="icon-[tabler--man] m-1 size-8 text-primary"></span>
 							</div>
 						</div>
-						<div class="chat chat-receiver">
-							<div class="avatar chat-avatar">
-								<div class="size-10 rounded-full">
-									<span class="icon-[tabler--user] m-1 size-8 text-primary"></span>
-								</div>
-							</div>
-							<div class="chat-header text-base-content">
-								User 2
-								<time class="text-base-content/50">12:57</time>
-							</div>
-							<div class="chat-bubble-primary chat-bubble">User 2 also had something to say.</div>
-							<div class="chat-footer text-base-content/50">
-								<div>Read</div>
+						<div class="chat-header text-base-content">
+							User 1
+							<time class="text-base-content/50">12:45</time>
+						</div>
+						<div class="chat-bubble-primary chat-bubble">Message from user 1.</div>
+						<div class="chat-footer text-base-content/50">
+							<div>Read</div>
+						</div>
+					</div>
+					<div class="chat chat-receiver">
+						<div class="avatar chat-avatar">
+							<div class="size-10 rounded-full">
+								<span class="icon-[tabler--user] m-1 size-8 text-primary"></span>
 							</div>
 						</div>
-						<div class="chat chat-sender">
-							<div class="chat-header text-base-content">
-								You
-								<time class="text-base-content/50">13:27</time>
-							</div>
-							<div class="chat-bubble-secondary chat-bubble">And I have replied to that.</div>
-							<div class="chat-footer text-base-content/50">
-								<div>Delivered</div>
-							</div>
+						<div class="chat-header text-base-content">
+							User 2
+							<time class="text-base-content/50">12:57</time>
+						</div>
+						<div class="chat-bubble-primary chat-bubble">User 2 also had something to say.</div>
+						<div class="chat-footer text-base-content/50">
+							<div>Read</div>
+						</div>
+					</div>
+					<div class="chat chat-sender">
+						<div class="chat-header text-base-content">
+							You
+							<time class="text-base-content/50">13:27</time>
+						</div>
+						<div class="chat-bubble-secondary chat-bubble">And I have replied to that.</div>
+						<div class="chat-footer text-base-content/50">
+							<div>Delivered</div>
 						</div>
 					</div>
 				</div>
-				<div class="card-footer flex flex-row items-center gap-2">
+			</Card>
+			{#snippet footerChat()}
+				<div class="flex flex-row items-center gap-2">
 					<div class="relative grow">
 						<input
 							type="text"
@@ -157,10 +159,12 @@
 					</div>
 					<button
 						class="btn-secondary-container btn btn-circle btn-gradient"
-						aria-label="Add Icon Button"><span class="icon-[tabler--send-2]"></span></button
+						aria-label="Add Icon Button"
 					>
+						<span class="icon-[tabler--send-2]"></span>
+					</button>
 				</div>
-			</div>
+			{/snippet}
 		</div>
 	</div>
 
@@ -241,6 +245,63 @@
 					</div>
 				</div>
 			</div>
+		</div>
+	</div>
+
+	<div>
+		<Heading>Card with edits</Heading>
+		<div class="mb-5 grid justify-items-center">
+			{#snippet headerEdit()}
+				<div class="flex justify-between">
+					<div>
+						<h5 class="text-title md:text-title-large card-title">Card with editable text</h5>
+					</div>
+					<div class="flex flex-row items-start gap-4">
+						<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
+							<span
+								id="dropdown-menu-icon"
+								class="dropdown-toggle icon-[tabler--dots-vertical] size-6"
+								role="button"
+								aria-haspopup="menu"
+								aria-expanded="false"
+								aria-label="Dropdown"
+							></span>
+							<!-- <button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-text btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
+								<span class="icon-[tabler--dots-vertical] size-6"></span>
+							</button> -->
+							<ul
+								class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+								role="menu"
+								aria-orientation="vertical"
+								aria-labelledby="dropdown-menu-icon"
+							>
+								<li class=" items-center">
+									<button class="btn dropdown-item btn-text justify-start"
+										><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
+									>
+								</li>
+								<li class="items-center">
+									<button class="btn dropdown-item btn-text justify-start"
+										><span class="icon-[tabler--share-2]"></span>Share</button
+									>
+								</li>
+								<li class="dropdown-footer gap-2">
+									<button class="btn dropdown-item btn-error btn-text justify-start"
+										><span class="icon-[tabler--trash]"></span>Delete</button
+									>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			{/snippet}
+			<Card id="cardEdit" extraClasses="md:w-4/5" header={headerEdit}>
+				<div
+					class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
+				>
+					Some text
+				</div>
+			</Card>
 		</div>
 	</div>
 
@@ -553,23 +614,36 @@
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
 				<p class="text-label text-center">Action Buttons</p>
-				<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add Button">
+				<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add">
 					<span class="icon-[fa6-solid--plus]"></span>
 				</button>
-				<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit Button">
+				<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit">
 					<span class="icon-[material-symbols--edit-outline-rounded]"></span>
 				</button>
-				<button class="btn-error-container btn btn-circle btn-gradient" aria-label="Delete Button">
+				<button class="btn-error-container btn btn-circle btn-gradient" aria-label="Delete">
 					<span class="icon-[tabler--trash]"></span>
 				</button>
-				<button
-					class="btn-secondary-container btn btn-circle btn-gradient"
-					aria-label="Send Button"
-				>
+				<button class="btn-secondary-container btn btn-circle btn-gradient" aria-label="Send">
 					<span class="icon-[tabler--send-2]"></span>
 				</button>
-				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share Button">
+				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share">
 					<span class="icon-[tabler--share-2]"></span>
+				</button>
+				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Done">
+					<span class="icon-[mingcute--check-2-fill]"></span>
+				</button>
+				<p class="text-label text-center">State changing buttons</p>
+				<button
+					class="btn-info-container btn btn-circle btn-gradient"
+					onclick={() => (edit ? (edit = false) : (edit = true))}
+					aria-label="Edit Button"
+				>
+					<span class="grid place-items-center">
+						<span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
+						></span>
+						<span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
+						></span>
+					</span>
 				</button>
 			</div>
 		</div>
@@ -657,14 +731,19 @@
 			aria-expanded="false"
 			aria-controls="basic-modal"
 			data-overlay="#basic-modal"
-			onclick={openModal}
 		>
 			Open modal
 		</button>
 
+		<!--
+		removed from button: 
+		onclick={openModal}
+		removed from div class="overlay modal":
+		bind:this={myModal}
+		-->
+
 		<!-- <div bind:this={modal} id="basic-modal" class="overlay modal overlay-open:opacity-100 hidden" role="dialog" tabindex="-1"> -->
 		<div
-			bind:this={myModal}
 			id="basic-modal"
 			class="overlay modal hidden overlay-open:opacity-100"
 			role="dialog"
@@ -673,7 +752,7 @@
 			<div class="modal-dialog overlay-open:opacity-100">
 				<div class="modal-content bg-base-300">
 					<div class="modal-header">
-						<h3 class="modal-text-title">Dialog Title</h3>
+						<h3 class="modal-text-title">First Dialog Title</h3>
 						<button
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
@@ -699,6 +778,130 @@
 				</div>
 			</div>
 		</div>
+
+		<button
+			type="button"
+			class="btn btn-primary"
+			aria-haspopup="dialog"
+			aria-expanded="false"
+			aria-controls="centered-modal"
+			data-overlay="#centered-modal"
+		>
+			Open centered modal
+		</button>
+
+		<div
+			id="centered-modal"
+			class="overlay modal modal-middle hidden overlay-open:opacity-100"
+			role="dialog"
+			tabindex="-1"
+		>
+			<div class="modal-dialog overlay-open:opacity-100">
+				<div class="modal-content bg-base-300">
+					<div class="modal-header">
+						<h3 class="modal-text-title">Centered Dialog Title</h3>
+						<button
+							type="button"
+							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+							aria-label="Close"
+							data-overlay="#basic-modal"
+						>
+							<span class="icon-[tabler--x] size-4"></span>
+						</button>
+					</div>
+					<div class="modal-body">
+						This is some placeholder content to show the scrolling behavior for modals. Instead of
+						repeating the text in the modal, we use an inline style to set a minimum height, thereby
+						extending the length of the overall modal and demonstrating the overflow scrolling. When
+						content becomes longer than the height of the viewport, scrolling will move the modal as
+						needed.
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary btn-soft" data-overlay="#centered-modal"
+							>Close</button
+						>
+						<button type="button" class="btn btn-primary">Save changes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<button
+			type="button"
+			class="btn btn-primary"
+			aria-haspopup="dialog"
+			aria-expanded="false"
+			aria-controls="share-modal"
+			data-overlay="#share-modal"
+		>
+			Open share modal
+		</button>
+
+		<div
+			id="share-modal"
+			class="overlay modal modal-middle hidden overlay-open:opacity-100"
+			role="dialog"
+			tabindex="-1"
+		>
+			<div class="modal-dialog overlay-open:opacity-100">
+				<div class="modal-content bg-base-300 shadow-xl shadow-outline">
+					<div class="modal-header">
+						<h3 class="modal-text-title">Share</h3>
+						<button
+							type="button"
+							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+							aria-label="Close"
+							data-overlay="#basic-modal"
+						>
+							<span class="icon-[tabler--x] size-4"></span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="w-full overflow-x-auto">
+							TBD: add dropdown for selecting new groups here<br />
+							TBD: add a heading for the table: existing permissions<br />
+							TBD: make existing permissions clickable / editable with dropdowns on click and add delete
+							button<br />
+							<table class="table shadow-inner">
+								<thead>
+									<tr>
+										<th>Group</th>
+										<th>Rights</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td class="text-nowrap">First group's name here </td>
+										<td class="text-center"><span class="icon-[tabler--eye]"></span></td>
+									</tr>
+									<tr>
+										<td class="text-nowrap">Another groups name comes here </td>
+										<td class="text-center"><span class="icon-[tabler--eye]"></span></td>
+									</tr>
+									<tr>
+										<td class="text-nowrap">And one more groups name here, so group3 </td>
+										<td class="text-center"
+											><span class="icon-[material-symbols--edit-outline-rounded]"></span></td
+										>
+									</tr>
+									<tr>
+										<td class="text-nowrap">Group 4</td>
+										<td class="text-center"><span class="icon-[tabler--key-filled]"></span></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary btn-soft" data-overlay="#share-modal"
+							>Close</button
+						>
+						<button type="button" class="btn btn-primary">Save changes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<HorizontalRule />
 	</div>
 

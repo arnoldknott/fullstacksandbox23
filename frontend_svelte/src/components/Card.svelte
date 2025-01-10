@@ -3,10 +3,12 @@
 
 	let {
 		id,
+		extraClasses,
 		header,
 		children,
 		footer
-	}: { id: string; header?: Snippet; children: Snippet; footer?: Snippet } = $props();
+	}: { id: string; extraClasses?: string; header?: Snippet; children: Snippet; footer?: Snippet } =
+		$props();
 
 	export const remove = () => {
 		const card = document.getElementById(id);
@@ -15,7 +17,7 @@
 </script>
 
 <div
-	class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+	class="card w-full rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant {extraClasses}"
 	{id}
 >
 	{#if header}
