@@ -90,13 +90,11 @@
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div>
 		<Heading>Card with chat</Heading>
-
-
 		<div class="mb-5 grid justify-items-center">
-			{#snippet header()}
+			{#snippet headerChat()}
 				<h5 class="text-title md:text-title-large card-title">Chat card</h5>
 			{/snippet}
-			<Card id="chatCard" extraClasses="md:w-4/5" {header} {footer}>
+			<Card id="chatCard" extraClasses="md:w-4/5" header={headerChat} footer={footerChat}>
 				<div
 					class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
 				>
@@ -142,7 +140,7 @@
 					</div>
 				</div>
 			</Card>
-			{#snippet footer()}
+			{#snippet footerChat()}
 			<div class="flex flex-row items-center gap-2">
 				<div class="relative grow">
 					<input
@@ -165,8 +163,7 @@
 						<span class="icon-[tabler--send-2]"></span>
 				</button>
 			</div>
-		{/snippet}
-
+			{/snippet}
 		</div>
 	</div>
 
@@ -247,6 +244,44 @@
 					</div>
 				</div>
 			</div>
+		</div>
+	</div>
+
+	<div>
+		<Heading>Card with edits</Heading>
+		<div class="mb-5 grid justify-items-center">
+			{#snippet headerEdit()}
+				<div class="flex justify-between">
+					<div>
+						<h5 class="text-title md:text-title-large card-title">Card with editable text</h5>
+					</div>
+					<div class="flex flex-row gap-4 items-start">
+						<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
+							<span id="dropdown-menu-icon" class="icon-[tabler--dots-vertical] size-6 dropdown-toggle" role="button" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown"></span>
+							<!-- <button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-text btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
+								<span class="icon-[tabler--dots-vertical] size-6"></span>
+							</button> -->
+							<ul class="dropdown-menu dropdown-open:opacity-100 bg-base-300 shadow-sm shadow-outline hidden" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-menu-icon">
+								<li class=" items-center">
+									<button class="dropdown-item btn btn-text justify-start"><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button>
+								</li>
+								<li class="items-center">
+									<button class="dropdown-item btn btn-text justify-start"><span class="icon-[tabler--share-2]"></span>Share</button>
+								</li>
+								<li class="dropdown-footer gap-2">
+									<button class="dropdown-item btn btn-text btn-error justify-start"><span class="icon-[tabler--trash]"></span>Delete</button>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			{/snippet}
+			<Card id="cardEdit" extraClasses="md:w-4/5" header={headerEdit}>
+				<div class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline">
+					Some text
+				</div>
+
+			</Card>
 		</div>
 	</div>
 
