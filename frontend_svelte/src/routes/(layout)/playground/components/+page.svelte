@@ -67,24 +67,24 @@
 	);
 	let contrast = $state(0.0);
 
-	// for modal and drawer:
-	const loadHSOverlay = async () => {
-		const { HSOverlay } = await import('flyonui/flyonui.js');
-		return HSOverlay;
-	};
+	// // for modal and drawer:
+	// const loadHSOverlay = async () => {
+	// 	const { HSOverlay } = await import('flyonui/flyonui.js');
+	// 	return HSOverlay;
+	// };
 
-	let myModal: HTMLElement;
-	let overlay: IOverlay | undefined = $state();
+	// let myModal: HTMLElement;
+	// let overlay: IOverlay | undefined = $state();
 
-	$effect(() => {
-		loadHSOverlay().then((loadHSOverlay) => {
-			overlay = new loadHSOverlay(myModal);
-		});
-	});
+	// $effect(() => {
+	// 	loadHSOverlay().then((loadHSOverlay) => {
+	// 		overlay = new loadHSOverlay(myModal);
+	// 	});
+	// });
 
-	const openModal = () => {
-		overlay?.open();
-	};
+	// const openModal = () => {
+	// 	overlay?.open();
+	// };
 </script>
 
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
@@ -711,14 +711,21 @@
 			aria-expanded="false"
 			aria-controls="basic-modal"
 			data-overlay="#basic-modal"
-			onclick={openModal}
+
 		>
 			Open modal
 		</button>
 
+		<!--
+		removed from button: 
+		onclick={openModal}
+		removed from div class="overlay modal":
+		bind:this={myModal}
+		-->
+
 		<!-- <div bind:this={modal} id="basic-modal" class="overlay modal overlay-open:opacity-100 hidden" role="dialog" tabindex="-1"> -->
 		<div
-			bind:this={myModal}
+			
 			id="basic-modal"
 			class="overlay modal hidden overlay-open:opacity-100"
 			role="dialog"
