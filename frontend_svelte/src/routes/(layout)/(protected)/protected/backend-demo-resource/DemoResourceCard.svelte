@@ -206,7 +206,7 @@
 				{name}
 			</h5> -->
 		</div>
-		<div>
+		<div class="flex flex-row gap-2">
 			{#if category}
 				<span
 					id={category_id}
@@ -218,6 +218,20 @@
 			{#if flag}
 				<span class="icon-[twemoji--flag-{flag}] size-6"></span>
 			{/if}
+			<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
+				<button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-soft btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
+					<span class="icon-[tabler--dots-vertical] size-4"></span>
+				</button>
+				<ul class="dropdown-menu dropdown-open:opacity-100 hidden min-w-60" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-menu-icon">
+					<li><a class="dropdown-item" href="#top">My Profile</a></li>
+					<li><a class="dropdown-item" href="#top">Settings</a></li>
+					<li><a class="dropdown-item" href="#top">Billing</a></li>
+					<li><a class="dropdown-item" href="#top">FAQs</a></li>
+					<li class="dropdown-footer gap-2">
+						<button class="btn btn-primary">Upgrade</button>
+					</li>
+				</ul>
+			</div>
 		</div>
 	</div>
 {/snippet}

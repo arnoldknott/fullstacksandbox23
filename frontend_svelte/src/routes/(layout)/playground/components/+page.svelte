@@ -6,6 +6,7 @@
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import type { IOverlay } from 'flyonui/flyonui';
+	import Card from '$components/Card.svelte';
 
 	// for status sliders:
 	let theme = $state({} as AppTheme);
@@ -86,81 +87,83 @@
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div>
 		<Heading>Card with chat</Heading>
+
+
 		<div class="mb-5 grid justify-items-center">
-			<div
-				class="card w-full rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant md:w-4/5"
-			>
-				<div class="card-header">
-					<h5 class="text-title md:text-title-large card-title">Chat card</h5>
-				</div>
-				<div class="card-body">
-					<div
-						class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
-					>
-						<div class="chat chat-receiver">
-							<div class="avatar chat-avatar">
-								<div class="size-10 rounded-full">
-									<span class="icon-[tabler--man] m-1 size-8 text-primary"></span>
-								</div>
-							</div>
-							<div class="chat-header text-base-content">
-								User 1
-								<time class="text-base-content/50">12:45</time>
-							</div>
-							<div class="chat-bubble-primary chat-bubble">Message from user 1.</div>
-							<div class="chat-footer text-base-content/50">
-								<div>Read</div>
+			{#snippet header()}
+				<h5 class="text-title md:text-title-large card-title">Chat card</h5>
+			{/snippet}
+			<Card id="chatCard" extraClasses="md:w-4/5" {header} {footer}>
+				<div
+					class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
+				>
+					<div class="chat chat-receiver">
+						<div class="avatar chat-avatar">
+							<div class="size-10 rounded-full">
+								<span class="icon-[tabler--man] m-1 size-8 text-primary"></span>
 							</div>
 						</div>
-						<div class="chat chat-receiver">
-							<div class="avatar chat-avatar">
-								<div class="size-10 rounded-full">
-									<span class="icon-[tabler--user] m-1 size-8 text-primary"></span>
-								</div>
-							</div>
-							<div class="chat-header text-base-content">
-								User 2
-								<time class="text-base-content/50">12:57</time>
-							</div>
-							<div class="chat-bubble-primary chat-bubble">User 2 also had something to say.</div>
-							<div class="chat-footer text-base-content/50">
-								<div>Read</div>
+						<div class="chat-header text-base-content">
+							User 1
+							<time class="text-base-content/50">12:45</time>
+						</div>
+						<div class="chat-bubble-primary chat-bubble">Message from user 1.</div>
+						<div class="chat-footer text-base-content/50">
+							<div>Read</div>
+						</div>
+					</div>
+					<div class="chat chat-receiver">
+						<div class="avatar chat-avatar">
+							<div class="size-10 rounded-full">
+								<span class="icon-[tabler--user] m-1 size-8 text-primary"></span>
 							</div>
 						</div>
-						<div class="chat chat-sender">
-							<div class="chat-header text-base-content">
-								You
-								<time class="text-base-content/50">13:27</time>
-							</div>
-							<div class="chat-bubble-secondary chat-bubble">And I have replied to that.</div>
-							<div class="chat-footer text-base-content/50">
-								<div>Delivered</div>
-							</div>
+						<div class="chat-header text-base-content">
+							User 2
+							<time class="text-base-content/50">12:57</time>
+						</div>
+						<div class="chat-bubble-primary chat-bubble">User 2 also had something to say.</div>
+						<div class="chat-footer text-base-content/50">
+							<div>Read</div>
+						</div>
+					</div>
+					<div class="chat chat-sender">
+						<div class="chat-header text-base-content">
+							You
+							<time class="text-base-content/50">13:27</time>
+						</div>
+						<div class="chat-bubble-secondary chat-bubble">And I have replied to that.</div>
+						<div class="chat-footer text-base-content/50">
+							<div>Delivered</div>
 						</div>
 					</div>
 				</div>
-				<div class="card-footer flex flex-row items-center gap-2">
-					<div class="relative grow">
-						<input
-							type="text"
-							placeholder="Send a message here"
-							class="input input-filled peer grow border-secondary shadow-sm shadow-outline"
-							id="chattMessage"
-						/>
-						<label
-							class="text-label-small md:text-label input-filled-label grow"
-							style="color: oklch(var(--s));"
-							for="chatMessage">♡ What's on your heart?</label
-						>
-						<span class="input-filled-focused grow" style="background-color: oklch(var(--s));"
-						></span>
-					</div>
-					<button
-						class="btn-secondary-container btn btn-circle btn-gradient"
-						aria-label="Add Icon Button"><span class="icon-[tabler--send-2]"></span></button
+			</Card>
+			{#snippet footer()}
+			<div class="flex flex-row items-center gap-2">
+				<div class="relative grow">
+					<input
+						type="text"
+						placeholder="Send a message here"
+						class="input input-filled peer grow border-secondary shadow-sm shadow-outline"
+						id="chattMessage"
+					/>
+					<label
+						class="text-label-small md:text-label input-filled-label grow"
+						style="color: oklch(var(--s));"
+						for="chatMessage">♡ What's on your heart?</label
 					>
+					<span class="input-filled-focused grow" style="background-color: oklch(var(--s));"
+					></span>
 				</div>
+				<button
+					class="btn-secondary-container btn btn-circle btn-gradient"
+					aria-label="Add Icon Button">
+						<span class="icon-[tabler--send-2]"></span>
+				</button>
 			</div>
+		{/snippet}
+
 		</div>
 	</div>
 
