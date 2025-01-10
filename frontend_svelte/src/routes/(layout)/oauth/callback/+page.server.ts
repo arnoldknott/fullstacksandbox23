@@ -44,8 +44,6 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			);
 			const responseMe = await backendAPI.get(sessionId, '/user/me');
 			const userProfile = await responseMe.json();
-			console.log('🚪 oauth - callback - server - userProfile: ', userProfile);
-			console.log(userProfile);
 			await redisCache.setSession(sessionId, '$.userProfile', JSON.stringify(userProfile));
 		} else {
 			console.error('🔥 🚪 oauth - callback - server - redirect failed');
