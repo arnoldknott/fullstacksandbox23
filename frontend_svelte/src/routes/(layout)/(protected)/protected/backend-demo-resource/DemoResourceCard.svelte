@@ -206,7 +206,7 @@
 				{name}
 			</h5> -->
 		</div>
-		<div>
+		<div class="flex flex-row items-start gap-4">
 			{#if category}
 				<span
 					id={category_id}
@@ -218,9 +218,73 @@
 			{#if flag}
 				<span class="icon-[twemoji--flag-{flag}] size-6"></span>
 			{/if}
+			<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
+				<span
+					id="dropdown-menu-icon"
+					class="dropdown-toggle icon-[tabler--dots-vertical] size-6"
+					role="button"
+					aria-haspopup="menu"
+					aria-expanded="false"
+					aria-label="Dropdown"
+				></span>
+				<!-- <button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-text btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
+					<span class="icon-[tabler--dots-vertical] size-6"></span>
+				</button> -->
+				<ul
+					class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+					role="menu"
+					aria-orientation="vertical"
+					aria-labelledby="dropdown-menu-icon"
+				>
+					<li class=" items-center">
+						<button
+							class="btn dropdown-item btn-text justify-start"
+							aria-label="Edit Button"
+							onclick={() => (edit ? (edit = false) : (edit = true))}
+							><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
+						>
+					</li>
+					<li class="items-center">
+						<button class="btn dropdown-item btn-text justify-start"
+							><span class="icon-[tabler--share-2]"></span>Share</button
+						>
+					</li>
+					<li class="dropdown-footer gap-2">
+						<button
+							class="btn dropdown-item btn-error btn-text justify-start"
+							aria-label="Delete Button"
+							onclick={deleteResource}><span class="icon-[tabler--trash]"></span>Delete</button
+						>
+					</li>
+				</ul>
+			</div>
 		</div>
 	</div>
 {/snippet}
+
+<Card bind:this={card} {id} {header} {footer}>
+	{#if edit}
+		<div class="relative">
+			<textarea
+				class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
+				id="description_{id}"
+				onblur={() => createOrUpdateResource()}
+				bind:value={description}
+				placeholder="Describe the demo resource here."
+			></textarea>
+			<label
+				class="text-label-small md:text-label textarea-filled-label"
+				style="color: oklch(var(--p));"
+				for="description_{id}">Description</label
+			>
+			<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
+		</div>
+	{:else}
+		<p class="text-body-small md:text-body text-primary-container-content">
+			{description || 'No description available'}
+		</p>
+	{/if}
+</Card>
 
 {#snippet footer()}
 	<div class="card-actions flex justify-between">
@@ -262,7 +326,7 @@
 					</span>
 				</button>
 			</form> -->
-			<button
+			<!-- <button
 				class="btn-info-container btn btn-circle btn-gradient"
 				onclick={() => (edit ? (edit = false) : (edit = true))}
 				aria-label="Edit Button"
@@ -276,7 +340,7 @@
 			</button>
 			<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share Button">
 				<span class="icon-[tabler--share-2]"></span>
-			</button>
+			</button> -->
 			<!-- <form action="?/delete" method="POST" use:enhance={() => 
                     {
                         return async ({result, update}) => {
@@ -299,37 +363,22 @@
                     <span class="icon-[tabler--trash]"></span>
                 </button>
             </form> -->
-			<button
+			<!-- <button
 				class="btn-error-container btn btn-circle btn-gradient"
 				aria-label="Delete Button"
 				onclick={deleteResource}
 			>
 				<span class="icon-[tabler--trash]"></span>
-			</button>
+			</button> -->
+			{#if edit}
+				<button
+					class="btn-success-container btn btn-circle btn-gradient"
+					onclick={() => (edit = false)}
+					aria-label="Done"
+				>
+					<span class="icon-[mingcute--check-2-fill]"></span>
+				</button>
+			{/if}
 		</div>
 	</div>
 {/snippet}
-
-<Card bind:this={card} {id} {header} {footer}>
-	{#if edit}
-		<div class="relative">
-			<textarea
-				class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
-				id="description_{id}"
-				onblur={() => createOrUpdateResource()}
-				bind:value={description}
-				placeholder="Describe the demo resource here."
-			></textarea>
-			<label
-				class="text-label-small md:text-label textarea-filled-label"
-				style="color: oklch(var(--p));"
-				for="description_{id}">Description</label
-			>
-			<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
-		</div>
-	{:else}
-		<p class="text-body-small md:text-body text-primary-container-content">
-			{description || 'No description available'}
-		</p>
-	{/if}
-</Card>
