@@ -7,7 +7,8 @@
 		header,
 		children,
 		footer
-	}: { id: string; extraClasses?: string, header?: Snippet; children: Snippet; footer?: Snippet } = $props();
+	}: { id: string; extraClasses?: string; header?: Snippet; children: Snippet; footer?: Snippet } =
+		$props();
 
 	export const remove = () => {
 		const card = document.getElementById(id);

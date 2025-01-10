@@ -206,7 +206,7 @@
 				{name}
 			</h5> -->
 		</div>
-		<div class="flex flex-row gap-4 items-start">
+		<div class="flex flex-row items-start gap-4">
 			{#if category}
 				<span
 					id={category_id}
@@ -219,28 +219,48 @@
 				<span class="icon-[twemoji--flag-{flag}] size-6"></span>
 			{/if}
 			<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
-				<span id="dropdown-menu-icon" class="icon-[tabler--dots-vertical] size-6 dropdown-toggle" role="button" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown"></span>
+				<span
+					id="dropdown-menu-icon"
+					class="dropdown-toggle icon-[tabler--dots-vertical] size-6"
+					role="button"
+					aria-haspopup="menu"
+					aria-expanded="false"
+					aria-label="Dropdown"
+				></span>
 				<!-- <button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-text btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
 					<span class="icon-[tabler--dots-vertical] size-6"></span>
 				</button> -->
-				<ul class="dropdown-menu dropdown-open:opacity-100 bg-base-300 shadow-sm shadow-outline hidden" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-menu-icon">
+				<ul
+					class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+					role="menu"
+					aria-orientation="vertical"
+					aria-labelledby="dropdown-menu-icon"
+				>
 					<li class=" items-center">
-						<button class="dropdown-item btn btn-text justify-start" aria-label="Edit Button" onclick={() => (edit ? (edit = false) : (edit = true))}><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button>
+						<button
+							class="btn dropdown-item btn-text justify-start"
+							aria-label="Edit Button"
+							onclick={() => (edit ? (edit = false) : (edit = true))}
+							><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
+						>
 					</li>
 					<li class="items-center">
-						<button class="dropdown-item btn btn-text justify-start"><span class="icon-[tabler--share-2]"></span>Share</button>
+						<button class="btn dropdown-item btn-text justify-start"
+							><span class="icon-[tabler--share-2]"></span>Share</button
+						>
 					</li>
 					<li class="dropdown-footer gap-2">
-						<button class="dropdown-item btn btn-text btn-error justify-start" aria-label="Delete Button"
-						onclick={deleteResource}><span class="icon-[tabler--trash]"></span>Delete</button>
+						<button
+							class="btn dropdown-item btn-error btn-text justify-start"
+							aria-label="Delete Button"
+							onclick={deleteResource}><span class="icon-[tabler--trash]"></span>Delete</button
+						>
 					</li>
 				</ul>
 			</div>
 		</div>
 	</div>
 {/snippet}
-
-
 
 <Card bind:this={card} {id} {header} {footer}>
 	{#if edit}
@@ -351,7 +371,11 @@
 				<span class="icon-[tabler--trash]"></span>
 			</button> -->
 			{#if edit}
-				<button class="btn-success-container btn btn-circle btn-gradient" onclick={() => edit=false} aria-label="Done">
+				<button
+					class="btn-success-container btn btn-circle btn-gradient"
+					onclick={() => (edit = false)}
+					aria-label="Done"
+				>
 					<span class="icon-[mingcute--check-2-fill]"></span>
 				</button>
 			{/if}

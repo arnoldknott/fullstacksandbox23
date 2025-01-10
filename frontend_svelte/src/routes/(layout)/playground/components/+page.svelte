@@ -5,7 +5,7 @@
 	import { onDestroy } from 'svelte';
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
-	import type { IOverlay } from 'flyonui/flyonui';
+	// import type { IOverlay } from 'flyonui/flyonui';
 	import Card from '$components/Card.svelte';
 
 	// for status sliders:
@@ -141,28 +141,29 @@
 				</div>
 			</Card>
 			{#snippet footerChat()}
-			<div class="flex flex-row items-center gap-2">
-				<div class="relative grow">
-					<input
-						type="text"
-						placeholder="Send a message here"
-						class="input input-filled peer grow border-secondary shadow-sm shadow-outline"
-						id="chattMessage"
-					/>
-					<label
-						class="text-label-small md:text-label input-filled-label grow"
-						style="color: oklch(var(--s));"
-						for="chatMessage">♡ What's on your heart?</label
+				<div class="flex flex-row items-center gap-2">
+					<div class="relative grow">
+						<input
+							type="text"
+							placeholder="Send a message here"
+							class="input input-filled peer grow border-secondary shadow-sm shadow-outline"
+							id="chattMessage"
+						/>
+						<label
+							class="text-label-small md:text-label input-filled-label grow"
+							style="color: oklch(var(--s));"
+							for="chatMessage">♡ What's on your heart?</label
+						>
+						<span class="input-filled-focused grow" style="background-color: oklch(var(--s));"
+						></span>
+					</div>
+					<button
+						class="btn-secondary-container btn btn-circle btn-gradient"
+						aria-label="Add Icon Button"
 					>
-					<span class="input-filled-focused grow" style="background-color: oklch(var(--s));"
-					></span>
-				</div>
-				<button
-					class="btn-secondary-container btn btn-circle btn-gradient"
-					aria-label="Add Icon Button">
 						<span class="icon-[tabler--send-2]"></span>
-				</button>
-			</div>
+					</button>
+				</div>
 			{/snippet}
 		</div>
 	</div>
@@ -255,21 +256,39 @@
 					<div>
 						<h5 class="text-title md:text-title-large card-title">Card with editable text</h5>
 					</div>
-					<div class="flex flex-row gap-4 items-start">
+					<div class="flex flex-row items-start gap-4">
 						<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
-							<span id="dropdown-menu-icon" class="icon-[tabler--dots-vertical] size-6 dropdown-toggle" role="button" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown"></span>
+							<span
+								id="dropdown-menu-icon"
+								class="dropdown-toggle icon-[tabler--dots-vertical] size-6"
+								role="button"
+								aria-haspopup="menu"
+								aria-expanded="false"
+								aria-label="Dropdown"
+							></span>
 							<!-- <button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-text btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
 								<span class="icon-[tabler--dots-vertical] size-6"></span>
 							</button> -->
-							<ul class="dropdown-menu dropdown-open:opacity-100 bg-base-300 shadow-sm shadow-outline hidden" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-menu-icon">
+							<ul
+								class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+								role="menu"
+								aria-orientation="vertical"
+								aria-labelledby="dropdown-menu-icon"
+							>
 								<li class=" items-center">
-									<button class="dropdown-item btn btn-text justify-start"><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button>
+									<button class="btn dropdown-item btn-text justify-start"
+										><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
+									>
 								</li>
 								<li class="items-center">
-									<button class="dropdown-item btn btn-text justify-start"><span class="icon-[tabler--share-2]"></span>Share</button>
+									<button class="btn dropdown-item btn-text justify-start"
+										><span class="icon-[tabler--share-2]"></span>Share</button
+									>
 								</li>
 								<li class="dropdown-footer gap-2">
-									<button class="dropdown-item btn btn-text btn-error justify-start"><span class="icon-[tabler--trash]"></span>Delete</button>
+									<button class="btn dropdown-item btn-error btn-text justify-start"
+										><span class="icon-[tabler--trash]"></span>Delete</button
+									>
 								</li>
 							</ul>
 						</div>
@@ -277,10 +296,11 @@
 				</div>
 			{/snippet}
 			<Card id="cardEdit" extraClasses="md:w-4/5" header={headerEdit}>
-				<div class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline">
+				<div
+					class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
+				>
 					Some text
 				</div>
-
 			</Card>
 		</div>
 	</div>
@@ -715,8 +735,6 @@
 			Open modal
 		</button>
 
-
-
 		<!--
 		removed from button: 
 		onclick={openModal}
@@ -726,7 +744,6 @@
 
 		<!-- <div bind:this={modal} id="basic-modal" class="overlay modal overlay-open:opacity-100 hidden" role="dialog" tabindex="-1"> -->
 		<div
-			
 			id="basic-modal"
 			class="overlay modal hidden overlay-open:opacity-100"
 			role="dialog"
@@ -763,21 +780,19 @@
 		</div>
 
 		<button
-		type="button"
-		class="btn btn-primary"
-		aria-haspopup="dialog"
-		aria-expanded="false"
-		aria-controls="centered-modal"
-		data-overlay="#centered-modal">
+			type="button"
+			class="btn btn-primary"
+			aria-haspopup="dialog"
+			aria-expanded="false"
+			aria-controls="centered-modal"
+			data-overlay="#centered-modal"
+		>
 			Open centered modal
 		</button>
 
-
-
 		<div
-			
 			id="centered-modal"
-			class="overlay modal hidden overlay-open:opacity-100 modal-middle"
+			class="overlay modal modal-middle hidden overlay-open:opacity-100"
 			role="dialog"
 			tabindex="-1"
 		>
@@ -812,20 +827,19 @@
 		</div>
 
 		<button
-		type="button"
-		class="btn btn-primary"
-		aria-haspopup="dialog"
-		aria-expanded="false"
-		aria-controls="share-modal"
-		data-overlay="#share-modal">
+			type="button"
+			class="btn btn-primary"
+			aria-haspopup="dialog"
+			aria-expanded="false"
+			aria-controls="share-modal"
+			data-overlay="#share-modal"
+		>
 			Open share modal
 		</button>
 
-
 		<div
-			
 			id="share-modal"
-			class="overlay modal hidden overlay-open:opacity-100 modal-middle"
+			class="overlay modal modal-middle hidden overlay-open:opacity-100"
 			role="dialog"
 			tabindex="-1"
 		>
@@ -846,13 +860,14 @@
 						<div class="w-full overflow-x-auto">
 							TBD: add dropdown for selecting new groups here<br />
 							TBD: add a heading for the table: existing permissions<br />
-							TBD: make existing permissions clickable / editable with dropdowns on click and add delete button<br />
+							TBD: make existing permissions clickable / editable with dropdowns on click and add delete
+							button<br />
 							<table class="table shadow-inner">
 								<thead>
 									<tr>
 										<th>Group</th>
 										<th>Rights</th>
-										</tr>
+									</tr>
 								</thead>
 								<tbody>
 									<tr>
@@ -865,7 +880,9 @@
 									</tr>
 									<tr>
 										<td class="text-nowrap">And one more groups name here, so group3 </td>
-										<td class="text-center"><span class="icon-[material-symbols--edit-outline-rounded]"></span></td>
+										<td class="text-center"
+											><span class="icon-[material-symbols--edit-outline-rounded]"></span></td
+										>
 									</tr>
 									<tr>
 										<td class="text-nowrap">Group 4</td>
