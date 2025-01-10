@@ -52,6 +52,9 @@
 		unsbscribeThemeStore();
 	});
 
+	// for edit button:
+	let edit = $state(false);
+
 	// for theme picker:
 	let sourceColor = $state('#769CDF');
 	let variant = $state('TONAL_SPOT');
@@ -573,6 +576,19 @@
 				</button>
 				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share Button">
 					<span class="icon-[tabler--share-2]"></span>
+				</button>
+				<p class="text-label text-center">State changing buttons</p>
+				<button
+					class="btn-info-container btn btn-circle btn-gradient"
+					onclick={() => (edit ? (edit = false) : (edit = true))}
+					aria-label="Edit Button"
+				>
+					<span class="grid place-items-center">
+						<span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
+						></span>
+						<span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
+						></span>
+					</span>
 				</button>
 			</div>
 		</div>

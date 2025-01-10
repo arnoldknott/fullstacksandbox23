@@ -206,7 +206,7 @@
 				{name}
 			</h5> -->
 		</div>
-		<div class="flex flex-row gap-2">
+		<div class="flex flex-row gap-4 items-start">
 			{#if category}
 				<span
 					id={category_id}
@@ -219,22 +219,51 @@
 				<span class="icon-[twemoji--flag-{flag}] size-6"></span>
 			{/if}
 			<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
-				<button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-soft btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-					<span class="icon-[tabler--dots-vertical] size-4"></span>
-				</button>
-				<ul class="dropdown-menu dropdown-open:opacity-100 hidden min-w-60" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-menu-icon">
-					<li><a class="dropdown-item" href="#top">My Profile</a></li>
-					<li><a class="dropdown-item" href="#top">Settings</a></li>
-					<li><a class="dropdown-item" href="#top">Billing</a></li>
-					<li><a class="dropdown-item" href="#top">FAQs</a></li>
+				<span id="dropdown-menu-icon" class="icon-[tabler--dots-vertical] size-6 dropdown-toggle" role="button" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown"></span>
+				<!-- <button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-text btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
+					<span class="icon-[tabler--dots-vertical] size-6"></span>
+				</button> -->
+				<ul class="dropdown-menu dropdown-open:opacity-100 bg-base-300 shadow-sm shadow-outline hidden" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-menu-icon">
+					<li class=" items-center">
+						<button class="dropdown-item btn btn-text justify-start"><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button>
+					</li>
+					<li class="items-center">
+						<button class="dropdown-item btn btn-text justify-start"><span class="icon-[tabler--share-2]"></span>Share</button>
+					</li>
 					<li class="dropdown-footer gap-2">
-						<button class="btn btn-primary">Upgrade</button>
+						<button class="dropdown-item btn btn-text btn-error justify-start"><span class="icon-[tabler--trash]"></span>Delete</button>
 					</li>
 				</ul>
 			</div>
 		</div>
 	</div>
 {/snippet}
+
+
+
+<Card bind:this={card} {id} {header} {footer}>
+	{#if edit}
+		<div class="relative">
+			<textarea
+				class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
+				id="description_{id}"
+				onblur={() => createOrUpdateResource()}
+				bind:value={description}
+				placeholder="Describe the demo resource here."
+			></textarea>
+			<label
+				class="text-label-small md:text-label textarea-filled-label"
+				style="color: oklch(var(--p));"
+				for="description_{id}">Description</label
+			>
+			<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
+		</div>
+	{:else}
+		<p class="text-body-small md:text-body text-primary-container-content">
+			{description || 'No description available'}
+		</p>
+	{/if}
+</Card>
 
 {#snippet footer()}
 	<div class="card-actions flex justify-between">
@@ -323,27 +352,3 @@
 		</div>
 	</div>
 {/snippet}
-
-<Card bind:this={card} {id} {header} {footer}>
-	{#if edit}
-		<div class="relative">
-			<textarea
-				class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
-				id="description_{id}"
-				onblur={() => createOrUpdateResource()}
-				bind:value={description}
-				placeholder="Describe the demo resource here."
-			></textarea>
-			<label
-				class="text-label-small md:text-label textarea-filled-label"
-				style="color: oklch(var(--p));"
-				for="description_{id}">Description</label
-			>
-			<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
-		</div>
-	{:else}
-		<p class="text-body-small md:text-body text-primary-container-content">
-			{description || 'No description available'}
-		</p>
-	{/if}
-</Card>
