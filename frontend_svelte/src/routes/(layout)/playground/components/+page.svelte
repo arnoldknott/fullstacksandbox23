@@ -711,10 +711,11 @@
 			aria-expanded="false"
 			aria-controls="basic-modal"
 			data-overlay="#basic-modal"
-
 		>
 			Open modal
 		</button>
+
+
 
 		<!--
 		removed from button: 
@@ -734,7 +735,7 @@
 			<div class="modal-dialog overlay-open:opacity-100">
 				<div class="modal-content bg-base-300">
 					<div class="modal-header">
-						<h3 class="modal-text-title">Dialog Title</h3>
+						<h3 class="modal-text-title">First Dialog Title</h3>
 						<button
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
@@ -760,6 +761,130 @@
 				</div>
 			</div>
 		</div>
+
+		<button
+		type="button"
+		class="btn btn-primary"
+		aria-haspopup="dialog"
+		aria-expanded="false"
+		aria-controls="centered-modal"
+		data-overlay="#centered-modal">
+			Open centered modal
+		</button>
+
+
+
+		<div
+			
+			id="centered-modal"
+			class="overlay modal hidden overlay-open:opacity-100 modal-middle"
+			role="dialog"
+			tabindex="-1"
+		>
+			<div class="modal-dialog overlay-open:opacity-100">
+				<div class="modal-content bg-base-300">
+					<div class="modal-header">
+						<h3 class="modal-text-title">Centered Dialog Title</h3>
+						<button
+							type="button"
+							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+							aria-label="Close"
+							data-overlay="#basic-modal"
+						>
+							<span class="icon-[tabler--x] size-4"></span>
+						</button>
+					</div>
+					<div class="modal-body">
+						This is some placeholder content to show the scrolling behavior for modals. Instead of
+						repeating the text in the modal, we use an inline style to set a minimum height, thereby
+						extending the length of the overall modal and demonstrating the overflow scrolling. When
+						content becomes longer than the height of the viewport, scrolling will move the modal as
+						needed.
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary btn-soft" data-overlay="#centered-modal"
+							>Close</button
+						>
+						<button type="button" class="btn btn-primary">Save changes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<button
+		type="button"
+		class="btn btn-primary"
+		aria-haspopup="dialog"
+		aria-expanded="false"
+		aria-controls="share-modal"
+		data-overlay="#share-modal">
+			Open share modal
+		</button>
+
+
+		<div
+			
+			id="share-modal"
+			class="overlay modal hidden overlay-open:opacity-100 modal-middle"
+			role="dialog"
+			tabindex="-1"
+		>
+			<div class="modal-dialog overlay-open:opacity-100">
+				<div class="modal-content bg-base-300 shadow-xl shadow-outline">
+					<div class="modal-header">
+						<h3 class="modal-text-title">Share</h3>
+						<button
+							type="button"
+							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+							aria-label="Close"
+							data-overlay="#basic-modal"
+						>
+							<span class="icon-[tabler--x] size-4"></span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="w-full overflow-x-auto">
+							TBD: add dropdown for selecting new groups here<br />
+							TBD: add a heading for the table: existing permissions<br />
+							TBD: make existing permissions clickable / editable with dropdowns on click and add delete button<br />
+							<table class="table shadow-inner">
+								<thead>
+									<tr>
+										<th>Group</th>
+										<th>Rights</th>
+										</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td class="text-nowrap">First group's name here </td>
+										<td class="text-center"><span class="icon-[tabler--eye]"></span></td>
+									</tr>
+									<tr>
+										<td class="text-nowrap">Another groups name comes here </td>
+										<td class="text-center"><span class="icon-[tabler--eye]"></span></td>
+									</tr>
+									<tr>
+										<td class="text-nowrap">And one more groups name here, so group3 </td>
+										<td class="text-center"><span class="icon-[material-symbols--edit-outline-rounded]"></span></td>
+									</tr>
+									<tr>
+										<td class="text-nowrap">Group 4</td>
+										<td class="text-center"><span class="icon-[tabler--key-filled]"></span></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary btn-soft" data-overlay="#share-modal"
+							>Close</button
+						>
+						<button type="button" class="btn btn-primary">Save changes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<HorizontalRule />
 	</div>
 
