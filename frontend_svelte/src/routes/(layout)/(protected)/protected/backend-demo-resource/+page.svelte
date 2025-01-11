@@ -21,8 +21,8 @@
 	let newDemoResources = $state<DemoResource[]>([]);
 
 	const demoResourceTemplate: DemoResource = {
-		id: "",
-		name: "",
+		id: '',
+		name: '',
 		description: undefined,
 		language: undefined
 	};

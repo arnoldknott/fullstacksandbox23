@@ -118,8 +118,8 @@ export const actions: Actions = {
 			const payload = await response.json();
 			return {
 				id: payload.id,
-				status: "created"
-			}
+				status: 'created'
+			};
 			// return payload;
 		}
 
@@ -155,11 +155,11 @@ export const actions: Actions = {
 		const response = await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
 		if (response.status === 200) {
 			return {
-				status: "deleted"
-			}
+				status: 'deleted'
+			};
 		}
 		// if (response.status !== 200) {
 		// 	return fail(response.status, { error: response.statusText });
 		// }
 	}
-} //satisfies Actions;
+}; //satisfies Actions;
