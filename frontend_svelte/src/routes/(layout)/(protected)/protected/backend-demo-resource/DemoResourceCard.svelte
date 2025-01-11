@@ -115,7 +115,11 @@
 			// createResource();
 		} else {
 			submitButton.formAction = `?/put`;
-			createUpdateForm?.formData?.append('id', id);
+			submitButton.name = 'id';
+			submitButton.value = id;
+			// createUpdateForm?.formData?.append('id', id);
+			// console.log('=== createUpdateForm.formData before updating ===');
+			// console.log(createUpdateForm?.formData);
 		}
 		console.log('=== createUpdateForm.formData ===');
 		console.log(createUpdateForm?.formData);

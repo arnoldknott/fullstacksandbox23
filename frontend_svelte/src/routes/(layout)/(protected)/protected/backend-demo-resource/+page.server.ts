@@ -43,7 +43,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// 	}
 	// });
 
-	const response = await backendAPI.get(sessionId, '/demoresource');
+	const response = await backendAPI.get(sessionId, '/demoresource/');
 	const demoResources = await response.json();
 	const resourceIds = demoResources.map((resource: DemoResource) => resource.id);
 	const creationDataResponse = await backendAPI.post(
@@ -103,7 +103,6 @@ export const actions = {
 
 		// const payload = Object.fromEntries(data);
 
-
 		const sessionId = locals.sessionData.sessionId;
 		const response = await backendAPI.post(sessionId, '/demoresource', data);
 		// console.log('=== response ===');
@@ -135,6 +134,8 @@ export const actions = {
 	put: async ({ locals, request }) => {
 		console.log('=== routes - demo-resource - page.server - put function executed ===');
 		const data = await request.formData();
+		console.log('=== data ===');
+		console.log(data);
 		// const payload = JSON.parse(Object.fromEntries(data));
 		// console.log('=== payload ===');
 		// console.log(payload);
