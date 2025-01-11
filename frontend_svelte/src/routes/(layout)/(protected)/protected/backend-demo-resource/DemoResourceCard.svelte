@@ -41,6 +41,11 @@
 		creation_date = demoResource.creation_date;
 	}
 
+	// use "ready" when the data is loaded
+	// use "loading" when the data is being fetched - TBD
+	// use "pending" when the data is being saved or not all required fields are filled
+	// use "deleted" when the data is deleted
+	// use "error" when the data is in an error state
 	let status = $state('ready');
 
 	// let edit = $state(false);
@@ -105,8 +110,6 @@
 		submitButton.classList.add('hidden');
 		submitButton.setAttribute('form', `form_${id}`);
 
-		console.log('=== createOrUpdateResource - id ===');
-		console.log(id.slice(0,4));
 
 		if (id.slice(0,4) === "new_") {
 			console.log("=== create new Resource ===");
@@ -117,17 +120,19 @@
 			submitButton.formAction = `?/put`;
 			submitButton.name = 'id';
 			submitButton.value = id;
-			// createUpdateForm?.formData?.append('id', id);
-			// console.log('=== createUpdateForm.formData before updating ===');
-			// console.log(createUpdateForm?.formData);
 		}
-		console.log('=== createUpdateForm.formData ===');
-		console.log(createUpdateForm?.formData);
 		createUpdateForm?.appendChild(submitButton);
 		createUpdateForm?.requestSubmit(submitButton);
 		createUpdateForm?.removeChild(submitButton);
-		console.log('=== createUpdateForm id after creating ===');
-		console.log(createUpdateForm?.id);
+
+		if (id.slice(0,4) === "new_") {
+			return async ({result, update}) => {
+				console.log('=== result ===');
+				console.log(result);
+
+			}
+		}
+
 
 			// This code could be shared with createResource, but should be removed anyways, when form actions are available.
 

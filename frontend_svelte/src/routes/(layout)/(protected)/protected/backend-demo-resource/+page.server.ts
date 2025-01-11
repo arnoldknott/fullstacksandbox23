@@ -104,7 +104,7 @@ export const actions = {
 		// const payload = Object.fromEntries(data);
 
 		const sessionId = locals.sessionData.sessionId;
-		const response = await backendAPI.post(sessionId, '/demoresource', data);
+		const response = await backendAPI.post(sessionId, '/demoresource/', data);
 		// console.log('=== response ===');
 		// console.log(response);
 		// console.log('=== payload ===');
@@ -119,7 +119,7 @@ export const actions = {
 				id: payload.id,
 				status: "created"
 			}
-			return payload;
+			// return payload;
 		}
 
 		// console.log("=== data ===");
@@ -134,8 +134,6 @@ export const actions = {
 	put: async ({ locals, request }) => {
 		console.log('=== routes - demo-resource - page.server - put function executed ===');
 		const data = await request.formData();
-		console.log('=== data ===');
-		console.log(data);
 		// const payload = JSON.parse(Object.fromEntries(data));
 		// console.log('=== payload ===');
 		// console.log(payload);
