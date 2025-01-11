@@ -28,7 +28,7 @@
 		demoResource,
 		edit = false,
 		form
-	}: { demoResource: DemoResource | DemoResourceWithCreationDate; edit?: boolean, form: ActionData } = $props();
+	}: { demoResource: DemoResource | DemoResourceWithCreationDate; edit?: boolean, form?: ActionData } = $props();
 	let id = $state(demoResource.id || form?.id ||  'new_' + Math.random().toString(36).substring(2, 9));
 	let name = $state(demoResource.name);
 	let description = $state(demoResource.description);
