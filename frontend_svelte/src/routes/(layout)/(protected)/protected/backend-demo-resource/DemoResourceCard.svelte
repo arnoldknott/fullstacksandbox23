@@ -4,6 +4,8 @@
 	import { error } from '@sveltejs/kit';
 	import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
 	import { deserialize } from '$app/forms';
+	import { enhance } from '$app/forms';
+	import type { ActionData } from './$types';
 
 	// let {
 	// 	id,
@@ -24,9 +26,10 @@
 	// } = $props();
 	let {
 		demoResource,
-		edit = false
-	}: { demoResource: DemoResource | DemoResourceWithCreationDate; edit?: boolean } = $props();
-	let id = $state(demoResource.id || 'new_' + Math.random().toString(36).substring(2, 9));
+		edit = false,
+		form
+	}: { demoResource: DemoResource | DemoResourceWithCreationDate; edit?: boolean, form: ActionData } = $props();
+	let id = $state(demoResource.id || form?.id ||  'new_' + Math.random().toString(36).substring(2, 9));
 	let name = $state(demoResource.name);
 	let description = $state(demoResource.description);
 	let language = $state(demoResource.language);
@@ -37,6 +40,9 @@
 	if ('creation_date' in demoResource) {
 		creation_date = demoResource.creation_date;
 	}
+
+	let status = $state('ready');
+
 	// let edit = $state(false);
 	let flag = $state(
 		language === 'en-US'
@@ -93,52 +99,80 @@
 	};
 
 	const createOrUpdateResource = async () => {
-		if (id.slice(0,3) == "new_") {
-			createResource();
+		const submitButton = document.createElement('button');
+        submitButton.type = 'submit';
+        // submitButton.style.display = 'none';
+		submitButton.classList.add('hidden');
+		submitButton.setAttribute('form', `form_${id}`);
+
+		console.log('=== createOrUpdateResource - id ===');
+		console.log(id.slice(0,4));
+
+		if (id.slice(0,4) === "new_") {
+			console.log("=== create new Resource ===");
+			submitButton.formAction = `?/post`;
+
+			// createResource();
 		} else {
-			const formData = new FormData();
-			formData.append('id', id);
-			formData.append('name', name);
-			if (description) {
-				formData.append('description', description);
-			}
-			if (language) {
-				formData.append('language', language);
-			}
-			if (category_id) formData.append('category_id', category_id);
-			const response = await fetch(`?/put`, {
-				method: 'POST',
-				body: formData
-			});
-			if (response.status === 200) {
-				// console.log('=== response ===');
-				// console.log(response);
-				// await update();
-			} else {
-				throw error(response.status || 404, 'Failed to update resource');
-			}
+			submitButton.formAction = `?/put`;
+			createUpdateForm?.formData?.append('id', id);
 		}
+		console.log('=== createUpdateForm.formData ===');
+		console.log(createUpdateForm?.formData);
+		createUpdateForm?.appendChild(submitButton);
+		createUpdateForm?.requestSubmit(submitButton);
+		createUpdateForm?.removeChild(submitButton);
+		console.log('=== createUpdateForm id after creating ===');
+		console.log(createUpdateForm?.id);
+
+			// This code could be shared with createResource, but should be removed anyways, when form actions are available.
+
+			//  === All of this worked - without form, but seems overkill to do in JavaScript, if Form actions are available and can do the job.
+			// const formData = new FormData();
+			// formData.append('id', id);
+			// formData.append('name', name);
+			// if (description) {
+			// 	formData.append('description', description);
+			// }
+			// if (language) {
+			// 	formData.append('language', language);
+			// }
+			// if (category_id) formData.append('category_id', category_id);
+			// const response = await fetch(`?/put`, {
+			// 	method: 'POST',
+			// 	body: formData
+			// });
+			// if (response.status === 200) {
+			// 	// console.log('=== response ===');
+			// 	// console.log(response);
+			// 	// await update();
+			// } else {
+			// 	throw error(response.status || 404, 'Failed to update resource');
+			// }
+			// === end of what worked without form
+		// }
 	};
 
 	// const deleteResource = ( ) => {
 	//     card.remove();
 	// }
 	const deleteResource = async () => {
-		const formData = new FormData();
-		if (!id) {
-			throw error(404, 'No id available');
-		} else {
-			formData.append('id', id);
-			const response = await fetch(`?/delete`, {
-				method: 'POST',
-				body: formData
-			});
-			if (response.status === 200) {
-				card.remove();
-			} else {
-				throw error(response.status || 404, 'Failed to delete resource');
-			}
-		}
+		// TBD: check if successfully deleted"
+		// const formData = new FormData();
+		// if (!id || id.slice(0,3) == "new_") {
+		// 	throw error(404, 'No id available');
+		// } else {
+		// 	formData.append('id', id);
+		// 	const response = await fetch(`?/delete`, {
+		// 		method: 'POST',
+		// 		body: formData
+		// 	});
+		// 	if (response.status === 200) {
+		// 		card.remove();
+		// 	} else {
+		// 		throw error(response.status || 404, 'Failed to delete resource');
+		// 	}
+		// }
 	};
 </script>
 
@@ -152,6 +186,7 @@
 						class="border-content text-title-small md:text-title base-content card-title input input-filled peer"
 						id="name_{id}"
 						form="form_{id}"
+						name="name"
 						onblur={() => createOrUpdateResource()}
 						bind:value={name}
 						placeholder="Name the demo resource"
@@ -226,11 +261,17 @@
 						>
 					</li>
 					<li class="dropdown-footer gap-2">
-						<button
-							class="btn dropdown-item btn-error btn-text justify-start"
-							aria-label="Delete Button"
-							onclick={deleteResource}><span class="icon-[tabler--trash]"></span>Delete</button
-						>
+						<form method="POST" use:enhance={() => card.remove()}>
+							<button
+								class="btn dropdown-item btn-error btn-text justify-start"
+								aria-label="Delete Button"
+								name="id"
+								value={id}
+								formaction="?/delete"
+								><span class="icon-[tabler--trash]"></span>Delete</button
+							>
+						</form>
+						<!-- onclick={deleteResource} -->
 					</li>
 				</ul>
 			</div>
@@ -240,12 +281,13 @@
 
 <Card bind:this={card} {id} {header} {footer}>
 	{#if edit}
-		<form method="POST" bind:this={createUpdateForm} id="form_{id}">
+		<form method="POST" use:enhance bind:this={createUpdateForm} id="form_{id}">
 			<div class="relative">
 				<textarea
 					class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
 					id="description_{id}"
 					onblur={() => createOrUpdateResource()}
+					name="description"
 					bind:value={description}
 					placeholder="Describe the demo resource here."
 				></textarea>
@@ -258,6 +300,9 @@
 			</div>
 		</form>
 	{:else}
+		{#if form?.status == "created"}
+			Successfully created resource - remove this message again
+		{/if}
 		<p class="text-body-small md:text-body text-primary-container-content">
 			{description || 'No description available'}
 		</p>

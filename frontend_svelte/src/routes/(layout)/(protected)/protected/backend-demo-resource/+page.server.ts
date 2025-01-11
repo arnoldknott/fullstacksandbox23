@@ -103,6 +103,7 @@ export const actions = {
 
 		// const payload = Object.fromEntries(data);
 
+
 		const sessionId = locals.sessionData.sessionId;
 		const response = await backendAPI.post(sessionId, '/demoresource', data);
 		// console.log('=== response ===');
@@ -115,8 +116,10 @@ export const actions = {
 			return fail(response.status, { error: response.statusText });
 		} else {
 			const payload = await response.json();
-			// console.log('=== payload ===');
-			// console.log(payload);
+			return {
+				id: payload.id,
+				status: "created"
+			}
 			return payload;
 		}
 
@@ -130,6 +133,7 @@ export const actions = {
 		// console.log(payload);
 	},
 	put: async ({ locals, request }) => {
+		console.log('=== routes - demo-resource - page.server - put function executed ===');
 		const data = await request.formData();
 		// const payload = JSON.parse(Object.fromEntries(data));
 		// console.log('=== payload ===');
@@ -143,11 +147,17 @@ export const actions = {
 		}
 	},
 	delete: async ({ locals, request }) => {
+		console.log('=== routes - demo-resource - page.server - delete function executed ===');
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
 		const response = await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
-		if (response.status !== 200) {
-			return fail(response.status, { error: response.statusText });
+		if (response.status === 200) {
+			return {
+				status: "deleted"
+			}
 		}
+		// if (response.status !== 200) {
+		// 	return fail(response.status, { error: response.statusText });
+		// }
 	}
 } satisfies Actions;
