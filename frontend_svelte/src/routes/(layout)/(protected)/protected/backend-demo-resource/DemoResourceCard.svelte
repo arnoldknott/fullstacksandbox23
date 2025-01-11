@@ -26,7 +26,7 @@
 		demoResource,
 		edit = false
 	}: { demoResource: DemoResource | DemoResourceWithCreationDate; edit?: boolean } = $props();
-	let id = $state(demoResource.id || '');
+	let id = $state(demoResource.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let name = $state(demoResource.name);
 	let description = $state(demoResource.description);
 	let language = $state(demoResource.language);
@@ -37,7 +37,6 @@
 	if ('creation_date' in demoResource) {
 		creation_date = demoResource.creation_date;
 	}
-
 	// let edit = $state(false);
 	let flag = $state(
 		language === 'en-US'
@@ -48,11 +47,14 @@
 					? 'germany'
 					: false
 	);
+
 	let card: Card;
+	let createUpdateForm = $state<HTMLFormElement | null>(null);
 
 	const createResource = async () => {
 		// check if all required fields are filled
 		if (name) {
+			//  === All of this worked - without form, but seems overkill to do in JavaScript, if Form actions are available and can do the job.
 			const formData = new FormData();
 			formData.append('name', name);
 			if (description) {
@@ -84,41 +86,14 @@
 				card.remove();
 				throw error(response.status || 404, 'Failed to create resource');
 			}
+			// === end of what worked without form
+			
 
-			// const payload = await response.json();
-			// console.log('=== payload ===');
-			// console.log(payload);
-			// console.log('=== typeof payload.data ===');
-			// console.log(typeof payload.data);
-			// console.log('=== payload.data ===');
-			// console.log(payload.data);
-
-			// const data = JSON.parse(payload.data);
-			// console.log('=== data ===');
-			// console.log(data);
-			// const data = await response.formData();
-			// const payload = Object.fromEntries(data.entries());
-			// console.log('=== payload ===');
-			// console.log(payload);
-			// const payload = await response.json();
-			// console.log('=== payload ===');
-			// console.log(payload);
-			// id = payload[0]
-			// console.log('=== id ===');
-			// console.log(id);
-			// console.log('=== payload ===');
-			// console.log(payload);
-			// console.log('=== payload.data ===');
-			// console.log(JSON.parse(payload.data));
-			// await update();
-			// } else {
-			//     throw error(response.status || 404, 'Failed to create resource');
-			// }
 		}
 	};
 
 	const createOrUpdateResource = async () => {
-		if (!id) {
+		if (id.slice(0,3) == "new_") {
 			createResource();
 		} else {
 			const formData = new FormData();
@@ -176,6 +151,7 @@
 						type="text"
 						class="border-content text-title-small md:text-title base-content card-title input input-filled peer"
 						id="name_{id}"
+						form="form_{id}"
 						onblur={() => createOrUpdateResource()}
 						bind:value={name}
 						placeholder="Name the demo resource"
@@ -264,21 +240,23 @@
 
 <Card bind:this={card} {id} {header} {footer}>
 	{#if edit}
-		<div class="relative">
-			<textarea
-				class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
-				id="description_{id}"
-				onblur={() => createOrUpdateResource()}
-				bind:value={description}
-				placeholder="Describe the demo resource here."
-			></textarea>
-			<label
-				class="text-label-small md:text-label textarea-filled-label"
-				style="color: oklch(var(--p));"
-				for="description_{id}">Description</label
-			>
-			<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
-		</div>
+		<form method="POST" bind:this={createUpdateForm} id="form_{id}">
+			<div class="relative">
+				<textarea
+					class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
+					id="description_{id}"
+					onblur={() => createOrUpdateResource()}
+					bind:value={description}
+					placeholder="Describe the demo resource here."
+				></textarea>
+				<label
+					class="text-label-small md:text-label textarea-filled-label"
+					style="color: oklch(var(--p));"
+					for="description_{id}">Description</label
+				>
+				<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
+			</div>
+		</form>
 	{:else}
 		<p class="text-body-small md:text-body text-primary-container-content">
 			{description || 'No description available'}
