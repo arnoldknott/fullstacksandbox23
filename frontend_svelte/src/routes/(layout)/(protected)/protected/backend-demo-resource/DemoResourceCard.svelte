@@ -1,7 +1,7 @@
 <script lang="ts">
 	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
-	import { error } from '@sveltejs/kit';
+	import { error, type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
 	import { deserialize } from '$app/forms';
 	import { enhance } from '$app/forms';
@@ -103,35 +103,43 @@
 		}
 	};
 
-	const createOrUpdateResource = async () => {
-		const submitButton = document.createElement('button');
-        submitButton.type = 'submit';
-        // submitButton.style.display = 'none';
-		submitButton.classList.add('hidden');
-		submitButton.setAttribute('form', `form_${id}`);
+	const formAction = $derived(id.slice(0,4) === "new_" ? "?/post" : "?/put")
+
+	const triggerSubmit = async () => {
+
+		createUpdateForm?.requestSubmit();
+	};
+
+	const createOrUpdateResource: SubmitFunction = async ({formElement}) => {
+		console.log('=== SubmitFunction triggered ===');
+		// const submitButton = document.createElement('button');
+        // submitButton.type = 'submit';
+        // // submitButton.style.display = 'none';
+		// submitButton.classList.add('hidden');
+		// submitButton.setAttribute('form', `form_${id}`);
 
 
-		if (id.slice(0,4) === "new_") {
-			console.log("=== create new Resource ===");
-			submitButton.formAction = `?/post`;
+		// if (id.slice(0,4) === "new_") {
+		// 	submitButton.formAction = `?/post`;
 
-			// createResource();
-		} else {
-			submitButton.formAction = `?/put`;
-			submitButton.name = 'id';
-			submitButton.value = id;
-		}
-		createUpdateForm?.appendChild(submitButton);
-		createUpdateForm?.requestSubmit(submitButton);
-		createUpdateForm?.removeChild(submitButton);
+		// 	// createResource();
+		// } else {
+		// 	submitButton.formAction = `?/put`;
+		// 	submitButton.name = 'id';
+		// 	submitButton.value = id;
+		// }
+		// formElement.appendChild(submitButton);
+		// formElement.requestSubmit(submitButton);
+		// formElement.removeChild(submitButton);
 
-		if (id.slice(0,4) === "new_") {
-			return async ({result, update}) => {
-				console.log('=== result ===');
-				console.log(result);
+		// return async ({result, update}) => {
+		// 		console.log('=== result ===');
+		// 		console.log(result);
+		// 		update()
+		// 	}
+		// if (id.slice(0,4) === "new_") {
 
-			}
-		}
+		// }
 
 
 			// This code could be shared with createResource, but should be removed anyways, when form actions are available.
@@ -196,7 +204,7 @@
 						id="name_{id}"
 						form="form_{id}"
 						name="name"
-						onblur={() => createOrUpdateResource()}
+						onblur={() => triggerSubmit()}	
 						bind:value={name}
 						placeholder="Name the demo resource"
 					/>
@@ -290,16 +298,17 @@
 
 <Card bind:this={card} {id} {header} {footer}>
 	{#if edit}
-		<form method="POST" use:enhance bind:this={createUpdateForm} id="form_{id}">
+		<form method="POST" use:enhance={createOrUpdateResource} bind:this={createUpdateForm} id="form_{id}" action={formAction}>
 			<div class="relative">
 				<textarea
 					class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
 					id="description_{id}"
-					onblur={() => createOrUpdateResource()}
+					onblur={() => triggerSubmit()}
 					name="description"
 					bind:value={description}
 					placeholder="Describe the demo resource here."
 				></textarea>
+				
 				<label
 					class="text-label-small md:text-label textarea-filled-label"
 					style="color: oklch(var(--p));"
