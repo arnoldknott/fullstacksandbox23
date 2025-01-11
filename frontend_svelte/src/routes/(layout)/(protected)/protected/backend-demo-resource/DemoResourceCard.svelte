@@ -1,9 +1,9 @@
 <script lang="ts">
 	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
-	import { error, type SubmitFunction } from '@sveltejs/kit';
+	import { type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
-	import { deserialize } from '$app/forms';
+	// import { deserialize } from '$app/forms';
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
 
@@ -67,7 +67,7 @@
 		createUpdateForm?.requestSubmit();
 	};
 
-	const createOrUpdateResource: SubmitFunction = async ({ formElement, formData }) => {
+	const createOrUpdateResource: SubmitFunction = async ({ formData }) => {
 		console.log('=== createOrUpdateResource triggered ===');
 		if (id.slice(0, 4) !== 'new_') {
 			formData.append('id', id);
@@ -75,7 +75,7 @@
 		// TBD: add validation here - if not all required fields are filled, otherwise cancel
 		// and mark the missing fields invalid
 
-		return async ({ result, update }) => {
+		return async ({ result }) => {
 			console.log('=== callback in submit function triggered ===');
 			if (id.slice(0, 4) === 'new_') {
 				// TBD: add manual typing due to bugs:
@@ -86,7 +86,6 @@
 			// update()
 		};
 	};
-
 </script>
 
 {#snippet header()}
