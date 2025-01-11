@@ -71,8 +71,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return { demoResourcesWithCreationDates };
 };
 
-export const actions = {
+export const actions: Actions = {
 	post: async ({ locals, request }) => {
+		console.log('=== routes - demo-resource - page.server - post function executed ===');
 		const data = await request.formData();
 
 		// before creating a class for backend access:
@@ -134,6 +135,8 @@ export const actions = {
 	put: async ({ locals, request }) => {
 		console.log('=== routes - demo-resource - page.server - put function executed ===');
 		const data = await request.formData();
+		console.log('=== data ===');
+		console.log(data);
 		// const payload = JSON.parse(Object.fromEntries(data));
 		// console.log('=== payload ===');
 		// console.log(payload);
@@ -159,4 +162,4 @@ export const actions = {
 		// 	return fail(response.status, { error: response.statusText });
 		// }
 	}
-} satisfies Actions;
+} //satisfies Actions;

@@ -106,12 +106,15 @@
 	const formAction = $derived(id.slice(0,4) === "new_" ? "?/post" : "?/put")
 
 	const triggerSubmit = async () => {
-
 		createUpdateForm?.requestSubmit();
 	};
 
-	const createOrUpdateResource: SubmitFunction = async ({formElement}) => {
-		console.log('=== SubmitFunction triggered ===');
+	const createOrUpdateResource: SubmitFunction = async ({formElement, formData}) => {
+		console.log("=== createOrUpdateResource triggered ===");
+		if (id.slice(0,4) !== "new_") {
+			formData.append('id', id);
+		}
+		// add validation here - if not all required fields are filled, otherwise cancel and mark the missing fields invalid
 		// const submitButton = document.createElement('button');
         // submitButton.type = 'submit';
         // // submitButton.style.display = 'none';
@@ -132,11 +135,18 @@
 		// formElement.requestSubmit(submitButton);
 		// formElement.removeChild(submitButton);
 
-		// return async ({result, update}) => {
-		// 		console.log('=== result ===');
-		// 		console.log(result);
-		// 		update()
-		// 	}
+		return async ({result, update}) => {
+			console.log("=== callback in submit function triggered ===");
+			console.log("=== result ===");
+			console.log(result);
+			// if result.status=
+			// console.log('=== result.data ===');
+			// console.log(result.data.status);
+			if (id.slice(0,4) === "new_") {
+				id = result.data.id;
+			}
+			// update()
+		}
 		// if (id.slice(0,4) === "new_") {
 
 		// }
