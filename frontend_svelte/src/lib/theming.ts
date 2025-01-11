@@ -884,7 +884,7 @@ export class Theming {
 		return {
 			configuration: colorConfig,
 			currentMode: mode,
-			...colorScheme
+			...colorScheme // TBD: should return colors here - removes the necessity to check for light and dark in other files!
 		};
 	}
 
@@ -931,7 +931,9 @@ export class Theming {
 				);
 			});
 		}
+		// Setting background and foreground colors for the targetElement to defaults
 		targetElement.style.backgroundColor = hexFromArgb(colors['background']);
+		targetElement.style.color = hexFromArgb(colors['onBackground']);
 	}
 
 	// consider moving to Colorization and add the instance of Colorization to the Theming class
