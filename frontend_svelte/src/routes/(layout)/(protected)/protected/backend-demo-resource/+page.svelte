@@ -19,15 +19,6 @@
 
 	let debug = $state(false);
 
-	let newDemoResources = $state<DemoResource[]>([]);
-
-	const demoResourceTemplate: DemoResource = {
-		id: '',
-		name: '',
-		description: undefined,
-		language: undefined
-	};
-
 	let demo_resource_dialog: Dialog;
 	// let name = $state('');
 	// let description = $state('');
