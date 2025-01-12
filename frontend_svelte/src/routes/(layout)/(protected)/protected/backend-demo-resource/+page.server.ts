@@ -5,8 +5,7 @@ import { fail } from '@sveltejs/kit';
 import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	console.log('=== routes - demo-resource - page.server - load function executed ===');
-
+	// console.log('=== routes - demo-resource - page.server - load function executed ===');
 	const sessionId = locals.sessionData.sessionId;
 
 	const response = await backendAPI.get(sessionId, '/demoresource/');
@@ -36,7 +35,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	post: async ({ locals, request }) => {
-		console.log('=== routes - demo-resource - page.server - post function executed ===');
+		// console.log('=== routes - demo-resource - page.server - post function executed ===');
 		const data = await request.formData();
 
 		const sessionId = locals.sessionData.sessionId;
@@ -59,7 +58,7 @@ export const actions: Actions = {
 		}
 	},
 	put: async ({ locals, request }) => {
-		console.log('=== routes - demo-resource - page.server - put function executed ===');
+		// console.log('=== routes - demo-resource - page.server - put function executed ===');
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
 		const response = await backendAPI.put(sessionId, `/demoresource/${data.get('id')}`, data);
@@ -68,7 +67,7 @@ export const actions: Actions = {
 		}
 	},
 	delete: async ({ locals, request }) => {
-		console.log('=== routes - demo-resource - page.server - delete function executed ===');
+		// console.log('=== routes - demo-resource - page.server - delete function executed ===');
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
 		const response = await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
