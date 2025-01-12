@@ -11,10 +11,11 @@
 	import '@material/web/select/select-option.js';
 	import '@material/web/list/list.js';
 	import '@material/web/list/list-item.js';
+	import { mount } from 'svelte'
 	import DemoResourceCard from './DemoResourceCard.svelte';
 	import type { DemoResource } from '$lib/types';
 	let { data }: { data: PageData } = $props();
-	const demo_resources = data.demoResourcesWithCreationDates;
+	const demoResources = data.demoResourcesWithCreationDates;
 
 	let debug = $state(false);
 
@@ -46,18 +47,25 @@
 <div class="mb-5">
 	<button
 		class="btn-neutral-container btn btn-circle btn-gradient"
-		onclick={() => newDemoResources.push(demoResourceTemplate)}
+		onclick ={() => {
+			const container = document.getElementById('demoResourcesContainer')!;
+			const firstDemoResource = container.childNodes[0];
+			mount(DemoResourceCard, { target: container, anchor: firstDemoResource })
+		}
+		}
 		aria-label="Add Button"
 	>
+	<!-- onclick={() => newDemoResources.push(demoResourceTemplate)} -->
 		<span class="icon-[fa6-solid--plus]"></span>
 	</button>
 </div>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
-	{#each newDemoResources as _newDemoResource}
-		<DemoResourceCard demoResource={demoResourceTemplate} edit={true} />
-	{/each}
-	{#each demo_resources as demoResource}
+	<!-- <div id="newDemoResource"></div> -->
+	<!-- {#each newDemoResources as _newDemoResource}
+		<DemoResourceCard />
+	{/each} -->
+	{#each demoResources as demoResource}
 		<DemoResourceCard {demoResource} />
 		<div class={debug ? 'block' : 'hidden'}>
 			<Heading>{demoResource.name}</Heading>

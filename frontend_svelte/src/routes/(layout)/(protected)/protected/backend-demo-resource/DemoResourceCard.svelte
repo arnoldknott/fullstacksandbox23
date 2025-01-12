@@ -26,26 +26,26 @@
 	// } = $props();
 	let {
 		demoResource,
-		edit = false,
 		form
 	}: {
-		demoResource: DemoResource | DemoResourceWithCreationDate;
-		edit?: boolean;
+		demoResource?: DemoResource | DemoResourceWithCreationDate;
 		form?: ActionData;
 	} = $props();
 	let id = $state(
-		demoResource.id || form?.id || 'new_' + Math.random().toString(36).substring(2, 9)
+		demoResource?.id || form?.id || 'new_' + Math.random().toString(36).substring(2, 9)
 	);
-	let name = $state(demoResource.name);
-	let description = $state(demoResource.description);
-	let language = $state(demoResource.language);
+	let name = $state(demoResource?.name || undefined);
+	let description = $state(demoResource?.description || undefined);
+	let language = $state(demoResource?.language || undefined);
 	let category = $state(demoResource?.category);
-	let category_id = $state(demoResource.category_id);
-	let tags = $state(demoResource.tags || []);
+	let category_id = $state(demoResource?.category_id || undefined);
+	let tags = $state(demoResource?.tags || []);
 	let creation_date = $state<Date | undefined>(undefined);
-	if ('creation_date' in demoResource) {
+	if (demoResource && 'creation_date' in demoResource) {
 		creation_date = demoResource.creation_date;
 	}
+
+let edit = $state(demoResource ? false : true);
 
 	// let edit = $state(false);
 	let flag = $state(
@@ -69,6 +69,7 @@
 
 	const createOrUpdateResource: SubmitFunction = async ({ formData }) => {
 		console.log('=== createOrUpdateResource triggered ===');
+
 		if (id.slice(0, 4) !== 'new_') {
 			formData.append('id', id);
 		}
@@ -77,10 +78,14 @@
 
 		return async ({ result }) => {
 			console.log('=== callback in submit function triggered ===');
+			console.log("=== id ===");
+			console.log(id)
 			if (id.slice(0, 4) === 'new_') {
 				// TBD: add manual typing due to bugs:
 				// https://github.com/sveltejs/kit/issues/7004
 				// https://github.com/sveltejs/kit/issues/6823
+				console.log("=== result ===");
+				console.log(result)
 				id = result.data.id;
 			}
 			// update()
