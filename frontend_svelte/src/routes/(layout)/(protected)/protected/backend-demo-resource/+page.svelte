@@ -19,10 +19,12 @@
 <div class="mb-5">
 	<button
 		class="btn-neutral-container btn btn-circle btn-gradient"
-		onclick={() => {
+		onclick={async () => {
 			const container = document.getElementById('demoResourcesContainer')!;
 			const firstDemoResource = container.childNodes[0];
 			mount(DemoResourceCard, { target: container, anchor: firstDemoResource });
+			const { HSDropdown } = await import('flyonui/flyonui.js');
+			HSDropdown.autoInit();
 		}}
 		aria-label="Add Button"
 	>

@@ -5,8 +5,6 @@
 	import type { DemoResourceWithCreationDate } from '$lib/types';
 	// import { deserialize } from '$app/forms';
 	import { enhance } from '$app/forms';
-	// import { HSDropdown } from 'flyonui/flyonui';
-	import { afterNavigate } from '$app/navigation';
 
 	// let {
 	// 	id,
@@ -40,6 +38,7 @@
 	// 	creation_date = demoResource.creation_date;
 	// }
 	let creationDate = $state<Date |undefined>(demoResource?.creation_date);
+	let formattedCreationDate = $derived(creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }));
 
 	let edit = $state(demoResource ? false : true);
 
@@ -53,35 +52,6 @@
 					? 'germany'
 					: false
 	);
-
-	// const loadHSStaticMethods = async () => {
-	// 	const { HSStaticMethods } = await import('flyonui/flyonui.js');
-	// 	return HSStaticMethods;
-	// };
-
-	// $effect(() => {
-	// 	afterNavigate(() => {
-	// 		loadHSStaticMethods().then((loadedHSStaticMethods) => {
-	// 			// console.log('layout - client - -effect calling - autoInit')
-	// 			loadedHSStaticMethods.autoInit();
-	// 		});
-	// 	});
-	// });
-	
-
-	const loadHSDropdown = async () => {
-		const { HSDropdown } = await import('flyonui/flyonui.js');
-		return HSDropdown;
-	};
-
-	$effect(() => {
-		afterNavigate(() => {
-			loadHSDropdown().then((loadedHSDropdown) => {
-				// console.log('layout - client - -effect calling - autoInit')
-				loadedHSDropdown.autoInit();
-			});
-		});
-	});
 
 	let card: Card;
 	let createUpdateForm = $state<HTMLFormElement | null>(null);
@@ -144,7 +114,8 @@
 					{name}
 				</h5>
 				<p class="text-label-small md:text-label text-secondary">
-					{creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }) }
+					{formattedCreationDate}
+					<!-- {creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }) } -->
 				</p>
 			{/if}
 			<!-- <h5
