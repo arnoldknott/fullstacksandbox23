@@ -13,7 +13,6 @@
 	import '@material/web/list/list-item.js';
 	import { mount } from 'svelte'
 	import DemoResourceCard from './DemoResourceCard.svelte';
-	import type { DemoResource } from '$lib/types';
 	let { data }: { data: PageData } = $props();
 	const demoResources = data.demoResourcesWithCreationDates;
 
@@ -46,16 +45,11 @@
 		}
 		aria-label="Add Button"
 	>
-	<!-- onclick={() => newDemoResources.push(demoResourceTemplate)} -->
 		<span class="icon-[fa6-solid--plus]"></span>
 	</button>
 </div>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
-	<!-- <div id="newDemoResource"></div> -->
-	<!-- {#each newDemoResources as _newDemoResource}
-		<DemoResourceCard />
-	{/each} -->
 	{#each demoResources as demoResource}
 		<DemoResourceCard {demoResource} />
 		<div class={debug ? 'block' : 'hidden'}>
@@ -64,8 +58,6 @@
 		</div>
 	{/each}
 </div>
-
-<!-- Form not available without JavaScript. -->
 
 <md-filled-button
 	onclick={() => demo_resource_dialog.show()}
