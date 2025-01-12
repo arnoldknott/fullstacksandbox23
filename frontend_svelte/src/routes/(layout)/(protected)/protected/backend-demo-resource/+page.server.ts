@@ -1,47 +1,14 @@
 import type { Actions, PageServerLoad } from './$types';
-// import { msalAuthProvider } from '$lib/server/oauth';
-// import AppConfig from '$lib/server/config';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis';
 import { fail } from '@sveltejs/kit';
 import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
 
-// const appConfig = await AppConfig.getInstance();
-
-// function removeEmpty( object: Object ): Object {
-// 	console.log("=== object ===");
-// 	console.log(object);
-// 	return Object.entries(object).reduce((acc: { [key: string]: any }, [key, value]) => {
-// 		console.log("=== key ===");
-// 		console.log(key);
-// 		console.log("=== value ===");
-// 		console.log(value);
-// 		if (value !== '' && value !== undefined && value !== null) {
-// 			acc[key] = typeof value === "object" ? removeEmpty(value) : value;
-// 		}
-// 		return acc;
-// 	}, {});
-// }
 
 export const load: PageServerLoad = async ({ locals }) => {
 	console.log('=== routes - demo-resource - page.server - load function executed ===');
 
-	// either send a token or make the demo resource publicly accessible by adding an access policy with flag public=True
-	// const sessionId = cookies.get('session_id');
 	const sessionId = locals.sessionData.sessionId;
-
-	// before creating a class for backend access:
-	// if (!sessionId) {
-	// 	throw error(401, 'No session id!');
-	// }
-	// const accessToken = await msalAuthProvider.getAccessToken(sessionId, [
-	// 	`${appConfig.api_scope}/api.read`
-	// ]);
-	// const response = await fetch(`${appConfig.backend_origin}/api/v1/demoresource/`, {
-	// 	headers: {
-	// 		Authorization: `Bearer ${accessToken}`
-	// 	}
-	// });
 
 	const response = await backendAPI.get(sessionId, '/demoresource/');
 	const demoResources = await response.json();
@@ -65,8 +32,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		}
 	);
 
-	// console.log('=== demoResourcesWithCreationDates ===');
-	// console.log(demoResourcesWithCreationDates);
 
 	return { demoResourcesWithCreationDates };
 };
