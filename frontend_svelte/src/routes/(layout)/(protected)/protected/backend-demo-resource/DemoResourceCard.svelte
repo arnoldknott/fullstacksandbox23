@@ -2,10 +2,9 @@
 	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
+	import type { DemoResourceWithCreationDate } from '$lib/types';
 	// import { deserialize } from '$app/forms';
-	import { enhance, applyAction } from '$app/forms';
-	import type { ActionData } from './$types';
+	import { enhance } from '$app/forms';
 
 	// let {
 	// 	id,
@@ -24,26 +23,21 @@
 	// 	category_id?: string;
 	// 	tags: string[];
 	// } = $props();
-	let {
-		demoResource,
-		form
-	}: {
-		demoResource?: DemoResource | DemoResourceWithCreationDate;
-		form?: ActionData;
-	} = $props();
+	let { demoResource }: { demoResource?: DemoResourceWithCreationDate } = $props();
 	let id = $state(
-		demoResource?.id || form?.id || 'new_' + Math.random().toString(36).substring(2, 9)
+		demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9)
 	);
 	let name = $state(demoResource?.name || undefined);
 	let description = $state(demoResource?.description || undefined);
 	let language = $state(demoResource?.language || undefined);
 	let category = $state(demoResource?.category);
-	let category_id = $state(demoResource?.category_id || undefined);
+	let categoryId = $state(demoResource?.category_id || undefined);
 	let tags = $state(demoResource?.tags || []);
-	let creation_date = $state<Date | undefined>(undefined);
-	if (demoResource && 'creation_date' in demoResource) {
-		creation_date = demoResource.creation_date;
-	}
+	// let creation_date = $state<Date | undefined>(undefined);
+	// if (demoResource && 'creation_date' in demoResource) {
+	// 	creation_date = demoResource.creation_date;
+	// }
+	let creation_date = $state<Date |undefined>(demoResource?.creation_date);
 
 	let edit = $state(demoResource ? false : true);
 
@@ -78,29 +72,15 @@
 
 		return async ({ result }) => {
 			console.log('=== callback in submit function triggered ===');
-			// console.log("=== id ===");
-			// console.log(id)
-			if (result.type === 'redirect') {
-				console.log('=== result - redirect===');
-				console.log(result);
-			} else if (result.type === 'success') {
-				console.log('=== result - success ===');
-				console.log(result);
-				console.log('=== result - success - result.data ===');
-				console.log(result.data);
+			if (result.type === 'success') {
 				if (id.slice(0, 4) === 'new_') {
 					id = result.data?.id;
+					console.log('=== result.data? ===');
+					console.log(result.data);
+					creation_date = result.data?.creationDate;
 				}
-			} else if (result.type === 'error') {
-				console.log('=== result - error ===');
-				console.log(result);
-			} else if (result.type === 'failure') {
-				console.log('=== result - failure ===');
-				console.log(result);
-				console.log('=== result - success - result.data ===');
-				console.log(result.data);
 			}
-			await applyAction(result);
+			// await applyAction(result);
 			// update()
 		};
 	};
@@ -133,7 +113,7 @@
 					{name}
 				</h5>
 				<p class="text-label-small md:text-label text-secondary">
-					{creation_date?.toLocaleString('da-DK', { timeZone: 'CET' })}
+					{creation_date?.toLocaleString('da-DK', { timeZone: 'CET' }) }
 				</p>
 			{/if}
 			<!-- <h5
@@ -150,7 +130,7 @@
 		<div class="flex flex-row items-start gap-4">
 			{#if category}
 				<span
-					id={category_id}
+					id={categoryId}
 					class="text-label-small md:text-label lg:text-label-large badge badge-secondary shadow-sm shadow-secondary"
 				>
 					{category}
@@ -236,9 +216,9 @@
 			</div>
 		</form>
 	{:else}
-		{#if form?.status == 'created'}
+		<!-- {#if form?.status == 'created'}
 			Successfully created resource - remove this message again
-		{/if}
+		{/if} -->
 		<p class="text-body-small md:text-body text-primary-container-content">
 			{description || 'No description available'}
 		</p>

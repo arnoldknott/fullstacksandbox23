@@ -242,6 +242,7 @@ async def get_creation_date_for_resource(
         )
 
 
+# TBD: change from /log to logs - it's a list of resources!
 @router.post("/log/created", status_code=200)
 async def get_creation_date_for_resources(
     resource_ids: list[UUID],
