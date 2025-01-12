@@ -24,9 +24,7 @@
 	// 	tags: string[];
 	// } = $props();
 	let { demoResource }: { demoResource?: DemoResourceWithCreationDate } = $props();
-	let id = $state(
-		demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9)
-	);
+	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let name = $state(demoResource?.name || undefined);
 	let description = $state(demoResource?.description || undefined);
 	let language = $state(demoResource?.language || undefined);
@@ -37,7 +35,7 @@
 	// if (demoResource && 'creation_date' in demoResource) {
 	// 	creation_date = demoResource.creation_date;
 	// }
-	let creationDate = $state<Date |undefined>(demoResource?.creation_date);
+	let creationDate = $state<Date | undefined>(demoResource?.creation_date);
 	let formattedCreationDate = $derived(creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }));
 
 	let edit = $state(demoResource ? false : true);

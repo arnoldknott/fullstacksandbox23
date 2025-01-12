@@ -46,7 +46,10 @@ export const actions: Actions = {
 			const payload = await response.json();
 			console.log('=== routes - demo-resource - page.server - post function - payload ===');
 			console.log(payload);
-			const createdLogResponse = await backendAPI.get(sessionId, `/access/log/${payload.id}/created`);
+			const createdLogResponse = await backendAPI.get(
+				sessionId,
+				`/access/log/${payload.id}/created`
+			);
 			const createdLogData = await createdLogResponse.json();
 			console.log('=== routes - demo-resource - page.server - post function - createdLogData ===');
 			console.log(createdLogData);
@@ -70,7 +73,8 @@ export const actions: Actions = {
 		// console.log('=== routes - demo-resource - page.server - delete function executed ===');
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
-		const response = await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
+		await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
+		// const response = await backendAPI.delete(sessionId, `/demoresource/${data.get('id')}`);
 		// if (response.status === 200) {
 		// 	return {
 		// 		status: 'deleted'
