@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	);
 	let microsoftTeams: string[] = [];
 	if (locals.sessionData.userProfile) {
-		microsoftTeams = locals.sessionData.userProfile.azure_token_groups || []
+		microsoftTeams = locals.sessionData.userProfile.azure_token_groups || [];
 	}
 	console.log('=== routes - demo-resource - page.server - load function - microsoftTeams ===');
 	console.log(microsoftTeams);
@@ -93,21 +93,21 @@ export const actions: Actions = {
 	share: async ({ locals, request, url }) => {
 		console.log('=== routes - demo-resource - page.server - share function executed ===');
 		const data = await request.formData();
-		console.log('=== routes - demo-resource - page.server - share function - data ===');
-		console.log(data);
-		console.log("=== url. searchParams ===");
-		console.log(url.searchParams.get('teamid'));
+		// console.log('=== routes - demo-resource - page.server - share function - data ===');
+		// console.log(data);
+		// console.log('=== url. searchParams ===');
+		// console.log(url.searchParams.get('teamid'));
 		const accessPolicy = {
 			resource_id: data.get('id'),
 			identity_id: url.searchParams.get('teamid'),
-			action: 'own'// TBD. make this dynamic: own, write, read
-		}
-		console.log('=== routes - demo-resource - page.server - share function - accessPolicy ===');
-		console.log(accessPolicy);
+			action: 'own' // TBD. make this dynamic: own, write, read
+		};
+		// console.log('=== routes - demo-resource - page.server - share function - accessPolicy ===');
+		// console.log(accessPolicy);
 
 		const sessionId = locals.sessionData.sessionId;
 
-		const response = await backendAPI.post(sessionId, '/access/policy', JSON.stringify(accessPolicy));
+		await backendAPI.post(sessionId, '/access/policy', JSON.stringify(accessPolicy));
 
 		// const accessPolicy = {
 		// 	resource_id: params.query.get('resource_id'),
