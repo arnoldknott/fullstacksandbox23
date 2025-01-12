@@ -4,7 +4,7 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
 	// import { deserialize } from '$app/forms';
-	import { enhance } from '$app/forms';
+	import { enhance, applyAction } from '$app/forms';
 	import type { ActionData } from './$types';
 
 	// let {
@@ -76,18 +76,19 @@ let edit = $state(demoResource ? false : true);
 		// TBD: add validation here - if not all required fields are filled, otherwise cancel
 		// and mark the missing fields invalid
 
-		return async ({ result }) => {
+		return async ({ result, update }) => {
 			console.log('=== callback in submit function triggered ===');
-			console.log("=== id ===");
-			console.log(id)
+			// console.log("=== id ===");
+			// console.log(id)
 			if (id.slice(0, 4) === 'new_') {
 				// TBD: add manual typing due to bugs:
 				// https://github.com/sveltejs/kit/issues/7004
 				// https://github.com/sveltejs/kit/issues/6823
-				console.log("=== result ===");
-				console.log(result)
+				// console.log("=== result ===");
+				// console.log(result)
 				id = result.data.id;
 			}
+			await applyAction(result);
 			// update()
 		};
 	};

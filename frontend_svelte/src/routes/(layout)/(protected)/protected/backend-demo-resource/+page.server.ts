@@ -76,43 +76,9 @@ export const actions: Actions = {
 		console.log('=== routes - demo-resource - page.server - post function executed ===');
 		const data = await request.formData();
 
-		// before creating a class for backend access:
-		// // console.log('=== data ===');
-		// // console.log(data);
-		// // const payload =  JSON.stringify(data);
-		// const payload = JSON.stringify(Object.fromEntries(data));
-		// // console.log('=== payload ===');
-		// // console.log(payload);
-
-		// // const sessionId = cookies.get('session_id');
-		// const sessionId = locals.sessionData.sessionId;
-		// if (!sessionId) {
-		// 	console.error('routes - demo-resource - page.server - no session id');
-		// 	throw error(401, 'No session id!');
-		// }
-		// const accessToken = await msalAuthProvider.getAccessToken(sessionId, [
-		// 	`${appConfig.api_scope}/api.write`
-		// ]);
-		// await fetch(`${appConfig.backend_origin}/api/v1/demoresource/`, {
-		// 	method: 'POST',
-		// 	headers: {
-		// 		Authorization: `Bearer ${accessToken}`,
-		// 		'Content-Type': 'application/json'
-		// 	},
-		// 	body: payload
-		// });
-
-		// const payload = Object.fromEntries(data);
-
 		const sessionId = locals.sessionData.sessionId;
 		const response = await backendAPI.post(sessionId, '/demoresource/', data);
-		// console.log('=== response ===');
-		// console.log(response);
-		// console.log('=== payload ===');
-		// console.log(payload);
 		if (response.status !== 201) {
-			// console.log('=== response.status ===');
-			// console.log(response.status);
 			return fail(response.status, { error: response.statusText });
 		} else {
 			const payload = await response.json();
@@ -120,30 +86,13 @@ export const actions: Actions = {
 				id: payload.id,
 				status: 'created'
 			};
-			// return payload;
 		}
-
-		// console.log("=== data ===");
-		// console.log(data);
-		// const name = data.get('name');
-		// console.log("=== name ===");
-		// console.log(name);
-		// const payload = removeEmpty(data);
-		// console.log("=== payload ===");
-		// console.log(payload);
 	},
 	put: async ({ locals, request }) => {
 		console.log('=== routes - demo-resource - page.server - put function executed ===');
 		const data = await request.formData();
-		console.log('=== data ===');
-		console.log(data);
-		// const payload = JSON.parse(Object.fromEntries(data));
-		// console.log('=== payload ===');
-		// console.log(payload);
 		const sessionId = locals.sessionData.sessionId;
 		const response = await backendAPI.put(sessionId, `/demoresource/${data.get('id')}`, data);
-		// console.log('=== response ===');
-		// console.log(response);
 		if (response.status !== 200) {
 			return fail(response.status, { error: response.statusText });
 		}
