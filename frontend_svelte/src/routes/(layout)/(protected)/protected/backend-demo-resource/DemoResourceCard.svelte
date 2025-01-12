@@ -1,5 +1,6 @@
 <script lang="ts">
 	// import { enhance } from '$app/forms';
+	import type { PageData } from './$types';
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResourceWithCreationDate } from '$lib/types';
@@ -23,7 +24,7 @@
 	// 	category_id?: string;
 	// 	tags: string[];
 	// } = $props();
-	let { demoResource }: { demoResource?: DemoResourceWithCreationDate } = $props();
+	let { demoResource, microsoftTeams }: { demoResource?: DemoResourceWithCreationDate, microsoftTeams?: string[] } = $props();
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let name = $state(demoResource?.name || undefined);
 	let description = $state(demoResource?.description || undefined);
@@ -55,6 +56,8 @@
 	let createUpdateForm = $state<HTMLFormElement | null>(null);
 
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
+
+	let teamId = $state<string[]>(["1234", "5678"]);
 
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
@@ -165,12 +168,45 @@
 							><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
 						>
 					</li>
-					<li class="items-center">
-						<button class="btn dropdown-item btn-text justify-start"
-							><span class="icon-[tabler--share-2]"></span>Share</button
-						>
+					<li class="items-center dropdown relative [--offset:15] max-sm:[--placement:bottom-start] [--placement:right-start]">
+						<button id="share-menu" class="btn dropdown-item btn-text justify-start dropdown-toggle" aria-haspopup="menu" aria-expanded="false" aria-label="Share with"
+							><span class="icon-[tabler--share-2]"></span>Share
+							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
+						</button>
+						<ul class="dropdown-menu dropdown-open:opacity-100 hidden min-w-60" role="menu" aria-orientation="vertical" aria-labelledby="share-menu">
+							<li>
+								<form method="POST" use:enhance={() => card.remove()}>
+									<!-- TBD: change to Teams ID -->
+									<!-- <button data-sveltekit-preload-data={false}
+										class="btn dropdown-item btn-text justify-start"
+										aria-label="Team 1"
+										name="id"
+										value={id}
+										formaction="?/share&teamid={teamId[0]}"><span class="icon-[fluent--people-team-16-filled]"></span>Team 1</button
+									> -->
+									{#if microsoftTeams}
+										{#each microsoftTeams as team}
+											<li>
+												<button data-sveltekit-preload-data={false}
+													class="btn dropdown-item btn-text justify-start"
+													
+													name="id"
+													value={id}
+													formaction="?/share&teamid={team}"><span class="icon-[fluent--people-team-16-filled]"></span>{team.slice(0,8)}</button
+												>
+											</li>
+											<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
+										{/each}
+									{/if}
+								</form></li>
+							<!-- <li>
+								Second
+							</li> -->
+						</ul>
 					</li>
 					<li class="dropdown-footer gap-2">
+						<!-- TBD: refactor into a call to same route and handle with params in load function 
+						either by changing to method="GET" or by using a link instead of a button inside a form-->
 						<form method="POST" use:enhance={() => card.remove()}>
 							<button
 								class="btn dropdown-item btn-error btn-text justify-start"

@@ -6,6 +6,7 @@
 	import DemoResourceCard from './DemoResourceCard.svelte';
 	let { data }: { data: PageData } = $props();
 	const demoResources = data.demoResourcesWithCreationDates;
+	const microsoftTeams = data.microsoftTeams;
 
 	let debug = $state(false);
 </script>
@@ -34,7 +35,7 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	{#each demoResources as demoResource}
-		<DemoResourceCard {demoResource} />
+		<DemoResourceCard {demoResource} {microsoftTeams} />
 		<div class={debug ? 'block' : 'hidden'}>
 			<Heading>{demoResource.name}</Heading>
 			<JsonData data={demoResource} />
