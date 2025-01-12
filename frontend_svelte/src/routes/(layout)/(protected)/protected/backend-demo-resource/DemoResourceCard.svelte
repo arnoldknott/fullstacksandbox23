@@ -1,11 +1,21 @@
 <script lang="ts">
 	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
-	import { type SubmitFunction } from '@sveltejs/kit';
+	import { type ActionResult, type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
 	// import { deserialize } from '$app/forms';
 	import { enhance, applyAction } from '$app/forms';
 	import type { ActionData } from './$types';
+
+	// TBD: add manual typing due to bugs:
+	// https://github.com/sveltejs/kit/issues/7004
+	// https://github.com/sveltejs/kit/issues/6823
+	type DemoResourceActionData = ActionData & {
+		data?: {
+			id: string;
+			status? : string;
+		}
+	}
 
 	// let {
 	// 	id,
@@ -76,18 +86,39 @@ let edit = $state(demoResource ? false : true);
 		// TBD: add validation here - if not all required fields are filled, otherwise cancel
 		// and mark the missing fields invalid
 
-		return async ({ result, update }) => {
+		// return async ({ result }: { result: DemoResourceActionData} ) => {
+		return async ({ result } ) => {
 			console.log('=== callback in submit function triggered ===');
 			// console.log("=== id ===");
 			// console.log(id)
-			if (id.slice(0, 4) === 'new_') {
-				// TBD: add manual typing due to bugs:
-				// https://github.com/sveltejs/kit/issues/7004
-				// https://github.com/sveltejs/kit/issues/6823
-				// console.log("=== result ===");
-				// console.log(result)
-				id = result.data.id;
+
+			if (result.type === "redirect") {
+				console.log("=== result - redirect===")
+				console.log(result)
+			} else if ( result.type === "success") {
+				console.log("=== result - success ===")
+				console.log(result)
+				console.log("=== result - success - result.data ===")
+				console.log(result.data)
+				if (id.slice(0, 4) === 'new_') {
+					// TBD: add manual typing due to bugs:
+					// https://github.com/sveltejs/kit/issues/7004
+					// https://github.com/sveltejs/kit/issues/6823
+					// console.log("=== result ===");
+					// console.log(result)
+					id = result.data?.id;
+				}
+			} else if ( result.type === "error") {
+				console.log("=== result - error ===")
+				console.log(result)
+			} else if ( result.type === "failure") {
+				console.log("=== result - failure ===")
+				console.log(result)
+				console.log("=== result - success - result.data ===")
+				console.log(result.data)
 			}
+				// const actionData =  { ...result.error,  ...result.status { result.error, result.data  }
+			// await applyAction(result as ActionResult<DemoResourceActionData>);
 			await applyAction(result);
 			// update()
 		};
