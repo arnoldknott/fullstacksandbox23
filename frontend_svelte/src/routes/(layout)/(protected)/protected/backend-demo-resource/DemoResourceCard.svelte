@@ -13,9 +13,9 @@
 	type DemoResourceActionData = ActionData & {
 		data?: {
 			id: string;
-			status? : string;
-		}
-	}
+			status?: string;
+		};
+	};
 
 	// let {
 	// 	id,
@@ -55,7 +55,7 @@
 		creation_date = demoResource.creation_date;
 	}
 
-let edit = $state(demoResource ? false : true);
+	let edit = $state(demoResource ? false : true);
 
 	// let edit = $state(false);
 	let flag = $state(
@@ -87,19 +87,19 @@ let edit = $state(demoResource ? false : true);
 		// and mark the missing fields invalid
 
 		// return async ({ result }: { result: DemoResourceActionData} ) => {
-		return async ({ result } ) => {
+		return async ({ result }) => {
 			console.log('=== callback in submit function triggered ===');
 			// console.log("=== id ===");
 			// console.log(id)
 
-			if (result.type === "redirect") {
-				console.log("=== result - redirect===")
-				console.log(result)
-			} else if ( result.type === "success") {
-				console.log("=== result - success ===")
-				console.log(result)
-				console.log("=== result - success - result.data ===")
-				console.log(result.data)
+			if (result.type === 'redirect') {
+				console.log('=== result - redirect===');
+				console.log(result);
+			} else if (result.type === 'success') {
+				console.log('=== result - success ===');
+				console.log(result);
+				console.log('=== result - success - result.data ===');
+				console.log(result.data);
 				if (id.slice(0, 4) === 'new_') {
 					// TBD: add manual typing due to bugs:
 					// https://github.com/sveltejs/kit/issues/7004
@@ -108,16 +108,16 @@ let edit = $state(demoResource ? false : true);
 					// console.log(result)
 					id = result.data?.id;
 				}
-			} else if ( result.type === "error") {
-				console.log("=== result - error ===")
-				console.log(result)
-			} else if ( result.type === "failure") {
-				console.log("=== result - failure ===")
-				console.log(result)
-				console.log("=== result - success - result.data ===")
-				console.log(result.data)
+			} else if (result.type === 'error') {
+				console.log('=== result - error ===');
+				console.log(result);
+			} else if (result.type === 'failure') {
+				console.log('=== result - failure ===');
+				console.log(result);
+				console.log('=== result - success - result.data ===');
+				console.log(result.data);
 			}
-				// const actionData =  { ...result.error,  ...result.status { result.error, result.data  }
+			// const actionData =  { ...result.error,  ...result.status { result.error, result.data  }
 			// await applyAction(result as ActionResult<DemoResourceActionData>);
 			await applyAction(result);
 			// update()

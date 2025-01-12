@@ -4,7 +4,6 @@ import { backendAPI } from '$lib/server/apis';
 import { fail } from '@sveltejs/kit';
 import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
 
-
 export const load: PageServerLoad = async ({ locals }) => {
 	console.log('=== routes - demo-resource - page.server - load function executed ===');
 
@@ -31,7 +30,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 			return a.creation_date < b.creation_date ? 1 : -1;
 		}
 	);
-
 
 	return { demoResourcesWithCreationDates };
 };

@@ -2,13 +2,12 @@
 	import type { PageData } from './$types';
 	import JsonData from '$components/JsonData.svelte';
 	import Heading from '$components/Heading.svelte';
-	import { mount } from 'svelte'
+	import { mount } from 'svelte';
 	import DemoResourceCard from './DemoResourceCard.svelte';
 	let { data }: { data: PageData } = $props();
 	const demoResources = data.demoResourcesWithCreationDates;
 
 	let debug = $state(false);
-
 </script>
 
 <!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->
@@ -20,12 +19,11 @@
 <div class="mb-5">
 	<button
 		class="btn-neutral-container btn btn-circle btn-gradient"
-		onclick ={() => {
+		onclick={() => {
 			const container = document.getElementById('demoResourcesContainer')!;
 			const firstDemoResource = container.childNodes[0];
-			mount(DemoResourceCard, { target: container, anchor: firstDemoResource })
-		}
-		}
+			mount(DemoResourceCard, { target: container, anchor: firstDemoResource });
+		}}
 		aria-label="Add Button"
 	>
 		<span class="icon-[fa6-solid--plus]"></span>
