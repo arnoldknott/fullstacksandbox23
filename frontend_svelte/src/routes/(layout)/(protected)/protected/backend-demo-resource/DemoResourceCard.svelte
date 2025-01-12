@@ -1,9 +1,10 @@
 <script lang="ts">
 	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
-	import { error } from '@sveltejs/kit';
-	import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
-	import { deserialize } from '$app/forms';
+	import { type SubmitFunction } from '@sveltejs/kit';
+	import type { DemoResourceWithCreationDate } from '$lib/types';
+	// import { deserialize } from '$app/forms';
+	import { enhance } from '$app/forms';
 
 	// let {
 	// 	id,
@@ -24,19 +25,23 @@
 	// } = $props();
 	let {
 		demoResource,
-		edit = false
-	}: { demoResource: DemoResource | DemoResourceWithCreationDate; edit?: boolean } = $props();
-	let id = $state(demoResource.id || '');
-	let name = $state(demoResource.name);
-	let description = $state(demoResource.description);
-	let language = $state(demoResource.language);
+		microsoftTeams
+	}: { demoResource?: DemoResourceWithCreationDate; microsoftTeams?: string[] } = $props();
+	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
+	let name = $state(demoResource?.name || undefined);
+	let description = $state(demoResource?.description || undefined);
+	let language = $state(demoResource?.language || undefined);
 	let category = $state(demoResource?.category);
-	let category_id = $state(demoResource.category_id);
-	let tags = $state(demoResource.tags || []);
-	let creation_date = $state<Date | undefined>(undefined);
-	if ('creation_date' in demoResource) {
-		creation_date = demoResource.creation_date;
-	}
+	let categoryId = $state(demoResource?.category_id || undefined);
+	let tags = $state(demoResource?.tags || []);
+	// let creation_date = $state<Date | undefined>(undefined);
+	// if (demoResource && 'creation_date' in demoResource) {
+	// 	creation_date = demoResource.creation_date;
+	// }
+	let creationDate = $state<Date | undefined>(demoResource?.creation_date);
+	let formattedCreationDate = $derived(creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }));
+
+	let edit = $state(demoResource ? false : true);
 
 	// let edit = $state(false);
 	let flag = $state(
@@ -48,122 +53,38 @@
 					? 'germany'
 					: false
 	);
+
 	let card: Card;
+	let createUpdateForm = $state<HTMLFormElement | null>(null);
 
-	const createResource = async () => {
-		// check if all required fields are filled
-		if (name) {
-			const formData = new FormData();
-			formData.append('name', name);
-			if (description) {
-				formData.append('description', description);
-			}
-			if (language) {
-				formData.append('language', language);
-			}
-			if (category_id) {
-				formData.append('category_id', category_id);
-			}
-			const response = await fetch(`?/post`, {
-				method: 'POST',
-				body: formData
-			});
-			// if (response.status === 200) {
-			// console.log('=== response ===');
-			// console.log(response);
-			const result = deserialize(await response.text());
+	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
+
+	const triggerSubmit = async () => {
+		createUpdateForm?.requestSubmit();
+	};
+
+	const createOrUpdateResource: SubmitFunction = async ({ formData }) => {
+		console.log('=== createOrUpdateResource triggered ===');
+
+		if (id.slice(0, 4) !== 'new_') {
+			formData.append('id', id);
+		}
+		// TBD: add validation here - if not all required fields are filled, otherwise cancel
+		// and mark the missing fields invalid
+
+		return async ({ result }) => {
+			console.log('=== callback in submit function triggered ===');
 			if (result.type === 'success') {
-				// console.log('=== result.data?.id ===');
-				// console.log(result.data?.id);
-				// console.log('=== typeof result.data?.id ===');
-				// console.log(typeof result.data?.id);
-				id = result.data?.id as string;
-
-				// result.data?.id ? id = result.data.id : null;
-			} else {
-				card.remove();
-				throw error(response.status || 404, 'Failed to create resource');
+				if (id.slice(0, 4) === 'new_') {
+					id = result.data?.id;
+					console.log('=== result.data? ===');
+					console.log(result.data);
+					creationDate = result.data?.creationDate;
+				}
 			}
-
-			// const payload = await response.json();
-			// console.log('=== payload ===');
-			// console.log(payload);
-			// console.log('=== typeof payload.data ===');
-			// console.log(typeof payload.data);
-			// console.log('=== payload.data ===');
-			// console.log(payload.data);
-
-			// const data = JSON.parse(payload.data);
-			// console.log('=== data ===');
-			// console.log(data);
-			// const data = await response.formData();
-			// const payload = Object.fromEntries(data.entries());
-			// console.log('=== payload ===');
-			// console.log(payload);
-			// const payload = await response.json();
-			// console.log('=== payload ===');
-			// console.log(payload);
-			// id = payload[0]
-			// console.log('=== id ===');
-			// console.log(id);
-			// console.log('=== payload ===');
-			// console.log(payload);
-			// console.log('=== payload.data ===');
-			// console.log(JSON.parse(payload.data));
-			// await update();
-			// } else {
-			//     throw error(response.status || 404, 'Failed to create resource');
-			// }
-		}
-	};
-
-	const createOrUpdateResource = async () => {
-		if (!id) {
-			createResource();
-		} else {
-			const formData = new FormData();
-			formData.append('id', id);
-			formData.append('name', name);
-			if (description) {
-				formData.append('description', description);
-			}
-			if (language) {
-				formData.append('language', language);
-			}
-			if (category_id) formData.append('category_id', category_id);
-			const response = await fetch(`?/put`, {
-				method: 'POST',
-				body: formData
-			});
-			if (response.status === 200) {
-				// console.log('=== response ===');
-				// console.log(response);
-				// await update();
-			} else {
-				throw error(response.status || 404, 'Failed to update resource');
-			}
-		}
-	};
-
-	// const deleteResource = ( ) => {
-	//     card.remove();
-	// }
-	const deleteResource = async () => {
-		const formData = new FormData();
-		if (!id) {
-			throw error(404, 'No id available');
-		} else {
-			formData.append('id', id);
-			const response = await fetch(`?/delete`, {
-				method: 'POST',
-				body: formData
-			});
-			if (response.status === 200) {
-				card.remove();
-			} else {
-				throw error(response.status || 404, 'Failed to delete resource');
-			}
-		}
+			// await applyAction(result);
+			// update()
+		};
 	};
 </script>
 
@@ -176,7 +97,9 @@
 						type="text"
 						class="border-content text-title-small md:text-title base-content card-title input input-filled peer"
 						id="name_{id}"
-						onblur={() => createOrUpdateResource()}
+						form="form_{id}"
+						name="name"
+						onblur={() => triggerSubmit()}
 						bind:value={name}
 						placeholder="Name the demo resource"
 					/>
@@ -192,7 +115,8 @@
 					{name}
 				</h5>
 				<p class="text-label-small md:text-label text-secondary">
-					{creation_date?.toLocaleString('da-DK', { timeZone: 'CET' })}
+					{formattedCreationDate}
+					<!-- {creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }) } -->
 				</p>
 			{/if}
 			<!-- <h5
@@ -209,7 +133,7 @@
 		<div class="flex flex-row items-start gap-4">
 			{#if category}
 				<span
-					id={category_id}
+					id={categoryId}
 					class="text-label-small md:text-label lg:text-label-large badge badge-secondary shadow-sm shadow-secondary"
 				>
 					{category}
@@ -244,17 +168,72 @@
 							><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
 						>
 					</li>
-					<li class="items-center">
-						<button class="btn dropdown-item btn-text justify-start"
-							><span class="icon-[tabler--share-2]"></span>Share</button
+					<li
+						class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+					>
+						<button
+							id="share-menu"
+							class="dropdown-toggle btn dropdown-item btn-text justify-start"
+							aria-haspopup="menu"
+							aria-expanded="false"
+							aria-label="Share with"
+							><span class="icon-[tabler--share-2]"></span>Share
+							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
+						</button>
+						<ul
+							class="dropdown-menu hidden min-w-60 dropdown-open:opacity-100"
+							role="menu"
+							aria-orientation="vertical"
+							aria-labelledby="share-menu"
 						>
+							<li>
+								<form method="POST" use:enhance={() => card.remove()}>
+									<!-- TBD: change to Teams ID -->
+									<!-- <button data-sveltekit-preload-data={false}
+										class="btn dropdown-item btn-text justify-start"
+										aria-label="Team 1"
+										name="id"
+										value={id}
+										formaction="?/share&teamid={teamId[0]}"><span class="icon-[fluent--people-team-16-filled]"></span>Team 1</button
+									> -->
+									{#if microsoftTeams}
+										{#each microsoftTeams as team}
+											<li>
+												<button
+													data-sveltekit-preload-data={false}
+													class="btn dropdown-item btn-text justify-start"
+													name="id"
+													value={id}
+													formaction="?/share&teamid={team}"
+													><span class="icon-[fluent--people-team-16-filled]"></span>{team.slice(
+														0,
+														8
+													)}</button
+												>
+											</li>
+											<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
+										{/each}
+									{/if}
+								</form>
+							</li>
+							<!-- <li>
+								Second
+							</li> -->
+						</ul>
 					</li>
 					<li class="dropdown-footer gap-2">
-						<button
-							class="btn dropdown-item btn-error btn-text justify-start"
-							aria-label="Delete Button"
-							onclick={deleteResource}><span class="icon-[tabler--trash]"></span>Delete</button
-						>
+						<!-- TBD: refactor into a call to same route and handle with params in load function 
+						either by changing to method="GET" or by using a link instead of a button inside a form-->
+						<form method="POST" use:enhance={() => card.remove()}>
+							<button
+								class="btn dropdown-item btn-error btn-text justify-start"
+								aria-label="Delete Button"
+								name="id"
+								value={id}
+								formaction="?/delete"><span class="icon-[tabler--trash]"></span>Delete</button
+							>
+						</form>
+						<!-- onclick={deleteResource} -->
 					</li>
 				</ul>
 			</div>
@@ -264,22 +243,35 @@
 
 <Card bind:this={card} {id} {header} {footer}>
 	{#if edit}
-		<div class="relative">
-			<textarea
-				class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
-				id="description_{id}"
-				onblur={() => createOrUpdateResource()}
-				bind:value={description}
-				placeholder="Describe the demo resource here."
-			></textarea>
-			<label
-				class="text-label-small md:text-label textarea-filled-label"
-				style="color: oklch(var(--p));"
-				for="description_{id}">Description</label
-			>
-			<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
-		</div>
+		<form
+			method="POST"
+			use:enhance={createOrUpdateResource}
+			bind:this={createUpdateForm}
+			id="form_{id}"
+			action={formAction}
+		>
+			<div class="relative">
+				<textarea
+					class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
+					id="description_{id}"
+					onblur={() => triggerSubmit()}
+					name="description"
+					bind:value={description}
+					placeholder="Describe the demo resource here."
+				></textarea>
+
+				<label
+					class="text-label-small md:text-label textarea-filled-label"
+					style="color: oklch(var(--p));"
+					for="description_{id}">Description</label
+				>
+				<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
+			</div>
+		</form>
 	{:else}
+		<!-- {#if form?.status == 'created'}
+			Successfully created resource - remove this message again
+		{/if} -->
 		<p class="text-body-small md:text-body text-primary-container-content">
 			{description || 'No description available'}
 		</p>
@@ -296,89 +288,14 @@
 				>
 			{/each}
 		</div>
-		<div class="flex gap-2">
-			<!-- <form
-				action="?/put"
-				method="POST"
-				use:enhance={() => {
-					return async ({ result, update }) => {
-						console.log('=== result ===');
-						console.log(result);
-						if (result.status === 204) {
-							await update();
-						} else {
-							throw error(result.status || 404, 'Failed to update resource');
-						}
-					};
-				}}
+		{#if edit}
+			<button
+				class="btn-success-container btn btn-circle btn-gradient"
+				onclick={() => (edit = false)}
+				aria-label="Done"
 			>
-				<input type="hidden" name="id" value={id} />
-				<button
-					class="btn-info-container btn btn-circle btn-gradient"
-					onclick={() => (edit ? (edit = false) : (edit = true))}
-					aria-label="Edit Button"
-				>
-					<span class="grid place-items-center">
-						<span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
-						></span>
-						<span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
-						></span>
-					</span>
-				</button>
-			</form> -->
-			<!-- <button
-				class="btn-info-container btn btn-circle btn-gradient"
-				onclick={() => (edit ? (edit = false) : (edit = true))}
-				aria-label="Edit Button"
-			>
-				<span class="grid place-items-center">
-					<span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
-					></span>
-					<span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
-					></span>
-				</span>
+				<span class="icon-[mingcute--check-2-fill]"></span>
 			</button>
-			<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share Button">
-				<span class="icon-[tabler--share-2]"></span>
-			</button> -->
-			<!-- <form action="?/delete" method="POST" use:enhance={() => 
-                    {
-                        return async ({result, update}) => {
-                            if (result.status === 204){
-                                deleteResource()
-                                await update()
-                            } else {
-                                throw  error(result.status || 404, 'Failed to delete resource')
-                            }
-                        }
-                    }
-                }>
-                <input type="hidden" name="id" value={id} /> 
-                <button 
-                    class="btn-error-container btn btn-circle btn-gradient"
-                    type="submit"
-                    aria-label="Delete Button"
-                    formaction="?/delete"
-                >
-                    <span class="icon-[tabler--trash]"></span>
-                </button>
-            </form> -->
-			<!-- <button
-				class="btn-error-container btn btn-circle btn-gradient"
-				aria-label="Delete Button"
-				onclick={deleteResource}
-			>
-				<span class="icon-[tabler--trash]"></span>
-			</button> -->
-			{#if edit}
-				<button
-					class="btn-success-container btn btn-circle btn-gradient"
-					onclick={() => (edit = false)}
-					aria-label="Done"
-				>
-					<span class="icon-[mingcute--check-2-fill]"></span>
-				</button>
-			{/if}
-		</div>
+		{/if}
 	</div>
 {/snippet}

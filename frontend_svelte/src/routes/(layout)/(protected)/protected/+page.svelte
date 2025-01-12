@@ -1,3 +1,5 @@
+<!-- Rename the folder of this file "protected" into the real content -->
+
 <script lang="ts">
 	import NavigationCard from '../../NavigationCard.svelte';
 
