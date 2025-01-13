@@ -10,7 +10,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 	let myTeams: MicrosoftTeamBasicInformation[] = [];
 	if (locals.sessionData.userProfile) {
 		const myAzureGroupIds = locals.sessionData.userProfile.azure_token_groups;
-		myTeams = await microsoftGraph.getAttachedTeams(sessionId, myAzureGroupIds);
+		if (myAzureGroupIds) {
+			myTeams = await microsoftGraph.getAttachedTeams(sessionId, myAzureGroupIds);
+		}
 	}
 	// const myTeams: MicrosoftTeamBasicInformation[] = [];
 	// if (locals.sessionData.userProfile) {
