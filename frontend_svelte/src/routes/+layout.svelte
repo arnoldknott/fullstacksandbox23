@@ -7,7 +7,7 @@
 	import { setContext } from 'svelte';
 	// import type { LayoutData } from './$types';
 	import type { Snippet } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';// TBD: change page to new import
 	import { afterNavigate } from '$app/navigation';
 	// import 'flyonui/flyonui.js';
 	// import { HSStaticMethods } from 'flyonui/flyonui.js';
@@ -30,8 +30,8 @@
 	// const loggedIn = session?.loggedIn || false;
 	// console.log('layout - client - data')
 	// console.log(data)
-	// console.log('layout - client - $page.data')
-	// console.log($page.data)
+	// console.log('layout - client - page.data')
+	// console.log(page.data)
 	// setContext('backendAPIConfiguration', data.backendAPIConfiguration);
 	// TBD: not working in socketio.ts any more!
 	// $effect(() => {
@@ -53,7 +53,7 @@
 	//     at Module.render (/app/node_modules/svelte/src/internal/server/index.js:117:2)
 	//     at Function._render [as render] (/app/node_modules/svelte/src/legacy/legacy-server.js:27:18)
 	// so better use the $props with page: PageData approach here!
-	setContext('backendAPIConfiguration', $page.data.backendAPIConfiguration);
+	setContext('backendAPIConfiguration', page.data.backendAPIConfiguration);
 
 	// const initFlyonui = async (_node: HTMLElement) => {
 	// 	const {HSStaticMethods} = await import('flyonui/flyonui.js')
@@ -99,8 +99,8 @@
 	// }
 
 	// $effect(async () => {
-	// 	// console.log('layout - client - $page.data')
-	// 	// console.log($page.data)
+	// 	// console.log('layout - client - page.data')
+	// 	// console.log(page.data)
 	// 	const {HStaticMethods} = await import('flyonui/flyonui.js');
 	// 	console.log('layout - client - -effect calling - initFlyonui')
 	// 	HSStaticMethods.autoInit();

@@ -7,7 +7,7 @@
 	import '@material/web/button/filled-button.js';
 	import Heading from '$components/Heading.svelte';
 	import Chat from './Chat.svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	// const socketio_client_from_lib = new SocketIO();
 
@@ -15,14 +15,14 @@
 		event: 'public_message',
 		namespace: '/public-namespace',
 		room: '',
-		cookie_session_id: $page.data.session.sessionId
+		cookie_session_id: page.data.session.sessionId
 	};
 	const demo_message_connection = {
 		event: 'demo_message',
 		namespace: '/demo-namespace',
 		// namespace: '',
 		room: '',
-		cookie_session_id: $page.data.session.sessionId
+		cookie_session_id: page.data.session.sessionId
 	};
 
 	// let { data }: { data: PageData } = $props();

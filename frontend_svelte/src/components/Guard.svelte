@@ -1,12 +1,12 @@
 <script lang="ts">
 	// import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import type { Snippet } from 'svelte';
 	// import { onMount } from 'svelte';
 
 	// let { redirect = 'login', children } = $props();
 	let { children }: { children: Snippet } = $props();
-	const { loggedIn } = $page.data.session || false;
+	const { loggedIn } = page.data.session || false;
 	// const forward = () => {
 	// 	onMount(() => {
 	// 		goto(redirect);
