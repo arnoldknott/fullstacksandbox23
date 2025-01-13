@@ -161,9 +161,9 @@
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon"
 				>
-					<li class=" items-center">
+					<li class="items-center">
 						<button
-							class="btn dropdown-item btn-text justify-start"
+							class="btn dropdown-item btn-text content-center justify-start"
 							aria-label="Edit Button"
 							onclick={() => (edit ? (edit = false) : (edit = true))}
 							><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
@@ -174,7 +174,7 @@
 					>
 						<button
 							id="share-menu"
-							class="dropdown-toggle btn dropdown-item btn-text justify-start"
+							class="dropdown-toggle  dropdown-item w-full btn btn-text content-center justify-start"
 							aria-haspopup="menu"
 							aria-expanded="false"
 							aria-label="Share with"
@@ -202,7 +202,7 @@
 											<li>
 												<button
 													data-sveltekit-preload-data={false}
-													class="btn dropdown-item btn-text justify-start"
+													class="btn dropdown-item btn-text content-center justify-start"
 													name="id"
 													value={id}
 													formaction="?/share&teamid={team.id}"
@@ -216,7 +216,7 @@
 										{/each}
 										<li class="dropdown-footer gap-2">
 											<button
-												class="btn dropdown-item btn-text justify-start"
+												class="btn dropdown-item btn-text content-center justify-start"
 												>... more options</button
 												>
 										</li>
@@ -233,7 +233,7 @@
 						either by changing to method="GET" or by using a link instead of a button inside a form-->
 						<form method="POST" use:enhance={() => card.remove()}>
 							<button
-								class="btn dropdown-item btn-error btn-text justify-start"
+								class="btn dropdown-item btn-error btn-text content-center justify-start"
 								aria-label="Delete Button"
 								name="id"
 								value={id}
