@@ -72,7 +72,7 @@ async def get_access_policies_for_resource(
     return access_policies
 
 
-@router.post("/policy/resource", status_code=200)
+@router.post("/policy/resources", status_code=200)
 async def get_access_policies_for_resources(
     resource_ids: list[UUID],
     # TBD: add a query parameter for action
@@ -82,7 +82,8 @@ async def get_access_policies_for_resources(
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for the requested resource_ids."""
     logger.info("GET access policies for resource_ids")
-
+    print("=== resource_ids ===")
+    print(resource_ids)
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
         access_policies = []
@@ -156,8 +157,6 @@ async def put_access_policy(
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
         new_policy_in_database = await crud.change(current_user, access_policy)
-        print("=== new_policy_in_database ===")
-        print(new_policy_in_database)
         return new_policy_in_database
 
 
