@@ -232,7 +232,7 @@ async def test_user_with_owner_rights_posts_access_policy(
     [token_user1_read_write],
     indirect=True,
 )
-async def test_user_with_owner_rights_posts_public_access_policy(
+async def test_user_with_owner_rights_posts_public_read_access_policy(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
@@ -262,6 +262,103 @@ async def test_user_with_owner_rights_posts_public_access_policy(
         "resource_id": many_test_policies[2]["resource_id"],
         "public": True,
         "action": Action.read,
+    }
+
+    response = await async_client.post("/api/v1/access/policy", json=new_share)
+    payload = response.json()
+
+    assert response.status_code == 201
+
+    assert payload["resource_id"] == many_test_policies[2]["resource_id"]
+    assert payload["action"] == new_share["action"]
+    assert payload["public"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_with_owner_rights_posts_public_write_policy(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests POST access policies, i.e. share."""
+    app_override_provide_http_token_payload
+
+    add_many_test_access_policies
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Give current user owner rights for the tested resource
+    await add_one_test_access_policy(
+        {
+            "resource_id": many_test_policies[2]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        }
+    )
+
+    new_share = {
+        "resource_id": many_test_policies[2]["resource_id"],
+        "public": True,
+        "action": Action.write,
+    }
+
+    response = await async_client.post("/api/v1/access/policy", json=new_share)
+    payload = response.json()
+
+    assert response.status_code == 201
+
+    assert payload["resource_id"] == many_test_policies[2]["resource_id"]
+    assert payload["action"] == new_share["action"]
+    assert payload["public"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+# TBD: consider if this should be failing?
+async def test_user_with_owner_rights_posts_public_own_policy(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests POST access policies, i.e. share."""
+    app_override_provide_http_token_payload
+
+    add_many_test_access_policies
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Give current user owner rights for the tested resource
+    await add_one_test_access_policy(
+        {
+            "resource_id": many_test_policies[2]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        }
+    )
+
+    new_share = {
+        "resource_id": many_test_policies[2]["resource_id"],
+        "public": True,
+        "action": Action.own,
     }
 
     response = await async_client.post("/api/v1/access/policy", json=new_share)
