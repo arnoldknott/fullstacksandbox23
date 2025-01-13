@@ -6,6 +6,7 @@
 	// import { deserialize } from '$app/forms';
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamBasicInformation } from '$lib/server/apis';
+	import { TemperatureCache } from '@material/material-color-utilities';
 
 	// let {
 	// 	id,
@@ -58,7 +59,12 @@
 	let card: Card;
 	let createUpdateForm = $state<HTMLFormElement | null>(null);
 
+	let dropdownMenu: HTMLUListElement;
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
+
+	microsoftTeams?.forEach((team) => {
+		team.rights = 'read';
+	});
 
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
@@ -145,7 +151,7 @@
 			{/if}
 			<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
 				<span
-					id="dropdown-menu-icon"
+					id="dropdown-menu-icon-{id}"
 					class="dropdown-toggle icon-[tabler--dots-vertical] size-6"
 					role="button"
 					aria-haspopup="menu"
@@ -158,8 +164,9 @@
 				<ul
 					class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
 					role="menu"
+					bind:this={dropdownMenu}
 					aria-orientation="vertical"
-					aria-labelledby="dropdown-menu-icon"
+					aria-labelledby="dropdown-menu-icon-{id}"
 				>
 					<li class="items-center">
 						<button
@@ -173,8 +180,8 @@
 						class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
 					>
 						<button
-							id="share-menu"
-							class="dropdown-toggle  dropdown-item w-full btn btn-text content-center justify-start"
+							id="share-{id}"
+							class="dropdown-toggle dropdown-item btn btn-text content-center justify-start"
 							aria-haspopup="menu"
 							aria-expanded="false"
 							aria-label="Share with"
@@ -182,13 +189,13 @@
 							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
 						</button>
 						<ul
-							class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline min-w-44 dropdown-open:opacity-100"
+							class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline min-w-60 dropdown-open:opacity-100"
 							role="menu"
 							aria-orientation="vertical"
-							aria-labelledby="share-menu"
+							aria-labelledby="share-{id}"
 						>
 							<li>
-								<form method="POST" use:enhance={() => card.remove()}>
+								<form method="POST" use:enhance={() => dropdownMenu.classList.add('hidden')}>
 									<!-- TBD: change to Teams ID -->
 									<!-- <button data-sveltekit-preload-data={false}
 										class="btn dropdown-item btn-text justify-start"
@@ -200,17 +207,37 @@
 									{#if microsoftTeams}
 										{#each microsoftTeams as team}
 											<li>
-												<button
-													data-sveltekit-preload-data={false}
-													class="btn dropdown-item btn-text content-center justify-start"
-													name="id"
-													value={id}
-													formaction="?/share&teamid={team.id}"
-													><span class="icon-[fluent--people-team-16-filled]"></span>{team.displayName.slice(
-														0,
-														8
-													)}{team.displayName.length > 9 ? " ..." : null}</button
-												>
+												<div class="flex items-center">
+													<button
+														data-sveltekit-preload-data={false}
+														class="btn dropdown-item btn-text content-center max-w-40"
+														name="id"
+														value={id}
+														formaction="?/share&teamid={team.id}"
+														><span class="icon-[fluent--people-team-16-filled]"></span>{team.displayName.slice(
+															0,
+															8
+														)}{team.displayName.length > 9 ? " ..." : null}
+														</button
+													>
+													<div class="mr-2"><span class="icon-[{
+														team.rights === "own" ? "tabler--key-filled"
+														: team.rights==="write" ? "material-symbols--edit-outline-rounded" 
+														: "tabler--eye"
+													}]"
+													></span></div>
+													<div class="dropdown relative inline-flex bg-base-300 [--offset:0] [--placement:left-start]">
+														<ul class="dropdown-menu bg-base-300 outline outline-2 outline-outline dropdown-open:opacity-100 hidden" role="menu" aria-orientation="vertical" aria-labelledby="rights-{id}">
+															<li><button type="button" onclick={() => team.rights = "own"} aria-label="own"><span class="icon-[tabler--key-filled]"></span></button></li>
+															<li><button type="button" onclick={() => team.rights = "write"} aria-label="write"><span class="icon-[material-symbols--edit-outline-rounded]"></span></button></li>
+															<li><button type="button" onclick={() => team.rights = "read"} aria-label="read"><span class="icon-[tabler--eye]"></span></button></li>
+														</ul>
+														<button id="rights-{id}" type="button" class="dropdown-toggle btn bg-base-300 btn-text " aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
+															<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"></span>
+														</button>
+														
+													</div>
+												</div>
 											</li>
 											<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
 										{/each}
