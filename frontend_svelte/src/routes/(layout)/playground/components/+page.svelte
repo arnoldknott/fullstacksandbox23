@@ -659,6 +659,20 @@
 	</div>
 
 	<div>
+		<Heading>Tooltips</Heading>
+		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
+			<div class="tooltip">
+				<button type="button" class="tooltip-toggle btn btn-square" aria-label="Tooltip">
+					<span class="icon-[tabler--chevron-up]"></span>
+				</button>
+				<span class="tooltip-content tooltip-shown:opacity-100 tooltip-shown:visible" role="tooltip">
+					<span class="tooltip-body">Tooltip on top</span>
+				</span>
+			</div>
+		</div>
+	</div>
+
+	<div>
 		<Heading>Theme Picker</Heading>
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div class="w-48">
