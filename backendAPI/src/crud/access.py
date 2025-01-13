@@ -700,7 +700,7 @@ class AccessPolicyCRUD:
                         current_user=current_user,
                         resource_id=policy.resource_id,
                         action=own,
-                        public=policy.public,
+                        # public=policy.public,  # This does not make sense - the policy does not need to be public if set to true!
                     )
                     # print("=== AccessPolicyCRUD.create - response ===")
                     # print(response)

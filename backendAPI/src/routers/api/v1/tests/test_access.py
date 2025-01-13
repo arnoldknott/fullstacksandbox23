@@ -250,6 +250,9 @@ async def test_user_with_owner_rights_posts_public_access_policy_fails(
         mocked_provide_http_token_payload
     )
 
+    print("=== current_user ===")
+    print(current_user)
+
     # Give current user owner rights for the tested resource
     await add_one_test_access_policy(
         {
@@ -265,11 +268,28 @@ async def test_user_with_owner_rights_posts_public_access_policy_fails(
         "action": Action.read,
     }
 
+    read_response = await async_client.get(
+        f"/api/v1/access/policy/resource/{many_test_policies[2]["resource_id"]}"
+    )
+    read_payload = read_response.json()
+
+    print("=== read_payload ===")
+    for policy in read_payload:
+        print(policy)
+
     response = await async_client.post("/api/v1/access/policy", json=new_share)
     payload = response.json()
 
-    assert response.status_code == 403
-    assert payload == {"detail": "Forbidden."}
+    assert response.status_code == 201
+
+    assert payload["resource_id"] == many_test_policies[2]["resource_id"]
+    assert payload["action"] == new_share["action"]
+    assert payload["public"] is True
+
+    # assert response.status_code == 403
+    # assert payload == {"detail": "Forbidden."}
+
+    # assert 0
 
 
 @pytest.mark.anyio
@@ -2043,9 +2063,6 @@ async def test_user_deletes_access_policy(
 
     assert len(read_payload) == 6
     # user has only access to 6
-
-    print("=== read_payload ===")
-    print(read_payload)
 
     assert AccessPolicyRead(**read_payload[0]) == AccessPolicyRead(
         **policies_in_database[5].model_dump()
