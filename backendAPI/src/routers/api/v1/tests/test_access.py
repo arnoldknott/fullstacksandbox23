@@ -292,6 +292,8 @@ async def test_user_posts_access_policies_without_access(
         assert response.json() == {"detail": "Forbidden."}
 
 
+# More detailed delete tests in access CRUD!
+
 # endregion: ## POST tests
 
 # region: ## GET tests:
@@ -1993,80 +1995,80 @@ async def test_admin_tries_to_delete_all_access_policy_with_owner_rights(
 
 
 # # TBD: debug why this test fails!
-# @pytest.mark.anyio
-# @pytest.mark.parametrize(
-#     "mocked_provide_http_token_payload",
-#     [token_user1_read_write],
-#     indirect=True,
-# )
-# async def test_user_deletes_access_policy(
-#     async_client: AsyncClient,
-#     app_override_provide_http_token_payload: FastAPI,
-#     add_many_test_access_policies,
-#     current_user_from_azure_token,
-#     mocked_provide_http_token_payload,
-#     add_one_test_access_policy,
-# ):
-#     """Tests DELETE access policy, i.e. stop sharing."""
-#     app_override_provide_http_token_payload
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_deletes_access_policy(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests DELETE access policy, i.e. stop sharing."""
+    app_override_provide_http_token_payload
 
-#     policies_in_database = add_many_test_access_policies
+    policies_in_database = add_many_test_access_policies
 
-#     assert len(policies_in_database) == 10
+    assert len(policies_in_database) == 10
 
-#     current_user = await current_user_from_azure_token(
-#         mocked_provide_http_token_payload
-#     )
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
 
-#     # Give current user owner rights for the tested resource
-#     await add_one_test_access_policy(
-#         {
-#             "resource_id": many_test_policies[2]["resource_id"],
-#             "identity_id": str(current_user.user_id),
-#             "action": Action.own,
-#         }
-#     )
+    # Give current user owner rights for the tested resource
+    permission_for_test = await add_one_test_access_policy(
+        {
+            "resource_id": many_test_policies[0]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        }
+    )
 
-#     # should delete policies 0 and 4
-#     response = await async_client.delete(
-#         f"/api/v1/access/policy?resource_id={resource_id1}&identity_id={identity_id_user2}"
-#     )
+    # should delete policies 0 and 4
+    response = await async_client.delete(
+        f"/api/v1/access/policy?resource_id={resource_id1}&identity_id={identity_id_user2}"
+    )
 
-#     assert response.status_code == 200
+    assert response.status_code == 200
 
-#     read_response = await async_client.get("/api/v1/access/policies")
-#     read_payload = read_response.json()
+    read_response = await async_client.get(
+        f"/api/v1/access/policy/resource/{many_test_policies[0]["resource_id"]}"
+    )
+    read_payload = read_response.json()
 
-#     assert len(read_payload) == 9
-#     # 2 deleted, but 1 created, when accessing the endpoint
+    assert len(read_payload) == 6
+    # user has only access to 6
 
-#     assert AccessPolicyRead(**read_payload[0]) == AccessPolicyRead(
-#         **policies_in_database[1].model_dump()
-#     )
-#     assert AccessPolicyRead(**read_payload[1]) == AccessPolicyRead(
-#         **policies_in_database[2].model_dump()
-#     )
-#     assert AccessPolicyRead(**read_payload[2]) == AccessPolicyRead(
-#         **policies_in_database[3].model_dump()
-#     )
-#     assert AccessPolicyRead(**read_payload[3]) == AccessPolicyRead(
-#         **policies_in_database[5].model_dump()
-#     )
-#     assert AccessPolicyRead(**read_payload[4]) == AccessPolicyRead(
-#         **policies_in_database[6].model_dump()
-#     )
-#     assert AccessPolicyRead(**read_payload[5]) == AccessPolicyRead(
-#         **policies_in_database[7].model_dump()
-#     )
-#     assert AccessPolicyRead(**read_payload[6]) == AccessPolicyRead(
-#         **policies_in_database[8].model_dump()
-#     )
-#     assert AccessPolicyRead(**read_payload[7]) == AccessPolicyRead(
-#         **policies_in_database[9].model_dump()
-#     )
+    print("=== read_payload ===")
+    print(read_payload)
+
+    assert AccessPolicyRead(**read_payload[0]) == AccessPolicyRead(
+        **policies_in_database[5].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[1]) == AccessPolicyRead(
+        **policies_in_database[6].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[2]) == AccessPolicyRead(
+        **policies_in_database[7].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[3]) == AccessPolicyRead(
+        **policies_in_database[8].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[4]) == AccessPolicyRead(
+        **policies_in_database[9].model_dump()
+    )
+    # and the one created for the test:
+    assert AccessPolicyRead(**read_payload[5]) == AccessPolicyRead(
+        **permission_for_test.model_dump()
+    )
 
 
-# TBD: user deletes access policy: corresponds to  "stop share"
+# More detailed delete tests in access CRUD!
 
 # endregion: ## DELETE tests
 
