@@ -232,7 +232,6 @@ async def test_user_with_owner_rights_posts_access_policy(
     [token_user1_read_write],
     indirect=True,
 )
-# TBD: should this pass - so an owner of a policy can publish the resource publicly?
 async def test_user_with_owner_rights_posts_public_access_policy(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
@@ -250,9 +249,6 @@ async def test_user_with_owner_rights_posts_public_access_policy(
         mocked_provide_http_token_payload
     )
 
-    print("=== current_user ===")
-    print(current_user)
-
     # Give current user owner rights for the tested resource
     await add_one_test_access_policy(
         {
@@ -268,15 +264,6 @@ async def test_user_with_owner_rights_posts_public_access_policy(
         "action": Action.read,
     }
 
-    read_response = await async_client.get(
-        f"/api/v1/access/policy/resource/{many_test_policies[2]["resource_id"]}"
-    )
-    read_payload = read_response.json()
-
-    print("=== read_payload ===")
-    for policy in read_payload:
-        print(policy)
-
     response = await async_client.post("/api/v1/access/policy", json=new_share)
     payload = response.json()
 
@@ -285,11 +272,6 @@ async def test_user_with_owner_rights_posts_public_access_policy(
     assert payload["resource_id"] == many_test_policies[2]["resource_id"]
     assert payload["action"] == new_share["action"]
     assert payload["public"] is True
-
-    # assert response.status_code == 403
-    # assert payload == {"detail": "Forbidden."}
-
-    # assert 0
 
 
 @pytest.mark.anyio
