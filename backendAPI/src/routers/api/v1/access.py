@@ -72,6 +72,27 @@ async def get_access_policies_for_resource(
     return access_policies
 
 
+@router.post("/policy/resource", status_code=200)
+async def get_access_policies_for_resources(
+    resource_ids: list[UUID],
+    # TBD: add a query parameter for action
+    # TBD: add a query parameter for exclude current_user in the result
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[AccessPolicyRead]:
+    """Returns all access policies for the requested resource_ids."""
+    logger.info("GET access policies for resource_ids")
+
+    current_user = await check_token_against_guards(token_payload, guards)
+    async with access_policy_view.crud() as crud:
+        access_policies = []
+        for resource_id in resource_ids:
+            access_policies += await crud.read_access_policies_by_resource_id(
+                current_user, resource_id
+            )
+    return access_policies
+
+
 @router.get("/policy/resource/type/{resource_type}", status_code=200)
 async def get_access_policies_by_resource_type(
     resource_type: ResourceType,
