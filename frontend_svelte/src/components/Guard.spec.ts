@@ -14,13 +14,13 @@ import { page } from '$app/state';
 // }));
 
 vi.mock('$app/state', () => ({
-    page: {
-        data: {
-            session: {
-                loggedIn: false // or true, depending on the test case
-            }
-        }
-    }
+	page: {
+		data: {
+			session: {
+				loggedIn: false // or true, depending on the test case
+			}
+		}
+	}
 }));
 
 const protectedContent: Snippet = createRawSnippet(() => {

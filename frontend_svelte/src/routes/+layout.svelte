@@ -7,7 +7,7 @@
 	import { setContext } from 'svelte';
 	// import type { LayoutData } from './$types';
 	import type { Snippet } from 'svelte';
-	import { page } from '$app/state';// TBD: change page to new import
+	import { page } from '$app/state'; // TBD: change page to new import
 	import { afterNavigate } from '$app/navigation';
 	// import 'flyonui/flyonui.js';
 	// import { HSStaticMethods } from 'flyonui/flyonui.js';

@@ -23,7 +23,10 @@
 		onclick={async () => {
 			const container = document.getElementById('demoResourcesContainer')!;
 			const firstDemoResource = container.childNodes[0];
-			mount(DemoResourceCard, { target: container, anchor: firstDemoResource });
+			mount(DemoResourceCard, {
+				target: container,
+				anchor: firstDemoResource
+			});
 			const { HSDropdown } = await import('flyonui/flyonui.js');
 			HSDropdown.autoInit();
 		}}
