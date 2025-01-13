@@ -5,6 +5,7 @@
 	import type { DemoResourceWithCreationDate } from '$lib/types';
 	// import { deserialize } from '$app/forms';
 	import { enhance } from '$app/forms';
+	import type { MicrosoftTeamBasicInformation } from '$lib/server/apis';
 
 	// let {
 	// 	id,
@@ -26,7 +27,7 @@
 	let {
 		demoResource,
 		microsoftTeams
-	}: { demoResource?: DemoResourceWithCreationDate; microsoftTeams?: string[] } = $props();
+	}: { demoResource?: DemoResourceWithCreationDate; microsoftTeams?: MicrosoftTeamBasicInformation[] } = $props();
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let name = $state(demoResource?.name || undefined);
 	let description = $state(demoResource?.description || undefined);
@@ -181,7 +182,7 @@
 							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
 						</button>
 						<ul
-							class="dropdown-menu hidden min-w-60 dropdown-open:opacity-100"
+							class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline min-w-44 dropdown-open:opacity-100"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share-menu"
@@ -204,15 +205,21 @@
 													class="btn dropdown-item btn-text justify-start"
 													name="id"
 													value={id}
-													formaction="?/share&teamid={team}"
-													><span class="icon-[fluent--people-team-16-filled]"></span>{team.slice(
+													formaction="?/share&teamid={team.id}"
+													><span class="icon-[fluent--people-team-16-filled]"></span>{team.displayName.slice(
 														0,
 														8
-													)}</button
+													)}{team.displayName.length > 9 ? " ..." : null}</button
 												>
 											</li>
 											<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
 										{/each}
+										<li class="dropdown-footer gap-2">
+											<button
+												class="btn dropdown-item btn-text justify-start"
+												>... more options</button
+												>
+										</li>
 									{/if}
 								</form>
 							</li>

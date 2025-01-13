@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { backendAPI } from '$lib/server/apis';
 import { fail } from '@sveltejs/kit';
 import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
+import { microsoftGraph, type MicrosoftTeamBasicInformation } from '$lib/server/apis';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function executed ===');
@@ -29,10 +30,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 			return a.creation_date < b.creation_date ? 1 : -1;
 		}
 	);
-	let microsoftTeams: string[] = [];
-	if (locals.sessionData.userProfile) {
-		microsoftTeams = locals.sessionData.userProfile.azure_token_groups || [];
+	// let microsoftTeams: string[] = [];
+	// if (locals.sessionData.userProfile) {
+	// 	microsoftTeams = locals.sessionData.userProfile.azure_token_groups || [];
+	// }
+
+	let microsoftTeams: MicrosoftTeamBasicInformation[] = [];
+	if( locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups ) {
+		microsoftTeams = await microsoftGraph.getAttachedTeams(sessionId, locals.sessionData.userProfile.azure_token_groups);
 	}
+
 	console.log('=== routes - demo-resource - page.server - load function - microsoftTeams ===');
 	console.log(microsoftTeams);
 

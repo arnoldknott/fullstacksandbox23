@@ -1,19 +1,11 @@
 import type { PageServerLoad } from './$types';
-import { microsoftGraph } from '$lib/server/apis';
-import type { MicrosoftTeamBasicInformation } from '$lib/types';
+import { microsoftGraph, type MicrosoftTeamBasicInformation } from '$lib/server/apis';
 // const getAllMicrosoftTeams = async (sessionId: string, azureGroups: string[]) => {
 
 // }
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;
-	let myTeams: MicrosoftTeamBasicInformation[] = [];
-	if (locals.sessionData.userProfile) {
-		const myAzureGroupIds = locals.sessionData.userProfile.azure_token_groups;
-		if (myAzureGroupIds) {
-			myTeams = await microsoftGraph.getAttachedTeams(sessionId, myAzureGroupIds);
-		}
-	}
 	// const myTeams: MicrosoftTeamBasicInformation[] = [];
 	// if (locals.sessionData.userProfile) {
 	// 	const myAzureGroups = locals.sessionData.userProfile.azure_token_groups;
@@ -35,6 +27,19 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// 		);
 	// 	}
 	// }
+
+	// let myTeams: MicrosoftTeamBasicInformation[] = [];
+	// if (locals.sessionData.userProfile) {
+	// 	const myAzureGroupIds = locals.sessionData.userProfile.azure_token_groups;
+	// 	if (myAzureGroupIds) {
+	// 		myTeams = await microsoftGraph.getAttachedTeams(sessionId, myAzureGroupIds);
+	// 	}
+	// }
+
+	let myTeams: MicrosoftTeamBasicInformation[] = [];
+	if( locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups ) {
+		myTeams = await microsoftGraph.getAttachedTeams(sessionId, locals.sessionData.userProfile.azure_token_groups);
+	}
 
 	console.log(
 		'=== src - routes - %28layout%29 - %28protected%29 - protected - identities - %2Bpage.server.ts - myTeams ==='
