@@ -665,7 +665,10 @@
 				<button type="button" class="tooltip-toggle btn btn-square" aria-label="Tooltip">
 					<span class="icon-[tabler--chevron-up]"></span>
 				</button>
-				<span class="tooltip-content tooltip-shown:opacity-100 tooltip-shown:visible" role="tooltip">
+				<span
+					class="tooltip-content tooltip-shown:visible tooltip-shown:opacity-100"
+					role="tooltip"
+				>
 					<span class="tooltip-body">Tooltip on top</span>
 				</span>
 			</div>

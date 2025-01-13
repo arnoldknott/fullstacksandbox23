@@ -213,7 +213,6 @@ class BackendAPI extends BaseAPI {
 
 export const backendAPI = new BackendAPI();
 
-
 export interface MicrosoftTeamBasicInformation {
 	id: string;
 	displayName: string;

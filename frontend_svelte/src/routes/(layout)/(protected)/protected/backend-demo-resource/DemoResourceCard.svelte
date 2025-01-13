@@ -6,7 +6,6 @@
 	// import { deserialize } from '$app/forms';
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamBasicInformation } from '$lib/server/apis';
-	import { TemperatureCache } from '@material/material-color-utilities';
 
 	// let {
 	// 	id,
@@ -28,7 +27,10 @@
 	let {
 		demoResource,
 		microsoftTeams
-	}: { demoResource?: DemoResourceWithCreationDate; microsoftTeams?: MicrosoftTeamBasicInformation[] } = $props();
+	}: {
+		demoResource?: DemoResourceWithCreationDate;
+		microsoftTeams?: MicrosoftTeamBasicInformation[];
+	} = $props();
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let name = $state(demoResource?.name || undefined);
 	let description = $state(demoResource?.description || undefined);
@@ -183,7 +185,7 @@
 					>
 						<button
 							id="share-{id}"
-							class="dropdown-toggle dropdown-item btn btn-text content-center justify-start"
+							class="dropdown-toggle btn dropdown-item btn-text content-center justify-start"
 							aria-haspopup="menu"
 							aria-expanded="false"
 							aria-label="Share with"
@@ -191,7 +193,7 @@
 							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
 						</button>
 						<ul
-							class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline min-w-60 dropdown-open:opacity-100"
+							class="dropdown-menu hidden min-w-60 bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share-{id}"
@@ -212,42 +214,79 @@
 												<div class="flex items-center">
 													<button
 														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text content-center max-w-40"
+														class="btn dropdown-item btn-text max-w-40 content-center"
 														name="id"
 														value={id}
 														formaction="?/share&teamid={team.id}"
-														><span class="icon-[fluent--people-team-16-filled]"></span>{team.displayName.slice(
-															0,
-															8
-														)}{team.displayName.length > 9 ? " ..." : null}
-														</button
+														><span class="icon-[fluent--people-team-16-filled]"
+														></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
+															? ' ...'
+															: null}
+													</button>
+													<div class="mr-2">
+														<span
+															class="icon-[{rights === 'own'
+																? 'tabler--key-filled'
+																: rights === 'write'
+																	? 'material-symbols--edit-outline-rounded'
+																	: 'tabler--eye'}]"
+														></span>
+													</div>
+													<div
+														class="dropdown relative inline-flex bg-base-300 [--offset:0] [--placement:left-start]"
 													>
-													<div class="mr-2"><span class="icon-[{
-														rights === "own" ? "tabler--key-filled"
-														: rights==="write" ? "material-symbols--edit-outline-rounded" 
-														: "tabler--eye"
-													}]"
-													></span></div>
-													<div class="dropdown relative inline-flex bg-base-300 [--offset:0] [--placement:left-start]">
-														<ul class="dropdown-menu bg-base-300 outline outline-2 outline-outline dropdown-open:opacity-100 hidden" role="menu" aria-orientation="vertical" aria-labelledby="rights-{id}">
-															<li><button type="button" onclick={() => rights = "own"} aria-label="own"><span class="icon-[tabler--key-filled]"></span></button></li>
-															<li><button type="button" onclick={() => rights = "write"} aria-label="write"><span class="icon-[material-symbols--edit-outline-rounded]"></span></button></li>
-															<li><button type="button" onclick={() => rights = "read"} aria-label="read"><span class="icon-[tabler--eye]"></span></button></li>
+														<ul
+															class="dropdown-menu hidden bg-base-300 outline outline-2 outline-outline dropdown-open:opacity-100"
+															role="menu"
+															aria-orientation="vertical"
+															aria-labelledby="rights-{id}"
+														>
+															<li>
+																<button
+																	type="button"
+																	onclick={() => (rights = 'own')}
+																	aria-label="own"
+																	><span class="icon-[tabler--key-filled]"></span></button
+																>
+															</li>
+															<li>
+																<button
+																	type="button"
+																	onclick={() => (rights = 'write')}
+																	aria-label="write"
+																	><span class="icon-[material-symbols--edit-outline-rounded]"
+																	></span></button
+																>
+															</li>
+															<li>
+																<button
+																	type="button"
+																	onclick={() => (rights = 'read')}
+																	aria-label="read"><span class="icon-[tabler--eye]"></span></button
+																>
+															</li>
 														</ul>
-														<button id="rights-{id}" type="button" class="dropdown-toggle btn bg-base-300 btn-text " aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-															<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"></span>
+														<button
+															id="rights-{id}"
+															type="button"
+															class="dropdown-toggle btn btn-text bg-base-300"
+															aria-haspopup="menu"
+															aria-expanded="false"
+															aria-label="Dropdown"
+														>
+															<span
+																class="icon-[tabler--chevron-down] size-4 dropdown-open:rotate-180"
+															></span>
 														</button>
-														
 													</div>
 												</div>
 											</li>
 											<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
 										{/each}
 										<li class="dropdown-footer gap-2">
-											<button
-												class="btn dropdown-item btn-text content-center justify-start"
+											<button class="btn dropdown-item btn-text content-center justify-start"
 												>... more options</button
-												>
+											>
 										</li>
 									{/if}
 								</form>

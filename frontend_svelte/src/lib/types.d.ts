@@ -79,4 +79,3 @@ export interface DemoResource {
 export interface DemoResourceWithCreationDate extends DemoResource {
 	creation_date: Date;
 }
-
