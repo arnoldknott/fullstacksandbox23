@@ -79,3 +79,9 @@ export interface DemoResource {
 export interface DemoResourceWithCreationDate extends DemoResource {
 	creation_date: Date;
 }
+
+export interface MicrosoftTeamBasicInformation {
+	id: string;
+	displayName: string;
+	description: string;
+}

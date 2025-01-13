@@ -2,11 +2,12 @@
 	import type { Snippet } from 'svelte';
 	let { title, id, children }: { title: string; id: string; children: Snippet } = $props();
 
-	export interface MicrosoftTeamBasicInformation {
-		id: string;
-		displayName: string;
-		description: string;
-	}
+
+	// export interface MicrosoftTeamBasicInformation {
+	// 	id: string;
+	// 	displayName: string;
+	// 	description: string;
+	// }
 </script>
 
 <div class="accordion-item bg-neutral-container text-neutral-container-content" {id}>
