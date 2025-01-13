@@ -25,7 +25,8 @@
 			const firstDemoResource = container.childNodes[0];
 			mount(DemoResourceCard, {
 				target: container,
-				anchor: firstDemoResource
+				anchor: firstDemoResource,
+				props: { microsoftTeams: microsoftTeams }
 			});
 			const { HSDropdown } = await import('flyonui/flyonui.js');
 			HSDropdown.autoInit();
