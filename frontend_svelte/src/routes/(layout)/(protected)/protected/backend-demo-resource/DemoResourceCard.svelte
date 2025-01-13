@@ -62,9 +62,11 @@
 	let dropdownMenu: HTMLUListElement;
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
-	microsoftTeams?.forEach((team) => {
-		team.rights = 'read';
-	});
+	let rights = $state('read');
+
+	// microsoftTeams?.forEach((team) => {
+	// 	team.rights = 'read';
+	// });
 
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
@@ -221,16 +223,16 @@
 														</button
 													>
 													<div class="mr-2"><span class="icon-[{
-														team.rights === "own" ? "tabler--key-filled"
-														: team.rights==="write" ? "material-symbols--edit-outline-rounded" 
+														rights === "own" ? "tabler--key-filled"
+														: rights==="write" ? "material-symbols--edit-outline-rounded" 
 														: "tabler--eye"
 													}]"
 													></span></div>
 													<div class="dropdown relative inline-flex bg-base-300 [--offset:0] [--placement:left-start]">
 														<ul class="dropdown-menu bg-base-300 outline outline-2 outline-outline dropdown-open:opacity-100 hidden" role="menu" aria-orientation="vertical" aria-labelledby="rights-{id}">
-															<li><button type="button" onclick={() => team.rights = "own"} aria-label="own"><span class="icon-[tabler--key-filled]"></span></button></li>
-															<li><button type="button" onclick={() => team.rights = "write"} aria-label="write"><span class="icon-[material-symbols--edit-outline-rounded]"></span></button></li>
-															<li><button type="button" onclick={() => team.rights = "read"} aria-label="read"><span class="icon-[tabler--eye]"></span></button></li>
+															<li><button type="button" onclick={() => rights = "own"} aria-label="own"><span class="icon-[tabler--key-filled]"></span></button></li>
+															<li><button type="button" onclick={() => rights = "write"} aria-label="write"><span class="icon-[material-symbols--edit-outline-rounded]"></span></button></li>
+															<li><button type="button" onclick={() => rights = "read"} aria-label="read"><span class="icon-[tabler--eye]"></span></button></li>
 														</ul>
 														<button id="rights-{id}" type="button" class="dropdown-toggle btn bg-base-300 btn-text " aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
 															<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"></span>

@@ -40,6 +40,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		microsoftTeams = await microsoftGraph.getAttachedTeams(sessionId, locals.sessionData.userProfile.azure_token_groups);
 	}
 
+	// const accessPoliciesResponse = await backendAPI.get(sessionId, '/access/policy');
+
 	console.log('=== routes - demo-resource - page.server - load function - microsoftTeams ===');
 	console.log(microsoftTeams);
 
