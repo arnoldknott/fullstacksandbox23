@@ -633,8 +633,6 @@ class AccessPolicyCRUD:
     ) -> AccessPermission:
         """Checks the access level of the user to the resource."""
         try:
-            print("=== AccessPolicyCRUD.check_access - current_user ===")
-            print(current_user)
             if await self.allows(
                 AccessRequest(
                     resource_id=resource_id,
@@ -642,7 +640,6 @@ class AccessPolicyCRUD:
                     current_user=current_user,
                 )
             ):
-                print("=== AccessPolicyCRUD.check_access - own-response triggered ===")
                 return AccessPermission(
                     resource_id=resource_id,
                     action=own,
@@ -654,9 +651,6 @@ class AccessPolicyCRUD:
                     current_user=current_user,
                 )
             ):
-                print(
-                    "=== AccessPolicyCRUD.check_access - write-response triggered ==="
-                )
                 return AccessPermission(
                     resource_id=resource_id,
                     action=write,
@@ -668,13 +662,11 @@ class AccessPolicyCRUD:
                     current_user=current_user,
                 )
             ):
-                print("=== AccessPolicyCRUD.check_access - read-response triggered ===")
                 return AccessPermission(
                     resource_id=resource_id,
                     action=read,
                 )
             else:
-                print("=== AccessPolicyCRUD.check_access - none-response triggered ===")
                 return AccessPermission(
                     resource_id=resource_id,
                     action=None,
