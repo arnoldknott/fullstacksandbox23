@@ -1,5 +1,6 @@
 import type { AccountInfo } from '@azure/msal-node';
 import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
+import type { Action } from '$lib/access';
 
 export type BackendAPIConfiguration = {
 	backendFqdn: string;
@@ -66,11 +67,6 @@ type Tab = {
 	active?: boolean;
 };
 
-enum Action {
-	Own = 'own',
-	Write = 'write',
-	Read = 'read',
-}
 
 export interface DemoResource {
 	id?: string;

@@ -6,6 +6,7 @@
 	// import { deserialize } from '$app/forms';
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamBasicInformation } from '$lib/server/apis';
+	import { AccessHandler } from '$lib/access';
 
 	// let {
 	// 	id,
@@ -68,22 +69,14 @@
 
 	let rights = $state('read');
 
+	// const myAccessRights = $derived.by(() => AccessHandler.getAccessRights(accessPolicies));
+
 	const rightsIconSelection = (identityId: string) => {
-		const hasOwnerRights = accessPolicies?.some((policy) => policy.identity_id === identityId && policy.action === 'own');
-		const hasWriteRights = accessPolicies?.some((policy) => policy.identity_id === identityId && policy.action === 'write');
-		const hasReadRights = accessPolicies?.some((policy) => policy.identity_id === identityId && policy.action === 'read');
-		if (hasOwnerRights) {
-			console.log(accessPolicies?.filter((policy) => policy.identity_id === identityId && policy.action === 'own'))
-		}
-		if (hasWriteRights) {
-			console.log(accessPolicies?.filter((policy) => policy.identity_id === identityId && policy.action === 'write'))
-		}
-		if (hasReadRights) {
-			console.log(accessPolicies?.filter((policy) => policy.identity_id === identityId && policy.action === 'read'))
-		}
-		return hasOwnerRights ? 'tabler--key-filled'
-			: hasWriteRights ? 'material-symbols--edit-outline-rounded'
-			: hasReadRights ? 'tabler--eye'
+		if (!accessPolicies) return null;
+		const rights = AccessHandler.getRights(identityId, accessPolicies)
+		return rights === 'own' ? 'tabler--key-filled'
+			: rights === 'write' ? 'material-symbols--edit-outline-rounded'
+			: rights === 'read' ? 'tabler--eye'
 			: null;
 	}
 

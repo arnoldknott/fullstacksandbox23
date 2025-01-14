@@ -20,6 +20,7 @@ from models.access import (
     AccessPolicyDelete,
     AccessPolicyRead,
     AccessPolicyUpdate,
+    AccessPermission,
 )
 
 from .base import BaseView
@@ -53,6 +54,7 @@ async def get_access_policies(
     return await access_policy_view.get(token_payload, guards)
 
 
+# Only owners get the list of access policies
 @router.get("/policy/resource/{resource_id}", status_code=200)
 async def get_access_policies_for_resource(
     resource_id: UUID,
@@ -72,6 +74,7 @@ async def get_access_policies_for_resource(
     return access_policies
 
 
+# Technically a post action, but it's retrieving information based on the resource_ids
 @router.post("/policy/resources", status_code=200)
 async def get_access_policies_for_resources(
     resource_ids: list[UUID],
@@ -82,8 +85,6 @@ async def get_access_policies_for_resources(
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for the requested resource_ids."""
     logger.info("GET access policies for resource_ids")
-    print("=== resource_ids ===")
-    print(resource_ids)
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
         access_policies = []
@@ -184,6 +185,25 @@ async def delete_access_policy(
 
 
 # endregion AccessPolicies
+
+
+# region AccessPermissions
+
+
+@router.get("/permission/resource/{resource_id}", status_code=200)
+async def get_my_access_for_resource(
+    resource_id: UUID,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> AccessPermission:
+    """Returns the access level toa resource for the current user."""
+    logger.info("GET access level for resource_id")
+    current_user = await check_token_against_guards(token_payload, guards)
+    async with access_policy_view.crud() as crud:
+        return await crud.check_access(current_user, resource_id)
+
+
+# endregion AccessPermissions
 
 # region AccessLogs
 

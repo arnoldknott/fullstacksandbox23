@@ -1,13 +1,21 @@
 import uuid
 from datetime import datetime, timedelta
 
+from pprint import pprint
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import AccessPolicyCRUD
-from models.access import AccessLogCreate, AccessLogRead, AccessPolicy, AccessPolicyRead
+from models.access import (
+    AccessLogCreate,
+    AccessLogRead,
+    AccessPolicy,
+    AccessPolicyRead,
+    AccessPermission,
+    AccessRequest,
+)
 from models.demo_resource import DemoResource
 from models.identity import AzureGroup, User
 from models.protected_resource import ProtectedResource
@@ -2385,6 +2393,143 @@ async def test_user_deletes_access_policy(
 # endregion: ## DELETE tests
 
 # endregion: ## AccessPolicy tests
+
+
+# region AccessPermission tests
+
+# Nomenclature:
+# ✔︎ implemented
+# X missing tests
+# - not implemented
+
+# AccessPermissions:
+# - user gets access permission for one resource with own permissions
+# - user gets access permission for one resource with write permissions
+# - user gets access permission for one resource with read permissions
+# - user gets access permission for one resource without permissions
+# - user gets access permission for multiple resources
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [
+        token_user2_read,
+    ],
+    indirect=True,
+)
+async def test_user_get_access_permission_for_resource_with_owner_permission(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+    # register_one_identity,
+):
+    """Tests GET access policies, i.e. share."""
+
+    app_override_provide_http_token_payload
+    # add_many_test_access_policies  # not used - but added so there's more stuff in the database
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # print("=== current_user ===")
+    # print(current_user)
+
+    # dummy_user_id = uuid.uuid4()
+    # register_one_identity(dummy_user_id, User)
+
+    # Access policies for the querying user - which is owner of resource:
+    # dummy_test_access_policy_for_debugging_test = {
+    #     "resource_id": str(resource_id1),
+    #     "identity_id": str(dummy_user_id),
+    #     "action": Action.own,
+    # }
+    own_test_access_policy_for_current_user = {
+        "resource_id": str(resource_id3),
+        "identity_id": str(current_user.user_id),
+        "action": Action.own,
+    }
+    write_test_access_policy_for_current_user = {
+        "resource_id": str(resource_id3),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    read_test_access_policy_for_current_user = {
+        "resource_id": str(resource_id3),
+        "identity_id": str(current_user.user_id),
+        "action": Action.read,
+    }
+
+    target_policies = [
+        # dummy_test_access_policy_for_debugging_test,
+        own_test_access_policy_for_current_user,
+        # write_test_access_policy_for_current_user,
+        # read_test_access_policy_for_current_user,
+    ]
+
+    # print("=== target_policies ===")
+    for policy in target_policies:
+        # print(policy)
+        await add_one_test_access_policy(policy)
+
+    # print("=== resource_id1 ===")
+    # print(resource_id1)
+
+    # response = await async_client.get(f"/api/v1/access/policy/resource/{resource_id1}")
+    # assert response.status_code == 200
+
+    # print("=== response ===")
+    # pprint(response.json())
+
+    # access_policy_crud = AccessPolicyCRUD()
+    # async with access_policy_crud as crud:
+    #     admin_response = await crud.read_access_policies_by_resource_id(
+    #         CurrentUserData(**current_user_data_admin), resource_id1
+    #     )
+    #     print("=== database_policies for resource_id1 - admin_response ===")
+    #     for policy in admin_response:
+    #         print(policy)
+
+    #     access_request_own = AccessRequest(
+    #         resource_id=resource_id1,
+    #         current_user=current_user,
+    #         action=Action.own,
+    #     )
+    #     allows_own = await crud.allows(access_request_own)
+    #     print("=== allows_own ===")
+    #     print(allows_own)
+
+    #     access_request_write = AccessRequest(
+    #         resource_id=resource_id1,
+    #         current_user=current_user,
+    #         action=Action.write,
+    #     )
+    #     allows_write = await crud.allows(access_request_write)
+    #     print("=== allows_write ===")
+    #     print(allows_write)
+
+    #     access_request_read = AccessRequest(
+    #         resource_id=resource_id1,
+    #         current_user=current_user,
+    #         action=Action.read,
+    #     )
+    #     allows_read = await crud.allows(access_request_read)
+    #     print("=== allows_read ===")
+    #     print(allows_read)
+
+    response = await async_client.get(
+        f"/api/v1/access/permission/resource/{resource_id3}"
+    )
+
+    permission = AccessPermission(**response.json())
+
+    assert permission.resource_id == uuid.UUID(resource_id3)
+    assert permission.action == Action.own
+
 
 # region: ## AccessLog tests
 

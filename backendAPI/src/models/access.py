@@ -135,6 +135,7 @@ class AccessPolicyDelete(SQLModel):
         return self
 
 
+# TBD: refactor into either using it on all CRUD operations (create, read, update and delete) or not at all
 class AccessRequest(BaseModel):
     """Model for the access request"""
 
@@ -142,6 +143,13 @@ class AccessRequest(BaseModel):
     current_user: CurrentUserData
     resource_id: Optional[uuid.UUID]
     action: Optional[Action]
+
+
+class AccessPermission(BaseModel):
+    """Model for the access permission"""
+
+    resource_id: uuid.UUID
+    action: Action | None
 
 
 # No update model for access policies: once created, they should not be updated, only deleted to keep loggings consistent.

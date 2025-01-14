@@ -25,6 +25,7 @@ from models.access import (
     AccessPolicyRead,
     AccessPolicyUpdate,
     AccessRequest,
+    AccessPermission,
     BaseHierarchy,
     IdentifierTypeLink,
     IdentityHierarchy,
@@ -624,6 +625,91 @@ class AccessPolicyCRUD:
             raise HTTPException(status_code=403, detail="Forbidden.")
 
         return False
+
+    async def check_access(
+        self,
+        current_user: CurrentUserData,
+        resource_id: UUID,
+    ) -> AccessPermission:
+        """Checks the access level of the user to the resource."""
+        try:
+            print("=== AccessPolicyCRUD.check_access - current_user ===")
+            print(current_user)
+            if await self.allows(
+                AccessRequest(
+                    resource_id=resource_id,
+                    action=own,
+                    current_user=current_user,
+                )
+            ):
+                print("=== AccessPolicyCRUD.check_access - own-response triggered ===")
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=own,
+                )
+            elif await self.allows(
+                AccessRequest(
+                    resource_id=resource_id,
+                    action=write,
+                    current_user=current_user,
+                )
+            ):
+                print(
+                    "=== AccessPolicyCRUD.check_access - write-response triggered ==="
+                )
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=write,
+                )
+            elif await self.allows(
+                AccessRequest(
+                    resource_id=resource_id,
+                    action=read,
+                    current_user=current_user,
+                )
+            ):
+                print("=== AccessPolicyCRUD.check_access - read-response triggered ===")
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=read,
+                )
+            else:
+                print("=== AccessPolicyCRUD.check_access - none-response triggered ===")
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=None,
+                )
+
+            # Reading the access policies for the resource from database
+            # - not working, finds access policies from other users as well!:
+            # query = select(AccessPolicy)
+            # query = query.where(AccessPolicy.resource_id == resource_id)
+            # query = self.filters_allowed(query, read, current_user=current_user)
+
+            # async with self:
+            #     response = await self.session.exec(query)
+            #     results = response.all()
+
+            # if not results:
+            #     return None
+
+            # access_level = None
+            # for result in results:
+            #     print("=== AccessPolicyCRUD.check_access - result ===")
+            #     print(result)
+            #     # TBD: should not be necessary to check for the resource_id again here!
+            #     # The query is doing this already!
+            #     if result.resource_id == resource_id:
+            #         if result.action == own:
+            #             return own  # can be returned directly, as it's the highest access level
+            #         elif result.action == write:
+            #             access_level = write
+            #         elif result.action == read and access_level != write:
+            #             access_level = read
+            #         return access_level
+        except Exception as e:
+            logger.error(f"Error in reading policy: {e}")
+            raise HTTPException(status_code=403, detail="Forbidden.")
 
     async def create(
         self,
@@ -1453,8 +1539,8 @@ class ResourceHierarchyCRUD(
     ) -> None:
         """Reorders the children of a parent resource."""
         try:
-            print("=== other_child_id ===")
-            print(other_child_id)
+            # print("=== other_child_id ===")
+            # print(other_child_id)
 
             # Ensure user has write permissions on parent resource:
             parent_access_request = AccessRequest(
