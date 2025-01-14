@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
 
-from pprint import pprint
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -14,7 +13,6 @@ from models.access import (
     AccessPolicy,
     AccessPolicyRead,
     AccessPermission,
-    AccessRequest,
 )
 from models.demo_resource import DemoResource
 from models.identity import AzureGroup, User
@@ -2410,7 +2408,7 @@ async def test_user_deletes_access_policy(
 # ✔︎ user gets access permission for one resource with write permissions
 # ✔︎ user gets access permission for one resource with read permissions
 # ✔︎ user gets access permission for one resource without permissions
-# - user gets access permission for multiple resources
+# ✔︎ user gets access permission for multiple resources
 
 
 @pytest.mark.anyio
