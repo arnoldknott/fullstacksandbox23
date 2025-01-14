@@ -2405,7 +2405,10 @@ async def test_user_deletes_access_policy(
 
 # AccessPermissions:
 # ✔︎ user gets access permission for one resource with own permissions
+# ✔︎ user gets access permission for one resource with own and write permissions
+# ✔︎ user gets access permission for one resource with own, write and read permissions
 # ✔︎ user gets access permission for one resource with write permissions
+# ✔︎ user gets access permission for one resource with write and read permissions
 # ✔︎ user gets access permission for one resource with read permissions
 # ✔︎ user gets access permission for one resource without permissions
 # ✔︎ user gets access permission for multiple resources
@@ -2807,6 +2810,7 @@ async def test_user_get_access_permission_for_resource_without_permission(
     # for policy in target_policies:
     #     await add_one_test_access_policy(policy)
 
+    # TBD: why would this fail with resource_id1 in connection to add_many_test_access_policies?
     response = await async_client.get(
         f"/api/v1/access/permission/resource/{resource_id1}"
     )
