@@ -68,11 +68,24 @@
 
 	let rights = $state('read');
 
-	// microsoftTeams?.forEach((team) => {
-	// 	team.rights = 'read';
-	// });
-	console.log('=== DemoResourceCard - accessPolicies ===');
-	console.log(accessPolicies);
+	const rightsIconSelection = (identityId: string) => {
+		const hasOwnerRights = accessPolicies?.some((policy) => policy.identity_id === identityId && policy.action === 'own');
+		const hasWriteRights = accessPolicies?.some((policy) => policy.identity_id === identityId && policy.action === 'write');
+		const hasReadRights = accessPolicies?.some((policy) => policy.identity_id === identityId && policy.action === 'read');
+		if (hasOwnerRights) {
+			console.log(accessPolicies?.filter((policy) => policy.identity_id === identityId && policy.action === 'own'))
+		}
+		if (hasWriteRights) {
+			console.log(accessPolicies?.filter((policy) => policy.identity_id === identityId && policy.action === 'write'))
+		}
+		if (hasReadRights) {
+			console.log(accessPolicies?.filter((policy) => policy.identity_id === identityId && policy.action === 'read'))
+		}
+		return hasOwnerRights ? 'tabler--key-filled'
+			: hasWriteRights ? 'material-symbols--edit-outline-rounded'
+			: hasReadRights ? 'tabler--eye'
+			: null;
+	}
 
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
@@ -229,11 +242,7 @@
 													</button>
 													<div class="mr-2">
 														<span
-															class="icon-[{rights === 'own'
-																? 'tabler--key-filled'
-																: rights === 'write'
-																	? 'material-symbols--edit-outline-rounded'
-																	: 'tabler--eye'}]"
+															class="icon-[{rightsIconSelection(team.id) || 'tabler--eye'}] size-4"
 														></span>
 													</div>
 													<div

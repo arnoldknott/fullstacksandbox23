@@ -46,9 +46,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const accessPoliciesResponse = await backendAPI.post(sessionId, '/access/policy/resources', JSON.stringify(demoResourceIds));
 	const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
 
-	console.log('=== routes - demo-resource - page.server - load function - accessPolicies ===');
-	console.log(accessPolicies);
-
 	return { demoResourcesWithCreationDates, microsoftTeams, accessPolicies };
 };
 
