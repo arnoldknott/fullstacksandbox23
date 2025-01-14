@@ -1,4 +1,5 @@
 /** @type {import('@sveltejs/kit').Handle} */
+// TBD: import to ES6 typescript import
 import { redisCache } from '$lib/server/cache';
 import type { Session } from '$lib/types'; // or types.d.ts?
 import { redirect } from '@sveltejs/kit';
