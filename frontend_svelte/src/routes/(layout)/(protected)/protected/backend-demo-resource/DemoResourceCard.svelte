@@ -73,12 +73,15 @@
 
 	const rightsIconSelection = (identityId: string) => {
 		if (!accessPolicies) return null;
-		const rights = AccessHandler.getRights(identityId, accessPolicies)
-		return rights === 'own' ? 'tabler--key-filled'
-			: rights === 'write' ? 'material-symbols--edit-outline-rounded'
-			: rights === 'read' ? 'tabler--eye'
-			: null;
-	}
+		const rights = AccessHandler.getRights(identityId, accessPolicies);
+		return rights === 'own'
+			? 'tabler--key-filled'
+			: rights === 'write'
+				? 'material-symbols--edit-outline-rounded'
+				: rights === 'read'
+					? 'tabler--eye'
+					: null;
+	};
 
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();

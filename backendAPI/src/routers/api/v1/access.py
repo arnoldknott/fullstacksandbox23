@@ -15,12 +15,12 @@ from core.types import Action, IdentityType, ResourceType
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 from models.access import (
     AccessLogRead,
+    AccessPermission,
     AccessPolicy,
     AccessPolicyCreate,
     AccessPolicyDelete,
     AccessPolicyRead,
     AccessPolicyUpdate,
-    AccessPermission,
 )
 
 from .base import BaseView

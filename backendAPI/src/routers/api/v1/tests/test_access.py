@@ -10,9 +10,9 @@ from crud.access import AccessPolicyCRUD
 from models.access import (
     AccessLogCreate,
     AccessLogRead,
+    AccessPermission,
     AccessPolicy,
     AccessPolicyRead,
-    AccessPermission,
 )
 from models.demo_resource import DemoResource
 from models.identity import AzureGroup, User
@@ -2812,12 +2812,12 @@ async def test_user_get_access_permission_for_resource_without_permission(
 
     # TBD: why would this fail with resource_id1 in connection to add_many_test_access_policies?
     response = await async_client.get(
-        f"/api/v1/access/permission/resource/{resource_id1}"
+        f"/api/v1/access/permission/resource/{resource_id3}"
     )
     assert response.status_code == 200
     permission = AccessPermission(**response.json())
 
-    assert permission.resource_id == uuid.UUID(resource_id1)
+    assert permission.resource_id == uuid.UUID(resource_id3)
     assert permission.action is None
 
 

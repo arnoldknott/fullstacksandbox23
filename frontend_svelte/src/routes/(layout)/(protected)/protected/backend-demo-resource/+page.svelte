@@ -5,7 +5,7 @@
 	import { mount } from 'svelte';
 	import DemoResourceCard from './DemoResourceCard.svelte';
 	let { data }: { data: PageData } = $props();
-	console.log("=== page data in backend-demo-resource/page.svelte ===");
+	console.log('=== page data in backend-demo-resource/page.svelte ===');
 	console.log(data);
 	const demoResources = data.demoResourcesWithCreationDates;
 	const microsoftTeams = data.microsoftTeams;
@@ -42,7 +42,11 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	{#each demoResources as demoResource}
-		<DemoResourceCard {demoResource} {microsoftTeams} accessPolicies={accessPolicies.filter((policy) => policy.resource_id === demoResource.id)}/>
+		<DemoResourceCard
+			{demoResource}
+			{microsoftTeams}
+			accessPolicies={accessPolicies.filter((policy) => policy.resource_id === demoResource.id)}
+		/>
 		<div class={debug ? 'block' : 'hidden'}>
 			<Heading>{demoResource.name}</Heading>
 			<JsonData data={demoResource} />

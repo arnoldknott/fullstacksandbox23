@@ -67,7 +67,6 @@ type Tab = {
 	active?: boolean;
 };
 
-
 export interface DemoResource {
 	id?: string;
 	name: string;
@@ -85,11 +84,10 @@ export interface DemoResourceWithCreationDate extends DemoResource {
 	creation_date: Date;
 }
 
-
 export interface AccessPolicy {
 	resource_id: string;
 	identity_id: string;
-	action: Action
+	action: Action;
 	public: boolean;
 	id: number;
 }

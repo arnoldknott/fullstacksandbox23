@@ -32,8 +32,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 	);
 
 	let microsoftTeams: MicrosoftTeamBasicInformation[] = [];
-	if( locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups ) {
-		microsoftTeams = await microsoftGraph.getAttachedTeams(sessionId, locals.sessionData.userProfile.azure_token_groups);
+	if (locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups) {
+		microsoftTeams = await microsoftGraph.getAttachedTeams(
+			sessionId,
+			locals.sessionData.userProfile.azure_token_groups
+		);
 	}
 	// console.log('=== routes - demo-resource - page.server - load function - microsoftTeams ===');
 	// console.log(microsoftTeams);
@@ -43,7 +46,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function - demoResourceIds ===');
 	// console.log(demoResourceIds);
 
-	const accessPoliciesResponse = await backendAPI.post(sessionId, '/access/policy/resources', JSON.stringify(demoResourceIds));
+	const accessPoliciesResponse = await backendAPI.post(
+		sessionId,
+		'/access/policy/resources',
+		JSON.stringify(demoResourceIds)
+	);
 	const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
 
 	return { demoResourcesWithCreationDates, microsoftTeams, accessPolicies };
