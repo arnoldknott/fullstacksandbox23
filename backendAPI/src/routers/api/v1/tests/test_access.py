@@ -2841,7 +2841,7 @@ async def test_user_get_access_permission_for_resources(
         {
             "resource_id": str(resource_id1),
             "identity_id": str(current_user.user_id),
-            "action": Action.read,
+            "action": Action.write,
         },
         {
             "resource_id": str(resource_id4),
@@ -2874,7 +2874,7 @@ async def test_user_get_access_permission_for_resources(
         await add_one_test_access_policy(policy)
 
     response = await async_client.post(
-        f"/api/v1/access/permission/resources",
+        "/api/v1/access/permission/resources",
         json=[resource_id1, resource_id2, resource_id4, resource_id7, resource_id9],
     )
     assert response.status_code == 200
@@ -2883,8 +2883,18 @@ async def test_user_get_access_permission_for_resources(
     for res in result:
         permissions.append(AccessPermission(**res))
 
-    assert permissions[0].resource_id == uuid.UUID(resource_id3)
-    assert permissions[0].action == Action.own
+    assert len(permissions) == 5
+
+    assert permissions[0].resource_id == uuid.UUID(resource_id1)
+    assert permissions[0].action == Action.write
+    assert permissions[1].resource_id == uuid.UUID(resource_id2)
+    assert permissions[1].action == Action.own
+    assert permissions[2].resource_id == uuid.UUID(resource_id4)
+    assert permissions[2].action == Action.write
+    assert permissions[3].resource_id == uuid.UUID(resource_id7)
+    assert permissions[3].action == Action.own
+    assert permissions[4].resource_id == uuid.UUID(resource_id9)
+    assert permissions[4].action is None
 
 
 # region: ## AccessLog tests

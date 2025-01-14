@@ -203,6 +203,23 @@ async def get_my_access_for_resource(
         return await crud.check_access(current_user, resource_id)
 
 
+@router.post("/permission/resources", status_code=200)
+async def get_my_access_for_resources(
+    resource_ids: list[UUID],
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[AccessPermission]:
+    """Returns the access level toa resource for the current user."""
+    logger.info("GET access level for resource_id")
+    current_user = await check_token_against_guards(token_payload, guards)
+    async with access_policy_view.crud() as crud:
+        access_permissions = []
+        for resource_id in resource_ids:
+            permission = await crud.check_access(current_user, resource_id)
+            access_permissions.append(permission)
+    return access_permissions
+
+
 # endregion AccessPermissions
 
 # region AccessLogs
