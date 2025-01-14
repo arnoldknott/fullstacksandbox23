@@ -2420,6 +2420,7 @@ async def test_user_deletes_access_policy(
 async def test_user_get_access_permission_for_resource_with_owner_permission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
     current_user_from_azure_token,
     mocked_provide_http_token_payload,
     add_one_test_access_policy,
@@ -2477,6 +2478,7 @@ async def test_user_get_access_permission_for_resource_with_owner_permission(
 async def test_user_get_access_permission_for_resource_with_owner_and_write_permission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
     current_user_from_azure_token,
     mocked_provide_http_token_payload,
     add_one_test_access_policy,
@@ -2534,6 +2536,7 @@ async def test_user_get_access_permission_for_resource_with_owner_and_write_perm
 async def test_user_get_access_permission_for_resource_with_owner_and_write_and_read_permission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
     current_user_from_azure_token,
     mocked_provide_http_token_payload,
     add_one_test_access_policy,
@@ -2591,6 +2594,7 @@ async def test_user_get_access_permission_for_resource_with_owner_and_write_and_
 async def test_user_get_access_permission_for_resource_with_write_permission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
     current_user_from_azure_token,
     mocked_provide_http_token_payload,
     add_one_test_access_policy,
@@ -2648,6 +2652,7 @@ async def test_user_get_access_permission_for_resource_with_write_permission(
 async def test_user_get_access_permission_for_resource_with_write_and_read_permission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
     current_user_from_azure_token,
     mocked_provide_http_token_payload,
     add_one_test_access_policy,
@@ -2705,6 +2710,7 @@ async def test_user_get_access_permission_for_resource_with_write_and_read_permi
 async def test_user_get_access_permission_for_resource_with_read_permission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
     current_user_from_azure_token,
     mocked_provide_http_token_payload,
     add_one_test_access_policy,
@@ -2762,6 +2768,7 @@ async def test_user_get_access_permission_for_resource_with_read_permission(
 async def test_user_get_access_permission_for_resource_without_permission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
     current_user_from_azure_token,
     mocked_provide_http_token_payload,
     add_one_test_access_policy,

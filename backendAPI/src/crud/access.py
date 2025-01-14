@@ -672,8 +672,8 @@ class AccessPolicyCRUD:
                     action=None,
                 )
 
-            # Reading the access policies for the resource from database
-            # - not working, finds access policies from other users as well!:
+            # # Reading the access policies for the resource from database
+            # # - not working, finds access policies from other users as well!:
             # query = select(AccessPolicy)
             # query = query.where(AccessPolicy.resource_id == resource_id)
             # query = self.filters_allowed(query, read, current_user=current_user)
@@ -693,12 +693,18 @@ class AccessPolicyCRUD:
             #     # The query is doing this already!
             #     if result.resource_id == resource_id:
             #         if result.action == own:
-            #             return own  # can be returned directly, as it's the highest access level
+            #             return AccessPermission(
+            #                 resource_id=resource_id,
+            #                 action=own,
+            #             )  # can be returned directly, as it's the highest access level
             #         elif result.action == write:
             #             access_level = write
             #         elif result.action == read and access_level != write:
             #             access_level = read
-            #         return access_level
+            #         return AccessPermission(
+            #             resource_id=resource_id,
+            #             action=access_level,
+            #         )
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
             raise HTTPException(status_code=403, detail="Forbidden.")
