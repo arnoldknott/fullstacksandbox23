@@ -67,7 +67,9 @@
 	let dropdownMenu: HTMLUListElement;
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
-	// let rights = $state('read');
+	let rights = $state('read');
+	console.log('=== rights ===');
+	console.log(rights);
 
 	// const myAccessRights = $derived.by(() => AccessHandler.getAccessRights(accessPolicies));
 
