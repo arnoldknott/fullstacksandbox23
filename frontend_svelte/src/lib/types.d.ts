@@ -66,6 +66,12 @@ type Tab = {
 	active?: boolean;
 };
 
+enum Action {
+	Own = 'own',
+	Write = 'write',
+	Read = 'read',
+}
+
 export interface DemoResource {
 	id?: string;
 	name: string;
@@ -76,6 +82,18 @@ export interface DemoResource {
 	tags?: string[];
 }
 
+// TBD: consider moving this, to where it is used locally
+// in protected/backend-demo-resource: +page.svelte;
+// needs to be defined client side!
 export interface DemoResourceWithCreationDate extends DemoResource {
 	creation_date: Date;
+}
+
+
+export interface AccessPolicy {
+	resource_id: string;
+	identity_id: string;
+	action: Action
+	public: boolean;
+	id: number;
 }

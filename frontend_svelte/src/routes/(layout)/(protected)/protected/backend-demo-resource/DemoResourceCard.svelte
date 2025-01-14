@@ -2,7 +2,7 @@
 	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import type { DemoResourceWithCreationDate } from '$lib/types';
+	import type { DemoResourceWithCreationDate, AccessPolicy } from '$lib/types';
 	// import { deserialize } from '$app/forms';
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamBasicInformation } from '$lib/server/apis';
@@ -26,10 +26,12 @@
 	// } = $props();
 	let {
 		demoResource,
-		microsoftTeams
+		microsoftTeams,
+		accessPolicies
 	}: {
 		demoResource?: DemoResourceWithCreationDate;
 		microsoftTeams?: MicrosoftTeamBasicInformation[];
+		accessPolicies?: AccessPolicy[];
 	} = $props();
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let name = $state(demoResource?.name || undefined);
@@ -69,6 +71,8 @@
 	// microsoftTeams?.forEach((team) => {
 	// 	team.rights = 'read';
 	// });
+	console.log('=== DemoResourceCard - accessPolicies ===');
+	console.log(accessPolicies);
 
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
