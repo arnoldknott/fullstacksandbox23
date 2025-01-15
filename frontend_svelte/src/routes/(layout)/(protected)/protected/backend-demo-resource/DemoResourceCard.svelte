@@ -179,7 +179,7 @@
 							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
 						</button>
 						<ul
-							class="dropdown-menu hidden min-w-60 bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+							class="dropdown-menu hidden min-w-[17rem] bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share-{id}"
@@ -256,6 +256,9 @@
 																class="icon-[tabler--chevron-down] size-4 dropdown-open:rotate-180"
 															></span>
 														</button>
+													</div>
+													<div class={rightsIconSelection(team.id) ? "block" : "invisible"}>
+														<span class="icon-[openmoji--check-mark]"></span>
 													</div>
 												</div>
 											</li>
