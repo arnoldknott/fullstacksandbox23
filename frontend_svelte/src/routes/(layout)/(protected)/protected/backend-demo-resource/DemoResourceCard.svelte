@@ -26,8 +26,6 @@
 	// 	tags: string[];
 	// } = $props();
 	let { demoResource, microsoftTeams }: { demoResource?: DemoResourceExtended, microsoftTeams?: MicrosoftTeamBasicInformation[] } = $props();
-	console.log('=== demoResource in DemoResourceCard.svelte ===');
-	console.log(demoResource);
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let userRight = $state(demoResource?.user_right || 'read');
 	let name = $state(demoResource?.name || undefined);
@@ -162,6 +160,9 @@
 			{#if flag}
 				<span class="icon-[twemoji--flag-{flag}] size-6"></span>
 			{/if}
+			<!-- TBD: move this if around the relevant list points,
+			if there are any left, that read-only users are also supposed to see. -->
+			{#if userRight === "write" || userRight === "own"}
 			<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
 				<span
 					id="dropdown-menu-icon-{id}"
@@ -181,6 +182,7 @@
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon-{id}"
 				>
+				
 					<li class="items-center">
 						<button
 							class="btn dropdown-item btn-text content-center justify-start"
@@ -189,6 +191,7 @@
 							><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
 						>
 					</li>
+					{#if userRight === "own"}
 					<li
 						class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
 					>
@@ -315,8 +318,10 @@
 						</form>
 						<!-- onclick={deleteResource} -->
 					</li>
+					{/if}
 				</ul>
 			</div>
+			{/if}
 		</div>
 	</div>
 {/snippet}
