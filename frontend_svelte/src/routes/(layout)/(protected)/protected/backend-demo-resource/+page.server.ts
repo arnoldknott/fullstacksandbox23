@@ -53,7 +53,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			return Object.assign({}, {
 				...resource,
 				creation_date: new Date(creationDates[index]),
-				user_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id),
+				user_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id).action,
 				access_policies: accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id)
 			});
 		}
