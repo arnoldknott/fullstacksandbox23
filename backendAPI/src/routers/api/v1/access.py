@@ -190,7 +190,7 @@ async def delete_access_policy(
 # region AccessPermissions
 
 
-@router.get("/permission/resource/{resource_id}", status_code=200)
+@router.get("/right/resource/{resource_id}", status_code=200)
 async def get_my_access_for_resource(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
@@ -203,7 +203,7 @@ async def get_my_access_for_resource(
         return await crud.check_access(current_user, resource_id)
 
 
-@router.post("/permission/resources", status_code=200)
+@router.post("/right/resources", status_code=200)
 async def get_my_access_for_resources(
     resource_ids: list[UUID],
     token_payload=Depends(get_http_access_token_payload),

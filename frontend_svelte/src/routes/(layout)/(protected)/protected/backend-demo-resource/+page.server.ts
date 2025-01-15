@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const accessPermissionsResponse = await backendAPI.post(
 		sessionId,
-		'/access/permission/resources',
+		'/access/right/resources',
 		JSON.stringify(demoResourceIds)
 	);
 	const accessPermissions = await accessPermissionsResponse.json();
@@ -61,7 +61,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	);
 	demoResourcesExtended.sort(
 		(a: DemoResourceExtended, b: DemoResourceExtended) => {
-			return a.creation_date < b.creation_date ? 1 : -1;
+			return (a.creation_date ?? 0) < (b.creation_date ?? 0) ? 1 : -1;
 		}
 	);
 
