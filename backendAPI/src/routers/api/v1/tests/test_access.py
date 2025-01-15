@@ -2713,7 +2713,7 @@ async def test_user_get_access_permission_for_resource_with_write_and_read_permi
 async def test_user_get_access_permission_for_resource_with_read_permission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
-    add_many_test_access_policies,
+    # add_many_test_access_policies, # gives public rad access to all resources, so not good for this test!
     current_user_from_azure_token,
     mocked_provide_http_token_payload,
     add_one_test_access_policy,
@@ -2771,7 +2771,7 @@ async def test_user_get_access_permission_for_resource_with_read_permission(
 async def test_user_get_access_permission_for_resource_without_permission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
-    add_many_test_access_policies,
+    # add_many_test_access_policies, # gives public rad access to all resources, so not good for this test!
     current_user_from_azure_token,
     mocked_provide_http_token_payload,
     add_one_test_access_policy,
@@ -2812,12 +2812,12 @@ async def test_user_get_access_permission_for_resource_without_permission(
 
     # TBD: why would this fail with resource_id1 in connection to add_many_test_access_policies?
     response = await async_client.get(
-        f"/api/v1/access/permission/resource/{resource_id3}"
+        f"/api/v1/access/permission/resource/{resource_id1}"
     )
     assert response.status_code == 200
     permission = AccessPermission(**response.json())
 
-    assert permission.resource_id == uuid.UUID(resource_id3)
+    assert permission.resource_id == uuid.UUID(resource_id1)
     assert permission.action is None
 
 
