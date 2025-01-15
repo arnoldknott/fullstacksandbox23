@@ -51,19 +51,7 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	{#each demoResources as demoResource}
-		<DemoResourceCard {demoResource} microsoftTeams={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)
-		// microsoftTeams.map((team: MicrosoftTeamBasicExtended) => {
-		// 	// console.log('team.access_policies', demoResource.access_policies);
-		// 	return {
-		// 		...team,
-		// 		dummy: 'dummy',
-		// 		access_policies: demoResource.access_policies?.filter((policy: AccessPolicy) => policy.resource_id === demoResource.id)
-		// 	}})
-			//return Object.assign(team, {
-			// access_policies: demoResource.access_policies?.filter((policy: AccessPolicy) => team.id === policy.identity_id)
-			// }, { dummy: "dummy" });
-			// })}
-		}/>
+		<DemoResourceCard {demoResource} microsoftTeams={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)}/>
 		<div class={debug ? 'block' : 'hidden'}>
 			<Heading>{demoResource.name}</Heading>
 			<p class="text-title-small md:text-title text-secondary">=> demoResource</p>

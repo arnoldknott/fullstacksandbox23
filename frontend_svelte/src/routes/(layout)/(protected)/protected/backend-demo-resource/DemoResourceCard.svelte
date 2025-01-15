@@ -1,30 +1,11 @@
 <script lang="ts">
-	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResourceExtended, AccessPolicy } from '$lib/types';
-	// import { deserialize } from '$app/forms';
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamBasic } from '$lib/types';
 	import { AccessHandler } from '$lib/accessHandler';
 
-	// let {
-	// 	id,
-	// 	name,
-	// 	description,
-	// 	language,
-	// 	category,
-	// 	category_id,
-	// 	tags
-	// }: {
-	// 	id: string;
-	// 	name: string;
-	// 	description?: string;
-	// 	language: string;
-	// 	category?: string;
-	// 	category_id?: string;
-	// 	tags: string[];
-	// } = $props();
 	let { demoResource, microsoftTeams }: { demoResource?: DemoResourceExtended, microsoftTeams?: MicrosoftTeamBasic[] } = $props();
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let userRight = $state(demoResource?.user_right || 'read');
@@ -34,17 +15,12 @@
 	let category = $state(demoResource?.category);
 	let categoryId = $state(demoResource?.category_id || undefined);
 	let tags = $state(demoResource?.tags || []);
-	// let creation_date = $state<Date | undefined>(undefined);
-	// if (demoResource && 'creation_date' in demoResource) {
-	// 	creation_date = demoResource.creation_date;
-	// }
 	let creationDate = $state<Date | undefined>(demoResource?.creation_date);
 	let formattedCreationDate = $derived(creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }));
 	let accessPolicies = $state<AccessPolicy[] | undefined>(demoResource?.access_policies);
 
 	let edit = $state(demoResource ? false : true);
 
-	// let edit = $state(false);
 	let flag = $state(
 		language === 'en-US'
 			? 'united-states'
@@ -61,9 +37,7 @@
 	let dropdownMenu = $state<HTMLUListElement | null>(null);
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
-	let rights = $state('read');
-
-	// const myAccessRights = $derived.by(() => AccessHandler.getAccessRights(accessPolicies));
+	let teamRight = $state('read');
 
 	const rightsIconSelection = (identityId: string) => {
 		if (!accessPolicies) return null;
@@ -212,18 +186,12 @@
 						>
 							<li>
 								<form method="POST" use:enhance={() => dropdownMenu?.classList.add('hidden')}>
-									<!-- TBD: change to Teams ID -->
-									<!-- <button data-sveltekit-preload-data={false}
-										class="btn dropdown-item btn-text justify-start"
-										aria-label="Team 1"
-										name="id"
-										value={id}
-										formaction="?/share&teamid={teamId[0]}"><span class="icon-[fluent--people-team-16-filled]"></span>Team 1</button
-									> -->
 									{#if microsoftTeams}
 										{#each microsoftTeams as team}
 											<li>
 												<div class="flex items-center">
+													<!-- Also send the desired action for the share: own, write, read.
+													Pass information if access_policy already exists to form handling function share(). -->
 													<button
 														data-sveltekit-preload-data={false}
 														class="btn dropdown-item btn-text max-w-40 content-center"
@@ -250,9 +218,11 @@
 															aria-labelledby="rights-{id}"
 														>
 															<li>
+																<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
+																combine with an accessPolicyExists - that also indicates the user, wether this policy already exists through a checkmark  -->
 																<button
 																	type="button"
-																	onclick={() => (rights = 'own')}
+																	onclick={() => (teamRight = 'own')}
 																	aria-label="own"
 																	><span class="icon-[tabler--key-filled]"></span></button
 																>
@@ -260,7 +230,7 @@
 															<li>
 																<button
 																	type="button"
-																	onclick={() => (rights = 'write')}
+																	onclick={() => (teamRight = 'write')}
 																	aria-label="write"
 																	><span class="icon-[material-symbols--edit-outline-rounded]"
 																	></span></button
@@ -269,7 +239,7 @@
 															<li>
 																<button
 																	type="button"
-																	onclick={() => (rights = 'read')}
+																	onclick={() => (teamRight = 'read')}
 																	aria-label="read"><span class="icon-[tabler--eye]"></span></button
 																>
 															</li>
