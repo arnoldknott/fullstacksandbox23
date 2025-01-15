@@ -1,5 +1,6 @@
 import AppConfig from '$lib/server/config';
 import { msalAuthProvider, type BaseOauthProvider } from '$lib/server/oauth';
+import type { MicrosoftTeamBasic } from '$lib/types';
 
 const appConfig = await AppConfig.getInstance();
 
@@ -213,11 +214,7 @@ class BackendAPI extends BaseAPI {
 
 export const backendAPI = new BackendAPI();
 
-export interface MicrosoftTeamBasicInformation {
-	id: string;
-	displayName: string;
-	description: string;
-}
+
 
 class MicrosoftGraph extends BaseAPI {
 	appConfig: AppConfig;
@@ -251,7 +248,7 @@ class MicrosoftGraph extends BaseAPI {
 	// TBD: implement put and delete methods
 
 	async getAttachedTeams(sessionId: string, azureGroups: string[]) {
-		const myTeams: MicrosoftTeamBasicInformation[] = [];
+		const myTeams: MicrosoftTeamBasic[] = [];
 		await Promise.all(
 			azureGroups.map(async (azureGroup) => {
 				const response = await this.get(sessionId, `/teams/${azureGroup}`, ['Team.ReadBasic.All']);

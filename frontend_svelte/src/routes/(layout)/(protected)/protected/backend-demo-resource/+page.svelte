@@ -4,6 +4,7 @@
 	import Heading from '$components/Heading.svelte';
 	import { mount } from 'svelte';
 	import DemoResourceCard from './DemoResourceCard.svelte';
+	import type { AccessPolicy, DemoResourceExtended, MicrosoftTeamBasicExtended } from '$lib/types';
 	let { data }: { data: PageData } = $props();
 	// console.log('=== page data in backend-demo-resource/page.svelte ===');
 	// console.log(data);
@@ -11,6 +12,15 @@
 	const microsoftTeams = data.microsoftTeams;
 
 	let debug = $state(false);
+
+	const microsoftTeamsExtendWithAccessPolicies = (microsoftTeams: MicrosoftTeamBasicExtended[], demoResource: DemoResourceExtended) => {
+		return microsoftTeams.map((team: MicrosoftTeamBasicExtended) => {
+			return {
+				...team,
+				access_policies: demoResource.access_policies?.filter((policy: AccessPolicy) => team.id === policy.identity_id)
+			};
+		});
+	};
 </script>
 
 <!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->
@@ -41,10 +51,25 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	{#each demoResources as demoResource}
-		<DemoResourceCard {demoResource} {microsoftTeams}/>
+		<DemoResourceCard {demoResource} microsoftTeams={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)
+		// microsoftTeams.map((team: MicrosoftTeamBasicExtended) => {
+		// 	// console.log('team.access_policies', demoResource.access_policies);
+		// 	return {
+		// 		...team,
+		// 		dummy: 'dummy',
+		// 		access_policies: demoResource.access_policies?.filter((policy: AccessPolicy) => policy.resource_id === demoResource.id)
+		// 	}})
+			//return Object.assign(team, {
+			// access_policies: demoResource.access_policies?.filter((policy: AccessPolicy) => team.id === policy.identity_id)
+			// }, { dummy: "dummy" });
+			// })}
+		}/>
 		<div class={debug ? 'block' : 'hidden'}>
 			<Heading>{demoResource.name}</Heading>
+			<p class="text-title-small md:text-title text-secondary">=> demoResource</p>
 			<JsonData data={demoResource} />
+			<p class="text-title-small md:text-title text-secondary">=> microsoftTeams</p>
+			<JsonData data={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)} />
 		</div>
 	{/each}
 </div>

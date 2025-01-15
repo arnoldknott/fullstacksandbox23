@@ -2,8 +2,8 @@ import type { Actions, PageServerLoad } from './$types';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis';
 import { fail } from '@sveltejs/kit';
-import type { AccessPolicy, AccessRight, DemoResource, DemoResourceExtended } from '$lib/types';
-import { microsoftGraph, type MicrosoftTeamBasicInformation } from '$lib/server/apis';
+import type { AccessPolicy, AccessRight, DemoResource, DemoResourceExtended, MicrosoftTeamBasic, MicrosoftTeamBasicExtended} from '$lib/types';
+import { microsoftGraph } from '$lib/server/apis';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function executed ===');
@@ -37,8 +37,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const ownedDemoResourceIds = accessRights
 		.filter((right: AccessRight) => right.action === 'own')
 		.map((right: AccessRight) => right.resource_id);
-	console.log('=== ownedDemoResourceIds ===')
-	console.log(ownedDemoResourceIds)
 
 
 	const accessPoliciesResponse = await backendAPI.post(
@@ -50,13 +48,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	let demoResourcesExtended = demoResources.map(
 		(resource: DemoResourceExtended, index: number) => {
-			const userRight = accessRights.find((right: AccessRight) => right.resource_id === resource.id);
-			const policies = accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id);
+			// const userRight = accessRights.find((right: AccessRight) => right.resource_id === resource.id);
+			// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id);
 			return Object.assign({}, {
 				...resource,
 				creation_date: new Date(creationDates[index]),
-				user_right: userRight.action,
-				access_policies: policies
+				user_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id),
+				access_policies: accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id)
 			});
 		}
 	);
@@ -66,7 +64,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		}
 	);
 
-	let microsoftTeams: MicrosoftTeamBasicInformation[] = [];
+	let microsoftTeams: MicrosoftTeamBasicExtended[] = [];
 	if (locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups) {
 		microsoftTeams = await microsoftGraph.getAttachedTeams(
 			sessionId,
@@ -74,6 +72,17 @@ export const load: PageServerLoad = async ({ locals }) => {
 		);
 	}
 
+	// let microsoftTeamsExtended = microsoftTeams.map(
+	// 	(team: MicrosoftTeamBasic) => {
+	// 		// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.identity_id === team.id);
+	// 		return {
+	// 			...team,
+	// 			// access_policies: accessPolicies.filter((policy: AccessPolicy) => policy.identity_id === team.id)
+	// 		};
+	// 	}
+	// );
+
+	// return { demoResourcesExtended, microsoftTeamsExtended };
 	return { demoResourcesExtended, microsoftTeams };
 };
 

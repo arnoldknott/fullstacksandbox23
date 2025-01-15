@@ -59,7 +59,7 @@ export type ClientSession = {
 };
 
 
-// Generic for resources - and partially relevant for identities:
+// Access types:
 
 export interface AccessPolicy {
 	resource_id: string;
@@ -73,6 +73,10 @@ export interface AccessRight {
 	resource_id: string;
 	action: Action;
 }
+
+// Generic for resources - and partially relevant for identities:
+// Create a generic type that extends a base type with additional properties
+type ExtendEntity<T> = T & Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies>;
 
 // Define the additional properties as separate interfaces
 interface WithCreationDate {
@@ -96,9 +100,6 @@ interface WithAccessPolicies {
 	access_policies: AccessPolicy[];
 }
 
-// Create a generic type that extends a base type with additional properties
-type ExtendResource<T> = T & Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies>;
-
 
 // specific resources:
 export interface DemoResource {
@@ -112,7 +113,7 @@ export interface DemoResource {
 }
 
 // add all specific resources that share the extension properties here:
-export type DemoResourceExtended = ExtendResource<DemoResource>;
+export type DemoResourceExtended = ExtendEntity<DemoResource>;
 
 // TBD: consider moving this, to where it is used locally
 // in protected/backend-demo-resource: +page.svelte;
@@ -136,3 +137,13 @@ export type UserProfile = {
 	azure_token_groups?: string[]; // TBD: fix
 }; // TBD: remove
 
+
+export interface MicrosoftTeamBasic {
+	id: string;
+	displayName: string;
+	description: string;
+}
+
+export type MicrosoftTeamBasicExtended = ExtendEntity<MicrosoftTeamBasic>;
+
+// add types for ueber-group, group, sub-group, and sub-sub-group

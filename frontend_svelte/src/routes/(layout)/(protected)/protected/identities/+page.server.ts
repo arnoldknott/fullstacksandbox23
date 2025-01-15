@@ -1,12 +1,12 @@
 import type { PageServerLoad } from './$types';
-import { microsoftGraph, type MicrosoftTeamBasicInformation } from '$lib/server/apis';
+import { microsoftGraph, type MicrosoftTeamBasic } from '$lib/server/apis';
 // const getAllMicrosoftTeams = async (sessionId: string, azureGroups: string[]) => {
 
 // }
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;
-	// const myTeams: MicrosoftTeamBasicInformation[] = [];
+	// const myTeams: MicrosoftTeamBasic[] = [];
 	// if (locals.sessionData.userProfile) {
 	// 	const myAzureGroups = locals.sessionData.userProfile.azure_token_groups;
 	// 	if (myAzureGroups) {
@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// 	}
 	// }
 
-	// let myTeams: MicrosoftTeamBasicInformation[] = [];
+	// let myTeams: MicrosoftTeamBasic[] = [];
 	// if (locals.sessionData.userProfile) {
 	// 	const myAzureGroupIds = locals.sessionData.userProfile.azure_token_groups;
 	// 	if (myAzureGroupIds) {
@@ -36,7 +36,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// 	}
 	// }
 
-	let myTeams: MicrosoftTeamBasicInformation[] = [];
+	let myTeams: MicrosoftTeamBasic[] = [];
 	if (locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups) {
 		myTeams = await microsoftGraph.getAttachedTeams(
 			sessionId,

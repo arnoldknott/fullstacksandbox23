@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	let { title, id, children }: { title: string; id: string; children: Snippet } = $props();
 
-	// export interface MicrosoftTeamBasicInformation {
+	// export interface MicrosoftTeamBasic {
 	// 	id: string;
 	// 	displayName: string;
 	// 	description: string;

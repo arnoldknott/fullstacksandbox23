@@ -5,7 +5,7 @@
 	import type { DemoResourceExtended, AccessPolicy } from '$lib/types';
 	// import { deserialize } from '$app/forms';
 	import { enhance } from '$app/forms';
-	import type { MicrosoftTeamBasicInformation } from '$lib/server/apis';
+	import type { MicrosoftTeamBasic } from '$lib/types';
 	import { AccessHandler } from '$lib/accessHandler';
 
 	// let {
@@ -25,7 +25,7 @@
 	// 	category_id?: string;
 	// 	tags: string[];
 	// } = $props();
-	let { demoResource, microsoftTeams }: { demoResource?: DemoResourceExtended, microsoftTeams?: MicrosoftTeamBasicInformation[] } = $props();
+	let { demoResource, microsoftTeams }: { demoResource?: DemoResourceExtended, microsoftTeams?: MicrosoftTeamBasic[] } = $props();
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let userRight = $state(demoResource?.user_right || 'read');
 	let name = $state(demoResource?.name || undefined);
