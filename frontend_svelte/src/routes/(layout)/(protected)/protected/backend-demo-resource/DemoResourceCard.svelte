@@ -58,7 +58,7 @@
 	let card: Card;
 	let createUpdateForm = $state<HTMLFormElement | null>(null);
 
-	let dropdownMenu: HTMLUListElement;
+	let dropdownMenu = $state<HTMLUListElement | null>(null);
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
 	let rights = $state('read');
@@ -211,7 +211,7 @@
 							aria-labelledby="share-{id}"
 						>
 							<li>
-								<form method="POST" use:enhance={() => dropdownMenu.classList.add('hidden')}>
+								<form method="POST" use:enhance={() => dropdownMenu?.classList.add('hidden')}>
 									<!-- TBD: change to Teams ID -->
 									<!-- <button data-sveltekit-preload-data={false}
 										class="btn dropdown-item btn-text justify-start"
