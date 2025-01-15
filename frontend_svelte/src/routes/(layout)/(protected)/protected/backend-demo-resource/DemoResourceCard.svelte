@@ -205,8 +205,9 @@
 															: null}
 													</button>
 													<div class="mr-2">
+														<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
 														<span
-															class="icon-[{rightsIconSelection(team.id) || 'tabler--eye'}] size-4 {rightsIconSelection(team.id) ? "bg-success" : ""}"
+															class="icon-[{rightsIconSelection(team.id) || 'tabler--eye'}] size-4"
 														></span>
 													</div>
 													<div
