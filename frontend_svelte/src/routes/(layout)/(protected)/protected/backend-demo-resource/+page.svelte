@@ -9,7 +9,6 @@
 	// console.log(data);
 	const demoResources = data.demoResourcesExtended;
 	const microsoftTeams = data.microsoftTeams;
-	const accessPolicies = data.accessPolicies;
 
 	let debug = $state(false);
 </script>
@@ -42,11 +41,7 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	{#each demoResources as demoResource}
-		<DemoResourceCard
-			{demoResource}
-			{microsoftTeams}
-			accessPolicies={accessPolicies.filter((policy) => policy.resource_id === demoResource.id)}
-		/>
+		<DemoResourceCard {demoResource} {microsoftTeams}/>
 		<div class={debug ? 'block' : 'hidden'}>
 			<Heading>{demoResource.name}</Heading>
 			<JsonData data={demoResource} />

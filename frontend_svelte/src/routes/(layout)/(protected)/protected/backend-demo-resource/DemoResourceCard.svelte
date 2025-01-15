@@ -25,16 +25,11 @@
 	// 	category_id?: string;
 	// 	tags: string[];
 	// } = $props();
-	let {
-		demoResource,
-		microsoftTeams,
-		accessPolicies
-	}: {
-		demoResource?: DemoResourceExtended;
-		microsoftTeams?: MicrosoftTeamBasicInformation[];
-		accessPolicies?: AccessPolicy[];
-	} = $props();
+	let { demoResource, microsoftTeams }: { demoResource?: DemoResourceExtended, microsoftTeams?: MicrosoftTeamBasicInformation[] } = $props();
+	console.log('=== demoResource in DemoResourceCard.svelte ===');
+	console.log(demoResource);
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
+	let userRight = $state(demoResource?.user_right || 'read');
 	let name = $state(demoResource?.name || undefined);
 	let description = $state(demoResource?.description || undefined);
 	let language = $state(demoResource?.language || undefined);
@@ -47,6 +42,7 @@
 	// }
 	let creationDate = $state<Date | undefined>(demoResource?.creation_date);
 	let formattedCreationDate = $derived(creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }));
+	let accessPolicies = $state<AccessPolicy[] | undefined>(demoResource?.access_policies);
 
 	let edit = $state(demoResource ? false : true);
 
@@ -97,12 +93,12 @@
 		// and mark the missing fields invalid
 
 		return async ({ result }) => {
-			console.log('=== callback in submit function triggered ===');
+			// console.log('=== callback in submit function triggered ===');
 			if (result.type === 'success') {
 				if (id.slice(0, 4) === 'new_') {
 					id = result.data?.id;
-					console.log('=== result.data? ===');
-					console.log(result.data);
+					// console.log('=== result.data? ===');
+					// console.log(result.data);
 					creationDate = result.data?.creationDate;
 				}
 			}

@@ -27,14 +27,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// 	}
 	// );
 
-	const accessPermissionsResponse = await backendAPI.post(
+	const accessRightsResponse = await backendAPI.post(
 		sessionId,
 		'/access/right/resources',
 		JSON.stringify(demoResourceIds)
 	);
-	const accessPermissions = await accessPermissionsResponse.json();
+	const accessRights = await accessRightsResponse.json();
 
-	const ownedDemoResourceIds = accessPermissions
+	const ownedDemoResourceIds = accessRights
 		.filter((right: AccessRight) => right.action === 'own')
 		.map((right: AccessRight) => right.resource_id);
 	console.log('=== ownedDemoResourceIds ===')
@@ -51,11 +51,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	let demoResourcesExtended = demoResources.map(
 		(resource: DemoResourceExtended, index: number) => {
-			const match = accessPermissions.find((perm: AccessPolicy) => perm.resource_id === resource.id);
+			const userRight = accessRights.find((right: AccessRight) => right.resource_id === resource.id);
+			const accessPolicies = accessRights.filter((policy: AccessPolicy) => policy.resource_id === resource.id);
 			return Object.assign({}, {
 				...resource,
 				creation_date: new Date(creationDates[index]),
-				user_right: match?.action
+				user_right: userRight.action,
+				access_policies: accessPolicies
 			});
 		}
 	);
@@ -73,7 +75,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		);
 	}
 
-	return { demoResourcesExtended, microsoftTeams, accessPolicies };
+	return { demoResourcesExtended, microsoftTeams };
 };
 
 export const actions: Actions = {
