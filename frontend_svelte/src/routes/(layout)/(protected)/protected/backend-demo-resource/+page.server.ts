@@ -2,7 +2,7 @@ import type { Actions, PageServerLoad } from './$types';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis';
 import { fail } from '@sveltejs/kit';
-import type { AccessPolicy, DemoResource, DemoResourceWithCreationDate } from '$lib/types';
+import type { AccessPolicy, AccessRight, DemoResource, DemoResourceExtended } from '$lib/types';
 import { microsoftGraph, type MicrosoftTeamBasicInformation } from '$lib/server/apis';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -11,22 +11,56 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const response = await backendAPI.get(sessionId, '/demoresource/');
 	const demoResources = await response.json();
-	const resourceIds = demoResources.map((resource: DemoResource) => resource.id);
+	const demoResourceIds = demoResources.map((resource: DemoResource) => resource.id);
 	const creationDataResponse = await backendAPI.post(
 		sessionId,
 		'/access/log/created',
-		JSON.stringify(resourceIds)
+		JSON.stringify(demoResourceIds)
 	);
 	const creationDates = await creationDataResponse.json();
-	const demoResourcesWithCreationDates = demoResources.map(
-		(resource: DemoResourceWithCreationDate, index: number) => {
-			resource = { ...resource };
-			resource.creation_date = new Date(creationDates[index]);
-			return resource;
+
+	// let demoResourcesExtended = demoResources.map(
+	// 	(resource: DemoResourceExtended, index: number) => {
+	// 		resource = { ...resource };
+	// 		resource.creation_date = new Date(creationDates[index]);
+	// 		return resource;
+	// 	}
+	// );
+
+	const accessPermissionsResponse = await backendAPI.post(
+		sessionId,
+		'/access/permission/resources',
+		JSON.stringify(demoResourceIds)
+	);
+	const accessPermissions = await accessPermissionsResponse.json();
+
+	const ownedDemoResourceIds = accessPermissions
+		.filter((right: AccessRight) => right.action === 'own')
+		.map((right: AccessRight) => right.resource_id);
+	console.log('=== ownedDemoResourceIds ===')
+	console.log(ownedDemoResourceIds)
+
+
+	const accessPoliciesResponse = await backendAPI.post(
+		sessionId,
+		'/access/policy/resources',
+		JSON.stringify(ownedDemoResourceIds)
+	);
+	const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
+
+
+	let demoResourcesExtended = demoResources.map(
+		(resource: DemoResourceExtended, index: number) => {
+			const match = accessPermissions.find((perm: AccessPolicy) => perm.resource_id === resource.id);
+			return Object.assign({}, {
+				...resource,
+				creation_date: new Date(creationDates[index]),
+				user_right: match?.action
+			});
 		}
 	);
-	demoResourcesWithCreationDates.sort(
-		(a: DemoResourceWithCreationDate, b: DemoResourceWithCreationDate) => {
+	demoResourcesExtended.sort(
+		(a: DemoResourceExtended, b: DemoResourceExtended) => {
 			return a.creation_date < b.creation_date ? 1 : -1;
 		}
 	);
@@ -39,16 +73,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		);
 	}
 
-	const demoResourceIds = demoResources.map((resource: DemoResource) => resource.id);
-
-	const accessPoliciesResponse = await backendAPI.post(
-		sessionId,
-		'/access/policy/resources',
-		JSON.stringify(demoResourceIds)
-	);
-	const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
-
-	return { demoResourcesWithCreationDates, microsoftTeams, accessPolicies };
+	return { demoResourcesExtended, microsoftTeams, accessPolicies };
 };
 
 export const actions: Actions = {

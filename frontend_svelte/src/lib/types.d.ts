@@ -1,6 +1,6 @@
 import type { AccountInfo } from '@azure/msal-node';
 import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
-import type { Action } from '$lib/access';
+import type { Action } from '$lib/accessHandler';
 
 
 // App specific:
@@ -69,6 +69,11 @@ export interface AccessPolicy {
 	id: number;
 }
 
+export interface AccessRight {
+	resource_id: string;
+	action: Action;
+}
+
 // Define the additional properties as separate interfaces
 interface WithCreationDate {
 	creation_date: Date;
@@ -82,7 +87,7 @@ interface WithLastModifiedDate {
 // intended for checking this user's rights
 // highest permission wins: "own", "write", "read"
 interface WithAccessRights {
-	access_permissions: Action; // Adjust the type as needed
+	user_right: Action; // Adjust the type as needed
 }
 
 // Access policies for the resource - that includes other users' access permissions
@@ -92,7 +97,7 @@ interface WithAccessPolicies {
 }
 
 // Create a generic type that extends a base type with additional properties
-type ExtendResource<T> = T & Partial<WithCreationDate & WithLastModifiedDate & WithAccessPermissions & WithAccessPolicies>;
+type ExtendResource<T> = T & Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies>;
 
 
 // specific resources:
@@ -106,6 +111,7 @@ export interface DemoResource {
 	tags?: string[];
 }
 
+// add all specific resources that share the extension properties here:
 export type DemoResourceExtended = ExtendResource<DemoResource>;
 
 // TBD: consider moving this, to where it is used locally

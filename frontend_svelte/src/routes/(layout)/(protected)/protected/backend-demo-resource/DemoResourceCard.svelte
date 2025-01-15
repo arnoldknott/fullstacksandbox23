@@ -2,11 +2,11 @@
 	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import type { DemoResourceWithCreationDate, AccessPolicy } from '$lib/types';
+	import type { DemoResourceExtended, AccessPolicy } from '$lib/types';
 	// import { deserialize } from '$app/forms';
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamBasicInformation } from '$lib/server/apis';
-	import { AccessHandler } from '$lib/access';
+	import { AccessHandler } from '$lib/accessHandler';
 
 	// let {
 	// 	id,
@@ -30,7 +30,7 @@
 		microsoftTeams,
 		accessPolicies
 	}: {
-		demoResource?: DemoResourceWithCreationDate;
+		demoResource?: DemoResourceExtended;
 		microsoftTeams?: MicrosoftTeamBasicInformation[];
 		accessPolicies?: AccessPolicy[];
 	} = $props();
@@ -68,8 +68,6 @@
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
 	let rights = $state('read');
-	console.log('=== rights ===');
-	console.log(rights);
 
 	// const myAccessRights = $derived.by(() => AccessHandler.getAccessRights(accessPolicies));
 

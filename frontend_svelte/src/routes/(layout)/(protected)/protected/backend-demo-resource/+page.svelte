@@ -5,9 +5,9 @@
 	import { mount } from 'svelte';
 	import DemoResourceCard from './DemoResourceCard.svelte';
 	let { data }: { data: PageData } = $props();
-	console.log('=== page data in backend-demo-resource/page.svelte ===');
-	console.log(data);
-	const demoResources = data.demoResourcesWithCreationDates;
+	// console.log('=== page data in backend-demo-resource/page.svelte ===');
+	// console.log(data);
+	const demoResources = data.demoResourcesExtended;
 	const microsoftTeams = data.microsoftTeams;
 	const accessPolicies = data.accessPolicies;
 
