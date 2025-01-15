@@ -178,6 +178,7 @@
 							><span class="icon-[tabler--share-2]"></span>Share
 							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
 						</button>
+						<!-- min-w-60 -->
 						<ul
 							class="dropdown-menu hidden min-w-[17rem] bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
 							role="menu"
@@ -205,7 +206,7 @@
 													</button>
 													<div class="mr-2">
 														<span
-															class="icon-[{rightsIconSelection(team.id) || 'tabler--eye'}] size-4"
+															class="icon-[{rightsIconSelection(team.id) || 'tabler--eye'}] size-4 {rightsIconSelection(team.id) ? "bg-success" : ""}"
 														></span>
 													</div>
 													<div
