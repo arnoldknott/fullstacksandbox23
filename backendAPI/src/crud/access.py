@@ -5,6 +5,8 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy.orm import aliased
+
+# from sqlalchemy import union_all
 from sqlmodel import SQLModel, and_, delete, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -632,81 +634,105 @@ class AccessPolicyCRUD:
         resource_id: UUID,
     ) -> AccessPermission:
         """Checks the access level of the user to the resource."""
+        # print("=== check_access - current_user ===")
+        # print(current_user)
         try:
-            # if await self.allows(
-            #     AccessRequest(
-            #         resource_id=resource_id,
-            #         action=own,
-            #         current_user=current_user,
-            #     )
-            # ):
-            #     return AccessPermission(
-            #         resource_id=resource_id,
-            #         action=own,
-            #     )
-            # elif await self.allows(
-            #     AccessRequest(
-            #         resource_id=resource_id,
-            #         action=write,
-            #         current_user=current_user,
-            #     )
-            # ):
-            #     return AccessPermission(
-            #         resource_id=resource_id,
-            #         action=write,
-            #     )
-            # elif await self.allows(
-            #     AccessRequest(
-            #         resource_id=resource_id,
-            #         action=read,
-            #         current_user=current_user,
-            #     )
-            # ):
-            #     return AccessPermission(
-            #         resource_id=resource_id,
-            #         action=read,
-            #     )
-            # else:
-            #     return AccessPermission(
-            #         resource_id=resource_id,
-            #         action=None,
-            #     )
+            if await self.allows(
+                AccessRequest(
+                    resource_id=resource_id,
+                    action=own,
+                    current_user=current_user,
+                )
+            ):
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=own,
+                )
+            elif await self.allows(
+                AccessRequest(
+                    resource_id=resource_id,
+                    action=write,
+                    current_user=current_user,
+                )
+            ):
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=write,
+                )
+            elif await self.allows(
+                AccessRequest(
+                    resource_id=resource_id,
+                    action=read,
+                    current_user=current_user,
+                )
+            ):
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=read,
+                )
+            else:
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=None,
+                )
 
             # Reading the access policies for the resource from database
             # - not working, finds access policies from other users as well!:
-            query = select(AccessPolicy)
-            query = query.where(AccessPolicy.resource_id == resource_id)
-            query = self.filters_allowed(query, own, current_user=current_user)
-            query = self.filters_allowed(query, write, current_user=current_user)
-            query = self.filters_allowed(query, read, current_user=current_user)
+            # query = select(AccessPolicy)
+            # query = query.where(AccessPolicy.resource_id == resource_id)
+            # query_own = self.filters_allowed(
+            #     query, own, current_user=current_user
+            # ).subquery()
+            # query_write = self.filters_allowed(
+            #     query, write, current_user=current_user
+            # ).subquery()
+            # query_read = self.filters_allowed(
+            #     query, read, current_user=current_user
+            # ).subquery()
 
-            async with self:
-                response = await self.session.exec(query)
-                results = response.all()
+            # combined_query = union_all(
+            #     select(query_own), select(query_write), select(query_read)
+            # )
 
-            if not results:
-                return None
+            # async with self:
+            #     # response = await self.session.exec(query)
+            #     response = await self.session.exec(combined_query)
+            #     results = response.all()
 
-            access_level = None
-            for result in results:
-                print("=== AccessPolicyCRUD.check_access - result ===")
-                print(result)
-                # TBD: should not be necessary to check for the resource_id again here!
-                # The query is doing this already!
-                if result.resource_id == resource_id:
-                    if result.action == own:
-                        return AccessPermission(
-                            resource_id=resource_id,
-                            action=own,
-                        )  # can be returned directly, as it's the highest access level
-                    elif result.action == write:
-                        access_level = write
-                    elif result.action == read and access_level != write:
-                        access_level = read
-                    return AccessPermission(
-                        resource_id=resource_id,
-                        action=access_level,
-                    )
+            # print("=== AccessPolicyCRUD.check_access - results ===")
+            # print(results)
+
+            # access_level = None
+            # if results:
+            #     for result in results:
+            #         print("=== AccessPolicyCRUD.check_access - result ===")
+            #         print(result)
+            #         # TBD: should not be necessary to check for the resource_id again here!
+            #         # The query is doing this already!
+            #         if result.resource_id == resource_id:
+            #             print("=== AccessPolicyCRUD.check_access - result ===")
+            #             print(result)
+            #             if result.action == own:
+            #                 return AccessPermission(
+            #                     resource_id=resource_id,
+            #                     action=own,
+            #                 )  # can be returned directly, as it's the highest access level
+            #             elif result.action == write:
+            #                 print(
+            #                     "=== AccessPolicyCRUD.check_access - write triggered ==="
+            #                 )
+            #                 access_level = write
+            #             elif result.action == read and access_level != write:
+            #                 print(
+            #                     "=== AccessPolicyCRUD.check_access - read triggered ==="
+            #                 )
+            #                 access_level = read
+            # print("=== AccessPolicyCRUD.check_access - access_level ===")
+            # print(access_level)
+            # return AccessPermission(
+            #     resource_id=resource_id,
+            #     action=access_level,
+            # )
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
             raise HTTPException(status_code=403, detail="Forbidden.")
