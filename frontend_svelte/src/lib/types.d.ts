@@ -2,24 +2,14 @@ import type { AccountInfo } from '@azure/msal-node';
 import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
 import type { Action } from '$lib/access';
 
+
+// App specific:
 export type BackendAPIConfiguration = {
 	backendFqdn: string;
 	restApiPath: string;
 	websocketPath: string;
 	socketIOPath: string | null;
 };
-
-// matches Me in models/identities/backend API
-export type UserProfile = {
-	id: string;
-	azureGroups?: string[]; // TBD: fix
-	ueberGroups?: string[]; // TBD: fix
-	groups?: string[]; // TBD: fix
-	subGroups?: string[]; // TBD: fix
-	subSubGroups?: string[]; // TBD: fix
-	azure_token_roles?: string[]; // TBD: fix
-	azure_token_groups?: string[]; // TBD: fix
-}; // TBD: remove
 
 // export type Configuration = {
 // 	az_authority: string;
@@ -36,22 +26,6 @@ export type UserProfile = {
 // 	redis_password: string;
 // };
 
-// TBD: rename into ServerSession:
-export type Session = {
-	loggedIn: boolean;
-	status?: string;
-	microsoftAccount?: AccountInfo; // TBD: change to MicrosoftAccount, containing Account, IdToken, AccessToken, RefreshToken, AppMetadata
-	microsoftProfile?: MicrosoftProfile;
-	userAgent?: string;
-	userProfile?: UserProfile;
-	sessionId: string;
-};
-
-export type ClientSession = {
-	loggedIn: boolean;
-	sessionId: string;
-	microsoftProfile: MicrosoftProfile;
-};
 
 export type SocketioConnection = {
 	event: string;
@@ -67,6 +41,61 @@ type Tab = {
 	active?: boolean;
 };
 
+// TBD: rename into ServerSession:
+export type Session = {
+	loggedIn: boolean;
+	status?: string;
+	microsoftAccount?: AccountInfo;
+	microsoftProfile?: MicrosoftProfile;
+	userAgent?: string;
+	userProfile?: UserProfile;
+	sessionId: string;
+};
+
+export type ClientSession = {
+	loggedIn: boolean;
+	sessionId: string;
+	microsoftProfile: MicrosoftProfile;
+};
+
+
+// Generic for resources - and partially relevant for identities:
+
+export interface AccessPolicy {
+	resource_id: string;
+	identity_id: string;
+	action: Action;
+	public: boolean;
+	id: number;
+}
+
+// Define the additional properties as separate interfaces
+interface WithCreationDate {
+	creation_date: Date;
+}
+
+interface WithLastModifiedDate {
+	last_modified_date: Date;
+}
+
+// The user's own access rights
+// intended for checking this user's rights
+// highest permission wins: "own", "write", "read"
+interface WithAccessRights {
+	access_permissions: Action; // Adjust the type as needed
+}
+
+// Access policies for the resource - that includes other users' access permissions
+// intended for sharing operations
+interface WithAccessPolicies {
+	access_policies: AccessPolicy[];
+}
+
+// Create a generic type that extends a base type with additional properties
+type ExtendResource<T> = T & Partial<WithCreationDate & WithLastModifiedDate & WithAccessPermissions & WithAccessPolicies>;
+
+
+// specific resources:
 export interface DemoResource {
 	id?: string;
 	name: string;
@@ -77,6 +106,8 @@ export interface DemoResource {
 	tags?: string[];
 }
 
+export type DemoResourceExtended = ExtendResource<DemoResource>;
+
 // TBD: consider moving this, to where it is used locally
 // in protected/backend-demo-resource: +page.svelte;
 // needs to be defined client side!
@@ -84,10 +115,18 @@ export interface DemoResourceWithCreationDate extends DemoResource {
 	creation_date: Date;
 }
 
-export interface AccessPolicy {
-	resource_id: string;
-	identity_id: string;
-	action: Action;
-	public: boolean;
-	id: number;
-}
+
+// Identity specific:
+
+// matches Me in models/identities/backend API
+export type UserProfile = {
+	id: string;
+	azureGroups?: string[]; // TBD: fix
+	ueberGroups?: string[]; // TBD: fix
+	groups?: string[]; // TBD: fix
+	subGroups?: string[]; // TBD: fix
+	subSubGroups?: string[]; // TBD: fix
+	azure_token_roles?: string[]; // TBD: fix
+	azure_token_groups?: string[]; // TBD: fix
+}; // TBD: remove
+

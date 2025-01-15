@@ -38,13 +38,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			locals.sessionData.userProfile.azure_token_groups
 		);
 	}
-	// console.log('=== routes - demo-resource - page.server - load function - microsoftTeams ===');
-	// console.log(microsoftTeams);
 
 	const demoResourceIds = demoResources.map((resource: DemoResource) => resource.id);
-
-	// console.log('=== routes - demo-resource - page.server - load function - demoResourceIds ===');
-	// console.log(demoResourceIds);
 
 	const accessPoliciesResponse = await backendAPI.post(
 		sessionId,
