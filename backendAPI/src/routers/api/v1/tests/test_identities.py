@@ -3370,8 +3370,8 @@ async def test_user_access_prohibited_after_deleting_group_with_direct_group_mem
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_hierarchy.parent_id == str(mocked_groups[1].id)
-    assert created_hierarchy.child_id == str(current_user.user_id)
+    assert created_hierarchy.parent_id == mocked_groups[1].id
+    assert created_hierarchy.child_id == current_user.user_id
     assert created_hierarchy.inherit is True
 
     mocked_protected_resources = await add_many_test_protected_resources()
