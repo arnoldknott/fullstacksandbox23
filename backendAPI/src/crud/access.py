@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import aliased
 
 # from sqlalchemy import union_all
-from sqlmodel import SQLModel, and_, delete, or_, select
+from sqlmodel import SQLModel, and_, delete, or_, select, func
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
@@ -1413,10 +1413,16 @@ class BaseHierarchyCRUD(
                     child_id=child_id,
                     inherit=inherit,
                 )
-                database_relation = self.model.model_validate(relation)
-                self.session.add(database_relation)
+                # database_relation = self.model.model_validate(relation)
+                # self.session.add(database_relation)
+                # await self.session.commit()
+                # await self.session.refresh(database_relation)
+                # return relation
+                # TBD: refactor into this - includes the order of the children:
+                relation = self.model.model_validate(relation)
+                self.session.add(relation)
                 await self.session.commit()
-                await self.session.refresh(database_relation)
+                await self.session.refresh(relation)
                 return relation
             else:
                 logger.error("Bad request: child type not allowed for parent.")
@@ -1555,6 +1561,41 @@ class ResourceHierarchyCRUD(
         # super().__init__(ResourceHierarchy, ResourceHierarchyTable)
         super().__init__(ResourceHierarchy, ResourceHierarchy)
 
+    async def create(
+        self,
+        current_user: CurrentUserData,
+        parent_id: UUID,
+        child_type: ResourceType,
+        child_id: UUID,
+        inherit: Optional[bool] = False,
+    ) -> ResourceHierarchy:
+        """Creates a new resource hierarchy."""
+        hierarchy = await super().create(
+            current_user, parent_id, child_type, child_id, inherit
+        )
+
+        # Add order to the hierarchy:
+        # Get the next order value
+        result = await self.session.exec(
+            select(func.max(ResourceHierarchy.order)).where(
+                ResourceHierarchy.parent_id == parent_id
+            )
+        )
+        print("=== result ===")
+        print(result)
+        max_order = result.one_or_none()
+        next_order = (max_order or 0) + 1
+
+        # Insert into ResourceHierarchy table
+        # hierarchy = ResourceHierarchy(
+        #     parent_id=parent_id, child_id=child_id, order=next_order
+        # )
+        hierarchy.order = next_order
+        await self.session.commit()
+        await self.session.refresh(hierarchy)
+
+        return hierarchy
+
     async def reorder_children(  # noqa: C901
         self,
         current_user: CurrentUserData,
@@ -1627,14 +1668,14 @@ class ResourceHierarchyCRUD(
             # for i, child in enumerate(children):
             for child in children:
                 if child.child_id == child_id:
-                    print("=== moving child ===")
-                    print(child)
+                    # print("=== moving child ===")
+                    # print(child)
                     # old_position = i
                     old_position = child.order
                     moving_child = child
                 if other_child_id and child.child_id == other_child_id:
-                    print("=== target child ===")
-                    print(child)
+                    # print("=== target child ===")
+                    # print(child)
                     if position == "before":
                         new_position = child.order - 1
                         # new_position = i
@@ -1645,18 +1686,10 @@ class ResourceHierarchyCRUD(
             if old_position < new_position:
                 moving_child.order = new_position
                 for i in range(old_position, new_position):
-                    print("==== iiiiiiii ====")
-                    print(i)
-                    print("=== children[i] ===")
-                    print(children[i])
                     children[i].order = i
             else:
                 moving_child.order = new_position + 1
                 for i in range(new_position, old_position - 1):
-                    print("==== iiiiiiii ====")
-                    print(i)
-                    print("=== children[i] ===")
-                    print(children[i])
                     children[i].order += 1
 
             print("=== all children - ready for database ===")

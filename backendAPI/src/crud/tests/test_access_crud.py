@@ -1246,9 +1246,10 @@ async def test_admin_create_resource_hierarchy(
             child_id=new_child_id,
         )
 
-    assert created_hierarchy.parent_id == resources[0]
+    assert created_hierarchy.parent_id == uuid.UUID(resources[0])
     assert created_hierarchy.child_id == new_child_id
     assert created_hierarchy.inherit is False
+    assert created_hierarchy.order == 1
 
 
 @pytest.mark.anyio
@@ -1270,9 +1271,10 @@ async def test_admin_create_resource_hierarchy_with_inheritance(
             inherit=True,
         )
 
-    assert created_hierarchy.parent_id == resources[0]
+    assert created_hierarchy.parent_id == uuid.UUID(resources[0])
     assert created_hierarchy.child_id == new_child_id
     assert created_hierarchy.inherit is True
+    assert created_hierarchy.order == 1
 
 
 @pytest.mark.anyio
@@ -1444,8 +1446,9 @@ async def test_admin_reads_resource_hierarchy_single_child_of_a_parent(
 
     assert len(read_relation) == 1
     assert read_relation[0].child_id == new_child_id
-    assert read_relation[0].parent_id == uuid.UUID(relationship.parent_id)
+    assert read_relation[0].parent_id == relationship.parent_id
     assert read_relation[0].inherit == relationship.inherit
+    assert "order" not in read_relation[0]
 
 
 @pytest.mark.anyio
@@ -1572,8 +1575,9 @@ async def test_admin_reads_resource_hierarchy_single_parent_of_child(
 
     assert len(read_relation) == 1
     assert read_relation[0].child_id == child_id
-    assert read_relation[0].parent_id == uuid.UUID(relationship.parent_id)
+    assert read_relation[0].parent_id == relationship.parent_id
     assert read_relation[0].inherit == relationship.inherit
+    assert "order" not in read_relation[0]
 
 
 @pytest.mark.anyio
