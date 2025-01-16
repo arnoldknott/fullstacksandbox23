@@ -13,11 +13,16 @@
 
 	let debug = $state(false);
 
-	const microsoftTeamsExtendWithAccessPolicies = (microsoftTeams: MicrosoftTeamBasicExtended[], demoResource: DemoResourceExtended) => {
+	const microsoftTeamsExtendWithAccessPolicies = (
+		microsoftTeams: MicrosoftTeamBasicExtended[],
+		demoResource: DemoResourceExtended
+	) => {
 		return microsoftTeams.map((team: MicrosoftTeamBasicExtended) => {
 			return {
 				...team,
-				access_policies: demoResource.access_policies?.filter((policy: AccessPolicy) => team.id === policy.identity_id)
+				access_policies: demoResource.access_policies?.filter(
+					(policy: AccessPolicy) => team.id === policy.identity_id
+				)
 			};
 		});
 	};
@@ -51,7 +56,10 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	{#each demoResources as demoResource}
-		<DemoResourceCard {demoResource} microsoftTeams={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)}/>
+		<DemoResourceCard
+			{demoResource}
+			microsoftTeams={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)}
+		/>
 		<div class={debug ? 'block' : 'hidden'}>
 			<Heading>{demoResource.name}</Heading>
 			<p class="text-title-small md:text-title text-secondary">=> demoResource</p>

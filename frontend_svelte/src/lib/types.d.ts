@@ -2,7 +2,6 @@ import type { AccountInfo } from '@azure/msal-node';
 import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
 import type { Action } from '$lib/accessHandler';
 
-
 // App specific:
 export type BackendAPIConfiguration = {
 	backendFqdn: string;
@@ -25,7 +24,6 @@ export type BackendAPIConfiguration = {
 // 	redis_session_db: string;
 // 	redis_password: string;
 // };
-
 
 export type SocketioConnection = {
 	event: string;
@@ -58,7 +56,6 @@ export type ClientSession = {
 	microsoftProfile: MicrosoftProfile;
 };
 
-
 // Access types:
 
 export interface AccessPolicy {
@@ -76,7 +73,8 @@ export interface AccessRight {
 
 // Generic for resources - and partially relevant for identities:
 // Create a generic type that extends a base type with additional properties
-type ExtendEntity<T> = T & Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies>;
+type ExtendEntity<T> = T &
+	Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies>;
 
 // Define the additional properties as separate interfaces
 interface WithCreationDate {
@@ -100,7 +98,6 @@ interface WithAccessPolicies {
 	access_policies: AccessPolicy[];
 }
 
-
 // specific resources:
 export interface DemoResource {
 	id?: string;
@@ -122,7 +119,6 @@ export interface DemoResourceWithCreationDate extends DemoResource {
 	creation_date: Date;
 }
 
-
 // Identity specific:
 
 // matches Me in models/identities/backend API
@@ -136,7 +132,6 @@ export type UserProfile = {
 	azure_token_roles?: string[]; // TBD: fix
 	azure_token_groups?: string[]; // TBD: fix
 }; // TBD: remove
-
 
 export interface MicrosoftTeamBasic {
 	id: string;

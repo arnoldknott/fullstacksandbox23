@@ -2,7 +2,13 @@ import type { Actions, PageServerLoad } from './$types';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis';
 import { fail } from '@sveltejs/kit';
-import type { AccessPolicy, AccessRight, DemoResource, DemoResourceExtended, MicrosoftTeamBasic, MicrosoftTeamBasicExtended} from '$lib/types';
+import type {
+	AccessPolicy,
+	AccessRight,
+	DemoResource,
+	DemoResourceExtended,
+	MicrosoftTeamBasic
+} from '$lib/types';
 import { microsoftGraph } from '$lib/server/apis';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -38,7 +44,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.filter((right: AccessRight) => right.action === 'own')
 		.map((right: AccessRight) => right.resource_id);
 
-
 	const accessPoliciesResponse = await backendAPI.post(
 		sessionId,
 		'/access/policy/resources',
@@ -46,23 +51,27 @@ export const load: PageServerLoad = async ({ locals }) => {
 	);
 	const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
 
-	let demoResourcesExtended = demoResources.map(
+	const demoResourcesExtended = demoResources.map(
 		(resource: DemoResourceExtended, index: number) => {
 			// const userRight = accessRights.find((right: AccessRight) => right.resource_id === resource.id);
 			// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id);
-			return Object.assign({}, {
-				...resource,
-				creation_date: new Date(creationDates[index]),
-				user_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id).action,
-				access_policies: accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id)
-			});
+			return Object.assign(
+				{},
+				{
+					...resource,
+					creation_date: new Date(creationDates[index]),
+					user_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id)
+						.action,
+					access_policies: accessPolicies.filter(
+						(policy: AccessPolicy) => policy.resource_id === resource.id
+					)
+				}
+			);
 		}
 	);
-	demoResourcesExtended.sort(
-		(a: DemoResourceExtended, b: DemoResourceExtended) => {
-			return (a.creation_date ?? 0) < (b.creation_date ?? 0) ? 1 : -1;
-		}
-	);
+	demoResourcesExtended.sort((a: DemoResourceExtended, b: DemoResourceExtended) => {
+		return (a.creation_date ?? 0) < (b.creation_date ?? 0) ? 1 : -1;
+	});
 
 	let microsoftTeams: MicrosoftTeamBasic[] = [];
 	if (locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups) {

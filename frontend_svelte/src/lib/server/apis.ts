@@ -214,8 +214,6 @@ class BackendAPI extends BaseAPI {
 
 export const backendAPI = new BackendAPI();
 
-
-
 class MicrosoftGraph extends BaseAPI {
 	appConfig: AppConfig;
 
