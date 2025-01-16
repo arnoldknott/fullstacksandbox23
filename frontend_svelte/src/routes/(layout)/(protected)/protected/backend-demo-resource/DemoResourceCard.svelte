@@ -41,7 +41,12 @@
 	let dropdownMenu = $state<HTMLUListElement | null>(null);
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
-	// let teamRight = $state('read');
+	let teamRight = $state('read');
+	
+	$effect(() =>{ 
+		console.log('=== DemoResourceCard.svelte - teamRight ===');
+		console.log(teamRight)
+	});
 
 	const rightsIconSelection = (identityId: string) => {
 		if (!accessPolicies) return null;
@@ -55,14 +60,18 @@
 					: null;
 	};
 
-	// Prepared for mapping into quick-share dropdown
-	// let identitiesRightsMap = $derived.by(() => {
-	// 	let rightsMapping = new Map<string, Action | null>();
-	// 	microsoftTeams?.forEach((team) => {
-	// 		// TBD: turn into a n object, that also hold information if right is assigned or not
-	// 		rightsMapping.set(team.id, AccessHandler.getRights(team.id, team.access_policies));
-	// 	});
-	// });
+	let identitiesRightsMap = $derived.by(() => {
+		let rightsMapping = new Map<string, Action | null>();
+		microsoftTeams?.forEach((team) => {
+			// TBD: turn into a n object, that also hold information if right is assigned or not
+			rightsMapping.set(team.id, AccessHandler.getRights(team.id, team.access_policies));
+		});
+	});
+	
+	$effect(() => {
+		console.log('=== DemoResourceCard.svelte - identitiesRightsMap ===');
+		console.log(identitiesRightsMap)
+	});
 
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
