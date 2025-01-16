@@ -3,10 +3,10 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResourceExtended, AccessPolicy } from '$lib/types';
 	import { enhance } from '$app/forms';
-	import type { MicrosoftTeamBasic } from '$lib/types';
-	import { AccessHandler } from '$lib/accessHandler';
+	import type { MicrosoftTeamBasicExtended } from '$lib/types';
+	import { AccessHandler, Action} from '$lib/accessHandler';
 
-	let { demoResource, microsoftTeams }: { demoResource?: DemoResourceExtended, microsoftTeams?: MicrosoftTeamBasic[] } = $props();
+	let { demoResource, microsoftTeams }: { demoResource?: DemoResourceExtended, microsoftTeams?: MicrosoftTeamBasicExtended[] } = $props();
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let userRight = $state(demoResource?.user_right || 'read');
 	let name = $state(demoResource?.name || undefined);
@@ -50,6 +50,16 @@
 					? 'tabler--eye'
 					: null;
 	};
+
+	let identitiesRightsMap = $derived.by(() => {
+		let rightsMapping = new Map<string, Action | null>()
+		microsoftTeams?.forEach(team => {
+			// TBD: turn into a n object, that also hold information if right is assigned or not
+			rightsMapping.set(team.id, AccessHandler.getRights(team.id, team.access_policies));
+		});
+	});
+
+
 
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();

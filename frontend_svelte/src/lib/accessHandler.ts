@@ -7,7 +7,7 @@ export enum Action {
 }
 
 export class AccessHandler {
-	static getRights(identityId: string, accessPolicies: AccessPolicy[]) {
+	static getRights(identityId: string, accessPolicies?: AccessPolicy[]) {
 		const hasOwnerRights = accessPolicies?.some(
 			(policy) => policy.identity_id === identityId && policy.action === 'own'
 		);

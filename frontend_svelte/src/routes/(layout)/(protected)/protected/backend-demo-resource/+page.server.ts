@@ -64,7 +64,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		}
 	);
 
-	let microsoftTeams: MicrosoftTeamBasicExtended[] = [];
+	let microsoftTeams: MicrosoftTeamBasic[] = [];
 	if (locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups) {
 		microsoftTeams = await microsoftGraph.getAttachedTeams(
 			sessionId,
