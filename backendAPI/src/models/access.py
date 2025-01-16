@@ -5,7 +5,7 @@ from pydantic import BaseModel, model_validator  # , create_model
 from sqlalchemy import (
     UniqueConstraint,
 )  # ,Column, Integer, text, DefaultClause, Computed
-from sqlmodel import Field, SQLModel, Relationship  # func, select
+from sqlmodel import Field, SQLModel  # func, select
 
 # from core.databases import SynchronSession
 
