@@ -1413,12 +1413,6 @@ class BaseHierarchyCRUD(
                     child_id=child_id,
                     inherit=inherit,
                 )
-                # database_relation = self.model.model_validate(relation)
-                # self.session.add(database_relation)
-                # await self.session.commit()
-                # await self.session.refresh(database_relation)
-                # return relation
-                # TBD: refactor into this - includes the order of the children:
                 relation = self.model.model_validate(relation)
                 self.session.add(relation)
                 await self.session.commit()
@@ -1550,9 +1544,6 @@ class BaseHierarchyCRUD(
 
 
 class ResourceHierarchyCRUD(
-    # BaseHierarchyCRUD[
-    #     ResourceHierarchyCreate, ResourceHierarchyTable, ResourceHierarchyRead
-    # ]
     BaseHierarchyCRUD[ResourceHierarchyCreate, ResourceHierarchy, ResourceHierarchyRead]
 ):
     """CRUD for resource hierarchies."""
@@ -1575,21 +1566,17 @@ class ResourceHierarchyCRUD(
         )
 
         # Add order to the hierarchy:
+
         # Get the next order value
         result = await self.session.exec(
             select(func.max(ResourceHierarchy.order)).where(
                 ResourceHierarchy.parent_id == parent_id
             )
         )
-        print("=== result ===")
-        print(result)
         max_order = result.one_or_none()
         next_order = (max_order or 0) + 1
 
-        # Insert into ResourceHierarchy table
-        # hierarchy = ResourceHierarchy(
-        #     parent_id=parent_id, child_id=child_id, order=next_order
-        # )
+        # Update the hierarchy with the order value:
         hierarchy.order = next_order
         await self.session.commit()
         await self.session.refresh(hierarchy)
@@ -1632,7 +1619,6 @@ class ResourceHierarchyCRUD(
             # parent_model = ResourceType.get_model(parent_type)
 
             # Fetch the children of the parent resource
-            # TBD: add check if current_user has access to the children!
             child_access_request = AccessRequest(
                 resource_id=child_id,
                 action=Action.write,
@@ -1658,30 +1644,20 @@ class ResourceHierarchyCRUD(
             children = children.all()
 
             debug_children = children
-            print("=== all children ===")
-            pprint(debug_children)
 
             # Find the old and new positions of the child
             old_position = None
             moving_child = None
             new_position = None
-            # for i, child in enumerate(children):
             for child in children:
                 if child.child_id == child_id:
-                    # print("=== moving child ===")
-                    # print(child)
-                    # old_position = i
                     old_position = child.order
                     moving_child = child
                 if other_child_id and child.child_id == other_child_id:
-                    # print("=== target child ===")
-                    # print(child)
                     if position == "before":
                         new_position = child.order - 1
-                        # new_position = i
                     elif position == "after":
                         new_position = child.order
-                        # new_position = i + 1
 
             if old_position < new_position:
                 moving_child.order = new_position
@@ -1692,9 +1668,6 @@ class ResourceHierarchyCRUD(
                 for i in range(new_position, old_position - 1):
                     children[i].order += 1
 
-            print("=== all children - ready for database ===")
-            pprint(children)
-
             # Update the database
             await self.session.commit()
 
@@ -1704,19 +1677,9 @@ class ResourceHierarchyCRUD(
 
 
 class IdentityHierarchyCRUD(
-    # BaseHierarchyCRUD[
-    #     IdentityHierarchyCreate, IdentityHierarchyTable, IdentityHierarchyRead
-    # ]
     BaseHierarchyCRUD[IdentityHierarchyCreate, IdentityHierarchy, IdentityHierarchyRead]
 ):
     """CRUD for resource hierarchies."""
 
     def __init__(self):
-        # super().__init__(IdentityHierarchy, IdentityHierarchyTable)
         super().__init__(IdentityHierarchy, IdentityHierarchy)
-
-
-# class IdentityHierarchyCRUD(BaseHierarchyCRUD):
-#     """CRUD for identity hierarchies."""
-
-#     pass

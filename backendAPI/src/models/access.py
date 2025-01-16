@@ -243,45 +243,6 @@ class ResourceHierarchyCreate(SQLModel):
         return self
 
 
-# def get_next_order(context):
-#     parent_id = context.get_current_parameters()["parent_id"]
-#     with SynchronSession() as session:
-#         try:
-#             max_order = session.execute(
-#                 select(func.max(ResourceHierarchy.order)).where(
-#                     ResourceHierarchy.parent_id == parent_id
-#                 )
-#             ).scalar()
-#         finally:
-#             session.close()
-#     return (max_order or 0) + 1
-
-
-# def get_next_order_handler():
-#     async def call_get_next_order(context):
-#         await get_next_order(context)
-
-#     return asyncio.run(call_get_next_order)
-
-
-# class ResourceOrder(SQLModel, table=True):
-#     """Table for ordering resources in a hierarchy"""
-
-#     parent_id: uuid.UUID = Field(primary_key=True)
-#     child_id: uuid.UUID = Field(primary_key=True)
-#     order: int = Field(index=True, backpopulates="order")
-
-#     resource_hierarchy: Optional["ResourceHierarchy"] = Relationship(
-#         sa_relationship_kwargs={
-#             "lazy": "joined",
-#             "viewonly": True,
-#             "primaryjoin": "and_(ResourceHierarchy.parent_id == ResourceOrder.parent_id, ResourceHierarchy.child_id == ResourceOrder.child_id)",
-#         }
-#     )
-
-#     __table_args__ = (UniqueConstraint("parent_id", "child_id"),)
-
-
 class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
     """Table for resource hierarchy and its types"""
 
@@ -291,55 +252,7 @@ class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
     child_id: uuid.UUID = Field(
         primary_key=True
     )  # foreign_key="identifiertypelink.id",
-    # order: Optional[int] = Field(
-    #     sa_column=Column(
-    #         Integer,
-    #         Sequence("order_seq", start=1, increment=1),
-    #         # autoincrement=True,
-    #     )
-    # )
-    # order: Optional[int] = Field(
-    #     sa_column=Column(Integer, default=get_next_order, index=True)
-    # )
-    # order: Optional[int] = Field(
-    #     sa_column=Column(
-    #         Integer,
-    #         # server_default=text(
-    #         #     '(SELECT COALESCE(MAX("order") + 1, 1) FROM resourcehierarchy WHERE parent_id = parent_id)'
-    #         # ),
-    #         # server_default=text("10"),
-    #         # server_default=(
-    #         #     text(
-    #         #         '(SELECT COALESCE(MAX("order") + 1, 1) FROM resourcehierarchy WHERE parent_id = parent_id)'
-    #         #     )
-    #         # ),
-    #         # DefaultClause(text("10")),
-    #         # DefaultClause(
-    #         #     text(
-    #         #         '(SELECT COALESCE(MAX("order") + 1, 1) FROM resourcehierarchy WHERE parent_id = parent_id)'
-    #         #     )
-    #         # ),
-    #         Computed(text('COALESCE(MAX("order") + 1, 1)')),
-    #         # DefaultClause(text('COALESCE(MAX("order") + 1, 1)')),
-    #         # server_default=text(
-    #         # DefaultClause(
-    #         #     text(
-    #         #         "10"
-    #         #         # '(SELECT COALESCE(MAX("order") + 1, 1) FROM resourcehierarchy WHERE parent_id = parent_id)'
-    #         #     ),
-    #         #     for_update=True,
-    #         # ),
-    #         index=True,
-    #     )
-    # )
     order: Optional[int] = Field(index=True)
-    # resource_order: Optional[ResourceOrder] = Relationship(
-    #     sa_relationship_kwargs={
-    #         "lazy": "joined",
-    #         "viewonly": True,
-    #         "primaryjoin": "and_(ResourceHierarchy.parent_id == ResourceOrder.parent_id, ResourceHierarchy.child_id == ResourceOrder.child_id)",
-    #     }
-    # )
 
     __table_args__ = (
         UniqueConstraint("parent_id", "child_id"),
