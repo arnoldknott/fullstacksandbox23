@@ -1642,8 +1642,6 @@ class ResourceHierarchyCRUD(
             children = await self.session.exec(statement)
             children = children.all()
 
-            debug_children = children
-
             # Find the old and new positions of the child
             old_position = None
             moving_child = None
