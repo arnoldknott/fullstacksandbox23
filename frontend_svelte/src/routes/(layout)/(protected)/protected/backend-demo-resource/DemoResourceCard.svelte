@@ -42,10 +42,10 @@
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
 	let teamRight = $state('read');
-	
-	$effect(() =>{ 
+
+	$effect(() => {
 		console.log('=== DemoResourceCard.svelte - teamRight ===');
-		console.log(teamRight)
+		console.log(teamRight);
 	});
 
 	const rightsIconSelection = (identityId: string) => {
@@ -67,10 +67,10 @@
 			rightsMapping.set(team.id, AccessHandler.getRights(team.id, team.access_policies));
 		});
 	});
-	
+
 	$effect(() => {
 		console.log('=== DemoResourceCard.svelte - identitiesRightsMap ===');
-		console.log(identitiesRightsMap)
+		console.log(identitiesRightsMap);
 	});
 
 	const triggerSubmit = async () => {
