@@ -524,7 +524,6 @@ async def test_get_users_without_token(
     [
         # token_user1_read,
         # token_user1_read_write,
-        token_user1_read_write_groups,
         token_user2_read,
         token_user2_read_write,
     ],
@@ -543,7 +542,7 @@ async def test_user_gets_user_by_azure_user_id(
     # mocks the access token:
     app_override_provide_http_token_payload
     # the target user:
-    user_in_database = await add_one_azure_test_user(0)
+    user_in_database = await add_one_azure_test_user(4)
     # the accessing user:
     accessing_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -556,7 +555,7 @@ async def test_user_gets_user_by_azure_user_id(
     }
     await add_one_test_access_policy(policy)
 
-    groups_for_user_in_database = many_test_azure_users[0]["groups"]
+    groups_for_user_in_database = many_test_azure_users[4]["groups"]
     for group_id in groups_for_user_in_database:
         policy = {
             "resource_id": str(group_id),
@@ -564,6 +563,87 @@ async def test_user_gets_user_by_azure_user_id(
             "action": Action.read,
         }
         await add_one_test_access_policy(policy)
+
+    before_time = datetime.now()
+    response = await async_client.get(
+        f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
+    )
+    after_time = datetime.now()
+    assert response.status_code == 200
+    response_user = response.json()
+
+    modelled_response_user = UserRead(**response_user)
+
+    assert modelled_response_user.id is not None
+    assert modelled_response_user.azure_user_id == user_in_database.azure_user_id
+    assert modelled_response_user.azure_tenant_id == user_in_database.azure_tenant_id
+    assert len(modelled_response_user.azure_groups) == 3
+
+    async with AccessLoggingCRUD() as crud:
+        created_at = await crud.read_resource_created_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+        last_accessed_at = await crud.read_resource_last_accessed_at(
+            CurrentUserData(**current_user_data_admin),
+            resource_id=modelled_response_user.id,
+        )
+
+    assert created_at > before_time - timedelta(seconds=1)
+    assert created_at < after_time + timedelta(seconds=1)
+    assert last_accessed_at.time > created_at
+    assert last_accessed_at.status_code == 200
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [
+        # token_user1_read,
+        # token_user1_read_write,
+        token_user1_read_write_groups,
+    ],
+    indirect=True,
+)
+async def test_user_gets_user_by_azure_user_id_with_common_groups(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_one_azure_test_user: List[User],
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+):
+    """Test a user GETs it's own user id from it's linked azure user account"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    # the target user:
+    user_in_database = await add_one_azure_test_user(4)
+    # the accessing user:
+    accessing_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    policy = {
+        "resource_id": str(user_in_database.id),
+        "identity_id": str(accessing_user.user_id),
+        "action": Action.read,
+    }
+    await add_one_test_access_policy(policy)
+
+    groups_for_user_in_database = many_test_azure_users[4]["groups"]
+    policy_group0 = {
+        "resource_id": str(groups_for_user_in_database[0]),
+        "identity_id": str(accessing_user.user_id),
+        "action": Action.read,
+    }
+    await add_one_test_access_policy(policy_group0)
+    policy_group2 = {
+        "resource_id": str(groups_for_user_in_database[2]),
+        "identity_id": str(accessing_user.user_id),
+        "action": Action.read,
+    }
+    await add_one_test_access_policy(policy_group2)
 
     before_time = datetime.now()
     response = await async_client.get(
@@ -864,11 +944,19 @@ async def test_user_gets_user_by_id(
     # mocks the access token:
     app_override_provide_http_token_payload
     # the target user:
-    user_in_database = await add_one_azure_test_user(0)
+    user_in_database = await add_one_azure_test_user(1)
     # the accessing user:
     accessing_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
     )
+
+    groups_for_user_in_database = many_test_azure_users[1]["groups"]
+    policy_non_common_group = {
+        "resource_id": str(groups_for_user_in_database[1]),
+        "identity_id": str(accessing_user.user_id),
+        "action": Action.read,
+    }
+    await add_one_test_access_policy(policy_non_common_group)
 
     policy = {
         "resource_id": str(user_in_database.id),
