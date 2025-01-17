@@ -1522,7 +1522,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
         json=many_test_protected_resources[0],
     )
 
-    current_user = current_test_user
+    current_test_user
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
