@@ -723,11 +723,7 @@ async def test_admin_deletes_all_access_policies_for_a_resource(
 
     expected_deletion = [
         policies[0],
-        policies[4],
         policies[5],
-        policies[6],
-        policies[7],
-        policies[8],
         policies[9],
     ]
     async with AccessPolicyCRUD() as policy_crud:
@@ -750,11 +746,15 @@ async def test_admin_deletes_all_access_policies_for_a_resource(
             current_user=current_admin_user
         )
 
-    assert len(all_policies_after_deletion) == 3
+    assert len(all_policies_after_deletion) == 7
 
     assert all_policies_after_deletion[0] == policies[1]
     assert all_policies_after_deletion[1] == policies[2]
     assert all_policies_after_deletion[2] == policies[3]
+    assert all_policies_after_deletion[3] == policies[4]
+    assert all_policies_after_deletion[4] == policies[6]
+    assert all_policies_after_deletion[5] == policies[7]
+    assert all_policies_after_deletion[6] == policies[8]
 
 
 @pytest.mark.anyio
@@ -845,11 +845,7 @@ async def test_user_deletes_all_access_policies_for_a_resource_with_owner_rights
 
     expected_deletion = [
         policies[0],
-        policies[4],
         policies[5],
-        policies[6],
-        policies[7],
-        policies[8],
         policies[9],
     ]
     async with AccessPolicyCRUD() as policy_crud:
@@ -872,11 +868,15 @@ async def test_user_deletes_all_access_policies_for_a_resource_with_owner_rights
             current_user=current_admin_user
         )
 
-    assert len(all_policies_after_deletion) == 3
+    assert len(all_policies_after_deletion) == 7
 
     assert all_policies_after_deletion[0] == policies[1]
     assert all_policies_after_deletion[1] == policies[2]
     assert all_policies_after_deletion[2] == policies[3]
+    assert all_policies_after_deletion[3] == policies[4]
+    assert all_policies_after_deletion[4] == policies[6]
+    assert all_policies_after_deletion[5] == policies[7]
+    assert all_policies_after_deletion[6] == policies[8]
 
 
 @pytest.mark.anyio
@@ -1370,12 +1370,12 @@ async def test_user_create_resource_hierarchy(
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         created_hierarchy = await hierarchy_crud.create(
             current_user=current_user_data,
-            parent_id=uuid.UUID(resource_id1),
+            parent_id=uuid.UUID(resource_id2),
             child_type=ResourceType.protected_child,
             child_id=new_child_id,
         )
 
-    assert created_hierarchy.parent_id == access_policies[7].resource_id
+    assert created_hierarchy.parent_id == access_policies[1].resource_id
     assert created_hierarchy.child_id == new_child_id
     assert created_hierarchy.inherit is False
 

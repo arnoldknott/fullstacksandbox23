@@ -596,7 +596,7 @@ many_test_policies = [
     {
         "identity_id": identity_id_user2,
         "resource_id": resource_id1,
-        "action": "read",
+        "action": "own",
     },
     {
         "identity_id": identity_id_user1,
