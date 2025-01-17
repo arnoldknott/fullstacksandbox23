@@ -598,15 +598,6 @@ async def test_post_protected_child_resource_and_add_to_parent(
         if protected_resources.name == "First Protected Resource"
     ][0]
 
-    await add_one_test_access_policy(
-        {
-            "identity_id": str(current_test_user.user_id),
-            "resource_id": str(test_parent.id),
-            "action": Action.write,
-        },
-        current_test_user,
-    )
-
     # Make a POST request to create the protected child as a child of a protected resource
     before_time = datetime.now()
     response = await async_client.post(
@@ -1274,15 +1265,6 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance(
         == many_test_protected_resources[0]["description"]
     )
 
-    await add_one_test_access_policy(
-        {
-            "identity_id": str(current_user.user_id),
-            "resource_id": str(created_protected_resource.id),
-            "action": Action.write,
-        },
-        current_user,
-    )
-
     # Make a POST request to create the protected child as a child of a protected resource
     response = await async_client.post(
         f"/api/v1/protected/resource/{created_protected_resource.id}/child?inherit=True",
@@ -1385,15 +1367,6 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance_mi
         == many_test_protected_resources[0]["description"]
     )
 
-    await add_one_test_access_policy(
-        {
-            "identity_id": str(current_user.user_id),
-            "resource_id": str(created_protected_resource.id),
-            "action": Action.write,
-        },
-        current_user,
-    )
-
     # Make a POST request to create the protected child as a child of a protected resource
     response = await async_client.post(
         f"/api/v1/protected/resource/{created_protected_resource.id}/child?inherit=True",
@@ -1464,15 +1437,6 @@ async def test_get_protected_child_resource_from_a_parent_missing_inheritance(
     assert (
         created_protected_resource.description
         == many_test_protected_resources[0]["description"]
-    )
-
-    await add_one_test_access_policy(
-        {
-            "identity_id": str(current_user.user_id),
-            "resource_id": str(created_protected_resource.id),
-            "action": Action.write,
-        },
-        current_user,
     )
 
     # Make a POST request to create the protected child as a child of a protected resource
@@ -1568,15 +1532,6 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
         == many_test_protected_resources[0]["description"]
     )
 
-    await add_one_test_access_policy(
-        {
-            "identity_id": str(current_user.user_id),
-            "resource_id": str(created_protected_resource.id),
-            "action": Action.write,
-        },
-        current_user,
-    )
-
     # Make a POST request to create the protected child as a child of a protected resource
     response_child = await async_client.post(
         f"/api/v1/protected/resource/{created_protected_resource.id}/child?inherit=True",
@@ -1584,16 +1539,6 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     )
     assert response.status_code == 201
     created_protected_child = ProtectedChild(**response_child.json())
-
-    # TBD: investigate if the write shouldn't be inherited to here as well?
-    await add_one_test_access_policy(
-        {
-            "identity_id": str(current_user.user_id),
-            "resource_id": str(created_protected_child.id),
-            "action": Action.write,
-        },
-        current_user,
-    )
 
     # Make a POST request to create the protected grandchild as a child of a protected child resource
     response_grandchild = await async_client.post(
