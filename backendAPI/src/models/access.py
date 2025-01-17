@@ -112,9 +112,9 @@ class AccessPolicy(AccessPolicyCreate, table=True):
     #     )
     #     return self
 
-    __table_args__ = (UniqueConstraint("identity_id", "resource_id", "action"),)
+    # __table_args__ = (UniqueConstraint("identity_id", "resource_id", "action"),)
     # consider refactoring into a unique constraint for identity_id, resource_id only - highest access level only:
-    # __table_args__ = (UniqueConstraint("identity_id", "resource_id"),)
+    __table_args__ = (UniqueConstraint("identity_id", "resource_id"),)
 
 
 class AccessPolicyUpdate(AccessPolicyCreate):
