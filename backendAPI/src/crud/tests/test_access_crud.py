@@ -181,8 +181,11 @@ async def test_prevent_create_duplicate_access_policy(
             policy = await policy_crud.create(many_test_policies[2], current_users[0])
             print(policy)
         except Exception as err:
-            assert err.status_code == 403
-            assert err.detail == "Forbidden."
+            assert err.status_code == 409
+            assert (
+                err.detail
+                == "Access policy for identity and resource already exists. Update instead of create."
+            )
         else:
             pytest.fail("No HTTPexception raised!")
 
