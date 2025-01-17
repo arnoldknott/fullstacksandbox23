@@ -847,9 +847,15 @@ class AccessPolicyCRUD:
             await self.session.refresh(policy)
             return policy
         except Exception as err:
-            logger.error(f"Error in creating policy: {err}")
-            print(err)
-            raise HTTPException(status_code=403, detail="Forbidden.")
+            if "duplicate key value violates unique constraint" in str(err):
+                raise HTTPException(
+                    status_code=409,
+                    detail="Access policy for identity and resource already exists. Update instead of create.",
+                )
+            else:
+                logger.error(f"Error in creating policy: {err}")
+                print(err)
+                raise HTTPException(status_code=403, detail="Forbidden.")
 
     async def read(
         self,
