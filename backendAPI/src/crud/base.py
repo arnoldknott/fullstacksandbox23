@@ -158,8 +158,10 @@ class BaseCRUD(
     def _add_identifier_type_link_to_session(
         self,
         object_id: uuid.UUID,
+        type: IdentityType = None,
     ):
         """Adds resource type link entry to session."""
+        type = type or self.entity_type
         identifier_type_link = IdentifierTypeLink(
             id=object_id,
             type=self.entity_type,
@@ -170,11 +172,10 @@ class BaseCRUD(
         return statement
 
     async def _write_identifier_type_link(
-        self,
-        object_id: uuid.UUID,
+        self, object_id: uuid.UUID, type: IdentityType = None
     ):
         """Creates an resource type link entry."""
-        statement = self._add_identifier_type_link_to_session(object_id)
+        statement = self._add_identifier_type_link_to_session(object_id, type)
         await self.session.exec(statement)
         await self.session.commit()
 
@@ -790,7 +791,6 @@ class BaseCRUD(
                 model=model_alias,
                 current_user=current_user,
             )
-
             statement = delete(self.model).where(self.model.id.in_(subquery))
             result = await self.session.exec(statement)
 

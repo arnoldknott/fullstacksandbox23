@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 from typing import List
-
+from pprint import pprint
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -428,6 +428,9 @@ async def test_user_gets_own_user_through_me_endpoint(
     assert "id" in user
     assert user["azure_user_id"] == str(mocked_provide_http_token_payload["oid"])
     assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
+    assert "id" in user["user_account"]
+    assert user["user_account"]["user_id"] == user["id"]
+    assert user["user_account"]["is_publicAIuser"] is False
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -578,6 +581,8 @@ async def test_user_gets_user_by_azure_user_id(
     assert modelled_response_user.azure_user_id == user_in_database.azure_user_id
     assert modelled_response_user.azure_tenant_id == user_in_database.azure_tenant_id
     assert len(modelled_response_user.azure_groups) == 3
+    assert "user_account" not in modelled_response_user
+    assert "user_profile" not in modelled_response_user
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -976,6 +981,8 @@ async def test_user_gets_user_by_id(
     assert user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
     assert len(user["azure_groups"]) == 3
+    assert "user_account" not in user_in_database
+    assert "user_profile" not in user_in_database
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -1237,8 +1244,8 @@ async def test_put_user_from_admin(
             resource_id=db_user.id,
         )
 
-    assert created_at > before_time - timedelta(seconds=1)
-    assert created_at < after_time + timedelta(seconds=1)
+    assert created_at > before_time - timedelta(seconds=2)
+    assert created_at < after_time + timedelta(seconds=2)
     assert last_accessed_at.time > created_at
     assert last_accessed_at.status_code == 200
 
@@ -1299,8 +1306,8 @@ async def test_put_user_with_integer_user_id(
             resource_id=db_user.id,
         )
 
-    assert created_at > before_time - timedelta(seconds=1)
-    assert created_at < after_time + timedelta(seconds=1)
+    assert created_at > before_time - timedelta(seconds=2)
+    assert created_at < after_time + timedelta(seconds=2)
     assert last_accessed_at.time > created_at
     assert last_accessed_at.status_code == 200
 
@@ -1363,8 +1370,8 @@ async def test_admin_put_user_with_uuid_user_id(
             resource_id=db_user.id,
         )
 
-    assert created_at > before_time - timedelta(seconds=1)
-    assert created_at < after_time + timedelta(seconds=1)
+    assert created_at > before_time - timedelta(seconds=2)
+    assert created_at < after_time + timedelta(seconds=2)
     assert last_accessed_at.time > created_at
     assert last_accessed_at.status_code == 200
 

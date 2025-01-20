@@ -109,14 +109,15 @@ async def get_current_user(
 ) -> Me:
     """Returns the current user."""
     current_user = await check_token_against_guards(token_payload, guards)
-    userInDatabase = await user_view.get_by_id(
-        current_user.user_id, token_payload, guards
-    )
-    return Me(
-        **userInDatabase.model_dump(),
-        azure_token_roles=current_user.azure_token_roles,
-        azure_token_groups=current_user.azure_token_groups,
-    )
+    # userInDatabase = await user_view.get_by_id(
+    #     current_user.user_id, token_payload, guards
+    # )
+    async with UserCRUD() as crud:
+        me = await crud.read_me(current_user)
+    me.azure_token_roles = current_user.azure_token_roles
+    me.azure_token_groups = current_user.azure_token_groups
+    me = Me.model_validate(me)
+    return me
 
 
 @user_router.get("/", status_code=200)

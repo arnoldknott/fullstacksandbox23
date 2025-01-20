@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import HTTPException
 from sqlmodel import select
 
-from core.types import Action, CurrentUserData
+from core.types import Action, CurrentUserData, IdentityType
 from models.access import AccessLogCreate, AccessPolicyCreate
 from models.identity import (
     AzureGroup,
@@ -30,7 +30,10 @@ from models.identity import (
     UeberGroupRead,
     UeberGroupUpdate,
     User,
+    Me,
     UserCreate,
+    UserAccount,
+    # UserProfile,
     UserRead,
     UserUpdate,
 )
@@ -38,7 +41,7 @@ from models.identity import (
 # from .azure_group import AzureGroupCRUD
 from .base import BaseCRUD
 
-# from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload
 
 
 logger = logging.getLogger(__name__)
@@ -147,6 +150,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 )
         except HTTPException as err:
             if err.status_code == 404 and err.detail == "User not found":
+                # create user and groups:
                 try:
                     user_create = UserCreate(
                         azure_user_id=azure_user_id,
@@ -165,6 +169,25 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     session.add(database_user)
                     await session.commit()
                     await session.refresh(database_user)
+
+                    # The settings in user account and user profile cannot be changed, before the user is created.
+                    user_account = UserAccount(user_id=database_user.id)
+                    # user_profile = UserProfile(id=database_user.id)
+                    user_account = UserAccount.model_validate(user_account)
+                    await self._write_identifier_type_link(
+                        user_account.id, IdentityType.user_account
+                    )
+                    # Commit again to save the user_account and user_profile:
+                    session.add(user_account)
+                    # session.add(database_user)
+                    await session.commit()
+                    await session.refresh(user_account)
+
+                    database_user.user_account_id = user_account.id
+                    session.add(database_user)
+                    await session.commit()
+                    await session.refresh(database_user)
+
                     current_user = database_user
                     current_user_data = CurrentUserData(
                         user_id=current_user.id,
@@ -179,6 +202,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     )
                     async with self.policy_CRUD as policy_CRUD:
                         await policy_CRUD.create(access_policy, current_user_data)
+
                     # await self._write_policy(
                     #     current_user.id, Action.own, current_user_data
                     # )
@@ -326,6 +350,40 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         #     azure_user_id  # , update_last_access
         # )
         return current_user
+
+    async def read_me(self, current_user: CurrentUserData) -> Me:
+        """Returns the current user."""
+        try:
+            # This is for checking the access rights of the user to itself:
+            # TBD fix cartesian product in the query when admin calls this!
+            # problem started since the user_account was added to the user!
+            user = await self.read_by_id(current_user.user_id, current_user)
+            # user_query = (
+            #     select(User).where(User.id == current_user.user_id)
+            #     # .join(UserAccount, UserAccount.user_id == User.id)
+            #     # .options(selectinload(User.user_account))
+            # )
+            # user_response = await self.session.exec(user_query)
+            # user = user_response.unique().one()
+            # me = Me.model_validate(user)
+            # print("=== user crud - read_me - me ===")
+            # print(me)
+            account_query = (
+                select(UserAccount).where(UserAccount.user_id == current_user.user_id)
+                # .options(selectinload(UserAccount))
+            )
+            account_response = await self.session.exec(account_query)
+            account = account_response.unique().one()
+            # print("=== user crud - read_me - account ===")
+            # print(account)
+            user.user_account = account
+            me = Me.model_validate(user)
+            # print("=== user crud - read_me - user ===")
+            # print(user)
+            return me
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="User not found")
 
     # Hose are not even used anywhere yet - so no priority to update them!
     # # TBD: Refactor into access control: just call self.update()
