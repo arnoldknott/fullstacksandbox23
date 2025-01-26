@@ -143,7 +143,8 @@ class User(UserCreate, table=True):
         default=None, foreign_key="useraccount.id"
     )
     user_account: Optional["UserAccount"] = Relationship(
-        back_populates="user", sa_relationship_kwargs={"lazy": "selectin"}
+        back_populates="user",
+        sa_relationship_kwargs={"lazy": "joined"},
     )
     # user_account_id: Optional[uuid.UUID] = Field(
     #     foreign_key="useraccount.id",
@@ -252,7 +253,8 @@ class UserAccount(SQLModel, table=True):
         default=None, index=True
     )  # This is manually set from identity crud at self-sign-up!
     user: User = Relationship(
-        back_populates="user_account", sa_relationship_kwargs={"lazy": "selectin"}
+        back_populates="user_account",
+        sa_relationship_kwargs={"lazy": "joined"},
     )
     is_publicAIuser: bool = False
 
