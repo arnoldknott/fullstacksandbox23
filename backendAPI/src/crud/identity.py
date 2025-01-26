@@ -41,7 +41,6 @@ from models.identity import (
 # from .azure_group import AzureGroupCRUD
 from .base import BaseCRUD
 
-from sqlalchemy.orm import selectinload
 
 
 logger = logging.getLogger(__name__)
