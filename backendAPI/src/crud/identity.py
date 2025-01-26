@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from sqlmodel import select
 
 from core.types import Action, CurrentUserData, IdentityType
-from models.access import AccessLogCreate, AccessPolicyCreate
+from models.access import AccessLogCreate, AccessPolicyCreate, AccessRequest
 from models.identity import (
     AzureGroup,
     AzureGroupCreate,
@@ -354,17 +354,26 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     async def read_me(self, current_user: CurrentUserData) -> Me:
         """Returns the current user."""
         try:
+
             # This is for checking the access rights of the user to itself:
+            # Version 1:
             # TBD fix cartesian product in the query when admin calls this!
             # problem started since the user_account was added to the user!
-            user = await self.read_by_id(current_user.user_id, current_user)
-            # user_query = (
-            #     select(User).where(User.id == current_user.user_id)
-            #     # .join(UserAccount, UserAccount.user_id == User.id)
-            #     # .options(selectinload(User.user_account))
-            # )
-            # user_response = await self.session.exec(user_query)
-            # user = user_response.unique().one()
+            # user = await self.read_by_id(current_user.user_id, current_user)
+            # Version 2: check access first and then read directly from the database:
+            access_request = AccessRequest(
+                current_user=current_user,
+                resource_id=current_user.user_id,
+                action=Action.own,
+            )
+            await self.policy_CRUD.allows(access_request)
+            user_query = (
+                select(User).where(User.id == current_user.user_id)
+                # .join(UserAccount, UserAccount.user_id == User.id)
+                # .options(selectinload(User.user_account))
+            )
+            user_response = await self.session.exec(user_query)
+            user = user_response.unique().one()
             # me = Me.model_validate(user)
             # print("=== user crud - read_me - me ===")
             # print(me)
