@@ -580,8 +580,8 @@ async def test_user_gets_user_by_azure_user_id(
     assert modelled_response_user.azure_user_id == user_in_database.azure_user_id
     assert modelled_response_user.azure_tenant_id == user_in_database.azure_tenant_id
     assert len(modelled_response_user.azure_groups) == 3
-    assert "user_account" not in modelled_response_user
-    assert "user_profile" not in modelled_response_user
+    assert not hasattr(modelled_response_user, "user_account")
+    assert not hasattr(modelled_response_user, "user_profile")
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -980,8 +980,8 @@ async def test_user_gets_user_by_id(
     assert user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
     assert len(user["azure_groups"]) == 3
-    assert "user_account" not in user_in_database
-    assert "user_profile" not in user_in_database
+    assert not hasattr(user_in_database, "user_account")
+    assert not hasattr(user_in_database, "user_profile")
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -1155,6 +1155,100 @@ async def test_get_user_by_id_invalid_token(
 # endregion: ## GET tests
 
 # region: ## PUT tests:
+
+
+# @pytest.mark.anyio
+# @pytest.mark.parametrize(
+#     "mocked_provide_http_token_payload",
+#     [token_user1_read_groups, token_admin_read],
+#     # here the admin get's itself => last_accessed_at should change!
+#     indirect=True,
+# )
+# async def test_user_gets_own_user_through_me_endpoint(
+#     async_client: AsyncClient,
+#     app_override_provide_http_token_payload: FastAPI,
+#     add_one_azure_test_user: List[User],
+#     mocked_provide_http_token_payload,
+# ):
+#     """Test a user GETs it's own user by id"""
+
+#     # mocks the access token:
+#     app_override_provide_http_token_payload
+#     # the target user:
+#     await add_one_azure_test_user(0)
+
+#     before_time = datetime.now()
+#     response = await async_client.get("/api/v1/user/me")
+#     after_time = datetime.now()
+
+#     assert response.status_code == 200
+#     user = response.json()
+#     modelled_response_user = UserRead(**user)
+#     assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
+#     if "groups" in mocked_provide_http_token_payload:
+#         assert user["azure_token_groups"] == mocked_provide_http_token_payload["groups"]
+#         assert len(user["azure_token_groups"]) == len(
+#             mocked_provide_http_token_payload["groups"]
+#         )
+#     assert "id" in user
+#     assert user["azure_user_id"] == str(mocked_provide_http_token_payload["oid"])
+#     assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
+#     assert "id" in user["user_account"]
+#     assert user["user_account"]["user_id"] == user["id"]
+#     assert user["user_account"]["is_publicAIuser"] is False
+
+#     async with AccessLoggingCRUD() as crud:
+#         created_at = await crud.read_resource_created_at(
+#             CurrentUserData(**current_user_data_admin),
+#             resource_id=modelled_response_user.id,
+#         )
+#         last_accessed_at = await crud.read_resource_last_accessed_at(
+#             CurrentUserData(**current_user_data_admin),
+#             resource_id=modelled_response_user.id,
+#         )
+
+#     assert created_at > before_time - timedelta(seconds=1)
+#     assert created_at < after_time + timedelta(seconds=1)
+#     assert last_accessed_at.time >= created_at
+#     # assert last_accessed_at.status_code == 200  # admin gets a 201 for the creation.
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_put_itself(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    current_test_user,
+):
+    """Tests put user endpoint"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_user = current_test_user
+
+    response = await async_client.get(f"/api/v1/user/{str(current_user.user_id)}")
+
+    assert response.status_code == 200
+    user = response.json()
+    original_user = UserRead(**user)
+    assert original_user.id is not None
+    assert original_user.id == current_user.user_id
+    assert not hasattr(original_user, "user_account")
+    assert not hasattr(original_user, "user_profile")
+    assert original_user.is_active is True
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        f"/api/v1/user/{str(current_user.user_id)}",
+        json={"is_active": False},
+    )
+    assert response.status_code == 200
+    updated_user = User(**response.json())
+    assert updated_user.is_active is False
 
 
 @pytest.mark.anyio

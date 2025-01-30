@@ -395,6 +395,42 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
 
+    async def update_me(self, current_user: CurrentUserData, new_me: Me) -> Me:
+        """Updates the current user including user account and user profile."""
+        try:
+            # This line also verifies the access rights of the user to itself:
+            user = await self.update(current_user, current_user.user_id, new_me)
+            statement = select(UserAccount).where(
+                UserAccount.user_id == current_user.user_id
+            )
+            # TBD: add UserProfile to the same query!
+            response = await self.session.exec(statement)
+            current_account = response.unique().one()
+            if current_account is None:
+                logger.info(
+                    f"User account with user_id {current_user.user_id} not found."
+                )
+                raise HTTPException(status_code=404, detail="User account not found")
+            updated_account = new_me.user_account.model_dump(exclude_unset=True)
+            for key, value in updated_account.items():
+                setattr(current_account, key, value)
+            self.session.add(current_account)
+            access_log = AccessLogCreate(
+                resource_id=current_user.user_id,
+                action=Action.write,
+                identity_id=current_user.user_id,
+                status_code=200,
+            )
+            async with self.logging_CRUD as log_CRUD:
+                await log_CRUD.create(access_log)
+            await self.session.commit()
+            await self.session.refresh(current_account)
+            user.user_account = current_account
+            return user
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="User not updated.")
+
     # Hose are not even used anywhere yet - so no priority to update them!
     # # TBD: Refactor into access control: just call self.update()
     # async def deactivate_user(self, azure_user_id: UUID) -> User:
