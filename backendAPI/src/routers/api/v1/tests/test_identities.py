@@ -1287,18 +1287,11 @@ async def test_user_put_itself(
     updated_user = Me(**response.json())
     assert updated_user.user_account.is_publicAIuser is True
 
-    print("=== test_user_put_itself - updated_user ===")
-    print(updated_user)
-
-    pytest.sleep(0.001)
-
     response_read = await async_client.get("/api/v1/user/me")
 
     assert response_read.status_code == 200
     user = response_read.json()
 
-    print("=== test_user_put_itself - read from me endpoint - user ===")
-    print(user)
     assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
     if "groups" in mocked_provide_http_token_payload:
         assert user["azure_token_groups"] == mocked_provide_http_token_payload["groups"]
