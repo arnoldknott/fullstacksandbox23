@@ -103,11 +103,11 @@ async def post_existing_user_to_group(
 
 
 @user_router.get("/me", status_code=200)
-async def get_current_user(
+async def get_me(
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(roles=["User"])),
 ) -> Me:
-    """Returns the current user."""
+    """Returns the current user with account and profile."""
     current_user = await check_token_against_guards(token_payload, guards)
     # userInDatabase = await user_view.get_by_id(
     #     current_user.user_id, token_payload, guards
@@ -157,12 +157,28 @@ async def get_user_by_id(
     )
 
 
+@user_router.put("/me", status_code=200)
+async def put_me(
+    user: Me,
+    token_payload=Depends(get_http_access_token_payload),
+    guards=Depends(Guards(roles=["User"])),
+) -> Me:
+    """Updates the current user with account and profile."""
+    current_user = await check_token_against_guards(token_payload, guards)
+    async with UserCRUD() as crud:
+        me = await crud.update_me(current_user, user)
+    me.azure_token_roles = current_user.azure_token_roles
+    me.azure_token_groups = current_user.azure_token_groups
+    me = Me.model_validate(me)
+    return me
+
+
 @user_router.put("/{user_id}", status_code=200)
 async def put_user(
     user_id: UUID,
     user: UserUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> User:
     """Updates a user."""
     return await user_view.put(

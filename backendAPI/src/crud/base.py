@@ -678,7 +678,6 @@ class BaseCRUD(
     ) -> BaseModelType:
         """Updates an object."""
         session = self.session
-
         try:
             statement = select(self.model).where(self.model.id == object_id)
 
@@ -689,20 +688,18 @@ class BaseCRUD(
                 current_user=current_user,
             )
             response = await session.exec(statement)
-            old = response.unique().one()
-            if old is None:
+            current = response.unique().one()
+            if current is None:
                 logger.info(f"Object with id {object_id} not found")
                 raise HTTPException(
                     status_code=404, detail=f"{self.model.__name__} not found."
                 )
-
             updated = new.model_dump(exclude_unset=True)
             for key, value in updated.items():
-                setattr(old, key, value)
-            object = old
-            session.add(object)
+                setattr(current, key, value)
+            session.add(current)
             access_log = AccessLogCreate(
-                resource_id=object.id,
+                resource_id=current.id,
                 action=write,
                 identity_id=current_user.user_id,
                 status_code=200,
@@ -710,12 +707,12 @@ class BaseCRUD(
             async with self.logging_CRUD as logging_CRUD:
                 await logging_CRUD.create(access_log)
             await session.commit()
-            await session.refresh(object)
-            return object
+            await session.refresh(current)
+            return current
         except Exception as e:
             try:
                 access_log = AccessLogCreate(
-                    resource_id=object.id,
+                    resource_id=current.id,
                     action=write,
                     identity_id=current_user.user_id,
                     status_code=404,
@@ -724,7 +721,7 @@ class BaseCRUD(
                     await logging_CRUD.create(access_log)
             except Exception as log_error:
                 logger.error(
-                    f"Error in BaseCRUD.update with parameters object_id: {object_id}, action: {write}, current_user: {current_user}, status_code: {404} results in  {log_error}"
+                    f"Error in BaseCRUD.update with parameters object_id: {object_id}, action: {write}, current_user: {current_user}, status_code: {404} results in {log_error}"
                 )
             logger.error(f"Error in BaseCRUD.update: {e}")
             raise HTTPException(

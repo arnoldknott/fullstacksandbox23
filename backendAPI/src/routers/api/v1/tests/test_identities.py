@@ -18,6 +18,7 @@ from models.identity import (
     UeberGroupRead,
     User,
     UserRead,
+    Me,
 )
 from models.protected_resource import ProtectedResourceRead
 from routers.api.v1.identities import (
@@ -417,7 +418,7 @@ async def test_user_gets_own_user_through_me_endpoint(
 
     assert response.status_code == 200
     user = response.json()
-    modelled_response_user = UserRead(**user)
+    modelled_response_user = Me(**user)
     assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
     if "groups" in mocked_provide_http_token_payload:
         assert user["azure_token_groups"] == mocked_provide_http_token_payload["groups"]
@@ -1161,6 +1162,44 @@ async def test_get_user_by_id_invalid_token(
 # region: ## PUT tests:
 
 
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_put_user(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    current_test_user,
+):
+    """Tests put user endpoint"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_user = current_test_user
+
+    response = await async_client.get(f"/api/v1/user/{str(current_user.user_id)}")
+
+    assert response.status_code == 200
+    user = response.json()
+    original_user = UserRead(**user)
+    assert original_user.id is not None
+    assert original_user.id == current_user.user_id
+    assert not hasattr(original_user, "user_account")
+    assert not hasattr(original_user, "user_profile")
+    assert original_user.is_active is True
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        f"/api/v1/user/{str(current_user.user_id)}",
+        json={"is_active": False},
+    )
+    assert response.status_code == 200
+    updated_user = User(**response.json())
+    assert updated_user.is_active is False
+
+
 # @pytest.mark.anyio
 # @pytest.mark.parametrize(
 #     "mocked_provide_http_token_payload",
@@ -1226,6 +1265,7 @@ async def test_get_user_by_id_invalid_token(
 async def test_user_put_itself(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
     current_test_user,
 ):
     """Tests put user endpoint"""
@@ -1234,25 +1274,43 @@ async def test_user_put_itself(
     app_override_provide_http_token_payload
     current_user = current_test_user
 
-    response = await async_client.get(f"/api/v1/user/{str(current_user.user_id)}")
-
-    assert response.status_code == 200
-    user = response.json()
-    original_user = UserRead(**user)
-    assert original_user.id is not None
-    assert original_user.id == current_user.user_id
-    assert not hasattr(original_user, "user_account")
-    assert not hasattr(original_user, "user_profile")
-    assert original_user.is_active is True
-
     # Make a PUT request to update the user
     response = await async_client.put(
-        f"/api/v1/user/{str(current_user.user_id)}",
-        json={"is_active": False},
+        "/api/v1/user/me",
+        json={
+            "id": str(current_user.user_id),
+            "user_account": {"is_publicAIuser": True},
+        },
+        # TBD: add user_profile change
     )
     assert response.status_code == 200
-    updated_user = User(**response.json())
-    assert updated_user.is_active is False
+    updated_user = Me(**response.json())
+    assert updated_user.user_account.is_publicAIuser is True
+
+    print("=== test_user_put_itself - updated_user ===")
+    print(updated_user)
+
+    pytest.sleep(0.001)
+
+    response_read = await async_client.get("/api/v1/user/me")
+
+    assert response_read.status_code == 200
+    user = response_read.json()
+
+    print("=== test_user_put_itself - read from me endpoint - user ===")
+    print(user)
+    assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
+    if "groups" in mocked_provide_http_token_payload:
+        assert user["azure_token_groups"] == mocked_provide_http_token_payload["groups"]
+        assert len(user["azure_token_groups"]) == len(
+            mocked_provide_http_token_payload["groups"]
+        )
+    assert "id" in user
+    assert user["azure_user_id"] == str(mocked_provide_http_token_payload["oid"])
+    assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
+    assert "id" in user["user_account"]
+    assert user["user_account"]["user_id"] == user["id"]
+    assert user["user_account"]["is_publicAIuser"] is True
 
 
 # @pytest.mark.anyio

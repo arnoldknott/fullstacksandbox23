@@ -399,7 +399,12 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         """Updates the current user including user account and user profile."""
         try:
             # This line also verifies the access rights of the user to itself:
-            user = await self.update(current_user, current_user.user_id, new_me)
+
+            user = await self.update(
+                current_user,
+                current_user.user_id,
+                UserUpdate(**new_me.model_dump(exclude={"user_account"})),
+            )
             statement = select(UserAccount).where(
                 UserAccount.user_id == current_user.user_id
             )
@@ -415,6 +420,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             for key, value in updated_account.items():
                 setattr(current_account, key, value)
             self.session.add(current_account)
+            await self.session.commit()
+            await self.session.refresh(current_account)
+            user.user_account = current_account
+            me = Me.model_validate(user)
             access_log = AccessLogCreate(
                 resource_id=current_user.user_id,
                 action=Action.write,
@@ -423,10 +432,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             )
             async with self.logging_CRUD as log_CRUD:
                 await log_CRUD.create(access_log)
-            await self.session.commit()
-            await self.session.refresh(current_account)
-            user.user_account = current_account
-            return user
+            return me
         except Exception as err:
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not updated.")
