@@ -2,7 +2,7 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 
 from core.security import (
     Guards,
@@ -165,6 +165,8 @@ async def put_me(
 ) -> Me:
     """Updates the current user with account and profile."""
     current_user = await check_token_against_guards(token_payload, guards)
+    if current_user.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Forbidden.")
     async with UserCRUD() as crud:
         me = await crud.update_me(current_user, user)
     me.azure_token_roles = current_user.azure_token_roles

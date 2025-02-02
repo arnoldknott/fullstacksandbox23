@@ -1261,7 +1261,7 @@ async def test_user_put_user(
     [token_user1_read_write],
     indirect=True,
 )
-async def test_user_put_itself(
+async def test_user_puts_own_user_account(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
     mocked_provide_http_token_payload,
@@ -1303,6 +1303,39 @@ async def test_user_put_itself(
     assert "id" in user["user_account"]
     assert user["user_account"]["user_id"] == user["id"]
     assert user["user_account"]["is_publicAIuser"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_puts_other_users_user_account(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    add_many_azure_test_users,
+    current_test_user,
+):
+    """Tests put user endpoint"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_test_user
+    many_test_users = await add_many_azure_test_users()
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": str(many_test_users[2].id),
+            "user_account": {"is_publicAIuser": True},
+        },
+    )
+    assert response.status_code == 403
+    payload = response.json()
+    assert payload["detail"] == "Forbidden."
 
 
 # @pytest.mark.anyio
