@@ -4,7 +4,8 @@ from typing import List, Optional, Annotated
 from enum import Enum
 from sqlalchemy import Column, ForeignKey, Uuid
 from sqlmodel import Field, Relationship, SQLModel
-from pydantic import model_validator, AfterValidator
+from pydantic import AfterValidator
+from fastapi import HTTPException
 
 # from core.types import AppRoles
 from core.config import config
@@ -269,11 +270,6 @@ class ThemeVariants(str, Enum):
     # fruit_salad = "Fruit Salad"
 
 
-def validate_contrast_range(contrast: float):
-    if contrast < -1.0 or contrast > 1.0:
-        raise ValueError("Contrast must be between -1.0 and 1.0.")
-
-
 def validate_theme_color(color: str):
     if not color.startswith("#"):
         raise ValueError("Theme color must start with '#'.")
@@ -281,6 +277,11 @@ def validate_theme_color(color: str):
         raise ValueError("Theme color must be 7 characters long.")
     if not all(c in "0123456789abcdef" for c in color[1:]):
         raise ValueError("Theme color must be a valid hex color.")
+
+
+def validate_contrast_range(contrast: float):
+    if contrast < -1.0 or contrast > 1.0:
+        raise ValueError("Contrast must be between -1.0 and 1.0.")
 
 
 class UserProfile(SQLModel, table=True):

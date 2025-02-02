@@ -413,7 +413,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # using self.update() also verifies the access rights of the user to itself:
 
             user_update = UserUpdate(
-                **new_me.model_dump(exclude={"user_account"}, exclude_unset=True)
+                **new_me.model_dump(
+                    exclude={"user_account", "user_profile"}, exclude_unset=True
+                )
             )
 
             user = await self.update(
@@ -424,21 +426,42 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             statement = select(UserAccount).where(
                 UserAccount.user_id == current_user.user_id
             )
-            # TBD: add UserProfile to the same query!
             response = await self.session.exec(statement)
             current_account = response.unique().one()
             if current_account is None:
                 logger.info(
-                    f"User account with user_id {current_user.user_id} not found."
+                    f"User account for user_id {current_user.user_id} not found."
                 )
                 raise HTTPException(status_code=404, detail="User account not found")
-            updated_account = new_me.user_account.model_dump(exclude_unset=True)
-            for key, value in updated_account.items():
-                setattr(current_account, key, value)
-            self.session.add(current_account)
+            if new_me.user_account is not None:
+                UserAccount.model_validate(new_me.user_account)
+                updated_account = new_me.user_account.model_dump(exclude_unset=True)
+                for key, value in updated_account.items():
+                    setattr(current_account, key, value)
+                self.session.add(current_account)
+
+            statement = select(UserProfile).where(
+                UserProfile.user_id == current_user.user_id
+            )
+            response = await self.session.exec(statement)
+            current_profile = response.unique().one()
+            if current_profile is None:
+                logger.info(
+                    f"User profile for user_id {current_user.user_id} not found."
+                )
+                raise HTTPException(status_code=404, detail="User profile not found")
+            if new_me.user_profile is not None:
+                UserProfile.model_validate(new_me.user_profile)
+                updated_profile = new_me.user_profile.model_dump(exclude_unset=True)
+                for key, value in updated_profile.items():
+                    setattr(current_profile, key, value)
+                self.session.add(current_profile)
+
             await self.session.commit()
             await self.session.refresh(current_account)
+            await self.session.refresh(current_profile)
             user.user_account = current_account
+            user.user_profile = current_profile
             me = Me.model_validate(user)
             access_log = AccessLogCreate(
                 resource_id=current_user.user_id,

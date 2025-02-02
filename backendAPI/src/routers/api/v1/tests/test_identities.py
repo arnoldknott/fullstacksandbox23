@@ -1313,61 +1313,271 @@ async def test_user_puts_own_user_account(
     assert user["user_profile"]["contrast"] == 0.0
 
 
-# @pytest.mark.anyio
-# @pytest.mark.parametrize(
-#     "mocked_provide_http_token_payload",
-#     [token_user1_read_write],
-#     indirect=True,
-# )
-# async def test_user_puts_own_user_profile(
-#     async_client: AsyncClient,
-#     app_override_provide_http_token_payload: FastAPI,
-#     mocked_provide_http_token_payload,
-#     current_test_user,
-# ):
-#     """Tests put user endpoint"""
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_puts_own_user_profile(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+):
+    """Tests put user endpoint"""
 
-#     # mocks the access token:
-#     app_override_provide_http_token_payload
-#     current_user = current_test_user
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_user = current_test_user
 
-#     # Make a PUT request to update the user
-#     response = await async_client.put(
-#         "/api/v1/user/me",
-#         json={
-#             "id": str(current_user.user_id),
-#             "user_profile": {
-#                 "theme_color": "#769CDF",
-#                 "theme_variant": "Vibrant",
-#                 "contrast": 1.0,
-#             },
-#         },
-#     )
-#     assert response.status_code == 200
-#     updated_user = Me(**response.json())
-#     assert updated_user.user_account.is_publicAIuser is True
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": str(current_user.user_id),
+            "user_profile": {
+                "theme_color": "#769CDF",
+                "theme_variant": "Vibrant",
+                "contrast": 1.0,
+            },
+        },
+    )
+    assert response.status_code == 200
+    updated_user = Me(**response.json())
+    assert updated_user.user_profile.theme_color == "#769CDF"
+    assert updated_user.user_profile.theme_variant == ThemeVariants.vibrant
+    assert updated_user.user_profile.contrast == 1.0
 
-#     response_read = await async_client.get("/api/v1/user/me")
+    response_read = await async_client.get("/api/v1/user/me")
 
-#     assert response_read.status_code == 200
-#     user = response_read.json()
+    assert response_read.status_code == 200
+    user = response_read.json()
 
-#     assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
-#     if "groups" in mocked_provide_http_token_payload:
-#         assert user["azure_token_groups"] == mocked_provide_http_token_payload["groups"]
-#         assert len(user["azure_token_groups"]) == len(
-#             mocked_provide_http_token_payload["groups"]
-#         )
-#     assert "id" in user
-#     assert user["azure_user_id"] == str(mocked_provide_http_token_payload["oid"])
-#     assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
-#     assert "id" in user["user_account"]
-#     assert user["user_account"]["user_id"] == user["id"]
-#     assert user["user_account"]["is_publicAIuser"] is True
-#     assert "id" in user["user_profile"]
-#     assert user["user_profile"]["theme_color"] == "#769CDF"
-#     assert user["user_profile"]["theme_variant"] == ThemeVariants.vibrant
-#     assert user["user_profile"]["contrast"] == 1.0
+    assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
+    if "groups" in mocked_provide_http_token_payload:
+        assert user["azure_token_groups"] == mocked_provide_http_token_payload["groups"]
+        assert len(user["azure_token_groups"]) == len(
+            mocked_provide_http_token_payload["groups"]
+        )
+    assert "id" in user
+    assert user["azure_user_id"] == str(mocked_provide_http_token_payload["oid"])
+    assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
+    assert "id" in user["user_account"]
+    assert user["user_account"]["user_id"] == user["id"]
+    assert user["user_account"]["is_publicAIuser"] is False
+    assert "id" in user["user_profile"]
+    assert user["user_profile"]["theme_color"] == "#769CDF"
+    assert user["user_profile"]["theme_variant"] == ThemeVariants.vibrant
+    assert user["user_profile"]["contrast"] == 1.0
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_puts_user_profile_with_missing_hashtag_in_color(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+):
+    """Tests put user endpoint"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_user = current_test_user
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": str(current_user.user_id),
+            "user_profile": {
+                "theme_color": "769CDF",
+                "theme_variant": "Vibrant",
+                "contrast": 1.0,
+            },
+        },
+    )
+    assert response.status_code == 404
+    payload = response.json()
+    assert payload["detail"] == "User not updated."
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_puts_user_profile_with_short_color(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+):
+    """Tests put user endpoint"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_user = current_test_user
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": str(current_user.user_id),
+            "user_profile": {
+                "theme_color": "#769C",
+                "theme_variant": "Vibrant",
+                "contrast": 1.0,
+            },
+        },
+    )
+    assert response.status_code == 404
+    payload = response.json()
+    assert payload["detail"] == "User not updated."
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_puts_user_profile_with_wrong_color(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+):
+    """Tests put user endpoint"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_user = current_test_user
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": str(current_user.user_id),
+            "user_profile": {
+                "theme_color": "#769CXY",
+                "theme_variant": "Vibrant",
+                "contrast": 1.0,
+            },
+        },
+    )
+    assert response.status_code == 404
+    payload = response.json()
+    assert payload["detail"] == "User not updated."
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_puts_user_profile_with_wrong_theme(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+):
+    """Tests put user endpoint"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_user = current_test_user
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": str(current_user.user_id),
+            "user_profile": {
+                "theme_color": "#769CDF",
+                "theme_variant": "SomeTheme",
+                "contrast": 1.0,
+            },
+        },
+    )
+    assert response.status_code == 404
+    payload = response.json()
+    assert payload["detail"] == "User not updated."
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_puts_user_profile_contrast_too_low(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+):
+    """Tests put user endpoint"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_user = current_test_user
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": str(current_user.user_id),
+            "user_profile": {
+                "theme_color": "#769CDF",
+                "contrast": -3.0,
+            },
+        },
+    )
+    assert response.status_code == 404
+    payload = response.json()
+    assert payload["detail"] == "User not updated."
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_puts_user_profile_contrast_too_high(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+):
+    """Tests put user endpoint"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_user = current_test_user
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": str(current_user.user_id),
+            "user_profile": {
+                "theme_color": "#769CDF",
+                "contrast": 6.2,
+            },
+        },
+    )
+    assert response.status_code == 404
+    payload = response.json()
+    assert payload["detail"] == "User not updated."
 
 
 @pytest.mark.anyio
@@ -1395,6 +1605,42 @@ async def test_user_puts_other_users_user_account(
         json={
             "id": str(many_test_users[2].id),
             "user_account": {"is_publicAIuser": True},
+        },
+    )
+    assert response.status_code == 403
+    payload = response.json()
+    assert payload["detail"] == "Forbidden."
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_puts_other_users_user_profile(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_azure_test_users,
+    current_test_user,
+):
+    """Tests put user endpoint"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_test_user
+    many_test_users = await add_many_azure_test_users()
+
+    # Make a PUT request to update the user
+    response = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": str(many_test_users[2].id),
+            "user_profile": {
+                "theme_color": "#769CDF",
+                "theme_variant": "Content",
+                "contrast": -1.0,
+            },
         },
     )
     assert response.status_code == 403
