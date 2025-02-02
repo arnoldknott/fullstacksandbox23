@@ -1,8 +1,10 @@
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Annotated
+from enum import Enum
 from sqlalchemy import Column, ForeignKey, Uuid
 from sqlmodel import Field, Relationship, SQLModel
+from pydantic import model_validator, AfterValidator
 
 # from core.types import AppRoles
 from core.config import config
@@ -146,22 +148,15 @@ class User(UserCreate, table=True):
         back_populates="user",
         sa_relationship_kwargs={"lazy": "joined"},
     )
-    # user_account_id: Optional[uuid.UUID] = Field(
-    #     foreign_key="useraccount.id",
-    # )
-    # user_account: Optional["UserAccount"] = Relationship(
-    #     back_populates="user",
-    #     # sa_relationship_kwargs={"single_parent": True},
-    #     # cascade_delete=True,
-    #     sa_relationship_kwargs={"cascade": "all, delete-orphan"},
-    # )
 
     # ### User Profile ###
-    # user_profile: Optional["UserProfile"] = Relationship(
-    #     back_populates="user",
-    #     # cascade_delete=True,
-    #     sa_relationship_kwargs={"single_parent": True},
-    # )
+    user_profile_id: Optional[uuid.UUID] = Field(
+        default=None, foreign_key="userprofile.id"
+    )
+    user_profile: Optional["UserProfile"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"lazy": "joined"},
+    )
 
     ### Foreign account: Azure AD ###
     azure_user_id: Optional[uuid.UUID] = Field(index=True, unique=True)
@@ -240,10 +235,11 @@ class User(UserCreate, table=True):
 
 
 class UserAccount(SQLModel, table=True):
-    # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
-    # id: Optional[uuid.UUID] = Field(
-    #     default=None, foreign_key="identifiertypelink.id", primary_key=True
-    # )
+    """Schema for a linking a user account to the database."""
+
+    # Add all personal user settings like permissions to various functionalities of the app here.
+    # Could potentially be used for account linking to other services as well.
+
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
         foreign_key="identifiertypelink.id",
@@ -259,84 +255,70 @@ class UserAccount(SQLModel, table=True):
     is_publicAIuser: bool = False
 
 
-# class UserAccount(SQLModel, table=True):
-#     """Schema for a user account in the database."""
+class ThemeVariants(str, Enum):
+    """Material Design 3 theme variants."""
 
-#     id: Optional[uuid.UUID] = Field(
-#         default_factory=uuid.uuid4,
-#         foreign_key="identifiertypelink.id",
-#         primary_key=True,
-#     )
-#     user_id: Optional[uuid.UUID] = Field(foreign_key="user.id", index=True)
-#     user: List["User"] = Relationship(
-#         back_populates="user", sa_relationship_kwargs={"lazy": "selectin"}
-#     )
-
-#     # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
-#     # user_id: Optional[uuid.UUID] = Field(
-#     #     Column(
-#     #         sa_relationship_kwargs={
-#     #             "foreign_keys": "[user.id], [identifiertypelink.id]"
-#     #         },
-#     #         index=True,
-#     #     )
-#     # )
-#     # user: Optional["User"] = Relationship(
-#     #     back_populates="user_account",
-#     #     # cascade_delete=True,
-#     #     sa_relationship_kwargs={"single_parent": True},
-#     # )
-
-#     # Controls user enabled features, account linking and so on in the app.
-#     is_publicAIuser: bool = False
+    # monochrome = "Monochrome"
+    neutral = "Neutral"
+    tonal_spot = "Tonal Spot"
+    vibrant = "Vibrant"
+    # expressive = "Expressive"
+    fidelity = "Fidelity"
+    content = "Content"
+    rainbow = "Rainbow"
+    # fruit_salad = "Fruit Salad"
 
 
-# class ThemeVariants(str, Enum):
-#     """Material Design 3 theme variants."""
-
-#     # monochrome = "Monochrome"
-#     neutral = "Neutral"
-#     tonal_spot = "Tonal Spot"
-#     vibrant = "Vibrant"
-#     # expressive = "Expressive"
-#     fidelity = "Fidelity"
-#     content = "Content"
-#     rainbow = "Rainbow"
-#     # fruit_salad = "Fruit Salad"
+def validate_contrast_range(contrast: float):
+    if contrast < -1.0 or contrast > 1.0:
+        raise ValueError("Contrast must be between -1.0 and 1.0.")
 
 
-# class UserProfile(SQLModel, table=True):
-#     """Schema for a user profile in the database."""
+def validate_theme_color(color: str):
+    if not color.startswith("#"):
+        raise ValueError("Theme color must start with '#'.")
+    if len(color) != 7:
+        raise ValueError("Theme color must be 7 characters long.")
+    if not all(c in "0123456789abcdef" for c in color[1:]):
+        raise ValueError("Theme color must be a valid hex color.")
 
-#     # Theme settings, language settings, notification settings,
-#     # potentially: view history, saved resources, personalized quick links, ...
 
-#     id: Optional[uuid.UUID] = Field(
-#         foreign_key="user.id",
-#         primary_key=True,
-#     )
-#     user: Optional["User"] = Relationship(
-#         back_populates="user_profile",
-#         cascade_delete=True,
-#     )
+class UserProfile(SQLModel, table=True):
+    """Schema for a user profile in the database."""
 
-#     theme_color: str = "#353c6e"
-#     theme_variant: ThemeVariants = ThemeVariants.tonal_spot
-#     contrast: float = 0.0
+    # Theme settings, localization settings, notification settings,
+    # potentially: view history, saved resources, personalized quick links, ...
 
-#     @model_validator(mode="after")
-#     def validate_theme_color(self):
-#         if not self.theme_color.startswith("#"):
-#             raise ValueError("Theme color must start with '#'.")
-#         if len(self.theme_color) != 7:
-#             raise ValueError("Theme color must be 7 characters long.")
-#         if not all(c in "0123456789abcdef" for c in self.theme_color[1:]):
-#             raise ValueError("Theme color must be a valid hex color.")
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
+    user_id: Optional[uuid.UUID] = Field(
+        default=None, index=True
+    )  # This is manually set from identity crud at self-sign-up!
+    user: User = Relationship(
+        back_populates="user_profile",
+        sa_relationship_kwargs={"lazy": "joined"},
+    )
 
-#     @model_validator(mode="after")
-#     def validate_contrast(self):
-#         if self.contrast <= -1.0 or self.contrast >= 1.0:
-#             raise ValueError("Contrast must be between -1.0 and 1.0.")
+    theme_color: Annotated[str, AfterValidator(validate_theme_color)] = "#353c6e"
+    theme_variant: ThemeVariants = ThemeVariants.tonal_spot
+    contrast: Annotated[float, AfterValidator(validate_contrast_range)] = 0.0
+
+    # @model_validator(mode="before")
+    # def validate_theme_color(self):
+    #     if not self.theme_color.startswith("#"):
+    #         raise ValueError("Theme color must start with '#'.")
+    #     if len(self.theme_color) != 7:
+    #         raise ValueError("Theme color must be 7 characters long.")
+    #     if not all(c in "0123456789abcdef" for c in self.theme_color[1:]):
+    #         raise ValueError("Theme color must be a valid hex color.")
+
+    # @model_validator(mode="before")
+    # def validate_contrast(self):
+    #     if self.contrast < -1.0 or self.contrast > 1.0:
+    #         raise ValueError("Contrast must be between -1.0 and 1.0.")
 
 
 # Note: this is one of the models, that other users can see about a user.
@@ -376,7 +358,7 @@ class Me(UserRead):
     azure_token_groups: Optional[list[uuid.UUID]] = None
     # user_account_id: Optional[uuid.UUID] = None
     user_account: Optional["UserAccount"] = None
-    # user_profile: Optional["UserProfile"] = None
+    user_profile: Optional["UserProfile"] = None
 
 
 class UserUpdate(UserCreate):

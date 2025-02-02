@@ -150,7 +150,7 @@ class IdentityType(BaseType):
     # TBD: consider getting those values programmatically?
     user = "User"
     user_account = "UserAccount"
-    # user_profile = "UserProfile"
+    user_profile = "UserProfile"
     ueber_group = "UeberGroup"
     group = "Group"
     sub_group = "SubGroup"

@@ -1,6 +1,7 @@
 import logging
 from typing import List, Optional
 from uuid import UUID
+from pprint import pprint
 
 from fastapi import HTTPException
 from sqlmodel import select
@@ -33,7 +34,7 @@ from models.identity import (
     Me,
     UserCreate,
     UserAccount,
-    # UserProfile,
+    UserProfile,
     UserRead,
     UserUpdate,
 )
@@ -170,18 +171,27 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
 
                     # The settings in user account and user profile cannot be changed, before the user is created.
                     user_account = UserAccount(user_id=database_user.id)
-                    # user_profile = UserProfile(id=database_user.id)
-                    user_account = UserAccount.model_validate(user_account)
+                    user_profile = UserProfile(user_id=database_user.id)
+                    # TBD: is the model_validate needed here right after creating the model?
+                    # user_account = UserAccount.model_validate(user_account)
+                    # user_profile = UserProfile.model_validate(user_profile)
                     await self._write_identifier_type_link(
                         user_account.id, IdentityType.user_account
                     )
+                    await self._write_identifier_type_link(
+                        user_profile.id, IdentityType.user_profile
+                    )
                     # Commit again to save the user_account and user_profile:
+
                     session.add(user_account)
+                    session.add(user_profile)
                     # session.add(database_user)
                     await session.commit()
-                    await session.refresh(user_account)
+                    # await session.refresh(user_account)
+                    await session.refresh(user_profile)
 
-                    database_user.user_account_id = user_account.id
+                    # database_user.user_account_id = user_account.id
+                    database_user.user_profile_id = user_profile.id
                     session.add(database_user)
                     await session.commit()
                     await session.refresh(database_user)
@@ -378,18 +388,20 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # me = Me.model_validate(user)
             # print("=== user crud - read_me - me ===")
             # print(me)
-            account_query = (
-                select(UserAccount).where(UserAccount.user_id == current_user.user_id)
+            query = (
+                select(UserAccount, UserProfile).where(
+                    UserAccount.user_id == current_user.user_id,
+                    UserProfile.user_id == current_user.user_id,
+                )
                 # .options(selectinload(UserAccount))
             )
-            account_response = await self.session.exec(account_query)
-            account = account_response.unique().one()
-            # print("=== user crud - read_me - account ===")
-            # print(account)
+            response = await self.session.exec(query)
+            account, profile = response.unique().one()
             user.user_account = account
+            user.user_profile = profile
+
+            # Add detailed logging before model_validate
             me = Me.model_validate(user)
-            # print("=== user crud - read_me - user ===")
-            # print(user)
             return me
         except Exception as err:
             logging.error(err)
