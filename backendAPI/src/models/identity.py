@@ -275,7 +275,7 @@ def validate_theme_color(color: str):
         raise ValueError("Theme color must start with '#'.")
     if len(color) != 7:
         raise ValueError("Theme color must be 7 characters long.")
-    if not all(c in "0123456789abcdef" for c in color[1:]):
+    if not all(c in "0123456789abcdefABCDEF" for c in color[1:]):
         raise ValueError("Theme color must be a valid hex color.")
 
 

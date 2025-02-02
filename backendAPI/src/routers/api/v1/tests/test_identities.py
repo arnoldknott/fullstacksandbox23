@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import List
 import pytest
+
 from fastapi import FastAPI
 from httpx import AsyncClient
 from core.types import Action, CurrentUserData
@@ -1589,7 +1590,7 @@ async def test_user_puts_user_profile_contrast_too_high(
 async def test_user_puts_other_users_user_account(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
-    add_many_azure_test_users,
+    add_one_azure_test_user,
     current_test_user,
 ):
     """Tests put user endpoint"""
@@ -1597,13 +1598,13 @@ async def test_user_puts_other_users_user_account(
     # mocks the access token:
     app_override_provide_http_token_payload
     current_test_user
-    many_test_users = await add_many_azure_test_users()
+    other_user = await add_one_azure_test_user(2)
 
     # Make a PUT request to update the user
     response = await async_client.put(
         "/api/v1/user/me",
         json={
-            "id": str(many_test_users[2].id),
+            "id": str(other_user.id),
             "user_account": {"is_publicAIuser": True},
         },
     )
