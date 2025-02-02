@@ -398,12 +398,16 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     async def update_me(self, current_user: CurrentUserData, new_me: Me) -> Me:
         """Updates the current user including user account and user profile."""
         try:
-            # This line also verifies the access rights of the user to itself:
+            # using self.update() also verifies the access rights of the user to itself:
+
+            user_update = UserUpdate(
+                **new_me.model_dump(exclude={"user_account"}, exclude_unset=True)
+            )
 
             user = await self.update(
                 current_user,
                 current_user.user_id,
-                UserUpdate(**new_me.model_dump(exclude={"user_account"})),
+                user_update,
             )
             statement = select(UserAccount).where(
                 UserAccount.user_id == current_user.user_id
