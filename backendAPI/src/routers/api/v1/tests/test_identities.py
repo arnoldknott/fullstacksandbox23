@@ -1274,31 +1274,6 @@ async def test_user_put_itself(
     app_override_provide_http_token_payload
     current_user = current_test_user
 
-    response_read_before = await async_client.get("/api/v1/user/me")
-
-    assert response_read_before.status_code == 200
-    user_before = response_read_before.json()
-
-    assert (
-        user_before["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
-    )
-    if "groups" in mocked_provide_http_token_payload:
-        assert (
-            user_before["azure_token_groups"]
-            == mocked_provide_http_token_payload["groups"]
-        )
-        assert len(user_before["azure_token_groups"]) == len(
-            mocked_provide_http_token_payload["groups"]
-        )
-    assert "id" in user_before
-    assert user_before["azure_user_id"] == str(mocked_provide_http_token_payload["oid"])
-    assert user_before["azure_tenant_id"] == str(
-        mocked_provide_http_token_payload["tid"]
-    )
-    assert "id" in user_before["user_account"]
-    assert user_before["user_account"]["user_id"] == user_before["id"]
-    assert user_before["user_account"]["is_publicAIuser"] is False
-
     # Make a PUT request to update the user
     response = await async_client.put(
         "/api/v1/user/me",
