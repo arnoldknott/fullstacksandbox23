@@ -4,7 +4,6 @@ from typing import List
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
-from pprint import pprint
 from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD
 from models.identity import (
