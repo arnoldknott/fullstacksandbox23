@@ -1,7 +1,6 @@
 import logging
 from typing import List, Optional
 from uuid import UUID
-from pprint import pprint
 
 from fastapi import HTTPException
 from sqlmodel import select

@@ -5,7 +5,6 @@ from enum import Enum
 from sqlalchemy import Column, ForeignKey, Uuid
 from sqlmodel import Field, Relationship, SQLModel
 from pydantic import AfterValidator
-from fastapi import HTTPException
 
 # from core.types import AppRoles
 from core.config import config
