@@ -10,7 +10,7 @@
 	import NavButton from '$components/NavButton.svelte';
 	import UserButton from '$components/UserButton.svelte';
 	import { type Snippet } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import ThemePicker from '$components/ThemePicker.svelte';
 	import { themeStore } from '$lib/stores';
@@ -86,9 +86,9 @@
 		mode = mode === 'dark' ? 'light' : 'dark';
 	};
 
-	const { loggedIn } = $page.data.session || false;
+	const { loggedIn } = page.data.session || false;
 
-	// const { session } = $page.data;
+	// const { session } = page.data;
 
 	// let userPictureURL: URL | undefined = $state(undefined);
 	// onMount(async () => {
@@ -146,7 +146,7 @@
 				<!-- {#if loggedIn} -->
 				<Guard>
 					<img class="h-12 w-12 rounded-full" src="/api/v1/user/me/picture" alt="you" />
-					{$page.data.session.microsoftProfile.displayName}
+					{page.data.session.microsoftProfile.displayName}
 					<!-- TBD: remove the following one: -->
 					<!-- {#if userPictureURL}
 					<img class="h-12 w-12 rounded-full" src={userPictureURL} alt="you" />
@@ -163,13 +163,13 @@
 					</label>
 				</button>
 				<!-- {/if} -->
-				<!-- Change this to using $page.data -> user -->
+				<!-- Change this to using page.data -> user -->
 				{#if !loggedIn}
 					<!-- <Guard> -->
 					<!-- <NavButton url="/register" link="Register" invert /> -->
 					<!-- data-sveltekit-preload-data="false" -->
 					<!-- TBD: remove it here and set in hooks.Server.ts -->
-					<NavButton pre_load={false} url={`/login?targetURL=${$page.url.href}`} link="Login" />
+					<NavButton pre_load={false} url={`/login?targetURL=${page.url.href}`} link="Login" />
 				{:else}
 					<UserButton />
 					<!-- needs to redirect to /home and delete session information -->

@@ -1,11 +1,12 @@
 import logging
-from pprint import pprint
 from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy.orm import aliased
-from sqlmodel import SQLModel, and_, delete, or_, select
+
+# from sqlalchemy import union_all
+from sqlmodel import SQLModel, and_, delete, or_, select, func
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
@@ -19,6 +20,7 @@ from models.access import (
     AccessLog,
     AccessLogCreate,
     AccessLogRead,
+    AccessPermission,
     AccessPolicy,
     AccessPolicyCreate,
     AccessPolicyDelete,
@@ -625,6 +627,115 @@ class AccessPolicyCRUD:
 
         return False
 
+    async def check_access(
+        self,
+        current_user: CurrentUserData,
+        resource_id: UUID,
+    ) -> AccessPermission:
+        """Checks the access level of the user to the resource."""
+        # print("=== check_access - current_user ===")
+        # print(current_user)
+        try:
+            if await self.allows(
+                AccessRequest(
+                    resource_id=resource_id,
+                    action=own,
+                    current_user=current_user,
+                )
+            ):
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=own,
+                )
+            elif await self.allows(
+                AccessRequest(
+                    resource_id=resource_id,
+                    action=write,
+                    current_user=current_user,
+                )
+            ):
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=write,
+                )
+            elif await self.allows(
+                AccessRequest(
+                    resource_id=resource_id,
+                    action=read,
+                    current_user=current_user,
+                )
+            ):
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=read,
+                )
+            else:
+                return AccessPermission(
+                    resource_id=resource_id,
+                    action=None,
+                )
+
+            # Reading the access policies for the resource from database
+            # - not working, finds access policies from other users as well!:
+            # query = select(AccessPolicy)
+            # query = query.where(AccessPolicy.resource_id == resource_id)
+            # query_own = self.filters_allowed(
+            #     query, own, current_user=current_user
+            # ).subquery()
+            # query_write = self.filters_allowed(
+            #     query, write, current_user=current_user
+            # ).subquery()
+            # query_read = self.filters_allowed(
+            #     query, read, current_user=current_user
+            # ).subquery()
+
+            # combined_query = union_all(
+            #     select(query_own), select(query_write), select(query_read)
+            # )
+
+            # async with self:
+            #     # response = await self.session.exec(query)
+            #     response = await self.session.exec(combined_query)
+            #     results = response.all()
+
+            # print("=== AccessPolicyCRUD.check_access - results ===")
+            # print(results)
+
+            # access_level = None
+            # if results:
+            #     for result in results:
+            #         print("=== AccessPolicyCRUD.check_access - result ===")
+            #         print(result)
+            #         # TBD: should not be necessary to check for the resource_id again here!
+            #         # The query is doing this already!
+            #         if result.resource_id == resource_id:
+            #             print("=== AccessPolicyCRUD.check_access - result ===")
+            #             print(result)
+            #             if result.action == own:
+            #                 return AccessPermission(
+            #                     resource_id=resource_id,
+            #                     action=own,
+            #                 )  # can be returned directly, as it's the highest access level
+            #             elif result.action == write:
+            #                 print(
+            #                     "=== AccessPolicyCRUD.check_access - write triggered ==="
+            #                 )
+            #                 access_level = write
+            #             elif result.action == read and access_level != write:
+            #                 print(
+            #                     "=== AccessPolicyCRUD.check_access - read triggered ==="
+            #                 )
+            #                 access_level = read
+            # print("=== AccessPolicyCRUD.check_access - access_level ===")
+            # print(access_level)
+            # return AccessPermission(
+            #     resource_id=resource_id,
+            #     action=access_level,
+            # )
+        except Exception as e:
+            logger.error(f"Error in reading policy: {e}")
+            raise HTTPException(status_code=403, detail="Forbidden.")
+
     async def create(
         self,
         policy: AccessPolicyCreate,
@@ -700,7 +811,7 @@ class AccessPolicyCRUD:
                         current_user=current_user,
                         resource_id=policy.resource_id,
                         action=own,
-                        public=policy.public,
+                        # public=policy.public,  # This does not make sense - the policy does not need to be public if set to true!
                     )
                     # print("=== AccessPolicyCRUD.create - response ===")
                     # print(response)
@@ -736,9 +847,15 @@ class AccessPolicyCRUD:
             await self.session.refresh(policy)
             return policy
         except Exception as err:
-            logger.error(f"Error in creating policy: {err}")
-            print(err)
-            raise HTTPException(status_code=403, detail="Forbidden.")
+            if "duplicate key value violates unique constraint" in str(err):
+                raise HTTPException(
+                    status_code=409,
+                    detail="Access policy for identity and resource already exists. Update instead of create.",
+                )
+            else:
+                logger.error(f"Error in creating policy: {err}")
+                print(err)
+                raise HTTPException(status_code=403, detail="Forbidden.")
 
     async def read(
         self,
@@ -1301,10 +1418,10 @@ class BaseHierarchyCRUD(
                     child_id=child_id,
                     inherit=inherit,
                 )
-                database_relation = self.model.model_validate(relation)
-                self.session.add(database_relation)
+                relation = self.model.model_validate(relation)
+                self.session.add(relation)
                 await self.session.commit()
-                await self.session.refresh(database_relation)
+                await self.session.refresh(relation)
                 return relation
             else:
                 logger.error("Bad request: child type not allowed for parent.")
@@ -1432,9 +1549,6 @@ class BaseHierarchyCRUD(
 
 
 class ResourceHierarchyCRUD(
-    # BaseHierarchyCRUD[
-    #     ResourceHierarchyCreate, ResourceHierarchyTable, ResourceHierarchyRead
-    # ]
     BaseHierarchyCRUD[ResourceHierarchyCreate, ResourceHierarchy, ResourceHierarchyRead]
 ):
     """CRUD for resource hierarchies."""
@@ -1442,6 +1556,37 @@ class ResourceHierarchyCRUD(
     def __init__(self):
         # super().__init__(ResourceHierarchy, ResourceHierarchyTable)
         super().__init__(ResourceHierarchy, ResourceHierarchy)
+
+    async def create(
+        self,
+        current_user: CurrentUserData,
+        parent_id: UUID,
+        child_type: ResourceType,
+        child_id: UUID,
+        inherit: Optional[bool] = False,
+    ) -> ResourceHierarchy:
+        """Creates a new resource hierarchy."""
+        hierarchy = await super().create(
+            current_user, parent_id, child_type, child_id, inherit
+        )
+
+        # Add order to the hierarchy:
+
+        # Get the next order value
+        result = await self.session.exec(
+            select(func.max(ResourceHierarchy.order)).where(
+                ResourceHierarchy.parent_id == parent_id
+            )
+        )
+        max_order = result.one_or_none()
+        next_order = (max_order or 0) + 1
+
+        # Update the hierarchy with the order value:
+        hierarchy.order = next_order
+        await self.session.commit()
+        await self.session.refresh(hierarchy)
+
+        return hierarchy
 
     async def reorder_children(  # noqa: C901
         self,
@@ -1453,8 +1598,8 @@ class ResourceHierarchyCRUD(
     ) -> None:
         """Reorders the children of a parent resource."""
         try:
-            print("=== other_child_id ===")
-            print(other_child_id)
+            # print("=== other_child_id ===")
+            # print(other_child_id)
 
             # Ensure user has write permissions on parent resource:
             parent_access_request = AccessRequest(
@@ -1479,7 +1624,6 @@ class ResourceHierarchyCRUD(
             # parent_model = ResourceType.get_model(parent_type)
 
             # Fetch the children of the parent resource
-            # TBD: add check if current_user has access to the children!
             child_access_request = AccessRequest(
                 resource_id=child_id,
                 action=Action.write,
@@ -1504,51 +1648,28 @@ class ResourceHierarchyCRUD(
             children = await self.session.exec(statement)
             children = children.all()
 
-            debug_children = children
-            print("=== all children ===")
-            pprint(debug_children)
-
             # Find the old and new positions of the child
             old_position = None
             moving_child = None
             new_position = None
-            # for i, child in enumerate(children):
             for child in children:
                 if child.child_id == child_id:
-                    print("=== moving child ===")
-                    print(child)
-                    # old_position = i
                     old_position = child.order
                     moving_child = child
                 if other_child_id and child.child_id == other_child_id:
-                    print("=== target child ===")
-                    print(child)
                     if position == "before":
                         new_position = child.order - 1
-                        # new_position = i
                     elif position == "after":
                         new_position = child.order
-                        # new_position = i + 1
 
             if old_position < new_position:
                 moving_child.order = new_position
                 for i in range(old_position, new_position):
-                    print("==== iiiiiiii ====")
-                    print(i)
-                    print("=== children[i] ===")
-                    print(children[i])
                     children[i].order = i
             else:
                 moving_child.order = new_position + 1
                 for i in range(new_position, old_position - 1):
-                    print("==== iiiiiiii ====")
-                    print(i)
-                    print("=== children[i] ===")
-                    print(children[i])
                     children[i].order += 1
-
-            print("=== all children - ready for database ===")
-            pprint(children)
 
             # Update the database
             await self.session.commit()
@@ -1559,19 +1680,9 @@ class ResourceHierarchyCRUD(
 
 
 class IdentityHierarchyCRUD(
-    # BaseHierarchyCRUD[
-    #     IdentityHierarchyCreate, IdentityHierarchyTable, IdentityHierarchyRead
-    # ]
     BaseHierarchyCRUD[IdentityHierarchyCreate, IdentityHierarchy, IdentityHierarchyRead]
 ):
     """CRUD for resource hierarchies."""
 
     def __init__(self):
-        # super().__init__(IdentityHierarchy, IdentityHierarchyTable)
         super().__init__(IdentityHierarchy, IdentityHierarchy)
-
-
-# class IdentityHierarchyCRUD(BaseHierarchyCRUD):
-#     """CRUD for identity hierarchies."""
-
-#     pass

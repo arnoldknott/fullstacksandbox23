@@ -1,9 +1,10 @@
 import uuid
 from datetime import datetime
-from typing import List, Optional
-
+from typing import List, Optional, Annotated
+from enum import Enum
 from sqlalchemy import Column, ForeignKey, Uuid
 from sqlmodel import Field, Relationship, SQLModel
+from pydantic import AfterValidator
 
 # from core.types import AppRoles
 from core.config import config
@@ -127,11 +128,15 @@ class UserCreate(SQLModel):
     # Could be an option in future to implement roles for the app:
     # app_roles: Optional[List[AppRoles]] = None
     is_active: bool = True
-    is_publicAIuser: bool = False
 
 
 class User(UserCreate, table=True):
     """Schema for a user in the database."""
+
+    # Rules of thumb:
+    # - if other users are supposed to see it, it should be in the user model.
+    # - if the user never sees it in the user interface, it should be in the user account.
+    # - if the user sees it in the user interface, it should be in the user profile.
 
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
@@ -139,6 +144,24 @@ class User(UserCreate, table=True):
         primary_key=True,
     )
     is_active: Optional[bool] = Field(default=True)
+
+    # ### User Account ###
+    user_account_id: Optional[uuid.UUID] = Field(
+        default=None, foreign_key="useraccount.id"
+    )
+    user_account: Optional["UserAccount"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"lazy": "joined"},
+    )
+
+    # ### User Profile ###
+    user_profile_id: Optional[uuid.UUID] = Field(
+        default=None, foreign_key="userprofile.id"
+    )
+    user_profile: Optional["UserProfile"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"lazy": "joined"},
+    )
 
     ### Foreign account: Azure AD ###
     azure_user_id: Optional[uuid.UUID] = Field(index=True, unique=True)
@@ -216,16 +239,109 @@ class User(UserCreate, table=True):
     # discord_account: Optional["DiscordAccount"] = Relationship(back_populates="user")
 
 
+class UserAccount(SQLModel, table=True):
+    """Schema for a linking a user account to the database."""
+
+    # Add all personal user settings like permissions to various functionalities of the app here.
+    # Could potentially be used for account linking to other services as well.
+
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
+    user_id: Optional[uuid.UUID] = Field(
+        default=None, index=True
+    )  # This is manually set from identity crud at self-sign-up!
+    user: User = Relationship(
+        back_populates="user_account",
+        sa_relationship_kwargs={"lazy": "joined"},
+    )
+    is_publicAIuser: bool = False
+
+
+class ThemeVariants(str, Enum):
+    """Material Design 3 theme variants."""
+
+    # monochrome = "Monochrome"
+    neutral = "Neutral"
+    tonal_spot = "Tonal Spot"
+    vibrant = "Vibrant"
+    # expressive = "Expressive"
+    fidelity = "Fidelity"
+    content = "Content"
+    rainbow = "Rainbow"
+    # fruit_salad = "Fruit Salad"
+
+
+def validate_theme_color(color: str):
+    if not color.startswith("#"):
+        raise ValueError("Theme color must start with '#'.")
+    if len(color) != 7:
+        raise ValueError("Theme color must be 7 characters long.")
+    if not all(c in "0123456789abcdefABCDEF" for c in color[1:]):
+        raise ValueError("Theme color must be a valid hex color.")
+
+
+def validate_contrast_range(contrast: float):
+    if contrast < -1.0 or contrast > 1.0:
+        raise ValueError("Contrast must be between -1.0 and 1.0.")
+
+
+class UserProfile(SQLModel, table=True):
+    """Schema for a user profile in the database."""
+
+    # Theme settings, localization settings, notification settings,
+    # potentially: view history, saved resources, personalized quick links, ...
+
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4,
+        foreign_key="identifiertypelink.id",
+        primary_key=True,
+    )
+    user_id: Optional[uuid.UUID] = Field(
+        default=None, index=True
+    )  # This is manually set from identity crud at self-sign-up!
+    user: User = Relationship(
+        back_populates="user_profile",
+        sa_relationship_kwargs={"lazy": "joined"},
+    )
+
+    theme_color: Annotated[str, AfterValidator(validate_theme_color)] = "#353c6e"
+    theme_variant: ThemeVariants = ThemeVariants.tonal_spot
+    contrast: Annotated[float, AfterValidator(validate_contrast_range)] = 0.0
+
+    # @model_validator(mode="before")
+    # def validate_theme_color(self):
+    #     if not self.theme_color.startswith("#"):
+    #         raise ValueError("Theme color must start with '#'.")
+    #     if len(self.theme_color) != 7:
+    #         raise ValueError("Theme color must be 7 characters long.")
+    #     if not all(c in "0123456789abcdef" for c in self.theme_color[1:]):
+    #         raise ValueError("Theme color must be a valid hex color.")
+
+    # @model_validator(mode="before")
+    # def validate_contrast(self):
+    #     if self.contrast < -1.0 or self.contrast > 1.0:
+    #         raise ValueError("Contrast must be between -1.0 and 1.0.")
+
+
+# Note: this is one of the models, that other users can see about a user.
 class UserReadNoGroups(UserCreate):
     """Schema for reading a user without linked accounts and groups."""
+
+    # This is what other users can see about a user - without groups.
 
     id: uuid.UUID
     azure_user_id: Optional[uuid.UUID] = None
     azure_groups: Optional[List["AzureGroupRead"]] = None
 
 
+# Note: this the other model, that other users can see about a user.
 class UserRead(UserCreate):
     """Schema for reading a user."""
+
+    # This is what other users can see about a user - including groups.
 
     id: uuid.UUID  # no longer optional - needs to exist now
 
@@ -241,9 +357,13 @@ class UserRead(UserCreate):
     sub_sub_groups: Optional[List["SubSubGroupRead"]] = None
 
 
+# This is the model, a users can see about themselves.
 class Me(UserRead):
     azure_token_roles: Optional[list[str]] = None
     azure_token_groups: Optional[list[uuid.UUID]] = None
+    # user_account_id: Optional[uuid.UUID] = None
+    user_account: Optional["UserAccount"] = None
+    user_profile: Optional["UserProfile"] = None
 
 
 class UserUpdate(UserCreate):

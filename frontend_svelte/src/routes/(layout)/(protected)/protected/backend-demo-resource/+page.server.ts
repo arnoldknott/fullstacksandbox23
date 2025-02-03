@@ -2,7 +2,14 @@ import type { Actions, PageServerLoad } from './$types';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis';
 import { fail } from '@sveltejs/kit';
-import type { DemoResource, DemoResourceWithCreationDate } from '$lib/types';
+import type {
+	AccessPolicy,
+	AccessRight,
+	DemoResource,
+	DemoResourceExtended,
+	MicrosoftTeamBasic
+} from '$lib/types';
+import { microsoftGraph } from '$lib/server/apis';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function executed ===');
@@ -10,33 +17,82 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const response = await backendAPI.get(sessionId, '/demoresource/');
 	const demoResources = await response.json();
-	const resourceIds = demoResources.map((resource: DemoResource) => resource.id);
+	const demoResourceIds = demoResources.map((resource: DemoResource) => resource.id);
 	const creationDataResponse = await backendAPI.post(
 		sessionId,
 		'/access/log/created',
-		JSON.stringify(resourceIds)
+		JSON.stringify(demoResourceIds)
 	);
 	const creationDates = await creationDataResponse.json();
-	const demoResourcesWithCreationDates = demoResources.map(
-		(resource: DemoResourceWithCreationDate, index: number) => {
-			resource = { ...resource };
-			resource.creation_date = new Date(creationDates[index]);
-			return resource;
-		}
-	);
-	demoResourcesWithCreationDates.sort(
-		(a: DemoResourceWithCreationDate, b: DemoResourceWithCreationDate) => {
-			return a.creation_date < b.creation_date ? 1 : -1;
-		}
-	);
-	let microsoftTeams: string[] = [];
-	if (locals.sessionData.userProfile) {
-		microsoftTeams = locals.sessionData.userProfile.azure_token_groups || [];
-	}
-	console.log('=== routes - demo-resource - page.server - load function - microsoftTeams ===');
-	console.log(microsoftTeams);
 
-	return { demoResourcesWithCreationDates, microsoftTeams };
+	// let demoResourcesExtended = demoResources.map(
+	// 	(resource: DemoResourceExtended, index: number) => {
+	// 		resource = { ...resource };
+	// 		resource.creation_date = new Date(creationDates[index]);
+	// 		return resource;
+	// 	}
+	// );
+
+	const accessRightsResponse = await backendAPI.post(
+		sessionId,
+		'/access/right/resources',
+		JSON.stringify(demoResourceIds)
+	);
+	const accessRights = await accessRightsResponse.json();
+
+	const ownedDemoResourceIds = accessRights
+		.filter((right: AccessRight) => right.action === 'own')
+		.map((right: AccessRight) => right.resource_id);
+
+	const accessPoliciesResponse = await backendAPI.post(
+		sessionId,
+		'/access/policy/resources',
+		JSON.stringify(ownedDemoResourceIds)
+	);
+	const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
+
+	const demoResourcesExtended = demoResources.map(
+		(resource: DemoResourceExtended, index: number) => {
+			// const userRight = accessRights.find((right: AccessRight) => right.resource_id === resource.id);
+			// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id);
+			return Object.assign(
+				{},
+				{
+					...resource,
+					creation_date: new Date(creationDates[index]),
+					user_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id)
+						.action,
+					access_policies: accessPolicies.filter(
+						(policy: AccessPolicy) => policy.resource_id === resource.id
+					)
+				}
+			);
+		}
+	);
+	demoResourcesExtended.sort((a: DemoResourceExtended, b: DemoResourceExtended) => {
+		return (a.creation_date ?? 0) < (b.creation_date ?? 0) ? 1 : -1;
+	});
+
+	let microsoftTeams: MicrosoftTeamBasic[] = [];
+	if (locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups) {
+		microsoftTeams = await microsoftGraph.getAttachedTeams(
+			sessionId,
+			locals.sessionData.userProfile.azure_token_groups
+		);
+	}
+
+	// let microsoftTeamsExtended = microsoftTeams.map(
+	// 	(team: MicrosoftTeamBasic) => {
+	// 		// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.identity_id === team.id);
+	// 		return {
+	// 			...team,
+	// 			// access_policies: accessPolicies.filter((policy: AccessPolicy) => policy.identity_id === team.id)
+	// 		};
+	// 	}
+	// );
+
+	// return { demoResourcesExtended, microsoftTeamsExtended };
+	return { demoResourcesExtended, microsoftTeams };
 };
 
 export const actions: Actions = {
@@ -50,15 +106,11 @@ export const actions: Actions = {
 			return fail(response.status, { error: response.statusText });
 		} else {
 			const payload = await response.json();
-			console.log('=== routes - demo-resource - page.server - post function - payload ===');
-			console.log(payload);
 			const createdLogResponse = await backendAPI.get(
 				sessionId,
 				`/access/log/${payload.id}/created`
 			);
 			const createdLogData = await createdLogResponse.json();
-			console.log('=== routes - demo-resource - page.server - post function - createdLogData ===');
-			console.log(createdLogData);
 
 			return {
 				id: payload.id,
@@ -93,17 +145,11 @@ export const actions: Actions = {
 	share: async ({ locals, request, url }) => {
 		console.log('=== routes - demo-resource - page.server - share function executed ===');
 		const data = await request.formData();
-		// console.log('=== routes - demo-resource - page.server - share function - data ===');
-		// console.log(data);
-		// console.log('=== url. searchParams ===');
-		// console.log(url.searchParams.get('teamid'));
 		const accessPolicy = {
 			resource_id: data.get('id'),
 			identity_id: url.searchParams.get('teamid'),
 			action: 'own' // TBD. make this dynamic: own, write, read
 		};
-		// console.log('=== routes - demo-resource - page.server - share function - accessPolicy ===');
-		// console.log(accessPolicy);
 
 		const sessionId = locals.sessionData.sessionId;
 

@@ -2,14 +2,24 @@ import { describe, test, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import { createRawSnippet, type Snippet } from 'svelte';
 import Guard from './Guard.svelte';
-import { page } from '$app/stores';
+import { page } from '$app/state';
 
 // Svelte has no way to fill slots programmatically yet,
 // https://github.com/sveltejs/svelte/pull/4296
 
-vi.mock('$app/stores', () => ({
+// vi.mock('$app/state', () => ({
+// 	page: {
+// 		subscribe: vi.fn()
+// 	}
+// }));
+
+vi.mock('$app/state', () => ({
 	page: {
-		subscribe: vi.fn()
+		data: {
+			session: {
+				loggedIn: false // or true, depending on the test case
+			}
+		}
 	}
 }));
 
@@ -26,10 +36,11 @@ describe('Guard', () => {
 		// const sessionData = {
 		// 	loggedIn: false
 		// }
-		page.subscribe = vi.fn((callback) => {
-			callback({ data: { session: { loggedIn: false } } });
-			return () => {};
-		});
+		// page.subscribe = vi.fn((callback) => {
+		// 	callback({ data: { session: { loggedIn: false } } });
+		// 	return () => {};
+		// });
+		vi.mocked(page).data.session.loggedIn = false;
 
 		render(Guard, { props: { children: protectedContent } });
 
@@ -38,10 +49,11 @@ describe('Guard', () => {
 	});
 
 	test('should show content as user is logged in', () => {
-		page.subscribe = vi.fn((callback) => {
-			callback({ data: { session: { loggedIn: true } } });
-			return () => {};
-		});
+		// page.subscribe = vi.fn((callback) => {
+		// 	callback({ data: { session: { loggedIn: true } } });
+		// 	return () => {};
+		// });
+		vi.mocked(page).data.session.loggedIn = true;
 
 		render(Guard, { props: { children: protectedContent } });
 

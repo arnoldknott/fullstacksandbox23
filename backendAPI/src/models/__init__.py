@@ -11,7 +11,7 @@ from .demo_resource import DemoResource  # noqa F401
 from .demo_resource_tag_link import DemoResourceTagLink  # noqa F401
 from .identity import AzureGroup  # noqa F401
 from .identity import AzureGroupUserLink  # noqa F401
-from .identity import User  # noqa F401
+from .identity import User, UserAccount, UserProfile  # noqa F401
 from .protected_resource import (  # noqa F401
     ProtectedChild,
     ProtectedGrandChild,
