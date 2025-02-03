@@ -409,7 +409,6 @@ async def add_one_test_access_policy():
         policy: dict, current_user: CurrentUserData = None
     ):
         """Adds test policies to the database."""
-
         return await add_test_access_policy(policy, current_user)
         # async with AccessPolicyCRUD() as crud:
         #     if current_user is None:

@@ -17,7 +17,7 @@
 </script>
 
 <div
-	class="card w-full rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant {extraClasses}"
+	class="card w-full rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-md shadow-outline-variant {extraClasses}"
 	{id}
 >
 	{#if header}

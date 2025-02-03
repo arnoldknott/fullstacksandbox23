@@ -563,7 +563,7 @@ many_entity_type_links = [
 # Note: it's not the azure_user_id that get's stored in the database, but the user_id!
 one_test_policy_read = {
     "identity_id": identity_id_user1,
-    "resource_id": resource_id1,
+    "resource_id": resource_id3,  # used to be 1
     "action": "read",
 }
 
@@ -575,14 +575,14 @@ one_test_policy_write = {
 
 one_test_policy_own = {
     "identity_id": identity_id_user1,
-    "resource_id": resource_id1,
+    "resource_id": resource_id5,  # used to be 1
     "action": "own",
 }
 
 # same as one_test_policy_own, but with different identity_id
 one_test_policy_share = {
     "identity_id": identity_id_user3,
-    "resource_id": resource_id1,
+    "resource_id": resource_id5,  # used to be 1
     "action": "own",
 }
 
@@ -596,7 +596,7 @@ many_test_policies = [
     {
         "identity_id": identity_id_user2,
         "resource_id": resource_id1,
-        "action": "read",
+        "action": "own",
     },
     {
         "identity_id": identity_id_user1,
@@ -613,10 +613,10 @@ many_test_policies = [
         "resource_id": resource_id3,
         "action": "own",
     },
-    # effectively overrides the first policy with more rights (own > read)
+    # used to effectively override the first policy with more rights (own > read)
     {
         "identity_id": identity_id_user2,
-        "resource_id": resource_id1,
+        "resource_id": resource_id4,  # used to be 1
         "action": "own",
     },
     one_test_policy_write,

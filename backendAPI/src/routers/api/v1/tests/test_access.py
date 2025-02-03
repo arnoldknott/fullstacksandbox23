@@ -1,13 +1,18 @@
 import uuid
 from datetime import datetime, timedelta
-
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import AccessPolicyCRUD
-from models.access import AccessLogCreate, AccessLogRead, AccessPolicy, AccessPolicyRead
+from models.access import (
+    AccessLogCreate,
+    AccessLogRead,
+    AccessPermission,
+    AccessPolicy,
+    AccessPolicyRead,
+)
 from models.demo_resource import DemoResource
 from models.identity import AzureGroup, User
 from models.protected_resource import ProtectedResource
@@ -24,6 +29,9 @@ from tests.utils import (
     resource_id1,
     resource_id2,
     resource_id3,
+    resource_id4,
+    resource_id5,
+    resource_id7,
     resource_id9,
     token_admin,
     token_admin_read,
@@ -38,6 +46,8 @@ from tests.utils import (
 )
 
 # region ## AccessPolicy tests:
+
+# Note: There are also plenty of tests for the access CRUD!!
 
 # Nomenclature:
 # ✔︎ implemented
@@ -172,10 +182,302 @@ async def test_admin_posts_public_access_policies_for_non_existing_identities(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_with_owner_rights_posts_access_policy(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+    register_one_identity,
+):
+    """Tests POST access policies, i.e. share."""
+    app_override_provide_http_token_payload
+
+    policies_in_database = add_many_test_access_policies
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Give current user owner rights for the tested resource
+    await add_one_test_access_policy(
+        {
+            "resource_id": many_test_policies[2]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        }
+    )
+
+    new_user_id = uuid.uuid4()
+    await register_one_identity(new_user_id, User)
+
+    new_share = {
+        "resource_id": many_test_policies[2]["resource_id"],
+        "identity_id": str(new_user_id),
+        "action": Action.read,
+    }
+
+    response = await async_client.post("/api/v1/access/policy", json=new_share)
+    payload = response.json()
+
+    assert response.status_code == 201
+
+    assert payload["id"] != policies_in_database[2].id
+
+    assert payload["resource_id"] == many_test_policies[2]["resource_id"]
+    assert payload["identity_id"] == str(new_user_id)
+    assert payload["action"] == new_share["action"]
+    assert payload["public"] is False
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_with_owner_rights_posts_public_read_access_policy(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests POST access policies, i.e. share."""
+    app_override_provide_http_token_payload
+
+    add_many_test_access_policies
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Give current user owner rights for the tested resource
+    await add_one_test_access_policy(
+        {
+            "resource_id": many_test_policies[2]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        }
+    )
+
+    new_share = {
+        "resource_id": many_test_policies[2]["resource_id"],
+        "public": True,
+        "action": Action.read,
+    }
+
+    response = await async_client.post("/api/v1/access/policy", json=new_share)
+    payload = response.json()
+
+    assert response.status_code == 201
+
+    assert payload["resource_id"] == many_test_policies[2]["resource_id"]
+    assert payload["action"] == new_share["action"]
+    assert payload["public"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_with_owner_rights_posts_public_write_policy(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests POST access policies, i.e. share."""
+    app_override_provide_http_token_payload
+
+    add_many_test_access_policies
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Give current user owner rights for the tested resource
+    await add_one_test_access_policy(
+        {
+            "resource_id": many_test_policies[2]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        }
+    )
+
+    new_share = {
+        "resource_id": many_test_policies[2]["resource_id"],
+        "public": True,
+        "action": Action.write,
+    }
+
+    response = await async_client.post("/api/v1/access/policy", json=new_share)
+    payload = response.json()
+
+    assert response.status_code == 201
+
+    assert payload["resource_id"] == many_test_policies[2]["resource_id"]
+    assert payload["action"] == new_share["action"]
+    assert payload["public"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+# TBD: consider if this should be failing?
+async def test_user_with_owner_rights_posts_public_own_policy(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests POST access policies, i.e. share."""
+    app_override_provide_http_token_payload
+
+    add_many_test_access_policies
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Give current user owner rights for the tested resource
+    await add_one_test_access_policy(
+        {
+            "resource_id": many_test_policies[2]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        }
+    )
+
+    new_share = {
+        "resource_id": many_test_policies[2]["resource_id"],
+        "public": True,
+        "action": Action.own,
+    }
+
+    response = await async_client.post("/api/v1/access/policy", json=new_share)
+    payload = response.json()
+
+    assert response.status_code == 201
+
+    assert payload["resource_id"] == many_test_policies[2]["resource_id"]
+    assert payload["action"] == new_share["action"]
+    assert payload["public"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+# TBD: should this pass - so an owner of a policy can publish the resource publicly?
+async def test_user_with_write_rights_posts_public_access_policy_fails(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests POST access policies, i.e. share."""
+    app_override_provide_http_token_payload
+
+    add_many_test_access_policies
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Give current user not enough rights for the tested resource
+    await add_one_test_access_policy(
+        {
+            "resource_id": many_test_policies[2]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.write,
+        }
+    )
+
+    new_share = {
+        "resource_id": many_test_policies[2]["resource_id"],
+        "public": True,
+        "action": Action.read,
+    }
+
+    response = await async_client.post("/api/v1/access/policy", json=new_share)
+    payload = response.json()
+
+    assert response.status_code == 403
+    assert payload == {"detail": "Forbidden."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+# TBD: should this pass - so an owner of a policy can publish the resource publicly?
+async def test_user_with_read_rights_posts_public_access_policy_fails(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests POST access policies, i.e. share."""
+    app_override_provide_http_token_payload
+
+    add_many_test_access_policies
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Give current user not enough rights for the tested resource
+    await add_one_test_access_policy(
+        {
+            "resource_id": many_test_policies[2]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.read,
+        }
+    )
+
+    new_share = {
+        "resource_id": many_test_policies[2]["resource_id"],
+        "public": True,
+        "action": Action.read,
+    }
+
+    response = await async_client.post("/api/v1/access/policy", json=new_share)
+    payload = response.json()
+
+    assert response.status_code == 403
+    assert payload == {"detail": "Forbidden."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
     [token_user1_read_write, token_user2_read_write],
     indirect=True,
 )
-async def test_user_posts_access_policies(
+async def test_user_posts_access_policies_without_access(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
 ):
@@ -185,13 +487,107 @@ async def test_user_posts_access_policies(
 
     for policy in many_test_policies:
         response = await async_client.post("/api/v1/access/policy", json=policy)
-
-        # TBD: this should not be failing for resources, that the user owns
-        # all other resources it should fail - so this test is good enough,
-        # but more tests are needed.
         assert response.status_code == 403
         assert response.json() == {"detail": "Forbidden."}
 
+
+# more like a get test, but takes a list of resources
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [
+        token_user1_read,
+        token_user2_read,
+    ],
+    indirect=True,
+)
+async def test_user_get_access_policies_for_resources(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET multiple access policies, i.e. share."""
+
+    app_override_provide_http_token_payload
+    add_many_test_access_policies  # not used - but added so there's more stuff in the database
+
+    resource_id_for_query = str(uuid.uuid4())
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    test_policy = {
+        "resource_id": str(resource_id1),
+        "identity_id": str(current_user.user_id),
+        "action": Action.own,  # user needs to own a resource for being allowed to read all access_policies
+    }
+    test_policy = await add_one_test_access_policy(test_policy)
+
+    # Access policies for the querying user - which is owner of resource:
+    own_test_access_policy_for_current_user = {
+        "resource_id": resource_id_for_query,
+        "identity_id": current_user.user_id,
+        "action": Action.own,
+    }
+
+    # Access policies for queried resource for other users:
+    own_test_access_policy_for_random_user = {
+        "resource_id": resource_id_for_query,
+        "identity_id": identity_id_user2,
+        "action": Action.own,
+    }
+    read2_test_access_policy_for_random_user = {
+        "resource_id": resource_id_for_query,
+        "identity_id": identity_id_user3,
+        "action": Action.write,
+    }
+    read_public_test_access_policy = {
+        "resource_id": resource_id_for_query,
+        "action": Action.read,
+        "public": True,
+    }
+
+    target_policies = [
+        own_test_access_policy_for_current_user,
+        own_test_access_policy_for_random_user,
+        read2_test_access_policy_for_random_user,
+        read_public_test_access_policy,
+    ]
+
+    existing_policies_in_db = []
+    for policy in target_policies:
+        created_policy = await add_one_test_access_policy(policy)
+        existing_policies_in_db.append(created_policy)
+
+    response = await async_client.post(
+        "/api/v1/access/policy/resources",
+        json=[str(resource_id_for_query), str(resource_id1)],
+    )
+    payload = response.json()
+
+    assert response.status_code == 200
+
+    target_policies.append(many_test_policies[0])
+    target_policies.append(many_test_policies[5])
+    target_policies.append(many_test_policies[9])
+    target_policies.append(test_policy)
+
+    assert len(payload) == len(target_policies)
+
+    for policy, target in zip(payload, existing_policies_in_db):
+        received_policy = AccessPolicy.model_validate(policy)
+        target_policy = AccessPolicy.model_validate(target)
+        assert received_policy.id == target_policy.id
+        assert received_policy.resource_id == target_policy.resource_id
+        assert received_policy.identity_id == target_policy.identity_id
+        assert received_policy.action == target_policy.action
+        assert received_policy.public == target_policy.public
+
+
+# More detailed delete tests in access CRUD!
 
 # endregion: ## POST tests
 
@@ -380,32 +776,12 @@ async def test_user_get_access_policies_for_resource(
         "identity_id": current_user.user_id,
         "action": Action.own,
     }
-    write_test_access_policy_for_current_user = {
-        "resource_id": resource_id_for_query,
-        "identity_id": current_user.user_id,
-        "action": Action.write,
-    }
-    read_test_access_policy_for_current_user = {
-        "resource_id": resource_id_for_query,
-        "identity_id": str(current_user.user_id),
-        "action": Action.read,
-    }
 
     # Access policies for queried resource for other users:
     own_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
         "identity_id": identity_id_user2,
         "action": Action.own,
-    }
-    write_test_access_policy_for_random_user = {
-        "resource_id": resource_id_for_query,
-        "identity_id": identity_id_user2,
-        "action": Action.write,
-    }
-    read1_test_access_policy_for_random_user = {
-        "resource_id": resource_id_for_query,
-        "identity_id": identity_id_user2,
-        "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
@@ -420,11 +796,7 @@ async def test_user_get_access_policies_for_resource(
 
     target_policies = [
         own_test_access_policy_for_current_user,
-        write_test_access_policy_for_current_user,
-        read_test_access_policy_for_current_user,
         own_test_access_policy_for_random_user,
-        write_test_access_policy_for_random_user,
-        read1_test_access_policy_for_random_user,
         read2_test_access_policy_for_random_user,
         read_public_test_access_policy,
     ]
@@ -487,27 +859,12 @@ async def test_user_get_access_policies_for_resource_without_being_owner(
         "identity_id": current_user.user_id,
         "action": Action.write,
     }
-    read_test_access_policy_for_current_user = {
-        "resource_id": resource_id_for_query,
-        "identity_id": current_user.user_id,
-        "action": Action.read,
-    }
 
     # Access policies for queried resource for other users:
     own_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
         "identity_id": identity_id_user2,
         "action": Action.own,
-    }
-    write_test_access_policy_for_random_user = {
-        "resource_id": resource_id_for_query,
-        "identity_id": identity_id_user2,
-        "action": Action.write,
-    }
-    read1_test_access_policy_for_random_user = {
-        "resource_id": resource_id_for_query,
-        "identity_id": identity_id_user2,
-        "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id_for_query,
@@ -522,10 +879,7 @@ async def test_user_get_access_policies_for_resource_without_being_owner(
 
     target_policies = [
         write_test_access_policy_for_current_user,
-        read_test_access_policy_for_current_user,
         own_test_access_policy_for_random_user,
-        write_test_access_policy_for_random_user,
-        read1_test_access_policy_for_random_user,
         read2_test_access_policy_for_random_user,
         read_public_test_access_policy,
     ]
@@ -951,6 +1305,8 @@ async def test_user_get_access_policies_for_identity(
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id = str(uuid.uuid4())
+    resource_id_other = str(uuid.uuid4())
+    resource_id_third = str(uuid.uuid4())
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
     )
@@ -961,15 +1317,15 @@ async def test_user_get_access_policies_for_identity(
         "identity_id": current_user.user_id,
         "action": Action.own,
     }
-    write_test_access_policy_for_current_user = {
-        "resource_id": resource_id,
+    other_test_access_policy_for_current_user = {
+        "resource_id": resource_id_other,
         "identity_id": current_user.user_id,
-        "action": Action.write,
+        "action": Action.own,
     }
-    read_test_access_policy_for_current_user = {
-        "resource_id": resource_id,
-        "identity_id": str(current_user.user_id),
-        "action": Action.read,
+    third_test_access_policy_for_current_user = {
+        "resource_id": resource_id_third,
+        "identity_id": current_user.user_id,
+        "action": Action.own,
     }
 
     # # Access policies for resource for other users:
@@ -977,16 +1333,6 @@ async def test_user_get_access_policies_for_identity(
         "resource_id": resource_id,
         "identity_id": identity_id_user2,
         "action": Action.own,
-    }
-    write_test_access_policy_for_random_user = {
-        "resource_id": resource_id,
-        "identity_id": identity_id_user2,
-        "action": Action.write,
-    }
-    read1_test_access_policy_for_random_user = {
-        "resource_id": resource_id,
-        "identity_id": identity_id_user2,
-        "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id,
@@ -1001,19 +1347,15 @@ async def test_user_get_access_policies_for_identity(
 
     target_policies = [
         own_test_access_policy_for_current_user,
-        write_test_access_policy_for_current_user,
-        read_test_access_policy_for_current_user,
+        other_test_access_policy_for_current_user,
+        third_test_access_policy_for_current_user,
         own_test_access_policy_for_random_user,
-        write_test_access_policy_for_random_user,
-        read1_test_access_policy_for_random_user,
         read2_test_access_policy_for_random_user,
         read_public_test_access_policy,
     ]
 
-    existing_policies_in_db = []
     for policy in target_policies:
-        created_policy = await add_one_test_access_policy(policy)
-        existing_policies_in_db.append(created_policy)
+        await add_one_test_access_policy(policy)
 
     response = await async_client.get(
         f"/api/v1/access/policy/identity/{str(current_user.user_id)}"
@@ -1033,8 +1375,8 @@ async def test_user_get_access_policies_for_identity(
 
     expected_results = [
         own_test_access_policy_for_current_user,
-        write_test_access_policy_for_current_user,
-        read_test_access_policy_for_current_user,
+        other_test_access_policy_for_current_user,
+        third_test_access_policy_for_current_user,
         users_own_policy,
     ]
 
@@ -1067,6 +1409,8 @@ async def test_admin_get_access_policies_for_identity(
     add_many_test_access_policies
 
     resource_id = str(uuid.uuid4())
+    resource_id_other = str(uuid.uuid4())
+    resource_id_third = str(uuid.uuid4())
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
     )
@@ -1078,12 +1422,12 @@ async def test_admin_get_access_policies_for_identity(
         "action": Action.own,
     }
     write_test_access_policy_for_current_user = {
-        "resource_id": resource_id,
+        "resource_id": resource_id_other,
         "identity_id": current_user.user_id,
         "action": Action.write,
     }
     read_test_access_policy_for_current_user = {
-        "resource_id": resource_id,
+        "resource_id": resource_id_third,
         "identity_id": str(current_user.user_id),
         "action": Action.read,
     }
@@ -1093,16 +1437,6 @@ async def test_admin_get_access_policies_for_identity(
         "resource_id": resource_id,
         "identity_id": identity_id_user2,
         "action": Action.own,
-    }
-    write_test_access_policy_for_random_user = {
-        "resource_id": resource_id,
-        "identity_id": identity_id_user2,
-        "action": Action.write,
-    }
-    read1_test_access_policy_for_random_user = {
-        "resource_id": resource_id,
-        "identity_id": identity_id_user2,
-        "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id,
@@ -1120,8 +1454,6 @@ async def test_admin_get_access_policies_for_identity(
         write_test_access_policy_for_current_user,
         read_test_access_policy_for_current_user,
         own_test_access_policy_for_random_user,
-        write_test_access_policy_for_random_user,
-        read1_test_access_policy_for_random_user,
         read2_test_access_policy_for_random_user,
         read_public_test_access_policy,
     ]
@@ -1184,6 +1516,8 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id = str(uuid.uuid4())
+    resource_id_other = str(uuid.uuid4())
+    resource_id_third = str(uuid.uuid4())
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
     )
@@ -1194,15 +1528,15 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
         "identity_id": current_user.user_id,
         "action": Action.own,
     }
-    write_test_access_policy_for_current_user = {
-        "resource_id": resource_id,
+    other_test_access_policy_for_current_user = {
+        "resource_id": resource_id_other,
         "identity_id": current_user.user_id,
-        "action": Action.write,
+        "action": Action.own,
     }
-    read_test_access_policy_for_current_user = {
-        "resource_id": resource_id,
+    third_test_access_policy_for_current_user = {
+        "resource_id": resource_id_third,
         "identity_id": str(current_user.user_id),
-        "action": Action.read,
+        "action": Action.own,
     }
 
     # # Access policies for resource for other users:
@@ -1211,15 +1545,10 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
         "identity_id": identity_id_user2,
         "action": Action.own,
     }
-    write_test_access_policy_for_queried_user = {
-        "resource_id": resource_id,
+    third_test_access_policy_for_queried_user = {
+        "resource_id": resource_id_third,
         "identity_id": identity_id_user2,
-        "action": Action.write,
-    }
-    read1_test_access_policy_for_queried_user = {
-        "resource_id": resource_id,
-        "identity_id": identity_id_user2,
-        "action": Action.read,
+        "action": Action.own,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id,
@@ -1234,19 +1563,16 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
 
     target_policies = [
         own_test_access_policy_for_current_user,
-        write_test_access_policy_for_current_user,
-        read_test_access_policy_for_current_user,
+        other_test_access_policy_for_current_user,
+        third_test_access_policy_for_current_user,
         own_test_access_policy_for_queried_user,
-        write_test_access_policy_for_queried_user,
-        read1_test_access_policy_for_queried_user,
+        third_test_access_policy_for_queried_user,
         read2_test_access_policy_for_random_user,
         read_public_test_access_policy,
     ]
 
-    existing_policies_in_db = []
     for policy in target_policies:
-        created_policy = await add_one_test_access_policy(policy)
-        existing_policies_in_db.append(created_policy)
+        await add_one_test_access_policy(policy)
 
     response = await async_client.get(
         f"/api/v1/access/policy/identity/{str(identity_id_user2)}"
@@ -1255,12 +1581,11 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
 
     assert response.status_code == 200
 
-    assert len(payload) == 3
+    assert len(payload) == 2
 
     expected_results = [
         own_test_access_policy_for_queried_user,
-        write_test_access_policy_for_queried_user,
-        read1_test_access_policy_for_queried_user,
+        third_test_access_policy_for_queried_user,
     ]
 
     for read_policy in payload:
@@ -1297,16 +1622,11 @@ async def test_user_get_access_policies_for_another_users_identity_without_owner
         mocked_provide_http_token_payload
     )
 
-    # Access policies for the querying user - which is owner of resource:
+    # Access policies for the querying user - which is not owner of resource:
     write_test_access_policy_for_current_user = {
         "resource_id": resource_id,
         "identity_id": current_user.user_id,
         "action": Action.write,
-    }
-    read_test_access_policy_for_current_user = {
-        "resource_id": resource_id,
-        "identity_id": str(current_user.user_id),
-        "action": Action.read,
     }
 
     # # Access policies for resource for other users:
@@ -1314,16 +1634,6 @@ async def test_user_get_access_policies_for_another_users_identity_without_owner
         "resource_id": resource_id,
         "identity_id": identity_id_user2,
         "action": Action.own,
-    }
-    write_test_access_policy_for_random_user = {
-        "resource_id": resource_id,
-        "identity_id": identity_id_user2,
-        "action": Action.write,
-    }
-    read1_test_access_policy_for_random_user = {
-        "resource_id": resource_id,
-        "identity_id": identity_id_user2,
-        "action": Action.read,
     }
     read2_test_access_policy_for_random_user = {
         "resource_id": resource_id,
@@ -1337,12 +1647,8 @@ async def test_user_get_access_policies_for_another_users_identity_without_owner
     }
 
     target_policies = [
-        # own_test_access_policy_for_current_user,
         write_test_access_policy_for_current_user,
-        read_test_access_policy_for_current_user,
         own_test_access_policy_for_random_user,
-        write_test_access_policy_for_random_user,
-        read1_test_access_policy_for_random_user,
         read2_test_access_policy_for_random_user,
         read_public_test_access_policy,
     ]
@@ -1797,7 +2103,7 @@ async def test_admin_deletes_access_policy(
 
     assert len(policies_in_database) == 10
 
-    # should delete policies 0 and 4
+    # should delete policies 0
     response = await async_client.delete(
         f"/api/v1/access/policy?resource_id={resource_id1}&identity_id={identity_id_user2}"
     )
@@ -1807,8 +2113,8 @@ async def test_admin_deletes_access_policy(
     read_response = await async_client.get("/api/v1/access/policies")
     read_payload = read_response.json()
 
-    assert len(read_payload) == 9
-    # 2 deleted, but 1 created, when accessing the endpoint
+    assert len(read_payload) == 10
+    # 1 deleted, but 1 created, when accessing the endpoint
 
     assert AccessPolicyRead(**read_payload[0]) == AccessPolicyRead(
         **policies_in_database[1].model_dump()
@@ -1820,18 +2126,21 @@ async def test_admin_deletes_access_policy(
         **policies_in_database[3].model_dump()
     )
     assert AccessPolicyRead(**read_payload[3]) == AccessPolicyRead(
-        **policies_in_database[5].model_dump()
+        **policies_in_database[4].model_dump()
     )
     assert AccessPolicyRead(**read_payload[4]) == AccessPolicyRead(
-        **policies_in_database[6].model_dump()
+        **policies_in_database[5].model_dump()
     )
     assert AccessPolicyRead(**read_payload[5]) == AccessPolicyRead(
-        **policies_in_database[7].model_dump()
+        **policies_in_database[6].model_dump()
     )
     assert AccessPolicyRead(**read_payload[6]) == AccessPolicyRead(
-        **policies_in_database[8].model_dump()
+        **policies_in_database[7].model_dump()
     )
     assert AccessPolicyRead(**read_payload[7]) == AccessPolicyRead(
+        **policies_in_database[8].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[8]) == AccessPolicyRead(
         **policies_in_database[9].model_dump()
     )
 
@@ -1870,7 +2179,7 @@ async def test_admin_tries_to_delete_public_access_policy_without_resource_id(
     [token_admin_read_write],
     indirect=True,
 )
-async def test_admin_tries_to_delete_all_access_policy_wit_owner_rights(
+async def test_admin_tries_to_delete_all_access_policy_with_owner_rights(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
@@ -1893,9 +2202,448 @@ async def test_admin_tries_to_delete_all_access_policy_wit_owner_rights(
         pytest.fail("No Value error raised!")
 
 
+# # TBD: debug why this test fails!
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_deletes_access_policy(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests DELETE access policy, i.e. stop sharing."""
+    app_override_provide_http_token_payload
+
+    policies_in_database = add_many_test_access_policies
+
+    assert len(policies_in_database) == 10
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Give current user owner rights for the tested resource
+    permission_for_test = await add_one_test_access_policy(
+        {
+            "resource_id": many_test_policies[1]["resource_id"],
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        }
+    )
+
+    # should delete policy 3
+    response = await async_client.delete(
+        f"/api/v1/access/policy?resource_id={resource_id2}&identity_id={identity_id_user3}"
+    )
+
+    assert response.status_code == 200
+
+    read_response = await async_client.get(
+        f"/api/v1/access/policy/resource/{resource_id2}"
+    )
+    read_payload = read_response.json()
+
+    assert len(read_payload) == 2
+    # user has only access to 3 and deleted 1
+
+    assert AccessPolicyRead(**read_payload[0]) == AccessPolicyRead(
+        **policies_in_database[1].model_dump()
+    )
+    assert AccessPolicyRead(**read_payload[1]) == AccessPolicyRead(
+        **permission_for_test.model_dump()
+    )
+
+
+# More detailed delete tests in access CRUD!
+
 # endregion: ## DELETE tests
 
 # endregion: ## AccessPolicy tests
+
+
+# region AccessPermission tests
+
+# Nomenclature:
+# ✔︎ implemented
+# X missing tests
+# - not implemented
+
+# AccessPermissions:
+# ✔︎ user gets access permission for one resource with own permissions
+# ✔︎ user gets access permission for one resource with own and write permissions
+# ✔︎ user gets access permission for one resource with own, write and read permissions
+# ✔︎ user gets access permission for one resource with write permissions
+# ✔︎ user gets access permission for one resource with write and read permissions
+# ✔︎ user gets access permission for one resource with read permissions
+# ✔︎ user gets access permission for one resource without permissions
+# ✔︎ user gets access permission for multiple resources
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_user_get_access_permission_for_resource_with_owner_permission(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access policies, i.e. share."""
+
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Access policies for the querying user - which is owner of resource:
+    own_test_access_policy_for_current_user = {
+        "resource_id": str(resource_id1),
+        "identity_id": str(current_user.user_id),
+        "action": Action.own,
+    }
+    # write_test_access_policy_for_current_user = {
+    #     "resource_id": str(resource_id1),
+    #     "identity_id": str(current_user.user_id),
+    #     "action": Action.write,
+    # }
+    # read_test_access_policy_for_current_user = {
+    #     "resource_id": str(resource_id1),
+    #     "identity_id": str(current_user.user_id),
+    #     "action": Action.read,
+    # }
+
+    target_policies = [
+        own_test_access_policy_for_current_user,
+        # write_test_access_policy_for_current_user,
+        # read_test_access_policy_for_current_user,
+    ]
+
+    for policy in target_policies:
+        await add_one_test_access_policy(policy)
+
+    response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
+    assert response.status_code == 200
+    permission = AccessPermission(**response.json())
+
+    assert permission.resource_id == uuid.UUID(resource_id1)
+    assert permission.action == Action.own
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_user_tries_to_add_write_policy_where_an_owner_policy_exists_already(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access policies, i.e. share."""
+
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Access policies for the querying user - which is owner of resource:
+    write_test_access_policy_for_current_user = {
+        "resource_id": str(resource_id1),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+
+    await add_one_test_access_policy(write_test_access_policy_for_current_user)
+
+    response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
+    assert response.status_code == 200
+    permission = AccessPermission(**response.json())
+
+    assert permission.resource_id == uuid.UUID(resource_id1)
+    assert permission.action == Action.write
+
+    try:
+        own_test_access_policy_for_current_user = {
+            "resource_id": str(resource_id1),
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        }
+        await add_one_test_access_policy(own_test_access_policy_for_current_user)
+    except Exception as err:
+        assert "409" in str(err)
+        assert (
+            "Access policy for identity and resource already exists. Update instead of create."
+            in str(err)
+        )
+    else:
+        pytest.fail("No exception raised!")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_user_get_access_permission_for_resource_with_write_permission(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access policies, i.e. share."""
+
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Access policies for the querying user - which is owner of resource:
+    # own_test_access_policy_for_current_user = {
+    #     "resource_id": str(resource_id1),
+    #     "identity_id": str(current_user.user_id),
+    #     "action": Action.own,
+    # }
+    write_test_access_policy_for_current_user = {
+        "resource_id": str(resource_id1),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    # read_test_access_policy_for_current_user = {
+    #     "resource_id": str(resource_id1),
+    #     "identity_id": str(current_user.user_id),
+    #     "action": Action.read,
+    # }
+
+    target_policies = [
+        # own_test_access_policy_for_current_user,
+        write_test_access_policy_for_current_user,
+        # read_test_access_policy_for_current_user,
+    ]
+
+    for policy in target_policies:
+        await add_one_test_access_policy(policy)
+
+    response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
+    assert response.status_code == 200
+    permission = AccessPermission(**response.json())
+
+    assert permission.resource_id == uuid.UUID(resource_id1)
+    assert permission.action == Action.write
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_user_get_access_permission_for_resource_with_read_permission(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    # add_many_test_access_policies, # gives public rad access to all resources, so not good for this test!
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access policies, i.e. share."""
+
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Access policies for the querying user - which is owner of resource:
+    # own_test_access_policy_for_current_user = {
+    #     "resource_id": str(resource_id1),
+    #     "identity_id": str(current_user.user_id),
+    #     "action": Action.own,
+    # }
+    # write_test_access_policy_for_current_user = {
+    #     "resource_id": str(resource_id1),
+    #     "identity_id": str(current_user.user_id),
+    #     "action": Action.write,
+    # }
+    read_test_access_policy_for_current_user = {
+        "resource_id": str(resource_id1),
+        "identity_id": str(current_user.user_id),
+        "action": Action.read,
+    }
+
+    target_policies = [
+        # own_test_access_policy_for_current_user,
+        # write_test_access_policy_for_current_user,
+        read_test_access_policy_for_current_user,
+    ]
+
+    for policy in target_policies:
+        await add_one_test_access_policy(policy)
+
+    response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
+    assert response.status_code == 200
+    permission = AccessPermission(**response.json())
+
+    assert permission.resource_id == uuid.UUID(resource_id1)
+    assert permission.action == Action.read
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_user_get_access_permission_for_resource_without_permission(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    # add_many_test_access_policies, # gives public rad access to all resources, so not good for this test!
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access policies, i.e. share."""
+
+    app_override_provide_http_token_payload
+
+    # current_user = await current_user_from_azure_token(
+    #     mocked_provide_http_token_payload
+    # )
+
+    # Access policies for the querying user - which is owner of resource:
+    # own_test_access_policy_for_current_user = {
+    #     "resource_id": str(resource_id1),
+    #     "identity_id": str(current_user.user_id),
+    #     "action": Action.own,
+    # }
+    # write_test_access_policy_for_current_user = {
+    #     "resource_id": str(resource_id1),
+    #     "identity_id": str(current_user.user_id),
+    #     "action": Action.write,
+    # }
+    # read_test_access_policy_for_current_user = {
+    #     "resource_id": str(resource_id1),
+    #     "identity_id": str(current_user.user_id),
+    #     "action": Action.read,
+    # }
+
+    # target_policies = [
+    #     # own_test_access_policy_for_current_user,
+    #     # write_test_access_policy_for_current_user,
+    #     read_test_access_policy_for_current_user,
+    # ]
+
+    # for policy in target_policies:
+    #     await add_one_test_access_policy(policy)
+
+    # TBD: why would this fail with resource_id1 in connection to add_many_test_access_policies?
+    response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
+    assert response.status_code == 200
+    permission = AccessPermission(**response.json())
+
+    assert permission.resource_id == uuid.UUID(resource_id1)
+    assert permission.action is None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_user_get_access_permission_for_resources(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    register_many_resources,
+    add_many_test_access_policies,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access policies, i.e. share."""
+
+    app_override_provide_http_token_payload
+    add_many_test_access_policies  # not used - but added so there's more stuff in the database
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    # Access policies for the querying user - which is owner of resource:
+    target_policies = [
+        {
+            "resource_id": str(resource_id1),
+            "identity_id": str(current_user.user_id),
+            "action": Action.write,
+        },
+        {
+            "resource_id": str(resource_id4),
+            "identity_id": str(current_user.user_id),
+            "action": Action.write,
+        },
+        {
+            "resource_id": str(resource_id2),
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+        {
+            "resource_id": str(resource_id5),
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+        {
+            "resource_id": str(resource_id7),
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+    ]
+
+    for policy in target_policies:
+        await add_one_test_access_policy(policy)
+
+    response = await async_client.post(
+        "/api/v1/access/right/resources",
+        json=[resource_id1, resource_id2, resource_id4, resource_id7, resource_id9],
+    )
+    assert response.status_code == 200
+    result = response.json()
+    permissions = []
+    for res in result:
+        permissions.append(AccessPermission(**res))
+
+    assert len(permissions) == 5
+
+    assert permissions[0].resource_id == uuid.UUID(resource_id1)
+    assert permissions[0].action == Action.write
+    assert permissions[1].resource_id == uuid.UUID(resource_id2)
+    assert permissions[1].action == Action.own
+    assert permissions[2].resource_id == uuid.UUID(resource_id4)
+    assert permissions[2].action == Action.write
+    assert permissions[3].resource_id == uuid.UUID(resource_id7)
+    assert permissions[3].action == Action.own
+    assert permissions[4].resource_id == uuid.UUID(resource_id9)
+    assert permissions[4].action is None
+
 
 # region: ## AccessLog tests
 

@@ -1,12 +1,13 @@
 import uuid
 from datetime import datetime
 from typing import ClassVar, List, Optional
-
 from pydantic import BaseModel, model_validator  # , create_model
-from sqlalchemy import Column, Integer, UniqueConstraint
-from sqlmodel import Field, SQLModel, func, select
+from sqlalchemy import (
+    UniqueConstraint,
+)  # ,Column, Integer, text, DefaultClause, Computed
+from sqlmodel import Field, SQLModel  # func, select
 
-from core.databases import SynchronSession
+# from core.databases import SynchronSession
 
 # if TYPE_CHECKING:
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
@@ -95,7 +96,25 @@ class AccessPolicy(AccessPolicyCreate, table=True):
     resource_id: uuid.UUID = Field(foreign_key="identifiertypelink.id", index=True)
     action: "Action" = Field()
 
-    __table_args__ = (UniqueConstraint("identity_id", "resource_id", "action"),)
+    # @model_validator(mode="before")
+    # def log_model_called(self):
+    #     """Logs the model called"""
+    #     print("=== AccessPolicy model called. ===")
+    #     print(
+    #         "self.id: ",
+    #         self,
+    #         "self.identity_id: ",
+    #         self.identity_id,
+    #         "self.resource_id: ",
+    #         self.resource_id,
+    #         "self.action: ",
+    #         self.action,
+    #     )
+    #     return self
+
+    # __table_args__ = (UniqueConstraint("identity_id", "resource_id", "action"),)
+    # consider refactoring into a unique constraint for identity_id, resource_id only - highest access level only:
+    __table_args__ = (UniqueConstraint("identity_id", "resource_id"),)
 
 
 class AccessPolicyUpdate(AccessPolicyCreate):
@@ -135,6 +154,7 @@ class AccessPolicyDelete(SQLModel):
         return self
 
 
+# TBD: refactor into either using it on all CRUD operations (create, read, update and delete) or not at all
 class AccessRequest(BaseModel):
     """Model for the access request"""
 
@@ -142,6 +162,13 @@ class AccessRequest(BaseModel):
     current_user: CurrentUserData
     resource_id: Optional[uuid.UUID]
     action: Optional[Action]
+
+
+class AccessPermission(BaseModel):
+    """Model for the access permission"""
+
+    resource_id: uuid.UUID
+    action: Action | None
 
 
 # No update model for access policies: once created, they should not be updated, only deleted to keep loggings consistent.
@@ -216,17 +243,6 @@ class ResourceHierarchyCreate(SQLModel):
         return self
 
 
-def get_next_order(context):
-    parent_id = context.get_current_parameters()["parent_id"]
-    with SynchronSession() as session:
-        max_order = session.execute(
-            select(func.max(ResourceHierarchy.order)).where(
-                ResourceHierarchy.parent_id == parent_id
-            )
-        ).scalar()
-    return (max_order or 0) + 1
-
-
 class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
     """Table for resource hierarchy and its types"""
 
@@ -236,16 +252,7 @@ class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
     child_id: uuid.UUID = Field(
         primary_key=True
     )  # foreign_key="identifiertypelink.id",
-    # order: Optional[int] = Field(
-    #     sa_column=Column(
-    #         Integer,
-    #         Sequence("order_seq", start=1, increment=1),
-    #         # autoincrement=True,
-    #     )
-    # )
-    order: Optional[int] = Field(
-        sa_column=Column(Integer, default=get_next_order, index=True)
-    )
+    order: Optional[int] = Field(index=True)
 
     __table_args__ = (
         UniqueConstraint("parent_id", "child_id"),

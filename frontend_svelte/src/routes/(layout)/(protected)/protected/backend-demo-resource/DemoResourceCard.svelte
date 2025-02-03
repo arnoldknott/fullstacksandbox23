@@ -1,49 +1,30 @@
 <script lang="ts">
-	// import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import type { DemoResourceWithCreationDate } from '$lib/types';
-	// import { deserialize } from '$app/forms';
+	import type { DemoResourceExtended, AccessPolicy } from '$lib/types';
 	import { enhance } from '$app/forms';
+	import type { MicrosoftTeamBasicExtended } from '$lib/types';
+	import { AccessHandler, Action } from '$lib/accessHandler';
 
-	// let {
-	// 	id,
-	// 	name,
-	// 	description,
-	// 	language,
-	// 	category,
-	// 	category_id,
-	// 	tags
-	// }: {
-	// 	id: string;
-	// 	name: string;
-	// 	description?: string;
-	// 	language: string;
-	// 	category?: string;
-	// 	category_id?: string;
-	// 	tags: string[];
-	// } = $props();
 	let {
 		demoResource,
 		microsoftTeams
-	}: { demoResource?: DemoResourceWithCreationDate; microsoftTeams?: string[] } = $props();
+	}: { demoResource?: DemoResourceExtended; microsoftTeams?: MicrosoftTeamBasicExtended[] } =
+		$props();
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
+	let userRight = $state(demoResource?.user_right || 'read');
 	let name = $state(demoResource?.name || undefined);
 	let description = $state(demoResource?.description || undefined);
 	let language = $state(demoResource?.language || undefined);
 	let category = $state(demoResource?.category);
 	let categoryId = $state(demoResource?.category_id || undefined);
 	let tags = $state(demoResource?.tags || []);
-	// let creation_date = $state<Date | undefined>(undefined);
-	// if (demoResource && 'creation_date' in demoResource) {
-	// 	creation_date = demoResource.creation_date;
-	// }
 	let creationDate = $state<Date | undefined>(demoResource?.creation_date);
 	let formattedCreationDate = $derived(creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }));
+	let accessPolicies = $state<AccessPolicy[] | undefined>(demoResource?.access_policies);
 
 	let edit = $state(demoResource ? false : true);
 
-	// let edit = $state(false);
 	let flag = $state(
 		language === 'en-US'
 			? 'united-states'
@@ -57,7 +38,40 @@
 	let card: Card;
 	let createUpdateForm = $state<HTMLFormElement | null>(null);
 
+	let dropdownMenu = $state<HTMLUListElement | null>(null);
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
+
+	let teamRight = $state('read');
+
+	$effect(() => {
+		console.log('=== DemoResourceCard.svelte - teamRight ===');
+		console.log(teamRight);
+	});
+
+	const rightsIconSelection = (identityId: string) => {
+		if (!accessPolicies) return null;
+		const rights = AccessHandler.getRights(identityId, accessPolicies);
+		return rights === 'own'
+			? 'tabler--key-filled'
+			: rights === 'write'
+				? 'material-symbols--edit-outline-rounded'
+				: rights === 'read'
+					? 'tabler--eye'
+					: null;
+	};
+
+	let identitiesRightsMap = $derived.by(() => {
+		let rightsMapping = new Map<string, Action | null>();
+		microsoftTeams?.forEach((team) => {
+			// TBD: turn into a n object, that also hold information if right is assigned or not
+			rightsMapping.set(team.id, AccessHandler.getRights(team.id, team.access_policies));
+		});
+	});
+
+	$effect(() => {
+		console.log('=== DemoResourceCard.svelte - identitiesRightsMap ===');
+		console.log(identitiesRightsMap);
+	});
 
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
@@ -73,12 +87,12 @@
 		// and mark the missing fields invalid
 
 		return async ({ result }) => {
-			console.log('=== callback in submit function triggered ===');
+			// console.log('=== callback in submit function triggered ===');
 			if (result.type === 'success') {
 				if (id.slice(0, 4) === 'new_') {
 					id = result.data?.id;
-					console.log('=== result.data? ===');
-					console.log(result.data);
+					// console.log('=== result.data? ===');
+					// console.log(result.data);
 					creationDate = result.data?.creationDate;
 				}
 			}
@@ -142,101 +156,170 @@
 			{#if flag}
 				<span class="icon-[twemoji--flag-{flag}] size-6"></span>
 			{/if}
-			<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
-				<span
-					id="dropdown-menu-icon"
-					class="dropdown-toggle icon-[tabler--dots-vertical] size-6"
-					role="button"
-					aria-haspopup="menu"
-					aria-expanded="false"
-					aria-label="Dropdown"
-				></span>
-				<!-- <button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-text btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
+			<!-- TBD: move this if around the relevant list points,
+			if there are any left, that read-only users are also supposed to see. -->
+			{#if userRight === 'write' || userRight === 'own'}
+				<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
+					<span
+						id="dropdown-menu-icon-{id}"
+						class="dropdown-toggle icon-[tabler--dots-vertical] size-6"
+						role="button"
+						aria-haspopup="menu"
+						aria-expanded="false"
+						aria-label="Dropdown"
+					></span>
+					<!-- <button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-text btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
 					<span class="icon-[tabler--dots-vertical] size-6"></span>
 				</button> -->
-				<ul
-					class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
-					role="menu"
-					aria-orientation="vertical"
-					aria-labelledby="dropdown-menu-icon"
-				>
-					<li class=" items-center">
-						<button
-							class="btn dropdown-item btn-text justify-start"
-							aria-label="Edit Button"
-							onclick={() => (edit ? (edit = false) : (edit = true))}
-							><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
-						>
-					</li>
-					<li
-						class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+					<ul
+						class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+						role="menu"
+						bind:this={dropdownMenu}
+						aria-orientation="vertical"
+						aria-labelledby="dropdown-menu-icon-{id}"
 					>
-						<button
-							id="share-menu"
-							class="dropdown-toggle btn dropdown-item btn-text justify-start"
-							aria-haspopup="menu"
-							aria-expanded="false"
-							aria-label="Share with"
-							><span class="icon-[tabler--share-2]"></span>Share
-							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
-						</button>
-						<ul
-							class="dropdown-menu hidden min-w-60 dropdown-open:opacity-100"
-							role="menu"
-							aria-orientation="vertical"
-							aria-labelledby="share-menu"
-						>
-							<li>
-								<form method="POST" use:enhance={() => card.remove()}>
-									<!-- TBD: change to Teams ID -->
-									<!-- <button data-sveltekit-preload-data={false}
-										class="btn dropdown-item btn-text justify-start"
-										aria-label="Team 1"
-										name="id"
-										value={id}
-										formaction="?/share&teamid={teamId[0]}"><span class="icon-[fluent--people-team-16-filled]"></span>Team 1</button
-									> -->
-									{#if microsoftTeams}
-										{#each microsoftTeams as team}
-											<li>
-												<button
-													data-sveltekit-preload-data={false}
-													class="btn dropdown-item btn-text justify-start"
-													name="id"
-													value={id}
-													formaction="?/share&teamid={team}"
-													><span class="icon-[fluent--people-team-16-filled]"></span>{team.slice(
-														0,
-														8
-													)}</button
-												>
-											</li>
-											<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
-										{/each}
-									{/if}
-								</form>
-							</li>
-							<!-- <li>
+						<li class="items-center">
+							<button
+								class="btn dropdown-item btn-text content-center justify-start"
+								aria-label="Edit Button"
+								onclick={() => (edit ? (edit = false) : (edit = true))}
+								><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
+							>
+						</li>
+						{#if userRight === 'own'}
+							<li
+								class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+							>
+								<button
+									id="share-{id}"
+									class="dropdown-toggle btn dropdown-item btn-text content-center justify-start"
+									aria-haspopup="menu"
+									aria-expanded="false"
+									aria-label="Share with"
+									><span class="icon-[tabler--share-2]"></span>Share
+									<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
+								</button>
+								<!-- min-w-60 -->
+								<ul
+									class="dropdown-menu hidden min-w-[17rem] bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+									role="menu"
+									aria-orientation="vertical"
+									aria-labelledby="share-{id}"
+								>
+									<li>
+										<form method="POST" use:enhance={() => dropdownMenu?.classList.add('hidden')}>
+											{#if microsoftTeams}
+												{#each microsoftTeams as team}
+													<li>
+														<div class="flex items-center">
+															<!-- Also send the desired action for the share: own, write, read.
+													Pass information if access_policy already exists to form handling function share(). -->
+															<button
+																data-sveltekit-preload-data={false}
+																class="btn dropdown-item btn-text max-w-40 content-center"
+																name="id"
+																value={id}
+																formaction="?/share&teamid={team.id}"
+																><span class="icon-[fluent--people-team-16-filled]"
+																></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
+																	? ' ...'
+																	: null}
+															</button>
+															<div class="mr-2">
+																<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
+																<span
+																	class="icon-[{rightsIconSelection(team.id) ||
+																		'tabler--eye'}] size-4"
+																></span>
+															</div>
+															<div
+																class="dropdown relative inline-flex bg-base-300 [--offset:0] [--placement:left-start]"
+															>
+																<ul
+																	class="dropdown-menu hidden bg-base-300 outline outline-2 outline-outline dropdown-open:opacity-100"
+																	role="menu"
+																	aria-orientation="vertical"
+																	aria-labelledby="rights-{id}"
+																>
+																	<li>
+																		<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
+																combine with an accessPolicyExists - that also indicates the user, wether this policy already exists through a checkmark  -->
+																		<button
+																			type="button"
+																			onclick={() => (teamRight = 'own')}
+																			aria-label="own"
+																			><span class="icon-[tabler--key-filled]"></span></button
+																		>
+																	</li>
+																	<li>
+																		<button
+																			type="button"
+																			onclick={() => (teamRight = 'write')}
+																			aria-label="write"
+																			><span class="icon-[material-symbols--edit-outline-rounded]"
+																			></span></button
+																		>
+																	</li>
+																	<li>
+																		<button
+																			type="button"
+																			onclick={() => (teamRight = 'read')}
+																			aria-label="read"
+																			><span class="icon-[tabler--eye]"></span></button
+																		>
+																	</li>
+																</ul>
+																<button
+																	id="rights-{id}"
+																	type="button"
+																	class="dropdown-toggle btn btn-text bg-base-300"
+																	aria-haspopup="menu"
+																	aria-expanded="false"
+																	aria-label="Dropdown"
+																>
+																	<span
+																		class="icon-[tabler--chevron-down] size-4 dropdown-open:rotate-180"
+																	></span>
+																</button>
+															</div>
+															<div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
+																<span class="icon-[openmoji--check-mark]"></span>
+															</div>
+														</div>
+													</li>
+													<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
+												{/each}
+												<li class="dropdown-footer gap-2">
+													<button class="btn dropdown-item btn-text content-center justify-start"
+														>... more options</button
+													>
+												</li>
+											{/if}
+										</form>
+									</li>
+									<!-- <li>
 								Second
 							</li> -->
-						</ul>
-					</li>
-					<li class="dropdown-footer gap-2">
-						<!-- TBD: refactor into a call to same route and handle with params in load function 
+								</ul>
+							</li>
+							<li class="dropdown-footer gap-2">
+								<!-- TBD: refactor into a call to same route and handle with params in load function 
 						either by changing to method="GET" or by using a link instead of a button inside a form-->
-						<form method="POST" use:enhance={() => card.remove()}>
-							<button
-								class="btn dropdown-item btn-error btn-text justify-start"
-								aria-label="Delete Button"
-								name="id"
-								value={id}
-								formaction="?/delete"><span class="icon-[tabler--trash]"></span>Delete</button
-							>
-						</form>
-						<!-- onclick={deleteResource} -->
-					</li>
-				</ul>
-			</div>
+								<form method="POST" use:enhance={() => card.remove()}>
+									<button
+										class="btn dropdown-item btn-error btn-text content-center justify-start"
+										aria-label="Delete Button"
+										name="id"
+										value={id}
+										formaction="?/delete"><span class="icon-[tabler--trash]"></span>Delete</button
+									>
+								</form>
+								<!-- onclick={deleteResource} -->
+							</li>
+						{/if}
+					</ul>
+				</div>
+			{/if}
 		</div>
 	</div>
 {/snippet}
