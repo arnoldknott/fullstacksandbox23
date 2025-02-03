@@ -6,6 +6,7 @@ from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from socketio import ASGIApp
 
+from core.databases import run_migrations
 from core.config import config
 from core.security import CurrentAccessTokenHasRole, CurrentAccessTokenHasScope
 from routers.api.v1.access import router as access_router
@@ -48,6 +49,7 @@ async def lifespan(app: FastAPI):
     # configure_logging()# TBD: add logging configuration
     # Don't do that: use Sessions instead!
     # await postgres.connect()
+    await run_migrations()
     yield  # this is where the FastAPI runs - when its done, it comes back here and closes down
     # await postgres.disconnect()
     logger.info("Application shutdown")
