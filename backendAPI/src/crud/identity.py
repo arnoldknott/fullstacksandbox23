@@ -186,10 +186,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     session.add(user_profile)
                     # session.add(database_user)
                     await session.commit()
-                    # await session.refresh(user_account)
+                    await session.refresh(user_account)
                     await session.refresh(user_profile)
 
-                    # database_user.user_account_id = user_account.id
+                    database_user.user_account_id = user_account.id
                     database_user.user_profile_id = user_profile.id
                     session.add(database_user)
                     await session.commit()

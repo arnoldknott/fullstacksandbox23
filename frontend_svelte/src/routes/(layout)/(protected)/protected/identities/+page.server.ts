@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
-import { microsoftGraph, type MicrosoftTeamBasic } from '$lib/server/apis';
+import { microsoftGraph} from '$lib/server/apis';
+import type { MicrosoftTeamBasic } from '$lib/types';
 // const getAllMicrosoftTeams = async (sessionId: string, azureGroups: string[]) => {
 
 // }
@@ -44,10 +45,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 		);
 	}
 
-	console.log(
-		'=== src - routes - %28layout%29 - %28protected%29 - protected - identities - %2Bpage.server.ts - myTeams ==='
-	);
-	console.log(myTeams);
+	// console.log(
+	// 	'=== src - routes - %28layout%29 - %28protected%29 - protected - identities - %2Bpage.server.ts - myTeams ==='
+	// );
+	// console.log(myTeams);
 
 	return {
 		microsoftTeams: myTeams

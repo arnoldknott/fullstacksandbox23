@@ -133,6 +133,11 @@ class UserCreate(SQLModel):
 class User(UserCreate, table=True):
     """Schema for a user in the database."""
 
+    # Rules of thumb:
+    # - if other users are supposed to see it, it should be in the user model.
+    # - if the user never sees it in the user interface, it should be in the user account.
+    # - if the user sees it in the user interface, it should be in the user profile.
+
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
         foreign_key="identifiertypelink.id",
