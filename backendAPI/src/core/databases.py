@@ -2,9 +2,6 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.config import config
-from sqlmodel import select
-from models.identity import User, UserAccount, UserProfile
-from models.access import IdentifierTypeLink, IdentityType
 
 # from sqlmodel import SQLmodel  # noqa: F401
 
