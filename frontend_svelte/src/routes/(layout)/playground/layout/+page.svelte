@@ -1,3 +1,22 @@
+<script lang="ts">
+
+	let mode: 'light' | 'dark' = $state('dark');
+	const toggleMode = () => {
+		mode = mode === 'dark' ? 'light' : 'dark';
+	};
+	// for theme picker:
+	let sourceColor = $state('#769CDF');
+	let variant = $state('TONAL_SPOT');
+	const contrastMin = -1.0;
+	const contrastMax = 1.0;
+	const contrastStep = 0.2;
+	const allContrasts = Array.from(
+		{ length: (contrastMax - contrastMin) / contrastStep + 1 },
+		(_, i) => contrastMin + i * contrastStep
+	);
+	let contrast = $state(0.0);
+</script>
+
 <nav
 	class="navbar absolute start-0 top-48 z-[1] rounded-box bg-base-100 shadow md:flex md:items-stretch"
 >
@@ -31,13 +50,110 @@
 				</li>
 				<li><a href="#top">Docs</a></li>
 				<li><a href="#top">Playground</a></li>
-				<hr class="-mx-2 my-3 border-base-content/25" />
+				<hr class="-mx-2 my-3 border-outline" />
 				<li><a href="#top">Protected</a></li>
 				<li><a href="#top">Dashboard</a></li>
 			</ul>
 		</div>
 	</div>
-	<div class="self-start pt-2">
+	<div class="self-start pt-2 dropdown relative [--auto-close:inside] inline-flex rtl:[--placement:bottom-end]">
+		<span
+			id="dropdown-menu-icon-user"
+			class="dropdown-toggle icon-[fa6-solid--user] size-6"
+			role="button"
+			aria-haspopup="menu"
+			aria-expanded="false"
+			aria-label="User Menu"
+		></span>
+		<ul
+			class="dropdown-menu hidden bg-base-200 shadow-md shadow-outline dropdown-open:opacity-100"
+			role="menu"
+			aria-orientation="vertical"
+			aria-labelledby="dropdown-menu-icon-user"
+		>
+			<li class="flex items-center gap-2">
+				<span class="icon-[material-symbols--palette-outline] size-6"></span>
+				<span class="grow"> Theming</span>
+				<button aria-label="modeToggler">
+					<label id="modeToggler" class="swap swap-rotate">
+						<input type="checkbox" onclick={toggleMode} />
+						<span class="icon-[tabler--sun] swap-on size-6"></span>
+						<span class="icon-[tabler--moon] swap-off size-6"></span>
+					</label>
+				</button>
+			</li>
+			<li>
+				<div class="w-48">
+					<label class="label label-text flex" for="colorPicker"
+						>
+						<span class="flex-grow">Source color:</span>
+						<code >{sourceColor}</code>
+					</label>
+					<input
+						class="w-full"
+						type="color"
+						id="colorPicker"
+						name="color-picker"
+						bind:value={sourceColor}
+					/>
+				</div>
+			</li>
+			<li>
+				<div class="relative w-48">
+					<label class="label label-text" for="themeVariant">Variant</label>
+					<select
+						class="select select-floating max-w-sm"
+						aria-label="Select variant"
+						id="themeVariant"
+						bind:value={variant}
+					>
+						<option value="TONAL_SPOT">Tonal Spot</option>
+						<option value="MONOCHROME">Monochrome</option>
+						<option value="NEUTRAL">Neutral</option>
+						<option value="VIBRANT">Vibrant</option>
+						<option value="EXPRESSIVE">Expressive</option>
+						<option value="FIDELITY">Fidelity</option>
+						<option value="CONTENT">Content</option>
+						<option value="RAINBOW">Rainbow</option>
+						<option value="FRUIT_SALAD">Fruit Salad</option>
+					</select>
+				</div>
+			</li>
+			<li>
+				<div class="w-48">
+					<label class="label label-text flex" for="contrast"
+						>
+						<span class="flex-grow">Contrast: </span>
+						<code>{contrast}</code>
+					</label>
+	
+					<input
+						type="range"
+						min={contrastMin}
+						max={contrastMax}
+						step={contrastStep}
+						class="range w-full"
+						aria-label="contrast"
+						id="contrast"
+						bind:value={contrast}
+					/>
+					<!-- <div class="flex w-full justify-between px-2 text-xs">
+						{#each allContrasts as _}
+							<span>|</span>
+						{/each}
+					</div> -->
+				</div>
+			</li>
+			<li>
+				<hr class="-mx-2 my-5 border-outline" />
+			</li>
+			<li class="flex items-center gap-2">
+				<span class="icon-[tabler--settings] size-6"></span>
+				<span class="grow"> Settings</span>
+			</li>
+		</ul>
+	</div>
+	<!-- <div class="self-start pt-2">
 		<a
 			class="link link-neutral text-xl font-semibold text-base-content no-underline"
 			href="#top"
@@ -45,5 +161,7 @@
 		>
 			<span class="icon-[fa6-solid--user] size-6"></span>
 		</a>
-	</div>
+	</div> -->
 </nav>
+
+
