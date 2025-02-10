@@ -58,29 +58,29 @@ class BaseAPI {
 		headers: HeadersInit = {}
 	): Promise<Response> {
 		// try {
-			const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
-			// options.body = JSON.stringify(body);
-			if (body instanceof FormData) {
-				options.body = JSON.stringify(Object.fromEntries(body));
-			} else if (typeof body === 'string') {
-				options.body = body;
-			} else {
-				console.error('Invalid body type or not yet implemented: ' + typeof body);
-				throw new Error('Invalid body type');
-			}
-			// options.body = body;
-			options.method = 'POST';
-			const request = this.constructRequest(path, accessToken, options, headers);
-			return await fetch(request);
-			// const response = await fetch(`${this.apiBaseURL}${path}`, {
-			// 	method: 'POST',
-			// 	headers: {
-			// 		Authorization: `Bearer ${accessToken}`,
-			// 		'Content-Type': "application/json"
-			// 	},
-			// 	body: JSON.stringify(body)
-			// });
-			// return response
+		const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
+		// options.body = JSON.stringify(body);
+		if (body instanceof FormData) {
+			options.body = JSON.stringify(Object.fromEntries(body));
+		} else if (typeof body === 'string') {
+			options.body = body;
+		} else {
+			console.error('Invalid body type or not yet implemented: ' + typeof body);
+			throw new Error('Invalid body type');
+		}
+		// options.body = body;
+		options.method = 'POST';
+		const request = this.constructRequest(path, accessToken, options, headers);
+		return await fetch(request);
+		// const response = await fetch(`${this.apiBaseURL}${path}`, {
+		// 	method: 'POST',
+		// 	headers: {
+		// 		Authorization: `Bearer ${accessToken}`,
+		// 		'Content-Type': "application/json"
+		// 	},
+		// 	body: JSON.stringify(body)
+		// });
+		// return response
 		// } catch (error) {
 		// 	return this.errorHandler(error);
 		// }
@@ -118,18 +118,18 @@ class BaseAPI {
 		headers: HeadersInit = {}
 	): Promise<Response> {
 		// try {
-			const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
-			if (body instanceof FormData) {
-				options.body = JSON.stringify(Object.fromEntries(body));
-			} else if (typeof body === 'string') {
-				options.body = body;
-			} else {
-				console.error('Invalid body type or not yet implemented: ' + typeof body);
-				throw new Error('Invalid body type');
-			}
-			options.method = 'PUT';
-			const request = this.constructRequest(path, accessToken, options, headers);
-			return await fetch(request);
+		const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
+		if (body instanceof FormData) {
+			options.body = JSON.stringify(Object.fromEntries(body));
+		} else if (typeof body === 'string') {
+			options.body = body;
+		} else {
+			console.error('Invalid body type or not yet implemented: ' + typeof body);
+			throw new Error('Invalid body type');
+		}
+		options.method = 'PUT';
+		const request = this.constructRequest(path, accessToken, options, headers);
+		return await fetch(request);
 		// } catch (error) {
 		// 	return this.errorHandler(error);
 		// }
@@ -143,16 +143,16 @@ class BaseAPI {
 		headers: HeadersInit
 	): Promise<Response> {
 		// try {
-			const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
-			options.method = 'DELETE';
-			const request = this.constructRequest(path, accessToken, options, headers);
-			return await fetch(request);
-			// const response = await fetch(`${this.apiBaseURL}${path}`, {
-			// 	headers: {
-			// 		Authorization: `Bearer ${accessToken}`
-			// 	}
-			// });
-			// return response;
+		const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
+		options.method = 'DELETE';
+		const request = this.constructRequest(path, accessToken, options, headers);
+		return await fetch(request);
+		// const response = await fetch(`${this.apiBaseURL}${path}`, {
+		// 	headers: {
+		// 		Authorization: `Bearer ${accessToken}`
+		// 	}
+		// });
+		// return response;
 		// } catch (error) {
 		// 	console.error('=== src - lib - server - apis - delete - error ===');
 		// 	console.error(error);
