@@ -1,7 +1,6 @@
 import AppConfig from '$lib/server/config';
 import { msalAuthProvider, type BaseOauthProvider } from '$lib/server/oauth';
 import type { MicrosoftTeamBasic } from '$lib/types';
-import { error } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
 
@@ -41,14 +40,14 @@ class BaseAPI {
 		});
 	}
 
-	private errorHandler(error: unknown): Response {
-		console.log('=== src - lib - server - apis - errorHandler ===');
-		console.error(error);
-		if (error instanceof Response) {
-			return error;
-		}
-		return new Response(`Error accessing ${this.apiBaseURL}`, { status: 500 });
-	}
+	// private errorHandler(error: unknown): Response {
+	// 	console.log('=== src - lib - server - apis - errorHandler ===');
+	// 	console.error(error);
+	// 	if (error instanceof Response) {
+	// 		return error;
+	// 	}
+	// 	return new Response(`Error accessing ${this.apiBaseURL}`, { status: 500 });
+	// }
 
 	async post(
 		session_id: string,
@@ -58,7 +57,7 @@ class BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	): Promise<Response> {
-		try {
+		// try {
 			const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
 			// options.body = JSON.stringify(body);
 			if (body instanceof FormData) {
@@ -82,9 +81,9 @@ class BaseAPI {
 			// 	body: JSON.stringify(body)
 			// });
 			// return response
-		} catch (error) {
-			return this.errorHandler(error);
-		}
+		// } catch (error) {
+		// 	return this.errorHandler(error);
+		// }
 	}
 
 	async get(
@@ -118,7 +117,7 @@ class BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	): Promise<Response> {
-		try {
+		// try {
 			const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
 			if (body instanceof FormData) {
 				options.body = JSON.stringify(Object.fromEntries(body));
@@ -131,9 +130,9 @@ class BaseAPI {
 			options.method = 'PUT';
 			const request = this.constructRequest(path, accessToken, options, headers);
 			return await fetch(request);
-		} catch (error) {
-			return this.errorHandler(error);
-		}
+		// } catch (error) {
+		// 	return this.errorHandler(error);
+		// }
 	}
 
 	async delete(
@@ -143,7 +142,7 @@ class BaseAPI {
 		options: RequestInit,
 		headers: HeadersInit
 	): Promise<Response> {
-		try {
+		// try {
 			const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
 			options.method = 'DELETE';
 			const request = this.constructRequest(path, accessToken, options, headers);
@@ -154,11 +153,11 @@ class BaseAPI {
 			// 	}
 			// });
 			// return response;
-		} catch (error) {
-			console.error('=== src - lib - server - apis - delete - error ===');
-			console.error(error);
-			return this.errorHandler(error);
-		}
+		// } catch (error) {
+		// 	console.error('=== src - lib - server - apis - delete - error ===');
+		// 	console.error(error);
+		// 	return this.errorHandler(error);
+		// }
 	}
 }
 
