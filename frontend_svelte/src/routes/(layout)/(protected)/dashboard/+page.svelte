@@ -2,7 +2,6 @@
 	import Guard from '$components/Guard.svelte';
 	import Heading from '$components/Heading.svelte';
 	import { page } from '$app/state';
-	// import NavButton from '$components/NavButton.svelte';
 </script>
 
 <Guard>
