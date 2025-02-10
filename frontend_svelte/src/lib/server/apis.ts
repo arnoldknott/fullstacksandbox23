@@ -1,6 +1,7 @@
 import AppConfig from '$lib/server/config';
 import { msalAuthProvider, type BaseOauthProvider } from '$lib/server/oauth';
 import type { MicrosoftTeamBasic } from '$lib/types';
+import { error } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
 
@@ -41,6 +42,7 @@ class BaseAPI {
 	}
 
 	private errorHandler(error: unknown): Response {
+		console.log('=== src - lib - server - apis - errorHandler ===');
 		console.error(error);
 		if (error instanceof Response) {
 			return error;
@@ -92,20 +94,20 @@ class BaseAPI {
 		options: RequestInit,
 		headers: HeadersInit
 	): Promise<Response> {
-		try {
-			const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
-			options.method = 'GET';
-			const request = this.constructRequest(path, accessToken, options, headers);
-			return await fetch(request);
-			// const response = await fetch(`${this.apiBaseURL}${path}`, {
-			// 	headers: {
-			// 		Authorization: `Bearer ${accessToken}`
-			// 	}
-			// });
-			// return response;
-		} catch (error) {
-			return this.errorHandler(error);
-		}
+		// try {
+		const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
+		options.method = 'GET';
+		const request = this.constructRequest(path, accessToken, options, headers);
+		const response = await fetch(request);
+		// if (response.status !== 200) {
+		// 	console.error('=== src - lib - server - apis - get - response.status !== 200 ===');
+		// 	console.error(response.status)
+		// 	error(response.status, {message: 'Error accessing ' + this.apiBaseURL + path });
+		// }
+		return response;
+		// } catch (error) {
+		// 	return this.errorHandler(error);
+		// }
 	}
 
 	async put(
