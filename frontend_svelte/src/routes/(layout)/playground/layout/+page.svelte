@@ -1,5 +1,4 @@
 <script lang="ts">
-
 	let mode: 'light' | 'dark' = $state('dark');
 	const toggleMode = () => {
 		mode = mode === 'dark' ? 'light' : 'dark';
@@ -10,10 +9,10 @@
 	const contrastMin = -1.0;
 	const contrastMax = 1.0;
 	const contrastStep = 0.2;
-	const allContrasts = Array.from(
-		{ length: (contrastMax - contrastMin) / contrastStep + 1 },
-		(_, i) => contrastMin + i * contrastStep
-	);
+	// const allContrasts = Array.from(
+	// 	{ length: (contrastMax - contrastMin) / contrastStep + 1 },
+	// 	(_, i) => contrastMin + i * contrastStep
+	// );
 	let contrast = $state(0.0);
 </script>
 
@@ -56,7 +55,9 @@
 			</ul>
 		</div>
 	</div>
-	<div class="self-start pt-2 dropdown relative [--auto-close:inside] inline-flex rtl:[--placement:bottom-end]">
+	<div
+		class="dropdown relative inline-flex self-start pt-2 [--auto-close:inside] rtl:[--placement:bottom-end]"
+	>
 		<span
 			id="dropdown-menu-icon-user"
 			class="dropdown-toggle icon-[fa6-solid--user] size-6"
@@ -84,10 +85,9 @@
 			</li>
 			<li>
 				<div class="w-48">
-					<label class="label label-text flex" for="colorPicker"
-						>
+					<label class="label label-text flex" for="colorPicker">
 						<span class="flex-grow">Source color:</span>
-						<code >{sourceColor}</code>
+						<code>{sourceColor}</code>
 					</label>
 					<input
 						class="w-full"
@@ -121,12 +121,11 @@
 			</li>
 			<li>
 				<div class="w-48">
-					<label class="label label-text flex" for="contrast"
-						>
+					<label class="label label-text flex" for="contrast">
 						<span class="flex-grow">Contrast: </span>
 						<code>{contrast}</code>
 					</label>
-	
+
 					<input
 						type="range"
 						min={contrastMin}
@@ -163,5 +162,3 @@
 		</a>
 	</div> -->
 </nav>
-
-
