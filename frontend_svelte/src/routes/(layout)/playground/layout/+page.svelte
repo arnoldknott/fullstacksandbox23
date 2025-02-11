@@ -152,7 +152,7 @@
 			</li>
 		</ul>
 	</div>
-	<button class="ml-5 btn btn-secondary btn-outline" aria-label="LogInOut">
+	<button class="btn btn-secondary btn-outline ml-5" aria-label="LogInOut">
 		<a href="#top">LogInOut</a>
 	</button>
 	<!-- <div class="self-start pt-2">
