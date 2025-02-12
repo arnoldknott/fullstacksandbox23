@@ -16,43 +16,44 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;
 
 	const response = await backendAPI.get(sessionId, '/demoresource/');
-	const demoResources = await response.json();
-	const demoResourceIds = demoResources.map((resource: DemoResource) => resource.id);
-	const creationDataResponse = await backendAPI.post(
-		sessionId,
-		'/access/log/created',
-		JSON.stringify(demoResourceIds)
-	);
-	const creationDates = await creationDataResponse.json();
+	let demoResourcesExtended = [];
+	if (response.status === 200) {
+		const demoResources = await response.json();
+		const demoResourceIds = demoResources.map((resource: DemoResource) => resource.id);
+		const creationDataResponse = await backendAPI.post(
+			sessionId,
+			'/access/log/created',
+			JSON.stringify(demoResourceIds)
+		);
+		const creationDates = await creationDataResponse.json();
 
-	// let demoResourcesExtended = demoResources.map(
-	// 	(resource: DemoResourceExtended, index: number) => {
-	// 		resource = { ...resource };
-	// 		resource.creation_date = new Date(creationDates[index]);
-	// 		return resource;
-	// 	}
-	// );
+		// let demoResourcesExtended = demoResources.map(
+		// 	(resource: DemoResourceExtended, index: number) => {
+		// 		resource = { ...resource };
+		// 		resource.creation_date = new Date(creationDates[index]);
+		// 		return resource;
+		// 	}
+		// );
 
-	const accessRightsResponse = await backendAPI.post(
-		sessionId,
-		'/access/right/resources',
-		JSON.stringify(demoResourceIds)
-	);
-	const accessRights = await accessRightsResponse.json();
+		const accessRightsResponse = await backendAPI.post(
+			sessionId,
+			'/access/right/resources',
+			JSON.stringify(demoResourceIds)
+		);
+		const accessRights = await accessRightsResponse.json();
 
-	const ownedDemoResourceIds = accessRights
-		.filter((right: AccessRight) => right.action === 'own')
-		.map((right: AccessRight) => right.resource_id);
+		const ownedDemoResourceIds = accessRights
+			.filter((right: AccessRight) => right.action === 'own')
+			.map((right: AccessRight) => right.resource_id);
 
-	const accessPoliciesResponse = await backendAPI.post(
-		sessionId,
-		'/access/policy/resources',
-		JSON.stringify(ownedDemoResourceIds)
-	);
-	const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
+		const accessPoliciesResponse = await backendAPI.post(
+			sessionId,
+			'/access/policy/resources',
+			JSON.stringify(ownedDemoResourceIds)
+		);
+		const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
 
-	const demoResourcesExtended = demoResources.map(
-		(resource: DemoResourceExtended, index: number) => {
+		demoResourcesExtended = demoResources.map((resource: DemoResourceExtended, index: number) => {
 			// const userRight = accessRights.find((right: AccessRight) => right.resource_id === resource.id);
 			// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id);
 			return Object.assign(
@@ -67,11 +68,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 					)
 				}
 			);
-		}
-	);
-	demoResourcesExtended.sort((a: DemoResourceExtended, b: DemoResourceExtended) => {
-		return (a.creation_date ?? 0) < (b.creation_date ?? 0) ? 1 : -1;
-	});
+		});
+		demoResourcesExtended.sort((a: DemoResourceExtended, b: DemoResourceExtended) => {
+			return (a.creation_date ?? 0) < (b.creation_date ?? 0) ? 1 : -1;
+		});
+	}
 
 	let microsoftTeams: MicrosoftTeamBasic[] = [];
 	if (locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups) {
