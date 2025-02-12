@@ -206,7 +206,7 @@
 			class="collapse hidden grow basis-full overflow-hidden transition-[height] duration-300 w-full md:flex md:items-center"
 		> -->
 		<ul
-			class="dropdown-menu hidden text-base dropdown-open:opacity-100"
+			class="dropdown-menu hidden bg-base-200 shadow-md shadow-outline text-base dropdown-open:opacity-100"
 			aria-labelledby="default-navbar-dropdown"
 		>
 			<li class="dropdown-item">
