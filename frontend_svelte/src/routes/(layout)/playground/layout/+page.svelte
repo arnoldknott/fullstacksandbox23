@@ -157,7 +157,7 @@
 		</ul>
 	</div>
 	<div class="navabar-end flex items-center md:ml-2">
-		<button class="btn btn-secondary btn-outline rounded-full ml-2" aria-label="LogInOut">
+		<button class="btn btn-secondary btn-outline rounded-full ml-2 shadow shadow-secondary" aria-label="LogInOut">
 			<a href="#top">LogInOut</a>
 		</button>
 	</div>
