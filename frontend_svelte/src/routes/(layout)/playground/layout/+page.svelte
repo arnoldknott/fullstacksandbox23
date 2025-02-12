@@ -52,7 +52,8 @@
 			<ul class="menu p-0 text-base md:menu-horizontal max-md:mt-2">
 				<li>
 					<a href="#top" aria-label="Home"
-						><span class="bg-primary icon-[material-symbols--home-outline-rounded] size-6"></span></a
+						><span class="icon-[material-symbols--home-outline-rounded] size-6 bg-primary"
+						></span></a
 					>
 				</li>
 				<li><a href="#top" class="text-primary">Docs</a></li>
@@ -63,8 +64,10 @@
 		</div>
 	</div>
 	<div class="navbar-center flex flex-col justify-center">
-		<div class="text-title-small text-primary italic" style="line-height: 1;">Fullstack</div>
-		<div class="text-title-small text-secondary font-bold tracking-widest" style="line-height: 1">Sandbox</div>
+		<div class="text-title-small italic text-primary" style="line-height: 1;">Fullstack</div>
+		<div class="text-title-small font-bold tracking-widest text-secondary" style="line-height: 1">
+			Sandbox
+		</div>
 	</div>
 	<div class="text-heading-large navbar-center ml-1 flex items-center text-accent">23</div>
 	<div
@@ -165,7 +168,10 @@
 		</ul>
 	</div>
 	<div class="navabar-end flex items-center md:ml-2">
-		<button class="btn btn-secondary btn-outline rounded-full ml-2 shadow shadow-secondary" aria-label="LogInOut">
+		<button
+			class="btn btn-secondary btn-outline ml-2 rounded-full shadow shadow-secondary"
+			aria-label="LogInOut"
+		>
 			<a href="#top">LogInOut</a>
 		</button>
 	</div>
@@ -182,9 +188,9 @@
 </nav>
 
 <nav
-	class="navbar absolute start-0 top-[800px] z-[1] rounded-box bg-base-100 shadow md:flex justify-between md:items-stretch"
->	
-	<div class="navbar-start dropdown relative inline-flex  rtl:[--placement:bottom-end] md:hidden">
+	class="navbar absolute start-0 top-[800px] z-[1] justify-between rounded-box bg-base-100 shadow md:flex md:items-stretch"
+>
+	<div class="dropdown navbar-start relative inline-flex md:hidden rtl:[--placement:bottom-end]">
 		<button
 			type="button"
 			class="dropdown-toggle btn btn-square btn-secondary btn-outline btn-sm"
@@ -199,24 +205,27 @@
 			id="default-navbar-dropdown"
 			class="collapse hidden grow basis-full overflow-hidden transition-[height] duration-300 w-full md:flex md:items-center"
 		> -->
-			<ul class="dropdown-menu dropdown-open:opacity-100 hidden text-base " aria-labelledby="default-navbar-dropdown">
-				<li class="dropdown-item">
-					<a href="#top" aria-label="Home"
-						><span class="bg-primary icon-[material-symbols--home-outline-rounded] size-6"></span></a
-					>
-				</li>
-				<li class="dropdown-item"><a href="#top" class="text-primary">Docs</a></li>
-				<li class="dropdown-item"><a href="#top" class="text-primary">Playground</a></li>
-				<hr class="-mx-2 my-3 border-outline" />
-				<li class="dropdown-item"><a href="#top" class="text-primary">Dashboard</a></li>
-			</ul>
+		<ul
+			class="dropdown-menu hidden text-base dropdown-open:opacity-100"
+			aria-labelledby="default-navbar-dropdown"
+		>
+			<li class="dropdown-item">
+				<a href="#top" aria-label="Home"
+					><span class="icon-[material-symbols--home-outline-rounded] size-6 bg-primary"></span></a
+				>
+			</li>
+			<li class="dropdown-item"><a href="#top" class="text-primary">Docs</a></li>
+			<li class="dropdown-item"><a href="#top" class="text-primary">Playground</a></li>
+			<hr class="-mx-2 my-3 border-outline" />
+			<li class="dropdown-item"><a href="#top" class="text-primary">Dashboard</a></li>
+		</ul>
 		<!-- </div> -->
 	</div>
-	<div class="navbar-start hidden md:flex items-center">
+	<div class="navbar-start hidden items-center md:flex">
 		<ul class="menu-horizontal flex items-center md:gap-4">
 			<li>
 				<a href="#top" aria-label="Home"
-					><span class="bg-primary icon-[material-symbols--home-outline-rounded] size-6"></span></a
+					><span class="icon-[material-symbols--home-outline-rounded] size-6 bg-primary"></span></a
 				>
 			</li>
 			<li><a href="#top" class="text-primary">Docs</a></li>
@@ -262,15 +271,15 @@
 	</div> -->
 	<div class="navbar-center flex flex-row">
 		<div class="flex flex-col justify-center">
-			<div class="text-title-small text-primary italic" style="line-height: 1;">Fullstack</div>
-			<div class="text-title-small text-secondary font-bold tracking-widest" style="line-height: 1">Sandbox</div>
+			<div class="text-title-small italic text-primary" style="line-height: 1;">Fullstack</div>
+			<div class="text-title-small font-bold tracking-widest text-secondary" style="line-height: 1">
+				Sandbox
+			</div>
 		</div>
 		<div class="text-heading-large navbar-center ml-1 flex items-center text-accent">23</div>
 	</div>
 	<div class="navbar-end">
-		<div
-			class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
-		>
+		<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
 			<span
 				id="dropdown-menu-icon-user"
 				class="dropdown-toggle icon-[fa6-solid--user] size-6"
@@ -366,7 +375,10 @@
 			</ul>
 		</div>
 		<div class="flex items-center md:ml-2">
-			<button class="btn btn-secondary btn-outline rounded-full ml-2 shadow shadow-secondary" aria-label="LogInOut">
+			<button
+				class="btn btn-secondary btn-outline ml-2 rounded-full shadow shadow-secondary"
+				aria-label="LogInOut"
+			>
 				<a href="#top">LogInOut</a>
 			</button>
 		</div>

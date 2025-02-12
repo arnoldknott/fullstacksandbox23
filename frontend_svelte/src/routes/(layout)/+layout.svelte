@@ -30,7 +30,6 @@
 	const contrastStep = 0.2;
 	// let contrast = $state(0.0);
 
-
 	let { children }: { children: Snippet } = $props();
 
 	let mainContent: HTMLDivElement;
@@ -137,9 +136,9 @@
 
 <div bind:this={mainContent} class="h-full" use:applyTheming>
 	<nav
-		class="navbar absolute start-0 top-0 z-[1] rounded-box bg-base-100 shadow md:flex justify-between md:items-stretch"
+		class="navbar absolute start-0 top-0 z-[1] justify-between rounded-box bg-base-100 shadow md:flex md:items-stretch"
 	>
-		<div class="navbar-start dropdown inline-flex rtl:[--placement:bottom-end] md:hidden">
+		<div class="dropdown navbar-start inline-flex md:hidden rtl:[--placement:bottom-end]">
 			<button
 				type="button"
 				class="dropdown-toggle btn btn-square btn-secondary btn-outline btn-sm"
@@ -150,25 +149,30 @@
 				<span class="icon-[tabler--menu-2] size-4 dropdown-open:hidden"></span>
 				<span class="icon-[tabler--x] hidden size-4 dropdown-open:block"></span>
 			</button>
-				<ul class="dropdown-menu dropdown-open:opacity-100 hidden text-base " aria-labelledby="default-navbar-dropdown">
-					<li class="dropdown-item">
-						<a href="/" aria-label="Home"
-							><span class="bg-primary icon-[material-symbols--home-outline-rounded] size-6"></span></a
-						>
-					</li>
-					<li class="dropdown-item"><a href="/docs" class="text-primary">Docs</a></li>
-					<li class="dropdown-item"><a href="/playground" class="text-primary">Playground</a></li>
-					<Guard>
-						<hr class="-mx-2 my-3 border-outline" />
-						<li class="dropdown-item"><a href="/dashboard" class="text-primary">Dashboard</a></li>
-					</Guard>
-				</ul>
+			<ul
+				class="dropdown-menu hidden text-base dropdown-open:opacity-100"
+				aria-labelledby="default-navbar-dropdown"
+			>
+				<li class="dropdown-item">
+					<a href="/" aria-label="Home"
+						><span class="icon-[material-symbols--home-outline-rounded] size-6 bg-primary"
+						></span></a
+					>
+				</li>
+				<li class="dropdown-item"><a href="/docs" class="text-primary">Docs</a></li>
+				<li class="dropdown-item"><a href="/playground" class="text-primary">Playground</a></li>
+				<Guard>
+					<hr class="-mx-2 my-3 border-outline" />
+					<li class="dropdown-item"><a href="/dashboard" class="text-primary">Dashboard</a></li>
+				</Guard>
+			</ul>
 		</div>
-		<div class="navbar-start hidden md:flex items-center">
+		<div class="navbar-start hidden items-center md:flex">
 			<ul class="menu-horizontal flex items-center md:gap-4">
 				<li>
 					<a href="/" aria-label="Home"
-						><span class="bg-primary icon-[material-symbols--home-outline-rounded] size-6"></span></a
+						><span class="icon-[material-symbols--home-outline-rounded] size-6 bg-primary"
+						></span></a
 					>
 				</li>
 				<li><a href="/docs" class="text-primary">Docs</a></li>
@@ -181,23 +185,26 @@
 		</div>
 		<div class="navbar-center flex flex-row">
 			<div class="flex flex-col justify-center">
-				<div class="text-title-small text-primary italic" style="line-height: 1;">Fullstack</div>
-				<div class="text-title-small text-secondary font-bold tracking-widest" style="line-height: 1">Sandbox</div>
+				<div class="text-title-small italic text-primary" style="line-height: 1;">Fullstack</div>
+				<div
+					class="text-title-small font-bold tracking-widest text-secondary"
+					style="line-height: 1"
+				>
+					Sandbox
+				</div>
 			</div>
 			<div class="text-heading-large navbar-center ml-1 flex items-center text-accent">23</div>
 		</div>
 		<div class="navbar-end flex items-center">
-			<div
-				class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
-			>
+			<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
 				<span
-						id="dropdown-menu-icon-user"
-						class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] size-6 bg-secondary' : ''}"
-						role="button"
-						aria-haspopup="menu"
-						aria-expanded="false"
-						aria-label="User Menu"
-					>
+					id="dropdown-menu-icon-user"
+					class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] size-6 bg-secondary' : ''}"
+					role="button"
+					aria-haspopup="menu"
+					aria-expanded="false"
+					aria-label="User Menu"
+				>
 					{#if loggedIn}
 						<img class="h-10 w-10 rounded-full" src="/api/v1/user/me/picture" alt="you" />
 					{/if}
@@ -290,19 +297,23 @@
 			</div>
 			<div class="flex items-center md:ml-2">
 				{#if !loggedIn}
-					<button class="btn btn-secondary rounded-full ml-2 shadow shadow-secondary" aria-label="Log In">
+					<button
+						class="btn btn-secondary ml-2 rounded-full shadow shadow-secondary"
+						aria-label="Log In"
+					>
 						<a href="/login">Log in</a>
 					</button>
 				{:else}
-					<button class="btn btn-secondary btn-outline rounded-full ml-2 shadow shadow-secondary" aria-label="Log Out">
+					<button
+						class="btn btn-secondary btn-outline ml-2 rounded-full shadow shadow-secondary"
+						aria-label="Log Out"
+					>
 						<a href="/logout">Log out</a>
 					</button>
 				{/if}
 			</div>
 		</div>
 	</nav>
-
-	
 
 	<div class="mx-5 pt-24">
 		{@render children?.()}
