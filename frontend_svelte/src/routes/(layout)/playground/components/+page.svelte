@@ -553,6 +553,7 @@
 						>Font Awesome Solid</span
 					>
 				</p>
+				<span class="icon-[fa6-solid--user] size-12"></span>
 				<span class="icon-[fa6-solid--droplet] size-12"></span>
 				<span class="icon-[fa6-solid--comments] size-12"></span>
 				<span class="icon-[fa6-solid--plus] size-12"></span>

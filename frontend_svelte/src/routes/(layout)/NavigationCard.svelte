@@ -23,7 +23,7 @@
 {/snippet}
 
 <Card id={v4()} {header} {footer}>
-	<p class="text-body-small md:text-body text-primary-container-content">
+	<p class="text-body-small md:text-body text-primary">
 		{@render children?.()}
 	</p>
 </Card>
