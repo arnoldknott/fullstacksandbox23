@@ -55,10 +55,10 @@
 		</div>
 	</div>
 	<div class="navbar-center flex flex-col justify-center">
-		<div class="text-title-small" style="line-height: 1;">Fullstack</div>
-		<div class="text-title-small" style="line-height: 1;">Sandbox</div>
+		<div class="text-title-small text-primary italic" style="line-height: 1;">Fullstack</div>
+		<div class="text-title-small text-secondary font-bold" style="line-height: 1">Sandbox</div>
 	</div>
-	<div class="text-heading-large navbar-center ml-1 flex items-center">23</div>
+	<div class="text-heading-large navbar-center ml-1 flex items-center text-accent">23</div>
 	<div
 		class="dropdown navbar-end flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
 	>
@@ -157,7 +157,7 @@
 		</ul>
 	</div>
 	<div class="navabar-end flex items-center md:ml-2">
-		<button class="btn btn-secondary btn-outline ml-2" aria-label="LogInOut">
+		<button class="btn btn-secondary btn-outline rounded-full ml-2" aria-label="LogInOut">
 			<a href="#top">LogInOut</a>
 		</button>
 	</div>
