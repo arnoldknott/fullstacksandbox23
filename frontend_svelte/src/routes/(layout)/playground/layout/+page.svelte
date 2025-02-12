@@ -41,7 +41,7 @@
 			id="default-navbar-collapse"
 			class="collapse hidden grow basis-full overflow-hidden transition-[height] duration-300 md:navbar-start max-md:w-full"
 		>
-			<ul class="menu gap-2 p-0 text-base md:menu-horizontal max-md:mt-2">
+			<ul class="menu p-0 text-base md:menu-horizontal max-md:mt-2">
 				<li>
 					<a href="#top" aria-label="Home"
 						><span class="icon-[material-symbols--home-outline-rounded] size-6"></span></a
@@ -50,13 +50,17 @@
 				<li><a href="#top">Docs</a></li>
 				<li><a href="#top">Playground</a></li>
 				<hr class="-mx-2 my-3 border-outline" />
-				<li><a href="#top">Protected</a></li>
 				<li><a href="#top">Dashboard</a></li>
 			</ul>
 		</div>
 	</div>
+	<div class="navbar-center flex flex-col justify-center">
+		<div class="text-title-small" style="line-height: 1;">Fullstack</div>
+		<div class="text-title-small" style="line-height: 1;">Sandbox</div>
+	</div>
+	<div class="text-heading-large navbar-center ml-1 flex items-center">23</div>
 	<div
-		class="dropdown relative inline-flex self-start pt-2 [--auto-close:inside] rtl:[--placement:bottom-end]"
+		class="dropdown navbar-end flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
 	>
 		<span
 			id="dropdown-menu-icon-user"
@@ -152,9 +156,12 @@
 			</li>
 		</ul>
 	</div>
-	<button class="btn btn-secondary btn-outline ml-5" aria-label="LogInOut">
-		<a href="#top">LogInOut</a>
-	</button>
+	<div class="navabar-end flex items-center md:ml-2">
+		<button class="btn btn-secondary btn-outline ml-2" aria-label="LogInOut">
+			<a href="#top">LogInOut</a>
+		</button>
+	</div>
+
 	<!-- <div class="self-start pt-2">
 		<a
 			class="link link-neutral text-xl font-semibold text-base-content no-underline"
