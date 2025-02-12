@@ -135,7 +135,6 @@
 				<NavButton url="/docs" link="Docs" />
 				<NavButton url="/playground" link="Playground" />
 				<Guard>
-					<NavButton url="/protected" link="Protected" />
 					<NavButton url="/dashboard" link="Dashboard" />
 				</Guard>
 			</div>
