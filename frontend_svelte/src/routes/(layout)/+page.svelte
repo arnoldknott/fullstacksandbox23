@@ -10,7 +10,7 @@
 <div class="w-full flex justify-center">
 	<div class="flex flex-col justify-center">
 		<div class="text-heading-large md:text-display-small text-primary italic" style="line-height: 1;">Fullstack</div>
-		<div class="text-heading-large text-secondary font-bold" style="line-height: 1">Sandbox</div>
+		<div class="text-heading-large text-secondary font-bold tracking-widest" style="line-height: 1">Sandbox</div>
 	</div>
 	<div class="text-8xl md:text-9xl ml-3  flex items-center text-accent">23</div>
 </div>
