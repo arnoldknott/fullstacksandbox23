@@ -44,13 +44,13 @@
 			<ul class="menu p-0 text-base md:menu-horizontal max-md:mt-2">
 				<li>
 					<a href="#top" aria-label="Home"
-						><span class="icon-[material-symbols--home-outline-rounded] size-6"></span></a
+						><span class="bg-primary icon-[material-symbols--home-outline-rounded] size-6"></span></a
 					>
 				</li>
-				<li><a href="#top">Docs</a></li>
-				<li><a href="#top">Playground</a></li>
+				<li><a href="#top" class="text-primary">Docs</a></li>
+				<li><a href="#top" class="text-primary">Playground</a></li>
 				<hr class="-mx-2 my-3 border-outline" />
-				<li><a href="#top">Dashboard</a></li>
+				<li><a href="#top" class="text-primary">Dashboard</a></li>
 			</ul>
 		</div>
 	</div>
