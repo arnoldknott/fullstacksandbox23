@@ -150,7 +150,7 @@
 				<span class="icon-[tabler--x] hidden size-4 dropdown-open:block"></span>
 			</button>
 			<ul
-				class="dropdown-menu hidden bg-base-200 shadow-md shadow-outline text-base dropdown-open:opacity-100"
+				class="dropdown-menu hidden bg-base-200 text-base shadow-md shadow-outline dropdown-open:opacity-100"
 				aria-labelledby="default-navbar-dropdown"
 			>
 				<li class="dropdown-item">
