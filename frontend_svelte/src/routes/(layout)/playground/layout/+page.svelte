@@ -17,7 +17,7 @@
 </script>
 
 <nav
-	class="navbar start-0 top-[400px] z-[1] rounded-box bg-base-100 shadow md:flex md:items-stretch"
+	class="navbar sticky start-0 top-[0px] z-[1] rounded-box bg-base-100 shadow md:flex md:items-stretch"
 >
 	<div class="navbar-start">A</div>
 	<div class="navbar-center">B</div>
@@ -27,7 +27,7 @@
 <div class="h-4"></div>
 
 <nav
-	class="navbar  start-0 top-[450px] z-[1] rounded-box bg-base-100 shadow md:flex md:items-stretch"
+	class="navbar sticky start-0 top-[50px] z-[1] rounded-box bg-base-100 shadow md:flex md:items-stretch"
 >
 	<div class="w-full md:flex md:items-center md:gap-2">
 		<div class="flex items-center justify-between">
@@ -192,7 +192,7 @@
 <div class="h-96"></div>
 
 <nav
-	class="navbar  start-0 top-[800px] z-[1] justify-between rounded-box bg-base-100 shadow md:flex md:items-stretch"
+	class="navbar sticky start-0 top-[800px] z-[1] justify-between rounded-box bg-base-100 shadow md:flex md:items-stretch"
 >
 	<div class="dropdown navbar-start relative inline-flex md:hidden rtl:[--placement:bottom-end]">
 		<button
