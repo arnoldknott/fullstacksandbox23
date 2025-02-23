@@ -134,9 +134,9 @@
 
 <!-- <JsonData data={theme.configuration}></JsonData> -->
 
-<div bind:this={mainContent} class="h-full" use:applyTheming>
+<div bind:this={mainContent} class="mx-5 mt-5 h-full" use:applyTheming>
 	<nav
-		class="navbar absolute start-0 top-0 z-[1] justify-between rounded-box bg-base-100 shadow md:flex md:items-stretch"
+		class="navbar start-0 top-0 z-[1] justify-between rounded-box bg-base-100 shadow md:flex md:items-stretch"
 	>
 		<div class="dropdown navbar-start inline-flex md:hidden rtl:[--placement:bottom-end]">
 			<button
@@ -315,7 +315,7 @@
 		</div>
 	</nav>
 
-	<div class="mx-5 pt-24">
+	<div class="mt-5">
 		{@render children?.()}
 	</div>
 
