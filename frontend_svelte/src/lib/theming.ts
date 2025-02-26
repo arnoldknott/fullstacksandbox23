@@ -27,15 +27,15 @@ const { dark: darkFlyonUI } = flyonUIThemes;
 import Color from 'colorjs.io';
 
 export enum Variant {
-	MONOCHROME = 'Monochrome',
+	// MONOCHROME = 'Monochrome',
 	NEUTRAL = 'Neutral',
-	TONAL_SPOT = 'Tonal spot',
+	TONAL_SPOT = 'Tonal Spot',
 	VIBRANT = 'Vibrant',
-	EXPRESSIVE = 'Expressive',
+	// EXPRESSIVE = 'Expressive',
 	FIDELITY = 'Fidelity',
 	CONTENT = 'Content',
 	RAINBOW = 'Rainbow',
-	FRUIT_SALAD = 'Fruit salad'
+	// FRUIT_SALAD = 'Fruit Salad'
 }
 
 // these are all the fixed colors from the DynamicScheme:
@@ -483,7 +483,7 @@ class Colorization {
 		this.variant = variant;
 		this.contrast = contrast;
 		this.isFidelity = variant === Variant.FIDELITY || variant === Variant.CONTENT;
-		this.isMonochrome = variant === Variant.MONOCHROME;
+		// this.isMonochrome = variant === Variant.MONOCHROME;
 	}
 
 	private createMaterialSchemes(
@@ -494,10 +494,10 @@ class Colorization {
 		let lightScheme: DynamicScheme;
 		let darkScheme: DynamicScheme;
 		switch (variant) {
-			case Variant.MONOCHROME:
-				lightScheme = new SchemeMonochrome(sourceColor, false, contrast);
-				darkScheme = new SchemeMonochrome(sourceColor, true, contrast);
-				break;
+			// case Variant.MONOCHROME:
+			// 	lightScheme = new SchemeMonochrome(sourceColor, false, contrast);
+			// 	darkScheme = new SchemeMonochrome(sourceColor, true, contrast);
+			// 	break;
 			case Variant.NEUTRAL:
 				lightScheme = new SchemeNeutral(sourceColor, false, contrast);
 				darkScheme = new SchemeNeutral(sourceColor, true, contrast);
@@ -510,10 +510,10 @@ class Colorization {
 				lightScheme = new SchemeVibrant(sourceColor, false, contrast);
 				darkScheme = new SchemeVibrant(sourceColor, true, contrast);
 				break;
-			case Variant.EXPRESSIVE:
-				lightScheme = new SchemeExpressive(sourceColor, false, contrast);
-				darkScheme = new SchemeExpressive(sourceColor, true, contrast);
-				break;
+			// case Variant.EXPRESSIVE:
+			// 	lightScheme = new SchemeExpressive(sourceColor, false, contrast);
+			// 	darkScheme = new SchemeExpressive(sourceColor, true, contrast);
+			// 	break;
 			case Variant.FIDELITY:
 				lightScheme = new SchemeFidelity(sourceColor, false, contrast);
 				darkScheme = new SchemeFidelity(sourceColor, true, contrast);
@@ -526,10 +526,10 @@ class Colorization {
 				lightScheme = new SchemeRainbow(sourceColor, false, contrast);
 				darkScheme = new SchemeRainbow(sourceColor, true, contrast);
 				break;
-			case Variant.FRUIT_SALAD:
-				lightScheme = new SchemeFruitSalad(sourceColor, false, contrast);
-				darkScheme = new SchemeFruitSalad(sourceColor, true, contrast);
-				break;
+			// case Variant.FRUIT_SALAD:
+			// 	lightScheme = new SchemeFruitSalad(sourceColor, false, contrast);
+			// 	darkScheme = new SchemeFruitSalad(sourceColor, true, contrast);
+			// 	break;
 			default:
 				throw new Error('Unsupported variant');
 		}

@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// });
 
 	const sessionId = locals.sessionData.sessionId;
-	const response = await backendAPI.get(sessionId, '/protected/resource');
+	const response = await backendAPI.get(sessionId, '/protected/resource/');
 
 	return {
 		protectedResource: await response.json()

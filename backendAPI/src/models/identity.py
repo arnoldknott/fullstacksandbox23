@@ -4,7 +4,7 @@ from typing import List, Optional, Annotated
 from enum import Enum
 from sqlalchemy import Column, ForeignKey, Uuid
 from sqlmodel import Field, Relationship, SQLModel
-from pydantic import AfterValidator
+from pydantic import AfterValidator, ConfigDict
 
 # from core.types import AppRoles
 from core.config import config
@@ -310,6 +310,10 @@ class UserProfile(SQLModel, table=True):
     theme_color: Annotated[str, AfterValidator(validate_theme_color)] = "#353c6e"
     theme_variant: ThemeVariants = ThemeVariants.tonal_spot
     contrast: Annotated[float, AfterValidator(validate_contrast_range)] = 0.0
+
+    model_config = ConfigDict(use_enum_values=True)
+    # class Config:
+    #     use_enum_values = True
 
     # @model_validator(mode="before")
     # def validate_theme_color(self):
