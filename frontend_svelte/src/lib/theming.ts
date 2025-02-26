@@ -34,7 +34,7 @@ export enum Variant {
 	// EXPRESSIVE = 'Expressive',
 	FIDELITY = 'Fidelity',
 	CONTENT = 'Content',
-	RAINBOW = 'Rainbow',
+	RAINBOW = 'Rainbow'
 	// FRUIT_SALAD = 'Fruit Salad'
 }
 

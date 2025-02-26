@@ -26,10 +26,10 @@
 	});
 	$effect(() => {
 		console.log('=== layout - page.data.session.userProfile.user_profile ===');
-		console.log(page.data.session.userProfile.user_profile)
-		themeConfiguration.sourceColor = page.data.session.userProfile.user_profile.theme_color
-		themeConfiguration.variant = page.data.session.userProfile.user_profile.theme_variant
-		themeConfiguration.contrast = page.data.session.userProfile.user_profile.contrast
+		console.log(page.data.session.userProfile.user_profile);
+		themeConfiguration.sourceColor = page.data.session.userProfile.user_profile.theme_color;
+		themeConfiguration.variant = page.data.session.userProfile.user_profile.theme_variant;
+		themeConfiguration.contrast = page.data.session.userProfile.user_profile.contrast;
 		console.log('=== layout - themeConfiguration ===');
 		console.log(themeConfiguration);
 	});
@@ -103,8 +103,8 @@
 		page.data.session.userProfile.user_profile.theme_color = themeConfiguration.sourceColor;
 		page.data.session.userProfile.user_profile.theme_variant = themeConfiguration.variant;
 		page.data.session.userProfile.user_profile.contrast = themeConfiguration.contrast;
-		console.log('=== layout - applyTheming - page.data.session.userProfile.user_profile ===');
-		console.log(page.data.session.userProfile.user_profile)
+		// console.log('=== layout - applyTheming - page.data.session.userProfile.user_profile ===');
+		// console.log(page.data.session.userProfile.user_profile);
 
 		$effect(() => {
 			themeStore.set(theme);
@@ -127,10 +127,10 @@
 	const updateProfileAccount: SubmitFunction = async () => {
 		console.log('=== layout - updateProfileAccount triggered ===');
 
-		return async ({result}) => {
+		return async ({ result }) => {
 			console.log('=== layout - updateProfileAccount - result ===');
 			console.log(result);
-		}
+		};
 	};
 
 	// const { session } = page.data;
@@ -174,7 +174,7 @@
 
 <div bind:this={mainContent} class="mx-5 mt-5 h-full" use:applyTheming>
 	<nav
-		class="navbar rounded-box bg-base-100 sticky start-0 top-0 z-[1] justify-between shadow md:flex md:items-stretch"
+		class="navbar sticky start-0 top-0 z-[1] justify-between rounded-box bg-base-100 shadow md:flex md:items-stretch"
 	>
 		<div class="dropdown navbar-start inline-flex md:hidden rtl:[--placement:bottom-end]">
 			<button
@@ -184,23 +184,23 @@
 				aria-controls="default-navbar-dropdown"
 				aria-label="Toggle navigation"
 			>
-				<span class="icon-[tabler--menu-2] dropdown-open:hidden size-4"></span>
-				<span class="icon-[tabler--x] dropdown-open:block hidden size-4"></span>
+				<span class="icon-[tabler--menu-2] size-4 dropdown-open:hidden"></span>
+				<span class="icon-[tabler--x] hidden size-4 dropdown-open:block"></span>
 			</button>
 			<ul
-				class="dropdown-menu bg-base-200 shadow-outline dropdown-open:opacity-100 hidden text-base shadow-md"
+				class="dropdown-menu hidden bg-base-200 text-base shadow-md shadow-outline dropdown-open:opacity-100"
 				aria-labelledby="default-navbar-dropdown"
 			>
 				<li class="dropdown-item">
 					<a href="/" aria-label="Home"
-						><span class="icon-[material-symbols--home-outline-rounded] bg-primary size-6"
+						><span class="icon-[material-symbols--home-outline-rounded] size-6 bg-primary"
 						></span></a
 					>
 				</li>
 				<li class="dropdown-item"><a href="/docs" class="text-primary">Docs</a></li>
 				<li class="dropdown-item"><a href="/playground" class="text-primary">Playground</a></li>
 				<Guard>
-					<hr class="border-outline -mx-2 my-3" />
+					<hr class="-mx-2 my-3 border-outline" />
 					<li class="dropdown-item"><a href="/dashboard" class="text-primary">Dashboard</a></li>
 				</Guard>
 			</ul>
@@ -209,35 +209,35 @@
 			<ul class="menu-horizontal flex items-center md:gap-4">
 				<li>
 					<a href="/" aria-label="Home"
-						><span class="icon-[material-symbols--home-outline-rounded] bg-primary size-6"
+						><span class="icon-[material-symbols--home-outline-rounded] size-6 bg-primary"
 						></span></a
 					>
 				</li>
 				<li><a href="/docs" class="text-primary">Docs</a></li>
 				<li><a href="/playground" class="text-primary">Playground</a></li>
 				<Guard>
-					<hr class="border-outline -mx-2 my-3" />
+					<hr class="-mx-2 my-3 border-outline" />
 					<li><a href="/dashboard" class="text-primary">Dashboard</a></li>
 				</Guard>
 			</ul>
 		</div>
 		<div class="navbar-center flex flex-row">
 			<div class="flex flex-col justify-center">
-				<div class="text-title-small text-primary italic" style="line-height: 1;">Fullstack</div>
+				<div class="text-title-small italic text-primary" style="line-height: 1;">Fullstack</div>
 				<div
-					class="text-title-small text-secondary font-bold tracking-widest"
+					class="text-title-small font-bold tracking-widest text-secondary"
 					style="line-height: 1"
 				>
 					Sandbox
 				</div>
 			</div>
-			<div class="text-heading-large navbar-center text-accent ml-1 flex items-center">23</div>
+			<div class="text-heading-large navbar-center ml-1 flex items-center text-accent">23</div>
 		</div>
 		<div class="navbar-end flex items-center">
 			<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
 				<span
 					id="dropdown-menu-icon-user"
-					class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-6' : ''}"
+					class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] size-6 bg-secondary' : ''}"
 					role="button"
 					aria-haspopup="menu"
 					aria-expanded="false"
@@ -249,7 +249,7 @@
 				</span>
 
 				<ul
-					class="dropdown-menu bg-base-200 shadow-outline dropdown-open:opacity-100 hidden shadow-md"
+					class="dropdown-menu hidden bg-base-200 shadow-md shadow-outline dropdown-open:opacity-100"
 					role="menu"
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon-user"
@@ -338,7 +338,7 @@
 							</div>
 						</li>
 						<li>
-							<hr class="border-outline -mx-2 my-5" />
+							<hr class="-mx-2 my-5 border-outline" />
 						</li>
 						<li class="flex items-center gap-2">
 							<span class="icon-[tabler--settings] size-6"></span>
@@ -350,14 +350,14 @@
 			<div class="flex items-center md:ml-2">
 				{#if !loggedIn}
 					<button
-						class="btn btn-secondary shadow-secondary ml-2 rounded-full shadow"
+						class="btn btn-secondary ml-2 rounded-full shadow shadow-secondary"
 						aria-label="Log In"
 					>
 						<a href="/login">Log in</a>
 					</button>
 				{:else}
 					<button
-						class="btn btn-secondary btn-outline shadow-secondary ml-2 rounded-full shadow"
+						class="btn btn-secondary btn-outline ml-2 rounded-full shadow shadow-secondary"
 						aria-label="Log Out"
 					>
 						<a href="/logout">Log out</a>
