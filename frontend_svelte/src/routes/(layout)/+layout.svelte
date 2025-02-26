@@ -100,9 +100,9 @@
 
 		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
 
-		page.data.session.userProfile.user_profile.theme_color = themeConfiguration.sourceColor;
-		page.data.session.userProfile.user_profile.theme_variant = themeConfiguration.variant;
-		page.data.session.userProfile.user_profile.contrast = themeConfiguration.contrast;
+		// page.data.session.userProfile.user_profile.theme_color = themeConfiguration.sourceColor;
+		// page.data.session.userProfile.user_profile.theme_variant = themeConfiguration.variant;
+		// page.data.session.userProfile.user_profile.contrast = themeConfiguration.contrast;
 		// console.log('=== layout - applyTheming - page.data.session.userProfile.user_profile ===');
 		// console.log(page.data.session.userProfile.user_profile);
 

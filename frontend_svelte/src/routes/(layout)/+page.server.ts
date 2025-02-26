@@ -32,6 +32,11 @@ export const actions: Actions = {
 			}
             // console.log('=== layout - layout.server - putProfile - locals.sessionData.userProfile ===');
             // console.log(locals.sessionData.userProfile);
+            locals.sessionData.userProfile.user_profile.theme_color = payload.user_profile.theme_color;
+            locals.sessionData.userProfile.user_profile.theme_variant = payload.user_profile.theme_variant;
+            locals.sessionData.userProfile.user_profile.contrast = payload.user_profile.contrast;
+            console.log('=== layout - layout.server - putProfile - locals.sessionData.userProfile ===');
+            console.log(locals.sessionData.userProfile);
 		}
 	}
 };
