@@ -1,5 +1,4 @@
 import type { Actions } from './$types';
-import { Variant } from '$lib/theming';
 import { backendAPI } from '$lib/server/apis';
 import { fail } from '@sveltejs/kit';
 
@@ -30,13 +29,14 @@ export const actions: Actions = {
 			if (response.status !== 200) {
 				return fail(response.status, { error: response.statusText });
 			}
-            // console.log('=== layout - layout.server - putProfile - locals.sessionData.userProfile ===');
-            // console.log(locals.sessionData.userProfile);
-            locals.sessionData.userProfile.user_profile.theme_color = payload.user_profile.theme_color;
-            locals.sessionData.userProfile.user_profile.theme_variant = payload.user_profile.theme_variant;
-            locals.sessionData.userProfile.user_profile.contrast = payload.user_profile.contrast;
-            console.log('=== layout - layout.server - putProfile - locals.sessionData.userProfile ===');
-            console.log(locals.sessionData.userProfile);
+			// console.log('=== layout - layout.server - putProfile - locals.sessionData.userProfile ===');
+			// console.log(locals.sessionData.userProfile);
+			locals.sessionData.userProfile.user_profile.theme_color = payload.user_profile.theme_color;
+			locals.sessionData.userProfile.user_profile.theme_variant =
+				payload.user_profile.theme_variant;
+			locals.sessionData.userProfile.user_profile.contrast = payload.user_profile.contrast;
+			console.log('=== layout - layout.server - putProfile - locals.sessionData.userProfile ===');
+			console.log(locals.sessionData.userProfile);
 		}
 	}
 };
