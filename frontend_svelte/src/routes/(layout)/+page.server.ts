@@ -1,19 +1,18 @@
 import type { Actions } from './$types';
 import { backendAPI } from '$lib/server/apis';
 import { fail } from '@sveltejs/kit';
+import { redisCache } from '$lib/server/cache';
 
 export const actions: Actions = {
-	default: async ({ locals, request }) => {
+	putme: async ({ locals, request }) => {
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
-		console.log('=== layout - layout.server - putProfile - sessionData.userProfile.id ===');
-		console.log(locals.sessionData.userProfile?.id);
-		console.log('=== layout - layout.server - putProfile - data ===');
-		console.log(data);
+		// console.log('=== layout - layout.server - putProfile - sessionData.userProfile.id ===');
+		// console.log(locals.sessionData.userProfile?.id);
+		// console.log('=== layout - layout.server - putProfile - data ===');
+		// console.log(data);
 		if (locals.sessionData.userProfile?.id) {
 			const variant = data.get('variant-picker');
-			console.log('=== layout - layout.server - putProfile - variant ===');
-			console.log(variant);
 			const contrast = parseFloat(data.get('contrast') as string);
 
 			const payload = {
@@ -31,12 +30,27 @@ export const actions: Actions = {
 			}
 			// console.log('=== layout - layout.server - putProfile - locals.sessionData.userProfile ===');
 			// console.log(locals.sessionData.userProfile);
-			locals.sessionData.userProfile.user_profile.theme_color = payload.user_profile.theme_color;
-			locals.sessionData.userProfile.user_profile.theme_variant =
-				payload.user_profile.theme_variant;
-			locals.sessionData.userProfile.user_profile.contrast = payload.user_profile.contrast;
-			console.log('=== layout - layout.server - putProfile - locals.sessionData.userProfile ===');
-			console.log(locals.sessionData.userProfile);
+			await redisCache.setSession(
+				sessionId,
+				'$.userProfile.user_profile.theme_color',
+				JSON.stringify(payload.user_profile.theme_color)
+			);
+			await redisCache.setSession(
+				sessionId,
+				'$.userProfile.user_profile.theme_variant',
+				JSON.stringify(payload.user_profile.theme_variant)
+			);
+			await redisCache.setSession(
+				sessionId,
+				'$.userProfile.user_profile.contrast',
+				JSON.stringify(payload.user_profile.contrast)
+			);
+			// locals.sessionData.userProfile.user_profile.theme_color = payload.user_profile.theme_color;
+			// locals.sessionData.userProfile.user_profile.theme_variant =
+			// 	payload.user_profile.theme_variant;
+			// locals.sessionData.userProfile.user_profile.contrast = payload.user_profile.contrast;
+			// console.log('=== layout - layout.server - putProfile - locals.sessionData.userProfile ===');
+			// console.log(locals.sessionData.userProfile);
 		}
 	}
 };

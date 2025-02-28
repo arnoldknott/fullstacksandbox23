@@ -256,7 +256,7 @@
 				>
 					<form
 						method="POST"
-						action="/?putMe"
+						action="?/putme"
 						id="user_profile_and_account"
 						use:enhance={updateProfileAccount}
 						bind:this={profileAccountForm}
@@ -264,7 +264,7 @@
 						<li class="flex items-center gap-2">
 							<span class="icon-[material-symbols--palette-outline] size-6"></span>
 							<span class="grow"> Theming</span>
-							<button aria-label="modeToggler">
+							<button aria-label="modeToggler" type="button">
 								<label id="modeToggler" class="swap swap-rotate">
 									<input type="checkbox" onclick={toggleMode} />
 									<span class="icon-[tabler--sun] swap-on size-6"></span>
