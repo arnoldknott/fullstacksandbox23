@@ -214,7 +214,7 @@
 														<div class="flex items-center">
 															<!-- Also send the desired action for the share: own, write, read.
 													Pass information if access_policy already exists to form handling function share(). -->
-															<button
+															<!-- <button
 																data-sveltekit-preload-data={false}
 																class="btn dropdown-item btn-text max-w-40 content-center"
 																name="id"
@@ -224,7 +224,14 @@
 																></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
 																	? ' ...'
 																	: null}
-															</button>
+															</button> -->
+															<div
+																class="dropdown-item max-w-40 content-center"
+																><span class="icon-[fluent--people-team-16-filled]"
+																></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
+																	? ' ...'
+																	: null}
+															</div>
 															<div class="mr-2">
 																<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
 																<span
@@ -244,7 +251,12 @@
 																		<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
 																combine with an accessPolicyExists - that also indicates the user, wether this policy already exists through a checkmark  -->
 																		<button
-																			type="button"
+																			data-sveltekit-preload-data={false}
+																			class="btn dropdown-item btn-text max-w-40 content-center"
+																			name="id"
+																			value={id}
+																			formaction="?/share&teamid={team.id}&action=own"
+																			type="submit"
 																			onclick={() => (teamRight = 'own')}
 																			aria-label="own"
 																			><span class="icon-[tabler--key-filled] bg-success"></span></button
@@ -252,27 +264,42 @@
 																	</li>
 																	<li>
 																		<button
-																			type="button"
+																			data-sveltekit-preload-data={false}
+																			class="btn dropdown-item btn-text max-w-40 content-center"
+																			name="id"
+																			value={id}
+																			formaction="?/share&teamid={team.id}&action=write"
+																			type="submit"
 																			onclick={() => (teamRight = 'write')}
 																			aria-label="write"
 																			><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
-																			></span></button
-																		>
+																			></span>
+																		</button>
 																	</li>
 																	<li>
 																		<button
-																			type="button"
+																			data-sveltekit-preload-data={false}
+																			class="btn dropdown-item btn-text max-w-40 content-center"
+																			name="id"
+																			value={id}
+																			formaction="?/share&teamid={team.id}&action=read"
+																			type="submit"
 																			onclick={() => (teamRight = 'read')}
 																			aria-label="read"
-																			><span class="icon-[tabler--eye] bg-neutral"></span></button
-																		>
+																			><span class="icon-[tabler--eye] bg-neutral"></span>
+																		</button>
 																	</li>
 																	<li>
 																		<button
-																			type="button"
-																			aria-label="read"
-																			><span class="icon-[tabler--ban] bg-error"></span></button
-																		>
+																			data-sveltekit-preload-data={false}
+																			class="btn dropdown-item btn-text max-w-40 content-center"
+																			name="id"
+																			value={id}
+																			formaction="?/share&teamid={team.id}&action=unshare"
+																			type="submit"
+																			aria-label="remove share"
+																			><span class="icon-[tabler--ban] bg-error"></span>
+																		</button>
 																	</li>
 																</ul>
 																<button
