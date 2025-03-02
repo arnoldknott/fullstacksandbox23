@@ -225,18 +225,15 @@
 																	? ' ...'
 																	: null}
 															</button> -->
-															<div
-																class="dropdown-item max-w-40 content-center"
-																><span class="icon-[fluent--people-team-16-filled]"
+															<div class="dropdown-item max-w-40 content-center">
+																<span class="icon-[fluent--people-team-16-filled]"
 																></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
 																	? ' ...'
 																	: null}
 															</div>
 															<div class="mr-2">
 																<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
-																<span
-																	class="{rightsIconSelection(team.id)} size-4"
-																></span>
+																<span class="{rightsIconSelection(team.id)} size-4"></span>
 															</div>
 															<div
 																class="dropdown relative inline-flex bg-base-300 [--offset:0] [--placement:left-start]"
@@ -259,7 +256,8 @@
 																			type="submit"
 																			onclick={() => (teamRight = 'own')}
 																			aria-label="own"
-																			><span class="icon-[tabler--key-filled] bg-success"></span></button
+																			><span class="icon-[tabler--key-filled] bg-success"
+																			></span></button
 																		>
 																	</li>
 																	<li>
@@ -272,7 +270,8 @@
 																			type="submit"
 																			onclick={() => (teamRight = 'write')}
 																			aria-label="write"
-																			><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
+																			><span
+																				class="icon-[material-symbols--edit-outline-rounded] bg-warning"
 																			></span>
 																		</button>
 																	</li>

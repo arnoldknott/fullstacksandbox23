@@ -147,11 +147,14 @@ export const actions: Actions = {
 		// console.log('=== routes - demo-resource - page.server - share function executed ===');
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
-		if(url.searchParams.get('action') === 'unshare') {
+		if (url.searchParams.get('action') === 'unshare') {
 			const resource_id = data.get('id');
 			const identity_id = url.searchParams.get('teamid');
-			await backendAPI.delete(sessionId, `/access/policy?resource_id=${resource_id}&identity_id=${identity_id}`);
-		}else{
+			await backendAPI.delete(
+				sessionId,
+				`/access/policy?resource_id=${resource_id}&identity_id=${identity_id}`
+			);
+		} else {
 			const accessPolicy = {
 				resource_id: data.get('id'),
 				identity_id: url.searchParams.get('teamid'),
