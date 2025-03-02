@@ -52,12 +52,12 @@
 		if (!accessPolicies) return null;
 		const rights = AccessHandler.getRights(identityId, accessPolicies);
 		return rights === 'own'
-			? 'tabler--key-filled'
+			? 'icon-[tabler--key-filled] bg-success'
 			: rights === 'write'
-				? 'material-symbols--edit-outline-rounded'
+				? 'icon-[material-symbols--edit-outline-rounded] bg-warning'
 				: rights === 'read'
-					? 'tabler--eye'
-					: null;
+					? 'icon-[tabler--eye] bg-neutral'
+					: 'icon-[tabler--ban] bg-error';
 	};
 
 	let identitiesRightsMap = $derived.by(() => {
@@ -201,7 +201,7 @@
 								</button>
 								<!-- min-w-60 -->
 								<ul
-									class="dropdown-menu hidden min-w-[17rem] bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+									class="dropdown-menu hidden min-w-[15rem] bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
 									role="menu"
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
@@ -228,8 +228,7 @@
 															<div class="mr-2">
 																<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
 																<span
-																	class="icon-[{rightsIconSelection(team.id) ||
-																		'tabler--eye'}] size-4"
+																	class="{rightsIconSelection(team.id)} size-4"
 																></span>
 															</div>
 															<div
@@ -248,7 +247,7 @@
 																			type="button"
 																			onclick={() => (teamRight = 'own')}
 																			aria-label="own"
-																			><span class="icon-[tabler--key-filled]"></span></button
+																			><span class="icon-[tabler--key-filled] bg-success"></span></button
 																		>
 																	</li>
 																	<li>
@@ -256,7 +255,7 @@
 																			type="button"
 																			onclick={() => (teamRight = 'write')}
 																			aria-label="write"
-																			><span class="icon-[material-symbols--edit-outline-rounded]"
+																			><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
 																			></span></button
 																		>
 																	</li>
@@ -265,7 +264,14 @@
 																			type="button"
 																			onclick={() => (teamRight = 'read')}
 																			aria-label="read"
-																			><span class="icon-[tabler--eye]"></span></button
+																			><span class="icon-[tabler--eye] bg-neutral"></span></button
+																		>
+																	</li>
+																	<li>
+																		<button
+																			type="button"
+																			aria-label="read"
+																			><span class="icon-[tabler--ban] bg-error"></span></button
 																		>
 																	</li>
 																</ul>
@@ -282,9 +288,9 @@
 																	></span>
 																</button>
 															</div>
-															<div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
+															<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
 																<span class="icon-[openmoji--check-mark]"></span>
-															</div>
+															</div> -->
 														</div>
 													</li>
 													<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
