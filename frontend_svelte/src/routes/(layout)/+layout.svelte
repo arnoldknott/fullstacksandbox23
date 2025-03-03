@@ -25,13 +25,13 @@
 		contrast: 0.0
 	});
 	$effect(() => {
-		console.log('=== layout - page.data.session.userProfile.user_profile ===');
-		console.log(page.data.session.userProfile.user_profile);
+		// console.log('=== layout - page.data.session.userProfile.user_profile ===');
+		// console.log(page.data.session.userProfile.user_profile);
 		themeConfiguration.sourceColor = page.data.session.userProfile.user_profile.theme_color;
 		themeConfiguration.variant = page.data.session.userProfile.user_profile.theme_variant;
 		themeConfiguration.contrast = page.data.session.userProfile.user_profile.contrast;
-		console.log('=== layout - themeConfiguration ===');
-		console.log(themeConfiguration);
+		// console.log('=== layout - themeConfiguration ===');
+		// console.log(themeConfiguration);
 	});
 	// let themeConfiguration: ColorConfig = $state({
 	// 	sourceColor: page.data.session.userProfile.user_profile.theme_color || '#353c6e',
@@ -125,12 +125,9 @@
 	};
 
 	const updateProfileAccount: SubmitFunction = async () => {
-		console.log('=== layout - updateProfileAccount triggered ===');
+		// console.log('=== layout - updateProfileAccount triggered ===');
 
-		return async ({ result }) => {
-			console.log('=== layout - updateProfileAccount - result ===');
-			console.log(result);
-		};
+		return () => {}
 	};
 
 	// const { session } = page.data;
@@ -256,7 +253,7 @@
 				>
 					<form
 						method="POST"
-						action="?/putme"
+						action="/?/putme"
 						id="user_profile_and_account"
 						use:enhance={updateProfileAccount}
 						bind:this={profileAccountForm}
