@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -5,10 +6,9 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from socketio import ASGIApp
-import asyncio
 
-from core.databases import run_migrations
 from core.config import config
+from core.databases import run_migrations
 from core.security import CurrentAccessTokenHasRole, CurrentAccessTokenHasScope
 from routers.api.v1.access import router as access_router
 from routers.api.v1.category import router as category_router

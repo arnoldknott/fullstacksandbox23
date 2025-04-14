@@ -43,10 +43,10 @@
 
 	let teamRight = $state('read');
 
-	$effect(() => {
-		console.log('=== DemoResourceCard.svelte - teamRight ===');
-		console.log(teamRight);
-	});
+	// $effect(() => {
+	// 	console.log('=== DemoResourceCard.svelte - teamRight ===');
+	// 	console.log(teamRight);
+	// });
 
 	const rightsIconSelection = (identityId: string) => {
 		if (!accessPolicies) return null;
@@ -63,15 +63,16 @@
 	let identitiesRightsMap = $derived.by(() => {
 		let rightsMapping = new Map<string, Action | null>();
 		microsoftTeams?.forEach((team) => {
-			// TBD: turn into a n object, that also hold information if right is assigned or not
+			// TBD: turn into an object, that also hold information if right is assigned or not
 			rightsMapping.set(team.id, AccessHandler.getRights(team.id, team.access_policies));
 		});
+		return rightsMapping;
 	});
 
-	$effect(() => {
-		console.log('=== DemoResourceCard.svelte - identitiesRightsMap ===');
-		console.log(identitiesRightsMap);
-	});
+	// $effect(() => {
+	// 	console.log('=== DemoResourceCard.svelte - identitiesRightsMap ===');
+	// 	console.log(identitiesRightsMap);
+	// });
 
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
@@ -207,7 +208,19 @@
 									aria-labelledby="share-{id}"
 								>
 									<li>
-										<form method="POST" use:enhance={() => dropdownMenu?.classList.add('hidden')}>
+										<!-- <form method="POST" use:enhance={() => dropdownMenu?.classList.add('hidden')}> -->
+										<!-- <form method="POST" use:enhance> -->
+										<form
+											method="POST"
+											use:enhance={async () => {
+												console.log('=== share form submitted - closing the dropdown ===');
+												// dropdownMenu?.close()
+												// const { HSDropdown } = await import('flyonui/flyonui.js');
+												// if(dropdownMenu){
+												// 	HSDropdown.close(dropdownMenu)
+												// }
+											}}
+										>
 											{#if microsoftTeams}
 												{#each microsoftTeams as team}
 													<li>

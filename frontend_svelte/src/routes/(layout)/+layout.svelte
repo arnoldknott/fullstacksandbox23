@@ -127,7 +127,7 @@
 	const updateProfileAccount: SubmitFunction = async () => {
 		// console.log('=== layout - updateProfileAccount triggered ===');
 
-		return () => {}
+		return () => {};
 	};
 
 	// const { session } = page.data;

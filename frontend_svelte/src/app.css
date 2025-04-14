@@ -1,6 +1,9 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+/* @plugin "flyonui";
+@import "flyonui/variants.css";
+@source "../node_modules/flyonui/flyonui/index.js"; */
 @import './components/materialDesignExtensionsToFlyonUI/typography.css';
 @import './components/materialDesignExtensionsToFlyonUI/chat.css';
 @import './components/materialDesignExtensionsToFlyonUI/badge.css';

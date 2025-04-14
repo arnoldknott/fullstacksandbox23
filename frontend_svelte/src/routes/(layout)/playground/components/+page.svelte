@@ -6,7 +6,101 @@
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	// import type { IOverlay } from 'flyonui/flyonui';
+	// import { HSDropdown, type IHTMLElementPopper } from 'flyonui/flyonui';
+	import type { IHTMLElementPopper, HSDropdown } from 'flyonui/flyonui';
+	import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
+
+	// for dropdown menus:
+	// let dropdownMenu = $state<HTMLUListElement | null>(null);
+	let dropdownElement = $state<HTMLElement | null>(null);
+	// let dropdownMenuElement = $state<HTMLElement | null>(null);
+	let dropdown = $state<HSDropdown | null>(null);
+
+	const loadHSDropdown = async () => {
+		const { HSDropdown } = await import('flyonui/flyonui');
+		return HSDropdown;
+	};
+
+	// const loadHSDropdown = async () => {
+	// 	const { HSDropdown } = await import('flyonui/flyonui');
+	// 	console.log('components - page - loadHSDropdown - HSDropdown')
+	// 	console.log(HSDropdown)
+	// 	dropdown = new HSDropdown(dropdownElement as unknown as IHTMLElementPopper);
+	// };
+	// const mapDropdown = (_node: HTMLElement) => {
+	// 	afterNavigate( () => {
+	// 		console.log('components - page - mapDrowdown - afterNavigate')
+	// 		// loadHSDropdown().then((LoadedHSDropdown) => {
+	// 		// 	dropdownMenu = new LoadedHSDropdown(dropdownMenuElement);
+	// 		// })
+	// 	})
+	// };
+	// let dropdownMenu = $derived.by(async () => {
+	// 	if (dropdownMenuElement){
+	// 		const { HSDropdown } = await import('flyonui/flyonui');
+	// 		return new HSDropdown(dropdownMenuElement as unknown as IHTMLElementPopper)
+	// 	}});
+
+	$effect(() => {
+		// afterNavigate(() => {
+		// console.log('components - page - $effect - dropdown')
+		// console.log(dropdownElement)
+		loadHSDropdown().then((LoadedHSDropdown) => {
+			// console.log("=== component - LoadedHSDropdown ===")
+			// console.log(LoadedHSDropdown)
+			dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
+			// dropdownMenu
+			// console.log("=== dropdownMenu ===")
+			// console.log(dropdownMenu)
+		});
+		// })
+		// if (dropdownElement) {
+		//     (async () => {
+		//         try {
+		//             const LoadedHSDropdown = await loadHSDropdown();
+		//             // Ensure the dropdown is not already initialized
+		//             if (!dropdown) {
+		//                 dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
+		//             }
+		//         } catch (error) {
+		//             console.error('Error initializing dropdown:', error);
+		//         }
+		//     })();
+		// }
+	});
+
+	const teams = $state([
+		{
+			name: 'The A Team',
+			right: 'read'
+		},
+		{
+			name: 'Awesome Team',
+			right: ''
+		},
+		{
+			name: 'Team Teams',
+			right: 'write'
+		},
+		{
+			name: 'Team Next',
+			right: 'own'
+		},
+		{
+			name: 'Be a Team',
+			right: 'read'
+		}
+	]);
+	const rightsIcon = (right: string) => {
+		return right === 'own'
+			? 'icon-[tabler--key-filled] bg-success'
+			: right === 'write'
+				? 'icon-[material-symbols--edit-outline-rounded] bg-warning'
+				: right === 'read'
+					? 'icon-[tabler--eye] bg-neutral'
+					: 'icon-[tabler--ban] bg-error';
+	};
 
 	// for status sliders:
 	let theme = $state({} as AppTheme);
@@ -86,6 +180,8 @@
 	// 	overlay?.open();
 	// };
 </script>
+
+<!-- <svelte:window use:mapDropdown /> -->
 
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div>
@@ -302,6 +398,168 @@
 					Some text
 				</div>
 			</Card>
+		</div>
+	</div>
+
+	<div>
+		<Heading>Dropdown menus</Heading>
+		<div
+			class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
+			bind:this={dropdownElement}
+		>
+			<!-- onload={async()=> await  loadHSDropdown()} -->
+			<span
+				id="dropdown-menu-icon"
+				class="dropdown-toggle icon-[tabler--dots-vertical] size-6"
+				role="button"
+				aria-haspopup="menu"
+				aria-expanded="false"
+				aria-label="Dropdown"
+			></span>
+			<ul
+				class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+				role="menu"
+				aria-orientation="vertical"
+				aria-labelledby="dropdown-menu-icon"
+			>
+				<li class="items-center">
+					<button
+						class="btn dropdown-item btn-text content-center justify-start"
+						aria-label="Edit Button"
+						onclick={() => (edit ? (edit = false) : (edit = true))}
+						><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
+					>
+				</li>
+				<li
+					class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+				>
+					<button
+						id="share"
+						class="dropdown-toggle btn dropdown-item btn-text content-center justify-start"
+						aria-haspopup="menu"
+						aria-expanded="false"
+						aria-label="Share with"
+						><span class="icon-[tabler--share-2]"></span>Share
+						<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
+					</button>
+					<!-- min-w-60 -->
+					<ul
+						class="dropdown-menu hidden min-w-[15rem] bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+						role="menu"
+						aria-orientation="vertical"
+						aria-labelledby="share"
+					>
+						<li>
+							<div class="flex items-center">
+								<div class="dropdown-item max-w-40 content-center">
+									<span class="icon-[fluent--people-team-16-filled]"></span>{teams[0].name}
+								</div>
+								<div class="mr-2">
+									<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
+									<span class="{rightsIcon(teams[0].right)} size-4"></span>
+								</div>
+								<div
+									class="dropdown relative inline-flex bg-base-300 [--offset:0] [--placement:left-start]"
+								>
+									<ul
+										class="dropdown-menu hidden bg-base-300 outline outline-2 outline-outline dropdown-open:opacity-100"
+										role="menu"
+										aria-orientation="vertical"
+										aria-labelledby="rights"
+									>
+										<li>
+											<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
+									combine with an accessPolicyExists - that also indicates the user, wether this policy already exists through a checkmark  -->
+											<button
+												data-sveltekit-preload-data={false}
+												class="btn dropdown-item btn-text max-w-40 content-center"
+												name="id"
+												type="submit"
+												onclick={() => {
+													teams[0].right = 'own';
+													dropdown?.close();
+												}}
+												aria-label="own"
+												><span class="icon-[tabler--key-filled] bg-success"></span></button
+											>
+										</li>
+										<li>
+											<button
+												data-sveltekit-preload-data={false}
+												class="btn dropdown-item btn-text max-w-40 content-center"
+												name="id"
+												type="submit"
+												onclick={() => {
+													teams[0].right = 'write';
+													dropdown?.close();
+												}}
+												aria-label="write"
+												><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
+												></span>
+											</button>
+										</li>
+										<li>
+											<button
+												data-sveltekit-preload-data={false}
+												class="btn dropdown-item btn-text max-w-40 content-center"
+												name="id"
+												type="submit"
+												onclick={() => {
+													teams[0].right = 'read';
+													dropdown?.close();
+												}}
+												aria-label="read"
+												><span class="icon-[tabler--eye] bg-neutral"></span>
+											</button>
+										</li>
+										<li>
+											<button
+												data-sveltekit-preload-data={false}
+												class="btn dropdown-item btn-text max-w-40 content-center"
+												name="id"
+												type="submit"
+												onclick={() => {
+													teams[0].right = '';
+													dropdown?.close();
+												}}
+												aria-label="remove share"
+												><span class="icon-[tabler--ban] bg-error"></span>
+											</button>
+										</li>
+									</ul>
+									<button
+										id="rights"
+										type="button"
+										class="dropdown-toggle btn btn-text bg-base-300"
+										aria-haspopup="menu"
+										aria-expanded="false"
+										aria-label="Dropdown"
+									>
+										<span class="icon-[tabler--chevron-down] size-4 dropdown-open:rotate-180"
+										></span>
+									</button>
+								</div>
+								<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
+									<span class="icon-[openmoji--check-mark]"></span>
+								</div> -->
+							</div>
+						</li>
+						<li class="dropdown-footer gap-2">
+							<button class="btn dropdown-item btn-text content-center justify-start"
+								>... more options</button
+							>
+						</li>
+					</ul>
+				</li>
+				<li class="dropdown-footer gap-2">
+					<button
+						class="btn dropdown-item btn-error btn-text content-center justify-start"
+						aria-label="Delete Button"
+						name="id"
+						formaction="?/delete"><span class="icon-[tabler--trash]"></span>Delete</button
+					>
+				</li>
+			</ul>
 		</div>
 	</div>
 

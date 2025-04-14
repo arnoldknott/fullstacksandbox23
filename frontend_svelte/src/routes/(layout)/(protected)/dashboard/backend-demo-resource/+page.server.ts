@@ -161,7 +161,19 @@ export const actions: Actions = {
 				action: url.searchParams.get('action')
 			};
 
-			await backendAPI.post(sessionId, '/access/policy', JSON.stringify(accessPolicy));
+			const response = await backendAPI.post(
+				sessionId,
+				'/access/policy',
+				JSON.stringify(accessPolicy)
+			);
+			if (response.status !== 201) {
+				const newAccessPolicy = {
+					resource_id: data.get('id'),
+					identity_id: url.searchParams.get('teamid'),
+					new_action: url.searchParams.get('action')
+				};
+				await backendAPI.put(sessionId, '/access/policy', JSON.stringify(newAccessPolicy));
+			}
 		}
 
 		// const accessPolicy = {
