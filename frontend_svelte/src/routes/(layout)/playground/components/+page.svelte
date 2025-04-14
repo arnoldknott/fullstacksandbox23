@@ -8,7 +8,7 @@
 	// import type { IOverlay } from 'flyonui/flyonui';
 	// import { HSDropdown, type IHTMLElementPopper } from 'flyonui/flyonui';
 	import type { IHTMLElementPopper, HSDropdown } from 'flyonui/flyonui';
-	import { afterNavigate } from '$app/navigation';
+	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
 
 	// for dropdown menus:

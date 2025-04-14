@@ -4,7 +4,8 @@
 	import type { DemoResourceExtended, AccessPolicy } from '$lib/types';
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamBasicExtended } from '$lib/types';
-	import { AccessHandler, Action } from '$lib/accessHandler';
+	// import { AccessHandler, Action } from '$lib/accessHandler';
+	import { AccessHandler } from '$lib/accessHandler';
 
 	let {
 		demoResource,
@@ -42,6 +43,8 @@
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
 	let teamRight = $state('read');
+	// just for preventing linting errors:
+	$effect(() => console.log(teamRight));
 
 	// $effect(() => {
 	// 	console.log('=== DemoResourceCard.svelte - teamRight ===');
@@ -60,14 +63,14 @@
 					: 'icon-[tabler--ban] bg-error';
 	};
 
-	let identitiesRightsMap = $derived.by(() => {
-		let rightsMapping = new Map<string, Action | null>();
-		microsoftTeams?.forEach((team) => {
-			// TBD: turn into an object, that also hold information if right is assigned or not
-			rightsMapping.set(team.id, AccessHandler.getRights(team.id, team.access_policies));
-		});
-		return rightsMapping;
-	});
+	// let identitiesRightsMap = $derived.by(() => {
+	// 	let rightsMapping = new Map<string, Action | null>();
+	// 	microsoftTeams?.forEach((team) => {
+	// 		// TBD: turn into an object, that also hold information if right is assigned or not
+	// 		rightsMapping.set(team.id, AccessHandler.getRights(team.id, team.access_policies));
+	// 	});
+	// 	return rightsMapping;
+	// });
 
 	// $effect(() => {
 	// 	console.log('=== DemoResourceCard.svelte - identitiesRightsMap ===');
