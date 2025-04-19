@@ -702,27 +702,27 @@
 			<div class="textarea-filled w-full grow">
 				<textarea class="textarea textarea-xs" placeholder="Hello!!!" id="filledTextareaXs"
 				></textarea>
-				<label class="textarea-filled-label" for="filledTextareaXs">Full name - xs</label>
+				<label class="textarea-filled-label" for="filledTextareaXs">Your bio - xs</label>
 			</div>
 			<div class="textarea-filled w-full grow">
 				<textarea class="textarea textarea-sm" placeholder="Hello!!!" id="filledTextareaSm"
 				></textarea>
-				<label class="textarea-filled-label" for="filledTextareatSm">Full name - sm</label>
+				<label class="textarea-filled-label" for="filledTextareatSm">Your bio - sm</label>
 			</div>
 			<div class="textarea-filled w-full grow">
 				<textarea class="textarea textarea-md" placeholder="Hello!!!" id="filledTextareaMd"
 				></textarea>
-				<label class="textarea-filled-label" for="filledTextareaDefault">Full name - default</label>
+				<label class="textarea-filled-label" for="filledTextareaDefault">Your bio - default</label>
 			</div>
 			<div class="textarea-filled w-full grow">
 				<textarea class="textarea textarea-lg" placeholder="Hello!!!" id="filledTextareaLg"
 				></textarea>
-				<label class="textarea-filled-label" for="filledTextareaLg">Full name - lg</label>
+				<label class="textarea-filled-label" for="filledTextareaLg">Your bio - lg</label>
 			</div>
 			<div class="textarea-filled w-full grow">
 				<textarea class="textarea textarea-xl" placeholder="Hello!!!" id="filledTextareaXl"
 				></textarea>
-				<label class="textarea-filled-label" for="filledTextareaXl">Full name - xl</label>
+				<label class="textarea-filled-label" for="filledTextareaXl">Your bio - xl</label>
 			</div>
 		</div>
 		<!-- <div class="mb-5 flex grow flex-row flex-wrap gap-4">
