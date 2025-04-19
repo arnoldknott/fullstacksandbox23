@@ -659,33 +659,33 @@
 					</div>
 				{/each} -->
 				<div
-					class="m-2 w-24 rounded-none bg-primary-container p-2 text-center text-base md:text-xl"
+					class="bg-primary-container m-2 w-24 rounded-none p-2 text-center text-base md:text-xl"
 				>
 					none
 				</div>
-				<div class="m-2 w-24 rounded-sm bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-xs p-2 text-center text-base md:text-xl">
 					sm
 				</div>
 				<div
-					class="m-2 w-24 rounded bg-primary-container p-2 text-center text-base md:text-xl"
+					class="bg-primary-container m-2 w-24 rounded-sm p-2 text-center text-base md:text-xl"
 				></div>
-				<div class="m-2 w-24 rounded-md bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-md p-2 text-center text-base md:text-xl">
 					md
 				</div>
-				<div class="m-2 w-24 rounded-lg bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-lg p-2 text-center text-base md:text-xl">
 					lg
 				</div>
-				<div class="m-2 w-24 rounded-xl bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-xl p-2 text-center text-base md:text-xl">
 					xl
 				</div>
-				<div class="m-2 w-24 rounded-2xl bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-2xl p-2 text-center text-base md:text-xl">
 					2xl
 				</div>
-				<div class="m-2 w-24 rounded-3xl bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-3xl p-2 text-center text-base md:text-xl">
 					3xl
 				</div>
 				<div
-					class="m-2 w-24 rounded-full bg-primary-container p-2 text-center text-base md:text-xl"
+					class="bg-primary-container m-2 w-24 rounded-full p-2 text-center text-base md:text-xl"
 				>
 					full
 				</div>
@@ -848,7 +848,7 @@
 						<div class="text-center">
 							<button
 								type="submit"
-								class="inline-block w-5/6 rounded bg-blue-400 px-7 pb-2.5 pt-3 uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-blue-700 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-blue-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-blue-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
+								class="inline-block w-5/6 rounded-sm bg-blue-400 px-7 pt-3 pb-2.5 leading-normal text-white uppercase shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-blue-700 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-blue-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:ring-0 focus:outline-hidden active:bg-blue-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
 								data-te-ripple-init
 								data-te-ripple-color="light"
 							>

@@ -1,361 +1,49 @@
 .btn-primary-container {
-	@apply text-primary-container-content outline-primary-container/30;
-	@supports (color: oklch(0% 0 0)) {
-		--btn-color: var(--pcontainer);
-	}
-	@supports not (color: oklch(0% 0 0)) {
-		--btn-color: var(--fallback-p);
-	}
+	--btn-color: var(--color-primary-container);
+	--btn-fg: var(--color-primary-container-content);
 }
 
 .btn-secondary-container {
-	@apply text-secondary-container-content outline-secondary-container/30;
-	@supports (color: oklch(0% 0 0)) {
-		--btn-color: var(--scontainer);
-	}
-	@supports not (color: oklch(0% 0 0)) {
-		--btn-color: var(--fallback-s);
-	}
+	--btn-color: var(--color-secondary-container);
+	--btn-fg: var(--color-secondary-container-content);
 }
 
 .btn-accent-container {
-	@apply text-accent-container-content outline-accent-container/30;
-	@supports (color: oklch(0% 0 0)) {
-		--btn-color: var(--acontainer);
-	}
-	@supports not (color: oklch(0% 0 0)) {
-		--btn-color: var(--fallback-a);
-	}
+	--btn-color: var(--color-accent-container);
+	--btn-fg: var(--color-accent-container-content);
 }
 
 .btn-neutral-container {
-	@apply text-neutral-container-content outline-neutral-container/30;
-	@supports (color: oklch(0% 0 0)) {
-		--btn-color: var(--ncontainer);
-	}
-	@supports not (color: oklch(0% 0 0)) {
-		--btn-color: var(--fallback-n);
-	}
+	--btn-color: var(--color-neutral-container);
+	--btn-fg: var(--color-neutral-container-content);
 }
 
 .btn-info-container {
-	@apply text-info-container-content outline-info-container/30;
-	@supports (color: oklch(0% 0 0)) {
-		--btn-color: var(--incontainer);
-	}
-	@supports not (color: oklch(0% 0 0)) {
-		--btn-color: var(--fallback-i);
-	}
+	--btn-color: var(--color-info-container);
+	--btn-fg: var(--color-info-container-content);
 }
 
 .btn-success-container {
-	@apply text-success-container-content outline-success-container/30;
-	@supports (color: oklch(0% 0 0)) {
-		--btn-color: var(--sucontainer);
-	}
-	@supports not (color: oklch(0% 0 0)) {
-		--btn-color: var(--fallback-s);
-	}
+	--btn-color: var(--color-success-container);
+	--btn-fg: var(--color-success-container-content);
 }
 
 .btn-warning-container {
-	@apply text-warning-container-content outline-warning-container/30;
-	@supports (color: oklch(0% 0 0)) {
-		--btn-color: var(--wacontainer);
-	}
-	@supports not (color: oklch(0% 0 0)) {
-		--btn-color: var(--fallback-w);
-	}
+	--btn-color: var(--color-warning-container);
+	--btn-fg: var(--color-warning-container-content);
 }
 
 .btn-error-container {
-	@apply text-error-container-content outline-error-container/30;
-	@supports (color: oklch(0% 0 0)) {
-		--btn-color: var(--ercontainer);
-	}
-	@supports not (color: oklch(0% 0 0)) {
-		--btn-color: var(--fallback-e);
-	}
+	--btn-color: var(--color-error-container);
+	--btn-fg: var(--color-error-container-content);
 }
 
 .btn-inverse-primary {
-	@apply text-inverse-surface outline-inverse-primary/30;
-	@supports (color: oklch(0% 0 0)) {
-		--btn-color: var(--ip);
-	}
-	@supports not (color: oklch(0% 0 0)) {
-		--btn-color: var(--fallback-p);
-	}
+	--btn-color: var(--color-inverse-primary);
+	--btn-fg: var(--color-inverse-surface);
 }
 
 .btn-primary-fixed-dim {
-	@apply text-primary-fixed-content outline-primary-fixed-dim/30;
-	@supports (color: oklch(0% 0 0)) {
-		--btn-color: var(--pf);
-	}
-	@supports not (color: oklch(0% 0 0)) {
-		--btn-color: var(--fallback-p);
-	}
-}
-
-.btn-soft.btn-primary-container {
-	@apply bg-primary-container/20 text-primary-container-content outline-primary-container/50;
-	@media (hover: hover) {
-		&:hover {
-			@apply bg-primary-container/30;
-		}
-	}
-	&.btn-active {
-		@apply bg-primary-container/30;
-	}
-	&:focus-visible {
-		@apply bg-primary-container/30 outline-primary-container/50;
-	}
-}
-
-.btn-soft.btn-inverse-primary {
-	@apply bg-inverse-primary/20 text-inverse-primary outline-inverse-primary/50;
-	@media (hover: hover) {
-		&:hover {
-			@apply bg-inverse-primary/30;
-		}
-	}
-	&.btn-active {
-		@apply bg-inverse-primary/30;
-	}
-	&:focus-visible {
-		@apply bg-inverse-primary/30 outline-inverse-primary/50;
-	}
-}
-
-.btn-soft.btn-primary-fixed-dim {
-	@apply bg-primary-fixed-dim/20 text-primary-fixed-dim outline-primary-fixed-dim/50;
-	@media (hover: hover) {
-		&:hover {
-			@apply bg-primary-fixed-dim/30;
-		}
-	}
-	&.btn-active {
-		@apply bg-primary-fixed-dim/30;
-	}
-	&:focus-visible {
-		@apply bg-primary-fixed-dim/30 outline-primary-fixed-dim/50;
-	}
-}
-
-.btn-outline.btn-primary-container {
-	@apply text-primary-container;
-	@media (hover: hover) {
-		&:hover {
-			@apply border-primary-container bg-primary-container/10;
-		}
-	}
-
-	&.btn-active {
-		@apply border-primary-container bg-primary-container/10;
-	}
-	&:focus-visible {
-		@apply bg-primary-container/10;
-	}
-}
-
-.btn-outline.btn-inverse-primary {
-	@apply text-inverse-primary;
-	@media (hover: hover) {
-		&:hover {
-			@apply border-inverse-primary bg-inverse-primary/10;
-		}
-	}
-
-	&.btn-active {
-		@apply border-inverse-primary bg-inverse-primary/10;
-	}
-	&:focus-visible {
-		@apply bg-inverse-primary/10;
-	}
-}
-
-.btn-outline.btn-primary-fixed-dim {
-	@apply text-primary-fixed-dim;
-	@media (hover: hover) {
-		&:hover {
-			@apply border-primary-fixed-dim bg-primary-fixed-dim/10;
-		}
-	}
-
-	&.btn-active {
-		@apply border-primary-fixed-dim bg-primary-fixed-dim/10;
-	}
-	&:focus-visible {
-		@apply bg-primary-fixed-dim/10;
-	}
-}
-
-.btn-text.btn-primary-container {
-	@apply text-primary-container;
-	@media (hover: hover) {
-		&:hover {
-			@apply bg-primary-container/10;
-		}
-	}
-
-	&.btn-active {
-		@apply bg-primary-container/10;
-	}
-	&:focus-visible {
-		@apply bg-primary-container/10;
-	}
-}
-
-.btn-text.btn-inverse-primary {
-	@apply text-inverse-primary;
-	@media (hover: hover) {
-		&:hover {
-			@apply bg-inverse-primary/10;
-		}
-	}
-
-	&.btn-active {
-		@apply bg-inverse-primary/10;
-	}
-	&:focus-visible {
-		@apply bg-inverse-primary/10;
-	}
-}
-
-.btn-text.btn-primary-fixed-dim {
-	@apply text-primary-fixed-dim;
-	@media (hover: hover) {
-		&:hover {
-			@apply bg-primary-fixed-dim/10;
-		}
-	}
-
-	&.btn-active {
-		@apply bg-primary-fixed-dim/10;
-	}
-	&:focus-visible {
-		@apply bg-primary-fixed-dim/10;
-	}
-}
-
-.btn-gradient.btn-neutral {
-	@apply border-neutral text-neutral-content shadow-neutral/26 hover:shadow-neutral/20;
-	@supports (color: oklch(0% 0 0)) {
-		--light-shade: var(--n);
-	}
-	&:focus-visible {
-		@apply outline-neutral/30;
-		border-color: transparent;
-	}
-}
-
-.btn-gradient.btn-primary-container {
-	@apply border-primary-container text-primary-container-content shadow-primary-container/26 hover:shadow-primary-container/20;
-	@supports (color: oklch(0% 0 0)) {
-		--light-shade: var(--pc);
-	}
-	&:focus-visible {
-		@apply outline-primary-container/30;
-		border-color: transparent;
-	}
-}
-
-.btn-gradient.btn-secondary-container {
-	@apply border-secondary-container text-secondary-container-content shadow-secondary-container/26 hover:shadow-secondary-container/20;
-	@supports (color: oklch(0% 0 0)) {
-		--light-shade: var(--sc);
-	}
-	&:focus-visible {
-		@apply outline-secondary-container/30;
-		border-color: transparent;
-	}
-}
-
-.btn-gradient.btn-accent-container {
-	@apply border-accent-container text-accent-container-content shadow-accent-container/26 hover:shadow-accent-container/20;
-	@supports (color: oklch(0% 0 0)) {
-		--light-shade: var(--ac);
-	}
-	&:focus-visible {
-		@apply outline-accent-container/30;
-		border-color: transparent;
-	}
-}
-
-.btn-gradient.btn-neutral-container {
-	@apply border-neutral-container text-neutral-container-content shadow-neutral-container/26 hover:shadow-neutral-container/20;
-	@supports (color: oklch(0% 0 0)) {
-		--light-shade: var(--nc);
-	}
-	&:focus-visible {
-		@apply outline-neutral-container/30;
-		border-color: transparent;
-	}
-}
-
-.btn-gradient.btn-info-container {
-	@apply border-info-container text-info-container-content shadow-info-container/26 hover:shadow-info-container/20;
-	@supports (color: oklch(0% 0 0)) {
-		--light-shade: var(--inc);
-	}
-	&:focus-visible {
-		@apply outline-info-container/30;
-		border-color: transparent;
-	}
-}
-
-.btn-gradient.btn-success-container {
-	@apply border-success-container text-success-container-content shadow-success-container/26 hover:shadow-success-container/20;
-	@supports (color: oklch(0% 0 0)) {
-		--light-shade: var(--suc);
-	}
-	&:focus-visible {
-		@apply outline-success-container/30;
-		border-color: transparent;
-	}
-}
-
-.btn-gradient.btn-warning-container {
-	@apply border-warning-container text-warning-container-content shadow-warning-container/26 hover:shadow-warning-container/20;
-	@supports (color: oklch(0% 0 0)) {
-		--light-shade: var(--wac);
-	}
-	&:focus-visible {
-		@apply outline-warning-container/30;
-		border-color: transparent;
-	}
-}
-
-.btn-gradient.btn-error-container {
-	@apply border-error-container text-error-container-content shadow-error-container/26 hover:shadow-error-container/20;
-	@supports (color: oklch(0% 0 0)) {
-		--light-shade: var(--erc);
-	}
-	&:focus-visible {
-		@apply outline-error-container/30;
-		border-color: transparent;
-	}
-}
-
-.btn-gradient.btn-inverse-primary {
-	@apply border-inverse-primary text-inverse-surface shadow-inverse-primary/26 hover:shadow-inverse-primary/20;
-	@supports (color: oklch(0% 0 0)) {
-		--light-shade: var(--ip);
-	}
-	&:focus-visible {
-		@apply outline-inverse-primary/30;
-		border-color: transparent;
-	}
-}
-
-.btn-gradient.btn-primary-fixed-dim {
-	@apply border-primary-fixed-dim text-primary-fixed-content shadow-primary-fixed-dim/26 hover:shadow-primary-fixed-dim/20;
-	@supports (color: oklch(0% 0 0)) {
-		--light-shade: var(--ip);
-	}
-	&:focus-visible {
-		@apply outline-primary-fixed-dim/30;
-		border-color: transparent;
-	}
+	--btn-color: var(--color-primary-fixed-dim);
+	--btn-fg: var(--color-primary-fixed-content);
 }

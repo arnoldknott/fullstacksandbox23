@@ -7,7 +7,8 @@
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	// import type { IOverlay } from 'flyonui/flyonui';
 	// import { HSDropdown, type IHTMLElementPopper } from 'flyonui/flyonui';
-	import type { IHTMLElementPopper, HSDropdown } from 'flyonui/flyonui';
+	// import type { IHTMLElementPopper, HSDropdown } from 'flyonui/flyonui';
+	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
 
@@ -49,7 +50,8 @@
 		loadHSDropdown().then((LoadedHSDropdown) => {
 			// console.log("=== component - LoadedHSDropdown ===")
 			// console.log(LoadedHSDropdown)
-			dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
+			// dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
+			dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementFloatingUI);
 			// dropdownMenu
 			// console.log("=== dropdownMenu ===")
 			// console.log(dropdownMenu)
@@ -188,16 +190,16 @@
 		<Heading>Card with chat</Heading>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet headerChat()}
-				<h5 class="text-title md:text-title-large card-title">Chat card</h5>
+				<h5 class="title md:title-large card-title">Chat card</h5>
 			{/snippet}
 			<Card id="chatCard" extraClasses="md:w-4/5" header={headerChat} footer={footerChat}>
 				<div
-					class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
+					class="bg-base-200 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
 				>
 					<div class="chat chat-receiver">
 						<div class="avatar chat-avatar">
 							<div class="size-10 rounded-full">
-								<span class="icon-[tabler--man] m-1 size-8 text-primary"></span>
+								<span class="icon-[tabler--man] text-primary m-1 size-8"></span>
 							</div>
 						</div>
 						<div class="chat-header text-base-content">
@@ -212,7 +214,7 @@
 					<div class="chat chat-receiver">
 						<div class="avatar chat-avatar">
 							<div class="size-10 rounded-full">
-								<span class="icon-[tabler--user] m-1 size-8 text-primary"></span>
+								<span class="icon-[tabler--user] text-primary m-1 size-8"></span>
 							</div>
 						</div>
 						<div class="chat-header text-base-content">
@@ -238,20 +240,13 @@
 			</Card>
 			{#snippet footerChat()}
 				<div class="flex flex-row items-center gap-2">
-					<div class="relative grow">
-						<input
-							type="text"
-							placeholder="Send a message here"
-							class="input input-filled peer grow border-secondary shadow-sm shadow-outline"
-							id="chattMessage"
-						/>
+					<div class="input-filled grow">
+						<input type="text" placeholder="Send a message here" class="input" id="chatMessage" />
 						<label
-							class="text-label-small md:text-label input-filled-label grow"
-							style="color: oklch(var(--s));"
+							class="input-filled-label"
+							style="color: var(--color-secondary);"
 							for="chatMessage">♡ What's on your heart?</label
 						>
-						<span class="input-filled-focused grow" style="background-color: oklch(var(--s));"
-						></span>
 					</div>
 					<button
 						class="btn-secondary-container btn btn-circle btn-gradient"
@@ -268,15 +263,15 @@
 		<Heading>Card with text and navigation</Heading>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			<div
-				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+					<h5 class="title-small md:title lg:title-large base-content card-title">
 						Here's a title
 					</h5>
 				</div>
 				<div class="card-body">
-					<p class="text-body-small md:text-body text-primary-container-content">
+					<p class="body-small md:body text-primary-container-content">
 						Some test text, here. Can go over several lines. And if it does, the cards in the same
 						line will adjust to the longest card. This is a good way to keep the layout clean and
 						consistent.
@@ -286,7 +281,7 @@
 					<div class="card-actions text-center">
 						<a href="#top"
 							><button
-								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
+								class="label-small btn btn-primary text-primary-content shadow-primary rounded-full px-3"
 								>Link to top of page</button
 							></a
 						>
@@ -294,15 +289,15 @@
 				</div>
 			</div>
 			<div
-				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+					<h5 class="title-small md:title lg:title-large base-content card-title">
 						One more title
 					</h5>
 				</div>
 				<div class="card-body">
-					<p class="text-body-small md:text-body text-primary-container-content">
+					<p class="body-small md:body text-primary-container-content">
 						Some shorter text here - but adjusts to the height of the neigour card
 					</p>
 				</div>
@@ -310,7 +305,7 @@
 					<div class="card-actions text-center">
 						<a href="#top"
 							><button
-								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
+								class="label-small btn btn-primary text-primary-content shadow-primary rounded-full px-3"
 								>Link to top of page</button
 							></a
 						>
@@ -318,15 +313,13 @@
 				</div>
 			</div>
 			<div
-				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
-						A third title
-					</h5>
+					<h5 class="title-small md:title lg:title-large base-content card-title">A third title</h5>
 				</div>
 				<div class="card-body">
-					<p class="text-body-small md:text-body text-primary-container-content">
+					<p class="body-small md:body text-primary-container-content">
 						This one is meant to fill the row. Note how the cards are responsive on smaller screens.
 					</p>
 				</div>
@@ -334,7 +327,7 @@
 					<div class="card-actions text-center">
 						<a href="#top"
 							><button
-								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
+								class="label-small btn btn-primary text-primary-content shadow-primary rounded-full px-3"
 								>Link to top of page</button
 							></a
 						>
@@ -350,7 +343,7 @@
 			{#snippet headerEdit()}
 				<div class="flex justify-between">
 					<div>
-						<h5 class="text-title md:text-title-large card-title">Card with editable text</h5>
+						<h5 class="title md:title-large card-title">Card with editable text</h5>
 					</div>
 					<div class="flex flex-row items-start gap-4">
 						<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
@@ -366,7 +359,7 @@
 								<span class="icon-[tabler--dots-vertical] size-6"></span>
 							</button> -->
 							<ul
-								class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
 								role="menu"
 								aria-orientation="vertical"
 								aria-labelledby="dropdown-menu-icon"
@@ -393,7 +386,7 @@
 			{/snippet}
 			<Card id="cardEdit" extraClasses="md:w-4/5" header={headerEdit}>
 				<div
-					class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
+					class="bg-base-200 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
 				>
 					Some text
 				</div>
@@ -410,21 +403,21 @@
 			<!-- onload={async()=> await  loadHSDropdown()} -->
 			<span
 				id="dropdown-menu-icon"
-				class="dropdown-toggle icon-[tabler--dots-vertical] size-6"
+				class="dropdown-toggle icon-[tabler--dots-vertical] text-secondary size-6"
 				role="button"
 				aria-haspopup="menu"
 				aria-expanded="false"
 				aria-label="Dropdown"
 			></span>
 			<ul
-				class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+				class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
 				role="menu"
 				aria-orientation="vertical"
 				aria-labelledby="dropdown-menu-icon"
 			>
 				<li class="items-center">
 					<button
-						class="btn dropdown-item btn-text content-center justify-start"
+						class="btn dropdown-item btn-text text-secondary content-center justify-start"
 						aria-label="Edit Button"
 						onclick={() => (edit ? (edit = false) : (edit = true))}
 						><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
@@ -435,7 +428,7 @@
 				>
 					<button
 						id="share"
-						class="dropdown-toggle btn dropdown-item btn-text content-center justify-start"
+						class="dropdown-toggle btn dropdown-item btn-text text-secondary content-center justify-start"
 						aria-haspopup="menu"
 						aria-expanded="false"
 						aria-label="Share with"
@@ -444,14 +437,14 @@
 					</button>
 					<!-- min-w-60 -->
 					<ul
-						class="dropdown-menu hidden min-w-[15rem] bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
 						role="menu"
 						aria-orientation="vertical"
 						aria-labelledby="share"
 					>
 						<li>
-							<div class="flex items-center">
-								<div class="dropdown-item max-w-40 content-center">
+							<div class="text-secondary flex items-center">
+								<div class="dropdown-item text-secondary max-w-40 content-center">
 									<span class="icon-[fluent--people-team-16-filled]"></span>{teams[0].name}
 								</div>
 								<div class="mr-2">
@@ -459,10 +452,10 @@
 									<span class="{rightsIcon(teams[0].right)} size-4"></span>
 								</div>
 								<div
-									class="dropdown relative inline-flex bg-base-300 [--offset:0] [--placement:left-start]"
+									class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
 								>
 									<ul
-										class="dropdown-menu hidden bg-base-300 outline outline-2 outline-outline dropdown-open:opacity-100"
+										class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
 										role="menu"
 										aria-orientation="vertical"
 										aria-labelledby="rights"
@@ -535,7 +528,7 @@
 										aria-expanded="false"
 										aria-label="Dropdown"
 									>
-										<span class="icon-[tabler--chevron-down] size-4 dropdown-open:rotate-180"
+										<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
 										></span>
 									</button>
 								</div>
@@ -545,7 +538,7 @@
 							</div>
 						</li>
 						<li class="dropdown-footer gap-2">
-							<button class="btn dropdown-item btn-text content-center justify-start"
+							<button class="btn dropdown-item btn-text text-secondary content-center justify-start"
 								>... more options</button
 							>
 						</li>
@@ -566,64 +559,173 @@
 	<div>
 		<Heading>Inputs</Heading>
 		<div class="mb-5 flex grow flex-row gap-4">
-			<div class="relative sm:w-56">
-				<input
-					type="text"
-					placeholder="Primary colored input"
-					class="input input-filled peer border-primary"
-					id="primaryInput"
-				/>
-				<label
-					class="text-label-small md:text-label input-filled-label"
-					style="color: oklch(var(--p));"
-					for="primaryInput">Full Name</label
-				>
-				<span class="input-filled-focused" style="background-color: oklch(var(--p));"></span>
+			<div class="input-filled w-full grow">
+				<input type="text" placeholder="Primary colored input" class="input" id="filledInput" />
+				<label class="input-filled-label" for="filledInput">Full name</label>
 			</div>
-			<div class="relative sm:w-56">
+			<div class="input-filled input-secondary w-full grow">
 				<input
 					type="text"
 					placeholder="Secondary colored input"
-					class="input input-filled peer border-secondary"
-					id="secondaryInput"
+					class="input border-secondary"
+					id="filledInputSecondary"
 				/>
-				<label
-					class="text-label-small md:text-label input-filled-label"
-					style="color: oklch(var(--s));"
-					for="secondaryInput">Full Name</label
+				<label class="input-filled-label text-secondary" for="filledInputSecondary">Full name</label
 				>
-				<span class="input-filled-focused" style="background-color: oklch(var(--s));"></span>
 			</div>
-			<div class="relative sm:w-56">
+			<div class="input-filled input-accent w-full grow">
 				<input
 					type="text"
 					placeholder="Accent colored input"
-					class="input input-filled peer border-accent"
-					id="accentInput"
+					class="input"
+					id="filledInputAccent"
 				/>
-				<label
-					class="text-label-small md:text-label input-filled-label"
-					style="color: oklch(var(--a));"
-					for="secondaryInput">Full Name</label
-				>
-				<span class="input-filled-focused" style="background-color: oklch(var(--a));"></span>
+				<label class="input-filled-label" for="filledInputAccent">Full name</label>
 			</div>
-			<div class="relative sm:w-56">
+			<div class="input-filled input-neutral w-full grow">
 				<input
 					type="text"
 					placeholder="Neutral colored input"
-					class="input input-filled peer border-neutral"
-					id="accentInput"
+					class="input"
+					id="filledInputNeutral"
 				/>
-				<label
-					class="text-label-small md:text-label input-filled-label"
-					style="color: oklch(var(--n));"
-					for="secondaryInput">Full Name</label
-				>
-				<span class="input-filled-focused" style="background-color: oklch(var(--n));"></span>
+				<label class="input-filled-label" for="filledInputNeutral">Full name</label>
 			</div>
 		</div>
-		<div class="mb-5 flex grow flex-row flex-wrap gap-4">
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="input-filled w-full grow">
+				<input type="text" placeholder="John Doe" class="input" id="filledInputDisabled" disabled />
+				<label class="input-filled-label" for="filledInputDisabled">Full name - disabled</label>
+			</div>
+			<div class="input-filled w-full grow">
+				<input type="text" placeholder="John Doe" class="input is-valid" id="filledInputIsValid" />
+				<label class="input-filled-label" for="filledInputIsValid">Full name - is-valid</label>
+			</div>
+			<div class="input-filled w-full grow">
+				<input
+					type="text"
+					placeholder="John Doe"
+					class="input is-invalid"
+					id="filledInputIsInvalid"
+				/>
+				<label class="input-filled-label" for="filledInputIsInvalid">Full name - is-invalid</label>
+			</div>
+			<div class="input-floating w-full grow">
+				<input type="text" placeholder="John Doe" class="input" id="floatingInput" />
+				<label class="input-floating-label" for="floatingInput">Full name - floating</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-xs" id="filledInputXs" />
+				<label class="input-filled-label" for="filledInputXs">Full name - xs</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-sm" id="filledInputSm" />
+				<label class="input-filled-label" for="filledInputSm">Full name - sm</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-md" id="filledInputDefault" />
+				<label class="input-filled-label" for="filledInputDefault">Full name - default</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-lg" id="filledInputLg" />
+				<label class="input-filled-label" for="filledInputLg">Full name - lg</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-xl" id="filledInputXl" />
+				<label class="input-filled-label" for="filledInputXl">Full name - xl</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="input-filled input-xs sm:input-md md:input-xl w-full grow">
+				<input
+					type="text"
+					placeholder="John Doe"
+					class="input input-xs"
+					id="filledInputResponsive"
+				/>
+				<label class="input-filled-label" for="filledInputResponsive">Full name - responsive</label>
+			</div>
+			<div class="input-floating input-xs sm:input-md md:input-xl w-full grow">
+				<input
+					type="text"
+					placeholder="John Doe"
+					class="input input-xs"
+					id="filledInputResponsive"
+				/>
+				<label class="input-floating-label" for="filledInputResponsive"
+					>Full name - responsive</label
+				>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledPrimary"></textarea>
+				<label class="textarea-filled-label" for="textareaFilledPrimary">Your bio</label>
+			</div>
+			<div class="textarea-filled textarea-secondary w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledSecondary"></textarea>
+				<label class="textarea-filled-label" for="textareaFlilledSecondary">Your bio</label>
+			</div>
+			<div class="textarea-filled textarea-accent w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledAccent"></textarea>
+				<label class="textarea-filled-label" for="textareaFilledAccent">Your bio</label>
+			</div>
+			<div class="textarea-filled textarea-neutral w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledNeutral"></textarea>
+				<label class="textarea-filled-label" for="textareaFilledNeutral">Your bio</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledDisabled" disabled
+				></textarea>
+				<label class="textarea-filled-label" for="textareaFilledDisabled">Your bio</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea is-valid" placeholder="Hello!!!" id="textareaFilledIsValid"
+				></textarea>
+				<label class="textarea-filled-label" for="textareaFilledIsValid">Your bio</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea is-invalid" placeholder="Hello!!!" id="textareaFilledIsInvalid"
+				></textarea>
+				<label class="textarea-filled-label" for="textareaFilledIsInvalid">Your bio</label>
+			</div>
+			<div class="textarea-floating w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFloating"></textarea>
+				<label class="textarea-floating-label" for="textareaFloating">Your bio</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-xs" placeholder="Hello!!!" id="filledTextareaXs"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaXs">Full name - xs</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-sm" placeholder="Hello!!!" id="filledTextareaSm"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareatSm">Full name - sm</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-md" placeholder="Hello!!!" id="filledTextareaMd"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaDefault">Full name - default</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-lg" placeholder="Hello!!!" id="filledTextareaLg"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaLg">Full name - lg</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-xl" placeholder="Hello!!!" id="filledTextareaXl"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaXl">Full name - xl</label>
+			</div>
+		</div>
+		<!-- <div class="mb-5 flex grow flex-row flex-wrap gap-4">
 			<div class="relative sm:w-56">
 				<textarea
 					placeholder="Primary colored input"
@@ -631,7 +733,7 @@
 					id="primaryInput"
 				></textarea>
 				<label
-					class="text-label-small md:text-label textarea-filled-label"
+					class="label-small md:label textarea-filled-label"
 					style="color: oklch(var(--p));"
 					for="primaryInput">Description</label
 				>
@@ -644,7 +746,7 @@
 					id="secondaryTextarea"
 				></textarea>
 				<label
-					class="text-label-small md:text-label textarea-filled-label"
+					class="label-small md:label textarea-filled-label"
 					style="color: oklch(var(--s));"
 					for="secondaryTextarea">Description</label
 				>
@@ -657,7 +759,7 @@
 					id="accentTextarea"
 				></textarea>
 				<label
-					class="text-label-small md:text-label textarea-filled-label"
+					class="label-small md:label textarea-filled-label"
 					style="color: oklch(var(--a));"
 					for="accentTextarea">Description</label
 				>
@@ -670,13 +772,13 @@
 					id="neutraTextarea"
 				></textarea>
 				<label
-					class="text-label-small md:text-label textarea-filled-label"
+					class="label-small md:label textarea-filled-label"
 					style="color: oklch(var(--n));"
 					for="secondaryTextarea">Description</label
 				>
 				<span class="textarea-filled-focused" style="background-color: oklch(var(--n));"></span>
 			</div>
-		</div>
+		</div> -->
 	</div>
 
 	<div>
@@ -766,11 +868,11 @@
 
 	<div>
 		<Heading>Icons</Heading>
-		<p class="text-title-large text-center text-xl">Iconify with FlyonUI</p>
+		<p class="title-large text-center text-xl">Iconify with FlyonUI</p>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
-				<p class="text-label text-center">
-					Default library <span class="text-label-prominent badge min-h-fit">Tablers</span>
+				<p class="label text-center">
+					Default library <span class="label-prominent badge min-h-fit">Tablers</span>
 				</p>
 				<span class="icon-[tabler--settings] size-12"></span>
 				<span class="icon-[tabler--palette] size-12"></span>
@@ -782,10 +884,8 @@
 				<span class="icon-[tabler--ban] size-12"></span>
 			</div>
 			<div>
-				<p class="text-label text-center">
-					Extension library <span class="text-label-prominent badge min-h-fit"
-						>Material Symbols</span
-					>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Material Symbols</span>
 				</p>
 				<span class="icon-[material-symbols--settings-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--palette-outline] size-12"></span>
@@ -794,8 +894,8 @@
 				<span class="icon-[material-symbols--edit-outline-rounded] size-12"></span>
 			</div>
 			<div>
-				<p class="text-label text-center">
-					Extension library <span class="text-label-prominent badge min-h-fit">SVG spinners</span>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">SVG spinners</span>
 				</p>
 				<span class="icon-[svg-spinners--12-dots-scale-rotate] size-12"></span>
 				<span class="icon-[svg-spinners--3-dots-bounce] size-12"></span>
@@ -807,19 +907,15 @@
 				<span class="icon-[svg-spinners--wifi-fade] size-12"></span>
 			</div>
 			<div>
-				<p class="text-label text-center">
-					Extension library <span class="text-label-prominent badge min-h-fit"
-						>Font Awesome Solid</span
-					>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Solid</span>
 				</p>
 				<span class="icon-[fa6-solid--user] size-12"></span>
 				<span class="icon-[fa6-solid--droplet] size-12"></span>
 				<span class="icon-[fa6-solid--comments] size-12"></span>
 				<span class="icon-[fa6-solid--plus] size-12"></span>
-				<p class="text-label text-center">
-					Extension library <span class="text-label-prominent badge min-h-fit"
-						>Font Awesome Brands</span
-					>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Brands</span>
 				</p>
 				<span class="icon-[fa6-brands--discord] size-12"></span>
 				<span class="icon-[fa6-brands--youtube] size-12"></span>
@@ -827,8 +923,8 @@
 				<span class="icon-[fa6-brands--github] size-12"></span>
 			</div>
 			<div>
-				<p class="text-label text-center">
-					Extension library <span class="text-label-prominent badge min-h-fit">Feather Icon</span>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Feather Icon</span>
 				</p>
 				<span class="icon-[fe--bell] size-12"></span>
 				<span class="icon-[fe--disabled] size-12"></span>
@@ -838,8 +934,8 @@
 				</span>
 			</div>
 			<div>
-				<p class="text-label text-center">
-					Emoji library <span class="text-label-prominent badge min-h-fit">Noto emoji</span>
+				<p class="label text-center">
+					Emoji library <span class="label-prominent badge min-h-fit">Noto emoji</span>
 				</p>
 				<span class="icon-[noto--folded-hands] size-12"></span>
 				<span class="icon-[noto--folded-hands-medium-dark-skin-tone] size-12"></span>
@@ -851,15 +947,15 @@
 				<span class="icon-[noto--cross-mark] size-12"></span>
 			</div>
 			<div>
-				<p class="text-label text-center">
-					Emoji library <span class="text-label-prominent badge min-h-fit">Openmoji</span>
+				<p class="label text-center">
+					Emoji library <span class="label-prominent badge min-h-fit">Openmoji</span>
 				</p>
 				<span class="icon-[openmoji--check-mark] size-12"></span>
 				<span class="icon-[openmoji--cross-mark] size-12"></span>
 			</div>
 			<div>
-				<p class="text-label text-center">
-					Emoji library <span class="text-label-prominent badge min-h-fit">Twitter Emoji</span>
+				<p class="label text-center">
+					Emoji library <span class="label-prominent badge min-h-fit">Twitter Emoji</span>
 				</p>
 				<span class="icon-[twemoji--flag-denmark] size-12"></span>
 				<span class="icon-[twemoji--flag-germany] size-12"></span>
@@ -873,7 +969,7 @@
 		<Heading>Buttons</Heading>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
-				<p class="text-label text-center">Action Buttons</p>
+				<p class="label text-center">Action Buttons</p>
 				<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add">
 					<span class="icon-[fa6-solid--plus]"></span>
 				</button>
@@ -892,7 +988,7 @@
 				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Done">
 					<span class="icon-[mingcute--check-2-fill]"></span>
 				</button>
-				<p class="text-label text-center">State changing buttons</p>
+				<p class="label text-center">State changing buttons</p>
 				<button
 					class="btn-info-container btn btn-circle btn-gradient"
 					onclick={() => (edit ? (edit = false) : (edit = true))}
@@ -913,7 +1009,7 @@
 		<Heading>Badges</Heading>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
-				<p class="text-label text-center">Text Badges</p>
+				<p class="label text-center">Text Badges</p>
 			</div>
 		</div>
 	</div>
@@ -1022,14 +1118,14 @@
 		<!-- <div bind:this={modal} id="basic-modal" class="overlay modal overlay-open:opacity-100 hidden" role="dialog" tabindex="-1"> -->
 		<div
 			id="basic-modal"
-			class="overlay modal hidden overlay-open:opacity-100"
+			class="overlay modal overlay-open:opacity-100 hidden"
 			role="dialog"
 			tabindex="-1"
 		>
 			<div class="modal-dialog overlay-open:opacity-100">
 				<div class="modal-content bg-base-300">
 					<div class="modal-header">
-						<h3 class="modal-text-title">First Dialog Title</h3>
+						<h3 class="modal-title">First Dialog Title</h3>
 						<button
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
@@ -1069,14 +1165,14 @@
 
 		<div
 			id="centered-modal"
-			class="overlay modal modal-middle hidden overlay-open:opacity-100"
+			class="overlay modal modal-middle overlay-open:opacity-100 hidden"
 			role="dialog"
 			tabindex="-1"
 		>
 			<div class="modal-dialog overlay-open:opacity-100">
 				<div class="modal-content bg-base-300">
 					<div class="modal-header">
-						<h3 class="modal-text-title">Centered Dialog Title</h3>
+						<h3 class="modal-title">Centered Dialog Title</h3>
 						<button
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
@@ -1116,14 +1212,14 @@
 
 		<div
 			id="share-modal"
-			class="overlay modal modal-middle hidden overlay-open:opacity-100"
+			class="overlay modal modal-middle overlay-open:opacity-100 hidden"
 			role="dialog"
 			tabindex="-1"
 		>
 			<div class="modal-dialog overlay-open:opacity-100">
-				<div class="modal-content bg-base-300 shadow-xl shadow-outline">
+				<div class="modal-content bg-base-300 shadow-outline shadow-xl">
 					<div class="modal-header">
-						<h3 class="modal-text-title">Share</h3>
+						<h3 class="modal-title">Share</h3>
 						<button
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
@@ -1250,12 +1346,12 @@
 
 		<div
 			id="overlay-example"
-			class="overlay drawer drawer-start hidden overlay-open:translate-x-0"
+			class="overlay drawer drawer-start overlay-open:translate-x-0 hidden"
 			role="dialog"
 			tabindex="-1"
 		>
 			<div class="drawer-header">
-				<h3 class="drawer-text-title">Drawer Title</h3>
+				<h3 class="drawer-title">Drawer Title</h3>
 				<button
 					type="button"
 					class="btn btn-circle btn-text btn-sm absolute end-3 top-3"

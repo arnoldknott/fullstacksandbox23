@@ -13,7 +13,7 @@
 
 <!-- <p class="text-left text-base md:text-xl text-{content}"> -->
 
-<div class="h-18 xl:24 flex grow md:h-20 {classes}">
+<div class="xl:24 flex h-18 grow md:h-20 {classes}">
 	{@render children?.()}
 </div>
 

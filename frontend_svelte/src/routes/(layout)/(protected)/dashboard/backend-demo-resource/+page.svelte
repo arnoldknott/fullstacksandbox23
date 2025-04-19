@@ -62,9 +62,9 @@
 		/>
 		<div class={debug ? 'block' : 'hidden'}>
 			<Heading>{demoResource.name}</Heading>
-			<p class="text-title-small md:text-title text-secondary">=> demoResource</p>
+			<p class="title-small md:title text-secondary">=> demoResource</p>
 			<JsonData data={demoResource} />
-			<p class="text-title-small md:text-title text-secondary">=> microsoftTeams</p>
+			<p class="title-small md:title text-secondary">=> microsoftTeams</p>
 			<JsonData data={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)} />
 		</div>
 	{/each}

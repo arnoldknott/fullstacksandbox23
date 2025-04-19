@@ -5,7 +5,7 @@
 </script>
 
 <div class="mx-5">
-	<h1 class="mx-5 mb-2 mt-0 text-5xl font-medium leading-tight text-primary">Protected Resource</h1>
+	<h1 class="text-primary mx-5 mt-0 mb-2 text-5xl leading-tight font-medium">Protected Resource</h1>
 </div>
 
 {#await data}
