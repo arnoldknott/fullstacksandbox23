@@ -1,21 +1,39 @@
-.radio-inverse-primary {
-	&:checked,
-	&[aria-checked='true'] {
-		@apply border-inverse-primary bg-inverse-primary;
+.radio-primary-container {
+	--input-color: var(--color-primary-container);
+}
 
-		&:focus-visible {
-			@apply outline-inverse-primary/30;
-		}
-	}
+.radio-secondary-container {
+	--input-color: var(--color-secondary-container);
+}
+
+.radio-accent-container {
+	--input-color: var(--color-accent-container);
+}
+
+.radio-neutral-container {
+	--input-color: var(--color-neutral-container);
+}
+
+.radio-info-container {
+	--input-color: var(--color-info-container);
+}
+
+.radio-success-container {
+	--input-color: var(--color-success-container);
+}
+
+.radio-warning-container {
+	--input-color: var(--color-warning-container);
+}
+
+.radio-error-container {
+	--input-color: var(--color-error-container);
+}
+
+.radio-inverse-primary {
+	--input-color: var(--color-inverse-primary);
 }
 
 .radio-primary-fixed-dim {
-	&:checked,
-	&[aria-checked='true'] {
-		@apply border-primary-fixed-dim bg-primary-fixed-dim;
-
-		&:focus-visible {
-			@apply outline-primary-fixed-dim/30;
-		}
-	}
+	--input-color: var(--color-primary-fixed-dim);
 }

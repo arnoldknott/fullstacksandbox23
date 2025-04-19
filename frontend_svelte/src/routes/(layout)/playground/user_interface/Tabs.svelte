@@ -10,12 +10,15 @@
 	let { tabs, children }: { tabs: Tab[]; children: Snippet } = $props();
 
 	let activeTab = $state(tabs.findIndex((tab) => tab.active == true) || 0);
-	const tabChange = (event: Event) => (activeTab = event.target ? event.target.activeTabIndex : 0);
+	const tabChange = (event: Event) => {
+		const target = event.target as { activeTabIndex: number } | null;
+		activeTab = target ? target.activeTabIndex : 0;
+	};
 </script>
 
 <md-filled-card class="w-80 py-10">
 	<md-tabs onchange={tabChange}>
-		{#each tabs as tab, i}
+		{#each tabs as tab, i (i)}
 			<md-primary-tab active={activeTab == i}>
 				{tab.header}
 			</md-primary-tab>

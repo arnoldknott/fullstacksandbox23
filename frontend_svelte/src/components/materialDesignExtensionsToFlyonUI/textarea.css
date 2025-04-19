@@ -1,0 +1,266 @@
+.textarea:has(> .textarea-filled) {
+	@apply p-0;
+	:where(.textarea-filled:first-child) > textarea {
+		@apply py-2 ps-4;
+	}
+
+	:where(.textarea-filled:nth-child(2)) > textarea {
+		@apply py-2;
+	}
+
+	:where(.textarea-filled:last-child) > textarea {
+		@apply py-2 pe-4;
+	}
+
+	:where(.textarea-filled:nth-child(2)) .textarea-filled-label,
+	:where(.textarea-filled:last-child) .textarea-filled-label {
+		@apply ms-0;
+	}
+
+	& * > textarea {
+		@apply size-full min-h-20;
+	}
+}
+
+.textarea:has(> .textarea-filled) textarea {
+	@apply bg-base-content/10 border-primary rounded-t-md rounded-b-none border-0 border-b placeholder:text-transparent;
+	@apply focus-visible:placeholder:text-base-content/50 pt-5 hover:border-0 hover:border-b focus:border-b-3 focus-visible:outline-0;
+}
+.textarea-filled-label {
+	@apply text-primary pointer-events-none absolute start-0 ms-4 w-fit overflow-hidden bg-transparent text-ellipsis;
+	top: 9px;
+	inset-inline-start: 1px;
+	transition:
+		top 0.1s ease-out,
+		translate 0.1s ease-out,
+		scale 0.1s ease-out,
+		opacity 0.1s ease-out;
+}
+
+.textarea-filled {
+	@apply relative block w-full;
+
+	.textarea {
+		@apply bg-base-content/10 border-primary rounded-t-md rounded-b-none border-0 border-b placeholder:text-transparent;
+		@apply focus-visible:placeholder:text-base-content/50 pt-5 hover:border-0 hover:border-b focus:border-b-3 focus-visible:outline-0;
+		/* field-sizing: content; */
+
+		&:has(> textarea[disabled]),
+		&:is(:disabled, [disabled]) {
+			@apply border-b bg-transparent opacity-50 placeholder:text-transparent;
+			& ~ .textarea-filled-label {
+				@apply text-base-content/30;
+			}
+		}
+	}
+	&:focus-within,
+	&:not(:has(textarea:placeholder-shown)),
+	&:has(.textarea:focus) {
+		.textarea-filled-label {
+			@apply pointer-events-auto top-0 bg-transparent px-1 font-medium;
+			translate: -15% -5%;
+			scale: 0.75;
+		}
+	}
+
+	/* &:focus-within,
+  &:has(.textarea:focus) {
+    .textarea-filled-label {
+      --input-color: var(--color-primary);
+      color: var(--input-color);
+    }
+  } */
+
+	&:has(.textarea-xs) .textarea-filled-label {
+		@apply text-xs;
+	}
+	&:has(.textarea-sm) .textarea-filled-label {
+		@apply text-sm;
+	}
+	&:has(.textarea-md) .textarea-filled-label {
+		@apply text-base;
+	}
+	&:has(.textarea-lg) .textarea-filled-label {
+		@apply text-lg;
+	}
+	&:has(.textarea-xl) .textarea-filled-label {
+		@apply text-xl;
+	}
+
+	.textarea.is-valid {
+		@apply bg-success/20 border-success;
+	}
+	.textarea.is-invalid {
+		@apply bg-error/20 border-error;
+	}
+
+	.textarea.is-valid ~ .textarea-filled-label {
+		@apply text-success;
+	}
+
+	.textarea.is-invalid ~ .textarea-filled-label {
+		@apply text-error;
+	}
+}
+
+.textarea-filled.textarea-secondary {
+	.textarea {
+		@apply border-secondary;
+	}
+	.textarea-filled-label {
+		@apply text-secondary;
+	}
+}
+
+.textarea-filled.textarea-accent {
+	.textarea {
+		@apply border-accent;
+	}
+	.textarea-filled-label {
+		@apply text-accent;
+	}
+}
+
+.textarea-filled.textarea-neutral {
+	.textarea {
+		@apply border-neutral;
+	}
+	.textarea-filled-label {
+		@apply text-neutral;
+	}
+}
+
+.textarea-filled.textarea-info {
+	.textarea {
+		@apply border-info;
+	}
+	.textarea-filled-label {
+		@apply text-info;
+	}
+}
+
+.textarea-filled.textarea-success {
+	.textarea {
+		@apply border-success;
+	}
+	.textarea-filled-label {
+		@apply text-success;
+	}
+}
+
+.textarea-filled.textarea-warning {
+	.textarea {
+		@apply border-warning;
+	}
+	.textarea-filled-label {
+		@apply text-warning;
+	}
+}
+
+.textarea-filled.textarea-error {
+	.textarea {
+		@apply border-error;
+	}
+	.textarea-filled-label {
+		@apply text-error;
+	}
+}
+
+.textarea-filled.textarea-primary-container {
+	.textarea {
+		@apply border-primary-container;
+	}
+	.textarea-filled-label {
+		@apply text-primary-container;
+	}
+}
+
+.textarea-filled.textarea-secondary-container {
+	.textarea {
+		@apply border-secondary-container;
+	}
+	.textarea-filled-label {
+		@apply text-secondary-container;
+	}
+}
+
+.textarea-filled.textarea-accent-container {
+	.textarea {
+		@apply border-accent-container;
+	}
+	.textarea-filled-label {
+		@apply text-accent-container;
+	}
+}
+
+.textarea-filled.textarea-neutral-container {
+	.textarea {
+		@apply border-neutral-container;
+	}
+	.textarea-filled-label {
+		@apply text-neutral-container;
+	}
+}
+
+.textarea-filled.textarea-info-container {
+	.textarea {
+		@apply border-info-container;
+	}
+	.textarea-filled-label {
+		@apply text-info-container;
+	}
+}
+
+.textarea-filled.textarea-success-container {
+	.textarea {
+		@apply border-success-container;
+	}
+	.textarea-filled-label {
+		@apply text-success-container;
+	}
+}
+
+.textarea-filled.textarea-warning-container {
+	.textarea {
+		@apply border-warning-container;
+	}
+	.textarea-filled-label {
+		@apply text-warning-container;
+	}
+}
+
+.textarea-filled.textarea-error-container {
+	.textarea {
+		@apply border-error-container;
+	}
+	.textarea-filled-label {
+		@apply text-error-container;
+	}
+}
+
+.textarea-filled.textarea-base-content {
+	.textarea {
+		@apply border-base-content;
+	}
+	.textarea-filled-label {
+		@apply text-base-content;
+	}
+}
+
+.textarea-filled.textarea-inverse-primary {
+	.textarea {
+		@apply border-inverse-primary;
+	}
+	.textarea-filled-label {
+		@apply text-inverse-surface;
+	}
+}
+
+.textarea-filled.textarea-primary-fixed-dim {
+	.textarea {
+		@apply border-primary-fixed-dim;
+	}
+	.textarea-filled-label {
+		@apply text-primary-fixed-content;
+	}
+}

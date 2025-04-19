@@ -1,16 +1,17 @@
 import uuid
 from datetime import datetime
 from typing import ClassVar, List, Optional
-from pydantic import BaseModel, model_validator  # , create_model
-from sqlalchemy import (
-    UniqueConstraint,
-)  # ,Column, Integer, text, DefaultClause, Computed
-from sqlmodel import Field, SQLModel  # func, select
 
-# from core.databases import SynchronSession
+from pydantic import BaseModel, model_validator  # , create_model
+from sqlalchemy import (  # ,Column, Integer, text, DefaultClause, Computed
+    UniqueConstraint,
+)
+from sqlmodel import Field, SQLModel  # func, select
 
 # if TYPE_CHECKING:
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
+
+# from core.databases import SynchronSession
 
 
 class IdentifierTypeLink(SQLModel, table=True):

@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import aliased
 
 # from sqlalchemy import union_all
-from sqlmodel import SQLModel, and_, delete, or_, select, func
+from sqlmodel import SQLModel, and_, delete, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session

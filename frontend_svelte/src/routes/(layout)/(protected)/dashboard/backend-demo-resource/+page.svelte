@@ -55,16 +55,16 @@
 </div>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
-	{#each demoResources as demoResource}
+	{#each demoResources as demoResource (demoResource.id)}
 		<DemoResourceCard
 			{demoResource}
 			microsoftTeams={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)}
 		/>
 		<div class={debug ? 'block' : 'hidden'}>
 			<Heading>{demoResource.name}</Heading>
-			<p class="text-title-small md:text-title text-secondary">=> demoResource</p>
+			<p class="title-small md:title text-secondary">=> demoResource</p>
 			<JsonData data={demoResource} />
-			<p class="text-title-small md:text-title text-secondary">=> microsoftTeams</p>
+			<p class="title-small md:title text-secondary">=> microsoftTeams</p>
 			<JsonData data={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)} />
 		</div>
 	{/each}

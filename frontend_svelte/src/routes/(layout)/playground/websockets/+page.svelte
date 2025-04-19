@@ -51,26 +51,33 @@
 	const sendMessage = (event: Event) => {
 		event.preventDefault();
 		socket?.send(new_message);
+		new_message = '';
 	};
 </script>
 
-<!-- TBD: clear text box -->
-<div class="w-50">
-	<form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
-		<md-filled-text-field
-			label="Message"
-			type="input"
-			name="message"
-			oninput={(e: Event) => (new_message = (e.target as HTMLInputElement).value)}
-			class="w-50"
-		>
-		</md-filled-text-field>
-		<div class="ml-auto py-4">
-			<md-filled-button type="submit" role="button" tabindex="0">OK</md-filled-button>
+<form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
+	<div class="flex flex-row items-center gap-4">
+		<div class="input-filled w-fit grow">
+			<input
+				type="input"
+				placeholder="Type your message here"
+				class="input input-lg w-full grow"
+				id="websocketTest"
+				name="message"
+				value={new_message}
+				oninput={(e: Event) => (new_message = (e.target as HTMLInputElement).value)}
+			/>
+			<label class="input-filled-label" for="websocketTest">Message</label>
 		</div>
-	</form>
-</div>
+		<button
+			class="btn-secondary-container btn btn-circle btn-gradient"
+			aria-label="Add Icon Button"
+		>
+			<span class="icon-[tabler--send-2]"></span>
+		</button>
+	</div>
+</form>
 
-{#each old_messages as old_message}
+{#each old_messages as old_message, i (i)}
 	<Heading>{old_message}</Heading>
 {/each}

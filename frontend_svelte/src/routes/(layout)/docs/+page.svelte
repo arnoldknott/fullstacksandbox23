@@ -40,7 +40,7 @@
 </div>
 
 <div class="grid grid-cols-2 gap-4 p-4">
-	{#each presentations as { title, link }}
+	{#each presentations as { title, link } (title)}
 		<Presentation {title} {link}>
 			<iframe {title} src={link} width="100%" height="400px"></iframe>
 		</Presentation>

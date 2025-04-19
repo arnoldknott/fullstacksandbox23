@@ -1,13 +1,13 @@
 import {
-	SchemeMonochrome,
+	// SchemeMonochrome,
 	SchemeNeutral,
 	SchemeTonalSpot,
 	SchemeVibrant,
-	SchemeExpressive,
+	// SchemeExpressive,
 	SchemeFidelity,
 	SchemeContent,
 	SchemeRainbow,
-	SchemeFruitSalad,
+	// SchemeFruitSalad,
 	argbFromHex,
 	Hct,
 	customColor,
@@ -19,23 +19,23 @@ import {
 } from '@material/material-color-utilities';
 import { ContrastCurve } from '../dependencies/material-color-utilities/0.3.0/contrast_curve';
 import { ToneDeltaPair } from '../dependencies/material-color-utilities/0.3.0/tone_delta_pair';
-import flyonUIThemes from 'flyonui/src/theming/themes';
+// import flyonUIThemes from 'flyonui/src/theming/themes';
 // TBD: is there even a difference between the light and dark version?
 // No, not for what it's used here.
 // const { light: lightFlyonUI, dark: darkFlyonUI } = flyonUIThemes;
-const { dark: darkFlyonUI } = flyonUIThemes;
+// const { dark: darkFlyonUI } = flyonUIThemes;
 import Color from 'colorjs.io';
 
 export enum Variant {
-	MONOCHROME = 'Monochrome',
+	// MONOCHROME = 'Monochrome',
 	NEUTRAL = 'Neutral',
-	TONAL_SPOT = 'Tonal spot',
+	TONAL_SPOT = 'Tonal Spot',
 	VIBRANT = 'Vibrant',
-	EXPRESSIVE = 'Expressive',
+	// EXPRESSIVE = 'Expressive',
 	FIDELITY = 'Fidelity',
 	CONTENT = 'Content',
-	RAINBOW = 'Rainbow',
-	FRUIT_SALAD = 'Fruit salad'
+	RAINBOW = 'Rainbow'
+	// FRUIT_SALAD = 'Fruit Salad'
 }
 
 // these are all the fixed colors from the DynamicScheme:
@@ -483,7 +483,7 @@ class Colorization {
 		this.variant = variant;
 		this.contrast = contrast;
 		this.isFidelity = variant === Variant.FIDELITY || variant === Variant.CONTENT;
-		this.isMonochrome = variant === Variant.MONOCHROME;
+		// this.isMonochrome = variant === Variant.MONOCHROME;
 	}
 
 	private createMaterialSchemes(
@@ -494,10 +494,10 @@ class Colorization {
 		let lightScheme: DynamicScheme;
 		let darkScheme: DynamicScheme;
 		switch (variant) {
-			case Variant.MONOCHROME:
-				lightScheme = new SchemeMonochrome(sourceColor, false, contrast);
-				darkScheme = new SchemeMonochrome(sourceColor, true, contrast);
-				break;
+			// case Variant.MONOCHROME:
+			// 	lightScheme = new SchemeMonochrome(sourceColor, false, contrast);
+			// 	darkScheme = new SchemeMonochrome(sourceColor, true, contrast);
+			// 	break;
 			case Variant.NEUTRAL:
 				lightScheme = new SchemeNeutral(sourceColor, false, contrast);
 				darkScheme = new SchemeNeutral(sourceColor, true, contrast);
@@ -510,10 +510,10 @@ class Colorization {
 				lightScheme = new SchemeVibrant(sourceColor, false, contrast);
 				darkScheme = new SchemeVibrant(sourceColor, true, contrast);
 				break;
-			case Variant.EXPRESSIVE:
-				lightScheme = new SchemeExpressive(sourceColor, false, contrast);
-				darkScheme = new SchemeExpressive(sourceColor, true, contrast);
-				break;
+			// case Variant.EXPRESSIVE:
+			// 	lightScheme = new SchemeExpressive(sourceColor, false, contrast);
+			// 	darkScheme = new SchemeExpressive(sourceColor, true, contrast);
+			// 	break;
 			case Variant.FIDELITY:
 				lightScheme = new SchemeFidelity(sourceColor, false, contrast);
 				darkScheme = new SchemeFidelity(sourceColor, true, contrast);
@@ -526,10 +526,10 @@ class Colorization {
 				lightScheme = new SchemeRainbow(sourceColor, false, contrast);
 				darkScheme = new SchemeRainbow(sourceColor, true, contrast);
 				break;
-			case Variant.FRUIT_SALAD:
-				lightScheme = new SchemeFruitSalad(sourceColor, false, contrast);
-				darkScheme = new SchemeFruitSalad(sourceColor, true, contrast);
-				break;
+			// case Variant.FRUIT_SALAD:
+			// 	lightScheme = new SchemeFruitSalad(sourceColor, false, contrast);
+			// 	darkScheme = new SchemeFruitSalad(sourceColor, true, contrast);
+			// 	break;
 			default:
 				throw new Error('Unsupported variant');
 		}
@@ -721,10 +721,28 @@ class Colorization {
 		const { light: lightMaterial, dark: darkMaterial } = this.createMaterialSchemes();
 		// those 4 colors are the same in lightFlyonUI and darkFlyonUI
 		// so no need for two inputs here - the colors are differentiated by Material Design Dynamic Colors:
-		const neutralFromFlyonUI = this.createCustomColors(darkFlyonUI.neutral, 'flyonui-neutral');
-		const infoFromFlyonUI = this.createCustomColors(darkFlyonUI.info, 'flyonui-info');
-		const successFromFlyonUI = this.createCustomColors(darkFlyonUI.success, 'flyonui-success');
-		const warningFromFlyonUI = this.createCustomColors(darkFlyonUI.warning, 'flyonui-warning');
+		// get the colors from the FlyonUI - used to be in hex in FlyonUI 1.x from 'flyonui/src/theming/themes':
+		/*
+		neutral: '#928F9E'
+		info: '#06B6D4'
+		success: '#02CA4B'
+		warning: '#FCAA1D'
+		*/
+		// FlyonUI changed to css in version 2.x:
+		/*
+		neutral: '--color-neutral: oklch(65.75% 0.022 294.95);'
+		info: '--color-info: oklch(60.89% 0.111 221.72);'
+		success: '--color-success: oklch(67.35% 0.201 146.84);'
+		warning: '--color-warning: oklch(72.59% 0.152 69.05);'
+		*/
+		// const neutralFromFlyonUI = this.createCustomColors(darkFlyonUI.neutral, 'flyonui-neutral');
+		// const infoFromFlyonUI = this.createCustomColors(darkFlyonUI.info, 'flyonui-info');
+		// const successFromFlyonUI = this.createCustomColors(darkFlyonUI.success, 'flyonui-success');
+		// const warningFromFlyonUI = this.createCustomColors(darkFlyonUI.warning, 'flyonui-warning');
+		const neutralFromFlyonUI = this.createCustomColors('#928F9E', 'flyonui-neutral');
+		const infoFromFlyonUI = this.createCustomColors('#06B6D4', 'flyonui-info');
+		const successFromFlyonUI = this.createCustomColors('#02CA4B', 'flyonui-success');
+		const warningFromFlyonUI = this.createCustomColors('#FCAA1D', 'flyonui-warning');
 		let light: {
 			colors: Partial<AppColorSchemeForMode['colors']>;
 			palettes: Partial<AppColorSchemeForMode['palettes']>;

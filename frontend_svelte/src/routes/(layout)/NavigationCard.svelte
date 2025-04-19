@@ -6,7 +6,7 @@
 </script>
 
 {#snippet header()}
-	<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+	<h5 class="title-small md:title lg:title-large base-content card-title">
 		{title}
 	</h5>
 {/snippet}
@@ -15,7 +15,7 @@
 	<div class="card-actions text-center">
 		<a {href}
 			><button
-				class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
+				class="label-small btn btn-primary text-primary-content shadow-primary rounded-full px-3 shadow-sm hover:shadow-none"
 				>Link to {title.toLowerCase()}</button
 			></a
 		>
@@ -23,7 +23,7 @@
 {/snippet}
 
 <Card id={v4()} {header} {footer}>
-	<p class="text-body-small md:text-body text-primary">
+	<p class="body-small md:body text-primary">
 		{@render children?.()}
 	</p>
 </Card>

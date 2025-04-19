@@ -9,7 +9,7 @@
 	};
 </script>
 
-<button class="m-4 rounded bg-blue-400 p-2" onclick={logSessionData}
+<button class="m-4 rounded-sm bg-blue-400 p-2" onclick={logSessionData}
 	>Current page.data.sessionData -> console</button
 >
 

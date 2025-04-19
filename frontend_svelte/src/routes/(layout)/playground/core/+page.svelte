@@ -1,11 +1,12 @@
 <script lang="ts">
 	import Heading from '$components/Heading.svelte';
 	import type { PageData } from './$types';
-	let { data, urlClient }: { data: PageData; urlClient: string } = $props();
+	let { data }: { data: PageData } = $props();
 	// export let data: PageData;
 	const backendInformation = data.body;
 	// const backendInformation = $page.data.backendAPIConfiguration;
 	// export let urlClient = 'undefined';
+	let urlClient = $state('undefined');
 	if (typeof window !== 'undefined') {
 		urlClient = location.href;
 	}

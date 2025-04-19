@@ -5,7 +5,7 @@
 	import { page } from '$app/state';
 	import NavigationCard from '../../NavigationCard.svelte';
 
-	export const links = [
+	const links = [
 		{
 			// TBD: don't do "_" in URLs, ideally just "/", but "-" is also ok.
 			name: 'Backend - Demo Resources',
@@ -59,7 +59,7 @@
 </Heading>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
-	{#each links as link}
+	{#each links as link (link.name)}
 		<NavigationCard title={link.name} href={`dashboard${link.url}`}
 			>{link.description}</NavigationCard
 		>

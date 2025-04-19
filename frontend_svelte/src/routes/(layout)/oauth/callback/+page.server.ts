@@ -42,7 +42,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 				'$.microsoftProfile',
 				JSON.stringify(microsoftProfile)
 			);
-			const responseMe = await backendAPI.get(sessionId, '/user/me/');
+			const responseMe = await backendAPI.get(sessionId, '/user/me');
 			const userProfile = await responseMe.json();
 			await redisCache.setSession(sessionId, '$.userProfile', JSON.stringify(userProfile));
 		} else {

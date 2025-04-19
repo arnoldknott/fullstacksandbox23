@@ -10,7 +10,7 @@
 	import { page } from '$app/state'; // TBD: change page to new import
 	import { afterNavigate } from '$app/navigation';
 	// import 'flyonui/flyonui.js';
-	// import { HSStaticMethods } from 'flyonui/flyonui.js';
+	// import type { HSStaticMethods } from 'flyonui/flyonui.js';
 	// import { afterNavigate } from "$app/navigation";
 	// import JsonData from '$components/JsonData.svelte';
 	// import Guard from '$components/Guard.svelte';
@@ -60,6 +60,12 @@
 	// 	HSStaticMethods.autoInit();
 	// }
 
+	// afterNavigate(() => {
+	// 	// Runs after navigating between pages
+	// 	// console.log('layout - client - -effect calling - autoInit')
+	// 	HSStaticMethods.autoInit();
+	// });
+
 	const loadHSStaticMethods = async () => {
 		const { HSStaticMethods } = await import('flyonui/flyonui.js');
 		return HSStaticMethods;
@@ -90,6 +96,14 @@
 	});
 
 	// end works
+
+	// update to FlyonUI 2.1.3:
+
+	afterNavigate(() => {
+		// Runs after navigating between pages
+		window.HSStaticMethods.autoInit();
+		// HSStaticMethods.autoInit();
+	});
 
 	// const foo = () => console.log('foo triggered')
 
