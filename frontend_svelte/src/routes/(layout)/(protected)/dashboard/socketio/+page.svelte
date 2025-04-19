@@ -103,7 +103,7 @@
 </script>
 
 <div class="m-5 grid grid-cols-2 gap-8">
-	<div>
+	<div class="grow">
 		<Chat connection={public_message_connection}><Heading>Public Message Namespace</Heading></Chat>
 	</div>
 	<div>

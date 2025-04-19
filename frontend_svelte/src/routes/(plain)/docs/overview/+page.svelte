@@ -244,8 +244,7 @@
 				</md-chip-set>
 				<div class="h-[650px] overflow-y-scroll">
 					<p>Replies</p>
-					<!-- TBD: change to unique names -->
-					{#each replies as reply (reply.comment)}
+					{#each replies as reply, i (i)}
 						<md-list class="bg-transparent">
 							<md-list-item>
 								<div

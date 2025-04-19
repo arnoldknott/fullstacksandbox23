@@ -45,31 +45,37 @@
 {@render children?.()} in Chat / Connection
 <span class={`icon-[openmoji--${status ? 'check-mark' : 'cross-mark'}] size-4`}></span>
 
-<div class="w-50">
-	<form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
-		<md-filled-text-field
-			label="Message"
-			type="input"
-			name="message"
-			role="textbox"
-			tabindex="0"
-			value={new_message}
-			oninput={(e: Event) => (new_message = (e.target as HTMLInputElement).value)}
-			onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && sendMessage(e)}
-			class="w-50"
-		>
-		</md-filled-text-field>
-		<div class="ml-auto py-4">
-			<md-filled-button type="submit" role="button" tabindex="0">OK</md-filled-button>
+<form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
+	<div class="flex flex-row items-center gap-4">
+		<div class="input-filled w-fit grow">
+			<input
+				type="input"
+				placeholder="Type your message here"
+				class="input input-lg w-full grow"
+				id={connection.namespace + connection.event + connection.room}
+				name="message"
+				value={new_message}
+				oninput={(e: Event) => (new_message = (e.target as HTMLInputElement).value)}
+				onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && sendMessage(e)}
+			/>
+			<label
+				class="input-filled-label"
+				for={connection.namespace + connection.event + connection.room}>Message</label
+			>
 		</div>
-	</form>
-</div>
+		<button
+			class="btn-secondary-container btn btn-circle btn-gradient"
+			aria-label="Add Icon Button"
+		>
+			<span class="icon-[tabler--send-2]"></span>
+		</button>
+	</div>
+</form>
 
 <p>Socket.IO message history</p>
 
 <ul>
-	<!-- TBD: change key to id of message! -->
-	{#each old_messages as old_message (old_message)}
+	{#each old_messages as old_message, i (i)}
 		<li>➡️ {old_message}</li>
 	{/each}
 </ul>
