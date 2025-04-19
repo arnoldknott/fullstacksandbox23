@@ -110,35 +110,30 @@
 	<div class="flex justify-between">
 		<div>
 			{#if edit}
-				<div class="relative">
+				<div class="input-filled input-base-content w-fit grow">
 					<input
 						type="text"
-						class="border-content text-title-small md:text-title base-content card-title input input-filled peer"
+						placeholder="Name the demo resource"
+						class="input input-sm md:input-md"
 						id="name_{id}"
 						form="form_{id}"
 						name="name"
 						onblur={() => triggerSubmit()}
 						bind:value={name}
-						placeholder="Name the demo resource"
 					/>
-					<label
-						class="text-label-small md:text-label input-filled-label"
-						style="color: oklch(var(--bc));"
-						for="name_{id}">Name</label
-					>
-					<span class="input-filled-focused" style="background-color: oklch(var(--bc));"></span>
+					<label class="input-filled-label" for="name_{id}">Name</label>
 				</div>
 			{:else}
-				<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
+				<h5 class="title-small md:title lg:title-large base-content card-title">
 					{name}
 				</h5>
-				<p class="text-label-small md:text-label text-secondary">
+				<p class="label-small md:label text-secondary">
 					{formattedCreationDate}
 					<!-- {creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }) } -->
 				</p>
 			{/if}
 			<!-- <h5
-				class="text-title-small md:text-title lg:text-title-large base-content card-title {edit
+				class="title-small md:title lg:title-large base-content card-title {edit
 					? `ring-2 ring-info`
 					: ``}"
 				contenteditable="true"
@@ -152,7 +147,7 @@
 			{#if category}
 				<span
 					id={categoryId}
-					class="text-label-small md:text-label lg:text-label-large badge badge-secondary shadow-sm shadow-secondary"
+					class="label-small md:label lg:label-large badge badge-secondary shadow-secondary shadow-xs"
 				>
 					{category}
 				</span>
@@ -176,7 +171,7 @@
 					<span class="icon-[tabler--dots-vertical] size-6"></span>
 				</button> -->
 					<ul
-						class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
 						role="menu"
 						bind:this={dropdownMenu}
 						aria-orientation="vertical"
@@ -184,7 +179,7 @@
 					>
 						<li class="items-center">
 							<button
-								class="btn dropdown-item btn-text content-center justify-start"
+								class="btn dropdown-item btn-text text-base-content content-center justify-start"
 								aria-label="Edit Button"
 								onclick={() => (edit ? (edit = false) : (edit = true))}
 								><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
@@ -196,7 +191,7 @@
 							>
 								<button
 									id="share-{id}"
-									class="dropdown-toggle btn dropdown-item btn-text content-center justify-start"
+									class="dropdown-toggle btn dropdown-item btn-text text-base-content content-center justify-start"
 									aria-haspopup="menu"
 									aria-expanded="false"
 									aria-label="Share with"
@@ -205,7 +200,7 @@
 								</button>
 								<!-- min-w-60 -->
 								<ul
-									class="dropdown-menu hidden min-w-[15rem] bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
 									role="menu"
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
@@ -252,10 +247,10 @@
 																<span class="{rightsIconSelection(team.id)} size-4"></span>
 															</div>
 															<div
-																class="dropdown relative inline-flex bg-base-300 [--offset:0] [--placement:left-start]"
+																class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
 															>
 																<ul
-																	class="dropdown-menu hidden bg-base-300 outline outline-2 outline-outline dropdown-open:opacity-100"
+																	class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
 																	role="menu"
 																	aria-orientation="vertical"
 																	aria-labelledby="rights-{id}"
@@ -326,7 +321,7 @@
 																	aria-label="Dropdown"
 																>
 																	<span
-																		class="icon-[tabler--chevron-down] size-4 dropdown-open:rotate-180"
+																		class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
 																	></span>
 																</button>
 															</div>
@@ -338,7 +333,8 @@
 													<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
 												{/each}
 												<li class="dropdown-footer gap-2">
-													<button class="btn dropdown-item btn-text content-center justify-start"
+													<button
+														class="btn dropdown-item btn-text text-base-content content-center justify-start"
 														>... more options</button
 													>
 												</li>
@@ -381,29 +377,24 @@
 			id="form_{id}"
 			action={formAction}
 		>
-			<div class="relative">
+			<div class="textarea-filled textarea-base-content w-full">
 				<textarea
-					class="text-body-small md:text-body textarea peer textarea-filled border-primary text-primary-container-content"
+					class="textarea"
+					placeholder="Describe the demo resource here."
 					id="description_{id}"
 					onblur={() => triggerSubmit()}
 					name="description"
 					bind:value={description}
-					placeholder="Describe the demo resource here."
-				></textarea>
-
-				<label
-					class="text-label-small md:text-label textarea-filled-label"
-					style="color: oklch(var(--p));"
-					for="description_{id}">Description</label
 				>
-				<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
+				</textarea>
+				<label class="textarea-filled-label" for="description_{id}"> Description </label>
 			</div>
 		</form>
 	{:else}
 		<!-- {#if form?.status == 'created'}
 			Successfully created resource - remove this message again
 		{/if} -->
-		<p class="text-body-small md:text-body text-primary-container-content">
+		<p class="body-small md:body text-primary-container-content">
 			{description || 'No description available'}
 		</p>
 	{/if}
@@ -414,7 +405,7 @@
 		<div>
 			{#each tags as tag}
 				<span
-					class="text-label-small md:text-label lg:text-label-large badge badge-neutral shadow-sm shadow-neutral"
+					class="label-small md:label lg:label-large badge badge-neutral shadow-neutral shadow-xs"
 					>{tag}</span
 				>
 			{/each}

@@ -97,6 +97,14 @@
 
 	// end works
 
+	// update to FlyonUI 2.1.3:
+
+	afterNavigate(() => {
+		// Runs after navigating between pages
+		window.HSStaticMethods.autoInit();
+		// HSStaticMethods.autoInit();
+	});
+
 	// const foo = () => console.log('foo triggered')
 
 	// const loadHSStaticMethods = async () => {

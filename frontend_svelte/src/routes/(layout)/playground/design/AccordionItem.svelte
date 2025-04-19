@@ -11,13 +11,13 @@
 		aria-expanded="true"
 	>
 		<span
-			class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+			class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180"
 		></span>
-		<p class="text-title md:text-title-large ml-10">{title}</p>
+		<p class="title md:title-large ml-10">{title}</p>
 	</button>
 	<div
 		id="{id}-collapse"
-		class="accordion-content w-full overflow-scroll bg-neutral text-neutral-content transition-[height] duration-300"
+		class="accordion-content bg-neutral text-neutral-content w-full overflow-scroll transition-[height] duration-300"
 		aria-labelledby={id}
 		role="region"
 	>

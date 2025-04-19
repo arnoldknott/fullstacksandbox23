@@ -71,7 +71,7 @@
 <HorizontalRule />
 
 <Heading>Card with tabs</Heading>
-<md-filled-card class="w-100 m-10 p-10">
+<md-filled-card class="m-10 w-100 p-10">
 	<md-tabs onchange={tabChange}>
 		<md-primary-tab active={activeTab == 0}>Tab 1</md-primary-tab>
 		<md-primary-tab active={activeTab == 1}>Tab 2</md-primary-tab>
@@ -111,7 +111,7 @@
 	oninput={(e: Event) => (sliderValue = parseInt((e.target as HTMLInputElement).value))}
 ></md-slider>
 
-<div class="w-100 m-10 p-10" style="background-color: {color};">
+<div class="m-10 w-100 p-10" style="background-color: {color};">
 	STATUS: {sliderValue}
 </div>
 <hr class="mx-5 my-12 h-2 bg-neutral-500 opacity-100 dark:opacity-50" />
@@ -210,7 +210,7 @@
 
 <!-- TBD: change to Tailwind rows and columns -->
 <!-- TBD: change to Tailwind gradients: https://tailwindcss.com/docs/gradient-color-stops#starting-color ?-->
-<div class="w-100 m-10 flex">
+<div class="m-10 flex w-100">
 	<div
 		class="flex h-20 w-1/3 items-center justify-center text-2xl"
 		style="background: linear-gradient(to right, {colors[0]}, {colors[1]});"
@@ -235,6 +235,6 @@
 
 <Heading>Tailwind CSS gradient</Heading>
 
-<div class="w-100 m-10 bg-gradient-to-r from-cyan-500 to-blue-500 p-10">STATUS:</div>
+<div class="m-10 w-100 bg-linear-to-r from-cyan-500 to-blue-500 p-10">STATUS:</div>
 
 <HorizontalRule />

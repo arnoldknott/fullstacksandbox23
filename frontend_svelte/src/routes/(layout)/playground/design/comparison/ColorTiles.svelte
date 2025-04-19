@@ -16,7 +16,7 @@
 </script>
 
 <div
-	class="w-84 skeleton flex h-24 items-center justify-center"
+	class="skeleton flex h-24 w-84 items-center justify-center"
 	style="background-color: var({materialVariables.background});"
 >
 	<p
@@ -26,7 +26,7 @@
 		{materialVariables.name}
 	</p>
 </div>
-<div class="w-84 skeleton flex h-24 items-center justify-center {flyonUIClasses.bg}">
+<div class="skeleton flex h-24 w-84 items-center justify-center {flyonUIClasses.bg}">
 	<p class="text-center text-2xl font-semibold md:text-4xl md:font-extrabold {flyonUIClasses.text}">
 		{flyonUIClasses.name}
 	</p>
