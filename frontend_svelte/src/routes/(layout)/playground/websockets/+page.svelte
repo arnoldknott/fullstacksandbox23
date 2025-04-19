@@ -71,6 +71,7 @@
 	</form>
 </div>
 
-{#each old_messages as old_message}
+<!-- TBD: change key to unique value -->
+{#each old_messages as old_message (old_message)}
 	<Heading>{old_message}</Heading>
 {/each}

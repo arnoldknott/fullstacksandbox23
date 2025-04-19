@@ -187,7 +187,7 @@
 		<p>Select your interest in this topic and comment on it</p>
 		<div class="grid grid-cols-2 gap-8">
 			<div class="h-[700px] overflow-y-scroll">
-				{#each topics as topic, i}
+				{#each topics as topic, i (i)}
 					<div class="my-2 flex flex-col" style="background-color: {input_colors[i]};">
 						<form id={topic.name} method="POST" onsubmit={submitForm}>
 							<div class="justify-left flex flex-row">
@@ -235,7 +235,7 @@
 			<div>
 				<span>Results</span>
 				<md-chip-set>
-					{#each topics as topic, i}
+					{#each topics as topic, i (i)}
 						<md-assist-chip
 							label={`${topic.name}: ${topic.count}`}
 							style="background-color: {average_colors[i]};"
@@ -244,7 +244,8 @@
 				</md-chip-set>
 				<div class="h-[650px] overflow-y-scroll">
 					<p>Replies</p>
-					{#each replies as reply}
+					<!-- TBD: change to unique names -->
+					{#each replies as reply (reply.comment)}
 						<md-list class="bg-transparent">
 							<md-list-item>
 								<div

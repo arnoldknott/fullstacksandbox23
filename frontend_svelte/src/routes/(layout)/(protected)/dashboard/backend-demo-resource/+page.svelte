@@ -55,7 +55,7 @@
 </div>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
-	{#each demoResources as demoResource}
+	{#each demoResources as demoResource (demoResource.id)}
 		<DemoResourceCard
 			{demoResource}
 			microsoftTeams={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)}

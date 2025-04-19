@@ -1,7 +1,7 @@
 <script lang="ts">
 	import NavigationCard from '../NavigationCard.svelte';
 
-	export const links = [
+	const links = [
 		{
 			name: 'Layout',
 			description: 'Playground for layouting components, using grid, flex, etc.',
@@ -56,7 +56,7 @@
 </script>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
-	{#each links as link}
+	{#each links as link (link.name)}
 		<NavigationCard title={link.name} href={`playground${link.url}`}
 			>{link.description}</NavigationCard
 		>

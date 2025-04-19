@@ -13,16 +13,16 @@
 <Heading>🚧 Construction sites - for design experiments 🚧</Heading>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
-	<NavigationCard title="FlyonUI 1" href={`/playground/design/flyonui`}>
+	<NavigationCard title="FlyonUI 1" href="/playground/design/flyonui">
 		"Playground and showcase for flyonUI components and design"
 	</NavigationCard>
-	<NavigationCard title="Material Design 3" href={`/playground/design/materialdesign`}>
+	<NavigationCard title="Material Design 3" href="/playground/design/materialdesign">
 		Playground and showcase for Material Design 3 components and design
 	</NavigationCard>
-	<NavigationCard title="TailwindCSS 3" href={`/playground/design/tailwindcss`}>
+	<NavigationCard title="TailwindCSS 3" href="/playground/design/tailwindcss">
 		Formating playground for styling with TailwindCSS utility classes
 	</NavigationCard>
-	<NavigationCard title="Comparison" href={`/playground/design/comparison`}>
+	<NavigationCard title="Comparison" href="/playground/design/comparison">
 		Directly putting components right next to each other to compare them
 	</NavigationCard>
 </div>

@@ -42,7 +42,7 @@
 			id="themeVariant"
 			bind:value={values.variant}
 		>
-			{#each Object.values(Variant) as variant}
+			{#each Object.values(Variant) as variant (variant)}
 				<option value={variant}>{variant}</option>
 			{/each}
 			<!-- <option value="TONAL_SPOT">Tonal Spot</option>
@@ -74,7 +74,7 @@
 			bind:value={values.contrast}
 		/>
 		<div class="flex w-full justify-between px-2 text-xs">
-			{#each allContrasts as _}
+			{#each allContrasts as _ (_)}
 				<span>|</span>
 			{/each}
 		</div>

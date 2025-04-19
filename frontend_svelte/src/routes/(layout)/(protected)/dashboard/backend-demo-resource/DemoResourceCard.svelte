@@ -220,7 +220,7 @@
 											}}
 										>
 											{#if microsoftTeams}
-												{#each microsoftTeams as team}
+												{#each microsoftTeams as team (team.id)}
 													<li>
 														<div class="flex items-center">
 															<!-- Also send the desired action for the share: own, write, read.
@@ -403,7 +403,7 @@
 {#snippet footer()}
 	<div class="card-actions flex justify-between">
 		<div>
-			{#each tags as tag}
+			{#each tags as tag (tag)}
 				<span
 					class="label-small md:label lg:label-large badge badge-neutral shadow-neutral shadow-xs"
 					>{tag}</span

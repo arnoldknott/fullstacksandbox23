@@ -68,7 +68,8 @@
 <p>Socket.IO message history</p>
 
 <ul>
-	{#each old_messages as old_message}
+	<!-- TBD: change key to id of message! -->
+	{#each old_messages as old_message (old_message)}
 		<li>➡️ {old_message}</li>
 	{/each}
 </ul>

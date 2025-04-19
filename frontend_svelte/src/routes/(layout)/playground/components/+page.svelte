@@ -1086,7 +1086,7 @@
 					bind:value={contrast}
 				/>
 				<div class="flex w-full justify-between px-2 text-xs">
-					{#each allContrasts as _}
+					{#each allContrasts as _ (_)}
 						<span>|</span>
 					{/each}
 				</div>

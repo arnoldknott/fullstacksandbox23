@@ -86,9 +86,10 @@
 		demoResourceDialog.close();
 	};
 
-	type Props = { type: 'login' | 'signup' };
-	let { type }: Props = $props();
-	const button = type === 'signup' ? 'Sign up' : 'Log in'; // untested!
+	// type Props = { type: 'login' | 'signup' };
+	// let { type }: Props = $props();
+	// const button = type === 'signup' ? 'Sign up' : 'Log in'; // untested!
+	const button = 'Log in'; // untested!
 	onDestroy(() => {
 		unsbscribeThemeStore();
 	});
@@ -442,7 +443,7 @@
 			<label class="label label-text text-base" for="switchColors">Show</label>
 		</div>
 		<div class={showSections.palettes ? '' : 'hidden'}>
-			{#each palettesArray as palette}
+			{#each palettesArray as palette (palette.name)}
 				<div class="mb-5 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
 					<div class="flex flex-col">
 						<p class="text-center text-2xl">{palette.name}</p>
@@ -804,7 +805,7 @@
 				<div class="border-primary-400 rounded-2xl border-4 bg-blue-50 p-6">
 					<form method="POST">
 						<!-- Name input -->
-						{#if type === 'signup'}
+						<!-- {#if type === 'signup'}
 							<div class="relative mb-6">
 								<md-filled-text-field
 									label="Full name"
@@ -816,7 +817,7 @@
 								>
 								</md-filled-text-field>
 							</div>
-						{/if}
+						{/if} -->
 
 						<!-- Email input -->
 						<div class="relative mb-6">
