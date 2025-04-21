@@ -19,4 +19,33 @@
 			</div>
 		</div>
 	</div>
+
+	<div>
+		<Heading>Responsive utilities</Heading>
+		<div>
+			<div class="input-filled w-full mt-4">
+				<input
+					type="text"
+					placeholder="John Doe"
+					class="input input-xs md:input-md md:input-xl text-error md:text-warning lg:text-success label md:heading lg:display"
+					id="filledInputResponsive"
+				/>
+				<label class="input-filled-label" for="filledInputResponsive"
+					>Full name - responsive</label
+				>
+			</div>
+			<div class="input-floating w-full mt-4">
+				<input
+					type="text"
+					placeholder="John Doe"
+					class="input input-xs md:input-md md:input-xl text-error md:text-warning lg:text-success label md:heading lg:display"
+					id="floatingInputResponsive"
+				/>
+				<label class="input-floating-label" for="floatingInputResponsive"
+					>Full name - responsive</label
+				>
+			</div>
+			<div class="label md:heading lg:display text-error md:text-warning lg:text-success">Checking responsibility with size and color in regular div</div>
+		</div>
+	</div>
 </div>

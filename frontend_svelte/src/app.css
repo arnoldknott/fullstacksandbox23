@@ -1,12 +1,13 @@
 @import 'tailwindcss';
 @import './components/materialDesignExtensionsToFlyonUI/typography.css';
 @import './components/materialDesignExtensionsToFlyonUI/chat.css';
-@import './components/materialDesignExtensionsToFlyonUI/badge.css' layer(utilities);
-@import './components/materialDesignExtensionsToFlyonUI/button.css' layer(utilities);
-@import './components/materialDesignExtensionsToFlyonUI/checkbox.css' layer(utilities);
-@import './components/materialDesignExtensionsToFlyonUI/input.css' layer(utilities);
-@import './components/materialDesignExtensionsToFlyonUI/textarea.css' layer(utilities);
-@import './components/materialDesignExtensionsToFlyonUI/radio.css' layer(utilities);
+@import './components/materialDesignExtensionsToFlyonUI/badge.css';
+@import './components/materialDesignExtensionsToFlyonUI/button.css';
+@import './components/materialDesignExtensionsToFlyonUI/checkbox.css';
+@import './components/materialDesignExtensionsToFlyonUI/input.css';
+@import './components/materialDesignExtensionsToFlyonUI/textarea.css';
+@import './components/materialDesignExtensionsToFlyonUI/radio.css';
+@import './components/materialDesignExtensionsToFlyonUI/select.css';
 
 @import '../node_modules/flyonui/variants.css';
 @plugin "@iconify/tailwind4";

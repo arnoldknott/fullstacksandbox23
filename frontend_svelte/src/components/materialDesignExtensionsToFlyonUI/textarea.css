@@ -23,8 +23,8 @@
 }
 
 .textarea:has(> .textarea-filled) textarea {
-	@apply bg-base-content/10 border-primary rounded-t-md rounded-b-none border-0 border-b placeholder:text-transparent;
-	@apply focus-visible:placeholder:text-base-content/50 pt-5 hover:border-0 hover:border-b focus:border-b-3 focus-visible:outline-0;
+	@apply bg-base-content/10 border-primary rounded-t-md rounded-b-none border-0 border-b mb-[4px] placeholder:text-transparent;
+	@apply focus-visible:placeholder:text-base-content/50 pt-5 hover:border-0 hover:border-b focus:mb-0 focus:border-b-3 focus-visible:outline-0;
 }
 .textarea-filled-label {
 	@apply text-primary pointer-events-none absolute start-0 ms-4 w-fit overflow-hidden bg-transparent text-ellipsis;
