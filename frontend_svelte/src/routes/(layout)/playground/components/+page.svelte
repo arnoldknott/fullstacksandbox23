@@ -725,6 +725,26 @@
 				<label class="textarea-filled-label" for="filledTextareaXl">Your bio - xl</label>
 			</div>
 		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea
+					class="textarea textarea-xs sm:textarea-sm md:textarea-md lg:textarea-lg xl:textarea-xl"
+					placeholder="Hello!!!"
+					id="filledTextareaResponsive"
+				></textarea>
+				<label class="textarea-filled-label" for="filleTextareaResponsive">Your bio - responsive</label>
+			</div>
+			<div class="textarea-floating w-full grow">
+				<textarea
+					class="textarea textarea-xs sm:textarea-sm md:textarea-md lg:textarea-lg xl:textarea-xl"
+					placeholder="Hello!!!"
+					id="filledInputResponsive"
+				></textarea>
+				<label class="textarea-floating-label" for="filledTextareaResponsive"
+					>Your bio - responsive</label
+				>
+			</div>
+		</div>
 		<!-- <div class="mb-5 flex grow flex-row flex-wrap gap-4">
 			<div class="relative sm:w-56">
 				<textarea
