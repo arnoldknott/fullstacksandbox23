@@ -745,6 +745,164 @@
 				>
 			</div>
 		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelect">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelect">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled select-secondary w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectSecondary">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectSecondary">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled select-accent w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectAccent">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectAccent">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled select-neutral w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectNeutral">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectNeutral">Pick your favorite Movie</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectDisabled" disabled>
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectDisabled">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select is-valid" aria-label="Select filled" id="filledSelectIsvalid">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectIsvalid">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select is-invalid" aria-label="Select filled" id="filledSelectIsinvalid">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectIsinvalid">Pick your favorite Movie</label>
+			</div>
+			<div class="select-floating w-full grow">
+				<select class="select" aria-label="Select floating label" id="floatingSelect">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-floating-label" for="floatingSelect">Pick your favorite Movie</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select class="select select-xs" aria-label="Select filled" id="filledSelectXs">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectXs">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-sm" aria-label="Select filled" id="filledSelectSm">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectSm">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-md" aria-label="Select filled" id="filledSelectMd">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectMd">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-lg" aria-label="Select filled" id="filledSelectLg">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectLg">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-xl" aria-label="Select filled" id="filledSelectXl">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectXl">Pick your favorite Movie</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select class="select select-xs sm:select:sm md:select-md lg:select-lg xl:select-xl" aria-label="Select filled" id="filledSelectResponsive">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectResponsive">Pick your favorite Movie</label>
+			</div>
+			<div class="select-floating w-full grow">
+				<select class="select select-xs sm:select:sm md:select-md lg:select-lg xl:select-xl" aria-label="Select floating" id="floatingSelectResponsive">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-floating-label" for="floatingSelectResponsive">Pick your favorite Movie</label>
+			</div>
+		</div>	
 		<!-- <div class="mb-5 flex grow flex-row flex-wrap gap-4">
 			<div class="relative sm:w-56">
 				<textarea

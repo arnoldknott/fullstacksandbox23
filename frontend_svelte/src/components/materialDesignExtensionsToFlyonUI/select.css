@@ -1,0 +1,229 @@
+.select:has(> .select-filled) select {
+    @apply bg-base-content/5 border-base-content/60 rounded-b-none rounded-t-md border-0 border-b pt-2.5 placeholder:text-transparent;
+  }
+  
+.select-filled-label {
+  @apply text-primary pointer-events-none absolute start-0 ms-3 w-fit overflow-hidden bg-transparent text-base text-ellipsis;
+  scale: 0.65;
+  translate: -17.5% -5%;
+}
+
+.select-filled {
+  @apply relative block w-full;
+  @apply h-full;
+
+  .select {
+    @apply h-full;
+    @apply bg-base-content/10 border-primary rounded-b-none rounded-t-md ring-0 border-0 border-b pt-4.5 mb-[2px] placeholder:text-transparent;
+
+    &.disabled,
+    &:disabled,
+    &[disabled] {
+      @apply border-b bg-transparent opacity-50;
+      & ~ .select-filled-label {
+        @apply text-base-content/50;
+      }
+    }
+
+    &:focus-visible,
+    &:focus-within,
+    &:focus {
+      @apply border-primary outline-0 border-0 mb-0 border-b-3;
+    }
+
+  }
+
+
+  &:has(.select-xs) .select-filled-label {
+    @apply ms-2.5 text-sm;
+  }
+  &:has(.select-sm) .select-filled-label {
+    @apply ms-2.5 text-sm;
+  }
+  &:has(.select-md) .select-filled-label {
+    @apply ms-3 text-base;
+  }
+  &:has(.select-lg) .select-filled-label {
+    @apply ms-4 text-lg;
+  }
+  &:has(.select-xl) .select-filled-label {
+    @apply ms-4.5 text-xl;
+  }
+
+  .select.is-valid {
+		@apply bg-success/20 border-success;
+	}
+	.select.is-invalid {
+		@apply bg-error/20 border-error;
+	}
+
+	.select.is-valid ~ .select-filled-label {
+		@apply text-success;
+	}
+
+	.select.is-invalid ~ .select-filled-label {
+		@apply text-error;
+	}
+}
+
+.select-filled.select-secondary {
+	.select {
+		@apply border-secondary;
+	}
+	.select-filled-label {
+		@apply text-secondary;
+	}
+}
+
+.select-filled.select-accent {
+	.select {
+		@apply border-accent;
+	}
+	.select-filled-label {
+		@apply text-accent;
+	}
+}
+
+.select-filled.select-neutral {
+	.select {
+		@apply border-neutral;
+	}
+	.select-filled-label {
+		@apply text-neutral;
+	}
+}
+
+.select-filled.select-info {
+	.select {
+		@apply border-info;
+	}
+	.select-filled-label {
+		@apply text-info;
+	}
+}
+
+.select-filled.select-success {
+	.select {
+		@apply border-success;
+	}
+	.select-filled-label {
+		@apply text-success;
+	}
+}
+
+.select-filled.select-warning {
+	.select {
+		@apply border-warning;
+	}
+	.select-filled-label {
+		@apply text-warning;
+	}
+}
+
+.select-filled.select-error {
+	.select {
+		@apply border-error;
+	}
+	.select-filled-label {
+		@apply text-error;
+	}
+}
+
+.select-filled.select-primary-container {
+	.select {
+		@apply border-primary-container;
+	}
+	.select-filled-label {
+		@apply text-primary-container;
+	}
+}
+
+.select-filled.select-secondary-container {
+	.select {
+		@apply border-secondary-container;
+	}
+	.select-filled-label {
+		@apply text-secondary-container;
+	}
+}
+
+.select-filled.select-accent-container {
+	.select {
+		@apply border-accent-container;
+	}
+	.select-filled-label {
+		@apply text-accent-container;
+	}
+}
+
+.select-filled.select-neutral-container {
+	.select {
+		@apply border-neutral-container;
+	}
+	.select-filled-label {
+		@apply text-neutral-container;
+	}
+}
+
+.select-filled.select-info-container {
+	.select {
+		@apply border-info-container;
+	}
+	.select-filled-label {
+		@apply text-info-container;
+	}
+}
+
+.select-filled.select-success-container {
+	.select {
+		@apply border-success-container;
+	}
+	.select-filled-label {
+		@apply text-success-container;
+	}
+}
+
+.select-filled.select-warning-container {
+	.select {
+		@apply border-warning-container;
+	}
+	.select-filled-label {
+		@apply text-warning-container;
+	}
+}
+
+.select-filled.select-error-container {
+	.select {
+		@apply border-error-container;
+	}
+	.select-filled-label {
+		@apply text-error-container;
+	}
+}
+
+.select-filled.select-base-content {
+	.select {
+		@apply border-base-content;
+	}
+	.select-filled-label {
+		@apply text-base-content;
+	}
+}
+
+.select-filled.select-inverse-primary {
+	.select {
+		@apply border-inverse-primary;
+	}
+	.select-filled-label {
+		@apply text-inverse-surface;
+	}
+}
+
+.select-filled.select-primary-fixed-dim {
+	.select {
+		@apply border-primary-fixed-dim;
+	}
+	.select-filled-label {
+		@apply text-primary-fixed-content;
+	}
+}
