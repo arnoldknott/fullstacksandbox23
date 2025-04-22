@@ -23,18 +23,16 @@
 	<div>
 		<Heading>Responsive utilities</Heading>
 		<div>
-			<div class="input-filled w-full mt-4">
+			<div class="input-filled mt-4 w-full">
 				<input
 					type="text"
 					placeholder="John Doe"
 					class="input input-xs md:input-md md:input-xl text-error md:text-warning lg:text-success label md:heading lg:display"
 					id="filledInputResponsive"
 				/>
-				<label class="input-filled-label" for="filledInputResponsive"
-					>Full name - responsive</label
-				>
+				<label class="input-filled-label" for="filledInputResponsive">Full name - responsive</label>
 			</div>
-			<div class="input-floating w-full mt-4">
+			<div class="input-floating mt-4 w-full">
 				<input
 					type="text"
 					placeholder="John Doe"
@@ -45,7 +43,9 @@
 					>Full name - responsive</label
 				>
 			</div>
-			<div class="label md:heading lg:display text-error md:text-warning lg:text-success">Checking responsibility with size and color in regular div</div>
+			<div class="label md:heading lg:display text-error md:text-warning lg:text-success">
+				Checking responsibility with size and color in regular div
+			</div>
 		</div>
 	</div>
 </div>

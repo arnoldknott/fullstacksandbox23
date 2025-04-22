@@ -555,7 +555,7 @@ class BaseCRUD(
                     statement = statement.where(
                         or_(
                             related_model.id
-                            == None,  # noqa: E711: comparison to None should be 'if cond is None:'
+                            == None,  # noqa E711: comparison to None should be 'if cond is None:'
                             related_model.id.in_(related_statement),
                         )
                     ).options(contains_eager(related_attribute))
