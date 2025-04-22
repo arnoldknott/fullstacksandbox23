@@ -1393,6 +1393,352 @@
 		<button class="btn-primary-fixed-dim btn rounded-full">rounded-full primary fixed dim</button>
 		<button class="btn btn-error rounded-full">rounded-full error</button>
 		<button class="btn-error/50 btn rounded-full">rounded-full error/50</button>
+		<p>Inputs:</p>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="input-filled w-full grow">
+				<input type="text" placeholder="Primary colored input" class="input" id="filledInput" />
+				<label class="input-filled-label" for="filledInput">Full name</label>
+			</div>
+			<div class="input-filled input-secondary w-full grow">
+				<input
+					type="text"
+					placeholder="Secondary colored input"
+					class="input border-secondary"
+					id="filledInputSecondary"
+				/>
+				<label class="input-filled-label text-secondary" for="filledInputSecondary">Full name</label
+				>
+			</div>
+			<div class="input-filled input-accent w-full grow">
+				<input
+					type="text"
+					placeholder="Accent colored input"
+					class="input"
+					id="filledInputAccent"
+				/>
+				<label class="input-filled-label" for="filledInputAccent">Full name</label>
+			</div>
+			<div class="input-filled input-neutral w-full grow">
+				<input
+					type="text"
+					placeholder="Neutral colored input"
+					class="input"
+					id="filledInputNeutral"
+				/>
+				<label class="input-filled-label" for="filledInputNeutral">Full name</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="input-filled w-full grow">
+				<input type="text" placeholder="John Doe" class="input" id="filledInputDisabled" disabled />
+				<label class="input-filled-label" for="filledInputDisabled">Full name - disabled</label>
+			</div>
+			<div class="input-filled w-full grow">
+				<input type="text" placeholder="John Doe" class="input is-valid" id="filledInputIsValid" />
+				<label class="input-filled-label" for="filledInputIsValid">Full name - is-valid</label>
+			</div>
+			<div class="input-filled w-full grow">
+				<input
+					type="text"
+					placeholder="John Doe"
+					class="input is-invalid"
+					id="filledInputIsInvalid"
+				/>
+				<label class="input-filled-label" for="filledInputIsInvalid">Full name - is-invalid</label>
+			</div>
+			<div class="input-floating w-full grow">
+				<input type="text" placeholder="John Doe" class="input" id="floatingInput" />
+				<label class="input-floating-label" for="floatingInput">Full name - floating</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-xs" id="filledInputXs" />
+				<label class="input-filled-label" for="filledInputXs">Full name - xs</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-sm" id="filledInputSm" />
+				<label class="input-filled-label" for="filledInputSm">Full name - sm</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-md" id="filledInputDefault" />
+				<label class="input-filled-label" for="filledInputDefault">Full name - default</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-lg" id="filledInputLg" />
+				<label class="input-filled-label" for="filledInputLg">Full name - lg</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-xl" id="filledInputXl" />
+				<label class="input-filled-label" for="filledInputXl">Full name - xl</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="input-filled w-full grow">
+				<input
+					type="text"
+					placeholder="John Doe"
+					class="input input-xs sm:input-sm md:input-md lg:input-lg xl:input-xl"
+					id="filledInputResponsive"
+				/>
+				<label class="input-filled-label" for="filledInputResponsive">Full name - responsive</label>
+			</div>
+			<div class="input-floating w-full grow">
+				<input
+					type="text"
+					placeholder="John Doe"
+					class="input input-xs sm:input-sm md:input-md lg:input-lg xl:input-xl"
+					id="filledInputResponsive"
+				/>
+				<label class="input-floating-label" for="filledInputResponsive"
+					>Full name - responsive</label
+				>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledPrimary"></textarea>
+				<label class="textarea-filled-label" for="textareaFilledPrimary">Your bio</label>
+			</div>
+			<div class="textarea-filled textarea-secondary w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledSecondary"></textarea>
+				<label class="textarea-filled-label" for="textareaFlilledSecondary">Your bio</label>
+			</div>
+			<div class="textarea-filled textarea-accent w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledAccent"></textarea>
+				<label class="textarea-filled-label" for="textareaFilledAccent">Your bio</label>
+			</div>
+			<div class="textarea-filled textarea-neutral w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledNeutral"></textarea>
+				<label class="textarea-filled-label" for="textareaFilledNeutral">Your bio</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledDisabled" disabled
+				></textarea>
+				<label class="textarea-filled-label" for="textareaFilledDisabled">Your bio</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea is-valid" placeholder="Hello!!!" id="textareaFilledIsValid"
+				></textarea>
+				<label class="textarea-filled-label" for="textareaFilledIsValid">Your bio</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea is-invalid" placeholder="Hello!!!" id="textareaFilledIsInvalid"
+				></textarea>
+				<label class="textarea-filled-label" for="textareaFilledIsInvalid">Your bio</label>
+			</div>
+			<div class="textarea-floating w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFloating"></textarea>
+				<label class="textarea-floating-label" for="textareaFloating">Your bio</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-xs" placeholder="Hello!!!" id="filledTextareaXs"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaXs">Your bio - xs</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-sm" placeholder="Hello!!!" id="filledTextareaSm"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareatSm">Your bio - sm</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-md" placeholder="Hello!!!" id="filledTextareaMd"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaDefault">Your bio - default</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-lg" placeholder="Hello!!!" id="filledTextareaLg"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaLg">Your bio - lg</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-xl" placeholder="Hello!!!" id="filledTextareaXl"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaXl">Your bio - xl</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea
+					class="textarea textarea-xs sm:textarea-sm md:textarea-md lg:textarea-lg xl:textarea-xl"
+					placeholder="Hello!!!"
+					id="filledTextareaResponsive"
+				></textarea>
+				<label class="textarea-filled-label" for="filleTextareaResponsive">Your bio - responsive</label>
+			</div>
+			<div class="textarea-floating w-full grow">
+				<textarea
+					class="textarea textarea-xs sm:textarea-sm md:textarea-md lg:textarea-lg xl:textarea-xl"
+					placeholder="Hello!!!"
+					id="filledInputResponsive"
+				></textarea>
+				<label class="textarea-floating-label" for="filledTextareaResponsive"
+					>Your bio - responsive</label
+				>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelect">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelect">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled select-secondary w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectSecondary">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectSecondary">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled select-accent w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectAccent">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectAccent">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled select-neutral w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectNeutral">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectNeutral">Pick your favorite Movie</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectDisabled" disabled>
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectDisabled">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select is-valid" aria-label="Select filled" id="filledSelectIsvalid">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectIsvalid">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select is-invalid" aria-label="Select filled" id="filledSelectIsinvalid">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectIsinvalid">Pick your favorite Movie</label>
+			</div>
+			<div class="select-floating w-full grow">
+				<select class="select" aria-label="Select floating label" id="floatingSelect">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-floating-label" for="floatingSelect">Pick your favorite Movie</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select class="select select-xs" aria-label="Select filled" id="filledSelectXs">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectXs">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-sm" aria-label="Select filled" id="filledSelectSm">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectSm">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-md" aria-label="Select filled" id="filledSelectMd">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectMd">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-lg" aria-label="Select filled" id="filledSelectLg">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectLg">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-xl" aria-label="Select filled" id="filledSelectXl">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectXl">Pick your favorite Movie</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select class="select select-xs sm:select:sm md:select-md lg:select-lg xl:select-xl" aria-label="Select filled" id="filledSelectResponsive">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectResponsive">Pick your favorite Movie</label>
+			</div>
+			<div class="select-floating w-full grow">
+				<select class="select select-xs sm:select:sm md:select-md lg:select-lg xl:select-xl" aria-label="Select floating" id="floatingSelectResponsive">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-floating-label" for="floatingSelectResponsive">Pick your favorite Movie</label>
+			</div>
+		</div>
 	</div>
 
 	<div>
