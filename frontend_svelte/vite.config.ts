@@ -1,14 +1,10 @@
 import { defineConfig } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
-import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-	plugins: [
-		sveltekit(),
-		svelteTesting(),
-		tailwindcss()
-	],
+	plugins: [sveltekit(), svelteTesting(), tailwindcss()],
 	server: {
 		host: '0.0.0.0',
 		hmr: {

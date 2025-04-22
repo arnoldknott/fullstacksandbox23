@@ -1568,7 +1568,9 @@
 					placeholder="Hello!!!"
 					id="filledTextareaResponsive"
 				></textarea>
-				<label class="textarea-filled-label" for="filleTextareaResponsive">Your bio - responsive</label>
+				<label class="textarea-filled-label" for="filleTextareaResponsive"
+					>Your bio - responsive</label
+				>
 			</div>
 			<div class="textarea-floating w-full grow">
 				<textarea
@@ -1600,7 +1602,9 @@
 					<option>The Dark Knight</option>
 					<option>Schindler's List</option>
 				</select>
-				<label class="select-filled-label" for="filledSelectSecondary">Pick your favorite Movie</label>
+				<label class="select-filled-label" for="filledSelectSecondary"
+					>Pick your favorite Movie</label
+				>
 			</div>
 			<div class="select-filled select-accent w-full grow">
 				<select class="select" aria-label="Select filled" id="filledSelectAccent">
@@ -1620,7 +1624,8 @@
 					<option>The Dark Knight</option>
 					<option>Schindler's List</option>
 				</select>
-				<label class="select-filled-label" for="filledSelectNeutral">Pick your favorite Movie</label>
+				<label class="select-filled-label" for="filledSelectNeutral">Pick your favorite Movie</label
+				>
 			</div>
 		</div>
 		<div class="mb-5 flex grow flex-row gap-4">
@@ -1632,7 +1637,9 @@
 					<option>The Dark Knight</option>
 					<option>Schindler's List</option>
 				</select>
-				<label class="select-filled-label" for="filledSelectDisabled">Pick your favorite Movie</label>
+				<label class="select-filled-label" for="filledSelectDisabled"
+					>Pick your favorite Movie</label
+				>
 			</div>
 			<div class="select-filled w-full grow">
 				<select class="select is-valid" aria-label="Select filled" id="filledSelectIsvalid">
@@ -1642,7 +1649,8 @@
 					<option>The Dark Knight</option>
 					<option>Schindler's List</option>
 				</select>
-				<label class="select-filled-label" for="filledSelectIsvalid">Pick your favorite Movie</label>
+				<label class="select-filled-label" for="filledSelectIsvalid">Pick your favorite Movie</label
+				>
 			</div>
 			<div class="select-filled w-full grow">
 				<select class="select is-invalid" aria-label="Select filled" id="filledSelectIsinvalid">
@@ -1652,7 +1660,9 @@
 					<option>The Dark Knight</option>
 					<option>Schindler's List</option>
 				</select>
-				<label class="select-filled-label" for="filledSelectIsinvalid">Pick your favorite Movie</label>
+				<label class="select-filled-label" for="filledSelectIsinvalid"
+					>Pick your favorite Movie</label
+				>
 			</div>
 			<div class="select-floating w-full grow">
 				<select class="select" aria-label="Select floating label" id="floatingSelect">
@@ -1719,24 +1729,36 @@
 		</div>
 		<div class="mb-5 flex grow flex-row gap-4">
 			<div class="select-filled w-full grow">
-				<select class="select select-xs sm:select:sm md:select-md lg:select-lg xl:select-xl" aria-label="Select filled" id="filledSelectResponsive">
+				<select
+					class="select select-xs sm:select:sm md:select-md lg:select-lg xl:select-xl"
+					aria-label="Select filled"
+					id="filledSelectResponsive"
+				>
 					<option>The Godfather</option>
 					<option>The Shawshank Redemption</option>
 					<option>Pulp Fiction</option>
 					<option>The Dark Knight</option>
 					<option>Schindler's List</option>
 				</select>
-				<label class="select-filled-label" for="filledSelectResponsive">Pick your favorite Movie</label>
+				<label class="select-filled-label" for="filledSelectResponsive"
+					>Pick your favorite Movie</label
+				>
 			</div>
 			<div class="select-floating w-full grow">
-				<select class="select select-xs sm:select:sm md:select-md lg:select-lg xl:select-xl" aria-label="Select floating" id="floatingSelectResponsive">
+				<select
+					class="select select-xs sm:select:sm md:select-md lg:select-lg xl:select-xl"
+					aria-label="Select floating"
+					id="floatingSelectResponsive"
+				>
 					<option>The Godfather</option>
 					<option>The Shawshank Redemption</option>
 					<option>Pulp Fiction</option>
 					<option>The Dark Knight</option>
 					<option>Schindler's List</option>
 				</select>
-				<label class="select-floating-label" for="floatingSelectResponsive">Pick your favorite Movie</label>
+				<label class="select-floating-label" for="floatingSelectResponsive"
+					>Pick your favorite Movie</label
+				>
 			</div>
 		</div>
 	</div>
