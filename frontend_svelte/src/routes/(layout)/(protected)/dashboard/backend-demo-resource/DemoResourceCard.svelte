@@ -256,8 +256,6 @@
 																	aria-labelledby="rights-{id}"
 																>
 																	<li>
-																		<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
-																combine with an accessPolicyExists - that also indicates the user, wether this policy already exists through a checkmark  -->
 																		<button
 																			data-sveltekit-preload-data={false}
 																			class="btn dropdown-item btn-text max-w-40 content-center"

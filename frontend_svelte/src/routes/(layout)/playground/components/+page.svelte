@@ -14,8 +14,10 @@
 
 	// for dropdown menus:
 	// let dropdownMenu = $state<HTMLUListElement | null>(null);
+	let actionButtonShareMenuElement = $state<HTMLElement | null>(null);
 	let dropdownElement = $state<HTMLElement | null>(null);
 	// let dropdownMenuElement = $state<HTMLElement | null>(null);
+	let actionButtonShareMenu = $state<HSDropdown | null>(null);
 	let dropdown = $state<HSDropdown | null>(null);
 
 	const loadHSDropdown = async () => {
@@ -51,7 +53,10 @@
 			// console.log("=== component - LoadedHSDropdown ===")
 			// console.log(LoadedHSDropdown)
 			// dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
+			// console.log('components - page - $effect - dropdown - window');
+			// console.log(window);	
 			dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementFloatingUI);
+			actionButtonShareMenu = new LoadedHSDropdown(actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI);
 			// dropdownMenu
 			// console.log("=== dropdownMenu ===")
 			// console.log(dropdownMenu)
@@ -407,7 +412,10 @@
 					>
 						<span class="icon-[material-symbols--edit-outline-rounded]"></span>Edit
 					</button>
-					<div class="dropdown join-item relative inline-flex grow [--placement:top]">
+					<div
+						class="dropdown join-item relative inline-flex grow [--placement:top]"	
+						bind:this={actionButtonShareMenuElement}
+					>
 						<button
 							id="action-share"
 							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content w-full rounded-none"
@@ -424,101 +432,101 @@
 							aria-orientation="vertical"
 							aria-labelledby="action-share"
 						>
-							<li>
-								<div class="text-secondary flex items-center">
-									<div class="dropdown-item text-secondary max-w-40 content-center">
-										<span class="icon-[fluent--people-team-16-filled]"></span>{teams[0].name}
-									</div>
-									<div class="mr-2">
-										<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
-										<span class="{rightsIcon(teams[0].right)} size-4"></span>
-									</div>
-									<div
-										class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
-									>
-										<ul
-											class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
-											role="menu"
-											aria-orientation="vertical"
-											aria-labelledby="rights"
+							<!-- {#each teams as team,i (i)} -->
+								<li>
+									<div class="text-secondary flex items-center">
+										<div class="dropdown-item text-secondary max-w-40 content-center">
+											<span class="icon-[fluent--people-team-16-filled]"></span>{teams[0].name}
+										</div>
+										<div class="mr-2">
+											<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
+											<span class="{rightsIcon(teams[0].right)} size-4"></span>
+										</div>
+										<div
+											class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
 										>
-											<li>
-												<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
-										combine with an accessPolicyExists - that also indicates the user, wether this policy already exists through a checkmark  -->
-												<button
-													data-sveltekit-preload-data={false}
-													class="btn dropdown-item btn-text max-w-40 content-center"
-													name="id"
-													type="submit"
-													onclick={() => {
-														teams[0].right = 'own';
-														dropdown?.close();
-													}}
-													aria-label="own"
-													><span class="icon-[tabler--key-filled] bg-success"></span></button
-												>
-											</li>
-											<li>
-												<button
-													data-sveltekit-preload-data={false}
-													class="btn dropdown-item btn-text max-w-40 content-center"
-													name="id"
-													type="submit"
-													onclick={() => {
-														teams[0].right = 'write';
-														dropdown?.close();
-													}}
-													aria-label="write"
-													><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
-													></span>
-												</button>
-											</li>
-											<li>
-												<button
-													data-sveltekit-preload-data={false}
-													class="btn dropdown-item btn-text max-w-40 content-center"
-													name="id"
-													type="submit"
-													onclick={() => {
-														teams[0].right = 'read';
-														dropdown?.close();
-													}}
-													aria-label="read"
-													><span class="icon-[tabler--eye] bg-neutral"></span>
-												</button>
-											</li>
-											<li>
-												<button
-													data-sveltekit-preload-data={false}
-													class="btn dropdown-item btn-text max-w-40 content-center"
-													name="id"
-													type="submit"
-													onclick={() => {
-														teams[0].right = '';
-														dropdown?.close();
-													}}
-													aria-label="remove share"
-													><span class="icon-[tabler--ban] bg-error"></span>
-												</button>
-											</li>
-										</ul>
-										<button
-											id="rights"
-											type="button"
-											class="dropdown-toggle btn btn-text bg-base-300"
-											aria-haspopup="menu"
-											aria-expanded="false"
-											aria-label="Dropdown"
-										>
-											<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-											></span>
-										</button>
+											<ul
+												class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
+												role="menu"
+												aria-orientation="vertical"
+												aria-labelledby="rights"
+											>
+												<li>
+													<button
+														data-sveltekit-preload-data={false}
+														class="btn dropdown-item btn-text max-w-40 content-center"
+														name="id"
+														type="submit"
+														onclick={() => {
+															teams[0].right = 'own';
+															actionButtonShareMenu?.close();
+														}}
+														aria-label="own"
+														><span class="icon-[tabler--key-filled] bg-success"></span></button
+													>
+												</li>
+												<li>
+													<button
+														data-sveltekit-preload-data={false}
+														class="btn dropdown-item btn-text max-w-40 content-center"
+														name="id"
+														type="submit"
+														onclick={() => {
+															teams[0].right = 'write';
+															actionButtonShareMenu?.close();
+														}}
+														aria-label="write"
+														><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
+														></span>
+													</button>
+												</li>
+												<li>
+													<button
+														data-sveltekit-preload-data={false}
+														class="btn dropdown-item btn-text max-w-40 content-center"
+														name="id"
+														type="submit"
+														onclick={() => {
+															teams[0].right = 'read';
+															actionButtonShareMenu?.close();
+														}}
+														aria-label="read"
+														><span class="icon-[tabler--eye] bg-neutral"></span>
+													</button>
+												</li>
+												<li>
+													<button
+														data-sveltekit-preload-data={false}
+														class="btn dropdown-item btn-text max-w-40 content-center"
+														name="id"
+														type="submit"
+														onclick={() => {
+															teams[0].right = '';
+															actionButtonShareMenu?.close();
+														}}
+														aria-label="remove share"
+														><span class="icon-[tabler--ban] bg-error"></span>
+													</button>
+												</li>
+											</ul>
+											<button
+												id="rights"
+												type="button"
+												class="dropdown-toggle btn btn-text bg-base-300"
+												aria-haspopup="menu"
+												aria-expanded="false"
+												aria-label="Dropdown"
+											>
+												<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
+												></span>
+											</button>
+										</div>
+										<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
+											<span class="icon-[openmoji--check-mark]"></span>
+										</div> -->
 									</div>
-									<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
-										<span class="icon-[openmoji--check-mark]"></span>
-									</div> -->
-								</div>
-							</li>
+								</li>
+							<!-- {/each} -->
 							<li class="dropdown-footer gap-2">
 								<button
 									class="btn dropdown-item btn-text text-secondary content-center justify-start"
