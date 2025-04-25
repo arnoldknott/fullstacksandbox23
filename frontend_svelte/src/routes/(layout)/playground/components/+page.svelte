@@ -407,7 +407,7 @@
 					>
 						<span class="icon-[material-symbols--edit-outline-rounded]"></span>Edit
 					</button>
-					<div class="dropdown join-item relative inline-flex grow">
+					<div class="dropdown join-item relative inline-flex grow [--placement:top]">
 						<button
 							id="action-share"
 							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content w-full rounded-none"
