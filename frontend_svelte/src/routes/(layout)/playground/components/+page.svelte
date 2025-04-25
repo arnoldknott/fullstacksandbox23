@@ -528,7 +528,7 @@
 						</ul>
 					</div>
 					<button
-						class="btn btn-error-container text-error-container-content join-item grow"
+						class="btn btn-error-container bg-error-container/70 border-0 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item grow"
 						aria-label="Delete Button"
 						name="id"
 						formaction="?/delete"
