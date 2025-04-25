@@ -45,6 +45,9 @@
 	// 		return new HSDropdown(dropdownMenuElement as unknown as IHTMLElementPopper)
 	// 	}});
 
+	// // TBD: is this stopping the dropdown from stalling? No, it doesn't, but the issue only exists in development mode.
+	// window.HSStaticMethods.autoInit(["dropdown"]);
+
 	$effect(() => {
 		// afterNavigate(() => {
 		// console.log('components - page - $effect - dropdown')

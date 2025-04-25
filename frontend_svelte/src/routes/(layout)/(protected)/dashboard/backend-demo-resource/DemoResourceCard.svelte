@@ -77,6 +77,9 @@
 	// 	console.log(identitiesRightsMap);
 	// });
 
+	// console.log('=== DemoResourceCard.svelte - demoResource - accessPolicies ===');
+	// console.log(demoResource?.access_policies);
+
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
 	};
