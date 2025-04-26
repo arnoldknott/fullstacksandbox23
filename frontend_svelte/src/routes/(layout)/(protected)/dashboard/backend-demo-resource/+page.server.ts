@@ -156,25 +156,25 @@ export const actions: Actions = {
 				`/access/policy?resource_id=${resource_id}&identity_id=${identity_id}`
 			);
 		} else {
-			const accessPolicy = {
+			// const accessPolicy = {
+			// 	resource_id: data.get('id'),
+			// 	identity_id: url.searchParams.get('teamid'),
+			// 	action: url.searchParams.get('action')
+			// };
+
+			// const response = await backendAPI.post(
+			// 	sessionId,
+			// 	'/access/policy',
+			// 	JSON.stringify(accessPolicy)
+			// );
+			// if (response.status !== 201) {
+			const newOrUpdateAccessPolicy = {
 				resource_id: data.get('id'),
 				identity_id: url.searchParams.get('teamid'),
-				action: url.searchParams.get('action')
+				new_action: url.searchParams.get('action')
 			};
-
-			const response = await backendAPI.post(
-				sessionId,
-				'/access/policy',
-				JSON.stringify(accessPolicy)
-			);
-			if (response.status !== 201) {
-				const newAccessPolicy = {
-					resource_id: data.get('id'),
-					identity_id: url.searchParams.get('teamid'),
-					new_action: url.searchParams.get('action')
-				};
-				await backendAPI.put(sessionId, '/access/policy', JSON.stringify(newAccessPolicy));
-			}
+			await backendAPI.put(sessionId, '/access/policy', JSON.stringify(newOrUpdateAccessPolicy));
+			// }
 		}
 
 		// const accessPolicy = {

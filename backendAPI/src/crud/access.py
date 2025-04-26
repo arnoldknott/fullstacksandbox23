@@ -783,8 +783,8 @@ class AccessPolicyCRUD:
             # to get all possible parent models as List[SQLModel]
 
             # TBD: refactor into using filters_allowed method!
-            # print("=== AccessPolicyCRUD.create - policy ===")
-            # print(policy)
+            print("=== AccessPolicyCRUD.create - policy ===")
+            print(policy)
             # print("=== AccessPolicyCRUD.create - current_user ===")
             # print(current_user)
 
@@ -998,22 +998,20 @@ class AccessPolicyCRUD:
             # TBD: add business logic: can last owner delete it's owner rights?
             # => yes, but only if there is another owner left - should be handled in delete!
             # TBD: what about downgrading from own to write or read? Permission inheritance?
-            # if access_policy.action is not None:
-            old_policy = AccessPolicy(
-                resource_id=access_policy.resource_id,
-                identity_id=access_policy.identity_id,
-                action=access_policy.action,
-                public=access_policy.public,
-            )
-            await self.delete(current_user, old_policy)
+            if hasattr(access_policy, "action") and access_policy.action is not None:
+                old_policy = AccessPolicy(
+                    resource_id=access_policy.resource_id,
+                    identity_id=access_policy.identity_id,
+                    action=access_policy.action,
+                    public=access_policy.public,
+                )
+                await self.delete(current_user, old_policy)
             new_policy = AccessPolicyCreate(
                 resource_id=access_policy.resource_id,
                 identity_id=access_policy.identity_id,
                 action=access_policy.new_action,
                 public=access_policy.public,
             )
-            # print("=== AccessPolicyCRUD.change - new_policy ===")
-            # pprint(new_policy)
             return await self.create(new_policy, current_user)
 
         except Exception as e:
