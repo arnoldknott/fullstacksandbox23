@@ -15,8 +15,7 @@
 	import { page } from '$app/state';
 	// import JsonData from '$components/JsonData.svelte';
 
-	let develop = $state(false);
-	// let develop = $state(page.url.searchParams.get('develop') === 'true' ? true : false);
+	let develop = $state(page.url.searchParams.get('develop') === 'true' ? true : false);
 
 	// for dropdown menus:
 	// let dropdownMenu = $state<HTMLUListElement | null>(null);
