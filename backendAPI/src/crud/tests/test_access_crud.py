@@ -527,7 +527,7 @@ async def test_admin_changes_access_policy_from_write_to_own(
         **policies[2].model_dump(), new_action=Action.own
     )
     async with AccessPolicyCRUD() as policy_crud:
-        updated_policy = await policy_crud.change(
+        updated_policy = await policy_crud.update(
             access_policy=update_policy,
             current_user=current_admin_user,
         )
@@ -577,7 +577,7 @@ async def test_owner_user_changes_access_policy_from_write_to_own(
         **policies[2].model_dump(), new_action=Action.own
     )
     async with AccessPolicyCRUD() as policy_crud:
-        updated_policy = await policy_crud.change(
+        updated_policy = await policy_crud.update(
             access_policy=update_policy,
             current_user=CurrentUserData(**current_user_data_user1),
         )
@@ -628,7 +628,7 @@ async def test_non_owner_user_tries_to_change_access_policy_from_write_to_own(
     )
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            await policy_crud.change(
+            await policy_crud.update(
                 access_policy=update_policy,
                 current_user=CurrentUserData(**current_user_data_user2),
             )

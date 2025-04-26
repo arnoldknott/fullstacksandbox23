@@ -143,6 +143,7 @@ export const actions: Actions = {
 		// 	return fail(response.status, { error: response.statusText });
 		// }
 	},
+	// TBD: after developing the share functionality, move it to lib/server/apis.ts
 	share: async ({ locals, request, url }) => {
 		// console.log('=== routes - demo-resource - page.server - share function executed ===');
 		const data = await request.formData();

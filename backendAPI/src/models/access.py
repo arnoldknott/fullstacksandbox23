@@ -121,6 +121,7 @@ class AccessPolicy(AccessPolicyCreate, table=True):
 class AccessPolicyUpdate(AccessPolicyCreate):
     """Update model for access policies"""
 
+    # action: Optional[Action] = None
     new_action: Action
 
 

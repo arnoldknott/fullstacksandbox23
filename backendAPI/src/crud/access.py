@@ -983,12 +983,12 @@ class AccessPolicyCRUD:
             raise HTTPException(status_code=404, detail="Access policies not found.")
 
     # similar to update - but deletes old and creates a new policy
-    async def change(
+    async def update(
         self,
         current_user: Optional["CurrentUserData"],
         access_policy: AccessPolicyUpdate,
     ) -> AccessPolicyRead:
-        """Updates an access control policy."""
+        """Deletes an existing policy if exists already and creates a new access control policy."""
         # reuses delete and create methods
 
         try:
@@ -998,6 +998,7 @@ class AccessPolicyCRUD:
             # TBD: add business logic: can last owner delete it's owner rights?
             # => yes, but only if there is another owner left - should be handled in delete!
             # TBD: what about downgrading from own to write or read? Permission inheritance?
+            # if access_policy.action is not None:
             old_policy = AccessPolicy(
                 resource_id=access_policy.resource_id,
                 identity_id=access_policy.identity_id,
