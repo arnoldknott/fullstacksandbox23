@@ -11,6 +11,12 @@
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
+	// import type { PageProps } from '../$types';
+	import { page } from '$app/state';
+	// import JsonData from '$components/JsonData.svelte';
+
+	let develop = $state(false);
+	// let develop = $state(page.url.searchParams.get('develop') === 'true' ? true : false);
 
 	// for dropdown menus:
 	// let dropdownMenu = $state<HTMLUListElement | null>(null);
@@ -193,9 +199,23 @@
 
 <!-- <svelte:window use:mapDropdown /> -->
 
-<div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
-	<div>
+<div class="mb-2 flex items-center gap-1">
+	<label class="label label-text text-base" for="debugSwitcher">Production only</label>
+	<input type="checkbox" class="switch-neutral switch" bind:checked={develop} id="debugSwitcher" />
+	<label for="debugSwitcher"> show Development 🚧</label>
+</div>
+
+<!-- <JsonData data={page.url} />
+<JsonData data={page.url.search} />
+<JsonData data={page.url.searchParams.get("develop")} /> -->
+
+<div class="w-full {!develop ? 'xl:grid xl:grid-cols-2 xl:gap-4' : 'md:grid md:grid-cols-2 md:gap-4'}">
+	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>Card with chat</Heading>
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with chat 🚧</Heading>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet headerChat()}
 				<h5 class="title md:title-large card-title">Chat card</h5>
@@ -267,8 +287,8 @@
 		</div>
 	</div>
 
-	<div>
-		<Heading>Card with text and navigation</Heading>
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with text and navigation 🚧</Heading>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			<div
 				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
@@ -345,8 +365,8 @@
 		</div>
 	</div>
 
-	<div>
-		<Heading>Card with dropdown menu</Heading>
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with dropdown menu 🚧</Heading>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet headerEdit()}
 				<div class="flex justify-between">
@@ -402,8 +422,8 @@
 		</div>
 	</div>
 
-	<div>
-		<Heading>Card with action buttons</Heading>
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with action buttons 🚧</Heading>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet footerAction()}
 				<!-- <div class="card-actions"> -->
@@ -557,8 +577,8 @@
 		</div>
 	</div>
 
-	<div>
-		<Heading>Dropdown menus</Heading>
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Dropdown menus 🚧</Heading>
 		<div
 			class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
 			bind:this={dropdownElement}
@@ -721,8 +741,8 @@
 		</div>
 	</div>
 
-	<div>
-		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Status sliders with Hue-Chroma-Tone 🚧</Heading>
 		<div class="grid grid-cols-3 gap-4">
 			<div class="w-full">
 				<label class="label label-text" for="leftStatus"
@@ -806,156 +826,8 @@
 		<HorizontalRule />
 	</div>
 
-	<div>
-		<Heading>Icons</Heading>
-		<p class="title-large text-center text-xl">Iconify with FlyonUI</p>
-		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
-			<div>
-				<p class="label text-center">
-					Default library <span class="label-prominent badge min-h-fit">Tablers</span>
-				</p>
-				<span class="icon-[tabler--settings] size-12"></span>
-				<span class="icon-[tabler--palette] size-12"></span>
-				<span class="icon-[tabler--home] size-12"></span>
-				<span class="icon-[tabler--user] size-12"></span>
-				<span class="icon-[tabler--trash] size-12"></span>
-				<span class="icon-[tabler--send-2] size-12"></span>
-				<span class="icon-[tabler--share-2] size-12"></span>
-				<span class="icon-[tabler--ban] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Extension library <span class="label-prominent badge min-h-fit">Material Symbols</span>
-				</p>
-				<span class="icon-[material-symbols--settings-outline-rounded] size-12"></span>
-				<span class="icon-[material-symbols--palette-outline] size-12"></span>
-				<span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
-				<span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
-				<span class="icon-[material-symbols--edit-outline-rounded] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Extension library <span class="label-prominent badge min-h-fit">SVG spinners</span>
-				</p>
-				<span class="icon-[svg-spinners--12-dots-scale-rotate] size-12"></span>
-				<span class="icon-[svg-spinners--3-dots-bounce] size-12"></span>
-				<span class="icon-[svg-spinners--6-dots-rotate] size-12"></span>
-				<span class="icon-[svg-spinners--90-ring-with-bg] size-12"></span>
-				<span class="icon-[svg-spinners--clock] size-12"></span>
-				<span class="icon-[svg-spinners--bars-scale] size-12"></span>
-				<span class="icon-[svg-spinners--wifi] size-12"></span>
-				<span class="icon-[svg-spinners--wifi-fade] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Solid</span>
-				</p>
-				<span class="icon-[fa6-solid--user] size-12"></span>
-				<span class="icon-[fa6-solid--droplet] size-12"></span>
-				<span class="icon-[fa6-solid--comments] size-12"></span>
-				<span class="icon-[fa6-solid--plus] size-12"></span>
-				<p class="label text-center">
-					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Brands</span>
-				</p>
-				<span class="icon-[fa6-brands--discord] size-12"></span>
-				<span class="icon-[fa6-brands--youtube] size-12"></span>
-				<span class="icon-[fa6-brands--linux] size-12"></span>
-				<span class="icon-[fa6-brands--github] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Extension library <span class="label-prominent badge min-h-fit">Feather Icon</span>
-				</p>
-				<span class="icon-[fe--bell] size-12"></span>
-				<span class="icon-[fe--disabled] size-12"></span>
-				<span class="grid place-items-center">
-					<span class="icon-[fe--bell] col-start-1 row-start-1 size-8"></span>
-					<span class="icon-[fe--disabled] col-start-1 row-start-1 size-12"></span>
-				</span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Emoji library <span class="label-prominent badge min-h-fit">Noto emoji</span>
-				</p>
-				<span class="icon-[noto--folded-hands] size-12"></span>
-				<span class="icon-[noto--folded-hands-medium-dark-skin-tone] size-12"></span>
-				<span class="icon-[noto--heart-hands] size-12"></span>
-				<span class="icon-[noto--heart-hands-dark-skin-tone] size-12"></span>
-				<span class="icon-[noto--fire] size-12"></span>
-				<span class="icon-[noto--smiling-face-with-sunglasses] size-12"></span>
-				<span class="icon-[noto--check-mark-button] size-12"></span>
-				<span class="icon-[noto--cross-mark] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Emoji library <span class="label-prominent badge min-h-fit">Openmoji</span>
-				</p>
-				<span class="icon-[openmoji--check-mark] size-12"></span>
-				<span class="icon-[openmoji--cross-mark] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Emoji library <span class="label-prominent badge min-h-fit">Twitter Emoji</span>
-				</p>
-				<span class="icon-[twemoji--flag-denmark] size-12"></span>
-				<span class="icon-[twemoji--flag-germany] size-12"></span>
-				<span class="icon-[twemoji--flag-united-states] size-12"></span>
-			</div>
-		</div>
-		<HorizontalRule />
-	</div>
-
-	<div>
-		<Heading>Buttons</Heading>
-		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
-			<div>
-				<p class="label text-center">Action Buttons</p>
-				<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add">
-					<span class="icon-[fa6-solid--plus]"></span>
-				</button>
-				<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit">
-					<span class="icon-[material-symbols--edit-outline-rounded]"></span>
-				</button>
-				<button class="btn-error-container btn btn-circle btn-gradient" aria-label="Delete">
-					<span class="icon-[tabler--trash]"></span>
-				</button>
-				<button class="btn-secondary-container btn btn-circle btn-gradient" aria-label="Send">
-					<span class="icon-[tabler--send-2]"></span>
-				</button>
-				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share">
-					<span class="icon-[tabler--share-2]"></span>
-				</button>
-				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Done">
-					<span class="icon-[mingcute--check-2-fill]"></span>
-				</button>
-				<p class="label text-center">State changing buttons</p>
-				<button
-					class="btn-info-container btn btn-circle btn-gradient"
-					onclick={() => (edit ? (edit = false) : (edit = true))}
-					aria-label="Edit Button"
-				>
-					<span class="grid place-items-center">
-						<span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
-						></span>
-						<span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
-						></span>
-					</span>
-				</button>
-			</div>
-		</div>
-	</div>
-
-	<div>
-		<Heading>Badges</Heading>
-		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
-			<div>
-				<p class="label text-center">Text Badges</p>
-			</div>
-		</div>
-	</div>
-
-	<div>
-		<Heading>Tooltips</Heading>
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Tooltips 🚧</Heading>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div class="tooltip">
 				<button type="button" class="tooltip-toggle btn btn-square" aria-label="Tooltip">
@@ -971,8 +843,8 @@
 		</div>
 	</div>
 
-	<div>
-		<Heading>Theme Picker</Heading>
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Theme Picker 🚧</Heading>
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div class="w-48">
 				<label class="label label-text" for="colorPicker"
@@ -1035,8 +907,8 @@
 		<HorizontalRule />
 	</div>
 
-	<div>
-		<Heading>Modal</Heading>
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Modal 🚧</Heading>
 		<button
 			type="button"
 			class="btn btn-accent"
@@ -1218,63 +1090,10 @@
 		<HorizontalRule />
 	</div>
 
-	<div>
-		<Heading>Swaps</Heading>
-		<div class="grid grid-cols-12 gap-4">
-			<div>
-				<label class="swap">
-					<input type="checkbox" />
-					<span class="icon-[tabler--volume] swap-on size-6"></span>
-					<span class="icon-[tabler--volume-off] swap-off size-6"></span>
-				</label>
-			</div>
-			<div>
-				<label class="btn btn-circle swap swap-rotate">
-					<input type="checkbox" />
-					<span class="icon-[tabler--menu-2] swap-off"></span>
-					<span class="icon-[tabler--x] swap-on"></span>
-				</label>
-			</div>
-			<div>
-				<label class="swap swap-rotate">
-					<input type="checkbox" />
-					<span class="icon-[tabler--sun] swap-on size-6"></span>
-					<span class="icon-[tabler--moon] swap-off size-6"></span>
-				</label>
-			</div>
-			<div>
-				<label class="swap swap-flip text-6xl">
-					<input type="checkbox" />
-					<span class="swap-on">😈</span>
-					<span class="swap-off">😇</span>
-				</label>
-			</div>
-			<!-- <div>
-					<label bind:this={myTemperature} class="swap swap-js text-6xl">
-						<span class="swap-on">🥵</span>
-						<span class="swap-off">🥶</span>
-					</label>
-					<label class="swap swap-js text-6xl">
-						<span class="swap-on">🥳</span>
-						<span class="swap-off">😭</span>
-					</label>
-				</div> -->
-			<div>
-				<label class="btn btn-circle swap swap-rotate">
-					<input type="checkbox" />
-					<span class="icon-[tabler--player-play] swap-off"></span>
-					<span class="icon-[tabler--player-pause] swap-on"></span>
-				</label>
-			</div>
-		</div>
-
-		<HorizontalRule />
-	</div>
-
 	<!-- This local override works:
 		style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
-	<div>
-		<Heading>Drawer (Sidebar)</Heading>
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Drawer (Sidebar) 🚧</Heading>
 		<button
 			type="button"
 			class="btn btn-primary"
