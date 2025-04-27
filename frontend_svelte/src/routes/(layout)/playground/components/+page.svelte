@@ -15,6 +15,7 @@
 	import { page } from '$app/state';
 	// import JsonData from '$components/JsonData.svelte';
 
+	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
 	let develop = $state(page.url.searchParams.get('develop') === 'true' ? true : false);
 
 	// for dropdown menus:
@@ -62,9 +63,11 @@
 			// console.log(LoadedHSDropdown)
 			// dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
 			// console.log('components - page - $effect - dropdown - window');
-			// console.log(window);	
+			// console.log(window);
 			dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementFloatingUI);
-			actionButtonShareMenu = new LoadedHSDropdown(actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI);
+			actionButtonShareMenu = new LoadedHSDropdown(
+				actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI
+			);
 			// dropdownMenu
 			// console.log("=== dropdownMenu ===")
 			// console.log(dropdownMenu)
@@ -198,18 +201,34 @@
 
 <!-- <svelte:window use:mapDropdown /> -->
 
-<div class="mb-2 flex items-center gap-1">
-	<label class="label label-text text-base" for="debugSwitcher">Production only</label>
-	<input type="checkbox" class="switch-neutral switch" bind:checked={develop} id="debugSwitcher" />
-	<label for="debugSwitcher"> show Development 🚧</label>
+<div class="flex flex-row justify-around">
+	<div class="mb-2 flex items-center gap-1">
+		<label class="label label-text text-base" for="prodSwitcher">Production: off </label>
+		<input type="checkbox" class="switch switch-accent" bind:checked={prod} id="prodSwitcher" />
+		<label class="label label-text text-base" for="prodSwitcher"> on</label>
+	</div>
+	<div class="mb-2 flex items-center gap-1">
+		<label class="label label-text text-base" for="developSwitcher">🚧 Development 🚧: off </label>
+		<input
+			type="checkbox"
+			class="switch switch-accent"
+			bind:checked={develop}
+			id="developSwitcher"
+		/>
+		<label class="label label-text text-base" for="developSwitcher"> on</label>
+	</div>
 </div>
 
 <!-- <JsonData data={page.url} />
 <JsonData data={page.url.search} />
 <JsonData data={page.url.searchParams.get("develop")} /> -->
 
-<div class="w-full {!develop ? 'xl:grid xl:grid-cols-2 xl:gap-4' : 'md:grid md:grid-cols-2 md:gap-4'}">
-	<div class={develop ? 'block' : 'hidden'}>
+<div
+	class="w-full {prod && develop
+		? 'md:grid md:grid-cols-2 md:gap-4'
+		: 'xl:grid xl:grid-cols-2 xl:gap-4'}"
+>
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Card with chat</Heading>
 	</div>
 
@@ -284,6 +303,10 @@
 				</div>
 			{/snippet}
 		</div>
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Card with text and navigation</Heading>
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -364,6 +387,10 @@
 		</div>
 	</div>
 
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Card with dropdown menu</Heading>
+	</div>
+
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Card with dropdown menu 🚧</Heading>
 		<div class="mb-5 grid justify-items-center">
@@ -421,6 +448,10 @@
 		</div>
 	</div>
 
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Card with action buttons</Heading>
+	</div>
+
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Card with action buttons 🚧</Heading>
 		<div class="mb-5 grid justify-items-center">
@@ -435,7 +466,7 @@
 						<span class="icon-[material-symbols--edit-outline-rounded]"></span>Edit
 					</button>
 					<div
-						class="dropdown join-item relative inline-flex grow [--placement:top]"	
+						class="dropdown join-item relative inline-flex grow [--placement:top]"
 						bind:this={actionButtonShareMenuElement}
 					>
 						<button
@@ -454,7 +485,7 @@
 							aria-orientation="vertical"
 							aria-labelledby="action-share"
 						>
-							{#each teams as team,i (i)}
+							{#each teams as team, i (i)}
 								<li>
 									<div class="text-secondary flex items-center">
 										<div class="dropdown-item text-secondary max-w-40 content-center">
@@ -558,7 +589,7 @@
 						</ul>
 					</div>
 					<button
-						class="btn btn-error-container bg-error-container/70 border-0 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item grow"
+						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item grow border-0"
 						aria-label="Delete Button"
 						name="id"
 						formaction="?/delete"
@@ -574,6 +605,10 @@
 				</p>
 			</Card>
 		</div>
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Dropdown menus</Heading>
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -624,7 +659,7 @@
 						aria-orientation="vertical"
 						aria-labelledby="share"
 					>
-						{#each teams as team,i (i)}
+						{#each teams as team, i (i)}
 							<li>
 								<div class="text-secondary flex items-center">
 									<div class="dropdown-item text-secondary max-w-40 content-center">
@@ -740,6 +775,10 @@
 		</div>
 	</div>
 
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
+	</div>
+
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Status sliders with Hue-Chroma-Tone 🚧</Heading>
 		<div class="grid grid-cols-3 gap-4">
@@ -825,6 +864,10 @@
 		<HorizontalRule />
 	</div>
 
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Tooltips</Heading>
+	</div>
+
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Tooltips 🚧</Heading>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
@@ -840,6 +883,10 @@
 				</span>
 			</div>
 		</div>
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Theme Picker</Heading>
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -906,8 +953,12 @@
 		<HorizontalRule />
 	</div>
 
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Modals</Heading>
+	</div>
+
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Modal 🚧</Heading>
+		<Heading>🚧 Modals 🚧</Heading>
 		<button
 			type="button"
 			class="btn btn-accent"
@@ -1087,6 +1138,10 @@
 		</div>
 
 		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Drawer (Sidebar)</Heading>
 	</div>
 
 	<!-- This local override works:
