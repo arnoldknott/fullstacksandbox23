@@ -623,7 +623,7 @@ async def test_owner_user_creates_new_access_policy_through_update(
     """Test updating an access policy."""
     register_many_resources
     current_admin_user = register_many_current_users[0]
-    policies = add_many_test_access_policies
+    add_many_test_access_policies
     create_policy = AccessPolicyUpdate(
         identity_id=identity_id_user2, resource_id=resource_id2, new_action=Action.write
     )
