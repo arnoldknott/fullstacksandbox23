@@ -783,8 +783,8 @@ class AccessPolicyCRUD:
             # to get all possible parent models as List[SQLModel]
 
             # TBD: refactor into using filters_allowed method!
-            print("=== AccessPolicyCRUD.create - policy ===")
-            print(policy)
+            # print("=== AccessPolicyCRUD.create - policy ===")
+            # print(policy)
             # print("=== AccessPolicyCRUD.create - current_user ===")
             # print(current_user)
 
