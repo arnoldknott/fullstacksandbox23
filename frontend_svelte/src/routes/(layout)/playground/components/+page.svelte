@@ -316,9 +316,11 @@
 				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="title-small md:title lg:title-large base-content card-title">
-						Here's a title
-					</h5>
+					<a href="#top" class="link link-base-content link-animated">
+						<h5 class="title-small md:title lg:title-large base-content card-title">
+							Here's a title
+						</h5>
+					</a>
 				</div>
 				<div class="card-body">
 					<p class="body-small md:body text-primary-container-content">
@@ -327,61 +329,35 @@
 						consistent.
 					</p>
 				</div>
-				<div class="card-footer">
-					<div class="card-actions text-center">
-						<a href="#top"
-							><button
-								class="label-small btn btn-primary text-primary-content shadow-primary rounded-full px-3"
-								>Link to top of page</button
-							></a
-						>
-					</div>
-				</div>
 			</div>
 			<div
 				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="title-small md:title lg:title-large base-content card-title">
-						One more title
-					</h5>
+					<a href="#top" class="link link-base-content link-animated">
+						<h5 class="title-small md:title lg:title-large base-content card-title">
+							One more title
+						</h5>
+					</a>
 				</div>
 				<div class="card-body">
 					<p class="body-small md:body text-primary-container-content">
 						Some shorter text here - but adjusts to the height of the neigour card
 					</p>
 				</div>
-				<div class="card-footer">
-					<div class="card-actions text-center">
-						<a href="#top"
-							><button
-								class="label-small btn btn-primary text-primary-content shadow-primary rounded-full px-3"
-								>Link to top of page</button
-							></a
-						>
-					</div>
-				</div>
 			</div>
 			<div
 				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="title-small md:title lg:title-large base-content card-title">A third title</h5>
+					<a href="#top" class="link link-base-content link-animated">
+						<h5 class="title-small md:title lg:title-large base-content card-title">A third title</h5>
+					</a>
 				</div>
 				<div class="card-body">
 					<p class="body-small md:body text-primary-container-content">
 						This one is meant to fill the row. Note how the cards are responsive on smaller screens.
 					</p>
-				</div>
-				<div class="card-footer">
-					<div class="card-actions text-center">
-						<a href="#top"
-							><button
-								class="label-small btn btn-primary text-primary-content shadow-primary rounded-full px-3"
-								>Link to top of page</button
-							></a
-						>
-					</div>
 				</div>
 			</div>
 		</div>

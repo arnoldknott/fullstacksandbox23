@@ -6,12 +6,14 @@
 </script>
 
 {#snippet header()}
-	<h5 class="title-small md:title lg:title-large base-content card-title">
-		{title}
-	</h5>
+	<a {href} class="link link-animated link-base-content">
+		<h5 class="title-small md:title lg:title-large base-content card-title">
+			{title}
+		</h5>
+	</a>
 {/snippet}
 
-{#snippet footer()}
+<!-- {#snippet footer()}
 	<div class="card-actions text-center">
 		<a {href}
 			><button
@@ -20,9 +22,9 @@
 			></a
 		>
 	</div>
-{/snippet}
+{/snippet} -->
 
-<Card id={v4()} {header} {footer}>
+<Card id={v4()} {header}>
 	<p class="body-small md:body text-primary">
 		{@render children?.()}
 	</p>
