@@ -10,30 +10,32 @@
 	}: { id: string; extraClasses?: string; header?: Snippet; children: Snippet; footer?: Snippet } =
 		$props();
 
-	export const remove = () => {
-		const card = document.getElementById(id);
-		card?.remove();
-	};
+	let showCard = $state(true);
+
+	export const remove = () => { showCard = false };
 </script>
 
-<div
-	class="card border-outline-variant bg-base-250 shadow-outline-variant w-full rounded-xl border-[1px] shadow-md {extraClasses}"
-	{id}
->
-	{#if header}
-		<div class="card-header">
-			{@render header()}
+{#if showCard}
+
+	<div
+		class="card border-outline-variant bg-base-250 shadow-outline-variant w-full rounded-xl border-[1px] shadow-md {extraClasses}"
+		{id}
+	>
+		{#if header}
+			<div class="card-header">
+				{@render header()}
+			</div>
+		{/if}
+		<div class="card-body">
+			{@render children()}
 		</div>
-	{/if}
-	<div class="card-body">
-		{@render children()}
+		{#if footer}
+			<div class="card-footer">
+				{@render footer()}
+			</div>
+		{/if}
 	</div>
-	{#if footer}
-		<div class="card-footer">
-			{@render footer()}
-		</div>
-	{/if}
-</div>
+{/if}
 
 <!--
 <div class="block rounded-lg bg-white text-left shadow-lg dark:bg-neutral-600">

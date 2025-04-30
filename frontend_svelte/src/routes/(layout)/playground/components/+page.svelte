@@ -11,11 +11,19 @@
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
+	// import type { PageProps } from '../$types';
+	import { page } from '$app/state';
+	// import JsonData from '$components/JsonData.svelte';
+
+	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
+	let develop = $state(page.url.searchParams.get('develop') === 'true' ? true : false);
 
 	// for dropdown menus:
 	// let dropdownMenu = $state<HTMLUListElement | null>(null);
+	let actionButtonShareMenuElement = $state<HTMLElement | null>(null);
 	let dropdownElement = $state<HTMLElement | null>(null);
 	// let dropdownMenuElement = $state<HTMLElement | null>(null);
+	let actionButtonShareMenu = $state<HSDropdown | null>(null);
 	let dropdown = $state<HSDropdown | null>(null);
 
 	const loadHSDropdown = async () => {
@@ -43,6 +51,9 @@
 	// 		return new HSDropdown(dropdownMenuElement as unknown as IHTMLElementPopper)
 	// 	}});
 
+	// // TBD: is this stopping the dropdown from stalling? No, it doesn't, but the issue only exists in development mode.
+	// window.HSStaticMethods.autoInit(["dropdown"]);
+
 	$effect(() => {
 		// afterNavigate(() => {
 		// console.log('components - page - $effect - dropdown')
@@ -51,7 +62,12 @@
 			// console.log("=== component - LoadedHSDropdown ===")
 			// console.log(LoadedHSDropdown)
 			// dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
+			// console.log('components - page - $effect - dropdown - window');
+			// console.log(window);
 			dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementFloatingUI);
+			actionButtonShareMenu = new LoadedHSDropdown(
+				actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI
+			);
 			// dropdownMenu
 			// console.log("=== dropdownMenu ===")
 			// console.log(dropdownMenu)
@@ -185,9 +201,39 @@
 
 <!-- <svelte:window use:mapDropdown /> -->
 
-<div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
-	<div>
+<div class="flex flex-row justify-around">
+	<div class="mb-2 flex items-center gap-1">
+		<label class="label label-text text-base" for="prodSwitcher">Production: off </label>
+		<input type="checkbox" class="switch switch-accent" bind:checked={prod} id="prodSwitcher" />
+		<label class="label label-text text-base" for="prodSwitcher"> on</label>
+	</div>
+	<div class="mb-2 flex items-center gap-1">
+		<label class="label label-text text-base" for="developSwitcher">🚧 Development 🚧: off </label>
+		<input
+			type="checkbox"
+			class="switch switch-accent"
+			bind:checked={develop}
+			id="developSwitcher"
+		/>
+		<label class="label label-text text-base" for="developSwitcher"> on</label>
+	</div>
+</div>
+
+<!-- <JsonData data={page.url} />
+<JsonData data={page.url.search} />
+<JsonData data={page.url.searchParams.get("develop")} /> -->
+
+<div
+	class="w-full {prod && develop
+		? 'md:grid md:grid-cols-2 md:gap-4'
+		: 'xl:grid xl:grid-cols-2 xl:gap-4'}"
+>
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Card with chat</Heading>
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with chat 🚧</Heading>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet headerChat()}
 				<h5 class="title md:title-large card-title">Chat card</h5>
@@ -259,16 +305,22 @@
 		</div>
 	</div>
 
-	<div>
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Card with text and navigation</Heading>
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with text and navigation 🚧</Heading>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			<div
 				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="title-small md:title lg:title-large base-content card-title">
-						Here's a title
-					</h5>
+					<a href="#top" class="link link-base-content link-animated">
+						<h5 class="title-small md:title lg:title-large base-content card-title">
+							Here's a title
+						</h5>
+					</a>
 				</div>
 				<div class="card-body">
 					<p class="body-small md:body text-primary-container-content">
@@ -277,68 +329,46 @@
 						consistent.
 					</p>
 				</div>
-				<div class="card-footer">
-					<div class="card-actions text-center">
-						<a href="#top"
-							><button
-								class="label-small btn btn-primary text-primary-content shadow-primary rounded-full px-3"
-								>Link to top of page</button
-							></a
-						>
-					</div>
-				</div>
 			</div>
 			<div
 				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="title-small md:title lg:title-large base-content card-title">
-						One more title
-					</h5>
+					<a href="#top" class="link link-base-content link-animated">
+						<h5 class="title-small md:title lg:title-large base-content card-title">
+							One more title
+						</h5>
+					</a>
 				</div>
 				<div class="card-body">
 					<p class="body-small md:body text-primary-container-content">
 						Some shorter text here - but adjusts to the height of the neigour card
 					</p>
 				</div>
-				<div class="card-footer">
-					<div class="card-actions text-center">
-						<a href="#top"
-							><button
-								class="label-small btn btn-primary text-primary-content shadow-primary rounded-full px-3"
-								>Link to top of page</button
-							></a
-						>
-					</div>
-				</div>
 			</div>
 			<div
 				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="title-small md:title lg:title-large base-content card-title">A third title</h5>
+					<a href="#top" class="link link-base-content link-animated">
+						<h5 class="title-small md:title lg:title-large base-content card-title">A third title</h5>
+					</a>
 				</div>
 				<div class="card-body">
 					<p class="body-small md:body text-primary-container-content">
 						This one is meant to fill the row. Note how the cards are responsive on smaller screens.
 					</p>
 				</div>
-				<div class="card-footer">
-					<div class="card-actions text-center">
-						<a href="#top"
-							><button
-								class="label-small btn btn-primary text-primary-content shadow-primary rounded-full px-3"
-								>Link to top of page</button
-							></a
-						>
-					</div>
-				</div>
 			</div>
 		</div>
 	</div>
 
-	<div>
-		<Heading>Card with edits</Heading>
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Card with dropdown menu</Heading>
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with dropdown menu 🚧</Heading>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet headerEdit()}
 				<div class="flex justify-between">
@@ -394,8 +424,171 @@
 		</div>
 	</div>
 
-	<div>
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Card with action buttons</Heading>
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with action buttons 🚧</Heading>
+		<div class="mb-5 grid justify-items-center">
+			{#snippet footerAction()}
+				<!-- <div class="card-actions"> -->
+				<div class="join flex flex-row items-center justify-center">
+					<button
+						class="btn btn-secondary-container text-secondary-container-content join-item grow"
+						aria-label="Edit Button"
+						onclick={() => (edit ? (edit = false) : (edit = true))}
+					>
+						<span class="icon-[material-symbols--edit-outline-rounded]"></span>Edit
+					</button>
+					<div
+						class="dropdown join-item relative inline-flex grow [--placement:top]"
+						bind:this={actionButtonShareMenuElement}
+					>
+						<button
+							id="action-share"
+							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content w-full rounded-none"
+							aria-haspopup="menu"
+							aria-expanded="false"
+							aria-label="Share with"
+						>
+							<span class="icon-[tabler--share-2]"></span>Share
+							<span class="icon-[tabler--chevron-up] size-4"></span>
+						</button>
+						<ul
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							role="menu"
+							aria-orientation="vertical"
+							aria-labelledby="action-share"
+						>
+							{#each teams as team, i (i)}
+								<li>
+									<div class="text-secondary flex items-center">
+										<div class="dropdown-item text-secondary max-w-40 content-center">
+											<span class="icon-[fluent--people-team-16-filled]"></span>{team.name}
+										</div>
+										<div class="mr-2">
+											<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
+											<span class="{rightsIcon(team.right)} size-4"></span>
+										</div>
+										<div
+											class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
+										>
+											<ul
+												class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
+												role="menu"
+												aria-orientation="vertical"
+												aria-labelledby="rights"
+											>
+												<li>
+													<button
+														data-sveltekit-preload-data={false}
+														class="btn dropdown-item btn-text max-w-40 content-center"
+														name="id"
+														type="submit"
+														onclick={() => {
+															team.right = 'own';
+															actionButtonShareMenu?.close();
+														}}
+														aria-label="own"
+														><span class="icon-[tabler--key-filled] bg-success"></span></button
+													>
+												</li>
+												<li>
+													<button
+														data-sveltekit-preload-data={false}
+														class="btn dropdown-item btn-text max-w-40 content-center"
+														name="id"
+														type="submit"
+														onclick={() => {
+															team.right = 'write';
+															actionButtonShareMenu?.close();
+														}}
+														aria-label="write"
+														><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
+														></span>
+													</button>
+												</li>
+												<li>
+													<button
+														data-sveltekit-preload-data={false}
+														class="btn dropdown-item btn-text max-w-40 content-center"
+														name="id"
+														type="submit"
+														onclick={() => {
+															team.right = 'read';
+															actionButtonShareMenu?.close();
+														}}
+														aria-label="read"
+														><span class="icon-[tabler--eye] bg-neutral"></span>
+													</button>
+												</li>
+												<li>
+													<button
+														data-sveltekit-preload-data={false}
+														class="btn dropdown-item btn-text max-w-40 content-center"
+														name="id"
+														type="submit"
+														onclick={() => {
+															team.right = '';
+															actionButtonShareMenu?.close();
+														}}
+														aria-label="remove share"
+														><span class="icon-[tabler--ban] bg-error"></span>
+													</button>
+												</li>
+											</ul>
+											<button
+												id="rights"
+												type="button"
+												class="dropdown-toggle btn btn-text bg-base-300"
+												aria-haspopup="menu"
+												aria-expanded="false"
+												aria-label="Dropdown"
+											>
+												<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
+												></span>
+											</button>
+										</div>
+										<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
+											<span class="icon-[openmoji--check-mark]"></span>
+										</div> -->
+									</div>
+								</li>
+							{/each}
+							<li class="dropdown-footer gap-2">
+								<button
+									class="btn dropdown-item btn-text text-secondary content-center justify-start"
+									>... more options</button
+								>
+							</li>
+						</ul>
+					</div>
+					<button
+						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item grow border-0"
+						aria-label="Delete Button"
+						name="id"
+						formaction="?/delete"
+					>
+						<span class="icon-[tabler--trash]"></span>Delete
+					</button>
+				</div>
+				<!-- </div> -->
+			{/snippet}
+			<Card id="cardEdit" footer={footerAction}>
+				<p class="body-small md:body text-primary-container-content">
+					The footer of this card contains action buttons.
+				</p>
+			</Card>
+		</div>
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Dropdown menus</Heading>
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Dropdown menus 🚧</Heading>
 		<div
 			class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
 			bind:this={dropdownElement}
@@ -442,101 +635,103 @@
 						aria-orientation="vertical"
 						aria-labelledby="share"
 					>
-						<li>
-							<div class="text-secondary flex items-center">
-								<div class="dropdown-item text-secondary max-w-40 content-center">
-									<span class="icon-[fluent--people-team-16-filled]"></span>{teams[0].name}
-								</div>
-								<div class="mr-2">
-									<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
-									<span class="{rightsIcon(teams[0].right)} size-4"></span>
-								</div>
-								<div
-									class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
-								>
-									<ul
-										class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
-										role="menu"
-										aria-orientation="vertical"
-										aria-labelledby="rights"
+						{#each teams as team, i (i)}
+							<li>
+								<div class="text-secondary flex items-center">
+									<div class="dropdown-item text-secondary max-w-40 content-center">
+										<span class="icon-[fluent--people-team-16-filled]"></span>{team.name}
+									</div>
+									<div class="mr-2">
+										<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
+										<span class="{rightsIcon(team.right)} size-4"></span>
+									</div>
+									<div
+										class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
 									>
-										<li>
-											<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
-									combine with an accessPolicyExists - that also indicates the user, wether this policy already exists through a checkmark  -->
-											<button
-												data-sveltekit-preload-data={false}
-												class="btn dropdown-item btn-text max-w-40 content-center"
-												name="id"
-												type="submit"
-												onclick={() => {
-													teams[0].right = 'own';
-													dropdown?.close();
-												}}
-												aria-label="own"
-												><span class="icon-[tabler--key-filled] bg-success"></span></button
-											>
-										</li>
-										<li>
-											<button
-												data-sveltekit-preload-data={false}
-												class="btn dropdown-item btn-text max-w-40 content-center"
-												name="id"
-												type="submit"
-												onclick={() => {
-													teams[0].right = 'write';
-													dropdown?.close();
-												}}
-												aria-label="write"
-												><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
-												></span>
-											</button>
-										</li>
-										<li>
-											<button
-												data-sveltekit-preload-data={false}
-												class="btn dropdown-item btn-text max-w-40 content-center"
-												name="id"
-												type="submit"
-												onclick={() => {
-													teams[0].right = 'read';
-													dropdown?.close();
-												}}
-												aria-label="read"
-												><span class="icon-[tabler--eye] bg-neutral"></span>
-											</button>
-										</li>
-										<li>
-											<button
-												data-sveltekit-preload-data={false}
-												class="btn dropdown-item btn-text max-w-40 content-center"
-												name="id"
-												type="submit"
-												onclick={() => {
-													teams[0].right = '';
-													dropdown?.close();
-												}}
-												aria-label="remove share"
-												><span class="icon-[tabler--ban] bg-error"></span>
-											</button>
-										</li>
-									</ul>
-									<button
-										id="rights"
-										type="button"
-										class="dropdown-toggle btn btn-text bg-base-300"
-										aria-haspopup="menu"
-										aria-expanded="false"
-										aria-label="Dropdown"
-									>
-										<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-										></span>
-									</button>
+										<ul
+											class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
+											role="menu"
+											aria-orientation="vertical"
+											aria-labelledby="rights"
+										>
+											<li>
+												<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
+										combine with an accessPolicyExists - that also indicates the user, wether this policy already exists through a checkmark  -->
+												<button
+													data-sveltekit-preload-data={false}
+													class="btn dropdown-item btn-text max-w-40 content-center"
+													name="id"
+													type="submit"
+													onclick={() => {
+														team.right = 'own';
+														dropdown?.close();
+													}}
+													aria-label="own"
+													><span class="icon-[tabler--key-filled] bg-success"></span></button
+												>
+											</li>
+											<li>
+												<button
+													data-sveltekit-preload-data={false}
+													class="btn dropdown-item btn-text max-w-40 content-center"
+													name="id"
+													type="submit"
+													onclick={() => {
+														team.right = 'write';
+														dropdown?.close();
+													}}
+													aria-label="write"
+													><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
+													></span>
+												</button>
+											</li>
+											<li>
+												<button
+													data-sveltekit-preload-data={false}
+													class="btn dropdown-item btn-text max-w-40 content-center"
+													name="id"
+													type="submit"
+													onclick={() => {
+														team.right = 'read';
+														dropdown?.close();
+													}}
+													aria-label="read"
+													><span class="icon-[tabler--eye] bg-neutral"></span>
+												</button>
+											</li>
+											<li>
+												<button
+													data-sveltekit-preload-data={false}
+													class="btn dropdown-item btn-text max-w-40 content-center"
+													name="id"
+													type="submit"
+													onclick={() => {
+														team.right = '';
+														dropdown?.close();
+													}}
+													aria-label="remove share"
+													><span class="icon-[tabler--ban] bg-error"></span>
+												</button>
+											</li>
+										</ul>
+										<button
+											id="rights"
+											type="button"
+											class="dropdown-toggle btn btn-text bg-base-300"
+											aria-haspopup="menu"
+											aria-expanded="false"
+											aria-label="Dropdown"
+										>
+											<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
+											></span>
+										</button>
+									</div>
+									<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
+										<span class="icon-[openmoji--check-mark]"></span>
+									</div> -->
 								</div>
-								<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
-									<span class="icon-[openmoji--check-mark]"></span>
-								</div> -->
-							</div>
-						</li>
+							</li>
+						{/each}
 						<li class="dropdown-footer gap-2">
 							<button class="btn dropdown-item btn-text text-secondary content-center justify-start"
 								>... more options</button
@@ -556,8 +751,12 @@
 		</div>
 	</div>
 
-	<div>
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Status sliders with Hue-Chroma-Tone 🚧</Heading>
 		<div class="grid grid-cols-3 gap-4">
 			<div class="w-full">
 				<label class="label label-text" for="leftStatus"
@@ -641,156 +840,12 @@
 		<HorizontalRule />
 	</div>
 
-	<div>
-		<Heading>Icons</Heading>
-		<p class="title-large text-center text-xl">Iconify with FlyonUI</p>
-		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
-			<div>
-				<p class="label text-center">
-					Default library <span class="label-prominent badge min-h-fit">Tablers</span>
-				</p>
-				<span class="icon-[tabler--settings] size-12"></span>
-				<span class="icon-[tabler--palette] size-12"></span>
-				<span class="icon-[tabler--home] size-12"></span>
-				<span class="icon-[tabler--user] size-12"></span>
-				<span class="icon-[tabler--trash] size-12"></span>
-				<span class="icon-[tabler--send-2] size-12"></span>
-				<span class="icon-[tabler--share-2] size-12"></span>
-				<span class="icon-[tabler--ban] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Extension library <span class="label-prominent badge min-h-fit">Material Symbols</span>
-				</p>
-				<span class="icon-[material-symbols--settings-outline-rounded] size-12"></span>
-				<span class="icon-[material-symbols--palette-outline] size-12"></span>
-				<span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
-				<span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
-				<span class="icon-[material-symbols--edit-outline-rounded] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Extension library <span class="label-prominent badge min-h-fit">SVG spinners</span>
-				</p>
-				<span class="icon-[svg-spinners--12-dots-scale-rotate] size-12"></span>
-				<span class="icon-[svg-spinners--3-dots-bounce] size-12"></span>
-				<span class="icon-[svg-spinners--6-dots-rotate] size-12"></span>
-				<span class="icon-[svg-spinners--90-ring-with-bg] size-12"></span>
-				<span class="icon-[svg-spinners--clock] size-12"></span>
-				<span class="icon-[svg-spinners--bars-scale] size-12"></span>
-				<span class="icon-[svg-spinners--wifi] size-12"></span>
-				<span class="icon-[svg-spinners--wifi-fade] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Solid</span>
-				</p>
-				<span class="icon-[fa6-solid--user] size-12"></span>
-				<span class="icon-[fa6-solid--droplet] size-12"></span>
-				<span class="icon-[fa6-solid--comments] size-12"></span>
-				<span class="icon-[fa6-solid--plus] size-12"></span>
-				<p class="label text-center">
-					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Brands</span>
-				</p>
-				<span class="icon-[fa6-brands--discord] size-12"></span>
-				<span class="icon-[fa6-brands--youtube] size-12"></span>
-				<span class="icon-[fa6-brands--linux] size-12"></span>
-				<span class="icon-[fa6-brands--github] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Extension library <span class="label-prominent badge min-h-fit">Feather Icon</span>
-				</p>
-				<span class="icon-[fe--bell] size-12"></span>
-				<span class="icon-[fe--disabled] size-12"></span>
-				<span class="grid place-items-center">
-					<span class="icon-[fe--bell] col-start-1 row-start-1 size-8"></span>
-					<span class="icon-[fe--disabled] col-start-1 row-start-1 size-12"></span>
-				</span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Emoji library <span class="label-prominent badge min-h-fit">Noto emoji</span>
-				</p>
-				<span class="icon-[noto--folded-hands] size-12"></span>
-				<span class="icon-[noto--folded-hands-medium-dark-skin-tone] size-12"></span>
-				<span class="icon-[noto--heart-hands] size-12"></span>
-				<span class="icon-[noto--heart-hands-dark-skin-tone] size-12"></span>
-				<span class="icon-[noto--fire] size-12"></span>
-				<span class="icon-[noto--smiling-face-with-sunglasses] size-12"></span>
-				<span class="icon-[noto--check-mark-button] size-12"></span>
-				<span class="icon-[noto--cross-mark] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Emoji library <span class="label-prominent badge min-h-fit">Openmoji</span>
-				</p>
-				<span class="icon-[openmoji--check-mark] size-12"></span>
-				<span class="icon-[openmoji--cross-mark] size-12"></span>
-			</div>
-			<div>
-				<p class="label text-center">
-					Emoji library <span class="label-prominent badge min-h-fit">Twitter Emoji</span>
-				</p>
-				<span class="icon-[twemoji--flag-denmark] size-12"></span>
-				<span class="icon-[twemoji--flag-germany] size-12"></span>
-				<span class="icon-[twemoji--flag-united-states] size-12"></span>
-			</div>
-		</div>
-		<HorizontalRule />
-	</div>
-
-	<div>
-		<Heading>Buttons</Heading>
-		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
-			<div>
-				<p class="label text-center">Action Buttons</p>
-				<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add">
-					<span class="icon-[fa6-solid--plus]"></span>
-				</button>
-				<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit">
-					<span class="icon-[material-symbols--edit-outline-rounded]"></span>
-				</button>
-				<button class="btn-error-container btn btn-circle btn-gradient" aria-label="Delete">
-					<span class="icon-[tabler--trash]"></span>
-				</button>
-				<button class="btn-secondary-container btn btn-circle btn-gradient" aria-label="Send">
-					<span class="icon-[tabler--send-2]"></span>
-				</button>
-				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share">
-					<span class="icon-[tabler--share-2]"></span>
-				</button>
-				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Done">
-					<span class="icon-[mingcute--check-2-fill]"></span>
-				</button>
-				<p class="label text-center">State changing buttons</p>
-				<button
-					class="btn-info-container btn btn-circle btn-gradient"
-					onclick={() => (edit ? (edit = false) : (edit = true))}
-					aria-label="Edit Button"
-				>
-					<span class="grid place-items-center">
-						<span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
-						></span>
-						<span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
-						></span>
-					</span>
-				</button>
-			</div>
-		</div>
-	</div>
-
-	<div>
-		<Heading>Badges</Heading>
-		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
-			<div>
-				<p class="label text-center">Text Badges</p>
-			</div>
-		</div>
-	</div>
-
-	<div>
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Tooltips</Heading>
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Tooltips 🚧</Heading>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div class="tooltip">
 				<button type="button" class="tooltip-toggle btn btn-square" aria-label="Tooltip">
@@ -806,8 +861,12 @@
 		</div>
 	</div>
 
-	<div>
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Theme Picker</Heading>
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Theme Picker 🚧</Heading>
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div class="w-48">
 				<label class="label label-text" for="colorPicker"
@@ -870,8 +929,12 @@
 		<HorizontalRule />
 	</div>
 
-	<div>
-		<Heading>Modal</Heading>
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Modals</Heading>
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Modals 🚧</Heading>
 		<button
 			type="button"
 			class="btn btn-accent"
@@ -1053,63 +1116,14 @@
 		<HorizontalRule />
 	</div>
 
-	<div>
-		<Heading>Swaps</Heading>
-		<div class="grid grid-cols-12 gap-4">
-			<div>
-				<label class="swap">
-					<input type="checkbox" />
-					<span class="icon-[tabler--volume] swap-on size-6"></span>
-					<span class="icon-[tabler--volume-off] swap-off size-6"></span>
-				</label>
-			</div>
-			<div>
-				<label class="btn btn-circle swap swap-rotate">
-					<input type="checkbox" />
-					<span class="icon-[tabler--menu-2] swap-off"></span>
-					<span class="icon-[tabler--x] swap-on"></span>
-				</label>
-			</div>
-			<div>
-				<label class="swap swap-rotate">
-					<input type="checkbox" />
-					<span class="icon-[tabler--sun] swap-on size-6"></span>
-					<span class="icon-[tabler--moon] swap-off size-6"></span>
-				</label>
-			</div>
-			<div>
-				<label class="swap swap-flip text-6xl">
-					<input type="checkbox" />
-					<span class="swap-on">😈</span>
-					<span class="swap-off">😇</span>
-				</label>
-			</div>
-			<!-- <div>
-					<label bind:this={myTemperature} class="swap swap-js text-6xl">
-						<span class="swap-on">🥵</span>
-						<span class="swap-off">🥶</span>
-					</label>
-					<label class="swap swap-js text-6xl">
-						<span class="swap-on">🥳</span>
-						<span class="swap-off">😭</span>
-					</label>
-				</div> -->
-			<div>
-				<label class="btn btn-circle swap swap-rotate">
-					<input type="checkbox" />
-					<span class="icon-[tabler--player-play] swap-off"></span>
-					<span class="icon-[tabler--player-pause] swap-on"></span>
-				</label>
-			</div>
-		</div>
-
-		<HorizontalRule />
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Drawer (Sidebar)</Heading>
 	</div>
 
 	<!-- This local override works:
 		style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
-	<div>
-		<Heading>Drawer (Sidebar)</Heading>
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Drawer (Sidebar) 🚧</Heading>
 		<button
 			type="button"
 			class="btn btn-primary"

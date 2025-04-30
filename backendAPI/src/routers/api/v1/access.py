@@ -157,7 +157,7 @@ async def put_access_policy(
     logger.info("PUT access policy")
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
-        new_policy_in_database = await crud.change(current_user, access_policy)
+        new_policy_in_database = await crud.update(current_user, access_policy)
         return new_policy_in_database
 
 
