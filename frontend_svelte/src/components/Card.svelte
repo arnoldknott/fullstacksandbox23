@@ -10,15 +10,14 @@
 	}: { id: string; extraClasses?: string; header?: Snippet; children: Snippet; footer?: Snippet } =
 		$props();
 
-	export const remove = () => {
-		const card = document.getElementById(id);
-		card?.remove();
-	};
+	let card: HTMLDivElement
+
+	export const remove = () => card.remove()
 </script>
 
 <div
 	class="card border-outline-variant bg-base-250 shadow-outline-variant w-full rounded-xl border-[1px] shadow-md {extraClasses}"
-	{id}
+	{id} bind:this={card}
 >
 	{#if header}
 		<div class="card-header">
