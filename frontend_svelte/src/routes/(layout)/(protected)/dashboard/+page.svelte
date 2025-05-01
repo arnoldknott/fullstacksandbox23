@@ -3,7 +3,7 @@
 <script lang="ts">
 	import Heading from '$components/Heading.svelte';
 	import { page } from '$app/state';
-	import NavigationCard from '../../NavigationCard.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 
 	const links = [
 		{

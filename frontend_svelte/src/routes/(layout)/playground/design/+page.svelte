@@ -1,5 +1,5 @@
 <script lang="ts">
-	import NavigationCard from '../../NavigationCard.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 	import Heading from '$components/Heading.svelte';
 	import AccordionItem from './AccordionItem.svelte';
 	import ContentText from './ContentText.svelte';

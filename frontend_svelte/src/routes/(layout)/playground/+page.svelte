@@ -1,5 +1,5 @@
 <script lang="ts">
-	import NavigationCard from '../NavigationCard.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 
 	const links = [
 		{
