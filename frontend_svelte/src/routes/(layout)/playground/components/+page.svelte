@@ -223,6 +223,10 @@
 <JsonData data={page.url.search} />
 <JsonData data={page.url.searchParams.get("develop")} /> -->
 
+{#snippet underConstruction()}
+	<p class="text-center">Not in production yet - check out the <a class="link" href="?develop=true">🚧 development version 🚧</a>.</p>
+{/snippet}
+
 <div
 	class="w-full {prod && develop
 		? 'md:grid md:grid-cols-2 md:gap-4'
@@ -230,6 +234,7 @@
 >
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Card with chat</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -307,6 +312,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Card with text and navigation</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -365,6 +371,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Card with dropdown menu</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -426,6 +433,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Card with action buttons</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -585,6 +593,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Dropdown menus</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -753,6 +762,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -842,6 +852,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Tooltips</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -863,6 +874,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Theme Picker</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -931,6 +943,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Modals</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -1118,6 +1131,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Drawer (Sidebar)</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<!-- This local override works:
