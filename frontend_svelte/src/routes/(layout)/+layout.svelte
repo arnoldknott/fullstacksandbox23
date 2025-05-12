@@ -176,13 +176,13 @@
 		<div class="dropdown navbar-start inline-flex md:hidden rtl:[--placement:bottom-end]">
 			<button
 				type="button"
-				class="dropdown-toggle btn btn-square btn-secondary btn-outline btn-sm"
+				class="dropdown-toggle btn btn-square btn-neutral btn-outline btn-sm"
 				data-collapse="#default-navbar-dropdown"
 				aria-controls="default-navbar-dropdown"
 				aria-label="Toggle navigation"
 			>
-				<span class="icon-[tabler--menu-2] dropdown-open:hidden size-4"></span>
-				<span class="icon-[tabler--x] dropdown-open:block hidden size-4"></span>
+				<span class="icon-[tabler--menu-2] bg-neutral dropdown-open:hidden size-4"></span>
+				<span class="icon-[tabler--x] bg-neutral dropdown-open:block hidden size-4"></span>
 			</button>
 			<ul
 				class="dropdown-menu bg-base-200 shadow-outline dropdown-open:opacity-100 hidden text-base shadow-md"
@@ -190,15 +190,15 @@
 			>
 				<li class="dropdown-item">
 					<a href="/" aria-label="Home"
-						><span class="icon-[material-symbols--home-outline-rounded] bg-primary size-6"
+						><span class="icon-[material-symbols--home-outline-rounded] bg-neutral size-6"
 						></span></a
 					>
 				</li>
-				<li class="dropdown-item"><a href="/docs" class="text-primary">Docs</a></li>
-				<li class="dropdown-item"><a href="/playground" class="text-primary">Playground</a></li>
+				<li class="dropdown-item"><a href="/docs" class="text-neutral">Docs</a></li>
+				<li class="dropdown-item"><a href="/playground" class="text-neutral">Playground</a></li>
 				<Guard>
 					<hr class="border-outline -mx-2 my-3" />
-					<li class="dropdown-item"><a href="/dashboard" class="text-primary">Dashboard</a></li>
+					<li class="dropdown-item"><a href="/dashboard" class="text-neutral">Dashboard</a></li>
 				</Guard>
 			</ul>
 		</div>
@@ -206,15 +206,15 @@
 			<ul class="menu-horizontal flex items-center md:gap-4">
 				<li>
 					<a href="/" aria-label="Home"
-						><span class="icon-[material-symbols--home-outline-rounded] bg-primary size-6"
+						><span class="icon-[material-symbols--home-outline-rounded] bg-neutral size-6"
 						></span></a
 					>
 				</li>
-				<li><a href="/docs" class="text-primary">Docs</a></li>
-				<li><a href="/playground" class="text-primary">Playground</a></li>
+				<li><a href="/docs" class="text-neutral">Docs</a></li>
+				<li><a href="/playground" class="text-neutral">Playground</a></li>
 				<Guard>
 					<hr class="border-outline -mx-2 my-3" />
-					<li><a href="/dashboard" class="text-primary">Dashboard</a></li>
+					<li><a href="/dashboard" class="text-neutral">Dashboard</a></li>
 				</Guard>
 			</ul>
 		</div>
@@ -243,7 +243,7 @@
 				</span>
 
 				<ul
-					class="dropdown-menu bg-base-200 shadow-outline dropdown-open:opacity-100 hidden shadow-md"
+					class="dropdown-menu bg-base-200 text-neutral shadow-outline dropdown-open:opacity-100 hidden shadow-md"
 					role="menu"
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon-user"
@@ -344,14 +344,14 @@
 			<div class="flex items-center md:ml-2">
 				{#if !loggedIn}
 					<button
-						class="btn btn-secondary shadow-secondary ml-2 rounded-full shadow-sm"
+						class="btn btn-neutral shadow-neutral ml-2 rounded-full shadow-sm"
 						aria-label="Log In"
 					>
 						<a href="/login">Log in</a>
 					</button>
 				{:else}
 					<button
-						class="btn btn-secondary btn-outline shadow-secondary ml-2 rounded-full shadow-sm"
+						class="btn btn-neutral btn-outline shadow-neutral ml-2 rounded-full shadow-sm"
 						aria-label="Log Out"
 					>
 						<a href="/logout">Log out</a>

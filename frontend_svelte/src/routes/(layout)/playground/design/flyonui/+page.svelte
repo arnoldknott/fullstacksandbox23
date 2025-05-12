@@ -1372,12 +1372,14 @@
 		<button class="btn-inverse-primary btn btn-soft">soft inverse primary</button>
 		<button class="btn-primary-fixed-dim btn btn-soft">soft primary fixed dim</button>
 		<button class="btn btn-error btn-soft">soft error</button>
+		<button class="btn btn-error-container btn-soft">soft error-container</button>
 		<button class="btn-error/50 btn btn-soft">soft error/50</button>
 		<p>Buttons - outline</p>
 		<button class="btn btn-primary btn-outline">outline primary</button>
 		<button class="btn-inverse-primary btn btn-outline">outline inverse primary</button>
 		<button class="btn-primary-fixed-dim btn btn-outline">outline primary fixed dim</button>
 		<button class="btn btn-error btn-outline">outline error</button>
+		<button class="btn btn-error-container btn-outline">outline error-container</button>
 		<button class="btn-error/50 btn btn-outline">outline error/50</button>
 		<p>Buttons - text</p>
 		<button class="btn btn-primary btn-text">text primary</button>
