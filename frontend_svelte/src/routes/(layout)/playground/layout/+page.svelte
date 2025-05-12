@@ -51,7 +51,7 @@
 			id="default-navbar-menu-collapse"
 			class="md:navbar-start collapse hidden grow basis-full overflow-hidden transition-[height] duration-300 max-md:w-full"
 		>
-			<ul class="menu md:menu-horizontal p-0 text-neutral max-md:mt-2">
+			<ul class="menu md:menu-horizontal text-neutral p-0 max-md:mt-2">
 				<li>
 					<a href="#top" aria-label="Home"
 						><span class="icon-[material-symbols--home-outline-rounded] bg-neutral size-6"
