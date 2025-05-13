@@ -24,7 +24,7 @@ import { ToneDeltaPair } from '../dependencies/material-color-utilities/0.3.0/to
 // No, not for what it's used here.
 // const { light: lightFlyonUI, dark: darkFlyonUI } = flyonUIThemes;
 // const { dark: darkFlyonUI } = flyonUIThemes;
-import Color from 'colorjs.io';
+// import Color from 'colorjs.io';
 
 export enum Variant {
 	// MONOCHROME = 'Monochrome',
