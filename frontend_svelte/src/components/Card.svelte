@@ -12,11 +12,12 @@
 
 	let showCard = $state(true);
 
-	export const remove = () => { showCard = false };
+	export const remove = () => {
+		showCard = false;
+	};
 </script>
 
 {#if showCard}
-
 	<div
 		class="card border-outline-variant bg-base-250 shadow-outline-variant w-full rounded-xl border-[1px] shadow-md {extraClasses}"
 		{id}

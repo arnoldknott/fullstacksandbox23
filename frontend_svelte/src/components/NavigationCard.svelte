@@ -7,7 +7,7 @@
 
 {#snippet header()}
 	<a {href} class="link link-animated link-base-content">
-		<h5 class="title-small md:title lg:title-large base-content card-title">
+		<h5 class="title-small md:title lg:title-large text-base-content card-title">
 			{title}
 		</h5>
 	</a>
@@ -25,7 +25,7 @@
 {/snippet} -->
 
 <Card id={v4()} {header}>
-	<p class="body-small md:body text-primary">
+	<p class="body-small md:body text-base-content-variant">
 		{@render children?.()}
 	</p>
 </Card>

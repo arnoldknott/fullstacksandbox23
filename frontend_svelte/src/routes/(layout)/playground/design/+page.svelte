@@ -1,5 +1,5 @@
 <script lang="ts">
-	import NavigationCard from '../../NavigationCard.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 	import Heading from '$components/Heading.svelte';
 	import AccordionItem from './AccordionItem.svelte';
 	import ContentText from './ContentText.svelte';
@@ -8,6 +8,7 @@
 	import AppInteraction from './AppInteraction.svelte';
 	import BackgroundRows from './BackgroundRows.svelte';
 	import Containers from './Containers.svelte';
+	import ColorTile from './ColorTile.svelte';
 </script>
 
 <Heading>🚧 Construction sites - for design experiments 🚧</Heading>
@@ -30,7 +31,13 @@
 <Heading>👍 Results - ready for use 👍</Heading>
 
 <div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
-	<AccordionItem title="Backgrounds">
+	<AccordionItem title="Backgrounds and Surfaces">
+		<ColorTile
+			background="--md-sys-color-background"
+			color="--md-sys-color-on-background"
+		/>
+	</AccordionItem>
+	<AccordionItem title="Backgrounds old">
 		<div class="bg-background text-base-content flex h-screen min-h-fit w-full flex-col">
 			<div class="bg-background text-base-content flex h-screen min-h-fit w-full flex-col">
 				<div class="bg-background h-1/6 min-h-fit p-4">Background<br /></div>

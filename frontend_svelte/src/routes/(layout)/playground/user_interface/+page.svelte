@@ -9,7 +9,7 @@
 	import type { Tab } from '$lib/types';
 	import VerticalTabs from './VerticalTabs.svelte';
 	import UserForm from './UserForm.svelte';
-	import NavigationCard from '../../NavigationCard.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 
 	const tabs: Tab[] = [

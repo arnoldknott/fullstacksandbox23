@@ -5,6 +5,7 @@
 	import { onDestroy } from 'svelte';
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 	// import type { IOverlay } from 'flyonui/flyonui';
 	// import { HSDropdown, type IHTMLElementPopper } from 'flyonui/flyonui';
 	// import type { IHTMLElementPopper, HSDropdown } from 'flyonui/flyonui';
@@ -88,6 +89,28 @@
 		// }
 	});
 
+	// data for card with navigation in title:
+	const cardsNavigation = [
+		{
+			title: "Here's a title",
+			description:
+				'Some test text, here. Can go over several lines. And if it does, the cards in the same line will adjust to the longest card. This is a good way to keep the layout clean and consistent.',
+			link: '#top'
+		},
+		{
+			title: 'One more title',
+			description: 'Some shorter text here - but adjusts to the height of the neighbor card',
+			link: '#top'
+		},
+		{
+			title: 'A third title',
+			description:
+				'This one is meant to fill the row. Note how the cards are responsive on smaller screens.',
+			link: '#top'
+		}
+	];
+
+	// data for share menu:
 	const teams = $state([
 		{
 			name: 'The A Team',
@@ -223,6 +246,14 @@
 <JsonData data={page.url.search} />
 <JsonData data={page.url.searchParams.get("develop")} /> -->
 
+{#snippet underConstruction()}
+	<p class="text-center">
+		Not in production yet - check out the <a class="link" href="?develop=true"
+			>🚧 development version 🚧</a
+		>.
+	</p>
+{/snippet}
+
 <div
 	class="w-full {prod && develop
 		? 'md:grid md:grid-cols-2 md:gap-4'
@@ -230,6 +261,7 @@
 >
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Card with chat</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -306,11 +338,18 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Card with text and navigation</Heading>
+		<Heading>Card with text and title navigation</Heading>
+		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
+			{#each cardsNavigation as cardNavigation, i (i)}
+				<NavigationCard title={cardNavigation.title} href={cardNavigation.link}
+					>{cardNavigation.description}</NavigationCard
+				>
+			{/each}
+		</div>
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Card with text and navigation 🚧</Heading>
+		<Heading>🚧 Card with text and title navigation 🚧</Heading>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			<div
 				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
@@ -351,7 +390,9 @@
 			>
 				<div class="card-header">
 					<a href="#top" class="link link-base-content link-animated">
-						<h5 class="title-small md:title lg:title-large base-content card-title">A third title</h5>
+						<h5 class="title-small md:title lg:title-large base-content card-title">
+							A third title
+						</h5>
 					</a>
 				</div>
 				<div class="card-body">
@@ -365,6 +406,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Card with dropdown menu</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -426,6 +468,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Card with action buttons</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -585,6 +628,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Dropdown menus</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -753,6 +797,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -842,6 +887,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Tooltips</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -863,6 +909,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Theme Picker</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -931,6 +978,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Modals</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
@@ -1118,6 +1166,7 @@
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Drawer (Sidebar)</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<!-- This local override works:

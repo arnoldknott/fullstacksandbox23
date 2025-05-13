@@ -35,13 +35,13 @@
 				<div class="md:hidden">
 					<button
 						type="button"
-						class="btn btn-square btn-secondary btn-outline collapse-toggle btn-sm"
+						class="btn btn-square btn-neutral btn-outline collapse-toggle btn-sm"
 						data-collapse="#default-navbar-menu-collapse"
 						aria-controls="default-navbar-menu-collapse"
 						aria-label="Toggle navigation"
 					>
-						<span class="icon-[tabler--menu-2] collapse-open:hidden size-4"></span>
-						<span class="icon-[tabler--x] collapse-open:block hidden size-4"></span>
+						<span class="icon-[tabler--menu-2] bg-neutral collapse-open:hidden size-4"></span>
+						<span class="icon-[tabler--x] bg-neutral collapse-open:block hidden size-4"></span>
 					</button>
 				</div>
 			</div>
@@ -51,17 +51,17 @@
 			id="default-navbar-menu-collapse"
 			class="md:navbar-start collapse hidden grow basis-full overflow-hidden transition-[height] duration-300 max-md:w-full"
 		>
-			<ul class="menu md:menu-horizontal p-0 text-base max-md:mt-2">
+			<ul class="menu md:menu-horizontal text-neutral p-0 max-md:mt-2">
 				<li>
 					<a href="#top" aria-label="Home"
-						><span class="icon-[material-symbols--home-outline-rounded] bg-primary size-6"
+						><span class="icon-[material-symbols--home-outline-rounded] bg-neutral size-6"
 						></span></a
 					>
 				</li>
-				<li><a href="#top" class="text-primary">Docs</a></li>
-				<li><a href="#top" class="text-primary">Playground</a></li>
+				<li><a href="#top" class="text-neutral">Docs</a></li>
+				<li><a href="#top" class="text-neutral">Playground</a></li>
 				<hr class="border-outline -mx-2 my-3" />
-				<li><a href="#top" class="text-primary">Dashboard</a></li>
+				<li><a href="#top" class="text-neutral">Dashboard</a></li>
 			</ul>
 		</div>
 	</div>
@@ -84,7 +84,7 @@
 			aria-label="User Menu"
 		></span>
 		<ul
-			class="dropdown-menu bg-base-200 shadow-outline dropdown-open:opacity-100 hidden shadow-md"
+			class="dropdown-menu bg-base-200 text-neutral shadow-outline dropdown-open:opacity-100 hidden shadow-md"
 			role="menu"
 			aria-orientation="vertical"
 			aria-labelledby="dropdown-menu-icon-user"
@@ -171,7 +171,7 @@
 	</div>
 	<div class="navabar-end flex items-center md:ml-2">
 		<button
-			class="btn btn-secondary btn-outline shadow-secondary ml-2 rounded-full shadow-sm"
+			class="btn btn-neutral btn-outline shadow-neutral ml-2 rounded-full shadow-sm"
 			aria-label="LogInOut"
 		>
 			<a href="#top">LogInOut</a>
@@ -197,13 +197,13 @@
 	<div class="dropdown navbar-start relative inline-flex md:hidden rtl:[--placement:bottom-end]">
 		<button
 			type="button"
-			class="dropdown-toggle btn btn-square btn-secondary btn-outline btn-sm"
+			class="dropdown-toggle btn btn-square btn-neutral btn-outline btn-sm"
 			data-collapse="#default-navbar-dropdown"
 			aria-controls="default-navbar-dropdown"
 			aria-label="Toggle navigation"
 		>
-			<span class="icon-[tabler--menu-2] dropdown-open:hidden size-4"></span>
-			<span class="icon-[tabler--x] dropdown-open:block hidden size-4"></span>
+			<span class="icon-[tabler--menu-2] bg-neutral dropdown-open:hidden size-4"></span>
+			<span class="icon-[tabler--x] bg-neutral dropdown-open:block hidden size-4"></span>
 		</button>
 		<!-- <div
 			id="default-navbar-dropdown"
@@ -215,13 +215,13 @@
 		>
 			<li class="dropdown-item">
 				<a href="#top" aria-label="Home"
-					><span class="icon-[material-symbols--home-outline-rounded] bg-primary size-6"></span></a
+					><span class="icon-[material-symbols--home-outline-rounded] bg-neutral size-6"></span></a
 				>
 			</li>
-			<li class="dropdown-item"><a href="#top" class="text-primary">Docs</a></li>
-			<li class="dropdown-item"><a href="#top" class="text-primary">Playground</a></li>
+			<li class="dropdown-item"><a href="#top" class="text-neutral">Docs</a></li>
+			<li class="dropdown-item"><a href="#top" class="text-neutral">Playground</a></li>
 			<hr class="border-outline -mx-2 my-3" />
-			<li class="dropdown-item"><a href="#top" class="text-primary">Dashboard</a></li>
+			<li class="dropdown-item"><a href="#top" class="text-neutral">Dashboard</a></li>
 		</ul>
 		<!-- </div> -->
 	</div>
@@ -229,13 +229,13 @@
 		<ul class="menu-horizontal flex items-center md:gap-4">
 			<li>
 				<a href="#top" aria-label="Home"
-					><span class="icon-[material-symbols--home-outline-rounded] bg-primary size-6"></span></a
+					><span class="icon-[material-symbols--home-outline-rounded] bg-neutral size-6"></span></a
 				>
 			</li>
-			<li><a href="#top" class="text-primary">Docs</a></li>
-			<li><a href="#top" class="text-primary">Playground</a></li>
+			<li><a href="#top" class="text-neutral">Docs</a></li>
+			<li><a href="#top" class="text-neutral">Playground</a></li>
 			<hr class="border-outline -mx-2 my-3" />
-			<li><a href="#top" class="text-primary">Dashboard</a></li>
+			<li><a href="#top" class="text-neutral">Dashboard</a></li>
 		</ul>
 	</div>
 	<!-- <div class="w-full md:flex md:items-center md:gap-2">
@@ -293,7 +293,7 @@
 				aria-label="User Menu"
 			></span>
 			<ul
-				class="dropdown-menu bg-base-200 shadow-outline dropdown-open:opacity-100 hidden shadow-md"
+				class="dropdown-menu bg-base-200 text-neutral shadow-outline dropdown-open:opacity-100 hidden shadow-md"
 				role="menu"
 				aria-orientation="vertical"
 				aria-labelledby="dropdown-menu-icon-user"
@@ -380,7 +380,7 @@
 		</div>
 		<div class="flex items-center md:ml-2">
 			<button
-				class="btn btn-secondary btn-outline shadow-secondary ml-2 rounded-full shadow-sm"
+				class="btn btn-neutral btn-outline shadow-neutral ml-2 rounded-full shadow-sm"
 				aria-label="LogInOut"
 			>
 				<a href="#top">LogInOut</a>
