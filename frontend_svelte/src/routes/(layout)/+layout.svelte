@@ -2,7 +2,7 @@
 	import {
 		Variant,
 		Theming,
-		extendingFlyonUIwithAdditionalMaterialDesignColors,
+		// extendingFlyonUIwithAdditionalMaterialDesignColors,
 		type ColorConfig
 	} from '$lib/theming';
 
@@ -59,44 +59,45 @@
 		// TBD: ensure that the material design tokens are not necessary any more.
 		// Should be handled by TailwindCSS extension now in tailwind.config.js!
 		// theming.ts creates the tokens and applies them to the DOM.
-		extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
-			(utilityClass, materialDesignToken) => {
-				const tokenKebabCase = materialDesignToken
-					.replace(/([a-z])([A-Z])/g, '$1-$2')
-					.toLowerCase();
-				Theming.addStyle(`.text-${utilityClass}`, [
-					`color: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				// TBD: check .ring
-				Theming.addStyle(`.fill-${utilityClass}`, [`fill: var(--md-sys-color-${tokenKebabCase});`]);
-				Theming.addStyle(`.caret-${utilityClass}`, [
-					`caret-color: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				Theming.addStyle(`.stroke-${utilityClass}`, [
-					`stroke: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				Theming.addStyle(`.border-${utilityClass}`, [
-					`border-color: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				Theming.addStyle(`.accent-${utilityClass}`, [
-					`accent-color: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				// TBD: check shadow!
-				// TBD: check possibilities for applying opacity to those colors!
-				Theming.addStyle(`.accent-${utilityClass}`, [
-					`accent-color: var(--md-sys-color-${tokenKebabCase});`
-				]);
-				Theming.addStyle(`.decoration-${utilityClass}`, [
-					`text-decoration-color: var(--md-sys-color-${tokenKebabCase});`
-				]);
+		// Refactor: Since FlyonUI2 and TailwindCSS4 not necessary any more:
+		// extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
+		// 	(utilityClass, materialDesignToken) => {
+		// 		const tokenKebabCase = materialDesignToken
+		// 			.replace(/([a-z])([A-Z])/g, '$1-$2')
+		// 			.toLowerCase();
+		// 		Theming.addStyle(`.text-${utilityClass}`, [
+		// 			`color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		// TBD: check .ring
+		// 		Theming.addStyle(`.fill-${utilityClass}`, [`fill: var(--md-sys-color-${tokenKebabCase});`]);
+		// 		Theming.addStyle(`.caret-${utilityClass}`, [
+		// 			`caret-color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		Theming.addStyle(`.stroke-${utilityClass}`, [
+		// 			`stroke: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		Theming.addStyle(`.border-${utilityClass}`, [
+		// 			`border-color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		Theming.addStyle(`.accent-${utilityClass}`, [
+		// 			`accent-color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		// TBD: check shadow!
+		// 		// TBD: check possibilities for applying opacity to those colors!
+		// 		Theming.addStyle(`.accent-${utilityClass}`, [
+		// 			`accent-color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
+		// 		Theming.addStyle(`.decoration-${utilityClass}`, [
+		// 			`text-decoration-color: var(--md-sys-color-${tokenKebabCase});`
+		// 		]);
 
-				// // TBD: causes trouble on all browsers on iPad
-				// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
-				// 	`color: var(--md-sys-color-${tokenKebabCase});`
-				// ]);
-				// TBD: check .ring-offset
-			}
-		);
+		// 		// // TBD: causes trouble on all browsers on iPad
+		// 		// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
+		// 		// 	`color: var(--md-sys-color-${tokenKebabCase});`
+		// 		// ]);
+		// 		// TBD: check .ring-offset
+		// 	}
+		// );
 
 		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
 

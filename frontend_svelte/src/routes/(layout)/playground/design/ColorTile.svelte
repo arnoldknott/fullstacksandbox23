@@ -49,7 +49,6 @@
 	onDestroy(() => {
 		unsubscribeThemeStore();
 	});
-
 </script>
 
 <div class="flex h-32 grow p-2 md:h-24" style="background-color: var({background});">

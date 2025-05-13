@@ -32,10 +32,7 @@
 
 <div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
 	<AccordionItem title="Backgrounds and Surfaces">
-		<ColorTile
-			background="--md-sys-color-background"
-			color="--md-sys-color-on-background"
-		/>
+		<ColorTile background="--md-sys-color-background" color="--md-sys-color-on-background" />
 	</AccordionItem>
 	<AccordionItem title="Backgrounds old">
 		<div class="bg-background text-base-content flex h-screen min-h-fit w-full flex-col">

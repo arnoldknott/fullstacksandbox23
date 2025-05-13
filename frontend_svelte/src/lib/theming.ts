@@ -24,7 +24,7 @@ import { ToneDeltaPair } from '../dependencies/material-color-utilities/0.3.0/to
 // No, not for what it's used here.
 // const { light: lightFlyonUI, dark: darkFlyonUI } = flyonUIThemes;
 // const { dark: darkFlyonUI } = flyonUIThemes;
-import Color from 'colorjs.io';
+// import Color from 'colorjs.io';
 
 export enum Variant {
 	// MONOCHROME = 'Monochrome',
@@ -207,123 +207,125 @@ type AdditionalFlyonUIScheme = {
 	palettes: AdditionalFlyonUIColorsPalette;
 };
 
+// Not needed any more in FlyonUI 2
 // TBD: check how to do all the containers programmatically for providing the container classes (extensions of FlyonUI to match Material Design)
 // Map matched colors to both class names, e.g. onPrimary primary-container becomes a class definition of ".on-primary, .primary-container"
 // Material design tokens become FlyonUI variables (both technically CSS variables)
-const flyonUIVariablesMaterialDesignMapping = new Map([
-	// default FlyonUI tokens:
-	['primary', 'p'],
-	['onPrimary', 'pc'],
-	['secondary', 's'],
-	['onSecondary', 'sc'],
-	['tertiary', 'a'], // accent
-	['onTertiary', 'ac'],
-	['neutral', 'n'],
-	['onNeutral', 'nc'],
-	['info', 'in'],
-	['onInfo', 'inc'],
-	['success', 'su'],
-	['onSuccess', 'suc'],
-	['warning', 'wa'],
-	['onWarning', 'wac'],
-	['error', 'er'],
-	['onError', 'erc'],
-	['surfaceContainerLowest', 'b1'],
-	['surfaceContainer', 'b2'],
-	['surfaceContainerHighest', 'b3'],
-	['onSurface', 'bc'],
-	['shadow', 'bs'],
-	// extension from material design to flyonUI:
-	// Foreground extensions:
-	['primaryContainer', 'pcontainer'],
-	['onPrimaryContainer', 'pcontainercontent'],
-	['secondaryContainer', 'scontainer'],
-	['onSecondaryContainer', 'scontainercontent'],
-	['tertiaryContainer', 'acontainer'],
-	['onTertiaryContainer', 'acontainercontent'],
-	['neutralContainer', 'ncontainer'],
-	['onNeutralContainer', 'ncontainercontent'],
-	['infoContainer', 'incontainer'],
-	['onInfoContainer', 'incontainercontent'],
-	['successContainer', 'sucontainer'],
-	['onSuccessContainer', 'sucontainercontent'],
-	['warningContainer', 'wacontainer'],
-	['onWarningContainer', 'wacontainercontent'],
-	['errorContainer', 'ercontainer'],
-	['onErrorContainer', 'ercontainercontent'],
-	// Background and other extensions:
-	['inversePrimary', 'ip'],
-	['surfaceTint', 'st'],
-	// TBD: add tertiary -> accent, netral, info, success, warning, error containers
-	// Avoid using those colors:
-	['primaryFixed', 'pf'],
-	['primaryFixedDim', 'pfdim'],
-	['onPrimaryFixed', 'pfcontent'],
-	['onPrimaryFixedVariant', 'pfvariantcontent'],
-	['secondaryFixed', 'sf'],
-	['secondaryFixedDim', 'sfdim'],
-	['onSecondaryFixed', 'sfcontent'],
-	['onSecondaryFixedVariant', 'sfvariantcontent'],
-	['tertiaryFixed', 'af'],
-	['tertiaryFixedDim', 'afdim'],
-	['onTertiaryFixed', 'afcontent'],
-	['onTertiaryFixedVariant', 'afvariantcontent']
-]);
+// const flyonUIVariablesMaterialDesignMapping = new Map([
+// 	// default FlyonUI tokens:
+// 	['primary', 'p'],
+// 	['onPrimary', 'pc'],
+// 	['secondary', 's'],
+// 	['onSecondary', 'sc'],
+// 	['tertiary', 'a'], // accent
+// 	['onTertiary', 'ac'],
+// 	['neutral', 'n'],
+// 	['onNeutral', 'nc'],
+// 	['info', 'in'],
+// 	['onInfo', 'inc'],
+// 	['success', 'su'],
+// 	['onSuccess', 'suc'],
+// 	['warning', 'wa'],
+// 	['onWarning', 'wac'],
+// 	['error', 'er'],
+// 	['onError', 'erc'],
+// 	['surfaceContainerLowest', 'b1'],
+// 	['surfaceContainer', 'b2'],
+// 	['surfaceContainerHighest', 'b3'],
+// 	['onSurface', 'bc'],
+// 	['shadow', 'bs'],
+// 	// extension from material design to flyonUI:
+// 	// Foreground extensions:
+// 	['primaryContainer', 'pcontainer'],
+// 	['onPrimaryContainer', 'pcontainercontent'],
+// 	['secondaryContainer', 'scontainer'],
+// 	['onSecondaryContainer', 'scontainercontent'],
+// 	['tertiaryContainer', 'acontainer'],
+// 	['onTertiaryContainer', 'acontainercontent'],
+// 	['neutralContainer', 'ncontainer'],
+// 	['onNeutralContainer', 'ncontainercontent'],
+// 	['infoContainer', 'incontainer'],
+// 	['onInfoContainer', 'incontainercontent'],
+// 	['successContainer', 'sucontainer'],
+// 	['onSuccessContainer', 'sucontainercontent'],
+// 	['warningContainer', 'wacontainer'],
+// 	['onWarningContainer', 'wacontainercontent'],
+// 	['errorContainer', 'ercontainer'],
+// 	['onErrorContainer', 'ercontainercontent'],
+// 	// Background and other extensions:
+// 	['inversePrimary', 'ip'],
+// 	['surfaceTint', 'st'],
+// 	// TBD: add tertiary -> accent, netral, info, success, warning, error containers
+// 	// Avoid using those colors:
+// 	['primaryFixed', 'pf'],
+// 	['primaryFixedDim', 'pfdim'],
+// 	['onPrimaryFixed', 'pfcontent'],
+// 	['onPrimaryFixedVariant', 'pfvariantcontent'],
+// 	['secondaryFixed', 'sf'],
+// 	['secondaryFixedDim', 'sfdim'],
+// 	['onSecondaryFixed', 'sfcontent'],
+// 	['onSecondaryFixedVariant', 'sfvariantcontent'],
+// 	['tertiaryFixed', 'af'],
+// 	['tertiaryFixedDim', 'afdim'],
+// 	['onTertiaryFixed', 'afcontent'],
+// 	['onTertiaryFixedVariant', 'afvariantcontent']
+// ]);
 
+// Refactor: No more needed with FlyonUI2 and TailwindCSS4
 // add missing material design tokens as utility classes for flyonUI
 // with both material design and flyonUI syntax:
 // TBD: does this have an impact at all, after tailwind extensions are mapped to material design colors?
-export const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
-	['primaryContainer', 'primary-container'],
-	['onPrimaryContainer', 'primary-container-content'],
-	['secondaryContainer', 'secondary-container'],
-	['onSecondaryContainer', 'secondary-container-content'],
-	['tertiaryContainer', 'accent-container'],
-	['onTertiaryContainer', 'accent-container-content'],
-	['neutralContainer', 'neutral-container'],
-	['onNeutralContainer', 'neutral-container-content'],
-	['errorContainer', 'error-container'],
-	['onErrorContainer', 'error-container-content'],
-	['warningContainer', 'warning-container'],
-	['onWarningContainer', 'warning-container-content'],
-	['successContainer', 'success-container'],
-	['onSuccessContainer', 'success-container-content'],
-	['infoContainer', 'info-container'],
-	['onInfoContainer', 'info-container-content'],
-	['surfaceContainerLow', 'base-150'],
-	['surfaceContainerHigh', 'base-250'],
-	['onSurfaceVariant', 'base-content-variant'],
-	['outline', 'outline'],
-	['outlineVariant', 'outline-variant'],
-	['inverseSurface', 'inverse-surface'],
-	['inverseOnSurface', 'inverse-surface-content'],
-	['inversePrimary', 'inverse-primary'],
-	['scrim', 'scrim'],
-	['background', 'background'],
-	['onBackground', 'background-content'],
-	['neutralPaletteKeyColor', 'neutral-palette-key-color'],
-	['neutralVariantPaletteKeyColor', 'neutral-variant-palette-key-color'],
-	['primaryPaletteKeyColor', 'primary-palette-key-color'],
-	['secondaryPaletteKeyColor', 'secondary-palette-key-color'],
-	['tertiaryPaletteKeyColor', 'accent-palette-key-color'],
-	['primaryFixed', 'primary-fixed'],
-	['primaryFixedDim', 'primary-fixed-dim'],
-	['onPrimaryFixed', 'primary-fixed-content'],
-	['onPrimaryFixedVariant', 'primary-fixed-variant-content'],
-	['secondaryFixed', 'secondary-fixed'],
-	['secondaryFixedDim', 'secondary-fixed-dim'],
-	['onSecondaryFixed', 'secondary-fixed-content'],
-	['onSecondaryFixedVariant', 'secondary-fixed-variant-content'],
-	['tertiaryFixed', 'accent-fixed'],
-	['tertiaryFixedDim', 'accent-fixed-dim'],
-	['onTertiaryFixed', 'accent-fixed-content'],
-	['onTertiaryFixedVariant', 'accent-fixed-variant-content'],
-	['surfaceDim', 'surface-dim'],
-	['surface', 'surface'],
-	['surfaceBright', 'surface-bright'],
-	['surfaceVariant', 'surface-variant'],
-	['surfaceTint', 'surface-tint']
-]);
+// export const extendingFlyonUIwithAdditionalMaterialDesignColors = new Map([
+// 	['primaryContainer', 'primary-container'],
+// 	['onPrimaryContainer', 'primary-container-content'],
+// 	['secondaryContainer', 'secondary-container'],
+// 	['onSecondaryContainer', 'secondary-container-content'],
+// 	['tertiaryContainer', 'accent-container'],
+// 	['onTertiaryContainer', 'accent-container-content'],
+// 	['neutralContainer', 'neutral-container'],
+// 	['onNeutralContainer', 'neutral-container-content'],
+// 	['errorContainer', 'error-container'],
+// 	['onErrorContainer', 'error-container-content'],
+// 	['warningContainer', 'warning-container'],
+// 	['onWarningContainer', 'warning-container-content'],
+// 	['successContainer', 'success-container'],
+// 	['onSuccessContainer', 'success-container-content'],
+// 	['infoContainer', 'info-container'],
+// 	['onInfoContainer', 'info-container-content'],
+// 	['surfaceContainerLow', 'base-150'],
+// 	['surfaceContainerHigh', 'base-250'],
+// 	['onSurfaceVariant', 'base-content-variant'],
+// 	['outline', 'outline'],
+// 	['outlineVariant', 'outline-variant'],
+// 	['inverseSurface', 'inverse-surface'],
+// 	['inverseOnSurface', 'inverse-surface-content'],
+// 	['inversePrimary', 'inverse-primary'],
+// 	['scrim', 'scrim'],
+// 	['background', 'background'],
+// 	['onBackground', 'background-content'],
+// 	['neutralPaletteKeyColor', 'neutral-palette-key-color'],
+// 	['neutralVariantPaletteKeyColor', 'neutral-variant-palette-key-color'],
+// 	['primaryPaletteKeyColor', 'primary-palette-key-color'],
+// 	['secondaryPaletteKeyColor', 'secondary-palette-key-color'],
+// 	['tertiaryPaletteKeyColor', 'accent-palette-key-color'],
+// 	['primaryFixed', 'primary-fixed'],
+// 	['primaryFixedDim', 'primary-fixed-dim'],
+// 	['onPrimaryFixed', 'primary-fixed-content'],
+// 	['onPrimaryFixedVariant', 'primary-fixed-variant-content'],
+// 	['secondaryFixed', 'secondary-fixed'],
+// 	['secondaryFixedDim', 'secondary-fixed-dim'],
+// 	['onSecondaryFixed', 'secondary-fixed-content'],
+// 	['onSecondaryFixedVariant', 'secondary-fixed-variant-content'],
+// 	['tertiaryFixed', 'accent-fixed'],
+// 	['tertiaryFixedDim', 'accent-fixed-dim'],
+// 	['onTertiaryFixed', 'accent-fixed-content'],
+// 	['onTertiaryFixedVariant', 'accent-fixed-variant-content'],
+// 	['surfaceDim', 'surface-dim'],
+// 	['surface', 'surface'],
+// 	['surfaceBright', 'surface-bright'],
+// 	['surfaceVariant', 'surface-variant'],
+// 	['surfaceTint', 'surface-tint']
+// ]);
 
 export interface ColorConfig {
 	sourceColor: string;
@@ -897,7 +899,7 @@ export class Theming {
 		const colorScheme = colorization.createAppColors();
 		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
 		this.applyMaterialTokens(colors, targetElement);
-		this.applyFlyonUITokens(colors, targetElement);
+		// this.applyFlyonUITokens(colors, targetElement);
 
 		return {
 			configuration: colorConfig,
@@ -954,12 +956,12 @@ export class Theming {
 		targetElement.style.color = hexFromArgb(colors['onBackground']);
 	}
 
-	// consider moving to Colorization and add the instance of Colorization to the Theming class
-	private oklchFromArgb(argbColor: number): string {
-		const hctColor = Hct.fromInt(argbColor);
-		const colorJs = new Color('hct', [hctColor.hue, hctColor.chroma, hctColor.tone]);
-		return colorJs.to('oklch').coords.join(' ');
-	}
+	// // consider moving to Colorization and add the instance of Colorization to the Theming class
+	// private oklchFromArgb(argbColor: number): string {
+	// 	const hctColor = Hct.fromInt(argbColor);
+	// 	const colorJs = new Color('hct', [hctColor.hue, hctColor.chroma, hctColor.tone]);
+	// 	return colorJs.to('oklch').coords.join(' ');
+	// }
 
 	static addStyle(styleName: string, styles: string[]): void {
 		const styleElement = Theming.createStyleElementInDocument('utility_classes');
@@ -989,31 +991,31 @@ export class Theming {
 		}
 	}
 
-	// TBD: might not be necessary any more, when refactored into Tailwind variables!
-	private applyFlyonUITokens(
-		colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
-		targetElement: HTMLElement
-	): void {
-		if (targetElement === document.documentElement) {
-			const styleElementId = 'flyonUI_variables';
-			let styles = '';
-			// match tokens from material design to flyonUI tokens:
-			flyonUIVariablesMaterialDesignMapping.forEach((flyonUIVariable, materialDesignToken) => {
-				const materialTokenKey = materialDesignToken as keyof typeof colors;
-				const oklchColor = this.oklchFromArgb(colors[materialTokenKey]);
-				styles += `--${flyonUIVariable}: ${oklchColor};\n`;
-				// styles += `.bg-${materialDesignToken} {background-color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
-				// styles += `.text-${materialDesignToken} {color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
-			});
-			const styleElement = Theming.createStyleElementInDocument(styleElementId);
-			styleElement.textContent = `:root {\n${styles}}`;
-			// document.head.appendChild(styleElement);
-		} else {
-			flyonUIVariablesMaterialDesignMapping.forEach((flyonUIVariable, materialDesignToken) => {
-				const oklchColor = this.oklchFromArgb(colors[materialDesignToken as keyof typeof colors]);
-				targetElement.style.setProperty(`--${flyonUIVariable}`, oklchColor);
-				// TBD: also set the classes as property on the targetElement?
-			});
-		}
-	}
+	// // TBD: might not be necessary any more, when refactored into Tailwind variables!
+	// private applyFlyonUITokens(
+	// 	colors: AppColors['dark']['colors'] | AppColors['light']['colors'],
+	// 	targetElement: HTMLElement
+	// ): void {
+	// 	if (targetElement === document.documentElement) {
+	// 		const styleElementId = 'flyonUI_variables';
+	// 		let styles = '';
+	// 		// match tokens from material design to flyonUI tokens:
+	// 		flyonUIVariablesMaterialDesignMapping.forEach((flyonUIVariable, materialDesignToken) => {
+	// 			const materialTokenKey = materialDesignToken as keyof typeof colors;
+	// 			const oklchColor = this.oklchFromArgb(colors[materialTokenKey]);
+	// 			styles += `--${flyonUIVariable}: ${oklchColor};\n`;
+	// 			// styles += `.bg-${materialDesignToken} {background-color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
+	// 			// styles += `.text-${materialDesignToken} {color: ${hexFromArgb(colors[materialTokenKey])}};\n`;
+	// 		});
+	// 		const styleElement = Theming.createStyleElementInDocument(styleElementId);
+	// 		styleElement.textContent = `:root {\n${styles}}`;
+	// 		// document.head.appendChild(styleElement);
+	// 	} else {
+	// 		flyonUIVariablesMaterialDesignMapping.forEach((flyonUIVariable, materialDesignToken) => {
+	// 			const oklchColor = this.oklchFromArgb(colors[materialDesignToken as keyof typeof colors]);
+	// 			targetElement.style.setProperty(`--${flyonUIVariable}`, oklchColor);
+	// 			// TBD: also set the classes as property on the targetElement?
+	// 		});
+	// 	}
+	// }
 }
