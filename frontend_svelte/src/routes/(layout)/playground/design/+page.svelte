@@ -36,14 +36,28 @@
 	<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
 </div>
 
+<p class="text-base-content">The following is the result of applying Material Design 3 to FlyonUI 2, based on Tailwind CSS 4. It applies the color philosophy from Material Design to the theming of FlyonUI and Tailwind CSS.</p>
+<p class="text-base-content">Turn on debug to get the names of teh CSS variables and the color values.</p>
+
 <div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
 	<AccordionItem title="Backgrounds and Surfaces">
-		<ColorTile background="background" text="base-content" {debug}
-			>The background color of the <code class="font-mono">body</code> of the page.</ColorTile
-		>
-		<div class="flex flex-row">
-			<ColorTile background="accent" text="accent-content" {debug} />
-			<ColorTile background="primary-fixed-dim" text="primary-fixed-content" {debug} />
+		<p >Background is the very background of the page. The base colors provide backgrounds to larger surfaces, like navigation elements and larger windows. The further upfront the more they contrast from the background.</p>
+		<div class="hidden md:block">
+			<ColorTile background="background" text="base-content" {debug}
+				>The background color of the <code class="font-mono">body</code> of the page.</ColorTile
+			>
+		</div>
+		<div class="grid grid-cols-3 md:grid-cols-5">
+			<div class="block md:hidden">
+				<ColorTile background="background" text="base-content" {debug}
+					>The background color of the <code class="font-mono">body</code> of the page.</ColorTile
+				>
+			</div>
+			<ColorTile background="base-100" text="base-content" {debug}>Lowest container surface</ColorTile>
+			<ColorTile background="base-150" text="base-content" {debug}>Low container surface</ColorTile>
+			<ColorTile background="base-200" text="base-content" {debug}>Medium container surface</ColorTile>
+			<ColorTile background="base-250" text="base-content" {debug}>High container surface</ColorTile>
+			<ColorTile background="base-300" text="base-content" {debug}>Highest container surface</ColorTile>
 		</div>
 	</AccordionItem>
 	<AccordionItem title="Backgrounds old">
