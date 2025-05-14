@@ -9,6 +9,8 @@
 	import BackgroundRows from './BackgroundRows.svelte';
 	import Containers from './Containers.svelte';
 	import ColorTile from './ColorTile.svelte';
+
+	let debug = $state(false);
 </script>
 
 <Heading>🚧 Construction sites - for design experiments 🚧</Heading>
@@ -29,10 +31,20 @@
 </div>
 
 <Heading>👍 Results - ready for use 👍</Heading>
+<div class="mb-2 flex items-center gap-1">
+	<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
+	<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
+</div>
 
 <div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
 	<AccordionItem title="Backgrounds and Surfaces">
-		<ColorTile background="--md-sys-color-background" color="--md-sys-color-on-background" />
+		<ColorTile background="background" text="base-content" {debug}
+			>The background color of the <code class="font-mono">body</code> of the page.</ColorTile
+		>
+		<div class="flex flex-row">
+			<ColorTile background="accent" text="accent-content" {debug} />
+			<ColorTile background="primary-fixed-dim" text="primary-fixed-content" {debug} />
+		</div>
 	</AccordionItem>
 	<AccordionItem title="Backgrounds old">
 		<div class="bg-background text-base-content flex h-screen min-h-fit w-full flex-col">
