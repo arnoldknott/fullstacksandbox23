@@ -69,30 +69,37 @@
 	});
 </script>
 
-<div class="flex h-36 grow p-2 md:h-44 bg-{background} text-{text}">
-	<div class="flex flex-col overflow-auto">
+<div
+	class="flex {debug ? 'h-36 md:h-48' : 'h-30'} m-1 grow rounded-xl p-2 bg-{background} text-{text}"
+>
+	<div class="flex w-full flex-col overflow-auto">
 		<div class="title">{background}</div>
-        <div>
-            {@render children?.()}
-        </div>
+		<div>
+			{@render children?.()}
+		</div>
 		{#if debug}
-            <div class="grid md:grid-cols-2">
-                <div class="text-sm">Tailwind CSS:</div>
-                <code class="text-xs">--color-{background}</code>
-                <div class="divider md:col-span-2"></div>
-                <div class="text-sm">Material Design: </div>
-                <code class="text-xs">{materialDesignVariable}</code>
-                <div class="divider md:col-span-2"></div>
-                <div class="text-sm">Hex:</div>
-                <code class="text-xs">{colorValues.hex}</code>
-                <div class="divider md:col-span-2"></div>
-                <div class="text-xs">HCT: </div>
-                <code class="text-xs">{colorValues.hct.hue}, {colorValues.hct.chroma},{colorValues.hct.tone}</code>
-                <div class="divider md:col-span-2"></div>
-                <div class="text-xs">RGBA:</div>
-                <code class="text-xs">{colorValues.rgba.r}, {colorValues.rgba.g}, {colorValues.rgba.b}, {colorValues.rgba.a}</code>
-                <div class="divider md:col-span-2"></div>
-            </div>
+			<div class="grid md:grid-cols-2">
+				<div class="text-sm">Tailwind CSS:</div>
+				<code class="text-xs">--color-{background}</code>
+				<div class="divider md:col-span-2"></div>
+				<div class="text-sm">Material Design:</div>
+				<code class="text-xs">{materialDesignVariable}</code>
+				<div class="divider md:col-span-2"></div>
+				<div class="text-sm">Hex:</div>
+				<code class="text-xs">{colorValues.hex}</code>
+				<div class="divider md:col-span-2"></div>
+				<div class="text-xs">HCT:</div>
+				<code class="text-xs"
+					>{colorValues.hct.hue}, {colorValues.hct.chroma},{colorValues.hct.tone}</code
+				>
+				<div class="divider md:col-span-2"></div>
+				<div class="text-xs">RGBA:</div>
+				<code class="text-xs"
+					>{colorValues.rgba.r}, {colorValues.rgba.g}, {colorValues.rgba.b}, {colorValues.rgba
+						.a}</code
+				>
+				<div class="divider md:col-span-2"></div>
+			</div>
 		{/if}
 	</div>
 </div>
