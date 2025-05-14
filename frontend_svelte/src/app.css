@@ -44,26 +44,7 @@
 	--color-error: rgb(var(--md-rgb-color-error));
 	--color-error-content: rgb(var(--md-rgb-color-on-error));
 }
-/* --color-base-100: oklch(var(--b1));
-	--color-base-200: oklch(var(--b2));
-	--color-base-300: oklch(var(--b3));
-	--color-base-content: oklch(var(--bc));
-	--color-primary: oklch(var(--p));
-	--color-primary-content: oklch(var(--pc));
-	--color-secondary: oklch(var(--s));
-	--color-secondary-content: oklch(var(--sc));
-	--color-accent: oklch(var(--a));
-	--color-accent-content: oklch(var(--ac));
-	--color-neutral: oklch(var(--n));
-	--color-neutral-content: oklch(var(--nc));
-	--color-info: oklch(var(--in));
-	--color-info-content: oklch(var(--inc));
-	--color-success: oklch(var(--su));
-	--color-success-content: oklch(var(--suc));
-	--color-warning: oklch(var(--wa));
-	--color-warning-content: oklch(var(--wac));
-	--color-error: oklch(var(--er));
-	--color-error-content: oklch(var(--erc)); */
+
 @source "../node_modules/flyonui/flyonui/index.js";
 /* Import Third-party override css */
 /* @import "flyonui/src/vendor/flatpickr.css"; */
@@ -74,19 +55,6 @@
 /* @import "flyonui/src/vendor/raty.css"; */
 /* @import "flyonui/src/vendor/waves.css"; */
 /* @import "flyonui/src/vendor/apexcharts.css"; */
-/*
-@source './components/materialDesignExtensionsToFlyonUI/typography.css';
-@source './components/materialDesignExtensionsToFlyonUI/chat.css';
-@source './components/materialDesignExtensionsToFlyonUI/badge.css';
-@source './components/materialDesignExtensionsToFlyonUI/button.css';
-@source './components/materialDesignExtensionsToFlyonUI/checkbox.css';
-@source './components/materialDesignExtensionsToFlyonUI/radio.css'; */
-/* @import "./node_modules/flyonui/variants.css";  */
-/* @plugin "flyonui";
-@import "flyonui/variants.css";
-@source "../node_modules/flyonui/flyonui/index.js"; */
-
-/* @source '../node_modules/flyonui/dist/js/*.js'; */
 
 @custom-variant dark (@media (prefers-color-scheme: dark));
 
