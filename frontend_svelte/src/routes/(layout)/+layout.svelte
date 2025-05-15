@@ -262,8 +262,8 @@
 							<button aria-label="modeToggler" type="button">
 								<label id="modeToggler" class="swap swap-rotate">
 									<input type="checkbox" onclick={toggleMode} />
-									<span class="icon-[tabler--sun] swap-on size-6"></span>
-									<span class="icon-[tabler--moon] swap-off size-6"></span>
+									<span class="icon-[tabler--moon] swap-on size-6"></span>
+									<span class="icon-[tabler--sun] swap-off size-6"></span>
 								</label>
 							</button>
 						</li>
