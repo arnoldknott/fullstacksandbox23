@@ -90,94 +90,174 @@
 		</div>
 	</AccordionItem>
 	<AccordionItem title="Components">
-		<p>Coloring components according to their meaning.</p>
+		<p>
+			Coloring components according to their meaning, preferably against <code>base</code> surfaces.
+		</p>
 		<div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8">
-			<div>
-				<p class="title text-primary text-center">Primary</p>
+			<div class="bg-primary-container/40 rounded-2xl">
+				<p class="title text-primary-container-content text-center">Primary</p>
+				<p
+					class="body-small text-primary-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+				>
+					Key components like "OK" buttons.
+				</p>
 				<ColorTile background="primary" text="primary-content" {debug} />
 				<ColorTile background="primary-content" text="primary" {debug} />
 				<ColorTile background="primary-container" text="primary-container-content" {debug} />
 				<ColorTile background="primary-container-content" text="primary-container" {debug} />
 			</div>
-			<div>
-				<p class="title text-secondary text-center">Secondary</p>
+			<div class="bg-secondary-container/40 rounded-2xl">
+				<p class="title text-secondary-container-content text-center">Secondary</p>
+				<p
+					class="body-small text-secondary-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+				>
+					Less prominent components like "cancel" buttons.
+				</p>
 				<ColorTile background="secondary" text="secondary-content" {debug} />
 				<ColorTile background="secondary-content" text="secondary" {debug} />
 				<ColorTile background="secondary-container" text="secondary-container-content" {debug} />
 				<ColorTile background="secondary-container-content" text="secondary-container" {debug} />
 			</div>
-			<div>
-				<p class="title text-accent text-center">Accent</p>
+			<div class="bg-accent-container/40 rounded-2xl">
+				<p class="title text-accent-container-content text-center">Accent</p>
+				<p
+					class="body-small text-accent-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+				>
+					Attention seeking, like "notification" badges.
+				</p>
 				<ColorTile background="accent" text="accent-content" {debug} />
 				<ColorTile background="accent-content" text="accent" {debug} />
 				<ColorTile background="accent-container" text="accent-container-content" {debug} />
 				<ColorTile background="accent-container-content" text="accent-container" {debug} />
 			</div>
-			<div>
-				<p class="title text-neutral text-center">Neutral</p>
+			<div class="bg-neutral-container/40 rounded-2xl">
+				<p class="title text-neutral-container-content text-center">Neutral</p>
+				<p
+					class="body-small text-neutral-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+				>
+					Elements that are similar to primary - use for distinguishing between content and app
+					interaction / navigation.
+				</p>
 				<ColorTile background="neutral" text="neutral-content" {debug} />
 				<ColorTile background="neutral-content" text="neutral" {debug} />
 				<ColorTile background="neutral-container" text="neutral-container-content" {debug} />
 				<ColorTile background="neutral-container-content" text="neutral-container" {debug} />
 			</div>
-			<div>
-				<p class="title text-info text-center">Info</p>
+			<div class="bg-info-container/40 rounded-2xl">
+				<p class="title text-info-container-content text-center">Info</p>
+				<p
+					class="body-small text-info-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+				>
+					Information towards the user - especially in connection with user input.
+				</p>
 				<ColorTile background="info" text="info-content" {debug} />
 				<ColorTile background="info-content" text="info" {debug} />
 				<ColorTile background="info-container" text="info-container-content" {debug} />
 				<ColorTile background="info-container-content" text="info-container" {debug} />
 			</div>
-			<div>
-				<p class="title text-success text-center">Success</p>
+			<div class="bg-success-container/40 rounded-2xl">
+				<p class="title text-success-container-content text-center">Success</p>
+				<p
+					class="body-small text-success-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+				>
+					Feedback to user after successful action.
+				</p>
 				<ColorTile background="success" text="success-content" {debug} />
 				<ColorTile background="success-content" text="success" {debug} />
 				<ColorTile background="success-container" text="success-container-content" {debug} />
 				<ColorTile background="success-container-content" text="success-container" {debug} />
 			</div>
-			<div>
-				<p class="title text-warning text-center">Warning</p>
+			<div class="bg-warning-container/40 rounded-2xl">
+				<p class="title text-warning-container-content text-center">Warning</p>
+				<p
+					class="body-small text-warning-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+				>
+					Seeking caution after user interaction.
+				</p>
 				<ColorTile background="warning" text="warning-content" {debug} />
 				<ColorTile background="warning-content" text="warning" {debug} />
 				<ColorTile background="warning-container" text="warning-container-content" {debug} />
 				<ColorTile background="warning-container-content" text="warning-container" {debug} />
 			</div>
-			<div>
-				<p class="title text-error text-center">Error</p>
+			<div class="bg-error-container/40 rounded-2xl">
+				<p class="title text-error-container-content text-center">Error</p>
+				<p
+					class="body-small text-error-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+				>
+					Informing user of error, especially after user interaction.
+				</p>
 				<ColorTile background="error" text="error-content" {debug} />
 				<ColorTile background="error-content" text="error" {debug} />
 				<ColorTile background="error-container" text="error-container-content" {debug} />
 				<ColorTile background="error-container-content" text="error-container" {debug} />
 			</div>
 		</div>
-		<p>
-			Add a playground here for text fields and buttons with ruler for background, dropdown for
-			foreground and checkboxes for shadow and outline.
-		</p>
 	</AccordionItem>
 	<AccordionItem title="Outlines and others">
-		<p>outline, outline-variant, base-shadow</p>
+		<p>For borders, rings, shadows and anything else around components</p>
+		<div class="grid grid-cols-2 md:grid-cols-4">
+			<ColorTile background="outline" text="base-content" {debug}>Important boundaries to mark a clear box.</ColorTile>
+			<ColorTile background="outline-variant" text="base-content" {debug}>Supportive boundaries, like dividers - where other elements provide visual boundaries</ColorTile>
+			<ColorTile background="base-shadow" text="white" {debug}>Shadow for containers.</ColorTile>
+			<ColorTile background="scrim" text="white" {debug}>Overlay of content behind navigation elements and modals to draw attention to the pop-over element</ColorTile>
+		</div>
 	</AccordionItem>
 	<AccordionItem title="Inverse">
 		<p>
-			If in dark mode, the color would be like this in light mode and vice verse: inverse-surface,
-			inverse-surface-content, inverse-primary
+			If in dark mode, the color would be like this in light mode and vice versa. Avoid using them.
 		</p>
+		<div class="grid grid-cols-3">
+			<ColorTile background="inverse-surface" text="inverse-surface-content" {debug} />
+			<ColorTile background="inverse-surface-content" text="inverse-surface" {debug} />
+			<ColorTile background="inverse-primary" text="base-content" {debug} />
+		</div>
 	</AccordionItem>
 	<AccordionItem title="Fixed">
-		<p>
-			Don't change color from light mode to dark mode: primary-fixed, primary-fixed-dim,
-			primary-fixed-content, primary-fixed-variant-content
-		</p>
-		<p>Same for secondary and accent.</p>
-		<p>Avoid using those!</p>
+		<p>Those colors don't change when switching from light mode to dark mode. Avoid using them.</p>
+		<div class="grid grid-cols-3">
+			<div class="bg-primary-fixed/40 rounded-2xl">
+				<p class="title text-primary-fixed-content text-center">Primary-fixed</p>
+				<ColorTile background="primary-fixed" text="primary-fixed-content" {debug} />
+				<ColorTile background="primary-fixed-dim" text="primary-fixed-content" {debug} />
+				<ColorTile background="primary-fixed-content" text="primary-fixed" {debug} />
+				<ColorTile background="primary-fixed-variant-content" text="primary-fixed" {debug} />
+			</div>
+			<div class="bg-secondary-fixed/40 rounded-2xl">
+				<p class="title text-secondary-fixed-content text-center">Secondary-fixed</p>
+				<ColorTile background="secondary-fixed" text="secondary-fixed-content" {debug} />
+				<ColorTile background="secondary-fixed-dim" text="secondary-fixed-content" {debug} />
+				<ColorTile background="secondary-fixed-content" text="secondary-fixed" {debug} />
+				<ColorTile background="secondary-fixed-variant-content" text="secondary-fixed" {debug} />
+			</div>
+			<div class="bg-accent-fixed/40 rounded-2xl">
+				<p class="title text-accent-fixed-content text-center">Accent-fixed</p>
+				<ColorTile background="accent-fixed" text="accent-fixed-content" {debug} />
+				<ColorTile background="accent-fixed-dim" text="accent-fixed-content" {debug} />
+				<ColorTile background="accent-fixed-content" text="accent-fixed" {debug} />
+				<ColorTile background="accent-fixed-variant-content" text="accent-fixed" {debug} />
+			</div>
+		</div>
 	</AccordionItem>
 	<AccordionItem title="Palette key and surface">
-		<p>Of no technical use any more:</p>
-		<p>
-			neutral-palette-key, neutral-variant-palette-key, primary-palette-key, secondary-palette-key,
-			accent-palette-key
-		</p>
-		<p>surface-dim, surface, surface-bright, surface-variant, surface-tint</p>
+		<p>Of no technical use any more. Avoid using them.</p>
+		<div class="grid grid-cols-2 md:grid-cols-5">
+			<ColorTile background="primary-palette-key-color" text="base-content" {debug} />
+			<ColorTile background="secondary-palette-key-color" text="background" {debug} />
+			<ColorTile background="accent-palette-key-color" text="inverse-surface-content" {debug} />
+			<ColorTile background="neutral-palette-key-color" text="inverse-surface-content" {debug} />
+			<ColorTile
+				background="neutral-variant-palette-key-color"
+				text="inverse-surface-content"
+				{debug}
+			/>
+		</div>
+		<div class="grid grid-cols-2 md:grid-cols-5">
+			<ColorTile background="surface-dim" text="base-content" {debug} />
+			<ColorTile background="surface" text="base-content" {debug} />
+			<ColorTile background="surface-bright" text="base-content" {debug} />
+			<ColorTile background="surface-variant" text="base-content" {debug} />
+			<ColorTile background="surface-tint" text="inverse-surface-content" {debug} />
+		</div>
 	</AccordionItem>
 	<AccordionItem title="Backgrounds old">
 		<div class="bg-background text-base-content flex h-screen min-h-fit w-full flex-col">
@@ -213,3 +293,8 @@
 		<p class="body-small text-outline">Borders of boxes outline.</p>
 	</AccordionItem>
 </div>
+
+<p>
+	Add a playground here for text fields and buttons with ruler for background, dropdown for
+	foreground and checkboxes for shadow and outline.
+</p>

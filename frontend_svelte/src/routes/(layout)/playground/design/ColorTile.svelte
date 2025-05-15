@@ -21,8 +21,6 @@
 	const findMaterialDesignVariable = (tailwindColorVariable: string): string | null => {
 		// Match CSS variable assignments like: --color-background: var(--md-rgb-color-background);
 		const regex = new RegExp(`${tailwindColorVariable}:\\s*rgb\\(var\\((--[\\w-]+)\\)\\)`, 'g');
-		console.log('=== playground - design - ColorTile - regex ===');
-		console.log(regex);
 		const match = regex.exec(appCss);
 
 		return match ? match[1] : null;

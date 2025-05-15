@@ -741,10 +741,10 @@ class Colorization {
 		// const infoFromFlyonUI = this.createCustomColors(darkFlyonUI.info, 'flyonui-info');
 		// const successFromFlyonUI = this.createCustomColors(darkFlyonUI.success, 'flyonui-success');
 		// const warningFromFlyonUI = this.createCustomColors(darkFlyonUI.warning, 'flyonui-warning');
-		const neutralFromFlyonUI = this.createCustomColors('#928F9E', 'flyonui-neutral');
-		const infoFromFlyonUI = this.createCustomColors('#06B6D4', 'flyonui-info');
-		const successFromFlyonUI = this.createCustomColors('#02CA4B', 'flyonui-success');
-		const warningFromFlyonUI = this.createCustomColors('#FCAA1D', 'flyonui-warning');
+		const neutralFromFlyonUI = this.createCustomColors('#92949E', 'flyonui-neutral'); // FlyonUI1: #928F9E
+		const infoFromFlyonUI = this.createCustomColors('#0A91B2', 'flyonui-info'); // FlyonUI1: #06B6D4
+		const successFromFlyonUI = this.createCustomColors('#02B541', 'flyonui-success'); // FlyonUI1: #02CA4B
+		const warningFromFlyonUI = this.createCustomColors('#E3921A', 'flyonui-warning'); // FlyonUI1: #FCAA1D
 		let light: {
 			colors: Partial<AppColorSchemeForMode['colors']>;
 			palettes: Partial<AppColorSchemeForMode['palettes']>;
