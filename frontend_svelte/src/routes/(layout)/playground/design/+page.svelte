@@ -196,10 +196,17 @@
 	<AccordionItem title="Outlines and others">
 		<p>For borders, rings, shadows and anything else around components</p>
 		<div class="grid grid-cols-2 md:grid-cols-4">
-			<ColorTile background="outline" text="base-content" {debug}>Important boundaries to mark a clear box.</ColorTile>
-			<ColorTile background="outline-variant" text="base-content" {debug}>Supportive boundaries, like dividers - where other elements provide visual boundaries</ColorTile>
+			<ColorTile background="outline" text="base-content" {debug}
+				>Important boundaries to mark a clear box.</ColorTile
+			>
+			<ColorTile background="outline-variant" text="base-content" {debug}
+				>Supportive boundaries, like dividers - where other elements provide visual boundaries</ColorTile
+			>
 			<ColorTile background="base-shadow" text="white" {debug}>Shadow for containers.</ColorTile>
-			<ColorTile background="scrim" text="white" {debug}>Overlay of content behind navigation elements and modals to draw attention to the pop-over element</ColorTile>
+			<ColorTile background="scrim" text="white" {debug}
+				>Overlay of content behind navigation elements and modals to draw attention to the pop-over
+				element</ColorTile
+			>
 		</div>
 	</AccordionItem>
 	<AccordionItem title="Inverse">
