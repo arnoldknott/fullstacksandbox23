@@ -209,7 +209,7 @@
 			>
 		</div>
 	</AccordionItem>
-	<AccordionItem title="Inverse">
+	<AccordionItem title="Inverse" active={false}>
 		<p>
 			If in dark mode, the color would be like this in light mode and vice versa. Avoid using them.
 		</p>
@@ -219,7 +219,7 @@
 			<ColorTile background="inverse-primary" text="base-content" {debug} />
 		</div>
 	</AccordionItem>
-	<AccordionItem title="Fixed">
+	<AccordionItem title="Fixed" active={false}>
 		<p>Those colors don't change when switching from light mode to dark mode. Avoid using them.</p>
 		<div class="grid grid-cols-3">
 			<div class="bg-primary-fixed/40 rounded-2xl">
@@ -245,7 +245,7 @@
 			</div>
 		</div>
 	</AccordionItem>
-	<AccordionItem title="Palette key and surface">
+	<AccordionItem title="Palette key and surface" active={false}>
 		<p>Of no technical use any more. Avoid using them.</p>
 		<div class="grid grid-cols-2 md:grid-cols-5">
 			<ColorTile background="primary-palette-key-color" text="base-content" {debug} />
