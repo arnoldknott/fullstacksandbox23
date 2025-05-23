@@ -371,6 +371,19 @@
 			<input type="checkbox" class="switch text-center switch-primary" bind:checked={playground.foreground} id="foreground" />
 			<code class="label-text-alt">{playground.foreground ? foregrounds[0] : foregrounds[1]}</code>
 		</div>
+		<div class="w-48">
+			<label class="label label-text" for="component">Component</label>
+			<select
+				class="select select-floating max-w-sm"
+				aria-label="Select variant"
+				id="themeVariant"
+				bind:value={playground.component}
+			>
+				{#each components as component,i (i)}
+					<option value={i}>{component}</option>
+				{/each}
+			</select>
+		</div>
 	</div>
 	<div>
 		<div>
