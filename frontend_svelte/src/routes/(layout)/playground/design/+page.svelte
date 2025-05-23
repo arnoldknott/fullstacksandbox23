@@ -12,6 +12,38 @@
 	import ColorTile from './ColorTile.svelte';
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
+
+	const backgrounds = [
+		'background',
+		'base-100',
+		'base-150',
+		'base-200',
+		'base-250',
+		'base-300'
+	];
+	const foregrounds = [
+		'base-content',
+		'base-content-variant',
+	];
+	const components = [
+		'primary',
+		'secondary',
+		'accent',
+		'neutral',
+		'info',
+		'success',
+		'warning',
+		'error',
+	];
+
+	let playground = $state({
+		background: 0,
+		foreground: 0,
+		component: 0,
+		outline: false,
+		ring: false,
+		shadow: false
+	});
 </script>
 
 <Heading>🚧 Construction sites - for design experiments 🚧</Heading>
@@ -299,6 +331,40 @@
 		<p class="body-small text-outline-variant">The dividers are outline-variant.</p>
 		<p class="body-small text-outline">Borders of boxes outline.</p>
 	</AccordionItem>
+</div>
+
+<div class="bg-{backgrounds[playground.background]} text-{foregrounds[playground.foreground]} flex h-screen min-h-fit w-full flex-col">
+	<div class="heading">Playground to preview color combinations</div>
+	<div class="flex flex-row">
+		<div class="w-100">
+			<label class="label label-text" for="background"
+				>Background: <span class="label">
+					<code class="label-text-alt">{backgrounds[playground.background]}</code>
+				</span></label
+			>
+
+			<input
+				type="range"
+				min=0
+				max=5
+				step=1
+				class="range w-full"
+				aria-label="contrast"
+				id="contrast"
+				bind:value={playground.background}
+			/>
+			<div class="flex w-full px-2 justify-between text-xs">
+				<div><span class="mr-9">default</span><span>darker</span></div>
+				<div>lighter</div>
+				<!-- {#each backgrounds as background,i (i)}
+				<div class="grid grid-cols-1 w-full">
+					<span class="w-full justify-center">|</span>
+					<span>{background}</span>
+				</div>
+				{/each} -->
+			</div>
+		</div>
+	</div>
 </div>
 
 <p>
