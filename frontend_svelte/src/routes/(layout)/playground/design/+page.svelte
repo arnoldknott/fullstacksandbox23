@@ -338,7 +338,7 @@
 
 <div class="mt-5 bg-{backgrounds[playground.background]} text-{playground.foreground ? foregrounds[0] : foregrounds[1]} flex h-screen min-h-fit w-full flex-col" id="playground">
 	<div class="heading">Playground to preview color combinations</div>
-	<div class="flex flex-row gap-4">
+	<div class="flex flex-row flex-wrap gap-4">
 		<div class="w-96">
 			<label class="label label-text" for="background"
 				>Background: <span class="label">
@@ -390,6 +390,21 @@
 			<div class="mt-5 heading">Heading</div>
 			<div class="mt-5 title">Some title here</div>
 			<div class="mt-5 body">This is a bunch of body text on top of the selected background, using the selected foreground.</div>
+			<div class="flex grow flex-col gap-4">
+				<div class="mt-5 title text-center text-{components[playground.component]}">Using component color</div>
+				<div class="input-filled input-{components[playground.component]} max-w-52 grow">
+					<input type="text" placeholder="colored input" class="input" id="playgroundInput" />
+					<label class="input-filled-label" for="playgroundInput">Text input</label>
+				</div>
+				<button
+					class="label-small md:label btn btn-{components[playground.component]} max-w-52 rounded-full"
+					>Component</button
+				>
+				<button
+					class="badge badge-{components[playground.component]}-container label-small h-8 rounded-3xl lg:rounded-full"
+					>Container</button
+				>
+			</div>
 		</div>
 	</div>
 </div>
