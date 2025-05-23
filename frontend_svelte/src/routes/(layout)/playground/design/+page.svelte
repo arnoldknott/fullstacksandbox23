@@ -94,7 +94,7 @@
 			Coloring components according to their meaning, preferably against <code>base</code> surfaces.
 		</p>
 		<div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8">
-			<div class="bg-primary-container/40 rounded-2xl">
+			<div class="m-1 bg-primary-container/40 rounded-2xl">
 				<p class="title text-primary-container-content text-center">Primary</p>
 				<p
 					class="body-small text-primary-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
@@ -106,7 +106,7 @@
 				<ColorTile background="primary-container" text="primary-container-content" {debug} />
 				<ColorTile background="primary-container-content" text="primary-container" {debug} />
 			</div>
-			<div class="bg-secondary-container/40 rounded-2xl">
+			<div class="m-1 bg-secondary-container/40 rounded-2xl">
 				<p class="title text-secondary-container-content text-center">Secondary</p>
 				<p
 					class="body-small text-secondary-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
@@ -118,7 +118,7 @@
 				<ColorTile background="secondary-container" text="secondary-container-content" {debug} />
 				<ColorTile background="secondary-container-content" text="secondary-container" {debug} />
 			</div>
-			<div class="bg-accent-container/40 rounded-2xl">
+			<div class="m-1 bg-accent-container/40 rounded-2xl">
 				<p class="title text-accent-container-content text-center">Accent</p>
 				<p
 					class="body-small text-accent-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
@@ -130,7 +130,7 @@
 				<ColorTile background="accent-container" text="accent-container-content" {debug} />
 				<ColorTile background="accent-container-content" text="accent-container" {debug} />
 			</div>
-			<div class="bg-neutral-container/40 rounded-2xl">
+			<div class="m-1 bg-neutral-container/40 rounded-2xl">
 				<p class="title text-neutral-container-content text-center">Neutral</p>
 				<p
 					class="body-small text-neutral-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
@@ -143,7 +143,7 @@
 				<ColorTile background="neutral-container" text="neutral-container-content" {debug} />
 				<ColorTile background="neutral-container-content" text="neutral-container" {debug} />
 			</div>
-			<div class="bg-info-container/40 rounded-2xl">
+			<div class="m-1 bg-info-container/40 rounded-2xl">
 				<p class="title text-info-container-content text-center">Info</p>
 				<p
 					class="body-small text-info-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
@@ -155,7 +155,7 @@
 				<ColorTile background="info-container" text="info-container-content" {debug} />
 				<ColorTile background="info-container-content" text="info-container" {debug} />
 			</div>
-			<div class="bg-success-container/40 rounded-2xl">
+			<div class="m-1 bg-success-container/40 rounded-2xl">
 				<p class="title text-success-container-content text-center">Success</p>
 				<p
 					class="body-small text-success-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
@@ -167,7 +167,7 @@
 				<ColorTile background="success-container" text="success-container-content" {debug} />
 				<ColorTile background="success-container-content" text="success-container" {debug} />
 			</div>
-			<div class="bg-warning-container/40 rounded-2xl">
+			<div class="m-1 bg-warning-container/40 rounded-2xl">
 				<p class="title text-warning-container-content text-center">Warning</p>
 				<p
 					class="body-small text-warning-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
@@ -179,7 +179,7 @@
 				<ColorTile background="warning-container" text="warning-container-content" {debug} />
 				<ColorTile background="warning-container-content" text="warning-container" {debug} />
 			</div>
-			<div class="bg-error-container/40 rounded-2xl">
+			<div class="m-1 bg-error-container/40 rounded-2xl">
 				<p class="title text-error-container-content text-center">Error</p>
 				<p
 					class="body-small text-error-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
