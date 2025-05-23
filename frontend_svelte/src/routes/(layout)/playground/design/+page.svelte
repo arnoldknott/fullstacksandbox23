@@ -388,6 +388,8 @@
 	<div>
 		<div>
 			<div class="mt-5 heading">Heading</div>
+			<div class="mt-5 title">Some title here</div>
+			<div class="mt-5 body">This is a bunch of body text on top of the selected background, using the selected foreground.</div>
 		</div>
 	</div>
 </div>
