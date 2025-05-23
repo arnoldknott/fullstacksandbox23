@@ -61,6 +61,9 @@
 	<NavigationCard title="Comparison" href="/playground/design/comparison">
 		Directly putting components right next to each other to compare them
 	</NavigationCard>
+	<NavigationCard title="Playground" href="#playground">
+		Play with the colors and some components below to get a preview of the design
+	</NavigationCard>
 </div>
 
 <Heading>👍 Results - ready for use 👍</Heading>
@@ -333,7 +336,7 @@
 	</AccordionItem>
 </div>
 
-<div class="bg-{backgrounds[playground.background]} text-{playground.foreground ? foregrounds[0] : foregrounds[1]} flex h-screen min-h-fit w-full flex-col">
+<div class="mt-5 bg-{backgrounds[playground.background]} text-{playground.foreground ? foregrounds[0] : foregrounds[1]} flex h-screen min-h-fit w-full flex-col" id="playground">
 	<div class="heading">Playground to preview color combinations</div>
 	<div class="flex flex-row gap-4">
 		<div class="w-96">
@@ -364,11 +367,15 @@
 			</div>
 		</div>
 		<div class="w-64">
-			<label class="label label-text text-base" for="foregroundSwitcher">Foreground:</label>
-			<input type="checkbox" class="switch text-center switch-primary" bind:checked={playground.foreground} id="foregroundSwitcher" />
+			<label class="label label-text text-base" for="foreground">Foreground:</label>
+			<input type="checkbox" class="switch text-center switch-primary" bind:checked={playground.foreground} id="foreground" />
 			<code class="label-text-alt">{playground.foreground ? foregrounds[0] : foregrounds[1]}</code>
 		</div>
-
+	</div>
+	<div>
+		<div>
+			<div class="mt-5 heading">Heading</div>
+		</div>
 	</div>
 </div>
 
