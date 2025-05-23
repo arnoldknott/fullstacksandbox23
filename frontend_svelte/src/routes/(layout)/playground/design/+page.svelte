@@ -38,7 +38,7 @@
 
 	let playground = $state({
 		background: 0,
-		foreground: 0,
+		foreground: true,
 		component: 0,
 		outline: false,
 		ring: false,
@@ -333,16 +333,15 @@
 	</AccordionItem>
 </div>
 
-<div class="bg-{backgrounds[playground.background]} text-{foregrounds[playground.foreground]} flex h-screen min-h-fit w-full flex-col">
+<div class="bg-{backgrounds[playground.background]} text-{playground.foreground ? foregrounds[0] : foregrounds[1]} flex h-screen min-h-fit w-full flex-col">
 	<div class="heading">Playground to preview color combinations</div>
-	<div class="flex flex-row">
-		<div class="w-100">
+	<div class="flex flex-row gap-4">
+		<div class="w-96">
 			<label class="label label-text" for="background"
 				>Background: <span class="label">
 					<code class="label-text-alt">{backgrounds[playground.background]}</code>
 				</span></label
 			>
-
 			<input
 				type="range"
 				min=0
@@ -364,6 +363,12 @@
 				{/each} -->
 			</div>
 		</div>
+		<div class="w-64">
+			<label class="label label-text text-base" for="foregroundSwitcher">Foreground:</label>
+			<input type="checkbox" class="switch text-center switch-primary" bind:checked={playground.foreground} id="foregroundSwitcher" />
+			<code class="label-text-alt">{playground.foreground ? foregrounds[0] : foregrounds[1]}</code>
+		</div>
+
 	</div>
 </div>
 
