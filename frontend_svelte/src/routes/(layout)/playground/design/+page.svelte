@@ -24,13 +24,12 @@
 		'warning',
 		'error'
 	];
-	const outlines = ['none', 'outline', 'outline-variant'];
 
 	let playgroundSelection = $state({
 		background: 0,
 		foreground: true,
 		component: 0,
-		outline: 0,
+		outline: false,
 		ring: false,
 		shadow: false
 	});
@@ -39,7 +38,7 @@
 		background: backgrounds[playgroundSelection.background],
 		foreground: playgroundSelection.foreground ? 'base-content' : 'base-content-variant',
 		component: components[playgroundSelection.component],
-		outline: outlines[playgroundSelection.outline],
+		outline: playgroundSelection.outline ? 'outline' : '',
 		ring: playgroundSelection.ring ? true : false,
 		shadow: playgroundSelection.shadow ? 'base-shadow' : ''
 	});
@@ -336,11 +335,11 @@
 </div>
 
 <div
-	class="mt-5 bg-{playground.background} text-{playground.foreground} flex h-screen min-h-fit w-full flex-col"
+	class="mt-5 flex h-screen min-h-fit w-full flex-col"
 	id="playground"
 >
 	<div class="heading">Playground to preview color combinations</div>
-	<div class="flex flex-row flex-wrap gap-4">
+	<div class="w-1/4 flex flex-row flex-wrap gap-4 bg-{playground.background} text-{playground.foreground}">
 		<div class="w-96">
 			<label class="label label-text" for="background"
 				>Background: <span class="label">
@@ -378,7 +377,7 @@
 			/>
 			<code class="label-text-alt">{playground.foreground}</code>
 		</div>
-		<div class="w-48">
+		<div class="w-36">
 			<label class="label label-text" for="component">Component</label>
 			<select
 				class="select select-floating max-w-sm"
@@ -391,16 +390,26 @@
 				{/each}
 			</select>
 		</div>
-	</div>
-	<div>
+		<div class="w-24">
+			<label class="label label-text text-base" for="outline">Outline:</label>
+			<input
+				type="checkbox"
+				class="switch switch-primary text-center"
+				bind:checked={playgroundSelection.outline}
+				id="foreground"
+			/>
+			<code class="label-text-alt">{playground.outline ? "on" : "off"}</code>
+		</div>
 		<div>
 			<div class="heading mt-5">Heading</div>
 			<div class="title mt-5">Some title here</div>
 			<div class="body mt-5">
 				This is a bunch of body text on top of the selected background, using the selected
-				foreground.
+				foreground.<br />
+				The divider below always uses <span class="text-outline-variant">outline-variant</span>.
 			</div>
-			<div class="flex grow flex-col gap-4">
+			<div class="divider-outline-variant divider"></div>
+			<div class="flex grow flex-col gap-4 {playground.outline} mt-2">
 				<div class="title mt-5 text-center text-{playground.component}">
 					Using component color
 				</div>
