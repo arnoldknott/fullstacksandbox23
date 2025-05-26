@@ -328,7 +328,7 @@
 					</div>
 					<button
 						class="btn-secondary-container btn btn-circle btn-gradient"
-						aria-label="Add Icon Button"
+						aria-label="Send Icon Button"
 					>
 						<span class="icon-[tabler--send-2]"></span>
 					</button>
