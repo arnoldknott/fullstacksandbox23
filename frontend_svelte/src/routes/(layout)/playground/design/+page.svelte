@@ -364,8 +364,8 @@
 					bind:value={playgroundSelections[i].background}
 				/>
 				<div class="flex w-full justify-between px-2 text-xs">
-					<div><span class="mr-9">default</span><span>darker</span></div>
-					<div>lighter</div>
+					<div><span class="mr-9">default</span><span>less</span></div>
+					<div>more</div>
 					<!-- {#each backgrounds as background,i (i)}
 					<div class="grid grid-cols-1 w-full">
 						<span class="w-full justify-center">|</span>
@@ -433,7 +433,7 @@
 					The shadow in in the components is an inner shadow.
 				</div>
 				<div class="flex grow flex-col gap-4 {playground.outline} rounded-2xl {playground.shadow ? 'shadow-xl shadow-base-shadow' : ''} m-2 p-4 mb-5">
-					<div class="title-small text-center text-{playground.component}">
+					<div class="title-small text-center font-bold text-{playground.component}">
 						Using component color
 					</div>
 					<div class="input-filled input-{playground.component} w-100 grow rounded-md {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">
