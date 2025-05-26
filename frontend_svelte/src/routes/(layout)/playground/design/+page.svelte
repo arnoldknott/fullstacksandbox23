@@ -30,7 +30,6 @@
 		foreground: true,
 		component: 0,
 		outline: false,
-		ring: false,
 		shadow: false
 	});
 
@@ -39,7 +38,6 @@
 		foreground: playgroundSelection.foreground ? 'base-content' : 'base-content-variant',
 		component: components[playgroundSelection.component],
 		outline: playgroundSelection.outline ? 'outline' : '',
-		ring: playgroundSelection.ring ? true : false,
 		shadow: playgroundSelection.shadow ? 'base-shadow' : ''
 	});
 </script>
@@ -339,7 +337,7 @@
 	id="playground"
 >
 	<div class="heading">Playground to preview color combinations</div>
-	<div class="w-1/4 flex flex-row flex-wrap gap-4 bg-{playground.background} text-{playground.foreground}">
+	<div class="w-full sm:w-1/2 md:w-1/4 xl:w-1/8 flex flex-row flex-wrap gap-4 bg-{playground.background} text-{playground.foreground} rounded-3xl p-2">
 		<div class="w-96">
 			<label class="label label-text" for="background"
 				>Background: <span class="label">
@@ -400,28 +398,44 @@
 			/>
 			<code class="label-text-alt">{playground.outline ? "on" : "off"}</code>
 		</div>
+		<div class="w-24">
+			<label class="label label-text text-base" for="outline">Shadow:</label>
+			<input
+				type="checkbox"
+				class="switch switch-primary text-center"
+				bind:checked={playgroundSelection.shadow}
+				id="foreground"
+			/>
+			<code class="label-text-alt">{playground.shadow ? "on" : "off"}</code>
+		</div>
 		<div>
 			<div class="heading mt-5">Heading</div>
 			<div class="title mt-5">Some title here</div>
 			<div class="body mt-5">
 				This is a bunch of body text on top of the selected background, using the selected
-				foreground.<br />
-				The divider below always uses <span class="text-outline-variant">outline-variant</span>.
+				foreground.
 			</div>
-			<div class="divider-outline-variant divider"></div>
-			<div class="flex grow flex-col gap-4 {playground.outline} mt-2">
-				<div class="title mt-5 text-center text-{playground.component}">
+			<div class="divider-outline-variant divider my-2"></div>
+			<div class="body mt-5">
+				The divider below always uses outline-variant.
+			</div>
+			<div class="divider-outline-variant divider my-2"></div>
+			<div class="body">
+				The shadow in in the components is an inner shadow.
+			</div>
+			<div class="flex grow flex-col gap-4 {playground.outline} rounded-2xl {playground.shadow ? 'shadow-xl shadow-base-shadow' : ''} m-3 p-4 mb-5">
+				<div class="title text-center text-{playground.component}">
 					Using component color
 				</div>
-				<div class="input-filled input-{playground.component} max-w-52 grow">
+				<div class="input-filled input-{playground.component} w-100 grow rounded-md {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">
 					<input type="text" placeholder="colored input" class="input" id="playgroundInput" />
 					<label class="input-filled-label" for="playgroundInput">Text input</label>
 				</div>
 				<button
-					class="label-small md:label btn btn-{playground.component} max-w-52 rounded-full">Component</button
+					class="label-small md:label btn btn-{playground.component} max-w-36 rounded-full {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">Component</button
 				>
 				<button
-					class="badge badge-{playground.component}-container label-small h-8 rounded-3xl lg:rounded-full">Container</button
+					class="badge badge-{playground.component}-container label-small h-8 rounded-3xl lg:rounded-full {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">Container</button
 				>
 			</div>
 		</div>
