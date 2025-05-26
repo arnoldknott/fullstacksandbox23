@@ -4,11 +4,12 @@
 <script lang="ts">
 	import '../app.css';
 	// import { onMount } from 'svelte';
-	import { setContext } from 'svelte';
+	import { onDestroy, setContext } from 'svelte';
 	// import type { LayoutData } from './$types';
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state'; // TBD: change page to new import
 	import { afterNavigate } from '$app/navigation';
+	// import type { Attachment } from 'svelte/attachments';
 	// import 'flyonui/flyonui.js';
 	// import type { HSStaticMethods } from 'flyonui/flyonui.js';
 	// import { afterNavigate } from "$app/navigation";
@@ -105,6 +106,20 @@
 		// HSStaticMethods.autoInit();
 	});
 
+	// prepares for using attachments, introduced in Svelte 5.29:
+	// const initFlyonUI: Attachment = () => {
+	// 	// await loadHSStaticMethods();
+	// 	// hssStaticMethods.autoInit();
+	// 	// console.log(element.nodeName)
+	// 	console.log('layout - client - initFlyonui - called');
+	// 	window.HSStaticMethods.autoInit();
+
+	// 	return () => {
+	// 		console.log('layout - client - initFlyonui - return function called');
+	// 	};
+
+	// };
+
 	// const foo = () => console.log('foo triggered')
 
 	// const loadHSStaticMethods = async () => {
@@ -132,7 +147,8 @@
 <!-- <svelte:window use:initFlyonui /> -->
 
 <!-- TBD: add toggle switch for light and dark mode -->
-<main class="h-100">
+<!-- <main {@attach initFlyonUI} class="h-100" > -->
+<main class="h-100" >
 	<!-- {initFlyonui()} -->
 	{@render children?.()}
 	<!-- <slot /> -->
