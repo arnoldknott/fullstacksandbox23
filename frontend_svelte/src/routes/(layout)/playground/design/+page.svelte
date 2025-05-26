@@ -25,21 +25,29 @@
 		'error'
 	];
 
-	let playgroundSelection = $state({
+	const backgroundSelection = {
 		background: 0,
 		foreground: true,
 		component: 0,
 		outline: false,
 		shadow: false
-	});
+	}
 
-	let playground = $derived({
-		background: backgrounds[playgroundSelection.background],
-		foreground: playgroundSelection.foreground ? 'base-content' : 'base-content-variant',
-		component: components[playgroundSelection.component],
-		outline: playgroundSelection.outline ? 'outline' : '',
-		shadow: playgroundSelection.shadow ? 'base-shadow' : ''
-	});
+	let playgroundSelections = $state([backgroundSelection]);
+
+	const addPlayground = () => { playgroundSelections.push( backgroundSelection ); };
+
+	let playgrounds = $derived(
+		playgroundSelections.map( (selection) => {
+			return {
+				background: backgrounds[selection.background],
+				foreground: selection.foreground ? 'base-content' : 'base-content-variant',
+				component: components[selection.component],
+				outline: selection.outline ? 'outline' : '',
+				shadow: selection.shadow ? 'base-shadow' : ''
+			};
+		})
+	);
 </script>
 
 <Heading>🚧 Construction sites - for design experiments 🚧</Heading>
@@ -333,113 +341,116 @@
 </div>
 
 <div
-	class="mt-5 flex h-screen min-h-fit w-full flex-col"
+	class="mt-5 flex h-screen min-h-fit w-full flex-wrap"
 	id="playground"
 >
-	<div class="heading">Playground to preview color combinations</div>
-	<div class="w-full sm:w-1/2 md:w-1/4 xl:w-1/8 flex flex-row flex-wrap gap-4 bg-{playground.background} text-{playground.foreground} rounded-3xl p-2">
-		<div class="w-96">
-			<label class="label label-text" for="background"
-				>Background: <span class="label">
-					<code class="label-text-alt">{playground.background}</code>
-				</span></label
-			>
-			<input
-				type="range"
-				min="0"
-				max="5"
-				step="1"
-				class="range w-full"
-				aria-label="contrast"
-				id="contrast"
-				bind:value={playgroundSelection.background}
-			/>
-			<div class="flex w-full justify-between px-2 text-xs">
-				<div><span class="mr-9">default</span><span>darker</span></div>
-				<div>lighter</div>
-				<!-- {#each backgrounds as background,i (i)}
-				<div class="grid grid-cols-1 w-full">
-					<span class="w-full justify-center">|</span>
-					<span>{background}</span>
-				</div>
-				{/each} -->
-			</div>
-		</div>
-		<div class="w-64">
-			<label class="label label-text text-base" for="foreground">Foreground:</label>
-			<input
-				type="checkbox"
-				class="switch switch-primary text-center"
-				bind:checked={playgroundSelection.foreground}
-				id="foreground"
-			/>
-			<code class="label-text-alt">{playground.foreground}</code>
-		</div>
-		<div class="w-36">
-			<label class="label label-text" for="component">Component</label>
-			<select
-				class="select select-floating max-w-sm"
-				aria-label="Select variant"
-				id="themeVariant"
-				bind:value={playgroundSelection.component}
-			>
-				{#each components as component, i (i)}
-					<option value={i}>{component}</option>
-				{/each}
-			</select>
-		</div>
-		<div class="w-24">
-			<label class="label label-text text-base" for="outline">Outline:</label>
-			<input
-				type="checkbox"
-				class="switch switch-primary text-center"
-				bind:checked={playgroundSelection.outline}
-				id="foreground"
-			/>
-			<code class="label-text-alt">{playground.outline ? "on" : "off"}</code>
-		</div>
-		<div class="w-24">
-			<label class="label label-text text-base" for="outline">Shadow:</label>
-			<input
-				type="checkbox"
-				class="switch switch-primary text-center"
-				bind:checked={playgroundSelection.shadow}
-				id="foreground"
-			/>
-			<code class="label-text-alt">{playground.shadow ? "on" : "off"}</code>
-		</div>
-		<div>
-			<div class="heading mt-5">Heading</div>
-			<div class="title mt-5">Some title here</div>
-			<div class="body mt-5">
-				This is a bunch of body text on top of the selected background, using the selected
-				foreground.
-			</div>
-			<div class="divider-outline-variant divider my-2"></div>
-			<div class="body mt-5">
-				The divider below always uses outline-variant.
-			</div>
-			<div class="divider-outline-variant divider my-2"></div>
-			<div class="body">
-				The shadow in in the components is an inner shadow.
-			</div>
-			<div class="flex grow flex-col gap-4 {playground.outline} rounded-2xl {playground.shadow ? 'shadow-xl shadow-base-shadow' : ''} m-3 p-4 mb-5">
-				<div class="title text-center text-{playground.component}">
-					Using component color
-				</div>
-				<div class="input-filled input-{playground.component} w-100 grow rounded-md {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">
-					<input type="text" placeholder="colored input" class="input" id="playgroundInput" />
-					<label class="input-filled-label" for="playgroundInput">Text input</label>
-				</div>
-				<button
-					class="label-small md:label btn btn-{playground.component} max-w-36 rounded-full {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">Component</button
+	<div class="heading grow w-full">Playground to preview color combinations</div>
+	{#each playgrounds as playground, i (i)}
+		<div class="w-full sm:w-1/2 md:w-1/4 xl:w-1/8 flex flex-row flex-wrap gap-4 bg-{playground.background} text-{playground.foreground} rounded-3xl p-4">
+			<div class="w-96">
+				<label class="label label-text" for="background"
+					>Background: <span class="label">
+						<code class="label-text-alt">{playground.background}</code>
+					</span></label
 				>
-				<button
-					class="badge badge-{playground.component}-container label-small h-8 rounded-3xl lg:rounded-full {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">Container</button
+				<input
+					type="range"
+					min="0"
+					max="5"
+					step="1"
+					class="range w-full"
+					aria-label="contrast"
+					id="contrast"
+					bind:value={playgroundSelections[i].background}
+				/>
+				<div class="flex w-full justify-between px-2 text-xs">
+					<div><span class="mr-9">default</span><span>darker</span></div>
+					<div>lighter</div>
+					<!-- {#each backgrounds as background,i (i)}
+					<div class="grid grid-cols-1 w-full">
+						<span class="w-full justify-center">|</span>
+						<span>{background}</span>
+					</div>
+					{/each} -->
+				</div>
+			</div>
+			<div class="w-64">
+				<label class="label label-text text-base" for="foreground">Foreground:</label>
+				<input
+					type="checkbox"
+					class="switch switch-primary text-center"
+					bind:checked={playgroundSelections[i].foreground}
+					id="foreground"
+				/>
+				<code class="label-text-alt">{playground.foreground}</code>
+			</div>
+			<div class="w-36">
+				<label class="label label-text" for="component">Component</label>
+				<select
+					class="select select-floating max-w-sm"
+					aria-label="Select variant"
+					id="themeVariant"
+					bind:value={playgroundSelections[i].component}
 				>
+					{#each components as component, i (i)}
+						<option value={i}>{component}</option>
+					{/each}
+				</select>
+			</div>
+			<div class="w-24">
+				<label class="label label-text text-base" for="outline">Outline:</label>
+				<input
+					type="checkbox"
+					class="switch switch-primary text-center"
+					bind:checked={playgroundSelections[i].outline}
+					id="foreground"
+				/>
+				<code class="label-text-alt">{playground.outline ? "on" : "off"}</code>
+			</div>
+			<div class="w-24">
+				<label class="label label-text text-base" for="outline">Shadow:</label>
+				<input
+					type="checkbox"
+					class="switch switch-primary text-center"
+					bind:checked={playgroundSelections[i].shadow}
+					id="foreground"
+				/>
+				<code class="label-text-alt">{playground.shadow ? "on" : "off"}</code>
+			</div>
+			<div>
+				<div class="heading mt-5">Heading</div>
+				<div class="title mt-5">Some title here</div>
+				<div class="body mt-5">
+					This is a bunch of body text on top of the selected background, using the selected
+					foreground.
+				</div>
+				<div class="divider-outline-variant divider my-2"></div>
+				<div class="body mt-5">
+					The divider below always uses outline-variant.
+				</div>
+				<div class="divider-outline-variant divider my-2"></div>
+				<div class="body">
+					The shadow in in the components is an inner shadow.
+				</div>
+				<div class="flex grow flex-col gap-4 {playground.outline} rounded-2xl {playground.shadow ? 'shadow-xl shadow-base-shadow' : ''} m-2 p-4 mb-5">
+					<div class="title text-center text-{playground.component}">
+						Using component color
+					</div>
+					<div class="input-filled input-{playground.component} w-100 grow rounded-md {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">
+						<input type="text" placeholder="colored input" class="input" id="playgroundInput" />
+						<label class="input-filled-label" for="playgroundInput">Text input</label>
+					</div>
+					<button
+						class="label-small md:label btn btn-{playground.component} max-w-36 rounded-full {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">Component</button
+					>
+					<button
+						class="badge badge-{playground.component}-container label-small h-8 rounded-3xl lg:rounded-full {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">Container</button
+					>
+				</div>
 			</div>
 		</div>
-	</div>
+	{/each}
+	<button class="w-full sm:w-1/2 md:w-1/4 xl:w-1/8 label btn btn-primary rounded-full m-4" onclick={addPlayground}><span class="icon-[fa6-solid--plus]"></span> Add playground</button>
 </div>
 
 <p>
