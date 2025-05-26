@@ -4,7 +4,7 @@
 <script lang="ts">
 	import '../app.css';
 	// import { onMount } from 'svelte';
-	import { onDestroy, setContext } from 'svelte';
+	import { setContext } from 'svelte';
 	// import type { LayoutData } from './$types';
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state'; // TBD: change page to new import
@@ -67,10 +67,10 @@
 	// 	HSStaticMethods.autoInit();
 	// });
 
-	const loadHSStaticMethods = async () => {
-		const { HSStaticMethods } = await import('flyonui/flyonui.js');
-		return HSStaticMethods;
-	};
+	// const loadHSStaticMethods = async () => {
+	// 	const { HSStaticMethods } = await import('flyonui/flyonui.js');
+	// 	return HSStaticMethods;
+	// };
 
 	// works with <svelte:window use:initFlyonui />
 
@@ -87,14 +87,15 @@
 
 	// works:
 
-	$effect(() => {
-		afterNavigate(() => {
-			loadHSStaticMethods().then((loadedHSStaticMethods) => {
-				// console.log('layout - client - -effect calling - autoInit')
-				loadedHSStaticMethods.autoInit();
-			});
-		});
-	});
+	// $effect(() => {
+	// 	afterNavigate(() => {
+	// 		// HSStaticMethods.autoInit();
+	// 		loadHSStaticMethods().then((loadedHSStaticMethods) => {
+	// 			// console.log('layout - client - -effect calling - autoInit')
+	// 			loadedHSStaticMethods.autoInit();
+	// 		});
+	// 	});
+	// });
 
 	// end works
 
