@@ -14,7 +14,7 @@
 }
 
 .badge-neutral-container {
-	--badge-colotr: var(--color-neutral-container);
+	--badge-color: var(--color-neutral-container);
 	--badge-fg: var(--color-neutral-container-content);
 }
 
