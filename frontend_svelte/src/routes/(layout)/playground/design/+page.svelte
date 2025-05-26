@@ -3,12 +3,6 @@
 	import NavigationCard from '$components/NavigationCard.svelte';
 	import Heading from '$components/Heading.svelte';
 	import AccordionItem from './AccordionItem.svelte';
-	import ContentText from './ContentText.svelte';
-	import AppText from './AppText.svelte';
-	import ContentInteraction from './ContentInteraction.svelte';
-	import AppInteraction from './AppInteraction.svelte';
-	import BackgroundRows from './BackgroundRows.svelte';
-	import Containers from './Containers.svelte';
 	import ColorTile from './ColorTile.svelte';
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
@@ -305,39 +299,6 @@
 			<ColorTile background="surface-tint" text="inverse-surface-content" {debug} />
 		</div>
 	</AccordionItem>
-	<AccordionItem title="Backgrounds old">
-		<div class="bg-background text-base-content flex h-screen min-h-fit w-full flex-col">
-			<div class="bg-background text-base-content flex h-screen min-h-fit w-full flex-col">
-				<div class="bg-background h-1/6 min-h-fit p-4">Background<br /></div>
-				<div class="bg-base-100 h-1/6 min-h-fit w-5/6 p-4">base-100<br /></div>
-				<div class="bg-base-150 h-1/6 min-h-fit w-4/6 p-4">base-150<br /></div>
-				<div class="bg-base-200 h-1/6 min-h-fit w-3/6 p-4">base-200<br /></div>
-				<div class="bg-base-250 h-1/6 min-h-fit w-2/6 p-4">base-250<br /></div>
-				<div class="bg-base-300 h-1/6 min-h-fit w-1/6 p-4">base-300<br /></div>
-			</div>
-		</div>
-	</AccordionItem>
-	<AccordionItem title="Text and colors for content">
-		<BackgroundRows><ContentText /></BackgroundRows>
-		<p class="body-small text-outline-variant">The dividers are outline-variant.</p>
-	</AccordionItem>
-	<AccordionItem title="Text and colors for app functionality">
-		<BackgroundRows><AppText /></BackgroundRows>
-		<p class="body-small text-outline-variant">The dividers are outline-variant.</p>
-	</AccordionItem>
-	<AccordionItem title="Interactions for content control">
-		<BackgroundRows><ContentInteraction /></BackgroundRows>
-		<p class="body-small text-outline-variant">The dividers are outline-variant.</p>
-	</AccordionItem>
-	<AccordionItem title="Interactions for app functionality">
-		<BackgroundRows><AppInteraction /></BackgroundRows>
-		<p class="body-small text-outline-variant">The dividers are outline-variant.</p>
-	</AccordionItem>
-	<AccordionItem title="Containers">
-		<BackgroundRows><Containers /></BackgroundRows>
-		<p class="body-small text-outline-variant">The dividers are outline-variant.</p>
-		<p class="body-small text-outline">Borders of boxes outline.</p>
-	</AccordionItem>
 </div>
 
 <div
@@ -432,7 +393,7 @@
 				<div class="body-small">
 					The shadow in in the components is an inner shadow.
 				</div>
-				<div class="flex grow flex-col gap-4 {playground.outline} rounded-2xl {playground.shadow ? 'shadow-xl shadow-base-shadow' : ''} m-2 p-4 mb-5">
+				<div class="flex grow  flex-wrap gap-4 {playground.outline} rounded-2xl {playground.shadow ? 'shadow-xl shadow-base-shadow' : ''} m-2 p-4 mb-5">
 					<div class="title-small text-center font-bold text-{playground.component}">
 						Using component color
 					</div>
@@ -446,6 +407,10 @@
 					<button
 						class="badge badge-{playground.component}-container label-small h-8 rounded-3xl lg:rounded-full {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">Container</button
 					>
+					<button
+						class="btn-{playground.component}-container btn btn-circle btn-gradient" aria-label="Add Icon Button"
+					><span class="icon-[fa6-solid--plus]"></span></button
+				>
 				</div>
 			</div>
 		</div>
