@@ -20,21 +20,25 @@
 	];
 
 	const backgroundSelection = {
-		background: 0,
+		background1: 0,
+		background2: 0,
 		foreground: true,
 		component: 0,
 		outline: false,
 		shadow: false
-	}
+	};
 
 	let playgroundSelections = $state([backgroundSelection]);
 
-	const addPlayground = () => { playgroundSelections.push( backgroundSelection ); };
+	const addPlayground = () => {
+		playgroundSelections.push(backgroundSelection);
+	};
 
 	let playgrounds = $derived(
-		playgroundSelections.map( (selection) => {
+		playgroundSelections.map((selection) => {
 			return {
-				background: backgrounds[selection.background],
+				background1: backgrounds[selection.background1],
+				background2: backgrounds[selection.background2],
 				foreground: selection.foreground ? 'base-content' : 'base-content-variant',
 				component: components[selection.component],
 				outline: selection.outline ? 'outline' : '',
@@ -47,13 +51,13 @@
 <Heading>🚧 Construction sites - for design experiments 🚧</Heading>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
-	<NavigationCard title="FlyonUI 1" href="/playground/design/flyonui">
-		"Playground and showcase for flyonUI components and design"
+	<NavigationCard title="FlyonUI 2" href="/playground/design/flyonui">
+		Playground and showcase for flyonUI components and design
 	</NavigationCard>
 	<NavigationCard title="Material Design 3" href="/playground/design/materialdesign">
 		Playground and showcase for Material Design 3 components and design
 	</NavigationCard>
-	<NavigationCard title="TailwindCSS 3" href="/playground/design/tailwindcss">
+	<NavigationCard title="TailwindCSS 4" href="/playground/design/tailwindcss">
 		Formating playground for styling with TailwindCSS utility classes
 	</NavigationCard>
 	<NavigationCard title="Comparison" href="/playground/design/comparison">
@@ -302,16 +306,20 @@
 </div>
 
 <div
-	class="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 h-screen min-h-fit w-full gap-4"
+	class="mt-5 grid h-screen min-h-fit w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4"
 	id="playground"
 >
-	<div class="heading grow w-full col-span-full">Playground to preview color combinations</div>
+	<div class="heading col-span-full w-full grow">Playground to preview color combinations</div>
 	{#each playgrounds as playground, i (i)}
-		<div class="w-full flex flex-row flex-wrap gap-2 bg-{playground.background} text-{playground.foreground} {playground.outline} {playground.shadow ? 'shadow-2xl shadow-base-shadow' : ''} rounded-3xl p-4">
+		<div
+			class="flex w-full flex-row flex-wrap gap-2 bg-{playground.background1} text-{playground.foreground} {playground.outline} {playground.shadow
+				? 'shadow-base-shadow shadow-2xl'
+				: ''} rounded-3xl p-4"
+		>
 			<div class="w-96">
-				<label class="label label-text" for="background"
-					>Background: <span class="label">
-						<code class="label-text-alt">{playground.background}</code>
+				<label class="label label-text" for="background1"
+					>Background 1: <span class="label">
+						<code class="label-text-alt">{playground.background1}</code>
 					</span></label
 				>
 				<input
@@ -320,9 +328,36 @@
 					max="5"
 					step="1"
 					class="range w-full"
-					aria-label="contrast"
-					id="contrast"
-					bind:value={playgroundSelections[i].background}
+					aria-label="background1"
+					id="background1_{i}"
+					bind:value={playgroundSelections[i].background1}
+				/>
+				<div class="flex w-full justify-between px-2 text-xs">
+					<div><span class="mr-9">default</span><span>less</span></div>
+					<div>more</div>
+					<!-- {#each backgrounds as background,i (i)}
+					<div class="grid grid-cols-1 w-full">
+						<span class="w-full justify-center">|</span>
+						<span>{background}</span>
+					</div>
+					{/each} -->
+				</div>
+			</div>
+			<div class="w-96">
+				<label class="label label-text" for="background2"
+					>Background 2: <span class="label">
+						<code class="label-text-alt">{playground.background2}</code>
+					</span></label
+				>
+				<input
+					type="range"
+					min="0"
+					max="5"
+					step="1"
+					class="range w-full"
+					aria-label="background1"
+					id="background1_{i}"
+					bind:value={playgroundSelections[i].background2}
 				/>
 				<div class="flex w-full justify-between px-2 text-xs">
 					<div><span class="mr-9">default</span><span>less</span></div>
@@ -345,6 +380,26 @@
 				/>
 				<code class="label-text-alt">{playground.foreground}</code>
 			</div>
+			<div class="w-24">
+				<label class="label label-text text-base" for="outline">Outline:</label>
+				<input
+					type="checkbox"
+					class="switch switch-{playground.component} text-center"
+					bind:checked={playgroundSelections[i].outline}
+					id="foreground"
+				/>
+				<code class="label-text-alt">{playground.outline ? 'on' : 'off'}</code>
+			</div>
+			<div class="w-24">
+				<label class="label label-text text-base" for="outline">Shadow:</label>
+				<input
+					type="checkbox"
+					class="switch switch-{playground.component} text-center"
+					bind:checked={playgroundSelections[i].shadow}
+					id="foreground"
+				/>
+				<code class="label-text-alt">{playground.shadow ? 'on' : 'off'}</code>
+			</div>
 			<div class="w-36">
 				<label class="label label-text" for="component">Component</label>
 				<select
@@ -358,26 +413,6 @@
 					{/each}
 				</select>
 			</div>
-			<div class="w-24">
-				<label class="label label-text text-base" for="outline">Outline:</label>
-				<input
-					type="checkbox"
-					class="switch switch-{playground.component} text-center"
-					bind:checked={playgroundSelections[i].outline}
-					id="foreground"
-				/>
-				<code class="label-text-alt">{playground.outline ? "on" : "off"}</code>
-			</div>
-			<div class="w-24">
-				<label class="label label-text text-base" for="outline">Shadow:</label>
-				<input
-					type="checkbox"
-					class="switch switch-{playground.component} text-center"
-					bind:checked={playgroundSelections[i].shadow}
-					id="foreground"
-				/>
-				<code class="label-text-alt">{playground.shadow ? "on" : "off"}</code>
-			</div>
 			<div>
 				<div class="heading">Heading</div>
 				<div class="title">Some title here</div>
@@ -386,36 +421,46 @@
 					foreground.
 				</div>
 				<div class="divider-outline-variant divider my-2"></div>
-				<div class="body-small">
-					The divider below always uses outline-variant.
-				</div>
+				<div class="body-small">The divider below always uses outline-variant.</div>
 				<div class="divider-outline-variant divider my-2"></div>
-				<div class="body-small">
-					The shadow in in the components is an inner shadow.
-				</div>
-				<div class="flex grow  flex-wrap gap-4 {playground.outline} rounded-2xl {playground.shadow ? 'shadow-xl shadow-base-shadow' : ''} m-2 p-4 mb-5">
+				<div class="body-small">The shadow in in the components is an inner shadow.</div>
+				<div
+					class="flex grow flex-wrap gap-4 bg-{playground.background2} {playground.outline} rounded-2xl {playground.shadow
+						? 'shadow-base-shadow shadow-xl'
+						: ''} m-2 mb-5 p-4"
+				>
 					<div class="title-small text-center font-bold text-{playground.component}">
 						Using component color
 					</div>
-					<div class="input-filled input-{playground.component} w-100 grow rounded-md {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">
+					<div
+						class="input-filled input-{playground.component} w-100 grow rounded-md {playground.shadow
+							? 'shadow-base-shadow shadow-inner'
+							: ''}"
+					>
 						<input type="text" placeholder="colored input" class="input" id="playgroundInput" />
 						<label class="input-filled-label" for="playgroundInput">Text input</label>
 					</div>
 					<button
-						class="label-small md:label btn btn-{playground.component} max-w-36 rounded-full {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">Component</button
+						class="label-small md:label btn btn-{playground.component} max-w-36 rounded-full {playground.shadow
+							? 'shadow-base-shadow shadow-inner'
+							: ''}">Component</button
 					>
 					<button
-						class="badge badge-{playground.component}-container label-small h-8 rounded-3xl lg:rounded-full {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">Container</button
+						class="badge badge-{playground.component}-container label-small h-8 rounded-3xl lg:rounded-full {playground.shadow
+							? 'shadow-base-shadow shadow-inner'
+							: ''}">Container</button
 					>
 					<button
-						class="btn-{playground.component}-container btn btn-circle btn-gradient" aria-label="Add Icon Button"
-					><span class="icon-[fa6-solid--plus]"></span></button
-				>
+						class="btn-{playground.component}-container btn btn-circle btn-gradient"
+						aria-label="Add Icon Button"><span class="icon-[fa6-solid--plus]"></span></button
+					>
 				</div>
 			</div>
 		</div>
 	{/each}
-	<button class="w-full label btn btn-primary rounded-full m-4" onclick={addPlayground}><span class="icon-[fa6-solid--plus]"></span> Add playground</button>
+	<button class="label btn btn-primary m-4 w-full rounded-full" onclick={addPlayground}
+		><span class="icon-[fa6-solid--plus]"></span> Add playground</button
+	>
 </div>
 
 <p>
