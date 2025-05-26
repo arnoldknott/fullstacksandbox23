@@ -341,12 +341,12 @@
 </div>
 
 <div
-	class="mt-5 flex h-screen min-h-fit w-full flex-wrap"
+	class="mt-5 flex h-screen min-h-fit w-full flex-wrap gap-4"
 	id="playground"
 >
 	<div class="heading grow w-full">Playground to preview color combinations</div>
 	{#each playgrounds as playground, i (i)}
-		<div class="w-full sm:w-1/2 md:w-1/4 xl:w-1/8 flex flex-row flex-wrap gap-4 bg-{playground.background} text-{playground.foreground} rounded-3xl p-4">
+		<div class="w-full sm:w-1/2 md:w-1/4 xl:w-1/8 flex flex-row flex-wrap gap-2 bg-{playground.background} text-{playground.foreground} {playground.outline} {playground.shadow ? 'shadow-2xl shadow-base-shadow' : ''} rounded-3xl p-4">
 			<div class="w-96">
 				<label class="label label-text" for="background"
 					>Background: <span class="label">
@@ -378,7 +378,7 @@
 				<label class="label label-text text-base" for="foreground">Foreground:</label>
 				<input
 					type="checkbox"
-					class="switch switch-primary text-center"
+					class="switch switch-{playground.component} text-center"
 					bind:checked={playgroundSelections[i].foreground}
 					id="foreground"
 				/>
@@ -387,7 +387,7 @@
 			<div class="w-36">
 				<label class="label label-text" for="component">Component</label>
 				<select
-					class="select select-floating max-w-sm"
+					class="select select-floating select-{playground.component} h-12 max-w-sm"
 					aria-label="Select variant"
 					id="themeVariant"
 					bind:value={playgroundSelections[i].component}
@@ -401,7 +401,7 @@
 				<label class="label label-text text-base" for="outline">Outline:</label>
 				<input
 					type="checkbox"
-					class="switch switch-primary text-center"
+					class="switch switch-{playground.component} text-center"
 					bind:checked={playgroundSelections[i].outline}
 					id="foreground"
 				/>
@@ -411,29 +411,29 @@
 				<label class="label label-text text-base" for="outline">Shadow:</label>
 				<input
 					type="checkbox"
-					class="switch switch-primary text-center"
+					class="switch switch-{playground.component} text-center"
 					bind:checked={playgroundSelections[i].shadow}
 					id="foreground"
 				/>
 				<code class="label-text-alt">{playground.shadow ? "on" : "off"}</code>
 			</div>
 			<div>
-				<div class="heading mt-5">Heading</div>
-				<div class="title mt-5">Some title here</div>
-				<div class="body mt-5">
+				<div class="heading">Heading</div>
+				<div class="title">Some title here</div>
+				<div class="body">
 					This is a bunch of body text on top of the selected background, using the selected
 					foreground.
 				</div>
 				<div class="divider-outline-variant divider my-2"></div>
-				<div class="body mt-5">
+				<div class="body-small">
 					The divider below always uses outline-variant.
 				</div>
 				<div class="divider-outline-variant divider my-2"></div>
-				<div class="body">
+				<div class="body-small">
 					The shadow in in the components is an inner shadow.
 				</div>
 				<div class="flex grow flex-col gap-4 {playground.outline} rounded-2xl {playground.shadow ? 'shadow-xl shadow-base-shadow' : ''} m-2 p-4 mb-5">
-					<div class="title text-center text-{playground.component}">
+					<div class="title-small text-center text-{playground.component}">
 						Using component color
 					</div>
 					<div class="input-filled input-{playground.component} w-100 grow rounded-md {playground.shadow ? 'shadow-inner shadow-base-shadow' : ''}">
