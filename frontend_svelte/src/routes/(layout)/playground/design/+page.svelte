@@ -14,7 +14,6 @@
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	const backgrounds = ['background', 'base-100', 'base-150', 'base-200', 'base-250', 'base-300'];
-	const foregrounds = ['base-content', 'base-content-variant'];
 	const components = [
 		'primary',
 		'secondary',
@@ -25,14 +24,24 @@
 		'warning',
 		'error'
 	];
+	const outlines = ['none', 'outline', 'outline-variant'];
 
-	let playground = $state({
+	let playgroundSelection = $state({
 		background: 0,
 		foreground: true,
 		component: 0,
-		outline: false,
+		outline: 0,
 		ring: false,
 		shadow: false
+	});
+
+	let playground = $derived({
+		background: backgrounds[playgroundSelection.background],
+		foreground: playgroundSelection.foreground ? 'base-content' : 'base-content-variant',
+		component: components[playgroundSelection.component],
+		outline: outlines[playgroundSelection.outline],
+		ring: playgroundSelection.ring ? true : false,
+		shadow: playgroundSelection.shadow ? 'base-shadow' : ''
 	});
 </script>
 
@@ -327,9 +336,7 @@
 </div>
 
 <div
-	class="mt-5 bg-{backgrounds[playground.background]} text-{playground.foreground
-		? foregrounds[0]
-		: foregrounds[1]} flex h-screen min-h-fit w-full flex-col"
+	class="mt-5 bg-{playground.background} text-{playground.foreground} flex h-screen min-h-fit w-full flex-col"
 	id="playground"
 >
 	<div class="heading">Playground to preview color combinations</div>
@@ -337,7 +344,7 @@
 		<div class="w-96">
 			<label class="label label-text" for="background"
 				>Background: <span class="label">
-					<code class="label-text-alt">{backgrounds[playground.background]}</code>
+					<code class="label-text-alt">{playground.background}</code>
 				</span></label
 			>
 			<input
@@ -348,7 +355,7 @@
 				class="range w-full"
 				aria-label="contrast"
 				id="contrast"
-				bind:value={playground.background}
+				bind:value={playgroundSelection.background}
 			/>
 			<div class="flex w-full justify-between px-2 text-xs">
 				<div><span class="mr-9">default</span><span>darker</span></div>
@@ -366,10 +373,10 @@
 			<input
 				type="checkbox"
 				class="switch switch-primary text-center"
-				bind:checked={playground.foreground}
+				bind:checked={playgroundSelection.foreground}
 				id="foreground"
 			/>
-			<code class="label-text-alt">{playground.foreground ? foregrounds[0] : foregrounds[1]}</code>
+			<code class="label-text-alt">{playground.foreground}</code>
 		</div>
 		<div class="w-48">
 			<label class="label label-text" for="component">Component</label>
@@ -377,7 +384,7 @@
 				class="select select-floating max-w-sm"
 				aria-label="Select variant"
 				id="themeVariant"
-				bind:value={playground.component}
+				bind:value={playgroundSelection.component}
 			>
 				{#each components as component, i (i)}
 					<option value={i}>{component}</option>
@@ -394,22 +401,18 @@
 				foreground.
 			</div>
 			<div class="flex grow flex-col gap-4">
-				<div class="title mt-5 text-center text-{components[playground.component]}">
+				<div class="title mt-5 text-center text-{playground.component}">
 					Using component color
 				</div>
-				<div class="input-filled input-{components[playground.component]} max-w-52 grow">
+				<div class="input-filled input-{playground.component} max-w-52 grow">
 					<input type="text" placeholder="colored input" class="input" id="playgroundInput" />
 					<label class="input-filled-label" for="playgroundInput">Text input</label>
 				</div>
 				<button
-					class="label-small md:label btn btn-{components[
-						playground.component
-					]} max-w-52 rounded-full">Component</button
+					class="label-small md:label btn btn-{playground.component} max-w-52 rounded-full">Component</button
 				>
 				<button
-					class="badge badge-{components[
-						playground.component
-					]}-container label-small h-8 rounded-3xl lg:rounded-full">Container</button
+					class="badge badge-{playground.component}-container label-small h-8 rounded-3xl lg:rounded-full">Container</button
 				>
 			</div>
 		</div>
