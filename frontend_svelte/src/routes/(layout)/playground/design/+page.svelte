@@ -341,12 +341,12 @@
 </div>
 
 <div
-	class="mt-5 flex h-screen min-h-fit w-full flex-wrap gap-4"
+	class="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 h-screen min-h-fit w-full gap-4"
 	id="playground"
 >
-	<div class="heading grow w-full">Playground to preview color combinations</div>
+	<div class="heading grow w-full col-span-full">Playground to preview color combinations</div>
 	{#each playgrounds as playground, i (i)}
-		<div class="w-full sm:w-1/2 md:w-1/4 flex flex-row flex-wrap gap-2 bg-{playground.background} text-{playground.foreground} {playground.outline} {playground.shadow ? 'shadow-2xl shadow-base-shadow' : ''} rounded-3xl p-4">
+		<div class="w-full flex flex-row flex-wrap gap-2 bg-{playground.background} text-{playground.foreground} {playground.outline} {playground.shadow ? 'shadow-2xl shadow-base-shadow' : ''} rounded-3xl p-4">
 			<div class="w-96">
 				<label class="label label-text" for="background"
 					>Background: <span class="label">
@@ -450,7 +450,7 @@
 			</div>
 		</div>
 	{/each}
-	<button class="w-full sm:w-1/2 md:w-1/4 xl:w-1/8 label btn btn-primary rounded-full m-4" onclick={addPlayground}><span class="icon-[fa6-solid--plus]"></span> Add playground</button>
+	<button class="w-full label btn btn-primary rounded-full m-4" onclick={addPlayground}><span class="icon-[fa6-solid--plus]"></span> Add playground</button>
 </div>
 
 <p>
