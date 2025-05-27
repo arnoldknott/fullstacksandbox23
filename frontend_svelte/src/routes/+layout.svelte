@@ -9,6 +9,7 @@
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state'; // TBD: change page to new import
 	import { afterNavigate } from '$app/navigation';
+	// import type { Attachment } from 'svelte/attachments';
 	// import 'flyonui/flyonui.js';
 	// import type { HSStaticMethods } from 'flyonui/flyonui.js';
 	// import { afterNavigate } from "$app/navigation";
@@ -66,10 +67,10 @@
 	// 	HSStaticMethods.autoInit();
 	// });
 
-	const loadHSStaticMethods = async () => {
-		const { HSStaticMethods } = await import('flyonui/flyonui.js');
-		return HSStaticMethods;
-	};
+	// const loadHSStaticMethods = async () => {
+	// 	const { HSStaticMethods } = await import('flyonui/flyonui.js');
+	// 	return HSStaticMethods;
+	// };
 
 	// works with <svelte:window use:initFlyonui />
 
@@ -86,14 +87,15 @@
 
 	// works:
 
-	$effect(() => {
-		afterNavigate(() => {
-			loadHSStaticMethods().then((loadedHSStaticMethods) => {
-				// console.log('layout - client - -effect calling - autoInit')
-				loadedHSStaticMethods.autoInit();
-			});
-		});
-	});
+	// $effect(() => {
+	// 	afterNavigate(() => {
+	// 		// HSStaticMethods.autoInit();
+	// 		loadHSStaticMethods().then((loadedHSStaticMethods) => {
+	// 			// console.log('layout - client - -effect calling - autoInit')
+	// 			loadedHSStaticMethods.autoInit();
+	// 		});
+	// 	});
+	// });
 
 	// end works
 
@@ -104,6 +106,20 @@
 		window.HSStaticMethods.autoInit();
 		// HSStaticMethods.autoInit();
 	});
+
+	// prepares for using attachments, introduced in Svelte 5.29:
+	// const initFlyonUI: Attachment = () => {
+	// 	// await loadHSStaticMethods();
+	// 	// hssStaticMethods.autoInit();
+	// 	// console.log(element.nodeName)
+	// 	console.log('layout - client - initFlyonui - called');
+	// 	window.HSStaticMethods.autoInit();
+
+	// 	return () => {
+	// 		console.log('layout - client - initFlyonui - return function called');
+	// 	};
+
+	// };
 
 	// const foo = () => console.log('foo triggered')
 
@@ -132,7 +148,8 @@
 <!-- <svelte:window use:initFlyonui /> -->
 
 <!-- TBD: add toggle switch for light and dark mode -->
-<main class="h-100">
+<!-- <main {@attach initFlyonUI} class="h-100" > -->
+<main class="h-100" >
 	<!-- {initFlyonui()} -->
 	{@render children?.()}
 	<!-- <slot /> -->

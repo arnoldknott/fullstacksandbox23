@@ -20,16 +20,18 @@
 	const theming = $state(new Theming());
 
 	let themeConfiguration: ColorConfig = $state({
-		sourceColor: '#353c6e', // <= That's a good color!// '#769CDF',
+		sourceColor: '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
 		variant: Variant.TONAL_SPOT, // Variant.FIDELITY,//
 		contrast: 0.0
 	});
 	$effect(() => {
-		// console.log('=== layout - page.data.session.userProfile.user_profile ===');
-		// console.log(page.data.session.userProfile.user_profile);
-		themeConfiguration.sourceColor = page.data.session.userProfile.user_profile.theme_color;
-		themeConfiguration.variant = page.data.session.userProfile.user_profile.theme_variant;
-		themeConfiguration.contrast = page.data.session.userProfile.user_profile.contrast;
+		if (page.data.session) {
+			// console.log('=== layout - page.data.session.userProfile.user_profile ===');
+			// console.log(page.data.session.userProfile.user_profile);
+			themeConfiguration.sourceColor = page.data.session.userProfile.user_profile.theme_color;
+			themeConfiguration.variant = page.data.session.userProfile.user_profile.theme_variant;
+			themeConfiguration.contrast = page.data.session.userProfile.user_profile.contrast;
+		}
 		// console.log('=== layout - themeConfiguration ===');
 		// console.log(themeConfiguration);
 	});

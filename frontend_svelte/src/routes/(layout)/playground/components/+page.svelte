@@ -508,7 +508,7 @@
 								<li>
 									<div class="text-secondary flex items-center">
 										<div class="dropdown-item text-secondary max-w-40 content-center">
-											<span class="icon-[fluent--people-team-16-filled]"></span>{team.name}
+											<span class="icon-[fluent--people-team-16-filled] pr-2"></span>{team.name}
 										</div>
 										<div class="mr-2">
 											<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
@@ -517,6 +517,17 @@
 										<div
 											class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
 										>
+											<button
+												id="rights"
+												type="button"
+												class="dropdown-toggle btn btn-text bg-base-300"
+												aria-haspopup="menu"
+												aria-expanded="false"
+												aria-label="Dropdown"
+											>
+												<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
+												></span>
+											</button>
 											<ul
 												class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
 												role="menu"
@@ -581,17 +592,7 @@
 													</button>
 												</li>
 											</ul>
-											<button
-												id="rights"
-												type="button"
-												class="dropdown-toggle btn btn-text bg-base-300"
-												aria-haspopup="menu"
-												aria-expanded="false"
-												aria-label="Dropdown"
-											>
-												<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-												></span>
-											</button>
+
 										</div>
 										<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
 											<span class="icon-[openmoji--check-mark]"></span>
@@ -638,14 +639,24 @@
 			bind:this={dropdownElement}
 		>
 			<!-- onload={async()=> await  loadHSDropdown()} -->
-			<span
+			<div 
+				id="dropdown-menu-icon"
+				role="button"
+				class="dropdown-toggle"
+				aria-haspopup="menu"
+				aria-expanded="false"
+				aria-label="Dropdown"
+			>
+				<span class="icon-[tabler--dots-vertical] text-secondary size-6"></span>
+			</div>
+			<!-- <span
 				id="dropdown-menu-icon"
 				class="dropdown-toggle icon-[tabler--dots-vertical] text-secondary size-6"
 				role="button"
 				aria-haspopup="menu"
 				aria-expanded="false"
 				aria-label="Dropdown"
-			></span>
+			></span> -->
 			<ul
 				class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
 				role="menu"
@@ -682,8 +693,8 @@
 						{#each teams as team, i (i)}
 							<li>
 								<div class="text-secondary flex items-center">
-									<div class="dropdown-item text-secondary max-w-40 content-center">
-										<span class="icon-[fluent--people-team-16-filled]"></span>{team.name}
+									<div class="dropdown-item text-secondary max-w-42 content-center">
+										<span class="icon-[fluent--people-team-16-filled] pr-2 shrink-0"></span>{team.name}
 									</div>
 									<div class="mr-2">
 										<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
@@ -692,6 +703,17 @@
 									<div
 										class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
 									>
+										<button
+											id="rights"
+											type="button"
+											class="dropdown-toggle btn btn-text bg-base-300"
+											aria-haspopup="menu"
+											aria-expanded="false"
+											aria-label="Dropdown"
+										>
+											<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
+											></span>
+										</button>
 										<ul
 											class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
 											role="menu"
@@ -758,17 +780,6 @@
 												</button>
 											</li>
 										</ul>
-										<button
-											id="rights"
-											type="button"
-											class="dropdown-toggle btn btn-text bg-base-300"
-											aria-haspopup="menu"
-											aria-expanded="false"
-											aria-label="Dropdown"
-										>
-											<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-											></span>
-										</button>
 									</div>
 									<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
 										<span class="icon-[openmoji--check-mark]"></span>

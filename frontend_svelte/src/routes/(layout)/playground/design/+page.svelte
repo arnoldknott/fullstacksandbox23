@@ -462,8 +462,3 @@
 		><span class="icon-[fa6-solid--plus]"></span> Add playground</button
 	>
 </div>
-
-<p>
-	Add a playground here for text fields and buttons with ruler for background, dropdown for
-	foreground and checkboxes for shadow and outline.
-</p>
