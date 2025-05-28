@@ -69,9 +69,15 @@
 			actionButtonShareMenu = new LoadedHSDropdown(
 				actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI
 			);
-			// dropdownMenu
-			// console.log("=== dropdownMenu ===")
-			// console.log(dropdownMenu)
+
+			// Add event listeners to reset dropdown state on close
+			dropdownMenuElement?.addEventListener('hidden.bs.dropdown', () => {
+				dropdownMenu?.close();
+			});
+
+			actionButtonShareMenuElement?.addEventListener('hidden.bs.dropdown', () => {
+				actionButtonShareMenu?.close();
+			});
 		});
 		// })
 		// if (dropdownElement) {
