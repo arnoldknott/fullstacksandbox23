@@ -672,7 +672,7 @@
 					>
 				</li>
 				<li
-					class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+					class="dropdown relative items-center [--offset:8] [--placement:right-start] max-sm:[--placement:bottom-start]"
 				>
 					<button
 						id="share"
@@ -680,9 +680,12 @@
 						aria-haspopup="menu"
 						aria-expanded="false"
 						aria-label="Share with"
-						><span class="icon-[tabler--share-2]"></span>Share
+					>
+						<span class="icon-[tabler--share-2]"></span>
+						Share
 						<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
 					</button>
+
 					<!-- min-w-60 -->
 					<ul
 						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
@@ -692,8 +695,8 @@
 					>
 						{#each teams as team, i (i)}
 							<li>
-								<div class="text-secondary flex items-center">
-									<div class="dropdown-item text-secondary max-w-42 content-center">
+								<div class="dropdown-item text-secondary flex items-center">
+									<div class="text-secondary max-w-42 content-center">
 										<span class="icon-[fluent--people-team-16-filled] pr-2 shrink-0"></span>{team.name}
 									</div>
 									<div class="mr-2">
@@ -706,7 +709,7 @@
 										<button
 											id="rights"
 											type="button"
-											class="dropdown-toggle btn btn-text bg-base-300"
+											class="dropdown-toggle dropdown-item btn btn-text bg-base-300"
 											aria-haspopup="menu"
 											aria-expanded="false"
 											aria-label="Dropdown"
