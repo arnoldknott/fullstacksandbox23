@@ -696,7 +696,7 @@
 						{#each teams as team, i (i)}
 							<li>
 								<div class="dropdown-item text-secondary flex items-center">
-									<div class="text-secondary max-w-42 content-center">
+									<div class="text-secondary max-w-42 content-center w-full">
 										<span class="icon-[fluent--people-team-16-filled] pr-2 shrink-0"></span>{team.name}
 									</div>
 									<div class="mr-2">
@@ -795,6 +795,16 @@
 								>... more options</button
 							>
 						</li>
+					</ul>
+				</li>
+				<li class="dropdown relative [--offset:15] [--placement:right-start]">
+					<button id="nested-dropdown-2" class="dropdown-toggle dropdown-item justify-between"  aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
+						More Options
+						<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
+					</button>
+					<ul class="dropdown-menu dropdown-open:opacity-100 hidden min-w-60" role="menu" aria-orientation="vertical" aria-labelledby="nested-dropdown-2">
+						<li><a class="dropdown-item" href="#">Download Documents</a></li>
+						<li><a class="dropdown-item" href="#">Manage FAQs</a></li>
 					</ul>
 				</li>
 				<li class="dropdown-footer gap-2">
