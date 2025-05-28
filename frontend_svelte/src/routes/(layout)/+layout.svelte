@@ -124,7 +124,9 @@
 	let profileAccountForm = $state<HTMLFormElement | null>(null);
 
 	const saveProfileAccount = async () => {
-		profileAccountForm?.requestSubmit();
+		if (page.data.session?.loggedIn) {
+			profileAccountForm?.requestSubmit();
+		}
 	};
 
 	const updateProfileAccount: SubmitFunction = async () => {
