@@ -22,10 +22,10 @@
 	// for dropdown menus:
 	// let dropdownMenu = $state<HTMLUListElement | null>(null);
 	let actionButtonShareMenuElement = $state<HTMLElement | null>(null);
-	let dropdownElement = $state<HTMLElement | null>(null);
+	let dropdownMenuElement = $state<HTMLElement | null>(null);
 	// let dropdownMenuElement = $state<HTMLElement | null>(null);
 	let actionButtonShareMenu = $state<HSDropdown | null>(null);
-	let dropdown = $state<HSDropdown | null>(null);
+	let dropdownMenu = $state<HSDropdown | null>(null);
 
 	const loadHSDropdown = async () => {
 		const { HSDropdown } = await import('flyonui/flyonui');
@@ -65,7 +65,7 @@
 			// dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
 			// console.log('components - page - $effect - dropdown - window');
 			// console.log(window);
-			dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementFloatingUI);
+			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
 			actionButtonShareMenu = new LoadedHSDropdown(
 				actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI
 			);
@@ -508,11 +508,11 @@
 								<li>
 									<div class="text-secondary flex items-center">
 										<div class="dropdown-item text-secondary max-w-42 content-center">
-											<span class="icon-[fluent--people-team-16-filled] pr-2 shrink-0"></span>{team.name}
+											<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"></span>{team.name}
 										</div>
 										<div class="mr-2">
 											<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
-											<span class="{rightsIcon(team.right)} size-4"></span>
+											<span class="{rightsIcon(team.right)} ml-2 size-4"></span>
 										</div>
 										<div
 											class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
@@ -636,7 +636,7 @@
 		<Heading>🚧 Dropdown menus 🚧</Heading>
 		<div
 			class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
-			bind:this={dropdownElement}
+			bind:this={dropdownMenuElement}
 		>
 			<!-- onload={async()=> await  loadHSDropdown()} -->
 			<div 
@@ -672,7 +672,7 @@
 					>
 				</li>
 				<li
-					class="dropdown relative items-center [--offset:8] [--placement:right-start] max-sm:[--placement:bottom-start]"
+					class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
 				>
 					<button
 						id="share"
@@ -695,13 +695,13 @@
 					>
 						{#each teams as team, i (i)}
 							<li>
-								<div class="dropdown-item text-secondary flex items-center">
+								<div class="text-secondary flex items-center">
 									<div class="text-secondary max-w-42 content-center w-full">
-										<span class="icon-[fluent--people-team-16-filled] pr-2 shrink-0"></span>{team.name}
+										<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"></span>{team.name}
 									</div>
 									<div class="mr-2">
 										<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
-										<span class="{rightsIcon(team.right)} size-4"></span>
+										<span class="{rightsIcon(team.right)} ml-2 size-4"></span>
 									</div>
 									<div
 										class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
@@ -733,7 +733,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = 'own';
-														dropdown?.close();
+														dropdownMenu?.close();
 													}}
 													aria-label="own"
 													><span class="icon-[tabler--key-filled] bg-success"></span></button
@@ -747,7 +747,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = 'write';
-														dropdown?.close();
+														dropdownMenu?.close();
 													}}
 													aria-label="write"
 													><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
@@ -762,7 +762,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = 'read';
-														dropdown?.close();
+														dropdownMenu?.close();
 													}}
 													aria-label="read"
 													><span class="icon-[tabler--eye] bg-neutral"></span>
@@ -776,7 +776,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = '';
-														dropdown?.close();
+														dropdownMenu?.close();
 													}}
 													aria-label="remove share"
 													><span class="icon-[tabler--ban] bg-error"></span>
