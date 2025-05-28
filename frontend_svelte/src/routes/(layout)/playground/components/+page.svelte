@@ -507,8 +507,8 @@
 							{#each teams as team, i (i)}
 								<li>
 									<div class="text-secondary flex items-center">
-										<div class="dropdown-item text-secondary max-w-40 content-center">
-											<span class="icon-[fluent--people-team-16-filled] pr-2"></span>{team.name}
+										<div class="dropdown-item text-secondary max-w-42 content-center">
+											<span class="icon-[fluent--people-team-16-filled] pr-2 shrink-0"></span>{team.name}
 										</div>
 										<div class="mr-2">
 											<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
