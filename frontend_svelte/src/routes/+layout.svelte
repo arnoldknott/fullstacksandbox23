@@ -101,8 +101,11 @@
 
 	// update to FlyonUI 2.1.3:
 
-	afterNavigate(() => {
+	afterNavigate(async () => {
 		// Runs after navigating between pages
+		if (!window.HSStaticMethods) {
+			await import('flyonui/flyonui.js')
+		}
 		window.HSStaticMethods.autoInit();
 		// HSStaticMethods.autoInit();
 	});
