@@ -10,6 +10,7 @@
 	// import { HSDropdown, type IHTMLElementPopper } from 'flyonui/flyonui';
 	// import type { IHTMLElementPopper, HSDropdown } from 'flyonui/flyonui';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
+	import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
 	// import type { PageProps } from '../$types';
@@ -22,9 +23,11 @@
 	// for dropdown menus:
 	// let dropdownMenu = $state<HTMLUListElement | null>(null);
 	let actionButtonShareMenuElement = $state<HTMLElement | null>(null);
+	let dropdownShareDropdownElement = $state<HTMLElement | null>(null);
 	let dropdownMenuElement = $state<HTMLElement | null>(null);
 	// let dropdownMenuElement = $state<HTMLElement | null>(null);
 	let actionButtonShareMenu = $state<HSDropdown | null>(null);
+	let dropdownShareDropdown = $state<HSDropdown | null>(null);
 	let dropdownMenu = $state<HSDropdown | null>(null);
 
 	const loadHSDropdown = async () => {
@@ -66,18 +69,19 @@
 			// console.log('components - page - $effect - dropdown - window');
 			// console.log(window);
 			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
+			dropdownShareDropdown = new LoadedHSDropdown(dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI);
 			actionButtonShareMenu = new LoadedHSDropdown(
 				actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI
 			);
 
-			// Add event listeners to reset dropdown state on close
-			dropdownMenuElement?.addEventListener('hidden.bs.dropdown', () => {
-				dropdownMenu?.close();
-			});
+			// // Add event listeners to reset dropdown state on close
+			// dropdownMenuElement?.addEventListener('hidden.bs.dropdown', () => {
+			// 	dropdownMenu?.close();
+			// });
 
-			actionButtonShareMenuElement?.addEventListener('hidden.bs.dropdown', () => {
-				actionButtonShareMenu?.close();
-			});
+			// actionButtonShareMenuElement?.addEventListener('hidden.bs.dropdown', () => {
+			// 	actionButtonShareMenu?.close();
+			// });
 		});
 		// })
 		// if (dropdownElement) {
@@ -94,6 +98,15 @@
 		//     })();
 		// }
 	});
+
+	// const closeChildDropdowns: Attachment = () => {
+	// 	dropdownMenu?.on("close", dropdownShareDropdown?.close());
+
+	// 	return () => {
+	// 		// Cleanup if necessary
+	// 		console.log('components - page - closeChildDropdowns - cleanup');
+	// 	};
+	// }
 
 	// data for card with navigation in title:
 	const cardsNavigation = [
@@ -644,6 +657,7 @@
 			class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
 			bind:this={dropdownMenuElement}
 		>
+			<!-- {@attach closeChildDropdowns()} -->
 			<!-- onload={async()=> await  loadHSDropdown()} -->
 			<div 
 				id="dropdown-menu-icon"
@@ -673,12 +687,16 @@
 					<button
 						class="btn dropdown-item btn-text text-secondary content-center justify-start"
 						aria-label="Edit Button"
-						onclick={() => (edit ? (edit = false) : (edit = true))}
-						><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
+						onclick={
+							() => (edit ? (edit = false) : (edit = true))
+						}
 					>
+						<span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit
+					</button>
 				</li>
 				<li
 					class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+					bind:this={dropdownShareDropdownElement}
 				>
 					<button
 						id="share"
@@ -701,7 +719,7 @@
 					>
 						{#each teams as team, i (i)}
 							<li>
-								<div class="text-secondary flex items-center">
+								<div class="text-secondary flex items-center px-2">
 									<div class="text-secondary max-w-42 content-center w-full">
 										<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"></span>{team.name}
 									</div>
@@ -739,6 +757,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = 'own';
+														dropdownShareDropdown?.close()
 														dropdownMenu?.close();
 													}}
 													aria-label="own"
@@ -753,6 +772,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = 'write';
+														dropdownShareDropdown?.close()
 														dropdownMenu?.close();
 													}}
 													aria-label="write"
@@ -768,6 +788,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = 'read';
+														dropdownShareDropdown?.close()
 														dropdownMenu?.close();
 													}}
 													aria-label="read"
@@ -782,6 +803,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = '';
+														dropdownShareDropdown?.close()
 														dropdownMenu?.close();
 													}}
 													aria-label="remove share"
@@ -801,16 +823,6 @@
 								>... more options</button
 							>
 						</li>
-					</ul>
-				</li>
-				<li class="dropdown relative [--offset:15] [--placement:right-start]">
-					<button id="nested-dropdown-2" class="dropdown-toggle dropdown-item justify-between"  aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-						More Options
-						<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
-					</button>
-					<ul class="dropdown-menu dropdown-open:opacity-100 hidden min-w-60" role="menu" aria-orientation="vertical" aria-labelledby="nested-dropdown-2">
-						<li><a class="dropdown-item" href="#">Download Documents</a></li>
-						<li><a class="dropdown-item" href="#">Manage FAQs</a></li>
 					</ul>
 				</li>
 				<li class="dropdown-footer gap-2">
