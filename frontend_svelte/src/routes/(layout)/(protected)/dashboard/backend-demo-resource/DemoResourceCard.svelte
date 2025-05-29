@@ -6,6 +6,8 @@
 	import type { MicrosoftTeamBasicExtended } from '$lib/types';
 	// import { AccessHandler, Action } from '$lib/accessHandler';
 	import { AccessHandler } from '$lib/accessHandler';
+	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
+	// import { on } from 'svelte/events';
 
 	let {
 		demoResource,
@@ -39,7 +41,23 @@
 	let card: Card;
 	let createUpdateForm = $state<HTMLFormElement | null>(null);
 
-	let dropdownMenu = $state<HTMLUListElement | null>(null);
+	let dropdownMenuElement = $state<HTMLElement | null>(null);
+	let dropdownShareDropdownElement = $state<HTMLElement | null>(null);
+	let dropdownMenu = $state<HSDropdown | null>(null);
+	let dropdownShareDropdown = $state<HSDropdown | null>(null);
+
+	const loadHSDropdown = async () => {
+		const { HSDropdown } = await import('flyonui/flyonui');
+		return HSDropdown;
+	};
+
+	$effect(() => {
+		loadHSDropdown().then((LoadedHSDropdown) => {
+			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
+			dropdownShareDropdown = new LoadedHSDropdown(dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI);
+		});
+	});
+
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
 	let teamRight = $state('read');
@@ -161,7 +179,10 @@
 			<!-- TBD: move this if around the relevant list points,
 			if there are any left, that read-only users are also supposed to see. -->
 			{#if userRight === 'write' || userRight === 'own'}
-				<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
+				<div
+					class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
+					bind:this={dropdownMenuElement}
+				>
 					<span
 						id="dropdown-menu-icon-{id}"
 						class="dropdown-toggle icon-[tabler--dots-vertical] size-6"
@@ -176,7 +197,6 @@
 					<ul
 						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
 						role="menu"
-						bind:this={dropdownMenu}
 						aria-orientation="vertical"
 						aria-labelledby="dropdown-menu-icon-{id}"
 					>
@@ -191,6 +211,7 @@
 						{#if userRight === 'own'}
 							<li
 								class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+								bind:this={dropdownShareDropdownElement}
 							>
 								<button
 									id="share-{id}"
@@ -215,6 +236,8 @@
 											method="POST"
 											use:enhance={async () => {
 												console.log('=== share form submitted - closing the dropdown ===');
+												dropdownShareDropdown?.close()
+												dropdownMenu?.close();
 												// dropdownMenu?.close()
 												// const { HSDropdown } = await import('flyonui/flyonui.js');
 												// if(dropdownMenu){
@@ -266,7 +289,9 @@
 																			value={id}
 																			formaction="?/share&teamid={team.id}&action=own"
 																			type="submit"
-																			onclick={() => (teamRight = 'own')}
+																			onclick={ () => {
+																				teamRight = 'own';
+																			}}
 																			aria-label="own"
 																			><span class="icon-[tabler--key-filled] bg-success"
 																			></span></button
@@ -280,7 +305,9 @@
 																			value={id}
 																			formaction="?/share&teamid={team.id}&action=write"
 																			type="submit"
-																			onclick={() => (teamRight = 'write')}
+																			onclick={() => {
+																				teamRight = 'write';
+																			}}
 																			aria-label="write"
 																			><span
 																				class="icon-[material-symbols--edit-outline-rounded] bg-warning"
@@ -295,7 +322,9 @@
 																			value={id}
 																			formaction="?/share&teamid={team.id}&action=read"
 																			type="submit"
-																			onclick={() => (teamRight = 'read')}
+																			onclick={ () => {
+																				teamRight = 'read';
+																			}}
 																			aria-label="read"
 																			><span class="icon-[tabler--eye] bg-neutral"></span>
 																		</button>
@@ -307,6 +336,10 @@
 																			name="id"
 																			value={id}
 																			formaction="?/share&teamid={team.id}&action=unshare"
+																			onclick={() => {
+																				dropdownShareDropdown?.close();
+																				dropdownMenu?.close();
+																			}}
 																			type="submit"
 																			aria-label="remove share"
 																			><span class="icon-[tabler--ban] bg-error"></span>

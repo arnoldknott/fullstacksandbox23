@@ -10,7 +10,7 @@
 	// import { HSDropdown, type IHTMLElementPopper } from 'flyonui/flyonui';
 	// import type { IHTMLElementPopper, HSDropdown } from 'flyonui/flyonui';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
-	import type { Attachment } from 'svelte/attachments';
+	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
 	// import type { PageProps } from '../$types';
@@ -99,6 +99,9 @@
 		// }
 	});
 
+
+	// TBD: make sure all dropdowns close and get reset, when user does not click any of the list items, but elsewhere on the screen.
+	// use the event from the main dropdown to listen and close the child dropdowns.
 	// const closeChildDropdowns: Attachment = () => {
 	// 	dropdownMenu?.on("close", dropdownShareDropdown?.close());
 
@@ -524,6 +527,10 @@
 							aria-labelledby="action-share"
 						>
 							{#each teams as team, i (i)}
+								<!--
+									TBD: Refactor this into a list item component - reuse here, in the dropdown menu and prepare for the DemoResourceCard!
+									Use the form use:enhance to close all the dropdowns after a selection. Also close the rights dropdown.
+								-->
 								<li>
 									<div class="text-secondary flex items-center">
 										<div class="dropdown-item text-secondary max-w-42 content-center">
