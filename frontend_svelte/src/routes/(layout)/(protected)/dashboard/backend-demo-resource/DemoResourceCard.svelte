@@ -54,7 +54,9 @@
 	$effect(() => {
 		loadHSDropdown().then((LoadedHSDropdown) => {
 			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
-			dropdownShareDropdown = new LoadedHSDropdown(dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI);
+			dropdownShareDropdown = new LoadedHSDropdown(
+				dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI
+			);
 		});
 	});
 
@@ -236,7 +238,7 @@
 											method="POST"
 											use:enhance={async () => {
 												console.log('=== share form submitted - closing the dropdown ===');
-												dropdownShareDropdown?.close()
+												dropdownShareDropdown?.close();
 												dropdownMenu?.close();
 												// dropdownMenu?.close()
 												// const { HSDropdown } = await import('flyonui/flyonui.js');
@@ -289,7 +291,7 @@
 																			value={id}
 																			formaction="?/share&teamid={team.id}&action=own"
 																			type="submit"
-																			onclick={ () => {
+																			onclick={() => {
 																				teamRight = 'own';
 																			}}
 																			aria-label="own"
@@ -322,7 +324,7 @@
 																			value={id}
 																			formaction="?/share&teamid={team.id}&action=read"
 																			type="submit"
-																			onclick={ () => {
+																			onclick={() => {
 																				teamRight = 'read';
 																			}}
 																			aria-label="read"

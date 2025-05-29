@@ -69,7 +69,9 @@
 			// console.log('components - page - $effect - dropdown - window');
 			// console.log(window);
 			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
-			dropdownShareDropdown = new LoadedHSDropdown(dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI);
+			dropdownShareDropdown = new LoadedHSDropdown(
+				dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI
+			);
 			actionButtonShareMenu = new LoadedHSDropdown(
 				actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI
 			);
@@ -98,7 +100,6 @@
 		//     })();
 		// }
 	});
-
 
 	// TBD: make sure all dropdowns close and get reset, when user does not click any of the list items, but elsewhere on the screen.
 	// use the event from the main dropdown to listen and close the child dropdowns.
@@ -534,7 +535,8 @@
 								<li>
 									<div class="text-secondary flex items-center">
 										<div class="dropdown-item text-secondary max-w-42 content-center">
-											<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"></span>{team.name}
+											<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"
+											></span>{team.name}
 										</div>
 										<div class="mr-2">
 											<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
@@ -618,7 +620,6 @@
 													</button>
 												</li>
 											</ul>
-
 										</div>
 										<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
 											<span class="icon-[openmoji--check-mark]"></span>
@@ -666,7 +667,7 @@
 		>
 			<!-- {@attach closeChildDropdowns()} -->
 			<!-- onload={async()=> await  loadHSDropdown()} -->
-			<div 
+			<div
 				id="dropdown-menu-icon"
 				role="button"
 				class="dropdown-toggle"
@@ -694,9 +695,7 @@
 					<button
 						class="btn dropdown-item btn-text text-secondary content-center justify-start"
 						aria-label="Edit Button"
-						onclick={
-							() => (edit ? (edit = false) : (edit = true))
-						}
+						onclick={() => (edit ? (edit = false) : (edit = true))}
 					>
 						<span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit
 					</button>
@@ -727,8 +726,9 @@
 						{#each teams as team, i (i)}
 							<li>
 								<div class="text-secondary flex items-center px-2">
-									<div class="text-secondary max-w-42 content-center w-full">
-										<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"></span>{team.name}
+									<div class="text-secondary w-full max-w-42 content-center">
+										<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"
+										></span>{team.name}
 									</div>
 									<div class="mr-2">
 										<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
@@ -764,7 +764,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = 'own';
-														dropdownShareDropdown?.close()
+														dropdownShareDropdown?.close();
 														dropdownMenu?.close();
 													}}
 													aria-label="own"
@@ -779,7 +779,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = 'write';
-														dropdownShareDropdown?.close()
+														dropdownShareDropdown?.close();
 														dropdownMenu?.close();
 													}}
 													aria-label="write"
@@ -795,7 +795,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = 'read';
-														dropdownShareDropdown?.close()
+														dropdownShareDropdown?.close();
 														dropdownMenu?.close();
 													}}
 													aria-label="read"
@@ -810,7 +810,7 @@
 													type="submit"
 													onclick={() => {
 														team.right = '';
-														dropdownShareDropdown?.close()
+														dropdownShareDropdown?.close();
 														dropdownMenu?.close();
 													}}
 													aria-label="remove share"
