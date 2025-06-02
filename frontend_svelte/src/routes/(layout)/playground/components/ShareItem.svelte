@@ -19,9 +19,21 @@
 </script>
 
 <li>
-	<div class="text-secondary flex items-center">
-		<div class="dropdown-item text-secondary w-full max-w-42 content-center">
-			<span class="icon-[{icon}] mr-2 shrink-0"></span>{name}
+	<div class="text-secondary flex items-center tooltip">
+		<div
+			class="dropdown-item text-secondary w-full max-w-42 content-center tooltip-toggle"
+			aria-label={name}
+		>
+			<span class="icon-[{icon}] mr-2 shrink-0"></span>
+			{name.slice(0, 12)}{name.length > 13 ? ' ...': null}
+			{#if name.length > 12}
+				<span
+					class="tooltip-content tooltip-shown:visible tooltip-shown:opacity-100 bg-base-300"
+					role="tooltip"
+				>
+					{name}
+				</span>
+			{/if}
 		</div>
 		<div class="mr-2">
 			<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->

@@ -161,6 +161,10 @@
 			{
 				name: 'Be a Team',
 				right: 'read'
+			},
+			{
+				name: 'Very long Team Name',
+				right: 'write'
 			}
 		].sort((a, b) => a.name.localeCompare(b.name))
 	);
@@ -414,7 +418,7 @@
 				</div>
 				<div class="card-body">
 					<p class="body-small md:body text-primary-container-content">
-						Some shorter text here - but adjusts to the height of the neigour card
+						Some shorter text here - but adjusts to the height of the neighbor card
 					</p>
 				</div>
 			</div>

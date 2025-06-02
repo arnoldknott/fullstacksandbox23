@@ -237,7 +237,7 @@
 										<form
 											method="POST"
 											use:enhance={async () => {
-												console.log('=== share form submitted - closing the dropdown ===');
+												// console.log('=== share form submitted - closing the dropdown ===');
 												dropdownShareDropdown?.close();
 												dropdownMenu?.close();
 												// dropdownMenu?.close()
