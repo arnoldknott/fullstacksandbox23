@@ -140,28 +140,30 @@
 	];
 
 	// data for share menu:
-	const teams = $state([
-		{
-			name: 'The A Team',
-			right: 'read'
-		},
-		{
-			name: 'Awesome Team',
-			right: ''
-		},
-		{
-			name: 'Team Teams',
-			right: 'write'
-		},
-		{
-			name: 'Team Next',
-			right: 'own'
-		},
-		{
-			name: 'Be a Team',
-			right: 'read'
-		}
-	]);
+	const teams = $state(
+		[
+			{
+				name: 'The A Team',
+				right: 'read'
+			},
+			{
+				name: 'Awesome Team',
+				right: ''
+			},
+			{
+				name: 'Team Teams',
+				right: 'write'
+			},
+			{
+				name: 'Team Next',
+				right: 'own'
+			},
+			{
+				name: 'Be a Team',
+				right: 'read'
+			}
+		].sort((a, b) => a.name.localeCompare(b.name))
+	);
 
 	// TBD: delete; after refactoring into ShareItem component, this is not needed anymore:
 	// const rightsIcon = (right: string) => {
