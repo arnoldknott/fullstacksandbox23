@@ -248,7 +248,7 @@
 											}}
 										>
 											{#if microsoftTeams}
-												{#each microsoftTeams as team (team.id)}
+												{#each microsoftTeams.sort((a, b) => a.displayName.localeCompare(b.displayName)) as team (team.id)}
 													<li>
 														<div class="flex items-center">
 															<!-- Also send the desired action for the share: own, write, read.
