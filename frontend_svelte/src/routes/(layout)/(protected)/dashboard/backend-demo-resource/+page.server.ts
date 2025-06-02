@@ -149,11 +149,11 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
 		if (url.searchParams.get('action') === 'unshare') {
-			const resource_id = data.get('id');
-			const identity_id = url.searchParams.get('teamid');
+			const resourceId = data.get('id');
+			const identityId = url.searchParams.get('identityid');
 			await backendAPI.delete(
 				sessionId,
-				`/access/policy?resource_id=${resource_id}&identity_id=${identity_id}`
+				`/access/policy?resource_id=${resourceId}&identity_id=${identityId}`
 			);
 		} else {
 			// const accessPolicy = {
@@ -170,7 +170,7 @@ export const actions: Actions = {
 			// if (response.status !== 201) {
 			const newOrUpdateAccessPolicy = {
 				resource_id: data.get('id'),
-				identity_id: url.searchParams.get('teamid'),
+				identity_id: url.searchParams.get('identityid'),
 				new_action: url.searchParams.get('action')
 			};
 			await backendAPI.put(sessionId, '/access/policy', JSON.stringify(newOrUpdateAccessPolicy));

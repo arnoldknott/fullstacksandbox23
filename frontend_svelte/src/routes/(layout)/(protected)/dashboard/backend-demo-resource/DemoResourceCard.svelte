@@ -105,7 +105,7 @@
 	};
 
 	const createOrUpdateResource: SubmitFunction = async ({ formData }) => {
-		console.log('=== createOrUpdateResource triggered ===');
+		// console.log('=== createOrUpdateResource triggered ===');
 
 		if (id.slice(0, 4) !== 'new_') {
 			formData.append('id', id);
@@ -289,7 +289,7 @@
 																			class="btn dropdown-item btn-text max-w-40 content-center"
 																			name="id"
 																			value={id}
-																			formaction="?/share&teamid={team.id}&action=own"
+																			formaction="?/share&identityid={team.id}&action=own"
 																			type="submit"
 																			onclick={() => {
 																				teamRight = 'own';
@@ -305,7 +305,7 @@
 																			class="btn dropdown-item btn-text max-w-40 content-center"
 																			name="id"
 																			value={id}
-																			formaction="?/share&teamid={team.id}&action=write"
+																			formaction="?/share&identityid={team.id}&action=write"
 																			type="submit"
 																			onclick={() => {
 																				teamRight = 'write';
@@ -322,7 +322,7 @@
 																			class="btn dropdown-item btn-text max-w-40 content-center"
 																			name="id"
 																			value={id}
-																			formaction="?/share&teamid={team.id}&action=read"
+																			formaction="?/share&identityid={team.id}&action=read"
 																			type="submit"
 																			onclick={() => {
 																				teamRight = 'read';
@@ -337,7 +337,7 @@
 																			class="btn dropdown-item btn-text max-w-40 content-center"
 																			name="id"
 																			value={id}
-																			formaction="?/share&teamid={team.id}&action=unshare"
+																			formaction="?/share&identityid={team.id}&action=unshare"
 																			onclick={() => {
 																				dropdownShareDropdown?.close();
 																				dropdownMenu?.close();
