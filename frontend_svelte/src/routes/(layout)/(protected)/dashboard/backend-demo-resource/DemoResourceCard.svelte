@@ -5,7 +5,7 @@
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamBasicExtended } from '$lib/types';
 	// import { AccessHandler, Action } from '$lib/accessHandler';
-	import { AccessHandler } from '$lib/accessHandler';
+	import { AccessHandler, type Action } from '$lib/accessHandler';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// import { on } from 'svelte/events';
 
@@ -71,9 +71,9 @@
 	// 	console.log(teamRight);
 	// });
 
-	const rightsIconSelection = (identityId: string) => {
-		if (!accessPolicies) return null;
-		const rights = AccessHandler.getRights(identityId, accessPolicies);
+	const accessAction = (identityId: string) =>  accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : null
+
+	const iconMapping = (rights: Action | null) => {
 		return rights === 'own'
 			? 'icon-[tabler--key-filled] bg-success'
 			: rights === 'write'
@@ -231,11 +231,13 @@
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
 								>
-									<li>
+									<!-- <li> -->
 										<!-- <form method="POST" use:enhance={() => dropdownMenu?.classList.add('hidden')}> -->
 										<!-- <form method="POST" use:enhance> -->
+									{#if microsoftTeams}
 										<form
 											method="POST"
+											name="shareForm-resource-{id}"
 											use:enhance={async () => {
 												// console.log('=== share form submitted - closing the dropdown ===');
 												dropdownShareDropdown?.close();
@@ -247,136 +249,135 @@
 												// }
 											}}
 										>
-											{#if microsoftTeams}
-												{#each microsoftTeams.sort((a, b) => a.displayName.localeCompare(b.displayName)) as team (team.id)}
-													<li>
-														<div class="flex items-center">
-															<!-- Also send the desired action for the share: own, write, read.
-													Pass information if access_policy already exists to form handling function share(). -->
-															<!-- <button
-																data-sveltekit-preload-data={false}
-																class="btn dropdown-item btn-text max-w-40 content-center"
-																name="id"
-																value={id}
-																formaction="?/share&teamid={team.id}"
-																><span class="icon-[fluent--people-team-16-filled]"
-																></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
-																	? ' ...'
-																	: null}
-															</button> -->
-															<div class="dropdown-item max-w-40 content-center">
-																<span class="icon-[fluent--people-team-16-filled]"
-																></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
-																	? ' ...'
-																	: null}
-															</div>
-															<div class="mr-2">
-																<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
-																<span class="{rightsIconSelection(team.id)} size-4"></span>
-															</div>
-															<div
-																class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
-															>
-																<ul
-																	class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
-																	role="menu"
-																	aria-orientation="vertical"
-																	aria-labelledby="rights-{id}"
-																>
-																	<li>
-																		<button
-																			data-sveltekit-preload-data={false}
-																			class="btn dropdown-item btn-text max-w-40 content-center"
-																			name="id"
-																			value={id}
-																			formaction="?/share&identityid={team.id}&action=own"
-																			type="submit"
-																			onclick={() => {
-																				teamRight = 'own';
-																			}}
-																			aria-label="own"
-																			><span class="icon-[tabler--key-filled] bg-success"
-																			></span></button
-																		>
-																	</li>
-																	<li>
-																		<button
-																			data-sveltekit-preload-data={false}
-																			class="btn dropdown-item btn-text max-w-40 content-center"
-																			name="id"
-																			value={id}
-																			formaction="?/share&identityid={team.id}&action=write"
-																			type="submit"
-																			onclick={() => {
-																				teamRight = 'write';
-																			}}
-																			aria-label="write"
-																			><span
-																				class="icon-[material-symbols--edit-outline-rounded] bg-warning"
-																			></span>
-																		</button>
-																	</li>
-																	<li>
-																		<button
-																			data-sveltekit-preload-data={false}
-																			class="btn dropdown-item btn-text max-w-40 content-center"
-																			name="id"
-																			value={id}
-																			formaction="?/share&identityid={team.id}&action=read"
-																			type="submit"
-																			onclick={() => {
-																				teamRight = 'read';
-																			}}
-																			aria-label="read"
-																			><span class="icon-[tabler--eye] bg-neutral"></span>
-																		</button>
-																	</li>
-																	<li>
-																		<button
-																			data-sveltekit-preload-data={false}
-																			class="btn dropdown-item btn-text max-w-40 content-center"
-																			name="id"
-																			value={id}
-																			formaction="?/share&identityid={team.id}&action=unshare"
-																			onclick={() => {
-																				dropdownShareDropdown?.close();
-																				dropdownMenu?.close();
-																			}}
-																			type="submit"
-																			aria-label="remove share"
-																			><span class="icon-[tabler--ban] bg-error"></span>
-																		</button>
-																	</li>
-																</ul>
-																<button
-																	id="rights-{id}"
-																	type="button"
-																	class="dropdown-toggle btn btn-text bg-base-300"
-																	aria-haspopup="menu"
-																	aria-expanded="false"
-																	aria-label="Dropdown"
-																>
-																	<span
-																		class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-																	></span>
-																</button>
-															</div>
-															<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
-																<span class="icon-[openmoji--check-mark]"></span>
-															</div> -->
+											{#each microsoftTeams.sort((a, b) => a.displayName.localeCompare(b.displayName)) as team (team.id)}
+												<li>
+													<div class="flex items-center">
+														<!-- Also send the desired action for the share: own, write, read.
+												Pass information if access_policy already exists to form handling function share(). -->
+														<!-- <button
+															data-sveltekit-preload-data={false}
+															class="btn dropdown-item btn-text max-w-40 content-center"
+															name="id"
+															value={id}
+															formaction="?/share&teamid={team.id}"
+															><span class="icon-[fluent--people-team-16-filled]"
+															></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
+																? ' ...'
+																: null}
+														</button> -->
+														<div class="dropdown-item max-w-40 content-center">
+															<span class="icon-[fluent--people-team-16-filled]"
+															></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
+																? ' ...'
+																: null}
 														</div>
-													</li>
-													<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
-												{/each}
-												<li class="dropdown-footer gap-2">
-													<button
-														class="btn dropdown-item btn-text text-base-content content-center justify-start"
-														>... more options</button
-													>
+														<div class="mr-2">
+															<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
+															<span class="{iconMapping(accessAction(team.id))} size-4"></span>
+														</div>
+														<div
+															class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
+														>
+															<ul
+																class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
+																role="menu"
+																aria-orientation="vertical"
+																aria-labelledby="rights-{id}"
+															>
+																<li>
+																	<button
+																		data-sveltekit-preload-data={false}
+																		class="btn dropdown-item btn-text max-w-40 content-center"
+																		name="id"
+																		value={id}
+																		formaction="?/share&identityid={team.id}&action=own"
+																		type="submit"
+																		onclick={() => {
+																			teamRight = 'own';
+																		}}
+																		aria-label="own"
+																		><span class="icon-[tabler--key-filled] bg-success"
+																		></span></button
+																	>
+																</li>
+																<li>
+																	<button
+																		data-sveltekit-preload-data={false}
+																		class="btn dropdown-item btn-text max-w-40 content-center"
+																		name="id"
+																		value={id}
+																		formaction="?/share&identityid={team.id}&action=write"
+																		type="submit"
+																		onclick={() => {
+																			teamRight = 'write';
+																		}}
+																		aria-label="write"
+																		><span
+																			class="icon-[material-symbols--edit-outline-rounded] bg-warning"
+																		></span>
+																	</button>
+																</li>
+																<li>
+																	<button
+																		data-sveltekit-preload-data={false}
+																		class="btn dropdown-item btn-text max-w-40 content-center"
+																		name="id"
+																		value={id}
+																		formaction="?/share&identityid={team.id}&action=read"
+																		type="submit"
+																		onclick={() => {
+																			teamRight = 'read';
+																		}}
+																		aria-label="read"
+																		><span class="icon-[tabler--eye] bg-neutral"></span>
+																	</button>
+																</li>
+																<li>
+																	<button
+																		data-sveltekit-preload-data={false}
+																		class="btn dropdown-item btn-text max-w-40 content-center"
+																		name="id"
+																		value={id}
+																		formaction="?/share&identityid={team.id}&action=unshare"
+																		onclick={() => {
+																			dropdownShareDropdown?.close();
+																			dropdownMenu?.close();
+																		}}
+																		type="submit"
+																		aria-label="remove share"
+																		><span class="icon-[tabler--ban] bg-error"></span>
+																	</button>
+																</li>
+															</ul>
+															<button
+																id="rights-{id}"
+																type="button"
+																class="dropdown-toggle btn btn-text bg-base-300"
+																aria-haspopup="menu"
+																aria-expanded="false"
+																aria-label="Dropdown"
+															>
+																<span
+																	class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
+																></span>
+															</button>
+														</div>
+														<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
+															<span class="icon-[openmoji--check-mark]"></span>
+														</div> -->
+													</div>
 												</li>
-											{/if}
+												<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
+											{/each}
+											<li class="dropdown-footer gap-2">
+												<button
+													class="btn dropdown-item btn-text text-base-content content-center justify-start"
+													>... more options</button
+												>
+											</li>
 										</form>
-									</li>
+									{/if}
+									<!-- </li> -->
 									<!-- <li>
 								Second
 							</li> -->
