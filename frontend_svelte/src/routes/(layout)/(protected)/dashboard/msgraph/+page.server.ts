@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 // import AppConfig from '$lib/server/config';
 // import { msalAuthProvider } from '$lib/server/oauth';
 // import { error } from '@sveltejs/kit';
-import { microsoftGraph } from '$lib/server/apis';
+import { microsoftGraph } from '$lib/server/apis/msgraph';
 
 // const appConfig = await AppConfig.getInstance();
 

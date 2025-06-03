@@ -34,6 +34,7 @@ const scopesMsGraph = [
 ];
 const scopesAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
 
+// Note: this is only exporting the BaseOauthProvider type, not the class itself!
 class BaseOauthProvider {
 	constructor() {}
 

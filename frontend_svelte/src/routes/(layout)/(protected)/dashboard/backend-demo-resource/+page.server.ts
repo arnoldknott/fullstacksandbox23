@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 // import { error } from '@sveltejs/kit';
-import { backendAPI } from '$lib/server/apis';
+import { backendAPI } from '$lib/server/apis/backendApi';
 import { fail } from '@sveltejs/kit';
 import type {
 	AccessPolicy,
@@ -9,7 +9,7 @@ import type {
 	DemoResourceExtended,
 	MicrosoftTeamBasic
 } from '$lib/types';
-import { microsoftGraph } from '$lib/server/apis';
+import { microsoftGraph } from '$lib/server/apis/msgraph';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function executed ===');

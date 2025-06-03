@@ -6,7 +6,9 @@ import AppConfig from '$lib/server/config';
 import { redisCache } from '$lib/server/cache';
 import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
 // import type { AuthenticationResult } from '@azure/msal-node';
-import { backendAPI, microsoftGraph } from '$lib/server/apis';
+import { backendAPI} from '$lib/server/apis/backendApi';
+import { microsoftGraph } from '$lib/server/apis/msgraph';
+
 
 const appConfig = await AppConfig.getInstance();
 

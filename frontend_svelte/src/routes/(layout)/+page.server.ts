@@ -1,5 +1,5 @@
 import type { Actions } from './$types';
-import { backendAPI } from '$lib/server/apis';
+import { backendAPI } from '$lib/server/apis/backendApi';
 import { fail } from '@sveltejs/kit';
 import { redisCache } from '$lib/server/cache';
 
