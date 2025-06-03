@@ -278,6 +278,18 @@
 														<div
 															class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
 														>
+															<button
+																id="rights-{id}"
+																type="button"
+																class="dropdown-toggle btn btn-text bg-base-300"
+																aria-haspopup="menu"
+																aria-expanded="false"
+																aria-label="Dropdown"
+															>
+																<span
+																	class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
+																></span>
+															</button>
 															<ul
 																class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
 																role="menu"
@@ -349,18 +361,6 @@
 																	</button>
 																</li>
 															</ul>
-															<button
-																id="rights-{id}"
-																type="button"
-																class="dropdown-toggle btn btn-text bg-base-300"
-																aria-haspopup="menu"
-																aria-expanded="false"
-																aria-label="Dropdown"
-															>
-																<span
-																	class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-																></span>
-															</button>
 														</div>
 														<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
 															<span class="icon-[openmoji--check-mark]"></span>
