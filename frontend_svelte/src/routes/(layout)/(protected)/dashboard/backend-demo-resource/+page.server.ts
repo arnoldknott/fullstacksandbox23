@@ -148,9 +148,9 @@ export const actions: Actions = {
 		// console.log('=== routes - demo-resource - page.server - share function executed ===');
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
-		if (url.searchParams.get('action') === 'unshare') {
+		if (url.searchParams.get('new-action') === 'unshare') {
 			const resourceId = data.get('id');
-			const identityId = url.searchParams.get('identityid');
+			const identityId = url.searchParams.get('identity-id');
 			await backendAPI.delete(
 				sessionId,
 				`/access/policy?resource_id=${resourceId}&identity_id=${identityId}`
@@ -168,12 +168,27 @@ export const actions: Actions = {
 			// 	JSON.stringify(accessPolicy)
 			// );
 			// if (response.status !== 201) {
-			const newOrUpdateAccessPolicy = {
-				resource_id: data.get('id'),
-				identity_id: url.searchParams.get('identityid'),
-				new_action: url.searchParams.get('action')
-			};
-			await backendAPI.put(sessionId, '/access/policy', JSON.stringify(newOrUpdateAccessPolicy));
+			const oldAction = url.searchParams.get('action');
+			if (!oldAction) {
+				{
+					const createAccessPolicy = {
+						resource_id: data.get('id'),
+						identity_id: url.searchParams.get('identity-id'),
+						action: url.searchParams.get('new-action')
+					};
+					await backendAPI.post(sessionId, '/access/policy', JSON.stringify(createAccessPolicy));
+				}
+			} else {
+				{
+					const updateAccessPolicy = {
+						resource_id: data.get('id'),
+						identity_id: url.searchParams.get('identity-id'),
+						action: url.searchParams.get('action'),
+						new_action: url.searchParams.get('new-action')
+					};
+					await backendAPI.put(sessionId, '/access/policy', JSON.stringify(updateAccessPolicy));
+				}
+			}
 			// }
 		}
 

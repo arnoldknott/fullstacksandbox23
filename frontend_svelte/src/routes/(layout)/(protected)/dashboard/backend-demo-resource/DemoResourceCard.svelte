@@ -62,9 +62,9 @@
 
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
-	let teamRight = $state('read');
-	// just for preventing linting errors:
-	$effect(() => console.log(teamRight));
+	// let teamRight = $state('read');
+	// // just for preventing linting errors:
+	// $effect(() => console.log(teamRight));
 
 	// $effect(() => {
 	// 	console.log('=== DemoResourceCard.svelte - teamRight ===');
@@ -302,10 +302,10 @@
 																		class="btn dropdown-item btn-text max-w-40 content-center"
 																		name="id"
 																		value={id}
-																		formaction="?/share&identityid={team.id}&action=own"
+																		formaction="?/share&identity-id={team.id}&action={accessAction(team.id)}&new-action=own"
 																		type="submit"
 																		onclick={() => {
-																			teamRight = 'own';
+																			// teamRight = 'own';
 																		}}
 																		aria-label="own"
 																		><span class="icon-[tabler--key-filled] bg-success"
@@ -318,10 +318,10 @@
 																		class="btn dropdown-item btn-text max-w-40 content-center"
 																		name="id"
 																		value={id}
-																		formaction="?/share&identityid={team.id}&action=write"
+																		formaction="?/share&identity-id={team.id}&action={accessAction(team.id)}&new-action=write"
 																		type="submit"
 																		onclick={() => {
-																			teamRight = 'write';
+																			// teamRight = 'write';
 																		}}
 																		aria-label="write"
 																		><span
@@ -335,10 +335,10 @@
 																		class="btn dropdown-item btn-text max-w-40 content-center"
 																		name="id"
 																		value={id}
-																		formaction="?/share&identityid={team.id}&action=read"
+																		formaction="?/share&identity-id={team.id}&action={accessAction(team.id)}&new-action=read"
 																		type="submit"
 																		onclick={() => {
-																			teamRight = 'read';
+																			// teamRight = 'read';
 																		}}
 																		aria-label="read"
 																		><span class="icon-[tabler--eye] bg-neutral"></span>
@@ -350,7 +350,7 @@
 																		class="btn dropdown-item btn-text max-w-40 content-center"
 																		name="id"
 																		value={id}
-																		formaction="?/share&identityid={team.id}&action=unshare"
+																		formaction="?/share&identity-id={team.id}&new-action=unshare"
 																		onclick={() => {
 																			dropdownShareDropdown?.close();
 																			dropdownMenu?.close();

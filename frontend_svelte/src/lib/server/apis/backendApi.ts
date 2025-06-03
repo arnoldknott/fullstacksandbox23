@@ -54,6 +54,13 @@ class BackendAPI extends BaseAPI {
     ) {
         return await super.delete(session_id, path, scopes, options, headers);
     }
+
+    async share(
+        session_id: string,
+
+    ){
+        
+    }
 }
 
 export const backendAPI = new BackendAPI();
