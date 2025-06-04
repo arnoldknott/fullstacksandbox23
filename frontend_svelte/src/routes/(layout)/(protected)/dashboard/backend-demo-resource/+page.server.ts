@@ -9,7 +9,7 @@ import type {
 	DemoResourceExtended,
 	MicrosoftTeamBasic
 } from '$lib/types';
-import { Action } from '$lib/accessHandler';
+// import { Action } from '$lib/accessHandler';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
 import { AccessHandler } from '$lib/accessHandler';
 
@@ -150,35 +150,43 @@ export const actions: Actions = {
 		// console.log('=== routes - demo-resource - page.server - share function executed ===');
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
-		const resourceId = data.get('id')?.toString();
-		const identityId = url.searchParams.get('identity-id')?.toString();
-		const actionParam = url.searchParams.get('action');
-		const newActionParam = url.searchParams.get('new-action');
-		let action = Object.values(Action).includes(actionParam as Action) ? (actionParam as Action) : undefined;
-		let newAction = Object.values(Action).includes(newActionParam as Action) ? (newActionParam as Action) : undefined;
+		// const resourceId = data.get('id')?.toString();
+		// const identityId = url.searchParams.get('identity-id')?.toString();
+		// const actionParam = url.searchParams.get('action');
+		// const newActionParam = url.searchParams.get('new-action');
+		// let action = Object.values(Action).includes(actionParam as Action) ? (actionParam as Action) : undefined;
+		// let newAction = Object.values(Action).includes(newActionParam as Action) ? (newActionParam as Action) : undefined;
 
-		if (!resourceId || !identityId) {
-			console.error('=== routes - demo-resource - page.server - Resource ID or Identity ID is missing ===');
-			return fail(400, { error: 'Resource ID and Identity ID are required.' });
-		} else if (!action) {
-			if (!newAction) {
-				console.error('=== routes - demo-resource - page.server - Action and newAction is missing ===');
-				return fail(400, { error: 'Invalid action parameter.' });
-			} else {
-				console.warn('=== routes - demo-resource - page.server - Action is missing, using newAction ===');
-				action = newAction;
-				newAction = undefined;
-			}
-		} 
-		const accessPolicy = {
-			resource_id: resourceId,
-			identity_id: identityId,
-			action: action,
-			new_action: newAction
-		};
-		// console.log('=== routes - demo-resource - page.server - accessPolicy ===');
-		// console.log(accessPolicy);
-		await backendAPI.share(sessionId,accessPolicy);
+		return backendAPI.share(
+			sessionId,
+			data.get('id')?.toString(),
+			url.searchParams.get('identity-id')?.toString(),
+			url.searchParams.get('action')?.toString(),
+			url.searchParams.get('new-action')?.toString()
+		)
+
+		// if (!resourceId || !identityId) {
+		// 	console.error('=== routes - demo-resource - page.server - Resource ID or Identity ID is missing ===');
+		// 	return fail(400, { error: 'Resource ID and Identity ID are required.' });
+		// } else if (!action) {
+		// 	if (!newAction) {
+		// 		console.error('=== routes - demo-resource - page.server - Action and newAction is missing ===');
+		// 		return fail(400, { error: 'Invalid action parameter.' });
+		// 	} else {
+		// 		console.warn('=== routes - demo-resource - page.server - Action is missing, using newAction ===');
+		// 		action = newAction;
+		// 		newAction = undefined;
+		// 	}
+		// } 
+		// const accessPolicy = {
+		// 	resource_id: resourceId,
+		// 	identity_id: identityId,
+		// 	action: action,
+		// 	new_action: newAction
+		// };
+		// // console.log('=== routes - demo-resource - page.server - accessPolicy ===');
+		// // console.log(accessPolicy);
+		// await backendAPI.share(sessionId,accessPolicy);
 
 		// if (url.searchParams.get('new-action') === 'unshare') {
 		// 	const resourceId = data.get('id');
