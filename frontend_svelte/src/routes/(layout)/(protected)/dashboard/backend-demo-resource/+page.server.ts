@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 // import { error } from '@sveltejs/kit';
-import { backendAPI } from '$lib/server/apis';
+import { backendAPI } from '$lib/server/apis/backendApi';
 import { fail } from '@sveltejs/kit';
 import type {
 	AccessPolicy,
@@ -9,7 +9,8 @@ import type {
 	DemoResourceExtended,
 	MicrosoftTeamBasic
 } from '$lib/types';
-import { microsoftGraph } from '$lib/server/apis';
+// import { Action } from '$lib/accessHandler';
+import { microsoftGraph } from '$lib/server/apis/msgraph';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function executed ===');
@@ -143,42 +144,16 @@ export const actions: Actions = {
 		// 	return fail(response.status, { error: response.statusText });
 		// }
 	},
-	// TBD: after developing the share functionality, move it to lib/server/apis.ts
 	share: async ({ locals, request, url }) => {
-		// console.log('=== routes - demo-resource - page.server - share function executed ===');
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
-		if (url.searchParams.get('action') === 'unshare') {
-			const resource_id = data.get('id');
-			const identity_id = url.searchParams.get('teamid');
-			await backendAPI.delete(
-				sessionId,
-				`/access/policy?resource_id=${resource_id}&identity_id=${identity_id}`
-			);
-		} else {
-			// const accessPolicy = {
-			// 	resource_id: data.get('id'),
-			// 	identity_id: url.searchParams.get('teamid'),
-			// 	action: url.searchParams.get('action')
-			// };
 
-			// const response = await backendAPI.post(
-			// 	sessionId,
-			// 	'/access/policy',
-			// 	JSON.stringify(accessPolicy)
-			// );
-			// if (response.status !== 201) {
-			const newOrUpdateAccessPolicy = {
-				resource_id: data.get('id'),
-				identity_id: url.searchParams.get('teamid'),
-				new_action: url.searchParams.get('action')
-			};
-			await backendAPI.put(sessionId, '/access/policy', JSON.stringify(newOrUpdateAccessPolicy));
-			// }
-		}
-
-		// const accessPolicy = {
-		// 	resource_id: params.query.get('resource_id'),
-		// }
+		return backendAPI.share(
+			sessionId,
+			data.get('id')?.toString(),
+			url.searchParams.get('identity-id')?.toString(),
+			url.searchParams.get('action')?.toString(),
+			url.searchParams.get('new-action')?.toString()
+		);
 	}
 }; //satisfies Actions;

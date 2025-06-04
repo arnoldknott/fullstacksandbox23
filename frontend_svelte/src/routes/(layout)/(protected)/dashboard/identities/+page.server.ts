@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { microsoftGraph } from '$lib/server/apis';
+import { microsoftGraph } from '$lib/server/apis/msgraph';
 import type { MicrosoftTeamBasic } from '$lib/types';
 // const getAllMicrosoftTeams = async (sessionId: string, azureGroups: string[]) => {
 

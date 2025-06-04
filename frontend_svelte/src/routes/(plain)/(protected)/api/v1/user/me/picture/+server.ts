@@ -1,7 +1,7 @@
 // import { msalAuthProvider } from '$lib/server/oauth';
 import { error, type RequestHandler } from '@sveltejs/kit';
 // import AppConfig from '$lib/server/config';
-import { microsoftGraph } from '$lib/server/apis';
+import { microsoftGraph } from '$lib/server/apis/msgraph';
 
 // const appConfig = await AppConfig.getInstance();
 

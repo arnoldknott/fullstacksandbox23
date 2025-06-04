@@ -1,10 +1,6 @@
-import AppConfig from '$lib/server/config';
-import { msalAuthProvider, type BaseOauthProvider } from '$lib/server/oauth';
-import type { MicrosoftTeamBasic } from '$lib/types';
+import { type BaseOauthProvider } from '$lib/server/oauth';
 
-const appConfig = await AppConfig.getInstance();
-
-type RequestBody =
+export type RequestBody =
 	| string
 	| Blob
 	| DataView
@@ -14,7 +10,9 @@ type RequestBody =
 	| URLSearchParams
 	| ReadableStream<Uint8Array>;
 
-class BaseAPI {
+export class BaseAPI {
+	// needs to have a method getAccessToken(session_id: string, scopes: string[]): Promise<string>;
+	// which returns an access Token for the given session_id and scopes for the specific API.
 	oauthProvider: BaseOauthProvider;
 	apiBaseURL: string;
 
@@ -160,109 +158,3 @@ class BaseAPI {
 		// }
 	}
 }
-
-class BackendAPI extends BaseAPI {
-	appConfig: AppConfig;
-	static pathPrefix = '/api/v1';
-
-	constructor() {
-		super(msalAuthProvider, `${appConfig.backend_origin}${BackendAPI.pathPrefix}`);
-		this.appConfig = appConfig;
-	}
-
-	async post(
-		session_id: string,
-		path: string,
-		body: RequestBody,
-		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
-		options: RequestInit = {},
-		headers: HeadersInit = {}
-	) {
-		return await super.post(session_id, path, body, scopes, options, headers);
-	}
-
-	async get(
-		session_id: string,
-		path: string,
-		scopes: string[] = [`${appConfig.api_scope}/api.read`],
-		options: RequestInit = {},
-		headers: HeadersInit = {}
-	) {
-		return await super.get(session_id, path, scopes, options, headers);
-	}
-
-	async put(
-		session_id: string,
-		path: string,
-		body: RequestBody,
-		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
-		options: RequestInit = {},
-		headers: HeadersInit = {}
-	) {
-		return await super.put(session_id, path, body, scopes, options, headers);
-	}
-
-	async delete(
-		session_id: string,
-		path: string,
-		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
-		options: RequestInit = {},
-		headers: HeadersInit = {}
-	) {
-		return await super.delete(session_id, path, scopes, options, headers);
-	}
-}
-
-export const backendAPI = new BackendAPI();
-
-class MicrosoftGraph extends BaseAPI {
-	appConfig: AppConfig;
-
-	constructor() {
-		super(msalAuthProvider, appConfig.ms_graph_base_uri);
-		this.appConfig = appConfig;
-	}
-
-	async post(
-		sessionId: string,
-		path: string,
-		body: RequestBody,
-		scopes: string[] = ['User.Read'],
-		options: RequestInit = {},
-		headers: HeadersInit = {}
-	) {
-		return await super.post(sessionId, path, body, scopes, options, headers);
-	}
-
-	async get(
-		sessionId: string,
-		path: string,
-		scopes: string[] = ['User.Read'],
-		options: RequestInit = {},
-		headers: HeadersInit = {}
-	) {
-		return await super.get(sessionId, path, scopes, options, headers);
-	}
-
-	// TBD: implement put and delete methods
-
-	async getAttachedTeams(sessionId: string, azureGroups: string[]) {
-		const myTeams: MicrosoftTeamBasic[] = [];
-		await Promise.all(
-			azureGroups.map(async (azureGroup) => {
-				const response = await this.get(sessionId, `/teams/${azureGroup}`, ['Team.ReadBasic.All']);
-				if (response.status === 200) {
-					const microsoftTeam = await response.json();
-					myTeams.push({
-						id: microsoftTeam.id,
-						displayName: microsoftTeam.displayName,
-						description: microsoftTeam.description
-					});
-				}
-			})
-		);
-		return myTeams;
-	}
-}
-
-export const microsoftGraph = new MicrosoftGraph();

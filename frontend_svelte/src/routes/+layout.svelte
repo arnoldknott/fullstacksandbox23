@@ -104,7 +104,7 @@
 	afterNavigate(async () => {
 		// Runs after navigating between pages
 		if (!window.HSStaticMethods) {
-			await import('flyonui/flyonui.js')
+			await import('flyonui/flyonui.js');
 		}
 		window.HSStaticMethods.autoInit();
 		// HSStaticMethods.autoInit();
@@ -152,7 +152,7 @@
 
 <!-- TBD: add toggle switch for light and dark mode -->
 <!-- <main {@attach initFlyonUI} class="h-100" > -->
-<main class="h-100" >
+<main class="h-100">
 	<!-- {initFlyonui()} -->
 	{@render children?.()}
 	<!-- <slot /> -->

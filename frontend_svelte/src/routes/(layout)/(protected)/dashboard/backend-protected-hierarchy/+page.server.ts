@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 // import { msalAuthProvider } from '$lib/server/oauth';
 // import AppConfig from '$lib/server/config';
 // import { error } from '@sveltejs/kit';
-import { backendAPI } from '$lib/server/apis';
+import { backendAPI } from '$lib/server/apis/backendApi';
 
 // const appConfig = await AppConfig.getInstance();
 

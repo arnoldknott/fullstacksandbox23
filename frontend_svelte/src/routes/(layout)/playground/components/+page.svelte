@@ -10,84 +10,18 @@
 	// import { HSDropdown, type IHTMLElementPopper } from 'flyonui/flyonui';
 	// import type { IHTMLElementPopper, HSDropdown } from 'flyonui/flyonui';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
+	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
+	import { enhance } from '$app/forms';
+	import ShareItem from './ShareItem.svelte';
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
+	import type { ActionResult } from '@sveltejs/kit';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
 	let develop = $state(page.url.searchParams.get('develop') === 'true' ? true : false);
-
-	// for dropdown menus:
-	// let dropdownMenu = $state<HTMLUListElement | null>(null);
-	let actionButtonShareMenuElement = $state<HTMLElement | null>(null);
-	let dropdownMenuElement = $state<HTMLElement | null>(null);
-	// let dropdownMenuElement = $state<HTMLElement | null>(null);
-	let actionButtonShareMenu = $state<HSDropdown | null>(null);
-	let dropdownMenu = $state<HSDropdown | null>(null);
-
-	const loadHSDropdown = async () => {
-		const { HSDropdown } = await import('flyonui/flyonui');
-		return HSDropdown;
-	};
-
-	// const loadHSDropdown = async () => {
-	// 	const { HSDropdown } = await import('flyonui/flyonui');
-	// 	console.log('components - page - loadHSDropdown - HSDropdown')
-	// 	console.log(HSDropdown)
-	// 	dropdown = new HSDropdown(dropdownElement as unknown as IHTMLElementPopper);
-	// };
-	// const mapDropdown = (_node: HTMLElement) => {
-	// 	afterNavigate( () => {
-	// 		console.log('components - page - mapDrowdown - afterNavigate')
-	// 		// loadHSDropdown().then((LoadedHSDropdown) => {
-	// 		// 	dropdownMenu = new LoadedHSDropdown(dropdownMenuElement);
-	// 		// })
-	// 	})
-	// };
-	// let dropdownMenu = $derived.by(async () => {
-	// 	if (dropdownMenuElement){
-	// 		const { HSDropdown } = await import('flyonui/flyonui');
-	// 		return new HSDropdown(dropdownMenuElement as unknown as IHTMLElementPopper)
-	// 	}});
-
-	// // TBD: is this stopping the dropdown from stalling? No, it doesn't, but the issue only exists in development mode.
-	// window.HSStaticMethods.autoInit(["dropdown"]);
-
-	$effect(() => {
-		// afterNavigate(() => {
-		// console.log('components - page - $effect - dropdown')
-		// console.log(dropdownElement)
-		loadHSDropdown().then((LoadedHSDropdown) => {
-			// console.log("=== component - LoadedHSDropdown ===")
-			// console.log(LoadedHSDropdown)
-			// dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
-			// console.log('components - page - $effect - dropdown - window');
-			// console.log(window);
-			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
-			actionButtonShareMenu = new LoadedHSDropdown(
-				actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI
-			);
-			// dropdownMenu
-			// console.log("=== dropdownMenu ===")
-			// console.log(dropdownMenu)
-		});
-		// })
-		// if (dropdownElement) {
-		//     (async () => {
-		//         try {
-		//             const LoadedHSDropdown = await loadHSDropdown();
-		//             // Ensure the dropdown is not already initialized
-		//             if (!dropdown) {
-		//                 dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
-		//             }
-		//         } catch (error) {
-		//             console.error('Error initializing dropdown:', error);
-		//         }
-		//     })();
-		// }
-	});
 
 	// data for card with navigation in title:
 	const cardsNavigation = [
@@ -110,38 +44,98 @@
 		}
 	];
 
-	// data for share menu:
-	const teams = $state([
-		{
-			name: 'The A Team',
-			right: 'read'
-		},
-		{
-			name: 'Awesome Team',
-			right: ''
-		},
-		{
-			name: 'Team Teams',
-			right: 'write'
-		},
-		{
-			name: 'Team Next',
-			right: 'own'
-		},
-		{
-			name: 'Be a Team',
-			right: 'read'
-		}
-	]);
-	const rightsIcon = (right: string) => {
-		return right === 'own'
-			? 'icon-[tabler--key-filled] bg-success'
-			: right === 'write'
-				? 'icon-[material-symbols--edit-outline-rounded] bg-warning'
-				: right === 'read'
-					? 'icon-[tabler--eye] bg-neutral'
-					: 'icon-[tabler--ban] bg-error';
+	// for dropdown menus:
+	// let dropdownMenu = $state<HTMLUListElement | undefined>(undefined);
+	let actionButtonShareMenuElement = $state<HTMLElement | undefined>(undefined);
+	let dropdownShareDropdownElement = $state<HTMLElement | undefined>(undefined);
+	let dropdownMenuElement = $state<HTMLElement | undefined>(undefined);
+	let dropdownShareElement = $state<HTMLElement | undefined>(undefined);
+	// let dropdownMenuElement = $state<HTMLElement | undefined>(undefined);
+	let actionButtonShareMenu = $state<HSDropdown | undefined>(undefined);
+	let dropdownShareDropdown = $state<HSDropdown | undefined>(undefined);
+	let dropdownMenu = $state<HSDropdown | undefined>(undefined);
+	let dropdownShare = $state<HSDropdown | undefined>(undefined);
+
+	const loadHSDropdown = async () => {
+		const { HSDropdown } = await import('flyonui/flyonui');
+		return HSDropdown;
 	};
+
+	// // TBD: is this stopping the dropdown from stalling? No, it doesn't, but the issue only exists in development mode.
+	// window.HSStaticMethods.autoInit(["dropdown"]);
+
+	// TBD: make sure all dropdowns close and get reset, when user does not click any of the list items, but elsewhere on the screen.
+	// use the event from the main dropdown to listen and close the child dropdowns.
+	// const closeChildDropdowns: Attachment = () => {
+	// 	dropdownMenu?.on("close", dropdownShareDropdown?.close());
+	// TBD: potentially using {@attach} for this?
+
+	$effect(() => {
+		// afterNavigate(() => {
+		loadHSDropdown().then((LoadedHSDropdown) => {
+			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
+			dropdownShareDropdown = new LoadedHSDropdown(
+				dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI
+			);
+			actionButtonShareMenu = new LoadedHSDropdown(
+				actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI
+			);
+			dropdownShare = new LoadedHSDropdown(
+				dropdownShareElement as unknown as IHTMLElementFloatingUI
+			);
+			// });
+		});
+	});
+
+	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
+		if (result.type === 'success') {
+			const team = teams.find((team) => team.id === result.data?.identityId);
+			if (team) {
+				team.right = result.data?.confirmedNewAction
+					? result.data.confirmedNewAction.toString()
+					: '';
+			}
+		} else {
+			// handle error: show error message
+		}
+		update();
+	};
+
+	// data for share menu:
+	const teams = $state(
+		[
+			{
+				id: '1',
+				name: 'The A Team',
+				right: 'read'
+			},
+			{
+				id: '2',
+				name: 'Awesome Team',
+				right: ''
+			},
+			{
+				id: '3',
+				name: 'Team Teams',
+				right: 'write'
+			},
+			{
+				id: '4',
+				name: 'Team Next',
+				right: 'own'
+			},
+			{
+				id: '5',
+				name: 'Be a Team',
+				right: 'read'
+			},
+			{
+				id: '6',
+				name: 'Very long Team Name',
+				right: 'write'
+			}
+		].sort((a, b) => a.name.localeCompare(b.name))
+	);
 
 	// for status sliders:
 	let theme = $state({} as AppTheme);
@@ -381,7 +375,7 @@
 				</div>
 				<div class="card-body">
 					<p class="body-small md:body text-primary-container-content">
-						Some shorter text here - but adjusts to the height of the neigour card
+						Some shorter text here - but adjusts to the height of the neighbor card
 					</p>
 				</div>
 			</div>
@@ -427,9 +421,6 @@
 								aria-expanded="false"
 								aria-label="Dropdown"
 							></span>
-							<!-- <button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-text btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-								<span class="icon-[tabler--dots-vertical] size-6"></span>
-							</button> -->
 							<ul
 								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
 								role="menu"
@@ -496,7 +487,7 @@
 							aria-label="Share with"
 						>
 							<span class="icon-[tabler--share-2]"></span>Share
-							<span class="icon-[tabler--chevron-up] size-4"></span>
+							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 						<ul
 							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
@@ -504,102 +495,20 @@
 							aria-orientation="vertical"
 							aria-labelledby="action-share"
 						>
-							{#each teams as team, i (i)}
-								<li>
-									<div class="text-secondary flex items-center">
-										<div class="dropdown-item text-secondary max-w-42 content-center">
-											<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"></span>{team.name}
-										</div>
-										<div class="mr-2">
-											<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
-											<span class="{rightsIcon(team.right)} ml-2 size-4"></span>
-										</div>
-										<div
-											class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
-										>
-											<button
-												id="rights"
-												type="button"
-												class="dropdown-toggle btn btn-text bg-base-300"
-												aria-haspopup="menu"
-												aria-expanded="false"
-												aria-label="Dropdown"
-											>
-												<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-												></span>
-											</button>
-											<ul
-												class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
-												role="menu"
-												aria-orientation="vertical"
-												aria-labelledby="rights"
-											>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = 'own';
-															actionButtonShareMenu?.close();
-														}}
-														aria-label="own"
-														><span class="icon-[tabler--key-filled] bg-success"></span></button
-													>
-												</li>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = 'write';
-															actionButtonShareMenu?.close();
-														}}
-														aria-label="write"
-														><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
-														></span>
-													</button>
-												</li>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = 'read';
-															actionButtonShareMenu?.close();
-														}}
-														aria-label="read"
-														><span class="icon-[tabler--eye] bg-neutral"></span>
-													</button>
-												</li>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = '';
-															actionButtonShareMenu?.close();
-														}}
-														aria-label="remove share"
-														><span class="icon-[tabler--ban] bg-error"></span>
-													</button>
-												</li>
-											</ul>
-
-										</div>
-										<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
-											<span class="icon-[openmoji--check-mark]"></span>
-										</div> -->
-									</div>
-								</li>
-							{/each}
+							<form
+								method="POST"
+								name="actionButtonShareForm"
+								use:enhance={async () => {
+									actionButtonShareMenu?.close();
+									return async ({ result, update }) => {
+										handleRightsChangeResponse(result, update);
+									};
+								}}
+							>
+								{#each teams as team, i (i)}
+									<ShareItem resourceId="actionButtonShareResourceId" identity={team} />
+								{/each}
+							</form>
 							<li class="dropdown-footer gap-2">
 								<button
 									class="btn dropdown-item btn-text text-secondary content-center justify-start"
@@ -617,7 +526,6 @@
 						<span class="icon-[tabler--trash]"></span>Delete
 					</button>
 				</div>
-				<!-- </div> -->
 			{/snippet}
 			<Card id="cardEdit" footer={footerAction}>
 				<p class="body-small md:body text-primary-container-content">
@@ -634,188 +542,126 @@
 
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Dropdown menus 🚧</Heading>
-		<div
-			class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
-			bind:this={dropdownMenuElement}
-		>
-			<!-- onload={async()=> await  loadHSDropdown()} -->
-			<div 
-				id="dropdown-menu-icon"
-				role="button"
-				class="dropdown-toggle"
-				aria-haspopup="menu"
-				aria-expanded="false"
-				aria-label="Dropdown"
+		<div class="mb-20 flex flex-wrap gap-4">
+			<div
+				class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
+				bind:this={dropdownMenuElement}
 			>
-				<span class="icon-[tabler--dots-vertical] text-secondary size-6"></span>
-			</div>
-			<!-- <span
-				id="dropdown-menu-icon"
-				class="dropdown-toggle icon-[tabler--dots-vertical] text-secondary size-6"
-				role="button"
-				aria-haspopup="menu"
-				aria-expanded="false"
-				aria-label="Dropdown"
-			></span> -->
-			<ul
-				class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
-				role="menu"
-				aria-orientation="vertical"
-				aria-labelledby="dropdown-menu-icon"
-			>
-				<li class="items-center">
-					<button
-						class="btn dropdown-item btn-text text-secondary content-center justify-start"
-						aria-label="Edit Button"
-						onclick={() => (edit ? (edit = false) : (edit = true))}
-						><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
-					>
-				</li>
-				<li
-					class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+				<!-- {@attach closeChildDropdowns()} -->
+				<!-- onload={async()=> await  loadHSDropdown()} -->
+				<div
+					id="dropdown-menu-icon"
+					role="button"
+					class="dropdown-toggle"
+					aria-haspopup="menu"
+					aria-expanded="false"
+					aria-label="Dropdown"
 				>
+					<span class="icon-[tabler--dots-vertical] text-secondary size-6"></span>
+				</div>
+				<ul
+					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
+					role="menu"
+					aria-orientation="vertical"
+					aria-labelledby="dropdown-menu-icon"
+				>
+					<li class="items-center">
+						<button
+							class="btn dropdown-item btn-text text-secondary content-center justify-start"
+							aria-label="Edit Button"
+							onclick={() => (edit ? (edit = false) : (edit = true))}
+						>
+							<span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit
+						</button>
+					</li>
+					<li
+						class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+						bind:this={dropdownShareDropdownElement}
+					>
+						<button
+							id="share"
+							class="dropdown-toggle btn dropdown-item btn-text text-secondary content-center justify-start"
+							aria-haspopup="menu"
+							aria-expanded="false"
+							aria-label="Share with"
+						>
+							<span class="icon-[tabler--share-2]"></span>
+							Share
+							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
+						</button>
+						<ul
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							role="menu"
+							aria-orientation="vertical"
+							aria-labelledby="share"
+						>
+							<form
+								method="POST"
+								name="dropDownShareDropdownForm"
+								use:enhance={async () => {
+									dropdownMenu?.close();
+									dropdownShareDropdown?.close();
+									return async ({ result, update }) => {
+										handleRightsChangeResponse(result, update);
+									};
+								}}
+							>
+								{#each teams as team, i (i)}
+									<ShareItem resourceId="dropdownShareDropdownResourceId" identity={team} />
+								{/each}
+							</form>
+							<li class="dropdown-footer gap-2">
+								<button
+									class="btn dropdown-item btn-text text-secondary content-center justify-start"
+									>... more options</button
+								>
+							</li>
+						</ul>
+					</li>
+					<li class="dropdown-footer gap-2">
+						<button
+							class="btn dropdown-item btn-error btn-text content-center justify-start"
+							aria-label="Delete Button"
+							name="id"
+							formaction="?/delete"><span class="icon-[tabler--trash]"></span>Delete</button
+						>
+					</li>
+				</ul>
+			</div>
+			<div>
+				<div class="dropdown relative inline-flex" bind:this={dropdownShareElement}>
 					<button
-						id="share"
-						class="dropdown-toggle btn dropdown-item btn-text text-secondary content-center justify-start"
+						id="dropdown-share"
+						type="button"
+						class="dropdown-toggle btn btn-secondary-container text-secondary-container-content w-full"
 						aria-haspopup="menu"
 						aria-expanded="false"
 						aria-label="Share with"
 					>
-						<span class="icon-[tabler--share-2]"></span>
-						Share
-						<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
+						<span class="icon-[tabler--share-2]"></span>Share
+						<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"></span>
 					</button>
-
-					<!-- min-w-60 -->
 					<ul
-						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+						class="dropdown-menu dropdown-open:opacity-100 bg-base-300 hidden min-w-60"
 						role="menu"
 						aria-orientation="vertical"
-						aria-labelledby="share"
+						aria-labelledby="dropdown-share"
 					>
-						{#each teams as team, i (i)}
-							<li>
-								<div class="text-secondary flex items-center">
-									<div class="text-secondary max-w-42 content-center w-full">
-										<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"></span>{team.name}
-									</div>
-									<div class="mr-2">
-										<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
-										<span class="{rightsIcon(team.right)} ml-2 size-4"></span>
-									</div>
-									<div
-										class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
-									>
-										<button
-											id="rights"
-											type="button"
-											class="dropdown-toggle dropdown-item btn btn-text bg-base-300"
-											aria-haspopup="menu"
-											aria-expanded="false"
-											aria-label="Dropdown"
-										>
-											<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-											></span>
-										</button>
-										<ul
-											class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
-											role="menu"
-											aria-orientation="vertical"
-											aria-labelledby="rights"
-										>
-											<li>
-												<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
-										combine with an accessPolicyExists - that also indicates the user, wether this policy already exists through a checkmark  -->
-												<button
-													data-sveltekit-preload-data={false}
-													class="btn dropdown-item btn-text max-w-40 content-center"
-													name="id"
-													type="submit"
-													onclick={() => {
-														team.right = 'own';
-														dropdownMenu?.close();
-													}}
-													aria-label="own"
-													><span class="icon-[tabler--key-filled] bg-success"></span></button
-												>
-											</li>
-											<li>
-												<button
-													data-sveltekit-preload-data={false}
-													class="btn dropdown-item btn-text max-w-40 content-center"
-													name="id"
-													type="submit"
-													onclick={() => {
-														team.right = 'write';
-														dropdownMenu?.close();
-													}}
-													aria-label="write"
-													><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
-													></span>
-												</button>
-											</li>
-											<li>
-												<button
-													data-sveltekit-preload-data={false}
-													class="btn dropdown-item btn-text max-w-40 content-center"
-													name="id"
-													type="submit"
-													onclick={() => {
-														team.right = 'read';
-														dropdownMenu?.close();
-													}}
-													aria-label="read"
-													><span class="icon-[tabler--eye] bg-neutral"></span>
-												</button>
-											</li>
-											<li>
-												<button
-													data-sveltekit-preload-data={false}
-													class="btn dropdown-item btn-text max-w-40 content-center"
-													name="id"
-													type="submit"
-													onclick={() => {
-														team.right = '';
-														dropdownMenu?.close();
-													}}
-													aria-label="remove share"
-													><span class="icon-[tabler--ban] bg-error"></span>
-												</button>
-											</li>
-										</ul>
-									</div>
-									<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
-										<span class="icon-[openmoji--check-mark]"></span>
-									</div> -->
-								</div>
-							</li>
-						{/each}
-						<li class="dropdown-footer gap-2">
-							<button class="btn dropdown-item btn-text text-secondary content-center justify-start"
-								>... more options</button
-							>
-						</li>
+						<form
+							method="POST"
+							name="dropdownShareForm"
+							use:enhance={async () => {
+								dropdownShare?.close();
+								return async ({ result, update }) => {
+									handleRightsChangeResponse(result, update);
+								};
+							}}
+						>
+							<ShareItem resourceId="dropdownShareResourceId" identity={teams[0]} />
+						</form>
 					</ul>
-				</li>
-				<li class="dropdown relative [--offset:15] [--placement:right-start]">
-					<button id="nested-dropdown-2" class="dropdown-toggle dropdown-item justify-between"  aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-						More Options
-						<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
-					</button>
-					<ul class="dropdown-menu dropdown-open:opacity-100 hidden min-w-60" role="menu" aria-orientation="vertical" aria-labelledby="nested-dropdown-2">
-						<li><a class="dropdown-item" href="#">Download Documents</a></li>
-						<li><a class="dropdown-item" href="#">Manage FAQs</a></li>
-					</ul>
-				</li>
-				<li class="dropdown-footer gap-2">
-					<button
-						class="btn dropdown-item btn-error btn-text content-center justify-start"
-						aria-label="Delete Button"
-						name="id"
-						formaction="?/delete"><span class="icon-[tabler--trash]"></span>Delete</button
-					>
-				</li>
-			</ul>
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -856,8 +702,8 @@
 					max="100"
 					step="1"
 					class="range w-full"
-					aria-label="left Status"
-					id="leftStatus"
+					aria-label="center Status"
+					id="centerStatus"
 					bind:value={status[1]}
 				/>
 			</div>
@@ -873,8 +719,8 @@
 					max="100"
 					step="1"
 					class="range w-full"
-					aria-label="left Status"
-					id="leftStatus"
+					aria-label="right Status"
+					id="rightStatus"
 					bind:value={status[2]}
 				/>
 			</div>

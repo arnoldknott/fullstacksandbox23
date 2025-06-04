@@ -5,7 +5,9 @@
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamBasicExtended } from '$lib/types';
 	// import { AccessHandler, Action } from '$lib/accessHandler';
-	import { AccessHandler } from '$lib/accessHandler';
+	import { AccessHandler, type Action } from '$lib/accessHandler';
+	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
+	// import { on } from 'svelte/events';
 
 	let {
 		demoResource,
@@ -39,21 +41,40 @@
 	let card: Card;
 	let createUpdateForm = $state<HTMLFormElement | null>(null);
 
-	let dropdownMenu = $state<HTMLUListElement | null>(null);
+	let dropdownMenuElement = $state<HTMLElement | null>(null);
+	let dropdownShareDropdownElement = $state<HTMLElement | null>(null);
+	let dropdownMenu = $state<HSDropdown | null>(null);
+	let dropdownShareDropdown = $state<HSDropdown | null>(null);
+
+	const loadHSDropdown = async () => {
+		const { HSDropdown } = await import('flyonui/flyonui');
+		return HSDropdown;
+	};
+
+	$effect(() => {
+		loadHSDropdown().then((LoadedHSDropdown) => {
+			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
+			dropdownShareDropdown = new LoadedHSDropdown(
+				dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI
+			);
+		});
+	});
+
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
-	let teamRight = $state('read');
-	// just for preventing linting errors:
-	$effect(() => console.log(teamRight));
+	// let teamRight = $state('read');
+	// // just for preventing linting errors:
+	// $effect(() => console.log(teamRight));
 
 	// $effect(() => {
 	// 	console.log('=== DemoResourceCard.svelte - teamRight ===');
 	// 	console.log(teamRight);
 	// });
 
-	const rightsIconSelection = (identityId: string) => {
-		if (!accessPolicies) return null;
-		const rights = AccessHandler.getRights(identityId, accessPolicies);
+	const accessAction = (identityId: string) =>
+		accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : null;
+
+	const iconMapping = (rights: Action | null) => {
 		return rights === 'own'
 			? 'icon-[tabler--key-filled] bg-success'
 			: rights === 'write'
@@ -85,7 +106,7 @@
 	};
 
 	const createOrUpdateResource: SubmitFunction = async ({ formData }) => {
-		console.log('=== createOrUpdateResource triggered ===');
+		// console.log('=== createOrUpdateResource triggered ===');
 
 		if (id.slice(0, 4) !== 'new_') {
 			formData.append('id', id);
@@ -161,7 +182,10 @@
 			<!-- TBD: move this if around the relevant list points,
 			if there are any left, that read-only users are also supposed to see. -->
 			{#if userRight === 'write' || userRight === 'own'}
-				<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
+				<div
+					class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
+					bind:this={dropdownMenuElement}
+				>
 					<span
 						id="dropdown-menu-icon-{id}"
 						class="dropdown-toggle icon-[tabler--dots-vertical] size-6"
@@ -176,7 +200,6 @@
 					<ul
 						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
 						role="menu"
-						bind:this={dropdownMenu}
 						aria-orientation="vertical"
 						aria-labelledby="dropdown-menu-icon-{id}"
 					>
@@ -191,6 +214,7 @@
 						{#if userRight === 'own'}
 							<li
 								class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+								bind:this={dropdownShareDropdownElement}
 							>
 								<button
 									id="share-{id}"
@@ -208,13 +232,17 @@
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
 								>
-									<li>
-										<!-- <form method="POST" use:enhance={() => dropdownMenu?.classList.add('hidden')}> -->
-										<!-- <form method="POST" use:enhance> -->
+									<!-- <li> -->
+									<!-- <form method="POST" use:enhance={() => dropdownMenu?.classList.add('hidden')}> -->
+									<!-- <form method="POST" use:enhance> -->
+									{#if microsoftTeams}
 										<form
 											method="POST"
+											name="shareForm-resource-{id}"
 											use:enhance={async () => {
-												console.log('=== share form submitted - closing the dropdown ===');
+												// console.log('=== share form submitted - closing the dropdown ===');
+												dropdownShareDropdown?.close();
+												dropdownMenu?.close();
 												// dropdownMenu?.close()
 												// const { HSDropdown } = await import('flyonui/flyonui.js');
 												// if(dropdownMenu){
@@ -222,126 +250,141 @@
 												// }
 											}}
 										>
-											{#if microsoftTeams}
-												{#each microsoftTeams as team (team.id)}
-													<li>
-														<div class="flex items-center">
-															<!-- Also send the desired action for the share: own, write, read.
-													Pass information if access_policy already exists to form handling function share(). -->
-															<!-- <button
-																data-sveltekit-preload-data={false}
-																class="btn dropdown-item btn-text max-w-40 content-center"
-																name="id"
-																value={id}
-																formaction="?/share&teamid={team.id}"
-																><span class="icon-[fluent--people-team-16-filled]"
-																></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
-																	? ' ...'
-																	: null}
-															</button> -->
-															<div class="dropdown-item max-w-40 content-center">
-																<span class="icon-[fluent--people-team-16-filled]"
-																></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
-																	? ' ...'
-																	: null}
-															</div>
-															<div class="mr-2">
-																<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
-																<span class="{rightsIconSelection(team.id)} size-4"></span>
-															</div>
-															<div
-																class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
-															>
-																<ul
-																	class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
-																	role="menu"
-																	aria-orientation="vertical"
-																	aria-labelledby="rights-{id}"
-																>
-																	<li>
-																		<button
-																			data-sveltekit-preload-data={false}
-																			class="btn dropdown-item btn-text max-w-40 content-center"
-																			name="id"
-																			value={id}
-																			formaction="?/share&teamid={team.id}&action=own"
-																			type="submit"
-																			onclick={() => (teamRight = 'own')}
-																			aria-label="own"
-																			><span class="icon-[tabler--key-filled] bg-success"
-																			></span></button
-																		>
-																	</li>
-																	<li>
-																		<button
-																			data-sveltekit-preload-data={false}
-																			class="btn dropdown-item btn-text max-w-40 content-center"
-																			name="id"
-																			value={id}
-																			formaction="?/share&teamid={team.id}&action=write"
-																			type="submit"
-																			onclick={() => (teamRight = 'write')}
-																			aria-label="write"
-																			><span
-																				class="icon-[material-symbols--edit-outline-rounded] bg-warning"
-																			></span>
-																		</button>
-																	</li>
-																	<li>
-																		<button
-																			data-sveltekit-preload-data={false}
-																			class="btn dropdown-item btn-text max-w-40 content-center"
-																			name="id"
-																			value={id}
-																			formaction="?/share&teamid={team.id}&action=read"
-																			type="submit"
-																			onclick={() => (teamRight = 'read')}
-																			aria-label="read"
-																			><span class="icon-[tabler--eye] bg-neutral"></span>
-																		</button>
-																	</li>
-																	<li>
-																		<button
-																			data-sveltekit-preload-data={false}
-																			class="btn dropdown-item btn-text max-w-40 content-center"
-																			name="id"
-																			value={id}
-																			formaction="?/share&teamid={team.id}&action=unshare"
-																			type="submit"
-																			aria-label="remove share"
-																			><span class="icon-[tabler--ban] bg-error"></span>
-																		</button>
-																	</li>
-																</ul>
-																<button
-																	id="rights-{id}"
-																	type="button"
-																	class="dropdown-toggle btn btn-text bg-base-300"
-																	aria-haspopup="menu"
-																	aria-expanded="false"
-																	aria-label="Dropdown"
-																>
-																	<span
-																		class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-																	></span>
-																</button>
-															</div>
-															<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
-																<span class="icon-[openmoji--check-mark]"></span>
-															</div> -->
+											{#each microsoftTeams.sort( (a, b) => a.displayName.localeCompare(b.displayName) ) as team (team.id)}
+												<li>
+													<div class="flex items-center">
+														<!-- Also send the desired action for the share: own, write, read.
+												Pass information if access_policy already exists to form handling function share(). -->
+														<!-- <button
+															data-sveltekit-preload-data={false}
+															class="btn dropdown-item btn-text max-w-40 content-center"
+															name="id"
+															value={id}
+															formaction="?/share&teamid={team.id}"
+															><span class="icon-[fluent--people-team-16-filled]"
+															></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
+																? ' ...'
+																: null}
+														</button> -->
+														<div class="dropdown-item max-w-40 content-center">
+															<span class="icon-[fluent--people-team-16-filled]"
+															></span>{team.displayName.slice(0, 8)}{team.displayName.length > 9
+																? ' ...'
+																: null}
 														</div>
-													</li>
-													<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
-												{/each}
-												<li class="dropdown-footer gap-2">
-													<button
-														class="btn dropdown-item btn-text text-base-content content-center justify-start"
-														>... more options</button
-													>
+														<div class="mr-2">
+															<!-- {rightsIconSelection(team.id) ? "bg-success" : ""} -->
+															<span class="{iconMapping(accessAction(team.id))} size-4"></span>
+														</div>
+														<div
+															class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
+														>
+															<button
+																id="rights-{id}"
+																type="button"
+																class="dropdown-toggle btn btn-text bg-base-300"
+																aria-haspopup="menu"
+																aria-expanded="false"
+																aria-label="Dropdown"
+															>
+																<span
+																	class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
+																></span>
+															</button>
+															<ul
+																class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
+																role="menu"
+																aria-orientation="vertical"
+																aria-labelledby="rights-{id}"
+															>
+																<li>
+																	<button
+																		data-sveltekit-preload-data={false}
+																		class="btn dropdown-item btn-text max-w-40 content-center"
+																		name="id"
+																		value={id}
+																		formaction="?/share&identity-id={team.id}&action={accessAction(
+																			team.id
+																		)}&new-action=own"
+																		type="submit"
+																		onclick={() => {
+																			// teamRight = 'own';
+																		}}
+																		aria-label="own"
+																		><span class="icon-[tabler--key-filled] bg-success"
+																		></span></button
+																	>
+																</li>
+																<li>
+																	<button
+																		data-sveltekit-preload-data={false}
+																		class="btn dropdown-item btn-text max-w-40 content-center"
+																		name="id"
+																		value={id}
+																		formaction="?/share&identity-id={team.id}&action={accessAction(
+																			team.id
+																		)}&new-action=write"
+																		type="submit"
+																		onclick={() => {
+																			// teamRight = 'write';
+																		}}
+																		aria-label="write"
+																		><span
+																			class="icon-[material-symbols--edit-outline-rounded] bg-warning"
+																		></span>
+																	</button>
+																</li>
+																<li>
+																	<button
+																		data-sveltekit-preload-data={false}
+																		class="btn dropdown-item btn-text max-w-40 content-center"
+																		name="id"
+																		value={id}
+																		formaction="?/share&identity-id={team.id}&action={accessAction(
+																			team.id
+																		)}&new-action=read"
+																		type="submit"
+																		onclick={() => {
+																			// teamRight = 'read';
+																		}}
+																		aria-label="read"
+																		><span class="icon-[tabler--eye] bg-neutral"></span>
+																	</button>
+																</li>
+																<li>
+																	<button
+																		data-sveltekit-preload-data={false}
+																		class="btn dropdown-item btn-text max-w-40 content-center"
+																		name="id"
+																		value={id}
+																		formaction="?/share&identity-id={team.id}&action=unshare"
+																		onclick={() => {
+																			dropdownShareDropdown?.close();
+																			dropdownMenu?.close();
+																		}}
+																		type="submit"
+																		aria-label="remove share"
+																		><span class="icon-[tabler--ban] bg-error"></span>
+																	</button>
+																</li>
+															</ul>
+														</div>
+														<!-- <div class={rightsIconSelection(team.id) ? 'block' : 'invisible'}>
+															<span class="icon-[openmoji--check-mark]"></span>
+														</div> -->
+													</div>
 												</li>
-											{/if}
+												<!-- TBD: add aria-label: aria-label={team ? team : 'Team'} -->
+											{/each}
+											<li class="dropdown-footer gap-2">
+												<button
+													class="btn dropdown-item btn-text text-base-content content-center justify-start"
+													>... more options</button
+												>
+											</li>
 										</form>
-									</li>
+									{/if}
+									<!-- </li> -->
 									<!-- <li>
 								Second
 							</li> -->
