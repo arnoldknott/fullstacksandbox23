@@ -14,13 +14,35 @@
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
 	import { enhance } from '$app/forms';
-	import ShareItem from './ShareItem.svelte';
+	import ShareListItem from './ShareListItem.svelte';
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
+	import type { ActionResult } from '@sveltejs/kit';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
 	let develop = $state(page.url.searchParams.get('develop') === 'true' ? true : false);
+
+	// data for card with navigation in title:
+	const cardsNavigation = [
+		{
+			title: "Here's a title",
+			description:
+				'Some test text, here. Can go over several lines. And if it does, the cards in the same line will adjust to the longest card. This is a good way to keep the layout clean and consistent.',
+			link: '#top'
+		},
+		{
+			title: 'One more title',
+			description: 'Some shorter text here - but adjusts to the height of the neighbor card',
+			link: '#top'
+		},
+		{
+			title: 'A third title',
+			description:
+				'This one is meant to fill the row. Note how the cards are responsive on smaller screens.',
+			link: '#top'
+		}
+	];
 
 	// for dropdown menus:
 	// let dropdownMenu = $state<HTMLUListElement | undefined>(undefined);
@@ -64,14 +86,7 @@
 
 	$effect(() => {
 		// afterNavigate(() => {
-		// console.log('components - page - $effect - dropdown')
-		// console.log(dropdownElement)
 		loadHSDropdown().then((LoadedHSDropdown) => {
-			// console.log("=== component - LoadedHSDropdown ===")
-			// console.log(LoadedHSDropdown)
-			// dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
-			// console.log('components - page - $effect - dropdown - window');
-			// console.log(window);
 			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
 			dropdownShareDropdown = new LoadedHSDropdown(
 				dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI
@@ -82,63 +97,26 @@
 			dropdownShare = new LoadedHSDropdown(
 				dropdownShareElement as unknown as IHTMLElementFloatingUI
 			);
-
-			// // Add event listeners to reset dropdown state on close
-			// dropdownMenuElement?.addEventListener('hidden.bs.dropdown', () => {
-			// 	dropdownMenu?.close();
-			// });
-
-			// actionButtonShareMenuElement?.addEventListener('hidden.bs.dropdown', () => {
-			// 	actionButtonShareMenu?.close();
 			// });
 		});
-		// })
-		// if (dropdownElement) {
-		//     (async () => {
-		//         try {
-		//             const LoadedHSDropdown = await loadHSDropdown();
-		//             // Ensure the dropdown is not already initialized
-		//             if (!dropdown) {
-		//                 dropdown = new LoadedHSDropdown(dropdownElement as unknown as IHTMLElementPopper);
-		//             }
-		//         } catch (error) {
-		//             console.error('Error initializing dropdown:', error);
-		//         }
-		//     })();
-		// }
 	});
+
+	const handleRightsChangeResponse = async ( result: ActionResult, update: Function ) => {
+		if (result.type === "success") {
+			const team = teams.find((team) => team.id === result.data?.identityId);
+			if (team) {
+				team.right = result.data?.confirmedNewAction ? result.data.confirmedNewAction.toString() : ""
+			}
+		} else{
+			// handle error: show error message
+		}
+		update();
+	}
 
 	// TBD: make sure all dropdowns close and get reset, when user does not click any of the list items, but elsewhere on the screen.
 	// use the event from the main dropdown to listen and close the child dropdowns.
 	// const closeChildDropdowns: Attachment = () => {
 	// 	dropdownMenu?.on("close", dropdownShareDropdown?.close());
-
-	// 	return () => {
-	// 		// Cleanup if necessary
-	// 		console.log('components - page - closeChildDropdowns - cleanup');
-	// 	};
-	// }
-
-	// data for card with navigation in title:
-	const cardsNavigation = [
-		{
-			title: "Here's a title",
-			description:
-				'Some test text, here. Can go over several lines. And if it does, the cards in the same line will adjust to the longest card. This is a good way to keep the layout clean and consistent.',
-			link: '#top'
-		},
-		{
-			title: 'One more title',
-			description: 'Some shorter text here - but adjusts to the height of the neighbor card',
-			link: '#top'
-		},
-		{
-			title: 'A third title',
-			description:
-				'This one is meant to fill the row. Note how the cards are responsive on smaller screens.',
-			link: '#top'
-		}
-	];
 
 	// data for share menu:
 	const teams = $state(
@@ -540,7 +518,7 @@
 							aria-label="Share with"
 						>
 							<span class="icon-[tabler--share-2]"></span>Share
-							<span class="icon-[tabler--chevron-up] size-4"></span>
+							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 						<ul
 							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
@@ -553,147 +531,16 @@
 								name="actionButtonShareForm"
 								use:enhance={async () => {
 									actionButtonShareMenu?.close()
-									return async ({ result, update }) => {
-										console.log('components - page - actionButtonShareForm - result');
-										console.log(result);
-										if (result.type === "success") {
-											console.log('components - page - actionButtonShareForm - result.data');
-											console.log(result.data);
-											const team = teams.find((team) => team.id === result.data?.identityId);
-											if (team) {
-												console.log('components - page - actionButtonShareForm - team - new rights assigned:');
-												team.right = result.data?.confirmedNewAction ? result.data.confirmedNewAction.toString() : ""
-												console.log(
-													"IdentityId: ", result.data?.identityId, "\n",
-													"New rights: ", team.right);
-											}
-										}
-
-											// Update the teams array with the new right
-											// const updatedTeams = teams.map((team) => {
-											// 	if (team.id === result.data.identityId) {
-											// 		return { ...team, right: result.data.right };
-											// 	}
-											// 	return team;
-											// });
-										// 	// Update the teams array with the new right
-										// 	// teams = updatedTeams.map((team) => ({
-										// 	// 	...team,
-										// 	// 	right: team.right || 'read' // Default to 'read' if no right is set
-										// 	// }));
-										// 	// Close the dropdown menu
-										// 	actionButtonShareMenu?.close();
-										// } else {
-										// 	console.error('Failed to update share rights:', result.data);
-										// 	// Optionally, you can show an error message to the user
-										// }
-										// teams.filter((team) => team.id === result.data.identityId)
-										update();
-									}
+									return async( {result, update} ) => {handleRightsChangeResponse( result, update) }
 								}}
 							>
 								{#each teams as team, i (i)}
-									<!--
-										TBD: Refactor this into a list item component - reuse here, in the dropdown menu and prepare for the DemoResourceCard!
-										Use the form use:enhance to close all the dropdowns after a selection. Also close the rights dropdown.
-									-->
-									<ShareItem
-										icon="fluent--people-team-16-filled"
+									<ShareListItem
 										resourceId="actionButtonShareResourceId"
-										team={team}
-										bind:right={team.right}
+										identity={team}
 									/>
+									<!-- bind:right={team.right} -->
 									<!-- parentMenus={[actionButtonShareMenu].filter((m) => m !== undefined)} -->
-									<!-- <li>
-										<div class="text-secondary flex items-center">
-											<div class="dropdown-item text-secondary w-full max-w-42 content-center">
-												<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"
-												></span>{team.name}
-											</div>
-											<div class="mr-2">
-												<span class="{rightsIcon(team.right)} ml-2 size-4"></span>
-											</div>
-											<div
-												class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
-											>
-												<button
-													id="rights"
-													type="button"
-													class="dropdown-toggle btn btn-text bg-base-300"
-													aria-haspopup="menu"
-													aria-expanded="false"
-													aria-label="Dropdown"
-												>
-													<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-													></span>
-												</button>
-												<ul
-													class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
-													role="menu"
-													aria-orientation="vertical"
-													aria-labelledby="rights"
-												>
-													<li>
-														<button
-															data-sveltekit-preload-data={false}
-															class="btn dropdown-item btn-text max-w-40 content-center"
-															name="id"
-															type="submit"
-															onclick={() => {
-																team.right = 'own';
-																actionButtonShareMenu?.close();
-															}}
-															aria-label="own"
-															><span class="icon-[tabler--key-filled] bg-success"></span></button
-														>
-													</li>
-													<li>
-														<button
-															data-sveltekit-preload-data={false}
-															class="btn dropdown-item btn-text max-w-40 content-center"
-															name="id"
-															type="submit"
-															onclick={() => {
-																team.right = 'write';
-																actionButtonShareMenu?.close();
-															}}
-															aria-label="write"
-															><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
-															></span>
-														</button>
-													</li>
-													<li>
-														<button
-															data-sveltekit-preload-data={false}
-															class="btn dropdown-item btn-text max-w-40 content-center"
-															name="id"
-															type="submit"
-															onclick={() => {
-																team.right = 'read';
-																actionButtonShareMenu?.close();
-															}}
-															aria-label="read"
-															><span class="icon-[tabler--eye] bg-neutral"></span>
-														</button>
-													</li>
-													<li>
-														<button
-															data-sveltekit-preload-data={false}
-															class="btn dropdown-item btn-text max-w-40 content-center"
-															name="id"
-															type="submit"
-															onclick={() => {
-																team.right = '';
-																actionButtonShareMenu?.close();
-															}}
-															aria-label="remove share"
-															><span class="icon-[tabler--ban] bg-error"></span>
-														</button>
-													</li>
-												</ul>
-											</div>
-										</div>
-									</li> -->
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -798,14 +645,13 @@
 								use:enhance={async () => {
 									dropdownMenu?.close()
 									dropdownShareDropdown?.close()
+									return async( {result, update} ) => {handleRightsChangeResponse( result, update) }
 								}}
 							>
 								{#each teams as team, i (i)}
-									<ShareItem
-										icon="fluent--people-team-16-filled"
+									<ShareListItem
 										resourceId="dropdownShareDropdownResourceId"
-										team={team}
-										bind:right={team.right}
+										identity={team}
 									/>
 									<!-- parentMenus={[dropdownShareDropdown, dropdownShareDropdown].filter((m) => m !== undefined)} -->
 									<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
@@ -948,13 +794,12 @@
 							name="dropdownShareForm"
 							use:enhance={async () => {
 								dropdownShare?.close()
+								return async( {result, update} ) => {handleRightsChangeResponse( result, update) }
 							}}
 						>
-							<ShareItem
-								icon="fluent--people-team-16-filled"
+							<ShareListItem
 								resourceId="dropdownShareResourceId"
-								team={teams[0]}
-								bind:right={teams[0].right}
+								identity={teams[0]}
 							/>
 							<!-- parentMenus={[dropdownShare].filter((m) => m !== undefined)} -->
 						</form>
