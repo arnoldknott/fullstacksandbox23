@@ -64,7 +64,7 @@ export interface AccessPolicy {
 	action: Action;
 	new_action?: Action; // for updates 
 	public?: boolean = false;
-	id: number;
+	id?: number;
 }
 
 export interface AccessRight {

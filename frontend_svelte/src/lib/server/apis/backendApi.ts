@@ -1,5 +1,6 @@
 import AppConfig from '$lib/server/config';
 import { msalAuthProvider } from '$lib/server/oauth';
+import type { AccessPolicy } from '$lib/types';
 import { BaseAPI, type RequestBody } from './base';
 
 const appConfig = await AppConfig.getInstance();
@@ -56,10 +57,30 @@ class BackendAPI extends BaseAPI {
     }
 
     async share(
-        session_id: string,
-
+        sessionId: string,
+        accessPolicy: AccessPolicy
     ){
-        
+        console.log('=== BackendAPI - share - accessPolicy ===');
+        console.log(accessPolicy);
+        if (accessPolicy.action === 'unshare') {
+            console.log('=== BackendAPI - share - delete ===');
+			await this.delete(
+				sessionId,
+				`/access/policy?resource_id=${accessPolicy.resource_id}&identity_id=${accessPolicy.identity_id}`
+			);
+		} else {
+			if (!accessPolicy.new_action) {
+				{
+                    console.log('=== BackendAPI - share - post ===');
+					await this.post(sessionId, '/access/policy', JSON.stringify(accessPolicy));
+				}
+			} else {
+				{
+                    console.log('=== BackendAPI - share - put ===');
+					await this.put(sessionId, '/access/policy', JSON.stringify(accessPolicy));
+				}
+			}
+        }
     }
 }
 

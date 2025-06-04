@@ -350,7 +350,7 @@
 																		class="btn dropdown-item btn-text max-w-40 content-center"
 																		name="id"
 																		value={id}
-																		formaction="?/share&identity-id={team.id}&new-action=unshare"
+																		formaction="?/share&identity-id={team.id}&action=unshare"
 																		onclick={() => {
 																			dropdownShareDropdown?.close();
 																			dropdownMenu?.close();

@@ -9,7 +9,9 @@ import type {
 	DemoResourceExtended,
 	MicrosoftTeamBasic
 } from '$lib/types';
+import { Action } from '$lib/accessHandler';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
+import { AccessHandler } from '$lib/accessHandler';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function executed ===');
@@ -148,49 +150,78 @@ export const actions: Actions = {
 		// console.log('=== routes - demo-resource - page.server - share function executed ===');
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
-		if (url.searchParams.get('new-action') === 'unshare') {
-			const resourceId = data.get('id');
-			const identityId = url.searchParams.get('identity-id');
-			await backendAPI.delete(
-				sessionId,
-				`/access/policy?resource_id=${resourceId}&identity_id=${identityId}`
-			);
-		} else {
-			// const accessPolicy = {
-			// 	resource_id: data.get('id'),
-			// 	identity_id: url.searchParams.get('teamid'),
-			// 	action: url.searchParams.get('action')
-			// };
+		const resourceId = data.get('id')?.toString();
+		const identityId = url.searchParams.get('identity-id')?.toString();
+		const actionParam = url.searchParams.get('action');
+		const newActionParam = url.searchParams.get('new-action');
+		let action = Object.values(Action).includes(actionParam as Action) ? (actionParam as Action) : undefined;
+		let newAction = Object.values(Action).includes(newActionParam as Action) ? (newActionParam as Action) : undefined;
 
-			// const response = await backendAPI.post(
-			// 	sessionId,
-			// 	'/access/policy',
-			// 	JSON.stringify(accessPolicy)
-			// );
-			// if (response.status !== 201) {
-			const oldAction = url.searchParams.get('action');
-			if (!oldAction) {
-				{
-					const createAccessPolicy = {
-						resource_id: data.get('id'),
-						identity_id: url.searchParams.get('identity-id'),
-						action: url.searchParams.get('new-action')
-					};
-					await backendAPI.post(sessionId, '/access/policy', JSON.stringify(createAccessPolicy));
-				}
+		if (!resourceId || !identityId) {
+			console.error('=== routes - demo-resource - page.server - Resource ID or Identity ID is missing ===');
+			return fail(400, { error: 'Resource ID and Identity ID are required.' });
+		} else if (!action) {
+			if (!newAction) {
+				console.error('=== routes - demo-resource - page.server - Action and newAction is missing ===');
+				return fail(400, { error: 'Invalid action parameter.' });
 			} else {
-				{
-					const updateAccessPolicy = {
-						resource_id: data.get('id'),
-						identity_id: url.searchParams.get('identity-id'),
-						action: url.searchParams.get('action'),
-						new_action: url.searchParams.get('new-action')
-					};
-					await backendAPI.put(sessionId, '/access/policy', JSON.stringify(updateAccessPolicy));
-				}
+				console.warn('=== routes - demo-resource - page.server - Action is missing, using newAction ===');
+				action = newAction;
+				newAction = undefined;
 			}
-			// }
-		}
+		} 
+		const accessPolicy = {
+			resource_id: resourceId,
+			identity_id: identityId,
+			action: action,
+			new_action: newAction
+		};
+		// console.log('=== routes - demo-resource - page.server - accessPolicy ===');
+		// console.log(accessPolicy);
+		await backendAPI.share(sessionId,accessPolicy);
+
+		// if (url.searchParams.get('new-action') === 'unshare') {
+		// 	const resourceId = data.get('id');
+		// 	const identityId = url.searchParams.get('identity-id');
+		// 	await backendAPI.delete(
+		// 		sessionId,
+		// 		`/access/policy?resource_id=${resourceId}&identity_id=${identityId}`
+		// 	);
+		// } else {
+		// 	// const accessPolicy = {
+		// 	// 	resource_id: data.get('id'),
+		// 	// 	identity_id: url.searchParams.get('teamid'),
+		// 	// 	action: url.searchParams.get('action')
+		// 	// };
+
+		// 	// const response = await backendAPI.post(
+		// 	// 	sessionId,
+		// 	// 	'/access/policy',
+		// 	// 	JSON.stringify(accessPolicy)
+		// 	// );
+		// 	// if (response.status !== 201) {
+		// 	const oldAction = url.searchParams.get('action');
+		// 	if (!oldAction) {
+		// 		{
+		// 			const createAccessPolicy = {
+		// 				resource_id: data.get('id'),
+		// 				identity_id: url.searchParams.get('identity-id'),
+		// 				action: url.searchParams.get('new-action')
+		// 			};
+		// 			await backendAPI.post(sessionId, '/access/policy', JSON.stringify(createAccessPolicy));
+		// 		}
+		// 	} else {
+		// 		{
+		// 			const updateAccessPolicy = {
+		// 				resource_id: data.get('id'),
+		// 				identity_id: url.searchParams.get('identity-id'),
+		// 				action: url.searchParams.get('action'),
+		// 				new_action: url.searchParams.get('new-action')
+		// 			};
+		// 			await backendAPI.put(sessionId, '/access/policy', JSON.stringify(updateAccessPolicy));
+		// 		}
+		// 	}
+		// }
 
 		// const accessPolicy = {
 		// 	resource_id: params.query.get('resource_id'),

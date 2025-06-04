@@ -3,7 +3,8 @@ import type { AccessPolicy } from '$lib/types';
 export enum Action {
 	Own = 'own',
 	Write = 'write',
-	Read = 'read'
+	Read = 'read',
+	Unshare = 'unshare',
 }
 
 export class AccessHandler {
