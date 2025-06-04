@@ -62,8 +62,8 @@ export interface AccessPolicy {
 	resource_id: string;
 	identity_id: string;
 	action: Action;
-	new_action?: Action; // for updates 
-	public?: boolean = false;
+	new_action?: Action; // for updates
+	public?: boolean;
 	id?: number;
 }
 

@@ -4,7 +4,7 @@ export enum Action {
 	Own = 'own',
 	Write = 'write',
 	Read = 'read',
-	Unshare = 'unshare',
+	Unshare = 'unshare'
 }
 
 export class AccessHandler {

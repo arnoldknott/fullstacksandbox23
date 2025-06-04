@@ -71,7 +71,8 @@
 	// 	console.log(teamRight);
 	// });
 
-	const accessAction = (identityId: string) =>  accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : null
+	const accessAction = (identityId: string) =>
+		accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : null;
 
 	const iconMapping = (rights: Action | null) => {
 		return rights === 'own'
@@ -232,8 +233,8 @@
 									aria-labelledby="share-{id}"
 								>
 									<!-- <li> -->
-										<!-- <form method="POST" use:enhance={() => dropdownMenu?.classList.add('hidden')}> -->
-										<!-- <form method="POST" use:enhance> -->
+									<!-- <form method="POST" use:enhance={() => dropdownMenu?.classList.add('hidden')}> -->
+									<!-- <form method="POST" use:enhance> -->
 									{#if microsoftTeams}
 										<form
 											method="POST"
@@ -249,7 +250,7 @@
 												// }
 											}}
 										>
-											{#each microsoftTeams.sort((a, b) => a.displayName.localeCompare(b.displayName)) as team (team.id)}
+											{#each microsoftTeams.sort( (a, b) => a.displayName.localeCompare(b.displayName) ) as team (team.id)}
 												<li>
 													<div class="flex items-center">
 														<!-- Also send the desired action for the share: own, write, read.
@@ -302,7 +303,9 @@
 																		class="btn dropdown-item btn-text max-w-40 content-center"
 																		name="id"
 																		value={id}
-																		formaction="?/share&identity-id={team.id}&action={accessAction(team.id)}&new-action=own"
+																		formaction="?/share&identity-id={team.id}&action={accessAction(
+																			team.id
+																		)}&new-action=own"
 																		type="submit"
 																		onclick={() => {
 																			// teamRight = 'own';
@@ -318,7 +321,9 @@
 																		class="btn dropdown-item btn-text max-w-40 content-center"
 																		name="id"
 																		value={id}
-																		formaction="?/share&identity-id={team.id}&action={accessAction(team.id)}&new-action=write"
+																		formaction="?/share&identity-id={team.id}&action={accessAction(
+																			team.id
+																		)}&new-action=write"
 																		type="submit"
 																		onclick={() => {
 																			// teamRight = 'write';
@@ -335,7 +340,9 @@
 																		class="btn dropdown-item btn-text max-w-40 content-center"
 																		name="id"
 																		value={id}
-																		formaction="?/share&identity-id={team.id}&action={accessAction(team.id)}&new-action=read"
+																		formaction="?/share&identity-id={team.id}&action={accessAction(
+																			team.id
+																		)}&new-action=read"
 																		type="submit"
 																		onclick={() => {
 																			// teamRight = 'read';

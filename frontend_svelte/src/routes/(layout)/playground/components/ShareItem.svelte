@@ -19,13 +19,13 @@
 </script>
 
 <li>
-	<div class="text-secondary flex items-center tooltip">
+	<div class="text-secondary tooltip flex items-center">
 		<div
-			class="dropdown-item text-secondary w-full max-w-42 content-center tooltip-toggle"
+			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
 			aria-label={name}
 		>
 			<span class="icon-[{icon}] mr-2 shrink-0"></span>
-			{name.slice(0, 12)}{name.length > 13 ? ' ...': null}
+			{name.slice(0, 12)}{name.length > 13 ? ' ...' : null}
 			{#if name.length > 12}
 				<span
 					class="tooltip-content tooltip-shown:visible tooltip-shown:opacity-100 bg-base-300"

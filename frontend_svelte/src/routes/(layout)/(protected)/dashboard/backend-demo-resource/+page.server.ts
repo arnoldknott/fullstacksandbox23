@@ -11,7 +11,6 @@ import type {
 } from '$lib/types';
 // import { Action } from '$lib/accessHandler';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
-import { AccessHandler } from '$lib/accessHandler';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function executed ===');
@@ -155,7 +154,6 @@ export const actions: Actions = {
 			url.searchParams.get('identity-id')?.toString(),
 			url.searchParams.get('action')?.toString(),
 			url.searchParams.get('new-action')?.toString()
-		)
-
+		);
 	}
 }; //satisfies Actions;
