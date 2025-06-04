@@ -5,10 +5,7 @@
 		right: string;
 	};
 
-	let {
-		resourceId,
-		identity,
-	}: { resourceId: string, identity: Identity;} = $props();
+	let { resourceId, identity }: { resourceId: string; identity: Identity } = $props();
 
 	const rightsIcon = (right: string) => {
 		return right === 'own'
@@ -30,7 +27,7 @@
 			type="submit"
 			value={resourceId}
 			formaction="?/share&identity-id={identity.id}&action={identity.right}&new-action={newAction}"
-			aria-label="{newAction}"><span class="{rightsIcon(newAction)}"></span></button
+			aria-label={newAction}><span class={rightsIcon(newAction)}></span></button
 		>
 	</li>
 {/snippet}
@@ -53,7 +50,6 @@
 			{/if}
 		</div>
 		<div class="mr-2">
-			<!-- {rightsIconSelection(identity.id) ? "bg-success" : ""} -->
 			<span class="{rightsIcon(identity.right)} ml-2 size-4"></span>
 		</div>
 		<div class="dropdown relative inline-flex [--offset:0] [--placement:left-start]">
