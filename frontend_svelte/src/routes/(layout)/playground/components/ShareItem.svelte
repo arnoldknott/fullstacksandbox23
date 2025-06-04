@@ -1,11 +1,21 @@
 <script lang="ts">
+	import type { Action } from '$lib/accessHandler';
+	// TBD: refactor Team into Identity
+	type Team = {
+		id: string;
+		name: string;
+		right: string;
+	};
+
 	import type { HSDropdown } from 'flyonui/flyonui';
 	let {
 		icon,
-		name,
+		resourceId,
+		team,
+		// right does not need to be bindable any more!
 		right = $bindable(),
-		parentMenus
-	}: { icon: string; name: string; right: string; parentMenus?: HSDropdown[] } = $props();
+		// parentMenus
+	}: { icon: string; resourceId: string, team: Team; right: string; parentMenus?: HSDropdown[] } = $props();
 
 	const rightsIcon = (right: string) => {
 		return right === 'own'
@@ -22,16 +32,16 @@
 	<div class="text-secondary tooltip flex items-center">
 		<div
 			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
-			aria-label={name}
+			aria-label={team.name}
 		>
 			<span class="icon-[{icon}] mr-2 shrink-0"></span>
-			{name.slice(0, 12)}{name.length > 13 ? ' ...' : null}
-			{#if name.length > 12}
+			{team.name.slice(0, 12)}{team.name.length > 13 ? ' ...' : null}
+			{#if team.name.length > 12}
 				<span
 					class="tooltip-content tooltip-shown:visible tooltip-shown:opacity-100 bg-base-300"
 					role="tooltip"
 				>
-					{name}
+					{team.name}
 				</span>
 			{/if}
 		</div>
@@ -62,11 +72,13 @@
 						class="btn dropdown-item btn-text max-w-40 content-center"
 						name="id"
 						type="submit"
+						value={resourceId}
+						formaction="?/share&identity-id={team.id}&action={right}&new-action=own"
 						onclick={() => {
-							right = 'own';
-							parentMenus?.forEach((menu: HSDropdown) => {
-								menu.close();
-							});
+							// right = 'own';
+							// parentMenus?.forEach((menu: HSDropdown) => {
+							// 	menu.close();
+							// });
 						}}
 						aria-label="own"><span class="icon-[tabler--key-filled] bg-success"></span></button
 					>
@@ -77,11 +89,13 @@
 						class="btn dropdown-item btn-text max-w-40 content-center"
 						name="id"
 						type="submit"
+						value={resourceId}
+						formaction="?/share&identity-id={team.id}&action={right}&new-action=write"
 						onclick={() => {
-							right = 'write';
-							parentMenus?.forEach((menu: HSDropdown) => {
-								menu.close();
-							});
+							// right = 'write';
+							// parentMenus?.forEach((menu: HSDropdown) => {
+							// 	menu.close();
+							// });
 						}}
 						aria-label="write"
 						><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"></span>
@@ -93,11 +107,13 @@
 						class="btn dropdown-item btn-text max-w-40 content-center"
 						name="id"
 						type="submit"
+						value={resourceId}
+						formaction="?/share&identity-id={team.id}&action={right}&new-action=read"
 						onclick={() => {
-							right = 'read';
-							parentMenus?.forEach((menu: HSDropdown) => {
-								menu.close();
-							});
+							// right = 'read';
+							// parentMenus?.forEach((menu: HSDropdown) => {
+							// 	menu.close();
+							// });
 						}}
 						aria-label="read"
 						><span class="icon-[tabler--eye] bg-neutral"></span>
@@ -109,11 +125,13 @@
 						class="btn dropdown-item btn-text max-w-40 content-center"
 						name="id"
 						type="submit"
+						value={resourceId}
+						formaction="?/share&identity-id={team.id}&action={right}&new-action=unshare"
 						onclick={() => {
-							right = '';
-							parentMenus?.forEach((menu: HSDropdown) => {
-								menu.close();
-							});
+							// right = '';
+							// parentMenus?.forEach((menu: HSDropdown) => {
+							// 	menu.close();
+							// });
 						}}
 						aria-label="remove share"
 						><span class="icon-[tabler--ban] bg-error"></span>

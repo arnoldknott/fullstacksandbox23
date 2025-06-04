@@ -13,6 +13,7 @@
 	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
+	import { enhance } from '$app/forms';
 	import ShareItem from './ShareItem.svelte';
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
@@ -143,26 +144,32 @@
 	const teams = $state(
 		[
 			{
+				id: '1',
 				name: 'The A Team',
 				right: 'read'
 			},
 			{
+				id: '2',
 				name: 'Awesome Team',
 				right: ''
 			},
 			{
+				id: '3',
 				name: 'Team Teams',
 				right: 'write'
 			},
 			{
+				id: '4',
 				name: 'Team Next',
 				right: 'own'
 			},
 			{
+				id: '5',
 				name: 'Be a Team',
 				right: 'read'
 			},
 			{
+				id: '6',
 				name: 'Very long Team Name',
 				right: 'write'
 			}
@@ -541,108 +548,154 @@
 							aria-orientation="vertical"
 							aria-labelledby="action-share"
 						>
-							{#each teams as team, i (i)}
-								<!--
-									TBD: Refactor this into a list item component - reuse here, in the dropdown menu and prepare for the DemoResourceCard!
-									Use the form use:enhance to close all the dropdowns after a selection. Also close the rights dropdown.
-								-->
-								<ShareItem
-									icon="fluent--people-team-16-filled"
-									name={team.name}
-									bind:right={team.right}
-									parentMenus={[actionButtonShareMenu].filter((m) => m !== undefined)}
-								/>
-								<!-- <li>
-									<div class="text-secondary flex items-center">
-										<div class="dropdown-item text-secondary w-full max-w-42 content-center">
-											<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"
-											></span>{team.name}
-										</div>
-										<div class="mr-2">
-											<span class="{rightsIcon(team.right)} ml-2 size-4"></span>
-										</div>
-										<div
-											class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
-										>
-											<button
-												id="rights"
-												type="button"
-												class="dropdown-toggle btn btn-text bg-base-300"
-												aria-haspopup="menu"
-												aria-expanded="false"
-												aria-label="Dropdown"
+							<form
+								method="POST"
+								name="actionButtonShareForm"
+								use:enhance={async () => {
+									actionButtonShareMenu?.close()
+									return async ({ result, update }) => {
+										console.log('components - page - actionButtonShareForm - result');
+										console.log(result);
+										if (result.type === "success") {
+											console.log('components - page - actionButtonShareForm - result.data');
+											console.log(result.data);
+											const team = teams.find((team) => team.id === result.data?.identityId);
+											if (team) {
+												console.log('components - page - actionButtonShareForm - team - new rights assigned:');
+												team.right = result.data?.confirmedNewAction ? result.data.confirmedNewAction.toString() : ""
+												console.log(
+													"IdentityId: ", result.data?.identityId, "\n",
+													"New rights: ", team.right);
+											}
+										}
+
+											// Update the teams array with the new right
+											// const updatedTeams = teams.map((team) => {
+											// 	if (team.id === result.data.identityId) {
+											// 		return { ...team, right: result.data.right };
+											// 	}
+											// 	return team;
+											// });
+										// 	// Update the teams array with the new right
+										// 	// teams = updatedTeams.map((team) => ({
+										// 	// 	...team,
+										// 	// 	right: team.right || 'read' // Default to 'read' if no right is set
+										// 	// }));
+										// 	// Close the dropdown menu
+										// 	actionButtonShareMenu?.close();
+										// } else {
+										// 	console.error('Failed to update share rights:', result.data);
+										// 	// Optionally, you can show an error message to the user
+										// }
+										// teams.filter((team) => team.id === result.data.identityId)
+										update();
+									}
+								}}
+							>
+								{#each teams as team, i (i)}
+									<!--
+										TBD: Refactor this into a list item component - reuse here, in the dropdown menu and prepare for the DemoResourceCard!
+										Use the form use:enhance to close all the dropdowns after a selection. Also close the rights dropdown.
+									-->
+									<ShareItem
+										icon="fluent--people-team-16-filled"
+										resourceId="actionButtonShareResourceId"
+										team={team}
+										bind:right={team.right}
+									/>
+									<!-- parentMenus={[actionButtonShareMenu].filter((m) => m !== undefined)} -->
+									<!-- <li>
+										<div class="text-secondary flex items-center">
+											<div class="dropdown-item text-secondary w-full max-w-42 content-center">
+												<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"
+												></span>{team.name}
+											</div>
+											<div class="mr-2">
+												<span class="{rightsIcon(team.right)} ml-2 size-4"></span>
+											</div>
+											<div
+												class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
 											>
-												<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-												></span>
-											</button>
-											<ul
-												class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
-												role="menu"
-												aria-orientation="vertical"
-												aria-labelledby="rights"
-											>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = 'own';
-															actionButtonShareMenu?.close();
-														}}
-														aria-label="own"
-														><span class="icon-[tabler--key-filled] bg-success"></span></button
-													>
-												</li>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = 'write';
-															actionButtonShareMenu?.close();
-														}}
-														aria-label="write"
-														><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
-														></span>
-													</button>
-												</li>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = 'read';
-															actionButtonShareMenu?.close();
-														}}
-														aria-label="read"
-														><span class="icon-[tabler--eye] bg-neutral"></span>
-													</button>
-												</li>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = '';
-															actionButtonShareMenu?.close();
-														}}
-														aria-label="remove share"
-														><span class="icon-[tabler--ban] bg-error"></span>
-													</button>
-												</li>
-											</ul>
+												<button
+													id="rights"
+													type="button"
+													class="dropdown-toggle btn btn-text bg-base-300"
+													aria-haspopup="menu"
+													aria-expanded="false"
+													aria-label="Dropdown"
+												>
+													<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
+													></span>
+												</button>
+												<ul
+													class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
+													role="menu"
+													aria-orientation="vertical"
+													aria-labelledby="rights"
+												>
+													<li>
+														<button
+															data-sveltekit-preload-data={false}
+															class="btn dropdown-item btn-text max-w-40 content-center"
+															name="id"
+															type="submit"
+															onclick={() => {
+																team.right = 'own';
+																actionButtonShareMenu?.close();
+															}}
+															aria-label="own"
+															><span class="icon-[tabler--key-filled] bg-success"></span></button
+														>
+													</li>
+													<li>
+														<button
+															data-sveltekit-preload-data={false}
+															class="btn dropdown-item btn-text max-w-40 content-center"
+															name="id"
+															type="submit"
+															onclick={() => {
+																team.right = 'write';
+																actionButtonShareMenu?.close();
+															}}
+															aria-label="write"
+															><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
+															></span>
+														</button>
+													</li>
+													<li>
+														<button
+															data-sveltekit-preload-data={false}
+															class="btn dropdown-item btn-text max-w-40 content-center"
+															name="id"
+															type="submit"
+															onclick={() => {
+																team.right = 'read';
+																actionButtonShareMenu?.close();
+															}}
+															aria-label="read"
+															><span class="icon-[tabler--eye] bg-neutral"></span>
+														</button>
+													</li>
+													<li>
+														<button
+															data-sveltekit-preload-data={false}
+															class="btn dropdown-item btn-text max-w-40 content-center"
+															name="id"
+															type="submit"
+															onclick={() => {
+																team.right = '';
+																actionButtonShareMenu?.close();
+															}}
+															aria-label="remove share"
+															><span class="icon-[tabler--ban] bg-error"></span>
+														</button>
+													</li>
+												</ul>
+											</div>
 										</div>
-									</div>
-								</li> -->
-							{/each}
+									</li> -->
+								{/each}
+							</form>
 							<li class="dropdown-footer gap-2">
 								<button
 									class="btn dropdown-item btn-text text-secondary content-center justify-start"
@@ -739,110 +792,120 @@
 							aria-orientation="vertical"
 							aria-labelledby="share"
 						>
-							{#each teams as team, i (i)}
-								<ShareItem
-									icon="fluent--people-team-16-filled"
-									name={team.name}
-									bind:right={team.right}
-									parentMenus={[dropdownShareDropdown, dropdownMenu].filter((m) => m !== undefined)}
-								/>
-								<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
-											combine with an accessPolicyExists - that also indicates the user, wether this policy already exists through a checkmark  -->
-								<!-- <li>
-									<div class="text-secondary flex items-center">
-										<div class="dropdown-item text-secondary w-full max-w-42 content-center">
-											<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"
-											></span>{team.name}
-										</div>
-										<div class="mr-2">
-											<span class="{rightsIcon(team.right)} ml-2 size-4"></span>
-										</div>
-										<div
-											class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
-										>
-											<button
-												id="rights"
-												type="button"
-												class="dropdown-toggle dropdown-item btn btn-text bg-base-300"
-												aria-haspopup="menu"
-												aria-expanded="false"
-												aria-label="Dropdown"
+							<form
+								method="POST"
+								name="dropDownShareDropdownForm"
+								use:enhance={async () => {
+									dropdownMenu?.close()
+									dropdownShareDropdown?.close()
+								}}
+							>
+								{#each teams as team, i (i)}
+									<ShareItem
+										icon="fluent--people-team-16-filled"
+										resourceId="dropdownShareDropdownResourceId"
+										team={team}
+										bind:right={team.right}
+									/>
+									<!-- parentMenus={[dropdownShareDropdown, dropdownShareDropdown].filter((m) => m !== undefined)} -->
+									<!-- The teamRight assignment needs to turn into a form submission, calling share() / createOrUpdateAccessPolicy()
+												combine with an accessPolicyExists - that also indicates the user, wether this policy already exists through a checkmark  -->
+									<!-- <li>
+										<div class="text-secondary flex items-center">
+											<div class="dropdown-item text-secondary w-full max-w-42 content-center">
+												<span class="icon-[fluent--people-team-16-filled] mr-2 shrink-0"
+												></span>{team.name}
+											</div>
+											<div class="mr-2">
+												<span class="{rightsIcon(team.right)} ml-2 size-4"></span>
+											</div>
+											<div
+												class="dropdown bg-base-300 relative inline-flex [--offset:0] [--placement:left-start]"
 											>
-												<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
-												></span>
-											</button>
-											<ul
-												class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
-												role="menu"
-												aria-orientation="vertical"
-												aria-labelledby="rights"
-											>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = 'own';
-															dropdownShareDropdown?.close();
-															dropdownMenu?.close();
-														}}
-														aria-label="own"
-														><span class="icon-[tabler--key-filled] bg-success"></span></button
-													>
-												</li>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = 'write';
-															dropdownShareDropdown?.close();
-															dropdownMenu?.close();
-														}}
-														aria-label="write"
-														><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
-														></span>
-													</button>
-												</li>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = 'read';
-															dropdownShareDropdown?.close();
-															dropdownMenu?.close();
-														}}
-														aria-label="read"
-														><span class="icon-[tabler--eye] bg-neutral"></span>
-													</button>
-												</li>
-												<li>
-													<button
-														data-sveltekit-preload-data={false}
-														class="btn dropdown-item btn-text max-w-40 content-center"
-														name="id"
-														type="submit"
-														onclick={() => {
-															team.right = '';
-															dropdownShareDropdown?.close();
-															dropdownMenu?.close();
-														}}
-														aria-label="remove share"
-														><span class="icon-[tabler--ban] bg-error"></span>
-													</button>
-												</li>
-											</ul>
+												<button
+													id="rights"
+													type="button"
+													class="dropdown-toggle dropdown-item btn btn-text bg-base-300"
+													aria-haspopup="menu"
+													aria-expanded="false"
+													aria-label="Dropdown"
+												>
+													<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"
+													></span>
+												</button>
+												<ul
+													class="dropdown-menu bg-base-300 outline-outline dropdown-open:opacity-100 hidden outline-2"
+													role="menu"
+													aria-orientation="vertical"
+													aria-labelledby="rights"
+												>
+													<li>
+														<button
+															data-sveltekit-preload-data={false}
+															class="btn dropdown-item btn-text max-w-40 content-center"
+															name="id"
+															type="submit"
+															onclick={() => {
+																team.right = 'own';
+																dropdownShareDropdown?.close();
+																dropdownMenu?.close();
+															}}
+															aria-label="own"
+															><span class="icon-[tabler--key-filled] bg-success"></span></button
+														>
+													</li>
+													<li>
+														<button
+															data-sveltekit-preload-data={false}
+															class="btn dropdown-item btn-text max-w-40 content-center"
+															name="id"
+															type="submit"
+															onclick={() => {
+																team.right = 'write';
+																dropdownShareDropdown?.close();
+																dropdownMenu?.close();
+															}}
+															aria-label="write"
+															><span class="icon-[material-symbols--edit-outline-rounded] bg-warning"
+															></span>
+														</button>
+													</li>
+													<li>
+														<button
+															data-sveltekit-preload-data={false}
+															class="btn dropdown-item btn-text max-w-40 content-center"
+															name="id"
+															type="submit"
+															onclick={() => {
+																team.right = 'read';
+																dropdownShareDropdown?.close();
+																dropdownMenu?.close();
+															}}
+															aria-label="read"
+															><span class="icon-[tabler--eye] bg-neutral"></span>
+														</button>
+													</li>
+													<li>
+														<button
+															data-sveltekit-preload-data={false}
+															class="btn dropdown-item btn-text max-w-40 content-center"
+															name="id"
+															type="submit"
+															onclick={() => {
+																team.right = '';
+																dropdownShareDropdown?.close();
+																dropdownMenu?.close();
+															}}
+															aria-label="remove share"
+															><span class="icon-[tabler--ban] bg-error"></span>
+														</button>
+													</li>
+												</ul>
+											</div>
 										</div>
-									</div>
-								</li> -->
-							{/each}
+									</li> -->
+								{/each}
+							</form>
 							<li class="dropdown-footer gap-2">
 								<button
 									class="btn dropdown-item btn-text text-secondary content-center justify-start"
@@ -880,12 +943,21 @@
 						aria-orientation="vertical"
 						aria-labelledby="dropdown-share"
 					>
-						<ShareItem
-							icon="fluent--people-team-16-filled"
-							name={teams[0].name}
-							bind:right={teams[0].right}
-							parentMenus={[dropdownShare].filter((m) => m !== undefined)}
-						/>
+						<form
+							method="POST"
+							name="dropdownShareForm"
+							use:enhance={async () => {
+								dropdownShare?.close()
+							}}
+						>
+							<ShareItem
+								icon="fluent--people-team-16-filled"
+								resourceId="dropdownShareResourceId"
+								team={teams[0]}
+								bind:right={teams[0].right}
+							/>
+							<!-- parentMenus={[dropdownShare].filter((m) => m !== undefined)} -->
+						</form>
 					</ul>
 				</div>
 			</div>
