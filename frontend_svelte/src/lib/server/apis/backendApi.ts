@@ -103,59 +103,7 @@ class BackendAPI extends BaseAPI {
                 }
             }
         }
-        
-        // } else if (!action) {
-		// 	if (!newAction) {
-		// 		console.error('=== routes - demo-resource - page.server - Action and newAction is missing ===');
-		// 		return fail(400, { error: 'Invalid action parameter.' });
-		// 	} else {
-        //         // call POST here
-		// 		console.warn('=== routes - demo-resource - page.server - Action is missing, using newAction ===');
-		// 		action = newAction;
-		// 		newAction = undefined;
-		// 	}
-		// } else if (action === 'unshare') {
-        //     // call DELETE here
-        // } else if (newAction) {
-        //     // call PUT here
-        // } else {
-        //     // call POST here
-
-		// const accessPolicy = {
-		// 	resource_id: resourceId,
-		// 	identity_id: identityId,
-		// 	action: action,
-		// 	new_action: newAction,
-		// 	public: publicAccess
-		// };
 	}
-
-    // async share(
-    //     sessionId: string,
-    //     accessPolicy: AccessPolicy
-    // ){
-    //     console.log('=== BackendAPI - share - accessPolicy ===');
-    //     console.log(accessPolicy);
-    //     if (accessPolicy.action === 'unshare') {
-    //         console.log('=== BackendAPI - share - delete ===');
-	// 		await this.delete(
-	// 			sessionId,
-	// 			`/access/policy?resource_id=${accessPolicy.resource_id}&identity_id=${accessPolicy.identity_id}`
-	// 		);
-	// 	} else {
-	// 		if (!accessPolicy.new_action) {
-	// 			{
-    //                 console.log('=== BackendAPI - share - post ===');
-	// 				await this.post(sessionId, '/access/policy', JSON.stringify(accessPolicy));
-	// 			}
-	// 		} else {
-	// 			{
-    //                 console.log('=== BackendAPI - share - put ===');
-	// 				await this.put(sessionId, '/access/policy', JSON.stringify(accessPolicy));
-	// 			}
-	// 		}
-    //     }
-    // }
 }
 
 export const backendAPI = new BackendAPI();
