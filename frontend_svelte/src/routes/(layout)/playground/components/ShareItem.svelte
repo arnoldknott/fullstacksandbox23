@@ -33,7 +33,7 @@
 {/snippet}
 
 <li>
-	<div class="text-secondary tooltip flex items-center">
+	<div class="tooltip flex items-center">
 		<div
 			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
 			aria-label={identity.name}
