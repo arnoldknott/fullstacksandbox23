@@ -27,7 +27,10 @@
 			type="submit"
 			value={resourceId}
 			formaction="?/share&identity-id={identity.id}&action={identity.right}&new-action={newAction}"
-			aria-label={newAction}><span class={rightsIcon(newAction)}></span></button
+			aria-label={newAction}
+		>
+			<span class={rightsIcon(newAction)}></span>
+		</button
 		>
 	</li>
 {/snippet}
@@ -54,7 +57,7 @@
 		</div>
 		<div class="dropdown relative inline-flex [--offset:0] [--placement:left-start]">
 			<button
-				id="rights"
+				id="rights-{identity.id}"
 				type="button"
 				class="dropdown-toggle btn btn-text bg-base-300"
 				aria-haspopup="menu"
@@ -67,7 +70,7 @@
 				class="dropdown-menu outline-outline bg-base-300 dropdown-open:opacity-100 hidden outline-2"
 				role="menu"
 				aria-orientation="vertical"
-				aria-labelledby="rights"
+				aria-labelledby="rights-{identity.id}"
 			>
 				{@render shareButton('own')}
 				{@render shareButton('write')}
