@@ -5,7 +5,7 @@
 		right: string;
 	};
 
-	let { resourceId, identity }: { resourceId: string; identity: Identity } = $props();
+	let { resourceId, icon, identity }: { resourceId: string; icon: string; identity: Identity } = $props();
 
 	const rightsIcon = (right: string) => {
 		return right === 'own'
@@ -38,7 +38,7 @@
 			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
 			aria-label={identity.name}
 		>
-			<span class="icon-[{rightsIcon(identity.right)}] mr-2 shrink-0"></span>
+			<span class="{icon} shrink-0"></span>
 			{identity.name.slice(0, 12)}{identity.name.length > 13 ? ' ...' : null}
 			{#if identity.name.length > 12}
 				<span

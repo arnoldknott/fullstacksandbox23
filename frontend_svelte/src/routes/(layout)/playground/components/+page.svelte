@@ -505,7 +505,7 @@
 								}}
 							>
 								{#each teams as team, i (i)}
-									<ShareItem resourceId="actionButtonShareResourceId" identity={team} />
+									<ShareItem resourceId="actionButtonShareResourceId" icon="icon-[fluent--people-team-16-filled]" identity={team} />
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -606,7 +606,7 @@
 								}}
 							>
 								{#each teams as team, i (i)}
-									<ShareItem resourceId="dropdownShareDropdownResourceId" identity={team} />
+									<ShareItem resourceId="dropdownShareDropdownResourceId" icon="icon-[fluent--people-team-16-filled]" identity={team} />
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -656,7 +656,7 @@
 								};
 							}}
 						>
-							<ShareItem resourceId="dropdownShareResourceId" identity={teams[0]} />
+							<ShareItem resourceId="dropdownShareResourceId" icon="icon-[fluent--people-team-16-filled]" identity={teams[0]} />
 						</form>
 					</ul>
 				</div>
