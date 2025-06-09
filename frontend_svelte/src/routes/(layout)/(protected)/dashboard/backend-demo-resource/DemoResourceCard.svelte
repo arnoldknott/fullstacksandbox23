@@ -5,8 +5,11 @@
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamBasicExtended } from '$lib/types';
 	// import { AccessHandler, Action } from '$lib/accessHandler';
-	import { AccessHandler, type Action } from '$lib/accessHandler';
+	import { AccessHandler, Action } from '$lib/accessHandler';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
+	// TBD: move to components folder
+	import ShareItem from '../../../playground/components/ShareItem.svelte';
+	import type { ActionResult } from '@sveltejs/kit';
 	// import { on } from 'svelte/events';
 
 	let {
@@ -61,20 +64,23 @@
 	});
 
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
+	
+	const accessAction = (identityId: string) =>  accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : null;
 
-	// let teamRight = $state('read');
-	// // just for preventing linting errors:
-	// $effect(() => console.log(teamRight));
+	let identities = $derived.by(() => {
+		return microsoftTeams?.map((team) => ({
+			id: team.id,
+			name: team.displayName,
+			right: accessAction(team.id) ?? ''
+		})) || [];
+	})
 
-	// $effect(() => {
-	// 	console.log('=== DemoResourceCard.svelte - teamRight ===');
-	// 	console.log(teamRight);
-	// });
 
-	const accessAction = (identityId: string) =>
-		accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : null;
-
-	const iconMapping = (rights: Action | null) => {
+	const iconMapping = (rights: Action | null | "") => {
+		if (demoResource?.name === 'New demo resource') {
+			console.log('=== iconMapping called with rights ===');
+			console.log(rights);
+		}
 		return rights === 'own'
 			? 'icon-[tabler--key-filled] bg-success'
 			: rights === 'write'
@@ -83,23 +89,6 @@
 					? 'icon-[tabler--eye] bg-neutral'
 					: 'icon-[tabler--ban] bg-error';
 	};
-
-	// let identitiesRightsMap = $derived.by(() => {
-	// 	let rightsMapping = new Map<string, Action | null>();
-	// 	microsoftTeams?.forEach((team) => {
-	// 		// TBD: turn into an object, that also hold information if right is assigned or not
-	// 		rightsMapping.set(team.id, AccessHandler.getRights(team.id, team.access_policies));
-	// 	});
-	// 	return rightsMapping;
-	// });
-
-	// $effect(() => {
-	// 	console.log('=== DemoResourceCard.svelte - identitiesRightsMap ===');
-	// 	console.log(identitiesRightsMap);
-	// });
-
-	// console.log('=== DemoResourceCard.svelte - demoResource - accessPolicies ===');
-	// console.log(demoResource?.access_policies);
 
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
@@ -127,6 +116,33 @@
 			// await applyAction(result);
 			// update()
 		};
+	};
+
+	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
+		if (result.type === 'success') {
+			if ( accessPolicies?.find((policy) => policy.identity_id === result.data?.identityId) ) {
+				accessPolicies?.map((policy) => {
+				console.log('=== DemoResourceCard - handleRightsChangeResponse - result.data? ===');
+				console.log(result.data);
+				if (policy.identity_id === result.data?.identityId) {
+					console.log('=== DemoResourceCard - handleRightsChangeResponse - policy changed ===');
+					policy.action = result.data?.confirmedNewAction || policy.action;
+				}
+			});	
+			} else {
+				// add new access policy
+				accessPolicies?.push({
+					identity_id: result.data?.identityId,
+					resource_id: id,
+					action: result.data?.confirmedNewAction,
+					public: result.data?.public
+				});
+			}
+			
+		} else {
+			// handle error: show error message
+		}
+		update();
 	};
 </script>
 
@@ -243,13 +259,15 @@
 												// console.log('=== share form submitted - closing the dropdown ===');
 												dropdownShareDropdown?.close();
 												dropdownMenu?.close();
-												// dropdownMenu?.close()
-												// const { HSDropdown } = await import('flyonui/flyonui.js');
-												// if(dropdownMenu){
-												// 	HSDropdown.close(dropdownMenu)
-												// }
+												return async ({ result, update }) => {
+													handleRightsChangeResponse(result, update);
+												};
 											}}
 										>
+											{#each identities ? identities.sort( (a, b) => a.name.localeCompare(b.name) ) : [] as identity (identity.id)}
+												<ShareItem resourceId={id} icon="icon-[fluent--people-team-16-filled]" {identity}/>
+												<!-- {identity.right} -->
+											{/each}
 											{#each microsoftTeams.sort( (a, b) => a.displayName.localeCompare(b.displayName) ) as team (team.id)}
 												<li>
 													<div class="flex items-center">

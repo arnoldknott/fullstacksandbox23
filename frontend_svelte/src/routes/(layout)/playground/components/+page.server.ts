@@ -11,7 +11,7 @@ export const actions: Actions = {
 
 		// Call the backendAPI.share() here to perform the necessary action
 		console.log(
-			'=== routes - playground - share action executed - following data ready to be sent to backend ==='
+			'=== playground - server - share action executed - following data ready to be sent to backend ==='
 		);
 		console.log(
 			'Resource Id: ',

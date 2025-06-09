@@ -82,10 +82,20 @@ class BackendAPI extends BaseAPI {
 			return fail(400, { error: 'Resource ID and Identity ID are required.' });
 		} else if (action === 'unshare' || newAction === 'unshare') {
 			console.log('=== routes - demo-resource - page.server - delete ===');
-			await this.delete(
+			const response = await this.delete(
 				sessionId,
 				`/access/policy?resource_id=${resourceId}&identity_id=${identityId}`
 			);
+            if (response.status !== 200) {
+                return fail(response.status, { error: response.statusText });
+            }
+            const payload = await response.json();
+            console.log('=== routes - demo-resource - page.server - delete response ===');
+            console.log(payload);
+            return {
+                identityId: identityId,
+                confirmedNewAction: "unshare",
+            };
 		} else {
 			if (!action && newAction) {
 				action = newAction;
@@ -101,10 +111,30 @@ class BackendAPI extends BaseAPI {
 				};
 				if (!newAction) {
 					console.log('=== routes - demo-resource - page.server - post ===');
-					await this.post(sessionId, '/access/policy', JSON.stringify(accessPolicy));
+					const response = await this.post(sessionId, '/access/policy', JSON.stringify(accessPolicy));
+                    if (response.status !== 201) {
+                        return fail(response.status, { error: response.statusText });
+                    }
+                    const payload = await response.json();
+                    console.log('=== routes - demo-resource - page.server - post response ===');
+                    console.log(payload);
+                    return {
+                        identityId: identityId,
+                        confirmedNewAction: payload.action,
+                    };
 				} else {
 					console.log('=== routes - demo-resource - page.server - put ===');
-					await this.put(sessionId, '/access/policy', JSON.stringify(accessPolicy));
+					const response = await this.put(sessionId, '/access/policy', JSON.stringify(accessPolicy));
+                    if (response.status !== 200) {
+                        return fail(response.status, { error: response.statusText });
+                    } else {
+                        const payload = await response.json();
+                        return {
+                            identityId: identityId,
+                            confirmedNewAction: payload.action,
+                        };
+                    }
+                    
 				}
 			}
 		}
