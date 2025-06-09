@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
-	import '@material/web/textfield/filled-text-field.js';
-	import '@material/web/button/filled-button.js';
 	import Heading from '$components/Heading.svelte';
 
 	let { data }: { data: PageData } = $props();
