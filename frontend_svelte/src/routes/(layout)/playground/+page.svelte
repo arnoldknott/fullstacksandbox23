@@ -21,7 +21,7 @@
 		},
 		{
 			name: 'Data Flow',
-			description: 
+			description:
 				'Playground for data flow in Svelte from server to browser via load functions and page data and from browser to server via form data.',
 			url: '/dataflow'
 		},

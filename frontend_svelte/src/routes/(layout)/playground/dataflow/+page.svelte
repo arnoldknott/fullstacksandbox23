@@ -4,10 +4,11 @@
 
 	let { data }: PageProps = $props();
 
-    console.log('=== playground - dataflow - +page.svelte ===');
-    console.log(data);// { layoutServerTs: 1, layout.ts: 2, pageserverTs: 3  }
+	console.log('=== playground - dataflow - +page.svelte ===');
+	console.log(data); // { layoutServerTs: 1, layout.ts: 2, pageserverTs: 3  }
 </script>
 
-<div>+page.svelte
-    <JsonData {data} />
+<div>
+	+page.svelte
+	<JsonData {data} />
 </div>
