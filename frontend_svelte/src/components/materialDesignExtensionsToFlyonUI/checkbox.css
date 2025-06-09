@@ -1,27 +1,49 @@
+.checkbox-primary-container {
+	@apply text-primary-container-content;
+	--input-color: var(--color-primary-container);
+}
+
+.checkbox-secondary-container {
+	@apply text-secondary-container-content;
+	--input-color: var(--color-secondary-container);
+}
+
+.checkbox-accent-container {
+	@apply text-accent-container-content;
+	--input-color: var(--color-accent-container);
+}
+
+.checkbox-neutral-container {
+	@apply text-neutral-container-content;
+	--input-color: var(--color-neutral-container);
+}
+
+.checkbox-info-container {
+	@apply text-info-container-content;
+	--input-color: var(--color-info-container);
+}
+
+.checkbox-success-container {
+	@apply text-success-container-content;
+	--input-color: var(--color-success-container);
+}
+
+.checkbox-warning-container {
+	@apply text-warning-container-content;
+	--input-color: var(--color-warning-container);
+}
+
+.checkbox-error-container {
+	@apply text-error-container-content;
+	--input-color: var(--color-error-container);
+}
+
 .checkbox-inverse-primary {
-	--chkbg: theme(colors.inverse-primary);
-	--chkfg: theme(colors.inverse-surface);
-	/* --chkbg: theme(colors.inverse-primary);
-    --chkfg: theme(colors.inverse-surface); */
-	&:checked,
-	&[checked='true'],
-	&[aria-checked='true'] {
-		&:focus-visible {
-			@apply outline-accent/30;
-		}
-	}
+	@apply text-inverse-surface;
+	--input-color: var(--color-inverse-primary);
 }
 
 .checkbox-primary-fixed-dim {
-	--chkbg: theme(colors.primary-fixed-dim);
-	--chkfg: theme(colors.primary-fixed-content);
-	/* --chkbg: theme(colors.inverse-primary);
-    --chkfg: theme(colors.inverse-surface); */
-	&:checked,
-	&[checked='true'],
-	&[aria-checked='true'] {
-		&:focus-visible {
-			@apply outline-accent/30;
-		}
-	}
+	@apply text-primary-fixed-content;
+	--input-color: var(--color-primary-fixed-dim);
 }

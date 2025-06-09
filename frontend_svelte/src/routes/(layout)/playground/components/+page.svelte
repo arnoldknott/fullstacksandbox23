@@ -5,8 +5,137 @@
 	import { onDestroy } from 'svelte';
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 	// import type { IOverlay } from 'flyonui/flyonui';
+	// import { HSDropdown, type IHTMLElementPopper } from 'flyonui/flyonui';
+	// import type { IHTMLElementPopper, HSDropdown } from 'flyonui/flyonui';
+	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
+	// import type { Attachment } from 'svelte/attachments';
+	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
+	import { enhance } from '$app/forms';
+	import ShareItem from './ShareItem.svelte';
+	// import type { PageProps } from '../$types';
+	import { page } from '$app/state';
+	import type { ActionResult } from '@sveltejs/kit';
+	// import JsonData from '$components/JsonData.svelte';
+
+	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
+	let develop = $state(page.url.searchParams.get('develop') === 'true' ? true : false);
+
+	// data for card with navigation in title:
+	const cardsNavigation = [
+		{
+			title: "Here's a title",
+			description:
+				'Some test text, here. Can go over several lines. And if it does, the cards in the same line will adjust to the longest card. This is a good way to keep the layout clean and consistent.',
+			link: '#top'
+		},
+		{
+			title: 'One more title',
+			description: 'Some shorter text here - but adjusts to the height of the neighbor card',
+			link: '#top'
+		},
+		{
+			title: 'A third title',
+			description:
+				'This one is meant to fill the row. Note how the cards are responsive on smaller screens.',
+			link: '#top'
+		}
+	];
+
+	// for dropdown menus:
+	// let dropdownMenu = $state<HTMLUListElement | undefined>(undefined);
+	let actionButtonShareMenuElement = $state<HTMLElement | undefined>(undefined);
+	let dropdownShareDropdownElement = $state<HTMLElement | undefined>(undefined);
+	let dropdownMenuElement = $state<HTMLElement | undefined>(undefined);
+	let dropdownShareElement = $state<HTMLElement | undefined>(undefined);
+	// let dropdownMenuElement = $state<HTMLElement | undefined>(undefined);
+	let actionButtonShareMenu = $state<HSDropdown | undefined>(undefined);
+	let dropdownShareDropdown = $state<HSDropdown | undefined>(undefined);
+	let dropdownMenu = $state<HSDropdown | undefined>(undefined);
+	let dropdownShare = $state<HSDropdown | undefined>(undefined);
+
+	const loadHSDropdown = async () => {
+		const { HSDropdown } = await import('flyonui/flyonui');
+		return HSDropdown;
+	};
+
+	// // TBD: is this stopping the dropdown from stalling? No, it doesn't, but the issue only exists in development mode.
+	// window.HSStaticMethods.autoInit(["dropdown"]);
+
+	// TBD: make sure all dropdowns close and get reset, when user does not click any of the list items, but elsewhere on the screen.
+	// use the event from the main dropdown to listen and close the child dropdowns.
+	// const closeChildDropdowns: Attachment = () => {
+	// 	dropdownMenu?.on("close", dropdownShareDropdown?.close());
+	// TBD: potentially using {@attach} for this?
+
+	$effect(() => {
+		// afterNavigate(() => {
+		loadHSDropdown().then((LoadedHSDropdown) => {
+			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
+			dropdownShareDropdown = new LoadedHSDropdown(
+				dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI
+			);
+			actionButtonShareMenu = new LoadedHSDropdown(
+				actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI
+			);
+			dropdownShare = new LoadedHSDropdown(
+				dropdownShareElement as unknown as IHTMLElementFloatingUI
+			);
+			// });
+		});
+	});
+
+	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
+		if (result.type === 'success') {
+			const team = teams.find((team) => team.id === result.data?.identityId);
+			if (team) {
+				team.right = result.data?.confirmedNewAction
+					? result.data.confirmedNewAction.toString()
+					: '';
+			}
+		} else {
+			// handle error: show error message
+		}
+		update();
+	};
+
+	// data for share menu:
+	const teams = $state(
+		[
+			{
+				id: '1',
+				name: 'The A Team',
+				right: 'read'
+			},
+			{
+				id: '2',
+				name: 'Awesome Team',
+				right: ''
+			},
+			{
+				id: '3',
+				name: 'Team Teams',
+				right: 'write'
+			},
+			{
+				id: '4',
+				name: 'Team Next',
+				right: 'own'
+			},
+			{
+				id: '5',
+				name: 'Be a Team',
+				right: 'read'
+			},
+			{
+				id: '6',
+				name: 'Very long Team Name',
+				right: 'write'
+			}
+		].sort((a, b) => a.name.localeCompare(b.name))
+	);
 
 	// for status sliders:
 	let theme = $state({} as AppTheme);
@@ -87,21 +216,62 @@
 	// };
 </script>
 
-<div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
-	<div>
+<!-- <svelte:window use:mapDropdown /> -->
+
+<div class="flex flex-row justify-around">
+	<div class="mb-2 flex items-center gap-1">
+		<label class="label label-text text-base" for="prodSwitcher">Production: off </label>
+		<input type="checkbox" class="switch switch-accent" bind:checked={prod} id="prodSwitcher" />
+		<label class="label label-text text-base" for="prodSwitcher"> on</label>
+	</div>
+	<div class="mb-2 flex items-center gap-1">
+		<label class="label label-text text-base" for="developSwitcher">🚧 Development 🚧: off </label>
+		<input
+			type="checkbox"
+			class="switch switch-accent"
+			bind:checked={develop}
+			id="developSwitcher"
+		/>
+		<label class="label label-text text-base" for="developSwitcher"> on</label>
+	</div>
+</div>
+
+<!-- <JsonData data={page.url} />
+<JsonData data={page.url.search} />
+<JsonData data={page.url.searchParams.get("develop")} /> -->
+
+{#snippet underConstruction()}
+	<p class="text-center">
+		Not in production yet - check out the <a class="link" href="?develop=true"
+			>🚧 development version 🚧</a
+		>.
+	</p>
+{/snippet}
+
+<div
+	class="w-full {prod && develop
+		? 'md:grid md:grid-cols-2 md:gap-4'
+		: 'xl:grid xl:grid-cols-2 xl:gap-4'}"
+>
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Card with chat</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with chat 🚧</Heading>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet headerChat()}
-				<h5 class="text-title md:text-title-large card-title">Chat card</h5>
+				<h5 class="title md:title-large card-title">Chat card</h5>
 			{/snippet}
 			<Card id="chatCard" extraClasses="md:w-4/5" header={headerChat} footer={footerChat}>
 				<div
-					class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
+					class="bg-base-200 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
 				>
 					<div class="chat chat-receiver">
 						<div class="avatar chat-avatar">
 							<div class="size-10 rounded-full">
-								<span class="icon-[tabler--man] m-1 size-8 text-primary"></span>
+								<span class="icon-[tabler--man] text-primary m-1 size-8"></span>
 							</div>
 						</div>
 						<div class="chat-header text-base-content">
@@ -116,7 +286,7 @@
 					<div class="chat chat-receiver">
 						<div class="avatar chat-avatar">
 							<div class="size-10 rounded-full">
-								<span class="icon-[tabler--user] m-1 size-8 text-primary"></span>
+								<span class="icon-[tabler--user] text-primary m-1 size-8"></span>
 							</div>
 						</div>
 						<div class="chat-header text-base-content">
@@ -142,24 +312,17 @@
 			</Card>
 			{#snippet footerChat()}
 				<div class="flex flex-row items-center gap-2">
-					<div class="relative grow">
-						<input
-							type="text"
-							placeholder="Send a message here"
-							class="input input-filled peer grow border-secondary shadow-sm shadow-outline"
-							id="chattMessage"
-						/>
+					<div class="input-filled grow">
+						<input type="text" placeholder="Send a message here" class="input" id="chatMessage" />
 						<label
-							class="text-label-small md:text-label input-filled-label grow"
-							style="color: oklch(var(--s));"
+							class="input-filled-label"
+							style="color: var(--color-secondary);"
 							for="chatMessage">♡ What's on your heart?</label
 						>
-						<span class="input-filled-focused grow" style="background-color: oklch(var(--s));"
-						></span>
 					</div>
 					<button
 						class="btn-secondary-container btn btn-circle btn-gradient"
-						aria-label="Add Icon Button"
+						aria-label="Send Icon Button"
 					>
 						<span class="icon-[tabler--send-2]"></span>
 					</button>
@@ -168,93 +331,85 @@
 		</div>
 	</div>
 
-	<div>
-		<Heading>Card with text and navigation</Heading>
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Card with text and title navigation</Heading>
+		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
+			{#each cardsNavigation as cardNavigation, i (i)}
+				<NavigationCard title={cardNavigation.title} href={cardNavigation.link}
+					>{cardNavigation.description}</NavigationCard
+				>
+			{/each}
+		</div>
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with text and title navigation 🚧</Heading>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			<div
-				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
-						Here's a title
-					</h5>
+					<a href="#top" class="link link-base-content link-animated">
+						<h5 class="title-small md:title lg:title-large base-content card-title">
+							Here's a title
+						</h5>
+					</a>
 				</div>
 				<div class="card-body">
-					<p class="text-body-small md:text-body text-primary-container-content">
+					<p class="body-small md:body text-primary-container-content">
 						Some test text, here. Can go over several lines. And if it does, the cards in the same
 						line will adjust to the longest card. This is a good way to keep the layout clean and
 						consistent.
 					</p>
 				</div>
-				<div class="card-footer">
-					<div class="card-actions text-center">
-						<a href="#top"
-							><button
-								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
-								>Link to top of page</button
-							></a
-						>
-					</div>
-				</div>
 			</div>
 			<div
-				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
-						One more title
-					</h5>
+					<a href="#top" class="link link-base-content link-animated">
+						<h5 class="title-small md:title lg:title-large base-content card-title">
+							One more title
+						</h5>
+					</a>
 				</div>
 				<div class="card-body">
-					<p class="text-body-small md:text-body text-primary-container-content">
-						Some shorter text here - but adjusts to the height of the neigour card
+					<p class="body-small md:body text-primary-container-content">
+						Some shorter text here - but adjusts to the height of the neighbor card
 					</p>
 				</div>
-				<div class="card-footer">
-					<div class="card-actions text-center">
-						<a href="#top"
-							><button
-								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
-								>Link to top of page</button
-							></a
-						>
-					</div>
-				</div>
 			</div>
 			<div
-				class="card rounded-xl border-[1px] border-outline-variant bg-base-250 shadow-lg shadow-outline-variant"
+				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
 			>
 				<div class="card-header">
-					<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
-						A third title
-					</h5>
+					<a href="#top" class="link link-base-content link-animated">
+						<h5 class="title-small md:title lg:title-large base-content card-title">
+							A third title
+						</h5>
+					</a>
 				</div>
 				<div class="card-body">
-					<p class="text-body-small md:text-body text-primary-container-content">
+					<p class="body-small md:body text-primary-container-content">
 						This one is meant to fill the row. Note how the cards are responsive on smaller screens.
 					</p>
-				</div>
-				<div class="card-footer">
-					<div class="card-actions text-center">
-						<a href="#top"
-							><button
-								class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
-								>Link to top of page</button
-							></a
-						>
-					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<div>
-		<Heading>Card with edits</Heading>
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Card with dropdown menu</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with dropdown menu 🚧</Heading>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet headerEdit()}
 				<div class="flex justify-between">
 					<div>
-						<h5 class="text-title md:text-title-large card-title">Card with editable text</h5>
+						<h5 class="title md:title-large card-title">Card with editable text</h5>
 					</div>
 					<div class="flex flex-row items-start gap-4">
 						<div class="dropdown relative inline-flex rtl:[--placement:bottom-end]">
@@ -266,11 +421,8 @@
 								aria-expanded="false"
 								aria-label="Dropdown"
 							></span>
-							<!-- <button id="dropdown-menu-icon" type="button" class="dropdown-toggle btn btn-square btn-text btn-secondary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-								<span class="icon-[tabler--dots-vertical] size-6"></span>
-							</button> -->
 							<ul
-								class="dropdown-menu hidden bg-base-300 shadow-sm shadow-outline dropdown-open:opacity-100"
+								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
 								role="menu"
 								aria-orientation="vertical"
 								aria-labelledby="dropdown-menu-icon"
@@ -297,7 +449,7 @@
 			{/snippet}
 			<Card id="cardEdit" extraClasses="md:w-4/5" header={headerEdit}>
 				<div
-					class="max-h-96 min-h-44 overflow-y-auto rounded-lg bg-base-200 p-2 shadow-inner shadow-outline"
+					class="bg-base-200 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
 				>
 					Some text
 				</div>
@@ -305,124 +457,232 @@
 		</div>
 	</div>
 
-	<div>
-		<Heading>Inputs</Heading>
-		<div class="mb-5 flex grow flex-row gap-4">
-			<div class="relative sm:w-56">
-				<input
-					type="text"
-					placeholder="Primary colored input"
-					class="input input-filled peer border-primary"
-					id="primaryInput"
-				/>
-				<label
-					class="text-label-small md:text-label input-filled-label"
-					style="color: oklch(var(--p));"
-					for="primaryInput">Full Name</label
-				>
-				<span class="input-filled-focused" style="background-color: oklch(var(--p));"></span>
-			</div>
-			<div class="relative sm:w-56">
-				<input
-					type="text"
-					placeholder="Secondary colored input"
-					class="input input-filled peer border-secondary"
-					id="secondaryInput"
-				/>
-				<label
-					class="text-label-small md:text-label input-filled-label"
-					style="color: oklch(var(--s));"
-					for="secondaryInput">Full Name</label
-				>
-				<span class="input-filled-focused" style="background-color: oklch(var(--s));"></span>
-			</div>
-			<div class="relative sm:w-56">
-				<input
-					type="text"
-					placeholder="Accent colored input"
-					class="input input-filled peer border-accent"
-					id="accentInput"
-				/>
-				<label
-					class="text-label-small md:text-label input-filled-label"
-					style="color: oklch(var(--a));"
-					for="secondaryInput">Full Name</label
-				>
-				<span class="input-filled-focused" style="background-color: oklch(var(--a));"></span>
-			</div>
-			<div class="relative sm:w-56">
-				<input
-					type="text"
-					placeholder="Neutral colored input"
-					class="input input-filled peer border-neutral"
-					id="accentInput"
-				/>
-				<label
-					class="text-label-small md:text-label input-filled-label"
-					style="color: oklch(var(--n));"
-					for="secondaryInput">Full Name</label
-				>
-				<span class="input-filled-focused" style="background-color: oklch(var(--n));"></span>
-			</div>
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Card with action buttons</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Card with action buttons 🚧</Heading>
+		<div class="mb-5 grid justify-items-center">
+			{#snippet footerAction()}
+				<div class="join flex flex-row items-center justify-center">
+					<button
+						class="btn btn-secondary-container text-secondary-container-content join-item grow"
+						aria-label="Edit Button"
+						onclick={() => (edit ? (edit = false) : (edit = true))}
+					>
+						<span class="icon-[material-symbols--edit-outline-rounded]"></span>Edit
+					</button>
+					<div
+						class="dropdown join-item relative inline-flex grow [--placement:top]"
+						bind:this={actionButtonShareMenuElement}
+					>
+						<button
+							id="action-share"
+							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content w-full rounded-none"
+							aria-haspopup="menu"
+							aria-expanded="false"
+							aria-label="Share with"
+						>
+							<span class="icon-[tabler--share-2]"></span>Share
+							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
+						</button>
+						<ul
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							role="menu"
+							aria-orientation="vertical"
+							aria-labelledby="action-share"
+						>
+							<form
+								method="POST"
+								name="actionButtonShareForm"
+								use:enhance={async () => {
+									actionButtonShareMenu?.close();
+									return async ({ result, update }) => {
+										handleRightsChangeResponse(result, update);
+									};
+								}}
+							>
+								{#each teams as team, i (i)}
+									<ShareItem
+										resourceId="actionButtonShareResourceId"
+										icon="icon-[fluent--people-team-16-filled]"
+										identity={team}
+									/>
+								{/each}
+							</form>
+							<li class="dropdown-footer gap-2">
+								<button
+									class="btn dropdown-item btn-text text-secondary content-center justify-start"
+									>... more options</button
+								>
+							</li>
+						</ul>
+					</div>
+					<button
+						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item grow border-0"
+						aria-label="Delete Button"
+						name="id"
+						formaction="?/delete"
+					>
+						<span class="icon-[tabler--trash]"></span>Delete
+					</button>
+				</div>
+			{/snippet}
+			<Card id="cardEdit" footer={footerAction}>
+				<p class="body-small md:body text-primary-container-content">
+					The footer of this card contains action buttons.
+				</p>
+			</Card>
 		</div>
-		<div class="mb-5 flex grow flex-row flex-wrap gap-4">
-			<div class="relative sm:w-56">
-				<textarea
-					placeholder="Primary colored input"
-					class="textarea peer textarea-filled max-h-44 border-primary"
-					id="primaryInput"
-				></textarea>
-				<label
-					class="text-label-small md:text-label textarea-filled-label"
-					style="color: oklch(var(--p));"
-					for="primaryInput">Description</label
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Dropdown menus</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Dropdown menus 🚧</Heading>
+		<div class="mb-20 flex flex-wrap gap-4">
+			<div
+				class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
+				bind:this={dropdownMenuElement}
+			>
+				<!-- {@attach closeChildDropdowns()} -->
+				<!-- onload={async()=> await  loadHSDropdown()} -->
+				<div
+					id="dropdown-menu-icon"
+					role="button"
+					class="dropdown-toggle"
+					aria-haspopup="menu"
+					aria-expanded="false"
+					aria-label="Dropdown"
 				>
-				<span class="textarea-filled-focused" style="background-color: oklch(var(--p));"></span>
+					<span class="icon-[tabler--dots-vertical] text-secondary size-6"></span>
+				</div>
+				<ul
+					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
+					role="menu"
+					aria-orientation="vertical"
+					aria-labelledby="dropdown-menu-icon"
+				>
+					<li class="items-center">
+						<button
+							class="btn dropdown-item btn-text text-secondary content-center justify-start"
+							aria-label="Edit Button"
+							onclick={() => (edit ? (edit = false) : (edit = true))}
+						>
+							<span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit
+						</button>
+					</li>
+					<li
+						class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+						bind:this={dropdownShareDropdownElement}
+					>
+						<button
+							id="share"
+							class="dropdown-toggle btn dropdown-item btn-text text-secondary content-center justify-start"
+							aria-haspopup="menu"
+							aria-expanded="false"
+							aria-label="Share with"
+						>
+							<span class="icon-[tabler--share-2]"></span>
+							Share
+							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
+						</button>
+						<ul
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							role="menu"
+							aria-orientation="vertical"
+							aria-labelledby="share"
+						>
+							<form
+								method="POST"
+								name="dropDownShareDropdownForm"
+								use:enhance={async () => {
+									dropdownMenu?.close();
+									dropdownShareDropdown?.close();
+									return async ({ result, update }) => {
+										handleRightsChangeResponse(result, update);
+									};
+								}}
+							>
+								{#each teams as team, i (i)}
+									<ShareItem
+										resourceId="dropdownShareDropdownResourceId"
+										icon="icon-[fluent--people-team-16-filled]"
+										identity={team}
+									/>
+								{/each}
+							</form>
+							<li class="dropdown-footer gap-2">
+								<button
+									class="btn dropdown-item btn-text text-secondary content-center justify-start"
+									>... more options</button
+								>
+							</li>
+						</ul>
+					</li>
+					<li class="dropdown-footer gap-2">
+						<button
+							class="btn dropdown-item btn-error btn-text text-secondary content-center justify-start"
+							aria-label="Delete Button"
+							name="id"
+							formaction="?/delete"><span class="icon-[tabler--trash]"></span>Delete</button
+						>
+					</li>
+				</ul>
 			</div>
-			<div class="relative sm:w-56">
-				<textarea
-					placeholder="Secondary colored input"
-					class="textarea peer textarea-filled max-h-44 border-secondary"
-					id="secondaryTextarea"
-				></textarea>
-				<label
-					class="text-label-small md:text-label textarea-filled-label"
-					style="color: oklch(var(--s));"
-					for="secondaryTextarea">Description</label
-				>
-				<span class="textarea-filled-focused" style="background-color: oklch(var(--s));"></span>
-			</div>
-			<div class="relative sm:w-56">
-				<textarea
-					placeholder="Accent colored input"
-					class="textarea peer textarea-filled max-h-44 border-accent"
-					id="accentTextarea"
-				></textarea>
-				<label
-					class="text-label-small md:text-label textarea-filled-label"
-					style="color: oklch(var(--a));"
-					for="accentTextarea">Description</label
-				>
-				<span class="textarea-filled-focused" style="background-color: oklch(var(--a));"></span>
-			</div>
-			<div class="relative sm:w-56">
-				<textarea
-					placeholder="Neutral colored input"
-					class="textarea peer textarea-filled max-h-44 border-neutral"
-					id="neutraTextarea"
-				></textarea>
-				<label
-					class="text-label-small md:text-label textarea-filled-label"
-					style="color: oklch(var(--n));"
-					for="secondaryTextarea">Description</label
-				>
-				<span class="textarea-filled-focused" style="background-color: oklch(var(--n));"></span>
+			<div>
+				<div class="dropdown relative inline-flex" bind:this={dropdownShareElement}>
+					<button
+						id="dropdown-share"
+						type="button"
+						class="dropdown-toggle btn btn-secondary-container text-secondary-container-content w-full"
+						aria-haspopup="menu"
+						aria-expanded="false"
+						aria-label="Share with"
+					>
+						<span class="icon-[tabler--share-2]"></span>Share
+						<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"></span>
+					</button>
+					<ul
+						class="dropdown-menu dropdown-open:opacity-100 bg-base-300 hidden min-w-60"
+						role="menu"
+						aria-orientation="vertical"
+						aria-labelledby="dropdown-share"
+					>
+						<form
+							method="POST"
+							name="dropdownShareForm"
+							use:enhance={async () => {
+								dropdownShare?.close();
+								return async ({ result, update }) => {
+									handleRightsChangeResponse(result, update);
+								};
+							}}
+						>
+							<ShareItem
+								resourceId="dropdownShareResourceId"
+								icon="icon-[fluent--people-team-16-filled]"
+								identity={teams[0]}
+							/>
+						</form>
+					</ul>
+				</div>
 			</div>
 		</div>
 	</div>
 
-	<div>
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Status sliders with Hue-Chroma-Tone 🚧</Heading>
 		<div class="grid grid-cols-3 gap-4">
 			<div class="w-full">
 				<label class="label label-text" for="leftStatus"
@@ -453,8 +713,8 @@
 					max="100"
 					step="1"
 					class="range w-full"
-					aria-label="left Status"
-					id="leftStatus"
+					aria-label="center Status"
+					id="centerStatus"
 					bind:value={status[1]}
 				/>
 			</div>
@@ -470,8 +730,8 @@
 					max="100"
 					step="1"
 					class="range w-full"
-					aria-label="left Status"
-					id="leftStatus"
+					aria-label="right Status"
+					id="rightStatus"
 					bind:value={status[2]}
 				/>
 			</div>
@@ -506,161 +766,13 @@
 		<HorizontalRule />
 	</div>
 
-	<div>
-		<Heading>Icons</Heading>
-		<p class="text-title-large text-center text-xl">Iconify with FlyonUI</p>
-		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
-			<div>
-				<p class="text-label text-center">
-					Default library <span class="text-label-prominent badge min-h-fit">Tablers</span>
-				</p>
-				<span class="icon-[tabler--settings] size-12"></span>
-				<span class="icon-[tabler--palette] size-12"></span>
-				<span class="icon-[tabler--home] size-12"></span>
-				<span class="icon-[tabler--user] size-12"></span>
-				<span class="icon-[tabler--trash] size-12"></span>
-				<span class="icon-[tabler--send-2] size-12"></span>
-				<span class="icon-[tabler--share-2] size-12"></span>
-			</div>
-			<div>
-				<p class="text-label text-center">
-					Extension library <span class="text-label-prominent badge min-h-fit"
-						>Material Symbols</span
-					>
-				</p>
-				<span class="icon-[material-symbols--settings-outline-rounded] size-12"></span>
-				<span class="icon-[material-symbols--palette-outline] size-12"></span>
-				<span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
-				<span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
-				<span class="icon-[material-symbols--edit-outline-rounded] size-12"></span>
-			</div>
-			<div>
-				<p class="text-label text-center">
-					Extension library <span class="text-label-prominent badge min-h-fit">SVG spinners</span>
-				</p>
-				<span class="icon-[svg-spinners--12-dots-scale-rotate] size-12"></span>
-				<span class="icon-[svg-spinners--3-dots-bounce] size-12"></span>
-				<span class="icon-[svg-spinners--6-dots-rotate] size-12"></span>
-				<span class="icon-[svg-spinners--90-ring-with-bg] size-12"></span>
-				<span class="icon-[svg-spinners--clock] size-12"></span>
-				<span class="icon-[svg-spinners--bars-scale] size-12"></span>
-				<span class="icon-[svg-spinners--wifi] size-12"></span>
-				<span class="icon-[svg-spinners--wifi-fade] size-12"></span>
-			</div>
-			<div>
-				<p class="text-label text-center">
-					Extension library <span class="text-label-prominent badge min-h-fit"
-						>Font Awesome Solid</span
-					>
-				</p>
-				<span class="icon-[fa6-solid--user] size-12"></span>
-				<span class="icon-[fa6-solid--droplet] size-12"></span>
-				<span class="icon-[fa6-solid--comments] size-12"></span>
-				<span class="icon-[fa6-solid--plus] size-12"></span>
-				<p class="text-label text-center">
-					Extension library <span class="text-label-prominent badge min-h-fit"
-						>Font Awesome Brands</span
-					>
-				</p>
-				<span class="icon-[fa6-brands--discord] size-12"></span>
-				<span class="icon-[fa6-brands--youtube] size-12"></span>
-				<span class="icon-[fa6-brands--linux] size-12"></span>
-				<span class="icon-[fa6-brands--github] size-12"></span>
-			</div>
-			<div>
-				<p class="text-label text-center">
-					Extension library <span class="text-label-prominent badge min-h-fit">Feather Icon</span>
-				</p>
-				<span class="icon-[fe--bell] size-12"></span>
-				<span class="icon-[fe--disabled] size-12"></span>
-				<span class="grid place-items-center">
-					<span class="icon-[fe--bell] col-start-1 row-start-1 size-8"></span>
-					<span class="icon-[fe--disabled] col-start-1 row-start-1 size-12"></span>
-				</span>
-			</div>
-			<div>
-				<p class="text-label text-center">
-					Emoji library <span class="text-label-prominent badge min-h-fit">Noto emoji</span>
-				</p>
-				<span class="icon-[noto--folded-hands] size-12"></span>
-				<span class="icon-[noto--folded-hands-medium-dark-skin-tone] size-12"></span>
-				<span class="icon-[noto--heart-hands] size-12"></span>
-				<span class="icon-[noto--heart-hands-dark-skin-tone] size-12"></span>
-				<span class="icon-[noto--fire] size-12"></span>
-				<span class="icon-[noto--smiling-face-with-sunglasses] size-12"></span>
-				<span class="icon-[noto--check-mark-button] size-12"></span>
-				<span class="icon-[noto--cross-mark] size-12"></span>
-			</div>
-			<div>
-				<p class="text-label text-center">
-					Emoji library <span class="text-label-prominent badge min-h-fit">Openmoji</span>
-				</p>
-				<span class="icon-[openmoji--check-mark] size-12"></span>
-				<span class="icon-[openmoji--cross-mark] size-12"></span>
-			</div>
-			<div>
-				<p class="text-label text-center">
-					Emoji library <span class="text-label-prominent badge min-h-fit">Twitter Emoji</span>
-				</p>
-				<span class="icon-[twemoji--flag-denmark] size-12"></span>
-				<span class="icon-[twemoji--flag-germany] size-12"></span>
-				<span class="icon-[twemoji--flag-united-states] size-12"></span>
-			</div>
-		</div>
-		<HorizontalRule />
-	</div>
-
-	<div>
-		<Heading>Buttons</Heading>
-		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
-			<div>
-				<p class="text-label text-center">Action Buttons</p>
-				<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add">
-					<span class="icon-[fa6-solid--plus]"></span>
-				</button>
-				<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit">
-					<span class="icon-[material-symbols--edit-outline-rounded]"></span>
-				</button>
-				<button class="btn-error-container btn btn-circle btn-gradient" aria-label="Delete">
-					<span class="icon-[tabler--trash]"></span>
-				</button>
-				<button class="btn-secondary-container btn btn-circle btn-gradient" aria-label="Send">
-					<span class="icon-[tabler--send-2]"></span>
-				</button>
-				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share">
-					<span class="icon-[tabler--share-2]"></span>
-				</button>
-				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Done">
-					<span class="icon-[mingcute--check-2-fill]"></span>
-				</button>
-				<p class="text-label text-center">State changing buttons</p>
-				<button
-					class="btn-info-container btn btn-circle btn-gradient"
-					onclick={() => (edit ? (edit = false) : (edit = true))}
-					aria-label="Edit Button"
-				>
-					<span class="grid place-items-center">
-						<span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
-						></span>
-						<span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
-						></span>
-					</span>
-				</button>
-			</div>
-		</div>
-	</div>
-
-	<div>
-		<Heading>Badges</Heading>
-		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
-			<div>
-				<p class="text-label text-center">Text Badges</p>
-			</div>
-		</div>
-	</div>
-
-	<div>
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Tooltips</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Tooltips 🚧</Heading>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div class="tooltip">
 				<button type="button" class="tooltip-toggle btn btn-square" aria-label="Tooltip">
@@ -676,8 +788,13 @@
 		</div>
 	</div>
 
-	<div>
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Theme Picker</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Theme Picker 🚧</Heading>
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div class="w-48">
 				<label class="label label-text" for="colorPicker"
@@ -731,7 +848,7 @@
 					bind:value={contrast}
 				/>
 				<div class="flex w-full justify-between px-2 text-xs">
-					{#each allContrasts as _}
+					{#each allContrasts as _ (_)}
 						<span>|</span>
 					{/each}
 				</div>
@@ -740,8 +857,13 @@
 		<HorizontalRule />
 	</div>
 
-	<div>
-		<Heading>Modal</Heading>
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Modals</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Modals 🚧</Heading>
 		<button
 			type="button"
 			class="btn btn-accent"
@@ -763,14 +885,14 @@
 		<!-- <div bind:this={modal} id="basic-modal" class="overlay modal overlay-open:opacity-100 hidden" role="dialog" tabindex="-1"> -->
 		<div
 			id="basic-modal"
-			class="overlay modal hidden overlay-open:opacity-100"
+			class="overlay modal overlay-open:opacity-100 hidden"
 			role="dialog"
 			tabindex="-1"
 		>
 			<div class="modal-dialog overlay-open:opacity-100">
 				<div class="modal-content bg-base-300">
 					<div class="modal-header">
-						<h3 class="modal-text-title">First Dialog Title</h3>
+						<h3 class="modal-title">First Dialog Title</h3>
 						<button
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
@@ -810,14 +932,14 @@
 
 		<div
 			id="centered-modal"
-			class="overlay modal modal-middle hidden overlay-open:opacity-100"
+			class="overlay modal modal-middle overlay-open:opacity-100 hidden"
 			role="dialog"
 			tabindex="-1"
 		>
 			<div class="modal-dialog overlay-open:opacity-100">
 				<div class="modal-content bg-base-300">
 					<div class="modal-header">
-						<h3 class="modal-text-title">Centered Dialog Title</h3>
+						<h3 class="modal-title">Centered Dialog Title</h3>
 						<button
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
@@ -857,14 +979,14 @@
 
 		<div
 			id="share-modal"
-			class="overlay modal modal-middle hidden overlay-open:opacity-100"
+			class="overlay modal modal-middle overlay-open:opacity-100 hidden"
 			role="dialog"
 			tabindex="-1"
 		>
 			<div class="modal-dialog overlay-open:opacity-100">
-				<div class="modal-content bg-base-300 shadow-xl shadow-outline">
+				<div class="modal-content bg-base-300 shadow-outline shadow-xl">
 					<div class="modal-header">
-						<h3 class="modal-text-title">Share</h3>
+						<h3 class="modal-title">Share</h3>
 						<button
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
@@ -923,63 +1045,15 @@
 		<HorizontalRule />
 	</div>
 
-	<div>
-		<Heading>Swaps</Heading>
-		<div class="grid grid-cols-12 gap-4">
-			<div>
-				<label class="swap">
-					<input type="checkbox" />
-					<span class="icon-[tabler--volume] swap-on size-6"></span>
-					<span class="icon-[tabler--volume-off] swap-off size-6"></span>
-				</label>
-			</div>
-			<div>
-				<label class="btn btn-circle swap swap-rotate">
-					<input type="checkbox" />
-					<span class="icon-[tabler--menu-2] swap-off"></span>
-					<span class="icon-[tabler--x] swap-on"></span>
-				</label>
-			</div>
-			<div>
-				<label class="swap swap-rotate">
-					<input type="checkbox" />
-					<span class="icon-[tabler--sun] swap-on size-6"></span>
-					<span class="icon-[tabler--moon] swap-off size-6"></span>
-				</label>
-			</div>
-			<div>
-				<label class="swap swap-flip text-6xl">
-					<input type="checkbox" />
-					<span class="swap-on">😈</span>
-					<span class="swap-off">😇</span>
-				</label>
-			</div>
-			<!-- <div>
-					<label bind:this={myTemperature} class="swap swap-js text-6xl">
-						<span class="swap-on">🥵</span>
-						<span class="swap-off">🥶</span>
-					</label>
-					<label class="swap swap-js text-6xl">
-						<span class="swap-on">🥳</span>
-						<span class="swap-off">😭</span>
-					</label>
-				</div> -->
-			<div>
-				<label class="btn btn-circle swap swap-rotate">
-					<input type="checkbox" />
-					<span class="icon-[tabler--player-play] swap-off"></span>
-					<span class="icon-[tabler--player-pause] swap-on"></span>
-				</label>
-			</div>
-		</div>
-
-		<HorizontalRule />
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Drawer (Sidebar)</Heading>
+		{@render underConstruction()}
 	</div>
 
 	<!-- This local override works:
 		style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
-	<div>
-		<Heading>Drawer (Sidebar)</Heading>
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Drawer (Sidebar) 🚧</Heading>
 		<button
 			type="button"
 			class="btn btn-primary"
@@ -991,12 +1065,12 @@
 
 		<div
 			id="overlay-example"
-			class="overlay drawer drawer-start hidden overlay-open:translate-x-0"
+			class="overlay drawer drawer-start overlay-open:translate-x-0 hidden"
 			role="dialog"
 			tabindex="-1"
 		>
 			<div class="drawer-header">
-				<h3 class="drawer-text-title">Drawer Title</h3>
+				<h3 class="drawer-title">Drawer Title</h3>
 				<button
 					type="button"
 					class="btn btn-circle btn-text btn-sm absolute end-3 top-3"

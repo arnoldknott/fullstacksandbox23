@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 // import { error } from '@sveltejs/kit';
-import { backendAPI } from '$lib/server/apis';
+import { backendAPI } from '$lib/server/apis/backendApi';
 import { fail } from '@sveltejs/kit';
 import type {
 	AccessPolicy,
@@ -9,7 +9,8 @@ import type {
 	DemoResourceExtended,
 	MicrosoftTeamBasic
 } from '$lib/types';
-import { microsoftGraph } from '$lib/server/apis';
+// import { Action } from '$lib/accessHandler';
+import { microsoftGraph } from '$lib/server/apis/msgraph';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function executed ===');
@@ -144,20 +145,15 @@ export const actions: Actions = {
 		// }
 	},
 	share: async ({ locals, request, url }) => {
-		console.log('=== routes - demo-resource - page.server - share function executed ===');
 		const data = await request.formData();
-		const accessPolicy = {
-			resource_id: data.get('id'),
-			identity_id: url.searchParams.get('teamid'),
-			action: 'own' // TBD. make this dynamic: own, write, read
-		};
-
 		const sessionId = locals.sessionData.sessionId;
 
-		await backendAPI.post(sessionId, '/access/policy', JSON.stringify(accessPolicy));
-
-		// const accessPolicy = {
-		// 	resource_id: params.query.get('resource_id'),
-		// }
+		return backendAPI.share(
+			sessionId,
+			data.get('id')?.toString(),
+			url.searchParams.get('identity-id')?.toString(),
+			url.searchParams.get('action')?.toString(),
+			url.searchParams.get('new-action')?.toString()
+		);
 	}
 }; //satisfies Actions;

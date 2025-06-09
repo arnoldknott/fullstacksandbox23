@@ -1,17 +1,313 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import 'tailwindcss';
 @import './components/materialDesignExtensionsToFlyonUI/typography.css';
 @import './components/materialDesignExtensionsToFlyonUI/chat.css';
 @import './components/materialDesignExtensionsToFlyonUI/badge.css';
 @import './components/materialDesignExtensionsToFlyonUI/button.css';
 @import './components/materialDesignExtensionsToFlyonUI/checkbox.css';
+@import './components/materialDesignExtensionsToFlyonUI/input.css';
+@import './components/materialDesignExtensionsToFlyonUI/textarea.css';
 @import './components/materialDesignExtensionsToFlyonUI/radio.css';
+@import './components/materialDesignExtensionsToFlyonUI/select.css';
+
+@import '../node_modules/flyonui/variants.css';
+@plugin "@iconify/tailwind4";
+@plugin "flyonui";
+/* @plugin "flyonui" {
+    themes: light --default, dark --prefersdark, soft;
+  } */
+/* @plugin "flyonui" {
+  themes: false;
+}; */
+@plugin "flyonui/theme" {
+	name: 'materialdesign';
+	default: true;
+	prefersdark: true;
+	color-scheme: dark;
+	--color-base-100: rgb(var(--md-rgb-color-surface-container-lowest));
+	--color-base-200: rgb(var(--md-rgb-color-surface-container));
+	--color-base-300: rgb(var(--md-rgb-color-surface-container-highest));
+	--color-base-content: rgb(var(--md-rgb-color-on-surface));
+	--color-primary: rgb(var(--md-rgb-color-primary));
+	--color-primary-content: rgb(var(--md-rgb-color-on-primary));
+	--color-secondary: rgb(var(--md-rgb-color-secondary));
+	--color-secondary-content: rgb(var(--md-rgb-color-on-secondary));
+	--color-accent: rgb(var(--md-rgb-color-tertiary));
+	--color-accent-content: rgb(var(--md-rgb-color-on-tertiary));
+	--color-neutral: rgb(var(--md-rgb-color-neutral));
+	--color-neutral-content: rgb(var(--md-rgb-color-on-neutral));
+	--color-info: rgb(var(--md-rgb-color-info));
+	--color-info-content: rgb(var(--md-rgb-color-on-info));
+	--color-success: rgb(var(--md-rgb-color-success));
+	--color-success-content: rgb(var(--md-rgb-color-on-success));
+	--color-warning: rgb(var(--md-rgb-color-warning));
+	--color-warning-content: rgb(var(--md-rgb-color-on-warning));
+	--color-error: rgb(var(--md-rgb-color-error));
+	--color-error-content: rgb(var(--md-rgb-color-on-error));
+}
+
+@source "../node_modules/flyonui/flyonui/index.js";
+/* Import Third-party override css */
+/* @import "flyonui/src/vendor/flatpickr.css"; */
+/* @import "flyonui/src/vendor/notyf.css"; */
+/* @import "flyonui/src/vendor/datatables.css"; */
+/* @import "flyonui/src/vendor/editor.css"; */
+/* @import "flyonui/src/vendor/fullcalendar.css"; */
+/* @import "flyonui/src/vendor/raty.css"; */
+/* @import "flyonui/src/vendor/waves.css"; */
+/* @import "flyonui/src/vendor/apexcharts.css"; */
+
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+@theme {
+	--font-sans: Work Sans, sans-serif;
+	--font-serif: Merriweather, serif;
+
+	/* Material Design utility classes for typography */
+	--text-display: 45pt;
+	--text-display--line-height: 52pt;
+	--text-display-large: 57pt;
+	--text-display-large--line-height: 64pt;
+	--text-display-small: 36pt;
+	--text-display-small--line-height: 44pt;
+	--text-heading: 28pt;
+	--text-heading--line-height: 36pt;
+	--text-heading-large: 32pt;
+	--text-heading-large--line-height: 40pt;
+	--text-heading-small: 24pt;
+	--text-heading-small--line-height: 32pt;
+	--text-title: 16pt;
+	--text-title--line-height: 24pt;
+	--text-title-large: 22pt;
+	--text-title-large--line-height: 28pt;
+	--text-title-small: 14pt;
+	--text-title-small--line-height: 20pt;
+	--text-body: 14pt;
+	--text-body--line-height: 20pt;
+	--text-body-large: 16pt;
+	--text-body-large--line-height: 24pt;
+	--text-body-small: 12pt;
+	--text-body-small--line-height: 16pt;
+	--text-label: 12pt;
+	--text-label--line-height: 16pt;
+	--text-label-large: 14pt;
+	--text-label-large--line-height: 20pt;
+	--text-label-small: 11pt;
+	--text-label-small--line-height: 16pt;
+
+	--tracking-display-large: -0.25pt;
+	--tracking-title: 0.15pt;
+	--tracking-title-small: 0.1pt;
+	--tracking-body-large: 0.5pt;
+	--tracking-body: 0.25pt;
+	--tracking-body-small: 0.4pt;
+	--tracking-label: 0.5pt;
+	--tracking-label-large: 0.1pt;
+	--tracking-label-small: 0.5pt;
+
+	--font-weight-label: 500;
+	--font-weight-prominent: 700;
+
+	/* Material Design utility classes for colors */
+	--color-transparent: transparent;
+	--color-current: currentColor;
+	--color-primary: rgb(var(--md-rgb-color-primary));
+	--color-primary-content: rgb(var(--md-rgb-color-on-primary));
+	--color-secondary: rgb(var(--md-rgb-color-secondary));
+	--color-secondary-content: rgb(var(--md-rgb-color-on-secondary));
+	--color-accent: rgb(var(--md-rgb-color-tertiary));
+	--color-accent-content: rgb(var(--md-rgb-color-on-tertiary));
+	--color-neutral: rgb(var(--md-rgb-color-neutral));
+	--color-neutral-content: rgb(var(--md-rgb-color-on-neutral));
+	--color-info: rgb(var(--md-rgb-color-info));
+	--color-info-content: rgb(var(--md-rgb-color-on-info));
+	--color-success: rgb(var(--md-rgb-color-success));
+	--color-success-content: rgb(var(--md-rgb-color-on-success));
+	--color-warning: rgb(var(--md-rgb-color-warning));
+	--color-warning-content: rgb(var(--md-rgb-color-on-warning));
+	--color-error: rgb(var(--md-rgb-color-error));
+	--color-error-content: rgb(var(--md-rgb-color-on-error));
+	--color-base-100: rgb(var(--md-rgb-color-surface-container-lowest));
+	--color-base-200: rgb(var(--md-rgb-color-surface-container));
+	--color-base-300: rgb(var(--md-rgb-color-surface-container-highest));
+	--color-base-content: rgb(var(--md-rgb-color-on-surface));
+	--color-base-shadow: rgb(var(--md-rgb-color-shadow));
+	--color-primary-container: rgb(var(--md-rgb-color-primary-container));
+	--color-primary-container-content: rgb(var(--md-rgb-color-on-primary-container));
+	--color-secondary-container: rgb(var(--md-rgb-color-secondary-container));
+	--color-secondary-container-content: rgb(var(--md-rgb-color-on-secondary-container));
+	--color-accent-container: rgb(var(--md-rgb-color-tertiary-container));
+	--color-accent-container-content: rgb(var(--md-rgb-color-on-tertiary-container));
+	--color-neutral-container: rgb(var(--md-rgb-color-neutral-container));
+	--color-neutral-container-content: rgb(var(--md-rgb-color-on-neutral-container));
+	--color-error-container: rgb(var(--md-rgb-color-error-container));
+	--color-error-container-content: rgb(var(--md-rgb-color-on-error-container));
+	--color-warning-container: rgb(var(--md-rgb-color-warning-container));
+	--color-warning-container-content: rgb(var(--md-rgb-color-on-warning-container));
+	--color-success-container: rgb(var(--md-rgb-color-success-container));
+	--color-success-container-content: rgb(var(--md-rgb-color-on-success-container));
+	--color-info-container: rgb(var(--md-rgb-color-info-container));
+	--color-info-container-content: rgb(var(--md-rgb-color-on-info-container));
+	--color-base-150: rgb(var(--md-rgb-color-surface-container-low));
+	--color-base-250: rgb(var(--md-rgb-color-surface-container-high));
+	--color-base-content-variant: rgb(var(--md-rgb-color-on-surface-variant));
+	--color-outline: rgb(var(--md-rgb-color-outline));
+	--color-outline-variant: rgb(var(--md-rgb-color-outline-variant));
+	--color-inverse-surface: rgb(var(--md-rgb-color-inverse-surface));
+	--color-inverse-surface-content: rgb(var(--md-rgb-color-inverse-on-surface));
+	--color-inverse-primary: rgb(var(--md-rgb-color-inverse-primary));
+	--color-scrim: rgb(var(--md-rgb-color-scrim));
+	--color-background: rgb(var(--md-rgb-color-background));
+	--color-background-content: rgb(var(--md-rgb-color-on-background));
+	--color-neutral-palette-key-color: rgb(var(--md-rgb-color-neutral-palette-key-color));
+	--color-neutral-variant-palette-key-color: rgb(
+		var(--md-rgb-color-neutral-variant-palette-key-color)
+	);
+	--color-primary-palette-key-color: rgb(var(--md-rgb-color-primary-palette-key-color));
+	--color-secondary-palette-key-color: rgb(var(--md-rgb-color-secondary-palette-key-color));
+	--color-accent-palette-key-color: rgb(var(--md-rgb-color-tertiary-palette-key-color));
+	--color-primary-fixed: rgb(var(--md-rgb-color-primary-fixed));
+	--color-primary-fixed-dim: rgb(var(--md-rgb-color-primary-fixed-dim));
+	--color-primary-fixed-content: rgb(var(--md-rgb-color-on-primary-fixed));
+	--color-primary-fixed-variant-content: rgb(var(--md-rgb-color-on-primary-fixed-variant));
+	--color-secondary-fixed: rgb(var(--md-rgb-color-secondary-fixed));
+	--color-secondary-fixed-dim: rgb(var(--md-rgb-color-secondary-fixed-dim));
+	--color-secondary-fixed-content: rgb(var(--md-rgb-color-on-secondary-fixed));
+	--color-secondary-fixed-variant-content: rgb(var(--md-rgb-color-on-secondary-fixed-variant));
+	--color-accent-fixed: rgb(var(--md-rgb-color-tertiary-fixed));
+	--color-accent-fixed-dim: rgb(var(--md-rgb-color-tertiary-fixed-dim));
+	--color-accent-fixed-content: rgb(var(--md-rgb-color-on-tertiary-fixed));
+	--color-accent-fixed-variant-content: rgb(var(--md-rgb-color-on-tertiary-fixed-variant));
+	--color-surface-dim: rgb(var(--md-rgb-color-surface-dim));
+	--color-surface: rgb(var(--md-rgb-color-surface));
+	--color-surface-bright: rgb(var(--md-rgb-color-surface-bright));
+	--color-surface-variant: rgb(var(--md-rgb-color-surface-variant));
+	--color-surface-tint: rgb(var(--md-rgb-color-surface-tint));
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentcolor);
+	}
+}
 
 /* Before update: */
 /* @tailwind base;
 @tailwind components;
 @tailwind utilities; */
+
+@utility display {
+	font-size: var(--text-display);
+	line-height: var(--text-display--line-height);
+	font-family: var(--font-sans);
+}
+@utility display-large {
+	font-size: var(--text-display-large);
+	line-height: var(--text-display-large--line-height);
+	font-family: var(--font-sans);
+	letter-spacing: var(--tracking-display-large);
+}
+@utility display-small {
+	font-size: var(--text-display-small);
+	line-height: var(--text-display-small--line-height);
+	font-family: var(--font-sans);
+}
+
+@utility heading {
+	font-size: var(--text-heading);
+	line-height: var(--text-heading--line-height);
+	font-family: var(--font-sans);
+}
+
+@utility heading-large {
+	font-size: var(--text-heading-large);
+	line-height: var(--text-heading-large--line-height);
+	font-family: var(--font-sans);
+}
+
+@utility heading-small {
+	font-size: var(--text-heading-small);
+	line-height: var(--text-heading-small--line-height);
+	font-family: var(--font-sans);
+}
+
+@utility title {
+	font-size: var(--text-title);
+	line-height: var(--text-title--line-height);
+	font-family: var(--font-sans);
+	letter-spacing: var(--tracking-title);
+}
+
+@utility title-large {
+	font-size: var(--text-title-large);
+	line-height: var(--text-title-large--line-height);
+	font-family: var(--font-sans);
+}
+
+@utility title-small {
+	font-size: var(--text-title-small);
+	line-height: var(--text-title-small--line-height);
+	font-family: var(--font-sans);
+	letter-spacing: var(--tracking-title-small);
+}
+
+@utility body {
+	font-size: var(--text-body);
+	line-height: var(--text-body--line-height);
+	font-family: var(--font-serif);
+	letter-spacing: var(--tracking-body);
+}
+
+@utility body-large {
+	font-size: var(--text-body-large);
+	line-height: var(--text-body-large--line-height);
+	font-family: var(--font-serif);
+	letter-spacing: var(--tracking-body-large);
+}
+
+@utility body-small {
+	font-size: var(--text-body-small);
+	line-height: var(--text-body-small--line-height);
+	font-family: var(--font-serif);
+	letter-spacing: var(--tracking-body-small);
+}
+
+@utility label {
+	font-size: var(--text-label);
+	line-height: var(--text-label--line-height);
+	font-family: var(--font-sans);
+	font-weight: var(--font-weight-label);
+	letter-spacing: var(--tracking-label);
+}
+
+@utility label-prominent {
+	font-weight: var(--font-weight-prominent);
+}
+
+@utility label-large {
+	font-size: var(--text-label-large);
+	line-height: var(--text-label-large--line-height);
+	font-family: var(--font-sans);
+	letter-spacing: var(--tracking-label-large);
+}
+
+@utility label-small {
+	font-size: var(--text-label-small);
+	line-height: var(--text-label-small--line-height);
+	font-family: var(--font-sans);
+	letter-spacing: var(--tracking-label-small);
+}
 
 html,
 body {

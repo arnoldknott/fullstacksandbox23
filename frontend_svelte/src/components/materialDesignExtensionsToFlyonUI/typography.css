@@ -1,73 +1,75 @@
-@layer utilities {
-	.text-display {
-		@apply font-sans text-[45pt] leading-[52pt];
-
-		&-large {
-			@apply font-sans text-[57pt] leading-[64pt] tracking-[-0.25pt];
-		}
-
-		&-small {
-			@apply font-sans text-[36pt] leading-[44pt];
-		}
-	}
+/* .text-display {
+  @apply font-sans text-[45pt] leading-[52pt];
 }
 
-@layer utilities {
-	.text-heading {
-		@apply font-sans text-[28pt] leading-[36pt];
+.text-display-large {
+  @apply font-sans text-[57pt] leading-[64pt] tracking-[-0.25pt];
+} */
 
-		&-large {
-			@apply font-sans text-[32pt] leading-[40pt];
-		}
+/* @apply font-sans text-[36pt] leading-[44pt]; */
+/* .text-display-small {
+  font-family: var(--font-sans);
+  font-size: 36pt;
+  line-height: 44pt;
+} */
 
-		&-small {
-			@apply font-sans text-[24pt] leading-[32pt];
-		}
-	}
+/* @apply font-sans text-[28pt] leading-[36pt]; */
+/* .text-heading {
+  font-family: var(--font-sans);
+  font-size: 28pt;
+  line-height: 36pt;
+} */
+
+/* @apply font-sans text-[32pt] leading-[40pt]; */
+/* .text-heading-large {
+  font-family: var(--font-sans);
+  font-size: 32pt;
+  line-height: 40pt;
+} */
+
+/* @apply font-sans text-[24pt] leading-[32pt]; */
+/* .text-heading-small {
+  font-family: var(--font-sans);
+  font-size: 24pt;
+  line-height: 32pt;
+} */
+
+/* .text-title {
+  @apply font-sans text-[16pt] leading-[24pt] tracking-[0.15pt];
 }
 
-@layer utilities {
-	.text-title {
-		@apply font-sans text-[16pt] leading-[24pt] tracking-[0.15pt];
-
-		&-large {
-			@apply font-sans text-[22pt] leading-[28pt] tracking-normal;
-		}
-
-		&-small {
-			@apply font-sans text-[14pt] leading-[20pt] tracking-[0.1pt];
-		}
-	}
+.text-title-large {
+  @apply font-sans text-[22pt] leading-[28pt] tracking-normal;
 }
 
-@layer utilities {
-	.text-body {
-		@apply font-serif text-[14pt] leading-[20pt] tracking-[0.25pt];
-
-		&-large {
-			@apply font-serif text-[16pt] leading-[24pt] tracking-[0.5pt];
-		}
-
-		&-small {
-			@apply font-serif text-[12pt] leading-[16pt] tracking-[0.4pt];
-		}
-	}
+.text-title-small {
+  @apply font-sans text-[14pt] leading-[20pt] tracking-[0.1pt];
 }
 
-@layer utilities {
-	.text-label {
-		@apply font-sans text-[12pt] font-[500] leading-[16pt] tracking-[0.5pt];
-
-		&-prominent {
-			@apply font-sans font-[700];
-		}
-
-		&-large {
-			@apply font-sans text-[14pt] leading-[20pt] tracking-[0.1pt];
-		}
-
-		&-small {
-			@apply font-sans text-[11pt] leading-[16pt] tracking-[0.5pt];
-		}
-	}
+.text-body {
+  @apply font-serif text-[14pt] leading-[20pt] tracking-[0.25pt];
 }
+
+.text-body-large {
+  @apply font-serif text-[16pt] leading-[24pt] tracking-[0.5pt];
+}
+
+.text-body-small {
+  @apply font-serif text-[12pt] leading-[16pt] tracking-[0.4pt];
+}
+
+.text-label {
+  @apply font-sans text-[12pt] font-[500] leading-[16pt] tracking-[0.5pt];
+}
+
+.text-label-prominent {
+  @apply font-sans font-[700];
+}
+
+.text-label-large {
+  @apply font-sans text-[14pt] leading-[20pt] tracking-[0.1pt];
+}
+
+.text-label-small {
+  @apply font-sans text-[11pt] leading-[16pt] tracking-[0.5pt];
+} */

@@ -2,9 +2,11 @@ import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import globals from 'globals';
 import tsParser from '@typescript-eslint/parser';
 import parser from 'svelte-eslint-parser';
+import svelte from 'eslint-plugin-svelte';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import js from '@eslint/js';
+import svelteConfig from './svelte.config.js';
 import { FlatCompat } from '@eslint/eslintrc';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,6 +18,8 @@ const compat = new FlatCompat({
 });
 
 export default [
+	js.configs.recommended,
+	...svelte.configs.recommended,
 	{
 		ignores: [
 			'**/.DS_Store',
@@ -34,14 +38,13 @@ export default [
 	...compat.extends(
 		'eslint:recommended',
 		'plugin:@typescript-eslint/recommended',
-		'plugin:svelte/recommended',
+		// 'plugin:svelte/recommended',
 		'prettier'
 	),
 	{
 		plugins: {
 			'@typescript-eslint': typescriptEslint
 		},
-
 		languageOptions: {
 			globals: {
 				...globals.browser,
@@ -58,15 +61,15 @@ export default [
 		}
 	},
 	{
-		files: ['**/*.svelte'],
+		files: ['**/*.svelte', '**/*.svelte.js'],
 
 		languageOptions: {
 			parser: parser,
 			ecmaVersion: 5,
 			sourceType: 'script',
-
 			parserOptions: {
-				parser: '@typescript-eslint/parser'
+				parser: '@typescript-eslint/parser',
+				svelteConfig
 			}
 		}
 	},

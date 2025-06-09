@@ -15,7 +15,7 @@
 
 	<Heading>Microsoft Teams associated with this fullstack sandbox application:</Heading>
 
-	{#each data.microsoftTeams as microsoftTeam}
+	{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
 		<IdentityAccordion title={microsoftTeam.displayName} id={microsoftTeam.id}>
 			<JsonData data={microsoftTeam} />
 		</IdentityAccordion>

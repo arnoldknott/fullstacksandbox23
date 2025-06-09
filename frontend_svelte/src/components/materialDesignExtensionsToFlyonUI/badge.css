@@ -1,19 +1,55 @@
 .badge-primary-container {
-	@apply bg-primary-container text-primary-container-content;
+	--badge-color: var(--color-primary-container);
+	--badge-fg: var(--color-primary-container-content);
+}
+
+.badge-secondary-container {
+	--badge-color: var(--color-secondary-container);
+	--badge-fg: var(--color-secondary-container-content);
+}
+
+.badge-accent-container {
+	--badge-color: var(--color-accent-container);
+	--badge-fg: var(--color-accent-container-content);
+}
+
+.badge-neutral-container {
+	--badge-color: var(--color-neutral-container);
+	--badge-fg: var(--color-neutral-container-content);
+}
+
+.badge-info-container {
+	--badge-color: var(--color-info-container);
+	--badge-fg: var(--color-info-container-content);
+}
+
+.badge-success-container {
+	--badge-color: var(--color-success-container);
+	--badge-fg: var(--color-success-container-content);
+}
+
+.badge-warning-container {
+	--badge-color: var(--color-warning-container);
+	--badge-fg: var(--color-warning-container-content);
+}
+
+.badge-error-container {
+	--badge-color: var(--color-error-container);
+	--badge-fg: var(--color-error-container-content);
 }
 
 .badge-inverse-primary {
-	@apply bg-inverse-primary text-inverse-surface;
+	--badge-color: var(--color-inverse-primary);
+	--badge-fg: var(--color-inverse-surface);
 }
 
-/* .badge {
-	@apply rounded-btn bg-base-200 text-base-content;
-
-    &-primary-container {
-		@apply bg-primary-container text-primary-container-content;
-	}
-} */
+.badge-primary-fixed-dim {
+	--badge-color: var(--color-primary-fixed-dim);
+	--badge-fg: var(--color-primary-fixed-content);
+}
 
 .badge-my-personal {
-	@apply h-16 bg-primary-container text-primary-container-content;
+	@apply h-16;
+	--badge-color: var(--color-primary-container);
+	--badge-fg: var(--color-primary-container-content);
 }

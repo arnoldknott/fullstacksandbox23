@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Heading from '$components/Heading.svelte';
+	import HorizontalRule from '$components/HorizontalRule.svelte';
 	// import { createRawSnippet, type Snippet } from 'svelte';
 
 	import ColorTileFlyonUi from './ColorTileFlyonUI.svelte';
@@ -139,6 +140,9 @@
 
 	const colorTileClasses = 'h-full w-full p-2';
 	const colorLabelClasses = 'text-left text-xs md:text-lg xl:text-xl';
+
+	// for edit button:
+	let edit = $state(false);
 </script>
 
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
@@ -155,18 +159,20 @@
 			<label class="label label-text text-base" for="switchColors">Show</label>
 		</div>
 		<div
-			class="accordion accordion-bordered divide-y {showSections.colors ? '' : 'hidden'}"
+			class="accordion accordion-bordered border-outline/40 divide-y {showSections.colors
+				? ''
+				: 'hidden'}"
 			data-accordion-always-open=""
 		>
 			<!-- <div class="accordion-item accordion-item-active:scale-[1.05] accordion-item-active:mb-3 ease-in duration-300 delay-[1ms] active" id="default-colors"> -->
-			<div class="active accordion-item" id="default-colors">
+			<div class="active accordion-item border-outline/40" id="default-colors">
 				<button
 					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
 					aria-controls="default-foreground-colors-collapse"
 					aria-expanded="true"
 				>
 					<span
-						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+						class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180"
 					></span>
 					<p class="ml-10 text-base md:text-xl">Default foreground colors FlyonUI</p>
 				</button>
@@ -319,14 +325,14 @@
 				<!-- </div>
                 </div> -->
 			</div>
-			<div class="active accordion-item" id="extension-materialui-colors">
+			<div class="active accordion-item border-outline/40" id="extension-materialui-colors">
 				<button
 					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
 					aria-controls="extension-materialui-colors-collapse"
 					aria-expanded="true"
 				>
 					<span
-						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+						class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180"
 					></span>
 					<p class="ml-10 text-base md:text-xl">
 						Extensions for foreground to FlyonUI with extra Material Design colors
@@ -458,14 +464,14 @@
 					</div>
 				</div>
 			</div>
-			<div class="active accordion-item" id="default-background-colors">
+			<div class="active accordion-item border-outline/40" id="default-background-colors">
 				<button
 					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
 					aria-controls="default-background-colors-collapse"
 					aria-expanded="true"
 				>
 					<span
-						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+						class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180"
 					></span>
 					<p class="ml-10 text-base md:text-xl">Default background colors FlyonUI</p>
 				</button>
@@ -524,14 +530,14 @@
 					</div>
 				</div>
 			</div>
-			<div class="active accordion-item" id="extension-materialui-colors">
+			<div class="active accordion-item border-outline/40" id="extension-materialui-colors">
 				<button
 					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
 					aria-controls="extension-background-materialui-colors-collapse"
 					aria-expanded="true"
 				>
 					<span
-						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+						class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180"
 					></span>
 					<p class="ml-10 text-base md:text-xl">
 						Extensions for background to FlyonUI with extra Material Design colors
@@ -633,14 +639,14 @@
 					</div>
 				</div>
 			</div>
-			<div class="active accordion-item" id="opacity-colors">
+			<div class="active accordion-item border-outline/40" id="opacity-colors">
 				<button
 					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
 					aria-controls="opacity-colors-collapse"
 					aria-expanded="true"
 				>
 					<span
-						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+						class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180"
 					></span>
 					<p class="ml-10 text-base md:text-xl">Applying tailwind /x argument for opacity</p>
 				</button>
@@ -652,128 +658,128 @@
 				>
 					<p class="ml-5">Primary:</p>
 					<div class="m-5 grid grid-cols-4 gap-4 md:grid-cols-11">
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary">
+						<div class="skeleton bg-primary flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl"></p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/10">
+						<div class="skeleton bg-primary/10 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/10</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/20">
+						<div class="skeleton bg-primary/20 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/20</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/30">
+						<div class="skeleton bg-primary/30 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/30</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/40">
+						<div class="skeleton bg-primary/40 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/40</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/50">
+						<div class="skeleton bg-primary/50 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/50</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/60">
+						<div class="skeleton bg-primary/60 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/60</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/70">
+						<div class="skeleton bg-primary/70 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/70</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/80">
+						<div class="skeleton bg-primary/80 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/80</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/90">
+						<div class="skeleton bg-primary/90 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/90</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary/100">
+						<div class="skeleton bg-primary/100 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/100</p>
 						</div>
 					</div>
 					<p class="ml-5">Primary content:</p>
 					<div class="m-5 grid grid-cols-4 gap-4 md:grid-cols-11">
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content">
+						<div class="skeleton bg-primary-content flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl"></p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/10">
+						<div class="skeleton bg-primary-content/10 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/10</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/20">
+						<div class="skeleton bg-primary-content/20 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/20</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/30">
+						<div class="skeleton bg-primary-content/30 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/30</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/40">
+						<div class="skeleton bg-primary-content/40 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/40</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/50">
+						<div class="skeleton bg-primary-content/50 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/50</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/60">
+						<div class="skeleton bg-primary-content/60 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/60</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/70">
+						<div class="skeleton bg-primary-content/70 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/70</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/80">
+						<div class="skeleton bg-primary-content/80 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/80</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/90">
+						<div class="skeleton bg-primary-content/90 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/90</p>
 						</div>
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-content/100">
+						<div class="skeleton bg-primary-content/100 flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl">/100</p>
 						</div>
 					</div>
 					<p class="ml-5">Primary container - this is an extension from material UI to flyonUI:</p>
 					<div class="m-5 grid grid-cols-4 gap-4 md:grid-cols-11">
-						<div class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container">
+						<div class="skeleton bg-primary-container flex h-12 w-12 items-center justify-center">
 							<p class="text-center text-xl"></p>
 						</div>
 						<div
-							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/10"
+							class="skeleton bg-primary-container/10 flex h-12 w-12 items-center justify-center"
 						>
 							<p class="text-center text-xl">/10</p>
 						</div>
 						<div
-							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/20"
+							class="skeleton bg-primary-container/20 flex h-12 w-12 items-center justify-center"
 						>
 							<p class="text-center text-xl">/20</p>
 						</div>
 						<div
-							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/30"
+							class="skeleton bg-primary-container/30 flex h-12 w-12 items-center justify-center"
 						>
 							<p class="text-center text-xl">/30</p>
 						</div>
 						<div
-							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/40"
+							class="skeleton bg-primary-container/40 flex h-12 w-12 items-center justify-center"
 						>
 							<p class="text-center text-xl">/40</p>
 						</div>
 						<div
-							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/50"
+							class="skeleton bg-primary-container/50 flex h-12 w-12 items-center justify-center"
 						>
 							<p class="text-center text-xl">/50</p>
 						</div>
 						<div
-							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/60"
+							class="skeleton bg-primary-container/60 flex h-12 w-12 items-center justify-center"
 						>
 							<p class="text-center text-xl">/60</p>
 						</div>
 						<div
-							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/70"
+							class="skeleton bg-primary-container/70 flex h-12 w-12 items-center justify-center"
 						>
 							<p class="text-center text-xl">/70</p>
 						</div>
 						<div
-							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/80"
+							class="skeleton bg-primary-container/80 flex h-12 w-12 items-center justify-center"
 						>
 							<p class="text-center text-xl">/80</p>
 						</div>
 						<div
-							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/90"
+							class="skeleton bg-primary-container/90 flex h-12 w-12 items-center justify-center"
 						>
 							<p class="text-center text-xl">/90</p>
 						</div>
 						<div
-							class="skeleton flex h-12 w-12 items-center justify-center bg-primary-container/100"
+							class="skeleton bg-primary-container/100 flex h-12 w-12 items-center justify-center"
 						>
 							<p class="text-center text-xl">/100</p>
 						</div>
@@ -787,14 +793,14 @@
 					</div>
 				</div>
 			</div>
-			<div class="active accordion-item" id="avoid-colors">
+			<div class="active accordion-item border-outline/40" id="avoid-colors">
 				<button
 					class="accordion-toggle inline-flex items-center gap-x-4 text-start"
 					aria-controls="avoid-colors-collapse"
 					aria-expanded="true"
 				>
 					<span
-						class="icon-[tabler--chevron-right] size-5 shrink-0 transition-transform duration-300 accordion-item-active:rotate-90 rtl:rotate-180"
+						class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180"
 					></span>
 					<p class="ml-10 text-base md:text-xl">
 						Avoid using those extensions FlyonUI with extra Material UI colors
@@ -933,43 +939,43 @@
 		</div>
 		<div class="mt-5 grid grid-cols-5 gap-4 {showSections.utilityClasses ? '' : 'hidden'}">
 			<div class="col-span-5 ml-5 text-2xl font-semibold">bg-"COLOR-NAME"</div>
-			<div class="h-24 bg-primary p-4 text-primary-content">bg-primary</div>
-			<div class="h-24 bg-inverse-primary p-4">bg-inverse-primary</div>
-			<div class="h-24 bg-primary-fixed-dim p-4 text-primary-content">bg-primary-fixed-dim</div>
-			<div class="h-24 bg-error p-4 text-error-content">bg-error</div>
-			<div class="h-24 bg-error/50 p-4">bg-error/50</div>
+			<div class="bg-primary text-primary-content h-24 p-4">bg-primary</div>
+			<div class="bg-inverse-primary h-24 p-4">bg-inverse-primary</div>
+			<div class="bg-primary-fixed-dim text-primary-content h-24 p-4">bg-primary-fixed-dim</div>
+			<div class="bg-error text-error-content h-24 p-4">bg-error</div>
+			<div class="bg-error/50 h-24 p-4">bg-error/50</div>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">
 				from-"COLOR-NAME" via-"COLOR-NAME" to-"COLOR-NAME"
 			</div>
-			<div class="h-24 bg-gradient-to-r from-primary via-secondary to-accent">
+			<div class="from-primary via-secondary to-accent h-24 bg-linear-to-r">
 				from-primary via-scondary to-accent
 			</div>
-			<div class="h-24 bg-gradient-to-r from-success via-warning to-error">
+			<div class="from-success via-warning to-error h-24 bg-linear-to-r">
 				from-success via-warning to-error
 			</div>
 			<div
-				class="h-24 w-fit bg-gradient-to-r from-success via-warning to-error bg-clip-text text-xl font-black text-transparent"
+				class="from-success via-warning to-error h-24 w-fit bg-linear-to-r bg-clip-text text-xl font-black text-transparent"
 			>
 				from-success via-warning to-error applied to text
 			</div>
-			<div class="h-24 bg-gradient-to-r from-primary via-inverse-primary to-primary-fixed-dim">
+			<div class="from-primary via-inverse-primary to-primary-fixed-dim h-24 bg-linear-to-r">
 				from-primary via-inverse-primary to-primary-fixed-dim
 			</div>
-			<div class="h-24 bg-gradient-to-r from-primary/50 via-secondary/50 to-accent/50">
+			<div class="from-primary/50 via-secondary/50 to-accent/50 h-24 bg-linear-to-r">
 				from-primary/50 via-scondary/50 to-accent/50
 			</div>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">text-"COLOR-NAME"</div>
-			<div class="h-24 text-xl font-bold text-primary md:text-3xl">text-primary</div>
-			<div class="h-24 text-xl font-bold text-inverse-primary md:text-3xl">
+			<div class="text-primary h-24 text-xl font-bold md:text-3xl">text-primary</div>
+			<div class="text-inverse-primary h-24 text-xl font-bold md:text-3xl">
 				text-inverse-primary
 			</div>
-			<div class="h-24 text-xl font-bold text-primary-fixed-dim md:text-3xl">
+			<div class="text-primary-fixed-dim h-24 text-xl font-bold md:text-3xl">
 				text-primary-fixed-dim
 			</div>
-			<div class="h-24 text-xl font-bold text-error md:text-3xl">text-error</div>
-			<div class="h-24 text-xl font-bold text-error/50 md:text-3xl">text-error/50</div>
+			<div class="text-error h-24 text-xl font-bold md:text-3xl">text-error</div>
+			<div class="text-error/50 h-24 text-xl font-bold md:text-3xl">text-error/50</div>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">ring-"COLOR-NAME"</div>
 			<div>
@@ -1017,21 +1023,21 @@
 					checked
 				/>Radio error/50
 			</div>
-			<button class="button ring ring-primary">ring-primary</button>
-			<button class="button ring ring-inverse-primary">ring-inverse-primary</button>
-			<button class="button ring ring-primary-fixed-dim">ring-primary-fixed-dim</button>
-			<button class="button ring ring-error">ring-error</button>
-			<button class="button ring ring-error/50">ring-error/50</button>
+			<button class="button ring-primary ring-3">ring-primary</button>
+			<button class="button ring-inverse-primary ring-3">ring-inverse-primary</button>
+			<button class="button ring-primary-fixed-dim ring-3">ring-primary-fixed-dim</button>
+			<button class="button ring-error ring-3">ring-error</button>
+			<button class="button ring-error/50 ring-3">ring-error/50</button>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">fill-"COLOR-NAME"</div>
-			<svg class="h-14 fill-primary" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+			<svg class="fill-primary h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
 				><path
 					fill-rule="evenodd"
 					clip-rule="evenodd"
 					d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"
 				></path></svg
 			>
-			<svg class="h-14 fill-inverse-primary" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+			<svg class="fill-inverse-primary h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
 				><path
 					fill-rule="evenodd"
 					clip-rule="evenodd"
@@ -1039,7 +1045,7 @@
 				></path></svg
 			>
 			<svg
-				class="h-14 fill-primary-fixed-dim"
+				class="fill-primary-fixed-dim h-14"
 				viewBox="0 0 46 48"
 				xmlns="http://www.w3.org/2000/svg"
 				><path
@@ -1048,14 +1054,14 @@
 					d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"
 				></path></svg
 			>
-			<svg class="h-14 fill-error" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+			<svg class="fill-error h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
 				><path
 					fill-rule="evenodd"
 					clip-rule="evenodd"
 					d="M23.0002 0C12.5068 0 4.00017 8.50659 4.00017 19V32.5335C4.00017 32.8383 3.9145 33.1371 3.75292 33.3956L0.912672 37.94C0.0801118 39.2721 1.0378 41 2.60867 41H43.3917C44.9625 41 45.9202 39.2721 45.0877 37.94L42.2474 33.3956C42.0858 33.1371 42.0002 32.8383 42.0002 32.5335V19C42.0002 8.50659 33.4936 0 23.0002 0ZM23.0002 48C20.2388 48 18.0002 45.7614 18.0002 43H28.0002C28.0002 45.7614 25.7616 48 23.0002 48Z"
 				></path></svg
 			>
-			<svg class="h-14 fill-error/50" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
+			<svg class="fill-error/50 h-14" viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg"
 				><path
 					fill-rule="evenodd"
 					clip-rule="evenodd"
@@ -1064,17 +1070,17 @@
 			>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">caret-"COLOR-NAME"</div>
-			<textarea class="h-24 caret-primary">caret-primary: cursor color!</textarea>
-			<textarea class="h-24 caret-inverse-primary">caret-inverse-primary: cursor color!</textarea>
-			<textarea class="h-24 caret-primary-fixed-dim"
+			<textarea class="caret-primary h-24">caret-primary: cursor color!</textarea>
+			<textarea class="caret-inverse-primary h-24">caret-inverse-primary: cursor color!</textarea>
+			<textarea class="caret-primary-fixed-dim h-24"
 				>caret-primary-fixed-dim: cursor color!</textarea
 			>
-			<textarea class="h-24 caret-error">caret-error: cursor color!</textarea>
-			<textarea class="h-24 caret-error/50">caret-error/50: cursor color!</textarea>
+			<textarea class="caret-error h-24">caret-error: cursor color!</textarea>
+			<textarea class="caret-error/50 h-24">caret-error/50: cursor color!</textarea>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">stroke-"COLOR-NAME"</div>
 			<svg
-				class="h-10 stroke-primary"
+				class="stroke-primary h-10"
 				viewBox="0 0 48 40"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -1085,7 +1091,7 @@
 				></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
 			</svg>
 			<svg
-				class="h-10 stroke-inverse-primary"
+				class="stroke-inverse-primary h-10"
 				viewBox="0 0 48 40"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -1096,7 +1102,7 @@
 				></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
 			</svg>
 			<svg
-				class="h-10 stroke-primary-fixed-dim"
+				class="stroke-primary-fixed-dim h-10"
 				viewBox="0 0 48 40"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -1107,7 +1113,7 @@
 				></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
 			</svg>
 			<svg
-				class="h-10 stroke-error"
+				class="stroke-error h-10"
 				viewBox="0 0 48 40"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -1118,7 +1124,7 @@
 				></path> <circle cx="24" cy="23" r="9" stroke-width="2"></circle>
 			</svg>
 			<svg
-				class="h-10 stroke-error/50"
+				class="stroke-error/50 h-10"
 				viewBox="0 0 48 40"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -1130,34 +1136,34 @@
 			</svg>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">border-"COLOR-NAME"</div>
-			<div class="h-24 border-4 border-primary">border-primary</div>
-			<div class="h-24 border-4 border-inverse-primary">border-inverse-primary</div>
-			<div class="h-24 border-4 border-primary-fixed-dim">border-primary-fixed-dim</div>
-			<div class="h-24 border-4 border-error">border-error</div>
-			<div class="h-24 border-4 border-error/50">border-error/50</div>
+			<div class="border-primary h-24 border-4">border-primary</div>
+			<div class="border-inverse-primary h-24 border-4">border-inverse-primary</div>
+			<div class="border-primary-fixed-dim h-24 border-4">border-primary-fixed-dim</div>
+			<div class="border-error h-24 border-4">border-error</div>
+			<div class="border-error/50 h-24 border-4">border-error/50</div>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">divide-"COLOR-NAME"</div>
-			<div class="h-24 divide-y-4 divide-primary">
+			<div class="divide-primary h-24 divide-y-4">
 				<div>divide</div>
 				<div>between</div>
 				<div>elements</div>
 			</div>
-			<div class="h-24 divide-y-4 divide-inverse-primary">
+			<div class="divide-inverse-primary h-24 divide-y-4">
 				<div>divide</div>
 				<div>between</div>
 				<div>elements</div>
 			</div>
-			<div class="h-24 divide-y-4 divide-primary-fixed-dim">
+			<div class="divide-primary-fixed-dim h-24 divide-y-4">
 				<div>divide</div>
 				<div>between</div>
 				<div>elements</div>
 			</div>
-			<div class="h-24 divide-y-4 divide-error">
+			<div class="divide-error h-24 divide-y-4">
 				<div>divide</div>
 				<div>between</div>
 				<div>elements</div>
 			</div>
-			<div class="h-24 divide-y-4 divide-error/50">
+			<div class="divide-error/50 h-24 divide-y-4">
 				<div>divide</div>
 				<div>between</div>
 				<div>elements</div>
@@ -1196,15 +1202,15 @@
 			</label>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">shadow-"COLOR-NAME"</div>
-			<button class="btn btn-primary shadow-lg shadow-primary">Shadow primary</button>
-			<button class="btn-inverse-primary btn shadow-lg shadow-inverse-primary"
+			<button class="btn btn-primary shadow-primary shadow-lg">Shadow primary</button>
+			<button class="btn-inverse-primary btn shadow-inverse-primary shadow-lg"
 				>Shadow inverse primary</button
 			>
-			<button class="btn-primary-fixed-dim btn shadow-lg shadow-primary-fixed-dim"
+			<button class="btn-primary-fixed-dim btn shadow-primary-fixed-dim shadow-lg"
 				>Shadow primary fixed dim</button
 			>
-			<button class="btn btn-error shadow-lg shadow-error">Shadow error</button>
-			<button class="btn-error/50 btn shadow-lg shadow-error/50">Shadow error/50</button>
+			<button class="btn btn-error shadow-error shadow-lg">Shadow error</button>
+			<button class="btn-error/50 btn shadow-error/50 shadow-lg">Shadow error/50</button>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">outline-"COLOR-NAME"</div>
 			<button class="btn btn-primary btn-outline">primary</button>
@@ -1261,11 +1267,11 @@
 			</div>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">decoration-"COLOR-NAME"</div>
-			<div class="h-24 underline decoration-primary">decoration-primary</div>
-			<div class="h-24 underline decoration-inverse-primary">decoration-inverse-primary</div>
-			<div class="h-24 underline decoration-primary-fixed-dim">decoration-primary-fixed-dim</div>
-			<div class="h-24 underline decoration-error">decoration-error</div>
-			<div class="h-24 underline decoration-error/50">decoration-error/50</div>
+			<div class="decoration-primary h-24 underline">decoration-primary</div>
+			<div class="decoration-inverse-primary h-24 underline">decoration-inverse-primary</div>
+			<div class="decoration-primary-fixed-dim h-24 underline">decoration-primary-fixed-dim</div>
+			<div class="decoration-error h-24 underline">decoration-error</div>
+			<div class="decoration-error/50 h-24 underline">decoration-error/50</div>
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">placeholder-"COLOR-NAME"</div>
 			<label class="relative block">
@@ -1311,23 +1317,23 @@
 
 			<div class="col-span-5 ml-5 text-2xl font-semibold">ring-offset-"COLOR-NAME"</div>
 			<span
-				class="badge col-span-5 ring-2 ring-red-300 ring-offset-4 ring-offset-primary md:col-span-1"
+				class="badge ring-offset-primary col-span-5 ring-2 ring-red-300 ring-offset-4 md:col-span-1"
 				>primary</span
 			>
 			<span
-				class="badge col-span-5 ring-2 ring-red-300 ring-offset-4 ring-offset-inverse-primary md:col-span-1"
+				class="badge ring-offset-inverse-primary col-span-5 ring-2 ring-red-300 ring-offset-4 md:col-span-1"
 				>inverse primary</span
 			>
 			<span
-				class="badge col-span-5 ring-2 ring-red-300 ring-offset-4 ring-offset-primary-fixed-dim md:col-span-1"
+				class="badge ring-offset-primary-fixed-dim col-span-5 ring-2 ring-red-300 ring-offset-4 md:col-span-1"
 				>primary fixed dim</span
 			>
 			<span
-				class="badge col-span-5 ring-2 ring-blue-300 ring-offset-4 ring-offset-error md:col-span-1"
+				class="badge ring-offset-error col-span-5 ring-2 ring-blue-300 ring-offset-4 md:col-span-1"
 				>error</span
 			>
 			<span
-				class="badge col-span-5 ring-2 ring-blue-300 ring-offset-4 ring-offset-error/50 md:col-span-1"
+				class="badge ring-offset-error/50 col-span-5 ring-2 ring-blue-300 ring-offset-4 md:col-span-1"
 				>error/50</span
 			>
 		</div>
@@ -1351,7 +1357,6 @@
 		<p>Using postCSS created components:</p>
 		<span class="badge-primary-container badge">Badge primary-container</span>
 		<span class="badge-my-personal badge">Badge my personal badge</span>
-		<span class="mycheckbox">mycheckbox</span>
 		<label>
 			<input type="checkbox" class="checkbox-inverse-primary checkbox" checked /> inverse primary
 		</label>
@@ -1360,18 +1365,21 @@
 		<button class="btn-inverse-primary btn">inverse primary</button>
 		<button class="btn-primary-fixed-dim btn">primary fixed dim</button>
 		<button class="btn btn-error">error</button>
+		<button class="btn btn-error-container">error-container</button>
 		<button class="btn-error/50 btn">error/50</button>
 		<p>Buttons - soft</p>
 		<button class="btn btn-primary btn-soft">soft primary</button>
 		<button class="btn-inverse-primary btn btn-soft">soft inverse primary</button>
 		<button class="btn-primary-fixed-dim btn btn-soft">soft primary fixed dim</button>
 		<button class="btn btn-error btn-soft">soft error</button>
+		<button class="btn btn-error-container btn-soft">soft error-container</button>
 		<button class="btn-error/50 btn btn-soft">soft error/50</button>
 		<p>Buttons - outline</p>
 		<button class="btn btn-primary btn-outline">outline primary</button>
 		<button class="btn-inverse-primary btn btn-outline">outline inverse primary</button>
 		<button class="btn-primary-fixed-dim btn btn-outline">outline primary fixed dim</button>
 		<button class="btn btn-error btn-outline">outline error</button>
+		<button class="btn btn-error-container btn-outline">outline error-container</button>
 		<button class="btn-error/50 btn btn-outline">outline error/50</button>
 		<p>Buttons - text</p>
 		<button class="btn btn-primary btn-text">text primary</button>
@@ -1391,59 +1399,427 @@
 		<button class="btn-primary-fixed-dim btn rounded-full">rounded-full primary fixed dim</button>
 		<button class="btn btn-error rounded-full">rounded-full error</button>
 		<button class="btn-error/50 btn rounded-full">rounded-full error/50</button>
+		<p>Inputs:</p>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="input-filled w-full grow">
+				<input type="text" placeholder="Primary colored input" class="input" id="filledInput" />
+				<label class="input-filled-label" for="filledInput">Full name</label>
+			</div>
+			<div class="input-filled input-secondary w-full grow">
+				<input
+					type="text"
+					placeholder="Secondary colored input"
+					class="input border-secondary"
+					id="filledInputSecondary"
+				/>
+				<label class="input-filled-label text-secondary" for="filledInputSecondary">Full name</label
+				>
+			</div>
+			<div class="input-filled input-accent w-full grow">
+				<input
+					type="text"
+					placeholder="Accent colored input"
+					class="input"
+					id="filledInputAccent"
+				/>
+				<label class="input-filled-label" for="filledInputAccent">Full name</label>
+			</div>
+			<div class="input-filled input-neutral w-full grow">
+				<input
+					type="text"
+					placeholder="Neutral colored input"
+					class="input"
+					id="filledInputNeutral"
+				/>
+				<label class="input-filled-label" for="filledInputNeutral">Full name</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="input-filled w-full grow">
+				<input type="text" placeholder="John Doe" class="input" id="filledInputDisabled" disabled />
+				<label class="input-filled-label" for="filledInputDisabled">Full name - disabled</label>
+			</div>
+			<div class="input-filled w-full grow">
+				<input type="text" placeholder="John Doe" class="input is-valid" id="filledInputIsValid" />
+				<label class="input-filled-label" for="filledInputIsValid">Full name - is-valid</label>
+			</div>
+			<div class="input-filled w-full grow">
+				<input
+					type="text"
+					placeholder="John Doe"
+					class="input is-invalid"
+					id="filledInputIsInvalid"
+				/>
+				<label class="input-filled-label" for="filledInputIsInvalid">Full name - is-invalid</label>
+			</div>
+			<div class="input-floating w-full grow">
+				<input type="text" placeholder="John Doe" class="input" id="floatingInput" />
+				<label class="input-floating-label" for="floatingInput">Full name - floating</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-xs" id="filledInputXs" />
+				<label class="input-filled-label" for="filledInputXs">Full name - xs</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-sm" id="filledInputSm" />
+				<label class="input-filled-label" for="filledInputSm">Full name - sm</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-md" id="filledInputDefault" />
+				<label class="input-filled-label" for="filledInputDefault">Full name - default</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-lg" id="filledInputLg" />
+				<label class="input-filled-label" for="filledInputLg">Full name - lg</label>
+			</div>
+			<div class="input-filled w-full">
+				<input type="text" placeholder="John Doe" class="input input-xl" id="filledInputXl" />
+				<label class="input-filled-label" for="filledInputXl">Full name - xl</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="input-filled w-full grow">
+				<input
+					type="text"
+					placeholder="John Doe"
+					class="input input-xs sm:input-sm md:input-md lg:input-lg xl:input-xl"
+					id="filledInputResponsive"
+				/>
+				<label class="input-filled-label" for="filledInputResponsive">Full name - responsive</label>
+			</div>
+			<div class="input-floating w-full grow">
+				<input
+					type="text"
+					placeholder="John Doe"
+					class="input input-xs sm:input-sm md:input-md lg:input-lg xl:input-xl"
+					id="filledInputResponsive"
+				/>
+				<label class="input-floating-label" for="filledInputResponsive"
+					>Full name - responsive</label
+				>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledPrimary"></textarea>
+				<label class="textarea-filled-label" for="textareaFilledPrimary">Your bio</label>
+			</div>
+			<div class="textarea-filled textarea-secondary w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledSecondary"></textarea>
+				<label class="textarea-filled-label" for="textareaFlilledSecondary">Your bio</label>
+			</div>
+			<div class="textarea-filled textarea-accent w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledAccent"></textarea>
+				<label class="textarea-filled-label" for="textareaFilledAccent">Your bio</label>
+			</div>
+			<div class="textarea-filled textarea-neutral w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledNeutral"></textarea>
+				<label class="textarea-filled-label" for="textareaFilledNeutral">Your bio</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFilledDisabled" disabled
+				></textarea>
+				<label class="textarea-filled-label" for="textareaFilledDisabled">Your bio</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea is-valid" placeholder="Hello!!!" id="textareaFilledIsValid"
+				></textarea>
+				<label class="textarea-filled-label" for="textareaFilledIsValid">Your bio</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea is-invalid" placeholder="Hello!!!" id="textareaFilledIsInvalid"
+				></textarea>
+				<label class="textarea-filled-label" for="textareaFilledIsInvalid">Your bio</label>
+			</div>
+			<div class="textarea-floating w-full grow">
+				<textarea class="textarea" placeholder="Hello!!!" id="textareaFloating"></textarea>
+				<label class="textarea-floating-label" for="textareaFloating">Your bio</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-xs" placeholder="Hello!!!" id="filledTextareaXs"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaXs">Your bio - xs</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-sm" placeholder="Hello!!!" id="filledTextareaSm"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareatSm">Your bio - sm</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-md" placeholder="Hello!!!" id="filledTextareaMd"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaDefault">Your bio - default</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-lg" placeholder="Hello!!!" id="filledTextareaLg"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaLg">Your bio - lg</label>
+			</div>
+			<div class="textarea-filled w-full grow">
+				<textarea class="textarea textarea-xl" placeholder="Hello!!!" id="filledTextareaXl"
+				></textarea>
+				<label class="textarea-filled-label" for="filledTextareaXl">Your bio - xl</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="textarea-filled w-full grow">
+				<textarea
+					class="textarea textarea-xs sm:textarea-sm md:textarea-md lg:textarea-lg xl:textarea-xl"
+					placeholder="Hello!!!"
+					id="filledTextareaResponsive"
+				></textarea>
+				<label class="textarea-filled-label" for="filleTextareaResponsive"
+					>Your bio - responsive</label
+				>
+			</div>
+			<div class="textarea-floating w-full grow">
+				<textarea
+					class="textarea textarea-xs sm:textarea-sm md:textarea-md lg:textarea-lg xl:textarea-xl"
+					placeholder="Hello!!!"
+					id="filledInputResponsive"
+				></textarea>
+				<label class="textarea-floating-label" for="filledTextareaResponsive"
+					>Your bio - responsive</label
+				>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelect">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelect">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled select-secondary w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectSecondary">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectSecondary"
+					>Pick your favorite Movie</label
+				>
+			</div>
+			<div class="select-filled select-accent w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectAccent">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectAccent">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled select-neutral w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectNeutral">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectNeutral">Pick your favorite Movie</label
+				>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select class="select" aria-label="Select filled" id="filledSelectDisabled" disabled>
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectDisabled"
+					>Pick your favorite Movie</label
+				>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select is-valid" aria-label="Select filled" id="filledSelectIsvalid">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectIsvalid">Pick your favorite Movie</label
+				>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select is-invalid" aria-label="Select filled" id="filledSelectIsinvalid">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectIsinvalid"
+					>Pick your favorite Movie</label
+				>
+			</div>
+			<div class="select-floating w-full grow">
+				<select class="select" aria-label="Select floating label" id="floatingSelect">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-floating-label" for="floatingSelect">Pick your favorite Movie</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select class="select select-xs" aria-label="Select filled" id="filledSelectXs">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectXs">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-sm" aria-label="Select filled" id="filledSelectSm">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectSm">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-md" aria-label="Select filled" id="filledSelectMd">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectMd">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-lg" aria-label="Select filled" id="filledSelectLg">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectLg">Pick your favorite Movie</label>
+			</div>
+			<div class="select-filled w-full grow">
+				<select class="select select-xl" aria-label="Select filled" id="filledSelectXl">
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectXl">Pick your favorite Movie</label>
+			</div>
+		</div>
+		<div class="mb-5 flex grow flex-row gap-4">
+			<div class="select-filled w-full grow">
+				<select
+					class="select select-xs sm:select:sm md:select-md lg:select-lg xl:select-xl"
+					aria-label="Select filled"
+					id="filledSelectResponsive"
+				>
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-filled-label" for="filledSelectResponsive"
+					>Pick your favorite Movie</label
+				>
+			</div>
+			<div class="select-floating w-full grow">
+				<select
+					class="select select-xs sm:select:sm md:select-md lg:select-lg xl:select-xl"
+					aria-label="Select floating"
+					id="floatingSelectResponsive"
+				>
+					<option>The Godfather</option>
+					<option>The Shawshank Redemption</option>
+					<option>Pulp Fiction</option>
+					<option>The Dark Knight</option>
+					<option>Schindler's List</option>
+				</select>
+				<label class="select-floating-label" for="floatingSelectResponsive"
+					>Pick your favorite Movie</label
+				>
+			</div>
+		</div>
 	</div>
 
 	<div>
 		<Heading>Typography</Heading>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<p class="text-center">Fonts families</p>
-		<div class="grid grid-cols-1 gap-4 divide-y-4">
-			<div class="font-sans">
+		<div class="grid grid-cols-1 divide-y-4">
+			<div class="py-2 font-sans">
 				Some text in <em>sans</em> font family, should be using <b>Robot</b> Google Fonts extending
-				default theme in <code>tailwindcss.config.js</code>.
+				default theme in <code>app.css</code>.
 			</div>
-			<div class="font-serif">
+			<div class="py-2 font-serif">
 				Some text in <em>serif</em> font family, should be using <b>Merriweather</b> Google Fonts,
-				extending default theme in <code>tailwindcss.config.js</code>.
+				extending default theme in <code>app.css</code>.
 			</div>
-			<div class="font-mono">
+			<div class="py-2 font-mono">
 				Some text in <em>mono</em> font family, still <b>TailwindCSS</b> default, not overwritten in
-				<code>tailwindcss.config.js</code> yet
+				<code>app.css</code> yet
 			</div>
 		</div>
 		<p class="pt-5 text-center">Typography styles for Display</p>
-		<div class="grid grid-cols-1 gap-8 divide-y-4">
-			<p class="text-display-large">
+		<div class="grid grid-cols-1 divide-y-4">
+			<p class="display-large py-4">
 				Some long eyecatcher in <i>Display - large</i> typography.
 			</p>
-			<p class="text-display">Another eyecatcher in <i>Display</i> typography.</p>
-			<p class="text-display-small">
+			<p class="display py-4">Another eyecatcher in <i>Display</i> typography.</p>
+			<p class="display-small py-4">
 				And a third eyecatcher in <i>Display - small</i> typography.
 			</p>
 		</div>
 		<p class="pt-5 text-center">Typography styles for Heading</p>
-		<div class="grid grid-cols-1 gap-8 divide-y-4">
-			<p class="text-heading-large">
+		<div class="grid grid-cols-1 divide-y-4">
+			<p class="heading-large py-4">
 				A <i>Heading - large</i> typography with long enough text to get a line break.
 			</p>
-			<p class="text-heading">
+			<p class="heading py-4">
 				Another <i>Heading</i> typography with long enough text to get a line break.
 			</p>
-			<p class="text-heading-small">
+			<p class="heading-small py-4">
 				And a third <i>Heading - small</i> typography with long enough text to get a line break.
 			</p>
 		</div>
 		<p class="pt-5 text-center">Typography styles for Title</p>
-		<div class="grid grid-cols-1 gap-8 divide-y-4">
-			<p class="text-title-large">
+		<div class="grid grid-cols-1 divide-y-4">
+			<p class="title-large py-4">
 				This is a <i>Title - large</i> typography with some extended text to be long enough to create
 				a line break.
 			</p>
-			<p class="text-title">
+			<p class="title py-4">
 				And that is another <i>Title</i> typography with some text to fill the line, so we can get a
 				line break, which requires long enough text get the line breaking over into a new line.
 			</p>
-			<p class="text-title-small">
+			<p class="title-small py-4">
 				And the third <i>Title - small</i> typography needs quite some extra meaningless text, just to
 				demonstrate the line break even on larger screens, where it might get hard to provoke a line
 				break with such small text, but we'll get there with to make the text long enough text to get
@@ -1451,17 +1827,17 @@
 			</p>
 		</div>
 		<p class="pt-5 text-center">Typography styles for Body</p>
-		<div class="grid grid-cols-1 gap-8 divide-y-4">
-			<p class="text-body-large">
+		<div class="grid grid-cols-1 divide-y-4">
+			<p class="body-large py-4">
 				This is a longer text in <i>Body - large</i> typography with long enough text to get more than
 				a line break. Note that the font changed to a serif font, which should make it easier to read
 				for longer text on a screen.
 			</p>
-			<p class="text-body">
+			<p class="body py-4">
 				And that is another <i>Body</i> typography with even more text to fill the line, so we can get
 				a line break, which requires long enough text get the line breaking over into a new line.
 			</p>
-			<p class="text-body-small">
+			<p class="body-small py-4">
 				And a third <i>Body - small</i> typography which needs even more meaningless text to make sure,
 				the line is eventually breaking, even on larger screens, where it might get hard to provoke a
 				line break with such small text, but we'll get there with to make the text long enough text to
@@ -1470,18 +1846,14 @@
 		</div>
 		<p class="pt-5 text-center">Typography styles for Labels - demonstrated in a badge</p>
 		<div class="grid grid-cols-2 gap-4">
-			<div class="text-label-large badge badge-xl rounded-full">Label large</div>
-			<div class="text-label-large text-label-prominent badge badge-xl rounded-full">
+			<div class="label-large badge badge-xl rounded-full">Label large</div>
+			<div class="label-large label-prominent badge badge-xl rounded-full">
 				Label large prominent
 			</div>
-			<span class="text-label badge badge-lg rounded-full text-primary">Label</span>
-			<span class="text-label-prominent text-label badge badge-lg rounded-full text-primary"
-				>Label prominent</span
-			>
-			<span class="text-label-small badge rounded-full px-4">Label small</span>
-			<span class="text-label-small text-label-prominent badge rounded-full px-4"
-				>Label small prominent</span
-			>
+			<span class="label badge badge-lg rounded-full">Label</span>
+			<span class="label-prominent label badge badge-lg rounded-full">Label prominent</span>
+			<span class="label-small badge rounded-full px-4">Label small</span>
+			<span class="label-small label-prominent badge rounded-full px-4">Label small prominent</span>
 		</div>
 	</div>
 
@@ -1499,6 +1871,207 @@
 			<li>--tab-border: 1px;</li>
 			<li>--tab-radius: 0.5rem;</li>
 		</ul>
+	</div>
+
+	<div>
+		<Heading>Icons</Heading>
+		<p class="title-large text-center text-xl">Iconify with FlyonUI</p>
+		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
+			<div>
+				<p class="label text-center">
+					Default library <span class="label-prominent badge min-h-fit">Tablers</span>
+				</p>
+				<span class="icon-[tabler--settings] size-12"></span>
+				<span class="icon-[tabler--palette] size-12"></span>
+				<span class="icon-[tabler--home] size-12"></span>
+				<span class="icon-[tabler--user] size-12"></span>
+				<span class="icon-[tabler--trash] size-12"></span>
+				<span class="icon-[tabler--send-2] size-12"></span>
+				<span class="icon-[tabler--share-2] size-12"></span>
+				<span class="icon-[tabler--ban] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Material Symbols</span>
+				</p>
+				<span class="icon-[material-symbols--settings-outline-rounded] size-12"></span>
+				<span class="icon-[material-symbols--palette-outline] size-12"></span>
+				<span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
+				<span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
+				<span class="icon-[material-symbols--edit-outline-rounded] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">SVG spinners</span>
+				</p>
+				<span class="icon-[svg-spinners--12-dots-scale-rotate] size-12"></span>
+				<span class="icon-[svg-spinners--3-dots-bounce] size-12"></span>
+				<span class="icon-[svg-spinners--6-dots-rotate] size-12"></span>
+				<span class="icon-[svg-spinners--90-ring-with-bg] size-12"></span>
+				<span class="icon-[svg-spinners--clock] size-12"></span>
+				<span class="icon-[svg-spinners--bars-scale] size-12"></span>
+				<span class="icon-[svg-spinners--wifi] size-12"></span>
+				<span class="icon-[svg-spinners--wifi-fade] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Solid</span>
+				</p>
+				<span class="icon-[fa6-solid--user] size-12"></span>
+				<span class="icon-[fa6-solid--droplet] size-12"></span>
+				<span class="icon-[fa6-solid--comments] size-12"></span>
+				<span class="icon-[fa6-solid--plus] size-12"></span>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Brands</span>
+				</p>
+				<span class="icon-[fa6-brands--discord] size-12"></span>
+				<span class="icon-[fa6-brands--youtube] size-12"></span>
+				<span class="icon-[fa6-brands--linux] size-12"></span>
+				<span class="icon-[fa6-brands--github] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Feather Icon</span>
+				</p>
+				<span class="icon-[fe--bell] size-12"></span>
+				<span class="icon-[fe--disabled] size-12"></span>
+				<span class="grid place-items-center">
+					<span class="icon-[fe--bell] col-start-1 row-start-1 size-8"></span>
+					<span class="icon-[fe--disabled] col-start-1 row-start-1 size-12"></span>
+				</span>
+			</div>
+			<div>
+				<p class="label text-center">
+					Emoji library <span class="label-prominent badge min-h-fit">Noto emoji</span>
+				</p>
+				<span class="icon-[noto--folded-hands] size-12"></span>
+				<span class="icon-[noto--folded-hands-medium-dark-skin-tone] size-12"></span>
+				<span class="icon-[noto--heart-hands] size-12"></span>
+				<span class="icon-[noto--heart-hands-dark-skin-tone] size-12"></span>
+				<span class="icon-[noto--fire] size-12"></span>
+				<span class="icon-[noto--smiling-face-with-sunglasses] size-12"></span>
+				<span class="icon-[noto--check-mark-button] size-12"></span>
+				<span class="icon-[noto--cross-mark] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					Emoji library <span class="label-prominent badge min-h-fit">Openmoji</span>
+				</p>
+				<span class="icon-[openmoji--check-mark] size-12"></span>
+				<span class="icon-[openmoji--cross-mark] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					Emoji library <span class="label-prominent badge min-h-fit">Twitter Emoji</span>
+				</p>
+				<span class="icon-[twemoji--flag-denmark] size-12"></span>
+				<span class="icon-[twemoji--flag-germany] size-12"></span>
+				<span class="icon-[twemoji--flag-united-states] size-12"></span>
+			</div>
+		</div>
+		<HorizontalRule />
+	</div>
+
+	<div>
+		<Heading>Buttons</Heading>
+		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
+			<div>
+				<p class="label text-center">Action Buttons</p>
+				<button class="btn-neutral-container btn btn-circle btn-gradient" aria-label="Add">
+					<span class="icon-[fa6-solid--plus]"></span>
+				</button>
+				<button class="btn-info-container btn btn-circle btn-gradient" aria-label="Edit">
+					<span class="icon-[material-symbols--edit-outline-rounded]"></span>
+				</button>
+				<button class="btn-error-container btn btn-circle btn-gradient" aria-label="Delete">
+					<span class="icon-[tabler--trash]"></span>
+				</button>
+				<button class="btn-secondary-container btn btn-circle btn-gradient" aria-label="Send">
+					<span class="icon-[tabler--send-2]"></span>
+				</button>
+				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Share">
+					<span class="icon-[tabler--share-2]"></span>
+				</button>
+				<button class="btn-success-container btn btn-circle btn-gradient" aria-label="Done">
+					<span class="icon-[mingcute--check-2-fill]"></span>
+				</button>
+				<p class="label text-center">State changing buttons</p>
+				<button
+					class="btn-info-container btn btn-circle btn-gradient"
+					onclick={() => (edit ? (edit = false) : (edit = true))}
+					aria-label="Edit Button"
+				>
+					<span class="grid place-items-center">
+						<span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1"
+						></span>
+						<span class="icon-[fe--disabled] col-start-1 row-start-1 size-6 {edit ? '' : 'hidden'}"
+						></span>
+					</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<div>
+		<Heading>Badges</Heading>
+		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
+			<div>
+				<p class="label text-center">Text Badges</p>
+			</div>
+		</div>
+	</div>
+
+	<div>
+		<Heading>Swaps</Heading>
+		<div class="grid grid-cols-12 gap-4">
+			<div>
+				<label class="swap">
+					<input type="checkbox" />
+					<span class="icon-[tabler--volume] swap-on size-6"></span>
+					<span class="icon-[tabler--volume-off] swap-off size-6"></span>
+				</label>
+			</div>
+			<div>
+				<label class="btn btn-circle swap swap-rotate">
+					<input type="checkbox" />
+					<span class="icon-[tabler--menu-2] swap-off"></span>
+					<span class="icon-[tabler--x] swap-on"></span>
+				</label>
+			</div>
+			<div>
+				<label class="swap swap-rotate">
+					<input type="checkbox" />
+					<span class="icon-[tabler--sun] swap-on size-6"></span>
+					<span class="icon-[tabler--moon] swap-off size-6"></span>
+				</label>
+			</div>
+			<div>
+				<label class="swap swap-flip text-6xl">
+					<input type="checkbox" />
+					<span class="swap-on">😈</span>
+					<span class="swap-off">😇</span>
+				</label>
+			</div>
+			<!-- <div>
+					<label bind:this={myTemperature} class="swap swap-js text-6xl">
+						<span class="swap-on">🥵</span>
+						<span class="swap-off">🥶</span>
+					</label>
+					<label class="swap swap-js text-6xl">
+						<span class="swap-on">🥳</span>
+						<span class="swap-off">😭</span>
+					</label>
+				</div> -->
+			<div>
+				<label class="btn btn-circle swap swap-rotate">
+					<input type="checkbox" />
+					<span class="icon-[tabler--player-play] swap-off"></span>
+					<span class="icon-[tabler--player-pause] swap-on"></span>
+				</label>
+			</div>
+		</div>
+
+		<HorizontalRule />
 	</div>
 
 	<!-- <div>

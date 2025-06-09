@@ -1,0 +1,3 @@
+- @azure Rule - Use Azure Best Practices: When generating code for Azure, running terminal commands for Azure, or performing operations related to Azure, invoke your `azure_development-get_best_practices` tool if available.
+- Follow software design principles such as YAGNI (You Aren't Gonna Need It), SOLID, KISS (Keep It Simple, Stupid), and DRY (Don't Repeat Yourself) to ensure maintainable and clean code.
+- Use the versions of dependencies specified in `pyproject.toml` and `package.json` when generating code. If a version is not specified, pull the latest version matching the constraints in these files.

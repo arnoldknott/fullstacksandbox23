@@ -37,6 +37,7 @@ from tests.utils import (
     identity_id_group2,
     identity_id_group3,
     identity_id_user1,
+    identity_id_user2,
     many_resource_ids,
     many_test_child_identities,
     many_test_child_resource_entities,
@@ -527,7 +528,7 @@ async def test_admin_changes_access_policy_from_write_to_own(
         **policies[2].model_dump(), new_action=Action.own
     )
     async with AccessPolicyCRUD() as policy_crud:
-        updated_policy = await policy_crud.change(
+        updated_policy = await policy_crud.update(
             access_policy=update_policy,
             current_user=current_admin_user,
         )
@@ -577,7 +578,7 @@ async def test_owner_user_changes_access_policy_from_write_to_own(
         **policies[2].model_dump(), new_action=Action.own
     )
     async with AccessPolicyCRUD() as policy_crud:
-        updated_policy = await policy_crud.change(
+        updated_policy = await policy_crud.update(
             access_policy=update_policy,
             current_user=CurrentUserData(**current_user_data_user1),
         )
@@ -614,6 +615,42 @@ async def test_owner_user_changes_access_policy_from_write_to_own(
 
 
 @pytest.mark.anyio
+async def test_owner_user_creates_new_access_policy_through_update(
+    register_many_resources,
+    register_many_current_users,
+    add_many_test_access_policies,
+):
+    """Test updating an access policy."""
+    register_many_resources
+    current_admin_user = register_many_current_users[0]
+    add_many_test_access_policies
+    create_policy = AccessPolicyUpdate(
+        identity_id=identity_id_user2, resource_id=resource_id2, new_action=Action.write
+    )
+    del create_policy.action
+    async with AccessPolicyCRUD() as policy_crud:
+        created_policy = await policy_crud.update(
+            access_policy=create_policy,
+            current_user=CurrentUserData(**current_user_data_user1),
+        )
+
+    assert int(created_policy.id)
+    assert created_policy.identity_id == uuid.UUID(identity_id_user2)
+    assert created_policy.resource_id == uuid.UUID(resource_id2)
+    assert created_policy.action == Action.write
+
+    async with AccessPolicyCRUD() as policy_crud:
+        read_policy = await policy_crud.read(
+            identity_id=identity_id_user2,
+            resource_id=resource_id2,
+            action=Action.write,
+            current_user=current_admin_user,
+        )
+
+    assert created_policy == read_policy[0]
+
+
+@pytest.mark.anyio
 async def test_non_owner_user_tries_to_change_access_policy_from_write_to_own(
     register_many_resources,
     register_many_current_users,
@@ -628,7 +665,7 @@ async def test_non_owner_user_tries_to_change_access_policy_from_write_to_own(
     )
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            await policy_crud.change(
+            await policy_crud.update(
                 access_policy=update_policy,
                 current_user=CurrentUserData(**current_user_data_user2),
             )

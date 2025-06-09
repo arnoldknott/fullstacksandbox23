@@ -6,24 +6,26 @@
 </script>
 
 {#snippet header()}
-	<h5 class="text-title-small md:text-title lg:text-title-large base-content card-title">
-		{title}
-	</h5>
+	<a {href} class="link link-animated link-base-content">
+		<h5 class="title-small md:title lg:title-large text-base-content card-title">
+			{title}
+		</h5>
+	</a>
 {/snippet}
 
-{#snippet footer()}
+<!-- {#snippet footer()}
 	<div class="card-actions text-center">
 		<a {href}
 			><button
-				class="text-label-small btn btn-primary rounded-full px-3 text-primary-content shadow-primary"
+				class="label-small btn btn-primary text-primary-content shadow-primary rounded-full px-3 shadow-sm hover:shadow-none"
 				>Link to {title.toLowerCase()}</button
 			></a
 		>
 	</div>
-{/snippet}
+{/snippet} -->
 
-<Card id={v4()} {header} {footer}>
-	<p class="text-body-small md:text-body text-primary">
+<Card id={v4()} {header}>
+	<p class="body-small md:body text-base-content-variant">
 		{@render children?.()}
 	</p>
 </Card>

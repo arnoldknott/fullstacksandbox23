@@ -1,7 +1,7 @@
 <script lang="ts">
-	import NavigationCard from '../NavigationCard.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 
-	export const links = [
+	const links = [
 		{
 			name: 'Layout',
 			description: 'Playground for layouting components, using grid, flex, etc.',
@@ -18,12 +18,6 @@
 			description:
 				'Design adaption of Material Design 3 principles to FlyonUI components supported by TailwindCSS',
 			url: '/design'
-		},
-		{
-			name: 'User interface',
-			description:
-				'Playground for elements of the user interface, before turing into Svelte components',
-			url: '/user_interface'
 		},
 		{
 			name: 'Backend - Schema',
@@ -56,7 +50,7 @@
 </script>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
-	{#each links as link}
+	{#each links as link (link.name)}
 		<NavigationCard title={link.name} href={`playground${link.url}`}
 			>{link.description}</NavigationCard
 		>

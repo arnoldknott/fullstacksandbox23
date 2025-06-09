@@ -17,6 +17,7 @@ from models.identity import (
     GroupCreate,
     GroupRead,
     GroupUpdate,
+    Me,
     SubGroup,
     SubGroupCreate,
     SubGroupRead,
@@ -30,9 +31,8 @@ from models.identity import (
     UeberGroupRead,
     UeberGroupUpdate,
     User,
-    Me,
-    UserCreate,
     UserAccount,
+    UserCreate,
     UserProfile,
     UserRead,
     UserUpdate,
@@ -40,7 +40,6 @@ from models.identity import (
 
 # from .azure_group import AzureGroupCRUD
 from .base import BaseCRUD
-
 
 logger = logging.getLogger(__name__)
 

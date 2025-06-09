@@ -1,5 +1,5 @@
 <script lang="ts">
-	import '@material/web/labs/card/elevated-card.js';
+	import Card from '$components/Card.svelte';
 	import Heading from './Heading.svelte';
 	// import RevealJs from './RevealJS.svelte';
 	import type { Snippet } from 'svelte';
@@ -17,7 +17,7 @@
     {@render children?.()}
 </md-filled-card> -->
 
-<md-elevated-card>
+<Card id={link}>
 	<Heading><a href={link}>{title}</a></Heading>
 	{@render children?.()}
-</md-elevated-card>
+</Card>

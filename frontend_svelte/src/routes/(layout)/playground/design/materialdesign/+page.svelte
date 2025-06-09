@@ -1,28 +1,10 @@
 <script lang="ts">
 	import ColorTileMaterialUi from './ColorTileMaterialUI.svelte';
-	import '@material/web/icon/icon.js';
-	import '@material/web/list/list.js';
-	import '@material/web/list/list-item.js';
-	import '@material/web/dialog/dialog.js';
-	import type { Dialog } from '@material/web/dialog/internal/dialog';
-	import '@material/web/textfield/filled-text-field.js';
-	import '@material/web/button/filled-button.js';
-	import '@material/web/button/filled-tonal-button.js';
-	import '@material/web/select/filled-select.js';
-	import '@material/web/select/select-option.js';
-	import '@material/web/list/list.js';
-	import '@material/web/list/list-item.js';
-	import '@material/web/labs/card/elevated-card.js';
-	import '@material/web/labs/card/filled-card.js';
-	import '@material/web/labs/card/outlined-card.js';
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import JsonData from '$components/JsonData.svelte';
-	// import { getContext } from 'svelte';
 	import { themeStore } from '$lib/stores';
 	import type { AppTheme } from '$lib/theming';
-	// import { get } from 'svelte/store';
-	// import { currentTheme } from '(layout)/layout.svelte';
 	import { onDestroy } from 'svelte';
 	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 
@@ -33,9 +15,7 @@
 		shapes: true,
 		sliders: true
 	});
-	// let theme = $state(getContext('theme'));
-	// let palettes = $themeStore.light.palettes;
-	// console.log('palettes:', palettes);
+
 	let theme = $state({} as AppTheme);
 	const unsbscribeThemeStore = themeStore.subscribe((value) => {
 		theme = value;
@@ -47,19 +27,10 @@
 			return theme[theme.currentMode].palettes;
 		}
 	});
-	// $effect(() => {console.log('palettes:', palettes)})
-	// let toneValues = $state({} as {key: string})
-	// let toneValues = $derived(
-	//     Object.fromEntries(
-	//         Object.entries(palettes).map(([key, value]) => [key, value.keyColor.tone])
-	//     )
-	// );
+
 	let palettesArray = $derived(
 		palettes
 			? Object.entries(palettes).map(([key, value]) => {
-					// const currentTone = value.keyColor.tone;
-					// toneValues[key] = value.keyColor.tone;
-					// return { name: key, currentTone: currentTone, ...value };
 					return { name: key, ...value };
 				})
 			: []
@@ -71,24 +42,7 @@
 			toneValues[key] = palette.keyColor.tone;
 		});
 	});
-	// $effect(() => {console.log('palettes:', palettesArray)})
-	// console.log('themeStore:', $themeStore);
-	// console.log(getContext('theme'))
-	// let theme = $state(getContext('theme'));
-	// $effect(() => { console.log('theme:', theme)} );
 
-	let demoResourceDialog: Dialog;
-	// let name = $state('');
-	// let description = $state('');
-	// let language = $state('en-US');
-	const cancelForm = (event: Event) => {
-		event.preventDefault();
-		demoResourceDialog.close();
-	};
-
-	type Props = { type: 'login' | 'signup' };
-	let { type }: Props = $props();
-	const button = type === 'signup' ? 'Sign up' : 'Log in'; // untested!
 	onDestroy(() => {
 		unsbscribeThemeStore();
 	});
@@ -442,7 +396,7 @@
 			<label class="label label-text text-base" for="switchColors">Show</label>
 		</div>
 		<div class={showSections.palettes ? '' : 'hidden'}>
-			{#each palettesArray as palette}
+			{#each palettesArray as palette (palette.name)}
 				<div class="mb-5 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
 					<div class="flex flex-col">
 						<p class="text-center text-2xl">{palette.name}</p>
@@ -499,47 +453,6 @@
 			{/each}
 		</div>
 	</div>
-
-	<!-- <div class="staticMaterialThemeBuilder">
-		<Heading>Colors</Heading>
-		<p class="text-center text-2xl">
-			(static generated on Material Theme Builder homepage and exported as css variables)
-		</p>
-		<div class="grid grid-cols-12 gap-4">
-			<p class="col-span-12">Sys color primary:</p>
-			<div
-				class="flex h-12 w-12 items-center justify-center"
-				style="background-color: var(--md-sys-color-primary);"
-			>
-				<p class="text-center text-xl">1</p>
-			</div>
-			<div
-				class="flex h-12 w-12 items-center justify-center"
-				style="background-color: var(--md-sys-color-surface-tint);"
-			>
-				<p class="text-center text-xl">2</p>
-			</div>
-			<div
-				class="flex h-12 w-12 items-center justify-center"
-				style="background-color: var(--md-sys-color-on-primary);"
-			>
-				<p class="text-center text-xl">3</p>
-			</div>
-			<div
-				class="flex h-12 w-12 items-center justify-center"
-				style="background-color: var(--md-sys-color-primary-container);"
-			>
-				<p class="text-center text-xl">4</p>
-			</div>
-			<div
-				class="flex h-12 w-12 items-center justify-center"
-				style="background-color: var(--md-sys-color-on-primary-container);"
-			>
-				<p class="text-center text-xl">5</p>
-			</div>
-		</div>
-		<HorizontalRule />
-	</div> -->
 
 	<div>
 		<Heading>Typography</Heading>
@@ -659,268 +572,37 @@
 					</div>
 				{/each} -->
 				<div
-					class="m-2 w-24 rounded-none bg-primary-container p-2 text-center text-base md:text-xl"
+					class="bg-primary-container m-2 w-24 rounded-none p-2 text-center text-base md:text-xl"
 				>
 					none
 				</div>
-				<div class="m-2 w-24 rounded-sm bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-xs p-2 text-center text-base md:text-xl">
 					sm
 				</div>
 				<div
-					class="m-2 w-24 rounded bg-primary-container p-2 text-center text-base md:text-xl"
+					class="bg-primary-container m-2 w-24 rounded-sm p-2 text-center text-base md:text-xl"
 				></div>
-				<div class="m-2 w-24 rounded-md bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-md p-2 text-center text-base md:text-xl">
 					md
 				</div>
-				<div class="m-2 w-24 rounded-lg bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-lg p-2 text-center text-base md:text-xl">
 					lg
 				</div>
-				<div class="m-2 w-24 rounded-xl bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-xl p-2 text-center text-base md:text-xl">
 					xl
 				</div>
-				<div class="m-2 w-24 rounded-2xl bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-2xl p-2 text-center text-base md:text-xl">
 					2xl
 				</div>
-				<div class="m-2 w-24 rounded-3xl bg-primary-container p-2 text-center text-base md:text-xl">
+				<div class="bg-primary-container m-2 w-24 rounded-3xl p-2 text-center text-base md:text-xl">
 					3xl
 				</div>
 				<div
-					class="m-2 w-24 rounded-full bg-primary-container p-2 text-center text-base md:text-xl"
+					class="bg-primary-container m-2 w-24 rounded-full p-2 text-center text-base md:text-xl"
 				>
 					full
 				</div>
 			</div>
 		</div>
 	</div>
-
-	<div>
-		<Heading>Icons</Heading>
-		<p>Don't use - iconify has them as well and well integrated with FlyonUI</p>
-		<div class="grid grid-cols-5 gap-4">
-			<div>
-				<p class="text-center text-2xl">Supported tokens:</p>
-				<ul>
-					<li>--md-icon-font: 'Material Symbols Rounded'</li>
-					<li>--md-icon-size: 24px</li>
-				</ul>
-			</div>
-			<div class="col-span-4">
-				<p class="text-center text-2xl">Material Symbols examples:</p>
-				<md-icon>settings</md-icon>
-				<md-icon>palette</md-icon>
-				<md-icon>home</md-icon>
-				<md-icon>person</md-icon>
-			</div>
-		</div>
-	</div>
-
-	<div>
-		<Heading>List</Heading>
-		<md-list class="w-full">
-			<md-list-item> Fruits </md-list-item>
-			<md-divider></md-divider>
-			<md-list-item> Apple </md-list-item>
-			<md-list-item> Banana </md-list-item>
-			<md-list-item>
-				<div slot="headline">Cucumber</div>
-				<div slot="supporting-text">
-					Cucumbers are long green fruits that are just as long as this multi-line description
-				</div>
-			</md-list-item>
-			<md-list-item
-				type="link"
-				href="https://google.com/search?q=buy+kiwis&tbm=shop"
-				target="_blank"
-			>
-				<div slot="headline">Shop for Kiwis</div>
-				<div slot="supporting-text">This will link you out in a new tab</div>
-				<md-icon slot="end">open_in_new</md-icon>
-			</md-list-item>
-		</md-list>
-		<HorizontalRule />
-	</div>
-
-	<div>
-		<Heading>Open Modal with dialog</Heading>
-		<md-filled-button
-			onclick={() => demoResourceDialog.show()}
-			role="button"
-			tabindex="0"
-			onkeydown={(event: KeyboardEvent) => event.key === 'Enter' && demoResourceDialog.show()}
-			>New</md-filled-button
-		>
-
-		<md-dialog id="demoResourceDialog" bind:this={demoResourceDialog} class="w-fill">
-			<div slot="headline" class="w-64">Demo Resource</div>
-			<form slot="content" id="post-demo-resource" method="POST" class="flex flex-col">
-				<md-filled-text-field label="Name" name="name" class="w-full"> </md-filled-text-field>
-				<br />
-				<md-filled-text-field
-					label="Description"
-					name="description"
-					type="textarea"
-					rows="3"
-					class="my-3 w-full"
-				>
-				</md-filled-text-field>
-				<md-filled-select label="Language" name="language" class="w-full">
-					<md-select-option value="en-US">
-						<div slot="headline">en-US</div>
-					</md-select-option>
-					<md-select-option value="dk-DK">
-						<div slot="headline">dk-DK</div>
-					</md-select-option>
-					<md-select-option value="de-DE">
-						<div slot="headline">de-DE</div>
-					</md-select-option>
-				</md-filled-select>
-				<!-- <button>Submit</button> -->
-				<!-- <md-filled-button type="submit" role="button" tabindex="0">OK</md-filled-button> -->
-				<div slot="actions" class="ml-auto py-4">
-					<md-filled-button type="submit" role="button" tabindex="0">OK</md-filled-button>
-					<md-filled-tonal-button
-						role="button"
-						tabindex="0"
-						onclick={(event: Event) => cancelForm(event)}
-						onkeydown={(event: KeyboardEvent) => event.key === 'Enter' && cancelForm(event)}
-						>Cancel</md-filled-tonal-button
-					>
-				</div>
-			</form>
-		</md-dialog>
-
-		<HorizontalRule />
-	</div>
-
-	<div>
-		<Heading>User Form</Heading>
-		<!-- Applying TailwindCSS classes formats the following paragraph: -->
-		<p class="text-center text-2xl">
-			(Only the text fields are material design - the div's around are tailwind CSS)
-		</p>
-
-		<section class="flex h-full w-full justify-center">
-			<div class="center py-12 md:w-8/12 lg:ml-6 lg:w-5/12">
-				<div class="border-primary-400 rounded-2xl border-4 bg-blue-50 p-6">
-					<form method="POST">
-						<!-- Name input -->
-						{#if type === 'signup'}
-							<div class="relative mb-6">
-								<md-filled-text-field
-									label="Full name"
-									type="input"
-									name="name"
-									role="textbox"
-									tabindex="0"
-									class="mr-2 w-full"
-								>
-								</md-filled-text-field>
-							</div>
-						{/if}
-
-						<!-- Email input -->
-						<div class="relative mb-6">
-							<md-filled-text-field
-								label="Email address"
-								type="email"
-								name="email"
-								role="textbox"
-								tabindex="0"
-								class="mr-2 w-full"
-							>
-							</md-filled-text-field>
-						</div>
-
-						<!-- Password input -->
-						<div class="relative mb-6">
-							<md-filled-text-field
-								label="Password"
-								type="password"
-								name="password"
-								role="textbox"
-								tabindex="0"
-								class="mr-2 w-full"
-							>
-							</md-filled-text-field>
-						</div>
-
-						<!-- Submit button -->
-						<div class="text-center">
-							<button
-								type="submit"
-								class="inline-block w-5/6 rounded bg-blue-400 px-7 pb-2.5 pt-3 uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-blue-700 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-blue-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-blue-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
-								data-te-ripple-init
-								data-te-ripple-color="light"
-							>
-								{button}
-							</button>
-						</div>
-					</form>
-				</div>
-			</div>
-		</section>
-
-		<HorizontalRule />
-	</div>
-
-	<div>
-		<Heading>Card</Heading>
-
-		<div class="grid grid-cols-3 gap-4">
-			<md-elevated-card>
-				<Heading>Elevated Card</Heading>
-				<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
-			</md-elevated-card>
-			<md-filled-card>
-				<Heading>Filled Card</Heading>
-				<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
-			</md-filled-card>
-			<md-outlined-card>
-				<Heading>Filled Card</Heading>
-				<p class="text-center text-2xl">Not implemented yet in Material Design 3</p>
-			</md-outlined-card>
-		</div>
-
-		<HorizontalRule />
-	</div>
 </div>
-
-<!-- <JsonData data={theme}></JsonData> -->
-
-<style>
-	/* Local override works:  */
-	/* #demoResourceDialog {
-		--md-dialog-headline-color: #e4a112;
-		--md-dialog-container-color: #e5deb9;
-	} */
-	/* .staticMaterialThemeBuilder {
-		@import './dark.css';
-		@import './dark-hc.css';
-		@import './dark-mc.css';
-		@import './light.css';
-		@import './light-hc.css';
-		@import './light-mc.css';
-	} */
-
-	md-icon {
-		--md-icon-font: 'Material Symbols Rounded';
-		--md-icon-size: 48px;
-	}
-
-	#post-demo-resource {
-		display: flex;
-		flex-direction: column;
-	}
-	#post-demo-resource md-filled-text-field {
-		margin-bottom: 1rem;
-	}
-	#post-demo-resource md-filled-select {
-		margin-bottom: 1rem;
-	}
-	#post-demo-resource md-filled-button {
-		margin-top: 1rem;
-	}
-	#post-demo-resource md-filled-tonal-button {
-		margin-top: 1rem;
-	}
-</style>
