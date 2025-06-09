@@ -1,6 +1,4 @@
 <script lang="ts">
-	import '@material/web/textfield/filled-text-field.js';
-	import '@material/web/button/filled-button.js';
 	import { SocketIO } from '$lib/socketio';
 	import type { SocketioConnection } from '$lib/types';
 	// import { getContext, type Snippet } from 'svelte';

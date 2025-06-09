@@ -3,8 +3,6 @@
 	// import type { PageData } from './$types';
 	// import { SocketIO } from '$lib/socketio';
 	// import { io } from 'socket.io-client';
-	import '@material/web/textfield/filled-text-field.js';
-	import '@material/web/button/filled-button.js';
 	import Heading from '$components/Heading.svelte';
 	import Chat from './Chat.svelte';
 	import { page } from '$app/state';
