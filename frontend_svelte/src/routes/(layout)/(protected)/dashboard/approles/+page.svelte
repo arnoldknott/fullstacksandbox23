@@ -1,7 +1,5 @@
 <script lang="ts">
 	import Heading from '$components/Heading.svelte';
-	import '@material/web/button/filled-button.js';
-	import '@material/web/switch/switch.js';
 
 	// let selected = $state(false);
 	// const toggleAIstatus = (event: Event) => {
@@ -12,16 +10,14 @@
 
 <Heading>Assign roles</Heading>
 <form method="POST" action="?/toggleAIuser">
-	<label for="publicAIswitch"> Assign "publicAIuser" role in backendAPI to signed in user:</label>
-	<!-- <input type="switch"  value={selected ? 'on': 'off' } /> -->
-	<md-switch
+	<label class="label-text" for="publicAIswitch"> Assign "publicAIuser" role in backendAPI to signed in user:</label>
+	<input
+		type="checkbox"
+		class="switch switch-primary"
 		id="publicAIswitch"
-		role="switch"
 		name="publicAIstatus"
 		aria-checked="false"
-		tabindex="0"
-		icons
-	>
-	</md-switch>
-	<md-filled-button type="submit" role="button" tabindex="0">OK</md-filled-button>
+		tabindex="0"	
+	/>
+	<button class="btn btn-primary rounded-full" type="submit" tabindex="0">OK</button>
 </form>
