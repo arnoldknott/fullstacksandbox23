@@ -1,17 +1,6 @@
 <script lang="ts">
 	import RevealJs from '$components/RevealJS.svelte';
 	import { SocketIO } from '$lib/socketio';
-	import '@material/web/textfield/filled-text-field.js';
-	import '@material/web/button/elevated-button.js';
-	import '@material/web/slider/slider.js';
-	import '@material/web/chips/chip-set.js';
-	import '@material/web/chips/assist-chip.js';
-	import '@material/web/list/list.js';
-	import '@material/web/list/list-item.js';
-	import '@material/web/divider/divider.js';
-	// import '@material/web/chips/input-chip.js';
-	// import '@material/web/chips/filter-chip.js';
-	// import '@material/web/chips/suggestion-chip.js';
 
 	import type { SocketioConnection } from '$lib/types';
 
@@ -192,40 +181,43 @@
 						<form id={topic.name} method="POST" onsubmit={submitForm}>
 							<div class="justify-left flex flex-row">
 								<div class="flex w-full flex-row">
-									<span class="justify-left p-4 text-3xl text-black">{topic.name}:</span>
+									<span class="justify-left p-2 text-2xl text-black/70">{topic.name}:</span>
 									<div class="w-full justify-end">
 										<span class="text-xl text-black">👎</span>
-										<md-slider
-											class="w-4/5"
+										<input
+											type="range"
+											class="range range-secondary bg-base-content w-4/5"
 											min="0"
 											max="100"
 											step="1"
 											value={topic.value}
 											oninput={(e: Event) =>
 												(topic.value = parseInt((e.target as HTMLInputElement).value))}
-										>
-										</md-slider>
+										/>
 										<span class="text-xl text-black">👍</span>
 									</div>
 								</div>
 							</div>
-							<div class="flex flex-row p-2">
-								<md-filled-text-field
-									label="Comments"
-									type="input"
-									name="message"
-									role="textbox"
-									tabindex="0"
-									value={topic.comment}
-									oninput={(e: Event) => (topic.comment = (e.target as HTMLInputElement).value)}
-									onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && sendMessage(topic)}
-									class="mr-2 w-full"
-								>
-								</md-filled-text-field>
+							<div class="flex flex-row gap-2">
+								<div class="input-filled input-neutral w-full grow">
+									<input
+										id={topic.name}
+										type="text"
+										class="input border-neutral text-neutral"
+										placeholder=""
+										name="message"
+										tabindex="0"
+										value={topic.comment}
+										oninput={(e: Event) => (topic.comment = (e.target as HTMLInputElement).value)}
+										onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && sendMessage(topic)}
+									/>
+									<label class="input-filled-label text-neutral" for="filledInputSecondary">Comments</label
+									>
+								</div>
 								<div>
-									<md-elevated-button type="submit" role="button" tabindex="0" class="my-1">
+									<button class="btn btn-secondary rounded-full" type="submit" tabindex="0">
 										Send
-									</md-elevated-button>
+									</button>
 								</div>
 							</div>
 						</form>
@@ -233,46 +225,44 @@
 				{/each}
 			</div>
 			<div>
-				<span>Results</span>
-				<md-chip-set>
+				<div>Results</div>
+				<div class="flex flex-row w-full gap-2">
 					{#each topics as topic, i (i)}
-						<md-assist-chip
-							label={`${topic.name}: ${topic.count}`}
+						<div
+							class="badge badge-xl text-label grow"
 							style="background-color: {average_colors[i]};"
-						></md-assist-chip>
+						>
+							{topic.name}: {topic.count}
+						</div>
 					{/each}
-				</md-chip-set>
-				<div class="h-[650px] overflow-y-scroll">
+				</div>
+				<div class="h-[650px] overflow-y-scroll w-full">
 					<p>Replies</p>
-					{#each replies as reply, i (i)}
-						<md-list class="bg-transparent">
-							<md-list-item>
+					<ul class="divide-base-content/25 w-full *:p-3" style="list-style-type: none;">
+						{#each replies as reply, i (i)}
+							<li class="w-full">
 								<div
-									slot="headline"
 									style="color: {average_colors[topics.findIndex((t) => t.name === reply.name)]}"
 									class="text-left text-2xl font-bold"
 								>
 									{reply.name}
 								</div>
-								<div slot="supporting-text" class="text-left text-xl text-white">
+								<div class="text-left text-xl text-white">
 									{reply.comment}
 								</div>
-								<md-divider></md-divider>
-							</md-list-item>
-						</md-list>
-						<!-- <span class=" text-3xl">{reply}</span><br /> -->
-					{/each}
+								<div class="divider divider-outline after:border-t-4 before:border-t-4"></div>
+							</li>
+						{/each}
+					</ul>
 				</div>
 			</div>
 		</div>
 	</section>
 
-	<style>
-		md-filled-text-field {
-			--md-filled-text-field-container-color: #ffbe6e;
-		}
-		md-elevated-button {
-			--md-elevated-button-container-color: #ffbe6e;
-		}
-	</style>
 </RevealJs>
+
+<style>
+	ul { 
+		list-style-type: dot; 
+	}
+</style>
