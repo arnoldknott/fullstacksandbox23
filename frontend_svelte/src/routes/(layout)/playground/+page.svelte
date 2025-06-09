@@ -20,12 +20,6 @@
 			url: '/design'
 		},
 		{
-			name: 'User interface',
-			description:
-				'Playground for elements of the user interface, before turing into Svelte components',
-			url: '/user_interface'
-		},
-		{
 			name: 'Backend - Schema',
 			description: 'The openapi schema of the backend API',
 			url: '/backend_schema'
