@@ -5,7 +5,8 @@
 		right: string;
 	};
 
-	let { resourceId, identity }: { resourceId: string; identity: Identity } = $props();
+	let { resourceId, icon, identity }: { resourceId: string; icon: string; identity: Identity } =
+		$props();
 
 	const rightsIcon = (right: string) => {
 		return right === 'own'
@@ -27,18 +28,20 @@
 			type="submit"
 			value={resourceId}
 			formaction="?/share&identity-id={identity.id}&action={identity.right}&new-action={newAction}"
-			aria-label={newAction}><span class={rightsIcon(newAction)}></span></button
+			aria-label={newAction}
 		>
+			<span class={rightsIcon(newAction)}></span>
+		</button>
 	</li>
 {/snippet}
 
 <li>
-	<div class="text-secondary tooltip flex items-center">
+	<div class="tooltip flex items-center">
 		<div
 			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
 			aria-label={identity.name}
 		>
-			<span class="icon-[{rightsIcon(identity.right)}] mr-2 shrink-0"></span>
+			<span class="{icon} shrink-0"></span>
 			{identity.name.slice(0, 12)}{identity.name.length > 13 ? ' ...' : null}
 			{#if identity.name.length > 12}
 				<span
@@ -54,7 +57,7 @@
 		</div>
 		<div class="dropdown relative inline-flex [--offset:0] [--placement:left-start]">
 			<button
-				id="rights"
+				id="rights-{identity.id}"
 				type="button"
 				class="dropdown-toggle btn btn-text bg-base-300"
 				aria-haspopup="menu"
@@ -67,7 +70,7 @@
 				class="dropdown-menu outline-outline bg-base-300 dropdown-open:opacity-100 hidden outline-2"
 				role="menu"
 				aria-orientation="vertical"
-				aria-labelledby="rights"
+				aria-labelledby="rights-{identity.id}"
 			>
 				{@render shareButton('own')}
 				{@render shareButton('write')}

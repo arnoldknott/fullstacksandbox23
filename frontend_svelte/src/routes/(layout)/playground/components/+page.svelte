@@ -466,7 +466,6 @@
 		<Heading>🚧 Card with action buttons 🚧</Heading>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet footerAction()}
-				<!-- <div class="card-actions"> -->
 				<div class="join flex flex-row items-center justify-center">
 					<button
 						class="btn btn-secondary-container text-secondary-container-content join-item grow"
@@ -506,7 +505,11 @@
 								}}
 							>
 								{#each teams as team, i (i)}
-									<ShareItem resourceId="actionButtonShareResourceId" identity={team} />
+									<ShareItem
+										resourceId="actionButtonShareResourceId"
+										icon="icon-[fluent--people-team-16-filled]"
+										identity={team}
+									/>
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -607,7 +610,11 @@
 								}}
 							>
 								{#each teams as team, i (i)}
-									<ShareItem resourceId="dropdownShareDropdownResourceId" identity={team} />
+									<ShareItem
+										resourceId="dropdownShareDropdownResourceId"
+										icon="icon-[fluent--people-team-16-filled]"
+										identity={team}
+									/>
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -620,7 +627,7 @@
 					</li>
 					<li class="dropdown-footer gap-2">
 						<button
-							class="btn dropdown-item btn-error btn-text content-center justify-start"
+							class="btn dropdown-item btn-error btn-text text-secondary content-center justify-start"
 							aria-label="Delete Button"
 							name="id"
 							formaction="?/delete"><span class="icon-[tabler--trash]"></span>Delete</button
@@ -657,7 +664,11 @@
 								};
 							}}
 						>
-							<ShareItem resourceId="dropdownShareResourceId" identity={teams[0]} />
+							<ShareItem
+								resourceId="dropdownShareResourceId"
+								icon="icon-[fluent--people-team-16-filled]"
+								identity={teams[0]}
+							/>
 						</form>
 					</ul>
 				</div>
