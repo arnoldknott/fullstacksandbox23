@@ -211,7 +211,8 @@
 										oninput={(e: Event) => (topic.comment = (e.target as HTMLInputElement).value)}
 										onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && sendMessage(topic)}
 									/>
-									<label class="input-filled-label text-neutral" for="filledInputSecondary">Comments</label
+									<label class="input-filled-label text-neutral" for="filledInputSecondary"
+										>Comments</label
 									>
 								</div>
 								<div>
@@ -226,7 +227,7 @@
 			</div>
 			<div>
 				<div>Results</div>
-				<div class="flex flex-row w-full gap-2">
+				<div class="flex w-full flex-row gap-2">
 					{#each topics as topic, i (i)}
 						<div
 							class="badge badge-xl text-label grow"
@@ -236,7 +237,7 @@
 						</div>
 					{/each}
 				</div>
-				<div class="h-[650px] overflow-y-scroll w-full">
+				<div class="h-[650px] w-full overflow-y-scroll">
 					<p>Replies</p>
 					<ul class="divide-base-content/25 w-full *:p-3" style="list-style-type: none;">
 						{#each replies as reply, i (i)}
@@ -250,7 +251,7 @@
 								<div class="text-left text-xl text-white">
 									{reply.comment}
 								</div>
-								<div class="divider divider-outline after:border-t-4 before:border-t-4"></div>
+								<div class="divider divider-outline before:border-t-4 after:border-t-4"></div>
 							</li>
 						{/each}
 					</ul>
@@ -258,11 +259,10 @@
 			</div>
 		</div>
 	</section>
-
 </RevealJs>
 
 <style>
-	ul { 
-		list-style-type: dot; 
+	ul {
+		list-style-type: dot;
 	}
 </style>
