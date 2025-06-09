@@ -8,8 +8,10 @@
     console.log(data);// { layoutServerTs: 1, layout.ts: 2, pageserverTs: 3  }
 </script>
 
-<div>
-    +layout.svelte
-    Data: <JsonData {data} />
+<div class="flex flex-row">
+    <div>
+        +layout.svelte
+        <JsonData {data} />
+    </div>
     {@render children()}
 </div>

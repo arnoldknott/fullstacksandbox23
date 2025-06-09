@@ -8,5 +8,6 @@
     console.log(data);// { layoutServerTs: 1, layout.ts: 2, pageserverTs: 3  }
 </script>
 
-<div>+page.svelte</div>
-Data: <JsonData {data} />
+<div>+page.svelte
+    <JsonData {data} />
+</div>
