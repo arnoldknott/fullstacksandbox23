@@ -5,7 +5,8 @@
 		right: string;
 	};
 
-	let { resourceId, icon, identity }: { resourceId: string; icon: string; identity: Identity } = $props();
+	let { resourceId, icon, identity }: { resourceId: string; icon: string; identity: Identity } =
+		$props();
 
 	const rightsIcon = (right: string) => {
 		return right === 'own'
@@ -30,8 +31,7 @@
 			aria-label={newAction}
 		>
 			<span class={rightsIcon(newAction)}></span>
-		</button
-		>
+		</button>
 	</li>
 {/snippet}
 
