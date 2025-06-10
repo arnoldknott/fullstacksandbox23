@@ -5,13 +5,16 @@
 	let { data, children }: LayoutProps = $props();
 
 	console.log('=== playground - dataflow - +layout.svelte ===');
-	console.log(data); // { layoutServerTs: 1, layout.ts: 2, pageserverTs: 3  }
+    const dataWithoutBackEndConfiguration = Object.fromEntries(
+        Object.entries(data).filter(([key]) => !key.startsWith('backendAPIConfiguration'))
+    );
+	console.log(dataWithoutBackEndConfiguration); // { layoutServerTs: 1, layout.ts: 2  }
 </script>
 
-<div class="flex flex-row">
+<div class="grid grid-cols-4 gap-2">
 	<div>
-		+layout.svelte
-		<JsonData {data} />
+		<p class="title">+layout.svelte</p>
+		<JsonData data={dataWithoutBackEndConfiguration} />
 	</div>
 	{@render children()}
 </div>
