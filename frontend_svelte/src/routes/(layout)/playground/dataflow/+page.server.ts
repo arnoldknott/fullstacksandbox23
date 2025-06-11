@@ -7,7 +7,13 @@ export const load = async ({ parent }) => {
 	// `parent` is the return value of `+layout.server.ts`
 	const parentData = await parent();
 	const cleanedParentData = Object.fromEntries(
-		Object.entries(parentData).filter(([key]) => key.startsWith('layoutServerTs') || key.startsWith('layoutTs') || key.startsWith('pageServerTs') || key.startsWith('pageTs'))
+		Object.entries(parentData).filter(
+			([key]) =>
+				key.startsWith('layoutServerTs') ||
+				key.startsWith('layoutTs') ||
+				key.startsWith('pageServerTs') ||
+				key.startsWith('pageTs')
+		)
 	);
 	console.log('=== playground - dataflow - +page.server.ts ===');
 	console.log(cleanedParentData); // { layoutServerTs: 1 }

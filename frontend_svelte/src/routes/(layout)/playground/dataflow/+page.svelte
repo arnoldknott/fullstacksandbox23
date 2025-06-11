@@ -9,7 +9,13 @@
 
 	console.log('=== playground - dataflow - +page.svelte ===');
 	const cleanedData = Object.fromEntries(
-		Object.entries(data).filter(([key]) => key.startsWith('layoutServerTs') || key.startsWith('layoutTs') || key.startsWith('pageServerTs') || key.startsWith('pageTs'))
+		Object.entries(data).filter(
+			([key]) =>
+				key.startsWith('layoutServerTs') ||
+				key.startsWith('layoutTs') ||
+				key.startsWith('pageServerTs') ||
+				key.startsWith('pageTs')
+		)
 	);
 	console.log(cleanedData); // { layoutServerTs: 1, layout.ts: 2, pageServerTs: 3, pageTs: 4  }
 
