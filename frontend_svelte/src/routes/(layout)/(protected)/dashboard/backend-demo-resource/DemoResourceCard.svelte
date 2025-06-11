@@ -46,9 +46,6 @@
 	let dropdownShareDropdownElement = $state<HTMLElement | null>(null);
 	let dropdownMenu = $state<HSDropdown | null>(null);
 	let dropdownShareDropdown = $state<HSDropdown | null>(null);
-	// let minWidthMenu = $state<String>("");
-	let identitiesList = $state<HTMLElement | null>(null);
-	
 
 	const loadHSDropdown = async () => {
 		const { HSDropdown } = await import('flyonui/flyonui');
@@ -64,43 +61,12 @@
 		});
 	});
 
-	// Event handler - works:
-	// $effect(() => {
-	// 	dropdownShareDropdown?.on("open", () => {
-	// 		console.log('Share dropdown opened');
-	// 		console.log("Share menu placement: ", identitiesList?.dataset.placement);
-	// 		if (identitiesList?.dataset.placement === "left-start"){
-	// 			minWidthMenu = "min-w-60";
-	// 			// dropdownMenu?.open();
-	// 			// dropdownShareDropdown?.open()
-	// 			console.log("Share menu min-width set to 60");
-	// 		} else {
-	// 			minWidthMenu = "";
-	// 		}
-	// 	});
-		
-	// })
-
-	// $effect(() => {
-	// 	if (dropdownMenuElement) {
-	// 		const rect = dropdownMenuElement.getBoundingClientRect();
-	// 		const distanceToRight = window.innerWidth - (rect.left + rect.width);
-	// 		// Example: set a class if less than 100px from right edge
-	// 		console.log("Distance to right edge: ", distanceToRight);
-	// 		minWidthMenu = distanceToRight < 70 ? "min-w-60" : "";
-	// 	}
-	// });
-
-	let minWidthMenu = $derived.by(
-		() => {
-			console.log('Calculating minWidthMenu');
-			if (dropdownMenuElement) {
-				console.log(dropdownMenuElement.getBoundingClientRect().right)
-				console.log('Window width:', window.innerWidth);
-				console.log('Distance to right edge:', window.innerWidth - dropdownMenuElement.getBoundingClientRect().right);
-			}
-			return dropdownMenuElement ? (window.innerWidth - dropdownMenuElement.getBoundingClientRect().right < 70 ? 'min-w-60' : '') : ''
-		}
+	let minWidthMenu = $derived.by(() =>
+		dropdownMenuElement
+			? window.innerWidth - dropdownMenuElement.getBoundingClientRect().right < 70
+				? 'min-w-60'
+				: ''
+			: ''
 	);
 
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
@@ -189,16 +155,6 @@
 					<!-- {creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }) } -->
 				</p>
 			{/if}
-			<!-- <h5
-				class="title-small md:title lg:title-large base-content card-title {edit
-					? `ring-2 ring-info`
-					: ``}"
-				contenteditable="true"
-				oninput={(event: Event) => (name = (event.target as HTMLElement).innerText)}
-				onblur={() => createOrUpdateResource()}
-			>
-				{name}
-			</h5> -->
 		</div>
 		<div class="flex flex-row items-start gap-4">
 			{#if category}
@@ -227,7 +183,6 @@
 						aria-expanded="false"
 						aria-label="Dropdown"
 					></span>
-					<!-- {minWidthMenu} -->
 					<ul
 						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden {minWidthMenu} shadow-xs"
 						role="menu"
@@ -268,7 +223,6 @@
 									role="menu"
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
-									bind:this={identitiesList}
 								>
 									{#if identities}
 										<form
