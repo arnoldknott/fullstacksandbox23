@@ -1487,7 +1487,9 @@
 					class="input input-xs sm:input-sm md:input-md lg:input-lg xl:input-xl"
 					id="filledInputResponsive"
 				/>
-				<label class="input-filled-label" for="filledInputResponsive">Full name - responsiveness not working!!</label>
+				<label class="input-filled-label" for="filledInputResponsive"
+					>Full name - responsiveness not working!!</label
+				>
 			</div>
 			<div class="input-floating w-full grow">
 				<input

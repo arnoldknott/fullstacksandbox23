@@ -5,9 +5,9 @@
 	let { data, children }: LayoutProps = $props();
 
 	console.log('=== playground - dataflow - +layout.svelte ===');
-    const dataWithoutBackEndConfiguration = Object.fromEntries(
-        Object.entries(data).filter(([key]) => !key.startsWith('backendAPIConfiguration'))
-    );
+	const dataWithoutBackEndConfiguration = Object.fromEntries(
+		Object.entries(data).filter(([key]) => !key.startsWith('backendAPIConfiguration'))
+	);
 	console.log(dataWithoutBackEndConfiguration); // { layoutServerTs: 1, layout.ts: 2  }
 </script>
 
