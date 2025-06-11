@@ -8,10 +8,10 @@
 	let { data, form }: PageProps = $props();
 
 	console.log('=== playground - dataflow - +page.svelte ===');
-	const dataWithoutBackEndConfiguration = Object.fromEntries(
-		Object.entries(data).filter(([key]) => !key.startsWith('backendAPIConfiguration'))
+	const cleanedData = Object.fromEntries(
+		Object.entries(data).filter(([key]) => !key.startsWith('backendAPIConfiguration') && !key.startsWith('session'))
 	);
-	console.log(dataWithoutBackEndConfiguration); // { layoutServerTs: 1, layout.ts: 2, pageServerTs: 3, pageTs: 4  }
+	console.log(cleanedData); // { layoutServerTs: 1, layout.ts: 2, pageServerTs: 3, pageTs: 4  }
 
 	const redirect = () => {
 		goto('dataflow/redirect');
@@ -165,7 +165,7 @@
 
 <div>
 	<p class="title">+page.svelte</p>
-	<JsonData data={dataWithoutBackEndConfiguration} />
+	<JsonData data={cleanedData} />
 </div>
 
 <div class="text-center">

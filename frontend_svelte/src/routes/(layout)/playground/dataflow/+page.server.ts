@@ -6,11 +6,11 @@ import { error, fail, redirect } from '@sveltejs/kit';
 export const load = async ({ parent }) => {
 	// `parent` is the return value of `+layout.server.ts`
 	const parentData = await parent();
-	const parentDataWithoutBackEndConfiguration = Object.fromEntries(
-		Object.entries(parentData).filter(([key]) => !key.startsWith('backendAPIConfiguration'))
+	const cleanedParentData = Object.fromEntries(
+		Object.entries(parentData).filter(([key]) => !key.startsWith('backendAPIConfiguration') && !key.startsWith('session'))
 	);
 	console.log('=== playground - dataflow - +page.server.ts ===');
-	console.log(parentDataWithoutBackEndConfiguration); // { layoutServerTs: 1 }
+	console.log(cleanedParentData); // { layoutServerTs: 1 }
 	// return new data
 	return {
 		...parentData,
