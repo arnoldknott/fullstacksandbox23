@@ -1480,14 +1480,16 @@
 			</div>
 		</div>
 		<div class="mb-5 flex grow flex-row gap-4">
-			<div class="input-filled w-full grow">
+			<div class="input-filled input-error w-full grow">
 				<input
 					type="text"
 					placeholder="John Doe"
 					class="input input-xs sm:input-sm md:input-md lg:input-lg xl:input-xl"
 					id="filledInputResponsive"
 				/>
-				<label class="input-filled-label" for="filledInputResponsive">Full name - responsive</label>
+				<label class="input-filled-label" for="filledInputResponsive"
+					>Full name - responsiveness not working!!</label
+				>
 			</div>
 			<div class="input-floating w-full grow">
 				<input

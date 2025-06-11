@@ -98,7 +98,7 @@
 		} else {
 			// handle error: show error message
 		}
-		update();
+		await update();
 	};
 
 	// data for share menu:
