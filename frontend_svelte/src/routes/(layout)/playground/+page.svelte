@@ -20,6 +20,12 @@
 			url: '/design'
 		},
 		{
+			name: 'Data Flow & Navigation',
+			description:
+				'Playground for data flow in Svelte from server to browser via load functions and page data and from browser to server via form data as well as error and redirect navigation.',
+			url: '/dataflow'
+		},
+		{
 			name: 'Backend - Schema',
 			description: 'The openapi schema of the backend API',
 			url: '/backend_schema'

@@ -16,14 +16,14 @@
 
 .input-filled {
 	@apply relative block w-full;
-	@apply h-full;
+	/* @apply h-full; */
 
 	.input {
-		@apply h-full;
+		/* @apply h-full; */
 		@apply bg-base-content/10 border-primary mb-[2px] rounded-t-md rounded-b-none border-0 border-b pt-4.5 placeholder:text-transparent;
 		@apply focus-visible:placeholder:text-base-content/50 hover:border-0 hover:border-b focus:mb-0 focus:border-b-3 focus-visible:outline-0;
-		/* height: var(--size);
-    --size: calc(var(--size-field, 0.25rem) * 11.5); */
+		height: var(--size);
+		--size: calc(var(--size-field, 0.25rem) * 11.5);
 
 		&:has(> input[disabled]),
 		&:is(:disabled, [disabled]) {
@@ -34,7 +34,7 @@
 		}
 	}
 	&:focus-within,
-	&:not(:has(input:placeholder-shown)),
+	/* &:not(:has(input:placeholder-shown)), */
 	&:has(.input:focus) {
 		.input-filled-label {
 			@apply pointer-events-auto top-0 bg-transparent px-1 text-sm font-medium;
@@ -72,7 +72,7 @@
 		top: calc(var(--size-field, 0.25rem) * 11.5 / 2);
 	}
 
-	/* &:has(.input-xs) .input {
+	&:has(.input-xs) .input {
 		--size: calc(var(--size-field, 0.25rem) * 7.5);
 	}
 	&:has(.input-sm) .input {
@@ -85,8 +85,8 @@
 		--size: calc(var(--size-field, 0.25rem) * 14);
 	}
 	&:has(.input-xl) .input {
-		--size: calc(var(--size-field, 0.25rem) * 116.5);
-	} */
+		--size: calc(var(--size-field, 0.25rem) * 16.5);
+	}
 
 	.input.is-valid {
 		@apply bg-success/20 border-success;

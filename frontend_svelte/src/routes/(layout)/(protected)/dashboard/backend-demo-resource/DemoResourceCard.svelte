@@ -61,6 +61,14 @@
 		});
 	});
 
+	let minWidthMenu = $derived.by(() =>
+		dropdownMenuElement
+			? window.innerWidth - dropdownMenuElement.getBoundingClientRect().right < 70
+				? 'min-w-60'
+				: ''
+			: ''
+	);
+
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
 	const accessAction = (identityId: string) =>
@@ -117,7 +125,7 @@
 		} else {
 			// handle error: show error message
 		}
-		update();
+		await update();
 	};
 </script>
 
@@ -147,16 +155,6 @@
 					<!-- {creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }) } -->
 				</p>
 			{/if}
-			<!-- <h5
-				class="title-small md:title lg:title-large base-content card-title {edit
-					? `ring-2 ring-info`
-					: ``}"
-				contenteditable="true"
-				oninput={(event: Event) => (name = (event.target as HTMLElement).innerText)}
-				onblur={() => createOrUpdateResource()}
-			>
-				{name}
-			</h5> -->
 		</div>
 		<div class="flex flex-row items-start gap-4">
 			{#if category}
@@ -186,7 +184,7 @@
 						aria-label="Dropdown"
 					></span>
 					<ul
-						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
+						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden {minWidthMenu} shadow-xs"
 						role="menu"
 						aria-orientation="vertical"
 						aria-labelledby="dropdown-menu-icon-{id}"
@@ -196,8 +194,10 @@
 								class="btn dropdown-item btn-text text-base-content content-center justify-start"
 								aria-label="Edit Button"
 								onclick={() => (edit ? (edit = false) : (edit = true))}
-								><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
 							>
+								<span class="icon-[material-symbols--edit-outline-rounded]"></span>
+								Edit
+							</button>
 						</li>
 						{#if userRight === 'own'}
 							<li
@@ -210,12 +210,16 @@
 									aria-haspopup="menu"
 									aria-expanded="false"
 									aria-label="Share with"
-									><span class="icon-[tabler--share-2]"></span>Share
-									<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
+								>
+									<span class="icon-[tabler--share-2]"></span>
+									Share
+									<span
+										class="icon-[tabler--chevron-right] dropdown-open:rotate-180 size-4 rtl:rotate-180"
+									></span>
 								</button>
 								<!-- min-w-60 -->
 								<ul
-									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-60 shadow-xs"
 									role="menu"
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
