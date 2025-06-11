@@ -36,7 +36,7 @@
 {/snippet}
 
 <li>
-	<div class="tooltip flex items-center">
+	<div class="tooltip [--placement:top] flex items-center">
 		<div
 			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
 			aria-label={identity.name}
@@ -45,7 +45,7 @@
 			{identity.name.slice(0, 12)}{identity.name.length > 13 ? ' ...' : null}
 			{#if identity.name.length > 12}
 				<span
-					class="tooltip-content tooltip-shown:visible tooltip-shown:opacity-100 bg-base-300"
+					class="tooltip-content outline rounded-xl tooltip-shown:visible tooltip-shown:opacity-100 bg-base-300"
 					role="tooltip"
 				>
 					{identity.name}
