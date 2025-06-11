@@ -4,15 +4,27 @@ import type { PageLoad, PageData } from './$types';
 export const load: PageLoad = async ({ data, parent }: PageData) => {
 	// `data` is the return value of `+layout.server.ts`
 	console.log('=== playground - dataflow - +page.ts ===');
-	const dataWithoutBackEndConfiguration = Object.fromEntries(
-		Object.entries(data).filter(([key]) => !key.startsWith('backendAPIConfiguration'))
+	const cleanedData = Object.fromEntries(
+		Object.entries(data).filter(
+			([key]) =>
+				key.startsWith('layoutServerTs') ||
+				key.startsWith('layoutTs') ||
+				key.startsWith('pageServerTs') ||
+				key.startsWith('pageTs')
+		)
 	);
-	console.log(dataWithoutBackEndConfiguration); // { layoutServerTs: 1, pageserverTs: 3  }
+	console.log(cleanedData); // { layoutServerTs: 1, pageserverTs: 3  }
 	const parentData = await parent();
-	const parentDataWithoutBackEndConfiguration = Object.fromEntries(
-		Object.entries(parentData).filter(([key]) => !key.startsWith('backendAPIConfiguration'))
+	const cleanedParentData = Object.fromEntries(
+		Object.entries(parentData).filter(
+			([key]) =>
+				key.startsWith('layoutServerTs') ||
+				key.startsWith('layoutTs') ||
+				key.startsWith('pageServerTs') ||
+				key.startsWith('pageTs')
+		)
 	);
-	console.log(parentDataWithoutBackEndConfiguration); // { layoutServerTs: 1, layoutTs: 2 }
+	console.log(cleanedParentData); // { layoutServerTs: 1, layoutTs: 2 }
 	// return new data
 	return {
 		...data,
