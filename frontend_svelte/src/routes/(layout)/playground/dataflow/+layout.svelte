@@ -11,7 +11,7 @@
 	console.log(dataWithoutBackEndConfiguration); // { layoutServerTs: 1, layout.ts: 2  }
 </script>
 
-<div class="grid grid-cols-4 gap-2">
+<div class="grid grid-cols-3 gap-2">
 	<div>
 		<p class="title">+layout.svelte</p>
 		<JsonData data={dataWithoutBackEndConfiguration} />

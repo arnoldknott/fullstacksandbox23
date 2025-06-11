@@ -117,7 +117,7 @@
 		} else {
 			// handle error: show error message
 		}
-		update();
+		await update();
 	};
 </script>
 
