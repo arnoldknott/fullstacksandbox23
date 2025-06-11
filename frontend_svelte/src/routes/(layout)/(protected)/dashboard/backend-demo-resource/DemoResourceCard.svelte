@@ -196,8 +196,10 @@
 								class="btn dropdown-item btn-text text-base-content content-center justify-start"
 								aria-label="Edit Button"
 								onclick={() => (edit ? (edit = false) : (edit = true))}
-								><span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit</button
 							>
+								<span class="icon-[material-symbols--edit-outline-rounded]"></span>
+								Edit
+							</button>
 						</li>
 						{#if userRight === 'own'}
 							<li
@@ -210,8 +212,12 @@
 									aria-haspopup="menu"
 									aria-expanded="false"
 									aria-label="Share with"
-									><span class="icon-[tabler--share-2]"></span>Share
-									<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
+								>
+									<span class="icon-[tabler--share-2]"></span>
+									Share
+									<span
+										class="icon-[tabler--chevron-right] dropdown-open:rotate-180 size-4 rtl:rotate-180"
+									></span>
 								</button>
 								<!-- min-w-60 -->
 								<ul
