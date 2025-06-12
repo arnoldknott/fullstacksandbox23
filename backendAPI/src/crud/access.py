@@ -982,7 +982,8 @@ class AccessPolicyCRUD:
             logging.error(err)
             raise HTTPException(status_code=404, detail="Access policies not found.")
 
-    # similar to update - but deletes old and creates a new policy
+    # strictly not fulfilling REST principles for PUT operations, as the id of the access policy changes.
+    # TBD: refactor this to keep the id of the access policy.
     async def update(
         self,
         current_user: Optional["CurrentUserData"],
@@ -996,8 +997,7 @@ class AccessPolicyCRUD:
             # => yes, needs to, because it's a mandatory part of the AccessPolicyCreate,
             # which AccessPolicyUpdate inherits from!
             # TBD: add business logic: can last owner delete it's owner rights?
-            # => yes, but only if there is another owner left - should be handled in delete!
-            # TBD: what about downgrading from own to write or read? Permission inheritance?
+            # => no, there needs to be another owner left - should be handled in delete!
             if hasattr(access_policy, "action") and access_policy.action is not None:
                 old_policy = AccessPolicy(
                     resource_id=access_policy.resource_id,
