@@ -25,19 +25,6 @@ export type BackendAPIConfiguration = {
 // 	redis_password: string;
 // };
 
-export type SocketioConnection = {
-	namespace?: string;
-	room?: string;
-	connected?: boolean;
-	cookie_session_id?: string;
-};
-
-type Tab = {
-	header: string;
-	content: string;
-	active?: boolean;
-};
-
 // TBD: rename into ServerSession:
 export type Session = {
 	loggedIn: boolean;
@@ -56,7 +43,6 @@ export type ClientSession = {
 };
 
 // Access types:
-
 export interface AccessPolicy {
 	resource_id: string;
 	identity_id: string;

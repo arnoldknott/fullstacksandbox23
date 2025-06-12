@@ -5,7 +5,7 @@
 	// import { io } from 'socket.io-client';
 	import Heading from '$components/Heading.svelte';
 	import Chat from './Chat.svelte';
-	import type { SocketioConnection } from '$lib/types';
+	import type { SocketioConnection } from '$lib/socketio';
 	import { page } from '$app/state';
 
 	// const socketio_client_from_lib = new SocketIO();

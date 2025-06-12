@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { SocketIO } from '$lib/socketio';
-	import type { SocketioConnection } from '$lib/types';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio';
+
 	// import { getContext, type Snippet } from 'svelte';
 	import { type Snippet } from 'svelte';
 

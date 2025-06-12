@@ -3,7 +3,14 @@ import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
 import { getContext } from 'svelte';
 import type { BackendAPIConfiguration } from '$lib/types.d.ts';
-import type { SocketioConnection } from '$lib/types.d.ts';
+
+
+export type SocketioConnection = {
+	namespace?: string;
+	room?: string;
+	connected?: boolean;
+	cookie_session_id?: string;
+};
 
 export class SocketIO {
 	// TBD: remove event and rooms from SocketioConnection
