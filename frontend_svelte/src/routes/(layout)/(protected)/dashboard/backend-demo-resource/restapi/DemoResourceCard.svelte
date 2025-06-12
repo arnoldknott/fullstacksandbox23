@@ -7,7 +7,7 @@
 	import { AccessHandler } from '$lib/accessHandler';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// TBD: move to components folder
-	import ShareItem from '../../../playground/components/ShareItem.svelte';
+	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import type { ActionResult } from '@sveltejs/kit';
 
 	let {
