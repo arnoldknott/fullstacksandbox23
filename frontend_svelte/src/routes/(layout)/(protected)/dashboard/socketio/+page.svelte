@@ -5,16 +5,17 @@
 	// import { io } from 'socket.io-client';
 	import Heading from '$components/Heading.svelte';
 	import Chat from './Chat.svelte';
+	import type { SocketioConnection } from '$lib/types';
 	import { page } from '$app/state';
 
 	// const socketio_client_from_lib = new SocketIO();
 
-	const public_message_connection = {
+	const public_message_connection: SocketioConnection = {
 		namespace: '/public-namespace',
 		room: '',
 		cookie_session_id: page.data.session.sessionId
 	};
-	const demo_message_connection = {
+	const demo_message_connection: SocketioConnection = {
 		namespace: '/demo-namespace',
 		room: '',
 		cookie_session_id: page.data.session.sessionId
