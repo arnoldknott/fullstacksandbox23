@@ -26,7 +26,6 @@ export type BackendAPIConfiguration = {
 // };
 
 export type SocketioConnection = {
-	event: string;
 	namespace?: string;
 	room?: string;
 	connected?: boolean;

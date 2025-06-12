@@ -4,7 +4,7 @@
 	// import { getContext, type Snippet } from 'svelte';
 	import { type Snippet } from 'svelte';
 
-	let { connection, children }: { connection: SocketioConnection; children: Snippet } = $props();
+	let { connection, socketioEvent, children }: { connection: SocketioConnection; socketioEvent: string; children: Snippet } = $props();
 
 	const socketio = new SocketIO(connection);
 
@@ -17,7 +17,7 @@
 
 		socketio.client.on('connect', updateStatus);
 		socketio.client.on('disconnect', updateStatus);
-		socketio.client.on(connection.event, updateStatus);
+		socketio.client.on(socketioEvent, updateStatus);
 		updateStatus();
 	});
 
@@ -28,12 +28,12 @@
 	// TBD: add as method to SocketIO class
 	const sendMessage = (event: Event) => {
 		event.preventDefault();
-		socketio.client.emit(connection.event, new_message);
+		socketio.client.emit(socketioEvent, new_message);
 		new_message = '';
 	};
 
 	$effect(() => {
-		socketio.client.on(connection.event, (data) => {
+		socketio.client.on(socketioEvent, (data) => {
 			// console.log(`Received from socket.io server: ${data}`);
 			old_messages.push(`${data}`);
 		});
@@ -50,7 +50,7 @@
 				type="input"
 				placeholder="Type your message here"
 				class="input input-lg w-full grow"
-				id={connection.namespace + connection.event + connection.room}
+				id={connection.namespace + socketioEvent + connection.room}
 				name="message"
 				value={new_message}
 				oninput={(e: Event) => (new_message = (e.target as HTMLInputElement).value)}
@@ -58,7 +58,7 @@
 			/>
 			<label
 				class="input-filled-label"
-				for={connection.namespace + connection.event + connection.room}>Message</label
+				for={connection.namespace + socketioEvent + connection.room}>Message</label
 			>
 		</div>
 		<button
