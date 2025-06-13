@@ -85,5 +85,17 @@ async def socketio_test_client():
     return _socketio_test_client
 
 
-# @pytest.fixture(scope="function")
-# async def provide_demo_namespace_server
+@pytest.fixture(scope="function")
+async def provide_namespace_server(
+    socketio_test_server: socketio.AsyncServer,
+):
+    """Provides a socket.io server with a specific namespace."""
+
+    async def _provide_namespace_server(namespaces: List[socketio.AsyncNamespace]):
+        sio = socketio_test_server
+        for namespace in namespaces:
+            sio.register_namespace(namespace)
+
+        return sio
+
+    return _provide_namespace_server

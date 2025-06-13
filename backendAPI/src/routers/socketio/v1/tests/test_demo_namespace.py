@@ -33,13 +33,15 @@ async def test_on_connect_invalid_token():
 )
 async def test_connect_with_test_server_demo_namespace(
     mock_token_payload,
-    socketio_test_server,
+    # socketio_test_server,
+    provide_namespace_server,
 ):
     """Test the demo socket.io message event."""
     mocked_token_payload = mock_token_payload
 
-    sio = socketio_test_server
-    sio.register_namespace(DemoNamespace("/demo-namespace"))
+    # sio = socketio_test_server
+    # sio.register_namespace(DemoNamespace("/demo-namespace"))
+    await provide_namespace_server([DemoNamespace("/demo-namespace")])
 
     client = socketio.AsyncClient(logger=True, engineio_logger=True)
 
@@ -71,14 +73,16 @@ async def test_connect_with_test_server_demo_namespace(
 )
 async def test_demo_message_with_test_server(
     mock_token_payload,
-    socketio_test_server,
+    # socketio_test_server,
+    provide_namespace_server,
     socketio_test_client,
 ):
     """Test the demo socket.io message event."""
     mocked_token_payload = mock_token_payload
 
-    sio = socketio_test_server
-    sio.register_namespace(DemoNamespace("/demo-namespace"))
+    # sio = socketio_test_server
+    # sio.register_namespace(DemoNamespace("/demo-namespace"))
+    await provide_namespace_server([DemoNamespace("/demo-namespace")])
 
     async for client in socketio_test_client(["/demo-namespace"]):
         await client.emit("demo_message", "Something", namespace="/demo-namespace")
