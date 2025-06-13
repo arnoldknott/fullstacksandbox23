@@ -37,28 +37,28 @@ async def test_demo_message_with_test_server(
 ):
     """Test the demo socket.io message event."""
     mocked_token_payload = mock_token_payload
+    async for server in socketio_test_server([DemoNamespace("/demo-namespace")]):
 
-    sio = socketio_test_server
+        # The server is available here, for example for room assignments or other setup:
+        # server.register_namespace(AnotherNamespace("/another-namespace"))
 
-    sio.register_namespace(DemoNamespace("/demo-namespace"))
+        async for client in socketio_test_client(["/demo-namespace"]):
+            await client.emit("demo_message", "Something", namespace="/demo-namespace")
 
-    async for client in socketio_test_client(["/demo-namespace"]):
-        await client.emit("demo_message", "Something", namespace="/demo-namespace")
+            response = ""
 
-        response = ""
+            @client.event(namespace="/demo-namespace")
+            async def demo_message(data):
 
-        @client.event(namespace="/demo-namespace")
-        async def demo_message(data):
+                nonlocal response
+                response = data
 
-            nonlocal response
-            response = data
+            # Wait for the response to be set
+            await client.sleep(1)
 
-        # Wait for the response to be set
-        await client.sleep(1)
+            assert response == f"{mocked_token_payload["name"]}: Something"
 
-        assert response == f"{mocked_token_payload["name"]}: Something"
-
-        await client.disconnect()
+            await client.disconnect()
 
 
 @pytest.mark.anyio

@@ -11,14 +11,9 @@ import uvicorn
 async def mock_token_payload(request):
     """Returns a mocked token payload."""
 
-    # print("=== mock_token_payload ===")
-    # print(request.param)
-
     with patch("core.security.decode_token") as mock:
         mock.return_value = request.param
-        # yield mock
         yield request.param
-    # return request.param
 
 
 @pytest.fixture(scope="function")
@@ -49,18 +44,29 @@ async def socketio_test_server(
     mock_get_user_account_from_session_cache,
 ):
     """Provide a socket.io server."""
-    mock_token_payload
 
-    sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
-    app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
+    async def _socketio_test_server(namespaces: List[socketio.AsyncNamespace] = None):
+        """Creates a socket.io test server with the given namespaces."""
+        mock_token_payload
 
-    config = uvicorn.Config(app, host="127.0.0.1", port=8669, log_level="info")
-    server = uvicorn.Server(config)
+        sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
+        for namespace in namespaces or []:
+            sio.register_namespace(namespace)
 
-    asyncio.create_task(server.serve())
-    await asyncio.sleep(1)
-    yield sio
-    await server.shutdown()
+        app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
+
+        # Serves an independent test server - not FastAPI server!
+        config = uvicorn.Config(app, host="127.0.0.1", port=8669, log_level="info")
+        server = uvicorn.Server(config)
+
+        asyncio.create_task(server.serve())
+        print("=== socketio_test_server - server started ===", flush=True)
+
+        await asyncio.sleep(1)
+        yield sio
+        await server.shutdown()
+
+    return _socketio_test_server
 
 
 # This one connects to a socketio server in FastAPI:
