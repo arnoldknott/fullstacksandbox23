@@ -1,8 +1,8 @@
 import pytest
 import socketio
 
-from src.models.demo_resource import DemoResource
-from src.routers.socketio.v1.demo_resource import DemoResourceNamespace
+from models.demo_resource import DemoResource
+from routers.socketio.v1.demo_resource import DemoResourceNamespace
 from tests.utils import (  # , token_user1_read_write_socketio
     token_admin_read_write_socketio,
 )
@@ -40,5 +40,5 @@ async def test_admin_connects_to_demo_resource_namespace_and_gets_all_demoresour
     )
 
     assert len(responses) == 4
-    for response in responses:
-        assert DemoResource(response) in resources
+    for response, resource in zip(responses, resources):
+        assert DemoResource.model_validate(response) == resource

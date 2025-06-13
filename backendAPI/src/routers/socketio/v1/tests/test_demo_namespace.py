@@ -2,7 +2,7 @@ import pytest
 import socketio
 from socketio.exceptions import ConnectionError
 
-from src.routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
+from routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
 from tests.utils import token_admin_read_write_socketio, token_user1_read_write_socketio
 
 
