@@ -17,7 +17,7 @@
 			description:
 				'The demo resources of the backend API service, retrieved through the backend REST API from the postgres database',
 			url: '/socketio'
-		},
+		}
 	];
 </script>
 

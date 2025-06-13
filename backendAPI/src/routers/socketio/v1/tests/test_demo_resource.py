@@ -1,9 +1,11 @@
 import pytest
 import socketio
 
-from src.routers.socketio.v1.demo_resource import DemoResourceNamespace
 from src.models.demo_resource import DemoResource
-from tests.utils import token_admin_read_write_socketio, token_user1_read_write_socketio
+from src.routers.socketio.v1.demo_resource import DemoResourceNamespace
+from tests.utils import (  # , token_user1_read_write_socketio
+    token_admin_read_write_socketio,
+)
 
 
 @pytest.mark.anyio

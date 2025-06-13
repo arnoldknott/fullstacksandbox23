@@ -2,9 +2,10 @@ import logging
 
 from core.types import GuardTypes
 
+from .base import BaseNamespace
+
 # from crud.protected_resource import ProtectedResourceCRUD
 
-from .base import BaseNamespace
 
 logger = logging.getLogger(__name__)
 

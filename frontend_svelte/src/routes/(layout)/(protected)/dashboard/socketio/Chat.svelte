@@ -4,14 +4,18 @@
 	// import { getContext, type Snippet } from 'svelte';
 	import { type Snippet } from 'svelte';
 
-	let { connection, socketioEvent, children }: { connection: SocketioConnection; socketioEvent: string; children: Snippet } = $props();
+	let {
+		connection,
+		socketioEvent,
+		children
+	}: { connection: SocketioConnection; socketioEvent: string; children: Snippet } = $props();
 
 	const socketio = new SocketIO(connection);
 
 	let status = $state(false);
 	$effect(() => {
 		const updateStatus = () => {
-			status = socketio.client.connected
+			status = socketio.client.connected;
 			// console.log(`socketio status: ${status}`);
 		};
 
@@ -56,9 +60,8 @@
 				oninput={(e: Event) => (new_message = (e.target as HTMLInputElement).value)}
 				onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && sendMessage(e)}
 			/>
-			<label
-				class="input-filled-label"
-				for={connection.namespace + socketioEvent + connection.room}>Message</label
+			<label class="input-filled-label" for={connection.namespace + socketioEvent + connection.room}
+				>Message</label
 			>
 		</div>
 		<button

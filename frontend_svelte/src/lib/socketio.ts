@@ -4,10 +4,9 @@ import type { Socket } from 'socket.io-client';
 import { getContext } from 'svelte';
 import type { BackendAPIConfiguration } from '$lib/types.d.ts';
 
-
 export type SocketioConnection = {
 	namespace?: string;
-	room?: string;// might not make sense on client side? Rooms are assigned server side!
+	room?: string; // might not make sense on client side? Rooms are assigned server side!
 	connected?: boolean;
 	cookie_session_id?: string;
 };

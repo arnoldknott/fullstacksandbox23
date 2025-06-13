@@ -100,10 +100,14 @@
 
 <div class="m-5 grid grid-cols-2 gap-8">
 	<div class="grow">
-		<Chat connection={public_message_connection} socketioEvent="public_message"><Heading>Public Message Namespace</Heading></Chat>
+		<Chat connection={public_message_connection} socketioEvent="public_message"
+			><Heading>Public Message Namespace</Heading></Chat
+		>
 	</div>
 	<div>
-		<Chat connection={demo_message_connection} socketioEvent="demo_message"><Heading>Demo Message Namespace</Heading></Chat>
+		<Chat connection={demo_message_connection} socketioEvent="demo_message"
+			><Heading>Demo Message Namespace</Heading></Chat
+		>
 	</div>
 </div>
 
