@@ -196,7 +196,7 @@ async def get_my_access_for_resource(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> AccessPermission:
-    """Returns the access level toa resource for the current user."""
+    """Returns the access level to a resource for the current user."""
     logger.info("GET access level for resource_id")
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
@@ -209,7 +209,7 @@ async def get_my_access_for_resources(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPermission]:
-    """Returns the access level toa resource for the current user."""
+    """Returns the access level to a resource for the current user."""
     logger.info("GET access level for resource_id")
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
