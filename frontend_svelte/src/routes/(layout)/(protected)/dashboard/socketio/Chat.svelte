@@ -11,7 +11,7 @@
 	let status = $state(false);
 	$effect(() => {
 		const updateStatus = () => {
-			status = socketio.client.connected ? true : false;
+			status = socketio.client.connected
 			// console.log(`socketio status: ${status}`);
 		};
 
