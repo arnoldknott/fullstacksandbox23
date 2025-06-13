@@ -44,29 +44,18 @@ async def socketio_test_server(
     mock_get_user_account_from_session_cache,
 ):
     """Provide a socket.io server."""
+    mock_token_payload
 
-    async def _socketio_test_server(namespaces: List[socketio.AsyncNamespace] = None):
-        """Creates a socket.io test server with the given namespaces."""
-        mock_token_payload
+    sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
+    app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
 
-        sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
-        for namespace in namespaces or []:
-            sio.register_namespace(namespace)
+    config = uvicorn.Config(app, host="127.0.0.1", port=8669, log_level="info")
+    server = uvicorn.Server(config)
 
-        app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
-
-        # Serves an independent test server - not FastAPI server!
-        config = uvicorn.Config(app, host="127.0.0.1", port=8669, log_level="info")
-        server = uvicorn.Server(config)
-
-        asyncio.create_task(server.serve())
-        print("=== socketio_test_server - server started ===", flush=True)
-
-        await asyncio.sleep(1)
-        yield sio
-        await server.shutdown()
-
-    return _socketio_test_server
+    asyncio.create_task(server.serve())
+    await asyncio.sleep(1)
+    yield sio
+    await server.shutdown()
 
 
 # This one connects to a socketio server in FastAPI:
@@ -94,3 +83,7 @@ async def socketio_test_client():
         await client.disconnect()
 
     return _socketio_test_client
+
+
+# @pytest.fixture(scope="function")
+# async def provide_demo_namespace_server

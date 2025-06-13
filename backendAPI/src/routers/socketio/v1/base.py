@@ -8,7 +8,7 @@ from core.security import (
     get_azure_token_payload,
     get_token_from_cache,
 )
-from core.types import GuardTypes, CurrentUserData
+from core.types import GuardTypes
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,5 @@
 import pytest
+import socketio
 from socketio.exceptions import ConnectionError
 
 from src.routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
@@ -30,6 +31,44 @@ async def test_on_connect_invalid_token():
     [token_admin_read_write_socketio, token_user1_read_write_socketio],
     indirect=True,
 )
+async def test_connect_with_test_server_demo_namespace(
+    mock_token_payload,
+    socketio_test_server,
+):
+    """Test the demo socket.io message event."""
+    mocked_token_payload = mock_token_payload
+
+    sio = socketio_test_server
+    sio.register_namespace(DemoNamespace("/demo-namespace"))
+
+    client = socketio.AsyncClient(logger=True, engineio_logger=True)
+
+    responses = []
+
+    @client.event(namespace="/demo-namespace")
+    async def demo_message(data):
+        nonlocal responses
+        responses.append(data)
+
+    await client.connect(
+        "http://127.0.0.1:8669",
+        socketio_path="socketio/v1",
+        namespaces=["/demo-namespace"],
+        auth={"session_id": "testsessionid"},
+    )
+    await client.sleep(3)
+
+    assert len(responses) == 2
+    assert responses[0] == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
+    assert "Your session ID is " in responses[1]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    indirect=True,
+)
 async def test_demo_message_with_test_server(
     mock_token_payload,
     socketio_test_server,
@@ -37,28 +76,27 @@ async def test_demo_message_with_test_server(
 ):
     """Test the demo socket.io message event."""
     mocked_token_payload = mock_token_payload
-    async for server in socketio_test_server([DemoNamespace("/demo-namespace")]):
 
-        # The server is available here, for example for room assignments or other setup:
-        # server.register_namespace(AnotherNamespace("/another-namespace"))
+    sio = socketio_test_server
+    sio.register_namespace(DemoNamespace("/demo-namespace"))
 
-        async for client in socketio_test_client(["/demo-namespace"]):
-            await client.emit("demo_message", "Something", namespace="/demo-namespace")
+    async for client in socketio_test_client(["/demo-namespace"]):
+        await client.emit("demo_message", "Something", namespace="/demo-namespace")
 
-            response = ""
+        response = ""
 
-            @client.event(namespace="/demo-namespace")
-            async def demo_message(data):
+        @client.event(namespace="/demo-namespace")
+        async def demo_message(data):
 
-                nonlocal response
-                response = data
+            nonlocal response
+            response = data
 
-            # Wait for the response to be set
-            await client.sleep(1)
+        # Wait for the response to be set
+        await client.sleep(1)
 
-            assert response == f"{mocked_token_payload["name"]}: Something"
+        assert response == f"{mocked_token_payload["name"]}: Something"
 
-            await client.disconnect()
+        await client.disconnect()
 
 
 @pytest.mark.anyio
