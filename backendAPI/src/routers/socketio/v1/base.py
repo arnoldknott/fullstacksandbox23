@@ -172,39 +172,23 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Connect event for socket.io namespaces."""
         logger.info(f"Client connected with session id: {sid}.")
         guards = self.guards
-        # print("=== base - on_connect - self.namespace ===")
-        # print(self.namespace, flush=True)
-        # print("=== base - on_connect - guards ===")
-        # print(guards, flush=True)
-        # print("=== base - on_connect - auth ===")
-        # print(auth, flush=True)
         if guards is not None:
             try:
                 # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
-                # token = await get_token_from_cache(auth["session_id"], ["User.Read"])
                 # catch and handle an expired token gracefully and return something to the client on a different message channel,
                 # so it can initiate the authentication process and come back with a new session id
                 token = await get_token_from_cache(
                     auth["session_id"], [f"api://{config.API_SCOPE}/socketio"]
-                )  # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
+                )
                 token_payload = await get_azure_token_payload(token)
-                # print("=== base - on_connect - token_payload ===")
-                # print(token_payload, flush=True)
-                print("=== base - on_connect - token_payload - name ===")
-                print(token_payload["name"], flush=True)
                 current_user = await check_token_against_guards(token_payload, guards)
                 session_data = {
                     "user_name": token_payload["name"],
                     "current_user": current_user,
                 }
-                print("=== base - on_connect - session_data ===")
-                print(session_data, flush=True)
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
                 )
-                # print("=== base - on_connect - current_user ===")
-                # print(current_user, flush=True)
-                print("=== base - on_connect - session saved ===", flush=True)
                 logger.info(
                     f"Client authenticated to access protected namespace {self.namespace}."
                 )
@@ -220,18 +204,6 @@ class BaseNamespace(socketio.AsyncNamespace):
             # This works:
             # print("=== base - on_connect - callback_on_connect ===")
             await self.callback_on_connect(sid)
-
-        # current_user = await check_token_against_guards(token_payload, self.guards)
-        # print("=== base - on_connect - sid - current_user ===")
-        # print(current_user, flush=True)
-        # await self.server.emit(
-        #     "demo_message",
-        #     f"Started session with id: {sid}",
-        #     namespace=self.namespace,
-        #     callback=self.callback_in_base_namespace,
-        # )
-        # TBD: should not return anything or potentially true?
-        # return "OK from server"
 
     async def on_transfer(self, sid, data):
         """Transfer (write, read and update) event for socket.io namespaces."""
@@ -258,15 +230,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         if self.crud is not None:
             try:
                 session = await self._get_session_data(sid)
-                # print("=== base - on_get_all - session ===")
-                # print(session["current_user"], flush=True)
-                # current_user = CurrentUserData.model_validate(session["current_user"])
-                # print("=== base - on_get_all - current_user ===")
-                # print(current_user, flush=True)
                 async with self.crud() as crud:
                     data = await crud.read(session["current_user"])
-                print("=== base - on_get_all - data ===")
-                print(data, flush=True)
                 for item in data:
                     await self.server.emit(
                         "transfer",

@@ -7,7 +7,7 @@ import type { BackendAPIConfiguration } from '$lib/types.d.ts';
 
 export type SocketioConnection = {
 	namespace?: string;
-	room?: string;
+	room?: string;// might not make sense on client side? Rooms are assigned server side!
 	connected?: boolean;
 	cookie_session_id?: string;
 };
@@ -24,7 +24,7 @@ export class SocketIO {
 		const socketioServerUrl = backendFqdn.startsWith('localhost')
 			? `http://${backendFqdn}`
 			: `https://${backendFqdn}`;
-		// Before sending the session_id, make sure to acquire a token silently to update the cache!
+		// Before sending the session_id, make sure to acquire a token silently on server side to update the cache!
 		this.client = io(socketioServerUrl + connection.namespace, {
 			path: `/socketio/v1`,
 			auth: { session_id: connection.cookie_session_id }

@@ -36,6 +36,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		// 	}
 		// );
 
+		// Fetch access rights of current user for the demo resources
 		const accessRightsResponse = await backendAPI.post(
 			sessionId,
 			'/access/right/resources',
@@ -43,6 +44,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		);
 		const accessRights = await accessRightsResponse.json();
 
+		// Get other users access policies for all demo resources, where user has 'own' rights:
 		const ownedDemoResourceIds = accessRights
 			.filter((right: AccessRight) => right.action === 'own')
 			.map((right: AccessRight) => right.resource_id);
@@ -75,6 +77,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		});
 	}
 
+	// Fetch the Microsoft Teams the user is attached to
 	let microsoftTeams: MicrosoftTeamBasic[] = [];
 	if (locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups) {
 		microsoftTeams = await microsoftGraph.getAttachedTeams(
