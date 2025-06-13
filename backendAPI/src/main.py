@@ -29,6 +29,9 @@ from routers.api.v1.tag import router as tag_router
 # from routers.socketio.v1.base import presentation_interests_router, socketio_server
 from routers.socketio.v1.base import socketio_server
 from routers.socketio.v1.demo_namespace import demo_namespace_router
+from routers.socketio.v1.demo_resource import (
+    demo_resource_router as demo_resource_namespace_router,
+)
 from routers.socketio.v1.interactive_documentation import (
     interactive_documentation_router,
 )
@@ -245,6 +248,7 @@ app.include_router(
 
 socketio_server.register_namespace(public_namespace_router)
 socketio_server.register_namespace(demo_namespace_router)
+socketio_server.register_namespace(demo_resource_namespace_router)
 # socketio_server.register_namespace(presentation_interests_router)
 socketio_server.register_namespace(interactive_documentation_router)
 socketio_app = ASGIApp(socketio_server, socketio_path="socketio/v1")

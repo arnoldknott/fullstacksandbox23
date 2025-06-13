@@ -1,7 +1,8 @@
 import logging
 
 from core.types import GuardTypes
-from crud.protected_resource import ProtectedResourceCRUD
+
+# from crud.protected_resource import ProtectedResourceCRUD
 
 from .base import BaseNamespace
 
@@ -23,7 +24,7 @@ class DemoNamespace(BaseNamespace):
         super().__init__(
             namespace=namespace,
             guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
-            crud=ProtectedResourceCRUD,
+            # crud=ProtectedResourceCRUD,
             callback_on_connect=self.callback_on_connect,
         )
         # self.namespace = namespace
@@ -43,6 +44,12 @@ class DemoNamespace(BaseNamespace):
             "demo_message",
             f"Welcome {user_name} to {self.namespace}.",
             namespace=self.namespace,
+        )
+        await self.server.emit(
+            "demo_message",
+            f"Your session ID is {sid}.",
+            namespace=self.namespace,
+            to=sid,
         )
         # else:
         #     await self.server.emit(

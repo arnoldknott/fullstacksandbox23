@@ -8,7 +8,7 @@ from core.security import (
     get_azure_token_payload,
     get_token_from_cache,
 )
-from core.types import GuardTypes
+from core.types import GuardTypes, CurrentUserData
 
 logger = logging.getLogger(__name__)
 
@@ -159,9 +159,9 @@ class BaseNamespace(socketio.AsyncNamespace):
             )
             logger.error(err)
 
-    async def callback_in_base_namespace(self):
-        print("=== base - callback ===")
-        return "callback"
+    # async def callback_in_base_namespace(self):
+    #     print("=== base - callback ===")
+    #     return "callback"
 
     async def on_connect(
         self,
@@ -232,6 +232,53 @@ class BaseNamespace(socketio.AsyncNamespace):
         # )
         # TBD: should not return anything or potentially true?
         # return "OK from server"
+
+    async def on_transfer(self, sid, data):
+        """Transfer (write, read and update) event for socket.io namespaces."""
+        logger.info(f"Exchanged data with client {sid}")
+        if self.crud is not None:
+            try:
+                # handle incoming data and put back on this event handler
+                print("=== base - on_transfer - sid ===")
+                print(sid, flush=True)
+            except Exception as err:
+                logger.error(f"Failed to exchange data with client {sid}.")
+                print(err)
+        else:
+            # Distributes incoming data to all clients in the namespace
+            self.server.emit(
+                "transfer",
+                data,
+                namespace=self.namespace,
+            )
+
+    async def on_get_all(self, sid):
+        """Get all event for socket.io namespaces."""
+        logger.info(f"Get all data request from client {sid}.")
+        if self.crud is not None:
+            try:
+                session = await self._get_session_data(sid)
+                # print("=== base - on_get_all - session ===")
+                # print(session["current_user"], flush=True)
+                # current_user = CurrentUserData.model_validate(session["current_user"])
+                # print("=== base - on_get_all - current_user ===")
+                # print(current_user, flush=True)
+                async with self.crud() as crud:
+                    data = await crud.read(session["current_user"])
+                print("=== base - on_get_all - data ===")
+                print(data, flush=True)
+                for item in data:
+                    await self.server.emit(
+                        "transfer",
+                        item.model_dump(mode="json"),
+                        namespace=self.namespace,
+                        to=sid,
+                    )
+            except Exception as error:
+                logger.error(f"Failed to get all data for client {sid}.")
+                print(error)
+        else:
+            logger.warning("No CRUD operations defined for this namespace.")
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""
