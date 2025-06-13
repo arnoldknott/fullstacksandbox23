@@ -36,7 +36,7 @@ async def test_connect_with_test_server_demo_namespace(
     # socketio_test_server,
     provide_namespace_server,
 ):
-    """Test the demo socket.io message event."""
+    """Test the demo socket.io connect event."""
     mocked_token_payload = mock_token_payload
 
     # sio = socketio_test_server
@@ -58,7 +58,6 @@ async def test_connect_with_test_server_demo_namespace(
         namespaces=["/demo-namespace"],
         auth={"session_id": "testsessionid"},
     )
-    await client.sleep(3)
 
     assert len(responses) == 2
     assert responses[0] == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
