@@ -1,4 +1,5 @@
 import logging
+from pprint import pprint
 from urllib.parse import parse_qs
 
 import socketio
@@ -103,14 +104,23 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Connect event for socket.io namespaces."""
         logger.info(f"Client connected with session id: {sid}.")
         # Parse 'extended' from query string using urllib.parse.parse_qs
+        print("=== base - on_connect - environ ===")
+        pprint(environ)
         query_string = environ.get("QUERY_STRING", "")
         query_params = parse_qs(query_string)
+        # print("=== base - on_connect - query_params ===")
+        # print(query_params, flush=True)
         print("=== base - on_connect - query_params ===")
-        print(query_params, flush=True)
+        print(query_string, flush=True)
         extended = query_params.get("extended")
-        print("=== base - on_connect - extended ===")
-        print(extended, flush=True)
-        extended = True if (extended[0] == "true" or extended[0] == "True") else False
+        # print("=== base - on_connect - extended ===")
+        # print(extended, flush=True)
+        if extended:
+            extended = (
+                True if (extended[0] == "true" or extended[0] == "True") else False
+            )
+        else:
+            extended = False
         # is_extended = extended == "true"
         print(f"=== base - on_connect - sid: {sid} - extended: {extended} ===")
         print(extended, flush=True)

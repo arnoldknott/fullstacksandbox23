@@ -14,7 +14,7 @@ async def test_on_connect_invalid_token():
     try:
         await demo_namespace_router.on_connect(
             sid="123",
-            environ="fake_environ",
+            environ={},
             auth={"session_id": "fake_session_id"},
         )
         raise Exception("This should have failed due to invalid token.")
