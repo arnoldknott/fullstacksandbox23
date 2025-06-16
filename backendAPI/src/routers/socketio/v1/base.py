@@ -1,6 +1,7 @@
 import logging
 
 import socketio
+from sqlmodel import SQLModel
 
 from core.config import config
 from core.security import (
@@ -137,12 +138,18 @@ class BaseNamespace(socketio.AsyncNamespace):
         room: str = None,
         guards: GuardTypes = None,
         crud=None,
+        create_model: SQLModel = None,
+        read_model: SQLModel = None,
+        update_model: SQLModel = None,
         callback_on_connect=None,
         callback_on_disconnect=None,
     ):
         super().__init__(namespace=namespace)
         self.guards = guards
         self.crud = crud
+        self.create_model = create_model
+        self.read_model = read_model
+        self.update_model = update_model
         self.server = socketio_server
         self.namespace = namespace
         self.room = room
@@ -227,23 +234,24 @@ class BaseNamespace(socketio.AsyncNamespace):
     async def on_get_all(self, sid):
         """Get all event for socket.io namespaces."""
         logger.info(f"Get all data request from client {sid}.")
-        if self.crud is not None:
-            try:
-                session = await self._get_session_data(sid)
-                async with self.crud() as crud:
-                    data = await crud.read(session["current_user"])
-                for item in data:
-                    await self.server.emit(
-                        "transfer",
-                        item.model_dump(mode="json"),
-                        namespace=self.namespace,
-                        to=sid,
-                    )
-            except Exception as error:
-                logger.error(f"Failed to get all data for client {sid}.")
-                print(error)
-        else:
-            logger.warning("No CRUD operations defined for this namespace.")
+        try:
+            session = await self._get_session_data(sid)
+            async with self.crud() as crud:
+                data = await crud.read(session["current_user"])
+            if self.read_model is not None:
+                for idx, item in enumerate(data):
+                    data[idx] = self.read_model.model_validate(item)
+            for item in data:
+                await self.server.emit(
+                    "transfer",
+                    item.model_dump(mode="json"),
+                    namespace=self.namespace,
+                    to=sid,
+                )
+        except Exception as error:
+            logger.error(f"Failed to get all data for client {sid}.")
+            print(error)
+            # TBD: return an error message to the client - either on "transfer" or a dedicated "error" event
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""

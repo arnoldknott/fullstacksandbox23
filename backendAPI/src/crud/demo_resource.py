@@ -59,6 +59,7 @@ class DemoResourceCRUD(
         await session.refresh(demo_resource)
         return demo_resource
 
+    # TBD: should the return type be a DemoResourceRead?
     async def read_by_category_id(
         self, current_user: CurrentUserData, category_id: UUID
     ) -> List[DemoResource]:

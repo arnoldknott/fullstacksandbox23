@@ -1,6 +1,11 @@
 import logging
 
 from core.types import GuardTypes
+from models.demo_resource import (
+    DemoResourceCreate,
+    DemoResourceRead,
+    DemoResourceUpdate,
+)
 from crud.demo_resource import DemoResourceCRUD
 
 from .base import BaseNamespace
@@ -16,6 +21,9 @@ class DemoResourceNamespace(BaseNamespace):
             namespace=namespace,
             guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
             crud=DemoResourceCRUD,
+            create_model=DemoResourceCreate,
+            read_model=DemoResourceRead,
+            update_model=DemoResourceUpdate,
             callback_on_connect=self.callback_on_connect,
         )
         # self.namespace = namespace
