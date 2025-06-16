@@ -54,15 +54,13 @@
 				type="input"
 				placeholder="Type your message here"
 				class="input input-lg w-full grow"
-				id={connection.namespace + socketioEvent + connection.room}
+				id={connection.namespace + socketioEvent}
 				name="message"
 				value={new_message}
 				oninput={(e: Event) => (new_message = (e.target as HTMLInputElement).value)}
 				onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && sendMessage(e)}
 			/>
-			<label class="input-filled-label" for={connection.namespace + socketioEvent + connection.room}
-				>Message</label
-			>
+			<label class="input-filled-label" for={connection.namespace + socketioEvent}>Message</label>
 		</div>
 		<button
 			class="btn-secondary-container btn btn-circle btn-gradient"

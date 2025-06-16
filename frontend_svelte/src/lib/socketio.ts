@@ -6,9 +6,8 @@ import type { BackendAPIConfiguration } from '$lib/types.d.ts';
 
 export type SocketioConnection = {
 	namespace?: string;
-	room?: string; // might not make sense on client side? Rooms are assigned server side!
-	connected?: boolean;
 	cookie_session_id?: string;
+	extended?: boolean; // Asks the server to return extended from the initial dataset, i.e. access_policies, created and updated information.
 };
 
 export class SocketIO {
@@ -26,7 +25,8 @@ export class SocketIO {
 		// Before sending the session_id, make sure to acquire a token silently on server side to update the cache!
 		this.client = io(socketioServerUrl + connection.namespace, {
 			path: `/socketio/v1`,
-			auth: { session_id: connection.cookie_session_id }
+			auth: { session_id: connection.cookie_session_id },
+			query: { extended: connection.extended || false }
 		});
 		this.client.connect();
 	}

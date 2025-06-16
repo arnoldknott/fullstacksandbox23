@@ -12,12 +12,10 @@
 
 	const public_message_connection: SocketioConnection = {
 		namespace: '/public-namespace',
-		room: '',
 		cookie_session_id: page.data.session.sessionId
 	};
 	const demo_message_connection: SocketioConnection = {
 		namespace: '/demo-namespace',
-		room: '',
 		cookie_session_id: page.data.session.sessionId
 	};
 

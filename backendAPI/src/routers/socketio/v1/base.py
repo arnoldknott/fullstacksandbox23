@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import parse_qs
 
 import socketio
 from sqlmodel import SQLModel
@@ -79,7 +80,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         self.update_model = update_model
         self.server = socketio_server
         self.namespace = namespace
-        self.room = room
+        self.room = room  # use in hierarchical resource system for parent resource id and/or identity (group) id? Can be assigned after authentication by using enter_room()
         self.callback_on_connect = callback_on_connect
         self.callback_on_disconnect = callback_on_disconnect
 
@@ -101,6 +102,18 @@ class BaseNamespace(socketio.AsyncNamespace):
     ):
         """Connect event for socket.io namespaces."""
         logger.info(f"Client connected with session id: {sid}.")
+        # Parse 'extended' from query string using urllib.parse.parse_qs
+        query_string = environ.get("QUERY_STRING", "")
+        query_params = parse_qs(query_string)
+        print("=== base - on_connect - query_params ===")
+        print(query_params, flush=True)
+        extended = query_params.get("extended")
+        print("=== base - on_connect - extended ===")
+        print(extended, flush=True)
+        extended = True if (extended[0] == "true" or extended[0] == "True") else False
+        # is_extended = extended == "true"
+        print(f"=== base - on_connect - sid: {sid} - extended: {extended} ===")
+        print(extended, flush=True)
         guards = self.guards
         if guards is not None:
             try:
@@ -150,7 +163,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 namespace=self.namespace,
             )
 
-    async def on_get_all(self, sid):
+    async def get_all(self, sid):
         """Get all event for socket.io namespaces."""
         logger.info(f"Get all data request from client {sid}.")
         try:

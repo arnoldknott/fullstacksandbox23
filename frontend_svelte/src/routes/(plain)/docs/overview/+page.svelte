@@ -9,8 +9,7 @@
 
 	const connection: SocketioConnection = {
 		// namespace: '/presentation_interests',
-		namespace: '/interactive-documentation',
-		room: 'does_not_matter_here_either'
+		namespace: '/interactive-documentation'
 	};
 
 	const socketio = new SocketIO(connection);
