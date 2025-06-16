@@ -50,14 +50,14 @@
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	{#each demoResources as demoResource (demoResource.id)}
 		<div>
-			<div class="flex flex-row">
+			<div class="flex flex-col md:flex-row">
 				<div class="grow">
 					<h5 class="title-large">{demoResource.name}</h5>
 					<p>{demoResource.description}</p>
 				</div>
 				<div class="join flex flex-row justify-center items-end pb-2">
 					<button
-						class="btn btn-secondary-container text-secondary-container-content join-item grow"
+						class="btn btn-secondary-container text-secondary-container-content btn-sm join-item grow"
 						aria-label="Edit Button"
 					>
 						<!-- onclick={() => (edit ? (edit = false) : (edit = true))} -->
@@ -67,7 +67,7 @@
 						<!-- bind:this={actionButtonShareMenuElement} -->
 						<button
 							id="action-share"
-							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content w-full rounded-none"
+							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content btn-sm w-full rounded-none"
 							aria-haspopup="menu"
 							aria-expanded="false"
 							aria-label="Share with"
@@ -77,7 +77,7 @@
 						</button>
 					</div>
 					<button
-						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item grow border-0"
+						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
 						aria-label="Delete Button"
 						name="id"
 						formaction="?/delete"
