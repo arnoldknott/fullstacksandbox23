@@ -8,7 +8,7 @@
 
 <div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
 	{#if data.session?.userProfile}
-		<IdentityAccordion title="My user Profile in this app" id={data.session.userProfile.id}>
+		<IdentityAccordion title="My user Profile in this app" id={data.session.userProfile.id} open={false}>
 			<JsonData data={data.session?.userProfile} />
 		</IdentityAccordion>
 	{/if}

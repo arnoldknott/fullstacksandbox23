@@ -4,7 +4,13 @@
 	import { page } from '$app/state';
 	import type { DemoResource } from '$lib/types';
 	import { goto } from '$app/navigation';
+    import type { PageData } from './$types';
+    import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
+    let { data }: { data: PageData } = $props();
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
+
+    console.log('=== dashboard - backend-demo-resource - data.microsoftTeams ===');
+    console.log(data.microsoftTeams);
 
 	$effect(() => {
 		if (debug) {
@@ -26,10 +32,10 @@
 	$effect(() => {
 		socketio.client.on('transfer', (data: DemoResource) => {
 			// if (debug) {
-			console.log(
-				'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-			);
-			console.log(data);
+			// console.log(
+			// 	'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+			// );
+			// console.log(data);
 			// }
 			demoResources.push(data);
 		});
@@ -47,9 +53,10 @@
 	</button>
 </div>
 
+
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
-	{#each demoResources as demoResource (demoResource.id)}
-		<div>
+    <div>
+	    {#each demoResources as demoResource (demoResource.id)}
 			<div class="flex flex-col md:flex-row">
 				<div class="grow">
 					<h5 class="title-large">{demoResource.name}</h5>
@@ -86,12 +93,37 @@
 					</button>
 				</div>
 			</div>
-			<div class="divider-outline-variant divider"></div>
-		</div>
-		<div class={debug ? 'block' : 'hidden'}>
-			<JsonData data={demoResource} />
-		</div>
+            <div class={debug ? 'block' : 'hidden'}>
+                <p class="title">🚧 Debug Information 🚧</p>
+                <JsonData data={demoResource} />
+            </div>
+            <div class="divider-outline-variant divider"></div>
+	    {/each}
+    </div>
+    <div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="true">
+	{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
+        <div>
+            <IdentityAccordion title={microsoftTeam.displayName} id={microsoftTeam.id}>
+                <div class="bg-success-container rounded-xl p-2 mb-2">
+                    <p class="title-small text-success-container-content p-2"><span class="icon-[tabler--key-filled] bg-success-container-content size-4"></span> Owner access</p>
+                    <div class="bg-success text-success-content rounded">Elements here</div>
+                </div>
+                <div class="bg-warning-container rounded-xl p-2 mb-2">
+                    <p class="title-small text-warning-container-content p-2"><span class="icon-[tabler--key-filled] bg-warning-container-content size-4"></span> Write access</p>
+                    <div class="bg-warning text-warning-content rounded">Elements here</div>
+                </div>
+                <div class="bg-neutral-container rounded-xl p-2 mb-2">
+                    <p class="title-small text-neutral-container-content p-2"><span class="icon-[tabler--eye] bg-neutral-container-content size-4"></span> Write access</p>
+                    <div class="bg-neutral text-neutral-content rounded">Elements here</div>
+                </div>
+                <div class={debug ? 'block' : 'hidden'}>
+                    <p class="title">🚧 Debug Information 🚧</p>
+                    <JsonData data={microsoftTeam} />
+                </div>
+            </IdentityAccordion>
+        </div>
 	{/each}
+</div>
 </div>
 
 <!-- <ul
