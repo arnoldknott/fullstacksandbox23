@@ -55,7 +55,7 @@
 					<h5 class="title-large">{demoResource.name}</h5>
 					<p>{demoResource.description}</p>
 				</div>
-				<div class="join flex flex-row items-center justify-center">
+				<div class="join flex flex-row justify-center items-end pb-2">
 					<button
 						class="btn btn-secondary-container text-secondary-container-content join-item grow"
 						aria-label="Edit Button"
