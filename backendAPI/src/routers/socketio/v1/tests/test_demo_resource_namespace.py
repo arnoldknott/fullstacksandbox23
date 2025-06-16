@@ -45,6 +45,8 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
 
     assert len(responses) == 4
     for response, resource in zip(responses, resources):
+        assert "category" in response
+        assert "tags" in response
         assert DemoResource.model_validate(response) == resource
 
 
@@ -107,4 +109,6 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_all_demoresourc
 
     assert len(responses) == 2
     for response, resource in zip(responses, resources_with_user_acccess):
+        assert "category" in response
+        assert "tags" in response
         assert DemoResource.model_validate(response) == resource
