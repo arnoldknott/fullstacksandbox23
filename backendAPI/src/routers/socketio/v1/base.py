@@ -1,6 +1,6 @@
 import logging
-from pprint import pprint
 from urllib.parse import parse_qs
+from uuid import UUID
 
 import socketio
 from sqlmodel import SQLModel
@@ -11,7 +11,8 @@ from core.security import (
     get_azure_token_payload,
     get_token_from_cache,
 )
-from core.types import GuardTypes
+from core.types import Action, GuardTypes
+from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         crud=None,
         create_model: SQLModel = None,
         read_model: SQLModel = None,
+        read_extended_model: SQLModel = None,
         update_model: SQLModel = None,
         callback_on_connect=None,
         callback_on_disconnect=None,
@@ -78,6 +80,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         self.crud = crud
         self.create_model = create_model
         self.read_model = read_model
+        self.read_extended_model = read_extended_model
         self.update_model = update_model
         self.server = socketio_server
         self.namespace = namespace
@@ -95,6 +98,52 @@ class BaseNamespace(socketio.AsyncNamespace):
             )
             logger.error(err)
 
+    async def _get_access_data(self, sid, resource_id=UUID):
+        """Get access data from the socketio session."""
+        session = await self._get_session_data(sid)
+        # Consider splitting the accesss policy and access log CRUDs into separate methods
+        async with AccessPolicyCRUD() as policy_crud:
+            access_permission = await policy_crud.check_access(
+                session["current_user"], resource_id
+            )
+            # TBD: write a test, that checks if only access policies are returned,
+            # where user has owner access
+            try:
+                access_policies = await policy_crud.read_access_policies_by_resource_id(
+                    session["current_user"], resource_id
+                )
+            except Exception:
+                access_policies = []
+        async with AccessLoggingCRUD() as logging_crud:
+            try:
+                creation_data = await logging_crud.read_resource_created_at(
+                    session["current_user"], resource_id
+                )
+                # TBD: check if this is a last accessed or a last modified date:
+                # read_resource_last_accessed_at() takes Action as parameter to distinguish
+                # between own, write and read access
+                last_modified_data = await logging_crud.read_resource_last_accessed_at(
+                    session["current_user"], resource_id, Action.write
+                )
+            except Exception:
+                creation_data = None
+                last_modified_data = None
+        # response = {}
+        # response["user_right"] = access_permission.action
+        # if access_policies:
+        #     response["access_policies"] = access_policies
+        # if creation_data:
+        #     response["creation_date"] = creation_data
+        # if last_access_data:
+        #     response["last_access_date"] = last_access_data.time
+        # return response
+        return {
+            "user_right": access_permission.action,
+            "access_policies": access_policies,
+            "creation_date": creation_data,
+            "last_modified_date": last_modified_data.time,
+        }
+
     async def on_connect(
         self,
         sid,
@@ -103,18 +152,22 @@ class BaseNamespace(socketio.AsyncNamespace):
     ):
         """Connect event for socket.io namespaces."""
         logger.info(f"Client connected with session id: {sid}.")
-        # Parse 'extended' from query string using urllib.parse.parse_qs
+        # Parse 'request_access_data' from query string using urllib.parse.parse_qs
         query_string = environ.get("QUERY_STRING", "")
-        extended = parse_qs(query_string).get("extended")
-        if extended:
-            extended = (
-                True if (extended[0] == "true" or extended[0] == "True") else False
+        request_access_data = parse_qs(query_string).get("request_access_data")
+        if request_access_data:
+            request_access_data = (
+                True
+                if (
+                    request_access_data[0] == "true" or request_access_data[0] == "True"
+                )
+                else False
             )
         else:
-            extended = False
-        # is_extended = extended == "true"
-        # print(f"=== base - on_connect - sid: {sid} - extended: {extended} ===")
-        # print(extended, flush=True)
+            request_access_data = False
+        # is_request_access_data = request_access_data == "true"
+        # print(f"=== base - on_connect - sid: {sid} - request_access_data: {request_access_data} ===")
+        # print(request_access_data, flush=True)
         guards = self.guards
         if guards is not None:
             try:
@@ -143,7 +196,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             current_user = None
             logger.info(f"Client authenticated to public namespace {self.namespace}.")
         if self.callback_on_connect is not None:
-            await self.callback_on_connect(sid, extended=extended)
+            await self.callback_on_connect(sid, request_access_data=request_access_data)
 
     async def on_transfer(self, sid, data):
         """Transfer (write, read and update) event for socket.io namespaces."""
@@ -164,10 +217,13 @@ class BaseNamespace(socketio.AsyncNamespace):
                 namespace=self.namespace,
             )
 
-    async def get_all(self, sid, extended=False):
+    async def get_all(self, sid, request_access_data=False):
         """Get all event for socket.io namespaces."""
         logger.info(f"Get all data request from client {sid}.")
-        print(f"=== base - get_all - sid: {sid} - extended: {extended} ===", flush=True)
+        # print(
+        #     f"=== base - get_all - sid: {sid} - request_access_data: {request_access_data} ===",
+        #     flush=True,
+        # )
         try:
             session = await self._get_session_data(sid)
             async with self.crud() as crud:
@@ -176,6 +232,28 @@ class BaseNamespace(socketio.AsyncNamespace):
                 for idx, item in enumerate(data):
                     data[idx] = self.read_model.model_validate(item)
             for item in data:
+                if request_access_data:
+                    access_data = await self._get_access_data(sid, item.id)
+                    item = self.read_extended_model.model_validate(item)
+                    # print("=== base - get_all - access_data ===")
+                    # pprint(access_data)
+                    item.user_right = access_data["user_right"]
+                    if access_data["access_policies"]:
+                        item.access_policies = access_data["access_policies"]
+                    if access_data["creation_date"]:
+                        item.creation_date = access_data["creation_date"]
+                    if access_data["last_modified_date"]:
+                        item.last_modified_date = access_data["last_modified_date"]
+                    # DemoResourceExtended(
+                    #     item.model_dump(),
+                    #     access_policies=access_data["access_policies"],
+                    #     user_right=access_data["user_right"],
+                    # )
+                    # new_item = {
+                    #     # ...item,
+                    #     "access_policies": access_data["access_policies"],
+                    #     "user_right": access_data["user_right"]
+                    # }
                 await self.server.emit(
                     "transfer",
                     item.model_dump(mode="json"),

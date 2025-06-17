@@ -5,6 +5,12 @@ from sqlmodel import Field, Relationship, SQLModel
 
 # from .demo_resource_tag_link import DemoResourceTagLink
 from .access import ResourceHierarchy
+from .base import (
+    AccessPolicyMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    UserRightsMixin,
+)
 from .category import Category, CategoryRead
 from .tag import Tag, TagRead
 
@@ -56,6 +62,12 @@ class DemoResourceRead(DemoResourceCreate):
     id: uuid.UUID
     category: Optional["CategoryRead"] = None
     tags: Optional[List["TagRead"]] = None
+
+
+class DemoResourceExtended(
+    DemoResourceRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+):
+    pass
 
 
 class DemoResourceUpdate(DemoResourceCreate):

@@ -4,6 +4,7 @@ from core.types import GuardTypes
 from crud.demo_resource import DemoResourceCRUD
 from models.demo_resource import (
     DemoResourceCreate,
+    DemoResourceExtended,
     DemoResourceRead,
     DemoResourceUpdate,
 )
@@ -23,6 +24,7 @@ class DemoResourceNamespace(BaseNamespace):
             crud=DemoResourceCRUD,
             create_model=DemoResourceCreate,
             read_model=DemoResourceRead,
+            read_extended_model=DemoResourceExtended,
             update_model=DemoResourceUpdate,
             callback_on_connect=self.callback_on_connect,
         )

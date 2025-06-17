@@ -20,7 +20,7 @@
 	const connection: SocketioConnection = {
 		namespace: '/demo-resource',
 		cookie_session_id: page.data.session.sessionId,
-		extended: true
+		requestAccessData: true
 	};
 
 	const socketio = new SocketIO(connection);

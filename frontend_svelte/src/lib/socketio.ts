@@ -7,7 +7,7 @@ import type { BackendAPIConfiguration } from '$lib/types.d.ts';
 export type SocketioConnection = {
 	namespace?: string;
 	cookie_session_id?: string;
-	extended?: boolean; // Asks the server to return extended from the initial dataset, i.e. access_policies, created and updated information.
+	requestAccessData?: boolean; // Asks the server to return extended from the initial dataset, i.e. access_policies, created and updated information.
 };
 
 export class SocketIO {
@@ -26,7 +26,7 @@ export class SocketIO {
 		this.client = io(socketioServerUrl + connection.namespace, {
 			path: `/socketio/v1`,
 			auth: { session_id: connection.cookie_session_id },
-			query: { extended: connection.extended || false }
+			query: { request_access_data: connection.requestAccessData || false }
 		});
 		this.client.connect();
 	}

@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
 
@@ -1219,7 +1220,7 @@ class AccessLoggingCRUD:
         self,
         current_user: CurrentUserData,
         resource_id: UUID,
-    ):
+    ) -> datetime:
         """Reads the first access log with action "Own" for a resource id - corresponds to create."""
         try:
             first_owner_entry = await self.read(

@@ -30,7 +30,7 @@ class DemoNamespace(BaseNamespace):
         )
         # self.namespace = namespace
 
-    async def callback_on_connect(self, sid):
+    async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
         # print("=== demo_namespace - callback_on_connect - sid ===")
         # print(sid)
