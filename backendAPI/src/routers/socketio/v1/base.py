@@ -104,17 +104,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Connect event for socket.io namespaces."""
         logger.info(f"Client connected with session id: {sid}.")
         # Parse 'extended' from query string using urllib.parse.parse_qs
-        print("=== base - on_connect - environ ===")
-        pprint(environ)
         query_string = environ.get("QUERY_STRING", "")
-        query_params = parse_qs(query_string)
-        # print("=== base - on_connect - query_params ===")
-        # print(query_params, flush=True)
-        print("=== base - on_connect - query_params ===")
-        print(query_string, flush=True)
-        extended = query_params.get("extended")
-        # print("=== base - on_connect - extended ===")
-        # print(extended, flush=True)
+        extended = parse_qs(query_string).get("extended")
         if extended:
             extended = (
                 True if (extended[0] == "true" or extended[0] == "True") else False
@@ -122,8 +113,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         else:
             extended = False
         # is_extended = extended == "true"
-        print(f"=== base - on_connect - sid: {sid} - extended: {extended} ===")
-        print(extended, flush=True)
+        # print(f"=== base - on_connect - sid: {sid} - extended: {extended} ===")
+        # print(extended, flush=True)
         guards = self.guards
         if guards is not None:
             try:
@@ -152,7 +143,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             current_user = None
             logger.info(f"Client authenticated to public namespace {self.namespace}.")
         if self.callback_on_connect is not None:
-            await self.callback_on_connect(sid)
+            await self.callback_on_connect(sid, extended=extended)
 
     async def on_transfer(self, sid, data):
         """Transfer (write, read and update) event for socket.io namespaces."""
@@ -173,9 +164,10 @@ class BaseNamespace(socketio.AsyncNamespace):
                 namespace=self.namespace,
             )
 
-    async def get_all(self, sid):
+    async def get_all(self, sid, extended=False):
         """Get all event for socket.io namespaces."""
         logger.info(f"Get all data request from client {sid}.")
+        print(f"=== base - get_all - sid: {sid} - extended: {extended} ===", flush=True)
         try:
             session = await self._get_session_data(sid)
             async with self.crud() as crud:
