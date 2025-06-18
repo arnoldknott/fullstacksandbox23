@@ -43,7 +43,7 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
         "http://127.0.0.1:8669",
         socketio_path="socketio/v1",
         namespaces=["/demo-resource"],
-        auth={"session_id": "testsessionid"},
+        auth={"session-id": "testsessionid"},
     )
 
     assert len(responses) == 4
@@ -100,7 +100,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         "http://127.0.0.1:8669",
         socketio_path="socketio/v1",
         namespaces=["/demo-resource"],
-        auth={"session_id": "testsessionid"},
+        auth={"session-id": "testsessionid"},
     )
 
     resources_with_user_acccess = [
@@ -165,10 +165,10 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         responses.append(data)
 
     await client.connect(
-        "http://127.0.0.1:8669?request_access_data=true",
+        "http://127.0.0.1:8669?request-access-data=true",
         socketio_path="socketio/v1",
         namespaces=["/demo-resource"],
-        auth={"session_id": "testsessionid"},
+        auth={"session-id": "testsessionid"},
     )
 
     resources_with_user_acccess = [

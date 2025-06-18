@@ -152,9 +152,9 @@ class BaseNamespace(socketio.AsyncNamespace):
     ):
         """Connect event for socket.io namespaces."""
         logger.info(f"Client connected with session id: {sid}.")
-        # Parse 'request_access_data' from query string using urllib.parse.parse_qs
+        # Parse 'request-access-data' from query string using urllib.parse.parse_qs
         query_string = environ.get("QUERY_STRING", "")
-        request_access_data = parse_qs(query_string).get("request_access_data")
+        request_access_data = parse_qs(query_string).get("request-access-data")
         if request_access_data:
             request_access_data = (
                 True
@@ -165,9 +165,9 @@ class BaseNamespace(socketio.AsyncNamespace):
             )
         else:
             request_access_data = False
-        # is_request_access_data = request_access_data == "true"
-        # print(f"=== base - on_connect - sid: {sid} - request_access_data: {request_access_data} ===")
-        # print(request_access_data, flush=True)
+        # is_request-access-data = request-access-data == "true"
+        # print(f"=== base - on_connect - sid: {sid} - request-access-data: {request-access-data} ===")
+        # print(request-access-data, flush=True)
         guards = self.guards
         if guards is not None:
             try:
@@ -175,7 +175,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 # catch and handle an expired token gracefully and return something to the client on a different message channel,
                 # so it can initiate the authentication process and come back with a new session id
                 token = await get_token_from_cache(
-                    auth["session_id"], [f"api://{config.API_SCOPE}/socketio"]
+                    auth["session-id"], [f"api://{config.API_SCOPE}/socketio"]
                 )
                 token_payload = await get_azure_token_payload(token)
                 current_user = await check_token_against_guards(token_payload, guards)
@@ -221,7 +221,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Get all event for socket.io namespaces."""
         logger.info(f"Get all data request from client {sid}.")
         # print(
-        #     f"=== base - get_all - sid: {sid} - request_access_data: {request_access_data} ===",
+        #     f"=== base - get_all - sid: {sid} - request-access-data: {request-access-data} ===",
         #     flush=True,
         # )
         try:

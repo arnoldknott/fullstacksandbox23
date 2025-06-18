@@ -15,7 +15,7 @@ async def test_on_connect_invalid_token():
         await demo_namespace_router.on_connect(
             sid="123",
             environ={},
-            auth={"session_id": "fake_session_id"},
+            auth={"session-id": "fake-session-id"},
         )
         raise Exception("This should have failed due to invalid token.")
     except ConnectionRefusedError as err:
@@ -56,7 +56,7 @@ async def test_connect_with_test_server_demo_namespace(
         "http://127.0.0.1:8669",
         socketio_path="socketio/v1",
         namespaces=["/demo-namespace"],
-        auth={"session_id": "testsessionid"},
+        auth={"session-id": "testsessionid"},
     )
 
     assert len(responses) == 2

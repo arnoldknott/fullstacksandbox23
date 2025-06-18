@@ -85,7 +85,7 @@ async def socketio_test_client():
             # url
             socketio_path="socketio/v1",
             namespaces=namespaces,
-            auth={"session_id": "testsessionid"},
+            auth={"session-id": "testsessionid"},
         )
         yield client
         await client.disconnect()
