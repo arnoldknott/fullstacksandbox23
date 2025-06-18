@@ -223,27 +223,17 @@ class BaseNamespace(socketio.AsyncNamespace):
     async def get_all(self, sid, request_access_data=False):
         """Get all event for socket.io namespaces."""
         logger.info(f"Get all data request from client {sid}.")
-        # print(
-        #     f"=== base - get_all - sid: {sid} - request-access-data: {request-access-data} ===",
-        #     flush=True,
-        # )
         try:
             session = await self._get_session_data(sid)
             async with self.crud() as crud:
                 data = await crud.read(session["current_user"])
-                print("=== base - get_all - data ===")
-                pprint(data)
             if self.read_model is not None:
                 for idx, item in enumerate(data):
                     data[idx] = self.read_model.model_validate(item)
             for item in data:
                 if request_access_data:
                     access_data = await self._get_access_data(sid, item.id)
-                    print("=== base - get_all - access_data ===")
-                    pprint(access_data)
                     item = self.read_extended_model.model_validate(item)
-                    # print("=== base - get_all - access_data ===")
-                    # pprint(access_data)
                     item.user_right = access_data["user_right"]
                     if access_data["access_policies"]:
                         item.access_policies = access_data["access_policies"]
@@ -251,16 +241,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                         item.creation_date = access_data["creation_date"]
                     if access_data["last_modified_date"]:
                         item.last_modified_date = access_data["last_modified_date"]
-                    # DemoResourceExtended(
-                    #     item.model_dump(),
-                    #     access_policies=access_data["access_policies"],
-                    #     user_right=access_data["user_right"],
-                    # )
-                    # new_item = {
-                    #     # ...item,
-                    #     "access_policies": access_data["access_policies"],
-                    #     "user_right": access_data["user_right"]
-                    # }
                 await self.server.emit(
                     "transfer",
                     item.model_dump(mode="json"),
