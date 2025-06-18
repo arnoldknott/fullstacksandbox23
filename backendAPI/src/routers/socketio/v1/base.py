@@ -4,7 +4,7 @@ from uuid import UUID
 
 import socketio
 from sqlmodel import SQLModel
-
+from pprint import pprint
 from core.config import config
 from core.security import (
     check_token_against_guards,
@@ -125,9 +125,12 @@ class BaseNamespace(socketio.AsyncNamespace):
                 last_modified_data = await logging_crud.read_resource_last_accessed_at(
                     session["current_user"], resource_id, Action.write
                 )
+                last_modified_date = (
+                    last_modified_data.time if last_modified_data else None
+                )
             except Exception:
                 creation_data = None
-                last_modified_data = None
+                last_modified_date = None
         # response = {}
         # response["user_right"] = access_permission.action
         # if access_policies:
@@ -141,7 +144,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             "user_right": access_permission.action,
             "access_policies": access_policies,
             "creation_date": creation_data,
-            "last_modified_date": last_modified_data.time,
+            "last_modified_date": last_modified_date,
         }
 
     async def on_connect(
@@ -228,12 +231,16 @@ class BaseNamespace(socketio.AsyncNamespace):
             session = await self._get_session_data(sid)
             async with self.crud() as crud:
                 data = await crud.read(session["current_user"])
+                print("=== base - get_all - data ===")
+                pprint(data)
             if self.read_model is not None:
                 for idx, item in enumerate(data):
                     data[idx] = self.read_model.model_validate(item)
             for item in data:
                 if request_access_data:
                     access_data = await self._get_access_data(sid, item.id)
+                    print("=== base - get_all - access_data ===")
+                    pprint(access_data)
                     item = self.read_extended_model.model_validate(item)
                     # print("=== base - get_all - access_data ===")
                     # pprint(access_data)

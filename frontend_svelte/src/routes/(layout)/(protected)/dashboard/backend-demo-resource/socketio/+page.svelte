@@ -2,10 +2,11 @@
 	import JsonData from '$components/JsonData.svelte';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio';
 	import { page } from '$app/state';
-	import type { DemoResource } from '$lib/types';
+	import type { DemoResource, DemoResourceExtended } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
+	import { Action } from '$lib/accessHandler';
 	let { data }: { data: PageData } = $props();
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
@@ -25,9 +26,9 @@
 
 	const socketio = new SocketIO(connection);
 
-	let demoResources: DemoResource[] = $state([]);
+	let demoResources: DemoResourceExtended[] = $state([]);
 	$effect(() => {
-		socketio.client.on('transfer', (data: DemoResource) => {
+		socketio.client.on('transfer', (data: DemoResourceExtended ) => {
 			// if (debug) {
 			// console.log(
 			// 	'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
@@ -37,6 +38,28 @@
 			demoResources.push(data);
 		});
 	});
+
+    let ownedDemoResources: DemoResourceExtended[] = $derived(
+        demoResources.filter((demoResource) => {
+            if ( demoResource.user_right === Action.Own) {
+                return demoResource;
+            }
+        })
+    );
+    let writeDemoResources: DemoResourceExtended[] = $derived(
+        demoResources.filter((demoResource) => {
+            if ( demoResource.user_right === Action.Write) {
+                return demoResource;
+            }
+        })
+    );
+    let readDemoResources: DemoResourceExtended[] = $derived(
+        demoResources.filter((demoResource) => {
+            if ( demoResource.user_right === Action.Read) {
+                return demoResource;
+            }
+        })
+    );
 </script>
 
 <div class="mb-2 flex items-center gap-1">
