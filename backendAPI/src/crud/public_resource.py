@@ -78,7 +78,8 @@ class PublicResourceCRUD:
         response = await session.exec(select(PublicResource))
         if response is None:
             # TBD: add access logging here!
-            raise HTTPException(status_code=404, detail="No objects found")
+            # raise HTTPException(status_code=404, detail="No objects found")
+            return []
         # TBD: add access logging here!
         return response.all()
 

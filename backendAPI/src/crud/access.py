@@ -807,20 +807,24 @@ class AccessPolicyCRUD:
             else:
                 # print("=== access check not skipped ===")
                 # if not self.__always_allow(policy, current_user):
-                try:
-                    await self.read(
-                        current_user=current_user,
-                        resource_id=policy.resource_id,
-                        action=own,
-                        # public=policy.public,  # This does not make sense - the policy does not need to be public if set to true!
-                    )
-                    # print("=== AccessPolicyCRUD.create - response ===")
-                    # print(response)
-                except Exception as e:
-                    logger.error(f"Error in reading policy: {e}")
+                # try:
+                repsonse = await self.read(
+                    current_user=current_user,
+                    resource_id=policy.resource_id,
+                    action=own,
+                    # public=policy.public,  # This does not make sense - the policy does not need to be public if set to true!
+                )
+                if not repsonse:
                     raise HTTPException(
                         status_code=404, detail="Access policy not found."
                     )
+                    # print("=== AccessPolicyCRUD.create - response ===")
+                    # print(response)
+                # except Exception as e:
+                #     logger.error(f"Error in reading policy: {e}")
+                #     raise HTTPException(
+                #         status_code=404, detail="Access policy not found."
+                #     )
 
             # if not response:
             #     raise HTTPException(
@@ -924,7 +928,8 @@ class AccessPolicyCRUD:
             # print(results)
 
             if not results:
-                raise HTTPException(status_code=404, detail="Access policy not found.")
+                # raise HTTPException(status_code=404, detail="Access policy not found.")
+                return []
 
             return results
         except Exception as e:
@@ -1190,7 +1195,8 @@ class AccessLoggingCRUD:
             # pprint(results)
 
             if not results:
-                raise HTTPException(status_code=404, detail="Access logs not found.")
+                # raise HTTPException(status_code=404, detail="Access logs not found.")
+                return []
 
             return results
         except Exception as e:
@@ -1478,7 +1484,8 @@ class BaseHierarchyCRUD(
             # pprint(results)
 
             if not results:
-                raise HTTPException(status_code=404, detail="No children found.")
+                # raise HTTPException(status_code=404, detail="No children found.")
+                return []
 
             return results
         except Exception as err:

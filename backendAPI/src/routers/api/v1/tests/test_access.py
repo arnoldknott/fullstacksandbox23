@@ -895,9 +895,9 @@ async def test_user_get_access_policies_for_resource_without_being_owner(
     )
     payload = response.json()
 
-    assert response.status_code == 404
+    assert response.status_code == 200
 
-    assert payload == {"detail": "Access policies not found."}
+    assert payload == []
 
 
 @pytest.mark.anyio
@@ -1147,9 +1147,9 @@ async def test_user_get_access_policies_for_resource_type_with_write_rights_only
     )
     payload = response.json()
 
-    assert response.status_code == 404
+    assert response.status_code == 200
 
-    assert payload == {"detail": "Access policies not found."}
+    assert payload == []
 
 
 @pytest.mark.anyio
@@ -1256,9 +1256,9 @@ async def test_user_get_access_policies_for_resource_type_with_read_rights_only(
     )
     payload = response.json()
 
-    assert response.status_code == 404
+    assert response.status_code == 200
 
-    assert payload == {"detail": "Access policies not found."}
+    assert payload == []
 
 
 @pytest.mark.anyio
@@ -1664,9 +1664,9 @@ async def test_user_get_access_policies_for_another_users_identity_without_owner
     )
     payload = response.json()
 
-    assert response.status_code == 404
+    assert response.status_code == 200
 
-    assert payload == {"detail": "Access policies not found."}
+    assert payload == []
 
 
 @pytest.mark.anyio
@@ -1889,9 +1889,9 @@ async def test_user_get_access_policies_for_identity_type_missing_owner_rights(
     response = await async_client.get("/api/v1/access/policy/identity/type/AzureGroup")
     payload = response.json()
 
-    assert response.status_code == 404
+    assert response.status_code == 200
 
-    assert payload == {"detail": "Access policies not found."}
+    assert payload == []
 
 
 @pytest.mark.anyio
@@ -2726,7 +2726,7 @@ async def test_admin_gets_created_access_all_logs(
     [token_admin_read],
     indirect=True,
 )
-async def test_admin_gets_access_all_logs_with_non_existing_status_code(
+async def test_admin_gets_access_all_logs_with_non_existing_status_code_in_database(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
 ):
@@ -2739,9 +2739,9 @@ async def test_admin_gets_access_all_logs_with_non_existing_status_code(
     response = await async_client.get("/api/v1/access/logs?status_code=200")
     payload = response.json()
 
-    assert response.status_code == 404
+    assert response.status_code == 200
 
-    assert payload == {"detail": "Access logs not found."}
+    assert payload == []
 
 
 @pytest.mark.anyio
@@ -2925,8 +2925,8 @@ async def test_get_logs_for_resource_without_permissions_from_policies(
     response = await async_client.get(f"/api/v1/access/log/{resource_id2}")
     payload = response.json()
 
-    assert response.status_code == 404
-    assert payload == {"detail": "Access logs not found."}
+    assert response.status_code == 200
+    assert payload == []
 
 
 @pytest.mark.anyio
@@ -2963,8 +2963,8 @@ async def test_get_logs_for_resource_with_write_permission_only(
     response = await async_client.get(f"/api/v1/access/log/{resource_id2}")
     payload = response.json()
 
-    assert response.status_code == 404
-    assert payload == {"detail": "Access logs not found."}
+    assert response.status_code == 200
+    assert payload == []
 
 
 @pytest.mark.anyio
@@ -3001,8 +3001,8 @@ async def test_get_logs_for_resource_with_read_permission_only(
     response = await async_client.get(f"/api/v1/access/log/{resource_id2}")
     payload = response.json()
 
-    assert response.status_code == 404
-    assert payload == {"detail": "Access logs not found."}
+    assert response.status_code == 200
+    assert payload == []
 
 
 @pytest.mark.anyio

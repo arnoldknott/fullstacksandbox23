@@ -104,7 +104,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         try:
             filters = [User.azure_user_id == azure_user_id]
             user = await self.read(current_user, filters=filters)
-            return user[0]
+            # raise HTTPException(status_code=404, detail="User not found")
+            return user[0]  # if len(user) > 0 else []
         except Exception as err:
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
@@ -294,14 +295,16 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             #     "===  user crud - create_azure_user_and_groups_if_not_exist - current_user_data ==="
             # )
             # print(current_user_data)
-            try:
-                async with self.hierarchy_CRUD as hierarchy_CRUD:
-                    await hierarchy_CRUD.read(
-                        parent_id=azure_group_id,
-                        child_id=current_user_data.user_id,
-                        current_user=current_user_data,
-                    )
-            except Exception as err:
+            # try:
+            user_group_link = []
+            async with self.hierarchy_CRUD as hierarchy_CRUD:
+                user_group_link = await hierarchy_CRUD.read(
+                    parent_id=azure_group_id,
+                    child_id=current_user_data.user_id,
+                    current_user=current_user_data,
+                )
+            # except Exception as err:
+            if not user_group_link:
                 async with self.policy_CRUD as policy_CRUD:
                     access_policy = AccessPolicyCreate(
                         resource_id=azure_group_id,
@@ -316,9 +319,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     current_user=current_user_data,
                     inherit=True,
                 )
-                logger.info(
-                    f"USERCrud failed with {err}, so user got linked to group in database."
-                )
+                logger.info("User got linked to group in database.")
 
         # print(
         #     "=== user crud - create_azure_user_and_groups_if_not_exist - current_user ==="

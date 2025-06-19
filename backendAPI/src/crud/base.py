@@ -591,9 +591,10 @@ class BaseCRUD(
 
             if not results:
                 logger.info(f"No objects found for {self.model.__name__}")
-                raise HTTPException(
-                    status_code=404, detail=f"{self.model.__name__} not found."
-                )
+                # raise HTTPException(
+                #     status_code=404, detail=f"{self.model.__name__} not found."
+                # )
+                return []
 
             for result in results:
                 # TBD: add logging to accessed children!
@@ -654,6 +655,10 @@ class BaseCRUD(
             current_user=current_user,
             filters=[self.model.id == id],
         )
+        if not object:
+            raise HTTPException(
+                status_code=404, detail=f"{self.model.__name__} not found."
+            )
         return object[0]
 
     async def read_file_by_id(
