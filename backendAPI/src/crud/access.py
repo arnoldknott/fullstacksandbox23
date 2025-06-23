@@ -925,7 +925,7 @@ class AccessPolicyCRUD:
             results = response.all()
 
             # print("=== AccessPolicyCRUD.read - results ===")
-            # print(results)
+            # print(results, flush=True)
 
             if not results:
                 # raise HTTPException(status_code=404, detail="Access policy not found.")
