@@ -1274,7 +1274,6 @@ class AccessLoggingCRUD:
             logging.error(err)
             raise HTTPException(status_code=404, detail="Access logs not found.")
 
-    # TBD: implement tests for this method!
     async def read_resource_last_modified_at(
         self,
         current_user: CurrentUserData,
@@ -1291,8 +1290,9 @@ class AccessLoggingCRUD:
                 limit=1,
                 required_action=Action.read,
             )
-            last_write_date = last_write_log[0].time
-            if not last_write_date:
+            if last_write_log:
+                last_write_date = last_write_log[0].time
+            else:
                 last_write_date = await self.read_resource_created_at(
                     current_user, resource_id
                 )

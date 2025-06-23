@@ -320,6 +320,42 @@ async def get_creation_date_for_resources(
     return creation_dates
 
 
+@router.get("/log/{resource_id}/last-modified", status_code=200)
+async def get_last_modified_for_resource(
+    resource_id: UUID,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> datetime:
+    """Returns the log for the latest modification of a resource."""
+    logger.info("GET access log information for resource")
+    current_user = await check_token_against_guards(token_payload, guards)
+    async with access_log_view.crud() as crud:
+        return await crud.read_resource_last_modified_at(
+            current_user,
+            resource_id=resource_id,
+        )
+
+
+@router.post("/log/last-modified", status_code=200)
+async def get_last_modified_for_resources(
+    resource_ids: list[UUID],
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[datetime]:
+    """Returns latest modification time for resources."""
+    logger.info("GET access log information for resource")
+    current_user = await check_token_against_guards(token_payload, guards)
+    async with access_log_view.crud() as crud:
+        last_modified_dates = []
+        for resource_id in resource_ids:
+            last_modified = await crud.read_resource_last_modified_at(
+                current_user,
+                resource_id=resource_id,
+            )
+            last_modified_dates.append(last_modified)
+    return last_modified_dates
+
+
 @router.get("/log/{resource_id}/last-accessed", status_code=200)
 async def get_last_accessed_for_resource(
     resource_id: UUID,

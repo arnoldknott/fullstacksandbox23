@@ -2839,7 +2839,7 @@ async def test_get_logs_for_resource(
     payload = response.json()
 
     assert response.status_code == 200
-    assert len(payload) == 5
+    assert len(payload) == 6
 
     expected_logs = [
         database_logs[1],
@@ -2847,6 +2847,7 @@ async def test_get_logs_for_resource(
         database_logs[6],
         database_logs[7],
         database_logs[10],
+        database_logs[13],
     ]
 
     for returned, expected in zip(payload, expected_logs):
@@ -2886,11 +2887,12 @@ async def test_get_logs_for_resource_and_identity(
     payload = response.json()
 
     assert response.status_code == 200
-    assert len(payload) == 2
+    assert len(payload) == 3
 
     expected_logs = [
         database_logs[1],
         database_logs[10],
+        database_logs[13],
     ]
 
     for returned, expected in zip(payload, expected_logs):
@@ -3027,7 +3029,7 @@ async def test_admin_get_logs_for_identity(
     payload = response.json()
 
     assert response.status_code == 200
-    assert len(payload) == 6
+    assert len(payload) == 8
 
     expected_logs = [
         database_logs[3],
@@ -3036,6 +3038,8 @@ async def test_admin_get_logs_for_identity(
         database_logs[6],
         database_logs[7],
         database_logs[11],
+        database_logs[14],
+        database_logs[15],
     ]
 
     for returned, expected in zip(payload, expected_logs):
@@ -3447,21 +3451,9 @@ async def test_get_creation_datetime_for_resources(
     database_logs = add_many_test_access_logs
 
     assert response.status_code == 200
-    assert (
-        (database_logs[0].time - timedelta(seconds=1)).isoformat()
-        < payload[0]
-        < (database_logs[0].time + timedelta(seconds=1)).isoformat()
-    )
-    assert (
-        (database_logs[1].time - timedelta(seconds=1)).isoformat()
-        < payload[1]
-        < (database_logs[1].time + timedelta(seconds=1)).isoformat()
-    )
-    assert (
-        (database_logs[2].time - timedelta(seconds=1)).isoformat()
-        < payload[2]
-        < (database_logs[2].time + timedelta(seconds=1)).isoformat()
-    )
+    assert database_logs[0].time.isoformat() == payload[0]
+    assert database_logs[1].time.isoformat() == payload[1]
+    assert database_logs[4].time.isoformat() == payload[2]
 
 
 @pytest.mark.anyio
@@ -3512,21 +3504,9 @@ async def test_get_creation_datetime_for_resources_with_write_permission_on_one_
     database_logs = add_many_test_access_logs
 
     assert response.status_code == 200
-    assert (
-        (database_logs[0].time - timedelta(seconds=1)).isoformat()
-        < payload[0]
-        < (database_logs[0].time + timedelta(seconds=1)).isoformat()
-    )
-    assert (
-        (database_logs[1].time - timedelta(seconds=1)).isoformat()
-        < payload[1]
-        < (database_logs[1].time + timedelta(seconds=1)).isoformat()
-    )
-    assert (
-        (database_logs[2].time - timedelta(seconds=1)).isoformat()
-        < payload[2]
-        < (database_logs[2].time + timedelta(seconds=1)).isoformat()
-    )
+    assert database_logs[0].time.isoformat() == payload[0]
+    assert database_logs[1].time.isoformat() == payload[1]
+    assert database_logs[4].time.isoformat() == payload[2]
 
 
 @pytest.mark.anyio
@@ -3577,21 +3557,9 @@ async def test_get_creation_datetime_for_resources_with_read_permission_on_resou
     database_logs = add_many_test_access_logs
 
     assert response.status_code == 200
-    assert (
-        (database_logs[0].time - timedelta(seconds=1)).isoformat()
-        < payload[0]
-        < (database_logs[0].time + timedelta(seconds=1)).isoformat()
-    )
-    assert (
-        (database_logs[1].time - timedelta(seconds=1)).isoformat()
-        < payload[1]
-        < (database_logs[1].time + timedelta(seconds=1)).isoformat()
-    )
-    assert (
-        (database_logs[2].time - timedelta(seconds=1)).isoformat()
-        < payload[2]
-        < (database_logs[2].time + timedelta(seconds=1)).isoformat()
-    )
+    assert database_logs[0].time.isoformat() == payload[0]
+    assert database_logs[1].time.isoformat() == payload[1]
+    assert database_logs[4].time.isoformat() == payload[2]
 
 
 @pytest.mark.anyio
@@ -3643,6 +3611,386 @@ async def test_get_creation_datetime_for_resources_without_access_on_one_resourc
     [token_admin_read, token_user1_read, token_user2_read],
     indirect=True,
 )
+async def test_get_modification_datetime_for_resource(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policy = {
+        "resource_id": resource_id1,
+        "identity_id": str(current_user.user_id),
+        "action": Action.own,
+    }
+    await add_one_test_access_policy(policy)
+
+    response = await async_client.get(
+        f"/api/v1/access/log/{resource_id1}/last-modified"
+    )
+    payload = response.json()
+
+    database_logs = add_many_test_access_logs
+
+    assert response.status_code == 200
+    assert payload == (database_logs[12].time).isoformat()
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read],
+    indirect=True,
+)
+async def test_get_modification_datetime_is_creation_time_for_never_accessed_resource(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_test_demo_resources,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    demo_resources = await add_test_demo_resources()
+
+    response_modified = await async_client.get(
+        f"/api/v1/access/log/{demo_resources[2].id}/last-modified"
+    )
+    payload_modified = response_modified.json()
+
+    response_created = await async_client.get(
+        f"/api/v1/access/log/{demo_resources[2].id}/created"
+    )
+    payload_created = response_created.json()
+
+    assert response_modified.status_code == 200
+    assert response_created.status_code == 200
+    assert payload_modified == payload_created
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_get_modification_datetime_for_resource_with_only_write_permission(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policy = {
+        "resource_id": resource_id1,
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    add_many_test_access_logs
+
+    response = await async_client.get(
+        f"/api/v1/access/log/{resource_id1}/last-modified"
+    )
+    payload = response.json()
+
+    database_logs = add_many_test_access_logs
+
+    assert response.status_code == 200
+    assert payload == (database_logs[12].time).isoformat()
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_get_modification_datetime_for_resource_with_only_read_permission(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policy = {
+        "resource_id": resource_id1,
+        "identity_id": str(current_user.user_id),
+        "action": Action.read,
+    }
+    await add_one_test_access_policy(policy)
+
+    add_many_test_access_logs
+
+    response = await async_client.get(
+        f"/api/v1/access/log/{resource_id1}/last-modified"
+    )
+    payload = response.json()
+
+    database_logs = add_many_test_access_logs
+
+    assert response.status_code == 200
+    assert payload == (database_logs[12].time).isoformat()
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_get_modification_datetime_for_resource_without_access_fails(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    add_many_test_access_logs
+
+    response = await async_client.get(
+        f"/api/v1/access/log/{resource_id1}/last-modified"
+    )
+    payload = response.json()
+
+    assert response.status_code == 404
+    assert payload == {"detail": "Access logs not found."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read, token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_get_modification_datetime_for_resources(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policies = [
+        {
+            "resource_id": resource_id1,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+        {
+            "resource_id": resource_id2,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+        {
+            "resource_id": resource_id3,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+    ]
+    for policy in policies:
+        await add_one_test_access_policy(policy)
+
+    response = await async_client.post(
+        "/api/v1/access/log/last-modified",
+        json=[resource_id1, resource_id2, resource_id3],
+    )
+    payload = response.json()
+
+    database_logs = add_many_test_access_logs
+
+    assert response.status_code == 200
+    assert database_logs[12].time.isoformat() == payload[0]
+    assert database_logs[13].time.isoformat() == payload[1]
+    assert database_logs[15].time.isoformat() == payload[2]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_get_modification_datetime_for_resources_with_write_permission_on_one_resource_only(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policies = [
+        {
+            "resource_id": resource_id1,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+        {
+            "resource_id": resource_id2,
+            "identity_id": str(current_user.user_id),
+            "action": Action.write,
+        },
+        {
+            "resource_id": resource_id3,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+    ]
+    for policy in policies:
+        await add_one_test_access_policy(policy)
+
+    response = await async_client.post(
+        "/api/v1/access/log/last-modified",
+        json=[resource_id1, resource_id2, resource_id3],
+    )
+    payload = response.json()
+
+    database_logs = add_many_test_access_logs
+
+    assert response.status_code == 200
+    assert database_logs[12].time.isoformat() == payload[0]
+    assert database_logs[13].time.isoformat() == payload[1]
+    assert database_logs[15].time.isoformat() == payload[2]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_get_modification_datetime_for_resources_with_read_permission_on_resources(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policies = [
+        {
+            "resource_id": resource_id1,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+        {
+            "resource_id": resource_id2,
+            "identity_id": str(current_user.user_id),
+            "action": Action.read,
+        },
+        {
+            "resource_id": resource_id3,
+            "identity_id": str(current_user.user_id),
+            "action": Action.read,
+        },
+    ]
+    for policy in policies:
+        await add_one_test_access_policy(policy)
+
+    response = await async_client.post(
+        "/api/v1/access/log/last-modified",
+        json=[resource_id1, resource_id2, resource_id3],
+    )
+    payload = response.json()
+
+    database_logs = add_many_test_access_logs
+
+    assert response.status_code == 200
+    assert database_logs[12].time.isoformat() == payload[0]
+    assert database_logs[13].time.isoformat() == payload[1]
+    assert database_logs[15].time.isoformat() == payload[2]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read, token_user1_read, token_user2_read],
+    indirect=True,
+)
+async def test_get_modification_datetime_for_resources_without_access_on_one_resource_fails(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policies = [
+        {
+            "resource_id": resource_id1,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+        {
+            "resource_id": resource_id2,
+            "identity_id": str(current_user.user_id),
+            "action": Action.own,
+        },
+    ]
+    for policy in policies:
+        await add_one_test_access_policy(policy)
+
+    response = await async_client.post(
+        "/api/v1/access/log/last-modified",
+        json=[resource_id1, resource_id2, resource_id3],
+    )
+    payload = response.json()
+
+    assert response.status_code == 404
+    assert payload == {"detail": "Access logs not found."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read, token_user1_read, token_user2_read],
+    indirect=True,
+)
 async def test_get_last_access_log_for_resource(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
@@ -3674,12 +4022,11 @@ async def test_get_last_access_log_for_resource(
     assert response.status_code == 200
     returned = AccessLogRead(**payload)
     assert int(returned.id)
-    assert returned.resource_id == database_logs[11].resource_id
-    assert returned.identity_id == database_logs[11].identity_id
-    assert returned.action == database_logs[11].action
-    assert returned.status_code == database_logs[11].status_code
-    # TBD: debug time offset
-    assert returned.time == database_logs[11].time
+    assert returned.resource_id == database_logs[15].resource_id
+    assert returned.identity_id == database_logs[15].identity_id
+    assert returned.action == database_logs[15].action
+    assert returned.status_code == database_logs[15].status_code
+    assert returned.time == database_logs[15].time
 
 
 @pytest.mark.anyio
@@ -3832,21 +4179,9 @@ async def test_get_last_access_datetime_for_resources(
     database_logs = add_many_test_access_logs
 
     assert response.status_code == 200
-    assert (
-        (database_logs[0].time - timedelta(seconds=1)).isoformat()
-        < payload[0]
-        < (database_logs[9].time + timedelta(seconds=1)).isoformat()
-    )
-    assert (
-        (database_logs[1].time - timedelta(seconds=1)).isoformat()
-        < payload[1]
-        < (database_logs[10].time + timedelta(seconds=1)).isoformat()
-    )
-    assert (
-        (database_logs[2].time - timedelta(seconds=1)).isoformat()
-        < payload[2]
-        < (database_logs[11].time + timedelta(seconds=1)).isoformat()
-    )
+    assert database_logs[12].time.isoformat() == payload[0]
+    assert database_logs[13].time.isoformat() == payload[1]
+    assert database_logs[15].time.isoformat() == payload[2]
 
 
 @pytest.mark.anyio
@@ -3898,21 +4233,9 @@ async def test_get_last_access_datetime_for_resources_with_read_and_write_access
     database_logs = add_many_test_access_logs
 
     assert response.status_code == 200
-    assert (
-        (database_logs[0].time - timedelta(seconds=1)).isoformat()
-        < payload[0]
-        < (database_logs[9].time + timedelta(seconds=1)).isoformat()
-    )
-    assert (
-        (database_logs[1].time - timedelta(seconds=1)).isoformat()
-        < payload[1]
-        < (database_logs[10].time + timedelta(seconds=1)).isoformat()
-    )
-    assert (
-        (database_logs[2].time - timedelta(seconds=1)).isoformat()
-        < payload[2]
-        < (database_logs[11].time + timedelta(seconds=1)).isoformat()
-    )
+    assert database_logs[12].time.isoformat() == payload[0]
+    assert database_logs[13].time.isoformat() == payload[1]
+    assert database_logs[15].time.isoformat() == payload[2]
 
 
 @pytest.mark.anyio
@@ -3971,7 +4294,7 @@ async def test_get_access_count_for_resource(
     payload = response.json()
 
     assert response.status_code == 200
-    assert int(payload) == 5
+    assert int(payload) == 6
 
 
 @pytest.mark.anyio

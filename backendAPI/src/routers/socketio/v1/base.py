@@ -10,7 +10,7 @@ from core.security import (
     get_azure_token_payload,
     get_token_from_cache,
 )
-from core.types import Action, GuardTypes
+from core.types import GuardTypes
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 
 logger = logging.getLogger(__name__)
@@ -105,8 +105,6 @@ class BaseNamespace(socketio.AsyncNamespace):
             access_permission = await policy_crud.check_access(
                 session["current_user"], resource_id
             )
-            # TBD: write a test, that checks if only access policies are returned,
-            # where user has owner access
             try:
                 access_policies = await policy_crud.read_access_policies_by_resource_id(
                     session["current_user"], resource_id
@@ -115,48 +113,19 @@ class BaseNamespace(socketio.AsyncNamespace):
                 access_policies = []
         async with AccessLoggingCRUD() as logging_crud:
             try:
-                creation_data = await logging_crud.read_resource_created_at(
+                creation_date = await logging_crud.read_resource_created_at(
                     session["current_user"], resource_id=resource_id
                 )
-                if access_permission.action == Action.read:
-                    print("=== base - _get_access_data - creation_data ===")
-                    print(creation_data, flush=True)
-                # TBD: check if this is a last accessed or a last modified date:
-                # read_resource_last_accessed_at() takes Action as parameter to distinguish
-                # between own, write and read access
-                last_modified_data = await logging_crud.read_resource_last_accessed_at(
-                    session["current_user"], resource_id, Action.read
-                )
-                last_modified_date = (
-                    last_modified_data.time if last_modified_data else None
+                last_modified_date = await logging_crud.read_resource_last_modified_at(
+                    session["current_user"], resource_id
                 )
             except Exception:
-                creation_data = None
+                creation_date = None
                 last_modified_date = None
-        # response = {}
-        # response["user_right"] = access_permission.action
-        # if access_policies:
-        #     response["access_policies"] = access_policies
-        # if creation_data:
-        #     response["creation_date"] = creation_data
-        # if last_access_data:
-        #     response["last_access_date"] = last_access_data.time
-        # return response
-        # print("=== base - _get_access_data - access_permission ===")
-        # print(access_permission, flush=True)
-        if access_permission.action == Action.read:
-            print("=== base - _get_access_data - access_permission ===")
-            print(access_permission, flush=True)
-            print("=== base - _get_access_data - access_policies ===")
-            print(access_policies, flush=True)
-            print("=== base - _get_access_data - creation_date ===")
-            print(creation_data, flush=True)
-            print("=== base - _get_access_data - last_modified_date ===")
-            print(last_modified_date, flush=True)
         return {
             "user_right": access_permission.action,
             "access_policies": access_policies,
-            "creation_date": creation_data,
+            "creation_date": creation_date,
             "last_modified_date": last_modified_date,
         }
 

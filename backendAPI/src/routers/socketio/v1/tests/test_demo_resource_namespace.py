@@ -183,6 +183,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         assert "tags" in response
         assert modelled_response.creation_date >= time_before_creation
         assert modelled_response.creation_date <= time_after_creation
+        # TBD: add check for last modified date
         assert DemoResource.model_validate(response) == resource
 
     assert responses[0]["user_right"] == "own"

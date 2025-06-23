@@ -698,6 +698,30 @@ many_test_access_logs = [
         "action": "read",
         "status_code": 200,
     },
+    {
+        "identity_id": identity_id_user2,
+        "resource_id": resource_id1,
+        "action": "write",
+        "status_code": 200,
+    },
+    {
+        "identity_id": identity_id_user1,
+        "resource_id": resource_id2,
+        "action": "write",
+        "status_code": 200,
+    },
+    {
+        "identity_id": identity_id_user3,
+        "resource_id": resource_id3,
+        "action": "read",
+        "status_code": 200,
+    },
+    {
+        "identity_id": identity_id_user3,
+        "resource_id": resource_id3,
+        "action": "write",
+        "status_code": 200,
+    },
 ]
 
 one_test_demo_resource = {
