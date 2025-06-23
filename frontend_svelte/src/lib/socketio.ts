@@ -25,8 +25,8 @@ export class SocketIO {
 		// Before sending the session_id, make sure to acquire a token silently on server side to update the cache!
 		this.client = io(socketioServerUrl + connection.namespace, {
 			path: `/socketio/v1`,
-			auth: { "session-id": connection.cookie_session_id },
-			query: { "request-access-data": connection.requestAccessData || false }
+			auth: { 'session-id': connection.cookie_session_id },
+			query: { 'request-access-data': connection.requestAccessData || false }
 		});
 		this.client.connect();
 	}
