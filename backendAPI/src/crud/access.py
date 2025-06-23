@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
 
+from pprint import pprint
 from fastapi import HTTPException
 from sqlalchemy.orm import aliased
 
@@ -925,7 +926,8 @@ class AccessPolicyCRUD:
             results = response.all()
 
             # print("=== AccessPolicyCRUD.read - results ===")
-            # print(results, flush=True)
+            # # print(results, flush=True)
+            # pprint(results)
 
             if not results:
                 # raise HTTPException(status_code=404, detail="Access policy not found.")
@@ -1228,6 +1230,10 @@ class AccessLoggingCRUD:
         resource_id: UUID,
     ) -> datetime:
         """Reads the first access log with action "Own" for a resource id - corresponds to create."""
+        # print("=== AccessLoggingCRUD.read_resource_created_at - current_user ===")
+        # print(current_user, flush=True)
+        # print("=== AccessLoggingCRUD.read_resource_created_at - resource_id ===")
+        # print(resource_id, flush=True)
         try:
             first_owner_entry = await self.read(
                 current_user,
@@ -1238,6 +1244,10 @@ class AccessLoggingCRUD:
                 limit=1,
                 required_action=Action.read,
             )
+            # print(
+            #     "=== AccessLoggingCRUD.read_resource_created_at - first_owner_entry ==="
+            # )
+            # print(first_owner_entry, flush=True)
             return first_owner_entry[0].time
         except Exception as err:
             logging.error(err)
@@ -1264,6 +1274,33 @@ class AccessLoggingCRUD:
             logging.error(err)
             raise HTTPException(status_code=404, detail="Access logs not found.")
 
+    # TBD: implement tests for this method!
+    async def read_resource_last_modified_at(
+        self,
+        current_user: CurrentUserData,
+        resource_id: UUID,
+    ) -> datetime:
+        """Reads the last modification (or creation) date for a resource id."""
+        try:
+            last_write_log = await self.read(
+                current_user,
+                resource_id,
+                status_code=200,
+                action=Action.write,
+                descending_order_by=AccessLog.time,
+                limit=1,
+                required_action=Action.read,
+            )
+            last_write_date = last_write_log[0].time
+            if not last_write_date:
+                last_write_date = await self.read_resource_created_at(
+                    current_user, resource_id
+                )
+            return last_write_date
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="Access logs not found.")
+
     async def read_resource_access_count(
         self,
         current_user: CurrentUserData,
@@ -1274,6 +1311,11 @@ class AccessLoggingCRUD:
             access_count = await self.read(
                 current_user, resource_id, required_action=Action.read, status_code=None
             )
+            if len(access_count) == 0:
+                print(
+                    "=== AccessLoggingCRUD.read_resource_access_count - no access logs found ==="
+                )
+                raise HTTPException(status_code=404, detail="Access logs not found.")
             return len(access_count)
         except Exception as err:
             logging.error(err)

@@ -117,13 +117,16 @@ class BaseNamespace(socketio.AsyncNamespace):
         async with AccessLoggingCRUD() as logging_crud:
             try:
                 creation_data = await logging_crud.read_resource_created_at(
-                    session["current_user"], resource_id
+                    session["current_user"], resource_id=resource_id
                 )
+                if access_permission.action == Action.read:
+                    print("=== base - _get_access_data - creation_data ===")
+                    print(creation_data, flush=True)
                 # TBD: check if this is a last accessed or a last modified date:
                 # read_resource_last_accessed_at() takes Action as parameter to distinguish
                 # between own, write and read access
                 last_modified_data = await logging_crud.read_resource_last_accessed_at(
-                    session["current_user"], resource_id, Action.write
+                    session["current_user"], resource_id, Action.read
                 )
                 last_modified_date = (
                     last_modified_data.time if last_modified_data else None
@@ -140,6 +143,17 @@ class BaseNamespace(socketio.AsyncNamespace):
         # if last_access_data:
         #     response["last_access_date"] = last_access_data.time
         # return response
+        # print("=== base - _get_access_data - access_permission ===")
+        # print(access_permission, flush=True)
+        if access_permission.action == Action.read:
+            print("=== base - _get_access_data - access_permission ===")
+            print(access_permission, flush=True)
+            print("=== base - _get_access_data - access_policies ===")
+            print(access_policies, flush=True)
+            print("=== base - _get_access_data - creation_date ===")
+            print(creation_data, flush=True)
+            print("=== base - _get_access_data - last_modified_date ===")
+            print(last_modified_date, flush=True)
         return {
             "user_right": access_permission.action,
             "access_policies": access_policies,

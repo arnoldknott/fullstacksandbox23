@@ -2681,8 +2681,8 @@ async def test_user_get_access_permission_for_resources(
 # ✔︎ Users read resources latest access log (last_accessed) with write permission from access policies only fails - full access log - needs owner
 # ✔︎ Users read resources latest access log (last_accessed) with read permission from access policies only fails - full access log - needs owner
 # ✔︎ Admin / Users read multiple resources latest access log (last_accessed)
-# ✔︎ Users read multiple resources latest access log (last_accessed) - with write permissions only fails - date-only, so everyone is allowed
-# ✔︎ Users read multiple resources latest access log (last_accessed) - with read permissions only fails - date-only, so everyone is allowed
+# ✔︎ Users read multiple resources latest access log (last_accessed) - with write permissions only - date-only, so everyone is allowed
+# ✔︎ Users read multiple resources latest access log (last_accessed) - with read permissions only - date-only, so everyone is allowed
 # ✔︎ Users read multiple resources latest access log (last_accessed) - without permissions fails
 # ✔︎ Admin / User read access count - use func.count/len
 
@@ -3972,6 +3972,34 @@ async def test_get_access_count_for_resource(
 
     assert response.status_code == 200
     assert int(payload) == 5
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [
+        token_user1_read_write,
+        token_user1_read,
+        token_user2_read_write,
+        token_user2_read,
+    ],
+    indirect=True,
+)
+async def test_get_access_count_for_resource_without_access_fails(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+):
+    """Tests GET access logs."""
+    app_override_provide_http_token_payload
+
+    add_many_test_access_logs
+
+    response = await async_client.get(f"/api/v1/access/log/{resource_id2}/count")
+    payload = response.json()
+
+    assert response.status_code == 404
+    assert payload == {"detail": "Access logs not found."}
 
 
 # endregion: ## GET tests
