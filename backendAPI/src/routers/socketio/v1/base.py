@@ -4,7 +4,6 @@ from uuid import UUID
 
 import socketio
 from sqlmodel import SQLModel
-from pprint import pprint
 from core.config import config
 from core.security import (
     check_token_against_guards,
