@@ -30,22 +30,22 @@
 	$effect(() => {
 		socketio.client.on('transfer', (data: DemoResourceExtended) => {
 			if (debug) {
-			console.log(
-				'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-			);
-			console.log(data);
+				console.log(
+					'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+				);
+				console.log(data);
 			}
 			demoResources.push(data);
 		});
-        socketio.client.on('remove', (resource_id: string) => {
-            if (debug) {
-            console.log(
-                '=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-            );
-            console.log(resource_id);
-            }
-            demoResources = demoResources.filter((res) => res.id !== resource_id);
-        });
+		socketio.client.on('remove', (resource_id: string) => {
+			if (debug) {
+				console.log(
+					'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+				);
+				console.log(resource_id);
+			}
+			demoResources = demoResources.filter((res) => res.id !== resource_id);
+		});
 	});
 
 	let ownedDemoResources: DemoResourceExtended[] = $derived(
@@ -89,44 +89,43 @@
 			<div class="grow">
 				<p>{demoResource.description}</p>
 			</div>
-            {#if demoResource.user_right === Action.Write || demoResource.user_right === Action.Own}
-                <div class="join flex flex-row items-end justify-center">
-                    <button
-                        class="btn btn-secondary-container text-secondary-container-content btn-sm join-item grow"
-                        aria-label="Edit Button"
-                    >
-                        <!-- onclick={() => (edit ? (edit = false) : (edit = true))} -->
-                        <span class="icon-[material-symbols--edit-outline-rounded]"></span>
-                    </button>
-                    {#if demoResource.user_right === Action.Own}
-                        <div class="dropdown join-item relative inline-flex grow [--placement:top]">
-                            <!-- bind:this={actionButtonShareMenuElement} -->
-                            <button
-                                id="action-share"
-                                class="dropdown-toggle btn btn-secondary-container text-secondary-container-content btn-sm w-full rounded-none"
-                                aria-haspopup="menu"
-                                aria-expanded="false"
-                                aria-label="Share with"
-                            >
-                                <span class="icon-[tabler--share-2]"></span>
-                                <span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
-                            </button>
-                        </div>
-                        <button
-                            class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
-                            aria-label="Delete Button"
-                            name="id"
-                            onclick={() => { 
-                                socketio.client.emit('delete', demoResource.id) 
-                                // demoResources = demoResources.filter((res) => res.id !== demoResource.id);
-                                } 
-                            }
-                        >
-                            <span class="icon-[tabler--trash]"></span>
-                        </button>
-                    {/if}
-                </div>
-            {/if}
+			{#if demoResource.user_right === Action.Write || demoResource.user_right === Action.Own}
+				<div class="join flex flex-row items-end justify-center">
+					<button
+						class="btn btn-secondary-container text-secondary-container-content btn-sm join-item grow"
+						aria-label="Edit Button"
+					>
+						<!-- onclick={() => (edit ? (edit = false) : (edit = true))} -->
+						<span class="icon-[material-symbols--edit-outline-rounded]"></span>
+					</button>
+					{#if demoResource.user_right === Action.Own}
+						<div class="dropdown join-item relative inline-flex grow [--placement:top]">
+							<!-- bind:this={actionButtonShareMenuElement} -->
+							<button
+								id="action-share"
+								class="dropdown-toggle btn btn-secondary-container text-secondary-container-content btn-sm w-full rounded-none"
+								aria-haspopup="menu"
+								aria-expanded="false"
+								aria-label="Share with"
+							>
+								<span class="icon-[tabler--share-2]"></span>
+								<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
+							</button>
+						</div>
+						<button
+							class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
+							aria-label="Delete Button"
+							name="id"
+							onclick={() => {
+								socketio.client.emit('delete', demoResource.id);
+								// demoResources = demoResources.filter((res) => res.id !== demoResource.id);
+							}}
+						>
+							<span class="icon-[tabler--trash]"></span>
+						</button>
+					{/if}
+				</div>
+			{/if}
 		</div>
 	</div>
 	<div class={debug ? 'block' : 'hidden'}>
