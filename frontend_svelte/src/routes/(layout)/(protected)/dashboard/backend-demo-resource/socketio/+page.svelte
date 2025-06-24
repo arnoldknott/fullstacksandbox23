@@ -80,38 +80,40 @@
 			<div class="grow">
 				<p>{demoResource.description}</p>
 			</div>
-			<div class="join flex flex-row items-end justify-center">
-				<button
-					class="btn btn-secondary-container text-secondary-container-content btn-sm join-item grow"
-					aria-label="Edit Button"
-				>
-					<!-- onclick={() => (edit ? (edit = false) : (edit = true))} -->
-					<span class="icon-[material-symbols--edit-outline-rounded]"></span>
-				</button>
-				{#if demoResource.user_right === Action.Own}
-					<div class="dropdown join-item relative inline-flex grow [--placement:top]">
-						<!-- bind:this={actionButtonShareMenuElement} -->
-						<button
-							id="action-share"
-							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content btn-sm w-full rounded-none"
-							aria-haspopup="menu"
-							aria-expanded="false"
-							aria-label="Share with"
-						>
-							<span class="icon-[tabler--share-2]"></span>
-							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
-						</button>
-					</div>
-				{/if}
-				<button
-					class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
-					aria-label="Delete Button"
-					name="id"
-					formaction="?/delete"
-				>
-					<span class="icon-[tabler--trash]"></span>
-				</button>
-			</div>
+            {#if demoResource.user_right === Action.Write || demoResource.user_right === Action.Own}
+                <div class="join flex flex-row items-end justify-center">
+                    <button
+                        class="btn btn-secondary-container text-secondary-container-content btn-sm join-item grow"
+                        aria-label="Edit Button"
+                    >
+                        <!-- onclick={() => (edit ? (edit = false) : (edit = true))} -->
+                        <span class="icon-[material-symbols--edit-outline-rounded]"></span>
+                    </button>
+                    {#if demoResource.user_right === Action.Own}
+                        <div class="dropdown join-item relative inline-flex grow [--placement:top]">
+                            <!-- bind:this={actionButtonShareMenuElement} -->
+                            <button
+                                id="action-share"
+                                class="dropdown-toggle btn btn-secondary-container text-secondary-container-content btn-sm w-full rounded-none"
+                                aria-haspopup="menu"
+                                aria-expanded="false"
+                                aria-label="Share with"
+                            >
+                                <span class="icon-[tabler--share-2]"></span>
+                                <span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
+                            </button>
+                        </div>
+                        <button
+                            class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
+                            aria-label="Delete Button"
+                            name="id"
+                            formaction="?/delete"
+                        >
+                            <span class="icon-[tabler--trash]"></span>
+                        </button>
+                    {/if}
+                </div>
+            {/if}
 		</div>
 	</div>
 	<div class={debug ? 'block' : 'hidden'}>
