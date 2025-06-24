@@ -281,3 +281,40 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
 
             await client1.disconnect()
             await client2.disconnect()
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [token_user1_read_write_socketio],
+    indirect=True,
+)
+async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_and_returns_status(
+    mock_token_payload,
+    provide_namespace_server,
+    add_test_demo_resources: list[DemoResource],
+    socketio_test_client,
+):
+    """Test the demo resource delete event."""
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)
+
+    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
+
+    async for client in socketio_test_client(["/demo-resource"]):
+
+        responses = []
+
+        @client.event(namespace="/demo-resource")
+        async def status(data):
+
+            nonlocal responses
+            responses = data
+
+        await client.emit("delete", str(resources[2].id), namespace="/demo-resource")
+
+        # Wait for the response to be set
+        await client.sleep(1)
+
+        assert responses == {"error": "404: DemoResource not deleted."}
+
+        await client.disconnect()
