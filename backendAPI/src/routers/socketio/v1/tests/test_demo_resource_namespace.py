@@ -1,5 +1,6 @@
 from datetime import datetime
 from uuid import UUID
+from socketio.exceptions import ConnectionError
 
 import pytest
 import socketio
@@ -10,7 +11,37 @@ from routers.socketio.v1.demo_resource import DemoResourceNamespace
 from tests.utils import (
     token_admin_read_write_socketio,
     token_user1_read_write_socketio,
+    token_admin_read,
+    token_admin_write,
+    token_user1_read,
+    token_user1_write,
 )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [token_admin_read, token_admin_write, token_user1_read, token_user1_write],
+    # [token_admin_read_write_socketio, token_user1_read_write_socketio],# actually connects to the namespace!
+    indirect=True,
+)
+async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_missing_in_token(
+    provide_namespace_server,
+    mock_token_payload,
+    socketio_test_client,
+):
+    """Test the demo_resource_namespace socket.io connection needs socketio scope in token."""
+
+    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
+    try:
+        async for client in socketio_test_client(["/demo-resource"]):
+            await client.sleep(1)
+            await client.disconnect()
+            raise Exception(
+                "This should have failed due to missing authentication in on_connect."
+            )
+    except ConnectionError as err:
+        assert str(err) == "One or more namespaces failed to connect"
 
 
 @pytest.mark.anyio
@@ -212,20 +243,10 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
     mock_token_payload,
     provide_namespace_server,
     add_test_demo_resources: list[DemoResource],
-    current_user_from_azure_token,
-    add_test_policy_for_resource,
     socketio_test_client,
 ):
     """Test the demo resource delete event."""
     resources = await add_test_demo_resources(mock_token_payload)
-    # current_user = await current_user_from_azusre_token(mock_token_payload)
-
-    # policy = {
-    #     "resource_id": resources[2].id,
-    #     "identity_id": current_user.user_id,
-    #     "action": "own",
-    # }
-    # await add_test_policy_for_resource(policy)
 
     await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
@@ -242,7 +263,7 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
                 responses_client1 = data
 
             @client2.event(namespace="/demo-resource")
-            async def remove(data):
+            async def remove(data):  # NOQA: F811
 
                 nonlocal responses_client2
                 responses_client2 = data
