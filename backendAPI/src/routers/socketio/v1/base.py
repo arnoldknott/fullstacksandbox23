@@ -97,6 +97,38 @@ class BaseNamespace(socketio.AsyncNamespace):
             )
             logger.error(err)
 
+    async def _get_all(self, sid, request_access_data=False):
+        """Get all event for socket.io namespaces."""
+        logger.info(f"Get all data request from client {sid}.")
+        try:
+            session = await self._get_session_data(sid)
+            async with self.crud() as crud:
+                data = await crud.read(session["current_user"])
+            if self.read_model is not None:
+                for idx, item in enumerate(data):
+                    data[idx] = self.read_model.model_validate(item)
+            for item in data:
+                if request_access_data:
+                    access_data = await self._get_access_data(sid, item.id)
+                    item = self.read_extended_model.model_validate(item)
+                    item.user_right = access_data["user_right"]
+                    if access_data["access_policies"]:
+                        item.access_policies = access_data["access_policies"]
+                    if access_data["creation_date"]:
+                        item.creation_date = access_data["creation_date"]
+                    if access_data["last_modified_date"]:
+                        item.last_modified_date = access_data["last_modified_date"]
+                await self.server.emit(
+                    "transfer",
+                    item.model_dump(mode="json"),
+                    namespace=self.namespace,
+                    to=sid,
+                )
+        except Exception as error:
+            logger.error(f"Failed to get all data for client {sid}.")
+            print(error)
+            await self._emit_status(sid, {"error": str(error)})
+
     async def _get_access_data(self, sid, resource_id=UUID):
         """Get access data from the socketio session."""
         session = await self._get_session_data(sid)
@@ -128,6 +160,15 @@ class BaseNamespace(socketio.AsyncNamespace):
             "creation_date": creation_date,
             "last_modified_date": last_modified_date,
         }
+
+    async def _emit_status(self, sid, data: object):
+        """Emit a status event to the client."""
+        await self.server.emit(
+            "status",
+            data,
+            namespace=self.namespace,
+            to=sid,
+        )
 
     async def on_connect(
         self,
@@ -176,7 +217,8 @@ class BaseNamespace(socketio.AsyncNamespace):
                 )
             except Exception:
                 logger.error(f"Client with session id {sid} failed to authenticate.")
-                raise ConnectionRefusedError("Authorization failed")
+                # await self._emit_status(sid, {"error": "Authorization failed."})
+                raise ConnectionRefusedError("Authorization failed.")
         else:
             current_user = None
             logger.info(f"Client authenticated to public namespace {self.namespace}.")
@@ -202,42 +244,9 @@ class BaseNamespace(socketio.AsyncNamespace):
                 namespace=self.namespace,
             )
 
-    async def get_all(self, sid, request_access_data=False):
-        """Get all event for socket.io namespaces."""
-        logger.info(f"Get all data request from client {sid}.")
-        try:
-            session = await self._get_session_data(sid)
-            async with self.crud() as crud:
-                data = await crud.read(session["current_user"])
-            if self.read_model is not None:
-                for idx, item in enumerate(data):
-                    data[idx] = self.read_model.model_validate(item)
-            for item in data:
-                if request_access_data:
-                    access_data = await self._get_access_data(sid, item.id)
-                    item = self.read_extended_model.model_validate(item)
-                    item.user_right = access_data["user_right"]
-                    if access_data["access_policies"]:
-                        item.access_policies = access_data["access_policies"]
-                    if access_data["creation_date"]:
-                        item.creation_date = access_data["creation_date"]
-                    if access_data["last_modified_date"]:
-                        item.last_modified_date = access_data["last_modified_date"]
-                await self.server.emit(
-                    "transfer",
-                    item.model_dump(mode="json"),
-                    namespace=self.namespace,
-                    to=sid,
-                )
-        except Exception as error:
-            logger.error(f"Failed to get all data for client {sid}.")
-            print(error)
-            # TBD: return an error message to the client - either on "transfer" or a dedicated "error" event
-
     async def on_delete(self, sid, resource_id: UUID):
         """Delete event for socket.io namespaces."""
         logger.info(f"Delete request from client {sid}.")
-        print(f"=== deleting demo resource with id: {resource_id}", flush=True)
         try:
             session = await self._get_session_data(sid)
             async with self.crud() as crud:
@@ -247,15 +256,13 @@ class BaseNamespace(socketio.AsyncNamespace):
                 resource_id,
                 namespace=self.namespace,
             )
+            await self._emit_status(
+                sid, {"success": f"Item with id {resource_id} deleted successfully."}
+            )
         except Exception as error:
             logger.error(f"Failed to delete item for client {sid}.")
             print(error)
-            await self.server.emit(
-                "status",
-                {"error": str(error)},
-                namespace=self.namespace,
-                to=sid,
-            )
+            await self._emit_status(sid, {"error": str(error)})
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""

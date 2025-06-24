@@ -19,10 +19,7 @@ async def test_on_connect_invalid_token():
         )
         raise Exception("This should have failed due to invalid token.")
     except ConnectionRefusedError as err:
-        print("=== test_on_connect_invalid_token - Exception ===")
-        print(err)
-
-        assert str(err) == "Authorization failed"
+        assert str(err) == "Authorization failed."
 
 
 @pytest.mark.anyio

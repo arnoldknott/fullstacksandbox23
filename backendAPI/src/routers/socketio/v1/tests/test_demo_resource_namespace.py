@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 from socketio.exceptions import ConnectionError
-
+from unittest.mock import patch
 import pytest
 import socketio
 
@@ -33,9 +33,17 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
     """Test the demo_resource_namespace socket.io connection needs socketio scope in token."""
 
     await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
+    # statuses = []
     try:
         async for client in socketio_test_client(["/demo-resource"]):
+            # @client.event(namespace="/demo-resource")
+            # async def status(data):
+
+            #     nonlocal statuses
+            #     statuses.append(data)
+
             await client.sleep(1)
+            # assert statuses == [{"error": "Authorization failed."}]
             await client.disconnect()
             raise Exception(
                 "This should have failed due to missing authentication in on_connect."
@@ -239,6 +247,54 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     [token_user1_read_write_socketio],
     indirect=True,
 )
+async def test_user_gets_error_on_status_event_due_to_missing_resources(
+    mock_token_payload, provide_namespace_server, socketio_test_client
+):
+    """Test the demo resource connect event."""
+    with patch(
+        "crud.demo_resource.DemoResourceCRUD.read",
+        side_effect=Exception("Database error."),
+    ):
+        await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
+
+        resources = []
+        statuses = []
+
+        client = socketio.AsyncClient(logger=True, engineio_logger=True)
+
+        @client.event(namespace="/demo-resource")
+        async def transfer(data):
+            nonlocal resources
+            resources.append(data)
+
+        @client.event(namespace="/demo-resource")
+        async def status(data):
+
+            nonlocal statuses
+            statuses.append(data)
+
+        await client.connect(
+            "http://127.0.0.1:8669",
+            socketio_path="socketio/v1",
+            namespaces=["/demo-resource"],
+            auth={"session-id": "testsessionid"},
+        )
+
+        # Wait for the response to be set
+        await client.sleep(1)
+
+        assert resources == []
+        assert statuses == [{"error": "Database error."}]
+
+        await client.disconnect()
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [token_user1_read_write_socketio],
+    indirect=True,
+)
 async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_remove_event(
     mock_token_payload,
     provide_namespace_server,
@@ -254,19 +310,33 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
         async for client2 in socketio_test_client(["/demo-resource"]):
 
             responses_client1 = []
+            statuses_client1 = []
             responses_client2 = []
+            statuses_client2 = []
 
             @client1.event(namespace="/demo-resource")
             async def remove(data):
 
                 nonlocal responses_client1
-                responses_client1 = data
+                responses_client1.append(data)
+
+            @client1.event(namespace="/demo-resource")
+            async def status(data):
+
+                nonlocal statuses_client1
+                statuses_client1.append(data)
 
             @client2.event(namespace="/demo-resource")
             async def remove(data):  # NOQA: F811
 
                 nonlocal responses_client2
-                responses_client2 = data
+                responses_client2.append(data)
+
+            @client2.event(namespace="/demo-resource")
+            async def status(data):  # NOQA: F811
+
+                nonlocal statuses_client2
+                statuses_client2.append(data)
 
             await client1.emit(
                 "delete", str(resources[2].id), namespace="/demo-resource"
@@ -276,8 +346,12 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
             await client1.sleep(1)
             await client2.sleep(1)
 
-            assert responses_client1 == str(resources[2].id)
-            assert responses_client2 == str(resources[2].id)
+            assert responses_client1 == [str(resources[2].id)]
+            assert statuses_client1 == [
+                {"success": f"Item with id {resources[2].id} deleted successfully."}
+            ]
+            assert responses_client2 == [str(resources[2].id)]
+            assert statuses_client2 == []
 
             await client1.disconnect()
             await client2.disconnect()
