@@ -200,3 +200,63 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     assert not responses[0]["access_policies"][1]["public"]
     assert responses[1]["user_right"] == "write"
     assert responses[1]["access_policies"] is None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [token_user1_read_write_socketio],
+    indirect=True,
+)
+async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_remove_event(
+    mock_token_payload,
+    provide_namespace_server,
+    add_test_demo_resources: list[DemoResource],
+    current_user_from_azure_token,
+    add_test_policy_for_resource,
+    socketio_test_client,
+):
+    """Test the demo resource delete event."""
+    resources = await add_test_demo_resources(mock_token_payload)
+    # current_user = await current_user_from_azusre_token(mock_token_payload)
+
+    # policy = {
+    #     "resource_id": resources[2].id,
+    #     "identity_id": current_user.user_id,
+    #     "action": "own",
+    # }
+    # await add_test_policy_for_resource(policy)
+
+    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
+
+    async for client1 in socketio_test_client(["/demo-resource"]):
+        async for client2 in socketio_test_client(["/demo-resource"]):
+
+            responses_client1 = []
+            responses_client2 = []
+
+            @client1.event(namespace="/demo-resource")
+            async def remove(data):
+
+                nonlocal responses_client1
+                responses_client1 = data
+
+            @client2.event(namespace="/demo-resource")
+            async def remove(data):
+
+                nonlocal responses_client2
+                responses_client2 = data
+
+            await client1.emit(
+                "delete", str(resources[2].id), namespace="/demo-resource"
+            )
+
+            # Wait for the response to be set
+            await client1.sleep(1)
+            await client2.sleep(1)
+
+            assert responses_client1 == str(resources[2].id)
+            assert responses_client2 == str(resources[2].id)
+
+            await client1.disconnect()
+            await client2.disconnect()

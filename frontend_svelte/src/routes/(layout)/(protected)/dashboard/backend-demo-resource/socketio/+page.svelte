@@ -29,14 +29,23 @@
 	let demoResources: DemoResourceExtended[] = $state([]);
 	$effect(() => {
 		socketio.client.on('transfer', (data: DemoResourceExtended) => {
-			// if (debug) {
-			// console.log(
-			// 	'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-			// );
-			// console.log(data);
-			// }
+			if (debug) {
+			console.log(
+				'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+			);
+			console.log(data);
+			}
 			demoResources.push(data);
 		});
+        socketio.client.on('remove', (resource_id: string) => {
+            if (debug) {
+            console.log(
+                '=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+            );
+            console.log(resource_id);
+            }
+            demoResources = demoResources.filter((res) => res.id !== resource_id);
+        });
 	});
 
 	let ownedDemoResources: DemoResourceExtended[] = $derived(
@@ -107,7 +116,11 @@
                             class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
                             aria-label="Delete Button"
                             name="id"
-                            formaction="?/delete"
+                            onclick={() => { 
+                                socketio.client.emit('delete', demoResource.id) 
+                                // demoResources = demoResources.filter((res) => res.id !== demoResource.id);
+                                } 
+                            }
                         >
                             <span class="icon-[tabler--trash]"></span>
                         </button>

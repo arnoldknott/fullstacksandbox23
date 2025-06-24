@@ -234,6 +234,29 @@ class BaseNamespace(socketio.AsyncNamespace):
             print(error)
             # TBD: return an error message to the client - either on "transfer" or a dedicated "error" event
 
+    async def on_delete(self, sid, resource_id: UUID):
+        """Delete event for socket.io namespaces."""
+        logger.info(f"Delete request from client {sid}.")
+        print(f"=== deleting demo resource with id: {resource_id}", flush=True)
+        try:
+            session = await self._get_session_data(sid)
+            async with self.crud() as crud:
+                await crud.delete(session["current_user"], resource_id)
+            await self.server.emit(
+                "remove",
+                resource_id,
+                namespace=self.namespace,
+            )
+        except Exception as error:
+            logger.error(f"Failed to delete item for client {sid}.")
+            print(error)
+            await self.server.emit(
+                "status",
+                {"error": str(error)},
+                namespace=self.namespace,
+                to=sid,
+            )
+
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""
         logger.info(f"Client with session id {sid} disconnected.")
