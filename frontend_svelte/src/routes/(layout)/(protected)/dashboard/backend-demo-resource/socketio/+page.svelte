@@ -49,7 +49,29 @@
 		});
 	});
 
+    const addDemoResource = () => {
+        const newResource: DemoResourceExtended =
+        {
+            id: 'new_' + Math.random().toString(36).substring(2, 9),
+            name: "",
+            user_right: Action.Own,
+			creation_date: new Date(Date.now()),
+        };
+        demoResources.push(newResource);
+    };
+
     const deleteResource = (resourceId: string) => { socketio.client.emit('delete', resourceId) };
+
+    const submitResource = (demoResource: DemoResourceExtended) => {
+        if (demoResource.id?.slice(0, 4) === 'new_') {
+            // If the resource is new, we need to emit a create event, remove the id and the backend will create a new resource
+            const { id, ...rest } = demoResource;
+            socketio.client.emit('submit', rest);
+        } else {
+            // Otherwise, we can update the existing resource
+            socketio.client.emit('submit', demoResource);
+        }
+    };
 
 	let ownedDemoResources: DemoResourceExtended[] = $derived(
 		demoResources
@@ -90,9 +112,10 @@
 </div>
 
 <div class="mb-5">
-	<button class="btn-neutral-container btn" aria-label="Add Button">
+	<button class="btn-neutral-container btn" aria-label="Add Button" onclick={() => addDemoResource()}>
 		<span class="icon-[fa6-solid--plus]"></span> Add
 	</button>
+    <!-- <JsonData data={array} /> -->
 </div>
 
 
@@ -100,7 +123,7 @@
 	<div>
 		<h3 class="title">Demo Resources with owner access</h3>
 		{#each ownedDemoResources as demoResource, idx (demoResource.id)}
-            <DemoResourceContainer {demoResource} {deleteResource} />
+            <DemoResourceContainer {demoResource} {deleteResource} {submitResource} />
             <div class="px-2 {debug ? 'block' : 'hidden'}">
                 <p class="title">🚧 Debug Information 🚧</p>
                 <JsonData data={demoResource} />
@@ -146,17 +169,18 @@
 				</div>
 			{/each}
 		</div>
+        <!-- <JsonData data={demoResources} /> -->
 	</div>
 	<div>
 		<h3 class="title">Demo Resources with write access</h3>
         {#each writeDemoResources as demoResource (demoResource.id)}
-            <DemoResourceContainer {demoResource} {deleteResource}/>
+            <DemoResourceContainer {demoResource} {submitResource}/>
 		{/each}
 	</div>
 	<div>
 		<h3 class="title">Demo Resources with read access</h3>
 		{#each readDemoResources as demoResource (demoResource.id)}
-			<DemoResourceContainer {demoResource} {deleteResource}/>
+			<DemoResourceContainer {demoResource}/>
 		{/each}
 	</div>
 </div>

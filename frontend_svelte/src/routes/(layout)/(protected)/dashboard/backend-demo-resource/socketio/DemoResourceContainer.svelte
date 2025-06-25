@@ -1,33 +1,47 @@
 <script lang="ts">
     import type { DemoResourceExtended } from '$lib/types';
     import { Action } from '$lib/accessHandler';
-    let { demoResource, deleteResource = (_id: string) => {} } : { demoResource: DemoResourceExtended, deleteResource: (id: string) => void } = $props();
+    let { demoResource, edit = false, deleteResource = (_id: string) => {}, submitResource = (_resource: DemoResourceExtended) => {} } : { demoResource: DemoResourceExtended, edit?: boolean, deleteResource?: (id: string) => void, submitResource?: (resource: DemoResourceExtended) => void } = $props();
     let formatedDate = $derived(
         demoResource.creation_date
             ? new Date(demoResource.creation_date).toLocaleString('da-DK', { timeZone: 'CET' })
             : new Date(Date.now()).toLocaleString('da-DK', { timeZone: 'CET' })
     );
+    if (demoResource.id?.slice(0,4) === 'new_') edit = true;
+    // TBD: trigger submitResource when edit changes to false
 </script>
 
 <div class="bg-base-300 shadow-shadow m-2 flex flex-col rounded-xl p-2 shadow-xl">
     <div class="flex flex-row justify-between">
-        <h5 class="title justify-self-start">{demoResource.name}</h5>
+        <h5
+            contenteditable={edit}
+            class="title justify-self-start"
+            onblur={(event) => {
+                console.log('onblur event', (event.target as HTMLElement)?.innerText);
+                demoResource.name = (event.target as HTMLElement)?.innerText || '';
+                submitResource(demoResource)
+            }}
+        >{demoResource.name}</h5>
         <div class="label justify-self-end">
             {formatedDate}
         </div>
     </div>
     <div class="flex flex-row">
         <div class="body-small grow">
-            <p>{demoResource.description}</p>
+            <p contenteditable={edit} onblur={() => submitResource(demoResource)}>{demoResource.description}</p>
         </div>
         {#if demoResource.user_right === Action.Write || demoResource.user_right === Action.Own}
             <div class="join flex flex-row items-end justify-center">
                 <button
                     class="btn btn-secondary-container text-secondary-container-content btn-sm join-item grow"
                     aria-label="Edit Button"
+                    onclick={() => (edit = !edit)}
                 >
-                    <!-- onclick={() => (edit ? (edit = false) : (edit = true))} -->
-                    <span class="icon-[material-symbols--edit-outline-rounded]"></span>
+                <span class="icon-[material-symbols--edit-outline-rounded] {!edit || 'hidden'}"></span>
+                    <span class="grid place-items-center {edit || 'hidden'}">
+                        <span class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1 size-3"></span>
+                        <span class="icon-[ic--outline-do-not-disturb] col-start-1 row-start-1 size-4"></span>
+                </span>
                 </button>
                 {#if demoResource.user_right === Action.Own}
                     <div class="dropdown join-item relative inline-flex grow [--placement:top]">

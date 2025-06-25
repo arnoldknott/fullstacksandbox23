@@ -232,6 +232,10 @@ class BaseNamespace(socketio.AsyncNamespace):
         if self.crud is not None:
             try:
                 # handle incoming data and put back on this event handler
+                print("=== base - on_submit - data ===")
+                print(data, flush=True)
+                # TBD: if incoming data contains an id, it is an update, otherwise a create
+                # TBD: validate incoming data - either with create or update model
                 print("=== base - on_submit - sid ===")
                 print(sid, flush=True)
             except Exception as err:
