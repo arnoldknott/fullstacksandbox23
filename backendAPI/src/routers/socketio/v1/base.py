@@ -225,6 +225,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         if self.callback_on_connect is not None:
             await self.callback_on_connect(sid, request_access_data=request_access_data)
 
+    # "submit" is communication from client to server
     async def on_submit(self, sid, data):
         """Gets data from client and issues a create or update based on id is present or not."""
         logger.info(f"Exchanged data with client {sid}")
@@ -238,6 +239,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 print(err)
         else:
             # Distributes incoming data to all clients in the namespace
+            # "transfer" is communication from server to client
             self.server.emit(
                 "transfer",
                 data,
