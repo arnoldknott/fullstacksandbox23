@@ -29,12 +29,12 @@
 	let demoResources: DemoResourceExtended[] = $state([]);
 	$effect(() => {
 		socketio.client.on('transfer', (data: DemoResourceExtended) => {
-			if (debug) {
-				console.log(
-					'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-				);
-				console.log(data);
-			}
+			// if (debug) {
+			// 	console.log(
+			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+			// 	);
+			// 	console.log(data);
+			// }
 			demoResources.push(data);
 		});
 		socketio.client.on('deleted', (resource_id: string) => {
@@ -47,6 +47,8 @@
 			demoResources = demoResources.filter((res) => res.id !== resource_id);
 		});
 	});
+
+    const deleteResource = (resourceId: string) => { socketio.client.emit('delete', resourceId) };
 
 	let ownedDemoResources: DemoResourceExtended[] = $derived(
 		demoResources
@@ -131,10 +133,7 @@
 							class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
 							aria-label="Delete Button"
 							name="id"
-							onclick={() => {
-								socketio.client.emit('delete', demoResource.id);
-								// demoResources = demoResources.filter((res) => res.id !== demoResource.id);
-							}}
+							onclick={() => !demoResource.id || deleteResource(demoResource.id)}
 						>
 							<span class="icon-[tabler--trash]"></span>
 						</button>
@@ -143,10 +142,6 @@
 			{/if}
 		</div>
 	</div>
-	<div class={debug ? 'block' : 'hidden'}>
-		<p class="title">🚧 Debug Information 🚧</p>
-		<JsonData data={demoResource} />
-	</div>
 {/snippet}
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
@@ -154,6 +149,10 @@
 		<h3 class="title">Demo Resources with owner access</h3>
 		{#each ownedDemoResources as demoResource, idx (demoResource.id)}
 			{@render demoResourceContainer(demoResource)}
+            <div class="px-2 {debug ? 'block' : 'hidden'}">
+                <p class="title">🚧 Debug Information 🚧</p>
+                <JsonData data={demoResource} />
+            </div>
 			<div
 				class="divider-outline-variant divider {idx === ownedDemoResources.length - 1
 					? 'hidden'
