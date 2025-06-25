@@ -37,7 +37,7 @@
 			}
 			demoResources.push(data);
 		});
-		socketio.client.on('remove', (resource_id: string) => {
+		socketio.client.on('deleted', (resource_id: string) => {
 			if (debug) {
 				console.log(
 					'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='

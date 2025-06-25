@@ -225,13 +225,13 @@ class BaseNamespace(socketio.AsyncNamespace):
         if self.callback_on_connect is not None:
             await self.callback_on_connect(sid, request_access_data=request_access_data)
 
-    async def on_transfer(self, sid, data):
-        """Transfer (write, read and update) event for socket.io namespaces."""
+    async def on_submit(self, sid, data):
+        """Gets data from client and issues a create or update based on id is present or not."""
         logger.info(f"Exchanged data with client {sid}")
         if self.crud is not None:
             try:
                 # handle incoming data and put back on this event handler
-                print("=== base - on_transfer - sid ===")
+                print("=== base - on_submit - sid ===")
                 print(sid, flush=True)
             except Exception as err:
                 logger.error(f"Failed to exchange data with client {sid}.")
@@ -252,7 +252,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             async with self.crud() as crud:
                 await crud.delete(session["current_user"], resource_id)
             await self.server.emit(
-                "remove",
+                "deleted",
                 resource_id,
                 namespace=self.namespace,
             )
