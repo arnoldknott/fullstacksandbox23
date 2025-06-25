@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { DemoResourceExtended } from '$lib/types';
     import { Action } from '$lib/accessHandler';
-    let { demoResource, deleteResource } : { demoResource: DemoResourceExtended, deleteResource: (id: string) => void } = $props();
+    let { demoResource, deleteResource = (_id: string) => {} } : { demoResource: DemoResourceExtended, deleteResource: (id: string) => void } = $props();
 </script>
 
 <div class="bg-base-300 shadow-shadow m-2 flex flex-col rounded-xl p-2 shadow-xl">
