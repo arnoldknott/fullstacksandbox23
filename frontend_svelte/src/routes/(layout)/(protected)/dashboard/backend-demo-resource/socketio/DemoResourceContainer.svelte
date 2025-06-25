@@ -2,13 +2,18 @@
     import type { DemoResourceExtended } from '$lib/types';
     import { Action } from '$lib/accessHandler';
     let { demoResource, deleteResource = (_id: string) => {} } : { demoResource: DemoResourceExtended, deleteResource: (id: string) => void } = $props();
+    let formatedDate = $derived(
+        demoResource.creation_date
+            ? new Date(demoResource.creation_date).toLocaleString('da-DK', { timeZone: 'CET' })
+            : new Date(Date.now()).toLocaleString('da-DK', { timeZone: 'CET' })
+    );
 </script>
 
 <div class="bg-base-300 shadow-shadow m-2 flex flex-col rounded-xl p-2 shadow-xl">
     <div class="flex flex-row justify-between">
         <h5 class="title justify-self-start">{demoResource.name}</h5>
         <div class="label justify-self-end">
-            {demoResource.creation_date?.toLocaleString('da-DK', { timeZone: 'CET' })}
+            {formatedDate}
         </div>
     </div>
     <div class="flex flex-row">
