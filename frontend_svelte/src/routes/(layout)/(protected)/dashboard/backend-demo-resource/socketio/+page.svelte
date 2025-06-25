@@ -7,6 +7,7 @@
 	import type { PageData } from './$types';
 	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
 	import { Action } from '$lib/accessHandler';
+    import DemoResourceContainer from './DemoResourceContainer.svelte';
 	let { data }: { data: PageData } = $props();
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
@@ -148,7 +149,8 @@
 	<div>
 		<h3 class="title">Demo Resources with owner access</h3>
 		{#each ownedDemoResources as demoResource, idx (demoResource.id)}
-			{@render demoResourceContainer(demoResource)}
+			<!-- {@render demoResourceContainer(demoResource)} -->
+            <DemoResourceContainer {demoResource} {deleteResource} />
             <div class="px-2 {debug ? 'block' : 'hidden'}">
                 <p class="title">🚧 Debug Information 🚧</p>
                 <JsonData data={demoResource} />
@@ -165,7 +167,7 @@
 		<div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="true">
 			{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
 				<div>
-					<IdentityAccordion title={microsoftTeam.displayName} id={microsoftTeam.id}>
+					<IdentityAccordion title={microsoftTeam.displayName} id={microsoftTeam.id} open={false}>
 						<div class="bg-success-container mb-2 rounded-xl p-2">
 							<p class="title-small text-success-container-content p-2">
 								<span class="icon-[tabler--key-filled] bg-success-container-content size-4"></span> Owner
