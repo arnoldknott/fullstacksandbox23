@@ -49,19 +49,21 @@
 	});
 
 	let ownedDemoResources: DemoResourceExtended[] = $derived(
-		demoResources.filter((demoResource) => {
-			if (demoResource.user_right === Action.Own) {
-				return demoResource;
-			}
-		}).sort((a, b) => {
-			if (a.creation_date && b.creation_date) {
-                const dateA = new Date(a.creation_date);
-                const dateB = new Date(b.creation_date);
-                return dateB.getTime() - dateA.getTime();
-			} else {
-                return 0
-            }
-		})
+		demoResources
+			.filter((demoResource) => {
+				if (demoResource.user_right === Action.Own) {
+					return demoResource;
+				}
+			})
+			.sort((a, b) => {
+				if (a.creation_date && b.creation_date) {
+					const dateA = new Date(a.creation_date);
+					const dateB = new Date(b.creation_date);
+					return dateB.getTime() - dateA.getTime();
+				} else {
+					return 0;
+				}
+			})
 	);
 	let writeDemoResources: DemoResourceExtended[] = $derived(
 		demoResources.filter((demoResource) => {
@@ -92,12 +94,14 @@
 
 {#snippet demoResourceContainer(demoResource: DemoResourceExtended)}
 	<div class="bg-base-300 shadow-shadow m-2 flex flex-col rounded-xl p-2 shadow-xl">
-        <div class="flex flex-row justify-between">
-            <h5 class="title justify-self-start">{demoResource.name}</h5>
-            <div class="justify-self-end label">{demoResource.creation_date?.toLocaleString('da-DK', { timeZone: 'CET' })}</div>
-        </div>
+		<div class="flex flex-row justify-between">
+			<h5 class="title justify-self-start">{demoResource.name}</h5>
+			<div class="label justify-self-end">
+				{demoResource.creation_date?.toLocaleString('da-DK', { timeZone: 'CET' })}
+			</div>
+		</div>
 		<div class="flex flex-row">
-			<div class="grow body-small">
+			<div class="body-small grow">
 				<p>{demoResource.description}</p>
 			</div>
 			{#if demoResource.user_right === Action.Write || demoResource.user_right === Action.Own}
@@ -148,9 +152,13 @@
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	<div>
 		<h3 class="title">Demo Resources with owner access</h3>
-		{#each ownedDemoResources as demoResource,idx (demoResource.id)}
+		{#each ownedDemoResources as demoResource, idx (demoResource.id)}
 			{@render demoResourceContainer(demoResource)}
-            <div class="divider-outline-variant divider {idx === ownedDemoResources.length - 1 ? 'hidden' : ''}"></div>
+			<div
+				class="divider-outline-variant divider {idx === ownedDemoResources.length - 1
+					? 'hidden'
+					: ''}"
+			></div>
 		{/each}
 	</div>
 	<div>
