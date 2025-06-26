@@ -7,7 +7,7 @@
 	import type { PageData } from './$types';
 	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
 	import { Action } from '$lib/accessHandler';
-    import DemoResourceContainer from './DemoResourceContainer.svelte';
+	import DemoResourceContainer from './DemoResourceContainer.svelte';
 	let { data }: { data: PageData } = $props();
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
@@ -49,27 +49,38 @@
 		});
 	});
 
-    const addDemoResource = () => {
-        const newResource: DemoResourceExtended =
-        {
-            id: 'new_' + Math.random().toString(36).substring(2, 9),
-            name: "",
-            user_right: Action.Own,
-			creation_date: new Date(Date.now()),
-        };
-        demoResources.push(newResource);
-    };
+	const addDemoResource = () => {
+		const newResource: DemoResourceExtended = {
+			id: 'new_' + Math.random().toString(36).substring(2, 9),
+			name: '',
+			user_right: Action.Own,
+			creation_date: new Date(Date.now())
+		};
+		demoResources.push(newResource);
+	};
 
-    const deleteResource = (resourceId: string) => { socketio.client.emit('delete', resourceId) };
+	const deleteResource = (resourceId: string) => {
+		socketio.client.emit('delete', resourceId);
+	};
 
-    const submitResource = (demoResource: DemoResourceExtended) => {
-        if (demoResource.id?.slice(0, 4) === 'new_') {
-            // If the resource is new, we need to emit a create event, remove the id and the backend will create a new resource
-            const { id, ...rest } = demoResource;
-            socketio.client.emit('submit', rest);
+	const submitResource = (demoResource: DemoResourceExtended) => {
+        // The backend is handling it, whether it's new or existing. If the id is a UUID, it tries to update an existing resource.
+		if (demoResource.id?.slice(0, 4) === 'new_') {
+			
+			socketio.client.emit('submit', demoResource);
+		} else {
+			// Otherwise, we can update the existing resource
+			socketio.client.emit('submit', demoResource);
+		}
+	};
+
+    const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
+        if (a.creation_date && b.creation_date) {
+            const dateA = new Date(a.creation_date);
+            const dateB = new Date(b.creation_date);
+            return dateB.getTime() - dateA.getTime();
         } else {
-            // Otherwise, we can update the existing resource
-            socketio.client.emit('submit', demoResource);
+            return 0;
         }
     };
 
@@ -80,30 +91,28 @@
 					return demoResource;
 				}
 			})
-			.sort((a, b) => {
-				if (a.creation_date && b.creation_date) {
-					const dateA = new Date(a.creation_date);
-					const dateB = new Date(b.creation_date);
-					return dateB.getTime() - dateA.getTime();
-				} else {
-					return 0;
-				}
-			})
-	);
+			.sort(sortResourcesByCreationDate)
+        );
+
 	let writeDemoResources: DemoResourceExtended[] = $derived(
-		demoResources.filter((demoResource) => {
-			if (demoResource.user_right === Action.Write) {
-				return demoResource;
-			}
-		})
-	);
+		demoResources
+            .filter((demoResource) => {
+                if (demoResource.user_right === Action.Write) {
+                    return demoResource;
+                }
+            })
+            .sort(sortResourcesByCreationDate)
+        )
+
 	let readDemoResources: DemoResourceExtended[] = $derived(
-		demoResources.filter((demoResource) => {
-			if (demoResource.user_right === Action.Read) {
-				return demoResource;
-			}
-		})
-	);
+		demoResources
+            .filter((demoResource) => {
+                if (demoResource.user_right === Action.Read) {
+                    return demoResource;
+                }
+            })
+            .sort(sortResourcesByCreationDate)
+        )
 </script>
 
 <div class="mb-2 flex items-center gap-1">
@@ -112,22 +121,24 @@
 </div>
 
 <div class="mb-5">
-	<button class="btn-neutral-container btn" aria-label="Add Button" onclick={() => addDemoResource()}>
+	<button
+		class="btn-neutral-container btn"
+		aria-label="Add Button"
+		onclick={() => addDemoResource()}
+	>
 		<span class="icon-[fa6-solid--plus]"></span> Add
 	</button>
-    <!-- <JsonData data={array} /> -->
 </div>
-
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	<div>
 		<h3 class="title">Demo Resources with owner access</h3>
 		{#each ownedDemoResources as demoResource, idx (demoResource.id)}
-            <DemoResourceContainer {demoResource} {deleteResource} {submitResource} />
-            <div class="px-2 {debug ? 'block' : 'hidden'}">
-                <p class="title">🚧 Debug Information 🚧</p>
-                <JsonData data={demoResource} />
-            </div>
+			<DemoResourceContainer {demoResource} {deleteResource} {submitResource} />
+			<div class="px-2 {debug ? 'block' : 'hidden'}">
+				<p class="title">🚧 Debug Information 🚧</p>
+				<JsonData data={demoResource} />
+			</div>
 			<div
 				class="divider-outline-variant divider {idx === ownedDemoResources.length - 1
 					? 'hidden'
@@ -169,18 +180,18 @@
 				</div>
 			{/each}
 		</div>
-        <!-- <JsonData data={demoResources} /> -->
+		<!-- <JsonData data={demoResources} /> -->
 	</div>
 	<div>
 		<h3 class="title">Demo Resources with write access</h3>
-        {#each writeDemoResources as demoResource (demoResource.id)}
-            <DemoResourceContainer {demoResource} {submitResource}/>
+		{#each writeDemoResources as demoResource (demoResource.id)}
+			<DemoResourceContainer {demoResource} {submitResource} />
 		{/each}
 	</div>
 	<div>
 		<h3 class="title">Demo Resources with read access</h3>
 		{#each readDemoResources as demoResource (demoResource.id)}
-			<DemoResourceContainer {demoResource}/>
+			<DemoResourceContainer {demoResource} />
 		{/each}
 	</div>
 </div>
