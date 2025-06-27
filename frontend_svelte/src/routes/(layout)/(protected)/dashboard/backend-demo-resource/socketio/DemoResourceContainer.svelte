@@ -27,7 +27,7 @@
 			contenteditable={edit}
 			class="title justify-self-start"
 			onblur={(event) => {
-                // TBD: onblur changes edit to false, as DemoResourceContainer is getting reloaded
+				// TBD: onblur changes edit to false, as DemoResourceContainer is getting reloaded
 				demoResource.name = (event.target as HTMLElement)?.innerText || '';
 				submitResource(demoResource);
 			}}
