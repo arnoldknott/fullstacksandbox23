@@ -10,6 +10,24 @@ export type SocketioConnection = {
 	requestAccessData?: boolean; // Asks the server to return extended from the initial dataset, i.e. access_policies, created and updated information.
 };
 
+export type SocketioStatus =
+	| {
+			success: 'created';
+			id: string;
+			submitted_id: string;
+	  }
+	| {
+			success: 'updated';
+			id: string;
+	  }
+	| {
+			success: 'deleted';
+			id: string;
+	  }
+	| {
+			error: string;
+	  };
+
 export class SocketIO {
 	// TBD: remove event and rooms from SocketioConnection
 	// private connection: SocketioConnection;

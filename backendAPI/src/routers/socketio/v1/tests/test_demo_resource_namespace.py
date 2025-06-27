@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 import socketio
 
+from tests.utils import many_test_demo_resources
 from models.access import AccessPolicy
 from models.demo_resource import DemoResource, DemoResourceExtended
 from routers.socketio.v1.demo_resource import DemoResourceNamespace
@@ -50,6 +51,52 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
             )
     except ConnectionError as err:
         assert str(err) == "One or more namespaces failed to connect"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    indirect=True,
+)
+async def test_user_submits_resource_without_id(
+    mock_token_payload,
+    provide_namespace_server,
+    socketio_test_client,
+):
+    """Test the demo resource delete event."""
+
+    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
+
+    async for client in socketio_test_client(["/demo-resource"]):
+        statuses = []
+
+        @client.event(namespace="/demo-resource")
+        async def status(data):
+
+            nonlocal statuses
+            statuses.append(data)
+
+        await client.emit(
+            "submit", many_test_demo_resources[1], namespace="/demo-resource"
+        )
+
+        # Wait for the response to be set
+        await client.sleep(1)
+
+        # assert "id" in status[0]
+        assert statuses[0]["submitted_id"] is None
+        assert UUID(statuses[0]["id"])  # Check if the ID is a valid UUID
+        assert statuses[0]["success"] == "created"
+
+        await client.disconnect()
+
+
+# TBD:
+# - user submits resource with mandatory data (here name) missing => error
+# - user submits resources with a UUID that does not exist => error
+# - user submits resource with a UUID that exists => update
+# - user submits resource with a UUID that exists and has no write access => error
 
 
 @pytest.mark.anyio
@@ -247,7 +294,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     [token_user1_read_write_socketio],
     indirect=True,
 )
-async def test_user_gets_error_on_status_event_due_to_missing_resources(
+async def test_user_gets_error_on_status_event_due_to_database_error(
     mock_token_payload, provide_namespace_server, socketio_test_client
 ):
     """Test the demo resource connect event."""
@@ -315,7 +362,7 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
             statuses_client2 = []
 
             @client1.event(namespace="/demo-resource")
-            async def remove(data):
+            async def deleted(data):
 
                 nonlocal responses_client1
                 responses_client1.append(data)
@@ -327,7 +374,7 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
                 statuses_client1.append(data)
 
             @client2.event(namespace="/demo-resource")
-            async def remove(data):  # NOQA: F811
+            async def deleted(data):  # NOQA: F811
 
                 nonlocal responses_client2
                 responses_client2.append(data)
@@ -348,7 +395,7 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
 
             assert responses_client1 == [str(resources[2].id)]
             assert statuses_client1 == [
-                {"success": f"Item with id {resources[2].id} deleted successfully."}
+                {"success": "deleted", "id": str(resources[2].id)}
             ]
             assert responses_client2 == [str(resources[2].id)]
             assert statuses_client2 == []

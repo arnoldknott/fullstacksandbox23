@@ -228,19 +228,59 @@ class BaseNamespace(socketio.AsyncNamespace):
     # "submit" is communication from client to server
     async def on_submit(self, sid, data):
         """Gets data from client and issues a create or update based on id is present or not."""
-        logger.info(f"Exchanged data with client {sid}")
+        logger.info(f"Data submitted from client {sid}")
         if self.crud is not None:
             try:
-                # handle incoming data and put back on this event handler
-                print("=== base - on_submit - data ===")
-                print(data, flush=True)
-                # TBD: if incoming data contains an id, it is an update, otherwise a create
-                # TBD: validate incoming data - either with create or update model
-                print("=== base - on_submit - sid ===")
-                print(sid, flush=True)
-            except Exception as err:
-                logger.error(f"Failed to exchange data with client {sid}.")
-                print(err)
+                session = await self._get_session_data(sid)
+                current_user = session["current_user"]
+                database_object = None
+                try:
+                    resource_id = UUID(data["id"])  # validate if id is a valid UUID
+                    # if id is present, it is an update
+                    # validate data with update model
+                    object_update = self.update_model(**data)
+                    async with self.crud() as crud:
+                        database_object = await crud.update(
+                            current_user, resource_id, object_update
+                        )
+                        await self._emit_status(
+                            sid,
+                            {
+                                "success": "updated",
+                                "id": str(database_object.id),
+                            },
+                        )
+                except Exception:
+                    # if id is not present, it is a create
+                    # validate data with create model
+                    object_create = self.create_model(**data)
+                    async with self.crud() as crud:
+                        # TBD: check the hierarchical resource system all the way through other events as well!
+                        parent_id = data.get("parent_id", None)
+                        inherit = data.get("inherit", False)
+                        database_object = await crud.create(
+                            object_create, current_user, parent_id, inherit
+                        )
+                        await self._emit_status(
+                            sid,
+                            {
+                                "success": "created",
+                                "id": str(database_object.id),
+                                "submitted_id": data.get("id"),
+                            },
+                        )
+                # if database_object is not None:
+                #     await self.server.emit(
+                #         "transfer",
+                #         database_object.model_dump(mode="json"),
+                #         namespace=self.namespace,
+                #         to=sid,
+                #     )
+            except Exception as error:
+                logger.error(f"Failed to write data from client {sid}.")
+                print(error, flush=True)
+                await self._emit_status(sid, {"error": str(error)})
+
         else:
             # Distributes incoming data to all clients in the namespace
             # "transfer" is communication from server to client
@@ -262,9 +302,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 resource_id,
                 namespace=self.namespace,
             )
-            await self._emit_status(
-                sid, {"success": f"Item with id {resource_id} deleted successfully."}
-            )
+            await self._emit_status(sid, {"success": "deleted", "id": resource_id})
         except Exception as error:
             logger.error(f"Failed to delete item for client {sid}.")
             print(error)

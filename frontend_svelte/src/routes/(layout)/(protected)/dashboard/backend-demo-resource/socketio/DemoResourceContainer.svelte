@@ -27,7 +27,7 @@
 			contenteditable={edit}
 			class="title justify-self-start"
 			onblur={(event) => {
-				console.log('onblur event', (event.target as HTMLElement)?.innerText);
+                // TBD: onblur changes edit to false, as DemoResourceContainer is getting reloaded
 				demoResource.name = (event.target as HTMLElement)?.innerText || '';
 				submitResource(demoResource);
 			}}
@@ -40,9 +40,16 @@
 	</div>
 	<div class="flex flex-row">
 		<div class="body-small grow">
-			<p contenteditable={edit} onblur={() => submitResource(demoResource)}>
+			<p
+				contenteditable={edit}
+				onblur={(event) => {
+					demoResource.description = (event.target as HTMLElement)?.innerText || '';
+					submitResource(demoResource);
+				}}
+			>
 				{demoResource.description}
 			</p>
+			<div class="badge badge-xs label-small">{demoResource.id?.slice(0, 7)}</div>
 		</div>
 		{#if demoResource.user_right === Action.Write || demoResource.user_right === Action.Own}
 			<div class="join flex flex-row items-end justify-center">

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import JsonData from '$components/JsonData.svelte';
-	import { SocketIO, type SocketioConnection } from '$lib/socketio';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import { page } from '$app/state';
 	import type { DemoResourceExtended } from '$lib/types';
 	import { goto } from '$app/navigation';
@@ -41,11 +41,28 @@
 		socketio.client.on('deleted', (resource_id: string) => {
 			if (debug) {
 				console.log(
-					'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+					'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
 				);
 				console.log(resource_id);
 			}
 			demoResources = demoResources.filter((res) => res.id !== resource_id);
+		});
+		socketio.client.on('status', (data: SocketioStatus) => {
+			if (debug) {
+				console.log(
+					'=== dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+				);
+				console.log('Status update:', data);
+			}
+			if ('success' in data) {
+				if (data.success === 'created') {
+					demoResources.forEach((demoResource) => {
+						if (demoResource.id === data.submitted_id) {
+							demoResource.id = data.id;
+						}
+					});
+				}
+			}
 		});
 	});
 
@@ -63,26 +80,20 @@
 		socketio.client.emit('delete', resourceId);
 	};
 
+	// The backend is handling it, whether it's new or existing. If the id is a UUID, it tries to update an existing resource.
 	const submitResource = (demoResource: DemoResourceExtended) => {
-        // The backend is handling it, whether it's new or existing. If the id is a UUID, it tries to update an existing resource.
-		if (demoResource.id?.slice(0, 4) === 'new_') {
-			
-			socketio.client.emit('submit', demoResource);
-		} else {
-			// Otherwise, we can update the existing resource
-			socketio.client.emit('submit', demoResource);
-		}
+		socketio.client.emit('submit', demoResource);
 	};
 
-    const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
-        if (a.creation_date && b.creation_date) {
-            const dateA = new Date(a.creation_date);
-            const dateB = new Date(b.creation_date);
-            return dateB.getTime() - dateA.getTime();
-        } else {
-            return 0;
-        }
-    };
+	const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
+		if (a.creation_date && b.creation_date) {
+			const dateA = new Date(a.creation_date);
+			const dateB = new Date(b.creation_date);
+			return dateB.getTime() - dateA.getTime();
+		} else {
+			return 0;
+		}
+	};
 
 	let ownedDemoResources: DemoResourceExtended[] = $derived(
 		demoResources
@@ -92,27 +103,27 @@
 				}
 			})
 			.sort(sortResourcesByCreationDate)
-        );
+	);
 
 	let writeDemoResources: DemoResourceExtended[] = $derived(
 		demoResources
-            .filter((demoResource) => {
-                if (demoResource.user_right === Action.Write) {
-                    return demoResource;
-                }
-            })
-            .sort(sortResourcesByCreationDate)
-        )
+			.filter((demoResource) => {
+				if (demoResource.user_right === Action.Write) {
+					return demoResource;
+				}
+			})
+			.sort(sortResourcesByCreationDate)
+	);
 
 	let readDemoResources: DemoResourceExtended[] = $derived(
 		demoResources
-            .filter((demoResource) => {
-                if (demoResource.user_right === Action.Read) {
-                    return demoResource;
-                }
-            })
-            .sort(sortResourcesByCreationDate)
-        )
+			.filter((demoResource) => {
+				if (demoResource.user_right === Action.Read) {
+					return demoResource;
+				}
+			})
+			.sort(sortResourcesByCreationDate)
+	);
 </script>
 
 <div class="mb-2 flex items-center gap-1">
