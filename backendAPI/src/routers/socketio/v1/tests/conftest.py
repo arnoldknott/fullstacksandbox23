@@ -87,6 +87,8 @@ async def socketio_test_client():
             namespaces=namespaces,
             auth={"session-id": "testsessionid"},
         )
+        await client.sleep(1)
+        # Wait for the connection to be established
         yield client
         await client.disconnect()
 
