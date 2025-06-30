@@ -68,6 +68,7 @@ async def socketio_test_client():
     async def _socketio_test_client(
         namespaces: List[str] = None,
         server_host: str = "http://127.0.0.1:8669",
+        auto_connect: bool = False,
         # query_parameters: dict = None,
     ):
         client = socketio.AsyncClient(logger=True, engineio_logger=True)
@@ -75,20 +76,6 @@ async def socketio_test_client():
         if server_host == "http://127.0.0.1:8669":
             socketio_test_server
 
-        # if query_parameters is None:
-        #     url = server_host
-        # else:
-        #     url = f"{server_host}?{'&'.join(f'{k}={v}' for k, v in query_parameters.items())}"
-
-        # await client.connect(
-        #     server_host,
-        #     # url
-        #     socketio_path="socketio/v1",
-        #     namespaces=namespaces,
-        #     auth={"session-id": "testsessionid"},
-        # )
-        # await client.sleep(1)
-        # Wait for the connection to be established
         async def connect_to_test_client():
             """Connects to the socket.io client and yields it."""
             await client.connect(
@@ -100,6 +87,9 @@ async def socketio_test_client():
             # await client.sleep(1)
 
         client.connect_to_test_client = connect_to_test_client
+
+        if auto_connect:
+            await connect_to_test_client()
 
         yield client
         await client.disconnect()
