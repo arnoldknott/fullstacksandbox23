@@ -77,12 +77,15 @@ async def test_user_submits_resource_without_id(
             nonlocal statuses
             statuses.append(data)
 
+        print("=== Submitting resource without ID - many_test_demo_resources[0] ===")
+        print(many_test_demo_resources[0])
+
         await client.emit(
             "submit", many_test_demo_resources[1], namespace="/demo-resource"
         )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        # await client.sleep(1)
 
         # assert "id" in status[0]
         assert statuses[0]["submitted_id"] is None
