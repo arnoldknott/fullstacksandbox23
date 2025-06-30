@@ -3,7 +3,6 @@ from uuid import UUID
 from socketio.exceptions import ConnectionError
 from unittest.mock import patch
 import pytest
-import socketio
 
 from tests.utils import many_test_demo_resources
 from models.access import AccessPolicy
