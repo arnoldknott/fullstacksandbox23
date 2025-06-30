@@ -75,6 +75,8 @@ async def test_user_submits_resource_without_id(
 
         await client.connect_to_test_client()
 
+        print("=== Submitting resource without ID - many_test_demo_resources[1] ===")
+        print(many_test_demo_resources[1], flush=True)
         await client.emit(
             "submit", many_test_demo_resources[1], namespace="/demo-resource"
         )

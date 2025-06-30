@@ -1,5 +1,4 @@
 import pytest
-import socketio
 from socketio.exceptions import ConnectionError
 
 from routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
@@ -31,7 +30,10 @@ async def test_on_connect_invalid_token():
 async def test_connect_with_test_server_demo_namespace(
     mock_token_payload,
     # socketio_test_server,
+    # TBD: refactor into test client to also create the test-server and
+    #  provide the namespace server
     provide_namespace_server,
+    socketio_test_client,
 ):
     """Test the demo socket.io connect event."""
     mocked_token_payload = mock_token_payload
@@ -40,21 +42,15 @@ async def test_connect_with_test_server_demo_namespace(
     # sio.register_namespace(DemoNamespace("/demo-namespace"))
     await provide_namespace_server([DemoNamespace("/demo-namespace")])
 
-    client = socketio.AsyncClient(logger=True, engineio_logger=True)
-
     responses = []
+    async for client in socketio_test_client(["/demo-namespace"]):
 
-    @client.event(namespace="/demo-namespace")
-    async def demo_message(data):
-        nonlocal responses
-        responses.append(data)
+        @client.event(namespace="/demo-namespace")
+        async def demo_message(data):
+            nonlocal responses
+            responses.append(data)
 
-    await client.connect(
-        "http://127.0.0.1:8669",
-        socketio_path="socketio/v1",
-        namespaces=["/demo-namespace"],
-        auth={"session-id": "testsessionid"},
-    )
+        await client.connect_to_test_client()
 
     assert len(responses) == 2
     assert responses[0] == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
