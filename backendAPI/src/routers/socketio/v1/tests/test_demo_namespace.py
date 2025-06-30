@@ -80,23 +80,29 @@ async def test_demo_message_with_test_server(
     # sio.register_namespace(DemoNamespace("/demo-namespace"))
     await provide_namespace_server([DemoNamespace("/demo-namespace")])
 
+    responses = []
     async for client in socketio_test_client(["/demo-namespace"]):
-        await client.emit("demo_message", "Something", namespace="/demo-namespace")
-
-        response = ""
 
         @client.event(namespace="/demo-namespace")
         async def demo_message(data):
 
-            nonlocal response
-            response = data
+            nonlocal responses
+            responses.append(data)
+
+        # Connect the client
+        await client.connect_to_test_client()
+
+        await client.emit("demo_message", "Something", namespace="/demo-namespace")
 
         # Wait for the response to be set
         await client.sleep(1)
 
-        assert response == f"{mocked_token_payload["name"]}: Something"
-
         await client.disconnect()
+
+    assert len(responses) == 3
+    assert responses[0] == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
+    assert "Your session ID is " in responses[1]
+    assert responses[2] == f"{mocked_token_payload["name"]}: Something"
 
 
 @pytest.mark.anyio
@@ -109,6 +115,7 @@ async def test_demo_message_with_production_server_fails_without_token(
         async for client in socketio_test_client(
             ["/demo-namespace"], "http://127.0.0.1:80"
         ):
+            await client.connect_to_test_client()
             response = None
 
             @client.on("demo_message", namespace="/demo-namespace")

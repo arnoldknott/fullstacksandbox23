@@ -37,11 +37,8 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
     # statuses = []
     try:
         async for client in socketio_test_client(["/demo-resource"]):
-            # @client.event(namespace="/demo-resource")
-            # async def status(data):
 
-            #     nonlocal statuses
-            #     statuses.append(data)
+            await client.connect_to_test_client()
 
             await client.sleep(1)
             # assert statuses == [{"error": "Authorization failed."}]
@@ -77,15 +74,14 @@ async def test_user_submits_resource_without_id(
             nonlocal statuses
             statuses.append(data)
 
-        print("=== Submitting resource without ID - many_test_demo_resources[0] ===")
-        print(many_test_demo_resources[0])
+        await client.connect_to_test_client()
 
         await client.emit(
             "submit", many_test_demo_resources[1], namespace="/demo-resource"
         )
 
         # Wait for the response to be set
-        # await client.sleep(1)
+        await client.sleep(1)
 
         # assert "id" in status[0]
         assert statuses[0]["submitted_id"] is None
@@ -110,7 +106,9 @@ async def test_user_submits_resource_without_id(
 )
 async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresources(
     mock_token_payload,
+    # TBD: refactor for the test_client to also create the test-server and provide the namespace server
     provide_namespace_server,
+    socketio_test_client,
     add_test_demo_resources: list[DemoResource],
 ):
     """Test the demo resource connect event."""
@@ -119,21 +117,15 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
 
     await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
-    client = socketio.AsyncClient(logger=True, engineio_logger=True)
-
     responses = []
+    async for client in socketio_test_client(["/demo-resource"]):
 
-    @client.on("transfer", namespace="/demo-resource")
-    async def receiving_transfer(data):
-        nonlocal responses
-        responses.append(data)
+        @client.on("transfer", namespace="/demo-resource")
+        async def receiving_transfer(data):
+            nonlocal responses
+            responses.append(data)
 
-    await client.connect(
-        "http://127.0.0.1:8669",
-        socketio_path="socketio/v1",
-        namespaces=["/demo-resource"],
-        auth={"session-id": "testsessionid"},
-    )
+        await client.connect_to_test_client()
 
     assert len(responses) == 4
     for response, resource in zip(responses, resources):
@@ -150,7 +142,10 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources(
     mock_token_payload,
+    # TBD: refactor into test client to also create the test-server and
+    # provide the namespace server
     provide_namespace_server,
+    socketio_test_client,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
     current_user_from_azure_token,
@@ -176,21 +171,15 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
 
     await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
-    client = socketio.AsyncClient(logger=True, engineio_logger=True)
-
     responses = []
+    async for client in socketio_test_client(["/demo-resource"]):
 
-    @client.on("transfer", namespace="/demo-resource")
-    async def receiving_transfer(data):
-        nonlocal responses
-        responses.append(data)
+        @client.on("transfer", namespace="/demo-resource")
+        async def receiving_transfer(data):
+            nonlocal responses
+            responses.append(data)
 
-    await client.connect(
-        "http://127.0.0.1:8669",
-        socketio_path="socketio/v1",
-        namespaces=["/demo-resource"],
-        auth={"session-id": "testsessionid"},
-    )
+    await client.connect_to_test_client()
 
     resources_with_user_acccess = [
         resources[1],  # Read access
@@ -216,7 +205,10 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources_with_access_data(
     mock_token_payload,
+    # TBD: refactor into test client to also create the test-server and
+    #  provide the namespace server
     provide_namespace_server,
+    socketio_test_client,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
     current_user_from_azure_token,
@@ -244,21 +236,16 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
 
     await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
-    client = socketio.AsyncClient(logger=True, engineio_logger=True)
-
     responses = []
 
-    @client.on("transfer", namespace="/demo-resource")
-    async def receiving_transfer(data):
-        nonlocal responses
-        responses.append(data)
+    async for client in socketio_test_client(["/demo-resource"]):
 
-    await client.connect(
-        "http://127.0.0.1:8669?request-access-data=true",
-        socketio_path="socketio/v1",
-        namespaces=["/demo-resource"],
-        auth={"session-id": "testsessionid"},
-    )
+        @client.on("transfer", namespace="/demo-resource")
+        async def receiving_transfer(data):
+            nonlocal responses
+            responses.append(data)
+
+        await client.connect_to_test_client()
 
     resources_with_user_acccess = [
         resources[1],  # Own access
@@ -310,25 +297,20 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
         resources = []
         statuses = []
 
-        client = socketio.AsyncClient(logger=True, engineio_logger=True)
+        async for client in socketio_test_client(["/demo-resource"]):
 
-        @client.event(namespace="/demo-resource")
-        async def transfer(data):
-            nonlocal resources
-            resources.append(data)
+            @client.event(namespace="/demo-resource")
+            async def transfer(data):
+                nonlocal resources
+                resources.append(data)
 
-        @client.event(namespace="/demo-resource")
-        async def status(data):
+            @client.event(namespace="/demo-resource")
+            async def status(data):
 
-            nonlocal statuses
-            statuses.append(data)
+                nonlocal statuses
+                statuses.append(data)
 
-        await client.connect(
-            "http://127.0.0.1:8669",
-            socketio_path="socketio/v1",
-            namespaces=["/demo-resource"],
-            auth={"session-id": "testsessionid"},
-        )
+            await client.connect_to_test_client()
 
         # Wait for the response to be set
         await client.sleep(1)
@@ -388,6 +370,9 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
                 nonlocal statuses_client2
                 statuses_client2.append(data)
 
+            await client1.connect_to_test_client()
+            await client2.connect_to_test_client()
+
             await client1.emit(
                 "delete", str(resources[2].id), namespace="/demo-resource"
             )
@@ -433,6 +418,8 @@ async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_a
 
             nonlocal responses
             responses = data
+
+        await client.connect_to_test_client()
 
         await client.emit("delete", str(resources[2].id), namespace="/demo-resource")
 

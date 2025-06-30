@@ -80,15 +80,27 @@ async def socketio_test_client():
         # else:
         #     url = f"{server_host}?{'&'.join(f'{k}={v}' for k, v in query_parameters.items())}"
 
-        await client.connect(
-            server_host,
-            # url
-            socketio_path="socketio/v1",
-            namespaces=namespaces,
-            auth={"session-id": "testsessionid"},
-        )
-        await client.sleep(1)
+        # await client.connect(
+        #     server_host,
+        #     # url
+        #     socketio_path="socketio/v1",
+        #     namespaces=namespaces,
+        #     auth={"session-id": "testsessionid"},
+        # )
+        # await client.sleep(1)
         # Wait for the connection to be established
+        async def connect_to_test_client():
+            """Connects to the socket.io client and yields it."""
+            await client.connect(
+                server_host,
+                socketio_path="socketio/v1",
+                namespaces=namespaces,
+                auth={"session-id": "testsessionid"},
+            )
+            # await client.sleep(1)
+
+        client.connect_to_test_client = connect_to_test_client
+
         yield client
         await client.disconnect()
 

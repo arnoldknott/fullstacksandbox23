@@ -15,6 +15,8 @@ async def test_public_message_event_in_public_namespace(socketio_test_client):
             nonlocal response
             response = data
 
+        await client.connect_to_test_client()
+
         await client.emit(
             "public_message", "Hello, world!", namespace="/public-namespace"
         )
