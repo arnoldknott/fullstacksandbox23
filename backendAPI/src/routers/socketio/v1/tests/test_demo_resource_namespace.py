@@ -52,6 +52,21 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_token_payload",
+    [token_admin_read_write_socketio],
+    indirect=True,
+)
+async def test_add_demoresources(
+    mock_token_payload, add_test_demo_resources: list[DemoResource]
+):
+    """For debugging: add demo resources to the database."""
+    added_demo_resources = await add_test_demo_resources(mock_token_payload)
+
+    assert len(added_demo_resources) == 4
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
     [token_admin_read_write_socketio, token_user1_read_write_socketio],
     indirect=True,
 )

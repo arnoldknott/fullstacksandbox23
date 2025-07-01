@@ -2,6 +2,7 @@ from os import path, remove
 from uuid import UUID
 
 import pytest
+import copy
 from fastapi import UploadFile
 
 from core.types import CurrentUserData
@@ -152,13 +153,22 @@ async def add_test_demo_resources(
 
     async def _add_test_demo_resources(token_payload: dict = None):
         existing_test_categories = await add_test_categories(token_payload)
-        many_test_demo_resources[0]["category_id"] = existing_test_categories[1].id
-        many_test_demo_resources[1]["category_id"] = existing_test_categories[0].id
-        many_test_demo_resources[2]["category_id"] = existing_test_categories[1].id
+        many_test_demo_resources_with_categories = copy.deepcopy(
+            many_test_demo_resources
+        )
+        many_test_demo_resources_with_categories[0]["category_id"] = (
+            existing_test_categories[1].id
+        )
+        many_test_demo_resources_with_categories[1]["category_id"] = (
+            existing_test_categories[0].id
+        )
+        many_test_demo_resources_with_categories[2]["category_id"] = (
+            existing_test_categories[1].id
+        )
 
         demo_resources = []
         current_user = await current_user_from_azure_token(token_payload)
-        for resource in many_test_demo_resources:
+        for resource in many_test_demo_resources_with_categories:
             async with DemoResourceCRUD() as crud:
                 demo_resource_instance = await crud.create(resource, current_user)
             demo_resources.append(demo_resource_instance)
