@@ -90,8 +90,6 @@ async def test_user_submits_resource_without_id(
 
         await client.connect_to_test_client()
 
-        print("=== Submitting resource without ID - many_test_demo_resources[1] ===")
-        print(many_test_demo_resources[1], flush=True)
         await client.emit(
             "submit", many_test_demo_resources[1], namespace="/demo-resource"
         )
@@ -261,7 +259,9 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
             nonlocal responses
             responses.append(data)
 
-        await client.connect_to_test_client()
+        await client.connect_to_test_client(
+            query_parameters={"request-access-data": "true"}
+        )
 
     resources_with_user_acccess = [
         resources[1],  # Own access
@@ -271,6 +271,10 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     assert len(responses) == 2
     for response, resource in zip(responses, resources_with_user_acccess):
         modelled_response = DemoResourceExtended.model_validate(response)
+        print(
+            "=== test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources_with_access_data - Modelled response ==="
+        )
+        print(modelled_response, flush=True)
         assert "category" in response
         assert "tags" in response
         assert modelled_response.creation_date >= time_before_creation
