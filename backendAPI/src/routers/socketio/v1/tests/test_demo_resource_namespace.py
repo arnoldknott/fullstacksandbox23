@@ -271,10 +271,6 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     assert len(responses) == 2
     for response, resource in zip(responses, resources_with_user_acccess):
         modelled_response = DemoResourceExtended.model_validate(response)
-        print(
-            "=== test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources_with_access_data - Modelled response ==="
-        )
-        print(modelled_response, flush=True)
         assert "category" in response
         assert "tags" in response
         assert modelled_response.creation_date >= time_before_creation
