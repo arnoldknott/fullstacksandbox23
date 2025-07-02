@@ -20,11 +20,6 @@
 		}
 	});
 
-	$effect(() => {
-		console.log('=== dashboard - backend-demo-resource - +page.svelte - editIds ===');
-		console.log(editIds);
-	});
-
 	const connection: SocketioConnection = {
 		namespace: '/demo-resource',
 		cookie_session_id: page.data.session.sessionId,
@@ -167,16 +162,11 @@
 					(value) => {
 						if (demoResource.id) {
 							if (value) {
-								console.log('Adding to editIds:', demoResource.id);
 								editIds.add(demoResource.id);
-								editIds = new Set(editIds);
-								console.log('Current editIds after adding:', editIds);
 							} else {
-								console.log('Removing from editIds:', demoResource.id);
 								editIds.delete(demoResource.id || '');
-								editIds = new Set(editIds);
-								console.log('Current editIds after deleting:', editIds);
 							}
+							editIds = new Set(editIds);
 						}
 					}
 				}
