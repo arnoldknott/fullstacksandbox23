@@ -9,6 +9,7 @@
 	import { Action } from '$lib/accessHandler';
 	import DemoResourceContainer from './DemoResourceContainer.svelte';
 	let { data }: { data: PageData } = $props();
+	let editIds = $state(new Set<string>());
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	$effect(() => {
@@ -17,6 +18,11 @@
 		} else {
 			goto(`?`, { replaceState: true });
 		}
+	});
+
+	$effect(() => {
+		console.log('=== dashboard - backend-demo-resource - +page.svelte - editIds ===');
+		console.log(editIds);
 	});
 
 	const connection: SocketioConnection = {
@@ -60,6 +66,8 @@
 						if (demoResource.id === data.submitted_id) {
 							demoResource.id = data.id;
 						}
+						editIds.add(data.id); // keep editing on after newly created resources
+						editIds = new Set(editIds); // trigger reactivity
 					});
 				}
 			}
@@ -141,11 +149,41 @@
 	</button>
 </div>
 
+<JsonData data={editIds} />
+
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	<div>
 		<h3 class="title">Demo Resources with owner access</h3>
 		{#each ownedDemoResources as demoResource, idx (demoResource.id)}
-			<DemoResourceContainer {demoResource} {deleteResource} {submitResource} />
+			<DemoResourceContainer
+				bind:edit={
+					() => {
+						if (demoResource.id) {
+							return editIds.has(demoResource.id);
+						} else {
+							return false;
+						}
+					},
+					(value) => {
+						if (demoResource.id) {
+							if (value) {
+								console.log('Adding to editIds:', demoResource.id);
+								editIds.add(demoResource.id);
+								editIds = new Set(editIds);
+								console.log('Current editIds after adding:', editIds);
+							} else {
+								console.log('Removing from editIds:', demoResource.id);
+								editIds.delete(demoResource.id || '');
+								editIds = new Set(editIds);
+								console.log('Current editIds after deleting:', editIds);
+							}
+						}
+					}
+				}
+				{demoResource}
+				{deleteResource}
+				{submitResource}
+			/>
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
 				<p class="title">🚧 Debug Information 🚧</p>
 				<JsonData data={demoResource} />

@@ -3,7 +3,7 @@
 	import { Action } from '$lib/accessHandler';
 	let {
 		demoResource,
-		edit = false,
+		edit = $bindable(false),
 		deleteResource = (_id: string) => {},
 		submitResource = (_resource: DemoResourceExtended) => {}
 	}: {
