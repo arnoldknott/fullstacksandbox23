@@ -235,24 +235,14 @@ class BaseNamespace(socketio.AsyncNamespace):
                 current_user = session["current_user"]
                 database_object = None
                 try:
-                    print("=== base - on_submit - data['id'] ===")
-                    print(data["id"], flush=True)
                     resource_id = UUID(data["id"])  # validate if id is a valid UUID
-                    print("=== base - on_submit - resource_id ===")
-                    print(resource_id, flush=True)
                     # if id is present, it is an update
                     # validate data with update model
                     object_update = self.update_model(**data)
-                    print("=== base - on_submit - object_update ===")
-                    print(object_update, flush=True)
                     async with self.crud() as crud:
                         database_object = await crud.update(
                             current_user, resource_id, object_update
                         )
-                        print("=== base - on_submit - update - database_object ===")
-                        print(database_object, flush=True)
-                        print("=== base - on_submit - update - database_object.id ===")
-                        print(database_object.id, flush=True)
                         await self._emit_status(
                             sid,
                             {
@@ -263,10 +253,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 except Exception:
                     # if id is not present, it is a create
                     # validate data with create model
-                    print("=== base - on_submit - start of create ===")
                     object_create = self.create_model(**data)
-                    print("=== base - on_submit - object_create ===")
-                    print(object_create, flush=True)
                     async with self.crud() as crud:
                         # TBD: check the hierarchical resource system all the way through other events as well!
                         parent_id = data.get("parent_id", None)
@@ -274,8 +261,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                         database_object = await crud.create(
                             object_create, current_user, parent_id, inherit
                         )
-                        print("=== base - on_submit - create - database_object ===")
-                        print(database_object, flush=True)
                         await self._emit_status(
                             sid,
                             {
