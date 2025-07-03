@@ -129,7 +129,7 @@
 	);
 </script>
 
-<div class="flex flex-row  justify-between">
+<div class="flex flex-row flex-wrap justify-between">
 	<div>
 		<div class="mb-2 flex items-center gap-1">
 			<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
@@ -147,14 +147,15 @@
 		</div>
 	</div>
 
-	<div class="h-25 w-100 overflow-y-scroll {debug ? 'block' : 'hidden'}">
-		<div class="title-small">Currently editable</div>
-		<ul class="list-inside list-disc">
+	<div class="h-25 w-100 {debug ? 'block' : 'hidden'} bg-base-150 p-2 rounded-lg shadow-outline shadow-inner">
+		<div class="title-small italic">Currently editable</div>
+		<ul class="list-inside h-15 overflow-y-scroll">
 		{#each editIds as id (id) }
-			<li>{id}</li>
+			<li class="label">{id}</li>
 		{/each}
 		</ul>
 	</div>
+
 </div>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
