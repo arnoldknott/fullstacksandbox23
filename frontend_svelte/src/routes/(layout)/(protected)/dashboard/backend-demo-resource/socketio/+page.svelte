@@ -129,22 +129,33 @@
 	);
 </script>
 
-<div class="mb-2 flex items-center gap-1">
-	<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
-	<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
-</div>
+<div class="flex flex-row  justify-between">
+	<div>
+		<div class="mb-2 flex items-center gap-1">
+			<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
+			<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
+		</div>
 
-<div class="mb-5">
-	<button
-		class="btn-neutral-container btn"
-		aria-label="Add Button"
-		onclick={() => addDemoResource()}
-	>
-		<span class="icon-[fa6-solid--plus]"></span> Add
-	</button>
-</div>
+		<div class="mb-5">
+			<button
+				class="btn-neutral-container btn"
+				aria-label="Add Button"
+				onclick={() => addDemoResource()}
+			>
+				<span class="icon-[fa6-solid--plus]"></span> Add
+			</button>
+		</div>
+	</div>
 
-<JsonData data={editIds} />
+	<div class="h-25 w-100 overflow-y-scroll {debug ? 'block' : 'hidden'}">
+		<div class="title-small">Currently editable</div>
+		<ul class="list-inside list-disc">
+		{#each editIds as id (id) }
+			<li>{id}</li>
+		{/each}
+		</ul>
+	</div>
+</div>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	<div>
