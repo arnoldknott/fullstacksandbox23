@@ -133,7 +133,12 @@
 	<div>
 		<div class="mb-2 flex items-center gap-1">
 			<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
-			<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
+			<input
+				type="checkbox"
+				class="switch-neutral switch"
+				bind:checked={debug}
+				id="debugSwitcher"
+			/>
 		</div>
 
 		<div class="mb-5">
@@ -147,15 +152,18 @@
 		</div>
 	</div>
 
-	<div class="h-25 w-100 {debug ? 'block' : 'hidden'} bg-base-150 p-2 rounded-lg shadow-outline shadow-inner">
+	<div
+		class="h-25 w-100 {debug
+			? 'block'
+			: 'hidden'} bg-base-150 shadow-outline rounded-lg p-2 shadow-inner"
+	>
 		<div class="title-small italic">Currently editable</div>
-		<ul class="list-inside h-15 overflow-y-scroll">
-		{#each editIds as id (id) }
-			<li class="label">{id}</li>
-		{/each}
+		<ul class="h-15 list-inside overflow-y-scroll">
+			{#each editIds as id (id)}
+				<li class="label">{id}</li>
+			{/each}
 		</ul>
 	</div>
-
 </div>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
