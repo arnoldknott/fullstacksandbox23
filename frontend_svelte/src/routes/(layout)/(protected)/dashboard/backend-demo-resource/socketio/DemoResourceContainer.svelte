@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { DemoResourceExtended } from '$lib/types';
+	import { fade } from 'svelte/transition';
 	import { Action } from '$lib/accessHandler';
 	let {
 		demoResource,
@@ -21,7 +22,7 @@
 	// TBD: trigger submitResource when edit changes to false
 </script>
 
-<div class="bg-base-300 shadow-shadow m-2 flex flex-col rounded-xl p-2 shadow-xl">
+<div class="bg-base-300 shadow-shadow m-2 flex flex-col rounded-xl p-2 shadow-xl" transition:fade>
 	<div class="flex flex-row justify-between">
 		<h5
 			contenteditable={edit}

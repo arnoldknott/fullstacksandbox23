@@ -8,8 +8,10 @@
 	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
 	import { Action } from '$lib/accessHandler';
 	import DemoResourceContainer from './DemoResourceContainer.svelte';
+	import { fade } from 'svelte/transition';
 	let { data }: { data: PageData } = $props();
 	let editIds = $state(new Set<string>());
+	let statusMessages = $state<SocketioStatus[]>([]);
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	$effect(() => {
@@ -158,9 +160,10 @@
 			: 'hidden'} bg-base-150 shadow-outline rounded-lg p-2 shadow-inner"
 	>
 		<div class="title-small italic">Currently editable</div>
+		<div class="divider divider-outline"></div>
 		<ul class="h-15 list-inside overflow-y-scroll">
 			{#each editIds as id (id)}
-				<li class="label">{id}</li>
+				<li class="label" transition:fade>{id}</li>
 			{/each}
 		</ul>
 	</div>
