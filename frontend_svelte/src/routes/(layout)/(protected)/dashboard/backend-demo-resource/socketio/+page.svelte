@@ -11,7 +11,7 @@
 	import { fade } from 'svelte/transition';
 	let { data }: { data: PageData } = $props();
 	let editIds = $state(new Set<string>());
-	let statusMessages = $state<SocketioStatus[]>([]);
+	// let statusMessages = $state<SocketioStatus[]>([]);
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	$effect(() => {
