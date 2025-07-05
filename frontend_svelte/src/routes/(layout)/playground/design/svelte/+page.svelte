@@ -2,7 +2,7 @@
 	import Heading from '$components/Heading.svelte';
     import Box from './Box.svelte'
 	import { blur, crossfade, draw, fade, fly, scale, slide  } from 'svelte/transition';
-    const [send, receive] = crossfade({});
+    const [sendCrossfade, receiveCrossfade] = crossfade({});
 
 
 	let newBlur = $state<string>('');
@@ -86,8 +86,8 @@
                         left = left.filter((i) => i !== item);
                         right.push(item)
                         }}
-                        in:receive={{ key: item, duration: 1500 }}
-                        out:send={{ key: item, duration: 1500 }}>
+                        in:receiveCrossfade={{ key: item, duration: 1500 }}
+                        out:sendCrossfade={{ key: item, duration: 1500 }}>
                         {item}
                     </button>
                 </li>
@@ -101,8 +101,8 @@
                         right = right.filter((i) => i !== item);
                         left.push(item)
                         }}
-                        in:receive={{ key: item, duration: 1500 }}
-                        out:send={{ key: item, duration: 1500 }}>
+                        in:receiveCrossfade={{ key: item, duration: 1500 }}
+                        out:sendCrossfade={{ key: item, duration: 1500 }}>
                         {item}
                     </button>
                 </li>
