@@ -1,10 +1,17 @@
 <script lang="ts">
 	import Heading from '$components/Heading.svelte';
     import Box from './Box.svelte'
+    import Slider from './Slider.svelte';
 	import { blur, crossfade, draw, fade, fly, scale, slide  } from 'svelte/transition';
     const [sendCrossfade, receiveCrossfade] = crossfade({});
 
 
+    let blurParameters = $state({
+        delay: 0,
+        duration: 300,
+        amount: 5,
+        opacity: 0.5,
+    });
 	let newBlur = $state<string>('');
 	let blurItems = $state<string[]>([]);
 
@@ -38,29 +45,69 @@
 <Heading>Transitions</Heading>
 
 {#snippet blurHeader()}
-<div class="input-filled">
-    <input
-        type="text"
-        placeholder="New blur item"
-        bind:value={newBlur}
-        onblur={() => pushItem(newBlur, blurItems)}
-        onkeydown={(e) => {
-            if (e.key === 'Enter') {
-                pushItem(newBlur, blurItems);
-            }
-        }}
-        class="input"
-        id="blurItem"
+<div class="flex flex-col">
+    <div class="title-small italic">Parameters</div>
+    <Slider
+        name="Delay"
+        id="blurDelay"
+        bind:value={blurParameters.delay}
+        min={0}
+        max={3000}
+        step={100}
+
     />
-    <label class="input-filled-label" for="blurItem">Add some text</label>
+    <Slider
+        name="Duration"
+        id="blurDuration"
+        bind:value={blurParameters.duration}
+        min={0}
+        max={3000}
+        step={100}
+
+    />
+        <Slider
+        name="Amount"
+        id="blurAmount"
+        bind:value={blurParameters.amount}
+        min={0}
+        max={20}
+        step={1}
+
+    />
+        <Slider
+        name="Opacity"
+        id="blurOpacity"
+        bind:value={blurParameters.opacity}
+        min={0}
+        max={1}
+        step={0.1}
+
+    />
+    <div class="divider divider-outline"></div>
+    <div class="input-filled">
+        <input
+            type="text"
+            placeholder="New blur item"
+            bind:value={newBlur}
+            onblur={() => pushItem(newBlur, blurItems)}
+            onkeydown={(e) => {
+                if (e.key === 'Enter') {
+                    pushItem(newBlur, blurItems);
+                }
+            }}
+            class="input"
+            id="blurItem"
+        />
+        <label class="input-filled-label" for="blurItem">Add some text</label>
+    </div>
 </div>
 {/snippet}
 
 <div class="w-full md:grid sm md:grid-cols-4 md:gap-4">
     <Box title="Blur" header={blurHeader}>
-        <ul class="h-85 list-inside overflow-y-scroll">
+        <ul class="h-25 py-2 list-inside overflow-y-scroll">
             {#each blurItems as item, idx (idx)}
-                <li class="title" transition:blur>
+                <li class="title" transition:blur={{...blurParameters}}>
                     <div class="flex flex-row justify-between">
                         {item}
                         <button
