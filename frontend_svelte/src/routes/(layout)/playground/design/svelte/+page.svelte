@@ -559,7 +559,7 @@
 			/>
 			{#if slideShow}
 				<ul>
-					{#each listItems.slice(0, slideShowItems) as item}
+					{#each listItems.slice(0, slideShowItems) as item (item)}
 						<li transition:slide|global={slideParameters}>
 							{item.name}
 							<div class="divider divider-outline"></div>
