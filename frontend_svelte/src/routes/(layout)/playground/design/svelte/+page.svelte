@@ -105,7 +105,7 @@
 
 <div class="w-full md:grid sm md:grid-cols-4 md:gap-4">
     <Box title="Blur" header={blurHeader}>
-        <ul class="h-25 py-2 list-inside overflow-y-scroll">
+        <ul class="h-45 py-2 list-inside overflow-y-scroll">
             {#each blurItems as item, idx (idx)}
                 <li class="title" transition:blur={{...blurParameters}}>
                     <div class="flex flex-row justify-between">

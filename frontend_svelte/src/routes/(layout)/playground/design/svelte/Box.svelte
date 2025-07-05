@@ -6,7 +6,7 @@ import type { Snippet } from 'svelte';
 <div class="w-full">
     <div class="title-large text-center">{title}</div>
 
-    <div class="bg-base-150 shadow-outline h-100 w-full rounded-lg p-2 shadow-inner">
+    <div class="bg-base-150 shadow-outline h-120 w-full rounded-lg p-2 shadow-inner">
         {#if header}
             {@render header()}
             <div class="divider divider-outline"></div>
