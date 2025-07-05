@@ -52,6 +52,11 @@
 	});
 	let drawShow = $state(false);
 
+	let fadeParameters = $state({
+		delay: 0,
+		duration: 300
+		// easing: (t: number) => t, // Easing function not implemented in this demo
+	});
 	let newFade = $state<string>('');
 	let fadeItems = $state<string[]>([]);
 
@@ -65,10 +70,8 @@
 	let slideItems = $state<string[]>([]);
 
 	const pushItem = (newItem: string, list: string[]) => {
-		console.log('Pushing item:', newItem, 'to list:', list);
 		if (newItem.trim() !== '') {
 			list.push(newItem);
-			newBlur = '';
 		}
 	};
 </script>
@@ -76,7 +79,7 @@
 <Heading>Transitions</Heading>
 
 <div class="sm w-full md:grid md:grid-cols-4 md:gap-4">
-	{#snippet blurHeader()}
+	<Box title="Blur">
 		<div class="flex flex-col">
 			<div class="title-small italic">Parameters:</div>
 			<Slider
@@ -121,10 +124,14 @@
 					type="text"
 					placeholder="New blur item"
 					bind:value={newBlur}
-					onblur={() => pushItem(newBlur, blurItems)}
+					onblur={() => {
+						pushItem(newBlur, blurItems);
+						newBlur = '';
+					}}
 					onkeydown={(e) => {
 						if (e.key === 'Enter') {
 							pushItem(newBlur, blurItems);
+							newBlur = '';
 						}
 					}}
 					class="input"
@@ -133,8 +140,6 @@
 				<label class="input-filled-label" for="blurItem">Add some text</label>
 			</div>
 		</div>
-	{/snippet}
-	<Box title="Blur" header={blurHeader}>
 		<ul class="h-38 list-inside overflow-y-scroll py-2">
 			{#each blurItems as item, idx (idx)}
 				<li class="title" transition:blur={blurParameters}>
@@ -153,7 +158,7 @@
 		</ul>
 	</Box>
 
-	{#snippet crossfadeHeader()}
+	<Box title="Crossfade">
 		<div class="flex flex-col">
 			<div class="title-small italic">Parameters:</div>
 			<Slider
@@ -179,9 +184,6 @@
 		<div class="body-small">- Also uses <code>animate:flip</code>.</div>
 		<div class="divider divider-outline py-2"></div>
 		<div class="title-small italic">Playground:</div>
-	{/snippet}
-
-	<Box title="Crossfade" header={crossfadeHeader}>
 		<div class="grid grid-cols-2">
 			<ul class="h-85 w-full list-inside overflow-y-scroll">
 				{#each left as item (item)}
@@ -294,15 +296,42 @@
 	</Box>
 
 	<Box title="Fade">
+		<div class="flex flex-col">
+			<div class="title-small italic">Parameters:</div>
+			<Slider
+				name="Delay"
+				id="fadeDelay"
+				bind:value={fadeParameters.delay}
+				min={0}
+				max={3000}
+				step={100}
+			/>
+			<Slider
+				name="Duration"
+				id="fadeDuration"
+				bind:value={fadeParameters.duration}
+				min={0}
+				max={3000}
+				step={100}
+			/>
+		</div>
+		<div class="divider divider-outline py-2"></div>
+		<div class="title-small italic">Notes:</div>
+		<div class="body-small">- <code>easing</code> not implemented.</div>
+		<div class="divider divider-outline py-2"></div>
 		<div class="input-filled">
 			<input
 				type="text"
 				placeholder="New fade item"
 				bind:value={newFade}
-				onblur={() => pushItem(newFade, fadeItems)}
+				onblur={() => {
+					pushItem(newFade, fadeItems);
+					newFade = '';
+				}}
 				onkeydown={(e) => {
 					if (e.key === 'Enter') {
 						pushItem(newFade, fadeItems);
+						newFade = '';
 					}
 				}}
 				class="input"
@@ -312,7 +341,7 @@
 		</div>
 		<ul class="h-85 list-inside overflow-y-scroll">
 			{#each fadeItems as item, idx (idx)}
-				<li class="title" transition:fade>
+				<li class="title" transition:fade={fadeParameters}>
 					<div class="flex flex-row justify-between">
 						{item}
 						<button
