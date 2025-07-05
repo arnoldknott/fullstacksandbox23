@@ -60,8 +60,15 @@
 	let newFade = $state<string>('');
 	let fadeItems = $state<string[]>([]);
 
-	let newFly = $state<string>('');
-	let flyItems = $state<string[]>([]);
+	let flyParameters = $state({
+		delay: 0,
+		duration: 500,
+		x: -25,
+		y: -25,
+		opacity: 0.2
+		// easing: (t: number) => t, // Easing function not implemented in this demo
+	});
+	let flyShow = $state<boolean>(false);
 
 	let newScale = $state<string>('');
 	let scaleItems = $state<string[]>([]);
@@ -355,5 +362,69 @@
 				</li>
 			{/each}
 		</ul>
+	</Box>
+
+	<Box title="Fly">
+		<div class="flex flex-col">
+			<div class="title-small italic">Parameters:</div>
+			<Slider
+				name="Delay"
+				id="flyDelay"
+				bind:value={flyParameters.delay}
+				min={0}
+				max={3000}
+				step={100}
+			/>
+			<Slider
+				name="Duration"
+				id="flyDuration"
+				bind:value={flyParameters.duration}
+				min={0}
+				max={3000}
+				step={100}
+			/>
+			<Slider
+				name="X Offset"
+				id="flyXOffset"
+				bind:value={flyParameters.x}
+				min={-50}
+				max={50}
+				step={10}
+			/>
+			<Slider
+				name="Y Offset"
+				id="flyYOffset"
+				bind:value={flyParameters.y}
+				min={-50}
+				max={50}
+				step={5}
+			/>
+			<Slider
+				name="Opacity"
+				id="flyZOpacity"
+				bind:value={flyParameters.opacity}
+				min={0}
+				max={1}
+				step={0.1}
+			/>
+		</div>
+		<div class="divider divider-outline py-2"></div>
+		<div class="title-small italic">Notes:</div>
+		<div class="body-small">- <code>easing</code> not implemented.</div>
+		<div class="divider divider-outline py-2"></div>
+		<div class="title-small italic">Playground:</div>
+		<button
+			class="btn w-full rounded-full px-2"
+			onclick={() => {
+				flyShow = !flyShow;
+			}}
+		>
+			{flyShow ? 'Hide' : 'Show'} icon
+		</button>
+		{#if flyShow}
+			<div class="flex justify-center p-5">
+				<span class="icon-[devicon--svelte] size-12" transition:fly={flyParameters}></span>
+			</div>
+		{/if}
 	</Box>
 </div>
