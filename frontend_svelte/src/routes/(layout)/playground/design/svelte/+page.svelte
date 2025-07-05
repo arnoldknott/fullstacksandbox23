@@ -4,6 +4,7 @@
 	import Slider from './Slider.svelte';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
+	import { list } from 'postcss';
 
 	let blurParameters = $state({
 		delay: 0,
@@ -79,8 +80,21 @@
 	});
 	let scaleShow = $state<boolean>(false);
 
-	let newSlide = $state<string>('');
-	let slideItems = $state<string[]>([]);
+	const listItems = [
+		{ name: 'Item 1' },
+		{ name: 'Item 2' },
+		{ name: 'Item 3' },
+		{ name: 'Item 4' },
+		{ name: 'Item 5' }
+	];
+	let slideParameters = $state({
+		delay: 0,
+		duration: 500,
+		axis: 'y' as 'x' | 'y'
+		// easing: (t: number) => t, // Easing function not implemented in this demo
+	});
+	let slideShow = $state<boolean>(false);
+	let slideShowItems = $state<number>(3); // Number of items to show in the slide transition
 
 	const pushItem = (newItem: string, list: string[]) => {
 		if (newItem.trim() !== '') {
@@ -489,4 +503,71 @@
 			</div>
 		{/if}
 	</Box>
+
+	<Box title="Slide">
+		<div class="flex flex-col">
+			<div class="title-small italic">Parameters:</div>
+			<Slider
+				name="Delay"
+				id="slideDelay"
+				bind:value={slideParameters.delay}
+				min={0}
+				max={3000}
+				step={100}
+			/>
+			<Slider
+				name="Duration"
+				id="slideDuration"
+				bind:value={slideParameters.duration}
+				min={0}
+				max={3000}
+				step={100}
+			/>
+			<div>
+				<label class="label label-text flex justify-between" for="axisSwitcher">Axis: </label>
+				x
+				<input
+					type="checkbox"
+					class="switch"
+					id="axisSwitcher"
+					checked={slideParameters.axis === 'y'}
+					onchange={() => {
+						slideParameters.axis = slideParameters.axis === 'x' ? 'y' : 'x';
+					}}
+				/>
+				y
+			</div>
+			<div class="divider divider-outline py-2"></div>
+			<div class="title-small italic">Notes:</div>
+			<div class="body-small">- <code>easing</code> not implemented.</div>
+			<div class="body-small">- Uses <code>global</code> to apply 2 conditions</div>
+			<div class="title-small italic">Playground:</div>
+			<button
+				class="btn w-full rounded-full px-2"
+				onclick={() => {
+					slideShow = !slideShow;
+				}}
+			>
+				{slideShow ? 'Hide' : 'Show'} list
+			</button>
+			<Slider
+				name="Show items"
+				id="showSlideItems"
+				bind:value={slideShowItems}
+				min={0}
+				max={5}
+				step={1}
+			/>
+			{#if slideShow}
+				<ul>
+					{#each listItems.slice(0, slideShowItems) as item}
+						<li transition:slide|global={slideParameters}>
+							{item.name}
+							<div class="divider divider-outline"></div>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+		</div></Box
+	>
 </div>
