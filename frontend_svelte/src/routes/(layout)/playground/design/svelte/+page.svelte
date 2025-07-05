@@ -169,7 +169,7 @@
         <div class="grid grid-cols-2">
             <ul class="h-85 w-full list-inside overflow-y-scroll">
                 {#each left as item (item)}
-                <li class="title" animate:flip>
+                <li class="title" animate:flip={{ ...crossfadeParameters }}>
                     <button
                         onclick={() => {
                         left = left.filter((i) => i !== item);
@@ -186,7 +186,7 @@
             </ul>
             <ul class="h-85 w-full list-inside overflow-y-scroll">
                 {#each right as item (item)}
-                <li class="title" animate:flip>
+                <li class="title" animate:flip={{ ...crossfadeParameters }}>
                     <button
                         onclick={() => {
                         right = right.filter((i) => i !== item);
