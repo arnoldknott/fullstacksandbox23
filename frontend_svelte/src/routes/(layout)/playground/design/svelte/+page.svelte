@@ -70,8 +70,14 @@
 	});
 	let flyShow = $state<boolean>(false);
 
-	let newScale = $state<string>('');
-	let scaleItems = $state<string[]>([]);
+	let scaleParameters = $state({
+		delay: 0,
+		duration: 500,
+		start: 0.3,
+		opacity: 0.2
+		// easing: (t: number) => t, // Easing function not implemented in this demo
+	});
+	let scaleShow = $state<boolean>(false);
 
 	let newSlide = $state<string>('');
 	let slideItems = $state<string[]>([]);
@@ -424,6 +430,62 @@
 		{#if flyShow}
 			<div class="flex justify-center p-5">
 				<span class="icon-[devicon--svelte] size-12" transition:fly={flyParameters}></span>
+			</div>
+		{/if}
+	</Box>
+
+	<Box title="Scale">
+		<div class="flex flex-col">
+			<div class="title-small italic">Parameters:</div>
+			<Slider
+				name="Delay"
+				id="scaleDelay"
+				bind:value={scaleParameters.delay}
+				min={0}
+				max={3000}
+				step={100}
+			/>
+			<Slider
+				name="Duration"
+				id="scaleDuration"
+				bind:value={scaleParameters.duration}
+				min={0}
+				max={3000}
+				step={100}
+			/>
+			<Slider
+				name="Start Scale"
+				id="scaleStart"
+				bind:value={scaleParameters.start}
+				min={0}
+				max={2}
+				step={0.1}
+			/>
+			<Slider
+				name="Opacity"
+				id="scaleOpacity"
+				bind:value={scaleParameters.opacity}
+				min={0}
+				max={1}
+				step={0.1}
+			/>
+		</div>
+		<div class="divider divider-outline py-2"></div>
+		<div class="title-small italic">Notes:</div>
+		<div class="body-small">- <code>easing</code> not implemented.</div>
+		<div class="divider divider-outline py-2"></div>
+		<div class="title-small italic">Playground:</div>
+		<button
+			class="btn w-full rounded-full px-2"
+			onclick={() => {
+				scaleShow = !scaleShow;
+			}}
+		>
+			{scaleShow ? 'Hide' : 'Show'} icon
+		</button>
+		{#if scaleShow}
+			<div class="flex justify-center p-5">
+				<span class="icon-[devicon--svelte] size-25" transition:scale={scaleParameters}></span>
 			</div>
 		{/if}
 	</Box>
