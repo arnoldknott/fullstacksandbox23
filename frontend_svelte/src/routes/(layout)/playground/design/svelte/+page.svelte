@@ -110,4 +110,43 @@
             </ul>
         </div>
     </Box>
+
+    <Box title="Draw">
+        TBD
+    </Box>
+
+    <Box title="Fade">
+        <div class="input-filled">
+            <input
+                type="text"
+                placeholder="New fade item"
+                bind:value={newFade}
+                onblur={() => pushItem(newFade, fadeItems)}
+                onkeydown={(e) => {
+                    if (e.key === 'Enter') {
+                        pushItem(newFade, fadeItems);
+                    }
+                }}
+                class="input"
+                id="fadeItem"
+            />
+            <label class="input-filled-label" for="fadeItem">Add some text</label>
+        </div>
+        <ul class="h-85 list-inside overflow-y-scroll">
+            {#each fadeItems as item, idx (idx)}
+                <li class="title" transition:fade>
+                    <div class="flex flex-row justify-between">
+                        {item}
+                        <button
+                            class="btn btn-error-container btn-circle btn-gradient btn-sm"
+                            aria-label="Remove Item"
+                            onclick={() => fadeItems.splice(idx, 1)}
+                        >
+                            <span class="icon-[fa6-solid--minus] size-4"></span>
+                        </button>
+                    </div>
+                </li>
+            {/each}
+        </ul>
+    </Box>
 </div>
