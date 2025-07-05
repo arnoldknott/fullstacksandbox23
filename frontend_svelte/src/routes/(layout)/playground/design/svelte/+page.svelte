@@ -4,7 +4,6 @@
 	import Slider from './Slider.svelte';
 	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
-	import { list } from 'postcss';
 
 	let blurParameters = $state({
 		delay: 0,
@@ -103,7 +102,7 @@
 	};
 </script>
 
-<Heading>Transitions</Heading>
+<Heading>Transitions and Animations</Heading>
 
 <div class="sm w-full md:grid md:grid-cols-4 md:gap-4">
 	<Box title="Blur">
@@ -568,6 +567,12 @@
 					{/each}
 				</ul>
 			{/if}
-		</div></Box
-	>
+		</div>
+	</Box>
+	<Box title="Flip">
+		<div class="flex flex-col">
+			<div class="title-small italic">Notes:</div>
+			<div class="body-small">See implementation of crossfade.</div>
+		</div>
+	</Box>
 </div>
