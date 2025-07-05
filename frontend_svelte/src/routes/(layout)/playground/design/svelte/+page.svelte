@@ -3,20 +3,28 @@
     import Box from './Box.svelte'
     import Slider from './Slider.svelte';
 	import { blur, crossfade, draw, fade, fly, scale, slide  } from 'svelte/transition';
-    const [sendCrossfade, receiveCrossfade] = crossfade({});
+    import {flip} from 'svelte/animate';
+    
 
 
     let blurParameters = $state({
         delay: 0,
         duration: 300,
+        // easing: (t: number) => t, // Easing function not implemented in this demo
         amount: 5,
         opacity: 0.5,
     });
 	let newBlur = $state<string>('');
 	let blurItems = $state<string[]>([]);
 
-	let left = $state([ 'Item 1', 'Item 2', 'Item 3' ]);
-    let right = $state([ 'Item A', 'Item B', 'Item C' ]);
+    let crossfadeParameters = $state({
+        delay: 0,
+        duration: 300,
+        // easing: (t: number) => t, // Easing function not implemented in this demo
+    })
+    const [sendCrossfade, receiveCrossfade] = crossfade({...crossfadeParameters});
+	let left = $state([ {name: 'Item 1'}, {name: 'Item 2'}, {name: 'Item 3'}, {name: 'Item 4'}, {name: 'Item 5'} ]);
+    let right = $state([ {name: 'Item A'}, {name: 'Item B'}, {name: 'Item C'}, {name: 'Item D'}, {name: 'Item E'} ]);
 
     let newDraw = $state<string>('');
     let drawItems = $state<string[]>([]);
@@ -44,9 +52,11 @@
 
 <Heading>Transitions</Heading>
 
-{#snippet blurHeader()}
+
+<div class="w-full md:grid sm md:grid-cols-4 md:gap-4">
+    {#snippet blurHeader()}
 <div class="flex flex-col">
-    <div class="title-small italic">Parameters</div>
+    <div class="title-small italic">Parameters:</div>
     <Slider
         name="Delay"
         id="blurDelay"
@@ -83,7 +93,11 @@
         step={0.1}
 
     />
-    <div class="divider divider-outline"></div>
+    <div class="divider divider-outline py-2"></div>
+    <div class="title-small italic">Notes:</div>
+    <div class="body-small"><code>easing</code> not implemented.</div>
+    <div class="divider divider-outline py-2"></div>
+    <div class="title-small italic">Playground:</div>
     <div class="input-filled">
         <input
             type="text"
@@ -102,10 +116,8 @@
     </div>
 </div>
 {/snippet}
-
-<div class="w-full md:grid sm md:grid-cols-4 md:gap-4">
     <Box title="Blur" header={blurHeader}>
-        <ul class="h-45 py-2 list-inside overflow-y-scroll">
+        <ul class="h-38 py-2 list-inside overflow-y-scroll">
             {#each blurItems as item, idx (idx)}
                 <li class="title" transition:blur={{...blurParameters}}>
                     <div class="flex flex-row justify-between">
@@ -123,34 +135,67 @@
         </ul>
     </Box>
 
-    <Box title="Crossfade">
-        <div class="grid grid-cols-2 gap-8">
-            <ul class="h-85 list-inside overflow-y-scroll">
-                {#each left as item, idx (idx)}
-                    <li class="title">
+    {#snippet crossfadeHeader()}
+    <div class="flex flex-col">
+        <div class="title-small italic">Parameters:</div>
+        <Slider
+            name="Delay"
+            id="crossfadeDelay"
+            bind:value={crossfadeParameters.delay}
+            min={0}
+            max={3000}
+            step={100}
+
+        />
+        <Slider
+            name="Duration"
+            id="crossfadeDuration"
+            bind:value={crossfadeParameters.duration}
+            min={0}
+            max={3000}
+            step={100}
+
+        />
+    </div>
+    <div class="divider divider-outline py-2"></div>
+    <div class="title-small italic">Notes:</div>
+    <div class="body-small"><code>easing</code> not implemented.</div>
+    <div class="body-small">also uses <code>animate:flip</code>.</div>
+    <div class="divider divider-outline py-2"></div>
+    <div class="title-small italic">Playground:</div>
+    {/snippet}
+
+    <Box title="Crossfade" header={crossfadeHeader}>
+        <div class="grid grid-cols-2">
+            <ul class="h-85 w-full list-inside overflow-y-scroll">
+                {#each left as item (item)}
+                <li class="title" animate:flip>
                     <button
                         onclick={() => {
                         left = left.filter((i) => i !== item);
                         right.push(item)
                         }}
-                        in:receiveCrossfade={{ key: item, duration: 1500 }}
-                        out:sendCrossfade={{ key: item, duration: 1500 }}>
-                        {item}
+                        in:receiveCrossfade={{ key: item, ...crossfadeParameters }}
+                        out:sendCrossfade={{ key: item, ...crossfadeParameters }}
+                        
+                    >
+                        {item.name}
                     </button>
                 </li>
                 {/each}
             </ul>
-            <ul class="h-85 list-inside overflow-y-scroll">
-                {#each right as item, idx (idx)}
-                <li class="title">
+            <ul class="h-85 w-full list-inside overflow-y-scroll">
+                {#each right as item (item)}
+                <li class="title" animate:flip>
                     <button
                         onclick={() => {
                         right = right.filter((i) => i !== item);
                         left.push(item)
                         }}
-                        in:receiveCrossfade={{ key: item, duration: 1500 }}
-                        out:sendCrossfade={{ key: item, duration: 1500 }}>
-                        {item}
+                        in:receiveCrossfade={{ key: item, ...crossfadeParameters }}
+                        out:sendCrossfade={{ key: item, ...crossfadeParameters }}
+                    >
+                        {item.name}
                     </button>
                 </li>
                 {/each}
