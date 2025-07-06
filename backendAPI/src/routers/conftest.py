@@ -83,6 +83,8 @@ async def add_test_policy_for_resource(current_user_from_azure_token: User):
 
     async def _add_test_policy_for_resource(policy, token_payload: dict = None):
         current_user = await current_user_from_azure_token(token_payload)
+        print("=== conftest - add_test_policy_for_resource - current_user ===")
+        print(current_user)
         async with AccessPolicyCRUD() as crud:
             added_policy = await crud.create(policy, current_user)
 
