@@ -269,16 +269,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                                 "submitted_id": data.get("id"),
                             },
                         )
-                        await self._emit_status(
-                            sid,
-                            {
-                                "error": "blabla too long error message, doesn't really fit in here what are we doing?"
-                            },
-                        )
-                        await self._emit_status(
-                            sid,
-                            {"error": "blabla short error message"},
-                        )
                 # if database_object is not None:
                 #     await self.server.emit(
                 #         "transfer",
