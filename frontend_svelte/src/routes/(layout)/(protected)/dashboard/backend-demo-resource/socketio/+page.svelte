@@ -8,11 +8,11 @@
 	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
 	import { Action } from '$lib/accessHandler';
 	import DemoResourceContainer from './DemoResourceContainer.svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, scale } from 'svelte/transition';
 
 	let { data }: { data: PageData } = $props();
 	let editIds = $state(new Set<string>());
-	// let statusMessages = $state<SocketioStatus[]>([]);
+	let statusMessages = $state<SocketioStatus[]>([]);
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	$effect(() => {
@@ -52,6 +52,7 @@
 			demoResources = demoResources.filter((res) => res.id !== resource_id);
 		});
 		socketio.client.on('status', (data: SocketioStatus) => {
+			statusMessages.unshift(data);
 			if (debug) {
 				console.log(
 					'=== dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
@@ -178,6 +179,43 @@
 		<ul class="h-15 list-inside overflow-y-scroll">
 			{#each editIds as id (id)}
 				<li class="label" transition:fade>{id}</li>
+			{/each}
+		</ul>
+	</div>
+
+	<div class="h-25 w-105 bg-base-150 shadow-outline rounded-lg p-2 shadow-inner">
+		<div class="title-small italic">Status messages</div>
+		<div class="divider divider-outline"></div>
+		<ul class="h-15 list-inside overflow-y-scroll">
+			{#each statusMessages as message (message)}
+				{#if 'error' in message}
+					<li class="label p-1" transition:fade>
+						<div
+							class="bg-error-container text-error-container-content flex h-fit flex-row items-center justify-between rounded-xl px-1"
+						>
+							<span class="icon-[noto--cross-mark] ml-1 size-3"></span>
+							<div class="mr-1 h-fit w-fit text-right">{message.error}</div>
+						</div>
+					</li>
+				{:else if 'success' in message}
+					<li class="label p-1" transition:fade>
+						<div
+							class="bg-success-container text-success-container-content flex h-fit flex-row items-center justify-between rounded-xl px-1"
+							transition:scale|global={{ duration: 500, start: 2, opacity: 0 }}
+						>
+							{#if message.success === 'created'}
+								<span class="bg-success-container-content icon-[tabler--check]"></span>
+							{:else if message.success === 'updated'}
+								<span
+									class="bg-success-container-content icon-[material-symbols--edit-outline-rounded]"
+								></span>
+							{:else if message.success === 'deleted'}
+								<span class="bg-success-container-content icon-[tabler--trash]"></span>
+							{/if}
+							<div class="mr-1 w-fit text-right">{message.id}</div>
+						</div>
+					</li>
+				{/if}
 			{/each}
 		</ul>
 	</div>

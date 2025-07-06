@@ -11,22 +11,10 @@ export type SocketioConnection = {
 };
 
 export type SocketioStatus =
-	| {
-			success: 'created';
-			id: string;
-			submitted_id: string;
-	  }
-	| {
-			success: 'updated';
-			id: string;
-	  }
-	| {
-			success: 'deleted';
-			id: string;
-	  }
-	| {
-			error: string;
-	  };
+	| { success: 'created'; id: string; submitted_id: string; }
+	| { success: 'updated'; id: string; }
+	| { success: 'deleted'; id: string; }
+	| { error: string; };
 
 export class SocketIO {
 	// TBD: remove event and rooms from SocketioConnection
