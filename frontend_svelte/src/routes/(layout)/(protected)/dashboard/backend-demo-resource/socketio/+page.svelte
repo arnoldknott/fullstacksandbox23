@@ -9,6 +9,7 @@
 	import { Action } from '$lib/accessHandler';
 	import DemoResourceContainer from './DemoResourceContainer.svelte';
 	import { fade } from 'svelte/transition';
+
 	let { data }: { data: PageData } = $props();
 	let editIds = $state(new Set<string>());
 	// let statusMessages = $state<SocketioStatus[]>([]);
@@ -82,11 +83,24 @@
 	};
 
 	const deleteResource = (resourceId: string) => {
-		socketio.client.emit('delete', resourceId);
+		if (resourceId.slice(0, 4) === 'new_') {
+			// If the resource is new and has no id, we can just remove it from the local array
+			demoResources = demoResources.filter((res) => res.id !== resourceId);
+		} else {
+			socketio.client.emit('delete', resourceId);
+		}
+		if (editIds.has(resourceId)) {
+			editIds.delete(resourceId);
+			editIds = new Set(editIds); // trigger reactivity
+		}
 	};
 
 	// The backend is handling it, whether it's new or existing. If the id is a UUID, it tries to update an existing resource.
 	const submitResource = (demoResource: DemoResourceExtended) => {
+		if (demoResource.id?.slice(0, 4) === 'new_') {
+			editIds.delete(demoResource.id);
+			editIds = new Set(editIds); // trigger reactivity
+		}
 		socketio.client.emit('submit', demoResource);
 	};
 
