@@ -183,7 +183,7 @@
 		</ul>
 	</div>
 
-	<div class="h-25 w-105 bg-base-150 shadow-outline rounded-lg p-2 shadow-inner">
+	<div class="bg-base-150 shadow-outline h-25 w-105 rounded-lg p-2 shadow-inner">
 		<div class="title-small italic">Status messages</div>
 		<div class="divider divider-outline"></div>
 		<ul class="h-15 list-inside overflow-y-scroll">
