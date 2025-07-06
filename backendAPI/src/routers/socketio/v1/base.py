@@ -234,8 +234,10 @@ class BaseNamespace(socketio.AsyncNamespace):
                 session = await self._get_session_data(sid)
                 current_user = session["current_user"]
                 database_object = None
-                try:
-                    resource_id = UUID(data["id"])  # validate if id is a valid UUID
+                if (
+                    "id" in data and data["id"][:4] != "new_"
+                ):  # validate if id is a valid UUID
+                    resource_id = UUID(data["id"])
                     # if id is present, it is an update
                     # validate data with update model
                     object_update = self.update_model(**data)
@@ -250,7 +252,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                                 "id": str(database_object.id),
                             },
                         )
-                except Exception:
+                else:
                     # if id is not present, it is a create
                     # validate data with create model
                     object_create = self.create_model(**data)
