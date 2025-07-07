@@ -35,7 +35,7 @@ class InteractiveDocumentation(BaseNamespace):
     #     print(sid, flush=True)
     #     # return await super().on_connect(sid, environ, auth)
 
-    async def initial_data_transfer(self, sid):
+    async def initial_data_transfer(self, sid, *args, **kwargs):
         """Executes transferring the initial data on connect."""
         for topic in self.average:
             await self.server.emit(
