@@ -81,6 +81,25 @@
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 					</div>
+					<ul
+						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
+						role="menu"
+						aria-orientation="vertical"
+						aria-labelledby="action-share"
+					>
+						<!-- {#each  as identity, i (i)}
+							<ShareItem
+								resourceId="actionButtonShareResourceId"
+								icon="icon-[fluent--people-team-16-filled]"
+								identity={identity}
+							/>
+						{/each} -->
+						<li class="dropdown-footer gap-2">
+							<button class="btn dropdown-item btn-text text-secondary content-center justify-start"
+								>... more options</button
+							>
+						</li>
+					</ul>
 					<button
 						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
 						aria-label="Delete Button"
