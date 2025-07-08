@@ -6,6 +6,8 @@
 	let { data }: { data: PageData } = $props();
 </script>
 
+<a href="../"><button class="btn btn-accent-container">Back to all identities</button></a>
+
 <div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
 	<IdentityAccordion
 		icon="icon-[fluent--people-team-16-filled]"
