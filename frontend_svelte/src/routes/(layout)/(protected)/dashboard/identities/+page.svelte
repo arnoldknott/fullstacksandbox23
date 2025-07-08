@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import JsonData from '$components/JsonData.svelte';
-	import Heading from '$components/Heading.svelte';
 	import IdentityAccordion from './IdentityAccordion.svelte';
 	let { data }: { data: PageData } = $props();
 </script>
@@ -33,7 +32,7 @@
 			<a href={microsoftTeam.webUrl} target="_blank" rel="noopener"
 				><button class="btn btn-primary-container">Open in Microsoft Teams</button></a
 			>
-			<a href="./msteams/{microsoftTeam.id}"
+			<a href="./identities/msteams/{microsoftTeam.id}"
 				><button class="btn btn-accent-container">More information</button></a
 			>
 		</IdentityAccordion>
