@@ -332,14 +332,17 @@ class UserProfile(SQLModel, table=True):
 
 
 # Note: this is one of the models, that other users can see about a user.
-class UserReadNoGroups(UserCreate):
-    """Schema for reading a user without linked accounts and groups."""
+# not used
+# - User getting their own data uses model Me()
+# - User reading another user uses model UserRead()
+# class UserReadNoGroups(UserCreate):
+#     """Schema for reading a user without linked accounts and groups."""
 
-    # This is what other users can see about a user - without groups.
+#     # This is what other users can see about a user - without groups.
 
-    id: uuid.UUID
-    azure_user_id: Optional[uuid.UUID] = None
-    azure_groups: Optional[List["AzureGroupRead"]] = None
+#     id: uuid.UUID
+#     azure_user_id: Optional[uuid.UUID] = None
+#     azure_groups: Optional[List["AzureGroupRead"]] = None
 
 
 # Note: this the other model, that other users can see about a user.

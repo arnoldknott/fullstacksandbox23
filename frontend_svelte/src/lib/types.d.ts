@@ -1,7 +1,6 @@
 import type { AccountInfo } from '@azure/msal-node';
 import type { User as MicrosoftProfile, Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
 import type { Action } from '$lib/accessHandler';
-import type { M } from 'vitest/dist/chunks/reporters.d.BFLkQcL6.js';
 
 // App specific:
 export type BackendAPIConfiguration = {
@@ -33,7 +32,7 @@ export type Session = {
 	microsoftAccount?: AccountInfo;
 	microsoftProfile?: MicrosoftProfile;
 	userAgent?: string;
-	userProfile?: UserProfile;
+	userProfile?: Me;
 	sessionId: string;
 };
 
@@ -108,19 +107,81 @@ export interface DemoResourceWithCreationDate extends DemoResource {
 
 // Identity specific:
 
-// matches Me in models/identities/backend API
-export type UserProfile = {
-	id: string;
-	azureGroups?: string[]; // TBD: fix
-	ueberGroups?: string[]; // TBD: fix
+export type User = {
+	id: string,
+	azure_user_id: string,
+	azure_tenant_id: string,
+	is_active: boolean,
+	azure_groups: AzureGroup[],
+	ueber_groups?: string[]; // TBD: fix
 	groups?: string[]; // TBD: fix
-	subGroups?: string[]; // TBD: fix
-	subSubGroups?: string[]; // TBD: fix
-	azure_token_roles?: string[]; // TBD: fix
-	azure_token_groups?: string[]; // TBD: fix
-}; // TBD: remove
+	sub_groups?: string[]; // TBD: fix
+	sub_sub_groups?: string[]; // TBD: fix
+}
 
+type UserProfile = {
+	id: string;
+	theme_color?: string;
+	theme_variant?: Variant; // from theming.ts
+	contrast?: number;
+	user_id: string; // TBD: remove
+};
 
+type UserAccount = {
+	id: string;
+	user_id: string;
+	is_publicAIIuser: boolean;
+}
+
+// matches Me in models/identities/backend API
+export type Me = User & {
+	azure_token_roles?: string[];
+	azure_token_groups?: string[];
+	user_profile: UserProfile;
+	user_account: UserAccount;
+};
+
+type AzureGroup = {
+	id: string;
+	azure_tenant_id: string;
+	is_active: boolean;
+	azure_users: User[];
+}
+
+export type UeberGroup = {
+	id: string;
+	name: string;
+	description?: string;
+	users?: User[];
+	groups?: Group[];
+}
+
+export type Group = {
+	id: string;
+	name: string;
+	description?: string;
+	users?: User[];
+	sub_groups?: SubGroup[];
+}
+
+export type SubGroup = {
+	id: string;
+	name: string;
+	description?: string;
+	users?: User[];
+	sub_sub_groups?: SubSubGroup[];
+}
+
+export type SubSubGroup = {
+	id: string;
+	name: string;
+	description?: string;
+	users?: User[];
+}
+
+export type UserExtended = ExtendEntity<User>;
+export type UeberGroupExtended = ExtendEntity<UeberGroup>;
+export type GroupExtended = ExtendEntity<Group>;
+export type SubGroupExtended = ExtendEntity<SubGroup>;
+export type SubSubGroupExtended = ExtendEntity<SubSubGroup>;
 export type MicrosoftTeamExtended = ExtendEntity<MicrosoftTeam>;
-
-// add types for ueber-group, group, sub-group, and sub-sub-group
