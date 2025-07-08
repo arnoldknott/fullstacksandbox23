@@ -1,6 +1,7 @@
 import type { AccountInfo } from '@azure/msal-node';
 import type { User as MicrosoftProfile, Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
 import type { Action } from '$lib/accessHandler';
+import type { Variant } from '$lib/theming';
 
 // App specific:
 export type BackendAPIConfiguration = {

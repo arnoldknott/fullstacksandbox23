@@ -37,4 +37,18 @@
 			>
 		</IdentityAccordion>
 	{/each}
+	{#each data.ueberGroups as uberGroup (uberGroup.id)}
+		<IdentityAccordion
+			icon="icon-[fa--institution]"
+			title={uberGroup.name || 'Unknown Group'}
+			id={uberGroup.id}
+		>
+			<div class="badge badge-secondary-container">{uberGroup.id}</div>
+
+			<p class="body bg-primary text-primary-content">{uberGroup.description}</p>
+			<a href="./identities/ueber-group/{uberGroup.id}"
+				><button class="btn btn-accent-container">More information</button></a
+			>
+		</IdentityAccordion>
+	{/each}
 </div>
