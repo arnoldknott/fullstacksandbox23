@@ -185,8 +185,8 @@ class User(UserCreate, table=True):
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            # "lazy": "joined",
-            "lazy": "noload",
+            "lazy": "joined",
+            # "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "UeberGroup.id == foreign(IdentityHierarchy.parent_id)",
@@ -196,8 +196,8 @@ class User(UserCreate, table=True):
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            # "lazy": "joined",
-            "lazy": "noload",
+            "lazy": "joined",
+            # "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
@@ -207,8 +207,8 @@ class User(UserCreate, table=True):
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            # "lazy": "joined",
-            "lazy": "noload",
+            "lazy": "joined",
+            # "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
@@ -218,8 +218,8 @@ class User(UserCreate, table=True):
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            # "lazy": "joined",
-            "lazy": "noload",
+            "lazy": "joined",
+            # "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.parent_id)",
@@ -426,7 +426,8 @@ class UeberGroup(UeberGroupCreate, table=True):
         back_populates="ueber_groups",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "UeberGroup.id == foreign(IdentityHierarchy.parent_id)",
             "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
@@ -436,7 +437,8 @@ class UeberGroup(UeberGroupCreate, table=True):
         back_populates="ueber_groups",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "UeberGroup.id == foreign(IdentityHierarchy.parent_id)",
             "secondaryjoin": "Group.id == foreign(IdentityHierarchy.child_id)",
@@ -483,7 +485,8 @@ class Group(GroupCreate, table=True):
         back_populates="groups",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
             "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
@@ -493,7 +496,8 @@ class Group(GroupCreate, table=True):
         back_populates="groups",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "Group.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "UeberGroup.id == foreign(IdentityHierarchy.parent_id)",
@@ -503,7 +507,8 @@ class Group(GroupCreate, table=True):
         back_populates="groups",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
             "secondaryjoin": "SubGroup.id == foreign(IdentityHierarchy.child_id)",
@@ -550,7 +555,8 @@ class SubGroup(SubGroupCreate, table=True):
         back_populates="sub_groups",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
             "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
@@ -560,7 +566,8 @@ class SubGroup(SubGroupCreate, table=True):
         back_populates="sub_groups",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
@@ -570,7 +577,8 @@ class SubGroup(SubGroupCreate, table=True):
         back_populates="sub_groups",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
             "secondaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.child_id)",
@@ -617,7 +625,8 @@ class SubSubGroup(SubSubGroupCreate, table=True):
         back_populates="sub_sub_groups",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.parent_id)",
             "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
@@ -627,7 +636,8 @@ class SubSubGroup(SubSubGroupCreate, table=True):
         back_populates="sub_sub_groups",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",

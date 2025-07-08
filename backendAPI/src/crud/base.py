@@ -589,6 +589,9 @@ class BaseCRUD(
             response = await self.session.exec(statement)
             results = response.unique().all()
 
+            # print("=== CRUD - base - read - results ===")
+            # print(results)
+
             if not results:
                 logger.info(f"No objects found for {self.model.__name__}")
                 # raise HTTPException(
