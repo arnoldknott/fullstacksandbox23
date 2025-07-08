@@ -17,7 +17,9 @@
 		</IdentityAccordion>
 	{/if}
 
-	<Heading>Microsoft Teams associated with this fullstack sandbox application:</Heading>
+	<div class="title-large m-2">
+		Microsoft Teams associated with this fullstack sandbox application:
+	</div>
 
 	{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
 		<IdentityAccordion
@@ -25,8 +27,15 @@
 			title={microsoftTeam.displayName || 'Unknown Team'}
 			id={microsoftTeam.id || 'random_' + Math.random().toString(36).substring(2, 9)}
 		>
-			Microsoft Teams:
-			<JsonData data={microsoftTeam} />
+			<div class="badge badge-secondary-container">{microsoftTeam.id}</div>
+
+			<p class="body bg-primary text-primary-content">{microsoftTeam.description}</p>
+			<a href={microsoftTeam.webUrl} target="_blank" rel="noopener"
+				><button class="btn btn-primary-container">Open in Microsoft Teams</button></a
+			>
+			<a href="./msteams/{microsoftTeam.id}"
+				><button class="btn btn-accent-container">More information</button></a
+			>
 		</IdentityAccordion>
 	{/each}
 </div>

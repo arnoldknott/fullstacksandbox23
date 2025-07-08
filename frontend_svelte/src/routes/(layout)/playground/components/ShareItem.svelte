@@ -2,13 +2,13 @@
 	type Identity = {
 		id: string;
 		name: string;
-		right: string;
+		right: string | null;
 	};
 
 	let { resourceId, icon, identity }: { resourceId: string; icon: string; identity: Identity } =
 		$props();
 
-	const rightsIcon = (right: string) => {
+	const rightsIcon = (right: string | null) => {
 		return right === 'own'
 			? 'icon-[tabler--key-filled] bg-success'
 			: right === 'write'
@@ -38,7 +38,7 @@
 <li>
 	<div class="tooltip flex items-center [--placement:top]">
 		<div
-			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
+			class="dropdown-item text-secondary tooltip-toggle max-w-42 w-full content-center"
 			aria-label={identity.name}
 		>
 			<span class="{icon} shrink-0"></span>

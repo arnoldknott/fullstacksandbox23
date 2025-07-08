@@ -1,11 +1,11 @@
 import type { PageServerLoad } from './$types';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
-import type { MicrosoftTeamBasic } from '$lib/types';
+import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;
 
-	let myTeams: MicrosoftTeamBasic[] = [];
+	let myTeams: MicrosoftTeam[] = [];
 	if (locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups) {
 		myTeams = await microsoftGraph.getAttachedTeams(
 			sessionId,

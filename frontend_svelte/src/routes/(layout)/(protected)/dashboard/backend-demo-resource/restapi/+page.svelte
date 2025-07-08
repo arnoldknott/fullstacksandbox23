@@ -4,7 +4,7 @@
 	import Heading from '$components/Heading.svelte';
 	import { mount } from 'svelte';
 	import DemoResourceCard from './DemoResourceCard.svelte';
-	import type { AccessPolicy, DemoResourceExtended, MicrosoftTeamBasicExtended } from '$lib/types';
+	import type { AccessPolicy, DemoResourceExtended, MicrosoftTeamExtended } from '$lib/types';
 	let { data }: { data: PageData } = $props();
 	// console.log('=== page data in backend-demo-resource/page.svelte ===');
 	// console.log(data);
@@ -14,10 +14,10 @@
 	let debug = $state(false);
 
 	const microsoftTeamsExtendWithAccessPolicies = (
-		microsoftTeams: MicrosoftTeamBasicExtended[],
+		microsoftTeams: MicrosoftTeamExtended[],
 		demoResource: DemoResourceExtended
 	) => {
-		return microsoftTeams.map((team: MicrosoftTeamBasicExtended) => {
+		return microsoftTeams.map((team: MicrosoftTeamExtended) => {
 			return {
 				...team,
 				access_policies: demoResource.access_policies?.filter(

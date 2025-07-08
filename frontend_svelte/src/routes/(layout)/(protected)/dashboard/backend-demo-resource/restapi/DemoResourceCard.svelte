@@ -3,18 +3,18 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResourceExtended, AccessPolicy } from '$lib/types';
 	import { enhance } from '$app/forms';
-	import type { MicrosoftTeamBasicExtended } from '$lib/types';
+	import type { MicrosoftTeamExtended } from '$lib/types';
 	import { AccessHandler } from '$lib/accessHandler';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// TBD: move to components folder
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import type { ActionResult } from '@sveltejs/kit';
+	import { Action } from '$lib/accessHandler';
 
 	let {
 		demoResource,
 		microsoftTeams
-	}: { demoResource?: DemoResourceExtended; microsoftTeams?: MicrosoftTeamBasicExtended[] } =
-		$props();
+	}: { demoResource?: DemoResourceExtended; microsoftTeams?: MicrosoftTeamExtended[] } = $props();
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let userRight = $state(demoResource?.user_right || 'read');
 	let name = $state(demoResource?.name || undefined);
@@ -74,13 +74,17 @@
 	const accessAction = (identityId: string) =>
 		accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : null;
 
+	// TBD: refactor type into Identity currently defined in ShareItem.
 	let identities = $derived.by(() => {
 		return (
-			microsoftTeams?.map((team) => ({
-				id: team.id,
-				name: team.displayName,
-				right: accessAction(team.id) ?? ''
-			})) || []
+			microsoftTeams
+				// Only include teams with a defined id (string)
+				?.filter((team) => typeof team.id === 'string')
+				.map((team) => ({
+					id: team.id as string,
+					name: team.displayName as string,
+					right: accessAction(team.id as string)
+				}))
 		);
 	});
 
@@ -219,7 +223,7 @@
 								</button>
 								<!-- min-w-60 -->
 								<ul
-									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-60 shadow-xs"
+									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-60"
 									role="menu"
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
@@ -236,7 +240,7 @@
 												};
 											}}
 										>
-											{#each identities ? identities.sort( (a, b) => a.name.localeCompare(b.name) ) : [] as identity (identity.id)}
+											{#each identities ? identities.sort( (a, b) => (a.name ?? '').localeCompare(b.name ?? '') ) : [] as identity (identity.id)}
 												<ShareItem
 													resourceId={id}
 													icon="icon-[fluent--people-team-16-filled]"

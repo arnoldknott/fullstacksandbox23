@@ -265,7 +265,11 @@
 		<div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="true">
 			{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
 				<div>
-					<IdentityAccordion title={microsoftTeam.displayName} id={microsoftTeam.id} open={false}>
+					<IdentityAccordion
+						title={microsoftTeam.displayName || 'Unknown Team'}
+						id={microsoftTeam.id || Math.random().toString(36).substring(2, 9)}
+						open={false}
+					>
 						<div class="bg-success-container mb-2 rounded-xl p-2">
 							<p class="title-small text-success-container-content p-2">
 								<span class="icon-[tabler--key-filled] bg-success-container-content size-4"></span> Owner

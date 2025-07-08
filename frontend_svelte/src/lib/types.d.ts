@@ -1,6 +1,7 @@
 import type { AccountInfo } from '@azure/msal-node';
-import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
+import type { User as MicrosoftProfile, Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
 import type { Action } from '$lib/accessHandler';
+import type { M } from 'vitest/dist/chunks/reporters.d.BFLkQcL6.js';
 
 // App specific:
 export type BackendAPIConfiguration = {
@@ -119,12 +120,7 @@ export type UserProfile = {
 	azure_token_groups?: string[]; // TBD: fix
 }; // TBD: remove
 
-export interface MicrosoftTeamBasic {
-	id: string;
-	displayName: string;
-	description: string;
-}
 
-export type MicrosoftTeamBasicExtended = ExtendEntity<MicrosoftTeamBasic>;
+export type MicrosoftTeamExtended = ExtendEntity<MicrosoftTeam>;
 
 // add types for ueber-group, group, sub-group, and sub-sub-group
