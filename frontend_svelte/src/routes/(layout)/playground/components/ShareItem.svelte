@@ -38,7 +38,7 @@
 <li>
 	<div class="tooltip flex items-center [--placement:top]">
 		<div
-			class="dropdown-item text-secondary tooltip-toggle max-w-42 w-full content-center"
+			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
 			aria-label={identity.name}
 		>
 			<span class="{icon} shrink-0"></span>

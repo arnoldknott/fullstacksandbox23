@@ -65,23 +65,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== src - routes - layout - protected - identities - +page.server.ts - myTeams ===');
 	// console.log(myTeams);
 
-	let ueberGroups: UeberGroup[] = [];
+	const ueberGroups: UeberGroup[] = [];
 	if (locals.sessionData.currentUser && locals.sessionData.currentUser.ueber_groups) {
 		for (const groupId of locals.sessionData.currentUser.ueber_groups) {
-			const response = await backendAPI.get(
-				sessionId,
-				`/uebergroup/${groupId}`
-			);
+			const response = await backendAPI.get(sessionId, `/uebergroup/${groupId}`);
 			if (response.status === 200) {
 				const ueberGroup = await response.json();
 				ueberGroups.push(ueberGroup);
 			} else {
-				console.error(
-					'Failed to fetch ueber group with ID:',
-					groupId,
-					'Status:',
-					response.status
-				);
+				console.error('Failed to fetch ueber group with ID:', groupId, 'Status:', response.status);
 			}
 		}
 	}

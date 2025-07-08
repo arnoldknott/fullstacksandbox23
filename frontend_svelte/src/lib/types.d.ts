@@ -1,5 +1,8 @@
 import type { AccountInfo } from '@azure/msal-node';
-import type { User as MicrosoftProfile, Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
+import type {
+	User as MicrosoftProfile,
+	Team as MicrosoftTeam
+} from '@microsoft/microsoft-graph-types';
 import type { Action } from '$lib/accessHandler';
 import type { Variant } from '$lib/theming';
 
@@ -109,16 +112,16 @@ export interface DemoResourceWithCreationDate extends DemoResource {
 // Identity specific:
 
 export type User = {
-	id: string,
-	azure_user_id: string,
-	azure_tenant_id: string,
-	is_active: boolean,
-	azure_groups: AzureGroup[],
+	id: string;
+	azure_user_id: string;
+	azure_tenant_id: string;
+	is_active: boolean;
+	azure_groups: AzureGroup[];
 	ueber_groups?: string[]; // TBD: fix
 	groups?: string[]; // TBD: fix
 	sub_groups?: string[]; // TBD: fix
 	sub_sub_groups?: string[]; // TBD: fix
-}
+};
 
 type UserProfile = {
 	id: string;
@@ -132,7 +135,7 @@ type UserAccount = {
 	id: string;
 	user_id: string;
 	is_publicAIIuser: boolean;
-}
+};
 
 // matches Me in models/identities/backend API
 export type Me = User & {
@@ -147,7 +150,7 @@ type AzureGroup = {
 	azure_tenant_id: string;
 	is_active: boolean;
 	azure_users: User[];
-}
+};
 
 export type UeberGroup = {
 	id: string;
@@ -155,7 +158,7 @@ export type UeberGroup = {
 	description?: string;
 	users?: User[];
 	groups?: Group[];
-}
+};
 
 export type Group = {
 	id: string;
@@ -163,7 +166,7 @@ export type Group = {
 	description?: string;
 	users?: User[];
 	sub_groups?: SubGroup[];
-}
+};
 
 export type SubGroup = {
 	id: string;
@@ -171,14 +174,14 @@ export type SubGroup = {
 	description?: string;
 	users?: User[];
 	sub_sub_groups?: SubSubGroup[];
-}
+};
 
 export type SubSubGroup = {
 	id: string;
 	name: string;
 	description?: string;
 	users?: User[];
-}
+};
 
 export type UserExtended = ExtendEntity<User>;
 export type UeberGroupExtended = ExtendEntity<UeberGroup>;
