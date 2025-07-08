@@ -457,6 +457,76 @@ async def test_user_gets_own_user_through_me_endpoint(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
+    [token_user1_read_write_groups],
+    # here the admin get's itself => last_accessed_at should change!
+    indirect=True,
+)
+async def test_user_gets_own_user_through_me_endpoint_with_ueber_groups(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_ueber_groups,
+    add_one_test_access_policy,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token: CurrentUserData,
+):
+    """Test a user GETs it's own user by id"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+
+    policy = {
+        "resource_id": str(mocked_ueber_groups[1].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    response_add_user_to_ueber_group = await async_client.post(
+        f"/api/v1/user/{current_user.user_id}/group/{str(mocked_ueber_groups[1].id)}"
+    )
+    assert response_add_user_to_ueber_group.status_code == 201
+
+    response = await async_client.get("/api/v1/user/me")
+
+    assert response.status_code == 200
+    user = response.json()
+    model_verified_user = Me(**user)
+    print(
+        "=== tests - test_identity - test_user_gets_own_user_through_me_endpoint_with_ueber_groups - model_verified_user ==="
+    )
+    print(model_verified_user)
+    assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
+    if "groups" in mocked_provide_http_token_payload:
+        assert user["azure_token_groups"] == mocked_provide_http_token_payload["groups"]
+        assert len(user["azure_token_groups"]) == len(
+            mocked_provide_http_token_payload["groups"]
+        )
+    assert "id" in user
+    assert user["azure_user_id"] == str(mocked_provide_http_token_payload["oid"])
+    assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
+    assert "id" in user["user_account"]
+    assert user["user_account"]["user_id"] == user["id"]
+    assert user["user_account"]["is_publicAIuser"] is False
+    assert "id" in user["user_profile"]
+    assert user["user_profile"]["theme_color"] == "#353c6e"
+    assert user["user_profile"]["theme_variant"] == ThemeVariants.tonal_spot
+    assert user["user_profile"]["contrast"] == 0.0
+    print("=== user['ueber_groups'] ===")
+    print(user)
+    assert len(user["ueber_groups"]) == 1
+    assert user["ueber_groups"][0]["id"] == str(mocked_ueber_groups[1].id)
+    assert user["ueber_groups"][0]["name"] == mocked_ueber_groups[1].name
+    assert user["ueber_groups"][0]["description"] == mocked_ueber_groups[1].description
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
     [token_admin_read],
     indirect=True,
 )
