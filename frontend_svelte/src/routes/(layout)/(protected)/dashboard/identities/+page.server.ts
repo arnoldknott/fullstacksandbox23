@@ -11,8 +11,8 @@ import { backendAPI } from '$lib/server/apis/backendApi';
 export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;
 	// const myTeams: MicrosoftTeamBasic[] = [];
-	// if (locals.sessionData.userProfile) {
-	// 	const myAzureGroups = locals.sessionData.userProfile.azure_token_groups;
+	// if (locals.sessionData.currentUser) {
+	// 	const myAzureGroups = locals.sessionData.currentUser.azure_token_groups;
 	// 	if (myAzureGroups) {
 	// 		await Promise.all(
 	// 			myAzureGroups.map(async (azureGroup) => {
@@ -33,8 +33,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// }
 
 	// let myTeams: MicrosoftTeamBasic[] = [];
-	// if (locals.sessionData.userProfile) {
-	// 	const myAzureGroupIds = locals.sessionData.userProfile.azure_token_groups;
+	// if (locals.sessionData.currentUser) {
+	// 	const myAzureGroupIds = locals.sessionData.currentUser.azure_token_groups;
 	// 	if (myAzureGroupIds) {
 	// 		myTeams = await microsoftGraph.getAttachedTeams(sessionId, myAzureGroupIds);
 	// 	}
@@ -42,22 +42,22 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	let myTeams: MicrosoftTeam[] = [];
 	// let mySecurityGroups: any[] = [];
-	if (locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups) {
+	if (locals.sessionData.currentUser && locals.sessionData.currentUser.azure_token_groups) {
 		myTeams = await microsoftGraph.getAttachedTeams(
 			sessionId,
-			locals.sessionData.userProfile.azure_token_groups
+			locals.sessionData.currentUser.azure_token_groups
 		);
 		// mySecurityGroups = await microsoftGraph.getAttachedSecuriyGroups(
 		// 	sessionId,
-		// 	locals.sessionData.userProfile.azure_token_groups
+		// 	locals.sessionData.currentUser.azure_token_groups
 		// )
-		// const response = await microsoftGraph.get(sessionId, `/me/memberOf/?$filter=id in ('${locals.sessionData.userProfile.azure_token_groups.join("','")}')`, ['User.Read']);
+		// const response = await microsoftGraph.get(sessionId, `/me/memberOf/?$filter=id in ('${locals.sessionData.currentUser.azure_token_groups.join("','")}')`, ['User.Read']);
 		// mySecurityGroups = await response.json();
 	}
 	// console.log(
 	// 	'=== src - routes - layout - protected - identities - page.server.ts - azure_token_groups ==='
 	// );
-	// console.log(locals.sessionData.userProfile?.azure_token_groups.join("','"));
+	// console.log(locals.sessionData.currentUser?.azure_token_groups.join("','"));
 
 	// console.log('=== src - routes - layout - protected - identities - +page.server.ts - mySecurityGroups ===');
 	// console.log(mySecurityGroups);
@@ -66,8 +66,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// console.log(myTeams);
 
 	let ueberGroups: UeberGroup[] = [];
-	if (locals.sessionData.userProfile && locals.sessionData.userProfile.ueber_groups) {
-		for (const groupId of locals.sessionData.userProfile.ueber_groups) {
+	if (locals.sessionData.currentUser && locals.sessionData.currentUser.ueber_groups) {
+		for (const groupId of locals.sessionData.currentUser.ueber_groups) {
 			const response = await backendAPI.get(
 				sessionId,
 				`/uebergroup/${groupId}`

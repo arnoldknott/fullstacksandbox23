@@ -26,27 +26,16 @@
 	});
 	$effect(() => {
 		if (page.data.session) {
-			// console.log('=== layout - page.data.session.userProfile.user_profile ===');
-			// console.log(page.data.session.userProfile.user_profile);
-			themeConfiguration.sourceColor = page.data.session.userProfile.user_profile.theme_color;
-			themeConfiguration.variant = page.data.session.userProfile.user_profile.theme_variant;
-			themeConfiguration.contrast = page.data.session.userProfile.user_profile.contrast;
+			// console.log('=== layout - page.data.session.currentUser ===');
+			// console.log(page.data.session);
+			themeConfiguration.sourceColor = page.data.session.currentUser.user_profile.theme_color;
+			themeConfiguration.variant = page.data.session.currentUser.user_profile.theme_variant;
+			themeConfiguration.contrast = page.data.session.currentUser.user_profile.contrast;
 		}
-		// console.log('=== layout - themeConfiguration ===');
-		// console.log(themeConfiguration);
 	});
-	// let themeConfiguration: ColorConfig = $state({
-	// 	sourceColor: page.data.session.userProfile.user_profile.theme_color || '#353c6e',
-	// 	variant: page.data.session.userProfile.user_profile.theme_variant || Variant.TONAL_SPOT,
-	// 	contrast: page.data.session.userProfile.user_profile.contrast || 0.0
-	// });
-	// for theme picker:
-	// let sourceColor = $state('#769CDF');
-	// let variant = $state(Variant.TONAL_SPOT);
 	const contrastMin = -1.0;
 	const contrastMax = 1.0;
 	const contrastStep = 0.2;
-	// let contrast = $state(0.0);
 
 	let { children }: { children: Snippet } = $props();
 
@@ -103,11 +92,11 @@
 
 		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
 
-		// page.data.session.userProfile.user_profile.theme_color = themeConfiguration.sourceColor;
-		// page.data.session.userProfile.user_profile.theme_variant = themeConfiguration.variant;
-		// page.data.session.userProfile.user_profile.contrast = themeConfiguration.contrast;
-		// console.log('=== layout - applyTheming - page.data.session.userProfile.user_profile ===');
-		// console.log(page.data.session.userProfile.user_profile);
+		// page.data.session.currentUser.user_profile.theme_color = themeConfiguration.sourceColor;
+		// page.data.session.currentUser.user_profile.theme_variant = themeConfiguration.variant;
+		// page.data.session.currentUser.user_profile.contrast = themeConfiguration.contrast;
+		// console.log('=== layout - applyTheming - page.data.session.currentUser.user_profile ===');
+		// console.log(page.data.session.currentUser.user_profile);
 
 		$effect(() => {
 			themeStore.set(theme);
@@ -176,7 +165,7 @@
 
 <div bind:this={mainContent} class="mx-5 mt-5 h-full" use:applyTheming>
 	<nav
-		class="navbar rounded-box bg-base-100 sticky start-0 top-0 z-1 justify-between shadow-sm md:flex md:items-stretch"
+		class="navbar rounded-box bg-base-100 z-1 sticky start-0 top-0 justify-between shadow-sm md:flex md:items-stretch"
 	>
 		<div class="dropdown navbar-start inline-flex md:hidden rtl:[--placement:bottom-end]">
 			<button

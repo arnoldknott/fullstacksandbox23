@@ -6,13 +6,13 @@
 </script>
 
 <div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
-	{#if data.session?.userProfile}
+	{#if data.session?.currentUser}
 		<IdentityAccordion
 			title="My user Profile in this app"
-			id={data.session.userProfile.id}
+			id={data.session.currentUser.id}
 			open={false}
 		>
-			<JsonData data={data.session?.userProfile} />
+			<JsonData data={data.session?.currentUser} />
 		</IdentityAccordion>
 	{/if}
 

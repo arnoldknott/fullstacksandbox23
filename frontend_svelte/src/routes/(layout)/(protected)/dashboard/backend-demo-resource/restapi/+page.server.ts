@@ -79,10 +79,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	// Fetch the Microsoft Teams the user is attached to
 	let microsoftTeams: MicrosoftTeamBasic[] = [];
-	if (locals.sessionData.userProfile && locals.sessionData.userProfile.azure_token_groups) {
+	if (locals.sessionData.currentUser && locals.sessionData.currentUser.azure_token_groups) {
 		microsoftTeams = await microsoftGraph.getAttachedTeams(
 			sessionId,
-			locals.sessionData.userProfile.azure_token_groups
+			locals.sessionData.currentUser.azure_token_groups
 		);
 	}
 

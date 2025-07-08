@@ -309,6 +309,7 @@ class UserProfile(SQLModel, table=True):
     )
 
     theme_color: Annotated[str, AfterValidator(validate_theme_color)] = "#353c6e"
+    # other nice color: #769CDF
     theme_variant: ThemeVariants = ThemeVariants.tonal_spot
     contrast: Annotated[float, AfterValidator(validate_contrast_range)] = 0.0
 

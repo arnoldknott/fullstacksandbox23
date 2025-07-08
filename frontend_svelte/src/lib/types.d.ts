@@ -33,7 +33,7 @@ export type Session = {
 	microsoftAccount?: AccountInfo;
 	microsoftProfile?: MicrosoftProfile;
 	userAgent?: string;
-	userProfile?: Me;
+	currentUser?: Me;
 	sessionId: string;
 };
 

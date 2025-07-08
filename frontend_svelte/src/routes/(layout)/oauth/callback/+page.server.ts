@@ -44,8 +44,8 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 				JSON.stringify(microsoftProfile)
 			);
 			const responseMe = await backendAPI.get(sessionId, '/user/me');
-			const userProfile = await responseMe.json();
-			await redisCache.setSession(sessionId, '$.userProfile', JSON.stringify(userProfile));
+			const currentUser = await responseMe.json();
+			await redisCache.setSession(sessionId, '$.currentUser', JSON.stringify(currentUser));
 		} else {
 			console.error('🔥 🚪 oauth - callback - server - redirect failed');
 			redirect(302, '/');
