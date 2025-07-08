@@ -16,8 +16,13 @@
 		</IdentityAccordion>
 	{/if}
 
-	<div class="title-large m-2">
-		Microsoft Teams associated with this fullstack sandbox application:
+	<div>
+		<div class="title-large m-2">
+			Microsoft Teams associated with this fullstack sandbox application
+		</div>
+		<div class="title-small m-2">
+			that {data.session?.microsoftProfile?.displayName || 'current user'} is a member of:
+		</div>
 	</div>
 
 	{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
@@ -37,6 +42,16 @@
 			>
 		</IdentityAccordion>
 	{/each}
+
+	<div>
+		<div class="title-large m-2">
+			Ueber Groups associated with this fullstack sandbox application,
+		</div>
+		<div class="title-small m-2">
+			that {data.session?.microsoftProfile?.displayName || 'current user'} is a member of:
+		</div>
+	</div>
+
 	{#each data.ueberGroups as uberGroup (uberGroup.id)}
 		<IdentityAccordion
 			icon="icon-[fa--institution]"

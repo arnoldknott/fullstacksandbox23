@@ -117,10 +117,10 @@ export type User = {
 	azure_tenant_id: string;
 	is_active: boolean;
 	azure_groups: AzureGroup[];
-	ueber_groups?: string[]; // TBD: fix
-	groups?: string[]; // TBD: fix
-	sub_groups?: string[]; // TBD: fix
-	sub_sub_groups?: string[]; // TBD: fix
+	ueber_groups?: UeberGroup[]; // TBD: fix
+	groups?: Group[]; // TBD: fix
+	sub_groups?: SubGroup[]; // TBD: fix
+	sub_sub_groups?: SubSubGroup[]; // TBD: fix
 };
 
 type UserProfile = {

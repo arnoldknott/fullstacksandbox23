@@ -3,7 +3,6 @@ import { microsoftGraph } from '$lib/server/apis/msgraph';
 // import type { MicrosoftTeamBasic } from '$lib/types';
 import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
 import type { UeberGroup } from '$lib/types';
-import { backendAPI } from '$lib/server/apis/backendApi';
 // const getAllMicrosoftTeams = async (sessionId: string, azureGroups: string[]) => {
 
 // }
@@ -65,21 +64,26 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== src - routes - layout - protected - identities - +page.server.ts - myTeams ===');
 	// console.log(myTeams);
 
-	const ueberGroups: UeberGroup[] = [];
+	// const ueberGroups: UeberGroup[] = [];
+	// if (locals.sessionData.currentUser && locals.sessionData.currentUser.ueber_groups) {
+	// 	for (const groupId of locals.sessionData.currentUser.ueber_groups) {
+	// 		const response = await backendAPI.get(sessionId, `/uebergroup/${groupId.id}`);
+	// 		if (response.status === 200) {
+	// 			const ueberGroup = await response.json();
+	// 			ueberGroups.push(ueberGroup);
+	// 		} else {
+	// 			console.error('Failed to fetch ueber group with ID:', groupId, 'Status:', response.status);
+	// 		}
+	// 	}
+	// }
+
+	let ueberGroups: UeberGroup[] = [];
 	if (locals.sessionData.currentUser && locals.sessionData.currentUser.ueber_groups) {
-		for (const groupId of locals.sessionData.currentUser.ueber_groups) {
-			const response = await backendAPI.get(sessionId, `/uebergroup/${groupId}`);
-			if (response.status === 200) {
-				const ueberGroup = await response.json();
-				ueberGroups.push(ueberGroup);
-			} else {
-				console.error('Failed to fetch ueber group with ID:', groupId, 'Status:', response.status);
-			}
-		}
+		ueberGroups = locals.sessionData.currentUser.ueber_groups;
 	}
 
 	return {
 		microsoftTeams: myTeams,
-		ueberGroups
+		ueberGroups: ueberGroups
 	};
 };
