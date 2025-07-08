@@ -20,7 +20,12 @@
 	<Heading>Microsoft Teams associated with this fullstack sandbox application:</Heading>
 
 	{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
-		<IdentityAccordion title={microsoftTeam.displayName} id={microsoftTeam.id}>
+		<IdentityAccordion
+			icon="icon-[fluent--people-team-16-filled]"
+			title={microsoftTeam.displayName || 'Unknown Team'}
+			id={microsoftTeam.id || 'random_' + Math.random().toString(36).substring(2, 9)}
+		>
+			Microsoft Teams:
 			<JsonData data={microsoftTeam} />
 		</IdentityAccordion>
 	{/each}

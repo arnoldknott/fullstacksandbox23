@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	let {
+		icon,
 		title,
 		id,
 		open = true,
 		children
-	}: { title: string; id: string; open?: boolean; children: Snippet } = $props();
+	}: { icon?: string; title: string; id: string; open?: boolean; children: Snippet } = $props();
 
 	// export interface MicrosoftTeamBasic {
 	// 	id: string;
@@ -24,9 +25,12 @@
 		aria-expanded={open}
 	>
 		<span
-			class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180"
+			class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 mr-10 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180"
 		></span>
-		<p class="title ml-10">{title}</p>
+		{#if icon}
+			<span class="{icon} shrink-0"></span>
+		{/if}
+		<p class="title">{title}</p>
 	</button>
 	<div
 		id="{id}-collapse"
