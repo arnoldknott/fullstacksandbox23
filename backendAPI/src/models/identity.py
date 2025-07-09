@@ -142,7 +142,13 @@ class User(UserCreate, table=True):
     )
     user_account: Optional["UserAccount"] = Relationship(
         back_populates="user",
-        sa_relationship_kwargs={"lazy": "joined"},
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            # "lazy": "joined",
+            "viewonly": True,
+            "uselist": False,  # one-to-one relationship
+            # "primaryjoin": "User.id == foreign(UserAccount.user_id)",
+        },
     )
 
     # ### User Profile ###
@@ -151,7 +157,13 @@ class User(UserCreate, table=True):
     )
     user_profile: Optional["UserProfile"] = Relationship(
         back_populates="user",
-        sa_relationship_kwargs={"lazy": "joined"},
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            # "lazy": "joined",
+            "viewonly": True,
+            "uselist": False,  # one-to-one relationship
+            # "primaryjoin": "User.id == foreign(UserProfile.user_id)",
+        },
     )
 
     ### App specific groups ###
@@ -245,7 +257,13 @@ class UserAccount(SQLModel, table=True):
     )  # This is manually set from identity crud at self-sign-up!
     user: User = Relationship(
         back_populates="user_account",
-        sa_relationship_kwargs={"lazy": "joined"},
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            # "lazy": "joined",
+            # "viewonly": True,
+            # "uselist": False,  # one-to-one relationship
+            # "primaryjoin": "UserAccount.user_id == foreign(User.id)",
+        },
     )
     is_publicAIuser: bool = False
 
@@ -294,7 +312,13 @@ class UserProfile(SQLModel, table=True):
     )  # This is manually set from identity crud at self-sign-up!
     user: User = Relationship(
         back_populates="user_profile",
-        sa_relationship_kwargs={"lazy": "joined"},
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            # "lazy": "joined",
+            # "lazy": "noload",
+            # "viewonly": True,
+            # "primaryjoin": "UserProfile.user_id == foreign(User.id)",
+        },
     )
 
     theme_color: Annotated[str, AfterValidator(validate_theme_color)] = "#353c6e"
