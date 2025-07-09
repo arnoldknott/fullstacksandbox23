@@ -9,6 +9,13 @@ from sqlmodel import Field, Relationship, SQLModel
 from core.config import config
 from models.access import IdentityHierarchy
 
+from .base import (
+    AccessPolicyMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    UserRightsMixin,
+)
+
 
 # region account linking
 
@@ -389,6 +396,12 @@ class UserUpdate(UserCreate):
     #     org_defined_id: int
 
 
+class UserExtended(
+    UserRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+):
+    pass
+
+
 # endregion User
 
 # TBD: check if it makes sense to use relationships between groups and group-users;
@@ -450,7 +463,13 @@ class UeberGroupUpdate(UeberGroupCreate):
     name: Optional[str] = None
 
 
-# endregion SubGroup
+class UeberGroupExtended(
+    UeberGroupRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+):
+    pass
+
+
+# endregion UeberGroup
 
 
 # region Group
@@ -518,6 +537,12 @@ class GroupUpdate(GroupCreate):
     """Schema for updating a group."""
 
     name: Optional[str] = None
+
+
+class GroupExtended(
+    GroupRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+):
+    pass
 
 
 # endregion Group
@@ -590,6 +615,12 @@ class SubGroupUpdate(SubGroupCreate):
     name: Optional[str] = None
 
 
+class SubGroupExtended(
+    SubGroupRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+):
+    pass
+
+
 # endregion SubGroup
 
 
@@ -646,6 +677,12 @@ class SubSubGroupUpdate(SubSubGroupCreate):
     """Schema for updating a sub-sub-group."""
 
     name: Optional[str] = None
+
+
+class SubSubGroupExtended(
+    SubSubGroupRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+):
+    pass
 
 
 # endregion SubSubGroup
