@@ -422,7 +422,7 @@
 								aria-label="Dropdown"
 							></span>
 							<ul
-								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
+								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden"
 								role="menu"
 								aria-orientation="vertical"
 								aria-labelledby="dropdown-menu-icon"
@@ -489,7 +489,7 @@
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="action-share"
@@ -563,7 +563,7 @@
 					<span class="icon-[tabler--dots-vertical] text-secondary size-6"></span>
 				</div>
 				<ul
-					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
+					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden"
 					role="menu"
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon"
@@ -593,7 +593,7 @@
 							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
 						</button>
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share"
@@ -944,7 +944,7 @@
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
 							aria-label="Close"
-							data-overlay="#basic-modal"
+							data-overlay="#centered-modal"
 						>
 							<span class="icon-[tabler--x] size-4"></span>
 						</button>
@@ -991,7 +991,7 @@
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
 							aria-label="Close"
-							data-overlay="#basic-modal"
+							data-overlay="#share-modal"
 						>
 							<span class="icon-[tabler--x] size-4"></span>
 						</button>
@@ -1037,6 +1037,75 @@
 							>Close</button
 						>
 						<button type="button" class="btn btn-primary">Save changes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<button
+			type="button"
+			class="btn btn-warning"
+			aria-haspopup="dialog"
+			aria-expanded="false"
+			aria-controls="add-element-modal"
+			data-overlay="#add-element-modal"
+		>
+			<span class="icon-[material-symbols--edit-outline-rounded]"></span>
+			Create new element
+		</button>
+
+		<div
+			id="add-element-modal"
+			class="overlay modal modal-middle overlay-open:opacity-100 hidden"
+			role="dialog"
+			tabindex="-1"
+		>
+			<div class="modal-dialog overlay-open:opacity-100">
+				<div class="modal-content bg-base-300 shadow-outline shadow">
+					<div class="modal-header">
+						<h3 class="modal-title">Add an Element</h3>
+						<button
+							type="button"
+							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+							aria-label="Close"
+							data-overlay="#add-element-modal"
+						>
+							<span class="icon-[tabler--x] size-4"></span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="w-full overflow-x-auto">
+							<div class="input-filled input-base-content mb-2 w-fit grow">
+								<input
+									type="text"
+									placeholder="Name the demo resource"
+									class="input input-sm md:input-md shadow-shadow shadow-inner"
+									id="name_id_new_element"
+									name="name"
+								/>
+								<label class="input-filled-label" for="name_id_new_element">Name</label>
+							</div>
+							<div class="textarea-filled textarea-base-content w-full">
+								<textarea
+									class="textarea shadow-shadow shadow-inner"
+									placeholder="Describe the demo resource here."
+									id="description_id_new_element"
+									name="description"
+								>
+								</textarea>
+								<label class="textarea-filled-label" for="description_id_new_element">
+									Description
+								</label>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button
+							class="btn-warning-container btn btn-circle btn-gradient"
+							aria-label="Send Icon Button"
+						>
+							<span class="icon-[tabler--send-2]"></span>
+						</button>
 					</div>
 				</div>
 			</div>
