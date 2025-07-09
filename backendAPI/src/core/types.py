@@ -25,6 +25,14 @@ class GuardTypes(BaseModel):
     groups: Optional[List[UUID]] = []
 
 
+# For guarding events in socketio namespaces.
+class EventGuard(BaseModel):
+    """Guards for the events in socket.io namespaces"""
+
+    event: str
+    guards: GuardTypes
+
+
 # TBD: consider moving this to src/models/access.py or src/core/security.py?
 class CurrentUserData(BaseModel):
     """Model for the current user data - acts as interface for the request from endpoint to crud."""

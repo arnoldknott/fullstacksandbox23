@@ -1,6 +1,6 @@
 import logging
 
-from core.types import GuardTypes
+from core.types import EventGuard, GuardTypes
 
 from .base import BaseNamespace
 
@@ -17,6 +17,14 @@ logger = logging.getLogger(__name__)
 # #     logger.info(f"Received message from client {sid}: {data}")
 # #     await sio.emit("message", f"Message received from client {sid}: {data}")
 
+# protect the events with requirements for scopes, roles and groups in users access token
+event_guards = [
+    EventGuard(
+        event="connect",
+        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+    )
+]
+
 
 class DemoNamespace(BaseNamespace):
     """Protected class for socket.io namespaces."""
@@ -24,7 +32,7 @@ class DemoNamespace(BaseNamespace):
     def __init__(self, namespace=None):
         super().__init__(
             namespace=namespace,
-            guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+            event_guards=event_guards,
             # crud=ProtectedResourceCRUD,
             callback_on_connect=self.callback_on_connect,
         )

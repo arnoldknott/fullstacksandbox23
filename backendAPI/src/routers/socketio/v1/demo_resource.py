@@ -2,7 +2,7 @@
 
 from .base import BaseNamespace
 
-from core.types import GuardTypes
+from core.types import EventGuard, GuardTypes
 from crud.demo_resource import DemoResourceCRUD
 from models.demo_resource import (
     DemoResourceCreate,
@@ -13,6 +13,14 @@ from models.demo_resource import (
 
 # logger = logging.getLogger(__name__)
 
+# protect the events with requirements for scopes, roles and groups in users access token
+event_guards = [
+    EventGuard(
+        event="connect",
+        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+    )
+]
+
 
 class DemoResourceNamespace(BaseNamespace):
     """Socket.IO interface for Demo Resources."""
@@ -20,7 +28,7 @@ class DemoResourceNamespace(BaseNamespace):
     def __init__(self, namespace=None):
         super().__init__(
             namespace=namespace,
-            guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+            event_guards=event_guards,
             crud=DemoResourceCRUD,
             create_model=DemoResourceCreate,
             read_model=DemoResourceRead,

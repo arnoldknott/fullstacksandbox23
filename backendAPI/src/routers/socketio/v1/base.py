@@ -1,7 +1,9 @@
+from typing import List
 import logging
 from urllib.parse import parse_qs
 from uuid import UUID
 
+from pprint import pprint
 import socketio
 from sqlmodel import SQLModel
 from core.config import config
@@ -10,7 +12,7 @@ from core.security import (
     get_azure_token_payload,
     get_token_from_cache,
 )
-from core.types import GuardTypes
+from core.types import EventGuard
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 
 logger = logging.getLogger(__name__)
@@ -65,7 +67,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         self,
         namespace: str = None,
         room: str = None,
-        guards: GuardTypes = None,
+        event_guards: List[EventGuard] = [],
         # create_guards: GuardTypes = None,
         # read_guards: GuardTypes = None,
         # update_guards: GuardTypes = None,
@@ -79,7 +81,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         callback_on_disconnect=None,
     ):
         super().__init__(namespace=namespace)
-        self.guards = guards
+        self.event_guards = event_guards
         self.crud = crud
         self.create_model = create_model
         self.read_model = read_model
@@ -90,6 +92,18 @@ class BaseNamespace(socketio.AsyncNamespace):
         self.room = room  # use in hierarchical resource system for parent resource id and/or identity (group) id? Can be assigned after authentication by using enter_room()
         self.callback_on_connect = callback_on_connect
         self.callback_on_disconnect = callback_on_disconnect
+
+    async def _check_auth_token_against_event_guards(self, session_id, guards):
+        """Check the auth token against the event guards."""
+
+        token = await get_token_from_cache(
+            session_id, [f"api://{config.API_SCOPE}/socketio"]
+        )
+        if not token:
+            raise ConnectionRefusedError("Authorization failed.")
+        token_payload = await get_azure_token_payload(token)
+        current_user = await check_token_against_guards(token_payload, guards)
+        return [current_user, token_payload["name"]]
 
     async def _get_session_data(self, sid):
         """Get socketio session data from the socketio server."""
@@ -198,20 +212,28 @@ class BaseNamespace(socketio.AsyncNamespace):
         # is_request-access-data = request-access-data == "true"
         # print(f"=== base - on_connect - sid: {sid} - request-access-data: {request-access-data} ===")
         # print(request-access-data, flush=True)
-        guards = self.guards
+        guards = next(
+            (guard.guards for guard in self.event_guards if guard.event == "connect"),
+            None,
+        )
         if guards is not None:
             try:
                 # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
                 # catch and handle an expired token gracefully and return something to the client on a different message channel,
                 # so it can initiate the authentication process and come back with a new session id
-                token = await get_token_from_cache(
-                    auth["session-id"], [f"api://{config.API_SCOPE}/socketio"]
+                [current_user, user_name] = (
+                    await self._check_auth_token_against_event_guards(
+                        auth["session-id"], guards
+                    )
                 )
-                token_payload = await get_azure_token_payload(token)
-                current_user = await check_token_against_guards(token_payload, guards)
+                # token = await get_token_from_cache(
+                #     auth["session-id"], [f"api://{config.API_SCOPE}/socketio"]
+                # )
+                # token_payload = await get_azure_token_payload(token)
+                # current_user = await check_token_against_guards(token_payload, guards)
                 # Do same in a try: except with create_guards, read_guards, update_guards, delete_guards
                 session_data = {
-                    "user_name": token_payload["name"],
+                    "user_name": user_name,
                     "current_user": current_user,
                 }
                 await self.server.save_session(
