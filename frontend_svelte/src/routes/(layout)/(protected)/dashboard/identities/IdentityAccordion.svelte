@@ -19,19 +19,31 @@
 	class="accordion-item bg-neutral-container text-neutral-container-content {open ? 'active' : ''}"
 	{id}
 >
-	<button
-		class="accordion-toggle inline-flex items-center gap-x-4 text-start"
-		aria-controls="{id}-collapse"
-		aria-expanded={open}
-	>
-		<span
-			class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 mr-10 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180"
-		></span>
-		{#if icon}
-			<span class="{icon} shrink-0"></span>
-		{/if}
-		<p class="title">{title}</p>
-	</button>
+	<div class="flex flex-col">
+		<button
+			class="accordion-toggle inline-flex items-center gap-x-4 text-start"
+			aria-controls="{id}-collapse"
+			aria-expanded={open}
+		>
+			<span
+				class="icon-[tabler--chevron-right] accordion-item-active:rotate-90 mr-10 size-5 shrink-0 transition-transform duration-300 rtl:rotate-180"
+			></span>
+			{#if icon}
+				<span class="{icon} shrink-0"></span>
+			{/if}
+			<div class="flex w-full flex-row">
+				<p class="title grow">{title}</p>
+				<div
+					class="badge badge-secondary-container shadow-shadow hidden justify-self-end shadow-xl md:block"
+				>
+					{id}
+				</div>
+			</div>
+		</button>
+		<div class="badge badge-secondary-container badge-sm mb-4 place-self-center md:hidden">
+			{id}
+		</div>
+	</div>
 	<div
 		id="{id}-collapse"
 		class="accordion-content bg-base-200 text-base-content-variant {!open
