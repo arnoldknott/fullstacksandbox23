@@ -3,7 +3,6 @@ import logging
 from urllib.parse import parse_qs
 from uuid import UUID
 
-from pprint import pprint
 import socketio
 from sqlmodel import SQLModel
 from core.config import config
