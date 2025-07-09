@@ -48,7 +48,7 @@ async def post_access_policy(
 @router.get("/policies", status_code=200)
 async def get_access_policies(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies."""
     return await access_policy_view.get(token_payload, guards)
@@ -234,7 +234,7 @@ async def get_access_logs(
     action: Annotated[Action | None, Query()] = None,
     status_code: Annotated[int | None, Query()] = None,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessLogRead]:
     """Returns all access logs."""
     logger.info("GET access logs")

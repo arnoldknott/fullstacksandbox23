@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime, timedelta
 
+from pprint import pprint
+
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -636,23 +638,50 @@ async def test_admin_gets_access_policies(
         token_user1_read_write,
         token_user2_read,
         token_user2_read_write,
-        token_admin,
     ],
     indirect=True,
 )
-async def test_users_get_all_access_policies_fails(
+async def test_users_get_all_access_policies_only_return_own_policies(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
     add_many_test_access_policies,
+    add_one_test_access_policy,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
 ):
     """Tests GET access policies, i.e. share."""
     app_override_provide_http_token_payload
     add_many_test_access_policies
 
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    extra_resource_id = str(uuid.uuid4())
+
+    policy = {
+        "resource_id": extra_resource_id,
+        "identity_id": current_user.user_id,
+        "action": Action.own,
+        "public": False,
+    }
+    await add_one_test_access_policy(policy)
+
     response = await async_client.get("/api/v1/access/policies")
 
-    assert response.status_code == 401
-    assert response.json() == {"detail": "Invalid token."}
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) == 2
+
+    # The user should only see the policies for the resources they own and one owner policy to itself
+    assert uuid.UUID(payload[0]["resource_id"]) == current_user.user_id
+    assert uuid.UUID(payload[0]["identity_id"]) == current_user.user_id
+    assert payload[0]["action"] == Action.own
+    assert payload[0]["public"] is False
+    assert payload[1]["resource_id"] == extra_resource_id
+    assert uuid.UUID(payload[1]["identity_id"]) == current_user.user_id
+    assert payload[1]["action"] == Action.own
+    assert payload[1]["public"] is False
 
 
 @pytest.mark.anyio
@@ -2753,9 +2782,26 @@ async def test_admin_gets_access_all_logs_with_non_existing_status_code_in_datab
 async def test_user_gets_access_all_logs(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
+    add_many_test_access_logs,
+    current_user_from_azure_token,
+    mocked_provide_http_token_payload,
+    add_one_test_access_policy,
 ):
     """Tests GET access logs."""
     app_override_provide_http_token_payload
+    access_logs = add_many_test_access_logs
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    policy = {
+        "resource_id": resource_id3,
+        "identity_id": current_user.user_id,
+        "action": Action.own,
+        "public": False,
+    }
+    await add_one_test_access_policy(policy)
 
     # No logs in the database
     # other than the ones created when the user logs in
@@ -2763,9 +2809,24 @@ async def test_user_gets_access_all_logs(
     response = await async_client.get("/api/v1/access/logs")
     payload = response.json()
 
-    assert response.status_code == 401
+    expected_logs = [
+        access_logs[4],
+        access_logs[5],
+        access_logs[8],
+        access_logs[11],
+        access_logs[14],
+        access_logs[15],
+    ]
 
-    assert payload == {"detail": "Invalid token."}
+    assert response.status_code == 200
+
+    for returned, expected in zip(payload, expected_logs):
+        returned = AccessLogRead(**returned)
+        assert int(returned.id)
+        assert returned.resource_id == expected.resource_id
+        assert returned.identity_id == expected.identity_id
+        assert returned.action == expected.action
+        assert returned.status_code == expected.status_code
 
 
 @pytest.mark.anyio

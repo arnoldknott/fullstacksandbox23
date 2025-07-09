@@ -66,6 +66,10 @@ class BaseNamespace(socketio.AsyncNamespace):
         namespace: str = None,
         room: str = None,
         guards: GuardTypes = None,
+        create_guards: GuardTypes = None,
+        read_guards: GuardTypes = None,
+        update_guards: GuardTypes = None,
+        delete_guards: GuardTypes = None,
         crud=None,
         create_model: SQLModel = None,
         read_model: SQLModel = None,
@@ -205,6 +209,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 )
                 token_payload = await get_azure_token_payload(token)
                 current_user = await check_token_against_guards(token_payload, guards)
+                # Do same in a try: except with create_guards, read_guards, update_guards, delete_guards
                 session_data = {
                     "user_name": token_payload["name"],
                     "current_user": current_user,
