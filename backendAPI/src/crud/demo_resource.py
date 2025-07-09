@@ -1,8 +1,6 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import HTTPException
-from sqlmodel import select
 
 from core.types import CurrentUserData
 from models.demo_resource import (
@@ -11,7 +9,6 @@ from models.demo_resource import (
     DemoResourceRead,
     DemoResourceUpdate,
 )
-from models.demo_resource_tag_link import DemoResourceTagLink
 from models.tag import Tag
 
 from .base import BaseCRUD

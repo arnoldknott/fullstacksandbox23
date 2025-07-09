@@ -4,7 +4,6 @@ from enum import Enum
 from typing import Annotated, List, Optional
 
 from pydantic import AfterValidator, ConfigDict
-from sqlalchemy import Column, ForeignKey, Uuid
 from sqlmodel import Field, Relationship, SQLModel
 
 from core.config import config
