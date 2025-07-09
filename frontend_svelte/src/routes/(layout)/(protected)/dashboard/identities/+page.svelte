@@ -59,10 +59,14 @@
 		>
 			<p class="body">{microsoftTeam.description}</p>
 			<a href={microsoftTeam.webUrl} target="_blank" rel="noopener"
-				><button class="btn btn-primary-container">Open in Microsoft Teams</button></a
+				><button class="btn btn-primary-container"
+					><span class="icon-[bi--microsoft-teams]"></span>Open in Microsoft Teams</button
+				></a
 			>
 			<a href="./identities/msteams/{microsoftTeam.id}"
-				><button class="btn btn-secondary-container">More information</button></a
+				><button class="btn btn-info-container"
+					><span class="icon-[tabler--info-triangle]"></span>More information</button
+				></a
 			>
 			{#if debug}
 				<JsonData data={microsoftTeam} />
@@ -70,13 +74,20 @@
 		</IdentityAccordion>
 	{/each}
 
-	<div>
-		<div class="title-large m-2">
-			Ueber-Groups associated with this fullstack sandbox application,
+	<div class="flex w-full flex-row">
+		<div class="grow">
+			<div class="title-large m-2">
+				Ueber-Groups associated with this fullstack sandbox application,
+			</div>
+			<div class="title-small m-2">
+				that {data.session?.microsoftProfile?.displayName || 'current user'} is a member of:
+			</div>
 		</div>
-		<div class="title-small m-2">
-			that {data.session?.microsoftProfile?.displayName || 'current user'} is a member of:
-		</div>
+		{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
+			<button class="btn-warning-container btn mr-2 self-center" aria-label="Create Ueber Group">
+				<span class="icon-[material-symbols--edit-outline-rounded]"></span> Create Ueber Group
+			</button>
+		{/if}
 	</div>
 
 	{#if data.ueberGroups.length === 0}
@@ -96,10 +107,16 @@
 					<p class="body">{uberGroup.description}</p>
 					<div class="flex gap-2">
 						<a href="./identities/ueber-group/{uberGroup.id}"
-							><button class="btn btn-secondary-container">More information</button></a
+							><button class="btn btn-info-container"
+								><span class="icon-[tabler--info-triangle]"></span>More information</button
+							></a
 						>
-						<button class="btn btn-accent-container">Add group</button>
-						<button class="btn btn-accent-container">Add user</button>
+						<button class="btn btn-accent-container"
+							><span class="icon-[fa6-solid--plus]"></span> Add Group</button
+						>
+						<button class="btn btn-accent-container"
+							><span class="icon-[fa6-solid--plus]"></span> Add User</button
+						>
 					</div>
 				</div>
 				{#if debug}
