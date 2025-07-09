@@ -434,7 +434,7 @@ class CurrentAccessToken:
             # if the user information stored in this class is not valid: get or sign-up the user.
             async with UserCRUD() as crud:
                 # TBD: this variable is misleading. The current_user here is not CurrentUserData, but a UserRead object!
-                current_user = await crud.create_azure_user_and_groups_if_not_exist(
+                current_user = await crud.azure_user_self_sign_up(
                     user_id, tenant_id, groups
                 )
                 if current_user:

@@ -64,7 +64,6 @@ class BaseCRUD(
         self.session = None
         self.model = base_model
         self.data_directory = directory
-        # TBD: move in the definition of the model, either in types or in access
         self.allow_standalone = allow_standalone
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
@@ -73,10 +72,6 @@ class BaseCRUD(
             self.hierarchy = ResourceHierarchy
             self.relations = ResourceHierarchy.relations
         elif base_model.__name__ in IdentityType.list():
-            # print("=== CRUD - base - IdentityType ===")
-            # print(IdentityType(self.model))
-            # print("=== CRUD - base - IdentityType.model.__name__ ===")
-            # print(IdentityType(self.model.__name__))
             self.entity_type = IdentityType(self.model.__name__)
             self.type = IdentityType
             self.hierarchy_CRUD = IdentityHierarchyCRUD()
@@ -87,20 +82,8 @@ class BaseCRUD(
                 f"{base_model.__name__} is not a valid ResourceType or IdentityType"
             )
 
-        # TBD: move to to the init: get all possible parent-child relations for the entity_type there!
-
-        # if self.entity_type in ResourceType:
-        #     related_model = ResourceType.get_model(relationship.mapper.class_.__name__)
-
-        # elif self.entity_type in IdentityType:
-        #     related_model = IdentityType.get_model(relationship.mapper.class_.__name__)
-
         self.policy_CRUD = AccessPolicyCRUD()
         self.logging_CRUD = AccessLoggingCRUD()
-        # moved to the if-block to check which hierarchy is relevant.
-        # self.hierarchy_CRUD = (
-        #     ResourceHierarchyCRUD()
-        # )  # TBD. are the occasions, where I would need the IdentityHierarchyCRUD() here?
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
@@ -179,15 +162,6 @@ class BaseCRUD(
         await self.session.exec(statement)
         await self.session.commit()
 
-    # async def _delete_identifier_type_link(
-    #     self,
-    #     object_id: uuid.UUID,
-    # ):
-    #     """Deletes a resource type link entry."""
-    #     statement = delete(IdentifierTypeLink).where(IdentifierTypeLink.id == object_id)
-    #     await self.session.exec(statement)
-    #     await self.session.commit()
-
     async def _check_identifier_type_link(
         self,
         object_id: uuid.UUID,
@@ -226,10 +200,6 @@ class BaseCRUD(
         """Creates a new object."""
         logger.info("BaseCRUD.create")
         try:
-
-            # print("=== CRUD - base - create - object ===")
-            # print(object)
-
             if inherit and not parent_id:
                 raise HTTPException(
                     status_code=400,
@@ -237,21 +207,8 @@ class BaseCRUD(
                 )
             database_object = self.model.model_validate(object)
 
-            # print("=== CRUD - base - create - current_user ===")
-            # print(current_user)
-            # print("=== CRUD - base - create - parent_id ===")
-            # print(parent_id)
-            # print("=== CRUD - base - create - inherit ===")
-            # print(inherit)
-            # print("=== CRUD - base - create - database_object ===")
-            # print(database_object)
-
-            # print("\n")
-
             await self._write_identifier_type_link(database_object.id)
             self.session.add(database_object)
-            # await self.session.commit()
-            # await self.session.refresh(database_object)
             access_log = AccessLogCreate(
                 resource_id=database_object.id,
                 action=own,
@@ -260,10 +217,6 @@ class BaseCRUD(
             )
             async with self.logging_CRUD as logging_CRUD:
                 await logging_CRUD.create(access_log)
-            # self.session = self.logging_CRUD.add_log_to_session(
-            #     access_log, self.session
-            # )
-            # await self._add_log_to_session(database_object.id, own, current_user, 201)
 
             # TBD: merge the sessions for creating the policy and the log
             # maybe together with creating the object
@@ -282,19 +235,12 @@ class BaseCRUD(
                 identity_id=current_user.user_id,
             )
 
-            # await self._write_log(database_object.id, own, current_user, 201)
-
-            # print("=== CRUD - base - create - policy created ===")
-            # print(access_policy)
-
             if parent_id:
                 parent_access_request = AccessRequest(
                     resource_id=parent_id,
                     action=write,
                     current_user=current_user,
                 )
-                # print("=== CRUD - base - create - parent_access_request ===")
-                # print(parent_access_request)
                 if not await self.policy_CRUD.allows(parent_access_request):
                     logger.error(f"Parent {parent_id} does not allow write access.")
                     raise HTTPException(status_code=403, detail="Forbidden.")
@@ -302,22 +248,12 @@ class BaseCRUD(
                     await policy_CRUD.create(
                         access_policy, current_user, allow_override=True
                     )
-                # print("=== CRUD - base - create - before adding child to parent ===")
                 await self.add_child_to_parent(
                     parent_id=parent_id,
                     child_id=database_object.id,
                     current_user=current_user,
                     inherit=inherit,
                 )
-                # print("=== CRUD - base - create - after adding child to parent ===")
-                # async with self.hierarchy_CRUD as hierarchy_CRUD:
-                #     await hierarchy_CRUD.create(
-                #         current_user=current_user,
-                #         parent_id=parent_id,
-                #         child_type=self.entity_type,
-                #         child_id=database_object.id,
-                #         inherit=inherit,
-                #     )
             elif self.allow_standalone:
                 async with self.policy_CRUD as policy_CRUD:
                     await policy_CRUD.create(
@@ -331,7 +267,7 @@ class BaseCRUD(
                         inherit=inherit,
                     )
             else:
-                # TBD: is this only admin that can create stand-alone resources?
+                # TBD: is it only admin that can create stand-alone resources?
                 logger.error(f"Resource {database_object.id} is not allowed.")
                 raise HTTPException(
                     status_code=403,
@@ -339,9 +275,6 @@ class BaseCRUD(
                 )
                 # async with self.policy_CRUD as policy_CRUD:
                 #     await policy_CRUD.create(access_policy, current_user)
-
-            # print("=== CRUD - base - create - database_object ===")
-            # print(database_object)
 
             # After all checks have passed: commit the object to the database
 
@@ -482,16 +415,10 @@ class BaseCRUD(
         limit: Optional[int] = None,
         offset: Optional[int] = None,
     ) -> list[BaseSchemaTypeRead]:
-        # TBD: consider allowing any return value - that might enable more flexibility, especially for select_args and functions!
         """Generic read method with optional parameters for select_args, filters, joins, order_by, group_by, limit and offset."""
         try:
             # TBD: select_args are not compatible with the return type of the method!
             statement = select(*select_args) if select_args else select(self.model)
-            # statement = (
-            #     self.session.select(*select_args)
-            #     if select_args
-            #     else self.session.select(self.model)
-            # )
 
             statement = self.policy_CRUD.filters_allowed(
                 statement=statement,
@@ -589,14 +516,8 @@ class BaseCRUD(
             response = await self.session.exec(statement)
             results = response.unique().all()
 
-            # print("=== CRUD - base - read - results ===")
-            # print(results)
-
             if not results:
                 logger.info(f"No objects found for {self.model.__name__}")
-                # raise HTTPException(
-                #     status_code=404, detail=f"{self.model.__name__} not found."
-                # )
                 return []
 
             for result in results:
@@ -672,8 +593,6 @@ class BaseCRUD(
         """Reads a file from disk by id."""
 
         file = await self.read_by_id(id, current_user)
-        # disk_file = open(f"/data/appdata/{self.data_directory}/{file.name}", "rb")
-        # return disk_file
         return FileResponse(
             f"/data/appdata/{self.data_directory}/{file.name}", filename=file.name
         )
@@ -741,7 +660,8 @@ class BaseCRUD(
     ) -> BaseModelType:
         """Updates a file."""
         try:
-            # This does not really change anything int he metadata, but ensures that the access control is applied:
+            # This does not really change anything in the metadata, but ensures that the access control is applied:
+            # TBD: refactor into only checking the access control and not updating the metadata
             old_metadata = await self.read_by_id(file_id, current_user)
             same_metadata = await self.update(current_user, file_id, old_metadata)
             with open(
@@ -783,7 +703,7 @@ class BaseCRUD(
         self,
         current_user: "CurrentUserData",
         object_id: uuid.UUID,
-    ) -> None:  # BaseModelType:
+    ) -> None:
         """Deletes an object."""
         try:
             model_alias = aliased(self.model)
@@ -821,7 +741,7 @@ class BaseCRUD(
             async with self.logging_CRUD as logging_CRUD:
                 await logging_CRUD.create(access_log)
             # TBD: delete hierarchy only if exists?
-            # TBD: delete hierarchies for both parent_id and child_id
+            # TBD: delete hierarchies for both parent_id and child_id?
 
             if self.type == ResourceType:
                 delete_policies = AccessPolicyDelete(
@@ -906,10 +826,3 @@ class BaseCRUD(
                 status_code=403,
                 detail=f"{self.model.__name__} - Forbidden.",
             )
-
-    # TBD: add share / permission methods - maybe in an inherited class BaseCRUDPermissions?
-    # TBD: for the hierarchies, do we need more methods here or just a new method in the BaseCRUD?
-    # => The AccessPolicyCRUD takes care of this!
-    # like sharing, tagging, creating hierarchies etc.
-    # or just a number of endpoints for doing the hierarchy: add child, remove child, ...?
-    # share with different permissions - like actions?

@@ -17,22 +17,22 @@ from models.access import IdentityHierarchy
 # region Azure Account
 
 
-class AzureGroupUserLink(SQLModel, table=True):
-    azure_group_id: Optional[uuid.UUID] = Field(
-        default=None, foreign_key="azuregroup.id", primary_key=True
-    )
-    azure_user_id: Optional[uuid.UUID] = Field(
-        default=None,
-        # foreign_key="user.azure_user_id",
-        # primary_key=True,
-        # TBD: add ondelete="CASCADE" to avoid orphans - write tests for this!
-        sa_column=Column(
-            "uuid_data",
-            Uuid,
-            ForeignKey("user.azure_user_id", ondelete="CASCADE"),
-            primary_key=True,
-        ),
-    )
+# class AzureGroupUserLink(SQLModel, table=True):
+#     azure_group_id: Optional[uuid.UUID] = Field(
+#         default=None, foreign_key="azuregroup.id", primary_key=True
+#     )
+#     azure_user_id: Optional[uuid.UUID] = Field(
+#         default=None,
+#         # foreign_key="user.azure_user_id",
+#         # primary_key=True,
+#         # TBD: add ondelete="CASCADE" to avoid orphans - write tests for this!
+#         sa_column=Column(
+#             "uuid_data",
+#             Uuid,
+#             ForeignKey("user.azure_user_id", ondelete="CASCADE"),
+#             primary_key=True,
+#         ),
+#     )
 
 
 class AzureGroupCreate(SQLModel):
