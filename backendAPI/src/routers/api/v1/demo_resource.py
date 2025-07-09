@@ -41,8 +41,7 @@ async def post_demo_resource(
 
 
 # The get functions are totally public
-# TBD: still a policy is needed for the fine grained access control to make the resource public!
-# The default create only grants "own" access to the user, how creates it!
+# However still a policy is needed for the fine grained access control to make the resource public!
 @router.get("/", status_code=200)
 async def get_all_demo_resources(
     # token_payload=Depends(get_http_access_token_payload),

@@ -255,19 +255,12 @@ async def get_access_logs_for_resource(
     """Returns creation information for a resource."""
     logger.info("GET access log information for resource")
     current_user = await check_token_against_guards(token_payload, guards)
-    # TBD: should be removed now: resource_id is always mandatory now and identity_id is optional - FastAPI should take care of it.
-    # if resource_id is None and identity_id is None:
-    #     raise HTTPException(
-    #         status_code=422,
-    #         detail="At least one of the parameters resource_id or identity_id must be provided.",
-    #     )
     async with access_log_view.crud() as crud:
         return await crud.read_access_logs_by_resource_id_and_identity_id(
             current_user, resource_id=resource_id, identity_id=identity_id
         )
 
 
-# TBD: implement a route for identity_id only, so user can see everything the user has access to - filter by own, write, read as query parameter
 @router.get("/log/identity/{identity_id}", status_code=200)
 async def get_access_logs_for_identity(
     identity_id: UUID,
@@ -300,7 +293,7 @@ async def get_creation_date_for_resource(
 
 
 # TBD: change from /log to logs - it's a list of resources!
-@router.post("/log/created", status_code=200)
+@router.post("/logs/created", status_code=200)
 async def get_creation_date_for_resources(
     resource_ids: list[UUID],
     token_payload=Depends(get_http_access_token_payload),
@@ -336,7 +329,7 @@ async def get_last_modified_for_resource(
         )
 
 
-@router.post("/log/last-modified", status_code=200)
+@router.post("/logs/last-modified", status_code=200)
 async def get_last_modified_for_resources(
     resource_ids: list[UUID],
     token_payload=Depends(get_http_access_token_payload),
@@ -372,7 +365,7 @@ async def get_last_accessed_for_resource(
         )
 
 
-@router.post("/log/last-accessed", status_code=200)
+@router.post("/logs/last-accessed", status_code=200)
 async def get_last_accessed_for_resources(
     resource_ids: list[UUID],
     token_payload=Depends(get_http_access_token_payload),

@@ -495,33 +495,35 @@ async def test_user_gets_own_user_through_me_endpoint_with_ueber_groups(
 
     assert response.status_code == 200
     user = response.json()
-    model_verified_user = Me(**user)
-    print(
-        "=== tests - test_identity - test_user_gets_own_user_through_me_endpoint_with_ueber_groups - model_verified_user ==="
-    )
-    print(model_verified_user)
-    assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
+    modelled_user = Me(**user)
+    assert modelled_user.azure_token_roles == mocked_provide_http_token_payload["roles"]
+    group_uuids = [uuid.UUID(g) for g in mocked_provide_http_token_payload["groups"]]
     if "groups" in mocked_provide_http_token_payload:
-        assert user["azure_token_groups"] == mocked_provide_http_token_payload["groups"]
-        assert len(user["azure_token_groups"]) == len(
+        assert modelled_user.azure_token_groups == group_uuids
+        assert len(modelled_user.azure_token_groups) == len(
             mocked_provide_http_token_payload["groups"]
         )
     assert "id" in user
-    assert user["azure_user_id"] == str(mocked_provide_http_token_payload["oid"])
-    assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
-    assert "id" in user["user_account"]
-    assert user["user_account"]["user_id"] == user["id"]
-    assert user["user_account"]["is_publicAIuser"] is False
-    assert "id" in user["user_profile"]
-    assert user["user_profile"]["theme_color"] == "#353c6e"
-    assert user["user_profile"]["theme_variant"] == ThemeVariants.tonal_spot
-    assert user["user_profile"]["contrast"] == 0.0
-    print("=== user['ueber_groups'] ===")
-    print(user)
-    assert len(user["ueber_groups"]) == 1
-    assert user["ueber_groups"][0]["id"] == str(mocked_ueber_groups[1].id)
-    assert user["ueber_groups"][0]["name"] == mocked_ueber_groups[1].name
-    assert user["ueber_groups"][0]["description"] == mocked_ueber_groups[1].description
+    assert modelled_user.id == current_user.user_id
+    assert modelled_user.azure_user_id == uuid.UUID(
+        mocked_provide_http_token_payload["oid"]
+    )
+    assert modelled_user.azure_tenant_id == uuid.UUID(
+        mocked_provide_http_token_payload["tid"]
+    )
+    assert modelled_user.user_account.id is not None
+    assert uuid.UUID(modelled_user.user_account.user_id) == modelled_user.id
+    assert modelled_user.user_account.is_publicAIuser is False
+    assert modelled_user.user_profile is not None
+    assert modelled_user.user_profile.theme_color == "#353c6e"
+    assert modelled_user.user_profile.theme_variant == ThemeVariants.tonal_spot
+    assert modelled_user.user_profile.contrast == 0.0
+    assert len(modelled_user.ueber_groups) == 1
+    assert modelled_user.ueber_groups[0].id == mocked_ueber_groups[1].id
+    assert modelled_user.ueber_groups[0].name == mocked_ueber_groups[1].name
+    assert (
+        modelled_user.ueber_groups[0].description == mocked_ueber_groups[1].description
+    )
 
 
 @pytest.mark.anyio

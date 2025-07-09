@@ -50,20 +50,6 @@ user_view = BaseView(UserCRUD)
 # that means, controlled by group and user membership from Azure Identity Provider!
 # The roles assigned to users and groups decide about sign-up here.
 # This function allows admins to sign up users through API on top of that.
-# TBD: make sure this route or anything else, that is checking if the user exists get's hit by the frontend when the user logs in!
-# That is solved now with the base view class!
-# @router.post("/", status_code=201)
-# async def post_user(
-#     user: UserCreate,
-#     _1=Depends(CurrentAccessTokenHasScope("api.write")),
-#     _2=Depends(CurrentAccessTokenHasRole("Admin")),
-# ) -> User:
-#     """Creates a new user."""
-#     logger.info("POST user")
-#     async with UserCRUD() as crud:
-#         created_user = await crud.create(user)
-#     return created_user
-
 
 # region User:
 
@@ -109,9 +95,6 @@ async def get_me(
 ) -> Me:
     """Returns the current user with account and profile."""
     current_user = await check_token_against_guards(token_payload, guards)
-    # userInDatabase = await user_view.get_by_id(
-    #     current_user.user_id, token_payload, guards
-    # )
     async with UserCRUD() as crud:
         me = await crud.read_me(current_user)
     me.azure_token_roles = current_user.azure_token_roles

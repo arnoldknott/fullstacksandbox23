@@ -3444,7 +3444,7 @@ async def test_get_creation_datetime_for_resources(
         await add_one_test_access_policy(policy)
 
     response = await async_client.post(
-        "/api/v1/access/log/created", json=[resource_id1, resource_id2, resource_id3]
+        "/api/v1/access/logs/created", json=[resource_id1, resource_id2, resource_id3]
     )
     payload = response.json()
 
@@ -3497,7 +3497,7 @@ async def test_get_creation_datetime_for_resources_with_write_permission_on_one_
         await add_one_test_access_policy(policy)
 
     response = await async_client.post(
-        "/api/v1/access/log/created", json=[resource_id1, resource_id2, resource_id3]
+        "/api/v1/access/logs/created", json=[resource_id1, resource_id2, resource_id3]
     )
     payload = response.json()
 
@@ -3550,7 +3550,7 @@ async def test_get_creation_datetime_for_resources_with_read_permission_on_resou
         await add_one_test_access_policy(policy)
 
     response = await async_client.post(
-        "/api/v1/access/log/created", json=[resource_id1, resource_id2, resource_id3]
+        "/api/v1/access/logs/created", json=[resource_id1, resource_id2, resource_id3]
     )
     payload = response.json()
 
@@ -3597,7 +3597,7 @@ async def test_get_creation_datetime_for_resources_without_access_on_one_resourc
         await add_one_test_access_policy(policy)
 
     response = await async_client.post(
-        "/api/v1/access/log/created", json=[resource_id1, resource_id2, resource_id3]
+        "/api/v1/access/logs/created", json=[resource_id1, resource_id2, resource_id3]
     )
     payload = response.json()
 
@@ -3820,7 +3820,7 @@ async def test_get_modification_datetime_for_resources(
         await add_one_test_access_policy(policy)
 
     response = await async_client.post(
-        "/api/v1/access/log/last-modified",
+        "/api/v1/access/logs/last-modified",
         json=[resource_id1, resource_id2, resource_id3],
     )
     payload = response.json()
@@ -3874,7 +3874,7 @@ async def test_get_modification_datetime_for_resources_with_write_permission_on_
         await add_one_test_access_policy(policy)
 
     response = await async_client.post(
-        "/api/v1/access/log/last-modified",
+        "/api/v1/access/logs/last-modified",
         json=[resource_id1, resource_id2, resource_id3],
     )
     payload = response.json()
@@ -3928,7 +3928,7 @@ async def test_get_modification_datetime_for_resources_with_read_permission_on_r
         await add_one_test_access_policy(policy)
 
     response = await async_client.post(
-        "/api/v1/access/log/last-modified",
+        "/api/v1/access/logs/last-modified",
         json=[resource_id1, resource_id2, resource_id3],
     )
     payload = response.json()
@@ -3976,7 +3976,7 @@ async def test_get_modification_datetime_for_resources_without_access_on_one_res
         await add_one_test_access_policy(policy)
 
     response = await async_client.post(
-        "/api/v1/access/log/last-modified",
+        "/api/v1/access/logs/last-modified",
         json=[resource_id1, resource_id2, resource_id3],
     )
     payload = response.json()
@@ -4171,7 +4171,7 @@ async def test_get_last_access_datetime_for_resources(
         await add_one_test_access_policy(policy)
 
     response = await async_client.post(
-        "/api/v1/access/log/last-accessed",
+        "/api/v1/access/logs/last-accessed",
         json=[resource_id1, resource_id2, resource_id3],
     )
     payload = response.json()
@@ -4225,7 +4225,7 @@ async def test_get_last_access_datetime_for_resources_with_read_and_write_access
         await add_one_test_access_policy(policy)
 
     response = await async_client.post(
-        "/api/v1/access/log/last-accessed",
+        "/api/v1/access/logs/last-accessed",
         json=[resource_id1, resource_id2, resource_id3],
     )
     payload = response.json()
@@ -4252,7 +4252,7 @@ async def test_get_last_access_datetime_for_resources_without_access_fails(
     app_override_provide_http_token_payload
 
     response = await async_client.post(
-        "/api/v1/access/log/last-accessed",
+        "/api/v1/access/logs/last-accessed",
         json=[resource_id1, resource_id2, resource_id3],
     )
     payload = response.json()
