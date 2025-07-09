@@ -7,8 +7,8 @@ import type {
 	AccessRight,
 	DemoResource,
 	DemoResourceExtended,
-	MicrosoftTeamBasic
 } from '$lib/types';
+import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
 // import { Action } from '$lib/accessHandler';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
 
@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const demoResourceIds = demoResources.map((resource: DemoResource) => resource.id);
 		const creationDataResponse = await backendAPI.post(
 			sessionId,
-			'/access/log/created',
+			'/access/logs/created',
 			JSON.stringify(demoResourceIds)
 		);
 		const creationDates = await creationDataResponse.json();
@@ -78,7 +78,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	// Fetch the Microsoft Teams the user is attached to
-	let microsoftTeams: MicrosoftTeamBasic[] = [];
+	let microsoftTeams: MicrosoftTeam[] = [];
 	if (locals.sessionData.currentUser && locals.sessionData.currentUser.azure_token_groups) {
 		microsoftTeams = await microsoftGraph.getAttachedTeams(
 			sessionId,
@@ -87,7 +87,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	// let microsoftTeamsExtended = microsoftTeams.map(
-	// 	(team: MicrosoftTeamBasic) => {
+	// 	(team: MicrosoftTeam) => {
 	// 		// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.identity_id === team.id);
 	// 		return {
 	// 			...team,
