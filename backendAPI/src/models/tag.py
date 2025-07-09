@@ -41,7 +41,3 @@ class TagUpdate(TagCreate):
 
 class TagRead(TagCreate):
     id: uuid.UUID
-
-
-# class TagReadWithDemoResources(Tag):
-#     demo_resources: List["DemoResource"] = []

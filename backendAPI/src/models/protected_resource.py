@@ -23,13 +23,7 @@ class ProtectedResource(ProtectedResourceCreate, table=True):
         back_populates="protected_resources",
         link_model=ResourceHierarchy,
         sa_relationship_kwargs={
-            # "lazy": "selectin",
-            # "lazy": "subquery",
-            # "lazy": "select",
             "lazy": "joined",
-            # "lazy": "dynamic",
-            # "lazy": "noload",
-            # TBD: is foreign() needed here?
             "viewonly": True,
             "primaryjoin": "ProtectedResource.id == foreign(ResourceHierarchy.parent_id)",
             "secondaryjoin": "ProtectedChild.id == foreign(ResourceHierarchy.child_id)",
@@ -64,18 +58,11 @@ class ProtectedChild(ProtectedChildCreate, table=True):
     protected_resources: Optional[List["ProtectedResource"]] = Relationship(
         back_populates="protected_children",
         link_model=ResourceHierarchy,
-        # primaryjoin="ProtectedChild.id == ResourceHierarchy.child_id",
         sa_relationship_kwargs={
-            # "lazy": "selectin",
-            # "lazy": "subquery",
-            # "lazy": "select",
             "lazy": "joined",
-            # "lazy": "dynamic",
-            # "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "ProtectedChild.id == foreign(ResourceHierarchy.child_id)",
             "secondaryjoin": "ProtectedResource.id == foreign(ResourceHierarchy.parent_id)",
-            # TBD: is foreign() needed here?
         },
     )
 

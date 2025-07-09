@@ -7,13 +7,8 @@ from pydantic import AfterValidator, ConfigDict
 from sqlalchemy import Column, ForeignKey, Uuid
 from sqlmodel import Field, Relationship, SQLModel
 
-# from core.types import AppRoles
 from core.config import config
 from models.access import IdentityHierarchy
-
-# from .azure_group import AzureGroup, AzureGroupRead
-
-# from .azure_group_user_link import AzureGroupUserLink
 
 
 # region account linking
@@ -71,13 +66,9 @@ class AzureGroup(AzureGroupCreate, table=True):
     )
     created_at: datetime = Field(default=datetime.now())
     is_active: Optional[bool] = Field(default=True)
-    # last_updated_at: datetime = Field(default=datetime.now())# does not really make sense here
 
     users: Optional[List["User"]] = Relationship(
         back_populates="azure_groups",
-        # link_model=AzureGroupUserLink,
-        # sa_relationship_kwargs={"lazy": "selectin"},
-        # # sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete"},
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
             "lazy": "joined",
@@ -164,23 +155,7 @@ class User(UserCreate, table=True):
         sa_relationship_kwargs={"lazy": "joined"},
     )
 
-    ### Foreign account: Azure AD ###
-    azure_user_id: Optional[uuid.UUID] = Field(index=True, unique=True)
-    azure_groups: Optional[List["AzureGroup"]] = Relationship(
-        back_populates="users",
-        # link_model=AzureGroupUserLink,
-        # # sa_relationship_kwargs={"lazy": "selectin"},
-        # sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete"},
-        link_model=IdentityHierarchy,
-        sa_relationship_kwargs={
-            "lazy": "joined",
-            # "lazy": "noload",
-            "viewonly": True,
-            "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
-            "secondaryjoin": "AzureGroup.id == foreign(IdentityHierarchy.parent_id)",
-            "cascade": "all, delete",
-        },
-    )
+    ### App specific groups ###
     ueber_groups: Optional[List["UeberGroup"]] = Relationship(
         back_populates="users",
         link_model=IdentityHierarchy,
@@ -226,9 +201,24 @@ class User(UserCreate, table=True):
         },
     )
 
-    ### Foreign Account: DTU Learn (Brightspace) ###
+    ### Foreign account: Azure AD ###
+    azure_user_id: Optional[uuid.UUID] = Field(index=True, unique=True)
+    azure_groups: Optional[List["AzureGroup"]] = Relationship(
+        back_populates="users",
+        link_model=IdentityHierarchy,
+        sa_relationship_kwargs={
+            "lazy": "joined",
+            # "lazy": "noload",
+            "viewonly": True,
+            "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+            "secondaryjoin": "AzureGroup.id == foreign(IdentityHierarchy.parent_id)",
+            "cascade": "all, delete",
+        },
+    )
+
+    ### Foreign Account: Brightspace ###
     # only add the user-id here - nothing else!
-    # Linking DTU Learn and other accounts to user:
+    # Linking brightspace and other accounts to user:
     # brightspace_account: Optional["BrightspaceAccount"] = Relationship(
     #     back_populates="user"
     # )
@@ -314,28 +304,12 @@ class UserProfile(SQLModel, table=True):
     contrast: Annotated[float, AfterValidator(validate_contrast_range)] = 0.0
 
     model_config = ConfigDict(use_enum_values=True)
-    # class Config:
-    #     use_enum_values = True
-
-    # @model_validator(mode="before")
-    # def validate_theme_color(self):
-    #     if not self.theme_color.startswith("#"):
-    #         raise ValueError("Theme color must start with '#'.")
-    #     if len(self.theme_color) != 7:
-    #         raise ValueError("Theme color must be 7 characters long.")
-    #     if not all(c in "0123456789abcdef" for c in self.theme_color[1:]):
-    #         raise ValueError("Theme color must be a valid hex color.")
-
-    # @model_validator(mode="before")
-    # def validate_contrast(self):
-    #     if self.contrast < -1.0 or self.contrast > 1.0:
-    #         raise ValueError("Contrast must be between -1.0 and 1.0.")
 
 
-# Note: this is one of the models, that other users can see about a user.
-# not used
 # - User getting their own data uses model Me()
 # - User reading another user uses model UserRead()
+# Note: this is one of the models, that other users can see about a user.
+# Not used anywhere!
 # class UserReadNoGroups(UserCreate):
 #     """Schema for reading a user without linked accounts and groups."""
 
@@ -354,8 +328,6 @@ class UserRead(UserCreate):
 
     id: uuid.UUID  # no longer optional - needs to exist now
 
-    # created_at: datetime
-    # last_accessed_at: datetime
     azure_groups: Optional[List["AzureGroupRead"]] = None
     # brightspace_account: Optional["DiscordAccount"] = None
     # google_account: Optional["GoogleAccount"] = None
@@ -370,7 +342,6 @@ class UserRead(UserCreate):
 class Me(UserRead):
     azure_token_roles: Optional[list[str]] = None
     azure_token_groups: Optional[list[uuid.UUID]] = None
-    # user_account_id: Optional[uuid.UUID] = None
     user_account: Optional["UserAccount"] = None
     user_profile: Optional["UserProfile"] = None
 
@@ -394,16 +365,12 @@ class UserUpdate(UserCreate):
     #     org_id: int
     #     org_defined_id: int
 
-    # ideally store the tokens in the cache!
-    # access_token: str
-    # refresh_token: str
-    # user: Optional["User"] = Relationship(back_populates="brightspace_account")
-
 
 # endregion User
 
 # TBD: check if it makes sense to use relationships between groups and group-users;
 # but consider the access filters_allowed!
+
 # region UeberGroup
 
 
