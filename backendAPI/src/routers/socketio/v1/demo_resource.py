@@ -1,4 +1,6 @@
-import logging
+# import logging
+
+from .base import BaseNamespace
 
 from core.types import GuardTypes
 from crud.demo_resource import DemoResourceCRUD
@@ -9,9 +11,7 @@ from models.demo_resource import (
     DemoResourceUpdate,
 )
 
-from .base import BaseNamespace
-
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 
 class DemoResourceNamespace(BaseNamespace):
