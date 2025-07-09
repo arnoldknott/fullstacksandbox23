@@ -516,6 +516,10 @@ async def test_user_submits_existing_resource_for_update(
     """Test the demo resource connect event."""
     resources = await add_test_demo_resources(mock_token_payload)
 
+    index_of_resource_to_update = next(
+        i for i, r in enumerate(resources) if r.name == "A second cat 2 resource"
+    )
+
     await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
     async for client in socketio_test_client(["/demo-resource"]):
@@ -529,7 +533,7 @@ async def test_user_submits_existing_resource_for_update(
 
         await client.connect_to_test_client()
 
-        modified_demo_resource = resources[3]
+        modified_demo_resource = resources[index_of_resource_to_update]
         modified_demo_resource.name = "Altering the name of this demo resource"
         modified_demo_resource.language = "fr-FR"
         modified_demo_resource.id = str(modified_demo_resource.id)
@@ -545,20 +549,27 @@ async def test_user_submits_existing_resource_for_update(
 
         assert UUID(statuses[0]["id"])  # Check if the ID is a valid UUID
         assert statuses[0]["success"] == "updated"
-        assert statuses[0]["id"] == str(resources[3].id)
+        assert statuses[0]["id"] == str(resources[index_of_resource_to_update].id)
 
         await client.disconnect()
 
     async with DemoResourceCRUD() as crud:
         current_user = await current_user_from_azure_token(mock_token_payload)
-        updated_resource = await crud.read_by_id(resources[3].id, current_user)
+        updated_resource = await crud.read_by_id(
+            resources[index_of_resource_to_update].id, current_user
+        )
 
-        assert updated_resource.description == resources[3].description
-        assert updated_resource.category_id == UUID(resources[3].category_id)
-        assert updated_resource.tags == resources[3].tags
+        assert (
+            updated_resource.description
+            == resources[index_of_resource_to_update].description
+        )
+        assert updated_resource.category_id == UUID(
+            resources[index_of_resource_to_update].category_id
+        )
+        assert updated_resource.tags == resources[index_of_resource_to_update].tags
         assert updated_resource.name == "Altering the name of this demo resource"
         assert updated_resource.language == "fr-FR"
-        assert updated_resource.id == UUID(resources[3].id)
+        assert updated_resource.id == UUID(resources[index_of_resource_to_update].id)
 
 
 @pytest.mark.anyio
