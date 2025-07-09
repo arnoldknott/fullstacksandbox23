@@ -288,7 +288,7 @@ async def post_existing_groups_to_uebergroup(
 @ueber_group_router.get("/", status_code=200)
 async def get_all_ueber_groups(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[UeberGroupRead]:
     """Returns all ueber_groups."""
     return await ueber_group_view.get(token_payload, guards)
