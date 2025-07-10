@@ -20,7 +20,11 @@ event_guards = [
         guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
     ),
     EventGuard(
-        event="submit",
+        event="submit:create",
+        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+    ),
+    EventGuard(
+        event="submit:update",
         guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
     ),
 ]

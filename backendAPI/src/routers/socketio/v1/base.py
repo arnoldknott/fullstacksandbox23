@@ -108,14 +108,6 @@ class BaseNamespace(socketio.AsyncNamespace):
             raise ConnectionRefusedError("Authorization failed.")
         return token_payload
 
-    async def _check_auth_token_against_event_guards(
-        self, session_id, guards
-    ) -> CurrentUserData:
-        """Check the auth token against the event guards."""
-        token_payload = await self._get_token_payload_if_authenticated(session_id)
-        current_user = await check_token_against_guards(token_payload, guards)
-        return current_user
-
     def _get_event_guards(self, event: str) -> Optional[GuardTypes]:
         """Get the guards for the event."""
         if self.event_guards:
@@ -126,7 +118,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             return guard
         return None
 
-    async def _get_session_data(self, sid):
+    async def _get_session_data(self, sid) -> Optional[SocketIoSessionData]:
         """Get socketio session data from the socketio server."""
         logger.info(f"🧦 Get session data for client with session id {sid}.")
         try:
@@ -136,6 +128,31 @@ class BaseNamespace(socketio.AsyncNamespace):
                 f"Failed to get session data for client with session id {sid}."
             )
             logger.error(err)
+
+    async def _get_current_user_and_check_guard(
+        self, sid, guard_name: str
+    ) -> CurrentUserData:
+        """Check the auth token against the event guards."""
+
+        current_user = None
+
+        session = await self._get_session_data(sid)
+        guards = self._get_event_guards(guard_name)
+        if guards is not None:
+            token_payload = await self._get_token_payload_if_authenticated(
+                session["session_id"]
+            )
+            current_user = await check_token_against_guards(token_payload, guards)
+        else:
+            current_user = session["current_user"]
+
+        if current_user is None:
+            logger.error(
+                f"🧦 Client with session id {sid} is missing current_user data."
+            )
+            self._emit_status(sid, {"error": "No Current User found."})
+        else:
+            return current_user
 
     async def _get_all(self, sid, request_access_data=False):
         """Get all event for socket.io namespaces."""
@@ -242,7 +259,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 # catch and handle an expired token gracefully and return something to the client on a different message channel,
                 # so it can initiate the authentication process and come back with a new session id
                 # [current_user, user_name] = (
-                #     await self._check_auth_token_against_event_guards(
+                #     await self._get_current_user_and_check_guard(
                 #         auth["session-id"], guards
                 #     )
                 # )
@@ -283,23 +300,17 @@ class BaseNamespace(socketio.AsyncNamespace):
     async def on_submit(self, sid, data):
         """Gets data from client and issues a create or update based on id is present or not."""
         logger.info(f"🧦 Data submitted from client {sid}")
-        current_user = None
-        guards = self._get_event_guards("submit")
         try:
-            if guards is not None:
-                session = await self._get_session_data(sid)
-                current_user = await self._check_auth_token_against_event_guards(
-                    session["session_id"], guards
-                )
+
             if self.crud is not None:
                 try:
-                    if not current_user:
-                        session = await self._get_session_data(sid)
-                        current_user = session["current_user"]
                     database_object = None
                     if (
                         "id" in data and data["id"][:4] != "new_"
                     ):  # validate if id is a valid UUID
+                        current_user = await self._get_current_user_and_check_guard(
+                            sid, "submit:create"
+                        )
                         resource_id = UUID(data["id"])
                         # if id is present, it is an update
                         # validate data with update model
@@ -318,6 +329,9 @@ class BaseNamespace(socketio.AsyncNamespace):
                     else:
                         # if id is not present, it is a create
                         # validate data with create model
+                        current_user = await self._get_current_user_and_check_guard(
+                            sid, "submit:update"
+                        )
                         object_create = self.create_model(**data)
                         async with self.crud() as crud:
                             # TBD: check the hierarchical resource system all the way through other events as well!
