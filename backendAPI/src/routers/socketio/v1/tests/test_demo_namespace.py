@@ -231,3 +231,39 @@ async def test_demo_message_with_production_server_fails_without_token(
 
     except ConnectionError as err:
         assert str(err) == "One or more namespaces failed to connect"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    indirect=True,
+)
+async def test_client_disconnects_from_demo_namespace_and_gets_goodbye_message(
+    mock_token_payload,
+    socketio_client_for_demo_namespace,
+):
+    """Test the demo socket.io message event."""
+    mocked_token_payload = mock_token_payload
+
+    async for client, response in socketio_client_for_demo_namespace():
+
+        await client.emit("demo_message", "Something", namespace="/demo-namespace")
+
+        # Wait for the response to be set
+        await client.sleep(1)
+
+        demo_messages = response["/demo-namespace"]["demo_message"]
+        assert len(demo_messages) == 3
+        assert (
+            demo_messages[0]
+            == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
+        )
+        assert "Your session ID is " in demo_messages[1]
+        assert demo_messages[2] == f"{mocked_token_payload['name']}: Something"
+
+        goodbye_message = await client.disconnect()
+        assert (
+            goodbye_message
+            == f"You have disconnected from /demo-namespace. Goodbye {mocked_token_payload['name']}!"
+        )
