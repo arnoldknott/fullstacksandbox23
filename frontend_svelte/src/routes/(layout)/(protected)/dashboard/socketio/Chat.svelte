@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { SocketIO, type SocketioConnection } from '$lib/socketio';
+	import { onDestroy } from 'svelte';
 
 	// import { getContext, type Snippet } from 'svelte';
 	import { type Snippet } from 'svelte';
@@ -42,6 +43,8 @@
 			old_messages.push(`${data}`);
 		});
 	});
+
+	onDestroy(() => socketio.client.disconnect());
 </script>
 
 {@render children?.()} in Chat / Connection

@@ -35,20 +35,14 @@ class DemoNamespace(BaseNamespace):
             event_guards=event_guards,
             # crud=ProtectedResourceCRUD,
             callback_on_connect=self.callback_on_connect,
+            callback_on_disconnect=self.callback_on_disconnect,
         )
         # self.namespace = namespace
 
     async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
-        # print("=== demo_namespace - callback_on_connect - sid ===")
-        # print(sid)
-        # if self.server.get_session(sid):
-        # session = await self.server.get_session(sid, namespace=self.namespace)
         session = await self._get_session_data(sid)
-        # print("=== demo_namespace - callback_on_connect - session ===")
-        # print(session, flush=True)
         user_name = session["user_name"] if session else "ANONYMOUS"
-        # if session:
         await self.server.emit(
             "demo_message",
             f"Welcome {user_name} to {self.namespace}.",
@@ -60,12 +54,6 @@ class DemoNamespace(BaseNamespace):
             namespace=self.namespace,
             to=sid,
         )
-        # else:
-        #     await self.server.emit(
-        #         "demo_message",
-        #         f"Welcome ANONYMOUS to {self.namespace}.",
-        #         namespace=self.namespace,
-        #     )
         return "callback_on_connect"
 
     async def on_demo_message(self, sid, data):
@@ -77,6 +65,27 @@ class DemoNamespace(BaseNamespace):
             f"{user_name}: {data}",
             namespace=self.namespace,
         )
+
+    async def callback_on_disconnect(self, sid):
+        """Callback on disconnect for socket.io namespaces."""
+        logger.info(f"🧦 Client with session id {sid} disconnected.")
+        session = await self._get_session_data(sid)
+        # print("=== demo_namespace - callback_on_disconnect - session ===")
+        # print(session, flush=True)
+        user_name = session["user_name"] if session else "ANONYMOUS"
+        await self.server.emit(
+            "demo_message",
+            f"{user_name} has disconnected from /demo-namespace. Goodbye!",
+            namespace=self.namespace,
+        )
+        await self.server.emit(
+            "demo_message",
+            f"Your session with ID {sid} is ending.",
+            namespace=self.namespace,
+            to=sid,
+        )
+        await self.server.sleep(3)  # Give time for the messages to be sent
+        return "callback_on_disconnect"
 
 
 demo_namespace_router = DemoNamespace("/demo-namespace")
