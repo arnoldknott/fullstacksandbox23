@@ -633,6 +633,58 @@ async def test_user_submits_existing_resource_for_update(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_token_payload",
+    [
+        token_admin_read_socketio,
+        token_user1_read_socketio,
+    ],
+    indirect=True,
+)
+async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
+    mock_token_payload,
+    socketio_client_for_demo_resource_namespace,
+    add_test_demo_resources: list[DemoResource],
+    add_test_policy_for_resource: AccessPolicy,
+    current_user_from_azure_token,
+):
+    """Test the demo resource connect event."""
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)
+    current_user = await current_user_from_azure_token(mock_token_payload)
+
+    if "Admin" not in current_user.azure_token_roles:
+        policy = {
+            "resource_id": resources[3].id,
+            "identity_id": current_user.user_id,
+            "action": "write",
+        }
+        await add_test_policy_for_resource(policy)
+
+    async for client, responses in socketio_client_for_demo_resource_namespace():
+        status_data = responses["/demo-resource"]["status"]
+
+        modified_demo_resource = resources[3]
+        modified_demo_resource.name = "Altering the name of this demo resource"
+        modified_demo_resource.language = "fr-FR"
+        modified_demo_resource.id = str(modified_demo_resource.id)
+        if modified_demo_resource.category_id:
+            modified_demo_resource.category_id = str(modified_demo_resource.category_id)
+
+        await client.emit(
+            "submit", modified_demo_resource.model_dump(), namespace="/demo-resource"
+        )
+
+        # Wait for the response to be set
+        await client.sleep(1)
+
+        assert status_data[0]["error"] == "401: Invalid token."
+
+        # Connection is still open, so disconnection_result should be None
+        disconnection_result = await client.disconnect()
+        assert disconnection_result is None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
     [token_user1_read_write_socketio],
     indirect=True,
 )
