@@ -375,9 +375,9 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Delete event for socket.io namespaces."""
         logger.info(f"🧦 Delete request from client {sid}.")
         try:
-            session = await self._get_session_data(sid)
+            current_user = await self._get_current_user_and_check_guard(sid, "delete")
             async with self.crud() as crud:
-                await crud.delete(session["current_user"], resource_id)
+                await crud.delete(current_user, resource_id)
             await self.server.emit(
                 "deleted",
                 resource_id,
