@@ -92,6 +92,49 @@ async def test_connect_with_test_server_demo_namespace(
     assert "Your session ID is " in responses[1]
 
 
+# TBD: rework to new client fixture with events:
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [
+        token_admin_read_write_socketio,
+        # TBD: comment in again, when refactor is done:
+        # token_user1_read_write_socketio,
+        # token_user2_read_write_socketio,
+        # token_admin_read_socketio,
+        # token_user1_read_socketio,
+        # token_user2_read_socketio,
+    ],
+    indirect=True,
+)
+async def test_connect_with_test_server_demo_namespace_with_new_client_fixture(
+    mock_token_payload,
+    socketio_test_client_with_events,
+):
+    """Test the demo socket.io connect event."""
+    mocked_token_payload = mock_token_payload
+
+    namespace_with_event = [
+        {
+            "name": "/demo-namespace",
+            "events": ["demo_message"],
+        }
+    ]
+
+    demo_messages = []
+    async for client, response in socketio_test_client_with_events(
+        namespace_with_event
+    ):
+        demo_messages = response["/demo-namespace"]["demo_message"]
+
+    assert len(demo_messages) == 2
+    assert (
+        demo_messages[0]
+        == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
+    )
+    assert "Your session ID is " in demo_messages[1]
+
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_token_payload",

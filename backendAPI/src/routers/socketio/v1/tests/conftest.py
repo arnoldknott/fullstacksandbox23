@@ -2,6 +2,7 @@ import asyncio
 from typing import List
 from unittest.mock import patch
 
+from pydantic import BaseModel
 import pytest
 import socketio
 import uvicorn
@@ -105,6 +106,48 @@ async def socketio_test_client():
         await client.disconnect()
 
     return _socketio_test_client
+
+
+class Namespaces(BaseModel):
+    """Model to hold a namespace."""
+
+    name: str
+    events: List[str] = []
+
+
+@pytest.fixture(scope="function")
+async def socketio_test_client_with_events(socketio_test_client):
+    """Provides a socket.io client with event handlers."""
+
+    async def _socketio_test_client_with_events(
+        namespaces_and_events: List[Namespaces],
+        server_host: str = "http://127.0.0.1:8669",
+        query_parameters: dict = None,
+    ):
+
+        namespaces = [namespace["name"] for namespace in namespaces_and_events]
+        async for client in socketio_test_client(namespaces, server_host):
+
+            responses = {}
+            for namespace_event in namespaces_and_events:
+                namespace = namespace_event["name"]
+                events = namespace_event["events"]
+                responses[namespace] = {}
+                for event in events:
+                    responses[namespace][event] = []
+
+                    @client.on(event, namespace=namespace)
+                    async def handle_event(data):
+                        """Handles the event and appends data to responses."""
+                        print(f"=== Received event '{event}': {data} ===", flush=True)
+                        nonlocal responses
+                        responses[namespace][event].append(data)
+
+            await client.connect_to_test_client(query_parameters)
+
+            yield client, responses
+
+    return _socketio_test_client_with_events
 
 
 @pytest.fixture(scope="module")
