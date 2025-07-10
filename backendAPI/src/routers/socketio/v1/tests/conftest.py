@@ -8,6 +8,9 @@ import socketio
 import uvicorn
 
 
+# Mocking the token payload for testing purposes.
+
+
 @pytest.fixture(scope="module")
 async def mock_token_payload(request):
     """Returns a mocked token payload."""
@@ -39,6 +42,9 @@ async def mock_get_azure_token_from_cache():
         yield mock
 
 
+# Setting up socketio server side for testing
+
+
 @pytest.fixture(scope="module")
 async def socketio_test_server(
     mock_token_payload,
@@ -58,6 +64,25 @@ async def socketio_test_server(
     await asyncio.sleep(1)
     yield sio
     await server.shutdown()
+
+
+@pytest.fixture(scope="module")
+async def provide_namespace_server(
+    socketio_test_server: socketio.AsyncServer,
+):
+    """Provides a socket.io server with a specific namespace."""
+
+    async def _provide_namespace_server(namespaces: List[socketio.AsyncNamespace]):
+        sio = socketio_test_server
+        for namespace in namespaces:
+            sio.register_namespace(namespace)
+
+        return sio
+
+    return _provide_namespace_server
+
+
+# Setting up socketio client side for testing:
 
 
 # This one connects to a socketio server in FastAPI:
@@ -117,7 +142,22 @@ class Namespaces(BaseModel):
 
 @pytest.fixture(scope="function")
 async def socketio_test_client_with_events(socketio_test_client):
-    """Provides a socket.io client with event handlers."""
+    """Provides a socket.io client with event handlers.
+
+    Args:
+        namespaces_and_events (List[Namespaces]): List of namespaces and their events,
+            where each namespace is a dictionary with "name" and "events" keys.
+        server_host (str): The server host to connect to.
+            server_host="http://127.0.0.1:80" => server from code
+            server_host="http://127.0.0.1:8669" => test server from fixture socketio_test_server
+        query_parameters (dict): Query parameters to include in the connection.
+            e.g. {"request-access-data": "true", "parent-id": "123e4567-e89b-12d3-a456-426614174000"}
+
+    Yields:
+        AsyncClient: An instance of the socket.io client connected to the server.
+        dict: A dictionary containing responses for each namespace and event.
+        e.g. {"namespace": {"event": ["response_data"]}}
+    """
 
     async def _socketio_test_client_with_events(
         namespaces_and_events: List[Namespaces],
@@ -150,17 +190,26 @@ async def socketio_test_client_with_events(socketio_test_client):
     return _socketio_test_client_with_events
 
 
-@pytest.fixture(scope="module")
-async def provide_namespace_server(
-    socketio_test_server: socketio.AsyncServer,
+@pytest.fixture(scope="function")
+async def socketio_client_for_demo_namespace(
+    socketio_test_client_with_events,
 ):
-    """Provides a socket.io server with a specific namespace."""
+    """Provides a socket.io client for the demo namespace with event handlers."""
 
-    async def _provide_namespace_server(namespaces: List[socketio.AsyncNamespace]):
-        sio = socketio_test_server
-        for namespace in namespaces:
-            sio.register_namespace(namespace)
+    async def _socketio_client_for_demo_namespace(
+        query_parameters: dict = None,
+    ):
 
-        return sio
+        demo_namespace_with_events = [
+            {
+                "name": "/demo-namespace",
+                "events": ["demo_message"],
+            }
+        ]
 
-    return _provide_namespace_server
+        async for client, responses in socketio_test_client_with_events(
+            demo_namespace_with_events, query_parameters=query_parameters
+        ):
+            yield client, responses
+
+    return _socketio_client_for_demo_namespace

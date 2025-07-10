@@ -57,6 +57,42 @@ async def test_on_connect_invalid_token(mock_token_payload):
         assert str(err) == "Authorization failed."
 
 
+# @pytest.mark.anyio
+# @pytest.mark.parametrize(
+#     "mock_token_payload",
+#     [
+#         token_admin_read_write_socketio,
+#         token_user1_read_write_socketio,
+#         token_user2_read_write_socketio,
+#         token_admin_read_socketio,
+#         token_user1_read_socketio,
+#         token_user2_read_socketio,
+#     ],
+#     indirect=True,
+# )
+# async def test_connect_with_test_server_demo_namespace(
+#     mock_token_payload,
+#     socketio_test_client,
+# ):
+#     """Test the demo socket.io connect event."""
+#     mocked_token_payload = mock_token_payload
+
+#     responses = []
+#     async for client in socketio_test_client(["/demo-namespace"]):
+
+#         @client.event(namespace="/demo-namespace")
+#         async def demo_message(data):
+#             nonlocal responses
+#             responses.append(data)
+
+#         await client.connect_to_test_client()
+
+#     assert len(responses) == 2
+#     assert responses[0] == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
+#     assert "Your session ID is " in responses[1]
+
+
+# TBD: rework to new client fixture with events:
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_token_payload",
@@ -72,59 +108,13 @@ async def test_on_connect_invalid_token(mock_token_payload):
 )
 async def test_connect_with_test_server_demo_namespace(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_namespace,
 ):
     """Test the demo socket.io connect event."""
     mocked_token_payload = mock_token_payload
-
-    responses = []
-    async for client in socketio_test_client(["/demo-namespace"]):
-
-        @client.event(namespace="/demo-namespace")
-        async def demo_message(data):
-            nonlocal responses
-            responses.append(data)
-
-        await client.connect_to_test_client()
-
-    assert len(responses) == 2
-    assert responses[0] == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
-    assert "Your session ID is " in responses[1]
-
-
-# TBD: rework to new client fixture with events:
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mock_token_payload",
-    [
-        token_admin_read_write_socketio,
-        # TBD: comment in again, when refactor is done:
-        # token_user1_read_write_socketio,
-        # token_user2_read_write_socketio,
-        # token_admin_read_socketio,
-        # token_user1_read_socketio,
-        # token_user2_read_socketio,
-    ],
-    indirect=True,
-)
-async def test_connect_with_test_server_demo_namespace_with_new_client_fixture(
-    mock_token_payload,
-    socketio_test_client_with_events,
-):
-    """Test the demo socket.io connect event."""
-    mocked_token_payload = mock_token_payload
-
-    namespace_with_event = [
-        {
-            "name": "/demo-namespace",
-            "events": ["demo_message"],
-        }
-    ]
 
     demo_messages = []
-    async for client, response in socketio_test_client_with_events(
-        namespace_with_event
-    ):
+    async for client, response in socketio_client_for_demo_namespace():
         demo_messages = response["/demo-namespace"]["demo_message"]
 
     assert len(demo_messages) == 2
@@ -161,13 +151,7 @@ async def test_connect_with_test_server_demo_namespace_missing_scopes_fails(
     """Test the demo socket.io connect event."""
     mock_token_payload
 
-    responses = []
     async for client in socketio_test_client(["/demo-namespace"]):
-
-        @client.event(namespace="/demo-namespace")
-        async def demo_message(data):
-            nonlocal responses
-            responses.append(data)
 
         try:
             await client.connect_to_test_client()
@@ -184,34 +168,30 @@ async def test_connect_with_test_server_demo_namespace_missing_scopes_fails(
 )
 async def test_demo_message_with_test_server(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_namespace,
 ):
     """Test the demo socket.io message event."""
     mocked_token_payload = mock_token_payload
 
-    responses = []
-    async for client in socketio_test_client(["/demo-namespace"]):
-
-        @client.event(namespace="/demo-namespace")
-        async def demo_message(data):
-
-            nonlocal responses
-            responses.append(data)
-
-        # Connect the client
-        await client.connect_to_test_client()
+    demo_messages = []
+    async for client, response in socketio_client_for_demo_namespace():
 
         await client.emit("demo_message", "Something", namespace="/demo-namespace")
 
         # Wait for the response to be set
         await client.sleep(1)
 
+        demo_messages = response["/demo-namespace"]["demo_message"]
+
         await client.disconnect()
 
-    assert len(responses) == 3
-    assert responses[0] == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
-    assert "Your session ID is " in responses[1]
-    assert responses[2] == f"{mocked_token_payload["name"]}: Something"
+    assert len(demo_messages) == 3
+    assert (
+        demo_messages[0]
+        == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
+    )
+    assert "Your session ID is " in demo_messages[1]
+    assert demo_messages[2] == f"{mocked_token_payload["name"]}: Something"
 
 
 @pytest.mark.anyio
