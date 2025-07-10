@@ -32,6 +32,7 @@ export class SocketIO {
 		this.client = io(socketioServerUrl + connection.namespace, {
 			path: `/socketio/v1`,
 			auth: { 'session-id': connection.cookie_session_id },
+			// TBD: refactor into an object to allow more flexible query parameters?
 			query: { 'request-access-data': connection.requestAccessData || false }
 		});
 		this.client.connect();

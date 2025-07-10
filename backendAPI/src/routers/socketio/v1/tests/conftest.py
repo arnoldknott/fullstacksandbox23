@@ -1,5 +1,6 @@
 import asyncio
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 from unittest.mock import patch
 
 from pydantic import BaseModel
@@ -163,10 +164,28 @@ async def socketio_test_client_with_events(socketio_test_client):
         namespaces_and_events: List[Namespaces],
         server_host: str = "http://127.0.0.1:8669",
         query_parameters: dict = None,
+        logs: Optional[List[dict]] = None,
     ):
 
         namespaces = [namespace["name"] for namespace in namespaces_and_events]
         async for client in socketio_test_client(namespaces, server_host):
+
+            def make_handler(event_name):
+                async def handle_event(data):
+                    """Handles the event and appends data to responses."""
+                    # print(f"=== Received event '{event_name}': {data} ===", flush=True)
+                    nonlocal responses
+                    if logs is not None:
+                        logs.append(
+                            {
+                                "event": event_name,
+                                "timestamp": datetime.now(),
+                                "data": data,
+                            }
+                        )
+                    responses[namespace][event_name].append(data)
+
+                return handle_event
 
             responses = {}
             for namespace_event in namespaces_and_events:
@@ -176,16 +195,14 @@ async def socketio_test_client_with_events(socketio_test_client):
                 for event in events:
                     responses[namespace][event] = []
 
-                    @client.on(event, namespace=namespace)
-                    async def handle_event(data):
-                        """Handles the event and appends data to responses."""
-                        print(f"=== Received event '{event}': {data} ===", flush=True)
-                        nonlocal responses
-                        responses[namespace][event].append(data)
+                    client.on(event, handler=make_handler(event), namespace=namespace)
 
             await client.connect_to_test_client(query_parameters)
 
-            yield client, responses
+            if logs is None:
+                yield client, responses
+            else:
+                yield client, responses, logs
 
     return _socketio_test_client_with_events
 
@@ -198,6 +215,7 @@ async def socketio_client_for_demo_namespace(
 
     async def _socketio_client_for_demo_namespace(
         query_parameters: dict = None,
+        logs: List[dict] = None,
     ):
 
         demo_namespace_with_events = [
@@ -207,9 +225,39 @@ async def socketio_client_for_demo_namespace(
             }
         ]
 
-        async for client, responses in socketio_test_client_with_events(
-            demo_namespace_with_events, query_parameters=query_parameters
+        async for socketio_test_client in socketio_test_client_with_events(
+            demo_namespace_with_events, query_parameters=query_parameters, logs=logs
         ):
-            yield client, responses
+            yield socketio_test_client
 
     return _socketio_client_for_demo_namespace
+
+
+@pytest.fixture(scope="function")
+async def socketio_client_for_demo_resource_namespace(
+    socketio_test_client_with_events,
+):
+    """Provides a socket.io client for the demo namespace with event handlers."""
+
+    async def _socketio_client_for_demo_resource_namespace(
+        query_parameters: dict = None,
+        logs: List[dict] = None,
+    ):
+
+        demo_namespace_with_events = [
+            {
+                "name": "/demo-resource",
+                "events": [
+                    "transfer",
+                    "deleted",
+                    "status",
+                ],
+            }
+        ]
+
+        async for socketio_test_client in socketio_test_client_with_events(
+            demo_namespace_with_events, query_parameters=query_parameters, logs=logs
+        ):
+            yield socketio_test_client
+
+    return _socketio_client_for_demo_resource_namespace

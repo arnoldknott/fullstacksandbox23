@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
+
 from socketio.exceptions import ConnectionError
 from unittest.mock import patch
 import pytest
@@ -64,14 +65,12 @@ async def setup_namespace_server(provide_namespace_server):
 )
 async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_missing_in_token(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
 ):
     """Test the demo_resource_namespace socket.io connection needs socketio scope in token."""
 
     try:
-        async for client in socketio_test_client(["/demo-resource"]):
-
-            await client.connect_to_test_client()
+        async for client in socketio_client_for_demo_resource_namespace():
 
             await client.sleep(1)
             await client.disconnect()
@@ -90,28 +89,23 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
 )
 async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresources(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
 ):
     """Test the demo resource connect event."""
     mocked_token_payload = mock_token_payload
     resources = await add_test_demo_resources(mocked_token_payload)
 
-    responses = []
-    async for client in socketio_test_client(["/demo-resource"]):
+    transfer_data = []
+    async for client, responses in socketio_client_for_demo_resource_namespace():
 
-        @client.on("transfer", namespace="/demo-resource")
-        async def receiving_transfer(data):
-            nonlocal responses
-            responses.append(data)
+        transfer_data = responses["/demo-resource"]["transfer"]
 
-        await client.connect_to_test_client()
-
-    assert len(responses) == 4
-    for response, resource in zip(responses, resources):
-        assert "category" in response
-        assert "tags" in response
-        assert DemoResource.model_validate(response) == resource
+    assert len(transfer_data) == 4
+    for transfer, resource in zip(transfer_data, resources):
+        assert "category" in transfer
+        assert "tags" in transfer
+        assert DemoResource.model_validate(transfer) == resource
 
 
 @pytest.mark.anyio
@@ -122,7 +116,7 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
     current_user_from_azure_token,
@@ -146,23 +140,18 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     for policy in policies:
         await add_test_policy_for_resource(policy)
 
-    responses = []
-    async for client in socketio_test_client(["/demo-resource"]):
+    transfer_data = []
+    async for client, responses in socketio_client_for_demo_resource_namespace():
 
-        @client.on("transfer", namespace="/demo-resource")
-        async def receiving_transfer(data):
-            nonlocal responses
-            responses.append(data)
-
-    await client.connect_to_test_client()
+        transfer_data = responses["/demo-resource"]["transfer"]
 
     resources_with_user_acccess = [
         resources[1],  # Read access
         resources[3],  # Write access
     ]
 
-    assert len(responses) == 2
-    for response, resource in zip(responses, resources_with_user_acccess):
+    assert len(transfer_data) == 2
+    for response, resource in zip(transfer_data, resources_with_user_acccess):
         assert "category" in response
         assert "tags" in response
         assert "user_right" not in response
@@ -180,7 +169,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources_with_access_data(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
     current_user_from_azure_token,
@@ -206,26 +195,21 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     for policy in policies:
         await add_test_policy_for_resource(policy)
 
-    responses = []
+    transfer_data = []
 
-    async for client in socketio_test_client(["/demo-resource"]):
+    async for client, responses in socketio_client_for_demo_resource_namespace(
+        {"request-access-data": "true"}
+    ):
 
-        @client.on("transfer", namespace="/demo-resource")
-        async def receiving_transfer(data):
-            nonlocal responses
-            responses.append(data)
-
-        await client.connect_to_test_client(
-            query_parameters={"request-access-data": "true"}
-        )
+        transfer_data = responses["/demo-resource"]["transfer"]
 
     resources_with_user_acccess = [
         resources[1],  # Own access
         resources[3],  # Write access
     ]
 
-    assert len(responses) == 2
-    for response, resource in zip(responses, resources_with_user_acccess):
+    assert len(transfer_data) == 2
+    for response, resource in zip(transfer_data, resources_with_user_acccess):
         modelled_response = DemoResourceExtended.model_validate(response)
         assert "category" in response
         assert "tags" in response
@@ -234,20 +218,20 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         assert modelled_response.last_modified_date == modelled_response.creation_date
         assert DemoResource.model_validate(response) == resource
 
-    assert responses[0]["user_right"] == "own"
-    assert "id" in responses[0]["access_policies"][1]
+    assert transfer_data[0]["user_right"] == "own"
+    assert "id" in transfer_data[0]["access_policies"][1]
     assert (
-        UUID(responses[0]["access_policies"][1]["identity_id"])
+        UUID(transfer_data[0]["access_policies"][1]["identity_id"])
         == policies[0]["identity_id"]
     )
     assert (
-        UUID(responses[0]["access_policies"][1]["resource_id"])
+        UUID(transfer_data[0]["access_policies"][1]["resource_id"])
         == policies[0]["resource_id"]
     )
-    assert responses[0]["access_policies"][1]["action"] == "own"
-    assert not responses[0]["access_policies"][1]["public"]
-    assert responses[1]["user_right"] == "write"
-    assert responses[1]["access_policies"] is None
+    assert transfer_data[0]["access_policies"][1]["action"] == "own"
+    assert not transfer_data[0]["access_policies"][1]["public"]
+    assert transfer_data[1]["user_right"] == "write"
+    assert transfer_data[1]["access_policies"] is None
 
 
 @pytest.mark.anyio
@@ -257,7 +241,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     indirect=True,
 )
 async def test_user_gets_error_on_status_event_due_to_database_error(
-    mock_token_payload, socketio_test_client
+    mock_token_payload, socketio_client_for_demo_resource_namespace
 ):
     """Test the demo resource connect event."""
     with patch(
@@ -265,29 +249,19 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
         side_effect=Exception("Database error."),
     ):
 
-        resources = []
-        statuses = []
+        transfer_data = []
+        status_data = []
 
-        async for client in socketio_test_client(["/demo-resource"]):
+        async for client, responses in socketio_client_for_demo_resource_namespace():
 
-            @client.event(namespace="/demo-resource")
-            async def transfer(data):
-                nonlocal resources
-                resources.append(data)
-
-            @client.event(namespace="/demo-resource")
-            async def status(data):
-
-                nonlocal statuses
-                statuses.append(data)
-
-            await client.connect_to_test_client()
+            transfer_data = responses["/demo-resource"]["transfer"]
+            status_data = responses["/demo-resource"]["status"]
 
         # Wait for the response to be set
-        await client.sleep(1)
+        # await client.sleep(1)
 
-        assert resources == []
-        assert statuses == [{"error": "Database error."}]
+        assert transfer_data == []
+        assert status_data == [{"error": "Database error."}]
 
         await client.disconnect()
 
@@ -300,31 +274,25 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
 )
 async def test_user_submits_resource_without_id_for_creation(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
 ):
     """Test the demo resource submit event without ID."""
 
-    async for client in socketio_test_client(["/demo-resource"]):
-        statuses = []
-
-        @client.event(namespace="/demo-resource")
-        async def status(data):
-
-            nonlocal statuses
-            statuses.append(data)
-
-        await client.connect_to_test_client()
+    status_data = []
+    async for client, responses in socketio_client_for_demo_resource_namespace():
 
         await client.emit(
             "submit", many_test_demo_resources[1], namespace="/demo-resource"
         )
 
+        status_data = responses["/demo-resource"]["status"]
+
         # Wait for the response to be set
         await client.sleep(1)
 
-        assert statuses[0]["submitted_id"] is None
-        assert UUID(statuses[0]["id"])  # Check if the ID is a valid UUID
-        assert statuses[0]["success"] == "created"
+        assert status_data[0]["submitted_id"] is None
+        assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
+        assert status_data[0]["success"] == "created"
 
         await client.disconnect()
 
@@ -337,35 +305,107 @@ async def test_user_submits_resource_without_id_for_creation(
 )
 async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
     test_resource = copy.deepcopy(many_test_demo_resources[1])
     test_resource["id"] = "new_34ab56z"
 
-    async for client in socketio_test_client(["/demo-resource"]):
-        statuses = []
+    status_data = []
+    async for client, responses in socketio_client_for_demo_resource_namespace():
 
-        @client.event(namespace="/demo-resource")
-        async def status(data):
+        await client.emit("submit", test_resource, namespace="/demo-resource")
 
-            nonlocal statuses
-            statuses.append(data)
+        status_data = responses["/demo-resource"]["status"]
+        # Wait for the response to be set
+        await client.sleep(1)
 
-        await client.connect_to_test_client()
+        await client.disconnect()
 
+    # assert "id" in status[0]
+    assert status_data[0]["submitted_id"] == test_resource["id"]
+    assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
+    assert status_data[0]["success"] == "created"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    indirect=True,
+)
+async def test_user_submits_two_resource_with_new__string_in_id_field_for_creation_assessing_order_through_logs(
+    mock_token_payload,
+    socketio_client_for_demo_resource_namespace,
+):
+    """Test the demo resource submit event with non-UUID in ID field."""
+
+    test_resource = copy.deepcopy(many_test_demo_resources[1])
+    test_resource["id"] = "new_34ab56z"
+
+    test_resource2 = copy.deepcopy(many_test_demo_resources[1])
+    test_resource2["id"] = "new_439832f"
+
+    status_data = []
+    logs = []
+    async for client, responses, logs in socketio_client_for_demo_resource_namespace(
+        logs=logs
+    ):
+
+        time_before_first_submit = datetime.now()
+        logs.append(
+            {
+                "event": "submit",
+                "timestamp": time_before_first_submit,
+                "data": test_resource,
+            }
+        )
         await client.emit("submit", test_resource, namespace="/demo-resource")
 
         # Wait for the response to be set
         await client.sleep(1)
 
-        # assert "id" in status[0]
-        assert statuses[0]["submitted_id"] == test_resource["id"]
-        assert UUID(statuses[0]["id"])  # Check if the ID is a valid UUID
-        assert statuses[0]["success"] == "created"
+        time_before_second_submit = datetime.now()
+        logs.append(
+            {
+                "event": "submit",
+                "timestamp": time_before_second_submit,
+                "data": test_resource2,
+            }
+        )
+        await client.emit("submit", test_resource2, namespace="/demo-resource")
+
+        # Wait for the response to be set
+        await client.sleep(1)
+
+        status_data = responses["/demo-resource"]["status"]
 
         await client.disconnect()
+
+    assert len(logs) == 4  # Two submits, two responses
+    assert logs[0]["event"] == "submit"
+    assert logs[0]["timestamp"] == time_before_first_submit
+    assert logs[0]["data"] == test_resource
+    assert logs[1]["event"] == "status"
+    assert logs[1]["timestamp"] > time_before_first_submit
+    assert logs[1]["timestamp"] < time_before_second_submit
+    assert logs[1]["data"]["submitted_id"] == test_resource["id"]
+    assert logs[2]["event"] == "submit"
+    assert logs[2]["timestamp"] == time_before_second_submit
+    assert logs[2]["data"] == test_resource2
+    assert logs[3]["event"] == "status"
+    assert logs[3]["timestamp"] > time_before_second_submit
+    assert logs[3]["data"]["submitted_id"] == test_resource2["id"]
+
+    assert len(status_data) == 2
+
+    assert status_data[0]["submitted_id"] == test_resource["id"]
+    assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
+    assert status_data[0]["success"] == "created"
+    assert status_data[1]["submitted_id"] == test_resource2["id"]
+    assert UUID(status_data[1]["id"])  # Check if the ID is a valid UUID
+    assert status_data[1]["success"] == "created"
 
 
 @pytest.mark.anyio
@@ -376,32 +416,26 @@ async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
 )
 async def test_user_submits_resource_with_random_string_in_id_field_fails(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
     test_resource = copy.deepcopy(many_test_demo_resources[1])
     test_resource["id"] = "random_string"
 
-    async for client in socketio_test_client(["/demo-resource"]):
-        statuses = []
-
-        @client.event(namespace="/demo-resource")
-        async def status(data):
-
-            nonlocal statuses
-            statuses.append(data)
-
-        await client.connect_to_test_client()
+    status_data = []
+    async for client, responses in socketio_client_for_demo_resource_namespace():
 
         await client.emit("submit", test_resource, namespace="/demo-resource")
 
         # Wait for the response to be set
         await client.sleep(1)
 
-        assert statuses[0]["error"] == "badly formed hexadecimal UUID string"
+        status_data = responses["/demo-resource"]["status"]
 
         await client.disconnect()
+
+    assert status_data[0]["error"] == "badly formed hexadecimal UUID string"
 
 
 @pytest.mark.anyio
@@ -412,20 +446,13 @@ async def test_user_submits_resource_with_random_string_in_id_field_fails(
 )
 async def test_user_submits_resource_without_id_for_creation_missing_name(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
 ):
     """Test the demo resource delete event."""
 
-    async for client in socketio_test_client(["/demo-resource"]):
-        statuses = []
+    async for client, responses in socketio_client_for_demo_resource_namespace():
 
-        @client.event(namespace="/demo-resource")
-        async def status(data):
-
-            nonlocal statuses
-            statuses.append(data)
-
-        await client.connect_to_test_client()
+        statuses_data = responses["/demo-resource"]["status"]
 
         await client.emit(
             "submit",
@@ -437,7 +464,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_name(
         await client.sleep(1)
 
         assert (
-            statuses[0]["error"]
+            statuses_data[0]["error"]
             == "1 validation error for DemoResourceCreate\nname\n  Field required [type=missing, input_value={'description': 'Description of test resource'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing"
         )
 
@@ -452,21 +479,12 @@ async def test_user_submits_resource_without_id_for_creation_missing_name(
 )
 async def test_user_submits_resource_with_nonexisting_uuid_fails(
     mock_token_payload,
-    provide_namespace_server,
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
 ):
     """Test the demo resource submit event with non-existing UUID."""
 
-    async for client in socketio_test_client(["/demo-resource"]):
-        statuses = []
-
-        @client.event(namespace="/demo-resource")
-        async def status(data):
-
-            nonlocal statuses
-            statuses.append(data)
-
-        await client.connect_to_test_client()
+    async for client, responses in socketio_client_for_demo_resource_namespace():
+        statuses_data = responses["/demo-resource"]["status"]
 
         test_demo_resource = copy.deepcopy(many_test_demo_resources[1])
         # test_demo_resource = many_test_demo_resources[1]
@@ -477,7 +495,7 @@ async def test_user_submits_resource_with_nonexisting_uuid_fails(
         # Wait for the response to be set
         await client.sleep(1)
 
-        assert statuses[0]["error"] == "404: DemoResource not updated."
+        assert statuses_data[0]["error"] == "404: DemoResource not updated."
 
         await client.disconnect()
 
@@ -490,7 +508,7 @@ async def test_user_submits_resource_with_nonexisting_uuid_fails(
 )
 async def test_user_submits_existing_resource_for_update(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
     current_user_from_azure_token,
 ):
@@ -501,16 +519,8 @@ async def test_user_submits_existing_resource_for_update(
         i for i, r in enumerate(resources) if r.name == "A second cat 2 resource"
     )
 
-    async for client in socketio_test_client(["/demo-resource"]):
-        statuses = []
-
-        @client.event(namespace="/demo-resource")
-        async def status(data):
-
-            nonlocal statuses
-            statuses.append(data)
-
-        await client.connect_to_test_client()
+    async for client, responses in socketio_client_for_demo_resource_namespace():
+        statuses_data = responses["/demo-resource"]["status"]
 
         modified_demo_resource = resources[index_of_resource_to_update]
         modified_demo_resource.name = "Altering the name of this demo resource"
@@ -526,9 +536,9 @@ async def test_user_submits_existing_resource_for_update(
         # Wait for the response to be set
         await client.sleep(1)
 
-        assert UUID(statuses[0]["id"])  # Check if the ID is a valid UUID
-        assert statuses[0]["success"] == "updated"
-        assert statuses[0]["id"] == str(resources[index_of_resource_to_update].id)
+        assert UUID(statuses_data[0]["id"])  # Check if the ID is a valid UUID
+        assert statuses_data[0]["success"] == "updated"
+        assert statuses_data[0]["id"] == str(resources[index_of_resource_to_update].id)
 
         await client.disconnect()
 
@@ -559,7 +569,7 @@ async def test_user_submits_existing_resource_for_update(
 )
 async def test_user_updates_demo_resource_not_having_write_access_fails(
     mock_token_payload,
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
     current_user_from_azure_token,
@@ -575,16 +585,8 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
     }
     await add_test_policy_for_resource(policy)
 
-    async for client in socketio_test_client(["/demo-resource"]):
-        statuses = []
-
-        @client.event(namespace="/demo-resource")
-        async def status(data):
-
-            nonlocal statuses
-            statuses.append(data)
-
-        await client.connect_to_test_client()
+    async for client, responses in socketio_client_for_demo_resource_namespace():
+        statuses_data = responses["/demo-resource"]["status"]
 
         modified_demo_resource = resources[3]
         modified_demo_resource.name = "Altering the name of this demo resource"
@@ -600,7 +602,7 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
         # Wait for the response to be set
         await client.sleep(1)
 
-        assert statuses[0]["error"] == "404: DemoResource not updated."
+        assert statuses_data[0]["error"] == "404: DemoResource not updated."
 
 
 @pytest.mark.anyio
@@ -612,45 +614,23 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
 async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_remove_event(
     mock_token_payload,
     add_test_demo_resources: list[DemoResource],
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
 ):
     """Test the demo resource delete event."""
     resources = await add_test_demo_resources(mock_token_payload)
 
-    async for client1 in socketio_test_client(["/demo-resource"]):
-        async for client2 in socketio_test_client(["/demo-resource"]):
+    async for client1, responses1 in socketio_client_for_demo_resource_namespace():
+        async for client2, responses2 in socketio_client_for_demo_resource_namespace():
 
-            responses_client1 = []
-            statuses_client1 = []
-            responses_client2 = []
-            statuses_client2 = []
+            deleted_data_client1 = []
+            statuses_data_client1 = []
+            deleted_data_client2 = []
+            statuses_data_client2 = []
 
-            @client1.event(namespace="/demo-resource")
-            async def deleted(data):
-
-                nonlocal responses_client1
-                responses_client1.append(data)
-
-            @client1.event(namespace="/demo-resource")
-            async def status(data):
-
-                nonlocal statuses_client1
-                statuses_client1.append(data)
-
-            @client2.event(namespace="/demo-resource")
-            async def deleted(data):  # NOQA: F811
-
-                nonlocal responses_client2
-                responses_client2.append(data)
-
-            @client2.event(namespace="/demo-resource")
-            async def status(data):  # NOQA: F811
-
-                nonlocal statuses_client2
-                statuses_client2.append(data)
-
-            await client1.connect_to_test_client()
-            await client2.connect_to_test_client()
+            statuses_data_client1 = responses1["/demo-resource"]["status"]
+            statuses_data_client2 = responses2["/demo-resource"]["status"]
+            deleted_data_client1 = responses1["/demo-resource"]["deleted"]
+            deleted_data_client2 = responses2["/demo-resource"]["deleted"]
 
             await client1.emit(
                 "delete", str(resources[2].id), namespace="/demo-resource"
@@ -660,12 +640,12 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
             await client1.sleep(1)
             await client2.sleep(1)
 
-            assert responses_client1 == [str(resources[2].id)]
-            assert statuses_client1 == [
+            assert deleted_data_client1 == [str(resources[2].id)]
+            assert statuses_data_client1 == [
                 {"success": "deleted", "id": str(resources[2].id)}
             ]
-            assert responses_client2 == [str(resources[2].id)]
-            assert statuses_client2 == []
+            assert deleted_data_client2 == [str(resources[2].id)]
+            assert statuses_data_client2 == []
 
             await client1.disconnect()
             await client2.disconnect()
@@ -680,28 +660,20 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
 async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_and_returns_status(
     mock_token_payload,
     add_test_demo_resources: list[DemoResource],
-    socketio_test_client,
+    socketio_client_for_demo_resource_namespace,
 ):
     """Test the demo resource delete event."""
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
 
-    async for client in socketio_test_client(["/demo-resource"]):
+    async for client, responses in socketio_client_for_demo_resource_namespace():
 
-        responses = []
-
-        @client.event(namespace="/demo-resource")
-        async def status(data):
-
-            nonlocal responses
-            responses = data
-
-        await client.connect_to_test_client()
+        status_data = responses["/demo-resource"]["status"]
 
         await client.emit("delete", str(resources[2].id), namespace="/demo-resource")
 
         # Wait for the response to be set
         await client.sleep(1)
 
-        assert responses == {"error": "404: DemoResource not deleted."}
+        assert status_data[0] == {"error": "404: DemoResource not deleted."}
 
         await client.disconnect()

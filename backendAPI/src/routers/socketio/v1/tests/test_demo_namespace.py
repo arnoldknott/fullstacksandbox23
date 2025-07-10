@@ -57,6 +57,7 @@ async def test_on_connect_invalid_token(mock_token_payload):
         assert str(err) == "Authorization failed."
 
 
+# TBD: Uses more generic fixture - ready to delete:
 # @pytest.mark.anyio
 # @pytest.mark.parametrize(
 #     "mock_token_payload",
