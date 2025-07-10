@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 event_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
     )
 ]
 

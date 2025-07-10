@@ -2,7 +2,26 @@ import pytest
 from socketio.exceptions import ConnectionError
 
 from routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
-from tests.utils import token_admin_read_write_socketio, token_user1_read_write_socketio
+from tests.utils import (
+    token_admin_read_write_socketio,
+    token_user1_read_write_socketio,
+    token_admin_read,
+    token_admin_write,
+    token_user1_read,
+    token_user1_write,
+    token_admin_socketio,
+    token_user1_read_socketio,
+    token_user1_write_socketio,
+    token_user1_socketio,
+    token_user2_socketio,
+    token_user2_read_socketio,
+    token_user2_write_socketio,
+    token_user2_read_write_socketio,
+    token_admin_read_socketio,
+    token_admin_write_socketio,
+    token_user2_read,
+    token_user2_write,
+)
 
 
 @pytest.mark.anyio
@@ -24,7 +43,14 @@ async def test_on_connect_invalid_token():
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_token_payload",
-    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    [
+        token_admin_read_write_socketio,
+        token_user1_read_write_socketio,
+        token_user2_read_write_socketio,
+        token_admin_read_socketio,
+        token_user1_read_socketio,
+        token_user2_read_socketio,
+    ],
     indirect=True,
 )
 async def test_connect_with_test_server_demo_namespace(
@@ -55,6 +81,55 @@ async def test_connect_with_test_server_demo_namespace(
     assert len(responses) == 2
     assert responses[0] == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
     assert "Your session ID is " in responses[1]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [
+        token_admin_read,
+        token_admin_write,
+        token_admin_socketio,
+        token_admin_write_socketio,
+        token_user1_read,
+        token_user1_write,
+        token_user1_socketio,
+        token_user1_write_socketio,
+        token_user2_socketio,
+        token_user2_read,
+        token_user2_write,
+        token_user2_write_socketio,
+    ],
+    indirect=True,
+)
+async def test_connect_with_test_server_demo_namespace_missing_scopes_fails(
+    mock_token_payload,
+    # socketio_test_server,
+    # TBD: refactor into test client to also create the test-server and
+    #  provide the namespace server
+    provide_namespace_server,
+    socketio_test_client,
+):
+    """Test the demo socket.io connect event."""
+    mock_token_payload
+
+    # sio = socketio_test_server
+    # sio.register_namespace(DemoNamespace("/demo-namespace"))
+    await provide_namespace_server([DemoNamespace("/demo-namespace")])
+
+    responses = []
+    async for client in socketio_test_client(["/demo-namespace"]):
+
+        @client.event(namespace="/demo-namespace")
+        async def demo_message(data):
+            nonlocal responses
+            responses.append(data)
+
+        try:
+            await client.connect_to_test_client()
+            raise Exception("This should have failed due to invalid token.")
+        except ConnectionError as err:
+            assert str(err) == "One or more namespaces failed to connect"
 
 
 @pytest.mark.anyio

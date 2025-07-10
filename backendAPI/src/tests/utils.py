@@ -72,6 +72,15 @@ token_payload_scope_api_write = {
 token_payload_scope_api_read_write = {
     "scp": "api.read api.write",
 }
+token_payload_scope_socketio = {
+    "scp": "socketio",
+}
+token_payload_scope_read_socketio = {
+    "scp": "socketio api.read",
+}
+token_payload_scope_write_socketio = {
+    "scp": "socketio api.write",
+}
 token_payload_scope_api_read_write_socketio = {
     "scp": "api.read api.write socketio",
 }
@@ -119,6 +128,27 @@ token_user1_read_write = {
     **token_payload_roles_user,
 }
 
+token_user1_socketio = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_socketio,
+    **token_payload_roles_user,
+}
+
+token_user1_read_socketio = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_read_socketio,
+    **token_payload_roles_user,
+}
+
+token_user1_write_socketio = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_write_socketio,
+    **token_payload_roles_user,
+}
+
 token_user1_read_write_socketio = {
     **token_payload_user_id,
     **token_payload_tenant_id,
@@ -163,6 +193,27 @@ token_user2_read_write = {
     **token_payload_roles_user,
 }
 
+token_user2_read_socketio = {
+    **token_payload_another_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_read_socketio,
+    **token_payload_roles_user,
+}
+
+token_user2_write_socketio = {
+    **token_payload_another_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_write_socketio,
+    **token_payload_roles_user,
+}
+
+token_user2_socketio = {
+    **token_payload_another_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_socketio,
+    **token_payload_roles_user,
+}
+
 token_user2_read_write_socketio = {
     **token_payload_another_user_id,
     **token_payload_tenant_id,
@@ -194,6 +245,27 @@ token_admin_read_write = {
     **token_payload_random_user_id,
     **token_payload_tenant_id,
     **token_payload_scope_api_read_write,
+    **token_payload_roles_admin,
+}
+
+token_admin_read_socketio = {
+    **token_payload_random_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_read_socketio,
+    **token_payload_roles_admin,
+}
+
+token_admin_write_socketio = {
+    **token_payload_random_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_write_socketio,
+    **token_payload_roles_admin,
+}
+
+token_admin_socketio = {
+    **token_payload_random_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_socketio,
     **token_payload_roles_admin,
 }
 
