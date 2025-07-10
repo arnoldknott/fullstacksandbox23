@@ -6,7 +6,6 @@ from pydantic import BaseModel
 import socketio
 from sqlmodel import SQLModel
 
-from models.access import AccessPolicyCreate
 from core.config import config
 from core.security import (
     check_token_against_guards,
