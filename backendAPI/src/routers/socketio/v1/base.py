@@ -2,7 +2,7 @@ from typing import List, Optional
 import logging
 from urllib.parse import parse_qs
 from uuid import UUID
-
+from pydantic import BaseModel
 import socketio
 from sqlmodel import SQLModel
 from core.config import config
@@ -14,6 +14,15 @@ from core.types import CurrentUserData, EventGuard, GuardTypes
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 
 logger = logging.getLogger(__name__)
+
+
+class SocketIoSessionData(BaseModel):
+    """Data stored in the socket.io session."""
+
+    user_name: str
+    current_user: CurrentUserData
+    session_id: str  # That's the Redis session-id, not the socket.io session-id (sid)
+
 
 socketio_server = socketio.AsyncServer(
     async_mode="asgi",
@@ -66,10 +75,6 @@ class BaseNamespace(socketio.AsyncNamespace):
         namespace: str = None,
         room: str = None,
         event_guards: List[EventGuard] = [],
-        # create_guards: GuardTypes = None,
-        # read_guards: GuardTypes = None,
-        # update_guards: GuardTypes = None,
-        # delete_guards: GuardTypes = None,
         crud=None,
         create_model: SQLModel = None,
         read_model: SQLModel = None,
@@ -107,7 +112,6 @@ class BaseNamespace(socketio.AsyncNamespace):
         self, session_id, guards
     ) -> CurrentUserData:
         """Check the auth token against the event guards."""
-
         token_payload = await self._get_token_payload_if_authenticated(session_id)
         current_user = await check_token_against_guards(token_payload, guards)
         return current_user
@@ -252,9 +256,10 @@ class BaseNamespace(socketio.AsyncNamespace):
                 # token_payload = await get_azure_token_payload(token)
                 # current_user = await check_token_against_guards(token_payload, guards)
                 # Do same in a try: except with create_guards, read_guards, update_guards, delete_guards
-                session_data = {
+                session_data: SocketIoSessionData = {
                     "user_name": token_payload["name"],
                     "current_user": current_user,
+                    "session_id": auth["session-id"],
                 }
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
@@ -278,68 +283,79 @@ class BaseNamespace(socketio.AsyncNamespace):
     async def on_submit(self, sid, data):
         """Gets data from client and issues a create or update based on id is present or not."""
         logger.info(f"🧦 Data submitted from client {sid}")
-        if self.crud is not None:
-            try:
+        current_user = None
+        guards = self._get_event_guards("submit")
+        try:
+            if guards is not None:
                 session = await self._get_session_data(sid)
-                current_user = session["current_user"]
-                database_object = None
-                if (
-                    "id" in data and data["id"][:4] != "new_"
-                ):  # validate if id is a valid UUID
-                    resource_id = UUID(data["id"])
-                    # if id is present, it is an update
-                    # validate data with update model
-                    object_update = self.update_model(**data)
-                    async with self.crud() as crud:
-                        database_object = await crud.update(
-                            current_user, resource_id, object_update
-                        )
-                        await self._emit_status(
-                            sid,
-                            {
-                                "success": "updated",
-                                "id": str(database_object.id),
-                            },
-                        )
-                else:
-                    # if id is not present, it is a create
-                    # validate data with create model
-                    object_create = self.create_model(**data)
-                    async with self.crud() as crud:
-                        # TBD: check the hierarchical resource system all the way through other events as well!
-                        parent_id = data.get("parent_id", None)
-                        inherit = data.get("inherit", False)
-                        database_object = await crud.create(
-                            object_create, current_user, parent_id, inherit
-                        )
-                        await self._emit_status(
-                            sid,
-                            {
-                                "success": "created",
-                                "id": str(database_object.id),
-                                "submitted_id": data.get("id"),
-                            },
-                        )
-                # if database_object is not None:
-                #     await self.server.emit(
-                #         "transfer",
-                #         database_object.model_dump(mode="json"),
-                #         namespace=self.namespace,
-                #         to=sid,
-                #     )
-            except Exception as error:
-                logger.error(f"🧦 Failed to write data from client {sid}.")
-                print(error, flush=True)
-                await self._emit_status(sid, {"error": str(error)})
-
-        else:
-            # Distributes incoming data to all clients in the namespace
-            # "transfer" is communication from server to client
-            self.server.emit(
-                "transfer",
-                data,
-                namespace=self.namespace,
-            )
+                current_user = await self._check_auth_token_against_event_guards(
+                    session["session_id"], guards
+                )
+            if self.crud is not None:
+                try:
+                    if not current_user:
+                        session = await self._get_session_data(sid)
+                        current_user = session["current_user"]
+                    database_object = None
+                    if (
+                        "id" in data and data["id"][:4] != "new_"
+                    ):  # validate if id is a valid UUID
+                        resource_id = UUID(data["id"])
+                        # if id is present, it is an update
+                        # validate data with update model
+                        object_update = self.update_model(**data)
+                        async with self.crud() as crud:
+                            database_object = await crud.update(
+                                current_user, resource_id, object_update
+                            )
+                            await self._emit_status(
+                                sid,
+                                {
+                                    "success": "updated",
+                                    "id": str(database_object.id),
+                                },
+                            )
+                    else:
+                        # if id is not present, it is a create
+                        # validate data with create model
+                        object_create = self.create_model(**data)
+                        async with self.crud() as crud:
+                            # TBD: check the hierarchical resource system all the way through other events as well!
+                            parent_id = data.get("parent_id", None)
+                            inherit = data.get("inherit", False)
+                            database_object = await crud.create(
+                                object_create, current_user, parent_id, inherit
+                            )
+                            await self._emit_status(
+                                sid,
+                                {
+                                    "success": "created",
+                                    "id": str(database_object.id),
+                                    "submitted_id": data.get("id"),
+                                },
+                            )
+                    # if database_object is not None:
+                    #     await self.server.emit(
+                    #         "transfer",
+                    #         database_object.model_dump(mode="json"),
+                    #         namespace=self.namespace,
+                    #         to=sid,
+                    #     )
+                except Exception as error:
+                    logger.error(f"🧦 Failed to write data from client {sid}.")
+                    print(error, flush=True)
+                    await self._emit_status(sid, {"error": str(error)})
+            else:
+                # Distributes incoming data to all clients in the namespace
+                # "transfer" is communication from server to client
+                self.server.emit(
+                    "transfer",
+                    data,
+                    namespace=self.namespace,
+                )
+        except Exception as error:
+            logger.error(f"🧦 Failed to write data from client {sid}.")
+            await self._emit_status(sid, {"error": str(error)})
 
     async def on_delete(self, sid, resource_id: UUID):
         """Delete event for socket.io namespaces."""

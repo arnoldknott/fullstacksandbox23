@@ -12,8 +12,14 @@ from models.demo_resource import DemoResource, DemoResourceExtended
 from crud.demo_resource import DemoResourceCRUD
 from routers.socketio.v1.demo_resource import DemoResourceNamespace
 from tests.utils import (
+    token_admin_write_socketio,
+    token_admin_read_socketio,
+    token_admin_read_write,
     token_admin_read_write_socketio,
     token_user1_read_write_socketio,
+    token_user1_read_write,
+    token_user1_read_socketio,
+    token_user1_write_socketio,
     token_admin_read,
     token_admin_write,
     token_user1_read,
@@ -84,7 +90,12 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_token_payload",
-    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    [
+        token_admin_read_write_socketio,
+        token_user1_read_write_socketio,
+        token_user1_read_socketio,
+        token_user1_read_socketio,
+    ],
     indirect=True,
 )
 async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresources(
@@ -111,7 +122,7 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_token_payload",
-    [token_user1_read_write_socketio],
+    [token_user1_read_write_socketio, token_user1_read_socketio],
     indirect=True,
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources(
@@ -295,6 +306,64 @@ async def test_user_submits_resource_without_id_for_creation(
         assert status_data[0]["success"] == "created"
 
         await client.disconnect()
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    [
+        token_admin_read_socketio,
+        token_user1_read_socketio,
+    ],
+    indirect=True,
+)
+async def test_user_submits_resource_without_id_for_creation_missing_write_scope_in_token(
+    mock_token_payload,
+    current_user_from_azure_token,
+    add_test_demo_resources: list[DemoResource],
+    add_test_policy_for_resource: AccessPolicy,
+    socketio_client_for_demo_resource_namespace,
+):
+    """Test the demo resource submit event without ID."""
+    existing_demo_resources = await add_test_demo_resources()
+    current_user = await current_user_from_azure_token(mock_token_payload)
+
+    if "Admin" not in current_user.azure_token_roles:
+        for demo_resource in existing_demo_resources:
+            policy = {
+                "resource_id": demo_resource.id,
+                "identity_id": current_user.user_id,
+                "action": "read",
+            }
+            await add_test_policy_for_resource(policy)
+
+    status_data = []
+    transfer_data = []
+    async for client, responses in socketio_client_for_demo_resource_namespace():
+
+        transfer_data = responses["/demo-resource"]["transfer"]
+
+        await client.emit(
+            "submit", many_test_demo_resources[1], namespace="/demo-resource"
+        )
+
+        status_data = responses["/demo-resource"]["status"]
+
+        # Wait for the response to be set
+        await client.sleep(1)
+
+        await client.disconnect()
+
+    # The get all resources on connect works: requires only "socketio" and "api.read" scope
+    assert len(transfer_data) == len(existing_demo_resources)
+    for transfer, resource in zip(transfer_data, existing_demo_resources):
+        assert "category" in transfer
+        assert "tags" in transfer
+        assert DemoResource.model_validate(transfer) == resource
+
+    # However the submit event fails due to missing "api.write" scope
+    assert len(status_data) == 1
+    assert status_data[0]["error"] == "401: Invalid token."
 
 
 @pytest.mark.anyio

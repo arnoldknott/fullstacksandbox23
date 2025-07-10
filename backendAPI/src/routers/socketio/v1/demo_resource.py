@@ -17,8 +17,12 @@ from models.demo_resource import (
 event_guards = [
     EventGuard(
         event="connect",
+        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+    ),
+    EventGuard(
+        event="submit",
         guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
-    )
+    ),
 ]
 
 
