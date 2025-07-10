@@ -5,6 +5,8 @@ from uuid import UUID
 from pydantic import BaseModel
 import socketio
 from sqlmodel import SQLModel
+
+from models.access import AccessPolicyCreate
 from core.config import config
 from core.security import (
     check_token_against_guards,
@@ -373,6 +375,32 @@ class BaseNamespace(socketio.AsyncNamespace):
             logger.error(f"🧦 Failed to delete item for client {sid}.")
             print(error)
             await self._emit_status(sid, {"error": str(error)})
+
+    # async def on_share(self, sid, access_policy: AccessPolicyCreate):
+    #     """Share event for socket.io namespaces."""
+    #     logger.info(f"🧦 Share request from client {sid}.")
+    #     try:
+    #         async with self.crud() as crud:
+    #             await crud.check_identifier_type_link(access_policy.resource_id)
+    #             current_user = await self._get_current_user_and_check_guard(
+    #                 sid, "share"
+    #             )
+    #             async with AccessPolicyCRUD() as crud:
+    #                 await crud.create(access_policy, current_user)
+    #         await self._emit_status(
+    #             sid,
+    #             {
+    #                 "success": "shared",
+    #                 "resource_id": access_policy.resource_id,
+    #                 "identity_id": access_policy.identity_id,
+    #                 "action": access_policy.action,
+    #                 "public": access_policy.public,
+    #             },
+    #         )
+    #     except Exception as error:
+    #         logger.error(f"🧦 Failed to share item for client {sid}.")
+    #         print(error)
+    #         await self._emit_status(sid, {"error": str(error)})
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""

@@ -162,7 +162,7 @@ class BaseCRUD(
         await self.session.exec(statement)
         await self.session.commit()
 
-    async def _check_identifier_type_link(
+    async def check_identifier_type_link(
         self,
         object_id: uuid.UUID,
     ):
@@ -795,7 +795,7 @@ class BaseCRUD(
         # check if child id refers to a type equal to self.model in identifiertypelink table:
         # if not, raise 404
         # if yes, delete the hierarchy entry
-        if await self._check_identifier_type_link(child_id):
+        if await self.check_identifier_type_link(child_id):
             async with self.hierarchy_CRUD as hierarchy_CRUD:
                 await hierarchy_CRUD.delete(
                     current_user=current_user,
