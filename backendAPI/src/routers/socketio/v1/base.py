@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 import logging
 from urllib.parse import parse_qs
 from uuid import UUID
@@ -8,10 +8,9 @@ from sqlmodel import SQLModel
 from core.config import config
 from core.security import (
     check_token_against_guards,
-    get_azure_token_payload,
-    get_token_from_cache,
+    get_token_payload_from_cache,
 )
-from core.types import EventGuard
+from core.types import CurrentUserData, EventGuard, GuardTypes
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 
 logger = logging.getLogger(__name__)
@@ -92,20 +91,40 @@ class BaseNamespace(socketio.AsyncNamespace):
         self.callback_on_connect = callback_on_connect
         self.callback_on_disconnect = callback_on_disconnect
 
-    async def _check_auth_token_against_event_guards(self, session_id, guards):
-        """Check the auth token against the event guards."""
-
-        token = await get_token_from_cache(
+    async def _get_token_payload_if_authenticated(
+        self, session_id: str
+    ) -> Optional[dict]:
+        """Get the token payload from the cache if authenticated."""
+        logger.info("🧦 Getting token payload from cache")
+        token_payload = await get_token_payload_from_cache(
             session_id, [f"api://{config.API_SCOPE}/socketio"]
         )
-        if not token:
+        if not token_payload:
             raise ConnectionRefusedError("Authorization failed.")
-        token_payload = await get_azure_token_payload(token)
+        return token_payload
+
+    async def _check_auth_token_against_event_guards(
+        self, session_id, guards
+    ) -> CurrentUserData:
+        """Check the auth token against the event guards."""
+
+        token_payload = await self._get_token_payload_if_authenticated(session_id)
         current_user = await check_token_against_guards(token_payload, guards)
-        return [current_user, token_payload["name"]]
+        return current_user
+
+    def _get_event_guards(self, event: str) -> Optional[GuardTypes]:
+        """Get the guards for the event."""
+        if self.event_guards:
+            guard = next(
+                (guard.guards for guard in self.event_guards if guard.event == event),
+                None,
+            )
+            return guard
+        return None
 
     async def _get_session_data(self, sid):
         """Get socketio session data from the socketio server."""
+        logger.info(f"🧦 Get session data for client with session id {sid}.")
         try:
             return await self.server.get_session(sid, namespace=self.namespace)
         except Exception as err:
@@ -116,7 +135,7 @@ class BaseNamespace(socketio.AsyncNamespace):
 
     async def _get_all(self, sid, request_access_data=False):
         """Get all event for socket.io namespaces."""
-        logger.info(f"Get all data request from client {sid}.")
+        logger.info(f"🧦 Get all data request from client {sid}.")
         try:
             session = await self._get_session_data(sid)
             async with self.crud() as crud:
@@ -148,6 +167,7 @@ class BaseNamespace(socketio.AsyncNamespace):
 
     async def _get_access_data(self, sid, resource_id=UUID):
         """Get access data from the socketio session."""
+        logger.info(f"🧦 Get access data for resource {resource_id} for client {sid}.")
         session = await self._get_session_data(sid)
         # Consider splitting the accesss policy and access log CRUDs into separate methods
         async with AccessPolicyCRUD() as policy_crud:
@@ -194,7 +214,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         auth=None,
     ):
         """Connect event for socket.io namespaces."""
-        logger.info(f"Client connected with session id: {sid}.")
+        logger.info(f"🧦 Client connected with session id: {sid}.")
         # Parse 'request-access-data' from query string using urllib.parse.parse_qs
         query_string = environ.get("QUERY_STRING", "")
         request_access_data = parse_qs(query_string).get("request-access-data")
@@ -211,20 +231,21 @@ class BaseNamespace(socketio.AsyncNamespace):
         # is_request-access-data = request-access-data == "true"
         # print(f"=== base - on_connect - sid: {sid} - request-access-data: {request-access-data} ===")
         # print(request-access-data, flush=True)
-        guards = next(
-            (guard.guards for guard in self.event_guards if guard.event == "connect"),
-            None,
-        )
+        guards = self._get_event_guards("connect")
         if guards is not None:
             try:
                 # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
                 # catch and handle an expired token gracefully and return something to the client on a different message channel,
                 # so it can initiate the authentication process and come back with a new session id
-                [current_user, user_name] = (
-                    await self._check_auth_token_against_event_guards(
-                        auth["session-id"], guards
-                    )
+                # [current_user, user_name] = (
+                #     await self._check_auth_token_against_event_guards(
+                #         auth["session-id"], guards
+                #     )
+                # )
+                token_payload = await self._get_token_payload_if_authenticated(
+                    auth["session-id"]
                 )
+                current_user = await check_token_against_guards(token_payload, guards)
                 # token = await get_token_from_cache(
                 #     auth["session-id"], [f"api://{config.API_SCOPE}/socketio"]
                 # )
@@ -232,29 +253,31 @@ class BaseNamespace(socketio.AsyncNamespace):
                 # current_user = await check_token_against_guards(token_payload, guards)
                 # Do same in a try: except with create_guards, read_guards, update_guards, delete_guards
                 session_data = {
-                    "user_name": user_name,
+                    "user_name": token_payload["name"],
                     "current_user": current_user,
                 }
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
                 )
                 logger.info(
-                    f"Client authenticated to access protected namespace {self.namespace}."
+                    f"🧦 Client authenticated to access protected namespace {self.namespace}."
                 )
             except Exception:
-                logger.error(f"Client with session id {sid} failed to authenticate.")
+                logger.error(f"🧦 Client with session id {sid} failed to authenticate.")
                 # await self._emit_status(sid, {"error": "Authorization failed."})
                 raise ConnectionRefusedError("Authorization failed.")
         else:
             current_user = None
-            logger.info(f"Client authenticated to public namespace {self.namespace}.")
+            logger.info(
+                f"🧦 Client authenticated to public namespace {self.namespace}."
+            )
         if self.callback_on_connect is not None:
             await self.callback_on_connect(sid, request_access_data=request_access_data)
 
     # "submit" is communication from client to server
     async def on_submit(self, sid, data):
         """Gets data from client and issues a create or update based on id is present or not."""
-        logger.info(f"Data submitted from client {sid}")
+        logger.info(f"🧦 Data submitted from client {sid}")
         if self.crud is not None:
             try:
                 session = await self._get_session_data(sid)
@@ -305,7 +328,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 #         to=sid,
                 #     )
             except Exception as error:
-                logger.error(f"Failed to write data from client {sid}.")
+                logger.error(f"🧦 Failed to write data from client {sid}.")
                 print(error, flush=True)
                 await self._emit_status(sid, {"error": str(error)})
 
@@ -320,7 +343,7 @@ class BaseNamespace(socketio.AsyncNamespace):
 
     async def on_delete(self, sid, resource_id: UUID):
         """Delete event for socket.io namespaces."""
-        logger.info(f"Delete request from client {sid}.")
+        logger.info(f"🧦 Delete request from client {sid}.")
         try:
             session = await self._get_session_data(sid)
             async with self.crud() as crud:
@@ -332,12 +355,12 @@ class BaseNamespace(socketio.AsyncNamespace):
             )
             await self._emit_status(sid, {"success": "deleted", "id": resource_id})
         except Exception as error:
-            logger.error(f"Failed to delete item for client {sid}.")
+            logger.error(f"🧦 Failed to delete item for client {sid}.")
             print(error)
             await self._emit_status(sid, {"error": str(error)})
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""
-        logger.info(f"Client with session id {sid} disconnected.")
+        logger.info(f"🧦 Client with session id {sid} disconnected.")
         if self.callback_on_disconnect is not None:
             await self.callback_on_disconnect(sid)

@@ -270,13 +270,14 @@ async def get_azure_token_from_cache(user_account, scopes: List[str] = []) -> st
     return None
 
 
-async def get_token_from_cache(session_id: str, scopes: List[str] = []) -> str:
+async def get_token_payload_from_cache(session_id: str, scopes: List[str] = []) -> dict:
     """Gets the azure token from the cache"""
     logger.info("🔑 Getting token from cache")
     user_account = await get_user_account_from_session_cache(session_id)
 
     # Can be extended to further identity service providers:
-    return await get_azure_token_from_cache(user_account, scopes)
+    token = await get_azure_token_from_cache(user_account, scopes)
+    return await get_azure_token_payload(token)
 
     # # Create the PersistentTokenCache
     # cache = get_persistent_cache(user_account)
