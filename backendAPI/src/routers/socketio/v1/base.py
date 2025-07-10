@@ -237,8 +237,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Connect event for socket.io namespaces."""
         logger.info(f"🧦 Client connected with session id: {sid}.")
         # Parse 'request-access-data' from query string using urllib.parse.parse_qs
-        query_string = environ.get("QUERY_STRING", "")
-        request_access_data = parse_qs(query_string).get("request-access-data")
+        query_strings = environ.get("QUERY_STRING", "")
+        request_access_data = parse_qs(query_strings).get("request-access-data")
         if request_access_data:
             request_access_data = (
                 True
@@ -249,30 +249,16 @@ class BaseNamespace(socketio.AsyncNamespace):
             )
         else:
             request_access_data = False
-        # is_request-access-data = request-access-data == "true"
-        # print(f"=== base - on_connect - sid: {sid} - request-access-data: {request-access-data} ===")
-        # print(request-access-data, flush=True)
         guards = self._get_event_guards("connect")
         if guards is not None:
             try:
-                # TBD: add get scopes from guards - potentially distinguish between MSGraph scopes and backendAPI scopes?!
-                # catch and handle an expired token gracefully and return something to the client on a different message channel,
+
+                # TBD: catch and handle an expired token gracefully and return something to the client on a different message channel,
                 # so it can initiate the authentication process and come back with a new session id
-                # [current_user, user_name] = (
-                #     await self._get_current_user_and_check_guard(
-                #         auth["session-id"], guards
-                #     )
-                # )
                 token_payload = await self._get_token_payload_if_authenticated(
                     auth["session-id"]
                 )
                 current_user = await check_token_against_guards(token_payload, guards)
-                # token = await get_token_from_cache(
-                #     auth["session-id"], [f"api://{config.API_SCOPE}/socketio"]
-                # )
-                # token_payload = await get_azure_token_payload(token)
-                # current_user = await check_token_against_guards(token_payload, guards)
-                # Do same in a try: except with create_guards, read_guards, update_guards, delete_guards
                 session_data: SocketIoSessionData = {
                     "user_name": token_payload["name"],
                     "current_user": current_user,
@@ -286,7 +272,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                 )
             except Exception:
                 logger.error(f"🧦 Client with session id {sid} failed to authenticate.")
-                # await self._emit_status(sid, {"error": "Authorization failed."})
                 raise ConnectionRefusedError("Authorization failed.")
         else:
             current_user = None
