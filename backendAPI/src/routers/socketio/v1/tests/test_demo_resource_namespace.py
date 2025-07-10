@@ -1,5 +1,6 @@
 from datetime import datetime
 from uuid import UUID, uuid4
+
 from socketio.exceptions import ConnectionError
 from unittest.mock import patch
 import pytest
@@ -42,6 +43,18 @@ from tests.utils import (
 # ✔︎ client tries to delete demo resource without owner rights fails and returns status
 
 
+@pytest.fixture(scope="module", autouse=True)
+async def setup_namespace_server(provide_namespace_server):
+    # Call setup function here
+    socket_io_server = await provide_namespace_server(
+        [DemoResourceNamespace("/demo-resource")]
+    )
+    # Yield to allow tests to run
+    yield
+    # Optionally, add teardown logic here if needed
+    await socket_io_server.shutdown()
+
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_token_payload",
@@ -50,21 +63,17 @@ from tests.utils import (
     indirect=True,
 )
 async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_missing_in_token(
-    provide_namespace_server,
     mock_token_payload,
     socketio_test_client,
 ):
     """Test the demo_resource_namespace socket.io connection needs socketio scope in token."""
 
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
-    # statuses = []
     try:
         async for client in socketio_test_client(["/demo-resource"]):
 
             await client.connect_to_test_client()
 
             await client.sleep(1)
-            # assert statuses == [{"error": "Authorization failed."}]
             await client.disconnect()
             raise Exception(
                 "This should have failed due to missing authentication in on_connect."
@@ -81,16 +90,12 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
 )
 async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresources(
     mock_token_payload,
-    # TBD: refactor for the test_client to also create the test-server and provide the namespace server
-    provide_namespace_server,
     socketio_test_client,
     add_test_demo_resources: list[DemoResource],
 ):
     """Test the demo resource connect event."""
     mocked_token_payload = mock_token_payload
     resources = await add_test_demo_resources(mocked_token_payload)
-
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
     responses = []
     async for client in socketio_test_client(["/demo-resource"]):
@@ -117,9 +122,6 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources(
     mock_token_payload,
-    # TBD: refactor into test client to also create the test-server and
-    # provide the namespace server
-    provide_namespace_server,
     socketio_test_client,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
@@ -143,8 +145,6 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     ]
     for policy in policies:
         await add_test_policy_for_resource(policy)
-
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
     responses = []
     async for client in socketio_test_client(["/demo-resource"]):
@@ -180,9 +180,6 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources_with_access_data(
     mock_token_payload,
-    # TBD: refactor into test client to also create the test-server and
-    #  provide the namespace server
-    provide_namespace_server,
     socketio_test_client,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
@@ -208,8 +205,6 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     ]
     for policy in policies:
         await add_test_policy_for_resource(policy)
-
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
     responses = []
 
@@ -262,14 +257,13 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     indirect=True,
 )
 async def test_user_gets_error_on_status_event_due_to_database_error(
-    mock_token_payload, provide_namespace_server, socketio_test_client
+    mock_token_payload, socketio_test_client
 ):
     """Test the demo resource connect event."""
     with patch(
         "crud.demo_resource.DemoResourceCRUD.read",
         side_effect=Exception("Database error."),
     ):
-        await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
         resources = []
         statuses = []
@@ -306,12 +300,9 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
 )
 async def test_user_submits_resource_without_id_for_creation(
     mock_token_payload,
-    provide_namespace_server,
     socketio_test_client,
 ):
     """Test the demo resource submit event without ID."""
-
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
     async for client in socketio_test_client(["/demo-resource"]):
         statuses = []
@@ -347,12 +338,10 @@ async def test_user_submits_resource_without_id_for_creation(
 )
 async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
     mock_token_payload,
-    provide_namespace_server,
     socketio_test_client,
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
     test_resource = many_test_demo_resources[1]
     test_resource["id"] = "new_34ab56z"
 
@@ -388,12 +377,10 @@ async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
 )
 async def test_user_submits_resource_with_random_string_in_id_field_fails(
     mock_token_payload,
-    provide_namespace_server,
     socketio_test_client,
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
     test_resource = many_test_demo_resources[1]
     test_resource["id"] = "random_string"
 
@@ -426,12 +413,9 @@ async def test_user_submits_resource_with_random_string_in_id_field_fails(
 )
 async def test_user_submits_resource_without_id_for_creation_missing_name(
     mock_token_payload,
-    provide_namespace_server,
     socketio_test_client,
 ):
     """Test the demo resource delete event."""
-
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
     async for client in socketio_test_client(["/demo-resource"]):
         statuses = []
@@ -474,8 +458,6 @@ async def test_user_submits_resource_with_nonexisting_uuid_fails(
 ):
     """Test the demo resource submit event with non-existing UUID."""
 
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
-
     async for client in socketio_test_client(["/demo-resource"]):
         statuses = []
 
@@ -508,7 +490,6 @@ async def test_user_submits_resource_with_nonexisting_uuid_fails(
 )
 async def test_user_submits_existing_resource_for_update(
     mock_token_payload,
-    provide_namespace_server,
     socketio_test_client,
     add_test_demo_resources: list[DemoResource],
     current_user_from_azure_token,
@@ -519,8 +500,6 @@ async def test_user_submits_existing_resource_for_update(
     index_of_resource_to_update = next(
         i for i, r in enumerate(resources) if r.name == "A second cat 2 resource"
     )
-
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
     async for client in socketio_test_client(["/demo-resource"]):
         statuses = []
@@ -580,9 +559,6 @@ async def test_user_submits_existing_resource_for_update(
 )
 async def test_user_updates_demo_resource_not_having_write_access_fails(
     mock_token_payload,
-    # TBD: refactor into test client to also create the test-server and
-    #  provide the namespace server
-    provide_namespace_server,
     socketio_test_client,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
@@ -598,8 +574,6 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
         "action": "read",
     }
     await add_test_policy_for_resource(policy)
-
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
     async for client in socketio_test_client(["/demo-resource"]):
         statuses = []
@@ -637,14 +611,11 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
 )
 async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_remove_event(
     mock_token_payload,
-    provide_namespace_server,
     add_test_demo_resources: list[DemoResource],
     socketio_test_client,
 ):
     """Test the demo resource delete event."""
     resources = await add_test_demo_resources(mock_token_payload)
-
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
     async for client1 in socketio_test_client(["/demo-resource"]):
         async for client2 in socketio_test_client(["/demo-resource"]):
@@ -708,14 +679,11 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
 )
 async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_and_returns_status(
     mock_token_payload,
-    provide_namespace_server,
     add_test_demo_resources: list[DemoResource],
     socketio_test_client,
 ):
     """Test the demo resource delete event."""
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
-
-    await provide_namespace_server([DemoResourceNamespace("/demo-resource")])
 
     async for client in socketio_test_client(["/demo-resource"]):
 

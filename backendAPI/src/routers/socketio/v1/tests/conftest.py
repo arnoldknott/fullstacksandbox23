@@ -7,16 +7,17 @@ import socketio
 import uvicorn
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 async def mock_token_payload(request):
     """Returns a mocked token payload."""
 
-    with patch("core.security.decode_token") as mock:
-        mock.return_value = request.param
-        yield request.param
+    if hasattr(request, "param"):
+        with patch("core.security.decode_token") as mock:
+            mock.return_value = request.param
+            yield request.param
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 async def mock_get_user_account_from_session_cache():
     """Returns a mocked token."""
 
@@ -28,16 +29,16 @@ async def mock_get_user_account_from_session_cache():
         yield mock
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 async def mock_get_azure_token_from_cache():
     """Returns a mocked token."""
 
     with patch("core.security.get_azure_token_from_cache") as mock:
-        mock.return_value = "ey-fake-token-from_cache"
+        mock.return_value = "a-fake-token-from_cache"
         yield mock
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 async def socketio_test_server(
     mock_token_payload,
     mock_get_azure_token_from_cache,
@@ -106,7 +107,7 @@ async def socketio_test_client():
     return _socketio_test_client
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 async def provide_namespace_server(
     socketio_test_server: socketio.AsyncServer,
 ):

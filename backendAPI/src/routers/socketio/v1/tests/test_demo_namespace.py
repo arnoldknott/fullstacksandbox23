@@ -24,8 +24,25 @@ from tests.utils import (
 )
 
 
+@pytest.fixture(scope="module", autouse=True)
+async def setup_namespace_server(provide_namespace_server):
+    # Call setup function here
+    socket_io_server = await provide_namespace_server(
+        [DemoNamespace("/demo-namespace")]
+    )
+    # Yield to allow tests to run
+    yield
+    # Optionally, add teardown logic here if needed
+    await socket_io_server.shutdown()
+
+
 @pytest.mark.anyio
-async def test_on_connect_invalid_token():
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    ["invalid_token_payload"],  # needed for module-level fixture setup_namespace_server
+    indirect=True,
+)
+async def test_on_connect_invalid_token(mock_token_payload):
     """Test the on_connect event for socket.io without mocking decoding function."""
     # Should run into an uncaught exception from the decoding algorithm, depending on its implementation
 
@@ -55,18 +72,10 @@ async def test_on_connect_invalid_token():
 )
 async def test_connect_with_test_server_demo_namespace(
     mock_token_payload,
-    # socketio_test_server,
-    # TBD: refactor into test client to also create the test-server and
-    #  provide the namespace server
-    provide_namespace_server,
     socketio_test_client,
 ):
     """Test the demo socket.io connect event."""
     mocked_token_payload = mock_token_payload
-
-    # sio = socketio_test_server
-    # sio.register_namespace(DemoNamespace("/demo-namespace"))
-    await provide_namespace_server([DemoNamespace("/demo-namespace")])
 
     responses = []
     async for client in socketio_test_client(["/demo-namespace"]):
@@ -104,18 +113,10 @@ async def test_connect_with_test_server_demo_namespace(
 )
 async def test_connect_with_test_server_demo_namespace_missing_scopes_fails(
     mock_token_payload,
-    # socketio_test_server,
-    # TBD: refactor into test client to also create the test-server and
-    #  provide the namespace server
-    provide_namespace_server,
     socketio_test_client,
 ):
     """Test the demo socket.io connect event."""
     mock_token_payload
-
-    # sio = socketio_test_server
-    # sio.register_namespace(DemoNamespace("/demo-namespace"))
-    await provide_namespace_server([DemoNamespace("/demo-namespace")])
 
     responses = []
     async for client in socketio_test_client(["/demo-namespace"]):
@@ -140,16 +141,10 @@ async def test_connect_with_test_server_demo_namespace_missing_scopes_fails(
 )
 async def test_demo_message_with_test_server(
     mock_token_payload,
-    # socketio_test_server,
-    provide_namespace_server,
     socketio_test_client,
 ):
     """Test the demo socket.io message event."""
     mocked_token_payload = mock_token_payload
-
-    # sio = socketio_test_server
-    # sio.register_namespace(DemoNamespace("/demo-namespace"))
-    await provide_namespace_server([DemoNamespace("/demo-namespace")])
 
     responses = []
     async for client in socketio_test_client(["/demo-namespace"]):
@@ -177,7 +172,13 @@ async def test_demo_message_with_test_server(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
+    ["invalid_token_payload"],  # needed for module-level fixture setup_namespace_server
+    indirect=True,
+)
 async def test_demo_message_with_production_server_fails_without_token(
+    mock_token_payload,
     socketio_test_client,
 ):
     """Test the demo socket.io message event."""
