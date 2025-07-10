@@ -775,6 +775,38 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_token_payload",
+    [token_admin_read_socketio, token_user1_read_socketio],
+    indirect=True,
+)
+async def test_user_deletes_a_demo_resource_missing_write_scope_in_token(
+    mock_token_payload,
+    add_test_demo_resources: list[DemoResource],
+    socketio_client_for_demo_resource_namespace,
+):
+    """Test the demo resource delete event."""
+    resources = await add_test_demo_resources(mock_token_payload)
+
+    async for client, responses in socketio_client_for_demo_resource_namespace():
+
+        statuses_data = responses["/demo-resource"]["status"]
+        deleted_data = responses["/demo-resource"]["deleted"]
+
+        await client.emit("delete", str(resources[2].id), namespace="/demo-resource")
+
+        # Wait for the response to be set
+        await client.sleep(1)
+
+        assert deleted_data == []
+        assert statuses_data == [{"error": "401: Invalid token."}]
+
+        disconnection_result = await client.disconnect()
+
+        assert disconnection_result is None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_token_payload",
     [token_user1_read_write_socketio],
     indirect=True,
 )

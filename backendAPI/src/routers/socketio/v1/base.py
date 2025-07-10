@@ -139,14 +139,11 @@ class BaseNamespace(socketio.AsyncNamespace):
         session = await self._get_session_data(sid)
         guards = self._get_event_guards(guard_name)
         if guards is not None:
-            print("=== base - _get_current_user_and_check_guard - guards ===")
-            print(guards)
             token_payload = await self._get_token_payload_if_authenticated(
                 session["session_id"]
             )
             current_user = await check_token_against_guards(token_payload, guards)
         else:
-            print("=== base - _get_current_user_and_check_guard - no guards ===")
             current_user = session["current_user"]
 
         if current_user is None:
@@ -311,8 +308,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                     if (
                         "id" in data and data["id"][:4] != "new_"
                     ):  # validate if id is a valid UUID
-                        print("=== base - on_submit - update - data ===")
-                        print(data, flush=True)
                         current_user = await self._get_current_user_and_check_guard(
                             sid, "submit:update"
                         )
@@ -334,8 +329,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                     else:
                         # if id is not present, it is a create
                         # validate data with create model
-                        print("=== base - on_submit - create - data ===")
-                        print(data, flush=True)
                         current_user = await self._get_current_user_and_check_guard(
                             sid, "submit:create"
                         )
