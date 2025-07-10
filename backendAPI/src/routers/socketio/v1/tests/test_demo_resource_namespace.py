@@ -12,14 +12,10 @@ from models.demo_resource import DemoResource, DemoResourceExtended
 from crud.demo_resource import DemoResourceCRUD
 from routers.socketio.v1.demo_resource import DemoResourceNamespace
 from tests.utils import (
-    token_admin_write_socketio,
     token_admin_read_socketio,
-    token_admin_read_write,
     token_admin_read_write_socketio,
     token_user1_read_write_socketio,
-    token_user1_read_write,
     token_user1_read_socketio,
-    token_user1_write_socketio,
     token_admin_read,
     token_admin_write,
     token_user1_read,
