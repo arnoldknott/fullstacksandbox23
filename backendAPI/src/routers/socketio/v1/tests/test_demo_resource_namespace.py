@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from socketio.exceptions import ConnectionError
 from unittest.mock import patch
 import pytest
-
+import copy
 from tests.utils import many_test_demo_resources
 from models.access import AccessPolicy
 from models.demo_resource import DemoResource, DemoResourceExtended
@@ -322,7 +322,6 @@ async def test_user_submits_resource_without_id_for_creation(
         # Wait for the response to be set
         await client.sleep(1)
 
-        # assert "id" in status[0]
         assert statuses[0]["submitted_id"] is None
         assert UUID(statuses[0]["id"])  # Check if the ID is a valid UUID
         assert statuses[0]["success"] == "created"
@@ -342,7 +341,7 @@ async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
-    test_resource = many_test_demo_resources[1]
+    test_resource = copy.deepcopy(many_test_demo_resources[1])
     test_resource["id"] = "new_34ab56z"
 
     async for client in socketio_test_client(["/demo-resource"]):
@@ -381,7 +380,7 @@ async def test_user_submits_resource_with_random_string_in_id_field_fails(
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
-    test_resource = many_test_demo_resources[1]
+    test_resource = copy.deepcopy(many_test_demo_resources[1])
     test_resource["id"] = "random_string"
 
     async for client in socketio_test_client(["/demo-resource"]):
@@ -469,7 +468,8 @@ async def test_user_submits_resource_with_nonexisting_uuid_fails(
 
         await client.connect_to_test_client()
 
-        test_demo_resource = many_test_demo_resources[1]
+        test_demo_resource = copy.deepcopy(many_test_demo_resources[1])
+        # test_demo_resource = many_test_demo_resources[1]
         test_demo_resource["id"] = str(uuid4())  # Set a non-existing UUID
 
         await client.emit("submit", test_demo_resource, namespace="/demo-resource")
