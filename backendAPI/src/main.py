@@ -56,6 +56,7 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(run_migrations())
     yield  # this is where the FastAPI runs - when its done, it comes back here and closes down
     # await postgres.disconnect()
+    await socketio_server.shutdown()
     logger.info("Application shutdown")
 
 
