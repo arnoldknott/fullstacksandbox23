@@ -53,7 +53,7 @@
 		);
 	});
 
-	const initDropdown: Attachment = (node: Element) => {
+	const initDropdown: Attachment = (_node: Element) => {
 		import('flyonui/flyonui')
 			.then(({ HSDropdown }) => {
 				HSDropdown.autoInit();

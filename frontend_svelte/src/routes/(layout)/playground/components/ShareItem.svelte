@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Action, IdentityType, AccessHandler } from '$lib/accessHandler';
+	import { Action, AccessHandler } from '$lib/accessHandler';
 	import type { AccessPolicy, Identity } from '$lib/types';
 
 	let {

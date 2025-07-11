@@ -20,7 +20,6 @@
 	import { page } from '$app/state';
 	import type { ActionResult } from '@sveltejs/kit';
 	import { Action, IdentityType } from '$lib/accessHandler';
-	import type { a } from 'vitest/dist/chunks/suite.d.FvehnV49.js';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);

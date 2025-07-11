@@ -69,5 +69,5 @@ export class AccessHandler {
 			default:
 				return 'icon-[ic--round-question-mark]';
 		}
-	}
+	};
 }

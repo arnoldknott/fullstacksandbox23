@@ -49,7 +49,7 @@ export type ClientSession = {
 // Access types:
 export interface AccessPolicy {
 	resource_id: string;
-	identity_id: string;// can be optional for public resources
+	identity_id: string; // can be optional for public resources
 	action?: Action;
 	new_action?: Action; // for updates
 	public?: boolean;
