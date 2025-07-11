@@ -274,6 +274,13 @@ class BaseNamespace(socketio.AsyncNamespace):
             logger.info(
                 f"🧦 Client authenticated to public namespace {self.namespace}."
             )
+        for identity_id in identity_ids:
+            if identity_id:
+                # Assign the identity id to the room for hierarchical resource system
+                await self.server.enter_room(sid, identity_id, namespace=self.namespace)
+                logger.info(
+                    f"🧦 Client with session id {sid} entered room {identity_id}."
+                )
         if self.callback_on_connect is not None:
             await self.callback_on_connect(sid, request_access_data=request_access_data)
 

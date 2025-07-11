@@ -188,4 +188,4 @@ export type UeberGroupExtended = ExtendEntity<UeberGroup>;
 export type GroupExtended = ExtendEntity<Group>;
 export type SubGroupExtended = ExtendEntity<SubGroup>;
 export type SubSubGroupExtended = ExtendEntity<SubSubGroup>;
-export type MicrosoftTeamExtended = ExtendEntity<MicrosoftTeam>;
+export type MicrosoftTeamExtended = MicrosoftTeam & Partial<WithAccessRights & WithAccessPolicies>;

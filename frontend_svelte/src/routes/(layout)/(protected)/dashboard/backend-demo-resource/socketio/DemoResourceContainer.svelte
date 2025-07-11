@@ -2,14 +2,24 @@
 	import type { DemoResourceExtended } from '$lib/types';
 	import { fade } from 'svelte/transition';
 	import { Action } from '$lib/accessHandler';
+
+	// TBD: move to types.d.ts:
+	type Identity = {
+		id: string;
+		name: string;
+		right: Action | null;
+	};
+
 	let {
 		demoResource,
+		identitys,
 		edit = $bindable(false),
 		deleteResource = (_id: string) => {},
 		submitResource = (_resource: DemoResourceExtended) => {}
 	}: {
 		demoResource: DemoResourceExtended;
 		edit?: boolean;
+		identitys?: string[];
 		deleteResource?: (id: string) => void;
 		submitResource?: (resource: DemoResourceExtended) => void;
 	} = $props();
@@ -82,7 +92,7 @@
 						</button>
 					</div>
 					<ul
-						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 						role="menu"
 						aria-orientation="vertical"
 						aria-labelledby="action-share"
