@@ -13,12 +13,14 @@
 	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
+
 	import { enhance } from '$app/forms';
 	import ShareItem from './ShareItem.svelte';
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
 	import type { ActionResult } from '@sveltejs/kit';
-	import { IdentityType } from '$lib/accessHandler';
+	import { Action, IdentityType } from '$lib/accessHandler';
+	import type { a } from 'vitest/dist/chunks/suite.d.FvehnV49.js';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
@@ -92,7 +94,7 @@
 		if (result.type === 'success') {
 			const identity = identities.find((identity) => identity.id === result.data?.identityId);
 			if (identity) {
-				identity.right = result.data?.confirmedNewAction
+				identity.accessRight = result.data?.confirmedNewAction
 					? result.data.confirmedNewAction.toString()
 					: '';
 			}
@@ -109,49 +111,49 @@
 				id: '1',
 				name: 'The A Team',
 				type: IdentityType.MICROSOFT_TEAM,
-				right: 'read'
+				accessRight: Action.READ
 			},
 			{
 				id: '2',
 				name: 'Awesome Team',
 				type: IdentityType.MICROSOFT_TEAM,
-				right: ''
+				accessRight: undefined
 			},
 			{
 				id: '3',
 				name: 'Ueber Group',
 				type: IdentityType.UEBER_GROUP,
-				right: 'write'
+				accessRight: Action.WRITE
 			},
 			{
 				id: '4',
 				name: 'Group some group',
 				type: IdentityType.GROUP,
-				right: 'own'
+				accessRight: Action.OWN
 			},
 			{
 				id: '5',
 				name: 'Sub Group',
 				type: IdentityType.SUB_GROUP,
-				right: 'read'
+				accessRight: Action.READ
 			},
 			{
 				id: '6',
 				name: 'Sub-Sub-Group',
 				type: IdentityType.SUB_SUB_GROUP,
-				right: 'own'
+				accessRight: Action.OWN
 			},
 			{
 				id: '7',
 				name: 'Tom User',
 				type: IdentityType.USER,
-				right: 'read'
+				accessRight: Action.READ
 			},
 			{
 				id: '8',
 				name: 'Another user with a very long Team Name of ',
 				type: IdentityType.USER,
-				right: 'write'
+				accessRight: Action.WRITE
 			}
 		].sort((a, b) => a.name.localeCompare(b.name))
 	);
