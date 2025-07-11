@@ -239,17 +239,12 @@ class BaseNamespace(socketio.AsyncNamespace):
         logger.info(f"🧦 Client connected with session id: {sid}.")
         # Parse 'request-access-data' from query string using urllib.parse.parse_qs
         query_strings = environ.get("QUERY_STRING", "")
-        request_access_data = parse_qs(query_strings).get("request-access-data")
-        if request_access_data:
-            request_access_data = (
-                True
-                if (
-                    request_access_data[0] == "true" or request_access_data[0] == "True"
-                )
-                else False
-            )
-        else:
-            request_access_data = False
+        print("=== routers - socketio - v1 - on_connect - parse_qs(query_strings) ===")
+        print(parse_qs(query_strings), flush=True)
+        request_access_data = parse_qs(query_strings).get("request-access-data")[0]
+        identity_ids = parse_qs(query_strings).get("identity-id")[0].split(",")
+        print("=== routers - socketio - v1 - on_connect - identity_ids ===")
+        print(identity_ids, flush=True)
         guards = self._get_event_guards("connect")
         if guards is not None:
             try:

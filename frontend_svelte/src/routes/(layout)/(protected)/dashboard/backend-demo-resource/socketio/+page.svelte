@@ -26,7 +26,10 @@
 	const connection: SocketioConnection = {
 		namespace: '/demo-resource',
 		cookie_session_id: page.data.session.sessionId,
-		requestAccessData: true
+		query_params: {
+			'request-access-data': true,
+			'identity-id': data.microsoftTeams.map((team) => team.id).join(',')
+		}
 	};
 
 	const socketio = new SocketIO(connection);
@@ -302,14 +305,32 @@
 	</div>
 	<div>
 		<h3 class="title">Demo Resources with write access</h3>
-		{#each writeDemoResources as demoResource (demoResource.id)}
+		{#each writeDemoResources as demoResource, idx (demoResource.id)}
 			<DemoResourceContainer {demoResource} {submitResource} />
+			<div class="px-2 {debug ? 'block' : 'hidden'}">
+				<p class="title">🚧 Debug Information 🚧</p>
+				<JsonData data={demoResource} />
+			</div>
+			<div
+				class="divider-outline-variant divider {idx === ownedDemoResources.length - 1
+					? 'hidden'
+					: ''}"
+			></div>
 		{/each}
 	</div>
 	<div>
 		<h3 class="title">Demo Resources with read access</h3>
-		{#each readDemoResources as demoResource (demoResource.id)}
+		{#each readDemoResources as demoResource, idx (demoResource.id)}
 			<DemoResourceContainer {demoResource} />
+			<div class="px-2 {debug ? 'block' : 'hidden'}">
+				<p class="title">🚧 Debug Information 🚧</p>
+				<JsonData data={demoResource} />
+			</div>
+			<div
+				class="divider-outline-variant divider {idx === ownedDemoResources.length - 1
+					? 'hidden'
+					: ''}"
+			></div>
 		{/each}
 	</div>
 </div>
