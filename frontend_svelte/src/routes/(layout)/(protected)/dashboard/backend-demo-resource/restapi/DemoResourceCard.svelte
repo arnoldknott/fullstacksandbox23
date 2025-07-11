@@ -4,7 +4,7 @@
 	import type { DemoResourceExtended, AccessPolicy } from '$lib/types';
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamExtended } from '$lib/types';
-	import { AccessHandler } from '$lib/accessHandler';
+	import { AccessHandler, IdentityType } from '$lib/accessHandler';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// TBD: move to components folder
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
@@ -82,8 +82,10 @@
 				.map((team) => ({
 					id: team.id as string,
 					name: team.displayName as string,
+					type: IdentityType.MICROSOFT_TEAM,
 					accessRight: accessAction(team.id as string)
 				}))
+			// TBD: add other identities here, e.g. from a ueber-group, group, sub-group, user list
 		);
 	});
 
@@ -240,11 +242,7 @@
 											}}
 										>
 											{#each identities ? identities.sort( (a, b) => (a.name ?? '').localeCompare(b.name ?? '') ) : [] as identity (identity.id)}
-												<ShareItem
-													resourceId={id}
-													icon="icon-[fluent--people-team-16-filled]"
-													{identity}
-												/>
+												<ShareItem resourceId={id} {identity} />
 											{/each}
 											<li class="dropdown-footer gap-2">
 												<button

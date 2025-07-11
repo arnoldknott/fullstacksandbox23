@@ -1,34 +1,23 @@
 <script lang="ts">
-	import { Action } from '$lib/accessHandler';
+	import { Action, IdentityType, AccessHandler } from '$lib/accessHandler';
 
 	// TBD: consider moving this to a types.d.ts file
 	type Identity = {
 		id: string;
 		name: string;
+		type: IdentityType;
 		accessRight: Action | null;
 	};
 
 	let {
 		resourceId,
-		icon,
 		identity,
 		share
 	}: {
 		resourceId: string;
-		icon: string;
 		identity: Identity;
 		share?: (identityId: string, action: Action | null, newAction: Action) => void;
 	} = $props();
-
-	const rightsIcon = (right: Action | null) => {
-		return right === Action.OWN
-			? 'icon-[tabler--key-filled] bg-success'
-			: right === Action.WRITE
-				? 'icon-[material-symbols--edit-outline-rounded] bg-warning'
-				: right === Action.READ
-					? 'icon-[tabler--eye] bg-neutral'
-					: 'icon-[tabler--ban] bg-error';
-	};
 </script>
 
 {#snippet shareButton(newAction: Action)}
@@ -45,7 +34,7 @@
 			onclick={share ? () => share(identity.id, identity.accessRight, newAction) : undefined}
 			aria-label={String(newAction)}
 		>
-			<span class={rightsIcon(newAction)}></span>
+			<span class={AccessHandler.rightsIcon(newAction)}></span>
 		</button>
 	</li>
 {/snippet}
@@ -56,7 +45,7 @@
 			class="dropdown-item text-secondary tooltip-toggle max-w-42 w-full content-center"
 			aria-label={identity.name}
 		>
-			<span class="{icon} shrink-0"></span>
+			<span class="{AccessHandler.identityIcon(identity.type)} shrink-0"></span>
 			{identity.name.slice(0, 12)}{identity.name.length > 13 ? ' ...' : null}
 			{#if identity.name.length > 12}
 				<span
@@ -68,7 +57,7 @@
 			{/if}
 		</div>
 		<div class="mr-2">
-			<span class="{rightsIcon(identity.accessRight)} ml-2 size-4"></span>
+			<span class="{AccessHandler.rightsIcon(identity.accessRight)} ml-2 size-4"></span>
 		</div>
 		<div class="dropdown relative inline-flex [--offset:0] [--placement:left-start]">
 			<button

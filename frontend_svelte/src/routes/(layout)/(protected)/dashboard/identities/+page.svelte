@@ -5,6 +5,7 @@
 
 	import JsonData from '$components/JsonData.svelte';
 	import IdentityAccordion from './IdentityAccordion.svelte';
+	import { AccessHandler, IdentityType } from '$lib/accessHandler';
 	let { data }: { data: PageData } = $props();
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
@@ -53,7 +54,7 @@
 
 	{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
 		<IdentityAccordion
-			icon="icon-[fluent--people-team-16-filled]"
+			icon={AccessHandler.identityIcon(IdentityType.MICROSOFT_TEAM)}
 			title={microsoftTeam.displayName || 'Unknown Team'}
 			id={microsoftTeam.id || 'random_' + Math.random().toString(36).substring(2, 9)}
 		>
@@ -162,7 +163,7 @@
 
 	{#each data.ueberGroups as uberGroup (uberGroup.id)}
 		<IdentityAccordion
-			icon="icon-[fa--institution]"
+			icon={AccessHandler.identityIcon(IdentityType.UEBER_GROUP)}
 			title={uberGroup.name || 'Unknown Group'}
 			id={uberGroup.id}
 		>

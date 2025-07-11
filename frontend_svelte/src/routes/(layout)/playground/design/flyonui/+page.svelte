@@ -948,21 +948,21 @@
 			<div class="col-span-5 ml-5 text-2xl font-semibold">
 				from-"COLOR-NAME" via-"COLOR-NAME" to-"COLOR-NAME"
 			</div>
-			<div class="from-primary via-secondary to-accent h-24 bg-linear-to-r">
+			<div class="from-primary via-secondary to-accent bg-linear-to-r h-24">
 				from-primary via-scondary to-accent
 			</div>
-			<div class="from-success via-warning to-error h-24 bg-linear-to-r">
+			<div class="from-success via-warning to-error bg-linear-to-r h-24">
 				from-success via-warning to-error
 			</div>
 			<div
-				class="from-success via-warning to-error h-24 w-fit bg-linear-to-r bg-clip-text text-xl font-black text-transparent"
+				class="from-success via-warning to-error bg-linear-to-r h-24 w-fit bg-clip-text text-xl font-black text-transparent"
 			>
 				from-success via-warning to-error applied to text
 			</div>
-			<div class="from-primary via-inverse-primary to-primary-fixed-dim h-24 bg-linear-to-r">
+			<div class="from-primary via-inverse-primary to-primary-fixed-dim bg-linear-to-r h-24">
 				from-primary via-inverse-primary to-primary-fixed-dim
 			</div>
-			<div class="from-primary/50 via-secondary/50 to-accent/50 h-24 bg-linear-to-r">
+			<div class="from-primary/50 via-secondary/50 to-accent/50 bg-linear-to-r h-24">
 				from-primary/50 via-scondary/50 to-accent/50
 			</div>
 
@@ -1902,6 +1902,12 @@
 				<span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--edit-outline-rounded] size-12"></span>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit"
+						>Google Material Icons</span
+					>
+				</p>
+				<span class="icon-[ic--round-question-mark] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
@@ -1921,12 +1927,14 @@
 					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Solid</span>
 				</p>
 				<span class="icon-[fa6-solid--user] size-12"></span>
+				<span class="icon-[fa6-solid--user-group] size-12"></span>
 				<span class="icon-[fa6-solid--droplet] size-12"></span>
 				<span class="icon-[fa6-solid--comments] size-12"></span>
 				<span class="icon-[fa6-solid--plus] size-12"></span>
 				<p class="label text-center">
 					Extension library <span class="label-prominent badge min-h-fit">Font Awesome</span>
 				</p>
+				<span class="icon-[fa--users] size-12"></span>
 				<span class="icon-[fa--institution] size-12"></span>
 				<p class="label text-center">
 					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Brands</span>
@@ -1946,6 +1954,10 @@
 					<span class="icon-[fe--bell] col-start-1 row-start-1 size-8"></span>
 					<span class="icon-[fe--disabled] col-start-1 row-start-1 size-12"></span>
 				</span>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Phosphor</span>
+				</p>
+				<span class="icon-[ph--users-four-fill] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
