@@ -1,13 +1,6 @@
 <script lang="ts">
 	import { Action, IdentityType, AccessHandler } from '$lib/accessHandler';
-
-	// TBD: consider moving this to a types.d.ts file
-	type Identity = {
-		id: string;
-		name: string;
-		type: IdentityType;
-		accessRight: Action | null;
-	};
+	import type { AccessPolicy, Identity } from '$lib/types';
 
 	let {
 		resourceId,
@@ -16,7 +9,7 @@
 	}: {
 		resourceId: string;
 		identity: Identity;
-		share?: (identityId: string, action: Action | null, newAction: Action) => void;
+		share?: (accessPolicy: AccessPolicy) => void;
 	} = $props();
 </script>
 
@@ -31,7 +24,15 @@
 			formaction={!share
 				? `?/share&identity-id=${identity.id}&action=${identity.accessRight}&new-action=${newAction}`
 				: undefined}
-			onclick={share ? () => share(identity.id, identity.accessRight, newAction) : undefined}
+			onclick={share
+				? () =>
+						share({
+							resource_id: resourceId,
+							identity_id: identity.id,
+							action: identity.accessRight,
+							new_action: newAction
+						})
+				: undefined}
 			aria-label={String(newAction)}
 		>
 			<span class={AccessHandler.rightsIcon(newAction)}></span>

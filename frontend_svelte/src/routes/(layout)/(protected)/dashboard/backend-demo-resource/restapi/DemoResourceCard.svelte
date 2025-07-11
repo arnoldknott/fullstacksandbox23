@@ -71,7 +71,7 @@
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
 	const accessAction = (identityId: string) =>
-		accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : null;
+		accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : undefined;
 
 	// TBD: refactor type into Identity currently defined in ShareItem.
 	let identities = $derived.by(() => {

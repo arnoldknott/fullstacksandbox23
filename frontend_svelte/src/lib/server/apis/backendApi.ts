@@ -67,6 +67,8 @@ class BackendAPI extends BaseAPI {
 		publicAccess: boolean = false
 	) {
 		// Data validation:
+		// action = action ? (action as Action) : undefined;
+		// newAction = newAction ? (newAction as Action) : undefined;
 		let action: Action | undefined = Object.values(Action).includes(actionIn as Action)
 			? (actionIn as Action)
 			: undefined;
@@ -80,7 +82,7 @@ class BackendAPI extends BaseAPI {
 				'=== routes - demo-resource - page.server - Resource ID or Identity ID is missing ==='
 			);
 			return fail(400, { error: 'Resource ID and Identity ID are required.' });
-		} else if (action === 'unshare' || newAction === 'unshare') {
+		} else if (action === Action.UNSHARE || newAction === Action.UNSHARE) {
 			const response = await this.delete(
 				sessionId,
 				`/access/policy?resource_id=${resourceId}&identity_id=${identityId}`
@@ -90,7 +92,7 @@ class BackendAPI extends BaseAPI {
 			}
 			return {
 				identityId: identityId,
-				confirmedNewAction: 'unshare',
+				confirmedNewAction: Action.UNSHARE,
 				public: false
 			};
 		} else {

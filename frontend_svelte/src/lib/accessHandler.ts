@@ -17,7 +17,7 @@ export enum IdentityType {
 }
 
 export class AccessHandler {
-	static getRights(identityId: string, accessPolicies?: AccessPolicy[]): Action | null {
+	static getRights(identityId: string, accessPolicies?: AccessPolicy[]): Action | undefined {
 		const hasOwnerRights = accessPolicies?.some(
 			(policy) => policy.identity_id === identityId && policy.action === 'own'
 		);
@@ -34,19 +34,22 @@ export class AccessHandler {
 		} else if (hasReadRights) {
 			return Action.READ;
 		} else {
-			return null;
+			return undefined;
 		}
 	}
 
 	// TBD: consider moving this to a designHandler or iconHandler or entityDesigner?
-	static rightsIcon = (right: Action | null) => {
-		return right === Action.OWN
-			? 'icon-[tabler--key-filled] bg-success'
-			: right === Action.WRITE
-				? 'icon-[material-symbols--edit-outline-rounded] bg-warning'
-				: right === Action.READ
-					? 'icon-[tabler--eye] bg-neutral'
-					: 'icon-[tabler--ban] bg-error';
+	static rightsIcon = (right?: Action) => {
+		switch (right) {
+			case Action.OWN:
+				return 'icon-[tabler--key-filled] bg-success';
+			case Action.WRITE:
+				return 'icon-[material-symbols--edit-outline-rounded] bg-warning';
+			case Action.READ:
+				return 'icon-[tabler--eye] bg-neutral';
+			default:
+				return 'icon-[tabler--ban] bg-error';
+		}
 	};
 
 	static identityIcon = (identityType: IdentityType) => {

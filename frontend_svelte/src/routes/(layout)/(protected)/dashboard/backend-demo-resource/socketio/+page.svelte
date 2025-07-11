@@ -2,7 +2,7 @@
 	import JsonData from '$components/JsonData.svelte';
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import { page } from '$app/state';
-	import type { DemoResourceExtended } from '$lib/types';
+	import type { AccessPolicy, DemoResourceExtended } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
@@ -106,6 +106,10 @@
 			editIds = new Set(editIds); // trigger reactivity
 		}
 		socketio.client.emit('submit', demoResource);
+	};
+
+	const share = (accessPolicy: AccessPolicy) => {
+		socketio.client.emit('share', accessPolicy);
 	};
 
 	const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {

@@ -1,27 +1,23 @@
 <script lang="ts">
-	import type { DemoResourceExtended } from '$lib/types';
+	import type { AccessPolicy, DemoResourceExtended, Identity } from '$lib/types';
 	import { fade } from 'svelte/transition';
 	import { Action } from '$lib/accessHandler';
-
-	// TBD: move to types.d.ts:
-	type Identity = {
-		id: string;
-		name: string;
-		right: Action | null;
-	};
+	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 
 	let {
 		demoResource,
-		identitys,
+		identities = [],
 		edit = $bindable(false),
 		deleteResource = (_id: string) => {},
-		submitResource = (_resource: DemoResourceExtended) => {}
+		submitResource = (_resource: DemoResourceExtended) => {},
+		share = (_accessPolicy: AccessPolicy) => {}
 	}: {
 		demoResource: DemoResourceExtended;
+		identities?: Identity[];
 		edit?: boolean;
-		identitys?: string[];
 		deleteResource?: (id: string) => void;
 		submitResource?: (resource: DemoResourceExtended) => void;
+		share?: (accessPolicy: AccessPolicy) => void;
 	} = $props();
 	let formatedDate = $derived(
 		demoResource.creation_date
@@ -97,6 +93,9 @@
 						aria-orientation="vertical"
 						aria-labelledby="action-share"
 					>
+						{#each identities ? identities.sort( (a, b) => (a.name ?? '').localeCompare(b.name ?? '') ) : [] as identity (identity.id)}
+							<ShareItem resourceId={demoResource.id as string} {identity} {share} />
+						{/each}
 						<!-- {#each  as identity, i (i)}
 							<ShareItem
 								resourceId="actionButtonShareResourceId"
