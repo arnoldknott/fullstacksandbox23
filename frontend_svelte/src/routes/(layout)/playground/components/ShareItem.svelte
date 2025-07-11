@@ -2,7 +2,7 @@
 	type Identity = {
 		id: string;
 		name: string;
-		right: string | null;
+		accessRight: string | null;
 	};
 
 	let { resourceId, icon, identity }: { resourceId: string; icon: string; identity: Identity } =
@@ -27,7 +27,7 @@
 			name="id"
 			type="submit"
 			value={resourceId}
-			formaction="?/share&identity-id={identity.id}&action={identity.right}&new-action={newAction}"
+			formaction="?/share&identity-id={identity.id}&action={identity.accessRight}&new-action={newAction}"
 			aria-label={newAction}
 		>
 			<span class={rightsIcon(newAction)}></span>
@@ -38,7 +38,7 @@
 <li>
 	<div class="tooltip flex items-center [--placement:top]">
 		<div
-			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
+			class="dropdown-item text-secondary tooltip-toggle max-w-42 w-full content-center"
 			aria-label={identity.name}
 		>
 			<span class="{icon} shrink-0"></span>
@@ -53,7 +53,7 @@
 			{/if}
 		</div>
 		<div class="mr-2">
-			<span class="{rightsIcon(identity.right)} ml-2 size-4"></span>
+			<span class="{rightsIcon(identity.accessRight)} ml-2 size-4"></span>
 		</div>
 		<div class="dropdown relative inline-flex [--offset:0] [--placement:left-start]">
 			<button

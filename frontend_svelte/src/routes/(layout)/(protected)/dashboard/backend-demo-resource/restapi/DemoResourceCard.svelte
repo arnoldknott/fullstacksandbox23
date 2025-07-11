@@ -82,7 +82,7 @@
 				.map((team) => ({
 					id: team.id as string,
 					name: team.displayName as string,
-					right: accessAction(team.id as string)
+					accessRight: accessAction(team.id as string)
 				}))
 		);
 	});

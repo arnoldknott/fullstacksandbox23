@@ -241,8 +241,17 @@ class BaseNamespace(socketio.AsyncNamespace):
         query_strings = environ.get("QUERY_STRING", "")
         print("=== routers - socketio - v1 - on_connect - parse_qs(query_strings) ===")
         print(parse_qs(query_strings), flush=True)
-        request_access_data = parse_qs(query_strings).get("request-access-data")[0]
-        identity_ids = parse_qs(query_strings).get("identity-id")[0].split(",")
+
+        request_access_data = (
+            parse_qs(query_strings).get("request-access-data")[0]
+            if "request-access-data" in query_strings
+            else None
+        )
+        identity_ids = (
+            parse_qs(query_strings).get("identity-id")[0].split(",")
+            if "identity-id" in query_strings
+            else []
+        )
         print("=== routers - socketio - v1 - on_connect - identity_ids ===")
         print(identity_ids, flush=True)
         guards = self._get_event_guards("connect")
@@ -277,7 +286,9 @@ class BaseNamespace(socketio.AsyncNamespace):
         for identity_id in identity_ids:
             if identity_id:
                 # Assign the identity id to the room for hierarchical resource system
-                await self.server.enter_room(sid, identity_id, namespace=self.namespace)
+                await self.server.enter_room(
+                    sid, f"identity:{identity_id}", namespace=self.namespace
+                )
                 logger.info(
                     f"🧦 Client with session id {sid} entered room {identity_id}."
                 )

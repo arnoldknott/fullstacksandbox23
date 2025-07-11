@@ -6,6 +6,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;
 
 	let myTeams: MicrosoftTeam[] = [];
+	// TBD: session is long-lived - needs to update more frequently
 	if (locals.sessionData.currentUser && locals.sessionData.currentUser.azure_token_groups) {
 		myTeams = await microsoftGraph.getAttachedTeams(
 			sessionId,
