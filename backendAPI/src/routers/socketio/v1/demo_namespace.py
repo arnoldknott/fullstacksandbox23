@@ -73,17 +73,29 @@ class DemoNamespace(BaseNamespace):
         # print("=== demo_namespace - callback_on_disconnect - session ===")
         # print(session, flush=True)
         user_name = session["user_name"] if session else "ANONYMOUS"
+        # print(
+        #     f"=== demo_namespace - callback_on_disconnect - session['user_name'] === {user_name}"
+        # )
+        # print(session["user_name"], flush=True)
         await self.server.emit(
             "demo_message",
             f"{user_name} has disconnected from /demo-namespace. Goodbye!",
             namespace=self.namespace,
         )
+        # print(
+        #     "=== demo_namespace - callback_on_disconnect - announcement sent to everyone ===",
+        #     flush=True,
+        # )
         await self.server.emit(
             "demo_message",
             f"Your session with ID {sid} is ending.",
             namespace=self.namespace,
             to=sid,
         )
+        # print(
+        #     "=== demo_namespace - callback_on_disconnect - goodbye message sent to client ===",
+        #     flush=True,
+        # )
         await self.server.sleep(3)  # Give time for the messages to be sent
         return "callback_on_disconnect"
 
