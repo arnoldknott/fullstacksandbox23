@@ -1,5 +1,3 @@
-import anyio
-from pprint import pprint
 import pytest
 from socketio.exceptions import ConnectionError
 

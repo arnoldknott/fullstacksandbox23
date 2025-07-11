@@ -10,7 +10,7 @@ export type SocketioConnection = {
 	query_params?: Record<string, string | number | boolean>; // Query parameters to be sent to the server, e.g. for filtering or other purposes.
 	// can be:
 	// request-access-data?: boolean
-	// identity-id?: string // getting added to rooms 
+	// identity-id?: string // getting added to rooms
 	// resource-id?: string // getting added to room
 	// parent-resource-id?: string // potentially getting added to room?
 };
@@ -40,7 +40,7 @@ export class SocketIO {
 			path: `/socketio/v1`,
 			auth: { 'session-id': connection.cookie_session_id },
 			// TBD: refactor into an object to allow more flexible query parameters?
-			query: connection.query_params || {}, // Use the query_params from the connection object
+			query: connection.query_params || {} // Use the query_params from the connection object
 		});
 		this.client.connect();
 	}
