@@ -1,25 +1,37 @@
 <script lang="ts">
+	import { Action } from '$lib/accessHandler';
+
+	// TBD: consider moving this to a types.d.ts file
 	type Identity = {
 		id: string;
 		name: string;
-		accessRight: string | null;
+		accessRight: Action | null;
 	};
 
-	let { resourceId, icon, identity }: { resourceId: string; icon: string; identity: Identity } =
-		$props();
+	let {
+		resourceId,
+		icon,
+		identity,
+		share
+	}: {
+		resourceId: string;
+		icon: string;
+		identity: Identity;
+		share?: (identityId: string, action: Action | null, newAction: Action) => void;
+	} = $props();
 
-	const rightsIcon = (right: string | null) => {
-		return right === 'own'
+	const rightsIcon = (right: Action | null) => {
+		return right === Action.OWN
 			? 'icon-[tabler--key-filled] bg-success'
-			: right === 'write'
+			: right === Action.WRITE
 				? 'icon-[material-symbols--edit-outline-rounded] bg-warning'
-				: right === 'read'
+				: right === Action.READ
 					? 'icon-[tabler--eye] bg-neutral'
 					: 'icon-[tabler--ban] bg-error';
 	};
 </script>
 
-{#snippet shareButton(newAction: string)}
+{#snippet shareButton(newAction: Action)}
 	<li>
 		<button
 			data-sveltekit-preload-data={false}
@@ -27,8 +39,11 @@
 			name="id"
 			type="submit"
 			value={resourceId}
-			formaction="?/share&identity-id={identity.id}&action={identity.accessRight}&new-action={newAction}"
-			aria-label={newAction}
+			formaction={!share
+				? `?/share&identity-id=${identity.id}&action=${identity.accessRight}&new-action=${newAction}`
+				: undefined}
+			onclick={share ? () => share(identity.id, identity.accessRight, newAction) : undefined}
+			aria-label={String(newAction)}
 		>
 			<span class={rightsIcon(newAction)}></span>
 		</button>
@@ -72,10 +87,10 @@
 				aria-orientation="vertical"
 				aria-labelledby="rights-{identity.id}"
 			>
-				{@render shareButton('own')}
-				{@render shareButton('write')}
-				{@render shareButton('read')}
-				{@render shareButton('unshare')}
+				{@render shareButton(Action.OWN)}
+				{@render shareButton(Action.WRITE)}
+				{@render shareButton(Action.READ)}
+				{@render shareButton(Action.UNSHARE)}
 			</ul>
 		</div>
 	</div>

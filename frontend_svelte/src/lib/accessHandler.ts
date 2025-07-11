@@ -1,14 +1,14 @@
 import type { AccessPolicy } from '$lib/types';
 
 export enum Action {
-	Own = 'own',
-	Write = 'write',
-	Read = 'read',
-	Unshare = 'unshare'
+	OWN = 'own',
+	WRITE = 'write',
+	READ = 'read',
+	UNSHARE = 'unshare'
 }
 
 export class AccessHandler {
-	static getRights(identityId: string, accessPolicies?: AccessPolicy[]) {
+	static getRights(identityId: string, accessPolicies?: AccessPolicy[]): Action | null {
 		const hasOwnerRights = accessPolicies?.some(
 			(policy) => policy.identity_id === identityId && policy.action === 'own'
 		);
@@ -19,11 +19,11 @@ export class AccessHandler {
 			(policy) => policy.identity_id === identityId && policy.action === 'read'
 		);
 		if (hasOwnerRights) {
-			return Action.Own;
+			return Action.OWN;
 		} else if (hasWriteRights) {
-			return Action.Write;
+			return Action.WRITE;
 		} else if (hasReadRights) {
-			return Action.Read;
+			return Action.READ;
 		} else {
 			return null;
 		}

@@ -62,7 +62,7 @@
 			</p>
 			<div class="badge badge-xs label-small">{demoResource.id?.slice(0, 7)}</div>
 		</div>
-		{#if demoResource.access_right === Action.Write || demoResource.access_right === Action.Own}
+		{#if demoResource.access_right === Action.WRITE || demoResource.access_right === Action.OWN}
 			<div class="join flex flex-row items-end justify-center">
 				<button
 					class="btn btn-secondary-container text-secondary-container-content btn-sm join-item grow"
@@ -77,7 +77,7 @@
 						<span class="icon-[ic--outline-do-not-disturb] col-start-1 row-start-1 size-4"></span>
 					</span>
 				</button>
-				{#if demoResource.access_right === Action.Own}
+				{#if demoResource.access_right === Action.OWN}
 					<div class="dropdown join-item relative inline-flex grow [--placement:top]">
 						<!-- bind:this={actionButtonShareMenuElement} -->
 						<button
