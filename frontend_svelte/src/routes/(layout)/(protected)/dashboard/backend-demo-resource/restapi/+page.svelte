@@ -13,6 +13,7 @@
 
 	let debug = $state(false);
 
+	// TBD: reconsider the processing of identities - currently done both here and in DemoResourceCard.svelte.
 	const microsoftTeamsExtendWithAccessPolicies = (
 		microsoftTeams: MicrosoftTeamExtended[],
 		demoResource: DemoResourceExtended
@@ -40,11 +41,13 @@
 		onclick={async () => {
 			const container = document.getElementById('demoResourcesContainer')!;
 			const firstDemoResource = container.childNodes[0];
+			// TBD: refactor into adding an element to the demoResources array
 			mount(DemoResourceCard, {
 				target: container,
 				anchor: firstDemoResource,
 				props: { microsoftTeams: microsoftTeams }
 			});
+			// TBD: refactor into using an attachment:
 			const { HSDropdown } = await import('flyonui/flyonui.js');
 			HSDropdown.autoInit();
 		}}

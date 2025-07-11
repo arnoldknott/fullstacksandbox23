@@ -111,6 +111,7 @@ export interface DemoResourceWithCreationDate extends DemoResource {
 
 // Identity specific:
 
+// TBD: this is not really an Identity: the accessRight doesn't belong here! - Maybe in an Extended version of it?
 export type Identity = {
 	id: string;
 	name: string;

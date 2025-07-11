@@ -11,6 +11,7 @@ from core.security import (
     check_token_against_guards,
     get_token_payload_from_cache,
 )
+from models.access import AccessPolicyCreate, AccessPolicyUpdate
 from core.types import CurrentUserData, EventGuard, GuardTypes
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 
@@ -388,9 +389,32 @@ class BaseNamespace(socketio.AsyncNamespace):
             print(error)
             await self._emit_status(sid, {"error": str(error)})
 
-    # async def on_share(self, sid, access_policy: AccessPolicyCreate):
-    #     """Share event for socket.io namespaces."""
-    #     logger.info(f"🧦 Share request from client {sid}.")
+    async def on_share(
+        self, sid, access_policy: AccessPolicyCreate | AccessPolicyUpdate
+    ):
+        """Share event for socket.io namespaces."""
+        logger.info(f"🧦 Share request from client {sid}.")
+        # TBD: validate the AccessPolicyCreate model!
+        print("=== routers - socketio - v1 - on_share - access_policy ===")
+        print(access_policy, flush=True)
+        try:
+            access_policy = AccessPolicyCreate(**access_policy)
+            print(
+                "=== routers - socketio - v1 - on_share - access_policy is create ==="
+            )
+            print(access_policy, flush=True)
+        except Exception as _error:
+            try:
+                access_policy = AccessPolicyUpdate(**access_policy)
+                print(
+                    "=== routers - socketio - v1 - on_share - access_policy is update ==="
+                )
+                print(access_policy, flush=True)
+            except Exception as error:
+                logger.error(f"🧦 Failed to validate access policy for client {sid}.")
+                print(error, flush=True)
+                await self._emit_status(sid, {"error": str(error)})
+
     #     try:
     #         async with self.crud() as crud:
     #             await crud.check_identifier_type_link(access_policy.resource_id)

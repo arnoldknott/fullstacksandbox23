@@ -2,7 +2,7 @@
 	import JsonData from '$components/JsonData.svelte';
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import { page } from '$app/state';
-	import type { AccessPolicy, DemoResourceExtended } from '$lib/types';
+	import type { AccessPolicy, DemoResourceExtended, Identity } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
@@ -33,6 +33,32 @@
 	};
 
 	const socketio = new SocketIO(connection);
+
+	// console.log(
+	// 	data.microsoftTeams
+	// 		.filter((team) => team.id)
+	// 		.map((team) => {
+	// 			return {
+	// 				id: team.id,
+	// 				name: team.displayName || 'Unknown Team',
+	// 				type: IdentityType.MICROSOFT_TEAM,
+	// 				accessRight: undefined
+	// 			};
+	// 		})
+	// );
+
+	// let identities: Identity[] | undefined = $derived.by(() =>
+	// 	data.microsoftTeams
+	// 		.filter((team) => team.id)
+	// 		.map((team) => {
+	// 			return {
+	// 				id: team.id,
+	// 				name: team.displayName || 'Unknown Team',
+	// 				type: IdentityType.MICROSOFT_TEAM,
+	// 				accessRight: undefined
+	// 			};
+	// 		})
+	// );
 
 	let demoResources: DemoResourceExtended[] = $state([]);
 	$effect(() => {
@@ -109,6 +135,11 @@
 	};
 
 	const share = (accessPolicy: AccessPolicy) => {
+		// socketio.client.emit('share', { text: 'some rubbish.' });
+		console.log(
+			'=== dashboard - backend-demo-resource - socketio - +page.svelte - share accessPolicy ==='
+		);
+		console.log(accessPolicy);
 		socketio.client.emit('share', accessPolicy);
 	};
 
@@ -252,9 +283,11 @@
 						}
 					}
 				}
+				microsoftTeams={data.microsoftTeams}
 				{demoResource}
 				{deleteResource}
 				{submitResource}
+				{share}
 			/>
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
 				<p class="title">🚧 Debug Information 🚧</p>

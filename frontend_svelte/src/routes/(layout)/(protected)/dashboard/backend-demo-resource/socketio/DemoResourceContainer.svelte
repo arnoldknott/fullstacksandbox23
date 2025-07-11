@@ -1,19 +1,24 @@
 <script lang="ts">
+	import type { Attachment } from 'svelte/attachments';
 	import type { AccessPolicy, DemoResourceExtended, Identity } from '$lib/types';
 	import { fade } from 'svelte/transition';
 	import { Action } from '$lib/accessHandler';
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
+	import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
+	import { AccessHandler, IdentityType } from '$lib/accessHandler';
 
 	let {
 		demoResource,
-		identities = [],
+		// identities = [],
+		microsoftTeams = [],
 		edit = $bindable(false),
 		deleteResource = (_id: string) => {},
 		submitResource = (_resource: DemoResourceExtended) => {},
 		share = (_accessPolicy: AccessPolicy) => {}
 	}: {
 		demoResource: DemoResourceExtended;
-		identities?: Identity[];
+		// identities?: Identity[];
+		microsoftTeams?: MicrosoftTeam[];
 		edit?: boolean;
 		deleteResource?: (id: string) => void;
 		submitResource?: (resource: DemoResourceExtended) => void;
@@ -25,7 +30,38 @@
 			: new Date(Date.now()).toLocaleString('da-DK', { timeZone: 'CET' })
 	);
 	if (demoResource.id?.slice(0, 4) === 'new_') edit = true;
-	// TBD: trigger submitResource when edit changes to false
+
+	const accessRightForIdentity = (identityId: string) =>
+		demoResource?.access_policies
+			? AccessHandler.getRights(identityId, demoResource.access_policies)
+			: undefined;
+
+	// TBD: reconsider the processing of identities - currently done both here and in the +page.svelte file.
+	// get most of the work done in the +page.svelte file to avoid passing unnecessary data to component!
+	let identities: Identity[] | undefined = $derived.by(() => {
+		return (
+			microsoftTeams
+				// Only include teams with a defined id (string)
+				?.filter((team) => team.id)
+				.map((team) => ({
+					id: team.id as string,
+					name: team.displayName as string,
+					type: IdentityType.MICROSOFT_TEAM,
+					accessRight: accessRightForIdentity(team.id as string)
+				}))
+			// TBD: add other identities here, e.g. from a ueber-group, group, sub-group, user list
+		);
+	});
+
+	const initDropdown: Attachment = (node: Element) => {
+		import('flyonui/flyonui')
+			.then(({ HSDropdown }) => {
+				HSDropdown.autoInit();
+			})
+			.catch((error) => {
+				console.error('Error loading HSDropdown:', error);
+			});
+	};
 </script>
 
 <div class="bg-base-300 shadow-shadow m-2 flex flex-col rounded-xl p-2 shadow-xl" transition:fade>
@@ -74,10 +110,13 @@
 					</span>
 				</button>
 				{#if demoResource.access_right === Action.OWN}
-					<div class="dropdown join-item relative inline-flex grow [--placement:top]">
+					<div
+						{@attach initDropdown}
+						class="dropdown join-item relative inline-flex grow [--placement:top]"
+					>
 						<!-- bind:this={actionButtonShareMenuElement} -->
 						<button
-							id="action-share"
+							id="share-{demoResource.id}"
 							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content btn-sm w-full rounded-none"
 							aria-haspopup="menu"
 							aria-expanded="false"
@@ -86,22 +125,29 @@
 							<span class="icon-[tabler--share-2]"></span>
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
+
+						<ul
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
+							role="menu"
+							aria-orientation="vertical"
+							aria-labelledby="share-{demoResource.id}"
+						>
+							{#each identities ? identities.sort( (a, b) => (a.name ?? '').localeCompare(b.name ?? '') ) : [] as identity (identity.id)}
+								<ShareItem
+									{@attach initDropdown}
+									resourceId={demoResource.id as string}
+									{identity}
+									{share}
+								/>
+							{/each}
+							<li class="dropdown-footer gap-2">
+								<button
+									class="btn dropdown-item btn-text text-secondary content-center justify-start"
+									>... more options</button
+								>
+							</li>
+						</ul>
 					</div>
-					<ul
-						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
-						role="menu"
-						aria-orientation="vertical"
-						aria-labelledby="action-share"
-					>
-						{#each identities ? identities.sort( (a, b) => (a.name ?? '').localeCompare(b.name ?? '') ) : [] as identity (identity.id)}
-							<ShareItem resourceId={demoResource.id as string} {identity} {share} />
-						{/each}
-						<li class="dropdown-footer gap-2">
-							<button class="btn dropdown-item btn-text text-secondary content-center justify-start"
-								>... more options</button
-							>
-						</li>
-					</ul>
 					<button
 						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
 						aria-label="Delete Button"

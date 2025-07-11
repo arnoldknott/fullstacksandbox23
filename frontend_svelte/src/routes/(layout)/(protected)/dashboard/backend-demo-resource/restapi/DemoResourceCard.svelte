@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import type { DemoResourceExtended, AccessPolicy } from '$lib/types';
+	import type { DemoResourceExtended, AccessPolicy, Identity } from '$lib/types';
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamExtended } from '$lib/types';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
@@ -70,20 +70,21 @@
 
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
-	const accessAction = (identityId: string) =>
+	const accessRightForIdentity = (identityId: string) =>
 		accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : undefined;
 
-	// TBD: refactor type into Identity currently defined in ShareItem.
-	let identities = $derived.by(() => {
+	// TBD: reconsider the processing of identities - currently done both here and in the +page.svelte file.
+	// get most of the work done in the +page.svelte file to avoid passing unnecessary data to component!
+	let identities: Identity[] | undefined = $derived.by(() => {
 		return (
 			microsoftTeams
 				// Only include teams with a defined id (string)
-				?.filter((team) => typeof team.id === 'string')
+				?.filter((team) => team.id)
 				.map((team) => ({
 					id: team.id as string,
 					name: team.displayName as string,
 					type: IdentityType.MICROSOFT_TEAM,
-					accessRight: accessAction(team.id as string)
+					accessRight: accessRightForIdentity(team.id as string)
 				}))
 			// TBD: add other identities here, e.g. from a ueber-group, group, sub-group, user list
 		);
