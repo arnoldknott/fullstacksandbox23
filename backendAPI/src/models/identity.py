@@ -13,7 +13,7 @@ from .base import (
     AccessPolicyMixin,
     CreatedAtMixin,
     UpdatedAtMixin,
-    UserRightsMixin,
+    AccessRightsMixin,
 )
 
 
@@ -397,7 +397,7 @@ class UserUpdate(UserCreate):
 
 
 class UserExtended(
-    UserRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+    UserRead, AccessRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
 ):
     pass
 
@@ -464,7 +464,7 @@ class UeberGroupUpdate(UeberGroupCreate):
 
 
 class UeberGroupExtended(
-    UeberGroupRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+    UeberGroupRead, AccessRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
 ):
     pass
 
@@ -540,7 +540,7 @@ class GroupUpdate(GroupCreate):
 
 
 class GroupExtended(
-    GroupRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+    GroupRead, AccessRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
 ):
     pass
 
@@ -616,7 +616,7 @@ class SubGroupUpdate(SubGroupCreate):
 
 
 class SubGroupExtended(
-    SubGroupRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+    SubGroupRead, AccessRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
 ):
     pass
 
@@ -680,7 +680,11 @@ class SubSubGroupUpdate(SubSubGroupCreate):
 
 
 class SubSubGroupExtended(
-    SubSubGroupRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+    SubSubGroupRead,
+    AccessRightsMixin,
+    AccessPolicyMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
 ):
     pass
 

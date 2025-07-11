@@ -80,7 +80,7 @@
 		const newResource: DemoResourceExtended = {
 			id: 'new_' + Math.random().toString(36).substring(2, 9),
 			name: '',
-			user_right: Action.Own,
+			access_right: Action.Own,
 			creation_date: new Date(Date.now())
 		};
 		demoResources.push(newResource);
@@ -121,7 +121,7 @@
 	let ownedDemoResources: DemoResourceExtended[] = $derived(
 		demoResources
 			.filter((demoResource) => {
-				if (demoResource.user_right === Action.Own) {
+				if (demoResource.access_right === Action.Own) {
 					return demoResource;
 				}
 			})
@@ -131,7 +131,7 @@
 	let writeDemoResources: DemoResourceExtended[] = $derived(
 		demoResources
 			.filter((demoResource) => {
-				if (demoResource.user_right === Action.Write) {
+				if (demoResource.access_right === Action.Write) {
 					return demoResource;
 				}
 			})
@@ -141,7 +141,7 @@
 	let readDemoResources: DemoResourceExtended[] = $derived(
 		demoResources
 			.filter((demoResource) => {
-				if (demoResource.user_right === Action.Read) {
+				if (demoResource.access_right === Action.Read) {
 					return demoResource;
 				}
 			})

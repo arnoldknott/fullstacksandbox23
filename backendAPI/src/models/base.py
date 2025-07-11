@@ -8,13 +8,13 @@ from models.access import AccessPolicyRead
 
 # Model mixins - combine with the SQLModel-based models in src/models/*.py
 # to extend the models with meta data,
-# like user_rights, access_policies, created_at, updated_at
+# like access_rights, access_policies, created_at, updated_at
 
 
-class UserRightsMixin(BaseModel):
-    """Mixin for user rights on a resource"""
+class AccessRightsMixin(BaseModel):
+    """Mixin for access rights on a resource"""
 
-    user_right: Optional[Action] = None
+    access_right: Optional[Action] = None
 
 
 class AccessPolicyMixin(BaseModel):

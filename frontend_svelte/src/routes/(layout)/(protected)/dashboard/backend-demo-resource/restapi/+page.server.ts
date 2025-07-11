@@ -52,14 +52,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
 
 		demoResourcesExtended = demoResources.map((resource: DemoResourceExtended, index: number) => {
-			// const userRight = accessRights.find((right: AccessRight) => right.resource_id === resource.id);
+			// const accessRight = accessRights.find((right: AccessRight) => right.resource_id === resource.id);
 			// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id);
 			return Object.assign(
 				{},
 				{
 					...resource,
 					creation_date: new Date(creationDates[index]),
-					user_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id)
+					access_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id)
 						.action,
 					access_policies: accessPolicies.filter(
 						(policy: AccessPolicy) => policy.resource_id === resource.id

@@ -161,7 +161,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     for response, resource in zip(transfer_data, resources_with_user_acccess):
         assert "category" in response
         assert "tags" in response
-        assert "user_right" not in response
+        assert "access_right" not in response
         assert "access_policies" not in response
         assert "created_at" not in response
         assert "last_modified_at" not in response
@@ -225,7 +225,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         assert modelled_response.last_modified_date == modelled_response.creation_date
         assert DemoResource.model_validate(response) == resource
 
-    assert transfer_data[0]["user_right"] == "own"
+    assert transfer_data[0]["access_right"] == "own"
     assert "id" in transfer_data[0]["access_policies"][1]
     assert (
         UUID(transfer_data[0]["access_policies"][1]["identity_id"])
@@ -237,7 +237,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     )
     assert transfer_data[0]["access_policies"][1]["action"] == "own"
     assert not transfer_data[0]["access_policies"][1]["public"]
-    assert transfer_data[1]["user_right"] == "write"
+    assert transfer_data[1]["access_right"] == "write"
     assert transfer_data[1]["access_policies"] is None
 
 

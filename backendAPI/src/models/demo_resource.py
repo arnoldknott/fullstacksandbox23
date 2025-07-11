@@ -9,7 +9,7 @@ from .base import (
     AccessPolicyMixin,
     CreatedAtMixin,
     UpdatedAtMixin,
-    UserRightsMixin,
+    AccessRightsMixin,
 )
 from .category import Category, CategoryRead
 from .tag import Tag, TagRead
@@ -65,7 +65,11 @@ class DemoResourceRead(DemoResourceCreate):
 
 
 class DemoResourceExtended(
-    DemoResourceRead, UserRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+    DemoResourceRead,
+    AccessRightsMixin,
+    AccessPolicyMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
 ):
     pass
 

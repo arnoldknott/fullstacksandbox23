@@ -169,7 +169,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 if request_access_data:
                     access_data = await self._get_access_data(sid, item.id)
                     item = self.read_extended_model.model_validate(item)
-                    item.user_right = access_data["user_right"]
+                    item.access_right = access_data["access_right"]
                     if access_data["access_policies"]:
                         item.access_policies = access_data["access_policies"]
                     if access_data["creation_date"]:
@@ -214,7 +214,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 creation_date = None
                 last_modified_date = None
         return {
-            "user_right": access_permission.action,
+            "access_right": access_permission.action,
             "access_policies": access_policies,
             "creation_date": creation_date,
             "last_modified_date": last_modified_date,

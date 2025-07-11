@@ -79,7 +79,7 @@ interface WithLastModifiedDate {
 // intended for checking this user's rights
 // highest permission wins: "own", "write", "read"
 interface WithAccessRights {
-	user_right: Action; // Adjust the type as needed
+	access_right: Action; // Adjust the type as needed
 }
 
 // Access policies for the resource - that includes other users' access permissions

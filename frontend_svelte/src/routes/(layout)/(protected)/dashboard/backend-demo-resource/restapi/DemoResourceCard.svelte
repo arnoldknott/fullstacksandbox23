@@ -15,7 +15,7 @@
 		microsoftTeams
 	}: { demoResource?: DemoResourceExtended; microsoftTeams?: MicrosoftTeamExtended[] } = $props();
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
-	let userRight = $state(demoResource?.user_right || 'read');
+	let accessRight = $state(demoResource?.access_right || 'read');
 	let name = $state(demoResource?.name || undefined);
 	let description = $state(demoResource?.description || undefined);
 	let language = $state(demoResource?.language || undefined);
@@ -173,7 +173,7 @@
 			{/if}
 			<!-- TBD: move this if around the relevant list points,
 			if there are any left, that read-only users are also supposed to see. -->
-			{#if userRight === 'write' || userRight === 'own'}
+			{#if accessRight === 'write' || accessRight === 'own'}
 				<div
 					class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
 					bind:this={dropdownMenuElement}
@@ -202,7 +202,7 @@
 								Edit
 							</button>
 						</li>
-						{#if userRight === 'own'}
+						{#if accessRight === 'own'}
 							<li
 								class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
 								bind:this={dropdownShareDropdownElement}
@@ -222,7 +222,7 @@
 								</button>
 								<!-- min-w-60 -->
 								<ul
-									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-60 shadow-xs"
+									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-60"
 									role="menu"
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
