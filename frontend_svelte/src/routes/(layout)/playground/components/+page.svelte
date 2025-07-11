@@ -18,6 +18,7 @@
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
 	import type { ActionResult } from '@sveltejs/kit';
+	import { IdentityType } from '$lib/accessHandler';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
@@ -89,49 +90,67 @@
 
 	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
 		if (result.type === 'success') {
-			const team = teams.find((team) => team.id === result.data?.identityId);
-			if (team) {
-				team.right = result.data?.confirmedNewAction
+			const identity = identities.find((identity) => identity.id === result.data?.identityId);
+			if (identity) {
+				identity.right = result.data?.confirmedNewAction
 					? result.data.confirmedNewAction.toString()
 					: '';
 			}
 		} else {
 			// handle error: show error message
 		}
-		await update();
+		update();
 	};
 
 	// data for share menu:
-	const teams = $state(
+	const identities = $state(
 		[
 			{
 				id: '1',
 				name: 'The A Team',
+				type: IdentityType.MICROSOFT_TEAM,
 				right: 'read'
 			},
 			{
 				id: '2',
 				name: 'Awesome Team',
+				type: IdentityType.MICROSOFT_TEAM,
 				right: ''
 			},
 			{
 				id: '3',
-				name: 'Team Teams',
+				name: 'Ueber Group',
+				type: IdentityType.UEBER_GROUP,
 				right: 'write'
 			},
 			{
 				id: '4',
-				name: 'Team Next',
+				name: 'Group some group',
+				type: IdentityType.GROUP,
 				right: 'own'
 			},
 			{
 				id: '5',
-				name: 'Be a Team',
+				name: 'Sub Group',
+				type: IdentityType.SUB_GROUP,
 				right: 'read'
 			},
 			{
 				id: '6',
-				name: 'Very long Team Name',
+				name: 'Sub-Sub-Group',
+				type: IdentityType.SUB_SUB_GROUP,
+				right: 'own'
+			},
+			{
+				id: '7',
+				name: 'Tom User',
+				type: IdentityType.USER,
+				right: 'read'
+			},
+			{
+				id: '8',
+				name: 'Another user with a very long Team Name of ',
+				type: IdentityType.USER,
 				right: 'write'
 			}
 		].sort((a, b) => a.name.localeCompare(b.name))
@@ -422,7 +441,7 @@
 								aria-label="Dropdown"
 							></span>
 							<ul
-								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
+								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden"
 								role="menu"
 								aria-orientation="vertical"
 								aria-labelledby="dropdown-menu-icon"
@@ -489,7 +508,7 @@
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="action-share"
@@ -504,12 +523,8 @@
 									};
 								}}
 							>
-								{#each teams as team, i (i)}
-									<ShareItem
-										resourceId="actionButtonShareResourceId"
-										icon="icon-[fluent--people-team-16-filled]"
-										identity={team}
-									/>
+								{#each identities as identity, i (i)}
+									<ShareItem resourceId="actionButtonShareResourceId" {identity} />
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -563,7 +578,7 @@
 					<span class="icon-[tabler--dots-vertical] text-secondary size-6"></span>
 				</div>
 				<ul
-					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
+					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden"
 					role="menu"
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon"
@@ -593,7 +608,7 @@
 							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
 						</button>
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share"
@@ -609,12 +624,8 @@
 									};
 								}}
 							>
-								{#each teams as team, i (i)}
-									<ShareItem
-										resourceId="dropdownShareDropdownResourceId"
-										icon="icon-[fluent--people-team-16-filled]"
-										identity={team}
-									/>
+								{#each identities as identity, i (i)}
+									<ShareItem resourceId="dropdownShareDropdownResourceId" {identity} />
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -664,11 +675,7 @@
 								};
 							}}
 						>
-							<ShareItem
-								resourceId="dropdownShareResourceId"
-								icon="icon-[fluent--people-team-16-filled]"
-								identity={teams[0]}
-							/>
+							<ShareItem resourceId="dropdownShareResourceId" identity={identities[0]} />
 						</form>
 					</ul>
 				</div>

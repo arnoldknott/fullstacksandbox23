@@ -96,13 +96,6 @@
 						{#each identities ? identities.sort( (a, b) => (a.name ?? '').localeCompare(b.name ?? '') ) : [] as identity (identity.id)}
 							<ShareItem resourceId={demoResource.id as string} {identity} {share} />
 						{/each}
-						<!-- {#each  as identity, i (i)}
-							<ShareItem
-								resourceId="actionButtonShareResourceId"
-								icon="icon-[fluent--people-team-16-filled]"
-								identity={identity}
-							/>
-						{/each} -->
 						<li class="dropdown-footer gap-2">
 							<button class="btn dropdown-item btn-text text-secondary content-center justify-start"
 								>... more options</button
