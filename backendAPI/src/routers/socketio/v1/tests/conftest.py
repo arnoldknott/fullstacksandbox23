@@ -129,6 +129,7 @@ async def socketio_test_client():
             await connect_to_test_client()
 
         yield client
+        # client.sleep(1)  # Give time for the disconnect to be processed
         await client.disconnect()
 
     return _socketio_test_client

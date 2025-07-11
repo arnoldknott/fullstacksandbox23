@@ -1,3 +1,5 @@
+import anyio
+from pprint import pprint
 import pytest
 from socketio.exceptions import ConnectionError
 
@@ -31,8 +33,11 @@ async def setup_namespace_server(provide_namespace_server):
         [DemoNamespace("/demo-namespace")]
     )
     # Yield to allow tests to run
-    yield
+    yield socket_io_server
     # Optionally, add teardown logic here if needed
+    # print("=== Shutting down socket.io server...")
+    # socket_io_server.sleep(5)
+    # print("=== Shutting down socket.io server... done")
     await socket_io_server.shutdown()
 
 
@@ -242,10 +247,12 @@ async def test_demo_message_with_production_server_fails_without_token(
 # async def test_client_disconnects_from_demo_namespace_and_gets_goodbye_message(
 #     mock_token_payload,
 #     socketio_client_for_demo_namespace,
+#     setup_namespace_server,
 # ):
 #     """Test the demo socket.io message event."""
 #     mocked_token_payload = mock_token_payload
 
+#     demo_messages = []
 #     async for client, response in socketio_client_for_demo_namespace():
 
 #         await client.emit("demo_message", "Something", namespace="/demo-namespace")
@@ -253,13 +260,28 @@ async def test_demo_message_with_production_server_fails_without_token(
 #         # Wait for the response to be set
 #         await client.sleep(1)
 
+#         await client.disconnect()
+#         # server = setup_namespace_server
+#         # await server.disconnect(client.sid)
+
+#         await client.sleep(1)  # Give time for the disconnect to be processed
+
 #         demo_messages = response["/demo-namespace"]["demo_message"]
-#         assert len(demo_messages) == 3
+
+#         print("=== demo_messages ===")
+#         pprint(demo_messages)
+
+#         # assert len(demo_messages) == 3
 #         assert (
 #             demo_messages[0]
 #             == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
 #         )
 #         assert "Your session ID is " in demo_messages[1]
 #         assert demo_messages[2] == f"{mocked_token_payload['name']}: Something"
-#
-#    assert 0
+
+#         assert (
+#             demo_messages[3]
+#             == f"{mocked_token_payload['name']} has disconnected from /demo-namespace. Goodbye!"
+#         )
+#         assert demo_messages[4] == f"Your session with ID {client.sid} is ending."
+#     # The disconnect message is sent after a delay, so we need to wait for it
