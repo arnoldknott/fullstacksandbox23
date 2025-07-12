@@ -4,7 +4,6 @@ export enum Action {
 	OWN = 'own',
 	WRITE = 'write',
 	READ = 'read',
-	// UNSHARE = 'unshare'
 }
 
 // numerical here to allow sorting by type

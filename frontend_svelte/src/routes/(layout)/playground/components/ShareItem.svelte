@@ -46,22 +46,15 @@
 			formaction={!share
 				? `?/share&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
 				: undefined}
-			onclick={() => {
-				console.log('=== Trying to change access policy ===');
-				console.log('=== resourceId ===', resourceId);
-				console.log('=== shareOption ===', shareOption);
-				console.log('=== newAction ===', selectedAction);
-				console.log('=== desiredActions ===', desiredActions(selectedAction));
-				// share
-				// 	? () =>
-				// 			share({
-				// 				resource_id: resourceId,
-				// 				identity_id: shareOption.identity_id,
-				// 				action: shareOption.action,
-				// 				new_action: newAction
-				// 			})
-				// 	: undefined
-			}}
+			onclick={share
+				? () =>
+						share({
+							resource_id: resourceId,
+							identity_id: shareOption.identity_id,
+							action: desiredActions(selectedAction).action,
+							new_action: desiredActions(selectedAction).new_action
+						})
+				: undefined}
 			aria-label={String(selectedAction) || 'remove'}
 		>
 			<span class={AccessHandler.rightsIcon(selectedAction)}></span>

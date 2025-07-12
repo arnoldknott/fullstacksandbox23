@@ -121,31 +121,11 @@
 				// TBD: handle error - show error message
 				console.error('Error handling rights change response:', result);
 			}
-
-			// // update existing access policy
-			// // check if the identity already has an access policy
-
-			// if (accessPolicies?.find((policy) => policy.identity_id === result.data?.identityId)) {
-			// 	// This .map is not getting assigned anywhere - useless?
-			// 	accessPolicies?.map((policy) => {
-			// 		// isn't this the same as the filter above?
-			// 		if (policy.identity_id === result.data?.identityId) {
-			// 			policy.action = result.data?.confirmedNewAction || policy.action;
-			// 			policy.public = result.data?.public || policy.public;
-			// 			// const confirmedNewAction = result.data?.confirmedNewAction;
-			// 			// policy.action = confirmedNewAction === Action.UNSHARE ? undefined : confirmedNewAction;
-			// 		}
-			// 	});
-			// } else {
-			// 	// add new access policy
-			// 	accessPolicies?.push({
-			// 		identity_id: result.data?.identityId,
-			// 		resource_id: id,
-			// 		action: result.data?.confirmedNewAction,
-			// 		public: result.data?.public
-			// 	});
-			// }
-		} else {
+		} else if (result.type === 'error') {
+			console.error(
+				'🔥 Error handling rights change response (server returned type error):',
+				result
+			);
 			// handle error: show error message
 		}
 		update();

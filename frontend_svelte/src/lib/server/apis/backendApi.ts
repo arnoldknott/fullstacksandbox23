@@ -92,17 +92,11 @@ class BackendAPI extends BaseAPI {
 			if (response.status !== 200) {
 				return fail(response.status, { error: response.statusText });
 			}
-			// TBD: refactor into removing the unshare - if no confirmedNewAction is provided, it's a delete
 			return {
 				identityId: identityId,
 			};
 		}
 		else {
-			// consider removing this one - no action means it's a delete operation:
-			// if (!action && newAction) {
-			// 	action = newAction;
-			// 	newAction = undefined;
-			// }
 			const accessPolicy: AccessPolicy = {
 				resource_id: resourceId,
 				identity_id: identityId,
@@ -142,50 +136,6 @@ class BackendAPI extends BaseAPI {
 					};
 				}
 			}
-			// if (!action && newAction) {
-			// 	action = newAction;
-			// 	newAction = undefined;
-			// }
-			// if (action) {
-			// 	const accessPolicy: AccessPolicy = {
-			// 		resource_id: resourceId,
-			// 		identity_id: identityId,
-			// 		action: action,
-			// 		new_action: newAction,
-			// 		public: publicAccess
-			// 	};
-			// 	if (!newAction) {
-			// 		const response = await this.post(
-			// 			sessionId,
-			// 			'/access/policy',
-			// 			JSON.stringify(accessPolicy)
-			// 		);
-			// 		if (response.status !== 201) {
-			// 			return fail(response.status, { error: response.statusText });
-			// 		}
-			// 		const payload = await response.json();
-			// 		return {
-			// 			identityId: identityId,
-			// 			confirmedNewAction: payload.action,
-			// 			public: payload.public
-			// 		};
-			// 	} else {
-			// 		const response = await this.put(
-			// 			sessionId,
-			// 			'/access/policy',
-			// 			JSON.stringify(accessPolicy)
-			// 		);
-			// 		if (response.status !== 200) {
-			// 			return fail(response.status, { error: response.statusText });
-			// 		} else {
-			// 			const payload = await response.json();
-			// 			return {
-			// 				identityId: identityId,
-			// 				confirmedNewAction: payload.action,
-			// 				public: payload.public
-			// 			};
-			// 		}
-
 		}
 	}
 }
