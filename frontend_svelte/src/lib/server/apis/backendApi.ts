@@ -93,10 +93,9 @@ class BackendAPI extends BaseAPI {
 				return fail(response.status, { error: response.statusText });
 			}
 			return {
-				identityId: identityId,
+				identityId: identityId
 			};
-		}
-		else {
+		} else {
 			const accessPolicy: AccessPolicy = {
 				resource_id: resourceId,
 				identity_id: identityId,
@@ -105,11 +104,7 @@ class BackendAPI extends BaseAPI {
 				public: publicAccess
 			};
 			if (!newAction) {
-				const response = await this.post(
-					sessionId,
-					'/access/policy',
-					JSON.stringify(accessPolicy)
-				);
+				const response = await this.post(sessionId, '/access/policy', JSON.stringify(accessPolicy));
 				if (response.status !== 201) {
 					return fail(response.status, { error: response.statusText });
 				}
@@ -118,13 +113,9 @@ class BackendAPI extends BaseAPI {
 					identityId: identityId,
 					confirmedNewAction: payload.action,
 					public: payload.public
-				}
+				};
 			} else {
-				const response = await this.put(
-					sessionId,
-					'/access/policy',
-					JSON.stringify(accessPolicy)
-				);
+				const response = await this.put(sessionId, '/access/policy', JSON.stringify(accessPolicy));
 				if (response.status !== 200) {
 					return fail(response.status, { error: response.statusText });
 				} else {

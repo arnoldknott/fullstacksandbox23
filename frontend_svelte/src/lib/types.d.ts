@@ -73,12 +73,7 @@ export interface AccessRight {
 // Generic for resources - and partially relevant for identities:
 // Create a generic type that extends a base type with additional properties
 type ExtendEntity<T> = T &
-	Partial<
-		WithCreationDate &
-		WithLastModifiedDate &
-		WithAccessRights &
-		WithAccessPolicies
-	>;
+	Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies>;
 
 // Define the additional properties as separate interfaces
 interface WithCreationDate {

@@ -31,6 +31,10 @@ event_guards = [
         event="delete",
         guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
     ),
+    EventGuard(
+        event="share",
+        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+    ),
 ]
 
 

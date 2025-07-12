@@ -447,7 +447,7 @@
 								aria-label="Dropdown"
 							></span>
 							<ul
-								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden"
+								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
 								role="menu"
 								aria-orientation="vertical"
 								aria-labelledby="dropdown-menu-icon"
@@ -514,7 +514,7 @@
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="action-share"
@@ -584,7 +584,7 @@
 					<span class="icon-[tabler--dots-vertical] text-secondary size-6"></span>
 				</div>
 				<ul
-					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden"
+					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
 					role="menu"
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon"
@@ -614,7 +614,7 @@
 							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
 						</button>
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share"

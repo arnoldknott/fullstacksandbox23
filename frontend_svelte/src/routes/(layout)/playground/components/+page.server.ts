@@ -21,13 +21,13 @@ export const actions: Actions = {
 			'NewAction: ' + newAction
 		);
 
-		let confirmedNewAction = undefined
+		let confirmedNewAction = undefined;
 		if (action) {
 			if (!newAction || newAction === 'undefined') {
-				console.log("=== assigning action to confirmedNewAction ===");
+				console.log('=== assigning action to confirmedNewAction ===');
 				confirmedNewAction = action;
 			} else {
-				console.log("=== assigning newAction to confirmedNewAction ===");
+				console.log('=== assigning newAction to confirmedNewAction ===');
 				confirmedNewAction = newAction;
 			}
 		}
@@ -37,12 +37,12 @@ export const actions: Actions = {
 
 		let returnObject: { identityId: string | undefined; confirmedNewAction?: string } = {
 			identityId: identityId
-		}
+		};
 		if (confirmedNewAction) {
 			returnObject.confirmedNewAction = confirmedNewAction;
 		}
 		console.log('=== playground - server - share action executed - returning following object ===');
 		console.log(returnObject);
-		return returnObject
+		return returnObject;
 	}
 };

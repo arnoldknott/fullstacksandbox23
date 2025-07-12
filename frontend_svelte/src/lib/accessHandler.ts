@@ -3,7 +3,7 @@ import type { AccessPolicy, AccessShareOption, Identity, MicrosoftTeamExtended }
 export enum Action {
 	OWN = 'own',
 	WRITE = 'write',
-	READ = 'read',
+	READ = 'read'
 }
 
 // numerical here to allow sorting by type
@@ -48,7 +48,10 @@ export class AccessHandler {
 			}));
 	}
 
-	static createShareOptions(identities?: Identity[], accessPolicies?: AccessPolicy[]): AccessShareOption[] | undefined {
+	static createShareOptions(
+		identities?: Identity[],
+		accessPolicies?: AccessPolicy[]
+	): AccessShareOption[] | undefined {
 		return identities
 			?.map((identity: Identity) => {
 				return {
@@ -61,7 +64,7 @@ export class AccessHandler {
 			})
 			.sort((a: AccessShareOption, b: AccessShareOption) => {
 				return a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name);
-			})
+			});
 	}
 
 	// TBD: consider moving this to a designHandler or iconHandler or entityDesigner?
