@@ -31,6 +31,8 @@
 
 	// TBD: reconsider the processing of identities - currently done both here and in the +page.svelte file.
 	// get most of the work done in the +page.svelte file to avoid passing unnecessary data to component!
+	// Adopt the simplifiaction of microsoftTeams into Identies and merge with other identity types from REST-API and move to +page.svelte
+	// use the generation of shareOptions from REST-API and move to accessHandler.ts -> feed with identities and accessPolicies
 	let shareOptions: AccessShareOption[] | undefined = $derived.by(() => {
 		return (
 			microsoftTeams

@@ -3,7 +3,7 @@ import type {
 	User as MicrosoftProfile,
 	Team as MicrosoftTeam
 } from '@microsoft/microsoft-graph-types';
-import type { Action } from '$lib/accessHandler';
+import type { Action, IdentityType } from '$lib/accessHandler';
 import type { Variant } from '$lib/theming';
 
 // App specific:
@@ -75,10 +75,9 @@ export interface AccessRight {
 type ExtendEntity<T> = T &
 	Partial<
 		WithCreationDate &
-			WithLastModifiedDate &
-			WithAccessRights &
-			WithAccessPolicies &
-			WithAccessShareOptions
+		WithLastModifiedDate &
+		WithAccessRights &
+		WithAccessPolicies
 	>;
 
 // Define the additional properties as separate interfaces
@@ -129,6 +128,12 @@ export interface DemoResourceWithCreationDate extends DemoResource {
 }
 
 // Identity specific:
+
+export type Identity = {
+	id: string;
+	name: string;
+	type: IdentityType;
+};
 
 export type User = {
 	id: string;

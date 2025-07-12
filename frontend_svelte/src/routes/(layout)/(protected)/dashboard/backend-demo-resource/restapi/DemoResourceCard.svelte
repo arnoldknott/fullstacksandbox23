@@ -1,15 +1,18 @@
 <script lang="ts">
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import type { DemoResourceExtended, AccessPolicy, AccessShareOption } from '$lib/types';
+	import type { DemoResourceExtended, AccessPolicy, AccessShareOption, Identity } from '$lib/types';
 	import { enhance } from '$app/forms';
-	import { Action } from '$lib/accessHandler';
+	import { Action, AccessHandler } from '$lib/accessHandler';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// TBD: move to components folder
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import type { ActionResult } from '@sveltejs/kit';
 
-	let { demoResource }: { demoResource: DemoResourceExtended } = $props();
+	let {
+		demoResource,
+		identities
+	}: { demoResource: DemoResourceExtended; identities?: Identity[] } = $props();
 	let id = $state(demoResource.id || 'new_' + Math.random().toString(36).substring(2, 9));
 	let accessRight = $state(demoResource.access_right);
 	let name = $state(demoResource.name || undefined);
@@ -23,6 +26,22 @@
 	let accessPolicies = $state<AccessPolicy[] | undefined>(demoResource.access_policies);
 
 	let edit = $state(demoResource.id?.slice(0, 4) === 'new_' ? true : false);
+
+	let shareOptions: AccessShareOption[] | undefined = $derived(
+		identities
+			?.map((identity: Identity) => {
+				return {
+					identity_id: identity.id,
+					identity_name: identity.name,
+					identity_type: identity.type,
+					action: AccessHandler.getRights(identity.id, demoResource.access_policies),
+					public: false
+				};
+			})
+			.sort((a: AccessShareOption, b: AccessShareOption) => {
+				return a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name);
+			})
+	);
 
 	let flag = $state(
 		language === 'en-US'
@@ -89,16 +108,6 @@
 	// TBD: refactor into reusing the automatic rerun of the load function to update the page data.
 	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
 		if (result.type === 'success') {
-			// TBD: use reactivity system to update the demoResource and accessPolicies - and/or put the generation of accessShareOptions into accessHandler!
-			demoResource.access_share_options
-				?.filter(
-					(shareOption: AccessShareOption) => shareOption.identity_id === result.data?.identityId
-				)
-				// There should only be one, shareOption, as identity_id is unique
-				.forEach((shareOption: AccessShareOption) => {
-					shareOption.action = result.data?.confirmedNewAction || shareOption.action;
-					shareOption.public = result.data?.public || shareOption.public;
-				});
 			if (accessPolicies?.find((policy) => policy.identity_id === result.data?.identityId)) {
 				// This .map is not getting assigned anywhere - useless?
 				accessPolicies?.map((policy) => {
@@ -218,7 +227,7 @@
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
 								>
-									{#if demoResource.access_share_options}
+									{#if shareOptions}
 										<form
 											method="POST"
 											name="shareForm-resource-{id}"
@@ -230,7 +239,7 @@
 												};
 											}}
 										>
-											{#each demoResource.access_share_options as shareOption (shareOption.identity_id)}
+											{#each shareOptions as shareOption (shareOption.identity_id)}
 												<ShareItem resourceId={id} {shareOption} />
 											{/each}
 											<li class="dropdown-footer gap-2">

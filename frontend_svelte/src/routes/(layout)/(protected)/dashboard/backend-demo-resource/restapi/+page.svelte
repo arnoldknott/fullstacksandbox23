@@ -3,31 +3,25 @@
 	import JsonData from '$components/JsonData.svelte';
 	import Heading from '$components/Heading.svelte';
 	import DemoResourceCard from './DemoResourceCard.svelte';
-	import type { AccessShareOption, DemoResourceExtended, MicrosoftTeamExtended } from '$lib/types';
-	import { AccessHandler, IdentityType, Action } from '$lib/accessHandler';
+	import type { DemoResourceExtended, MicrosoftTeamExtended, Identity } from '$lib/types';
+	import { IdentityType, Action } from '$lib/accessHandler';
 	let { data }: { data: PageData } = $props();
 	let demoResources = $state(data.demoResourcesExtended);
 	const microsoftTeams = data.microsoftTeams;
 
 	let debug = $state(false);
 
-	// TBD: consider moving this to server side:
-	// No: rather back to the DemoResourceCard, because it's getting updated there after sharing the resource.
-	demoResources.forEach((demoResource: DemoResourceExtended) => {
-		demoResource.access_share_options = microsoftTeams
+	let identities: Identity[] = $derived.by(() => {
+		const microsoftTeamsIdentities: Identity[] = microsoftTeams
 			.filter((team: MicrosoftTeamExtended) => team.id !== undefined)
-			.map((team: MicrosoftTeamExtended) => {
-				return {
-					identity_id: team.id as string,
-					identity_name: team.displayName || 'Unknown Team',
-					identity_type: IdentityType.MICROSOFT_TEAM,
-					action: AccessHandler.getRights(team.id, demoResource.access_policies),
-					public: false
-				};
-			})
-			.sort((a: AccessShareOption, b: AccessShareOption) => {
-				return a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name);
-			});
+			.map((team: MicrosoftTeamExtended) => ({
+				id: team.id as string,
+				name: team.displayName || 'Unknown Team',
+				type: IdentityType.MICROSOFT_TEAM
+			}));
+		// TBD add other identities here, e.g. from a ueber-group, group, sub-group, user list
+		const emptyListAsPlaceholder: Identity[] = [];
+		return [...microsoftTeamsIdentities, ...emptyListAsPlaceholder];
 	});
 
 	// This is the same as in +page.svelte  for socketIO!
@@ -60,7 +54,7 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	{#each demoResources as demoResource (demoResource.id)}
-		<DemoResourceCard {demoResource} />
+		<DemoResourceCard {demoResource} {identities} />
 		<div class={debug ? 'block' : 'hidden'}>
 			<Heading>{demoResource.name}</Heading>
 			<p class="title-small md:title text-secondary">=> demoResource</p>
