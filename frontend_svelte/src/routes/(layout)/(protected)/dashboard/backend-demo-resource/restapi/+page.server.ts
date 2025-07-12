@@ -52,8 +52,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		);
 		const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
 
-
-
 		demoResourcesExtended = demoResources.map((resource: DemoResourceExtended, index: number) => {
 			// const accessRight = accessRights.find((right: AccessRight) => right.resource_id === resource.id);
 			// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id);
@@ -62,7 +60,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 				{
 					...resource,
 					creation_date: new Date(creationDates[index]),
-					access_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id)?.action,
+					access_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id)
+						?.action,
 					access_policies: accessPolicies.filter(
 						(policy: AccessPolicy) => policy.resource_id === resource.id
 					)

@@ -2,13 +2,10 @@
 	import type { PageData } from './$types';
 	import JsonData from '$components/JsonData.svelte';
 	import Heading from '$components/Heading.svelte';
-
 	import DemoResourceCard from './DemoResourceCard.svelte';
 	import type { AccessShareOption, DemoResourceExtended, MicrosoftTeamExtended } from '$lib/types';
 	import { AccessHandler, IdentityType, Action } from '$lib/accessHandler';
 	let { data }: { data: PageData } = $props();
-	// console.log('=== page data in backend-demo-resource/page.svelte ===');
-	// console.log(data);
 	let demoResources = $state(data.demoResourcesExtended);
 	const microsoftTeams = data.microsoftTeams;
 

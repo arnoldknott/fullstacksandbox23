@@ -62,7 +62,7 @@ export interface AccessShareOption {
 	identity_name: string;
 	identity_type: IdentityType;
 	action?: Action; // for existing AccessPolicy for this identity: it's an Action, otherwise undefined
-	public?: boolean = false;
+	public?: boolean;
 }
 
 export interface AccessRight {
@@ -73,7 +73,13 @@ export interface AccessRight {
 // Generic for resources - and partially relevant for identities:
 // Create a generic type that extends a base type with additional properties
 type ExtendEntity<T> = T &
-	Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies & WithAccessShareOptions>;
+	Partial<
+		WithCreationDate &
+			WithLastModifiedDate &
+			WithAccessRights &
+			WithAccessPolicies &
+			WithAccessShareOptions
+	>;
 
 // Define the additional properties as separate interfaces
 interface WithCreationDate {

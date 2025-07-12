@@ -3,8 +3,7 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResourceExtended, AccessPolicy, AccessShareOption } from '$lib/types';
 	import { enhance } from '$app/forms';
-	import type { MicrosoftTeamExtended } from '$lib/types';
-	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
+	import { Action } from '$lib/accessHandler';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// TBD: move to components folder
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
@@ -162,8 +161,6 @@
 			{#if flag}
 				<span class="icon-[twemoji--flag-{flag}] size-6"></span>
 			{/if}
-			<!-- TBD: move this if around to the relevant list items,
-			if there are any left, that read-only users are also supposed to see. -->
 			{#if accessRight === Action.WRITE || accessRight === Action.OWN}
 				<div
 					class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
@@ -211,9 +208,8 @@
 										class="icon-[tabler--chevron-right] dropdown-open:rotate-180 size-4 rtl:rotate-180"
 									></span>
 								</button>
-								<!-- min-w-60 -->
 								<ul
-									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-60"
+									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-60 shadow-xs"
 									role="menu"
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
