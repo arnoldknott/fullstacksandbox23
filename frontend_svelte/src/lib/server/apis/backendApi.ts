@@ -82,7 +82,9 @@ class BackendAPI extends BaseAPI {
 				'=== routes - demo-resource - page.server - Resource ID or Identity ID is missing ==='
 			);
 			return fail(400, { error: 'Resource ID and Identity ID are required.' });
-		} else if (action === Action.UNSHARE || newAction === Action.UNSHARE) {
+		}
+		// TBD: check if action is present, otherwise it's a delete operation
+		else if (action === Action.UNSHARE || newAction === Action.UNSHARE) {
 			const response = await this.delete(
 				sessionId,
 				`/access/policy?resource_id=${resourceId}&identity_id=${identityId}`
@@ -90,12 +92,15 @@ class BackendAPI extends BaseAPI {
 			if (response.status !== 200) {
 				return fail(response.status, { error: response.statusText });
 			}
+			// TBD: refactor into removing the unshare - if no confirmedNewAction is provided, it's a delete
 			return {
 				identityId: identityId,
 				confirmedNewAction: Action.UNSHARE,
 				public: false
 			};
-		} else {
+		}
+		else {
+			// consider removing this one - no action means it's a delete operation:
 			if (!action && newAction) {
 				action = newAction;
 				newAction = undefined;

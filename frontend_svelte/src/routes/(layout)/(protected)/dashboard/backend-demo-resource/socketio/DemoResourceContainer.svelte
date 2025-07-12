@@ -9,7 +9,6 @@
 
 	let {
 		demoResource,
-		// identities = [],
 		microsoftTeams = [],
 		edit = $bindable(false),
 		deleteResource = (_id: string) => {},
@@ -17,7 +16,6 @@
 		share = (_accessPolicy: AccessPolicy) => {}
 	}: {
 		demoResource: DemoResourceExtended;
-		// identities?: Identity[];
 		microsoftTeams?: MicrosoftTeam[];
 		edit?: boolean;
 		deleteResource?: (id: string) => void;
@@ -30,11 +28,6 @@
 			: new Date(Date.now()).toLocaleString('da-DK', { timeZone: 'CET' })
 	);
 	if (demoResource.id?.slice(0, 4) === 'new_') edit = true;
-
-	const accessRightForIdentity = (identityId: string) =>
-		demoResource?.access_policies
-			? AccessHandler.getRights(identityId, demoResource.access_policies)
-			: undefined;
 
 	// TBD: reconsider the processing of identities - currently done both here and in the +page.svelte file.
 	// get most of the work done in the +page.svelte file to avoid passing unnecessary data to component!
@@ -132,7 +125,7 @@
 						</button>
 
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share-{demoResource.id}"

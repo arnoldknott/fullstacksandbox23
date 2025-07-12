@@ -12,6 +12,7 @@
 	let debug = $state(false);
 
 	// TBD: consider moving this to server side:
+	// No: rather back to the DemoResourceCard, because it's getting updated there after sharing the resource.
 	demoResources.forEach((demoResource: DemoResourceExtended) => {
 		demoResource.access_share_options = microsoftTeams
 			.filter((team: MicrosoftTeamExtended) => team.id !== undefined)

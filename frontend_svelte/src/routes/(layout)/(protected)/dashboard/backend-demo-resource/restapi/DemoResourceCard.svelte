@@ -94,14 +94,18 @@
 				?.filter(
 					(shareOption: AccessShareOption) => shareOption.identity_id === result.data?.identityId
 				)
+				// There should only be one, shareOption, as identity_id is unique
 				.forEach((shareOption: AccessShareOption) => {
 					shareOption.action = result.data?.confirmedNewAction || shareOption.action;
 					shareOption.public = result.data?.public || shareOption.public;
 				});
 			if (accessPolicies?.find((policy) => policy.identity_id === result.data?.identityId)) {
+				// This .map is not getting assigned anywhere - useless?
 				accessPolicies?.map((policy) => {
+					// isn't this the same as the filter above?
 					if (policy.identity_id === result.data?.identityId) {
 						policy.action = result.data?.confirmedNewAction || policy.action;
+						policy.public = result.data?.public || policy.public;
 						// const confirmedNewAction = result.data?.confirmedNewAction;
 						// policy.action = confirmedNewAction === Action.UNSHARE ? undefined : confirmedNewAction;
 					}
@@ -209,7 +213,7 @@
 									></span>
 								</button>
 								<ul
-									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-60 shadow-xs"
+									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-60"
 									role="menu"
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
