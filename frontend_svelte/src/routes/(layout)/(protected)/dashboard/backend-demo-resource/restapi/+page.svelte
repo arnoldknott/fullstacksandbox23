@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { AccessHandler } from '$lib/accessHandler';
 	import JsonData from '$components/JsonData.svelte';
 	import Heading from '$components/Heading.svelte';
 	import DemoResourceCard from './DemoResourceCard.svelte';
-	import type { DemoResourceExtended, MicrosoftTeamExtended, Identity } from '$lib/types';
-	import { IdentityType, Action } from '$lib/accessHandler';
+	import type { DemoResourceExtended, Identity } from '$lib/types';
+	import { Action } from '$lib/accessHandler';
 	let { data }: { data: PageData } = $props();
 	let demoResources = $state(data.demoResourcesExtended);
 	const microsoftTeams = data.microsoftTeams;
@@ -12,13 +13,8 @@
 	let debug = $state(false);
 
 	let identities: Identity[] = $derived.by(() => {
-		const microsoftTeamsIdentities: Identity[] = microsoftTeams
-			.filter((team: MicrosoftTeamExtended) => team.id !== undefined)
-			.map((team: MicrosoftTeamExtended) => ({
-				id: team.id as string,
-				name: team.displayName || 'Unknown Team',
-				type: IdentityType.MICROSOFT_TEAM
-			}));
+		const microsoftTeamsIdentities: Identity[] =
+			AccessHandler.reduceMicrosoftTeamsToIdentities(microsoftTeams);
 		// TBD add other identities here, e.g. from a ueber-group, group, sub-group, user list
 		const emptyListAsPlaceholder: Identity[] = [];
 		return [...microsoftTeamsIdentities, ...emptyListAsPlaceholder];

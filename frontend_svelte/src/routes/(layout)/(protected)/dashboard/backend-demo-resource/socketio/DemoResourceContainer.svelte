@@ -1,22 +1,21 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
-	import type { AccessPolicy, AccessShareOption, DemoResourceExtended } from '$lib/types';
+	import type { AccessPolicy, AccessShareOption, DemoResourceExtended, Identity } from '$lib/types';
 	import { fade } from 'svelte/transition';
 	import { Action } from '$lib/accessHandler';
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
-	import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
-	import { AccessHandler, IdentityType } from '$lib/accessHandler';
+	import { AccessHandler } from '$lib/accessHandler';
 
 	let {
 		demoResource,
-		microsoftTeams = [],
+		identities,
 		edit = $bindable(false),
 		deleteResource = (_id: string) => {},
 		submitResource = (_resource: DemoResourceExtended) => {},
 		share = (_accessPolicy: AccessPolicy) => {}
 	}: {
 		demoResource: DemoResourceExtended;
-		microsoftTeams?: MicrosoftTeam[];
+		identities?: Identity[];
 		edit?: boolean;
 		deleteResource?: (id: string) => void;
 		submitResource?: (resource: DemoResourceExtended) => void;
@@ -33,25 +32,9 @@
 	// get most of the work done in the +page.svelte file to avoid passing unnecessary data to component!
 	// Adopt the simplifiaction of microsoftTeams into Identies and merge with other identity types from REST-API and move to +page.svelte
 	// use the generation of shareOptions from REST-API and move to accessHandler.ts -> feed with identities and accessPolicies
-	let shareOptions: AccessShareOption[] | undefined = $derived.by(() => {
-		return (
-			microsoftTeams
-				// Only include teams with a defined id (string)
-				?.filter((team) => team.id)
-				.map((team) => ({
-					identity_id: team.id as string,
-					identity_name: team.displayName as string,
-					identity_type: IdentityType.MICROSOFT_TEAM,
-					action: AccessHandler.getRights(team.id as string, demoResource.access_policies)
-				}))
-				// TBD: add other identities here, e.g. from a ueber-group, group, sub-group, user list
-				.sort((a: AccessShareOption, b: AccessShareOption) => {
-					return (
-						a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name)
-					);
-				})
-		);
-	});
+	let shareOptions: AccessShareOption[] | undefined = $derived(
+		AccessHandler.createShareOptions(identities, demoResource.access_policies)
+	);
 
 	const initDropdown: Attachment = (_node: Element) => {
 		import('flyonui/flyonui')
@@ -132,14 +115,16 @@
 							aria-orientation="vertical"
 							aria-labelledby="share-{demoResource.id}"
 						>
-							{#each shareOptions as shareOption (shareOption.identity_id)}
-								<ShareItem
-									{@attach initDropdown}
-									resourceId={demoResource.id as string}
-									{shareOption}
-									{share}
-								/>
-							{/each}
+							{#if shareOptions}
+								{#each shareOptions as shareOption (shareOption.identity_id)}
+									<ShareItem
+										{@attach initDropdown}
+										resourceId={demoResource.id as string}
+										{shareOption}
+										{share}
+									/>
+								{/each}
+							{/if}
 							<li class="dropdown-footer gap-2">
 								<button
 									class="btn dropdown-item btn-text text-secondary content-center justify-start"

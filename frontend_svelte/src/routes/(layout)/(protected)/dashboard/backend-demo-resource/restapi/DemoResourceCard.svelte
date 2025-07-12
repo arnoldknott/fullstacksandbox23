@@ -27,21 +27,8 @@
 
 	let edit = $state(demoResource.id?.slice(0, 4) === 'new_' ? true : false);
 
-	let shareOptions: AccessShareOption[] | undefined = $derived(
-		identities
-			?.map((identity: Identity) => {
-				return {
-					identity_id: identity.id,
-					identity_name: identity.name,
-					identity_type: identity.type,
-					action: AccessHandler.getRights(identity.id, demoResource.access_policies),
-					public: false
-				};
-			})
-			.sort((a: AccessShareOption, b: AccessShareOption) => {
-				return a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name);
-			})
-	);
+	// TBD. move to accessHandler.ts
+	let shareOptions = $derived(AccessHandler.createShareOptions(identities, accessPolicies));
 
 	let flag = $state(
 		language === 'en-US'

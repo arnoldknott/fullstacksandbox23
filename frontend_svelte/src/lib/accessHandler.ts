@@ -1,4 +1,4 @@
-import type { AccessPolicy } from '$lib/types';
+import type { AccessPolicy, AccessShareOption, Identity, MicrosoftTeamExtended } from '$lib/types';
 
 export enum Action {
 	OWN = 'own',
@@ -37,6 +37,32 @@ export class AccessHandler {
 		} else {
 			return undefined;
 		}
+	}
+
+	static reduceMicrosoftTeamsToIdentities(microsoftTeams: MicrosoftTeamExtended[]): Identity[] {
+		return microsoftTeams
+			.filter((team: MicrosoftTeamExtended) => team.id !== undefined)
+			.map((team: MicrosoftTeamExtended) => ({
+				id: team.id as string,
+				name: team.displayName || 'Unknown Team',
+				type: IdentityType.MICROSOFT_TEAM
+			}));
+	}
+
+	static createShareOptions(identities?: Identity[], accessPolicies?: AccessPolicy[]): AccessShareOption[] | undefined {
+		return identities
+			?.map((identity: Identity) => {
+				return {
+					identity_id: identity.id,
+					identity_name: identity.name,
+					identity_type: identity.type,
+					action: AccessHandler.getRights(identity.id, accessPolicies),
+					public: false
+				};
+			})
+			.sort((a: AccessShareOption, b: AccessShareOption) => {
+				return a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name);
+			})
 	}
 
 	// TBD: consider moving this to a designHandler or iconHandler or entityDesigner?

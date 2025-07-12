@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
-	import { Action } from '$lib/accessHandler';
+	import { AccessHandler, Action } from '$lib/accessHandler';
 	import DemoResourceContainer from './DemoResourceContainer.svelte';
 	import { fade, scale } from 'svelte/transition';
 
@@ -283,7 +283,7 @@
 						}
 					}
 				}
-				microsoftTeams={data.microsoftTeams}
+				identities={AccessHandler.reduceMicrosoftTeamsToIdentities(data.microsoftTeams)}
 				{demoResource}
 				{deleteResource}
 				{submitResource}
