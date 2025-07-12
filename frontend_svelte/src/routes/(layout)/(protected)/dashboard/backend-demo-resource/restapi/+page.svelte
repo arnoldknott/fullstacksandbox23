@@ -4,29 +4,58 @@
 	import Heading from '$components/Heading.svelte';
 	import { mount } from 'svelte';
 	import DemoResourceCard from './DemoResourceCard.svelte';
-	import type { AccessPolicy, DemoResourceExtended, MicrosoftTeamExtended } from '$lib/types';
+	import type { AccessShareOption, DemoResourceExtended, MicrosoftTeamExtended } from '$lib/types';
+	import { AccessHandler, IdentityType } from '$lib/accessHandler';
 	let { data }: { data: PageData } = $props();
 	// console.log('=== page data in backend-demo-resource/page.svelte ===');
 	// console.log(data);
-	const demoResources = data.demoResourcesExtended;
+	let demoResources = $state(data.demoResourcesExtended);
 	const microsoftTeams = data.microsoftTeams;
 
 	let debug = $state(false);
 
-	// TBD: reconsider the processing of identities - currently done both here and in DemoResourceCard.svelte.
-	const microsoftTeamsExtendWithAccessPolicies = (
-		microsoftTeams: MicrosoftTeamExtended[],
-		demoResource: DemoResourceExtended
-	) => {
-		return microsoftTeams.map((team: MicrosoftTeamExtended) => {
-			return {
-				...team,
-				access_policies: demoResource.access_policies?.filter(
-					(policy: AccessPolicy) => team.id === policy.identity_id
-				)
-			};
-		});
-	};
+	// const shareOptions: AccessShareOption[] = $derived.by(() => {
+	// 	return demoResources
+	// 		.flatMap((demoResource: DemoResourceExtended) => {
+	// 			microsoftTeams
+	// 				.filter((team: MicrosoftTeamExtended) => team.id)
+	// 				.map((team: MicrosoftTeamExtended) => {
+	// 					return {
+	// 						identity_id: team.id,
+	// 						identity_name: team.displayName || 'Unknown Team',
+	// 						identity_type: IdentityType.MICROSOFT_TEAM,
+	// 						action: AccessHandler.getRights(team.id, demoResource.access_policies),
+	// 						public: false
+	// 					};
+	// 				})
+	// 		)
+	// 		.sort((a: AccessShareOption, b: AccessShareOption) => {
+	// 			return a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name);
+	// 		});
+	// });
+
+	// TBD: consider moving this to server side:
+	demoResources.forEach((demoResource: DemoResourceExtended) => {
+		demoResource.access_share_options = microsoftTeams
+			.filter((team: MicrosoftTeamExtended) => team.id !== undefined)
+			.map((team: MicrosoftTeamExtended) => {
+				return {
+					identity_id: team.id as string,
+					identity_name: team.displayName || 'Unknown Team',
+					identity_type: IdentityType.MICROSOFT_TEAM,
+					action: AccessHandler.getRights(team.id, demoResource.access_policies),
+					public: false
+				};
+			})
+			.sort((a: AccessShareOption, b: AccessShareOption) => {
+				return a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name);
+			});
+	});
+
+	// $effect(() => {
+	// 	console.log('=== shareOptions ===');
+	// 	console.log(shareOptions);
+	// });
 </script>
 
 <!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->
@@ -45,7 +74,7 @@
 			mount(DemoResourceCard, {
 				target: container,
 				anchor: firstDemoResource,
-				props: { microsoftTeams: microsoftTeams }
+				// props: { shareOptions: shareOptions }
 			});
 			// TBD: refactor into using an attachment:
 			const { HSDropdown } = await import('flyonui/flyonui.js');
@@ -59,16 +88,11 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	{#each demoResources as demoResource (demoResource.id)}
-		<DemoResourceCard
-			{demoResource}
-			microsoftTeams={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)}
-		/>
+		<DemoResourceCard {demoResource} />
 		<div class={debug ? 'block' : 'hidden'}>
 			<Heading>{demoResource.name}</Heading>
 			<p class="title-small md:title text-secondary">=> demoResource</p>
 			<JsonData data={demoResource} />
-			<p class="title-small md:title text-secondary">=> microsoftTeams</p>
-			<JsonData data={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)} />
 		</div>
 	{/each}
 </div>

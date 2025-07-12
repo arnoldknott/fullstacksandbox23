@@ -6,6 +6,7 @@ import type { AccessPolicy, AccessRight, DemoResource, DemoResourceExtended } fr
 import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
 // import { Action } from '$lib/accessHandler';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
+import { Action } from '$lib/accessHandler';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function executed ===');
@@ -37,11 +38,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 			'/access/right/resources',
 			JSON.stringify(demoResourceIds)
 		);
-		const accessRights = await accessRightsResponse.json();
+		const accessRights: AccessRight[] = await accessRightsResponse.json();
 
 		// Get other users access policies for all demo resources, where user has 'own' rights:
 		const ownedDemoResourceIds = accessRights
-			.filter((right: AccessRight) => right.action === 'own')
+			.filter((right: AccessRight) => right.action === Action.OWN)
 			.map((right: AccessRight) => right.resource_id);
 
 		const accessPoliciesResponse = await backendAPI.post(
@@ -51,6 +52,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		);
 		const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
 
+
+
 		demoResourcesExtended = demoResources.map((resource: DemoResourceExtended, index: number) => {
 			// const accessRight = accessRights.find((right: AccessRight) => right.resource_id === resource.id);
 			// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id);
@@ -59,8 +62,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				{
 					...resource,
 					creation_date: new Date(creationDates[index]),
-					access_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id)
-						.action,
+					access_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id)?.action,
 					access_policies: accessPolicies.filter(
 						(policy: AccessPolicy) => policy.resource_id === resource.id
 					)

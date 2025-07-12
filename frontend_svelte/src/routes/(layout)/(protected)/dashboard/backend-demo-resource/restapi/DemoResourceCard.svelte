@@ -1,21 +1,18 @@
 <script lang="ts">
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import type { DemoResourceExtended, AccessPolicy, Identity } from '$lib/types';
+	import type { DemoResourceExtended, AccessPolicy, AccessShareOption } from '$lib/types';
 	import { enhance } from '$app/forms';
 	import type { MicrosoftTeamExtended } from '$lib/types';
-	import { AccessHandler, IdentityType } from '$lib/accessHandler';
+	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// TBD: move to components folder
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import type { ActionResult } from '@sveltejs/kit';
 
-	let {
-		demoResource,
-		microsoftTeams
-	}: { demoResource?: DemoResourceExtended; microsoftTeams?: MicrosoftTeamExtended[] } = $props();
+	let { demoResource }: { demoResource?: DemoResourceExtended } = $props();
 	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
-	let accessRight = $state(demoResource?.access_right || 'read');
+	let accessRight = $state(demoResource?.access_right);
 	let name = $state(demoResource?.name || undefined);
 	let description = $state(demoResource?.description || undefined);
 	let language = $state(demoResource?.language || undefined);
@@ -70,26 +67,6 @@
 
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
-	const accessRightForIdentity = (identityId: string) =>
-		accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : undefined;
-
-	// TBD: reconsider the processing of identities - currently done both here and in the +page.svelte file.
-	// get most of the work done in the +page.svelte file to avoid passing unnecessary data to component!
-	let identities: Identity[] | undefined = $derived.by(() => {
-		return (
-			microsoftTeams
-				// Only include teams with a defined id (string)
-				?.filter((team) => team.id)
-				.map((team) => ({
-					id: team.id as string,
-					name: team.displayName as string,
-					type: IdentityType.MICROSOFT_TEAM,
-					accessRight: accessRightForIdentity(team.id as string)
-				}))
-			// TBD: add other identities here, e.g. from a ueber-group, group, sub-group, user list
-		);
-	});
-
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
 	};
@@ -113,10 +90,21 @@
 	// TBD: refactor into reusing the automatic rerun of the load function to update the page data.
 	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
 		if (result.type === 'success') {
+			// TBD: use reactivity system to update the demoResource and accessPolicies - and/or put the generation of accessShareOptions into accessHandler!
+			demoResource?.access_share_options
+				?.filter(
+					(shareOption: AccessShareOption) => shareOption.identity_id === result.data?.identityId
+				)
+				.forEach((shareOption: AccessShareOption) => {
+					shareOption.action = result.data?.confirmedNewAction || shareOption.action;
+					shareOption.public = result.data?.public || shareOption.public;
+				});
 			if (accessPolicies?.find((policy) => policy.identity_id === result.data?.identityId)) {
 				accessPolicies?.map((policy) => {
 					if (policy.identity_id === result.data?.identityId) {
 						policy.action = result.data?.confirmedNewAction || policy.action;
+						// const confirmedNewAction = result.data?.confirmedNewAction;
+						// policy.action = confirmedNewAction === Action.UNSHARE ? undefined : confirmedNewAction;
 					}
 				});
 			} else {
@@ -176,7 +164,7 @@
 			{/if}
 			<!-- TBD: move this if around the relevant list points,
 			if there are any left, that read-only users are also supposed to see. -->
-			{#if accessRight === 'write' || accessRight === 'own'}
+			{#if accessRight === Action.WRITE || accessRight === Action.OWN}
 				<div
 					class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
 					bind:this={dropdownMenuElement}
@@ -205,7 +193,7 @@
 								Edit
 							</button>
 						</li>
-						{#if accessRight === 'own'}
+						{#if accessRight === Action.OWN}
 							<li
 								class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
 								bind:this={dropdownShareDropdownElement}
@@ -225,12 +213,12 @@
 								</button>
 								<!-- min-w-60 -->
 								<ul
-									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-60 shadow-xs"
+									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-60"
 									role="menu"
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
 								>
-									{#if identities}
+									{#if demoResource?.access_share_options}
 										<form
 											method="POST"
 											name="shareForm-resource-{id}"
@@ -242,8 +230,8 @@
 												};
 											}}
 										>
-											{#each identities ? identities.sort( (a, b) => (a.name ?? '').localeCompare(b.name ?? '') ) : [] as identity (identity.id)}
-												<ShareItem resourceId={id} {identity} />
+											{#each demoResource?.access_share_options as shareOption (shareOption.identity_id)}
+												<ShareItem resourceId={id} {shareOption} />
 											{/each}
 											<li class="dropdown-footer gap-2">
 												<button

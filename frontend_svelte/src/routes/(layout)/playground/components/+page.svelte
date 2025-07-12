@@ -20,6 +20,7 @@
 	import { page } from '$app/state';
 	import type { ActionResult } from '@sveltejs/kit';
 	import { Action, IdentityType } from '$lib/accessHandler';
+	import type { AccessShareOption } from '$lib/types';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
@@ -91,9 +92,11 @@
 
 	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
 		if (result.type === 'success') {
-			const identity = identities.find((identity) => identity.id === result.data?.identityId);
+			const identity = shareOptions.find(
+				(option) => option.identity_id === result.data?.identityId
+			);
 			if (identity) {
-				identity.accessRight = result.data?.confirmedNewAction
+				identity.action = result.data?.confirmedNewAction
 					? result.data.confirmedNewAction.toString()
 					: '';
 			}
@@ -104,57 +107,59 @@
 	};
 
 	// data for share menu:
-	const identities = $state(
+	const shareOptions: AccessShareOption[] = $state(
 		[
 			{
-				id: '1',
-				name: 'The A Team',
-				type: IdentityType.MICROSOFT_TEAM,
-				accessRight: Action.READ
+				identity_id: '1',
+				identity_name: 'The A Team',
+				identity_type: IdentityType.MICROSOFT_TEAM,
+				action: Action.READ
 			},
 			{
-				id: '2',
-				name: 'Awesome Team',
-				type: IdentityType.MICROSOFT_TEAM,
-				accessRight: undefined
+				identity_id: '2',
+				identity_name: 'Awesome Team',
+				identity_type: IdentityType.MICROSOFT_TEAM,
+				action: undefined
 			},
 			{
-				id: '3',
-				name: 'Ueber Group',
-				type: IdentityType.UEBER_GROUP,
-				accessRight: Action.WRITE
+				identity_id: '3',
+				identity_name: 'Ueber Group',
+				identity_type: IdentityType.UEBER_GROUP,
+				action: Action.WRITE
 			},
 			{
-				id: '4',
-				name: 'Group some group',
-				type: IdentityType.GROUP,
-				accessRight: Action.OWN
+				identity_id: '4',
+				identity_name: 'Group some group',
+				identity_type: IdentityType.GROUP,
+				action: Action.OWN
 			},
 			{
-				id: '5',
-				name: 'Sub Group',
-				type: IdentityType.SUB_GROUP,
-				accessRight: Action.READ
+				identity_id: '5',
+				identity_name: 'Sub Group',
+				identity_type: IdentityType.SUB_GROUP,
+				action: Action.READ
 			},
 			{
-				id: '6',
-				name: 'Sub-Sub-Group',
-				type: IdentityType.SUB_SUB_GROUP,
-				accessRight: Action.OWN
+				identity_id: '6',
+				identity_name: 'Sub-Sub-Group',
+				identity_type: IdentityType.SUB_SUB_GROUP,
+				action: Action.OWN
 			},
 			{
-				id: '7',
-				name: 'Tom User',
-				type: IdentityType.USER,
-				accessRight: Action.READ
+				identity_id: '7',
+				identity_name: 'Tom User',
+				identity_type: IdentityType.USER,
+				action: Action.READ
 			},
 			{
-				id: '8',
-				name: 'Another user with a very long Team Name of ',
-				type: IdentityType.USER,
-				accessRight: Action.WRITE
+				identity_id: '8',
+				identity_name: 'Another user with a very long Team Name of ',
+				identity_type: IdentityType.USER,
+				action: Action.WRITE
 			}
-		].sort((a, b) => a.name.localeCompare(b.name))
+		].sort(
+			(a, b) => a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name)
+		)
 	);
 
 	// for status sliders:
@@ -524,8 +529,8 @@
 									};
 								}}
 							>
-								{#each identities as identity, i (i)}
-									<ShareItem resourceId="actionButtonShareResourceId" {identity} />
+								{#each shareOptions as shareOption, i (i)}
+									<ShareItem resourceId="actionButtonShareResourceId" {shareOption} />
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -625,8 +630,8 @@
 									};
 								}}
 							>
-								{#each identities as identity, i (i)}
-									<ShareItem resourceId="dropdownShareDropdownResourceId" {identity} />
+								{#each shareOptions as shareOption, i (i)}
+									<ShareItem resourceId="dropdownShareDropdownResourceId" {shareOption} />
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -676,7 +681,7 @@
 								};
 							}}
 						>
-							<ShareItem resourceId="dropdownShareResourceId" identity={identities[0]} />
+							<ShareItem resourceId="dropdownShareResourceId" shareOption={shareOptions[0]} />
 						</form>
 					</ul>
 				</div>

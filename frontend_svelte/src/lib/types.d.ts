@@ -56,6 +56,15 @@ export interface AccessPolicy {
 	id?: number;
 }
 
+// identifies with whom and how a resource can be shared with:
+export interface AccessShareOption {
+	identity_id: string;
+	identity_name: string;
+	identity_type: IdentityType;
+	action?: Action; // for existing AccessPolicy for this identity: it's an Action, otherwise undefined
+	public?: boolean = false;
+}
+
 export interface AccessRight {
 	resource_id: string;
 	action: Action;
@@ -64,7 +73,7 @@ export interface AccessRight {
 // Generic for resources - and partially relevant for identities:
 // Create a generic type that extends a base type with additional properties
 type ExtendEntity<T> = T &
-	Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies>;
+	Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies & WithAccessShareOptions>;
 
 // Define the additional properties as separate interfaces
 interface WithCreationDate {
@@ -86,6 +95,10 @@ interface WithAccessRights {
 // intended for sharing operations
 interface WithAccessPolicies {
 	access_policies: AccessPolicy[];
+}
+
+interface WithAccessShareOptions {
+	access_share_options: AccessShareOption[];
 }
 
 // specific resources:
@@ -110,14 +123,6 @@ export interface DemoResourceWithCreationDate extends DemoResource {
 }
 
 // Identity specific:
-
-// TBD: this is not really an Identity: the accessRight doesn't belong here! - Maybe in an Extended version of it?
-export type Identity = {
-	id: string;
-	name: string;
-	type: IdentityType;
-	accessRight?: Action;
-};
 
 export type User = {
 	id: string;

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
-	import type { AccessPolicy, DemoResourceExtended, Identity } from '$lib/types';
+	import type { AccessPolicy, AccessShareOption, DemoResourceExtended } from '$lib/types';
 	import { fade } from 'svelte/transition';
 	import { Action } from '$lib/accessHandler';
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
@@ -38,18 +38,23 @@
 
 	// TBD: reconsider the processing of identities - currently done both here and in the +page.svelte file.
 	// get most of the work done in the +page.svelte file to avoid passing unnecessary data to component!
-	let identities: Identity[] | undefined = $derived.by(() => {
+	let shareOptions: AccessShareOption[] | undefined = $derived.by(() => {
 		return (
 			microsoftTeams
 				// Only include teams with a defined id (string)
 				?.filter((team) => team.id)
 				.map((team) => ({
-					id: team.id as string,
-					name: team.displayName as string,
-					type: IdentityType.MICROSOFT_TEAM,
-					accessRight: accessRightForIdentity(team.id as string)
+					identity_id: team.id as string,
+					identity_name: team.displayName as string,
+					identity_type: IdentityType.MICROSOFT_TEAM,
+					action: AccessHandler.getRights(team.id as string, demoResource.access_policies)
 				}))
-			// TBD: add other identities here, e.g. from a ueber-group, group, sub-group, user list
+				// TBD: add other identities here, e.g. from a ueber-group, group, sub-group, user list
+				.sort((a: AccessShareOption, b: AccessShareOption) => {
+					return (
+						a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name)
+					);
+				})
 		);
 	});
 
@@ -132,11 +137,11 @@
 							aria-orientation="vertical"
 							aria-labelledby="share-{demoResource.id}"
 						>
-							{#each identities ? identities.sort( (a, b) => (a.name ?? '').localeCompare(b.name ?? '') ) : [] as identity (identity.id)}
+							{#each shareOptions as shareOption (shareOption.identity_id)}
 								<ShareItem
 									{@attach initDropdown}
 									resourceId={demoResource.id as string}
-									{identity}
+									{shareOption}
 									{share}
 								/>
 							{/each}

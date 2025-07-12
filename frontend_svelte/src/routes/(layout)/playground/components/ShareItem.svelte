@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { Action, AccessHandler } from '$lib/accessHandler';
-	import type { AccessPolicy, Identity } from '$lib/types';
+	import type { AccessPolicy, AccessShareOption } from '$lib/types';
 
 	let {
 		resourceId,
-		identity,
+		shareOption,
 		share
 	}: {
 		resourceId: string;
-		identity: Identity;
+		shareOption: AccessShareOption;
 		share?: (accessPolicy: AccessPolicy) => void;
 	} = $props();
 </script>
@@ -22,14 +22,14 @@
 			type="submit"
 			value={resourceId}
 			formaction={!share
-				? `?/share&identity-id=${identity.id}&action=${identity.accessRight}&new-action=${newAction}`
+				? `?/share&identity-id=${shareOption.identity_id}&action=${shareOption.action === Action.UNSHARE ? '' : shareOption.action}&new-action=${newAction}`
 				: undefined}
 			onclick={share
 				? () =>
 						share({
 							resource_id: resourceId,
-							identity_id: identity.id,
-							action: identity.accessRight,
+							identity_id: shareOption.identity_id,
+							action: shareOption.action,
 							new_action: newAction
 						})
 				: undefined}
@@ -44,25 +44,27 @@
 	<div class="tooltip flex items-center [--placement:top]">
 		<div
 			class="dropdown-item text-secondary tooltip-toggle max-w-42 w-full content-center"
-			aria-label={identity.name}
+			aria-label={shareOption.identity_name}
 		>
-			<span class="{AccessHandler.identityIcon(identity.type)} shrink-0"></span>
-			{identity.name.slice(0, 12)}{identity.name.length > 13 ? ' ...' : null}
-			{#if identity.name.length > 12}
+			<span class="{AccessHandler.identityIcon(shareOption.identity_type)} shrink-0"></span>
+			{shareOption.identity_name.slice(0, 12)}{shareOption.identity_name.length > 13
+				? ' ...'
+				: null}
+			{#if shareOption.identity_name.length > 12}
 				<span
 					class="tooltip-content tooltip-shown:visible tooltip-shown:opacity-100 bg-base-300 rounded-xl outline"
 					role="tooltip"
 				>
-					{identity.name}
+					{shareOption.identity_name}
 				</span>
 			{/if}
 		</div>
 		<div class="mr-2">
-			<span class="{AccessHandler.rightsIcon(identity.accessRight)} ml-2 size-4"></span>
+			<span class="{AccessHandler.rightsIcon(shareOption.action)} ml-2 size-4"></span>
 		</div>
 		<div class="dropdown relative inline-flex [--offset:0] [--placement:left-start]">
 			<button
-				id="rights-{identity.id}"
+				id="rights-{shareOption.identity_id}"
 				type="button"
 				class="dropdown-toggle btn btn-text bg-base-300"
 				aria-haspopup="menu"
@@ -75,7 +77,7 @@
 				class="dropdown-menu outline-outline bg-base-300 dropdown-open:opacity-100 hidden outline-2"
 				role="menu"
 				aria-orientation="vertical"
-				aria-labelledby="rights-{identity.id}"
+				aria-labelledby="rights-{shareOption.identity_id}"
 			>
 				{@render shareButton(Action.OWN)}
 				{@render shareButton(Action.WRITE)}

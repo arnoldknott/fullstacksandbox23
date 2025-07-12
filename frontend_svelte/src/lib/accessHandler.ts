@@ -1,31 +1,32 @@
 import type { AccessPolicy } from '$lib/types';
 
 export enum Action {
-	OWN = 'own',
-	WRITE = 'write',
-	READ = 'read',
-	UNSHARE = 'unshare'
+	OWN = "own",
+	WRITE = "write",
+	READ = "read",
+	UNSHARE = "unshare"
 }
 
+// numerical here to allow sorting by type
 export enum IdentityType {
-	USER = 'user',
-	UEBER_GROUP = 'ueber_group',
-	GROUP = 'group',
-	SUB_GROUP = 'sub_group',
-	SUB_SUB_GROUP = 'sub_sub_group',
-	MICROSOFT_TEAM = 'microsoft_team'
+	USER,
+	UEBER_GROUP,
+	GROUP,
+	SUB_GROUP,
+	SUB_SUB_GROUP,
+	MICROSOFT_TEAM
 }
 
 export class AccessHandler {
-	static getRights(identityId: string, accessPolicies?: AccessPolicy[]): Action | undefined {
+	static getRights(identityId?: string, accessPolicies?: AccessPolicy[]): Action | undefined {
 		const hasOwnerRights = accessPolicies?.some(
-			(policy) => policy.identity_id === identityId && policy.action === 'own'
+			(policy) => policy.identity_id === identityId && policy.action === Action.OWN
 		);
 		const hasWriteRights = accessPolicies?.some(
-			(policy) => policy.identity_id === identityId && policy.action === 'write'
+			(policy) => policy.identity_id === identityId && policy.action === Action.WRITE
 		);
 		const hasReadRights = accessPolicies?.some(
-			(policy) => policy.identity_id === identityId && policy.action === 'read'
+			(policy) => policy.identity_id === identityId && policy.action === Action.READ
 		);
 		if (hasOwnerRights) {
 			return Action.OWN;
