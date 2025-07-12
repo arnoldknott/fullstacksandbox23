@@ -198,7 +198,7 @@
 
 		<div class="mb-5">
 			<button
-				class="btn-neutral-container btn"
+				class="btn-neutral-container btn btn-gradient rounded-full"
 				aria-label="Add Button"
 				onclick={() => addDemoResource()}
 			>

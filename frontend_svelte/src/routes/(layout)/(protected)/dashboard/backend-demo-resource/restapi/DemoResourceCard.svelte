@@ -10,20 +10,20 @@
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import type { ActionResult } from '@sveltejs/kit';
 
-	let { demoResource }: { demoResource?: DemoResourceExtended } = $props();
-	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
-	let accessRight = $state(demoResource?.access_right);
-	let name = $state(demoResource?.name || undefined);
-	let description = $state(demoResource?.description || undefined);
-	let language = $state(demoResource?.language || undefined);
-	let category = $state(demoResource?.category);
-	let categoryId = $state(demoResource?.category_id || undefined);
-	let tags = $state(demoResource?.tags || []);
-	let creationDate = $state<Date | undefined>(demoResource?.creation_date);
+	let { demoResource }: { demoResource: DemoResourceExtended } = $props();
+	let id = $state(demoResource.id || 'new_' + Math.random().toString(36).substring(2, 9));
+	let accessRight = $state(demoResource.access_right);
+	let name = $state(demoResource.name || undefined);
+	let description = $state(demoResource.description || undefined);
+	let language = $state(demoResource.language || undefined);
+	let category = $state(demoResource.category);
+	let categoryId = $state(demoResource.category_id || undefined);
+	let tags = $state(demoResource.tags || []);
+	let creationDate = $state<Date | undefined>(demoResource.creation_date);
 	let formattedCreationDate = $derived(creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }));
-	let accessPolicies = $state<AccessPolicy[] | undefined>(demoResource?.access_policies);
+	let accessPolicies = $state<AccessPolicy[] | undefined>(demoResource.access_policies);
 
-	let edit = $state(demoResource ? false : true);
+	let edit = $state(demoResource.id?.slice(0, 4) === 'new_' ? true : false);
 
 	let flag = $state(
 		language === 'en-US'
@@ -91,7 +91,7 @@
 	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
 		if (result.type === 'success') {
 			// TBD: use reactivity system to update the demoResource and accessPolicies - and/or put the generation of accessShareOptions into accessHandler!
-			demoResource?.access_share_options
+			demoResource.access_share_options
 				?.filter(
 					(shareOption: AccessShareOption) => shareOption.identity_id === result.data?.identityId
 				)
@@ -162,7 +162,7 @@
 			{#if flag}
 				<span class="icon-[twemoji--flag-{flag}] size-6"></span>
 			{/if}
-			<!-- TBD: move this if around the relevant list points,
+			<!-- TBD: move this if around to the relevant list items,
 			if there are any left, that read-only users are also supposed to see. -->
 			{#if accessRight === Action.WRITE || accessRight === Action.OWN}
 				<div
@@ -218,7 +218,7 @@
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
 								>
-									{#if demoResource?.access_share_options}
+									{#if demoResource.access_share_options}
 										<form
 											method="POST"
 											name="shareForm-resource-{id}"
@@ -230,7 +230,7 @@
 												};
 											}}
 										>
-											{#each demoResource?.access_share_options as shareOption (shareOption.identity_id)}
+											{#each demoResource.access_share_options as shareOption (shareOption.identity_id)}
 												<ShareItem resourceId={id} {shareOption} />
 											{/each}
 											<li class="dropdown-footer gap-2">
@@ -292,7 +292,7 @@
 </Card>
 
 {#snippet footer()}
-	<div class="card-actions flex justify-between">
+	<div class="card-actions flex justify-end">
 		<div>
 			{#each tags as tag (tag)}
 				<span
@@ -303,12 +303,28 @@
 		</div>
 		{#if edit}
 			<button
-				class="btn-success-container btn btn-circle btn-gradient"
+				class="btn-success-container btn btn-gradient rounded-full"
 				onclick={() => (edit = false)}
 				aria-label="Done"
 			>
-				<span class="icon-[mingcute--check-2-fill]"></span>
+				<span class="icon-[mingcute--check-2-fill]"></span> Done
 			</button>
+			<form
+				method="POST"
+				use:enhance={({ cancel }) => {
+					if (id.slice(0, 4) === 'new_') cancel();
+					card.remove();
+				}}
+			>
+				<button
+					class="btn-error-container btn btn-gradient rounded-full"
+					value={id}
+					formaction="?/delete"
+					aria-label="Done"
+				>
+					<span class="icon-[mingcute--check-2-fill]"></span> Delete
+				</button>
+			</form>
 		{/if}
 	</div>
 {/snippet}
