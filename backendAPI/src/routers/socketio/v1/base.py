@@ -144,9 +144,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             token_payload = await self._get_token_payload_if_authenticated(
                 session["session_id"]
             )
-            current_user = await check_token_against_guards(token_payload, guards)
-        else:
-            current_user = session["current_user"]
+        current_user = await check_token_against_guards(token_payload, guards)
 
         if current_user is None:
             logger.error(
@@ -156,19 +154,22 @@ class BaseNamespace(socketio.AsyncNamespace):
         else:
             return current_user
 
-    async def _get_all(self, sid, request_access_data=False):
+    async def _get_all(
+        self, sid, current_user: CurrentUserData, request_access_data=False
+    ):
         """Get all event for socket.io namespaces."""
         logger.info(f"🧦 Get all data request from client {sid}.")
         try:
-            session = await self._get_session_data(sid)
             async with self.crud() as crud:
-                data = await crud.read(session["current_user"])
+                data = await crud.read(current_user)
             if self.read_model is not None:
                 for idx, item in enumerate(data):
                     data[idx] = self.read_model.model_validate(item)
             for item in data:
                 if request_access_data:
-                    access_data = await self._get_access_data(sid, item.id)
+                    access_data = await self._get_access_data(
+                        sid, current_user, item.id
+                    )
                     item = self.read_extended_model.model_validate(item)
                     item.access_right = access_data["access_right"]
                     if access_data["access_policies"]:
@@ -188,28 +189,28 @@ class BaseNamespace(socketio.AsyncNamespace):
             print(error)
             await self._emit_status(sid, {"error": str(error)})
 
-    async def _get_access_data(self, sid, resource_id=UUID):
+    async def _get_access_data(self, sid, current_user, resource_id=UUID):
         """Get access data from the socketio session."""
         logger.info(f"🧦 Get access data for resource {resource_id} for client {sid}.")
         session = await self._get_session_data(sid)
         # Consider splitting the accesss policy and access log CRUDs into separate methods
         async with AccessPolicyCRUD() as policy_crud:
             access_permission = await policy_crud.check_access(
-                session["current_user"], resource_id
+                current_user, resource_id
             )
             try:
                 access_policies = await policy_crud.read_access_policies_by_resource_id(
-                    session["current_user"], resource_id
+                    current_user, resource_id
                 )
             except Exception:
                 access_policies = []
         async with AccessLoggingCRUD() as logging_crud:
             try:
                 creation_date = await logging_crud.read_resource_created_at(
-                    session["current_user"], resource_id=resource_id
+                    current_user, resource_id=resource_id
                 )
                 last_modified_date = await logging_crud.read_resource_last_modified_at(
-                    session["current_user"], resource_id
+                    current_user, resource_id
                 )
             except Exception:
                 creation_date = None
@@ -294,7 +295,9 @@ class BaseNamespace(socketio.AsyncNamespace):
                     f"🧦 Client with session id {sid} entered room {identity_id}."
                 )
         if self.callback_on_connect is not None:
-            await self.callback_on_connect(sid, request_access_data=request_access_data)
+            await self.callback_on_connect(
+                sid, current_user=current_user, request_access_data=request_access_data
+            )
 
     # "submit" is communication from client to server
     async def on_submit(self, sid, data):
@@ -395,25 +398,33 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Share event for socket.io namespaces."""
         logger.info(f"🧦 Share request from client {sid}.")
         # TBD: validate the AccessPolicyCreate model!
-        print("=== routers - socketio - v1 - on_share - access_policy ===")
-        print(access_policy, flush=True)
         try:
-            access_policy = AccessPolicyCreate(**access_policy)
-            print(
-                "=== routers - socketio - v1 - on_share - access_policy is create ==="
-            )
+            current_user = await self._get_current_user_and_check_guard(sid, "share")
+            print("=== routers - socketio - v1 - on_share - access_policy ===")
             print(access_policy, flush=True)
-        except Exception as _error:
             try:
-                access_policy = AccessPolicyUpdate(**access_policy)
+                access_policy = AccessPolicyCreate(**access_policy)
                 print(
-                    "=== routers - socketio - v1 - on_share - access_policy is update ==="
+                    "=== routers - socketio - v1 - on_share - access_policy is create ==="
                 )
                 print(access_policy, flush=True)
-            except Exception as error:
-                logger.error(f"🧦 Failed to validate access policy for client {sid}.")
-                print(error, flush=True)
-                await self._emit_status(sid, {"error": str(error)})
+            except Exception as _error:
+                try:
+                    access_policy = AccessPolicyUpdate(**access_policy)
+                    print(
+                        "=== routers - socketio - v1 - on_share - access_policy is update ==="
+                    )
+                    print(access_policy, flush=True)
+                except Exception as error:
+                    logger.error(
+                        f"🧦 Failed to validate access policy for client {sid}."
+                    )
+                    print(error, flush=True)
+                    await self._emit_status(sid, {"error": str(error)})
+        except Exception as error:
+            logger.error(f"🧦 Failed update access attempted from client {sid}.")
+            print(error, flush=True)
+            await self._emit_status(sid, {"error": str(error)})
 
     #     try:
     #         async with self.crud() as crud:
