@@ -95,18 +95,21 @@
 	// TBD: refactor into reusing the automatic rerun of the load function to update the page data.
 	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
 		if (result.type === 'success') {
-			if (accessPolicies?.find((policy) => policy.identity_id === result.data?.identityId)) {
-				// This .map is not getting assigned anywhere - useless?
-				accessPolicies?.map((policy) => {
-					// isn't this the same as the filter above?
-					if (policy.identity_id === result.data?.identityId) {
-						policy.action = result.data?.confirmedNewAction || policy.action;
-						policy.public = result.data?.public || policy.public;
-						// const confirmedNewAction = result.data?.confirmedNewAction;
-						// policy.action = confirmedNewAction === Action.UNSHARE ? undefined : confirmedNewAction;
-					}
-				});
-			} else {
+			if (!result.data?.confirmedNewAction) {
+				// remove access policy
+				accessPolicies = accessPolicies?.filter(
+					(policy) => policy.identity_id !== result.data?.identityId
+				);
+			} else if (accessPolicies?.find((policy) => policy.identity_id === result.data?.identityId)) {
+				// update existing access policy
+				let existingPolicy = accessPolicies?.find(
+					(policy) => policy.identity_id === result.data?.identityId
+				);
+				if (existingPolicy) {
+					existingPolicy.action = result.data?.confirmedNewAction;
+					existingPolicy.public = result.data?.public || existingPolicy.public;
+				}
+			} else if (result.data?.confirmedNewAction) {
 				// add new access policy
 				accessPolicies?.push({
 					identity_id: result.data?.identityId,
@@ -114,7 +117,34 @@
 					action: result.data?.confirmedNewAction,
 					public: result.data?.public
 				});
+			} else {
+				// TBD: handle error - show error message
+				console.error('Error handling rights change response:', result);
 			}
+
+			// // update existing access policy
+			// // check if the identity already has an access policy
+
+			// if (accessPolicies?.find((policy) => policy.identity_id === result.data?.identityId)) {
+			// 	// This .map is not getting assigned anywhere - useless?
+			// 	accessPolicies?.map((policy) => {
+			// 		// isn't this the same as the filter above?
+			// 		if (policy.identity_id === result.data?.identityId) {
+			// 			policy.action = result.data?.confirmedNewAction || policy.action;
+			// 			policy.public = result.data?.public || policy.public;
+			// 			// const confirmedNewAction = result.data?.confirmedNewAction;
+			// 			// policy.action = confirmedNewAction === Action.UNSHARE ? undefined : confirmedNewAction;
+			// 		}
+			// 	});
+			// } else {
+			// 	// add new access policy
+			// 	accessPolicies?.push({
+			// 		identity_id: result.data?.identityId,
+			// 		resource_id: id,
+			// 		action: result.data?.confirmedNewAction,
+			// 		public: result.data?.public
+			// 	});
+			// }
 		} else {
 			// handle error: show error message
 		}

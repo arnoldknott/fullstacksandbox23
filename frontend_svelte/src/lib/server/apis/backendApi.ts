@@ -84,7 +84,7 @@ class BackendAPI extends BaseAPI {
 			return fail(400, { error: 'Resource ID and Identity ID are required.' });
 		}
 		// TBD: check if action is present, otherwise it's a delete operation
-		else if (action === Action.UNSHARE || newAction === Action.UNSHARE) {
+		else if (!action) {
 			const response = await this.delete(
 				sessionId,
 				`/access/policy?resource_id=${resourceId}&identity_id=${identityId}`
@@ -95,57 +95,97 @@ class BackendAPI extends BaseAPI {
 			// TBD: refactor into removing the unshare - if no confirmedNewAction is provided, it's a delete
 			return {
 				identityId: identityId,
-				confirmedNewAction: Action.UNSHARE,
-				public: false
 			};
 		}
 		else {
 			// consider removing this one - no action means it's a delete operation:
-			if (!action && newAction) {
-				action = newAction;
-				newAction = undefined;
-			}
-			if (action) {
-				const accessPolicy: AccessPolicy = {
-					resource_id: resourceId,
-					identity_id: identityId,
-					action: action,
-					new_action: newAction,
-					public: publicAccess
-				};
-				if (!newAction) {
-					const response = await this.post(
-						sessionId,
-						'/access/policy',
-						JSON.stringify(accessPolicy)
-					);
-					if (response.status !== 201) {
-						return fail(response.status, { error: response.statusText });
-					}
+			// if (!action && newAction) {
+			// 	action = newAction;
+			// 	newAction = undefined;
+			// }
+			const accessPolicy: AccessPolicy = {
+				resource_id: resourceId,
+				identity_id: identityId,
+				action: action,
+				new_action: newAction,
+				public: publicAccess
+			};
+			if (!newAction) {
+				const response = await this.post(
+					sessionId,
+					'/access/policy',
+					JSON.stringify(accessPolicy)
+				);
+				if (response.status !== 201) {
+					return fail(response.status, { error: response.statusText });
+				}
+				const payload = await response.json();
+				return {
+					identityId: identityId,
+					confirmedNewAction: payload.action,
+					public: payload.public
+				}
+			} else {
+				const response = await this.put(
+					sessionId,
+					'/access/policy',
+					JSON.stringify(accessPolicy)
+				);
+				if (response.status !== 200) {
+					return fail(response.status, { error: response.statusText });
+				} else {
 					const payload = await response.json();
 					return {
 						identityId: identityId,
 						confirmedNewAction: payload.action,
 						public: payload.public
 					};
-				} else {
-					const response = await this.put(
-						sessionId,
-						'/access/policy',
-						JSON.stringify(accessPolicy)
-					);
-					if (response.status !== 200) {
-						return fail(response.status, { error: response.statusText });
-					} else {
-						const payload = await response.json();
-						return {
-							identityId: identityId,
-							confirmedNewAction: payload.action,
-							public: payload.public
-						};
-					}
 				}
 			}
+			// if (!action && newAction) {
+			// 	action = newAction;
+			// 	newAction = undefined;
+			// }
+			// if (action) {
+			// 	const accessPolicy: AccessPolicy = {
+			// 		resource_id: resourceId,
+			// 		identity_id: identityId,
+			// 		action: action,
+			// 		new_action: newAction,
+			// 		public: publicAccess
+			// 	};
+			// 	if (!newAction) {
+			// 		const response = await this.post(
+			// 			sessionId,
+			// 			'/access/policy',
+			// 			JSON.stringify(accessPolicy)
+			// 		);
+			// 		if (response.status !== 201) {
+			// 			return fail(response.status, { error: response.statusText });
+			// 		}
+			// 		const payload = await response.json();
+			// 		return {
+			// 			identityId: identityId,
+			// 			confirmedNewAction: payload.action,
+			// 			public: payload.public
+			// 		};
+			// 	} else {
+			// 		const response = await this.put(
+			// 			sessionId,
+			// 			'/access/policy',
+			// 			JSON.stringify(accessPolicy)
+			// 		);
+			// 		if (response.status !== 200) {
+			// 			return fail(response.status, { error: response.statusText });
+			// 		} else {
+			// 			const payload = await response.json();
+			// 			return {
+			// 				identityId: identityId,
+			// 				confirmedNewAction: payload.action,
+			// 				public: payload.public
+			// 			};
+			// 		}
+
 		}
 	}
 }

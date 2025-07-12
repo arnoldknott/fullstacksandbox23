@@ -11,9 +11,31 @@
 		shareOption: AccessShareOption;
 		share?: (accessPolicy: AccessPolicy) => void;
 	} = $props();
+
+	const desiredActions = (selectedAction?: Action) => {
+		let action = shareOption.action;
+		let newAction = undefined;
+		// deleting access policy:
+		if (selectedAction === undefined) {
+			action = undefined;
+			newAction = undefined;
+		}
+		// creating a new access policy:
+		else if (shareOption.action === undefined) {
+			action = selectedAction;
+		}
+		// updating an existing access policy:
+		else if (selectedAction && shareOption.action !== selectedAction) {
+			newAction = selectedAction;
+		}
+		return {
+			action: action,
+			new_action: newAction
+		};
+	};
 </script>
 
-{#snippet shareButton(newAction: Action)}
+{#snippet shareButton(selectedAction?: Action)}
 	<li>
 		<button
 			data-sveltekit-preload-data={false}
@@ -22,20 +44,27 @@
 			type="submit"
 			value={resourceId}
 			formaction={!share
-				? `?/share&identity-id=${shareOption.identity_id}&action=${shareOption.action === Action.UNSHARE ? '' : shareOption.action}&new-action=${newAction}`
+				? `?/share&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
 				: undefined}
-			onclick={share
-				? () =>
-						share({
-							resource_id: resourceId,
-							identity_id: shareOption.identity_id,
-							action: shareOption.action,
-							new_action: newAction
-						})
-				: undefined}
-			aria-label={String(newAction)}
+			onclick={() => {
+				console.log('=== Trying to change access policy ===');
+				console.log('=== resourceId ===', resourceId);
+				console.log('=== shareOption ===', shareOption);
+				console.log('=== newAction ===', selectedAction);
+				console.log('=== desiredActions ===', desiredActions(selectedAction));
+				// share
+				// 	? () =>
+				// 			share({
+				// 				resource_id: resourceId,
+				// 				identity_id: shareOption.identity_id,
+				// 				action: shareOption.action,
+				// 				new_action: newAction
+				// 			})
+				// 	: undefined
+			}}
+			aria-label={String(selectedAction) || 'remove'}
 		>
-			<span class={AccessHandler.rightsIcon(newAction)}></span>
+			<span class={AccessHandler.rightsIcon(selectedAction)}></span>
 		</button>
 	</li>
 {/snippet}
@@ -43,7 +72,7 @@
 <li>
 	<div class="tooltip flex items-center [--placement:top]">
 		<div
-			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
+			class="dropdown-item text-secondary tooltip-toggle max-w-42 w-full content-center"
 			aria-label={shareOption.identity_name}
 		>
 			<span class="{AccessHandler.identityIcon(shareOption.identity_type)} shrink-0"></span>
@@ -82,7 +111,7 @@
 				{@render shareButton(Action.OWN)}
 				{@render shareButton(Action.WRITE)}
 				{@render shareButton(Action.READ)}
-				{@render shareButton(Action.UNSHARE)}
+				{@render shareButton()}
 			</ul>
 		</div>
 	</div>
