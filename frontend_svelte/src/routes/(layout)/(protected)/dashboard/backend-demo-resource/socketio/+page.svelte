@@ -218,7 +218,7 @@
 		</div>
 	</div>
 
-	<div class="flex flex-col {debug ? 'block' : 'hidden'} gap-1">
+	<div class="flex flex-col gap-1">
 		<div class="title-small italic">Current user</div>
 		<IdBadge id={data.session?.currentUser?.id} />
 		<div class="badge badge-xs badge-secondary label-small shadow-outline shadow">
