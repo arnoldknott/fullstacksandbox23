@@ -180,7 +180,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                         item.last_modified_date = access_data["last_modified_date"]
                 if item.id not in self.server.rooms(sid, self.namespace):
                     await self.server.enter_room(
-                        sid, str(item.id), namespace=self.namespace
+                        sid, f"resource:{str(item.id)}", namespace=self.namespace
                     )
                 await self.server.emit(
                     "transfer",
@@ -332,7 +332,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                                 "transfer",
                                 database_object.model_dump(mode="json"),
                                 namespace=self.namespace,
-                                to=str(database_object.id),
+                                to=f"resource:{str(database_object.id)}",
                             )
                             await self._emit_status(
                                 sid,

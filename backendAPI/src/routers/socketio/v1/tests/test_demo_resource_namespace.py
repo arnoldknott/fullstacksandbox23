@@ -736,6 +736,7 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
     """Test the demo resource delete event."""
     resources = await add_test_demo_resources(mock_token_payload)
 
+    # Two clients from same user - coming from mock_token_payload!
     async for client1, responses1 in socketio_client_for_demo_resource_namespace():
         async for client2, responses2 in socketio_client_for_demo_resource_namespace():
 

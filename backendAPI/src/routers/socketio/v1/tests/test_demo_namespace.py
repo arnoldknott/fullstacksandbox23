@@ -24,19 +24,19 @@ from tests.utils import (
 )
 
 
-@pytest.fixture(scope="module", autouse=True)
-async def setup_namespace_server(provide_namespace_server):
-    # Call setup function here
-    socket_io_server = await provide_namespace_server(
-        [DemoNamespace("/demo-namespace")]
-    )
-    # Yield to allow tests to run
-    yield socket_io_server
-    # Optionally, add teardown logic here if needed
-    # print("=== Shutting down socket.io server...")
-    # socket_io_server.sleep(5)
-    # print("=== Shutting down socket.io server... done")
-    await socket_io_server.shutdown()
+# @pytest.fixture(scope="module", autouse=True)
+# async def setup_namespace_server(provide_namespace_server):
+#     # Call setup function here
+#     socket_io_server = await provide_namespace_server(
+#         [DemoNamespace("/demo-namespace")]
+#     )
+#     # Yield to allow tests to run
+#     yield socket_io_server
+#     # Optionally, add teardown logic here if needed
+#     # print("=== Shutting down socket.io server...")
+#     # socket_io_server.sleep(5)
+#     # print("=== Shutting down socket.io server... done")
+#     await socket_io_server.shutdown()
 
 
 @pytest.mark.anyio
@@ -196,6 +196,44 @@ async def test_demo_message_with_test_server(
     )
     assert "Your session ID is " in demo_messages[1]
     assert demo_messages[2] == f"{mocked_token_payload["name"]}: Something"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mock_session",
+    [[token_user1_read_write_socketio, token_user2_read_write_socketio]],
+    indirect=True,
+)
+async def test_demo_message_with_test_server_and_multiple_users_connected(
+    mock_session,
+    socketio_test_client_with_multiple_mocked_users_on_server,
+):
+    """Test the demo socket.io message event."""
+    # mocked_token_payload = mock_session[0]
+
+    demo_messages = []
+    async for client in socketio_test_client_with_multiple_mocked_users_on_server(
+        namespaces=["/demo-namespace"]
+    ):
+
+        # Wait for the response to be set
+        await client.sleep(1)
+
+        # demo_messages = response["/demo-namespace"]["demo_message"]
+
+        await client.disconnect()
+
+    print(
+        "=== test_demo_message_with_test_server_and_multiple_users_connected - mock_session.call_args.args ==="
+    )
+    print(mock_session.call_args.args, flush=True)
+
+    assert len(demo_messages) == 3
+    # assert (
+    #     demo_messages[0]
+    #     == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
+    # )
+    assert "Your session ID is " in demo_messages[1]
 
 
 @pytest.mark.anyio

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 from unittest.mock import patch
 
+from routers.socketio.v1.demo_namespace import DemoNamespace
 from pydantic import BaseModel
 import pytest
 import socketio
@@ -83,7 +84,137 @@ async def provide_namespace_server(
     return _provide_namespace_server
 
 
+# @pytest.fixture(scope="module")
+# async def mock_token_payloads(request):
+#     """Returns multiple mocked token payload."""
+
+#     if hasattr(request, "param"):
+#         with patch("core.security.decode_token") as mock:
+#             mock.return_value = request.param
+#             yield request.param
+
+
+@pytest.fixture(scope="module")
+async def mock_session(request):
+    """Chooses the right token-payload based on which session should be mocked."""
+
+    # TBD: consider moving the mock deeper into decode token from security, as this short-cuts the security layers above
+    # or rename into "no authentication checked" or so.
+
+    if hasattr(request, "param"):
+
+        def choose_token_payload(*args, **kwargs):
+            """Chooses the right token-payload based on which session should be mocked."""
+            # args/kwargs are the arguments passed by the production code
+            print("=== chose_token_payload - called with:", args, kwargs)
+            print(
+                "=== chose_token_payload - request.param is:", request.param, flush=True
+            )
+            # Compute the return value based on the arguments
+            return_token = request.param[int(args[0])]
+            print("=== return this token content ===")
+            print(return_token, flush=True)
+            return return_token
+
+        with patch(
+            "routers.socketio.v1.base.BaseNamespace._get_token_payload_if_authenticated"
+        ) as mocked_session:
+            await mocked_session("abcd")
+            print("=== mock_session - request.param ===")
+            print(request.param, flush=True)
+            print("=== mock_session - mocked_session.call_args ===")
+            print(mocked_session.call_args, flush=True)
+            print("=== mock_session - mocked_session.called ===")
+            print(mocked_session.called, flush=True)
+            print("=== mock_session - mocked_session.call_count ===")
+            print(mocked_session.call_count, flush=True)
+            print("=== mock_session - mocked_session.call_args_list ===")
+            print(mocked_session.call_args_list, flush=True)
+            print("=== mock_session - mocked_session.mock_calls ===")
+            print(mocked_session.mock_calls, flush=True)
+            print("=== mock_session[0] - request.param ===")
+            print(request.param[0], flush=True)
+            # selected_token = int(mocked_session.call_args)
+            mocked_session.side_effect = choose_token_payload
+            print("=== mock_session - mocked_session.side_effect ===")
+            print(mocked_session.side_effect, flush=True)
+            mocked_session.return_value = request.param[0]
+            # yield request.param[0]
+            yield mocked_session
+
+
+# This patches different users and allows therefore clients from different users to talk to each other.
+@pytest.fixture(scope="module")
+async def socketio_test_server_with_multiple_patched_token_payloads(
+    mock_session,
+    # mock_get_azure_token_from_cache,
+    # mock_get_user_account_from_session_cache,
+):
+    """Provide a socket.io server."""
+    mock_session
+    print(
+        "=== socketio_test_server_with_multiple_patched_token_payloads - mock_session ==="
+    )
+    print(mock_session.call_args, flush=True)
+
+    sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
+    app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
+
+    config = uvicorn.Config(app, host="127.0.0.1", port=8670, log_level="info")
+    server = uvicorn.Server(config)
+
+    asyncio.create_task(server.serve())
+    sio.register_namespace(DemoNamespace("/demo-namespace"))
+    await asyncio.sleep(1)
+    yield sio
+    await server.shutdown()
+
+
 # Setting up socketio client side for testing:
+
+
+@pytest.fixture
+async def socketio_test_client_with_multiple_mocked_users_on_server(
+    socketio_test_server_with_multiple_patched_token_payloads, mock_session
+):
+    """Provides a socket.io client and connects to it."""
+    socketio_test_server_with_multiple_patched_token_payloads
+
+    async def _socketio_test_client_with_multiple_mocked_users_on_server(
+        namespaces: List[str] = None, query_parameters: dict = None, token_number=1
+    ):
+        socketio_test_server_with_multiple_patched_token_payloads
+        client = socketio.AsyncClient(logger=True, engineio_logger=True)
+
+        server_url = "http://127.0.0.1:8670"
+        if query_parameters:
+            query_string = "&".join(
+                f"{key}={value}" for key, value in query_parameters.items()
+            )
+            server_url += f"?{query_string}"
+        # await client.sleep(1)
+        print(
+            "=== socketio_test_client_with_multiple_mocked_users_on_server - mock_session.call_args.args - before connect ==="
+        )
+        print(mock_session.call_args.args, flush=True)
+        await client.connect(
+            # server_url,
+            "http://127.0.0.1:8670",
+            socketio_path="socketio/v1",
+            namespaces=namespaces,
+            auth={"session-id": str(token_number)},
+        )
+        # await client.sleep(1)
+        print(
+            "=== socketio_test_client_with_multiple_mocked_users_on_server - mock_session.call_args.args - after connect ==="
+        )
+        print(mock_session.call_args.args, flush=True)
+
+        yield client
+        # client.sleep(1)  # Give time for the disconnect to be processed
+        await client.disconnect()
+
+    return _socketio_test_client_with_multiple_mocked_users_on_server
 
 
 # This one connects to a socketio server in FastAPI:
