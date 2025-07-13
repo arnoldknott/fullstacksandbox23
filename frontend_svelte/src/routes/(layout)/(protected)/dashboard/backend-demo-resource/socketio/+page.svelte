@@ -280,7 +280,10 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
 	<div>
-		<h3 class="title">Demo Resources with owner access</h3>
+		<h3 class="title">
+			<span class="icon-[tabler--key-filled] bg-success"></span>
+			Demo Resources with owner access: {ownedDemoResources.length}
+		</h3>
 		{#each ownedDemoResources as demoResource, idx (demoResource.id)}
 			<DemoResourceContainer
 				bind:edit={
@@ -321,7 +324,10 @@
 		{/each}
 	</div>
 	<div>
-		<h3 class="title">Teams access to demoresources</h3>
+		<h3 class="title">
+			<span class="icon-[fluent--people-team-16-filled]"></span>
+			Teams access to demoresources: {data.microsoftTeams.length}
+		</h3>
 		<div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="true">
 			{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
 				<div>
@@ -361,7 +367,10 @@
 		<!-- <JsonData data={demoResources} /> -->
 	</div>
 	<div>
-		<h3 class="title">Demo Resources with write access</h3>
+		<h3 class="title">
+			<span class="icon-[material-symbols--edit-outline-rounded] bg-warning"></span>
+			Demo Resources with write access: {writeDemoResources.length}
+		</h3>
 		{#each writeDemoResources as demoResource, idx (demoResource.id)}
 			<DemoResourceContainer {demoResource} {submitResource} />
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
@@ -376,7 +385,10 @@
 		{/each}
 	</div>
 	<div>
-		<h3 class="title">Demo Resources with read access</h3>
+		<h3 class="title">
+			<span class="icon-[tabler--eye] bg-neutral"></span>
+			Demo Resources with read access: {readDemoResources.length}
+		</h3>
 		{#each readDemoResources as demoResource, idx (demoResource.id)}
 			<DemoResourceContainer {demoResource} />
 			<div class="px-2 {debug ? 'block' : 'hidden'}">

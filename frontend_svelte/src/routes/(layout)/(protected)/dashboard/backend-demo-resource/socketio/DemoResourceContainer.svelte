@@ -23,7 +23,7 @@
 		share?: (accessPolicy: AccessPolicy) => void;
 	} = $props();
 
-	let editableDemoResource: DemoResourceExtended = $derived({ ...demoResource });
+	// let editableDemoResource: DemoResourceExtended = $derived({ ...demoResource });
 
 	let formatedDate = $derived(
 		demoResource.creation_date
@@ -58,11 +58,11 @@
 			class="title justify-self-start"
 			onblur={(event) => {
 				// TBD: onblur changes edit to false, as DemoResourceContainer is getting reloaded
-				editableDemoResource.name = (event.target as HTMLElement)?.innerText || '';
-				submitResource(editableDemoResource);
+				demoResource.name = (event.target as HTMLElement)?.innerText || '';
+				submitResource(demoResource);
 			}}
 		>
-			{editableDemoResource.name}
+			{demoResource.name}
 		</h5>
 		<div class="label justify-self-end">
 			{formatedDate}
@@ -73,11 +73,11 @@
 			<p
 				contenteditable={edit}
 				onblur={(event) => {
-					editableDemoResource.description = (event.target as HTMLElement)?.innerText || '';
-					submitResource(editableDemoResource);
+					demoResource.description = (event.target as HTMLElement)?.innerText || '';
+					submitResource(demoResource);
 				}}
 			>
-				{editableDemoResource.description}
+				{demoResource.description}
 			</p>
 			<div class="flex flex-row gap-2">
 				<IdBadge id={demoResource.id} />
@@ -119,7 +119,7 @@
 						</button>
 
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share-{demoResource.id}"
