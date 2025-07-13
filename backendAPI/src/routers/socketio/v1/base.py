@@ -328,10 +328,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object = await crud.update(
                                 current_user, resource_id, object_update
                             )
-                            print(
-                                "=== routers - socketio - v1 - on_submit - database_object ==="
-                            )
-                            print(database_object, flush=True)
                             await self.server.emit(
                                 "transfer",
                                 database_object.model_dump(mode="json"),
