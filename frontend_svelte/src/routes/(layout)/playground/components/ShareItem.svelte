@@ -16,7 +16,7 @@
 		let action = shareOption.action;
 		let newAction = undefined;
 		// deleting access policy:
-		if (selectedAction === undefined) {
+		if (selectedAction === undefined && action) {
 			action = undefined;
 			newAction = undefined;
 		}
@@ -25,9 +25,15 @@
 			action = selectedAction;
 		}
 		// updating an existing access policy:
-		else if (selectedAction && shareOption.action !== selectedAction) {
+		// else if (selectedAction && shareOption.action !== selectedAction) {
+		else {
 			newAction = selectedAction;
 		}
+		// console.log(
+		// 	'=== shareItem - desiredActions - Values for access policy ===',
+		// 	shareOption.action,
+		// 	selectedAction
+		// );
 		return {
 			action: action,
 			new_action: newAction
@@ -65,7 +71,7 @@
 <li>
 	<div class="tooltip flex items-center [--placement:top]">
 		<div
-			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
+			class="dropdown-item text-secondary tooltip-toggle max-w-42 w-full content-center"
 			aria-label={shareOption.identity_name}
 		>
 			<span class="{AccessHandler.identityIcon(shareOption.identity_type)} shrink-0"></span>

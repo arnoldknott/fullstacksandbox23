@@ -76,6 +76,15 @@ class BackendAPI extends BaseAPI {
 			? (newActionIn as Action)
 			: undefined;
 
+		// console.log(
+		// 	'=== routes - demo-resource - page.server - share function executed ===',
+		// 	'Resource ID:' + resourceId + '\n',
+		// 	'Identity ID:' + identityId + '\n',
+		// 	'Action:' + action + '\n',
+		// 	'New Action:' + newAction + '\n',
+		// 	'Public Access:' + publicAccess + '\n'
+		// );
+
 		// Logic to decide wether to create, update or delete the access policy:
 		if (!resourceId || !identityId) {
 			console.error(
@@ -114,7 +123,8 @@ class BackendAPI extends BaseAPI {
 					confirmedNewAction: payload.action,
 					public: payload.public
 				};
-			} else {
+				// } else {
+			} else if (action !== newAction) {
 				const response = await this.put(sessionId, '/access/policy', JSON.stringify(accessPolicy));
 				if (response.status !== 200) {
 					return fail(response.status, { error: response.statusText });
@@ -127,6 +137,12 @@ class BackendAPI extends BaseAPI {
 					};
 				}
 			}
+			// } else {
+			// 	console.error(
+			// 		'=== routes - demo-resource - page.server - Action and New Action are the same ==='
+			// 	);
+			// 	return fail(400, { error: 'Action and New Action cannot be the same.' });
+			// }
 		}
 	}
 }
