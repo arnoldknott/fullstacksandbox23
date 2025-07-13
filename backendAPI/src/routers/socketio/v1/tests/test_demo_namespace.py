@@ -201,12 +201,17 @@ async def test_demo_message_with_test_server(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mock_sessions",
-    [[token_user1_read_write_socketio, token_user2_read_write_socketio]],
+    [
+        [token_user1_read_write_socketio, token_user2_read_write_socketio],
+        # [token_admin_read_write_socketio, token_user1_read_write_socketio],
+        # [token_user2_read_write_socketio, token_admin_read_write_socketio],
+    ],
     indirect=True,
 )
 async def test_demo_message_with_test_server_and_multiple_users_connected(
     mock_sessions,
     socketio_test_client_with_multiple_mocked_users_on_server,
+    # request,
 ):
     """Test the demo socket.io message event, with two users communicating."""
     # check that both users can connect  and one can send messages to the other
@@ -268,20 +273,20 @@ async def test_demo_message_with_test_server_and_multiple_users_connected(
     assert len(demo_messages_user1) == 5
     assert (
         demo_messages_user1[0]
-        == f"Welcome {token_user1_read_write_socketio['name']} to /demo-namespace."
+        == f"Welcome {mock_sessions['mocked_results'][0]['name']} to /demo-namespace."
     )
     assert "Your session ID is " in demo_messages_user1[1]
     assert (
         demo_messages_user1[2]
-        == f"Welcome {token_user2_read_write_socketio['name']} to /demo-namespace."
+        == f"Welcome {mock_sessions['mocked_results'][1]['name']} to /demo-namespace."
     )
     assert (
         demo_messages_user1[3]
-        == f"{token_user1_read_write_socketio['name']}: Hello from User 1"
+        == f"{mock_sessions['mocked_results'][0]['name']}: Hello from User 1"
     )
     assert (
         demo_messages_user1[4]
-        == f"{token_user2_read_write_socketio['name']} has disconnected from /demo-namespace. Goodbye!"
+        == f"{mock_sessions['mocked_results'][1]['name']} has disconnected from /demo-namespace. Goodbye!"
     )
 
     # Asserting logs for user 1:
@@ -290,29 +295,29 @@ async def test_demo_message_with_test_server_and_multiple_users_connected(
         assert log["event"] == "demo_message"
 
     assert log_user1[0]["data"] == (
-        f"Welcome {token_user1_read_write_socketio['name']} to /demo-namespace."
+        f"Welcome {mock_sessions['mocked_results'][0]['name']} to /demo-namespace."
     )
     assert log_user1[1]["data"].startswith("Your session ID is ")
     assert log_user1[2]["data"] == (
-        f"Welcome {token_user2_read_write_socketio['name']} to /demo-namespace."
+        f"Welcome {mock_sessions['mocked_results'][1]['name']} to /demo-namespace."
     )
     assert log_user1[3]["data"] == (
-        f"{token_user1_read_write_socketio['name']}: Hello from User 1"
+        f"{mock_sessions['mocked_results'][0]['name']}: Hello from User 1"
     )
     assert log_user1[4]["data"] == (
-        f"{token_user2_read_write_socketio['name']} has disconnected from /demo-namespace. Goodbye!"
+        f"{mock_sessions['mocked_results'][1]['name']} has disconnected from /demo-namespace. Goodbye!"
     )
 
     # Asserting messages received by user 2:
     assert len(demo_messages_user2) == 3
     assert (
         demo_messages_user2[0]
-        == f"Welcome {token_user2_read_write_socketio['name']} to /demo-namespace."
+        == f"Welcome {mock_sessions['mocked_results'][1]['name']} to /demo-namespace."
     )
     assert demo_messages_user2[1].startswith("Your session ID is ")
     assert (
         demo_messages_user2[2]
-        == f"{token_user1_read_write_socketio['name']}: Hello from User 1"
+        == f"{mock_sessions['mocked_results'][0]['name']}: Hello from User 1"
     )
 
     # Asserting logs for user 2:
@@ -321,19 +326,19 @@ async def test_demo_message_with_test_server_and_multiple_users_connected(
         assert log["event"] == "demo_message"
 
     assert log_user2[0]["data"] == (
-        f"Welcome {token_user2_read_write_socketio['name']} to /demo-namespace."
+        f"Welcome {mock_sessions['mocked_results'][1]['name']} to /demo-namespace."
     )
     assert log_user2[1]["data"].startswith("Your session ID is ")
     assert log_user2[2]["data"] == (
-        f"{token_user1_read_write_socketio['name']}: Hello from User 1"
+        f"{mock_sessions['mocked_results'][0]['name']}: Hello from User 1"
     )
 
     # Asserting the mock sessions:
-    assert mock_sessions.call_count == 2
+    assert mock_sessions["mock"].call_count == 2
     # User 1 token selected first:
-    assert mock_sessions.call_args_list[0].args == ("0",)
+    assert mock_sessions["mock"].call_args_list[0].args == ("0",)
     # User 2 token selected second:
-    assert mock_sessions.call_args_list[1].args == ("1",)
+    assert mock_sessions["mock"].call_args_list[1].args == ("1",)
 
 
 @pytest.mark.anyio

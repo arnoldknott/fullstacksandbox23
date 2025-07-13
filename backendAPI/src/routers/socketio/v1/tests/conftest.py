@@ -37,17 +37,20 @@ async def mock_sessions(request):
 
     if hasattr(request, "param"):
 
+        results = []
+
         def choose_token_payload(*args):
             """Chooses the right token-payload based on which session should be mocked."""
             # Compute the return value based on the arguments
             return_token = request.param[int(args[0])]
+            results.append(return_token)
             return return_token
 
         with patch(
             "routers.socketio.v1.base.BaseNamespace._get_token_payload_if_authenticated"
         ) as mocked_sessions:
             mocked_sessions.side_effect = choose_token_payload
-            yield mocked_sessions
+            yield {"mock": mocked_sessions, "mocked_results": results}
 
 
 @pytest.fixture(scope="module")
@@ -167,7 +170,7 @@ async def provide_namespace_server(
 
 # This patches different users and allows therefore clients from different users to talk to each other.
 # Skips Authorization, but still checks Authentication.
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def socketio_test_server_for_multiple_users(
     mock_sessions,
     mock_get_azure_token_from_cache,
