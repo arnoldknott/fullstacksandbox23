@@ -63,11 +63,20 @@
 	let demoResources: DemoResourceExtended[] = $state([]);
 	$effect(() => {
 		socketio.client.on('transfer', (data: DemoResourceExtended) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+			if (debug) {
+				console.log(
+					'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+				);
+				console.log(data);
+			}
+			// if (demoResources.some((res) => res.id === data.id)) {
+			// 	// Update existing resource
+			// 	demoResources = demoResources.map((res) =>
+			// 		res.id === data.id ? { ...res, ...data } : res
 			// 	);
-			// 	console.log(data);
+			// } else {
+			// 	// Add new resource
+			// 	demoResources.push(data);
 			// }
 			demoResources.push(data);
 		});
@@ -109,7 +118,7 @@
 			access_right: Action.OWN,
 			creation_date: new Date(Date.now())
 		};
-		demoResources.push(newResource);
+		demoResources.unshift(newResource);
 	};
 
 	const deleteResource = (resourceId: string) => {
@@ -207,6 +216,13 @@
 		</div>
 	</div>
 
+	<div class={debug ? 'block' : 'hidden'}>
+		<div class="title-small italic">Current user</div>
+		<div class="badge badge-xs badge-secondary label-small">
+			{data.session?.currentUser?.id?.slice(0, 7)}
+		</div>
+	</div>
+
 	<div
 		class="h-25 w-100 {debug
 			? 'block'
@@ -284,7 +300,7 @@
 					}
 				}
 				identities={AccessHandler.reduceMicrosoftTeamsToIdentities(data.microsoftTeams)}
-				{demoResource}
+				bind:demoResource={demoResources[idx]}
 				{deleteResource}
 				{submitResource}
 				{share}

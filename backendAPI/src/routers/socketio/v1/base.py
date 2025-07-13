@@ -178,6 +178,10 @@ class BaseNamespace(socketio.AsyncNamespace):
                         item.creation_date = access_data["creation_date"]
                     if access_data["last_modified_date"]:
                         item.last_modified_date = access_data["last_modified_date"]
+                if item.id not in self.server.rooms(sid, self.namespace):
+                    await self.server.enter_room(
+                        sid, str(item.id), namespace=self.namespace
+                    )
                 await self.server.emit(
                     "transfer",
                     item.model_dump(mode="json"),
@@ -241,9 +245,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         logger.info(f"🧦 Client connected with session id: {sid}.")
         # Parse 'request-access-data' from query string using urllib.parse.parse_qs
         query_strings = environ.get("QUERY_STRING", "")
-        print("=== routers - socketio - v1 - on_connect - parse_qs(query_strings) ===")
-        print(parse_qs(query_strings), flush=True)
-
+        # print("=== routers - socketio - v1 - on_connect - parse_qs(query_strings) ===")
+        # print(parse_qs(query_strings), flush=True)
         request_access_data = (
             parse_qs(query_strings).get("request-access-data")[0]
             if "request-access-data" in query_strings
@@ -254,8 +257,11 @@ class BaseNamespace(socketio.AsyncNamespace):
             if "identity-id" in query_strings
             else []
         )
-        print("=== routers - socketio - v1 - on_connect - identity_ids ===")
-        print(identity_ids, flush=True)
+        # TBD: consider only relying on information from the backend
+        # instead of retrieving identities from client side!
+        # But allow the frontend client to request identity spaces!
+        # print("=== routers - socketio - v1 - on_connect - identity_ids ===")
+        # print(identity_ids, flush=True)
         guards = self._get_event_guards("connect")
         if guards is not None:
             try:
@@ -322,6 +328,16 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object = await crud.update(
                                 current_user, resource_id, object_update
                             )
+                            print(
+                                "=== routers - socketio - v1 - on_submit - database_object ==="
+                            )
+                            print(database_object, flush=True)
+                            await self.server.emit(
+                                "transfer",
+                                database_object.model_dump(mode="json"),
+                                namespace=self.namespace,
+                                to=str(database_object.id),
+                            )
                             await self._emit_status(
                                 sid,
                                 {
@@ -374,6 +390,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             logger.error(f"🧦 Failed to write data from client {sid}.")
             await self._emit_status(sid, {"error": str(error)})
 
+    # TBD: consider renaming resource_id into id - it should also work for identities!
     async def on_delete(self, sid, resource_id: UUID):
         """Delete event for socket.io namespaces."""
         logger.info(f"🧦 Delete request from client {sid}.")
@@ -381,6 +398,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             current_user = await self._get_current_user_and_check_guard(sid, "delete")
             async with self.crud() as crud:
                 await crud.delete(current_user, resource_id)
+            await self.server.close_room(resource_id, namespace=self.namespace)
             await self.server.emit(
                 "deleted",
                 resource_id,
