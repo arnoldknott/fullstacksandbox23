@@ -7,7 +7,7 @@
 	import { AccessHandler } from '$lib/accessHandler';
 
 	let {
-		demoResource,
+		demoResource, // = $bindable(),
 		identities,
 		edit = $bindable(false),
 		deleteResource = (_id: string) => {},
@@ -21,6 +21,9 @@
 		submitResource?: (resource: DemoResourceExtended) => void;
 		share?: (accessPolicy: AccessPolicy) => void;
 	} = $props();
+
+	let editableDemoResource: DemoResourceExtended = $derived({ ...demoResource });
+
 	let formatedDate = $derived(
 		demoResource.creation_date
 			? new Date(demoResource.creation_date).toLocaleString('da-DK', { timeZone: 'CET' })
@@ -54,11 +57,11 @@
 			class="title justify-self-start"
 			onblur={(event) => {
 				// TBD: onblur changes edit to false, as DemoResourceContainer is getting reloaded
-				demoResource.name = (event.target as HTMLElement)?.innerText || '';
-				submitResource(demoResource);
+				editableDemoResource.name = (event.target as HTMLElement)?.innerText || '';
+				submitResource(editableDemoResource);
 			}}
 		>
-			{demoResource.name}
+			{editableDemoResource.name}
 		</h5>
 		<div class="label justify-self-end">
 			{formatedDate}
@@ -69,13 +72,20 @@
 			<p
 				contenteditable={edit}
 				onblur={(event) => {
-					demoResource.description = (event.target as HTMLElement)?.innerText || '';
-					submitResource(demoResource);
+					editableDemoResource.description = (event.target as HTMLElement)?.innerText || '';
+					submitResource(editableDemoResource);
 				}}
 			>
-				{demoResource.description}
+				{editableDemoResource.description}
 			</p>
-			<div class="badge badge-xs label-small">{demoResource.id?.slice(0, 7)}</div>
+			<div class="flex flex-row gap-2">
+				<div class="badge badge-xs badge-secondary label-small shadow-outline shadow">
+					{demoResource.id?.slice(0, 7)}
+				</div>
+				<div class="badge badge-xs badge-accent label-small shadow-outline shadow">
+					{demoResource.access_right}
+				</div>
+			</div>
 		</div>
 		{#if demoResource.access_right === Action.WRITE || demoResource.access_right === Action.OWN}
 			<div class="join flex flex-row items-end justify-center">
@@ -110,7 +120,7 @@
 						</button>
 
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share-{demoResource.id}"

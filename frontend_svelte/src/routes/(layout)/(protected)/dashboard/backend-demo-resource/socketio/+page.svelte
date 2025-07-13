@@ -63,22 +63,23 @@
 	let demoResources: DemoResourceExtended[] = $state([]);
 	$effect(() => {
 		socketio.client.on('transfer', (data: DemoResourceExtended) => {
-			if (debug) {
-				console.log(
-					'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-				);
-				console.log(data);
-			}
-			// if (demoResources.some((res) => res.id === data.id)) {
-			// 	// Update existing resource
-			// 	demoResources = demoResources.map((res) =>
-			// 		res.id === data.id ? { ...res, ...data } : res
+			// if (debug) {
+			// 	console.log(
+			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
 			// 	);
-			// } else {
-			// 	// Add new resource
-			// 	demoResources.push(data);
+			// 	console.log(data);
 			// }
-			demoResources.push(data);
+			if (demoResources.some((res) => res.id === data.id)) {
+				// Update existing resource
+				demoResources = demoResources.map((res) =>
+					// only replaces the keys, where the newly incoming data is defined.
+					res.id === data.id ? { ...res, ...data } : res
+				);
+			} else {
+				// Add new resource
+				demoResources.push(data);
+			}
+			// demoResources.push(data);
 		});
 		socketio.client.on('deleted', (resource_id: string) => {
 			if (debug) {
@@ -216,10 +217,13 @@
 		</div>
 	</div>
 
-	<div class={debug ? 'block' : 'hidden'}>
+	<div class="flex flex-col {debug ? 'block' : 'hidden'} gap-1">
 		<div class="title-small italic">Current user</div>
-		<div class="badge badge-xs badge-secondary label-small">
+		<div class="badge badge-xs badge-secondary label-small shadow-outline shadow">
 			{data.session?.currentUser?.id?.slice(0, 7)}
+		</div>
+		<div class="badge badge-xs badge-secondary label-small shadow-outline shadow">
+			{data.session?.microsoftProfile?.mail}
 		</div>
 	</div>
 
@@ -300,11 +304,12 @@
 					}
 				}
 				identities={AccessHandler.reduceMicrosoftTeamsToIdentities(data.microsoftTeams)}
-				bind:demoResource={demoResources[idx]}
+				{demoResource}
 				{deleteResource}
 				{submitResource}
 				{share}
 			/>
+			<!-- bind:demoResource={demoResources[idx]} -->
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
 				<p class="title">🚧 Debug Information 🚧</p>
 				<JsonData data={demoResource} />
