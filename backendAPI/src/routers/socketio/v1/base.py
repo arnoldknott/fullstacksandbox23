@@ -355,6 +355,12 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object = await crud.create(
                                 object_create, current_user, parent_id, inherit
                             )
+                            await self.server.emit(
+                                "transfer",
+                                database_object.model_dump(mode="json"),
+                                namespace=self.namespace,
+                                to=sid,
+                            )
                             await self._emit_status(
                                 sid,
                                 {
