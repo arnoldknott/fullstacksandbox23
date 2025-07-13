@@ -49,13 +49,13 @@ from tests.utils import (
 @pytest.fixture(scope="module", autouse=True)
 async def setup_namespace_server(provide_namespace_server):
     # Call setup function here
-    socket_io_server = await provide_namespace_server(
+    async for socket_io_server in provide_namespace_server(
         [DemoResourceNamespace("/demo-resource")]
-    )
-    # Yield to allow tests to run
-    yield
-    # Optionally, add teardown logic here if needed
-    await socket_io_server.shutdown()
+    ):
+        # Yield to allow tests to run
+        yield
+        # # Optionally, add teardown logic here if needed
+        # await socket_io_server.shutdown()
 
 
 @pytest.mark.anyio

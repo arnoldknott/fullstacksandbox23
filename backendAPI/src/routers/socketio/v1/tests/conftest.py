@@ -3,6 +3,14 @@ from datetime import datetime
 from typing import List, Optional
 from unittest.mock import patch
 
+from routers.socketio.v1.demo_namespace import demo_namespace_router
+from routers.socketio.v1.demo_resource import (
+    demo_resource_router as demo_resource_namespace_router,
+)
+from routers.socketio.v1.interactive_documentation import (
+    interactive_documentation_router,
+)
+from routers.socketio.v1.public_namespace import public_namespace_router
 from routers.socketio.v1.demo_namespace import DemoNamespace
 from pydantic import BaseModel
 import pytest
@@ -21,6 +29,25 @@ async def mock_token_payload(request):
         with patch("core.security.decode_token") as mock:
             mock.return_value = request.param
             yield request.param
+
+
+@pytest.fixture(scope="module")
+async def mock_sessions(request):
+    """Chooses the right token-payload based on which session should be mocked."""
+
+    if hasattr(request, "param"):
+
+        def choose_token_payload(*args):
+            """Chooses the right token-payload based on which session should be mocked."""
+            # Compute the return value based on the arguments
+            return_token = request.param[int(args[0])]
+            return return_token
+
+        with patch(
+            "routers.socketio.v1.base.BaseNamespace._get_token_payload_if_authenticated"
+        ) as mocked_sessions:
+            mocked_sessions.side_effect = choose_token_payload
+            yield mocked_sessions
 
 
 @pytest.fixture(scope="module")
@@ -48,7 +75,7 @@ async def mock_get_azure_token_from_cache():
 
 
 @pytest.fixture(scope="module")
-async def socketio_test_server(
+async def socketio_test_serve_single_connection_deep_security(
     mock_token_payload,
     mock_get_azure_token_from_cache,
     mock_get_user_account_from_session_cache,
@@ -69,17 +96,39 @@ async def socketio_test_server(
 
 
 @pytest.fixture(scope="module")
+async def socketio_test_server(
+    mocked_sessions,
+    mock_get_azure_token_from_cache,
+    mock_get_user_account_from_session_cache,
+):
+    """Provide a socket.io server."""
+    mocked_sessions
+
+    sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
+    app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
+
+    config = uvicorn.Config(app, host="127.0.0.1", port=8669, log_level="info")
+    server = uvicorn.Server(config)
+
+    asyncio.create_task(server.serve())
+    await asyncio.sleep(1)
+    yield sio
+    await server.shutdown()
+
+
+@pytest.fixture(scope="module")
 async def provide_namespace_server(
-    socketio_test_server: socketio.AsyncServer,
+    socketio_test_serve_single_connection_deep_security: socketio.AsyncServer,
 ):
     """Provides a socket.io server with a specific namespace."""
 
     async def _provide_namespace_server(namespaces: List[socketio.AsyncNamespace]):
-        sio = socketio_test_server
+        sio = socketio_test_serve_single_connection_deep_security
         for namespace in namespaces:
             sio.register_namespace(namespace)
 
-        return sio
+        yield sio
+        await sio.shutdown()
 
     return _provide_namespace_server
 
@@ -94,127 +143,57 @@ async def provide_namespace_server(
 #             yield request.param
 
 
-@pytest.fixture(scope="module")
-async def mock_session(request):
-    """Chooses the right token-payload based on which session should be mocked."""
+# @pytest.fixture(scope="module")
+# async def mock_sessions(request):
+#     """Chooses the right token-payload based on which session should be mocked."""
 
-    # TBD: consider moving the mock deeper into decode token from security, as this short-cuts the security layers above
-    # or rename into "no authentication checked" or so.
+#     # TBD: consider moving the mock deeper into decode token from security, as this short-cuts the security layers above
+#     # or rename into "no authentication checked" or so.
 
-    if hasattr(request, "param"):
+#     if hasattr(request, "param"):
 
-        def choose_token_payload(*args, **kwargs):
-            """Chooses the right token-payload based on which session should be mocked."""
-            # args/kwargs are the arguments passed by the production code
-            print("=== chose_token_payload - called with:", args, kwargs)
-            print(
-                "=== chose_token_payload - request.param is:", request.param, flush=True
-            )
-            # Compute the return value based on the arguments
-            return_token = request.param[int(args[0])]
-            print("=== return this token content ===")
-            print(return_token, flush=True)
-            return return_token
+#         def choose_token_payload(*args, **kwargs):
+#             """Chooses the right token-payload based on which session should be mocked."""
+#             # Compute the return value based on the arguments
+#             return_token = request.param[int(args[0])]
+#             return return_token
 
-        with patch(
-            "routers.socketio.v1.base.BaseNamespace._get_token_payload_if_authenticated"
-        ) as mocked_session:
-            await mocked_session("abcd")
-            print("=== mock_session - request.param ===")
-            print(request.param, flush=True)
-            print("=== mock_session - mocked_session.call_args ===")
-            print(mocked_session.call_args, flush=True)
-            print("=== mock_session - mocked_session.called ===")
-            print(mocked_session.called, flush=True)
-            print("=== mock_session - mocked_session.call_count ===")
-            print(mocked_session.call_count, flush=True)
-            print("=== mock_session - mocked_session.call_args_list ===")
-            print(mocked_session.call_args_list, flush=True)
-            print("=== mock_session - mocked_session.mock_calls ===")
-            print(mocked_session.mock_calls, flush=True)
-            print("=== mock_session[0] - request.param ===")
-            print(request.param[0], flush=True)
-            # selected_token = int(mocked_session.call_args)
-            mocked_session.side_effect = choose_token_payload
-            print("=== mock_session - mocked_session.side_effect ===")
-            print(mocked_session.side_effect, flush=True)
-            mocked_session.return_value = request.param[0]
-            # yield request.param[0]
-            yield mocked_session
+#         with patch(
+#             "routers.socketio.v1.base.BaseNamespace._get_token_payload_if_authenticated"
+#         ) as mocked_session:
+#             mocked_session.side_effect = choose_token_payload
+#             yield mocked_session
 
 
 # This patches different users and allows therefore clients from different users to talk to each other.
+# Skips Authorization, but still checks Authentication.
 @pytest.fixture(scope="module")
-async def socketio_test_server_with_multiple_patched_token_payloads(
-    mock_session,
-    # mock_get_azure_token_from_cache,
-    # mock_get_user_account_from_session_cache,
+async def socketio_test_server_for_multiple_users(
+    mock_sessions,
+    mock_get_azure_token_from_cache,
+    mock_get_user_account_from_session_cache,
 ):
-    """Provide a socket.io server."""
-    mock_session
-    print(
-        "=== socketio_test_server_with_multiple_patched_token_payloads - mock_session ==="
-    )
-    print(mock_session.call_args, flush=True)
+    """Provide a socket.io server for multiple patched users.
+    This fixture skips Authorization but still checks Authentication."""
+    mock_sessions
 
     sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
     app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
 
-    config = uvicorn.Config(app, host="127.0.0.1", port=8670, log_level="info")
+    config = uvicorn.Config(app, host="127.0.0.1", port=8669, log_level="info")
     server = uvicorn.Server(config)
 
     asyncio.create_task(server.serve())
-    sio.register_namespace(DemoNamespace("/demo-namespace"))
+    sio.register_namespace(public_namespace_router)
+    sio.register_namespace(demo_namespace_router)
+    sio.register_namespace(demo_resource_namespace_router)
+    sio.register_namespace(interactive_documentation_router)
     await asyncio.sleep(1)
     yield sio
     await server.shutdown()
 
 
 # Setting up socketio client side for testing:
-
-
-@pytest.fixture
-async def socketio_test_client_with_multiple_mocked_users_on_server(
-    socketio_test_server_with_multiple_patched_token_payloads, mock_session
-):
-    """Provides a socket.io client and connects to it."""
-    socketio_test_server_with_multiple_patched_token_payloads
-
-    async def _socketio_test_client_with_multiple_mocked_users_on_server(
-        namespaces: List[str] = None, query_parameters: dict = None, token_number=1
-    ):
-        socketio_test_server_with_multiple_patched_token_payloads
-        client = socketio.AsyncClient(logger=True, engineio_logger=True)
-
-        server_url = "http://127.0.0.1:8670"
-        if query_parameters:
-            query_string = "&".join(
-                f"{key}={value}" for key, value in query_parameters.items()
-            )
-            server_url += f"?{query_string}"
-        # await client.sleep(1)
-        print(
-            "=== socketio_test_client_with_multiple_mocked_users_on_server - mock_session.call_args.args - before connect ==="
-        )
-        print(mock_session.call_args.args, flush=True)
-        await client.connect(
-            # server_url,
-            "http://127.0.0.1:8670",
-            socketio_path="socketio/v1",
-            namespaces=namespaces,
-            auth={"session-id": str(token_number)},
-        )
-        # await client.sleep(1)
-        print(
-            "=== socketio_test_client_with_multiple_mocked_users_on_server - mock_session.call_args.args - after connect ==="
-        )
-        print(mock_session.call_args.args, flush=True)
-
-        yield client
-        # client.sleep(1)  # Give time for the disconnect to be processed
-        await client.disconnect()
-
-    return _socketio_test_client_with_multiple_mocked_users_on_server
 
 
 # This one connects to a socketio server in FastAPI:
@@ -236,6 +215,9 @@ async def socketio_test_client():
 
         async def connect_to_test_client(
             query_parameters: dict = None,
+            mocked_token_number=0,
+            # tells the server to mock a session with token at index <mocked_token_number>
+            # in the parameterization array mock_sessions
         ):
             """Connects to the socket.io client and yields it."""
 
@@ -250,7 +232,7 @@ async def socketio_test_client():
                 server_url,
                 socketio_path="socketio/v1",
                 namespaces=namespaces,
-                auth={"session-id": "testsessionid"},
+                auth={"session-id": str(mocked_token_number)},
             )
             # await client.sleep(1)
 
@@ -296,6 +278,9 @@ async def socketio_test_client_with_events(socketio_test_client):
         namespaces_and_events: List[Namespaces],
         server_host: str = "http://127.0.0.1:8669",
         query_parameters: dict = None,
+        mocked_token_number: int = 0,
+        # tells the server to mock a session with token at index <mocked_token_number>
+        # in the parameterization array mock_sessions
         logs: Optional[List[dict]] = None,
     ):
 
@@ -329,7 +314,7 @@ async def socketio_test_client_with_events(socketio_test_client):
 
                     client.on(event, handler=make_handler(event), namespace=namespace)
 
-            await client.connect_to_test_client(query_parameters)
+            await client.connect_to_test_client(query_parameters, mocked_token_number)
 
             if logs is None:
                 yield client, responses
@@ -339,30 +324,109 @@ async def socketio_test_client_with_events(socketio_test_client):
     return _socketio_test_client_with_events
 
 
+# TBD: refactor this fixture into module wide fixture, when multiple clients is merged with deep security:
+@pytest.fixture
+async def socketio_test_client_with_multiple_mocked_users_on_server(
+    socketio_test_server_for_multiple_users, mock_sessions
+):
+    """Provides a socket.io client and connects to it."""
+    socketio_test_server_for_multiple_users
+
+    async def _socketio_test_client_with_multiple_mocked_users_on_server(
+        namespaces_and_events: List[Namespaces],
+        query_parameters: dict = None,
+        mocked_token_number=0,
+        # tells the server to mock a session with token at index <mocked_token_number>
+        # in the parameterization array mock_sessions
+        logs: List[dict] = None,
+    ):
+        socketio_test_server_for_multiple_users
+        client = socketio.AsyncClient(logger=True, engineio_logger=True)
+
+        def make_handler(event_name):
+            async def handle_event(data):
+                """Handles the event and appends data to responses."""
+                # print(f"=== Received event '{event_name}': {data} ===", flush=True)
+                nonlocal responses
+                if logs is not None:
+                    logs.append(
+                        {
+                            "event": event_name,
+                            "timestamp": datetime.now(),
+                            "data": data,
+                        }
+                    )
+                responses[namespace][event_name].append(data)
+
+            return handle_event
+
+        responses = {}
+        for namespace_event in namespaces_and_events:
+            namespace = namespace_event["name"]
+            events = namespace_event["events"]
+            responses[namespace] = {}
+            for event in events:
+                responses[namespace][event] = []
+
+                client.on(event, handler=make_handler(event), namespace=namespace)
+
+        server_url = "http://127.0.0.1:8669"
+        if query_parameters:
+            query_string = "&".join(
+                f"{key}={value}" for key, value in query_parameters.items()
+            )
+            server_url += f"?{query_string}"
+        all_namespaces = [namespace["name"] for namespace in namespaces_and_events]
+        await client.connect(
+            server_url,
+            socketio_path="socketio/v1",
+            namespaces=all_namespaces,
+            auth={"session-id": str(mocked_token_number)},
+        )
+
+        connection = {
+            "client": client,
+            "responses": responses,
+            "logs": logs if logs is not None else None,
+        }
+        yield connection
+        # client.sleep(1)  # Give time for the disconnect to be processed
+        await client.disconnect()
+
+    return _socketio_test_client_with_multiple_mocked_users_on_server
+
+
 @pytest.fixture(scope="function")
 async def socketio_client_for_demo_namespace(
     socketio_test_client_with_events,
+    provide_namespace_server: socketio.AsyncServer,
 ):
     """Provides a socket.io client for the demo namespace with event handlers."""
+    ## TBD: refactor back into module wide fixture, when multiple clients is merged with deep security:
+    async for server in provide_namespace_server([DemoNamespace("/demo-namespace")]):
 
-    async def _socketio_client_for_demo_namespace(
-        query_parameters: dict = None,
-        logs: List[dict] = None,
-    ):
-
-        demo_namespace_with_events = [
-            {
-                "name": "/demo-namespace",
-                "events": ["demo_message"],
-            }
-        ]
-
-        async for socketio_test_client in socketio_test_client_with_events(
-            demo_namespace_with_events, query_parameters=query_parameters, logs=logs
+        async def _socketio_client_for_demo_namespace(
+            query_parameters: dict = None,
+            mocked_token_number: int = 0,
+            logs: List[dict] = None,
         ):
-            yield socketio_test_client
 
-    return _socketio_client_for_demo_namespace
+            demo_namespace_with_events = [
+                {
+                    "name": "/demo-namespace",
+                    "events": ["demo_message"],
+                }
+            ]
+
+            async for socketio_test_client in socketio_test_client_with_events(
+                demo_namespace_with_events,
+                query_parameters=query_parameters,
+                logs=logs,
+                mocked_token_number=mocked_token_number,
+            ):
+                yield socketio_test_client
+
+        return _socketio_client_for_demo_namespace
 
 
 @pytest.fixture(scope="function")

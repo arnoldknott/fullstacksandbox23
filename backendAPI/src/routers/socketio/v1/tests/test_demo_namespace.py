@@ -3,6 +3,7 @@ from socketio.exceptions import ConnectionError
 
 from routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
 from tests.utils import (
+    token_admin_read_write,
     token_admin_read_write_socketio,
     token_user1_read_write_socketio,
     token_admin_read,
@@ -111,8 +112,7 @@ async def test_on_connect_invalid_token(mock_token_payload):
     indirect=True,
 )
 async def test_connect_with_test_server_demo_namespace(
-    mock_token_payload,
-    socketio_client_for_demo_namespace,
+    mock_token_payload, socketio_client_for_demo_namespace
 ):
     """Test the demo socket.io connect event."""
     mocked_token_payload = mock_token_payload
@@ -149,19 +149,21 @@ async def test_connect_with_test_server_demo_namespace(
     indirect=True,
 )
 async def test_connect_with_test_server_demo_namespace_missing_scopes_fails(
-    mock_token_payload,
-    socketio_test_client,
+    mock_token_payload, socketio_test_client, provide_namespace_server
 ):
     """Test the demo socket.io connect event."""
     mock_token_payload
 
-    async for client in socketio_test_client(["/demo-namespace"]):
+    ## TBD: refactor back into module wide fixture, when multiple clients is merged with deep security:
+    async for server in provide_namespace_server([DemoNamespace("/demo-namespace")]):
 
-        try:
-            await client.connect_to_test_client()
-            raise Exception("This should have failed due to invalid token.")
-        except ConnectionError as err:
-            assert str(err) == "One or more namespaces failed to connect"
+        async for client in socketio_test_client(["/demo-namespace"]):
+
+            try:
+                await client.connect_to_test_client()
+                raise Exception("This should have failed due to invalid token.")
+            except ConnectionError as err:
+                assert str(err) == "One or more namespaces failed to connect"
 
 
 @pytest.mark.anyio
@@ -171,8 +173,7 @@ async def test_connect_with_test_server_demo_namespace_missing_scopes_fails(
     indirect=True,
 )
 async def test_demo_message_with_test_server(
-    mock_token_payload,
-    socketio_client_for_demo_namespace,
+    mock_token_payload, socketio_client_for_demo_namespace
 ):
     """Test the demo socket.io message event."""
     mocked_token_payload = mock_token_payload
@@ -200,40 +201,140 @@ async def test_demo_message_with_test_server(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_session",
+    "mock_sessions",
     [[token_user1_read_write_socketio, token_user2_read_write_socketio]],
     indirect=True,
 )
 async def test_demo_message_with_test_server_and_multiple_users_connected(
-    mock_session,
+    mock_sessions,
     socketio_test_client_with_multiple_mocked_users_on_server,
 ):
-    """Test the demo socket.io message event."""
-    # mocked_token_payload = mock_session[0]
+    """Test the demo socket.io message event, with two users communicating."""
+    # check that both users can connect  and one can send messages to the other
+    # as well as disconnect events.
+    # This is also testing the mocking of the sessions fixture
 
-    demo_messages = []
-    async for client in socketio_test_client_with_multiple_mocked_users_on_server(
-        namespaces=["/demo-namespace"]
+    demo_namespace_with_events = [
+        {
+            "name": "/demo-namespace",
+            "events": ["demo_message"],
+        }
+    ]
+    demo_messages_user1 = []
+    demo_messages_user2 = []
+    log_user1 = []
+    log_user2 = []
+    async for (
+        connection_user1
+    ) in socketio_test_client_with_multiple_mocked_users_on_server(
+        demo_namespace_with_events,
+        logs=log_user1,
     ):
+        async for (
+            connection_user2
+        ) in socketio_test_client_with_multiple_mocked_users_on_server(
+            demo_namespace_with_events,
+            mocked_token_number=1,
+            logs=log_user2,
+        ):
+            # Connect user 2 to the demo namespace
+            client_user2 = connection_user2["client"]
+            responses_user2 = connection_user2["responses"]
+            logs_user2 = connection_user2["logs"]
 
+            # Wait for the response to be set
+            await client_user2.sleep(1)
+
+            demo_messages_user2 = responses_user2["/demo-namespace"]["demo_message"]
+
+            # Emit a message from user 1
+            client_user1 = connection_user1["client"]
+            await client_user1.emit(
+                "demo_message", "Hello from User 1", namespace="/demo-namespace"
+            )
+            await client_user2.sleep(1)
+            await client_user2.disconnect()
+
+        client_user1 = connection_user1["client"]
+        responses_user1 = connection_user1["responses"]
+        logs_user1 = connection_user1["logs"]
         # Wait for the response to be set
-        await client.sleep(1)
+        await client_user1.sleep(1)
 
-        # demo_messages = response["/demo-namespace"]["demo_message"]
+        demo_messages_user1 = responses_user1["/demo-namespace"]["demo_message"]
 
-        await client.disconnect()
+        await client_user1.disconnect()
 
-    print(
-        "=== test_demo_message_with_test_server_and_multiple_users_connected - mock_session.call_args.args ==="
+    # Asserting messages receivbed by user 1:
+    assert len(demo_messages_user1) == 5
+    assert (
+        demo_messages_user1[0]
+        == f"Welcome {token_user1_read_write_socketio['name']} to /demo-namespace."
     )
-    print(mock_session.call_args.args, flush=True)
+    assert "Your session ID is " in demo_messages_user1[1]
+    assert (
+        demo_messages_user1[2]
+        == f"Welcome {token_user2_read_write_socketio['name']} to /demo-namespace."
+    )
+    assert (
+        demo_messages_user1[3]
+        == f"{token_user1_read_write_socketio['name']}: Hello from User 1"
+    )
+    assert (
+        demo_messages_user1[4]
+        == f"{token_user2_read_write_socketio['name']} has disconnected from /demo-namespace. Goodbye!"
+    )
 
-    assert len(demo_messages) == 3
-    # assert (
-    #     demo_messages[0]
-    #     == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
-    # )
-    assert "Your session ID is " in demo_messages[1]
+    # Asserting logs for user 1:
+    assert len(log_user1) == 5
+    for log in log_user1:
+        assert log["event"] == "demo_message"
+
+    assert log_user1[0]["data"] == (
+        f"Welcome {token_user1_read_write_socketio['name']} to /demo-namespace."
+    )
+    assert log_user1[1]["data"].startswith("Your session ID is ")
+    assert log_user1[2]["data"] == (
+        f"Welcome {token_user2_read_write_socketio['name']} to /demo-namespace."
+    )
+    assert log_user1[3]["data"] == (
+        f"{token_user1_read_write_socketio['name']}: Hello from User 1"
+    )
+    assert log_user1[4]["data"] == (
+        f"{token_user2_read_write_socketio['name']} has disconnected from /demo-namespace. Goodbye!"
+    )
+
+    # Asserting messages received by user 2:
+    assert len(demo_messages_user2) == 3
+    assert (
+        demo_messages_user2[0]
+        == f"Welcome {token_user2_read_write_socketio['name']} to /demo-namespace."
+    )
+    assert demo_messages_user2[1].startswith("Your session ID is ")
+    assert (
+        demo_messages_user2[2]
+        == f"{token_user1_read_write_socketio['name']}: Hello from User 1"
+    )
+
+    # Asserting logs for user 2:
+    assert len(log_user2) == 3
+    for log in log_user2:
+        assert log["event"] == "demo_message"
+
+    assert log_user2[0]["data"] == (
+        f"Welcome {token_user2_read_write_socketio['name']} to /demo-namespace."
+    )
+    assert log_user2[1]["data"].startswith("Your session ID is ")
+    assert log_user2[2]["data"] == (
+        f"{token_user1_read_write_socketio['name']}: Hello from User 1"
+    )
+
+    # Asserting the mock sessions:
+    assert mock_sessions.call_count == 2
+    # User 1 token selected first:
+    assert mock_sessions.call_args_list[0].args == ("0",)
+    # User 2 token selected second:
+    assert mock_sessions.call_args_list[1].args == ("1",)
 
 
 @pytest.mark.anyio
