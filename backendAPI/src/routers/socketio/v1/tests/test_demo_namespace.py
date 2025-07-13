@@ -203,8 +203,8 @@ async def test_demo_message_with_test_server(
     "mock_sessions",
     [
         [token_user1_read_write_socketio, token_user2_read_write_socketio],
-        # [token_admin_read_write_socketio, token_user1_read_write_socketio],
-        # [token_user2_read_write_socketio, token_admin_read_write_socketio],
+        [token_admin_read_write_socketio, token_user1_read_write_socketio],
+        [token_user2_read_write_socketio, token_admin_read_write_socketio],
     ],
     indirect=True,
 )
