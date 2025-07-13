@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import type { DemoResourceExtended, AccessPolicy, AccessShareOption, Identity } from '$lib/types';
+	import type { DemoResourceExtended, AccessPolicy, Identity } from '$lib/types';
 	import { enhance } from '$app/forms';
 	import { Action, AccessHandler } from '$lib/accessHandler';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
@@ -219,7 +219,7 @@
 									></span>
 								</button>
 								<ul
-									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-60 shadow-xs"
+									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-60"
 									role="menu"
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"

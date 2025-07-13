@@ -69,10 +69,10 @@ class BackendAPI extends BaseAPI {
 		// Data validation:
 		// action = action ? (action as Action) : undefined;
 		// newAction = newAction ? (newAction as Action) : undefined;
-		let action: Action | undefined = Object.values(Action).includes(actionIn as Action)
+		const action: Action | undefined = Object.values(Action).includes(actionIn as Action)
 			? (actionIn as Action)
 			: undefined;
-		let newAction: Action | undefined = Object.values(Action).includes(newActionIn as Action)
+		const newAction: Action | undefined = Object.values(Action).includes(newActionIn as Action)
 			? (newActionIn as Action)
 			: undefined;
 

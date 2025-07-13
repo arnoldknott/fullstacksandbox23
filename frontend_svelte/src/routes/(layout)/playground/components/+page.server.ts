@@ -35,7 +35,7 @@ export const actions: Actions = {
 		//     error: 'This action is not implemented yet. Please check the console for more details.'
 		// });
 
-		let returnObject: { identityId: string | undefined; confirmedNewAction?: string } = {
+		const returnObject: { identityId: string | undefined; confirmedNewAction?: string } = {
 			identityId: identityId
 		};
 		if (confirmedNewAction) {
