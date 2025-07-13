@@ -355,7 +355,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object = await crud.create(
                                 object_create, current_user, parent_id, inherit
                             )
-                            # TBD: consider if necessary?
+                            # TBD: delete! Should not be necessary!
                             # await self.server.emit(
                             #     "transfer",
                             #     database_object.model_dump(mode="json"),

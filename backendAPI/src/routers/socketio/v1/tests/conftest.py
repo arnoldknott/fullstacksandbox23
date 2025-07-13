@@ -65,6 +65,18 @@ async def mock_get_user_account_from_session_cache():
         yield mock
 
 
+# TBD: when refactoring the mock_sessions fixture to go deeper, potentially stop here
+# That would include the cache, that means we need a fixture that puts session-ids
+# in the cache and return the token_payloads directly from there. That means putting token payloads
+# into the cache, which is not done yet.
+# _________________________________________________
+# | session-id     | token_payload                |
+# |________________|______________________________|
+# | admin-with-... | token_payload_admin-with-... |
+# | user1-with-... | token_payload_user1-with-... |
+# |________________|______________________________|
+
+
 @pytest.fixture(scope="module")
 async def mock_get_azure_token_from_cache():
     """Returns a mocked token."""
