@@ -180,7 +180,7 @@ async def socketio_test_server_for_multiple_users(
     sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
     app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
 
-    config = uvicorn.Config(app, host="127.0.0.1", port=8669, log_level="info")
+    config = uvicorn.Config(app, host="127.0.0.1", port=8670, log_level="info")
     server = uvicorn.Server(config)
 
     asyncio.create_task(server.serve())
@@ -370,7 +370,7 @@ async def socketio_test_client_with_multiple_mocked_users_on_server(
 
                 client.on(event, handler=make_handler(event), namespace=namespace)
 
-        server_url = "http://127.0.0.1:8669"
+        server_url = "http://127.0.0.1:8670"
         if query_parameters:
             query_string = "&".join(
                 f"{key}={value}" for key, value in query_parameters.items()

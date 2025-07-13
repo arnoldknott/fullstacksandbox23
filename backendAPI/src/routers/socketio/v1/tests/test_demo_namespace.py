@@ -3,7 +3,6 @@ from socketio.exceptions import ConnectionError
 
 from routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
 from tests.utils import (
-    token_admin_read_write,
     token_admin_read_write_socketio,
     token_user1_read_write_socketio,
     token_admin_read,
@@ -240,7 +239,7 @@ async def test_demo_message_with_test_server_and_multiple_users_connected(
             # Connect user 2 to the demo namespace
             client_user2 = connection_user2["client"]
             responses_user2 = connection_user2["responses"]
-            logs_user2 = connection_user2["logs"]
+            logs_user2 = connection_user2["logs"]  # noqa F841
 
             # Wait for the response to be set
             await client_user2.sleep(1)
@@ -257,7 +256,7 @@ async def test_demo_message_with_test_server_and_multiple_users_connected(
 
         client_user1 = connection_user1["client"]
         responses_user1 = connection_user1["responses"]
-        logs_user1 = connection_user1["logs"]
+        logs_user1 = connection_user1["logs"]  # noqa F841
         # Wait for the response to be set
         await client_user1.sleep(1)
 
