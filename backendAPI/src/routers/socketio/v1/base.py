@@ -416,6 +416,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             current_user = await self._get_current_user_and_check_guard(sid, "share")
             print("=== routers - socketio - v1 - on_share - access_policy ===")
             print(access_policy, flush=True)
+            print(current_user, flush=True)
             try:
                 access_policy = AccessPolicyCreate(**access_policy)
                 print(
