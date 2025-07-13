@@ -9,6 +9,7 @@
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import DemoResourceContainer from './DemoResourceContainer.svelte';
 	import { fade, scale } from 'svelte/transition';
+	import IdBadge from '../../IdBadge.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let editIds = $state(new Set<string>());
@@ -219,9 +220,7 @@
 
 	<div class="flex flex-col {debug ? 'block' : 'hidden'} gap-1">
 		<div class="title-small italic">Current user</div>
-		<div class="badge badge-xs badge-secondary label-small shadow-outline shadow">
-			{data.session?.currentUser?.id?.slice(0, 7)}
-		</div>
+		<IdBadge id={data.session?.currentUser?.id} />
 		<div class="badge badge-xs badge-secondary label-small shadow-outline shadow">
 			{data.session?.microsoftProfile?.mail}
 		</div>

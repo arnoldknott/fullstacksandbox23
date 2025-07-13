@@ -5,6 +5,7 @@
 	import { Action } from '$lib/accessHandler';
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import { AccessHandler } from '$lib/accessHandler';
+	import IdBadge from '../../IdBadge.svelte';
 
 	let {
 		demoResource, // = $bindable(),
@@ -79,9 +80,7 @@
 				{editableDemoResource.description}
 			</p>
 			<div class="flex flex-row gap-2">
-				<div class="badge badge-xs badge-secondary label-small shadow-outline shadow">
-					{demoResource.id?.slice(0, 7)}
-				</div>
+				<IdBadge id={demoResource.id} />
 				<div class="badge badge-xs badge-accent label-small shadow-outline shadow">
 					{demoResource.access_right}
 				</div>

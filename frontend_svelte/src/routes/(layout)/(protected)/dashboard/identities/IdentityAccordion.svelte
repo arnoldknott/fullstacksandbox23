@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import IdBadge from '../IdBadge.svelte';
 	let {
 		icon,
 		title,
@@ -33,11 +34,7 @@
 			{/if}
 			<div class="flex w-full flex-row">
 				<p class="title grow">{title}</p>
-				<div
-					class="badge badge-secondary-container shadow-shadow hidden justify-self-end shadow-xl md:block"
-				>
-					{id}
-				</div>
+				<IdBadge {id} />
 			</div>
 		</button>
 		<div class="badge badge-secondary-container badge-sm mb-4 place-self-center md:hidden">
