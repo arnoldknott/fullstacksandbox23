@@ -192,7 +192,7 @@ class BaseNamespace(socketio.AsyncNamespace):
     async def _get_access_data(self, sid, current_user, resource_id=UUID):
         """Get access data from the socketio session."""
         logger.info(f"🧦 Get access data for resource {resource_id} for client {sid}.")
-        session = await self._get_session_data(sid)
+        # session = await self._get_session_data(sid)
         # Consider splitting the accesss policy and access log CRUDs into separate methods
         async with AccessPolicyCRUD() as policy_crud:
             access_permission = await policy_crud.check_access(
@@ -268,7 +268,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 current_user = await check_token_against_guards(token_payload, guards)
                 session_data: SocketIoSessionData = {
                     "user_name": token_payload["name"],
-                    "current_user": current_user,
+                    # "current_user": current_user,
                     "session_id": auth["session-id"],
                 }
                 await self.server.save_session(
