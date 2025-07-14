@@ -305,6 +305,9 @@ async def socketio_test_server_generic(
 # Setting up socketio client side for testing:
 
 
+####### GENERIC TEST CLIENT FOR SOCKET.IO - WORKS: keep! (start) #######
+
+
 @pytest.fixture(scope="function")
 def session_id_selector(request):
     """Returns the session id from an array of parameters based on the index."""
@@ -427,6 +430,12 @@ async def socketio_test_client_generic(session_id_selector: uuid.UUID):
         await client.disconnect()
 
     return _socketio_test_client_generic
+
+
+####### GENERIC TEST CLIENT FOR SOCKET.IO - WORKS: keep! (end) #######
+
+
+####### PREVIOUS TEST CLIENTs FOR SOCKET.IO - REFACTOR INTO GENERIC! (start) #######
 
 
 # This one connects to a socketio server in FastAPI:
@@ -629,6 +638,12 @@ async def socketio_test_client_with_multiple_mocked_users_on_server(
     return _socketio_test_client_with_multiple_mocked_users_on_server
 
 
+####### PREVIOUS TEST CLIENTs FOR SOCKET.IO - REFACTOR INTO GENERIC! (end) #######
+
+
+##### BASE THE NAMESPACE SPECIFIC CLIENTS ON THE GENERIC CLIENTS ABOVE! (refactor - start ) #####
+
+
 @pytest.fixture(scope="function")
 async def socketio_client_for_demo_namespace(
     socketio_test_client_with_events,
@@ -690,3 +705,6 @@ async def socketio_client_for_demo_resource_namespace(
             yield socketio_test_client
 
     return _socketio_client_for_demo_resource_namespace
+
+
+##### BASE THE NAMESPACE SPECIFIC CLIENTS ON THE GENERIC CLIENTS ABOVE! (refactor - end ) #####
