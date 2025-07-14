@@ -99,18 +99,18 @@ async def test_on_connect_to_production_on_server_side_fails_unpatched_server():
     indirect=True,
 )
 async def test_connect_to_demo_namespace(
-    session_id_selector, socketio_test_client_generic
+    current_token_payload, socketio_test_client_generic
 ):
     """Test the demo socket.io connect event."""
 
     demo_messages = []
     async for connection in socketio_test_client_generic(client_config_demo_namespace):
-        demo_messages = connection.response["/demo-namespace"]["demo_message"]
+        demo_messages = connection["responses"]["/demo-namespace"]["demo_message"]
 
     assert len(demo_messages) == 2
     assert (
         demo_messages[0]
-        == f"Welcome {session_id_selector()['name']} to /demo-namespace."
+        == f"Welcome {current_token_payload()['name']} to /demo-namespace."
     )
     assert "Your session ID is " in demo_messages[1]
 
@@ -155,30 +155,30 @@ async def test_connect_to_demo_namespace_missing_scopes_fails(
     [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
     indirect=True,
 )
-async def test_send_demo_message(session_id_selector, socketio_test_client_generic):
+async def test_send_demo_message(current_token_payload, socketio_test_client_generic):
     """Test the demo socket.io message event."""
 
     demo_messages = []
     async for connection in socketio_test_client_generic(client_config_demo_namespace):
 
-        await connection.client.emit(
+        await connection["client"].emit(
             "demo_message", "Something", namespace="/demo-namespace"
         )
 
         # Wait for the response to be set
-        await connection.client.sleep(1)
+        await connection["client"].sleep(1)
 
-        demo_messages = connection.response["/demo-namespace"]["demo_message"]
+        demo_messages = connection["responses"]["/demo-namespace"]["demo_message"]
 
-        await connection.client.disconnect()
+        await connection["client"].disconnect()
 
     assert len(demo_messages) == 3
     assert (
         demo_messages[0]
-        == f"Welcome {session_id_selector()['name']} to /demo-namespace."
+        == f"Welcome {current_token_payload()['name']} to /demo-namespace."
     )
     assert "Your session ID is " in demo_messages[1]
-    assert demo_messages[2] == f"{session_id_selector()['name']}: Something"
+    assert demo_messages[2] == f"{current_token_payload()['name']}: Something"
 
 
 # @pytest.mark.anyio
@@ -385,7 +385,6 @@ async def test_demo_resource_chat_between_two_users(
                     "data": f"{current_token_payload(0)['name']}: sends message to server.",
                 }
             )
-            # TBD: replace "User 1" with mock_azure_token_in_redis(session_id_selector(0))["name"]
             await client1.emit(
                 "demo_message",
                 f"Hello from {current_token_payload(0)['name']}",
