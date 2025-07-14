@@ -1,3 +1,4 @@
+import copy
 from os import path, remove
 from uuid import UUID
 
@@ -82,6 +83,8 @@ async def add_test_policy_for_resource(current_user_from_azure_token: User):
 
     async def _add_test_policy_for_resource(policy, token_payload: dict = None):
         current_user = await current_user_from_azure_token(token_payload)
+        # print("=== conftest - add_test_policy_for_resource - current_user ===")
+        # print(current_user)
         async with AccessPolicyCRUD() as crud:
             added_policy = await crud.create(policy, current_user)
 
@@ -152,13 +155,22 @@ async def add_test_demo_resources(
 
     async def _add_test_demo_resources(token_payload: dict = None):
         existing_test_categories = await add_test_categories(token_payload)
-        many_test_demo_resources[0]["category_id"] = existing_test_categories[1].id
-        many_test_demo_resources[1]["category_id"] = existing_test_categories[0].id
-        many_test_demo_resources[2]["category_id"] = existing_test_categories[1].id
+        many_test_demo_resources_with_categories = copy.deepcopy(
+            many_test_demo_resources
+        )
+        many_test_demo_resources_with_categories[0]["category_id"] = (
+            existing_test_categories[1].id
+        )
+        many_test_demo_resources_with_categories[1]["category_id"] = (
+            existing_test_categories[0].id
+        )
+        many_test_demo_resources_with_categories[2]["category_id"] = (
+            existing_test_categories[1].id
+        )
 
         demo_resources = []
         current_user = await current_user_from_azure_token(token_payload)
-        for resource in many_test_demo_resources:
+        for resource in many_test_demo_resources_with_categories:
             async with DemoResourceCRUD() as crud:
                 demo_resource_instance = await crud.create(resource, current_user)
             demo_resources.append(demo_resource_instance)

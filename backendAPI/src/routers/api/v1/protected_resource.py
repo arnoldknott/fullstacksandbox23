@@ -208,7 +208,6 @@ async def delete_protected_child(
     return await protected_child_view.delete(resource_id, token_payload, guards)
 
 
-# TBD: write tests for this
 @router.delete("/child/{child_id}/parent/{parent_id}", status_code=200)
 async def remove_child_from_parent(
     parent_id: UUID,
@@ -289,21 +288,3 @@ async def delete_protected_grandchild(
 
 
 # endregion ProtectedGrandChild
-
-
-# This is secure and works!
-# old version - remove after refactoring to BaseView is done!
-# note - this is the path called by the frontend!
-# @router.get("/")
-# async def get_protected_resource(
-#     token_payload=Depends(get_http_access_token_payload),
-#     # current_user=Depends(CurrentAzureUserInDatabase()),
-# ):
-#     """Returns a protected resource."""
-#     token = CurrentAccessToken(token_payload)
-#     current_user = await token.gets_or_signs_up_current_user()
-#     logger.info("GET protected resource")
-#     return {
-#         # "message": "Hello from protected resource!"
-#         "message": f"Authenticated user (user_id: {current_user.id}, azure_user_id: {current_user.azure_user_id}) is authorized to access protected resource!"
-#     }

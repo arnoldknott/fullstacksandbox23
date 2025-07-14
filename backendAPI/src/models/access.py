@@ -2,26 +2,18 @@ import uuid
 from datetime import datetime
 from typing import ClassVar, List, Optional
 
-from pydantic import BaseModel, model_validator  # , create_model
-from sqlalchemy import (  # ,Column, Integer, text, DefaultClause, Computed
-    UniqueConstraint,
-)
-from sqlmodel import Field, SQLModel  # func, select
+from pydantic import BaseModel, model_validator
+from sqlalchemy import UniqueConstraint
+from sqlmodel import Field, SQLModel
 
 # if TYPE_CHECKING:
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
-
-# from core.databases import SynchronSession
 
 
 class IdentifierTypeLink(SQLModel, table=True):
     """Model for resource types"""
 
     id: uuid.UUID = Field(primary_key=True)
-    # type: Union[ResourceType, IdentityType] = Field(index=True)
-    # type: BaseType = Field(
-    #     sa_column=Column(Union(Enum(IdentityType), Enum(ResourceType)))
-    # )
     type: str = Field(index=True)
 
     # TBD: is there another way to define the type of the column?
@@ -32,31 +24,6 @@ class IdentifierTypeLink(SQLModel, table=True):
         ):
             raise ValueError("Invalid type")
         return self
-
-
-# class ResourceTypeLink(SQLModel, table=True):
-#     """Model for resource types"""
-
-#     id: uuid.UUID = Field(primary_key=True)
-#     # type: Union[ResourceType, IdentityType] = Field(index=True)
-#     # type: BaseType = Field(
-#     #     sa_column=Column(Union(Enum(IdentityType), Enum(ResourceType)))
-#     # )
-#     type: ResourceType = Field(index=True)
-
-#     # TBD: is there another way to define the type of the column?
-#     # @model_validator(mode="after")
-#     # def validate_type(self):
-#     #     if self.type not in ResourceType.list():
-#     #         raise ValueError("Invalid Resource type")
-#     #     return self
-
-
-# class IdentityTypeLink(SQLModel, table=True):
-#     """Model for identity types"""
-
-#     id: uuid.UUID = Field(primary_key=True)
-#     type: IdentityType = Field(index=True)
 
 
 # region Access
@@ -97,23 +64,6 @@ class AccessPolicy(AccessPolicyCreate, table=True):
     resource_id: uuid.UUID = Field(foreign_key="identifiertypelink.id", index=True)
     action: "Action" = Field()
 
-    # @model_validator(mode="before")
-    # def log_model_called(self):
-    #     """Logs the model called"""
-    #     print("=== AccessPolicy model called. ===")
-    #     print(
-    #         "self.id: ",
-    #         self,
-    #         "self.identity_id: ",
-    #         self.identity_id,
-    #         "self.resource_id: ",
-    #         self.resource_id,
-    #         "self.action: ",
-    #         self.action,
-    #     )
-    #     return self
-
-    # __table_args__ = (UniqueConstraint("identity_id", "resource_id", "action"),)
     # consider refactoring into a unique constraint for identity_id, resource_id only - highest access level only:
     __table_args__ = (UniqueConstraint("identity_id", "resource_id"),)
 
@@ -191,8 +141,6 @@ class AccessLog(AccessLogCreate, table=True):
     """Table for logging actual access attempts"""
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
-    # identity_id: Optional[uuid.UUID] = Field(default=None, index=True)
     identity_id: Optional[uuid.UUID] = Field(
         default=None, foreign_key="identifiertypelink.id", index=True
     )
@@ -234,8 +182,6 @@ class ResourceHierarchyCreate(SQLModel):
         default=False,
         description="Set to true, if the child inherits permissions from this parent.",
     )
-    # order: Optional[int] = None
-    # = Field(default=None, sa_column_kwargs={"autoincrement": True})
 
     @model_validator(mode="after")
     def not_child_to_self(self):
@@ -248,18 +194,11 @@ class ResourceHierarchyCreate(SQLModel):
 class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
     """Table for resource hierarchy and its types"""
 
-    parent_id: uuid.UUID = Field(
-        primary_key=True
-    )  # foreign_key="identifiertypelink.id",
-    child_id: uuid.UUID = Field(
-        primary_key=True
-    )  # foreign_key="identifiertypelink.id",
+    parent_id: uuid.UUID = Field(primary_key=True)
+    child_id: uuid.UUID = Field(primary_key=True)
     order: Optional[int] = Field(index=True)
 
-    __table_args__ = (
-        UniqueConstraint("parent_id", "child_id"),
-        # UniqueConstraint("parent_id", "order"),# TBD: causes issues during reordering
-    )
+    __table_args__ = (UniqueConstraint("parent_id", "child_id"),)
 
     # TBD: add the required relations: children, that cannot be standalone, but need a parent.
     relations: ClassVar = {

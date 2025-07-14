@@ -5,21 +5,17 @@
 	// import { io } from 'socket.io-client';
 	import Heading from '$components/Heading.svelte';
 	import Chat from './Chat.svelte';
+	import type { SocketioConnection } from '$lib/socketio';
 	import { page } from '$app/state';
 
 	// const socketio_client_from_lib = new SocketIO();
 
-	const public_message_connection = {
-		event: 'public_message',
+	const public_message_connection: SocketioConnection = {
 		namespace: '/public-namespace',
-		room: '',
 		cookie_session_id: page.data.session.sessionId
 	};
-	const demo_message_connection = {
-		event: 'demo_message',
+	const demo_message_connection: SocketioConnection = {
 		namespace: '/demo-namespace',
-		// namespace: '',
-		room: '',
 		cookie_session_id: page.data.session.sessionId
 	};
 
@@ -102,10 +98,14 @@
 
 <div class="m-5 grid grid-cols-2 gap-8">
 	<div class="grow">
-		<Chat connection={public_message_connection}><Heading>Public Message Namespace</Heading></Chat>
+		<Chat connection={public_message_connection} socketioEvent="public_message"
+			><Heading>Public Message Namespace</Heading></Chat
+		>
 	</div>
 	<div>
-		<Chat connection={demo_message_connection}><Heading>Demo Message Namespace</Heading></Chat>
+		<Chat connection={demo_message_connection} socketioEvent="demo_message"
+			><Heading>Demo Message Namespace</Heading></Chat
+		>
 	</div>
 </div>
 

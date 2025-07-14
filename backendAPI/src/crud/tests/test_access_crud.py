@@ -323,14 +323,9 @@ async def test_read_access_policy_by_id_without_permission(
     (register_many_current_users,)
     register_many_resources
     policies = add_many_test_access_policies
-    try:
-        async with AccessPolicyCRUD() as policy_crud:
-            await policy_crud.read(resource_id=policies[2].resource_id)
-    except Exception as err:
-        assert err.status_code == 404
-        assert err.detail == "Access policy not found."
-    else:
-        pytest.fail("No HTTPexception raised!")
+    async with AccessPolicyCRUD() as policy_crud:
+        result = await policy_crud.read(resource_id=policies[2].resource_id)
+        assert result == []
 
 
 # TBD: implement tests for filters_allowed logic:
@@ -348,17 +343,11 @@ async def test_read_access_policy_for_nonexisting_resource_id(
     current_admin_user = register_many_current_users[0]
     add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
-        try:
-            # results = await policy_crud.read_by_id(1234)
-            await policy_crud.read(
-                resource_id=uuid.uuid4(),
-                current_user=current_admin_user,
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await policy_crud.read(
+            resource_id=uuid.uuid4(),
+            current_user=current_admin_user,
+        )
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -401,16 +390,11 @@ async def test_read_access_policy_for_nonexisting_identity(
     current_admin_user = register_many_current_users[0]
     (add_many_test_access_policies,)
     async with AccessPolicyCRUD() as policy_crud:
-        try:
-            await policy_crud.read(
-                identity_id=uuid.UUID(user_id_nonexistent),
-                current_user=current_admin_user,
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await policy_crud.read(
+            identity_id=uuid.UUID(user_id_nonexistent),
+            current_user=current_admin_user,
+        )
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -448,18 +432,12 @@ async def test_read_access_policy_for_wrong_resource_type(
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
-        try:
-            # await policy_crud.read_by_resource(
-            await policy_crud.read(
-                resource_id=policies[1].resource_id,
-                resource_type="wrong_resource_type",
-                current_user=current_admin_user,
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await policy_crud.read(
+            resource_id=policies[1].resource_id,
+            resource_type="wrong_resource_type",
+            current_user=current_admin_user,
+        )
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -540,18 +518,13 @@ async def test_admin_changes_access_policy_from_write_to_own(
     assert updated_policy.action == Action.own
 
     async with AccessPolicyCRUD() as policy_crud:
-        try:
-            await policy_crud.read(
-                identity_id=policies[2].identity_id,
-                resource_id=policies[2].resource_id,
-                action=Action.write,
-                current_user=current_admin_user,
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await policy_crud.read(
+            identity_id=policies[2].identity_id,
+            resource_id=policies[2].resource_id,
+            action=Action.write,
+            current_user=current_admin_user,
+        )
+        assert result == []
 
     async with AccessPolicyCRUD() as policy_crud:
         read_policy = await policy_crud.read(
@@ -590,18 +563,13 @@ async def test_owner_user_changes_access_policy_from_write_to_own(
     assert updated_policy.action == Action.own
 
     async with AccessPolicyCRUD() as policy_crud:
-        try:
-            await policy_crud.read(
-                identity_id=policies[2].identity_id,
-                resource_id=policies[2].resource_id,
-                action=Action.write,
-                current_user=current_admin_user,
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await policy_crud.read(
+            identity_id=policies[2].identity_id,
+            resource_id=policies[2].resource_id,
+            action=Action.write,
+            current_user=current_admin_user,
+        )
+        assert result == []
 
     async with AccessPolicyCRUD() as policy_crud:
         read_policy = await policy_crud.read(
@@ -715,18 +683,13 @@ async def test_admin_deletes_access_policy(
         )
 
     async with AccessPolicyCRUD() as policy_crud:
-        try:
-            await policy_crud.read(
-                resource_id=policies[2].resource_id,
-                identity_id=policies[2].identity_id,
-                action=policies[2].action,
-                current_user=current_admin_user,
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await policy_crud.read(
+            resource_id=policies[2].resource_id,
+            identity_id=policies[2].identity_id,
+            action=policies[2].action,
+            current_user=current_admin_user,
+        )
+        assert result == []
 
     async with AccessPolicyCRUD() as policy_crud:
         all_policies_after_deletion = await policy_crud.read(
@@ -768,18 +731,13 @@ async def test_admin_deletes_all_access_policies_for_a_resource(
     ]
     async with AccessPolicyCRUD() as policy_crud:
         for policy in expected_deletion:
-            try:
-                await policy_crud.read(
-                    resource_id=policy.resource_id,
-                    identity_id=policy.identity_id,
-                    action=policy.action,
-                    current_user=current_admin_user,
-                )
-            except Exception as err:
-                assert err.status_code == 404
-                assert err.detail == "Access policy not found."
-            else:
-                pytest.fail("No HTTPexception raised!")
+            result = await policy_crud.read(
+                resource_id=policy.resource_id,
+                identity_id=policy.identity_id,
+                action=policy.action,
+                current_user=current_admin_user,
+            )
+            assert result == []
 
     async with AccessPolicyCRUD() as policy_crud:
         all_policies_after_deletion = await policy_crud.read(
@@ -830,18 +788,13 @@ async def test_admin_deletes_all_access_policies_for_an_identity(
     ]
     async with AccessPolicyCRUD() as policy_crud:
         for policy in expected_deletion:
-            try:
-                await policy_crud.read(
-                    resource_id=policy.resource_id,
-                    identity_id=policy.identity_id,
-                    action=policy.action,
-                    current_user=current_admin_user,
-                )
-            except Exception as err:
-                assert err.status_code == 404
-                assert err.detail == "Access policy not found."
-            else:
-                pytest.fail("No HTTPexception raised!")
+            result = await policy_crud.read(
+                resource_id=policy.resource_id,
+                identity_id=policy.identity_id,
+                action=policy.action,
+                current_user=current_admin_user,
+            )
+            assert result == []
 
     async with AccessPolicyCRUD() as policy_crud:
         all_policies_after_deletion = await policy_crud.read(
@@ -890,18 +843,13 @@ async def test_user_deletes_all_access_policies_for_a_resource_with_owner_rights
     ]
     async with AccessPolicyCRUD() as policy_crud:
         for policy in expected_deletion:
-            try:
-                await policy_crud.read(
-                    resource_id=policy.resource_id,
-                    identity_id=policy.identity_id,
-                    action=policy.action,
-                    current_user=current_admin_user,
-                )
-            except Exception as err:
-                assert err.status_code == 404
-                assert err.detail == "Access policy not found."
-            else:
-                pytest.fail("No HTTPexception raised!")
+            result = await policy_crud.read(
+                resource_id=policy.resource_id,
+                identity_id=policy.identity_id,
+                action=policy.action,
+                current_user=current_admin_user,
+            )
+            assert result == []
 
     async with AccessPolicyCRUD() as policy_crud:
         all_policies_after_deletion = await policy_crud.read(
@@ -1161,18 +1109,13 @@ async def test_user_deletes_access_policy_with_owner_rights(
         )
 
     async with AccessPolicyCRUD() as policy_crud:
-        try:
-            await policy_crud.read(
-                resource_id=policies[2].resource_id,
-                identity_id=policies[2].identity_id,
-                action=policies[2].action,
-                current_user=current_admin_user,
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await policy_crud.read(
+            resource_id=policies[2].resource_id,
+            identity_id=policies[2].identity_id,
+            action=policies[2].action,
+            current_user=current_admin_user,
+        )
+        assert result == []
 
     async with AccessPolicyCRUD() as policy_crud:
         all_policies_after_deletion = await policy_crud.read(
@@ -1568,15 +1511,10 @@ async def test_user_reads_resource_hierarchy_all_children_of_a_parent_without_pa
     current_user_data = await register_current_user(current_user_data_user2)
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
-        try:
-            await hierarchy_crud.read(
-                current_user=current_user_data, parent_id=resource_id3
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await hierarchy_crud.read(
+            current_user=current_user_data, parent_id=resource_id3
+        )
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -1723,14 +1661,9 @@ async def test_user_reads_resource_hierarchy_all_allowed_parents_without_access_
             child_id, parent_id=uuid.UUID(parent)
         )
 
-    try:
-        async with ResourceHierarchyCRUD() as hierarchy_crud:
-            await hierarchy_crud.read(current_user=current_user, child_id=child_id)
-    except Exception as err:
-        assert err.status_code == 404
-        assert err.detail == "Hierarchy not found."
-    else:
-        pytest.fail("No HTTPexception raised!")
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        result = await hierarchy_crud.read(current_user=current_user, child_id=child_id)
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -1755,14 +1688,9 @@ async def test_user_reads_resource_hierarchy_all_allowed_parents_without_access_
             child_id, parent_id=uuid.UUID(parent)
         )
 
-    try:
-        async with ResourceHierarchyCRUD() as hierarchy_crud:
-            await hierarchy_crud.read(current_user=current_user, child_id=child_id)
-    except Exception as err:
-        assert err.status_code == 404
-        assert err.detail == "Hierarchy not found."
-    else:
-        pytest.fail("No HTTPexception raised!")
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        result = await hierarchy_crud.read(current_user=current_user, child_id=child_id)
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -1779,13 +1707,10 @@ async def test_user_reads_resource_hierarchy_all_parents_of_a_child_without_acce
         )
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
-        try:
-            await hierarchy_crud.read(current_user=current_user_data, child_id=child_id)
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await hierarchy_crud.read(
+            current_user=current_user_data, child_id=child_id
+        )
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -1806,15 +1731,10 @@ async def test_admin_deletes_resource_hierarchy_child(
         )
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
-        try:
-            await hierarchy_crud.read(
-                current_user=current_admin_user, child_id=child_id
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await hierarchy_crud.read(
+            current_user=current_admin_user, child_id=child_id
+        )
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -1843,15 +1763,10 @@ async def test_user_deletes_resource_hierarchy_child_with_owner_rights(
         )
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
-        try:
-            await hierarchy_crud.read(
-                current_user=current_user, child_id=child_resource_id8
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await hierarchy_crud.read(
+            current_user=current_user, child_id=child_resource_id8
+        )
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -2237,15 +2152,10 @@ async def test_user_reads_identity_hierarchy_all_children_of_a_parent_without_pa
     current_user_data = await register_current_user(current_user_data_user2)
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:
-        try:
-            await hierarchy_crud.read(
-                current_user=current_user_data, parent_id=identity_id_group2
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await hierarchy_crud.read(
+            current_user=current_user_data, parent_id=identity_id_group2
+        )
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -2392,14 +2302,9 @@ async def test_user_reads_identity_hierarchy_all_allowed_parents_without_access_
             child_id, parent_id=uuid.UUID(parent)
         )
 
-    try:
-        async with IdentityHierarchyCRUD() as hierarchy_crud:
-            await hierarchy_crud.read(current_user=current_user, child_id=child_id)
-    except Exception as err:
-        assert err.status_code == 404
-        assert err.detail == "Hierarchy not found."
-    else:
-        pytest.fail("No HTTPexception raised!")
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        result = await hierarchy_crud.read(current_user=current_user, child_id=child_id)
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -2428,14 +2333,9 @@ async def test_user_reads_identity_hierarchy_all_allowed_parents_without_access_
             child_id, parent_id=uuid.UUID(parent)
         )
 
-    try:
-        async with IdentityHierarchyCRUD() as hierarchy_crud:
-            await hierarchy_crud.read(current_user=current_user, child_id=child_id)
-    except Exception as err:
-        assert err.status_code == 404
-        assert err.detail == "Hierarchy not found."
-    else:
-        pytest.fail("No HTTPexception raised!")
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        result = await hierarchy_crud.read(current_user=current_user, child_id=child_id)
+    assert result == []
 
 
 @pytest.mark.anyio
@@ -2457,13 +2357,10 @@ async def test_user_reads_identity_hierarchy_all_parents_of_a_child_without_acce
         )
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:
-        try:
-            await hierarchy_crud.read(current_user=current_user_data, child_id=child_id)
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await hierarchy_crud.read(
+            current_user=current_user_data, child_id=child_id
+        )
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -2484,15 +2381,10 @@ async def test_admin_deletes_identity_hierarchy_child(
         )
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:
-        try:
-            await hierarchy_crud.read(
-                current_user=current_admin_user, child_id=child_id
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await hierarchy_crud.read(
+            current_user=current_admin_user, child_id=child_id
+        )
+        assert result == []
 
 
 @pytest.mark.anyio
@@ -2521,15 +2413,10 @@ async def test_user_deletes_identity_hierarchy_child_with_owner_rights(
         )
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:
-        try:
-            await hierarchy_crud.read(
-                current_user=current_user, child_id=child_identity_id5
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        result = await hierarchy_crud.read(
+            current_user=current_user, child_id=child_identity_id5
+        )
+        assert result == []
 
 
 @pytest.mark.anyio

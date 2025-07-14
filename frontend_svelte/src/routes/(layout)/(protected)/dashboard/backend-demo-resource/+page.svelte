@@ -1,71 +1,34 @@
+<!-- Rename the folder of this file "protected" into the real content -->
+
 <script lang="ts">
-	import type { PageData } from './$types';
-	import JsonData from '$components/JsonData.svelte';
 	import Heading from '$components/Heading.svelte';
-	import { mount } from 'svelte';
-	import DemoResourceCard from './DemoResourceCard.svelte';
-	import type { AccessPolicy, DemoResourceExtended, MicrosoftTeamBasicExtended } from '$lib/types';
-	let { data }: { data: PageData } = $props();
-	// console.log('=== page data in backend-demo-resource/page.svelte ===');
-	// console.log(data);
-	const demoResources = data.demoResourcesExtended;
-	const microsoftTeams = data.microsoftTeams;
+	import NavigationCard from '$components/NavigationCard.svelte';
 
-	let debug = $state(false);
-
-	const microsoftTeamsExtendWithAccessPolicies = (
-		microsoftTeams: MicrosoftTeamBasicExtended[],
-		demoResource: DemoResourceExtended
-	) => {
-		return microsoftTeams.map((team: MicrosoftTeamBasicExtended) => {
-			return {
-				...team,
-				access_policies: demoResource.access_policies?.filter(
-					(policy: AccessPolicy) => team.id === policy.identity_id
-				)
-			};
-		});
-	};
+	const links = [
+		{
+			// TBD: don't do "_" in URLs, ideally just "/", but "-" is also ok.
+			name: 'Via REST API',
+			description:
+				'The demo resources of the backend API service, retrieved through the backend REST API from the postgres database',
+			url: '/restapi'
+		},
+		{
+			name: 'Via Socket.IO',
+			description:
+				'The demo resources of the backend API service, retrieved through the backend REST API from the postgres database',
+			url: '/socketio'
+		}
+	];
 </script>
 
-<!-- <code><pre>{JSON.stringify(demo_resources, null, ' ')}</pre></code> -->
+<Heading>
+	Communicating Demo Resources to Backend API Service and handling access policies for identities.
+</Heading>
 
-<div class="mb-2 flex items-center gap-1">
-	<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
-	<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
-</div>
-<div class="mb-5">
-	<button
-		class="btn-neutral-container btn btn-circle btn-gradient"
-		onclick={async () => {
-			const container = document.getElementById('demoResourcesContainer')!;
-			const firstDemoResource = container.childNodes[0];
-			mount(DemoResourceCard, {
-				target: container,
-				anchor: firstDemoResource,
-				props: { microsoftTeams: microsoftTeams }
-			});
-			const { HSDropdown } = await import('flyonui/flyonui.js');
-			HSDropdown.autoInit();
-		}}
-		aria-label="Add Button"
-	>
-		<span class="icon-[fa6-solid--plus]"></span>
-	</button>
-</div>
-
-<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-2" id="demoResourcesContainer">
-	{#each demoResources as demoResource (demoResource.id)}
-		<DemoResourceCard
-			{demoResource}
-			microsoftTeams={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)}
-		/>
-		<div class={debug ? 'block' : 'hidden'}>
-			<Heading>{demoResource.name}</Heading>
-			<p class="title-small md:title text-secondary">=> demoResource</p>
-			<JsonData data={demoResource} />
-			<p class="title-small md:title text-secondary">=> microsoftTeams</p>
-			<JsonData data={microsoftTeamsExtendWithAccessPolicies(microsoftTeams, demoResource)} />
-		</div>
+<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
+	{#each links as link (link.name)}
+		<NavigationCard title={link.name} href={`backend-demo-resource${link.url}`}
+			>{link.description}</NavigationCard
+		>
 	{/each}
 </div>

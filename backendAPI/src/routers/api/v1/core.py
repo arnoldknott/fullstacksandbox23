@@ -67,8 +67,6 @@ def get_users_groups_ms_graph(access_token: str):
     )
     groups = response.json()
 
-    # print("=== groups ===")
-    # print(groups)
     return groups
 
 
@@ -79,8 +77,6 @@ def get_me_ms_graph(access_token: str):
         "https://graph.microsoft.com/v1.0/me",
         headers={"Authorization": f"Bearer {access_token}"},
     )
-    # print("=== response of onbehalfof me")
-    # print(response)
     return response.json()
 
 
@@ -107,6 +103,20 @@ async def get_keyvault():
     }
 
 
+# @router.get("/postgres")
+# async def get_postgres():
+#     """Returns the configuration of the PostgreSQL database."""
+#     logger.info("Postgres check")
+# return alembic version:
+# SELECT * FROM public.alembic_version
+
+# @router.get("/redis")
+# async def get_redis():
+#     """Returns the configuration of the Redis database."""
+#     logger.info("Redis check")
+# access the Redis database to check if it is running
+
+
 # # Don't put under protected resource, because the protected resource router requires scope "api.read"  for this API!
 # # This route is protected by the OAuth2AuthorizationCodeBearer scheme.
 # @router.get("/oauth2")
@@ -129,17 +139,6 @@ async def get_keyvault():
 #             headers={"WWW-Authenticate": "Bearer"},
 #         )
 #     return {"access_token": token, "token_type": "bearer"}
-
-
-# previously in security - not really needed any more!
-# def get_token_from_header(auth_header: str):
-#     """Returns the access token sent in the request header"""
-#     try:
-#         token = auth_header.split("Bearer ")[1]
-#         return token
-#     except Exception:
-#         logger.error("🔑 Failed to get token from header.")
-#         raise HTTPException(status_code=401, detail="Invalid authorization header.")
 
 
 # Note: this one is protected under the scope "user_impersonization"" from https://management.azure.com

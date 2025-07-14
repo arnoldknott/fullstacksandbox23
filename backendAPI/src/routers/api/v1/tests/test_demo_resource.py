@@ -601,9 +601,9 @@ async def test_get_demo_resources_for_lonely_category(
         f"/api/v1/demoresource/category/{str(categories[2]['id'])}"
     )
 
-    assert response.status_code == 404
+    assert response.status_code == 200
     content = response.json()
-    assert content["detail"] == "DemoResource not found."
+    assert content == []
 
 
 @pytest.mark.anyio

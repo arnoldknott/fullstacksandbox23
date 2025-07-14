@@ -41,8 +41,7 @@ async def post_demo_resource(
 
 
 # The get functions are totally public
-# TBD: still a policy is needed for the fine grained access control to make the resource public!
-# The default create only grants "own" access to the user, how creates it!
+# However still a policy is needed for the fine grained access control to make the resource public!
 @router.get("/", status_code=200)
 async def get_all_demo_resources(
     # token_payload=Depends(get_http_access_token_payload),
@@ -95,13 +94,9 @@ async def add_tag_to_demo_resource(
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResourceRead:
     """Adds a tag to a demo resource."""
-    # token = CurrentAccessToken(token_payload)
-    # current_user = await token.provides_current_user()
     current_user = await check_token_against_guards(token_payload, guards)
     async with TagCRUD() as crud:
         for tag_id in tag_ids:
-            print("=== tag_id ===")
-            print(tag_id)
             await crud.add_child_to_parent(
                 parent_id=resource_id,
                 child_id=tag_id,
@@ -110,7 +105,6 @@ async def add_tag_to_demo_resource(
             )
     async with demo_resource_view.crud() as crud:
         return await crud.read_by_id(resource_id, current_user)
-        # return await crud.add_tag(resource_id, tag_ids)
 
 
 @router.get("/category/{category_id}")

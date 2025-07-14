@@ -67,12 +67,23 @@ class BackendAPI extends BaseAPI {
 		publicAccess: boolean = false
 	) {
 		// Data validation:
-		let action: Action | undefined = Object.values(Action).includes(actionIn as Action)
+		// action = action ? (action as Action) : undefined;
+		// newAction = newAction ? (newAction as Action) : undefined;
+		const action: Action | undefined = Object.values(Action).includes(actionIn as Action)
 			? (actionIn as Action)
 			: undefined;
-		let newAction: Action | undefined = Object.values(Action).includes(newActionIn as Action)
+		const newAction: Action | undefined = Object.values(Action).includes(newActionIn as Action)
 			? (newActionIn as Action)
 			: undefined;
+
+		// console.log(
+		// 	'=== routes - demo-resource - page.server - share function executed ===',
+		// 	'Resource ID:' + resourceId + '\n',
+		// 	'Identity ID:' + identityId + '\n',
+		// 	'Action:' + action + '\n',
+		// 	'New Action:' + newAction + '\n',
+		// 	'Public Access:' + publicAccess + '\n'
+		// );
 
 		// Logic to decide wether to create, update or delete the access policy:
 		if (!resourceId || !identityId) {
@@ -80,7 +91,9 @@ class BackendAPI extends BaseAPI {
 				'=== routes - demo-resource - page.server - Resource ID or Identity ID is missing ==='
 			);
 			return fail(400, { error: 'Resource ID and Identity ID are required.' });
-		} else if (action === 'unshare' || newAction === 'unshare') {
+		}
+		// TBD: check if action is present, otherwise it's a delete operation
+		else if (!action) {
 			const response = await this.delete(
 				sessionId,
 				`/access/policy?resource_id=${resourceId}&identity_id=${identityId}`
@@ -89,56 +102,47 @@ class BackendAPI extends BaseAPI {
 				return fail(response.status, { error: response.statusText });
 			}
 			return {
-				identityId: identityId,
-				confirmedNewAction: 'unshare',
-				public: false
+				identityId: identityId
 			};
 		} else {
-			if (!action && newAction) {
-				action = newAction;
-				newAction = undefined;
-			}
-			if (action) {
-				const accessPolicy: AccessPolicy = {
-					resource_id: resourceId,
-					identity_id: identityId,
-					action: action,
-					new_action: newAction,
-					public: publicAccess
+			const accessPolicy: AccessPolicy = {
+				resource_id: resourceId,
+				identity_id: identityId,
+				action: action,
+				new_action: newAction,
+				public: publicAccess
+			};
+			if (!newAction) {
+				const response = await this.post(sessionId, '/access/policy', JSON.stringify(accessPolicy));
+				if (response.status !== 201) {
+					return fail(response.status, { error: response.statusText });
+				}
+				const payload = await response.json();
+				return {
+					identityId: identityId,
+					confirmedNewAction: payload.action,
+					public: payload.public
 				};
-				if (!newAction) {
-					const response = await this.post(
-						sessionId,
-						'/access/policy',
-						JSON.stringify(accessPolicy)
-					);
-					if (response.status !== 201) {
-						return fail(response.status, { error: response.statusText });
-					}
+				// } else {
+			} else if (action !== newAction) {
+				const response = await this.put(sessionId, '/access/policy', JSON.stringify(accessPolicy));
+				if (response.status !== 200) {
+					return fail(response.status, { error: response.statusText });
+				} else {
 					const payload = await response.json();
 					return {
 						identityId: identityId,
 						confirmedNewAction: payload.action,
 						public: payload.public
 					};
-				} else {
-					const response = await this.put(
-						sessionId,
-						'/access/policy',
-						JSON.stringify(accessPolicy)
-					);
-					if (response.status !== 200) {
-						return fail(response.status, { error: response.statusText });
-					} else {
-						const payload = await response.json();
-						return {
-							identityId: identityId,
-							confirmedNewAction: payload.action,
-							public: payload.public
-						};
-					}
 				}
 			}
+			// } else {
+			// 	console.error(
+			// 		'=== routes - demo-resource - page.server - Action and New Action are the same ==='
+			// 	);
+			// 	return fail(400, { error: 'Action and New Action cannot be the same.' });
+			// }
 		}
 	}
 }

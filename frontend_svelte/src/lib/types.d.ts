@@ -1,6 +1,10 @@
 import type { AccountInfo } from '@azure/msal-node';
-import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
-import type { Action } from '$lib/accessHandler';
+import type {
+	User as MicrosoftProfile,
+	Team as MicrosoftTeam
+} from '@microsoft/microsoft-graph-types';
+import type { Action, IdentityType } from '$lib/accessHandler';
+import type { Variant } from '$lib/theming';
 
 // App specific:
 export type BackendAPIConfiguration = {
@@ -25,20 +29,6 @@ export type BackendAPIConfiguration = {
 // 	redis_password: string;
 // };
 
-export type SocketioConnection = {
-	event: string;
-	namespace?: string;
-	room?: string;
-	connected?: boolean;
-	cookie_session_id?: string;
-};
-
-type Tab = {
-	header: string;
-	content: string;
-	active?: boolean;
-};
-
 // TBD: rename into ServerSession:
 export type Session = {
 	loggedIn: boolean;
@@ -46,7 +36,7 @@ export type Session = {
 	microsoftAccount?: AccountInfo;
 	microsoftProfile?: MicrosoftProfile;
 	userAgent?: string;
-	userProfile?: UserProfile;
+	currentUser?: Me;
 	sessionId: string;
 };
 
@@ -57,14 +47,22 @@ export type ClientSession = {
 };
 
 // Access types:
-
 export interface AccessPolicy {
 	resource_id: string;
-	identity_id: string;
-	action: Action;
+	identity_id: string; // can be optional for public resources
+	action?: Action;
 	new_action?: Action; // for updates
 	public?: boolean;
 	id?: number;
+}
+
+// identifies with whom and how a resource can be shared with:
+export interface AccessShareOption {
+	identity_id: string;
+	identity_name: string;
+	identity_type: IdentityType;
+	action?: Action; // for existing AccessPolicy for this identity: it's an Action, otherwise undefined
+	public?: boolean;
 }
 
 export interface AccessRight {
@@ -90,13 +88,17 @@ interface WithLastModifiedDate {
 // intended for checking this user's rights
 // highest permission wins: "own", "write", "read"
 interface WithAccessRights {
-	user_right: Action; // Adjust the type as needed
+	access_right: Action; // Adjust the type as needed
 }
 
 // Access policies for the resource - that includes other users' access permissions
 // intended for sharing operations
 interface WithAccessPolicies {
 	access_policies: AccessPolicy[];
+}
+
+interface WithAccessShareOptions {
+	access_share_options: AccessShareOption[];
 }
 
 // specific resources:
@@ -122,24 +124,87 @@ export interface DemoResourceWithCreationDate extends DemoResource {
 
 // Identity specific:
 
+export type Identity = {
+	id: string;
+	name: string;
+	type: IdentityType;
+};
+
+export type User = {
+	id: string;
+	azure_user_id: string;
+	azure_tenant_id: string;
+	is_active: boolean;
+	azure_groups: AzureGroup[];
+	ueber_groups?: UeberGroup[]; // TBD: fix
+	groups?: Group[]; // TBD: fix
+	sub_groups?: SubGroup[]; // TBD: fix
+	sub_sub_groups?: SubSubGroup[]; // TBD: fix
+};
+
+type UserProfile = {
+	id: string;
+	theme_color?: string;
+	theme_variant?: Variant; // from theming.ts
+	contrast?: number;
+	user_id: string; // TBD: remove
+};
+
+type UserAccount = {
+	id: string;
+	user_id: string;
+	is_publicAIIuser: boolean;
+};
+
 // matches Me in models/identities/backend API
-export type UserProfile = {
+export type Me = User & {
+	azure_token_roles?: string[];
+	azure_token_groups?: string[];
+	user_profile: UserProfile;
+	user_account: UserAccount;
+};
+
+type AzureGroup = {
 	id: string;
-	azureGroups?: string[]; // TBD: fix
-	ueberGroups?: string[]; // TBD: fix
-	groups?: string[]; // TBD: fix
-	subGroups?: string[]; // TBD: fix
-	subSubGroups?: string[]; // TBD: fix
-	azure_token_roles?: string[]; // TBD: fix
-	azure_token_groups?: string[]; // TBD: fix
-}; // TBD: remove
+	azure_tenant_id: string;
+	is_active: boolean;
+	azure_users: User[];
+};
 
-export interface MicrosoftTeamBasic {
+export type UeberGroup = {
 	id: string;
-	displayName: string;
-	description: string;
-}
+	name: string;
+	description?: string;
+	users?: User[];
+	groups?: Group[];
+};
 
-export type MicrosoftTeamBasicExtended = ExtendEntity<MicrosoftTeamBasic>;
+export type Group = {
+	id: string;
+	name: string;
+	description?: string;
+	users?: User[];
+	sub_groups?: SubGroup[];
+};
 
-// add types for ueber-group, group, sub-group, and sub-sub-group
+export type SubGroup = {
+	id: string;
+	name: string;
+	description?: string;
+	users?: User[];
+	sub_sub_groups?: SubSubGroup[];
+};
+
+export type SubSubGroup = {
+	id: string;
+	name: string;
+	description?: string;
+	users?: User[];
+};
+
+export type UserExtended = ExtendEntity<User>;
+export type UeberGroupExtended = ExtendEntity<UeberGroup>;
+export type GroupExtended = ExtendEntity<Group>;
+export type SubGroupExtended = ExtendEntity<SubGroup>;
+export type SubSubGroupExtended = ExtendEntity<SubSubGroup>;
+export type MicrosoftTeamExtended = MicrosoftTeam & Partial<WithAccessRights & WithAccessPolicies>;

@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-# TBD: write more tests for this:
 @router.post("/", status_code=201)
 async def post_protected_resource(
     public_resource: PublicResourceCreate,

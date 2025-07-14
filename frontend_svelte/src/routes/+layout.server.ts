@@ -32,7 +32,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 				loggedIn: locals.sessionData.loggedIn,
 				microsoftProfile: locals.sessionData.microsoftProfile,
 				sessionId: locals.sessionData.sessionId,
-				userProfile: locals.sessionData.userProfile
+				currentUser: locals.sessionData.currentUser
 			}
 		};
 		// console.log('=== layout.server.ts - load - globalClientData ===');

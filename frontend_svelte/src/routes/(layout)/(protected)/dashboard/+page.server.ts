@@ -12,6 +12,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// TBD: change scope to socketio!
 	await msalAuthProvider.getAccessToken(sessionId, [
 		`${appConfig.api_scope}/socketio`,
+		`${appConfig.api_scope}/api.read`,
 		`${appConfig.api_scope}/api.write`
 	]);
 };

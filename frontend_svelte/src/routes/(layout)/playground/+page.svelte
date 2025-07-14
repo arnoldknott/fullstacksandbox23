@@ -11,7 +11,7 @@
 			name: 'Components',
 			description:
 				'Prototypes of components with applied design - candidates to become Svelte components',
-			url: '/components'
+			url: '/components?develop=true&prod=false'
 		},
 		{
 			name: 'Design',

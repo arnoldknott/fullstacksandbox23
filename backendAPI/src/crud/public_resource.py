@@ -78,7 +78,7 @@ class PublicResourceCRUD:
         response = await session.exec(select(PublicResource))
         if response is None:
             # TBD: add access logging here!
-            raise HTTPException(status_code=404, detail="No objects found")
+            return []
         # TBD: add access logging here!
         return response.all()
 
@@ -103,12 +103,6 @@ class PublicResourceCRUD:
         session = self.session
         updated = new.model_dump(exclude_unset=True)
         for key, value in updated.items():
-            # if (
-            #     key == "created_at"
-            #     or key == "last_updated_at"
-            #     # or key == "last_accessed_at"
-            # ):
-            #     continue
             setattr(old, key, value)
         public_resource = old
         session.add(public_resource)

@@ -16,14 +16,6 @@ logger = logging.getLogger(__name__)
 # TBD: implement caching
 
 
-# class Protectors(BaseModel):
-#     """Protectors for the routes"""
-
-#     scopes: Optional[List[str]] = []
-#     roles: Optional[List[str]] = []
-#     groups: Optional[List[UUID]] = []
-
-
 class BaseView:
     """Base class for all views"""
 
@@ -34,26 +26,6 @@ class BaseView:
     # - implement rate limiting
     # - implement pagination
     # - implement sorting
-    # async def _check_token_against_guards(self, token_payload, guards):
-    #     """checks if token fulfills the required guards and returns current user."""
-    #     token = CurrentAccessToken(token_payload)
-    #     # TBD: consider moving this logic to the guards class
-    #     # and only call the verifying method with the token_payload!
-    #     if guards is not None:
-    #         if guards.scopes is not None:
-    #             for scope in guards.scopes:
-    #                 await token.has_scope(scope)
-    #         if guards.roles is not None:
-    #             for role in guards.roles:
-    #                 await token.has_role(role)
-    #         if guards.groups is not None:
-    #             for group in guards.groups:
-    #                 await token.has_group(group)
-    #     return await token.provides_current_user()
-    # current_user = await self._guards(
-    #     token_payload, guards.scopes, guards.roles, guards.groups
-    # )
-    # return current_user
 
     async def post(self, object, token_payload, guards, parent_id=None, inherit=False):
         logger.info("POST view calls create CRUD")

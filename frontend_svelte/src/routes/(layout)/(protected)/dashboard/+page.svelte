@@ -65,39 +65,3 @@
 		>
 	{/each}
 </div>
-
-<!-- Version 2:
-
-<div class="grid grid-cols-3 gap-4">
-
-	{#each links as link}
-		<div>
-			<li>
-				<a
-					class="text-xl text-blue-400 transition duration-150 ease-in-out hover:text-neutral-600 focus:text-neutral-700 active:text-neutral-300"
-					href={`/playground${link.url}`}
-				>
-					{link.name}
-				</a>
-			</li>
-		</div>
-	{/each}
-
-</div>
-
-Version 1:
-
-<div class="mx-5">
-	<ul>
-		{#each links as link}
-			<li>
-			<a
-					class="text-xl text-blue-400 transition duration-150 ease-in-out hover:text-neutral-600 focus:text-neutral-700 active:text-neutral-300"
-					href={`/playground${link.url}`}
-				>
-					{link.name}
-				</a>
-			</li>
-		{/each}
-	</ul>
-</div> -->

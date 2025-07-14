@@ -7,6 +7,39 @@
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
+	const links = [
+		{
+			name: 'FlyonUI 2',
+			description: 'Playground and showcase for flyonUI components and design',
+			url: '/playground/design/flyonui'
+		},
+		{
+			name: 'Material Design 3',
+			description: 'Playground and showcase for Material Design 3 components and design',
+			url: '/playground/design/materialdesign'
+		},
+		{
+			name: 'TailwindCSS 4',
+			description: 'Formatting playground for styling with TailwindCSS utility classes',
+			url: '/playground/design/tailwindcss'
+		},
+		{
+			name: 'Svelte 5',
+			description: 'Playground for Svelte 5 transitions and animations',
+			url: '/playground/design/svelte'
+		},
+		{
+			name: 'Comparison',
+			description: 'Directly putting components right next to each other to compare them',
+			url: '/playground/design/comparison'
+		},
+		{
+			name: 'Playground',
+			description: 'Play with the colors and some components below to get a preview of the design',
+			url: '#playground'
+		}
+	];
+
 	const backgrounds = ['background', 'base-100', 'base-150', 'base-200', 'base-250', 'base-300'];
 	const components = [
 		'primary',
@@ -51,7 +84,10 @@
 <Heading>🚧 Construction sites - for design experiments 🚧</Heading>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
-	<NavigationCard title="FlyonUI 2" href="/playground/design/flyonui">
+	{#each links as link (link.name)}
+		<NavigationCard title={link.name} href={link.url}>{link.description}</NavigationCard>
+	{/each}
+	<!-- <NavigationCard title="FlyonUI 2" href="/playground/design/flyonui">
 		Playground and showcase for flyonUI components and design
 	</NavigationCard>
 	<NavigationCard title="Material Design 3" href="/playground/design/materialdesign">
@@ -65,7 +101,7 @@
 	</NavigationCard>
 	<NavigationCard title="Playground" href="#playground">
 		Play with the colors and some components below to get a preview of the design
-	</NavigationCard>
+	</NavigationCard> -->
 </div>
 
 <Heading>👍 Results - ready for use 👍</Heading>
