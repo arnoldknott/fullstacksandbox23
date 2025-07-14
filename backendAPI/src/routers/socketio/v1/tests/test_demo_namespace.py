@@ -1,31 +1,9 @@
-from pprint import pprint
-import uuid
 import pytest
 from socketio.exceptions import ConnectionError
 from datetime import datetime
 import socketio
-from routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
+from routers.socketio.v1.demo_namespace import demo_namespace_router
 from tests.utils import (
-    session_id_user1_read_write_socketio,
-    session_id_user2_read_write_socketio,
-    token_admin_read_write_socketio,
-    token_user1_read_write_socketio,
-    token_admin_read,
-    token_admin_write,
-    token_user1_read,
-    token_user1_write,
-    token_admin_socketio,
-    token_user1_read_socketio,
-    token_user1_write_socketio,
-    token_user1_socketio,
-    token_user2_socketio,
-    token_user2_read_socketio,
-    token_user2_write_socketio,
-    token_user2_read_write_socketio,
-    token_admin_read_socketio,
-    token_admin_write_socketio,
-    token_user2_read,
-    token_user2_write,
     session_id_admin_read,
     session_id_admin_write,
     session_id_admin_socketio,
@@ -35,13 +13,18 @@ from tests.utils import (
     session_id_user1_read,
     session_id_user1_write,
     session_id_user1_socketio,
-    session_id_user1_write_socketio,
     session_id_user1_read_socketio,
+    session_id_user1_read_write_socketio,
     session_id_user2_socketio,
     session_id_user2_read,
     session_id_user2_write,
     session_id_user2_read_socketio,
     session_id_user2_write_socketio,
+    session_id_user2_read_write_socketio,
+    session_id_invalid_token1,
+    session_id_invalid_token2,
+    token_user1_read_write_socketio,
+    token_user2_read_write_socketio,
 )
 
 
@@ -84,7 +67,6 @@ async def test_on_connect_to_production_on_server_side_fails_unpatched_server():
         assert str(err) == "Authorization failed."
 
 
-# TBD: rework to new client fixture with events:
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "session_id_selector",
@@ -131,6 +113,8 @@ async def test_connect_to_demo_namespace(
         [session_id_user2_read],
         [session_id_user2_write],
         [session_id_user2_write_socketio],
+        [session_id_invalid_token1],
+        [session_id_invalid_token2],
     ],
     indirect=True,
 )

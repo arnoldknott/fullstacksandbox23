@@ -351,6 +351,28 @@ def current_token_payload(session_id_selector: callable):
 
 
 @pytest.fixture(scope="function")
+async def current_user_from_session_id(
+    session_id_selector: callable,
+    current_user_from_azure_token: callable,
+    current_token_payload: callable,
+):
+    """Returns the current user from the session id selector."""
+
+    async def _current_user_from_session_id(index: int = 0):
+        """Returns the current user from the session id selector."""
+        session_id = session_id_selector(index)
+        if session_id:
+            user_account = await current_user_from_azure_token(
+                current_token_payload(index)
+            )
+            return user_account
+        return None
+
+    return _current_user_from_session_id
+
+
+# If this one gets even bigger, consider refactoring it into a class!
+@pytest.fixture(scope="function")
 async def socketio_test_client_generic(session_id_selector: uuid.UUID):
     """Provides a socket.io client for testing with a specific session ID.
 
@@ -383,7 +405,6 @@ async def socketio_test_client_generic(session_id_selector: uuid.UUID):
         def make_handler(event_name):
             async def handle_event(data):
                 """Handles the event and appends data to responses."""
-                # print(f"=== Received event '{event_name}': {data} ===", flush=True)
                 nonlocal responses
                 if logs is not None:
                     logs.append(
@@ -415,30 +436,12 @@ async def socketio_test_client_generic(session_id_selector: uuid.UUID):
             )
             server_url += f"?{query_string}"
         all_namespaces = [namespace["namespace"] for namespace in client_config]
-        print(
-            "=== socketio_test_client_generic - connecting to server - session_id ==="
-        )
-        print(session_id, flush=True)
-        print(
-            "=== socketio_test_client_generic - connecting to server - server_url ==="
-        )
-        print(server_url, flush=True)
-        print(
-            "=== socketio_test_client_generic - connecting to server - namespaces ==="
-        )
-        print(all_namespaces, flush=True)
         await client.connect(
             server_url,
             socketio_path="socketio/v1",
             namespaces=all_namespaces,
             auth={"session-id": str(session_id)},
         )
-
-        # print(
-        #     "=== socketio_test_client_generic - mock_azure_token_in_redis - call_count ==="
-        # )
-        # print(mock_azure_token_in_redis["mock"].call_count)
-
         connection = {
             "client": client,
             "responses": responses,

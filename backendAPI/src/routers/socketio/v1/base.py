@@ -232,7 +232,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             "status",
             data,
             namespace=self.namespace,
-            to=sid,
+            to=sid,  # TBD: add room "admin"?
         )
 
     async def on_connect(
@@ -291,6 +291,8 @@ class BaseNamespace(socketio.AsyncNamespace):
             logger.info(
                 f"🧦 Client authenticated to public namespace {self.namespace}."
             )
+        # TBD: consider switching the if and for
+        # TBD: add admin to room admin.
         for identity_id in identity_ids:
             if identity_id:
                 # Assign the identity id to the room for hierarchical resource system

@@ -10,16 +10,17 @@ from tests.utils import many_test_demo_resources
 from models.access import AccessPolicy
 from models.demo_resource import DemoResource, DemoResourceExtended
 from crud.demo_resource import DemoResourceCRUD
-from routers.socketio.v1.demo_resource import DemoResourceNamespace
 from tests.utils import (
-    token_admin_read_socketio,
+    session_id_admin_read,
+    session_id_admin_write,
+    session_id_admin_read_socketio,
+    session_id_admin_read_write_socketio,
+    session_id_user1_read,
+    session_id_user1_write,
+    session_id_user1_read_socketio,
+    session_id_user1_read_write_socketio,
+    session_id_user2_read_socketio,
     token_admin_read_write_socketio,
-    token_user1_read_write_socketio,
-    token_user1_read_socketio,
-    token_admin_read,
-    token_admin_write,
-    token_user1_read,
-    token_user1_write,
 )
 
 # Nomenclature:
@@ -45,37 +46,54 @@ from tests.utils import (
 # ✔︎ one client deletes a demo resource and another client gets the remove event
 # ✔︎ client tries to delete demo resource without owner rights fails and returns status
 
+client_config_demo_resource_namespace = [
+    {
+        "namespace": "/demo-resource",
+        "events": [
+            "transfer",
+            "deleted",
+            "status",
+        ],
+    }
+]
 
-@pytest.fixture(scope="module", autouse=True)
-async def setup_namespace_server(provide_namespace_server):
-    # Call setup function here
-    async for socket_io_server in provide_namespace_server(
-        [DemoResourceNamespace("/demo-resource")]
-    ):
-        # Yield to allow tests to run
-        yield
-        # # Optionally, add teardown logic here if needed
-        # await socket_io_server.shutdown()
+
+# @pytest.fixture(scope="module", autouse=True)
+# async def setup_namespace_server(provide_namespace_server):
+#     # Call setup function here
+#     async for socket_io_server in provide_namespace_server(
+#         [DemoResourceNamespace("/demo-resource")]
+#     ):
+#         # Yield to allow tests to run
+#         yield
+#         # # Optionally, add teardown logic here if needed
+#         # await socket_io_server.shutdown()
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_admin_read, token_admin_write, token_user1_read, token_user1_write],
-    # [token_admin_read_write_socketio, token_user1_read_write_socketio],# actually connects to the namespace!
+    "session_id_selector",
+    [
+        [session_id_admin_read],
+        [session_id_admin_write],
+        [session_id_user1_read],
+        [session_id_user1_write],
+    ],
+    # [session_id_admin_read_write_socketio, session_id_user1_read_write_socketio],# actually connects to the namespace!
     indirect=True,
 )
 async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_missing_in_token(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    socketio_test_client_generic,
 ):
     """Test the demo_resource_namespace socket.io connection needs socketio scope in token."""
 
     try:
-        async for client in socketio_client_for_demo_resource_namespace():
+        async for connection in socketio_test_client_generic(
+            client_config_demo_resource_namespace
+        ):
 
-            await client.sleep(1)
-            await client.disconnect()
+            await connection["client"].sleep(1)
+            await connection["client"].disconnect()
             raise Exception(
                 "This should have failed due to missing authentication in on_connect."
             )
@@ -85,28 +103,29 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
+    "session_id_selector",
     [
-        token_admin_read_write_socketio,
-        token_user1_read_write_socketio,
-        token_user1_read_socketio,
-        token_user1_read_socketio,
+        [session_id_admin_read_write_socketio],
+        [session_id_user1_read_write_socketio],
+        [session_id_user1_read_socketio],
+        [session_id_user1_read_socketio],
     ],
     indirect=True,
 )
 async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresources(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    current_token_payload,
+    socketio_test_client_generic,
     add_test_demo_resources: list[DemoResource],
 ):
     """Test the demo resource connect event."""
-    mocked_token_payload = mock_token_payload
-    resources = await add_test_demo_resources(mocked_token_payload)
+    resources = await add_test_demo_resources(current_token_payload())
 
     transfer_data = []
-    async for client, responses in socketio_client_for_demo_resource_namespace():
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
 
-        transfer_data = responses["/demo-resource"]["transfer"]
+        transfer_data = connection["responses"]["/demo-resource"]["transfer"]
 
     assert len(transfer_data) == 4
     for transfer, resource in zip(transfer_data, resources):
@@ -117,20 +136,19 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_user1_read_write_socketio, token_user1_read_socketio],
+    "session_id_selector",
+    [[session_id_user1_read_write_socketio], [session_id_user1_read_socketio]],
     indirect=True,
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    current_user_from_session_id,
+    socketio_test_client_generic,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
-    current_user_from_azure_token,
 ):
     """Test the demo resource connect event."""
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
-    current_user = await current_user_from_azure_token(mock_token_payload)
+    current_user = await current_user_from_session_id(0)
 
     policies = [
         {
@@ -148,9 +166,11 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         await add_test_policy_for_resource(policy)
 
     transfer_data = []
-    async for client, responses in socketio_client_for_demo_resource_namespace():
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
 
-        transfer_data = responses["/demo-resource"]["transfer"]
+        transfer_data = connection["responses"]["/demo-resource"]["transfer"]
 
     resources_with_user_acccess = [
         resources[1],  # Read access
@@ -170,22 +190,21 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources_with_access_data(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    current_user_from_session_id,
+    socketio_test_client_generic,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
-    current_user_from_azure_token,
 ):
     """Test the demo resource connect event."""
     time_before_creation = datetime.now()
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
     time_after_creation = datetime.now()
-    current_user = await current_user_from_azure_token(mock_token_payload)
+    current_user = await current_user_from_session_id(0)
 
     policies = [
         {
@@ -204,11 +223,12 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
 
     transfer_data = []
 
-    async for client, responses in socketio_client_for_demo_resource_namespace(
-        {"request-access-data": "true"}
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace,
+        query_parameters={"request-access-data": "true"},
     ):
 
-        transfer_data = responses["/demo-resource"]["transfer"]
+        transfer_data = connection["responses"]["/demo-resource"]["transfer"]
 
     resources_with_user_acccess = [
         resources[1],  # Own access
@@ -243,12 +263,12 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_gets_error_on_status_event_due_to_database_error(
-    mock_token_payload, socketio_client_for_demo_resource_namespace
+    socketio_test_client_generic,
 ):
     """Test the demo resource connect event."""
     with patch(
@@ -259,10 +279,12 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
         transfer_data = []
         status_data = []
 
-        async for client, responses in socketio_client_for_demo_resource_namespace():
+        async for connection in socketio_test_client_generic(
+            client_config_demo_resource_namespace
+        ):
 
-            transfer_data = responses["/demo-resource"]["transfer"]
-            status_data = responses["/demo-resource"]["status"]
+            transfer_data = connection["responses"]["/demo-resource"]["transfer"]
+            status_data = connection["responses"]["/demo-resource"]["status"]
 
         # Wait for the response to be set
         # await client.sleep(1)
@@ -270,59 +292,59 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
         assert transfer_data == []
         assert status_data == [{"error": "Database error."}]
 
-        await client.disconnect()
+        await connection["client"].disconnect()
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_admin_read_write_socketio, session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_submits_resource_without_id_for_creation(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    socketio_test_client_generic,
 ):
     """Test the demo resource submit event without ID."""
 
     status_data = []
-    async for client, responses in socketio_client_for_demo_resource_namespace():
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
 
-        await client.emit(
+        await connection["client"].emit(
             "submit", many_test_demo_resources[1], namespace="/demo-resource"
         )
 
-        status_data = responses["/demo-resource"]["status"]
+        status_data = connection["responses"]["/demo-resource"]["status"]
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
         assert status_data[0]["submitted_id"] is None
         assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
         assert status_data[0]["success"] == "created"
 
-        await client.disconnect()
+        await connection["client"].disconnect()
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
+    "session_id_selector",
     [
-        token_admin_read_socketio,
-        token_user1_read_socketio,
+        [session_id_admin_read_socketio],
+        [session_id_user1_read_socketio],
     ],
     indirect=True,
 )
 async def test_user_submits_resource_without_id_for_creation_missing_write_scope_in_token(
-    mock_token_payload,
-    current_user_from_azure_token,
+    current_user_from_session_id,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
-    socketio_client_for_demo_resource_namespace,
+    socketio_test_client_generic,
 ):
     """Test the demo resource submit event without ID."""
     existing_demo_resources = await add_test_demo_resources()
-    current_user = await current_user_from_azure_token(mock_token_payload)
+    current_user = await current_user_from_session_id()
 
     if "Admin" not in current_user.azure_token_roles:
         for demo_resource in existing_demo_resources:
@@ -335,20 +357,22 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
 
     status_data = []
     transfer_data = []
-    async for client, responses in socketio_client_for_demo_resource_namespace():
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
 
-        transfer_data = responses["/demo-resource"]["transfer"]
+        transfer_data = connection["responses"]["/demo-resource"]["transfer"]
 
-        await client.emit(
+        await connection["client"].emit(
             "submit", many_test_demo_resources[1], namespace="/demo-resource"
         )
 
-        status_data = responses["/demo-resource"]["status"]
+        status_data = connection["responses"]["/demo-resource"]["status"]
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
-        await client.disconnect()
+        await connection["client"].disconnect()
 
     # The get all resources on connect works: requires only "socketio" and "api.read" scope
     assert len(transfer_data) == len(existing_demo_resources)
@@ -364,13 +388,12 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    socketio_test_client_generic,
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
@@ -378,15 +401,19 @@ async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
     test_resource["id"] = "new_34ab56z"
 
     status_data = []
-    async for client, responses in socketio_client_for_demo_resource_namespace():
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
 
-        await client.emit("submit", test_resource, namespace="/demo-resource")
+        await connection["client"].emit(
+            "submit", test_resource, namespace="/demo-resource"
+        )
 
-        status_data = responses["/demo-resource"]["status"]
+        status_data = connection["responses"]["/demo-resource"]["status"]
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
-        await client.disconnect()
+        await connection["client"].disconnect()
 
     # assert "id" in status[0]
     assert status_data[0]["submitted_id"] == test_resource["id"]
@@ -396,13 +423,12 @@ async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_submits_two_resource_with_new__string_in_id_field_for_creation_assessing_order_through_logs(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    socketio_test_client_generic,
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
@@ -414,8 +440,8 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
 
     status_data = []
     logs = []
-    async for client, responses, logs in socketio_client_for_demo_resource_namespace(
-        logs=logs
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace, logs=logs
     ):
 
         time_before_first_submit = datetime.now()
@@ -426,10 +452,12 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
                 "data": test_resource,
             }
         )
-        await client.emit("submit", test_resource, namespace="/demo-resource")
+        await connection["client"].emit(
+            "submit", test_resource, namespace="/demo-resource"
+        )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
         time_before_second_submit = datetime.now()
         logs.append(
@@ -439,14 +467,16 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
                 "data": test_resource2,
             }
         )
-        await client.emit("submit", test_resource2, namespace="/demo-resource")
+        await connection["client"].emit(
+            "submit", test_resource2, namespace="/demo-resource"
+        )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
-        status_data = responses["/demo-resource"]["status"]
+        status_data = connection["responses"]["/demo-resource"]["status"]
 
-        await client.disconnect()
+        await connection["client"].disconnect()
 
     assert len(logs) == 4  # Two submits, two responses
     assert logs[0]["event"] == "submit"
@@ -475,13 +505,12 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_submits_resource_with_random_string_in_id_field_fails(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    socketio_test_client_generic,
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
@@ -489,103 +518,113 @@ async def test_user_submits_resource_with_random_string_in_id_field_fails(
     test_resource["id"] = "random_string"
 
     status_data = []
-    async for client, responses in socketio_client_for_demo_resource_namespace():
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
 
-        await client.emit("submit", test_resource, namespace="/demo-resource")
+        await connection["client"].emit(
+            "submit", test_resource, namespace="/demo-resource"
+        )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
-        status_data = responses["/demo-resource"]["status"]
+        status_data = connection["responses"]["/demo-resource"]["status"]
 
-        await client.disconnect()
+        await connection["client"].disconnect()
 
     assert status_data[0]["error"] == "badly formed hexadecimal UUID string"
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_submits_resource_without_id_for_creation_missing_name(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    socketio_test_client_generic,
 ):
     """Test the demo resource delete event."""
 
-    async for client, responses in socketio_client_for_demo_resource_namespace():
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
 
-        statuses_data = responses["/demo-resource"]["status"]
+        statuses_data = connection["responses"]["/demo-resource"]["status"]
 
-        await client.emit(
+        await connection["client"].emit(
             "submit",
             {"description": "Description of test resource"},
             namespace="/demo-resource",
         )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
         assert (
             statuses_data[0]["error"]
             == "1 validation error for DemoResourceCreate\nname\n  Field required [type=missing, input_value={'description': 'Description of test resource'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing"
         )
 
-        await client.disconnect()
+        await connection["client"].disconnect()
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_submits_resource_with_nonexisting_uuid_fails(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    socketio_test_client_generic,
 ):
     """Test the demo resource submit event with non-existing UUID."""
 
-    async for client, responses in socketio_client_for_demo_resource_namespace():
-        statuses_data = responses["/demo-resource"]["status"]
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
+        statuses_data = connection["responses"]["/demo-resource"]["status"]
 
         test_demo_resource = copy.deepcopy(many_test_demo_resources[1])
         # test_demo_resource = many_test_demo_resources[1]
         test_demo_resource["id"] = str(uuid4())  # Set a non-existing UUID
 
-        await client.emit("submit", test_demo_resource, namespace="/demo-resource")
+        await connection["client"].emit(
+            "submit", test_demo_resource, namespace="/demo-resource"
+        )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
         assert statuses_data[0]["error"] == "404: DemoResource not updated."
 
-        await client.disconnect()
+        await connection["client"].disconnect()
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_submits_existing_resource_for_update(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    current_token_payload,
+    socketio_test_client_generic,
     add_test_demo_resources: list[DemoResource],
-    current_user_from_azure_token,
+    current_user_from_session_id,
 ):
     """Test the demo resource connect event."""
-    resources = await add_test_demo_resources(mock_token_payload)
+    resources = await add_test_demo_resources(current_token_payload())
 
     index_of_resource_to_update = next(
         i for i, r in enumerate(resources) if r.name == "A second cat 2 resource"
     )
 
-    async for client, responses in socketio_client_for_demo_resource_namespace():
-        statuses_data = responses["/demo-resource"]["status"]
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
+        statuses_data = connection["responses"]["/demo-resource"]["status"]
 
         modified_demo_resource = resources[index_of_resource_to_update]
         modified_demo_resource.name = "Altering the name of this demo resource"
@@ -594,21 +633,21 @@ async def test_user_submits_existing_resource_for_update(
         if modified_demo_resource.category_id:
             modified_demo_resource.category_id = str(modified_demo_resource.category_id)
 
-        await client.emit(
+        await connection["client"].emit(
             "submit", modified_demo_resource.model_dump(), namespace="/demo-resource"
         )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
         assert UUID(statuses_data[0]["id"])  # Check if the ID is a valid UUID
         assert statuses_data[0]["success"] == "updated"
         assert statuses_data[0]["id"] == str(resources[index_of_resource_to_update].id)
 
-        await client.disconnect()
+        await connection["client"].disconnect()
 
     async with DemoResourceCRUD() as crud:
-        current_user = await current_user_from_azure_token(mock_token_payload)
+        current_user = await current_user_from_session_id()
         updated_resource = await crud.read_by_id(
             resources[index_of_resource_to_update].id, current_user
         )
@@ -628,23 +667,22 @@ async def test_user_submits_existing_resource_for_update(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
+    "session_id_selector",
     [
-        token_admin_read_socketio,
-        token_user1_read_socketio,
+        [session_id_admin_read_socketio],
+        [session_id_user1_read_socketio],
     ],
     indirect=True,
 )
 async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    current_user_from_session_id,
+    socketio_test_client_generic,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
-    current_user_from_azure_token,
 ):
     """Test the demo resource connect event."""
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
-    current_user = await current_user_from_azure_token(mock_token_payload)
+    current_user = await current_user_from_session_id()
 
     if "Admin" not in current_user.azure_token_roles:
         policy = {
@@ -654,8 +692,10 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
         }
         await add_test_policy_for_resource(policy)
 
-    async for client, responses in socketio_client_for_demo_resource_namespace():
-        status_data = responses["/demo-resource"]["status"]
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
+        status_data = connection["responses"]["/demo-resource"]["status"]
 
         modified_demo_resource = resources[3]
         modified_demo_resource.name = "Altering the name of this demo resource"
@@ -664,36 +704,35 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
         if modified_demo_resource.category_id:
             modified_demo_resource.category_id = str(modified_demo_resource.category_id)
 
-        await client.emit(
+        await connection["client"].emit(
             "submit", modified_demo_resource.model_dump(), namespace="/demo-resource"
         )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
         assert status_data[0]["error"] == "401: Invalid token."
 
         # Connection is still open, so disconnection_result should be None
-        disconnection_result = await client.disconnect()
+        disconnection_result = await connection["client"].disconnect()
         assert disconnection_result is None
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_updates_demo_resource_not_having_write_access_fails(
-    mock_token_payload,
-    socketio_client_for_demo_resource_namespace,
+    current_user_from_session_id,
+    socketio_test_client_generic,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
-    current_user_from_azure_token,
 ):
     """Test the demo resource connect event."""
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
-    current_user = await current_user_from_azure_token(mock_token_payload)
+    current_user = await current_user_from_session_id()
 
     policy = {
         "resource_id": resources[3].id,
@@ -702,8 +741,10 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
     }
     await add_test_policy_for_resource(policy)
 
-    async for client, responses in socketio_client_for_demo_resource_namespace():
-        statuses_data = responses["/demo-resource"]["status"]
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
+        statuses_data = connection["responses"]["/demo-resource"]["status"]
 
         modified_demo_resource = resources[3]
         modified_demo_resource.name = "Altering the name of this demo resource"
@@ -712,51 +753,55 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
         if modified_demo_resource.category_id:
             modified_demo_resource.category_id = str(modified_demo_resource.category_id)
 
-        await client.emit(
+        await connection["client"].emit(
             "submit", modified_demo_resource.model_dump(), namespace="/demo-resource"
         )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
         assert statuses_data[0]["error"] == "404: DemoResource not updated."
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_user1_read_write_socketio]],
     indirect=True,
 )
-async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_remove_event(
-    mock_token_payload,
+async def test_one_client_deletes_a_demo_resource_and_another_client_from_same_user_gets_the_remove_event(
+    current_token_payload,
     add_test_demo_resources: list[DemoResource],
-    socketio_client_for_demo_resource_namespace,
+    socketio_test_client_generic,
 ):
     """Test the demo resource delete event."""
-    resources = await add_test_demo_resources(mock_token_payload)
+    resources = await add_test_demo_resources(current_token_payload())
 
     # Two clients from same user - coming from mock_token_payload!
-    async for client1, responses1 in socketio_client_for_demo_resource_namespace():
-        async for client2, responses2 in socketio_client_for_demo_resource_namespace():
+    async for connection1 in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
+        async for connection2 in socketio_test_client_generic(
+            client_config_demo_resource_namespace
+        ):
 
             deleted_data_client1 = []
             statuses_data_client1 = []
             deleted_data_client2 = []
             statuses_data_client2 = []
 
-            statuses_data_client1 = responses1["/demo-resource"]["status"]
-            statuses_data_client2 = responses2["/demo-resource"]["status"]
-            deleted_data_client1 = responses1["/demo-resource"]["deleted"]
-            deleted_data_client2 = responses2["/demo-resource"]["deleted"]
+            statuses_data_client1 = connection1["responses"]["/demo-resource"]["status"]
+            statuses_data_client2 = connection2["responses"]["/demo-resource"]["status"]
+            deleted_data_client1 = connection1["responses"]["/demo-resource"]["deleted"]
+            deleted_data_client2 = connection2["responses"]["/demo-resource"]["deleted"]
 
-            await client1.emit(
+            await connection1["client"].emit(
                 "delete", str(resources[2].id), namespace="/demo-resource"
             )
 
             # Wait for the response to be set
-            await client1.sleep(1)
-            await client2.sleep(1)
+            await connection1["client"].sleep(1)
+            await connection2["client"].sleep(1)
 
             assert deleted_data_client1 == [str(resources[2].id)]
             assert statuses_data_client1 == [
@@ -765,65 +810,159 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_gets_the_re
             assert deleted_data_client2 == [str(resources[2].id)]
             assert statuses_data_client2 == []
 
-            await client1.disconnect()
-            await client2.disconnect()
+            await connection1["client"].disconnect()
+            await connection2["client"].disconnect()
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_admin_read_socketio, token_user1_read_socketio],
+    "session_id_selector",
+    [
+        [
+            session_id_user1_read_write_socketio,
+            session_id_user2_read_socketio,
+            session_id_admin_read_socketio,
+        ]
+    ],
+    indirect=True,
+)
+async def test_one_client_deletes_a_demo_resource_and_another_client_with_different_user_gets_the_deleted_event(
+    current_token_payload,
+    current_user_from_session_id,
+    add_test_policy_for_resource,
+    add_test_demo_resources: list[DemoResource],
+    socketio_test_client_generic,
+):
+    """Test the demo resource delete event."""
+    resources = await add_test_demo_resources(current_token_payload())
+
+    other_user = await current_user_from_session_id(1)
+    policy = {
+        "resource_id": resources[3].id,
+        "identity_id": other_user.user_id,
+        "action": "read",
+    }
+    # Creating user (first user) shares the resource with other user
+    await add_test_policy_for_resource(policy, current_token_payload(0))
+
+    # Two clients from different users
+    async for connection1 in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
+        async for connection2 in socketio_test_client_generic(
+            client_config_demo_resource_namespace
+        ):
+            async for connection_admin in socketio_test_client_generic(
+                client_config_demo_resource_namespace
+            ):
+
+                statuses_data_client1 = connection1["responses"]["/demo-resource"][
+                    "status"
+                ]
+                statuses_data_client2 = connection2["responses"]["/demo-resource"][
+                    "status"
+                ]
+                # statuses_data_admin = connection_admin["responses"]["/demo-resource"][
+                #     "status"
+                # ]
+                deleted_data_client1 = connection1["responses"]["/demo-resource"][
+                    "deleted"
+                ]
+                deleted_data_client2 = connection2["responses"]["/demo-resource"][
+                    "deleted"
+                ]
+                # deleted_data_admin = connection_admin["responses"]["/demo-resource"][
+                #     "deleted"
+                # ]
+
+                await connection1["client"].emit(
+                    "delete", str(resources[2].id), namespace="/demo-resource"
+                )
+
+                # Wait for the response to be set
+                await connection1["client"].sleep(1)
+                await connection2["client"].sleep(1)
+
+                assert deleted_data_client1 == [str(resources[2].id)]
+                assert statuses_data_client1 == [
+                    {"success": "deleted", "id": str(resources[2].id)}
+                ]
+                assert deleted_data_client2 == [str(resources[2].id)]
+                assert statuses_data_client2 == []
+                # Admin always gets the delete event:
+                # TBD: think about it and fix this!
+                # assert deleted_data_admin == [str(resources[2].id)]
+                # assert statuses_data_admin == [
+                #     {"success": "deleted", "id": str(resources[2].id)}
+                # ]
+                # assert 0
+
+                await connection1["client"].disconnect()
+                await connection2["client"].disconnect()
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_id_selector",
+    [[session_id_admin_read_socketio], [session_id_user1_read_socketio]],
     indirect=True,
 )
 async def test_user_deletes_a_demo_resource_missing_write_scope_in_token(
-    mock_token_payload,
+    current_token_payload,
     add_test_demo_resources: list[DemoResource],
-    socketio_client_for_demo_resource_namespace,
+    socketio_test_client_generic,
 ):
     """Test the demo resource delete event."""
-    resources = await add_test_demo_resources(mock_token_payload)
+    resources = await add_test_demo_resources(current_token_payload())
 
-    async for client, responses in socketio_client_for_demo_resource_namespace():
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
 
-        statuses_data = responses["/demo-resource"]["status"]
-        deleted_data = responses["/demo-resource"]["deleted"]
+        statuses_data = connection["responses"]["/demo-resource"]["status"]
+        deleted_data = connection["responses"]["/demo-resource"]["deleted"]
 
-        await client.emit("delete", str(resources[2].id), namespace="/demo-resource")
+        await connection["client"].emit(
+            "delete", str(resources[2].id), namespace="/demo-resource"
+        )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
         assert deleted_data == []
         assert statuses_data == [{"error": "401: Invalid token."}]
 
-        disconnection_result = await client.disconnect()
+        disconnection_result = await connection["client"].disconnect()
 
         assert disconnection_result is None
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_and_returns_status(
-    mock_token_payload,
     add_test_demo_resources: list[DemoResource],
-    socketio_client_for_demo_resource_namespace,
+    socketio_test_client_generic,
 ):
     """Test the demo resource delete event."""
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
 
-    async for client, responses in socketio_client_for_demo_resource_namespace():
+    async for connection in socketio_test_client_generic(
+        client_config_demo_resource_namespace
+    ):
 
-        status_data = responses["/demo-resource"]["status"]
+        status_data = connection["responses"]["/demo-resource"]["status"]
 
-        await client.emit("delete", str(resources[2].id), namespace="/demo-resource")
+        await connection["client"].emit(
+            "delete", str(resources[2].id), namespace="/demo-resource"
+        )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection["client"].sleep(1)
 
         assert status_data[0] == {"error": "404: DemoResource not deleted."}
 
-        await client.disconnect()
+        await connection["client"].disconnect()
