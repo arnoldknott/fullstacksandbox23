@@ -51,9 +51,31 @@
 	};
 </script>
 
-<div class="bg-base-300 shadow-shadow m-2 flex flex-col rounded-xl p-2 shadow-xl" transition:fade>
+<div
+	class="bg-base-300 shadow-shadow m-2 flex h-fit flex-col rounded-xl p-2 shadow-xl"
+	transition:fade
+>
 	<div class="flex flex-row justify-between">
-		<h5
+		{#if edit}
+			<div class="input-filled input-base-content w-fit grow">
+				<input
+					type="text"
+					placeholder="Name the demo resource"
+					id="name_{demoResource.id}"
+					class="input input-sm md:input-md"
+					name="name"
+					onblur={() => submitResource(demoResource)}
+					bind:value={demoResource.name}
+				/>
+				<label class="input-filled-label" for="name_{demoResource.id}">Name</label>
+			</div>
+		{:else}
+			<h5 class="title-small md:title-small lg:title base-content card-title">
+				{demoResource.name}
+			</h5>
+		{/if}
+
+		<!-- <h5
 			contenteditable={edit}
 			class="title justify-self-start"
 			onblur={(event) => {
@@ -63,14 +85,34 @@
 			}}
 		>
 			{demoResource.name}
-		</h5>
+		</h5> -->
 		<div class="label justify-self-end">
 			{formatedDate}
 		</div>
 	</div>
-	<div class="flex flex-row">
+	<div class="flex h-fit flex-row">
 		<div class="body-small grow">
-			<p
+			{#if edit}
+				<div class="textarea-filled textarea-base-content w-full">
+					<textarea
+						class="textarea h-fit"
+						placeholder="Describe the demo resource here."
+						id="description_{demoResource.id}"
+						onblur={() => submitResource(demoResource)}
+						name="description"
+						bind:value={demoResource.description}
+					>
+					</textarea>
+					<label class="textarea-filled-label" for="description_{demoResource.id}">
+						Description
+					</label>
+				</div>
+			{:else}
+				<p class="body-small md:body text-primary-container-content">
+					{demoResource.description || 'No description available'}
+				</p>
+			{/if}
+			<!-- <p
 				contenteditable={edit}
 				onblur={(event) => {
 					demoResource.description = (event.target as HTMLElement)?.innerText || '';
@@ -78,7 +120,7 @@
 				}}
 			>
 				{demoResource.description}
-			</p>
+			</p> -->
 			<div class="flex flex-row gap-2">
 				<IdBadge id={demoResource.id} />
 				<div class="badge badge-xs badge-accent label-small shadow-outline shadow">
@@ -119,7 +161,7 @@
 						</button>
 
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share-{demoResource.id}"

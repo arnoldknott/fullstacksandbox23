@@ -80,7 +80,6 @@
 				// Add new resource
 				demoResources.push(data);
 			}
-			// demoResources.push(data);
 		});
 		socketio.client.on('deleted', (resource_id: string) => {
 			if (debug) {
