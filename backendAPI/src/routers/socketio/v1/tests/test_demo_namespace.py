@@ -3,6 +3,7 @@ import uuid
 import pytest
 from socketio.exceptions import ConnectionError
 from datetime import datetime
+import socketio
 from routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
 from tests.utils import (
     session_id_user1_read_write_socketio,
@@ -30,6 +31,7 @@ from tests.utils import (
     session_id_admin_socketio,
     session_id_admin_read_socketio,
     session_id_admin_write_socketio,
+    session_id_admin_read_write_socketio,
     session_id_user1_read,
     session_id_user1_write,
     session_id_user1_socketio,
@@ -38,9 +40,18 @@ from tests.utils import (
     session_id_user2_socketio,
     session_id_user2_read,
     session_id_user2_write,
+    session_id_user2_read_socketio,
     session_id_user2_write_socketio,
 )
 
+
+# Default setup for client to use in all tests that use the demo namespace.
+client_config_demo_namespace = [
+    {
+        "namespace": "/demo-namespace",
+        "events": ["demo_message"],
+    }
+]
 
 # @pytest.fixture(scope="module", autouse=True)
 # async def setup_namespace_server(provide_namespace_server):
@@ -58,12 +69,7 @@ from tests.utils import (
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mock_token_payload",
-    ["invalid_token_payload"],  # needed for module-level fixture setup_namespace_server
-    indirect=True,
-)
-async def test_on_connect_server_side_invalid_token(mock_token_payload):
+async def test_on_connect_to_production_on_server_side_fails_unpatched_server():
     """Test the on_connect event for socket.io without mocking decoding function."""
     # Should run into an uncaught exception from the decoding algorithm, depending on its implementation
 
@@ -73,75 +79,38 @@ async def test_on_connect_server_side_invalid_token(mock_token_payload):
             environ={},
             auth={"session-id": "fake-session-id"},
         )
-        raise Exception("This should have failed due to invalid token.")
+        raise Exception("This should have failed due unpatched server.")
     except ConnectionRefusedError as err:
         assert str(err) == "Authorization failed."
-
-
-# TBD: Uses more generic fixture - ready to delete:
-# @pytest.mark.anyio
-# @pytest.mark.parametrize(
-#     "mock_token_payload",
-#     [
-#         token_admin_read_write_socketio,
-#         token_user1_read_write_socketio,
-#         token_user2_read_write_socketio,
-#         token_admin_read_socketio,
-#         token_user1_read_socketio,
-#         token_user2_read_socketio,
-#     ],
-#     indirect=True,
-# )
-# async def test_connect_with_test_server_demo_namespace(
-#     mock_token_payload,
-#     socketio_test_client,
-# ):
-#     """Test the demo socket.io connect event."""
-#     mocked_token_payload = mock_token_payload
-
-#     responses = []
-#     async for client in socketio_test_client(["/demo-namespace"]):
-
-#         @client.event(namespace="/demo-namespace")
-#         async def demo_message(data):
-#             nonlocal responses
-#             responses.append(data)
-
-#         await client.connect_to_test_client()
-
-#     assert len(responses) == 2
-#     assert responses[0] == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
-#     assert "Your session ID is " in responses[1]
 
 
 # TBD: rework to new client fixture with events:
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
+    "session_id_selector",
     [
-        token_admin_read_write_socketio,
-        token_user1_read_write_socketio,
-        token_user2_read_write_socketio,
-        token_admin_read_socketio,
-        token_user1_read_socketio,
-        token_user2_read_socketio,
+        [session_id_admin_read_write_socketio],
+        [session_id_user1_read_write_socketio],
+        [session_id_user2_read_write_socketio],
+        [session_id_admin_read_socketio],
+        [session_id_user1_read_socketio],
+        [session_id_user2_read_socketio],
     ],
     indirect=True,
 )
-async def test_connect_with_test_server_demo_namespace(
-    mock_token_payload, socketio_client_for_demo_namespace
+async def test_connect_to_demo_namespace(
+    session_id_selector, socketio_test_client_generic
 ):
     """Test the demo socket.io connect event."""
-    mocked_token_payload = mock_token_payload
 
     demo_messages = []
-    async for client, response in socketio_client_for_demo_namespace():
-        demo_messages = response["/demo-namespace"]["demo_message"]
+    async for connection in socketio_test_client_generic(client_config_demo_namespace):
+        demo_messages = connection.response["/demo-namespace"]["demo_message"]
 
     assert len(demo_messages) == 2
     assert (
         demo_messages[0]
-        == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
+        == f"Welcome {session_id_selector()['name']} to /demo-namespace."
     )
     assert "Your session ID is " in demo_messages[1]
 
@@ -165,7 +134,7 @@ async def test_connect_with_test_server_demo_namespace(
     ],
     indirect=True,
 )
-async def test_connect_with_test_server_demo_namespace_missing_scopes_fails(
+async def test_connect_to_demo_namespace_missing_scopes_fails(
     socketio_test_client_generic,
 ):
     """Test the demo socket.io connect event."""
@@ -173,9 +142,7 @@ async def test_connect_with_test_server_demo_namespace_missing_scopes_fails(
     ## TBD: refactor back into module wide fixture, when multiple clients is merged with deep security:
 
     try:
-        async for client in socketio_test_client_generic(
-            [{"namespace": "/demo-namespace"}]
-        ):
+        async for _client in socketio_test_client_generic(client_config_demo_namespace):
             pass
         raise Exception("This should have failed due to invalid token.")
     except ConnectionError as err:
@@ -184,35 +151,34 @@ async def test_connect_with_test_server_demo_namespace_missing_scopes_fails(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    [token_admin_read_write_socketio, token_user1_read_write_socketio],
+    "session_id_selector",
+    [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
     indirect=True,
 )
-async def test_demo_message_with_test_server(
-    mock_token_payload, socketio_client_for_demo_namespace
-):
+async def test_send_demo_message(session_id_selector, socketio_test_client_generic):
     """Test the demo socket.io message event."""
-    mocked_token_payload = mock_token_payload
 
     demo_messages = []
-    async for client, response in socketio_client_for_demo_namespace():
+    async for connection in socketio_test_client_generic(client_config_demo_namespace):
 
-        await client.emit("demo_message", "Something", namespace="/demo-namespace")
+        await connection.client.emit(
+            "demo_message", "Something", namespace="/demo-namespace"
+        )
 
         # Wait for the response to be set
-        await client.sleep(1)
+        await connection.client.sleep(1)
 
-        demo_messages = response["/demo-namespace"]["demo_message"]
+        demo_messages = connection.response["/demo-namespace"]["demo_message"]
 
-        await client.disconnect()
+        await connection.client.disconnect()
 
     assert len(demo_messages) == 3
     assert (
         demo_messages[0]
-        == f"Welcome {mocked_token_payload['name']} to /demo-namespace."
+        == f"Welcome {session_id_selector()['name']} to /demo-namespace."
     )
     assert "Your session ID is " in demo_messages[1]
-    assert demo_messages[2] == f"{mocked_token_payload["name"]}: Something"
+    assert demo_messages[2] == f"{session_id_selector()['name']}: Something"
 
 
 # @pytest.mark.anyio
@@ -358,15 +324,6 @@ async def test_demo_message_with_test_server(
 #     assert mock_sessions["mock"].call_args_list[1].args == ("1",)
 
 
-# Define one reusable client per namespace as a fixture!
-client_config = [
-    {
-        "namespace": "/demo-namespace",
-        "events": ["demo_message"],
-    }
-]
-
-
 # This is testing the test setup!
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -374,7 +331,7 @@ client_config = [
     [[session_id_user1_read_write_socketio, session_id_user2_read_write_socketio]],
     indirect=True,
 )
-async def test_generic_test_client_and_server(
+async def test_demo_resource_chat_between_two_users(
     session_id_selector,
     socketio_test_client_generic,
     current_token_payload,
@@ -401,13 +358,16 @@ async def test_generic_test_client_and_server(
     responses2 = []
     # TBD: add one client for each namespace, hardcoding the client_config.
     async for connection1 in socketio_test_client_generic(
-        client_config, 0, query_parameters={"request-access-data": "true"}, logs=logs1
+        client_config_demo_namespace,
+        0,
+        query_parameters={"request-access-data": "true"},
+        logs=logs1,
     ):
         client1 = connection1["client"]
         responses1 = connection1["responses"]["/demo-namespace"]["demo_message"]
         logs1 = connection1["logs"]
         async for connection2 in socketio_test_client_generic(
-            client_config,
+            client_config_demo_namespace,
             1,
             query_parameters={"request-access-data": "true"},
             logs=logs2,
@@ -508,37 +468,60 @@ async def test_generic_test_client_and_server(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_token_payload",
-    ["invalid_token_payload"],  # needed for module-level fixture setup_namespace_server
+    "session_id_selector",
+    [[session_id_user1_read_socketio]],
     indirect=True,
 )
-async def test_demo_message_with_production_server_fails_without_token(
-    mock_token_payload,
-    socketio_test_client,
+async def test_demo_message_with_production_server_fails_authorization(
+    session_id_selector,
 ):
     """Test the demo socket.io message event."""
 
     try:
-        async for client in socketio_test_client(
-            ["/demo-namespace"], "http://127.0.0.1:80"
-        ):
-            await client.connect_to_test_client()
-            response = None
+        client = socketio.AsyncClient(logger=True, engineio_logger=True)
 
-            @client.on("demo_message", namespace="/demo-namespace")
-            async def handler(data):
-                nonlocal response
-                response = data
+        await client.connect(
+            "http://127.0.0.1:80",
+            socketio_path="socketio/v1",
+            namespaces=["/demo-namespace"],
+            auth={"session-id": str(session_id_selector(0))},
+        )
 
-            await client.emit(
-                "demo_message", "Hello, world!", namespace="/demo-namespace"
-            )
+        response = None
 
-            await client.sleep(1)
+        @client.on("demo_message", namespace="/demo-namespace")
+        async def handler(data):
+            nonlocal response
+            response = data
 
-            raise Exception(
-                "This should have failed due to missing authentication in on_connect."
-            )
+        await client.emit("demo_message", "Hello, world!", namespace="/demo-namespace")
+
+        await client.sleep(1)
+
+        raise Exception(
+            "This should have failed due to missing authentication in on_connect."
+        )
+
+        # async for client in socketio_test_client(
+        #     ["/demo-namespace"], "http://127.0.0.1:80"
+        # ):
+        #     await client.connect_to_test_client()
+        #     response = None
+
+        #     @client.on("demo_message", namespace="/demo-namespace")
+        #     async def handler(data):
+        #         nonlocal response
+        #         response = data
+
+        #     await client.emit(
+        #         "demo_message", "Hello, world!", namespace="/demo-namespace"
+        #     )
+
+        #     await client.sleep(1)
+
+        #     raise Exception(
+        #         "This should have failed due to missing authentication in on_connect."
+        #     )
 
     except ConnectionError as err:
         assert str(err) == "One or more namespaces failed to connect"

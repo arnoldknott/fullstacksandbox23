@@ -400,7 +400,6 @@ async def socketio_test_client_generic(session_id_selector: uuid.UUID):
         responses = {}
         for config in client_config:
             namespace = config["namespace"]
-
             responses[namespace] = {}
             if "events" in config:
                 events = config["events"]
