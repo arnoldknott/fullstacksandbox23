@@ -227,16 +227,13 @@ def load_test_sessions_into_redis():
         # instead of linking the session_id with the microsoftAccount,
         # it links microsoftAccount with the token payload
         # This enables that the production code from get_user_account_from_session_cache
-        # accesses the cache
+        # to accesses the cache - afterwards the get_azure_token_from_cache and
+        # get_azure_token_payload functions are mocked to just pass the raw data through.
         redis_session_client.json().set(
             f"session:{session['session_id']}",
             ".",
-            {"microsoftAccount": session["token"]},
+            {"microsoftAccount": session["token_payload"]},
         )
-        # print("=== load_test_sessions_into_redis - session ===")
-        # print(session["session_id"])
-        # print("=== load_test_sessions_into_redis - token ===")
-        # print(session["token"])
 
     yield
     for session in sessions:
@@ -328,6 +325,26 @@ class ClientConfig(BaseModel):
 
     namespace: str
     events: List[str] = []
+
+
+@pytest.fixture(scope="function")
+def current_token_payload(session_id_selector: callable):
+    """Returns the current token payload based on the session id selector."""
+
+    def _current_token_payload(index: int = 0):
+        """Returns the current token payload based on the session id selector."""
+        session_id = session_id_selector(index)
+        if session_id:
+            token_payload = [
+                session["token_payload"]
+                for session in sessions
+                if session["session_id"] == session_id
+            ][0]
+
+            return token_payload
+        return None
+
+    return _current_token_payload
 
 
 @pytest.fixture(scope="function")

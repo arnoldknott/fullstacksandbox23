@@ -171,7 +171,7 @@ token_user1_read_write_groups = {
     **token_payload_roles_user,
     **token_payload_many_groups,
 }
-# 9
+
 token_user2_read = {
     **token_payload_another_user_id,
     **token_payload_tenant_id,
@@ -220,7 +220,7 @@ token_user2_read_write_socketio = {
     **token_payload_scope_api_read_write_socketio,
     **token_payload_roles_user,
 }
-# 7
+
 token_admin = {
     **token_payload_random_user_id,
     **token_payload_tenant_id,
@@ -288,7 +288,7 @@ session_id_user1_write_socketio = uuid4()
 session_id_user1_read_write_socketio = uuid4()
 session_id_user1_read_groups = uuid4()
 session_id_user1_read_write_groups = uuid4()
-# 9
+
 session_id_user2_read = uuid4()
 session_id_user2_write = uuid4()
 session_id_user2_read_write = uuid4()
@@ -306,87 +306,101 @@ session_id_admin_read_socketio = uuid4()
 session_id_admin_write_socketio = uuid4()
 session_id_admin_read_write_socketio = uuid4()
 
+session_id_invalid_token1 = uuid4()
+session_id_invalid_token2 = uuid4()
+
 sessions = [
     {
         "session_id": session_id_user1_read,
-        "token": token_user1_read,
+        "token_payload": token_user1_read,
     },
     {
         "session_id": session_id_user1_write,
-        "token": token_user1_write,
+        "token_payload": token_user1_write,
     },
     {
         "session_id": session_id_user1_read_write,
-        "token": token_user1_read_write,
+        "token_payload": token_user1_read_write,
     },
     {
         "session_id": session_id_user1_socketio,
-        "token": token_user1_socketio,
+        "token_payload": token_user1_socketio,
     },
     {
         "session_id": session_id_user1_read_socketio,
-        "token": token_user1_read_socketio,
+        "token_payload": token_user1_read_socketio,
     },
     {
         "session_id": session_id_user1_write_socketio,
-        "token": token_user1_write_socketio,
+        "token_payload": token_user1_write_socketio,
     },
     {
         "session_id": session_id_user1_read_write_socketio,
-        "token": token_user1_read_write_socketio,
+        "token_payload": token_user1_read_write_socketio,
     },
     {
         "session_id": session_id_user1_read_groups,
-        "token": token_user1_read_groups,
+        "token_payload": token_user1_read_groups,
     },
     {
         "session_id": session_id_user1_read_write_groups,
-        "token": token_user1_read_write_groups,
+        "token_payload": token_user1_read_write_groups,
     },
-    # 9
     {
         "session_id": session_id_user2_read,
-        "token": token_user2_read,
+        "token_payload": token_user2_read,
     },
     {
         "session_id": session_id_user2_write,
-        "token": token_user2_write,
+        "token_payload": token_user2_write,
     },
     {
         "session_id": session_id_user2_read_write,
-        "token": token_user2_read_write,
+        "token_payload": token_user2_read_write,
     },
     {
         "session_id": session_id_user2_socketio,
-        "token": token_user2_socketio,
+        "token_payload": token_user2_socketio,
     },
     {
         "session_id": session_id_user2_read_socketio,
-        "token": token_user2_read_socketio,
+        "token_payload": token_user2_read_socketio,
     },
     {
         "session_id": session_id_user2_write_socketio,
-        "token": token_user2_write_socketio,
+        "token_payload": token_user2_write_socketio,
     },
     {
         "session_id": session_id_user2_read_write_socketio,
-        "token": token_user2_read_write_socketio,
+        "token_payload": token_user2_read_write_socketio,
     },
-    # 7
-    {"session_id": session_id_admin_read, "token": token_admin_read},
-    {"session_id": session_id_admin_write, "token": token_admin_write},
-    {"session_id": session_id_admin_read_write, "token": token_admin_read_write},
-    {"session_id": session_id_admin_socketio, "token": token_admin_socketio},
-    {"session_id": session_id_admin_read_socketio, "token": token_admin_read_socketio},
+    {"session_id": session_id_admin_read, "token_payload": token_admin_read},
+    {"session_id": session_id_admin_write, "token_payload": token_admin_write},
+    {
+        "session_id": session_id_admin_read_write,
+        "token_payload": token_admin_read_write,
+    },
+    {"session_id": session_id_admin_socketio, "token_payload": token_admin_socketio},
+    {
+        "session_id": session_id_admin_read_socketio,
+        "token_payload": token_admin_read_socketio,
+    },
     {
         "session_id": session_id_admin_write_socketio,
-        "token": token_admin_write_socketio,
+        "token_payload": token_admin_write_socketio,
     },
     {
         "session_id": session_id_admin_read_write_socketio,
-        "token": token_admin_read_write_socketio,
+        "token_payload": token_admin_read_write_socketio,
     },
-    # 7
+    {
+        "session_id": session_id_invalid_token1,
+        "token_payload": {"invalid_token": "This is an invalid token"},
+    },
+    {
+        "session_id": session_id_invalid_token2,
+        "token_payload": {"invalid_token": "This is another invalid token"},
+    },
 ]
 
 # Test identity IDs and user data for testing purposes

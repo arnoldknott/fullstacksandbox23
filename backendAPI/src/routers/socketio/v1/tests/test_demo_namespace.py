@@ -1,3 +1,4 @@
+from pprint import pprint
 import uuid
 import pytest
 from socketio.exceptions import ConnectionError
@@ -363,20 +364,28 @@ client_config = [
 async def test_generic_test_client_and_server(
     session_id_selector,
     socketio_test_client_generic,
+    current_token_payload,
 ):
     """Test the generic client and generic server interaction."""
 
     session_id_default = session_id_selector()
     assert session_id_default == session_id_user1_read_write_socketio
-    print("=== session_id_default ===")
-    print(session_id_default, flush=True)
     session_id1 = session_id_selector(0)
     assert session_id1 == session_id_user1_read_write_socketio
     session_id2 = session_id_selector(1)
     assert session_id2 == session_id_user2_read_write_socketio
 
+    token_payload_default = current_token_payload()
+    assert token_payload_default == token_user1_read_write_socketio
+    token_payload1 = current_token_payload(0)
+    assert token_payload1 == token_user1_read_write_socketio
+    token_payload2 = current_token_payload(1)
+    assert token_payload2 == token_user2_read_write_socketio
+
     logs1 = []
+    logs2 = []
     responses1 = []
+    responses2 = []
     # TBD: add one client for each namespace, hardcoding the client_config.
     async for connection1 in socketio_test_client_generic(
         client_config, 0, query_parameters={"request-access-data": "true"}, logs=logs1
@@ -384,23 +393,104 @@ async def test_generic_test_client_and_server(
         client1 = connection1["client"]
         responses1 = connection1["responses"]["/demo-namespace"]["demo_message"]
         logs1 = connection1["logs"]
-        logs1.append(
-            {
-                "event": "demo_message",
-                "timestamp": datetime.now(),
-                # TBD: replace session_id_selector with mock_azure_token_in_redis(session_id_selector(0))["name"]
-                # TBD: replace session_id_selector with mock_azure_token_in_redis[0].mocked_token["name"]
-                # TBD: just use a fixture to select the token by session_id form sessions in tests.utils
-                "data": f"{session_id_selector(0)}: sends message to server",
-            }
-        )
-        # TBD: replace "User 1" with mock_azure_token_in_redis(session_id_selector(0))["name"]
-        client1.emit("demo_message", "Hello from User 1", namespace="/demo-namespace")
-        await client1.sleep(1)
-        client1.disconnect()
+        async for connection2 in socketio_test_client_generic(
+            client_config,
+            1,
+            query_parameters={"request-access-data": "true"},
+            logs=logs2,
+        ):
+            client2 = connection2["client"]
+            responses2 = connection2["responses"]["/demo-namespace"]["demo_message"]
+            logs2 = connection2["logs"]
 
-    # Check the responses for user 1
-    assert len(responses1) == 3
+            # Wait for the response to be set
+            await client2.sleep(1)
+            logs1.append(
+                {
+                    "event": "demo_message",
+                    "timestamp": datetime.now(),
+                    "data": f"{current_token_payload(0)['name']}: sends message to server.",
+                }
+            )
+            # TBD: replace "User 1" with mock_azure_token_in_redis(session_id_selector(0))["name"]
+            await client1.emit(
+                "demo_message",
+                f"Hello from {current_token_payload(0)['name']}",
+                namespace="/demo-namespace",
+            )
+            await client2.sleep(1)
+            await client2.disconnect()
+
+        await client1.sleep(1)
+        await client1.disconnect()
+
+    # Asserting responses for user 1
+    assert len(responses1) == 5
+
+    assert (
+        responses1[0]
+        == f"Welcome {current_token_payload()['name']} to /demo-namespace."
+    )
+    assert "Your session ID is " in responses1[1]
+    assert (
+        responses1[2]
+        == f"Welcome {current_token_payload(1)['name']} to /demo-namespace."
+    )
+    assert (
+        responses1[3]
+        == f"{current_token_payload(0)['name']}: Hello from {current_token_payload(0)['name']}"
+    )
+    assert (
+        responses1[4]
+        == f"{current_token_payload(1)['name']} has disconnected from /demo-namespace. Goodbye!"
+    )
+
+    # Asserting logs for user 1:
+    assert len(logs1) == 6
+    for log in logs1:
+        assert log["event"] == "demo_message"
+
+    assert logs1[0]["data"] == (
+        f"Welcome {current_token_payload()['name']} to /demo-namespace."
+    )
+    assert logs1[1]["data"].startswith("Your session ID is ")
+    assert logs1[2]["data"] == (
+        f"Welcome {current_token_payload(1)['name']} to /demo-namespace."
+    )
+    assert logs1[3]["data"] == (
+        f"{current_token_payload(0)['name']}: sends message to server."
+    )
+    assert logs1[4]["data"] == (
+        f"{current_token_payload(0)['name']}: Hello from {current_token_payload(0)['name']}"
+    )
+    assert logs1[5]["data"] == (
+        f"{current_token_payload(1)['name']} has disconnected from /demo-namespace. Goodbye!"
+    )
+
+    # Asserting messages received by user 2:
+    assert len(responses2) == 3
+    assert (
+        responses2[0]
+        == f"Welcome {current_token_payload(1)['name']} to /demo-namespace."
+    )
+    assert responses2[1].startswith("Your session ID is ")
+    assert (
+        responses2[2]
+        == f"{current_token_payload(0)['name']}: Hello from {current_token_payload(0)['name']}"
+    )
+
+    # Asserting logs for user 2:
+    assert len(logs2) == 3
+    for log in logs2:
+        assert log["event"] == "demo_message"
+
+    assert logs2[0]["data"] == (
+        f"Welcome {current_token_payload(1)['name']} to /demo-namespace."
+    )
+    assert logs2[1]["data"].startswith("Your session ID is ")
+    assert logs2[2]["data"] == (
+        f"{current_token_payload(0)['name']}: Hello from {current_token_payload(0)['name']}"
+    )
 
 
 @pytest.mark.anyio
