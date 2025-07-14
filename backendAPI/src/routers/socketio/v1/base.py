@@ -359,11 +359,16 @@ class BaseNamespace(socketio.AsyncNamespace):
                             )
                             # TBD: delete! Should not be necessary!
                             # await self.server.emit(
-                            #     "transfer",
+                            #     "transfer:create",
                             #     database_object.model_dump(mode="json"),
                             #     namespace=self.namespace,
                             #     to=sid,
                             # )
+                            await self.server.enter_room(
+                                sid,
+                                f"resource:{str(database_object.id)}",
+                                namespace=self.namespace,
+                            )
                             await self._emit_status(
                                 sid,
                                 {
