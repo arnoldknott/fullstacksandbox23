@@ -58,18 +58,6 @@ client_config_demo_resource_namespace = [
 ]
 
 
-# @pytest.fixture(scope="module", autouse=True)
-# async def setup_namespace_server(provide_namespace_server):
-#     # Call setup function here
-#     async for socket_io_server in provide_namespace_server(
-#         [DemoResourceNamespace("/demo-resource")]
-#     ):
-#         # Yield to allow tests to run
-#         yield
-#         # # Optionally, add teardown logic here if needed
-#         # await socket_io_server.shutdown()
-
-
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "session_id_selector",
@@ -83,12 +71,12 @@ client_config_demo_resource_namespace = [
     indirect=True,
 )
 async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_missing_in_token(
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo_resource_namespace socket.io connection needs socketio scope in token."""
 
     try:
-        async for connection in socketio_test_client_generic(
+        async for connection in socketio_test_client(
             client_config_demo_resource_namespace
         ):
 
@@ -114,16 +102,14 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
 )
 async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresources(
     current_token_payload,
-    socketio_test_client_generic,
+    socketio_test_client,
     add_test_demo_resources: list[DemoResource],
 ):
     """Test the demo resource connect event."""
     resources = await add_test_demo_resources(current_token_payload())
 
     transfer_data = []
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
 
         transfer_data = connection["responses"]["/demo-resource"]["transfer"]
 
@@ -142,7 +128,7 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources(
     current_user_from_session_id,
-    socketio_test_client_generic,
+    socketio_test_client,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
 ):
@@ -166,9 +152,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         await add_test_policy_for_resource(policy)
 
     transfer_data = []
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
 
         transfer_data = connection["responses"]["/demo-resource"]["transfer"]
 
@@ -196,7 +180,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources_with_access_data(
     current_user_from_session_id,
-    socketio_test_client_generic,
+    socketio_test_client,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
 ):
@@ -223,7 +207,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
 
     transfer_data = []
 
-    async for connection in socketio_test_client_generic(
+    async for connection in socketio_test_client(
         client_config_demo_resource_namespace,
         query_parameters={"request-access-data": "true"},
     ):
@@ -268,7 +252,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     indirect=True,
 )
 async def test_user_gets_error_on_status_event_due_to_database_error(
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource connect event."""
     with patch(
@@ -279,7 +263,7 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
         transfer_data = []
         status_data = []
 
-        async for connection in socketio_test_client_generic(
+        async for connection in socketio_test_client(
             client_config_demo_resource_namespace
         ):
 
@@ -302,14 +286,12 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
     indirect=True,
 )
 async def test_user_submits_resource_without_id_for_creation(
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource submit event without ID."""
 
     status_data = []
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
 
         await connection["client"].emit(
             "submit", many_test_demo_resources[1], namespace="/demo-resource"
@@ -340,7 +322,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
     current_user_from_session_id,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource submit event without ID."""
     existing_demo_resources = await add_test_demo_resources()
@@ -357,9 +339,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
 
     status_data = []
     transfer_data = []
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
 
         transfer_data = connection["responses"]["/demo-resource"]["transfer"]
 
@@ -393,7 +373,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
     indirect=True,
 )
 async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
@@ -401,9 +381,7 @@ async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
     test_resource["id"] = "new_34ab56z"
 
     status_data = []
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
 
         await connection["client"].emit(
             "submit", test_resource, namespace="/demo-resource"
@@ -428,7 +406,7 @@ async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
     indirect=True,
 )
 async def test_user_submits_two_resource_with_new__string_in_id_field_for_creation_assessing_order_through_logs(
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
@@ -440,7 +418,7 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
 
     status_data = []
     logs = []
-    async for connection in socketio_test_client_generic(
+    async for connection in socketio_test_client(
         client_config_demo_resource_namespace, logs=logs
     ):
 
@@ -510,7 +488,7 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
     indirect=True,
 )
 async def test_user_submits_resource_with_random_string_in_id_field_fails(
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
 
@@ -518,9 +496,7 @@ async def test_user_submits_resource_with_random_string_in_id_field_fails(
     test_resource["id"] = "random_string"
 
     status_data = []
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
 
         await connection["client"].emit(
             "submit", test_resource, namespace="/demo-resource"
@@ -543,13 +519,11 @@ async def test_user_submits_resource_with_random_string_in_id_field_fails(
     indirect=True,
 )
 async def test_user_submits_resource_without_id_for_creation_missing_name(
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource delete event."""
 
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
 
         statuses_data = connection["responses"]["/demo-resource"]["status"]
 
@@ -577,13 +551,11 @@ async def test_user_submits_resource_without_id_for_creation_missing_name(
     indirect=True,
 )
 async def test_user_submits_resource_with_nonexisting_uuid_fails(
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource submit event with non-existing UUID."""
 
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
         statuses_data = connection["responses"]["/demo-resource"]["status"]
 
         test_demo_resource = copy.deepcopy(many_test_demo_resources[1])
@@ -610,7 +582,7 @@ async def test_user_submits_resource_with_nonexisting_uuid_fails(
 )
 async def test_user_submits_existing_resource_for_update(
     current_token_payload,
-    socketio_test_client_generic,
+    socketio_test_client,
     add_test_demo_resources: list[DemoResource],
     current_user_from_session_id,
 ):
@@ -621,9 +593,7 @@ async def test_user_submits_existing_resource_for_update(
         i for i, r in enumerate(resources) if r.name == "A second cat 2 resource"
     )
 
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
         statuses_data = connection["responses"]["/demo-resource"]["status"]
 
         modified_demo_resource = resources[index_of_resource_to_update]
@@ -676,7 +646,7 @@ async def test_user_submits_existing_resource_for_update(
 )
 async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
     current_user_from_session_id,
-    socketio_test_client_generic,
+    socketio_test_client,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
 ):
@@ -692,9 +662,7 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
         }
         await add_test_policy_for_resource(policy)
 
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
         status_data = connection["responses"]["/demo-resource"]["status"]
 
         modified_demo_resource = resources[3]
@@ -726,7 +694,7 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
 )
 async def test_user_updates_demo_resource_not_having_write_access_fails(
     current_user_from_session_id,
-    socketio_test_client_generic,
+    socketio_test_client,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
 ):
@@ -741,9 +709,7 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
     }
     await add_test_policy_for_resource(policy)
 
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
         statuses_data = connection["responses"]["/demo-resource"]["status"]
 
         modified_demo_resource = resources[3]
@@ -772,16 +738,16 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
 async def test_one_client_deletes_a_demo_resource_and_another_client_from_same_user_gets_the_remove_event(
     current_token_payload,
     add_test_demo_resources: list[DemoResource],
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource delete event."""
     resources = await add_test_demo_resources(current_token_payload())
 
-    # Two clients from same user - coming from mock_token_payload!
-    async for connection1 in socketio_test_client_generic(
+    # Two clients from same user - coming from current_token_payload()!
+    async for connection1 in socketio_test_client(
         client_config_demo_resource_namespace
     ):
-        async for connection2 in socketio_test_client_generic(
+        async for connection2 in socketio_test_client(
             client_config_demo_resource_namespace
         ):
 
@@ -831,7 +797,7 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_with_differ
     current_user_from_session_id,
     add_test_policy_for_resource,
     add_test_demo_resources: list[DemoResource],
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource delete event."""
     resources = await add_test_demo_resources(current_token_payload())
@@ -846,13 +812,13 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_with_differ
     await add_test_policy_for_resource(policy, current_token_payload(0))
 
     # Two clients from different users
-    async for connection1 in socketio_test_client_generic(
+    async for connection1 in socketio_test_client(
         client_config_demo_resource_namespace
     ):
-        async for connection2 in socketio_test_client_generic(
+        async for connection2 in socketio_test_client(
             client_config_demo_resource_namespace
         ):
-            async for connection_admin in socketio_test_client_generic(
+            async for connection_admin in socketio_test_client(
                 client_config_demo_resource_namespace
             ):
 
@@ -910,14 +876,12 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_with_differ
 async def test_user_deletes_a_demo_resource_missing_write_scope_in_token(
     current_token_payload,
     add_test_demo_resources: list[DemoResource],
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource delete event."""
     resources = await add_test_demo_resources(current_token_payload())
 
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
 
         statuses_data = connection["responses"]["/demo-resource"]["status"]
         deleted_data = connection["responses"]["/demo-resource"]["deleted"]
@@ -945,14 +909,12 @@ async def test_user_deletes_a_demo_resource_missing_write_scope_in_token(
 )
 async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_and_returns_status(
     add_test_demo_resources: list[DemoResource],
-    socketio_test_client_generic,
+    socketio_test_client,
 ):
     """Test the demo resource delete event."""
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
 
-    async for connection in socketio_test_client_generic(
-        client_config_demo_resource_namespace
-    ):
+    async for connection in socketio_test_client(client_config_demo_resource_namespace):
 
         status_data = connection["responses"]["/demo-resource"]["status"]
 
