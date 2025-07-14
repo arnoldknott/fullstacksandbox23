@@ -1,8 +1,13 @@
 import asyncio
+import uuid
 from datetime import datetime
 from typing import List, Optional
 from unittest.mock import patch
-import uuid
+
+import pytest
+import socketio
+import uvicorn
+from pydantic import BaseModel
 
 from core.cache import redis_session_client
 from routers.socketio.v1.demo_namespace import demo_namespace_router
@@ -14,11 +19,6 @@ from routers.socketio.v1.interactive_documentation import (
 )
 from routers.socketio.v1.public_namespace import public_namespace_router
 from tests.utils import sessions
-from pydantic import BaseModel
-import pytest
-import socketio
-import uvicorn
-
 
 # Mocking the sessions for testing purposes.
 

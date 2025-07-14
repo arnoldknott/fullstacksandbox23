@@ -7,9 +7,9 @@ from sqlmodel import Field, Relationship, SQLModel
 from .access import ResourceHierarchy
 from .base import (
     AccessPolicyMixin,
+    AccessRightsMixin,
     CreatedAtMixin,
     UpdatedAtMixin,
-    AccessRightsMixin,
 )
 from .category import Category, CategoryRead
 from .tag import Tag, TagRead

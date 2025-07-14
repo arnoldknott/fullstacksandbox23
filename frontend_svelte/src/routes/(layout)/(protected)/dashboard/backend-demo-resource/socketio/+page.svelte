@@ -107,6 +107,10 @@
 						editIds.add(data.id); // keep editing on after newly created resources
 						editIds = new Set(editIds); // trigger reactivity
 					});
+				} else if (data.success === 'shared') {
+					socketio.client.emit('read', data.id);
+				} else if (data.success === 'unshared') {
+					socketio.client.emit('read', data.id);
 				}
 			}
 		});
@@ -145,7 +149,6 @@
 	};
 
 	const share = (accessPolicy: AccessPolicy) => {
-		// socketio.client.emit('share', { text: 'some rubbish.' });
 		console.log(
 			'=== dashboard - backend-demo-resource - socketio - +page.svelte - share accessPolicy ==='
 		);
@@ -267,6 +270,10 @@
 								></span>
 							{:else if message.success === 'deleted'}
 								<span class="bg-success-container-content icon-[tabler--trash]"></span>
+							{:else if message.success === 'shared'}
+								<span class="bg-success-container-content icon-[ic--outline-share]"></span>
+							{:else if message.success === 'unshared'}
+								<span class="bg-success-container-content icon-[fe--disabled]"></span>
 							{/if}
 							<div class="mr-1 w-fit text-right">{message.id}</div>
 						</div>

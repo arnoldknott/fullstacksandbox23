@@ -1,8 +1,8 @@
+import copy
 from os import path, remove
 from uuid import UUID
 
 import pytest
-import copy
 from fastapi import UploadFile
 
 from core.types import CurrentUserData

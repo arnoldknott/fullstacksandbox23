@@ -1,32 +1,33 @@
-import pytest
-from socketio.exceptions import ConnectionError
 from datetime import datetime
+
+import pytest
 import socketio
+from socketio.exceptions import ConnectionError
+
 from routers.socketio.v1.demo_namespace import demo_namespace_router
 from tests.utils import (
     session_id_admin_read,
-    session_id_admin_write,
-    session_id_admin_socketio,
     session_id_admin_read_socketio,
-    session_id_admin_write_socketio,
     session_id_admin_read_write_socketio,
-    session_id_user1_read,
-    session_id_user1_write,
-    session_id_user1_socketio,
-    session_id_user1_read_socketio,
-    session_id_user1_read_write_socketio,
-    session_id_user2_socketio,
-    session_id_user2_read,
-    session_id_user2_write,
-    session_id_user2_read_socketio,
-    session_id_user2_write_socketio,
-    session_id_user2_read_write_socketio,
+    session_id_admin_socketio,
+    session_id_admin_write,
+    session_id_admin_write_socketio,
     session_id_invalid_token1,
     session_id_invalid_token2,
+    session_id_user1_read,
+    session_id_user1_read_socketio,
+    session_id_user1_read_write_socketio,
+    session_id_user1_socketio,
+    session_id_user1_write,
+    session_id_user2_read,
+    session_id_user2_read_socketio,
+    session_id_user2_read_write_socketio,
+    session_id_user2_socketio,
+    session_id_user2_write,
+    session_id_user2_write_socketio,
     token_user1_read_write_socketio,
     token_user2_read_write_socketio,
 )
-
 
 # Default setup for client to use in all tests that use the demo namespace.
 client_config_demo_namespace = [

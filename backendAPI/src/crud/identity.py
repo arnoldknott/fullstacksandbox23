@@ -7,12 +7,11 @@ from sqlmodel import select
 
 from core.types import Action, CurrentUserData, IdentityType
 from models.access import AccessLogCreate, AccessPolicyCreate
-from models.identity import (
+from models.identity import (  # AzureGroupUserLink,
     AzureGroup,
     AzureGroupCreate,
     AzureGroupRead,
     AzureGroupUpdate,
-    # AzureGroupUserLink,
     Group,
     GroupCreate,
     GroupRead,

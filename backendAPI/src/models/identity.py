@@ -11,11 +11,10 @@ from models.access import IdentityHierarchy
 
 from .base import (
     AccessPolicyMixin,
+    AccessRightsMixin,
     CreatedAtMixin,
     UpdatedAtMixin,
-    AccessRightsMixin,
 )
-
 
 # region account linking
 

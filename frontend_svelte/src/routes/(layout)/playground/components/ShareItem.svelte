@@ -5,11 +5,13 @@
 	let {
 		resourceId,
 		shareOption,
-		share
+		share,
+		closeShareMenu
 	}: {
 		resourceId: string;
 		shareOption: AccessShareOption;
 		share?: (accessPolicy: AccessPolicy) => void;
+		closeShareMenu?: () => void;
 	} = $props();
 
 	const desiredActions = (selectedAction?: Action) => {
@@ -52,15 +54,19 @@
 			formaction={!share
 				? `?/share&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
 				: undefined}
-			onclick={share
-				? () =>
-						share({
-							resource_id: resourceId,
-							identity_id: shareOption.identity_id,
-							action: desiredActions(selectedAction).action,
-							new_action: desiredActions(selectedAction).new_action
-						})
-				: undefined}
+			onclick={() => {
+				if (share) {
+					share({
+						resource_id: resourceId,
+						identity_id: shareOption.identity_id,
+						action: desiredActions(selectedAction).action,
+						new_action: desiredActions(selectedAction).new_action
+					});
+					if (closeShareMenu) {
+						closeShareMenu();
+					}
+				}
+			}}
 			aria-label={String(selectedAction) || 'remove'}
 		>
 			<span class={AccessHandler.rightsIcon(selectedAction)}></span>

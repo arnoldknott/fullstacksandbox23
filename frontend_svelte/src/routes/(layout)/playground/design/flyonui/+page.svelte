@@ -1908,6 +1908,7 @@
 					>
 				</p>
 				<span class="icon-[ic--round-question-mark] size-12"></span>
+				<span class="icon-[ic--outline-share] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">

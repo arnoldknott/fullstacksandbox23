@@ -19,6 +19,8 @@ export type SocketioStatus =
 	| { success: 'created'; id: string; submitted_id: string }
 	| { success: 'updated'; id: string }
 	| { success: 'deleted'; id: string }
+	| { success: 'shared'; id: string }
+	| { success: 'unshared'; id: string }
 	| { error: string };
 
 export class SocketIO {

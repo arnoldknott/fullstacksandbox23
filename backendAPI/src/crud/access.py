@@ -39,7 +39,6 @@ from models.access import (
     ResourceHierarchyRead,
 )
 
-
 logger = logging.getLogger(__name__)
 
 read = Action.read

@@ -6,6 +6,7 @@
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import { AccessHandler } from '$lib/accessHandler';
 	import IdBadge from '../../IdBadge.svelte';
+	import type { HSDropdown, IHTMLElementFloatingUI } from 'flyonui/flyonui';
 
 	let {
 		demoResource, // = $bindable(),
@@ -25,6 +26,25 @@
 
 	// let editableDemoResource: DemoResourceExtended = $derived({ ...demoResource });
 
+	let shareMenuElement: HTMLElement | undefined = $state(undefined);
+	let shareMenu: HSDropdown | undefined = $derived(undefined);
+
+	const initDropdown: Attachment = (_node: Element) => {
+		import('flyonui/flyonui')
+			.then(({ HSDropdown }) => {
+				shareMenu = new HSDropdown(shareMenuElement as unknown as IHTMLElementFloatingUI);
+				HSDropdown.autoInit();
+			})
+			.catch((error) => {
+				console.error('Error loading HSDropdown:', error);
+			});
+	};
+	const closeShareMenu = () => {
+		if (shareMenu) {
+			shareMenu.close();
+		}
+	};
+
 	let formatedDate = $derived(
 		demoResource.creation_date
 			? new Date(demoResource.creation_date).toLocaleString('da-DK', { timeZone: 'CET' })
@@ -39,16 +59,6 @@
 	let shareOptions: AccessShareOption[] | undefined = $derived(
 		AccessHandler.createShareOptions(identities, demoResource.access_policies)
 	);
-
-	const initDropdown: Attachment = (_node: Element) => {
-		import('flyonui/flyonui')
-			.then(({ HSDropdown }) => {
-				HSDropdown.autoInit();
-			})
-			.catch((error) => {
-				console.error('Error loading HSDropdown:', error);
-			});
-	};
 </script>
 
 <div
@@ -146,6 +156,7 @@
 				{#if demoResource.access_right === Action.OWN}
 					<div
 						{@attach initDropdown}
+						bind:this={shareMenuElement}
 						class="dropdown join-item relative inline-flex grow [--placement:top]"
 					>
 						<!-- bind:this={actionButtonShareMenuElement} -->
@@ -161,7 +172,7 @@
 						</button>
 
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share-{demoResource.id}"
@@ -173,6 +184,7 @@
 										resourceId={demoResource.id as string}
 										{shareOption}
 										{share}
+										{closeShareMenu}
 									/>
 								{/each}
 							{/if}

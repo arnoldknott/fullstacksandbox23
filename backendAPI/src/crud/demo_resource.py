@@ -1,7 +1,6 @@
 from typing import List
 from uuid import UUID
 
-
 from core.types import CurrentUserData
 from models.demo_resource import (
     DemoResource,

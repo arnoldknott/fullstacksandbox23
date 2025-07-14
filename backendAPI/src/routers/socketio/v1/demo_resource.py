@@ -1,7 +1,5 @@
 # import logging
 
-from .base import BaseNamespace
-
 from core.types import EventGuard, GuardTypes
 from crud.demo_resource import DemoResourceCRUD
 from models.demo_resource import (
@@ -10,6 +8,8 @@ from models.demo_resource import (
     DemoResourceRead,
     DemoResourceUpdate,
 )
+
+from .base import BaseNamespace
 
 # logger = logging.getLogger(__name__)
 

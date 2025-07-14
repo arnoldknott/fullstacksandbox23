@@ -74,7 +74,7 @@ async def get_access_policies_for_resource(
     return access_policies
 
 
-# Technically a post action, but it's retrieving information based on the resource_ids
+# Technically a get action, but it's retrieving information based on the resource_ids
 @router.post("/policy/resources", status_code=200)
 async def get_access_policies_for_resources(
     resource_ids: list[UUID],
