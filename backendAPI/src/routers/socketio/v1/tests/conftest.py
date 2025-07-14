@@ -24,7 +24,7 @@ import uvicorn
 # Mocking the token payload for testing purposes.
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def mock_token_payload(request):
     """Returns a mocked token payload."""
 
@@ -34,7 +34,7 @@ async def mock_token_payload(request):
             yield request.param
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def mock_sessions(request):
     """Chooses the right token-payload based on which session should be mocked."""
 
@@ -56,7 +56,7 @@ async def mock_sessions(request):
             yield {"mock": mocked_sessions, "mocked_results": results}
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def mock_get_user_account_from_session_cache():
     """Returns a mocked token."""
 
@@ -87,7 +87,7 @@ async def mock_get_user_account_from_session_cache():
 # and session-id matches the token_payload in the cache.
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def mock_get_azure_token_from_cache():
     """Returns a mocked token."""
 
@@ -99,28 +99,28 @@ async def mock_get_azure_token_from_cache():
 # Setting up socketio server side for testing
 
 
-@pytest.fixture(scope="module")
-async def socketio_test_serve_single_connection_deep_security(
-    mock_token_payload,
-    mock_get_azure_token_from_cache,
-    mock_get_user_account_from_session_cache,
-):
-    """Provide a socket.io server."""
-    mock_token_payload
+# @pytest.fixture(scope="function")
+# async def socketio_test_serve_single_connection_deep_security(
+#     mock_token_payload,
+#     mock_get_azure_token_from_cache,
+#     mock_get_user_account_from_session_cache,
+# ):
+#     """Provide a socket.io server."""
+#     mock_token_payload
 
-    sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
-    app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
+#     sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
+#     app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
 
-    config = uvicorn.Config(app, host="127.0.0.1", port=8669, log_level="info")
-    server = uvicorn.Server(config)
+#     config = uvicorn.Config(app, host="127.0.0.1", port=8669, log_level="info")
+#     server = uvicorn.Server(config)
 
-    asyncio.create_task(server.serve())
-    await asyncio.sleep(1)
-    yield sio
-    await server.shutdown()
+#     asyncio.create_task(server.serve())
+#     await asyncio.sleep(1)
+#     yield sio
+#     await server.shutdown()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def socketio_test_server(
     mocked_sessions,
     mock_get_azure_token_from_cache,
@@ -141,7 +141,7 @@ async def socketio_test_server(
     await server.shutdown()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def provide_namespace_server(
     socketio_test_serve_single_connection_deep_security: socketio.AsyncServer,
 ):
@@ -352,7 +352,24 @@ def current_token_payload(session_id_selector: callable):
 
 @pytest.fixture(scope="function")
 async def socketio_test_client_generic(session_id_selector: uuid.UUID):
-    """Provides a socket.io client for testing with a specific session ID."""
+    """Provides a socket.io client for testing with a specific session ID.
+
+        Args:
+        client_config (List[ClientConfig]): List of namespaces and their events,
+            where each namespace is a dictionary with keys
+            - "name" (string), for example "/demo-namespace"
+            - "events" (list of strings), ["submit", "transfer", "deleted"].
+        server_host (str): The server host to connect to.
+            server_host="http://127.0.0.1:80" => server from code
+            server_host="http://127.0.0.1:8669" => test server from fixture socketio_test_server
+        query_parameters (dict): Query parameters to include in the connection.
+            e.g. {"request-access-data": "true", "parent-id": "123e4567-e89b-12d3-a456-426614174000"}
+
+    Yields:
+        AsyncClient: An instance of the socket.io client connected to the server.
+        dict: A dictionary containing responses for each namespace and event.
+        e.g. {"namespace": {"event": ["response_data"]}}
+    """
 
     async def _socketio_test_client_generic(
         client_config: ClientConfig,
@@ -383,12 +400,14 @@ async def socketio_test_client_generic(session_id_selector: uuid.UUID):
         responses = {}
         for config in client_config:
             namespace = config["namespace"]
-            events = config["events"]
-            responses[namespace] = {}
-            for event in events:
-                responses[namespace][event] = []
 
-                client.on(event, handler=make_handler(event), namespace=namespace)
+            responses[namespace] = {}
+            if "events" in config:
+                events = config["events"]
+                for event in events:
+                    responses[namespace][event] = []
+
+                    client.on(event, handler=make_handler(event), namespace=namespace)
 
         server_url = "http://127.0.0.1:8671"
         if query_parameters:
