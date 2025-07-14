@@ -2,7 +2,9 @@ import asyncio
 from datetime import datetime
 from typing import List, Optional
 from unittest.mock import patch
+import uuid
 
+from core.cache import redis_session_client
 from routers.socketio.v1.demo_namespace import demo_namespace_router
 from routers.socketio.v1.demo_resource import (
     demo_resource_router as demo_resource_namespace_router,
@@ -12,6 +14,7 @@ from routers.socketio.v1.interactive_documentation import (
 )
 from routers.socketio.v1.public_namespace import public_namespace_router
 from routers.socketio.v1.demo_namespace import DemoNamespace
+from tests.utils import sessions
 from pydantic import BaseModel
 import pytest
 import socketio
@@ -75,6 +78,13 @@ async def mock_get_user_account_from_session_cache():
 # | admin-with-... | token_payload_admin-with-... |
 # | user1-with-... | token_payload_user1-with-... |
 # |________________|______________________________|
+#
+# means: get_azure_token_from_cache() gets the token content
+# instead of the user_account, as input
+# and simply returns that token content.
+# no need to mock based on input any more.
+# just make sure that parameterization is now done with the session-id
+# and session-id matches the token_payload in the cache.
 
 
 @pytest.fixture(scope="module")
@@ -208,7 +218,198 @@ async def socketio_test_server_for_multiple_users(
     await server.shutdown()
 
 
+@pytest.fixture(scope="package", autouse=True)
+def load_test_sessions_into_redis():
+    """Loads test sessions into Redis for testing purposes."""
+
+    for session in sessions:
+        # This is where the mock happens:
+        # instead of linking the session_id with the microsoftAccount,
+        # it links microsoftAccount with the token payload
+        # This enables that the production code from get_user_account_from_session_cache
+        # accesses the cache
+        redis_session_client.json().set(
+            f"session:{session['session_id']}",
+            ".",
+            {"microsoftAccount": session["token"]},
+        )
+        # print("=== load_test_sessions_into_redis - session ===")
+        # print(session["session_id"])
+        # print("=== load_test_sessions_into_redis - token ===")
+        # print(session["token"])
+
+    yield
+    for session in sessions:
+        redis_session_client.json().delete(f"session:{session['session_id']}")
+
+
+# @pytest.fixture(scope="package")
+# async def mock_azure_token_in_redis():
+#     """Mocks the Redis sessions for testing purposes."""
+
+#     mocked_token = None
+
+#     # get_azure_token_from_cache didn't get the user account as input,
+#     # but the token_payload
+#     # as load_test_sessions_into_redis linked the session_id directly with the token_payload
+#     # therefore just simply return the input here instead of sending the user account
+#     # to get a token from the cache and try to decode it.
+#     def return_token_payload(*args):
+#         """Chooses the token associated with the session ID from redis."""
+#         # Compute the return value based on the arguments
+#         mocked_token = args[0]
+#         return mocked_token
+
+#     with patch("core.security.get_azure_token_from_cache") as mocked_sessions:
+#         mocked_sessions.side_effect = return_token_payload
+#         # TBD: consider only returning the token, not the mock. Who cares how many times the function was called and so on.
+#         yield {"mock": mock_azure_token_in_redis, "mocked_token": mocked_token}
+#         # yield mocked_token
+
+
+@pytest.fixture(scope="package", autouse=True)
+async def socketio_test_server_generic(
+    # mock_azure_token_in_redis,
+    load_test_sessions_into_redis,
+):
+    """Provide a socket.io server for multiple patched users.
+    This fixture skips Authorization but still checks Authentication."""
+    # mock_azure_token_in_redis
+
+    def return_input(*args):
+        """Chooses the token associated with the session ID from redis."""
+        # Compute the return value based on the arguments
+        mocked_token = args[0]
+        return mocked_token
+
+    with patch("core.security.get_azure_token_from_cache") as mocked_user_account:
+        mocked_user_account.side_effect = return_input
+        with patch("core.security.get_azure_token_payload") as mocked_decode_token:
+            mocked_decode_token.side_effect = return_input
+
+            sio = socketio.AsyncServer(
+                async_mode="asgi", logger=True, engineio_logger=True
+            )
+            app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
+
+            config = uvicorn.Config(app, host="127.0.0.1", port=8671, log_level="info")
+            server = uvicorn.Server(config)
+
+            asyncio.create_task(server.serve())
+            sio.register_namespace(public_namespace_router)
+            sio.register_namespace(demo_namespace_router)
+            sio.register_namespace(demo_resource_namespace_router)
+            sio.register_namespace(interactive_documentation_router)
+            await asyncio.sleep(1)
+            yield sio
+            await server.shutdown()
+
+
 # Setting up socketio client side for testing:
+
+
+@pytest.fixture(scope="function")
+def session_id_selector(request):
+    """Returns the session id from an array of parameters based on the index."""
+
+    print(f"session_id_selector: {request}")  # Debugging output
+
+    def _session_id_selector(index: int = 0):
+        """Selects the session id based on the index."""
+        if hasattr(request, "param"):
+            return request.param[index]
+        return None
+
+    return _session_id_selector
+
+
+class ClientConfig(BaseModel):
+    """Model to hold a namespace."""
+
+    namespace: str
+    events: List[str] = []
+
+
+@pytest.fixture(scope="function")
+async def socketio_test_client_generic(session_id_selector: uuid.UUID):
+    """Provides a socket.io client for testing with a specific session ID."""
+
+    async def _socketio_test_client_generic(
+        client_config: ClientConfig,
+        index_of_session_id_parameter: int = 0,
+        query_parameters: dict = None,
+        logs: Optional[List[dict]] = None,
+    ):
+        client = socketio.AsyncClient(logger=True, engineio_logger=True)
+        session_id = session_id_selector(index_of_session_id_parameter)
+
+        def make_handler(event_name):
+            async def handle_event(data):
+                """Handles the event and appends data to responses."""
+                # print(f"=== Received event '{event_name}': {data} ===", flush=True)
+                nonlocal responses
+                if logs is not None:
+                    logs.append(
+                        {
+                            "event": event_name,
+                            "timestamp": datetime.now(),
+                            "data": data,
+                        }
+                    )
+                responses[namespace][event_name].append(data)
+
+            return handle_event
+
+        responses = {}
+        for config in client_config:
+            namespace = config["namespace"]
+            events = config["events"]
+            responses[namespace] = {}
+            for event in events:
+                responses[namespace][event] = []
+
+                client.on(event, handler=make_handler(event), namespace=namespace)
+
+        server_url = "http://127.0.0.1:8671"
+        if query_parameters:
+            query_string = "&".join(
+                f"{key}={value}" for key, value in query_parameters.items()
+            )
+            server_url += f"?{query_string}"
+        all_namespaces = [namespace["namespace"] for namespace in client_config]
+        print(
+            "=== socketio_test_client_generic - connecting to server - session_id ==="
+        )
+        print(session_id, flush=True)
+        print(
+            "=== socketio_test_client_generic - connecting to server - server_url ==="
+        )
+        print(server_url, flush=True)
+        print(
+            "=== socketio_test_client_generic - connecting to server - namespaces ==="
+        )
+        print(all_namespaces, flush=True)
+        await client.connect(
+            server_url,
+            socketio_path="socketio/v1",
+            namespaces=all_namespaces,
+            auth={"session-id": str(session_id)},
+        )
+
+        # print(
+        #     "=== socketio_test_client_generic - mock_azure_token_in_redis - call_count ==="
+        # )
+        # print(mock_azure_token_in_redis["mock"].call_count)
+
+        connection = {
+            "client": client,
+            "responses": responses,
+            "logs": logs if logs is not None else None,
+        }
+        yield connection
+        await client.disconnect()
+
+    return _socketio_test_client_generic
 
 
 # This one connects to a socketio server in FastAPI:

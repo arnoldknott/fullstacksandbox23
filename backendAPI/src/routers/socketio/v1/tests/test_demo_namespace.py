@@ -1,8 +1,11 @@
+import uuid
 import pytest
 from socketio.exceptions import ConnectionError
-
+from datetime import datetime
 from routers.socketio.v1.demo_namespace import DemoNamespace, demo_namespace_router
 from tests.utils import (
+    session_id_user1_read_write_socketio,
+    session_id_user2_read_write_socketio,
     token_admin_read_write_socketio,
     token_user1_read_write_socketio,
     token_admin_read,
@@ -339,6 +342,65 @@ async def test_demo_message_with_test_server_and_multiple_users_connected(
     assert mock_sessions["mock"].call_args_list[0].args == ("0",)
     # User 2 token selected second:
     assert mock_sessions["mock"].call_args_list[1].args == ("1",)
+
+
+# Define one reusable client per namespace as a fixture!
+client_config = [
+    {
+        "namespace": "/demo-namespace",
+        "events": ["demo_message"],
+    }
+]
+
+
+# This is testing the test setup!
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_id_selector",
+    [[session_id_user1_read_write_socketio, session_id_user2_read_write_socketio]],
+    indirect=True,
+)
+async def test_generic_test_client_and_server(
+    session_id_selector,
+    socketio_test_client_generic,
+):
+    """Test the generic client and generic server interaction."""
+
+    session_id_default = session_id_selector()
+    assert session_id_default == session_id_user1_read_write_socketio
+    print("=== session_id_default ===")
+    print(session_id_default, flush=True)
+    session_id1 = session_id_selector(0)
+    assert session_id1 == session_id_user1_read_write_socketio
+    session_id2 = session_id_selector(1)
+    assert session_id2 == session_id_user2_read_write_socketio
+
+    logs1 = []
+    responses1 = []
+    # TBD: add one client for each namespace, hardcoding the client_config.
+    async for connection1 in socketio_test_client_generic(
+        client_config, 0, query_parameters={"request-access-data": "true"}, logs=logs1
+    ):
+        client1 = connection1["client"]
+        responses1 = connection1["responses"]["/demo-namespace"]["demo_message"]
+        logs1 = connection1["logs"]
+        logs1.append(
+            {
+                "event": "demo_message",
+                "timestamp": datetime.now(),
+                # TBD: replace session_id_selector with mock_azure_token_in_redis(session_id_selector(0))["name"]
+                # TBD: replace session_id_selector with mock_azure_token_in_redis[0].mocked_token["name"]
+                # TBD: just use a fixture to select the token by session_id form sessions in tests.utils
+                "data": f"{session_id_selector(0)}: sends message to server",
+            }
+        )
+        # TBD: replace "User 1" with mock_azure_token_in_redis(session_id_selector(0))["name"]
+        client1.emit("demo_message", "Hello from User 1", namespace="/demo-namespace")
+        await client1.sleep(1)
+        client1.disconnect()
+
+    # Check the responses for user 1
+    assert len(responses1) == 3
 
 
 @pytest.mark.anyio
