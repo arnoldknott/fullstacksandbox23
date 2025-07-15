@@ -358,6 +358,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 namespace=self.namespace,
                 to=sid,
             )
+            # TBD: consider changing this - can be misleading!
             await self._emit_status(sid, {"success": "deleted", "id": str(resource_id)})
             await self._emit_status(
                 sid, {"error": f"Resource {str(resource_id)} not found."}

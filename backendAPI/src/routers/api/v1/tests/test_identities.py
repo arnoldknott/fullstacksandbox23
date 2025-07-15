@@ -2854,7 +2854,7 @@ async def test_add_user_to_group_and_remove_again(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
-    add_many_test_groups,
+    add_many_test_groups: List[Group],
 ):
     """Tests adding user to a group and remove again."""
     app_override_provide_http_token_payload
