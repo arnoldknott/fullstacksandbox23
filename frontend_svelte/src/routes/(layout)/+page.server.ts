@@ -17,13 +17,15 @@ export const actions: Actions = {
 
 			const payload = {
 				id: locals.sessionData.currentUser.id,
-				userProfile: {
+				user_profile: {
 					theme_color: data.get('color-picker'),
 					theme_variant: variant,
 					// theme_variant: "Neutral",
 					contrast: contrast
 				}
 			};
+			console.log('=== layout - layout.server - putProfile - payload ===');
+			console.log(payload);
 			const response = await backendAPI.put(sessionId, '/user/me', JSON.stringify(payload));
 			if (response.status !== 200) {
 				return fail(response.status, { error: response.statusText });
@@ -33,17 +35,17 @@ export const actions: Actions = {
 			await redisCache.setSession(
 				sessionId,
 				'$.currentUser.userProfile.theme_color',
-				JSON.stringify(payload.userProfile.theme_color)
+				JSON.stringify(payload.user_profile.theme_color)
 			);
 			await redisCache.setSession(
 				sessionId,
 				'$.currentUser.userProfile.theme_variant',
-				JSON.stringify(payload.userProfile.theme_variant)
+				JSON.stringify(payload.user_profile.theme_variant)
 			);
 			await redisCache.setSession(
 				sessionId,
 				'$.currentUser.userProfile.contrast',
-				JSON.stringify(payload.userProfile.contrast)
+				JSON.stringify(payload.user_profile.contrast)
 			);
 			// locals.sessionData.currentUser.user_profile.theme_color = payload.user_profile.theme_color;
 			// locals.sessionData.currentUser.user_profile.theme_variant =
