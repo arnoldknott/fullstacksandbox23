@@ -12,14 +12,18 @@ from models.demo_resource import DemoResource, DemoResourceExtended
 from tests.utils import (
     many_test_demo_resources,
     session_id_admin_read,
+    session_id_admin_write,
     session_id_admin_read_socketio,
     session_id_admin_read_write_socketio,
-    session_id_admin_write,
+    session_id_admin_read_write_socketio_groups,
     session_id_user1_read,
+    session_id_user1_write,
     session_id_user1_read_socketio,
     session_id_user1_read_write_socketio,
-    session_id_user1_write,
+    session_id_user1_read_write_socketio_groups,
     session_id_user2_read_socketio,
+    session_id_user2_read_write_socketio,
+    session_id_user2_read_write_socketio_groups,
     token_admin_read_write_socketio,
 )
 
@@ -928,3 +932,177 @@ async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_a
         assert status_data[0] == {"error": "404: DemoResource not deleted."}
 
         await connection["client"].disconnect()
+
+
+# Testing the share events:
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_id_selector",
+    [
+        [
+            session_id_user1_read_write_socketio_groups,
+            session_id_user2_read_write_socketio_groups,
+            session_id_admin_read_write_socketio,
+        ],
+        [
+            session_id_admin_read_write_socketio_groups,
+            session_id_user1_read_write_socketio_groups,
+            session_id_user2_read_write_socketio,
+        ],
+        [
+            session_id_user2_read_write_socketio_groups,
+            session_id_admin_read_write_socketio_groups,
+            session_id_user1_read_write_socketio,
+        ],
+    ],
+    indirect=True,
+)
+async def test_user_shares_owned_resource_with_groups_in_azure_token(
+    current_token_payload,
+    socketio_test_client,
+    add_test_demo_resources: list[DemoResource],
+):
+    """Test the demo resource connect event."""
+    # First user owns the resources:
+    token_user1 = current_token_payload(0)
+    query_parameters_user1 = {}
+    if "groups" in token_user1:
+        identity_ids_user1 = [identity_id for identity_id in token_user1["groups"]]
+        query_parameters_user1 = {"identity-id": ",".join(identity_ids_user1)}
+
+    token_user2 = current_token_payload(1)
+    query_parameters_user2 = {}
+    if "groups" in token_user2:
+        identity_ids_user2 = [identity_id for identity_id in token_user2["groups"]]
+        query_parameters_user2 = {"identity-id": ",".join(identity_ids_user2)}
+
+    token_user3 = current_token_payload(2)
+    query_parameters_user3 = {}
+    if "groups" in token_user3:
+        identity_ids_user3 = [identity_id for identity_id in token_user3["groups"]]
+        query_parameters_user3 = {"identity-id": ",".join(identity_ids_user3)}
+
+    resources = await add_test_demo_resources(token_user1)
+    # resources = await add_test_demo_resources(token_admin_read_write_socketio)
+
+    async for connection1 in socketio_test_client(
+        client_config_demo_resource_namespace,
+        query_parameters=query_parameters_user1,
+    ):
+        status_data1 = connection1["responses"]["/demo-resource"]["status"]
+        client1 = connection1["client"]
+        async for connection2 in socketio_test_client(
+            client_config_demo_resource_namespace,
+            1,
+            query_parameters=query_parameters_user2,
+        ):
+            status_data2 = connection2["responses"]["/demo-resource"]["status"]
+
+            client2 = connection2["client"]
+
+            async for connection3 in socketio_test_client(
+                client_config_demo_resource_namespace,
+                2,
+                query_parameters=query_parameters_user3,
+            ):
+                status_data3 = connection3["responses"]["/demo-resource"]["status"]
+                client3 = connection3["client"]
+
+                # First user shares the resources with a group, that first and second user are member of:
+                await client1.emit(
+                    "share",
+                    {
+                        "resource_id": str(resources[0].id),
+                        "identity_id": token_user1["groups"][1],
+                        "action": "read",
+                    },
+                    namespace="/demo-resource",
+                )
+
+                # Wait for the response to be set
+                await client1.sleep(1)
+                await client2.sleep(1)
+                await client3.sleep(1)
+
+                assert status_data1 == [
+                    {"success": "shared", "id": str(resources[0].id)}
+                ]
+                assert status_data2 == [
+                    {"success": "shared", "id": str(resources[0].id)}
+                ]
+                # Even the third user is admin, share events don't get emitted automatically to admin,
+                # Anyways can see everything!
+                # Unless the admin also has the team in the groups from token.
+                assert status_data3 == []
+
+                transfer_data1 = connection1["responses"]["/demo-resource"]["transfer"]
+                transfer_data2 = connection2["responses"]["/demo-resource"]["transfer"]
+                assert len(transfer_data1) == len(resources)
+                # Even though the access has been granted, no resources are transferred yet.
+                # User needs to make another emit to event read, to get the resource,
+                # because other existing access policies might influence the access rights.
+                assert len(transfer_data2) == 0
+
+                await client1.disconnect()
+                await client2.disconnect()
+                await client3.disconnect()
+
+
+# TBD add tests for:
+# - user owning resource updates access to a different action level: success
+# - user owning resource updates access to same action level: nothing happens
+# - user deletes access to a resource: success
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_id_selector",
+    [
+        [session_id_user1_read_write_socketio_groups],
+        [session_id_user2_read_write_socketio_groups],
+    ],
+    indirect=True,
+)
+async def test_user_shares_tries_to_share_resource_without_having_access(
+    current_token_payload,
+    socketio_test_client,
+    add_test_demo_resources: list[DemoResource],
+):
+    """Test the demo resource connect event."""
+    # First user owns the resources:
+
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)
+
+    token_user1 = current_token_payload(0)
+    async for connection in socketio_test_client(
+        client_config_demo_resource_namespace,
+    ):
+        status_data = connection["responses"]["/demo-resource"]["status"]
+        client = connection["client"]
+
+        # First user shares the resources with a group, that first and second user are member of:
+        await client.emit(
+            "share",
+            {
+                "resource_id": str(resources[0].id),
+                "identity_id": token_user1["groups"][1],
+                "action": "read",
+            },
+            namespace="/demo-resource",
+        )
+
+        # Wait for the response to be set
+        await client.sleep(1)
+
+        assert status_data == [{"error": "403: Forbidden."}]
+        transfer_data = connection["responses"]["/demo-resource"]["transfer"]
+
+        assert len(transfer_data) == 0
+        await client.disconnect()
+
+
+# TBD: add tests for read event:
+# - user has access to resource: success & transfer data
+# - user does not have access to resource: error
