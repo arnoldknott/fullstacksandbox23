@@ -1871,8 +1871,12 @@ async def test_put_user_with_integer_user_id(
             resource_id=db_user.id,
         )
 
-    assert created_at > before_time - timedelta(seconds=2)
-    assert created_at < after_time + timedelta(seconds=2)
+    assert created_at > before_time - timedelta(
+        seconds=3
+    )  # TBD: set back to 2 seconds: 3, due to extremly slow localhost,
+    assert created_at < after_time + timedelta(
+        seconds=3
+    )  # TBD: set back to 2 seconds: 3, dur to extremly slow localhost
     assert last_accessed_at.time > created_at
     assert last_accessed_at.status_code == 200
 
