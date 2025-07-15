@@ -208,10 +208,14 @@ async def current_user_from_session_id(
     return _current_user_from_session_id
 
 
+# TBD: consider refactoring into a class - and call instantiation with await ClassName()
+# add connect, logging and so on as methods
+# connect automatically, if not auto_connect = false in instance creation
+# pass query parameters in instantiation
+#
 # This one connects to a socketio server in FastAPI:
 # host="http://127.0.0.1:80" => production server
 # host="http://127.0.0.1:8669" => test server from fixture socketio_test_server
-# If this one gets even bigger, consider refactoring it into a class!
 @pytest.fixture(scope="function")
 async def socketio_test_client(session_id_selector: uuid.UUID):
     """Provides a socket.io client for testing with a specific session ID.

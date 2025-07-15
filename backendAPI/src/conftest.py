@@ -570,12 +570,12 @@ async def add_one_parent_child_identity_relationship(
     async def _add_one_parent_child_identity_relationship(
         child_id: UUID,
         parent_id: UUID = parent_id,
-        type: IdentityType = IdentityType.sub_group,
+        child_type: IdentityType = IdentityType.sub_group,
         inherit: bool = False,
     ):
         """Adds a parent-child relationship to the database."""
         return await add_parent_child_identity_relationship(
-            parent_id, child_id, type, inherit
+            parent_id, child_id, child_type, inherit
         )
 
     yield _add_one_parent_child_identity_relationship

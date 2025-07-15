@@ -358,6 +358,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 namespace=self.namespace,
                 to=sid,
             )
+            # TBD: consider changing this - can be misleading!
             await self._emit_status(sid, {"success": "deleted", "id": str(resource_id)})
             await self._emit_status(
                 sid, {"error": f"Resource {str(resource_id)} not found."}
@@ -486,8 +487,8 @@ class BaseNamespace(socketio.AsyncNamespace):
         # TBD: validate the AccessPolicyCreate model!
         try:
             current_user = await self._get_current_user_and_check_guard(sid, "share")
-            print("===  socketio - SHARE - access_policy ===")
-            print(access_policy, flush=True)
+            # print("===  socketio - SHARE - access_policy ===")
+            # print(access_policy, flush=True)
             if "action" not in access_policy:
                 access_policy = AccessPolicyDelete(**access_policy)
                 async with AccessPolicyCRUD() as crud:
@@ -497,7 +498,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                         {"success": "unshared", "id": str(access_policy.resource_id)},
                         rooms=[f"identity:{str(access_policy.identity_id)}"],
                     )
-                print("=== socketio - DELETE - access_policy ===", flush=True)
+                # print("=== socketio - DELETE - access_policy ===", flush=True)
             elif "new_action" not in access_policy:
                 # print(
                 #     "=== routers - socketio - v1 - on_share - CREATE - access_policy ==="
@@ -514,7 +515,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                     },
                     rooms=[f"identity:{access_policy.identity_id}"],
                 )
-                print("=== socketio - CREATE - access_policy ===", flush=True)
+                # print("=== socketio - CREATE - access_policy ===", flush=True)
             elif "action" != "new_action":
                 access_policy = AccessPolicyUpdate(**access_policy)
                 async with AccessPolicyCRUD() as crud:
@@ -527,7 +528,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                     },
                     rooms=[f"identity:{str(access_policy.identity_id)}"],
                 )
-                print("=== socketio - UPDATE - access_policy ===", flush=True)
+                # print("=== socketio - UPDATE - access_policy ===", flush=True)
         except Exception as error:
             logger.error(f"🧦 Failed update access attempted from client {sid}.")
             print(error, flush=True)
