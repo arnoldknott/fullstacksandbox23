@@ -1,5 +1,3 @@
-from datetime import datetime
-from pprint import pprint
 
 import pytest
 import socketio
