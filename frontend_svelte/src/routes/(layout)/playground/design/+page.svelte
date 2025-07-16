@@ -81,28 +81,20 @@
 	);
 </script>
 
-<Heading>🚧 Construction sites - for design experiments 🚧</Heading>
-
-<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
-	{#each links as link (link.name)}
-		<NavigationCard title={link.name} href={link.url}>{link.description}</NavigationCard>
-	{/each}
-	<!-- <NavigationCard title="FlyonUI 2" href="/playground/design/flyonui">
-		Playground and showcase for flyonUI components and design
-	</NavigationCard>
-	<NavigationCard title="Material Design 3" href="/playground/design/materialdesign">
-		Playground and showcase for Material Design 3 components and design
-	</NavigationCard>
-	<NavigationCard title="TailwindCSS 4" href="/playground/design/tailwindcss">
-		Formating playground for styling with TailwindCSS utility classes
-	</NavigationCard>
-	<NavigationCard title="Comparison" href="/playground/design/comparison">
-		Directly putting components right next to each other to compare them
-	</NavigationCard>
-	<NavigationCard title="Playground" href="#playground">
-		Play with the colors and some components below to get a preview of the design
-	</NavigationCard> -->
-</div>
+<button
+	type="button"
+	class="btn btn-primary-container"
+	aria-haspopup="dialog"
+	aria-expanded="false"
+	aria-controls="overlay-example"
+	data-overlay="#overlay-example"
+	><a
+		href="#building-blocks"
+		class="link link-animated link-base-content text-primary-container-content"
+	>
+		🚧 Building blocks 🚧</a
+	></button
+>
 
 <Heading>👍 Results - ready for use 👍</Heading>
 <div class="mb-2 flex items-center gap-1">
@@ -170,7 +162,7 @@
 			<div class="bg-primary-container/40 m-1 rounded-2xl">
 				<p class="title text-primary-container-content text-center">Primary</p>
 				<p
-					class="body-small text-primary-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+					class="body-small text-primary-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
 				>
 					Key components like "OK" buttons.
 				</p>
@@ -182,7 +174,7 @@
 			<div class="bg-secondary-container/40 m-1 rounded-2xl">
 				<p class="title text-secondary-container-content text-center">Secondary</p>
 				<p
-					class="body-small text-secondary-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+					class="body-small text-secondary-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
 				>
 					Less prominent components like "cancel" buttons.
 				</p>
@@ -194,7 +186,7 @@
 			<div class="bg-accent-container/40 m-1 rounded-2xl">
 				<p class="title text-accent-container-content text-center">Accent</p>
 				<p
-					class="body-small text-accent-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+					class="body-small text-accent-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
 				>
 					Attention seeking, like "notification" badges.
 				</p>
@@ -206,7 +198,7 @@
 			<div class="bg-neutral-container/40 m-1 rounded-2xl">
 				<p class="title text-neutral-container-content text-center">Neutral</p>
 				<p
-					class="body-small text-neutral-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+					class="body-small text-neutral-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
 				>
 					Elements that are similar to primary - use for distinguishing between content and app
 					interaction / navigation.
@@ -219,7 +211,7 @@
 			<div class="bg-info-container/40 m-1 rounded-2xl">
 				<p class="title text-info-container-content text-center">Info</p>
 				<p
-					class="body-small text-info-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+					class="body-small text-info-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
 				>
 					Information towards the user - especially in connection with user input.
 				</p>
@@ -231,7 +223,7 @@
 			<div class="bg-success-container/40 m-1 rounded-2xl">
 				<p class="title text-success-container-content text-center">Success</p>
 				<p
-					class="body-small text-success-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+					class="body-small text-success-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
 				>
 					Feedback to user after successful action.
 				</p>
@@ -243,7 +235,7 @@
 			<div class="bg-warning-container/40 m-1 rounded-2xl">
 				<p class="title text-warning-container-content text-center">Warning</p>
 				<p
-					class="body-small text-warning-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+					class="body-small text-warning-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
 				>
 					Seeking caution after user interaction.
 				</p>
@@ -255,7 +247,7 @@
 			<div class="bg-error-container/40 m-1 rounded-2xl">
 				<p class="title text-error-container-content text-center">Error</p>
 				<p
-					class="body-small text-error-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
+					class="body-small text-error-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
 				>
 					Informing user of error, especially after user interaction.
 				</p>
@@ -497,4 +489,41 @@
 	<button class="label btn btn-primary m-4 w-full rounded-full" onclick={addPlayground}
 		><span class="icon-[fa6-solid--plus]"></span> Add playground</button
 	>
+</div>
+
+<div id="building-blocks">
+	<Heading>🚧 Building blocks - for design experiments 🚧</Heading>
+</div>
+
+<button
+	type="button"
+	class="btn btn-primary-container mb-2"
+	aria-haspopup="dialog"
+	aria-expanded="false"
+	aria-controls="overlay-example"
+	data-overlay="#overlay-example"
+	><a href="#top" class="link link-animated link-base-content text-primary-container-content">
+		👍 Production ready 👍</a
+	></button
+>
+
+<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
+	{#each links as link (link.name)}
+		<NavigationCard title={link.name} href={link.url}>{link.description}</NavigationCard>
+	{/each}
+	<!-- <NavigationCard title="FlyonUI 2" href="/playground/design/flyonui">
+		Playground and showcase for flyonUI components and design
+	</NavigationCard>
+	<NavigationCard title="Material Design 3" href="/playground/design/materialdesign">
+		Playground and showcase for Material Design 3 components and design
+	</NavigationCard>
+	<NavigationCard title="TailwindCSS 4" href="/playground/design/tailwindcss">
+		Formating playground for styling with TailwindCSS utility classes
+	</NavigationCard>
+	<NavigationCard title="Comparison" href="/playground/design/comparison">
+		Directly putting components right next to each other to compare them
+	</NavigationCard>
+	<NavigationCard title="Playground" href="#playground">
+		Play with the colors and some components below to get a preview of the design
+	</NavigationCard> -->
 </div>
