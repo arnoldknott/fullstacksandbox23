@@ -5,7 +5,7 @@
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import type { PageData } from './$types';
 	let { data }: { data: PageData } = $props();
-	const logSessionData = (data: Object | undefined) => {
+	const logSessionData = (data: object | undefined) => {
 		console.log('=== routes - playground - userstore - data.sessionData ===');
 		console.log(data);
 	};

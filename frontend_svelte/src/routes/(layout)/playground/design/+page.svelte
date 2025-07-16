@@ -162,7 +162,7 @@
 			<div class="bg-primary-container/40 m-1 rounded-2xl">
 				<p class="title text-primary-container-content text-center">Primary</p>
 				<p
-					class="body-small text-primary-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
+					class="body-small text-primary-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
 				>
 					Key components like "OK" buttons.
 				</p>
@@ -174,7 +174,7 @@
 			<div class="bg-secondary-container/40 m-1 rounded-2xl">
 				<p class="title text-secondary-container-content text-center">Secondary</p>
 				<p
-					class="body-small text-secondary-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
+					class="body-small text-secondary-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
 				>
 					Less prominent components like "cancel" buttons.
 				</p>
@@ -186,7 +186,7 @@
 			<div class="bg-accent-container/40 m-1 rounded-2xl">
 				<p class="title text-accent-container-content text-center">Accent</p>
 				<p
-					class="body-small text-accent-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
+					class="body-small text-accent-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
 				>
 					Attention seeking, like "notification" badges.
 				</p>
@@ -198,7 +198,7 @@
 			<div class="bg-neutral-container/40 m-1 rounded-2xl">
 				<p class="title text-neutral-container-content text-center">Neutral</p>
 				<p
-					class="body-small text-neutral-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
+					class="body-small text-neutral-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
 				>
 					Elements that are similar to primary - use for distinguishing between content and app
 					interaction / navigation.
@@ -211,7 +211,7 @@
 			<div class="bg-info-container/40 m-1 rounded-2xl">
 				<p class="title text-info-container-content text-center">Info</p>
 				<p
-					class="body-small text-info-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
+					class="body-small text-info-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
 				>
 					Information towards the user - especially in connection with user input.
 				</p>
@@ -223,7 +223,7 @@
 			<div class="bg-success-container/40 m-1 rounded-2xl">
 				<p class="title text-success-container-content text-center">Success</p>
 				<p
-					class="body-small text-success-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
+					class="body-small text-success-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
 				>
 					Feedback to user after successful action.
 				</p>
@@ -235,7 +235,7 @@
 			<div class="bg-warning-container/40 m-1 rounded-2xl">
 				<p class="title text-warning-container-content text-center">Warning</p>
 				<p
-					class="body-small text-warning-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
+					class="body-small text-warning-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
 				>
 					Seeking caution after user interaction.
 				</p>
@@ -247,7 +247,7 @@
 			<div class="bg-error-container/40 m-1 rounded-2xl">
 				<p class="title text-error-container-content text-center">Error</p>
 				<p
-					class="body-small text-error-container-content md:h-30 mb-4 h-24 overflow-auto p-2 text-justify"
+					class="body-small text-error-container-content mb-4 h-24 overflow-auto p-2 text-justify md:h-30"
 				>
 					Informing user of error, especially after user interaction.
 				</p>

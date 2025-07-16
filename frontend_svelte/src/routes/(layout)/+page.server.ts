@@ -50,14 +50,19 @@ export const actions: Actions = {
 				JSON.stringify(payload.user_profile.contrast)
 			);
 			if (payload.user_profile.theme_color) {
-				locals.sessionData.currentUser.user_profile.theme_color = data.get('color-picker') as string;
+				locals.sessionData.currentUser.user_profile.theme_color = data.get(
+					'color-picker'
+				) as string;
 			}
 			if (payload.user_profile.theme_variant) {
-				locals.sessionData.currentUser.user_profile.theme_variant =
-					data.get('variant-picker') as Variant;
+				locals.sessionData.currentUser.user_profile.theme_variant = data.get(
+					'variant-picker'
+				) as Variant;
 			}
 			if (payload.user_profile.contrast) {
-				locals.sessionData.currentUser.user_profile.contrast = Number(data.get('contrast') as string);
+				locals.sessionData.currentUser.user_profile.contrast = Number(
+					data.get('contrast') as string
+				);
 			}
 			// console.log('=== layout - layout.server - putProfile - locals.sessionData.currentUser ===');
 			// console.log(locals.sessionData.currentUser);
