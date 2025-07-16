@@ -502,7 +502,7 @@
 	aria-expanded="false"
 	aria-controls="overlay-example"
 	data-overlay="#overlay-example"
-	><a href="#top" class="link link-animated link-base-content text-primary-container-content">
+	><a href="#top<" class="link link-animated link-base-content text-primary-container-content">
 		👍 Production ready 👍</a
 	></button
 >
