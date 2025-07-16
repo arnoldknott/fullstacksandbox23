@@ -1,4 +1,3 @@
-
 import pytest
 import socketio
 from socketio.exceptions import ConnectionError
