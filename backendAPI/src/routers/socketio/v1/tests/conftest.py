@@ -434,16 +434,18 @@ class SocketIOTestConnection:
 
 
 @pytest.fixture(scope="function")
-def socketio_test_client_class(request):
+def socketio_test_client_class(request, session_ids):
     """Fixture to provide a class-based socket.io test client."""
 
     async def _socketio_test_client_class(
         client_config: ClientConfig,
-        session_id: uuid.UUID,
-        query_parameters: dict = None,
+        session_id: Optional[uuid.UUID] = None,
+        query_parameters: Optional[dict] = None,
         # logs: List = None,
     ):
         """Creates an instance of SocketIOTestClient."""
+        if not session_id:
+            session_id = session_ids[0]
 
         connection = SocketIOTestConnection(
             client_config,
@@ -469,10 +471,11 @@ def socketio_test_client_demo_namespace(socketio_test_client_class):
     """Fixture to provide a socket.io test client for the demo namespace."""
 
     async def _socketio_test_client_demo_namespace(
-        session_id: uuid.UUID, query_parameters: dict = None  # , logs: List = None
+        session_id: Optional[uuid.UUID] = None,
+        query_parameters: Optional[dict] = None,  # , logs: List = None
     ):
         """Factory function for creating a socket.io test client for the demo namespace."""
-        client_config_demo_namespace = [
+        client_config = [
             {
                 "namespace": "/demo-namespace",
                 "events": ["demo_message"],
@@ -481,10 +484,34 @@ def socketio_test_client_demo_namespace(socketio_test_client_class):
 
         """Creates an instance of SocketIOTestClient for the demo namespace."""
         return await socketio_test_client_class(
-            client_config=client_config_demo_namespace,
-            session_id=session_id,
-            query_parameters=query_parameters,
-            # logs=logs,
+            client_config, session_id, query_parameters
         )
 
     return _socketio_test_client_demo_namespace
+
+
+@pytest.fixture(scope="function")
+def socketio_test_client_demo_resource_namespace(socketio_test_client_class):
+    """Fixture to provide a socket.io test client for the demo namespace."""
+
+    async def _socketio_test_client_demo_resource_namespace(
+        session_id: uuid.UUID, query_parameters: dict = None  # , logs: List = None
+    ):
+        """Factory function for creating a socket.io test client for the demo namespace."""
+        client_config = [
+            {
+                "namespace": "/demo-resource",
+                "events": [
+                    "transfer",
+                    "deleted",
+                    "status",
+                ],
+            }
+        ]
+
+        """Creates an instance of SocketIOTestClient for the demo namespace."""
+        return await socketio_test_client_class(
+            client_config, session_id, query_parameters
+        )
+
+    return _socketio_test_client_demo_resource_namespace
