@@ -170,19 +170,18 @@ class ClientConfig(BaseModel):
 
 
 @pytest.fixture(scope="function")
-def current_token_payload(session_id_selector: callable):
+def current_token_payload(session_ids: List[uuid.UUID]):
     """Returns the current token payload based on the session id selector."""
 
     def _current_token_payload(index: int = 0):
         """Returns the current token payload based on the session id selector."""
-        session_id = session_id_selector(index)
+        session_id = session_ids[index]
         if session_id:
             token_payload = [
                 session["token_payload"]
                 for session in sessions
                 if session["session_id"] == session_id
             ][0]
-
             return token_payload
         return None
 
@@ -191,7 +190,7 @@ def current_token_payload(session_id_selector: callable):
 
 @pytest.fixture(scope="function")
 async def current_user_from_session_id(
-    session_id_selector: callable,
+    session_ids: List[uuid.UUID],
     current_user_from_azure_token: callable,
     current_token_payload: callable,
 ):
@@ -199,7 +198,7 @@ async def current_user_from_session_id(
 
     async def _current_user_from_session_id(index: int = 0):
         """Returns the current user from the session id selector."""
-        session_id = session_id_selector(index)
+        session_id = session_ids[index]
         if session_id:
             user_account = await current_user_from_azure_token(
                 current_token_payload(index)
@@ -311,6 +310,26 @@ def session_ids(request):
         return request.param
 
 
+# Provides a class with a socket.io client for testing with a specific session ID.
+
+# Args:
+#     client_config (List[ClientConfig]): List of namespaces and their events,
+#         where each namespace is a dictionary with keys
+#         - "name" (string), for example "/demo-namespace"
+#         - "events" (list of strings), ["submit", "transfer", "deleted"].
+#     session_id (uuid.UUID): The session ID to use for the connection.
+#     query_parameters (dict): Query parameters to include in the connection.
+#         e.g. {"request-access-data": "true", "parent-id": "123e4567-e89b-12d3-a456-426614174000"}
+
+# Yields:
+#     AsyncClient: An instance of the socket.io client connected to the server.
+#     dict: A dictionary containing responses for each namespace and event.
+#     e.g. {"namespace": {"event": ["response_data"]}}
+#
+# Usage:
+# TBD: document
+
+
 class SocketIOTestConnection:
     """Class to handle socket.io client connections and events."""
 
@@ -319,6 +338,7 @@ class SocketIOTestConnection:
         client_config: ClientConfig,
         session_id: uuid.UUID,
         query_parameters: dict = None,
+        # TBD:add callback_before_connect: callable = None,
         # logs: Optional[List[dict]] = None,
     ):
         self.client_config = client_config
@@ -359,6 +379,8 @@ class SocketIOTestConnection:
 
     async def __aenter__(self):
         """Connect the client when entering the context."""
+        # if self.callback_before_connect:
+        #     await self.callback_before_connect(self.token_payload, self.current_user)
         await self.connect()
         return self
 
@@ -398,10 +420,17 @@ class SocketIOTestConnection:
 
     def responses(self, event: str | None = None, namespace: str | None = None):
         """Returns the responses for a specific namespace and event."""
+        # print("=== self.responseData ===")
+        # print(self.responseData, flush=True)
         if namespace is None:
             namespace = self.client_config[0]["namespace"]
         if event is None:
-            event = self.client_config[0]["events"][0]
+            index = next(
+                i
+                for i, obj in enumerate(self.client_config)
+                if obj.get("namespace") == namespace
+            )
+            event = self.client_config[index]["events"][0]
         if namespace in self.responseData and event in self.responseData[namespace]:
             return self.responseData[namespace][event]
         else:
@@ -495,7 +524,8 @@ def socketio_test_client_demo_resource_namespace(socketio_test_client_class):
     """Fixture to provide a socket.io test client for the demo namespace."""
 
     async def _socketio_test_client_demo_resource_namespace(
-        session_id: uuid.UUID, query_parameters: dict = None  # , logs: List = None
+        session_id: Optional[uuid.UUID] = None,
+        query_parameters: Optional[dict] = None,  # , logs: List = None
     ):
         """Factory function for creating a socket.io test client for the demo namespace."""
         client_config = [

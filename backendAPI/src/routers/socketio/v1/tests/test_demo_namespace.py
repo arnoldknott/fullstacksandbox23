@@ -28,16 +28,7 @@ from tests.utils import (
     session_id_user2_write_socketio,
     token_admin_read_write_socketio,
     token_user1_read_write_socketio,
-    token_user2_read_write_socketio,
 )
-
-# Default setup for client to use in all tests that use the demo namespace.
-# client_config_demo_namespace = [
-#     {
-#         "namespace": "/demo-namespace",
-#         "events": ["demo_message"],
-#     }
-# ]
 
 
 @pytest.mark.anyio
@@ -115,7 +106,7 @@ async def test_connect_to_demo_namespace_missing_scopes_fails(
     ## TBD: refactor back into module wide fixture, when multiple clients is merged with deep security:
 
     try:
-        await socketio_test_client_demo_namespace(session_ids[0])
+        await socketio_test_client_demo_namespace()
         raise Exception("This should have failed due to invalid token.")
     except ConnectionError as err:
         assert str(err) == "One or more namespaces failed to connect"
@@ -127,11 +118,11 @@ async def test_connect_to_demo_namespace_missing_scopes_fails(
     [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
     indirect=True,
 )
-async def test_send_demo_message(session_ids, socketio_test_client_demo_namespace):
+async def test_send_demo_message(socketio_test_client_demo_namespace):
     """Test the demo socket.io message event."""
 
     demo_messages = []
-    connection = await socketio_test_client_demo_namespace(session_ids[0])
+    connection = await socketio_test_client_demo_namespace()
 
     await connection.client.emit(
         "demo_message", "Something", namespace="/demo-namespace"
@@ -155,12 +146,12 @@ async def test_send_demo_message(session_ids, socketio_test_client_demo_namespac
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "session_id_selector",
+    "session_ids",
     [[session_id_user1_read_socketio]],
     indirect=True,
 )
 async def test_connection_to_production_server_fails_authorization(
-    session_id_selector,
+    session_ids,
 ):
     """Test the demo socket.io message event."""
 
@@ -171,7 +162,7 @@ async def test_connection_to_production_server_fails_authorization(
             "http://127.0.0.1:80",
             socketio_path="socketio/v1",
             namespaces=["/demo-namespace"],
-            auth={"session-id": str(session_id_selector(0))},
+            auth={"session-id": str(session_ids[0])},
         )
 
         response = None
@@ -261,7 +252,7 @@ async def test_user_communication_with_response_and_disconnect(
     # ]
     query_admin = {"param1": "value1", "param2": "value2"}
     connection_admin = await socketio_test_client_demo_namespace(
-        session_ids[0], query_parameters=query_admin
+        query_parameters=query_admin
     )
 
     await connection_admin.client.sleep(0.1)
