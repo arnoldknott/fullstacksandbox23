@@ -16,28 +16,49 @@
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
+	import type { LayoutData } from './$types';
+	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
 	const theming = $state(new Theming());
 
+	// let themeConfiguration: ColorConfig = $state({
+	// 	sourceColor: '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
+	// 	variant: Variant.TONAL_SPOT, // Variant.FIDELITY,//
+	// 	contrast: 0.0
+	// });
+	// $effect(() => {
+	// 	if (page.data.session) {
+	// 		console.log('=== layout - page.data.session.currentUser ===');
+	// 		console.log(page.data.session);
+	// 		console.log('=== layout - page.form ===');
+	// 		console.log(page.form);
+	// 		themeConfiguration.sourceColor = page.data.session.currentUser.user_profile.theme_color;
+	// 		themeConfiguration.variant = page.data.session.currentUser.user_profile.theme_variant;
+	// 		themeConfiguration.contrast = page.data.session.currentUser.user_profile.contrast;
+	// 	}
+	// });
+
+	// TBD: refactor this to decently use the reactivity of Svelte - potentially use $derived!
 	let themeConfiguration: ColorConfig = $state({
-		sourceColor: '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
-		variant: Variant.TONAL_SPOT, // Variant.FIDELITY,//
-		contrast: 0.0
+		sourceColor: data?.session?.currentUser?.user_profile.theme_color || '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
+		variant: data?.session?.currentUser?.user_profile.theme_variant || Variant.TONAL_SPOT, // Variant.FIDELITY,//
+		contrast: data?.session?.currentUser?.user_profile.contrast || 0.0
 	});
 	$effect(() => {
-		if (page.data.session) {
-			// console.log('=== layout - page.data.session.currentUser ===');
-			// console.log(page.data.session);
-			themeConfiguration.sourceColor = page.data.session.currentUser.user_profile.theme_color;
-			themeConfiguration.variant = page.data.session.currentUser.user_profile.theme_variant;
-			themeConfiguration.contrast = page.data.session.currentUser.user_profile.contrast;
+		if (data.session?.currentUser?.user_profile) {
+			console.log('=== layout - data.session.currentUser.user_profile ===');
+			console.log(data.session.currentUser.user_profile);
+			data.session.currentUser.user_profile.theme_color = themeConfiguration.sourceColor;
+			data.session.currentUser.user_profile.theme_variant = themeConfiguration.variant;
+			data.session.currentUser.user_profile.contrast = themeConfiguration.contrast;
 		}
 	});
+
 	const contrastMin = -1.0;
 	const contrastMax = 1.0;
 	const contrastStep = 0.2;
 
-	let { children }: { children: Snippet } = $props();
+	// let { children }: { children: Snippet } = $props();
 
 	let mainContent: HTMLDivElement;
 	let systemDark = $state(false);
@@ -115,11 +136,14 @@
 	const saveProfileAccount = async () => {
 		if (page.data.session?.loggedIn) {
 			profileAccountForm?.requestSubmit();
+			console.log('=== layout - saveProfileAccount - themeConfiguration ===');
+			console.log(themeConfiguration);
 		}
 	};
 
-	const updateProfileAccount: SubmitFunction = async () => {
-		// console.log('=== layout - updateProfileAccount triggered ===');
+	const updateProfileAccount: SubmitFunction = async ({ formData }) => {
+		// console.log('=== layout - updateProfileAccount - formData ===');
+		// console.log(formData);
 
 		return () => {};
 	};
@@ -165,7 +189,7 @@
 
 <div bind:this={mainContent} class="mx-5 mt-5 h-full" use:applyTheming>
 	<nav
-		class="navbar rounded-box bg-base-100 sticky start-0 top-0 z-1 justify-between shadow-sm md:flex md:items-stretch"
+		class="navbar rounded-box bg-base-100 z-1 sticky start-0 top-0 justify-between shadow-sm md:flex md:items-stretch"
 	>
 		<div class="dropdown navbar-start inline-flex md:hidden rtl:[--placement:bottom-end]">
 			<button
