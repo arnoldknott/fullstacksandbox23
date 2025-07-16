@@ -396,7 +396,7 @@ class SocketIOTestConnection:
         """Returns the socket.io client instance."""
         return self.client
 
-    def responses(self, namespace: str | None = None, event: str | None = None):
+    def responses(self, event: str | None = None, namespace: str | None = None):
         """Returns the responses for a specific namespace and event."""
         if namespace is None:
             namespace = self.client_config[0]["namespace"]

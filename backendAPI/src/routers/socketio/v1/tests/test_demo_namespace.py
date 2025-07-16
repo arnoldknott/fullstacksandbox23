@@ -399,23 +399,24 @@ async def test_use_class_based_test_client(
     #         "data": "Connecting to demo namespace for first user.",
     #     },
     # ]
+    query_admin = {"param1": "value1", "param2": "value2"}
     connection_admin = await socketio_test_client_demo_namespace(
-        session_ids[0],
-        query_parameters={"param1": "value1", "param2": "value2"},
-        # logs=logs_admin,
+        session_ids[0], query_parameters=query_admin
     )
 
     await connection_admin.client.sleep(0.1)
     assert connection_admin.session_id == session_ids[0]
+    assert connection_admin.query_parameters == query_admin
     assert connection_admin.token_payload() == token_admin_read_write_socketio
     assert await connection_admin.current_user() == await current_user_from_azure_token(
         token_admin_read_write_socketio
     )
-
-    print("===  ADMIN.responses - after admin logs in ===")
-    pprint(connection_admin.responses())
-
     assert len(connection_admin.responses()) == 2
+    assert (
+        connection_admin.responses()[0]
+        == f"Welcome {token_admin_read_write_socketio['name']} to /demo-namespace."
+    )
+    assert "Your session ID is " in connection_admin.responses()[1]
 
     # Initializing and connecting user1:
     # # TBD: potentially delete logging system, as teh responses are now growing along the way.
@@ -426,22 +427,33 @@ async def test_use_class_based_test_client(
     #         "data": "Connecting to demo namespace for second user.",
     #     },
     # ]
+    query_user1 = {"param1": "Avalue", "paramB": "some-other-value"}
     connection_user1 = await socketio_test_client_demo_namespace(
         session_ids[1],
-        query_parameters={"param1": "value1", "param2": "value2"},
+        query_parameters=query_user1,
         # logs=logs_user1,
     )
 
     await connection_admin.client.sleep(0.1)
 
-    print("===  ADMIN.responses - after user1 logs in ===")
-    pprint(connection_admin.responses())
-    assert len(connection_admin.responses()) == 3
     assert connection_user1.session_id == session_ids[1]
+    assert connection_user1.query_parameters == query_user1
     assert connection_user1.token_payload() == token_user1_read_write_socketio
     assert await connection_user1.current_user() == await current_user_from_azure_token(
         token_user1_read_write_socketio
     )
+
+    assert len(connection_admin.responses()) == 3
+    assert connection_admin.responses()[2] == (
+        f"Welcome {token_user1_read_write_socketio['name']} to /demo-namespace."
+    )
+
+    assert len(connection_user1.responses()) == 2
+    assert (
+        connection_user1.responses()[0]
+        == f"Welcome {token_user1_read_write_socketio['name']} to /demo-namespace."
+    )
+    assert "Your session ID is " in connection_user1.responses()[1]
 
     # print("=== client - logs_admin ===")
     # pprint(connection_admin.logs)
@@ -467,9 +479,15 @@ async def test_use_class_based_test_client(
     )
 
     await connection_admin.client.sleep(0.1)
-    print("=== ADMIN.responses - after admin sends message ===")
-    pprint(connection_admin.responses())
     assert len(connection_admin.responses()) == 4
+
+    assert connection_admin.responses()[3] == (
+        f"{token_admin_read_write_socketio['name']}: Hello, {user1_name}!"
+    )
+    assert len(connection_user1.responses()) == 3
+    assert connection_user1.responses()[2] == (
+        f"{token_admin_read_write_socketio['name']}: Hello, {user1_name}!"
+    )
 
     # logs_admin.append(
     #     {
@@ -479,36 +497,29 @@ async def test_use_class_based_test_client(
     #     }
     # )
 
-    # await connection_user1.client.sleep(0.1)
-    # admin_name = connection_admin.token_payload()["name"]
-    # await connection_user1.client.emit(
-    #     "demo_message",
-    #     f"Hi {admin_name}, good to see you, How are you!?",
-    #     namespace="/demo-namespace",
-    # )
+    await connection_user1.client.sleep(0.1)
+    admin_name = connection_admin.token_payload()["name"]
+    await connection_user1.client.emit(
+        "demo_message",
+        f"Hi {admin_name}, good to see you, How are you!?",
+        namespace="/demo-namespace",
+    )
 
-    # await connection_user1.client.sleep(0.1)
-    # print("=== ADMIN.responses - after user1 replies message ===")
-    # pprint(connection_admin.responses())
-    # print("=== USER1.responses - after user1 replies message ===")
-    # pprint(connection_admin.responses())
-    # assert len(connection_admin.responses()) == 5
-    # assert len(connection_user1.responses()) == 4
+    await connection_user1.client.sleep(0.1)
+    assert len(connection_admin.responses()) == 5
+    assert connection_admin.responses()[4] == (
+        f"{token_user1_read_write_socketio['name']}: Hi {admin_name}, good to see you, How are you!?"
+    )
+    assert len(connection_user1.responses()) == 4
+    assert connection_user1.responses()[3] == (
+        f"{token_user1_read_write_socketio['name']}: Hi {admin_name}, good to see you, How are you!?"
+    )
 
     # await connection_admin.client.sleep(0.1)
     await connection_user1.client.disconnect()
 
     await connection_admin.client.sleep(0.1)
-    print("=== ADMIN.responses - after user1 disconnects ===")
-    pprint(connection_admin.responses())
-    # print("=== test_use_class_based_test_client - client.logs_admin ===")
-    # pprint(connection_admin.logs)
-
-    # assert len(connection_admin.logs) == 9
-
-    print("=== ADMIN.responses - at end ===")
-    pprint(connection_admin.responses())
-
-    assert len(connection_admin.responses()) == 5
-
-    assert 0
+    assert len(connection_admin.responses()) == 6
+    assert connection_admin.responses()[5] == (
+        f"{token_user1_read_write_socketio['name']} has disconnected from /demo-namespace. Goodbye!"
+    )
