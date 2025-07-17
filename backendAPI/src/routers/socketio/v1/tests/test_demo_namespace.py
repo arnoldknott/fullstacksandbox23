@@ -261,12 +261,11 @@ async def test_user_communication_with_response_and_disconnect(
     assert "Your session ID is " in connection_admin.responses()[1]
 
     # Initializing and connecting user1:
+    connection_user1 = await socketio_test_client_demo_namespace(session_ids[1])
     query_user1 = {"param1": "Avalue", "paramB": "some-other-value"}
-    connection_user1 = await socketio_test_client_demo_namespace(
-        session_ids[1],
+    await connection_user1.connect(
         query_parameters=query_user1,
     )
-    await connection_user1.connect()
 
     await connection_admin.client.sleep(0.1)
 
