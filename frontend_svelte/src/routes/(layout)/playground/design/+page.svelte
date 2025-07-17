@@ -81,28 +81,20 @@
 	);
 </script>
 
-<Heading>🚧 Construction sites - for design experiments 🚧</Heading>
-
-<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
-	{#each links as link (link.name)}
-		<NavigationCard title={link.name} href={link.url}>{link.description}</NavigationCard>
-	{/each}
-	<!-- <NavigationCard title="FlyonUI 2" href="/playground/design/flyonui">
-		Playground and showcase for flyonUI components and design
-	</NavigationCard>
-	<NavigationCard title="Material Design 3" href="/playground/design/materialdesign">
-		Playground and showcase for Material Design 3 components and design
-	</NavigationCard>
-	<NavigationCard title="TailwindCSS 4" href="/playground/design/tailwindcss">
-		Formating playground for styling with TailwindCSS utility classes
-	</NavigationCard>
-	<NavigationCard title="Comparison" href="/playground/design/comparison">
-		Directly putting components right next to each other to compare them
-	</NavigationCard>
-	<NavigationCard title="Playground" href="#playground">
-		Play with the colors and some components below to get a preview of the design
-	</NavigationCard> -->
-</div>
+<button
+	type="button"
+	class="btn btn-primary-container"
+	aria-haspopup="dialog"
+	aria-expanded="false"
+	aria-controls="overlay-example"
+	data-overlay="#overlay-example"
+	><a
+		href="#building-blocks"
+		class="link link-animated link-base-content text-primary-container-content"
+	>
+		🚧 Building blocks 🚧</a
+	></button
+>
 
 <Heading>👍 Results - ready for use 👍</Heading>
 <div class="mb-2 flex items-center gap-1">
@@ -497,4 +489,41 @@
 	<button class="label btn btn-primary m-4 w-full rounded-full" onclick={addPlayground}
 		><span class="icon-[fa6-solid--plus]"></span> Add playground</button
 	>
+</div>
+
+<div id="building-blocks">
+	<Heading>🚧 Building blocks - for design experiments 🚧</Heading>
+</div>
+
+<button
+	type="button"
+	class="btn btn-primary-container mb-2"
+	aria-haspopup="dialog"
+	aria-expanded="false"
+	aria-controls="overlay-example"
+	data-overlay="#overlay-example"
+	><a href="#top<" class="link link-animated link-base-content text-primary-container-content">
+		👍 Production ready 👍</a
+	></button
+>
+
+<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
+	{#each links as link (link.name)}
+		<NavigationCard title={link.name} href={link.url}>{link.description}</NavigationCard>
+	{/each}
+	<!-- <NavigationCard title="FlyonUI 2" href="/playground/design/flyonui">
+		Playground and showcase for flyonUI components and design
+	</NavigationCard>
+	<NavigationCard title="Material Design 3" href="/playground/design/materialdesign">
+		Playground and showcase for Material Design 3 components and design
+	</NavigationCard>
+	<NavigationCard title="TailwindCSS 4" href="/playground/design/tailwindcss">
+		Formating playground for styling with TailwindCSS utility classes
+	</NavigationCard>
+	<NavigationCard title="Comparison" href="/playground/design/comparison">
+		Directly putting components right next to each other to compare them
+	</NavigationCard>
+	<NavigationCard title="Playground" href="#playground">
+		Play with the colors and some components below to get a preview of the design
+	</NavigationCard> -->
 </div>

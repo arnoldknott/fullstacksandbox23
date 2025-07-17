@@ -1,6 +1,5 @@
 import asyncio
 import uuid
-from datetime import datetime
 from typing import List, Optional
 from unittest.mock import patch
 
@@ -10,6 +9,8 @@ import uvicorn
 from pydantic import BaseModel
 
 from core.cache import redis_session_client
+from core.security import CurrentAccessToken
+from core.types import CurrentUserData
 from routers.socketio.v1.demo_namespace import demo_namespace_router
 from routers.socketio.v1.demo_resource import (
     demo_resource_router as demo_resource_namespace_router,
@@ -142,22 +143,24 @@ async def socketio_test_server(
 # Setting up socketio client side for testing:
 
 
-####### GENERIC TEST CLIENT FOR SOCKET.IO - WORKS: keep! (start) #######
-
-
 @pytest.fixture(scope="function")
-def session_id_selector(request):
+def session_ids(request):
     """Returns the session id from an array of parameters based on the index."""
 
-    print(f"session_id_selector: {request}")  # Debugging output
+    if hasattr(request, "param"):
+        return request.param
 
-    def _session_id_selector(index: int = 0):
-        """Selects the session id based on the index."""
-        if hasattr(request, "param"):
-            return request.param[index]
-        return None
 
-    return _session_id_selector
+# Provides a class with a socket.io client for testing with a specific session ID.
+
+# Args:
+#     client_config (List[ClientConfig]): List of namespaces and their events,
+#         where each namespace is a dictionary with keys
+#         - "name" (string), for example "/demo-namespace"
+#         - "events" (list of strings), ["submit", "transfer", "deleted"].
+#     session_id (uuid.UUID): The session ID to use for the connection.
+#     query_parameters (dict): Query parameters to include in the connection.
+#         e.g. {"request-access-data": "true", "parent-id": "123e4567-e89b-12d3-a456-426614174000"}
 
 
 class ClientConfig(BaseModel):
@@ -167,99 +170,30 @@ class ClientConfig(BaseModel):
     events: List[str] = []
 
 
-@pytest.fixture(scope="function")
-def current_token_payload(session_id_selector: callable):
-    """Returns the current token payload based on the session id selector."""
+class SocketIOTestConnection:
+    """Class to handle socket.io client connections and events."""
 
-    def _current_token_payload(index: int = 0):
-        """Returns the current token payload based on the session id selector."""
-        session_id = session_id_selector(index)
-        if session_id:
-            token_payload = [
-                session["token_payload"]
-                for session in sessions
-                if session["session_id"] == session_id
-            ][0]
-
-            return token_payload
-        return None
-
-    return _current_token_payload
-
-
-@pytest.fixture(scope="function")
-async def current_user_from_session_id(
-    session_id_selector: callable,
-    current_user_from_azure_token: callable,
-    current_token_payload: callable,
-):
-    """Returns the current user from the session id selector."""
-
-    async def _current_user_from_session_id(index: int = 0):
-        """Returns the current user from the session id selector."""
-        session_id = session_id_selector(index)
-        if session_id:
-            user_account = await current_user_from_azure_token(
-                current_token_payload(index)
-            )
-            return user_account
-        return None
-
-    return _current_user_from_session_id
-
-
-# TBD: consider refactoring into a class - and call instantiation with await ClassName()
-# add connect, logging and so on as methods
-# connect automatically, if not auto_connect = false in instance creation
-# pass query parameters in instantiation
-#
-# This one connects to a socketio server in FastAPI:
-# host="http://127.0.0.1:80" => production server
-# host="http://127.0.0.1:8669" => test server from fixture socketio_test_server
-@pytest.fixture(scope="function")
-async def socketio_test_client(session_id_selector: uuid.UUID):
-    """Provides a socket.io client for testing with a specific session ID.
-
-        Args:
-        client_config (List[ClientConfig]): List of namespaces and their events,
-            where each namespace is a dictionary with keys
-            - "name" (string), for example "/demo-namespace"
-            - "events" (list of strings), ["submit", "transfer", "deleted"].
-        query_parameters (dict): Query parameters to include in the connection.
-            e.g. {"request-access-data": "true", "parent-id": "123e4567-e89b-12d3-a456-426614174000"}
-
-    Yields:
-        AsyncClient: An instance of the socket.io client connected to the server.
-        dict: A dictionary containing responses for each namespace and event.
-        e.g. {"namespace": {"event": ["response_data"]}}
-    """
-
-    async def _socketio_test_client(
+    def __init__(
+        self,
         client_config: ClientConfig,
-        index_of_session_id_parameter: int = 0,
-        query_parameters: dict = None,
-        logs: Optional[List[dict]] = None,
+        session_id: uuid.UUID,
     ):
-        client = socketio.AsyncClient(logger=True, engineio_logger=True)
-        session_id = session_id_selector(index_of_session_id_parameter)
+        self.client_config = client_config
+        self.session_id = session_id
+        self.query_parameters = {}
+        self.client = socketio.AsyncClient(logger=True, engineio_logger=True)
+        self.responseData = {}
 
+        # Attaching the event handlers for the client during initialization:
         def make_handler(event_name):
             async def handle_event(data):
                 """Handles the event and appends data to responses."""
                 nonlocal responses
-                if logs is not None:
-                    logs.append(
-                        {
-                            "event": event_name,
-                            "timestamp": datetime.now(),
-                            "data": data,
-                        }
-                    )
-                responses[namespace][event_name].append(data)
+                self.responseData[namespace][event_name].append(data)
 
             return handle_event
 
-        responses = {}
+        responses = self.responseData
         for config in client_config:
             namespace = config["namespace"]
             responses[namespace] = {}
@@ -267,33 +201,148 @@ async def socketio_test_client(session_id_selector: uuid.UUID):
                 events = config["events"]
                 for event in events:
                     responses[namespace][event] = []
+                    self.client.on(
+                        event, handler=make_handler(event), namespace=namespace
+                    )
 
-                    client.on(event, handler=make_handler(event), namespace=namespace)
+    async def __aenter__(self):
+        """Connect the client when entering the context."""
+        # await self.connect()
+        return self
 
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        """Disconnect the client when exiting the context."""
+        await self.client.disconnect()
+
+    async def connect(self, query_parameters: dict = None):
+        if query_parameters is not None:
+            self.query_parameters = query_parameters
+        """Connects to the socket.io server with the specified namespaces."""
         # server_url="http://127.0.0.1:8669" => test server from fixture socketio_test_server
         # server_host="http://127.0.0.1:80" => server from code
         server_url = "http://127.0.0.1:8669"
-        if query_parameters:
+        if self.query_parameters:
             query_string = "&".join(
-                f"{key}={value}" for key, value in query_parameters.items()
+                f"{key}={value}" for key, value in self.query_parameters.items()
             )
             server_url += f"?{query_string}"
-        all_namespaces = [namespace["namespace"] for namespace in client_config]
-        await client.connect(
+        all_namespaces = [namespace["namespace"] for namespace in self.client_config]
+        await self.client.connect(
             server_url,
             socketio_path="socketio/v1",
             namespaces=all_namespaces,
-            auth={"session-id": str(session_id)},
+            auth={"session-id": str(self.session_id)},
         )
-        connection = {
-            "client": client,
-            "responses": responses,
-            "logs": logs if logs is not None else None,
-        }
-        yield connection
-        await client.disconnect()
 
-    return _socketio_test_client
+    async def client(self):
+        """Returns the socket.io client instance."""
+        return self.client
+
+    def responses(self, event: str | None = None, namespace: str | None = None):
+        """Returns the responses for a specific namespace and event."""
+        # print("=== self.responseData ===")
+        # print(self.responseData, flush=True)
+        if namespace is None:
+            namespace = self.client_config[0]["namespace"]
+        if event is None:
+            index = next(
+                i
+                for i, obj in enumerate(self.client_config)
+                if obj.get("namespace") == namespace
+            )
+            event = self.client_config[index]["events"][0]
+        if namespace in self.responseData and event in self.responseData[namespace]:
+            return self.responseData[namespace][event]
+        else:
+            raise ValueError(f"No responses found for {namespace} and {event}.")
+
+    def token_payload(self):
+        """Returns the current token payload for the user of this session."""
+        token_payload = [
+            session["token_payload"]
+            for session in sessions
+            if session["session_id"] == self.session_id
+        ][0]
+        return token_payload
+
+    async def current_user(self) -> CurrentUserData:
+        """Returns the current user for the user of this session."""
+        current_user = None
+        token = CurrentAccessToken(self.token_payload())
+        current_user = await token.provides_current_user()
+        return current_user
 
 
-####### GENERIC TEST CLIENT FOR SOCKET.IO - WORKS: keep! (end) #######
+@pytest.fixture(scope="function")
+def socketio_test_client_class(request, session_ids):
+    """Fixture to provide a class-based socket.io test client."""
+
+    async def _socketio_test_client_class(
+        client_config: ClientConfig,
+        session_id: Optional[uuid.UUID] = None,
+    ):
+        """Creates an instance of SocketIOTestClient."""
+        if not session_id:
+            session_id = session_ids[0]
+
+        connection = SocketIOTestConnection(
+            client_config,
+            session_id,
+        )
+        await connection.__aenter__()
+
+        def cleanup():
+            # Schedule disconnect for the event loop
+            asyncio.get_event_loop().create_task(connection.__aexit__(None, None, None))
+
+        request.addfinalizer(cleanup)
+
+        return connection
+
+    return _socketio_test_client_class
+
+
+@pytest.fixture(scope="function")
+def socketio_test_client_demo_namespace(socketio_test_client_class):
+    """Fixture to provide a socket.io test client for the demo namespace."""
+
+    async def _socketio_test_client_demo_namespace(
+        session_id: Optional[uuid.UUID] = None,
+    ):
+        """Factory function for creating a socket.io test client for the demo namespace."""
+        client_config = [
+            {
+                "namespace": "/demo-namespace",
+                "events": ["demo_message"],
+            }
+        ]
+
+        """Creates an instance of SocketIOTestClient for the demo namespace."""
+        return await socketio_test_client_class(client_config, session_id)
+
+    return _socketio_test_client_demo_namespace
+
+
+@pytest.fixture(scope="function")
+def socketio_test_client_demo_resource_namespace(socketio_test_client_class):
+    """Fixture to provide a socket.io test client for the demo namespace."""
+
+    async def _socketio_test_client_demo_resource_namespace(
+        session_id: Optional[uuid.UUID] = None,
+    ):
+        """Factory function for creating a socket.io test client for the demo namespace."""
+        client_config = [
+            {
+                "namespace": "/demo-resource",
+                "events": [
+                    "transfer",
+                    "deleted",
+                    "status",
+                ],
+            }
+        ]
+
+        """Creates an instance of SocketIOTestClient for the demo namespace."""
+        return await socketio_test_client_class(client_config, session_id)
+
+    return _socketio_test_client_demo_resource_namespace
