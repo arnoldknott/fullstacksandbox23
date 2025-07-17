@@ -109,7 +109,7 @@ resource "azurerm_container_app" "FrontendContainer" {
 
     http_scale_rule {
       name                = "http-scaler"
-      concurrent_requests = "10"
+      concurrent_requests = "100"
     }
     # consider adjust to "20" or more, if the apps can handle it!
   }
@@ -231,11 +231,13 @@ resource "azurerm_container_app" "BackendContainer" {
       storage_name = azurerm_container_app_environment_storage.applicationDataConnect.name
       storage_type = "AzureFile"
     }
+    min_replicas = 0
+    max_replicas = 1 # SocketIO breaks with more than 1 replica!
     http_scale_rule {
       name                = "http-scaler"
-      concurrent_requests = "10"
+      concurrent_requests = "1000"
     }
-    # consider adjust to "20" or more, if the apps can handle it!
+    # consider adjust to to less after load testing!
   }
 
   ingress {
@@ -352,10 +354,12 @@ resource "azurerm_container_app" "redisContainer" {
       storage_name = azurerm_container_app_environment_storage.redisDataConnect.name
       storage_type = "AzureFile"
     }
+    min_replicas = 0
+    max_replicas = 1 # SocketIO breaks with more than 1 replica!
     tcp_scale_rule {
       name                = "tcp-scaler"
-      concurrent_requests = "10"
-      # consider adjust to "20" or more, if the apps can handle it!
+      concurrent_requests = "1000"
+      # consider adjust to to less after load testing!
     }
   }
 
