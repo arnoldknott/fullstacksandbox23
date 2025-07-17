@@ -3,7 +3,7 @@ import socketio
 
 
 @pytest.mark.anyio
-async def test_public_message_event_in_public_namespace(socketio_test_client):
+async def test_public_message_event_in_public_namespace():
     """Test the public message event in socket.io's public namespace."""
 
     client = socketio.AsyncClient(logger=True, engineio_logger=True)
