@@ -51,8 +51,6 @@
 #         -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
 #         -reconfigure
 
-# TBD: check if this script triggers the unwanted deployment to prod?
-
 echo "=== Running: deploy_infrastructure ==="
 
 echo ""
