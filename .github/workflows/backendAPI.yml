@@ -250,6 +250,10 @@ jobs:
           docker push \
               ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA
 
+  # TBD: Fix: The untagged action run after the infrastructure workflow run
+  # is updating the latest tagged image in github container registry,
+  # which then gets used in prod - even though the workflow only ran in stage
+  # That is basically the unwanted deployment to prod!
   deploy_stage:
     needs: containerize
     # if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
@@ -498,6 +502,7 @@ jobs:
   # if the migration workflow was not successful, the pull request did not get created!
 
   deploy_prod:
+    # TBD: debug the deployments to main with deployment code 00000x - seems to be connected to infrastructure runs (maybe dependent on their success or failure?)
     needs: [ deploy_stage, check_postgres_migrations ]
     # if: ${{ github.event.ref  == 'refs/heads/main' && needs.check_postgres_migrations.outputs.alembic_check == 0 }}
     if: ${{ (github.event.ref  == 'refs/heads/main' || github.event.workflow_run.head_branch == 'main') && needs.check_postgres_migrations.outputs.alembic_check == 0 }}

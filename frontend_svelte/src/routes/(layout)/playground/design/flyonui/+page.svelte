@@ -1891,6 +1891,7 @@
 				<span class="icon-[tabler--send-2] size-12"></span>
 				<span class="icon-[tabler--share-2] size-12"></span>
 				<span class="icon-[tabler--ban] size-12"></span>
+				<span class="icon-[tabler--info-triangle] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
@@ -1901,6 +1902,13 @@
 				<span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--edit-outline-rounded] size-12"></span>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit"
+						>Google Material Icons</span
+					>
+				</p>
+				<span class="icon-[ic--round-question-mark] size-12"></span>
+				<span class="icon-[ic--outline-share] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
@@ -1920,9 +1928,15 @@
 					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Solid</span>
 				</p>
 				<span class="icon-[fa6-solid--user] size-12"></span>
+				<span class="icon-[fa6-solid--user-group] size-12"></span>
 				<span class="icon-[fa6-solid--droplet] size-12"></span>
 				<span class="icon-[fa6-solid--comments] size-12"></span>
 				<span class="icon-[fa6-solid--plus] size-12"></span>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Font Awesome</span>
+				</p>
+				<span class="icon-[fa--users] size-12"></span>
+				<span class="icon-[fa--institution] size-12"></span>
 				<p class="label text-center">
 					Extension library <span class="label-prominent badge min-h-fit">Font Awesome Brands</span>
 				</p>
@@ -1941,6 +1955,22 @@
 					<span class="icon-[fe--bell] col-start-1 row-start-1 size-8"></span>
 					<span class="icon-[fe--disabled] col-start-1 row-start-1 size-12"></span>
 				</span>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Phosphor</span>
+				</p>
+				<span class="icon-[ph--users-four-fill] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Fluent (Microsoft)</span>
+				</p>
+				<span class="icon-[fluent--people-team-16-filled] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Bootstrap Icons</span>
+				</p>
+				<span class="icon-[bi--microsoft-teams] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">

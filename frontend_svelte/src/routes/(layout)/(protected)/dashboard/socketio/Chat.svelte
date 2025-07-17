@@ -1,23 +1,28 @@
 <script lang="ts">
-	import { SocketIO } from '$lib/socketio';
-	import type { SocketioConnection } from '$lib/types';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio';
+	import { onDestroy } from 'svelte';
+
 	// import { getContext, type Snippet } from 'svelte';
 	import { type Snippet } from 'svelte';
 
-	let { connection, children }: { connection: SocketioConnection; children: Snippet } = $props();
+	let {
+		connection,
+		socketioEvent,
+		children
+	}: { connection: SocketioConnection; socketioEvent: string; children: Snippet } = $props();
 
 	const socketio = new SocketIO(connection);
 
 	let status = $state(false);
 	$effect(() => {
 		const updateStatus = () => {
-			status = socketio.client.connected ? true : false;
+			status = socketio.client.connected;
 			// console.log(`socketio status: ${status}`);
 		};
 
 		socketio.client.on('connect', updateStatus);
 		socketio.client.on('disconnect', updateStatus);
-		socketio.client.on(connection.event, updateStatus);
+		socketio.client.on(socketioEvent, updateStatus);
 		updateStatus();
 	});
 
@@ -28,16 +33,18 @@
 	// TBD: add as method to SocketIO class
 	const sendMessage = (event: Event) => {
 		event.preventDefault();
-		socketio.client.emit(connection.event, new_message);
+		socketio.client.emit(socketioEvent, new_message);
 		new_message = '';
 	};
 
 	$effect(() => {
-		socketio.client.on(connection.event, (data) => {
+		socketio.client.on(socketioEvent, (data) => {
 			// console.log(`Received from socket.io server: ${data}`);
 			old_messages.push(`${data}`);
 		});
 	});
+
+	onDestroy(() => socketio.client.disconnect());
 </script>
 
 {@render children?.()} in Chat / Connection
@@ -50,16 +57,13 @@
 				type="input"
 				placeholder="Type your message here"
 				class="input input-lg w-full grow"
-				id={connection.namespace + connection.event + connection.room}
+				id={connection.namespace + socketioEvent}
 				name="message"
 				value={new_message}
 				oninput={(e: Event) => (new_message = (e.target as HTMLInputElement).value)}
 				onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && sendMessage(e)}
 			/>
-			<label
-				class="input-filled-label"
-				for={connection.namespace + connection.event + connection.room}>Message</label
-			>
+			<label class="input-filled-label" for={connection.namespace + socketioEvent}>Message</label>
 		</div>
 		<button
 			class="btn-secondary-container btn btn-circle btn-gradient"

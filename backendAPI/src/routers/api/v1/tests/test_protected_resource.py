@@ -326,17 +326,12 @@ async def test_delete_protected_resource(
     assert response.status_code == 404
     assert response.json() == {"detail": "ProtectedResource not found."}
 
-    try:
-        async with AccessPolicyCRUD() as crud:
-            await crud.read(
-                current_test_user,
-                resource_id=mocked_protected_resources[1].id,
-            )
-    except Exception as err:
-        assert err.status_code == 404
-        assert err.detail == "Access policy not found."
-    else:
-        pytest.fail("No HTTPexception raised!")
+    async with AccessPolicyCRUD() as crud:
+        result = await crud.read(
+            current_test_user,
+            resource_id=mocked_protected_resources[1].id,
+        )
+        assert result == []
 
 
 @pytest.mark.anyio

@@ -1,25 +1,49 @@
 <script lang="ts">
-	type Identity = {
-		id: string;
-		name: string;
-		right: string;
-	};
+	import { Action, AccessHandler } from '$lib/accessHandler';
+	import type { AccessPolicy, AccessShareOption } from '$lib/types';
 
-	let { resourceId, icon, identity }: { resourceId: string; icon: string; identity: Identity } =
-		$props();
+	let {
+		resourceId,
+		shareOption,
+		share,
+		closeShareMenu
+	}: {
+		resourceId: string;
+		shareOption: AccessShareOption;
+		share?: (accessPolicy: AccessPolicy) => void;
+		closeShareMenu?: () => void;
+	} = $props();
 
-	const rightsIcon = (right: string) => {
-		return right === 'own'
-			? 'icon-[tabler--key-filled] bg-success'
-			: right === 'write'
-				? 'icon-[material-symbols--edit-outline-rounded] bg-warning'
-				: right === 'read'
-					? 'icon-[tabler--eye] bg-neutral'
-					: 'icon-[tabler--ban] bg-error';
+	const desiredActions = (selectedAction?: Action) => {
+		let action = shareOption.action;
+		let newAction = undefined;
+		// deleting access policy:
+		if (selectedAction === undefined && action) {
+			action = undefined;
+			newAction = undefined;
+		}
+		// creating a new access policy:
+		else if (shareOption.action === undefined) {
+			action = selectedAction;
+		}
+		// updating an existing access policy:
+		// else if (selectedAction && shareOption.action !== selectedAction) {
+		else {
+			newAction = selectedAction;
+		}
+		// console.log(
+		// 	'=== shareItem - desiredActions - Values for access policy ===',
+		// 	shareOption.action,
+		// 	selectedAction
+		// );
+		return {
+			action: action,
+			new_action: newAction
+		};
 	};
 </script>
 
-{#snippet shareButton(newAction: string)}
+{#snippet shareButton(selectedAction?: Action)}
 	<li>
 		<button
 			data-sveltekit-preload-data={false}
@@ -27,10 +51,25 @@
 			name="id"
 			type="submit"
 			value={resourceId}
-			formaction="?/share&identity-id={identity.id}&action={identity.right}&new-action={newAction}"
-			aria-label={newAction}
+			formaction={!share
+				? `?/share&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
+				: undefined}
+			onclick={() => {
+				if (share) {
+					share({
+						resource_id: resourceId,
+						identity_id: shareOption.identity_id,
+						action: desiredActions(selectedAction).action,
+						new_action: desiredActions(selectedAction).new_action
+					});
+					if (closeShareMenu) {
+						closeShareMenu();
+					}
+				}
+			}}
+			aria-label={String(selectedAction) || 'remove'}
 		>
-			<span class={rightsIcon(newAction)}></span>
+			<span class={AccessHandler.rightsIcon(selectedAction)}></span>
 		</button>
 	</li>
 {/snippet}
@@ -39,25 +78,27 @@
 	<div class="tooltip flex items-center [--placement:top]">
 		<div
 			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
-			aria-label={identity.name}
+			aria-label={shareOption.identity_name}
 		>
-			<span class="{icon} shrink-0"></span>
-			{identity.name.slice(0, 12)}{identity.name.length > 13 ? ' ...' : null}
-			{#if identity.name.length > 12}
+			<span class="{AccessHandler.identityIcon(shareOption.identity_type)} shrink-0"></span>
+			{shareOption.identity_name.slice(0, 12)}{shareOption.identity_name.length > 13
+				? ' ...'
+				: null}
+			{#if shareOption.identity_name.length > 12}
 				<span
 					class="tooltip-content tooltip-shown:visible tooltip-shown:opacity-100 bg-base-300 rounded-xl outline"
 					role="tooltip"
 				>
-					{identity.name}
+					{shareOption.identity_name}
 				</span>
 			{/if}
 		</div>
 		<div class="mr-2">
-			<span class="{rightsIcon(identity.right)} ml-2 size-4"></span>
+			<span class="{AccessHandler.rightsIcon(shareOption.action)} ml-2 size-4"></span>
 		</div>
 		<div class="dropdown relative inline-flex [--offset:0] [--placement:left-start]">
 			<button
-				id="rights-{identity.id}"
+				id="rights-{shareOption.identity_id}"
 				type="button"
 				class="dropdown-toggle btn btn-text bg-base-300"
 				aria-haspopup="menu"
@@ -70,12 +111,12 @@
 				class="dropdown-menu outline-outline bg-base-300 dropdown-open:opacity-100 hidden outline-2"
 				role="menu"
 				aria-orientation="vertical"
-				aria-labelledby="rights-{identity.id}"
+				aria-labelledby="rights-{shareOption.identity_id}"
 			>
-				{@render shareButton('own')}
-				{@render shareButton('write')}
-				{@render shareButton('read')}
-				{@render shareButton('unshare')}
+				{@render shareButton(Action.OWN)}
+				{@render shareButton(Action.WRITE)}
+				{@render shareButton(Action.READ)}
+				{@render shareButton()}
 			</ul>
 		</div>
 	</div>

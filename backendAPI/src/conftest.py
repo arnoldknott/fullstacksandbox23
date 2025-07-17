@@ -168,7 +168,7 @@ def mock_guards():
 # async def add_one_test_user_with_groups(get_async_test_session: AsyncSession) -> User:
 #     """Adds a tst user with group membership to the database."""
 #     async with UserCRUD() as crud:
-#         user = await crud.create_azure_user_and_groups_if_not_exist(
+#         user = await crud.azure_user_self_sign_up(
 #             many_test_azure_users[0]["azure_user_id"],
 #             many_test_azure_users[0]["azure_tenant_id"],
 #             token_payload_many_groups["groups"],
@@ -570,12 +570,12 @@ async def add_one_parent_child_identity_relationship(
     async def _add_one_parent_child_identity_relationship(
         child_id: UUID,
         parent_id: UUID = parent_id,
-        type: IdentityType = IdentityType.sub_group,
+        child_type: IdentityType = IdentityType.sub_group,
         inherit: bool = False,
     ):
         """Adds a parent-child relationship to the database."""
         return await add_parent_child_identity_relationship(
-            parent_id, child_id, type, inherit
+            parent_id, child_id, child_type, inherit
         )
 
     yield _add_one_parent_child_identity_relationship
@@ -624,7 +624,7 @@ async def add_one_azure_test_user(current_user_from_azure_token: User):
         # TBD: Fix that the current_user is not the same as the many_test_azure_users[user_number]!
         # therefore access policy missing form current_user to the created user.
         async with UserCRUD() as crud:
-            user = await crud.create_azure_user_and_groups_if_not_exist(
+            user = await crud.azure_user_self_sign_up(
                 **many_test_azure_users[user_number]
             )
         return user
@@ -641,7 +641,7 @@ async def add_many_azure_test_users():
         users = []
         for user in many_test_azure_users:
             async with UserCRUD() as crud:
-                user = await crud.create_azure_user_and_groups_if_not_exist(**user)
+                user = await crud.azure_user_self_sign_up(**user)
             users.append(user)
         users = sorted(users, key=lambda x: x.id)
         return users

@@ -5,8 +5,6 @@ from uuid import UUID
 from pydantic import BaseModel
 from sqlmodel import SQLModel
 
-# import models
-
 
 def get_all_models(SQLModel=SQLModel):
     all_models = []
@@ -18,6 +16,7 @@ def get_all_models(SQLModel=SQLModel):
     return all_models
 
 
+# TBD: consider moving this to src/models/access.py?
 class GuardTypes(BaseModel):
     """Protectors for the routes"""
 
@@ -26,29 +25,25 @@ class GuardTypes(BaseModel):
     groups: Optional[List[UUID]] = []
 
 
-# class AppRoles(str, Enum):
-#     """Enum for the roles that can be self-assigned to a user inside the app; Note: consent is required for some roles, handled by frontend!"""
+# For guarding events in socketio namespaces.
+class EventGuard(BaseModel):
+    """Guards for the events in socket.io namespaces"""
 
-#     # This is for services only, that don't require an account linking.
-#     # For services that require an account linking, a linked account counts as an assigned role.
-
-#     publicAIuser = "publicAIuser"
-#     privateAIuser = "privateAIuser"
+    event: str
+    guards: GuardTypes
 
 
+# TBD: consider moving this to src/models/access.py or src/core/security.py?
 class CurrentUserData(BaseModel):
     """Model for the current user data - acts as interface for the request from endpoint to crud."""
 
-    # TBD: add the user_id and remove azure_user_id!
-    # user_id: UUID# not this one -> it's not in the HTTP request.
     # Class Access needs to resolve that from database. Consider caching in Redis!
-    # azure_user_id: UUID
     user_id: UUID
     azure_token_roles: Optional[List[str]] = []
     azure_token_groups: Optional[List[UUID]] = []
-    # scopes: List[str]# should not be relevant for access control?
 
 
+# TBD: consider moving this to src/models/access.py?
 class Action(str, Enum):
     """Enum for the actions that can be performed on a resource"""
 
@@ -57,6 +52,7 @@ class Action(str, Enum):
     own = "own"
 
 
+# Types identify resources in teh identifier type table - used for registering resources and identities.
 class BaseType(str, Enum):
     """Base enum for types of entities in the database"""
 
@@ -79,6 +75,7 @@ class BaseType(str, Enum):
         return self.name
 
 
+# Resource versions of types
 class ResourceType(BaseType):
     """Enum for the types of resources to identify which table a resource uuid belongs to"""
 
@@ -102,48 +99,7 @@ class ResourceType(BaseType):
     demo_file = "DemoFile"
 
 
-# moved into hierarchy models - as this is used together with the models most of the time anyways:
-# class BaseHierarchy:
-#     """Class to define the hierarchy of the entities"""
-
-#     relations = {}
-
-#     @classmethod
-#     def get_allowed_children_types(cls, entity_type: str) -> List[str]:
-#         return cls.relations.get(entity_type, [])
-
-
-# class ResourceHierarchy(BaseHierarchy):
-#     """Class to define the hierarchy of the resources"""
-
-#     relations = {
-#         ResourceType.category: [
-#             ResourceType.demo_resource,
-#             ResourceType.protected_resource,
-#             ResourceType.public_resource,
-#         ],
-#         ResourceType.protected_resource: [
-#             ResourceType.protected_child,
-#             ResourceType.protected_grand_child,
-#         ],
-#         ResourceType.protected_child: [
-#             ResourceType.protected_grand_child,
-#         ],
-#         ResourceType.module: [
-#             ResourceType.section,
-#             ResourceType.topic,
-#             ResourceType.element,
-#         ],
-#         ResourceType.section: [
-#             ResourceType.subsection,
-#             ResourceType.topic,
-#             ResourceType.element,
-#         ],
-#         ResourceType.subsection: [ResourceType.topic, ResourceType.element],
-#         ResourceType.topic: [ResourceType.element],
-#     }
-
-
+# Identity versions of types
 class IdentityType(BaseType):
     """Enum for the types of identities to identify which table an identity uuid belongs"""
 
@@ -159,45 +115,3 @@ class IdentityType(BaseType):
     # brightspace_group = "brightspace_group"
     # discord_group = "discord_group"
     # google_group = "google_group"
-
-
-# class IdentityHierarchy(BaseHierarchy):
-#     """Class to define the hierarchy of the identities"""
-
-#     relations = {
-#         IdentityType.azure_group: [IdentityType.user],
-#         IdentityType.group: [IdentityType.sub_group, IdentityType.user],
-#         IdentityType.sub_group: [IdentityType.sub_sub_group, IdentityType.user],
-#         IdentityType.sub_sub_group: [IdentityType.user],
-#     }
-
-
-# using models in stead of strings:
-# class ResourceType(Enum):
-#     """Enum for the types of resources to identify which table a resource uuid belongs to"""
-
-#     # for sandbox only:
-#     category = Category  # potentially keep for production
-#     tag = Tag  # potentially keep for production
-#     demo_resource = DemoResource
-#     protected_resource = ProtectedResource
-#     # for future use:
-#     # module = models.Module
-#     # section = models.Section
-#     # subsection = models.Subsection
-#     # topic = models.Topic
-#     # element = models.Element
-
-
-# class IdentityType(Enum):
-#     """Enum for the types of identities to identify which table an identity uuid belongs"""
-
-#     user = User
-#     azure_group = AzureGroup
-#     # user = "user"
-#     # # admin = "admin"
-#     # group = "group"
-#     # azure_group = "azure_group"
-#     # # brightspace_group = "brightspace_group"
-#     # # discord_group = "discord_group"
-#     # # google_group = "google_group"

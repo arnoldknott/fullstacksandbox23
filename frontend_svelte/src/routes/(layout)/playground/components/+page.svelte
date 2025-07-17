@@ -13,11 +13,14 @@
 	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
+
 	import { enhance } from '$app/forms';
 	import ShareItem from './ShareItem.svelte';
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
 	import type { ActionResult } from '@sveltejs/kit';
+	import { Action, IdentityType } from '$lib/accessHandler';
+	import type { AccessShareOption } from '$lib/types';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
@@ -89,52 +92,74 @@
 
 	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
 		if (result.type === 'success') {
-			const team = teams.find((team) => team.id === result.data?.identityId);
-			if (team) {
-				team.right = result.data?.confirmedNewAction
-					? result.data.confirmedNewAction.toString()
-					: '';
+			const identity = shareOptions.find(
+				(option) => option.identity_id === result.data?.identityId
+			);
+			if (identity) {
+				identity.action = result.data?.confirmedNewAction
+					? (result.data.confirmedNewAction.toString() as Action)
+					: undefined;
 			}
 		} else {
 			// handle error: show error message
 		}
-		await update();
+		update();
 	};
 
 	// data for share menu:
-	const teams = $state(
+	const shareOptions: AccessShareOption[] = $state(
 		[
 			{
-				id: '1',
-				name: 'The A Team',
-				right: 'read'
+				identity_id: '1',
+				identity_name: 'The A Team',
+				identity_type: IdentityType.MICROSOFT_TEAM,
+				action: Action.READ
 			},
 			{
-				id: '2',
-				name: 'Awesome Team',
-				right: ''
+				identity_id: '2',
+				identity_name: 'Awesome Team',
+				identity_type: IdentityType.MICROSOFT_TEAM,
+				action: undefined
 			},
 			{
-				id: '3',
-				name: 'Team Teams',
-				right: 'write'
+				identity_id: '3',
+				identity_name: 'Ueber Group',
+				identity_type: IdentityType.UEBER_GROUP,
+				action: Action.WRITE
 			},
 			{
-				id: '4',
-				name: 'Team Next',
-				right: 'own'
+				identity_id: '4',
+				identity_name: 'Group some group',
+				identity_type: IdentityType.GROUP,
+				action: Action.OWN
 			},
 			{
-				id: '5',
-				name: 'Be a Team',
-				right: 'read'
+				identity_id: '5',
+				identity_name: 'Sub Group',
+				identity_type: IdentityType.SUB_GROUP,
+				action: Action.READ
 			},
 			{
-				id: '6',
-				name: 'Very long Team Name',
-				right: 'write'
+				identity_id: '6',
+				identity_name: 'Sub-Sub-Group',
+				identity_type: IdentityType.SUB_SUB_GROUP,
+				action: Action.OWN
+			},
+			{
+				identity_id: '7',
+				identity_name: 'Tom User',
+				identity_type: IdentityType.USER,
+				action: Action.READ
+			},
+			{
+				identity_id: '8',
+				identity_name: 'Another user with a very long Team Name of ',
+				identity_type: IdentityType.USER,
+				action: Action.WRITE
 			}
-		].sort((a, b) => a.name.localeCompare(b.name))
+		].sort(
+			(a, b) => a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name)
+		)
 	);
 
 	// for status sliders:
@@ -504,12 +529,8 @@
 									};
 								}}
 							>
-								{#each teams as team, i (i)}
-									<ShareItem
-										resourceId="actionButtonShareResourceId"
-										icon="icon-[fluent--people-team-16-filled]"
-										identity={team}
-									/>
+								{#each shareOptions as shareOption, i (i)}
+									<ShareItem resourceId="actionButtonShareResourceId" {shareOption} />
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -609,12 +630,8 @@
 									};
 								}}
 							>
-								{#each teams as team, i (i)}
-									<ShareItem
-										resourceId="dropdownShareDropdownResourceId"
-										icon="icon-[fluent--people-team-16-filled]"
-										identity={team}
-									/>
+								{#each shareOptions as shareOption, i (i)}
+									<ShareItem resourceId="dropdownShareDropdownResourceId" {shareOption} />
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -664,11 +681,7 @@
 								};
 							}}
 						>
-							<ShareItem
-								resourceId="dropdownShareResourceId"
-								icon="icon-[fluent--people-team-16-filled]"
-								identity={teams[0]}
-							/>
+							<ShareItem resourceId="dropdownShareResourceId" shareOption={shareOptions[0]} />
 						</form>
 					</ul>
 				</div>
@@ -944,7 +957,7 @@
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
 							aria-label="Close"
-							data-overlay="#basic-modal"
+							data-overlay="#centered-modal"
 						>
 							<span class="icon-[tabler--x] size-4"></span>
 						</button>
@@ -991,7 +1004,7 @@
 							type="button"
 							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
 							aria-label="Close"
-							data-overlay="#basic-modal"
+							data-overlay="#share-modal"
 						>
 							<span class="icon-[tabler--x] size-4"></span>
 						</button>
@@ -1037,6 +1050,75 @@
 							>Close</button
 						>
 						<button type="button" class="btn btn-primary">Save changes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<button
+			type="button"
+			class="btn btn-warning"
+			aria-haspopup="dialog"
+			aria-expanded="false"
+			aria-controls="add-element-modal"
+			data-overlay="#add-element-modal"
+		>
+			<span class="icon-[material-symbols--edit-outline-rounded]"></span>
+			Create new element
+		</button>
+
+		<div
+			id="add-element-modal"
+			class="overlay modal modal-middle overlay-open:opacity-100 hidden"
+			role="dialog"
+			tabindex="-1"
+		>
+			<div class="modal-dialog overlay-open:opacity-100">
+				<div class="modal-content bg-base-300 shadow-outline shadow">
+					<div class="modal-header">
+						<h3 class="modal-title">Add an Element</h3>
+						<button
+							type="button"
+							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+							aria-label="Close"
+							data-overlay="#add-element-modal"
+						>
+							<span class="icon-[tabler--x] size-4"></span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="w-full overflow-x-auto">
+							<div class="input-filled input-base-content mb-2 w-fit grow">
+								<input
+									type="text"
+									placeholder="Name the demo resource"
+									class="input input-sm md:input-md shadow-shadow shadow-inner"
+									id="name_id_new_element"
+									name="name"
+								/>
+								<label class="input-filled-label" for="name_id_new_element">Name</label>
+							</div>
+							<div class="textarea-filled textarea-base-content w-full">
+								<textarea
+									class="textarea shadow-shadow shadow-inner"
+									placeholder="Describe the demo resource here."
+									id="description_id_new_element"
+									name="description"
+								>
+								</textarea>
+								<label class="textarea-filled-label" for="description_id_new_element">
+									Description
+								</label>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button
+							class="btn-warning-container btn btn-circle btn-gradient"
+							aria-label="Send Icon Button"
+						>
+							<span class="icon-[tabler--send-2]"></span>
+						</button>
 					</div>
 				</div>
 			</div>

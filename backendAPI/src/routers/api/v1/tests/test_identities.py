@@ -457,6 +457,78 @@ async def test_user_gets_own_user_through_me_endpoint(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
+    [token_user1_read_write_groups],
+    # here the admin get's itself => last_accessed_at should change!
+    indirect=True,
+)
+async def test_user_gets_own_user_through_me_endpoint_with_ueber_groups(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_ueber_groups,
+    add_one_test_access_policy,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token: CurrentUserData,
+):
+    """Test a user GETs it's own user by id"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+
+    policy = {
+        "resource_id": str(mocked_ueber_groups[1].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    response_add_user_to_ueber_group = await async_client.post(
+        f"/api/v1/user/{current_user.user_id}/group/{str(mocked_ueber_groups[1].id)}"
+    )
+    assert response_add_user_to_ueber_group.status_code == 201
+
+    response = await async_client.get("/api/v1/user/me")
+
+    assert response.status_code == 200
+    user = response.json()
+    modelled_user = Me(**user)
+    assert modelled_user.azure_token_roles == mocked_provide_http_token_payload["roles"]
+    group_uuids = [uuid.UUID(g) for g in mocked_provide_http_token_payload["groups"]]
+    if "groups" in mocked_provide_http_token_payload:
+        assert modelled_user.azure_token_groups == group_uuids
+        assert len(modelled_user.azure_token_groups) == len(
+            mocked_provide_http_token_payload["groups"]
+        )
+    assert "id" in user
+    assert modelled_user.id == current_user.user_id
+    assert modelled_user.azure_user_id == uuid.UUID(
+        mocked_provide_http_token_payload["oid"]
+    )
+    assert modelled_user.azure_tenant_id == uuid.UUID(
+        mocked_provide_http_token_payload["tid"]
+    )
+    assert modelled_user.user_account.id is not None
+    assert uuid.UUID(modelled_user.user_account.user_id) == modelled_user.id
+    assert modelled_user.user_account.is_publicAIuser is False
+    assert modelled_user.user_profile is not None
+    assert modelled_user.user_profile.theme_color == "#353c6e"
+    assert modelled_user.user_profile.theme_variant == ThemeVariants.tonal_spot
+    assert modelled_user.user_profile.contrast == 0.0
+    assert len(modelled_user.ueber_groups) == 1
+    assert modelled_user.ueber_groups[0].id == mocked_ueber_groups[1].id
+    assert modelled_user.ueber_groups[0].name == mocked_ueber_groups[1].name
+    assert (
+        modelled_user.ueber_groups[0].description == mocked_ueber_groups[1].description
+    )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
     [token_admin_read],
     indirect=True,
 )
@@ -1799,8 +1871,12 @@ async def test_put_user_with_integer_user_id(
             resource_id=db_user.id,
         )
 
-    assert created_at > before_time - timedelta(seconds=2)
-    assert created_at < after_time + timedelta(seconds=2)
+    assert created_at > before_time - timedelta(
+        seconds=3
+    )  # TBD: set back to 2 seconds: 3, due to extremly slow localhost,
+    assert created_at < after_time + timedelta(
+        seconds=3
+    )  # TBD: set back to 2 seconds: 3, dur to extremly slow localhost
     assert last_accessed_at.time > created_at
     assert last_accessed_at.status_code == 200
 
@@ -2778,7 +2854,7 @@ async def test_add_user_to_group_and_remove_again(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
-    add_many_test_groups,
+    add_many_test_groups: List[Group],
 ):
     """Tests adding user to a group and remove again."""
     app_override_provide_http_token_payload

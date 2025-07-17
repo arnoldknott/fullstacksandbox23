@@ -1,33 +1,34 @@
 <script lang="ts">
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import type { DemoResourceExtended, AccessPolicy } from '$lib/types';
+	import type { DemoResourceExtended, AccessPolicy, Identity } from '$lib/types';
 	import { enhance } from '$app/forms';
-	import type { MicrosoftTeamBasicExtended } from '$lib/types';
-	import { AccessHandler } from '$lib/accessHandler';
+	import { Action, AccessHandler } from '$lib/accessHandler';
 	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// TBD: move to components folder
-	import ShareItem from '../../../playground/components/ShareItem.svelte';
+	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import type { ActionResult } from '@sveltejs/kit';
 
 	let {
 		demoResource,
-		microsoftTeams
-	}: { demoResource?: DemoResourceExtended; microsoftTeams?: MicrosoftTeamBasicExtended[] } =
-		$props();
-	let id = $state(demoResource?.id || 'new_' + Math.random().toString(36).substring(2, 9));
-	let userRight = $state(demoResource?.user_right || 'read');
-	let name = $state(demoResource?.name || undefined);
-	let description = $state(demoResource?.description || undefined);
-	let language = $state(demoResource?.language || undefined);
-	let category = $state(demoResource?.category);
-	let categoryId = $state(demoResource?.category_id || undefined);
-	let tags = $state(demoResource?.tags || []);
-	let creationDate = $state<Date | undefined>(demoResource?.creation_date);
+		identities
+	}: { demoResource: DemoResourceExtended; identities?: Identity[] } = $props();
+	let id = $state(demoResource.id || 'new_' + Math.random().toString(36).substring(2, 9));
+	let accessRight = $state(demoResource.access_right);
+	let name = $state(demoResource.name || undefined);
+	let description = $state(demoResource.description || undefined);
+	let language = $state(demoResource.language || undefined);
+	let category = $state(demoResource.category);
+	let categoryId = $state(demoResource.category_id || undefined);
+	let tags = $state(demoResource.tags || []);
+	let creationDate = $state<Date | undefined>(demoResource.creation_date);
 	let formattedCreationDate = $derived(creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }));
-	let accessPolicies = $state<AccessPolicy[] | undefined>(demoResource?.access_policies);
+	let accessPolicies = $state<AccessPolicy[] | undefined>(demoResource.access_policies);
 
-	let edit = $state(demoResource ? false : true);
+	let edit = $state(demoResource.id?.slice(0, 4) === 'new_' ? true : false);
+
+	// TBD. move to accessHandler.ts
+	let shareOptions = $derived(AccessHandler.createShareOptions(identities, accessPolicies));
 
 	let flag = $state(
 		language === 'en-US'
@@ -71,19 +72,6 @@
 
 	const formAction = $derived(id.slice(0, 4) === 'new_' ? '?/post' : '?/put');
 
-	const accessAction = (identityId: string) =>
-		accessPolicies ? AccessHandler.getRights(identityId, accessPolicies) : null;
-
-	let identities = $derived.by(() => {
-		return (
-			microsoftTeams?.map((team) => ({
-				id: team.id,
-				name: team.displayName,
-				right: accessAction(team.id) ?? ''
-			})) || []
-		);
-	});
-
 	const triggerSubmit = async () => {
 		createUpdateForm?.requestSubmit();
 	};
@@ -107,13 +95,21 @@
 	// TBD: refactor into reusing the automatic rerun of the load function to update the page data.
 	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
 		if (result.type === 'success') {
-			if (accessPolicies?.find((policy) => policy.identity_id === result.data?.identityId)) {
-				accessPolicies?.map((policy) => {
-					if (policy.identity_id === result.data?.identityId) {
-						policy.action = result.data?.confirmedNewAction || policy.action;
-					}
-				});
-			} else {
+			if (!result.data?.confirmedNewAction) {
+				// remove access policy
+				accessPolicies = accessPolicies?.filter(
+					(policy) => policy.identity_id !== result.data?.identityId
+				);
+			} else if (accessPolicies?.find((policy) => policy.identity_id === result.data?.identityId)) {
+				// update existing access policy
+				let existingPolicy = accessPolicies?.find(
+					(policy) => policy.identity_id === result.data?.identityId
+				);
+				if (existingPolicy) {
+					existingPolicy.action = result.data?.confirmedNewAction;
+					existingPolicy.public = result.data?.public || existingPolicy.public;
+				}
+			} else if (result.data?.confirmedNewAction) {
 				// add new access policy
 				accessPolicies?.push({
 					identity_id: result.data?.identityId,
@@ -121,11 +117,18 @@
 					action: result.data?.confirmedNewAction,
 					public: result.data?.public
 				});
+			} else {
+				// TBD: handle error - show error message
+				console.error('Error handling rights change response:', result);
 			}
-		} else {
+		} else if (result.type === 'error') {
+			console.error(
+				'🔥 Error handling rights change response (server returned type error):',
+				result
+			);
 			// handle error: show error message
 		}
-		await update();
+		update();
 	};
 </script>
 
@@ -168,9 +171,7 @@
 			{#if flag}
 				<span class="icon-[twemoji--flag-{flag}] size-6"></span>
 			{/if}
-			<!-- TBD: move this if around the relevant list points,
-			if there are any left, that read-only users are also supposed to see. -->
-			{#if userRight === 'write' || userRight === 'own'}
+			{#if accessRight === Action.WRITE || accessRight === Action.OWN}
 				<div
 					class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
 					bind:this={dropdownMenuElement}
@@ -199,7 +200,7 @@
 								Edit
 							</button>
 						</li>
-						{#if userRight === 'own'}
+						{#if accessRight === Action.OWN}
 							<li
 								class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
 								bind:this={dropdownShareDropdownElement}
@@ -217,14 +218,13 @@
 										class="icon-[tabler--chevron-right] dropdown-open:rotate-180 size-4 rtl:rotate-180"
 									></span>
 								</button>
-								<!-- min-w-60 -->
 								<ul
 									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-60 shadow-xs"
 									role="menu"
 									aria-orientation="vertical"
 									aria-labelledby="share-{id}"
 								>
-									{#if identities}
+									{#if shareOptions}
 										<form
 											method="POST"
 											name="shareForm-resource-{id}"
@@ -236,14 +236,9 @@
 												};
 											}}
 										>
-											{#each identities ? identities.sort( (a, b) => a.name.localeCompare(b.name) ) : [] as identity (identity.id)}
-												<ShareItem
-													resourceId={id}
-													icon="icon-[fluent--people-team-16-filled]"
-													{identity}
-												/>
+											{#each shareOptions as shareOption (shareOption.identity_id)}
+												<ShareItem resourceId={id} {shareOption} />
 											{/each}
-
 											<li class="dropdown-footer gap-2">
 												<button
 													class="btn dropdown-item btn-text text-base-content content-center justify-start"
@@ -303,7 +298,7 @@
 </Card>
 
 {#snippet footer()}
-	<div class="card-actions flex justify-between">
+	<div class="card-actions flex justify-end">
 		<div>
 			{#each tags as tag (tag)}
 				<span
@@ -314,12 +309,28 @@
 		</div>
 		{#if edit}
 			<button
-				class="btn-success-container btn btn-circle btn-gradient"
+				class="btn-success-container btn btn-gradient rounded-full"
 				onclick={() => (edit = false)}
 				aria-label="Done"
 			>
-				<span class="icon-[mingcute--check-2-fill]"></span>
+				<span class="icon-[mingcute--check-2-fill]"></span> Done
 			</button>
+			<form
+				method="POST"
+				use:enhance={({ cancel }) => {
+					if (id.slice(0, 4) === 'new_') cancel();
+					card.remove();
+				}}
+			>
+				<button
+					class="btn-error-container btn btn-gradient rounded-full"
+					value={id}
+					formaction="?/delete"
+					aria-label="Done"
+				>
+					<span class="icon-[mingcute--check-2-fill]"></span> Delete
+				</button>
+			</form>
 		{/if}
 	</div>
 {/snippet}

@@ -2,16 +2,14 @@
 	import RevealJs from '$components/RevealJS.svelte';
 	import { SocketIO } from '$lib/socketio';
 
-	import type { SocketioConnection } from '$lib/types';
+	import type { SocketioConnection } from '$lib/socketio';
 
 	// let { keyboard = $bindable(false) }: { keyboard: boolean } = $props();
 	// let keyboard = false
 
 	const connection: SocketioConnection = {
-		event: 'comments', // does not really matter here, I guess?
 		// namespace: '/presentation_interests',
-		namespace: '/interactive-documentation',
-		room: 'does_not_matter_here_either'
+		namespace: '/interactive-documentation'
 	};
 
 	const socketio = new SocketIO(connection);

@@ -14,23 +14,30 @@ user_id_nonexistent = "87654321-4321-4321-4321-210987654321"
 # }
 
 azure_home_tenant = str(uuid4())
+
+azure_group1 = str(uuid4())
+azure_group2 = str(uuid4())
+
+three_test_azure_groups = [
+    azure_group1,
+    azure_group2,
+    str(uuid4()),
+]
+
+
 many_test_azure_users = [
     {
         "azure_user_id": "12345678-1234-1234-1234-123456789012",
-        "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
-        "groups": [
-            "12345678-1234-1234-1234-123456789012",
-            "12a34b56-12ab-34cd-56ef-78ab90cd12ef",
-            str(uuid4()),
-        ],
+        "azure_tenant_id": "12a34b56-12ab-34cd-56ef-78ab90cd12ef",
+        "groups": three_test_azure_groups,
     },
     {
         "azure_user_id": "1b2b3c4d-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
-        "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
+        "azure_tenant_id": "12a34b56-12ab-34cd-56ef-78ab90cd12ef",
         "groups": [
-            "12345678-1234-1234-1234-123456789012",
-            str(uuid4()),
-            "12a34b56-12ab-34cd-56ef-78ab90cd12ef",
+            azure_group1,
+            str(uuid4()),  # different random group
+            azure_group2,  # different order
         ],
     },
     {
@@ -42,7 +49,7 @@ many_test_azure_users = [
     {
         "azure_user_id": str(uuid4()),
         "azure_tenant_id": str(uuid4()),  # foreign tenant here.
-        "groups": [str(uuid4()), "12345678-1234-1234-1234-123456789012", str(uuid4())],
+        "groups": [str(uuid4()), azure_group1, str(uuid4())],
     },
 ]
 # TBD: add data for groups
@@ -72,6 +79,15 @@ token_payload_scope_api_write = {
 token_payload_scope_api_read_write = {
     "scp": "api.read api.write",
 }
+token_payload_scope_socketio = {
+    "scp": "socketio",
+}
+token_payload_scope_read_socketio = {
+    "scp": "socketio api.read",
+}
+token_payload_scope_write_socketio = {
+    "scp": "socketio api.write",
+}
 token_payload_scope_api_read_write_socketio = {
     "scp": "api.read api.write socketio",
 }
@@ -88,14 +104,13 @@ token_payload_roles_user_admin = {
     "roles": ["User", "Admin"],
 }
 token_payload_one_group = {
-    "groups": ["12345678-1234-1234-1234-123456789012"],
+    "groups": [azure_group1],
 }
 token_payload_one_random_group = {
     "groups": [str(uuid4())],
 }
 token_payload_many_groups = {
-    # "groups": [str(uuid4()), str(uuid4()), str(uuid4())],
-    "groups": many_test_azure_users[0]["groups"],
+    "groups": three_test_azure_groups,
 }
 
 token_user1_read = {
@@ -116,6 +131,27 @@ token_user1_read_write = {
     **token_payload_user_id,
     **token_payload_tenant_id,
     **token_payload_scope_api_read_write,
+    **token_payload_roles_user,
+}
+
+token_user1_socketio = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_socketio,
+    **token_payload_roles_user,
+}
+
+token_user1_read_socketio = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_read_socketio,
+    **token_payload_roles_user,
+}
+
+token_user1_write_socketio = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_write_socketio,
     **token_payload_roles_user,
 }
 
@@ -142,6 +178,14 @@ token_user1_read_write_groups = {
     **token_payload_many_groups,
 }
 
+token_user1_read_write_socketio_groups = {
+    **token_payload_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read_write_socketio,
+    **token_payload_roles_user,
+    **token_payload_many_groups,
+}
+
 token_user2_read = {
     **token_payload_another_user_id,
     **token_payload_tenant_id,
@@ -163,11 +207,40 @@ token_user2_read_write = {
     **token_payload_roles_user,
 }
 
+token_user2_socketio = {
+    **token_payload_another_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_socketio,
+    **token_payload_roles_user,
+}
+
+token_user2_read_socketio = {
+    **token_payload_another_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_read_socketio,
+    **token_payload_roles_user,
+}
+
+token_user2_write_socketio = {
+    **token_payload_another_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_write_socketio,
+    **token_payload_roles_user,
+}
+
 token_user2_read_write_socketio = {
     **token_payload_another_user_id,
     **token_payload_tenant_id,
     **token_payload_scope_api_read_write_socketio,
     **token_payload_roles_user,
+}
+
+token_user2_read_write_socketio_groups = {
+    **token_payload_another_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read_write_socketio,
+    **token_payload_roles_user,
+    **token_payload_many_groups,
 }
 
 token_admin = {
@@ -197,12 +270,186 @@ token_admin_read_write = {
     **token_payload_roles_admin,
 }
 
+token_admin_socketio = {
+    **token_payload_random_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_socketio,
+    **token_payload_roles_admin,
+}
+
+token_admin_read_socketio = {
+    **token_payload_random_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_read_socketio,
+    **token_payload_roles_admin,
+}
+
+token_admin_write_socketio = {
+    **token_payload_random_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_write_socketio,
+    **token_payload_roles_admin,
+}
+
+
 token_admin_read_write_socketio = {
     **token_payload_random_user_id,
     **token_payload_tenant_id,
     **token_payload_scope_api_read_write_socketio,
     **token_payload_roles_admin,
 }
+
+token_admin_read_write_socketio_groups = {
+    **token_payload_random_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read_write_socketio,
+    **token_payload_roles_user,
+    **token_payload_many_groups,
+}
+
+# Sessions in cache for testing purposes
+
+session_id_user1_read = uuid4()
+session_id_user1_write = uuid4()
+session_id_user1_read_write = uuid4()
+session_id_user1_socketio = uuid4()
+session_id_user1_read_socketio = uuid4()
+session_id_user1_write_socketio = uuid4()
+session_id_user1_read_write_socketio = uuid4()
+session_id_user1_read_groups = uuid4()
+session_id_user1_read_write_groups = uuid4()
+session_id_user1_read_write_socketio_groups = uuid4()
+
+
+session_id_user2_read = uuid4()
+session_id_user2_write = uuid4()
+session_id_user2_read_write = uuid4()
+session_id_user2_socketio = uuid4()
+session_id_user2_read_socketio = uuid4()
+session_id_user2_write_socketio = uuid4()
+session_id_user2_read_write_socketio = uuid4()
+session_id_user2_read_write_socketio_groups = uuid4()
+
+session_id_admin = uuid4()
+session_id_admin_read = uuid4()
+session_id_admin_write = uuid4()
+session_id_admin_read_write = uuid4()
+session_id_admin_socketio = uuid4()
+session_id_admin_read_socketio = uuid4()
+session_id_admin_write_socketio = uuid4()
+session_id_admin_read_write_socketio = uuid4()
+session_id_admin_read_write_socketio_groups = uuid4()
+
+session_id_invalid_token1 = uuid4()
+session_id_invalid_token2 = uuid4()
+
+sessions = [
+    {
+        "session_id": session_id_user1_read,
+        "token_payload": token_user1_read,
+    },
+    {
+        "session_id": session_id_user1_write,
+        "token_payload": token_user1_write,
+    },
+    {
+        "session_id": session_id_user1_read_write,
+        "token_payload": token_user1_read_write,
+    },
+    {
+        "session_id": session_id_user1_socketio,
+        "token_payload": token_user1_socketio,
+    },
+    {
+        "session_id": session_id_user1_read_socketio,
+        "token_payload": token_user1_read_socketio,
+    },
+    {
+        "session_id": session_id_user1_write_socketio,
+        "token_payload": token_user1_write_socketio,
+    },
+    {
+        "session_id": session_id_user1_read_write_socketio,
+        "token_payload": token_user1_read_write_socketio,
+    },
+    {
+        "session_id": session_id_user1_read_groups,
+        "token_payload": token_user1_read_groups,
+    },
+    {
+        "session_id": session_id_user1_read_write_groups,
+        "token_payload": token_user1_read_write_groups,
+    },
+    {
+        "session_id": session_id_user1_read_write_socketio_groups,
+        "token_payload": token_user1_read_write_socketio_groups,
+    },
+    {
+        "session_id": session_id_user2_read,
+        "token_payload": token_user2_read,
+    },
+    {
+        "session_id": session_id_user2_write,
+        "token_payload": token_user2_write,
+    },
+    {
+        "session_id": session_id_user2_read_write,
+        "token_payload": token_user2_read_write,
+    },
+    {
+        "session_id": session_id_user2_socketio,
+        "token_payload": token_user2_socketio,
+    },
+    {
+        "session_id": session_id_user2_read_socketio,
+        "token_payload": token_user2_read_socketio,
+    },
+    {
+        "session_id": session_id_user2_write_socketio,
+        "token_payload": token_user2_write_socketio,
+    },
+    {
+        "session_id": session_id_user2_read_write_socketio,
+        "token_payload": token_user2_read_write_socketio,
+    },
+    {
+        "session_id": session_id_user2_read_write_socketio_groups,
+        "token_payload": token_user2_read_write_socketio_groups,
+    },
+    {"session_id": session_id_admin_read, "token_payload": token_admin_read},
+    {"session_id": session_id_admin_write, "token_payload": token_admin_write},
+    {
+        "session_id": session_id_admin_read_write,
+        "token_payload": token_admin_read_write,
+    },
+    {"session_id": session_id_admin_socketio, "token_payload": token_admin_socketio},
+    {
+        "session_id": session_id_admin_read_socketio,
+        "token_payload": token_admin_read_socketio,
+    },
+    {
+        "session_id": session_id_admin_write_socketio,
+        "token_payload": token_admin_write_socketio,
+    },
+    {
+        "session_id": session_id_admin_read_write_socketio,
+        "token_payload": token_admin_read_write_socketio,
+    },
+    {
+        "session_id": session_id_admin_read_write_socketio_groups,
+        "token_payload": token_admin_read_write_socketio_groups,
+    },
+    {
+        "session_id": session_id_invalid_token1,
+        "token_payload": {"invalid_token": "This is an invalid token"},
+    },
+    {
+        "session_id": session_id_invalid_token2,
+        "token_payload": {"invalid_token": "This is another invalid token"},
+    },
+]
+
+# Test identity IDs and user data for testing purposes
 
 identity_id_admin = str(uuid4())
 identity_id_user1 = str(uuid4())
@@ -698,6 +945,30 @@ many_test_access_logs = [
         "action": "read",
         "status_code": 200,
     },
+    {
+        "identity_id": identity_id_user2,
+        "resource_id": resource_id1,
+        "action": "write",
+        "status_code": 200,
+    },
+    {
+        "identity_id": identity_id_user1,
+        "resource_id": resource_id2,
+        "action": "write",
+        "status_code": 200,
+    },
+    {
+        "identity_id": identity_id_user3,
+        "resource_id": resource_id3,
+        "action": "read",
+        "status_code": 200,
+    },
+    {
+        "identity_id": identity_id_user3,
+        "resource_id": resource_id3,
+        "action": "write",
+        "status_code": 200,
+    },
 ]
 
 one_test_demo_resource = {
@@ -713,19 +984,16 @@ many_test_demo_resources = [
         "name": "Name of Test Resource",
         "description": "Some fancy description of my test resource.",
         "language": "en-US",
-        # "category_id": specific_test_category_id2,
     },
     {
         "name": "Another Test Resource's name",
         "description": "The description of the second test resource.",
         "language": "en-GB",
-        # "category_id": specific_test_category_id1,
     },
     {
         "name": "A second cat 2 resource",
         "description": "category 2 is popular.",
         "language": "es-ES",
-        # "category_id": specific_test_category_id2,
     },
     {
         "name": "Test resource without category",

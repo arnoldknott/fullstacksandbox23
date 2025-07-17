@@ -11,4 +11,5 @@
   "svelte.plugin.html.hover.enable": true,
   "svelte.plugin.svelte.hover.enable": true,
   "svelte.plugin.typescript.hover.enable": true,
+  "editor.formatOnSave": true,
 }
