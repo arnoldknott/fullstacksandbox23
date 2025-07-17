@@ -177,9 +177,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     add_test_policy_for_resource: AccessPolicy,
 ):
     """Test the demo resource connect event."""
-    connection = await socketio_test_client_demo_resource_namespace(
-        query_parameters={"request-access-data": "true"}
-    )
+    connection = await socketio_test_client_demo_resource_namespace()
     current_user = await connection.current_user()
 
     time_before_creation = datetime.now()
@@ -201,7 +199,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     for policy in policies:
         await add_test_policy_for_resource(policy)
 
-    await connection.connect()
+    await connection.connect(query_parameters={"request-access-data": "true"})
 
     await connection.client.sleep(1)
     transfer_data = connection.responses("transfer")
@@ -858,7 +856,10 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
 ):
     """Test the demo resource connect event."""
     # First user owns the resources:
-    token_user1 = current_token_payload(0)
+    connection1 = await socketio_test_client_demo_resource_namespace()
+    connection2 = await socketio_test_client_demo_resource_namespace(session_ids[1])
+    connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
+    token_user1 = connection1.token_payload()
     # TBD:
     query_parameters_user1 = {}
     if "groups" in token_user1:
@@ -877,24 +878,12 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
         identity_ids_user3 = [identity_id for identity_id in token_user3["groups"]]
         query_parameters_user3 = {"identity-id": ",".join(identity_ids_user3)}
 
-    connection1 = await socketio_test_client_demo_resource_namespace(
-        query_parameters=query_parameters_user1
-    )
-    connection2 = await socketio_test_client_demo_resource_namespace(
-        session_ids[1], query_parameters=query_parameters_user2
-    )
-
-    connection3 = await socketio_test_client_demo_resource_namespace(
-        session_ids[2],
-        query_parameters=query_parameters_user3,
-    )
-
     resources = await add_test_demo_resources(token_user1)
     # resources = await add_test_demo_resources(token_admin_read_write_socketio)
 
-    await connection1.connect()
-    await connection2.connect()
-    await connection3.connect()
+    await connection1.connect(query_parameters=query_parameters_user1)
+    await connection2.connect(query_parameters=query_parameters_user2)
+    await connection3.connect(query_parameters=query_parameters_user3)
 
     # First user shares the resources with a group, that first and second user are member of:
     await connection1.client.emit(
@@ -961,18 +950,14 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity(
     socketio_test_client_demo_resource_namespace,
 ):
     """Test the demo resource connect event."""
+    connection1 = await socketio_test_client_demo_resource_namespace()
+    connection2 = await socketio_test_client_demo_resource_namespace(session_ids[1])
+    connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
+
     many_test_groups = await add_many_test_groups()
     common_group_id = many_test_groups[2].id
     query_parameters_user1 = {"identity-id": str(common_group_id)}
     query_parameters_user2 = {"identity-id": str(common_group_id)}
-
-    connection1 = await socketio_test_client_demo_resource_namespace(
-        query_parameters=query_parameters_user1,
-    )
-    connection2 = await socketio_test_client_demo_resource_namespace(
-        session_ids[1], query_parameters=query_parameters_user2
-    )
-    connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
 
     # First user owns the resources:
     token_user1 = connection1.token_payload()
@@ -997,8 +982,8 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity(
         }
     )
 
-    await connection1.connect()
-    await connection2.connect()
+    await connection1.connect(query_parameters=query_parameters_user1)
+    await connection2.connect(query_parameters=query_parameters_user2)
     await connection3.connect()
 
     # First user shares the resources with a group, that first and second user are member of:
@@ -1065,22 +1050,15 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity_to_sa
 ):
     """Test the demo resource connect event."""
     # First user owns the resources:
+    connection1 = await socketio_test_client_demo_resource_namespace()
+    connection2 = await socketio_test_client_demo_resource_namespace(session_ids[1])
+    connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
+
     many_test_groups = await add_many_test_groups()
     common_group_id = many_test_groups[2].id
     query_parameters_user1 = {"identity-id": str(common_group_id)}
     query_parameters_user2 = {"identity-id": str(common_group_id)}
 
-    connection1 = await socketio_test_client_demo_resource_namespace(
-        query_parameters=query_parameters_user1,
-    )
-    connection2 = await socketio_test_client_demo_resource_namespace(
-        session_ids[1],
-        query_parameters=query_parameters_user2,
-    )
-
-    connection3 = await socketio_test_client_demo_resource_namespace(
-        session_ids[2],
-    )
     token_user1 = connection1.token_payload()
     current_user1 = await connection1.current_user()
     current_user2 = await connection2.current_user()
@@ -1102,8 +1080,8 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity_to_sa
         }
     )
 
-    await connection1.connect()
-    await connection2.connect()
+    await connection1.connect(query_parameters=query_parameters_user1)
+    await connection2.connect(query_parameters=query_parameters_user2)
     await connection3.connect()
 
     # First user shares the resources with a group, that first and second user are member of:
@@ -1168,23 +1146,15 @@ async def test_user_removes_share_with_group(
     socketio_test_client_demo_resource_namespace,
 ):
     """Test the demo resource connect event."""
-    # First user owns the resources:
+    connection1 = await socketio_test_client_demo_resource_namespace()
+    connection2 = await socketio_test_client_demo_resource_namespace(session_ids[1])
+    connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
 
+    # First user owns the resources:
     many_test_groups = await add_many_test_groups()
     common_group_id = many_test_groups[2].id
     query_parameters_user1 = {"identity-id": str(common_group_id)}
     query_parameters_user2 = {"identity-id": str(common_group_id)}
-
-    connection1 = await socketio_test_client_demo_resource_namespace(
-        query_parameters=query_parameters_user1,
-    )
-
-    connection2 = await socketio_test_client_demo_resource_namespace(
-        session_ids[1],
-        query_parameters=query_parameters_user2,
-    )
-
-    connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
 
     token_user1 = connection1.token_payload()
     current_user1 = await connection1.current_user()
@@ -1206,8 +1176,8 @@ async def test_user_removes_share_with_group(
             "action": "write",
         }
     )
-    await connection1.connect()
-    await connection2.connect()
+    await connection1.connect(query_parameters=query_parameters_user1)
+    await connection2.connect(query_parameters=query_parameters_user2)
     await connection3.connect()
 
     # First user shares the resources with a group, that first and second user are member of:

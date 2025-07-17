@@ -337,11 +337,10 @@ class SocketIOTestConnection:
         self,
         client_config: ClientConfig,
         session_id: uuid.UUID,
-        query_parameters: dict = None,
     ):
         self.client_config = client_config
         self.session_id = session_id
-        self.query_parameters = query_parameters or {}
+        self.query_parameters = {}
         self.client = socketio.AsyncClient(logger=True, engineio_logger=True)
         self.responseData = {}
 
@@ -450,7 +449,6 @@ def socketio_test_client_class(request, session_ids):
     async def _socketio_test_client_class(
         client_config: ClientConfig,
         session_id: Optional[uuid.UUID] = None,
-        query_parameters: Optional[dict] = None,
     ):
         """Creates an instance of SocketIOTestClient."""
         if not session_id:
@@ -459,7 +457,6 @@ def socketio_test_client_class(request, session_ids):
         connection = SocketIOTestConnection(
             client_config,
             session_id,
-            query_parameters=query_parameters,
         )
         await connection.__aenter__()
 
@@ -504,7 +501,6 @@ def socketio_test_client_demo_resource_namespace(socketio_test_client_class):
 
     async def _socketio_test_client_demo_resource_namespace(
         session_id: Optional[uuid.UUID] = None,
-        query_parameters: Optional[dict] = None,
     ):
         """Factory function for creating a socket.io test client for the demo namespace."""
         client_config = [
@@ -519,8 +515,6 @@ def socketio_test_client_demo_resource_namespace(socketio_test_client_class):
         ]
 
         """Creates an instance of SocketIOTestClient for the demo namespace."""
-        return await socketio_test_client_class(
-            client_config, session_id, query_parameters
-        )
+        return await socketio_test_client_class(client_config, session_id)
 
     return _socketio_test_client_demo_resource_namespace
