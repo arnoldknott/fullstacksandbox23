@@ -3,26 +3,26 @@ from datetime import datetime
 from unittest.mock import patch
 from uuid import UUID, uuid4
 
-from models.identity import Group
 import pytest
 from socketio.exceptions import ConnectionError
 
+from core.types import IdentityType
 from crud.demo_resource import DemoResourceCRUD
 from models.access import AccessPolicy
 from models.demo_resource import DemoResource, DemoResourceExtended
-from core.types import IdentityType
+from models.identity import Group
 from tests.utils import (
     many_test_demo_resources,
     session_id_admin_read,
-    session_id_admin_write,
     session_id_admin_read_socketio,
     session_id_admin_read_write_socketio,
     session_id_admin_read_write_socketio_groups,
+    session_id_admin_write,
     session_id_user1_read,
-    session_id_user1_write,
     session_id_user1_read_socketio,
     session_id_user1_read_write_socketio,
     session_id_user1_read_write_socketio_groups,
+    session_id_user1_write,
     session_id_user2_read_socketio,
     session_id_user2_read_write_socketio,
     session_id_user2_read_write_socketio_groups,

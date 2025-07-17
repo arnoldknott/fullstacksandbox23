@@ -242,11 +242,9 @@ async def test_user_communication_with_response_and_disconnect(
     """Test the class-based socket.io test client."""
 
     # Initializing and connecting admin:
+    connection_admin = await socketio_test_client_demo_namespace()
     query_admin = {"param1": "value1", "param2": "value2"}
-    connection_admin = await socketio_test_client_demo_namespace(
-        query_parameters=query_admin
-    )
-    await connection_admin.connect()
+    await connection_admin.connect(query_parameters=query_admin)
 
     await connection_admin.client.sleep(0.1)
     assert connection_admin.session_id == session_ids[0]
