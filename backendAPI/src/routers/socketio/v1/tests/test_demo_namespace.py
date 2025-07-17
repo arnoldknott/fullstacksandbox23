@@ -64,6 +64,7 @@ async def test_connect_to_demo_namespace(
 
     demo_messages = []
     connection = await socketio_test_client_demo_namespace(session_ids[0])
+    await connection.connect()
     demo_messages = connection.responses()
 
     assert len(demo_messages) == 2
@@ -96,14 +97,15 @@ async def test_connect_to_demo_namespace(
     indirect=True,
 )
 async def test_connect_to_demo_namespace_missing_scopes_fails(
-    session_ids, socketio_test_client_demo_namespace
+    socketio_test_client_demo_namespace,
 ):
     """Test the demo socket.io connect event."""
 
     ## TBD: refactor back into module wide fixture, when multiple clients is merged with deep security:
 
     try:
-        await socketio_test_client_demo_namespace()
+        connection = await socketio_test_client_demo_namespace()
+        await connection.connect()
         raise Exception("This should have failed due to invalid token.")
     except ConnectionError as err:
         assert str(err) == "One or more namespaces failed to connect"
@@ -120,6 +122,7 @@ async def test_send_demo_message(socketio_test_client_demo_namespace):
 
     demo_messages = []
     connection = await socketio_test_client_demo_namespace()
+    await connection.connect()
 
     await connection.client.emit(
         "demo_message", "Something", namespace="/demo-namespace"
@@ -239,18 +242,11 @@ async def test_user_communication_with_response_and_disconnect(
     """Test the class-based socket.io test client."""
 
     # Initializing and connecting admin:
-    # # TBD: potentially delete logging system, as teh responses are now growing along the way.
-    # logs_admin = [
-    #     {
-    #         "event": "",
-    #         "timestamp": datetime.now(),
-    #         "data": "Connecting to demo namespace for first user.",
-    #     },
-    # ]
     query_admin = {"param1": "value1", "param2": "value2"}
     connection_admin = await socketio_test_client_demo_namespace(
         query_parameters=query_admin
     )
+    await connection_admin.connect()
 
     await connection_admin.client.sleep(0.1)
     assert connection_admin.session_id == session_ids[0]
@@ -267,20 +263,12 @@ async def test_user_communication_with_response_and_disconnect(
     assert "Your session ID is " in connection_admin.responses()[1]
 
     # Initializing and connecting user1:
-    # # TBD: potentially delete logging system, as teh responses are now growing along the way.
-    # logs_user1 = [
-    #     {
-    #         "event": "",
-    #         "timestamp": datetime.now(),
-    #         "data": "Connecting to demo namespace for second user.",
-    #     },
-    # ]
     query_user1 = {"param1": "Avalue", "paramB": "some-other-value"}
     connection_user1 = await socketio_test_client_demo_namespace(
         session_ids[1],
         query_parameters=query_user1,
-        # logs=logs_user1,
     )
+    await connection_user1.connect()
 
     await connection_admin.client.sleep(0.1)
 
@@ -303,22 +291,8 @@ async def test_user_communication_with_response_and_disconnect(
     )
     assert "Your session ID is " in connection_user1.responses()[1]
 
-    # print("=== client - logs_admin ===")
-    # pprint(connection_admin.logs)
-    # assert len(connection_admin.logs) == 5
-    # assert connection_admin.logs == logs_admin
-    # assert connection_user1.logs == logs_user1
-
     # print("=== test_use_class_based_test_client - client.current_user ===")
     # print(await connection.current_user, flush=True)
-
-    # logs_admin.append(
-    #     {
-    #         "event": "demo_message",
-    #         "timestamp": datetime.now(),
-    #         "data": "Before emitting demo message.",
-    #     }
-    # )
 
     # Admin sends a message in chat to everyone with name of user1:
     user1_name = connection_user1.token_payload()["name"]
@@ -336,14 +310,6 @@ async def test_user_communication_with_response_and_disconnect(
     assert connection_user1.responses()[2] == (
         f"{token_admin_read_write_socketio['name']}: Hello, {user1_name}!"
     )
-
-    # logs_admin.append(
-    #     {
-    #         "event": "demo_message",
-    #         "timestamp": datetime.now(),
-    #         "data": "After emitting demo message.",
-    #     }
-    # )
 
     await connection_user1.client.sleep(0.1)
     admin_name = connection_admin.token_payload()["name"]

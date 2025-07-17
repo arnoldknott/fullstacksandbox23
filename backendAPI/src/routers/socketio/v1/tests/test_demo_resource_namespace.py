@@ -66,12 +66,13 @@ from tests.utils import (
     indirect=True,
 )
 async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_missing_in_token(
-    session_ids, socketio_test_client_demo_resource_namespace
+    socketio_test_client_demo_resource_namespace,
 ):
     """Test the demo_resource_namespace socket.io connection needs socketio scope in token."""
 
     try:
-        await socketio_test_client_demo_resource_namespace(session_ids[0])
+        connection = await socketio_test_client_demo_resource_namespace()
+        await connection.connect()
         raise Exception(
             "This should have failed due to missing authentication in on_connect."
         )
@@ -91,17 +92,15 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
     indirect=True,
 )
 async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresources(
-    current_token_payload,
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
 ):
     """Test the demo resource connect event."""
-    # TBD: refactor into a method and pass as callback_before_connect to the connection
-    # takes token_payload and async current_user as arguments
-    resources = await add_test_demo_resources(current_token_payload())
 
     transfer_data = []
     connection = await socketio_test_client_demo_resource_namespace()
+    resources = await add_test_demo_resources(connection.token_payload())
+    await connection.connect()
 
     await connection.client.sleep(0.2)
     transfer_data = connection.responses("transfer")
@@ -120,14 +119,14 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
     indirect=True,
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources(
-    current_user_from_session_id,
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
 ):
     """Test the demo resource connect event."""
+    connection = await socketio_test_client_demo_resource_namespace()
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
-    current_user = await current_user_from_session_id(0)
+    current_user = await connection.current_user()
 
     policies = [
         {
@@ -144,8 +143,8 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     for policy in policies:
         await add_test_policy_for_resource(policy)
 
+    await connection.connect()
     transfer_data = []
-    connection = await socketio_test_client_demo_resource_namespace()
 
     await connection.client.sleep(0.2)
     transfer_data = connection.responses("transfer")
@@ -173,16 +172,19 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     indirect=True,
 )
 async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources_with_access_data(
-    current_user_from_session_id,
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
 ):
     """Test the demo resource connect event."""
+    connection = await socketio_test_client_demo_resource_namespace(
+        query_parameters={"request-access-data": "true"}
+    )
+    current_user = await connection.current_user()
+
     time_before_creation = datetime.now()
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
     time_after_creation = datetime.now()
-    current_user = await current_user_from_session_id(0)
 
     policies = [
         {
@@ -199,9 +201,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     for policy in policies:
         await add_test_policy_for_resource(policy)
 
-    connection = await socketio_test_client_demo_resource_namespace(
-        query_parameters={"request-access-data": "true"}
-    )
+    await connection.connect()
 
     await connection.client.sleep(1)
     transfer_data = connection.responses("transfer")
@@ -256,6 +256,7 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
         status_data = []
 
         connection = await socketio_test_client_demo_resource_namespace()
+        await connection.connect()
 
         # Wait for the response to be set
         # await client.sleep(0.2)
@@ -280,6 +281,7 @@ async def test_user_submits_resource_without_id_for_creation(
 
     status_data = []
     connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
 
     await connection.client.emit(
         "submit", many_test_demo_resources[1], namespace="/demo-resource"
@@ -305,14 +307,15 @@ async def test_user_submits_resource_without_id_for_creation(
     indirect=True,
 )
 async def test_user_submits_resource_without_id_for_creation_missing_write_scope_in_token(
-    current_user_from_session_id,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
     socketio_test_client_demo_resource_namespace,
 ):
     """Test the demo resource submit event without ID."""
+    connection = await socketio_test_client_demo_resource_namespace()
+
     existing_demo_resources = await add_test_demo_resources()
-    current_user = await current_user_from_session_id()
+    current_user = await connection.current_user()
 
     if "Admin" not in current_user.azure_token_roles:
         for demo_resource in existing_demo_resources:
@@ -323,7 +326,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
             }
             await add_test_policy_for_resource(policy)
 
-    connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
 
     await connection.client.emit(
         "submit", many_test_demo_resources[1], namespace="/demo-resource"
@@ -361,6 +364,7 @@ async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
     test_resource["id"] = "new_34ab56z"
 
     connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
 
     await connection.client.emit("submit", test_resource, namespace="/demo-resource")
 
@@ -391,17 +395,10 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
     test_resource2 = copy.deepcopy(many_test_demo_resources[1])
     test_resource2["id"] = "new_439832f"
 
-    # logs = []
     connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
 
     time_before_first_submit = datetime.now()
-    # logs.append(
-    #     {
-    #         "event": "submit",
-    #         "timestamp": time_before_first_submit,
-    #         "data": test_resource,
-    #     }
-    # )
     await connection.client.emit("submit", test_resource, namespace="/demo-resource")
 
     # Wait for the response to be set
@@ -415,34 +412,12 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
     assert status_data[0]["success"] == "created"
 
     time_before_second_submit = datetime.now()
-    # logs.append(
-    #     {
-    #         "event": "submit",
-    #         "timestamp": time_before_second_submit,
-    #         "data": test_resource2,
-    #     }
-    # )
     await connection.client.emit("submit", test_resource2, namespace="/demo-resource")
 
     # Wait for the response to be set
     await connection.client.sleep(0.2)
 
     status_data = connection.responses("status")
-
-    # assert len(logs) == 4  # Two submits, two responses
-    # assert logs[0]["event"] == "submit"
-    # assert logs[0]["timestamp"] == time_before_first_submit
-    # assert logs[0]["data"] == test_resource
-    # assert logs[1]["event"] == "status"
-    # assert logs[1]["timestamp"] > time_before_first_submit
-    # assert logs[1]["timestamp"] < time_before_second_submit
-    # assert logs[1]["data"]["submitted_id"] == test_resource["id"]
-    # assert logs[2]["event"] == "submit"
-    # assert logs[2]["timestamp"] == time_before_second_submit
-    # assert logs[2]["data"] == test_resource2
-    # assert logs[3]["event"] == "status"
-    # assert logs[3]["timestamp"] > time_before_second_submit
-    # assert logs[3]["data"]["submitted_id"] == test_resource2["id"]
 
     assert len(status_data) == 2
 
@@ -472,6 +447,7 @@ async def test_user_submits_resource_with_random_string_in_id_field_fails(
 
     status_data = []
     connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
 
     await connection.client.emit("submit", test_resource, namespace="/demo-resource")
 
@@ -494,6 +470,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_name(
     """Test the demo resource delete event."""
 
     connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
     await connection.client.emit(
         "submit",
         {"description": "Description of test resource"},
@@ -523,6 +500,7 @@ async def test_user_submits_resource_with_nonexisting_uuid_fails(
     """Test the demo resource submit event with non-existing UUID."""
 
     connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
 
     test_demo_resource = copy.deepcopy(many_test_demo_resources[1])
     # test_demo_resource = many_test_demo_resources[1]
@@ -546,19 +524,18 @@ async def test_user_submits_resource_with_nonexisting_uuid_fails(
     indirect=True,
 )
 async def test_user_submits_existing_resource_for_update(
-    current_token_payload,
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
-    current_user_from_session_id,
 ):
     """Test the demo resource connect event."""
-    resources = await add_test_demo_resources(current_token_payload())
+    connection = await socketio_test_client_demo_resource_namespace()
+    resources = await add_test_demo_resources(connection.token_payload())
 
     index_of_resource_to_update = next(
         i for i, r in enumerate(resources) if r.name == "A second cat 2 resource"
     )
 
-    connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
 
     modified_demo_resource = resources[index_of_resource_to_update]
     modified_demo_resource.name = "Altering the name of this demo resource"
@@ -580,7 +557,7 @@ async def test_user_submits_existing_resource_for_update(
     assert statuses_data[0]["id"] == str(resources[index_of_resource_to_update].id)
 
     async with DemoResourceCRUD() as crud:
-        current_user = await current_user_from_session_id()
+        current_user = await connection.current_user()
         updated_resource = await crud.read_by_id(
             resources[index_of_resource_to_update].id, current_user
         )
@@ -608,14 +585,14 @@ async def test_user_submits_existing_resource_for_update(
     indirect=True,
 )
 async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
-    current_user_from_session_id,
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
 ):
     """Test the demo resource connect event."""
+    connection = await socketio_test_client_demo_resource_namespace()
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
-    current_user = await current_user_from_session_id()
+    current_user = await connection.current_user()
 
     if "Admin" not in current_user.azure_token_roles:
         policy = {
@@ -625,7 +602,7 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
         }
         await add_test_policy_for_resource(policy)
 
-    connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
 
     modified_demo_resource = resources[3]
     modified_demo_resource.name = "Altering the name of this demo resource"
@@ -655,14 +632,15 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
     indirect=True,
 )
 async def test_user_updates_demo_resource_not_having_write_access_fails(
-    current_user_from_session_id,
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
 ):
     """Test the demo resource connect event."""
+    connection = await socketio_test_client_demo_resource_namespace()
+
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
-    current_user = await current_user_from_session_id()
+    current_user = await connection.current_user()
 
     policy = {
         "resource_id": resources[3].id,
@@ -671,7 +649,7 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
     }
     await add_test_policy_for_resource(policy)
 
-    connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
 
     modified_demo_resource = resources[3]
     modified_demo_resource.name = "Altering the name of this demo resource"
@@ -698,16 +676,17 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
     indirect=True,
 )
 async def test_one_client_deletes_a_demo_resource_and_another_client_from_same_user_gets_the_remove_event(
-    current_token_payload,
     add_test_demo_resources: list[DemoResource],
     socketio_test_client_demo_resource_namespace,
 ):
     """Test the demo resource delete event."""
-    resources = await add_test_demo_resources(current_token_payload())
+    connection1 = await socketio_test_client_demo_resource_namespace()
+    resources = await add_test_demo_resources(connection1.token_payload())
 
     # Two clients from same user - coming from current_token_payload()!
-    connection1 = await socketio_test_client_demo_resource_namespace()
+    await connection1.connect()
     connection2 = await socketio_test_client_demo_resource_namespace()
+    await connection2.connect()
 
     await connection1.client.emit(
         "delete", str(resources[2].id), namespace="/demo-resource"
@@ -736,27 +715,27 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_from_same_u
 )
 async def test_one_client_deletes_a_demo_resource_and_another_client_with_different_user_gets_the_deleted_event(
     session_ids,
-    current_token_payload,
-    current_user_from_session_id,
     add_test_policy_for_resource,
     add_test_demo_resources: list[DemoResource],
     socketio_test_client_demo_resource_namespace,
 ):
     """Test the demo resource delete event."""
-    resources = await add_test_demo_resources(current_token_payload())
+    # Two clients from different users
+    connection1 = await socketio_test_client_demo_resource_namespace()
+    connection2 = await socketio_test_client_demo_resource_namespace(session_ids[1])
+    resources = await add_test_demo_resources(connection1.token_payload())
 
-    other_user = await current_user_from_session_id(1)
+    other_user = await connection2.current_user()
     policy = {
         "resource_id": resources[3].id,
         "identity_id": other_user.user_id,
         "action": "read",
     }
     # Creating user (first user) shares the resource with other user
-    await add_test_policy_for_resource(policy, current_token_payload(0))
+    await add_test_policy_for_resource(policy, connection1.token_payload())
 
-    # Two clients from different users
-    connection1 = await socketio_test_client_demo_resource_namespace()
-    connection2 = await socketio_test_client_demo_resource_namespace(session_ids[1])
+    await connection1.connect()
+    await connection2.connect()
 
     await connection1.client.emit(
         "delete", str(resources[2].id), namespace="/demo-resource"
@@ -781,14 +760,13 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_with_differ
     indirect=True,
 )
 async def test_user_deletes_a_demo_resource_missing_write_scope_in_token(
-    current_token_payload,
     add_test_demo_resources: list[DemoResource],
     socketio_test_client_demo_resource_namespace,
 ):
     """Test the demo resource delete event."""
-    resources = await add_test_demo_resources(current_token_payload())
-
     connection = await socketio_test_client_demo_resource_namespace()
+    resources = await add_test_demo_resources(connection.token_payload())
+    await connection.connect()
 
     await connection.client.emit(
         "delete", str(resources[2].id), namespace="/demo-resource"
@@ -817,9 +795,9 @@ async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_a
     socketio_test_client_demo_resource_namespace,
 ):
     """Test the demo resource delete event."""
-    resources = await add_test_demo_resources(token_admin_read_write_socketio)
-
     connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)
 
     await connection.client.emit(
         "delete", str(resources[2].id), namespace="/demo-resource"
@@ -881,6 +859,7 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
     """Test the demo resource connect event."""
     # First user owns the resources:
     token_user1 = current_token_payload(0)
+    # TBD:
     query_parameters_user1 = {}
     if "groups" in token_user1:
         identity_ids_user1 = [identity_id for identity_id in token_user1["groups"]]
@@ -898,9 +877,6 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
         identity_ids_user3 = [identity_id for identity_id in token_user3["groups"]]
         query_parameters_user3 = {"identity-id": ",".join(identity_ids_user3)}
 
-    resources = await add_test_demo_resources(token_user1)
-    # resources = await add_test_demo_resources(token_admin_read_write_socketio)
-
     connection1 = await socketio_test_client_demo_resource_namespace(
         query_parameters=query_parameters_user1
     )
@@ -912,6 +888,13 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
         session_ids[2],
         query_parameters=query_parameters_user3,
     )
+
+    resources = await add_test_demo_resources(token_user1)
+    # resources = await add_test_demo_resources(token_admin_read_write_socketio)
+
+    await connection1.connect()
+    await connection2.connect()
+    await connection3.connect()
 
     # First user shares the resources with a group, that first and second user are member of:
     await connection1.client.emit(
@@ -971,8 +954,6 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
 )
 async def test_user_updates_access_to_owned_resource_for_an_group_identity(
     session_ids,
-    current_token_payload,
-    current_user_from_session_id,
     add_test_demo_resources: list[DemoResource],
     add_many_test_groups: list[Group],
     add_one_parent_child_identity_relationship,
@@ -980,15 +961,24 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity(
     socketio_test_client_demo_resource_namespace,
 ):
     """Test the demo resource connect event."""
-    # First user owns the resources:
-    token_user1 = current_token_payload(0)
     many_test_groups = await add_many_test_groups()
     common_group_id = many_test_groups[2].id
     query_parameters_user1 = {"identity-id": str(common_group_id)}
     query_parameters_user2 = {"identity-id": str(common_group_id)}
 
-    current_user1 = await current_user_from_session_id(0)
-    current_user2 = await current_user_from_session_id(1)
+    connection1 = await socketio_test_client_demo_resource_namespace(
+        query_parameters=query_parameters_user1,
+    )
+    connection2 = await socketio_test_client_demo_resource_namespace(
+        session_ids[1], query_parameters=query_parameters_user2
+    )
+    connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
+
+    # First user owns the resources:
+    token_user1 = connection1.token_payload()
+
+    current_user1 = await connection1.current_user()
+    current_user2 = await connection2.current_user()
 
     await add_one_parent_child_identity_relationship(
         current_user1.user_id, common_group_id, IdentityType.user, inherit=True
@@ -1007,13 +997,9 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity(
         }
     )
 
-    connection1 = await socketio_test_client_demo_resource_namespace(
-        query_parameters=query_parameters_user1,
-    )
-    connection2 = await socketio_test_client_demo_resource_namespace(
-        session_ids[1], query_parameters=query_parameters_user2
-    )
-    connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
+    await connection1.connect()
+    await connection2.connect()
+    await connection3.connect()
 
     # First user shares the resources with a group, that first and second user are member of:
     await connection1.client.emit(
@@ -1028,7 +1014,7 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity(
     )
 
     # Wait for the response to be set
-    await connection1.client.sleep(0.3)
+    await connection1.client.sleep(0.4)
 
     status_data1 = connection1.responses("status")
     status_data2 = connection2.responses("status")
@@ -1071,8 +1057,6 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity(
 )
 async def test_user_updates_access_to_owned_resource_for_an_group_identity_to_same_access(
     session_ids,
-    current_token_payload,
-    current_user_from_session_id,
     add_test_demo_resources: list[DemoResource],
     add_many_test_groups: list[Group],
     add_one_parent_child_identity_relationship,
@@ -1081,14 +1065,25 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity_to_sa
 ):
     """Test the demo resource connect event."""
     # First user owns the resources:
-    token_user1 = current_token_payload(0)
     many_test_groups = await add_many_test_groups()
     common_group_id = many_test_groups[2].id
     query_parameters_user1 = {"identity-id": str(common_group_id)}
     query_parameters_user2 = {"identity-id": str(common_group_id)}
 
-    current_user1 = await current_user_from_session_id(0)
-    current_user2 = await current_user_from_session_id(1)
+    connection1 = await socketio_test_client_demo_resource_namespace(
+        query_parameters=query_parameters_user1,
+    )
+    connection2 = await socketio_test_client_demo_resource_namespace(
+        session_ids[1],
+        query_parameters=query_parameters_user2,
+    )
+
+    connection3 = await socketio_test_client_demo_resource_namespace(
+        session_ids[2],
+    )
+    token_user1 = connection1.token_payload()
+    current_user1 = await connection1.current_user()
+    current_user2 = await connection2.current_user()
 
     await add_one_parent_child_identity_relationship(
         current_user1.user_id, common_group_id, IdentityType.user, inherit=True
@@ -1107,17 +1102,9 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity_to_sa
         }
     )
 
-    connection1 = await socketio_test_client_demo_resource_namespace(
-        query_parameters=query_parameters_user1,
-    )
-    connection2 = await socketio_test_client_demo_resource_namespace(
-        session_ids[1],
-        query_parameters=query_parameters_user2,
-    )
-
-    connection3 = await socketio_test_client_demo_resource_namespace(
-        session_ids[2],
-    )
+    await connection1.connect()
+    await connection2.connect()
+    await connection3.connect()
 
     # First user shares the resources with a group, that first and second user are member of:
     await connection1.client.emit(
@@ -1174,8 +1161,6 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity_to_sa
 )
 async def test_user_removes_share_with_group(
     session_ids,
-    current_token_payload,
-    current_user_from_session_id,
     add_test_demo_resources: list[DemoResource],
     add_many_test_groups: list[Group],
     add_one_parent_child_identity_relationship,
@@ -1184,14 +1169,26 @@ async def test_user_removes_share_with_group(
 ):
     """Test the demo resource connect event."""
     # First user owns the resources:
-    token_user1 = current_token_payload(0)
+
     many_test_groups = await add_many_test_groups()
     common_group_id = many_test_groups[2].id
     query_parameters_user1 = {"identity-id": str(common_group_id)}
     query_parameters_user2 = {"identity-id": str(common_group_id)}
 
-    current_user1 = await current_user_from_session_id(0)
-    current_user2 = await current_user_from_session_id(1)
+    connection1 = await socketio_test_client_demo_resource_namespace(
+        query_parameters=query_parameters_user1,
+    )
+
+    connection2 = await socketio_test_client_demo_resource_namespace(
+        session_ids[1],
+        query_parameters=query_parameters_user2,
+    )
+
+    connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
+
+    token_user1 = connection1.token_payload()
+    current_user1 = await connection1.current_user()
+    current_user2 = await connection2.current_user()
 
     await add_one_parent_child_identity_relationship(
         current_user1.user_id, common_group_id, IdentityType.user, inherit=True
@@ -1209,17 +1206,9 @@ async def test_user_removes_share_with_group(
             "action": "write",
         }
     )
-
-    connection1 = await socketio_test_client_demo_resource_namespace(
-        query_parameters=query_parameters_user1,
-    )
-
-    connection2 = await socketio_test_client_demo_resource_namespace(
-        session_ids[1],
-        query_parameters=query_parameters_user2,
-    )
-
-    connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
+    await connection1.connect()
+    await connection2.connect()
+    await connection3.connect()
 
     # First user shares the resources with a group, that first and second user are member of:
     await connection1.client.emit(
@@ -1282,7 +1271,6 @@ async def test_user_removes_share_with_group(
     indirect=True,
 )
 async def test_user_shares_tries_to_share_resource_without_having_access(
-    current_token_payload,
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
 ):
@@ -1291,8 +1279,9 @@ async def test_user_shares_tries_to_share_resource_without_having_access(
 
     resources = await add_test_demo_resources(token_admin_read_write_socketio)
 
-    token_user1 = current_token_payload(0)
     connection = await socketio_test_client_demo_resource_namespace()
+    token_user1 = connection.token_payload()
+    await connection.connect()
 
     # First user shares the resources with a group, that first and second user are member of:
     await connection.client.emit(
@@ -1306,7 +1295,7 @@ async def test_user_shares_tries_to_share_resource_without_having_access(
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
 
     assert connection.responses("status") == [{"error": "403: Forbidden."}]
 

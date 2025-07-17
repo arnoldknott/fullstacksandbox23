@@ -338,29 +338,18 @@ class SocketIOTestConnection:
         client_config: ClientConfig,
         session_id: uuid.UUID,
         query_parameters: dict = None,
-        # TBD:add callback_before_connect: callable = None,
-        # logs: Optional[List[dict]] = None,
     ):
         self.client_config = client_config
         self.session_id = session_id
         self.query_parameters = query_parameters or {}
         self.client = socketio.AsyncClient(logger=True, engineio_logger=True)
         self.responseData = {}
-        # self.logs = logs
 
         # Attaching the event handlers for the client during initialization:
         def make_handler(event_name):
             async def handle_event(data):
                 """Handles the event and appends data to responses."""
                 nonlocal responses
-                # if logs is not None:
-                #     logs.append(
-                #         {
-                #             "event": event_name,
-                #             "timestamp": datetime.now(),
-                #             "data": data,
-                #         }
-                #     )
                 self.responseData[namespace][event_name].append(data)
 
             return handle_event
@@ -379,16 +368,16 @@ class SocketIOTestConnection:
 
     async def __aenter__(self):
         """Connect the client when entering the context."""
-        # if self.callback_before_connect:
-        #     await self.callback_before_connect(self.token_payload, self.current_user)
-        await self.connect()
+        # await self.connect()
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         """Disconnect the client when exiting the context."""
         await self.client.disconnect()
 
-    async def connect(self):
+    async def connect(self, query_parameters: dict = None):
+        if query_parameters is not None:
+            self.query_parameters = query_parameters
         """Connects to the socket.io server with the specified namespaces."""
         # server_url="http://127.0.0.1:8669" => test server from fixture socketio_test_server
         # server_host="http://127.0.0.1:80" => server from code
@@ -405,14 +394,6 @@ class SocketIOTestConnection:
             namespaces=all_namespaces,
             auth={"session-id": str(self.session_id)},
         )
-        # if self.logs is not None:
-        #     self.logs.append(
-        #         {
-        #             "event": "connect",
-        #             "timestamp": datetime.now(),
-        #             "data": f"session_id: {str(self.session_id)}",
-        #         }
-        #     )
 
     async def client(self):
         """Returns the socket.io client instance."""
@@ -470,7 +451,6 @@ def socketio_test_client_class(request, session_ids):
         client_config: ClientConfig,
         session_id: Optional[uuid.UUID] = None,
         query_parameters: Optional[dict] = None,
-        # logs: List = None,
     ):
         """Creates an instance of SocketIOTestClient."""
         if not session_id:
@@ -480,7 +460,6 @@ def socketio_test_client_class(request, session_ids):
             client_config,
             session_id,
             query_parameters=query_parameters,
-            # logs=logs,
         )
         await connection.__aenter__()
 
@@ -501,7 +480,7 @@ def socketio_test_client_demo_namespace(socketio_test_client_class):
 
     async def _socketio_test_client_demo_namespace(
         session_id: Optional[uuid.UUID] = None,
-        query_parameters: Optional[dict] = None,  # , logs: List = None
+        query_parameters: Optional[dict] = None,
     ):
         """Factory function for creating a socket.io test client for the demo namespace."""
         client_config = [
@@ -525,7 +504,7 @@ def socketio_test_client_demo_resource_namespace(socketio_test_client_class):
 
     async def _socketio_test_client_demo_resource_namespace(
         session_id: Optional[uuid.UUID] = None,
-        query_parameters: Optional[dict] = None,  # , logs: List = None
+        query_parameters: Optional[dict] = None,
     ):
         """Factory function for creating a socket.io test client for the demo namespace."""
         client_config = [
