@@ -681,7 +681,7 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_from_same_u
     connection1 = await socketio_test_client_demo_resource_namespace()
     resources = await add_test_demo_resources(connection1.token_payload())
 
-    # Two clients from same user - coming from current_token_payload()!
+    # Two clients from same user - coming from token_payload()!
     await connection1.connect()
     connection2 = await socketio_test_client_demo_resource_namespace()
     await connection2.connect()
@@ -850,7 +850,6 @@ async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_a
 )
 async def test_user_shares_owned_resource_with_groups_in_azure_token(
     session_ids,
-    current_token_payload,
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
 ):
@@ -860,19 +859,19 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
     connection2 = await socketio_test_client_demo_resource_namespace(session_ids[1])
     connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
     token_user1 = connection1.token_payload()
+    token_user2 = connection2.token_payload()
+    token_user3 = connection3.token_payload()
     # TBD:
     query_parameters_user1 = {}
     if "groups" in token_user1:
         identity_ids_user1 = [identity_id for identity_id in token_user1["groups"]]
         query_parameters_user1 = {"identity-id": ",".join(identity_ids_user1)}
 
-    token_user2 = current_token_payload(1)
     query_parameters_user2 = {}
     if "groups" in token_user2:
         identity_ids_user2 = [identity_id for identity_id in token_user2["groups"]]
         query_parameters_user2 = {"identity-id": ",".join(identity_ids_user2)}
 
-    token_user3 = current_token_payload(2)
     query_parameters_user3 = {}
     if "groups" in token_user3:
         identity_ids_user3 = [identity_id for identity_id in token_user3["groups"]]
