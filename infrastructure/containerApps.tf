@@ -19,6 +19,8 @@ resource "azurerm_container_app_environment" "ContainerEnvironment" {
   }
 }
 
+# Comments for debugging the creation of build of container with latest commit_sha from main, even though no workflow run in main:
+
 # resource "azurerm_container_app_environment_storage" "postgresDataConnect" {
 #   name                         = "${var.project_short_name}-postgresdataconnect-${terraform.workspace}"
 #   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
