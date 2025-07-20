@@ -24,5 +24,17 @@
 			Changed the containerApps.tf file to have a comment in it, so that the file is changed and now
 			variables are echoed in the frontend_svelte.yml and backend.yml file.
 		</li>
+		<li>
+			toJSON() in github actions broke the debugging chain. But with the existing output already in
+			backend.yml, the wrong tagging should be solved now.
+		</li>
+		<li>
+			Now committing the bug fix directly to main - should not allow debugging, but next push to
+			stage should solve the bug.
+		</li>
+		<li>
+			Starting from dev branch with fix in place. First run with fixed bug - manually transfered it
+			back from main.
+		</li>
 	</ul>
 </div>

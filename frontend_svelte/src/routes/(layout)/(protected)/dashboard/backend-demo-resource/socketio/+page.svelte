@@ -76,6 +76,8 @@
 					// only replaces the keys, where the newly incoming data is defined.
 					res.id === data.id ? { ...res, ...data } : res
 				);
+				// TBD: examin the workflow: access policies of recently changed accesses in resources change the icon,
+				// but the data, e.g. in debugging information stays outdated!
 			} else {
 				// Add new resource
 				demoResources.push(data);

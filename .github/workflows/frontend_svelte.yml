@@ -19,8 +19,6 @@ on:
       
 env:
   REGISTRY: ghcr.io
-  # COMMIT_SHA: ${{ github.event.after }}
-  # COMMIT_SHA: ${{ github.sha }}
   COMMIT_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
 jobs:
@@ -117,8 +115,6 @@ jobs:
           echo ${{ github.event_name }}
           echo "=== github.sha ==="
           echo ${{ github.sha }}
-          echo "=== github.event ==="
-          echo ${{ toJson(github.event) }}
           echo "=== github.event.after ==="
           echo ${{ github.event.after }}
           echo "=== Environment variable: COMMIT_SHA ==="
