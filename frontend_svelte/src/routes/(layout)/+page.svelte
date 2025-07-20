@@ -11,4 +11,14 @@
 		</div>
 	</div>
 	<div class="text-accent ml-3 flex items-center text-[116px]">23</div>
+	<div>
+		Repeating the bug of creating the image with the tag of the latest main commit sha, even though
+		no commit to main, but infrastructure was updated.
+	</div>
+	<ul>
+		<li>
+			Repeating the false tagging behavior: changed containerApps.tf, frontend_svelte.yml and this
+			file.
+		</li>
+	</ul>
 </div>

@@ -134,11 +134,24 @@ jobs:
       packages: write
     environment: stage
     steps:
-      # - name: echos github.event.after variable
-      #   run: |
-      #     echo "=== Is this the correct tag: github.event.after? ==="
-      #     echo ${{ github.event.after }}
-      #     echo $CONTAINER_TAG
+      - name: echos github.event.after variable
+        run: |
+          echo "=== github.ref ==="
+          echo ${{ github.ref }}
+          echo "=== github.ref_type ==="
+          echo ${{ github.ref_type }}
+          echo "=== github.event.workflow_run.head_sha ==="
+          echo ${{ github.event.workflow_run.head_sha }}
+          echo "=== github.event_name ==="
+          echo ${{ github.event_name }}
+          echo "=== github.sha ==="
+          echo ${{ github.sha }}
+          echo "=== github.event ==="
+          echo ${{ toJson(github.event) }}
+          echo "=== github.event.after ==="
+          echo ${{ github.event.after }}
+          echo "=== Environment variable: COMMIT_SHA ==="
+          echo $COMMIT_SHA
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }} 
