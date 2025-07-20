@@ -19,6 +19,8 @@ resource "azurerm_container_app_environment" "ContainerEnvironment" {
   }
 }
 
+# Trigger infrastructure -make sure bug is gone from wrong tagging. FIRST RUN!
+
 # resource "azurerm_container_app_environment_storage" "postgresDataConnect" {
 #   name                         = "${var.project_short_name}-postgresdataconnect-${terraform.workspace}"
 #   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
