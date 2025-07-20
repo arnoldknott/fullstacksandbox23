@@ -17,8 +17,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # COMMIT_SHA: ${{ github.event.after }}
-  # COMMIT_SHA: ${{ github.sha }}
   COMMIT_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
   FILESHARE_APPDATA_MIGRATIONS_PATH: migrations/stage_prod
 
@@ -271,6 +269,11 @@ jobs:
   # is updating the latest tagged image in github container registry,
   # which then gets used in prod - even though the workflow only ran in stage
   # That is basically the unwanted deployment to prod!
+  # See Pull Request #230:
+  # accidental deployment to prod identified: untagged workflow
+  # over writes the latest tagged image with main commit sha,
+  # and then prod loads that image next time the server scales from 0 to 1
+  # The untagged workflow run is initiated by a successful infrastructure run!
   deploy_stage:
     needs: containerize
     # if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}

@@ -19,8 +19,6 @@ on:
       
 env:
   REGISTRY: ghcr.io
-  # COMMIT_SHA: ${{ github.event.after }}
-  # COMMIT_SHA: ${{ github.sha }}
   COMMIT_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
 jobs:
@@ -151,22 +149,6 @@ jobs:
       packages: write
     environment: stage
     steps:
-      # - name: echos github.event.after variable
-      #   run: |
-      #     echo "=== github.ref ==="
-      #     echo ${{ github.ref }}
-      #     echo "=== github.ref_type ==="
-      #     echo ${{ github.ref_type }}
-      #     echo "=== github.event.workflow_run.head_sha ==="
-      #     echo ${{ github.event.workflow_run.head_sha }}
-      #     echo "=== github.event_name ==="
-      #     echo ${{ github.event_name }}
-      #     echo "=== github.sha ==="
-      #     echo ${{ github.sha }}
-      #     echo "=== github.event.after ==="
-      #     echo ${{ github.event.after }}
-      #     echo "=== Environment variable: COMMIT_SHA ==="
-      #     echo $COMMIT_SHA
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }} 

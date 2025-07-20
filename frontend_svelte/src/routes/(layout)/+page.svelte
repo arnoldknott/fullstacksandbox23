@@ -32,5 +32,9 @@
 			Now committing the bug fix directly to main - should not allow debugging, but next push to
 			stage should solve the bug.
 		</li>
+		<li>
+			Starting from dev branch with fix in place. First run with fixed bug - manually transfered it
+			back from main.
+		</li>
 	</ul>
 </div>
