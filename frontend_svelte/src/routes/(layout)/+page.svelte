@@ -20,5 +20,9 @@
 			Repeating the false tagging behavior: changed containerApps.tf, frontend_svelte.yml and this
 			file.
 		</li>
+		<li>
+			Changed the containerApps.tf file to have a comment in it, so that the file is changed and now
+			variables are echoed in the frontend_svelte.yml and backend.yml file.
+		</li>
 	</ul>
 </div>

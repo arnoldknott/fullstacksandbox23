@@ -18,7 +18,8 @@ on:
 env:
   REGISTRY: ghcr.io
   # COMMIT_SHA: ${{ github.event.after }}
-  COMMIT_SHA: ${{ github.sha }}
+  # COMMIT_SHA: ${{ github.sha }}
+  COMMIT_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
   FILESHARE_APPDATA_MIGRATIONS_PATH: migrations/stage_prod
 
 jobs:
@@ -188,6 +189,24 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
+      - name: echos github variables
+        run: |
+          echo "=== github.ref ==="
+          echo ${{ github.ref }}
+          echo "=== github.ref_type ==="
+          echo ${{ github.ref_type }}
+          echo "=== github.event.workflow_run.head_sha ==="
+          echo ${{ github.event.workflow_run.head_sha }}
+          echo "=== github.event_name ==="
+          echo ${{ github.event_name }}
+          echo "=== github.sha ==="
+          echo ${{ github.sha }}
+          echo "=== github.event ==="
+          echo ${{ toJson(github.event) }}
+          echo "=== github.event.after ==="
+          echo ${{ github.event.after }}
+          echo "=== Environment variable: COMMIT_SHA ==="
+          echo $COMMIT_SHA
       - name: Check for infrastructure changes
         id: check_for_infrastructure_change
         # replace --exit-code with --quite for less output on console if necessary!
