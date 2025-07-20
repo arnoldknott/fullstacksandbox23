@@ -20,6 +20,11 @@ resource "azurerm_container_app_environment" "ContainerEnvironment" {
 }
 
 # Comments for debugging the creation of build of container with latest commit_sha from main, even though no workflow run in main:
+# first was trying to repeat the bug - it did tag the container with the latest commit sha from main!
+# now, the echoing of the variables should be in place after frontend-yml file reached main
+# toJson in github action broke the debugging chain.
+# But with the output already existing in backend.yml, the wrong tagging should be solved now.
+# Now committing the bug fix directly to main - should not allow debugging, but next push to stage should solve the bug.
 
 # resource "azurerm_container_app_environment_storage" "postgresDataConnect" {
 #   name                         = "${var.project_short_name}-postgresdataconnect-${terraform.workspace}"
