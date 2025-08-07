@@ -2,7 +2,6 @@ import uuid
 from pprint import pprint
 
 import pytest
-from fastapi import HTTPException
 
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import (
