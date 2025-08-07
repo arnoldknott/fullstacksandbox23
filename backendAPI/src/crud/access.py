@@ -496,31 +496,10 @@ class AccessPolicyCRUD:
         access_policy: AccessPolicyUpdate,
     ) -> AccessPolicyRead:
         """Deletes an existing policy if exists already and creates a new access control policy."""
-        # reuses delete and create methods
 
         try:
-            # TBD: should the attribute public be a part of the update?
-            # => yes, needs to, because it's a mandatory part of the AccessPolicyCreate,
-            # which AccessPolicyUpdate inherits from!
             # TBD: add business logic: can last owner delete it's owner rights?
-            # => no, there needs to be another owner left - should be handled in delete!
-            # if hasattr(access_policy, "action") and access_policy.action is not None:
-            #     old_policy = AccessPolicy(
-            #         resource_id=access_policy.resource_id,
-            #         identity_id=access_policy.identity_id,
-            #         action=access_policy.action,
-            #         public=access_policy.public,
-            #     )
-            #     await self.delete(current_user, old_policy)
-            # new_policy = AccessPolicyCreate(
-            #     resource_id=access_policy.resource_id,
-            #     identity_id=access_policy.identity_id,
-            #     action=access_policy.new_action,
-            #     public=access_policy.public,
-            # )
-            # return await self.create(new_policy, current_user)
-
-            # Refactor into a real update - not the delete and create method:
+            # => no, there needs to be another owner left, so last downgrade from owner should not be accepted.
             updated_policy = None
             # Creates a new policy if action not provided but new_action is provided.
             if not hasattr(access_policy, "action"):
