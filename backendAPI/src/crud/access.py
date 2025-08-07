@@ -496,29 +496,66 @@ class AccessPolicyCRUD:
         access_policy: AccessPolicyUpdate,
     ) -> AccessPolicyRead:
         """Deletes an existing policy if exists already and creates a new access control policy."""
-        # reuses delete and create methods
 
         try:
-            # TBD: should the attribute public be a part of the update?
-            # => yes, needs to, because it's a mandatory part of the AccessPolicyCreate,
-            # which AccessPolicyUpdate inherits from!
             # TBD: add business logic: can last owner delete it's owner rights?
-            # => no, there needs to be another owner left - should be handled in delete!
-            if hasattr(access_policy, "action") and access_policy.action is not None:
+            # => no, there needs to be another owner left, so last downgrade from owner should not be accepted.
+            updated_policy = None
+            # Creates a new policy if action not provided but new_action is provided.
+            if not hasattr(access_policy, "action"):
+                query = select(AccessPolicy).where(
+                    AccessPolicy.resource_id == access_policy.resource_id
+                )
+                query = self.filters_allowed(query, own, current_user=current_user)
+                access_check_response = await self.session.exec(query)
+                current_access_policy = access_check_response.unique().all()
+                if not current_access_policy:
+                    logger.info("Access policy not found for update.")
+                    raise HTTPException(
+                        status_code=404, detail="Access policy not found."
+                    )
+                new_policy = AccessPolicyCreate(
+                    resource_id=access_policy.resource_id,
+                    identity_id=access_policy.identity_id,
+                    action=access_policy.new_action,
+                    public=access_policy.public,
+                )
+                updated_policy = await self.create(new_policy, current_user)
+            else:
                 old_policy = AccessPolicy(
                     resource_id=access_policy.resource_id,
                     identity_id=access_policy.identity_id,
                     action=access_policy.action,
                     public=access_policy.public,
                 )
+                query = select(AccessPolicy).where(
+                    AccessPolicy.resource_id == old_policy.resource_id,
+                    AccessPolicy.identity_id == old_policy.identity_id,
+                    AccessPolicy.action == old_policy.action,
+                    AccessPolicy.public == old_policy.public,
+                )
+                query = self.filters_allowed(query, own, current_user=current_user)
+                access_check_response = await self.session.exec(query)
+                current_access_policy = access_check_response.unique().one()
+                if not current_access_policy:
+                    logger.info("Access policy not found for update.")
+                    raise HTTPException(
+                        status_code=404, detail="Access policy not found."
+                    )
+
                 await self.delete(current_user, old_policy)
-            new_policy = AccessPolicyCreate(
-                resource_id=access_policy.resource_id,
-                identity_id=access_policy.identity_id,
-                action=access_policy.new_action,
-                public=access_policy.public,
-            )
-            return await self.create(new_policy, current_user)
+                new_policy = AccessPolicy(
+                    id=current_access_policy.id,  # keep the id of the old policy
+                    resource_id=access_policy.resource_id,
+                    identity_id=access_policy.identity_id,
+                    action=access_policy.new_action,
+                    public=access_policy.public,
+                )
+                self.session.add(new_policy)
+                await self.session.commit()
+                await self.session.refresh(new_policy)
+                updated_policy = new_policy
+            return updated_policy
 
         except Exception as e:
             logger.error(f"Error in updating policy: {e}")

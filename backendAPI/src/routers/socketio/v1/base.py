@@ -530,6 +530,8 @@ class BaseNamespace(socketio.AsyncNamespace):
                 )
                 # print("=== socketio - UPDATE - access_policy ===", flush=True)
         except Exception as error:
+            print("=== socketio - share - access_policy ===")
+            print(access_policy, flush=True)
             logger.error(f"🧦 Failed update access attempted from client {sid}.")
             print(error, flush=True)
             await self._emit_status(sid, {"error": str(error)})

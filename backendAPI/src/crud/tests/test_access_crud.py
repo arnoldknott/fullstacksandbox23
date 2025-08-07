@@ -512,7 +512,7 @@ async def test_admin_changes_access_policy_from_write_to_own(
         )
 
     assert int(updated_policy.id)
-    assert int(updated_policy.id) != policies[2].id
+    assert int(updated_policy.id) == policies[2].id
     assert updated_policy.identity_id == policies[2].identity_id
     assert updated_policy.resource_id == policies[2].resource_id
     assert updated_policy.action == Action.own
@@ -557,7 +557,7 @@ async def test_owner_user_changes_access_policy_from_write_to_own(
         )
 
     assert int(updated_policy.id)
-    assert int(updated_policy.id) != policies[2].id
+    assert int(updated_policy.id) == policies[2].id
     assert updated_policy.identity_id == policies[2].identity_id
     assert updated_policy.resource_id == policies[2].resource_id
     assert updated_policy.action == Action.own
@@ -616,6 +616,31 @@ async def test_owner_user_creates_new_access_policy_through_update(
         )
 
     assert created_policy == read_policy[0]
+
+
+@pytest.mark.anyio
+async def test_user_fails_to_create_new_access_policy_through_update_missing_access(
+    register_many_resources,
+    register_many_current_users,
+):
+    """Test updating an access policy."""
+    register_many_resources
+    register_many_current_users
+    create_policy = AccessPolicyUpdate(
+        identity_id=identity_id_user2, resource_id=resource_id2, new_action=Action.write
+    )
+    del create_policy.action
+    try:
+        async with AccessPolicyCRUD() as policy_crud:
+            await policy_crud.update(
+                access_policy=create_policy,
+                current_user=CurrentUserData(**current_user_data_user1),
+            )
+    except Exception as err:
+        assert err.status_code == 404
+        assert str(err.detail) == "Access policy not found."
+    else:
+        pytest.fail("No HTTPexception raised!")
 
 
 @pytest.mark.anyio

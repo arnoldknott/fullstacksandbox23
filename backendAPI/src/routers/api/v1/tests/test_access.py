@@ -1974,7 +1974,7 @@ async def test_admin_puts_access_policy(
 
     assert response.status_code == 200
 
-    assert payload["id"] != policies_in_database[2].id
+    assert payload["id"] == policies_in_database[2].id
     assert payload["resource_id"] == update_policy["resource_id"]
     assert payload["resource_id"] == many_test_policies[2]["resource_id"]
     assert payload["identity_id"] == update_policy["identity_id"]
@@ -2025,7 +2025,7 @@ async def test_user_with_owner_rights_puts_access_policy(
 
     assert response.status_code == 200
 
-    assert payload["id"] != policies_in_database[2].id
+    assert payload["id"] == policies_in_database[2].id
     assert payload["resource_id"] == update_policy["resource_id"]
     assert payload["resource_id"] == many_test_policies[2]["resource_id"]
     assert payload["identity_id"] == update_policy["identity_id"]
