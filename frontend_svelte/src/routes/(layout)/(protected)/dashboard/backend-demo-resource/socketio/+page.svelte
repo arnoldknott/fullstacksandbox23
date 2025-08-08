@@ -347,7 +347,7 @@
 					<IdentityAccordion
 						title={microsoftTeam.displayName || 'Unknown Team'}
 						id={microsoftTeam.id || Math.random().toString(36).substring(2, 9)}
-						open={false}
+						active={false}
 					>
 						<div class="bg-success-container mb-2 rounded-xl p-2">
 							<p class="title-small text-success-container-content p-2">
