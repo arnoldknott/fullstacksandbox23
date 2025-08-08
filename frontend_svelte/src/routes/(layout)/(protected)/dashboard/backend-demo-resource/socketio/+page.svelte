@@ -112,7 +112,9 @@
 				} else if (data.success === 'shared') {
 					socketio.client.emit('read', data.id);
 				} else if (data.success === 'unshared') {
-					socketio.client.emit('read', data.id);
+					// TBD: consider not to emit read, but to remove the resource from the list!
+					// socketio.client.emit('read', data.id);
+					demoResources = demoResources.filter((res) => res.id !== data.id);
 				}
 			}
 		});
@@ -152,10 +154,12 @@
 	};
 
 	const share = (accessPolicy: AccessPolicy) => {
-		console.log(
-			'=== dashboard - backend-demo-resource - socketio - +page.svelte - share accessPolicy ==='
-		);
-		console.log(accessPolicy);
+		if (debug) {
+			console.log(
+				'=== dashboard - backend-demo-resource - socketio - +page.svelte - share accessPolicy ==='
+			);
+			console.log(accessPolicy);
+		}
 		socketio.client.emit('share', accessPolicy);
 	};
 
