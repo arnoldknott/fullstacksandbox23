@@ -122,6 +122,7 @@
 		const newResource: DemoResourceExtended = {
 			id: 'new_' + Math.random().toString(36).substring(2, 9),
 			name: '',
+			description: '',
 			access_right: Action.OWN,
 			creation_date: new Date(Date.now())
 		};
