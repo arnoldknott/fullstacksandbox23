@@ -10,7 +10,7 @@ from core.types import IdentityType
 from crud.demo_resource import DemoResourceCRUD
 from models.access import AccessPolicy
 from models.demo_resource import DemoResource, DemoResourceExtended
-from models.identity import Group
+from models.identity import Group, UeberGroup
 from tests.utils import (
     many_test_demo_resources,
     session_id_admin_read,
@@ -1269,3 +1269,181 @@ async def test_user_shares_tries_to_share_resource_without_having_access(
     assert connection.responses("status") == [{"error": "403: Forbidden."}]
 
     assert len(connection.responses("transfer")) == 0
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [
+        [session_id_user1_read_write_socketio_groups],
+        [session_id_user2_read_write_socketio_groups],
+    ],
+    indirect=True,
+)
+async def test_user_downgrades_last_inherited_owner_access(
+    socketio_test_client_demo_resource_namespace,
+    add_test_demo_resources: list[DemoResource],
+    add_many_test_ueber_groups: list[UeberGroup],
+    add_one_parent_child_identity_relationship,
+    add_one_test_access_policy,
+):
+    """Test the demo resource connect event."""
+
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)
+    ueber_groups = await add_many_test_ueber_groups(token_admin_read_write_socketio)
+    connection = await socketio_test_client_demo_resource_namespace()
+
+    current_user = await connection.current_user()
+    # Add current_user to UeberGroup
+    await add_one_parent_child_identity_relationship(
+        current_user.user_id,
+        ueber_groups[0].id,
+        IdentityType.user,
+        inherit=True,
+    )
+    # Add owner access policy for the resource to the UeberGroup
+    await add_one_test_access_policy(
+        {
+            "resource_id": str(resources[0].id),
+            "identity_id": str(ueber_groups[0].id),  # str(current_user.user_id),
+            "action": "own",
+        }
+    )
+    await connection.connect(query_parameters={"request-access-data": True})
+
+    # Wait for the response to be set
+    await connection.client.sleep(0.3)
+
+    assert len(connection.responses("transfer")) == 1
+    assert connection.responses("transfer")[0]["id"] == str(resources[0].id)
+    assert connection.responses("transfer")[0]["name"] == str(resources[0].name)
+    assert connection.responses("transfer")[0]["language"] == str(resources[0].language)
+    assert connection.responses("transfer")[0]["description"] == str(
+        resources[0].description
+    )
+    assert connection.responses("transfer")[0]["access_right"] == "own"
+    assert len(connection.responses("transfer")[0]["access_policies"]) == 2
+
+    # Downgrade the UeberGroup access to read:
+    await connection.client.emit(
+        "share",
+        {
+            "resource_id": str(resources[0].id),
+            "identity_id": str(ueber_groups[0].id),
+            "action": "own",
+            "new_action": "read",
+        },
+        namespace="/demo-resource",
+    )
+
+    # Wait for the response to be set
+    await connection.client.sleep(0.4)
+
+    assert connection.responses("status")[0] == {
+        "success": "shared",
+        "id": str(resources[0].id),
+    }
+
+    await connection.client.emit(
+        "read", str(resources[0].id), namespace="/demo-resource"
+    )
+
+    # Wait for the response to be set
+    await connection.client.sleep(0.4)
+
+    assert len(connection.responses("transfer")) == 2
+    assert connection.responses("transfer")[1]["id"] == str(resources[0].id)
+    assert connection.responses("transfer")[1]["name"] == str(resources[0].name)
+    assert connection.responses("transfer")[1]["language"] == str(resources[0].language)
+    assert connection.responses("transfer")[1]["description"] == str(
+        resources[0].description
+    )
+    assert connection.responses("transfer")[1]["access_right"] == "read"
+    assert connection.responses("transfer")[1]["access_policies"] is None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [
+        [session_id_user1_read_write_socketio_groups],
+        [session_id_user2_read_write_socketio_groups],
+    ],
+    indirect=True,
+)
+async def test_user_removes_last_inherited_owner_access(
+    socketio_test_client_demo_resource_namespace,
+    add_test_demo_resources: list[DemoResource],
+    add_many_test_ueber_groups: list[UeberGroup],
+    add_one_parent_child_identity_relationship,
+    add_one_test_access_policy,
+):
+    """Test the demo resource connect event."""
+
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)
+    ueber_groups = await add_many_test_ueber_groups(token_admin_read_write_socketio)
+    connection = await socketio_test_client_demo_resource_namespace()
+
+    current_user = await connection.current_user()
+    # Add current_user to UeberGroup
+    await add_one_parent_child_identity_relationship(
+        current_user.user_id,
+        ueber_groups[0].id,
+        IdentityType.user,
+        inherit=True,
+    )
+    # Add owner access policy for the resource to the UeberGroup
+    await add_one_test_access_policy(
+        {
+            "resource_id": str(resources[0].id),
+            "identity_id": str(ueber_groups[0].id),  # str(current_user.user_id),
+            "action": "own",
+        }
+    )
+    await connection.connect(query_parameters={"request-access-data": True})
+
+    # Wait for the response to be set
+    await connection.client.sleep(0.3)
+
+    assert len(connection.responses("transfer")) == 1
+    assert connection.responses("transfer")[0]["id"] == str(resources[0].id)
+    assert connection.responses("transfer")[0]["name"] == str(resources[0].name)
+    assert connection.responses("transfer")[0]["language"] == str(resources[0].language)
+    assert connection.responses("transfer")[0]["description"] == str(
+        resources[0].description
+    )
+    assert connection.responses("transfer")[0]["access_right"] == "own"
+    assert len(connection.responses("transfer")[0]["access_policies"]) == 2
+
+    # Downgrade the UeberGroup access to read:
+    await connection.client.emit(
+        "share",
+        {
+            "resource_id": str(resources[0].id),
+            "identity_id": str(ueber_groups[0].id),
+        },
+        namespace="/demo-resource",
+    )
+
+    # Wait for the response to be set
+    await connection.client.sleep(0.3)
+
+    assert connection.responses("status") == [
+        {"success": "unshared", "id": str(resources[0].id)}
+    ]
+
+    await connection.client.emit(
+        "read", str(resources[0].id), namespace="/demo-resource"
+    )
+
+    # Wait for the response to be set
+    await connection.client.sleep(0.3)
+
+    assert connection.responses("status")[1] == {
+        "success": "deleted",
+        "id": str(resources[0].id),
+    }
+    assert connection.responses("status")[2] == {
+        "error": f"Resource {str(resources[0].id)} not found."
+    }
+    assert len(connection.responses("transfer")) == 1

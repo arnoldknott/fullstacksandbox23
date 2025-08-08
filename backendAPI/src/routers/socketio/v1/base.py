@@ -343,11 +343,11 @@ class BaseNamespace(socketio.AsyncNamespace):
                     namespace=self.namespace,
                     to=sid,
                 )
-                await self.server.enter_room(
-                    sid,
-                    f"resource:{str(database_object.id)}",
-                    namespace=self.namespace,
-                )
+                # await self.server.enter_room(
+                #     sid,
+                #     f"resource:{str(database_object.id)}",
+                #     namespace=self.namespace,
+                # )
         except Exception as error:
             logger.error(f"🧦 Failed to read data from client {sid}.")
             print(error)
@@ -493,6 +493,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 access_policy = AccessPolicyDelete(**access_policy)
                 async with AccessPolicyCRUD() as crud:
                     await crud.delete(current_user, access_policy)
+                    # print("=== socketio - DELETE - access_policy ===", flush=True)
                     await self._emit_status(
                         sid,
                         {"success": "unshared", "id": str(access_policy.resource_id)},
@@ -507,6 +508,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 access_policy = AccessPolicyCreate(**access_policy)
                 async with AccessPolicyCRUD() as crud:
                     await crud.create(access_policy, current_user)
+                # print("=== socketio - CREATE - access_policy ===", flush=True)
                 await self._emit_status(
                     sid,
                     {
@@ -520,6 +522,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 access_policy = AccessPolicyUpdate(**access_policy)
                 async with AccessPolicyCRUD() as crud:
                     await crud.update(current_user, access_policy)
+                # print("=== socketio - UPDATE - access_policy ===", flush=True)
                 await self._emit_status(
                     sid,
                     {
