@@ -112,7 +112,9 @@
 				} else if (data.success === 'shared') {
 					socketio.client.emit('read', data.id);
 				} else if (data.success === 'unshared') {
-					socketio.client.emit('read', data.id);
+					// TBD: consider not to emit read, but to remove the resource from the list!
+					// socketio.client.emit('read', data.id);
+					demoResources = demoResources.filter((res) => res.id !== data.id);
 				}
 			}
 		});
@@ -122,6 +124,7 @@
 		const newResource: DemoResourceExtended = {
 			id: 'new_' + Math.random().toString(36).substring(2, 9),
 			name: '',
+			description: '',
 			access_right: Action.OWN,
 			creation_date: new Date(Date.now())
 		};
@@ -151,10 +154,12 @@
 	};
 
 	const share = (accessPolicy: AccessPolicy) => {
-		console.log(
-			'=== dashboard - backend-demo-resource - socketio - +page.svelte - share accessPolicy ==='
-		);
-		console.log(accessPolicy);
+		if (debug) {
+			console.log(
+				'=== dashboard - backend-demo-resource - socketio - +page.svelte - share accessPolicy ==='
+			);
+			console.log(accessPolicy);
+		}
 		socketio.client.emit('share', accessPolicy);
 	};
 
@@ -342,7 +347,7 @@
 					<IdentityAccordion
 						title={microsoftTeam.displayName || 'Unknown Team'}
 						id={microsoftTeam.id || Math.random().toString(36).substring(2, 9)}
-						open={false}
+						active={false}
 					>
 						<div class="bg-success-container mb-2 rounded-xl p-2">
 							<p class="title-small text-success-container-content p-2">

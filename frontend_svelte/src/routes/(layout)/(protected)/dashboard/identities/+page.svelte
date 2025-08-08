@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 
+	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import IdentityAccordion from './IdentityAccordion.svelte';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
@@ -10,6 +11,21 @@
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
+	let azureAccountLink = $state({
+		azure_user_id: data.session?.currentUser?.azure_user_id,
+		azure_tenant_id: data.session?.currentUser?.azure_tenant_id,
+		azure_grous: data.session?.currentUser?.azure_groups,
+		azure_token_roles: data.session?.currentUser?.azure_token_roles,
+		azure_token_groups: data.session?.currentUser?.azure_token_groups
+	});
+	let memberships = $state({
+		ueber_groups: data.session?.currentUser?.ueber_groups,
+		groups: data.session?.currentUser?.groups,
+		sub_groups: data.session?.currentUser?.sub_groups,
+		sub_sub_groups: data.session?.currentUser?.sub_sub_groups
+	});
+	let userAccount = $state(data.session?.currentUser?.user_account);
+	let userProfile = $state(data.session?.currentUser?.user_profile);
 	$effect(() => {
 		if (debug) {
 			goto(`?debug=true`, { replaceState: true });
@@ -26,26 +42,60 @@
 	</div>
 </div>
 
-<div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
-	{#if data.session?.currentUser}
+<Heading>My user data in this app</Heading>
+
+<div
+	class="accordion accordion-bordered bg-primary-container text-primary-container-content mb-5"
+	data-accordion-always-open=""
+>
+	{#if azureAccountLink.azure_user_id}
 		<IdentityAccordion
-			title="My user Profile in this app"
-			id={data.session.currentUser.id}
-			open={false}
+			title="Azure Account Link"
+			id={azureAccountLink.azure_user_id}
+			active={false}
 		>
-			<JsonData data={data.session?.currentUser} />
+			<JsonData data={azureAccountLink} />
 		</IdentityAccordion>
 	{/if}
 
-	<div>
-		<div class="title-large m-2">
-			Microsoft Teams associated with this fullstack sandbox application
-		</div>
-		<div class="title-small m-2">
-			that {data.session?.microsoftProfile?.displayName || 'current user'} is a member of:
-		</div>
-	</div>
+	{#if data.session?.currentUser}
+		<IdentityAccordion
+			title="Group memberships"
+			id={`${data.session?.currentUser?.id}-memberships`}
+			active={false}
+		>
+			<JsonData data={memberships} />
+		</IdentityAccordion>
+	{/if}
 
+	{#if userAccount}
+		<IdentityAccordion title="User Account" id={userAccount.id} active={false}>
+			<JsonData data={userAccount} />
+		</IdentityAccordion>
+	{/if}
+
+	{#if userProfile}
+		<IdentityAccordion title="User Profile" id={userProfile.id} active={false}>
+			<JsonData data={userProfile} />
+		</IdentityAccordion>
+	{/if}
+
+	{#if data.session?.currentUser}
+		<IdentityAccordion title="All data" id={data.session?.currentUser?.id} active={false}>
+			<JsonData data={data.session?.currentUser} />
+		</IdentityAccordion>
+	{/if}
+</div>
+
+<Heading>Microsoft Teams</Heading>
+<p>
+	associated with this fullstack sandbox application, that {data.session?.microsoftProfile
+		?.displayName || 'current user'} is a member of:
+</p>
+<div
+	class="accordion accordion-bordered bg-primary-container text-primary-container-content mb-5"
+	data-accordion-always-open=""
+>
 	{#if data.microsoftTeams.length === 0}
 		<div class="alert alert-warning label-large text-center" role="alert">
 			No Microsoft Teams found for this user.
@@ -74,87 +124,87 @@
 			{/if}
 		</IdentityAccordion>
 	{/each}
+</div>
 
-	<div class="flex w-full flex-row">
-		<div class="grow">
-			<div class="title-large m-2">
-				Ueber-Groups associated with this fullstack sandbox application,
-			</div>
-			<div class="title-small m-2">
-				that {data.session?.microsoftProfile?.displayName || 'current user'} is a member of:
-			</div>
-		</div>
-		{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
-			<button
-				class="btn-warning-container btn shadow-outline mr-2 self-center shadow-md"
-				aria-haspopup="dialog"
-				aria-expanded="false"
-				aria-controls="add-element-modal"
-				aria-label="Create Ueber Group"
-				data-overlay="#add-ueber-group-modal"
-			>
-				<span class="icon-[material-symbols--edit-outline-rounded]"></span> Create Ueber Group
-			</button>
+<Heading>Ueber-Groups</Heading>
+<div class="my-5 flex flex-row justify-between">
+	<p>
+		that {data.session?.microsoftProfile?.displayName || 'current user'} is a member of:
+	</p>
+	{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
+		<button
+			class="btn-warning-container btn shadow-outline mr-2 self-center shadow-md"
+			aria-haspopup="dialog"
+			aria-expanded="false"
+			aria-controls="add-element-modal"
+			aria-label="Create Ueber Group"
+			data-overlay="#add-ueber-group-modal"
+		>
+			<span class="icon-[material-symbols--edit-outline-rounded]"></span> Create Ueber Group
+		</button>
 
-			<div
-				id="add-ueber-group-modal"
-				class="overlay modal modal-middle overlay-open:opacity-100 hidden"
-				role="dialog"
-				tabindex="-1"
-			>
-				<div class="modal-dialog overlay-open:opacity-100">
-					<div class="modal-content bg-base-300 shadow-outline shadow">
-						<div class="modal-header">
-							<h3 class="modal-title">Add new Ueber Group</h3>
-							<button
-								type="button"
-								class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
-								aria-label="Close"
-								data-overlay="#add-ueber-group-modal"
-							>
-								<span class="icon-[tabler--x] size-4"></span>
-							</button>
-						</div>
-						<div class="modal-body">
-							<div class="w-full overflow-x-auto">
-								<div class="input-filled input-base-content mb-2 w-fit grow">
-									<input
-										type="text"
-										placeholder="Name the demo resource"
-										class="input input-sm md:input-md shadow-shadow shadow-inner"
-										id="name_id_new_element"
-										name="name"
-									/>
-									<label class="input-filled-label" for="name_id_new_element">Name</label>
-								</div>
-								<div class="textarea-filled textarea-base-content w-full">
-									<textarea
-										class="textarea shadow-shadow shadow-inner"
-										placeholder="Describe the demo resource here."
-										id="description_id_new_element"
-										name="description"
-									>
-									</textarea>
-									<label class="textarea-filled-label" for="description_id_new_element">
-										Description
-									</label>
-								</div>
+		<div
+			id="add-ueber-group-modal"
+			class="overlay modal modal-middle overlay-open:opacity-100 hidden"
+			role="dialog"
+			tabindex="-1"
+		>
+			<div class="modal-dialog overlay-open:opacity-100">
+				<div class="modal-content bg-base-300 shadow-outline shadow">
+					<div class="modal-header">
+						<h3 class="modal-title">Add new Ueber Group</h3>
+						<button
+							type="button"
+							class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+							aria-label="Close"
+							data-overlay="#add-ueber-group-modal"
+						>
+							<span class="icon-[tabler--x] size-4"></span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="w-full overflow-x-auto">
+							<div class="input-filled input-base-content mb-2 w-fit grow">
+								<input
+									type="text"
+									placeholder="Name the demo resource"
+									class="input input-sm md:input-md shadow-shadow shadow-inner"
+									id="name_id_new_element"
+									name="name"
+								/>
+								<label class="input-filled-label" for="name_id_new_element">Name</label>
+							</div>
+							<div class="textarea-filled textarea-base-content w-full">
+								<textarea
+									class="textarea shadow-shadow shadow-inner"
+									placeholder="Describe the demo resource here."
+									id="description_id_new_element"
+									name="description"
+								>
+								</textarea>
+								<label class="textarea-filled-label" for="description_id_new_element">
+									Description
+								</label>
 							</div>
 						</div>
-						<div class="modal-footer">
-							<button
-								class="btn-warning-container btn btn-circle btn-gradient"
-								aria-label="Send Icon Button"
-							>
-								<span class="icon-[tabler--send-2]"></span>
-							</button>
-						</div>
+					</div>
+					<div class="modal-footer">
+						<button
+							class="btn-warning-container btn btn-circle btn-gradient"
+							aria-label="Send Icon Button"
+						>
+							<span class="icon-[tabler--send-2]"></span>
+						</button>
 					</div>
 				</div>
 			</div>
-		{/if}
-	</div>
-
+		</div>
+	{/if}
+</div>
+<div
+	class="accordion accordion-bordered bg-primary-container text-primary-container-content"
+	data-accordion-always-open=""
+>
 	{#if data.ueberGroups.length === 0}
 		<div class="alert alert-warning label-large text-center" role="alert">
 			No Ueber-Groups found for this user.
