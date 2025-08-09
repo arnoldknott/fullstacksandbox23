@@ -367,7 +367,7 @@ async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
     await connection.client.emit("submit", test_resource, namespace="/demo-resource")
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
     status_data = connection.responses("status")
 
     # assert "id" in status[0]
@@ -824,6 +824,8 @@ async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_a
 #   ✔︎ user has access to resource: success & transfer data
 #   ✔︎ user does not have access to resource: error
 # ✔︎ user tries to share a resource, that the user does not own: error
+# ✔︎ user downgrades last inherited owner access
+# ✔︎ user removes last inherited owner access and consecutive read fails
 
 
 @pytest.mark.anyio

@@ -19,14 +19,6 @@ from models.access import AccessPolicyCreate, AccessPolicyDelete, AccessPolicyUp
 logger = logging.getLogger(__name__)
 
 
-class SocketIoSessionData(BaseModel):
-    """Data stored in the socket.io session."""
-
-    user_name: str
-    current_user: CurrentUserData
-    session_id: str  # That's the Redis session-id, not the socket.io session-id (sid)
-
-
 socketio_server = socketio.AsyncServer(
     async_mode="asgi",
     cors_allowed_origins=[],  # disable CORS in Socket.IO, as FastAPI handles CORS!
@@ -71,6 +63,14 @@ async def catch_all(event, sid, data):
 
 
 BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=SQLModel)
+
+
+class SocketIoSessionData(BaseModel):
+    """Data stored in the socket.io session."""
+
+    user_name: str
+    current_user: CurrentUserData
+    session_id: str  # That's the Redis session-id, not the socket.io session-id (sid)
 
 
 class BaseNamespace(socketio.AsyncNamespace):
@@ -388,6 +388,8 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object = await crud.update(
                                 current_user, resource_id, object_update
                             )
+                            # transfer after update is necessary for other clients,
+                            # which are in the same room of this resource_id to get the updated data
                             await self.server.emit(
                                 "transfer",
                                 database_object.model_dump(mode="json"),

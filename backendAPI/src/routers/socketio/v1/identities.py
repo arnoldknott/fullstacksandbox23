@@ -1,4 +1,4 @@
-from core.types import GuardTypes
+from core.types import EventGuard, GuardTypes
 from crud.identity import (  # UserCRUD,; GroupCRUD,; SubGroupCRUD,; SubSubGroupCRUD,
     UeberGroupCRUD,
 )
@@ -12,13 +12,37 @@ from models.identity import (  # UserCreate,; UserRead,; UserExtended,; UserUpda
 from .base import BaseNamespace
 
 
+ueber_group_guards = [
+    EventGuard(
+        event="connect",
+        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+    ),
+    EventGuard(
+        event="submit:create",
+        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["Admin"]),
+    ),
+    EventGuard(
+        event="submit:update",
+        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+    ),
+    EventGuard(
+        event="delete",
+        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["Admin"]),
+    ),
+    EventGuard(
+        event="share",
+        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+    ),
+]
+
+
 class UeberGroupNamespace(BaseNamespace):
     """Socket.IO interface for Ueber Groups."""
 
-    def __init__(self, namespace=None):
+    def __init__(self):
         super().__init__(
-            namespace=namespace,
-            guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+            namespace="/ueber-group",
+            event_guards=ueber_group_guards,
             crud=UeberGroupCRUD,
             create_model=UeberGroupCreate,
             read_model=UeberGroupRead,
@@ -33,4 +57,4 @@ class UeberGroupNamespace(BaseNamespace):
         await self._get_all(sid, *args, **kwargs)
 
 
-ueber_group_router = UeberGroupNamespace("/ueber-group")
+ueber_group_router = UeberGroupNamespace()
