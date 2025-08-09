@@ -10,12 +10,11 @@ logger = logging.getLogger(__name__)
 class PublicNamespace(BaseNamespace):
     """Protected class for socket.io namespaces."""
 
-    def __init__(self, namespace=None):
+    def __init__(self):
         super().__init__(
-            namespace=namespace,
+            namespace="/public-namespace",
             crud=PublicResourceCRUD,
         )
-        self.namespace = namespace
 
     async def on_public_message(self, sid, data):
         """Public message event for public socket.io namespace."""
@@ -27,4 +26,4 @@ class PublicNamespace(BaseNamespace):
         )
 
 
-public_namespace_router = PublicNamespace("/public-namespace")
+public_namespace_router = PublicNamespace()
