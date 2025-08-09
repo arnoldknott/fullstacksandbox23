@@ -376,7 +376,6 @@ class BaseCRUD(
 
         return hierarchy
 
-    # TBD: implement tests for this!
     async def reorder_children(
         self,
         parent_id: uuid.UUID,
