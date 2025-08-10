@@ -5,6 +5,7 @@ from tests.utils import (
     session_id_user1_read_write_socketio,
     session_id_user2_read_write_socketio,
     many_test_azure_users,
+    many_test_groups,
 )
 
 # Nomenclature:
@@ -341,7 +342,7 @@ async def test_deletes_user_where_being_owner_fails(
 
 
 # Ueber Group Namespace Tests:
-# ✔︎ Admin connects, creates, updates, and deletes ueber group
+# ✔︎ Admin connects, creates, updates, and deletes an ueber group
 # ✔︎ Admin gets all existing ueber groups on connnect
 # ✔︎ User fails to create ueber group
 # ✔︎ User succeeds to update ueber group, where user is owner
@@ -571,3 +572,88 @@ async def test_deletes_ueber_group_where_being_owner_fails(
     await connection_user.client.sleep(0.3)
     assert connection_user.responses("status")[0]["error"] == "401: Invalid token."
     assert len(connection_user.responses("transfer")) == 1
+
+
+# Group Namespace Tests:
+# ✔︎ user connects, creates, updates, and deletes a group
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [[session_id_user1_read_write_socketio]],
+    indirect=True,
+)
+async def test_connect_create_read_update_delete_group(
+    socketio_test_client,
+):
+    """Test admin access to connect, create, update, and delete events in the user namespace."""
+
+    client_config = [
+        {
+            "namespace": "/group",
+            "events": [
+                "transfer",
+                "deleted",
+                "status",
+            ],
+        }
+    ]
+    connection = await socketio_test_client(client_config)
+    # Connect to the user namespace:
+    await connection.connect()
+    await connection.client.sleep(0.5)
+    assert len(connection.responses("transfer")) == 0
+
+    # Create group:
+    test_group = many_test_groups[1]
+    await connection.client.emit("submit", test_group, namespace="/group")
+    await connection.client.sleep(0.5)
+    # Check if the user was created successfully:
+    assert connection.responses("status")[0]["success"] == "created"
+    assert "id" in connection.responses("status")[0]
+    created_group_id = connection.responses("status")[0]["id"]
+    assert len(connection.responses("transfer")) == 0
+
+    # Read:
+    await connection.client.emit("read", created_group_id, namespace="/group")
+    await connection.client.sleep(0.3)
+    assert len(connection.responses("transfer")) == 1
+    assert connection.responses("transfer")[0]["id"] == created_group_id
+    assert connection.responses("transfer")[0]["name"] == test_group["name"]
+    assert (
+        connection.responses("transfer")[0]["description"] == test_group["description"]
+    )
+
+    # Update group:
+    updated_group = {
+        **test_group,
+        "id": created_group_id,
+        "description": "Updated description",
+    }
+    await connection.client.emit("submit", updated_group, namespace="/group")
+    await connection.client.sleep(0.3)
+    assert connection.responses("status")[1]["success"] == "updated"
+    assert connection.responses("status")[1]["id"] == created_group_id
+    assert len(connection.responses("transfer")) == 2
+    assert connection.responses("transfer")[1]["id"] == created_group_id
+    assert connection.responses("transfer")[1]["name"] == test_group["name"]
+    assert connection.responses("transfer")[1]["description"] == "Updated description"
+
+    # Delete group:
+    await connection.client.emit("delete", created_group_id, namespace="/group")
+    await connection.client.sleep(0.3)
+    assert connection.responses("status")[2]["success"] == "deleted"
+    assert connection.responses("status")[2]["id"] == created_group_id
+    assert connection.responses("deleted")[0] == created_group_id
+
+    # Read deleted group fails:
+    await connection.client.emit("read", created_group_id, namespace="/group")
+    await connection.client.sleep(1)
+    assert len(connection.responses("transfer")) == 2
+    assert connection.responses("status")[3]["success"] == "deleted"
+    assert connection.responses("status")[3]["id"] == created_group_id
+    assert (
+        connection.responses("status")[4]["error"]
+        == f"Resource {created_group_id} not found."
+    )
