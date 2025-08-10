@@ -117,6 +117,9 @@
 					// Re-read to see, if there is still access to the resource any other way.
 					// If that fails, remove it from the list
 					// rerun check on access policies for this resource after removing the unshared policy:
+					// TBD: reload all access for the resource,
+					// as other users access_policies are still part of the resource, e.g. admin, that created it.
+					// however that does not give the current user access any more!
 					demoResources = demoResources.map((res) => {
 						if (res.id === data.resource_id) {
 							res.access_policies = res.access_policies?.filter(
@@ -161,7 +164,7 @@
 			editIds.delete(demoResource.id);
 			editIds = new Set(editIds); // trigger reactivity
 		}
-		socketio.client.emit('submit', demoResource);
+		socketio.client.emit('submit', { payload: demoResource });
 	};
 
 	const share = (accessPolicy: AccessPolicy) => {

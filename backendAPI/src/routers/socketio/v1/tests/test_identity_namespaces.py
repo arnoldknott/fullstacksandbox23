@@ -4,6 +4,7 @@ from tests.utils import (
     session_id_admin_read_write_socketio,
     session_id_user1_read_write_socketio,
     session_id_user2_read_write_socketio,
+    token_user1_read_write_socketio,
     many_test_azure_users,
     many_test_groups,
 )
@@ -40,17 +41,20 @@ async def test_admin_access_user_connect_create_read_update_delete(
 
     # Create user:
     test_user = many_test_azure_users[1]
-    await connection.client.emit("submit", test_user, namespace="/user")
+    await connection.client.emit("submit", {"payload": test_user}, namespace="/user")
     await connection.client.sleep(0.5)
     # Check if the user was created successfully:
     assert connection.responses("status")[0]["success"] == "created"
     assert "id" in connection.responses("status")[0]
     created_user_id = connection.responses("status")[0]["id"]
+    # Admin automatically gets a shared notification:
+    assert connection.responses("status")[1]["success"] == "shared"
+    assert connection.responses("status")[1]["id"] == created_user_id
     assert len(connection.responses("transfer")) == 0
 
     # Read:
     await connection.client.emit("read", created_user_id, namespace="/user")
-    await connection.client.sleep(1.2)
+    await connection.client.sleep(1.3)
     assert len(connection.responses("transfer")) == 1
     assert connection.responses("transfer")[0]["id"] == created_user_id
     assert (
@@ -68,10 +72,10 @@ async def test_admin_access_user_connect_create_read_update_delete(
         "id": created_user_id,
         "is_active": False,
     }
-    await connection.client.emit("submit", updated_user, namespace="/user")
+    await connection.client.emit("submit", {"payload": updated_user}, namespace="/user")
     await connection.client.sleep(0.3)
-    assert connection.responses("status")[1]["success"] == "updated"
-    assert connection.responses("status")[1]["id"] == created_user_id
+    assert connection.responses("status")[2]["success"] == "updated"
+    assert connection.responses("status")[2]["id"] == created_user_id
     assert len(connection.responses("transfer")) == 2
     assert connection.responses("transfer")[1]["id"] == created_user_id
     assert connection.responses("transfer")[1]["is_active"] is False
@@ -79,18 +83,18 @@ async def test_admin_access_user_connect_create_read_update_delete(
     # Delete user:
     await connection.client.emit("delete", created_user_id, namespace="/user")
     await connection.client.sleep(0.3)
-    assert connection.responses("status")[2]["success"] == "deleted"
-    assert connection.responses("status")[2]["id"] == created_user_id
+    assert connection.responses("status")[3]["success"] == "deleted"
+    assert connection.responses("status")[3]["id"] == created_user_id
     assert connection.responses("deleted")[0] == created_user_id
 
     # Read deleted user fails:
     await connection.client.emit("read", created_user_id, namespace="/user")
     await connection.client.sleep(1)
     assert len(connection.responses("transfer")) == 2
-    assert connection.responses("status")[3]["success"] == "deleted"
-    assert connection.responses("status")[3]["id"] == created_user_id
+    assert connection.responses("status")[4]["success"] == "deleted"
+    assert connection.responses("status")[4]["id"] == created_user_id
     assert (
-        connection.responses("status")[4]["error"]
+        connection.responses("status")[5]["error"]
         == f"Resource {created_user_id} not found."
     )
 
@@ -224,7 +228,7 @@ async def test_user_creates_user_fails(
 
     # Create user:
     test_user = {}
-    await connection.client.emit("submit", test_user, namespace="/user")
+    await connection.client.emit("submit", {"payload": test_user}, namespace="/user")
     await connection.client.sleep(0.3)
     assert connection.responses("status")[0]["error"] == "401: Invalid token."
     assert len(connection.responses("status")) == 1
@@ -239,33 +243,44 @@ async def test_user_creates_user_fails(
 )
 async def test_updates_user_where_being_owner(
     socketio_test_client_user_namespace,
-    add_many_azure_test_users,
     session_ids,
     add_one_test_access_policy,
 ):
     """Test user access to connect, create, update, and delete events in the user namespace."""
     connection_admin = await socketio_test_client_user_namespace()
     connection_user = await socketio_test_client_user_namespace(session_ids[1])
-    many_test_users = await add_many_azure_test_users()
     current_user = await connection_user.current_user()
-    await add_one_test_access_policy(
-        {
-            "resource_id": str(many_test_users[3].id),
-            "identity_id": str(current_user.user_id),
-            "action": "own",
-        }
-    )
     # Connect to the user namespace:
     await connection_admin.connect()
     await connection_user.connect()
     # await connection_user.client.sleep(0.3)
 
+    # Admin creates a user:
+    test_user = many_test_azure_users[1]
+    await connection_admin.client.emit(
+        "submit", {"payload": test_user}, namespace="/user"
+    )
+    await connection_admin.client.sleep(0.3)
+    assert connection_admin.responses("status")[0]["success"] == "created"
+    created_user_id = connection_admin.responses("status")[0]["id"]
+
+    # Admin shares the created user:
+    await add_one_test_access_policy(
+        {
+            "resource_id": str(created_user_id),
+            "identity_id": str(current_user.user_id),
+            "action": "own",
+        }
+    )
+
     # User updates user:
     updated_test_user = {
-        "id": str(many_test_users[3].id),
+        "id": str(created_user_id),
         "is_active": "False",
     }
-    await connection_user.client.emit("submit", updated_test_user, namespace="/user")
+    await connection_user.client.emit(
+        "submit", {"payload": updated_test_user}, namespace="/user"
+    )
     await connection_user.client.sleep(0.3)
     assert connection_user.responses("status")[0]["success"] == "updated"
     assert connection_user.responses("status")[0]["id"] == updated_test_user["id"]
@@ -282,24 +297,33 @@ async def test_updates_user_where_being_owner(
 )
 async def test_updates_user_fails_due_to_missing_ownership(
     socketio_test_client_user_namespace,
-    add_many_azure_test_users,
     session_ids,
 ):
     """Test user access to connect, create, update, and delete events in the user namespace."""
     connection_admin = await socketio_test_client_user_namespace()
     connection_user = await socketio_test_client_user_namespace(session_ids[1])
-    many_test_users = await add_many_azure_test_users()
     # Connect to the user namespace:
     await connection_admin.connect()
     await connection_user.connect()
 
+    # Admin creates a user:
+    test_user = many_test_azure_users[1]
+    await connection_admin.client.emit(
+        "submit", {"payload": test_user}, namespace="/user"
+    )
+    await connection_admin.client.sleep(0.3)
+    assert connection_admin.responses("status")[0]["success"] == "created"
+    created_user_id = connection_admin.responses("status")[0]["id"]
+
     # User updates user:
     updated_test_user = {
-        "id": str(many_test_users[2].id),
+        "id": str(created_user_id),
         "is_active": "False",
     }
-    await connection_user.client.emit("submit", updated_test_user, namespace="/user")
-    await connection_user.client.sleep(0.6)
+    await connection_user.client.emit(
+        "submit", {"payload": updated_test_user}, namespace="/user"
+    )
+    await connection_user.client.sleep(0.3)
     assert connection_user.responses("status")[0]["error"] == "404: User not updated."
     assert connection_user.responses("transfer") == []
 
@@ -368,11 +392,16 @@ async def test_admin_access_ueber_group_connect_create_update_delete(
         "name": "Dummy Ueber Group",
         "description": "A dummy group added via SocketIO.",
     }
-    await connection.client.emit("submit", test_group, namespace="/ueber-group")
+    await connection.client.emit(
+        "submit", {"payload": test_group}, namespace="/ueber-group"
+    )
     await connection.client.sleep(0.3)
     assert connection.responses("status")[0]["success"] == "created"
     assert "id" in connection.responses("status")[0]
     created_uber_group_id = connection.responses("status")[0]["id"]
+    # Admin automatically gets a shared notification:
+    assert connection.responses("status")[1]["success"] == "shared"
+    assert connection.responses("status")[1]["id"] == created_uber_group_id
     assert len(connection.responses("transfer")) == 0
 
     # Update ueber group:
@@ -381,10 +410,12 @@ async def test_admin_access_ueber_group_connect_create_update_delete(
         "description": "Updated description",
         "id": created_uber_group_id,
     }
-    await connection.client.emit("submit", updated_group, namespace="/ueber-group")
+    await connection.client.emit(
+        "submit", {"payload": updated_group}, namespace="/ueber-group"
+    )
     await connection.client.sleep(0.3)
-    assert connection.responses("status")[1]["success"] == "updated"
-    assert connection.responses("status")[1]["id"] == created_uber_group_id
+    assert connection.responses("status")[2]["success"] == "updated"
+    assert connection.responses("status")[2]["id"] == created_uber_group_id
     assert len(connection.responses("transfer")) == 1
     assert connection.responses("transfer")[0]["id"] == created_uber_group_id
     assert connection.responses("transfer")[0]["description"] == "Updated description"
@@ -395,8 +426,8 @@ async def test_admin_access_ueber_group_connect_create_update_delete(
         "delete", created_uber_group_id, namespace="/ueber-group"
     )
     await connection.client.sleep(0.3)
-    assert connection.responses("status")[2]["success"] == "deleted"
-    assert connection.responses("status")[2]["id"] == created_uber_group_id
+    assert connection.responses("status")[3]["success"] == "deleted"
+    assert connection.responses("status")[3]["id"] == created_uber_group_id
     assert connection.responses("deleted")[0] == created_uber_group_id
 
 
@@ -434,7 +465,9 @@ async def test_user_creates_ueber_group_fails(
         "name": "Dummy Ueber Group",
         "description": "A dummy group added via SocketIO.",
     }
-    await connection.client.emit("submit", test_group, namespace="/ueber-group")
+    await connection.client.emit(
+        "submit", {"payload": test_group}, namespace="/ueber-group"
+    )
     await connection.client.sleep(0.3)
     assert connection.responses("status")[0]["error"] == "401: Invalid token."
     assert len(connection.responses("status")) == 1
@@ -479,7 +512,7 @@ async def test_updates_ueber_group_where_being_owner(
         "description": "An updated dummy group added via SocketIO.",
     }
     await connection_user.client.emit(
-        "submit", updated_test_group, namespace="/ueber-group"
+        "submit", {"payload": updated_test_group}, namespace="/ueber-group"
     )
     await connection_user.client.sleep(0.3)
     assert connection_user.responses("status")[0]["success"] == "updated"
@@ -524,7 +557,7 @@ async def test_updates_ueber_group_fails_due_to_missing_ownership(
         "description": "An updated dummy group added via SocketIO.",
     }
     await connection_user.client.emit(
-        "submit", updated_test_group, namespace="/ueber-group"
+        "submit", {"payload": updated_test_group}, namespace="/ueber-group"
     )
     await connection_user.client.sleep(0.3)
     assert (
@@ -576,6 +609,18 @@ async def test_deletes_ueber_group_where_being_owner_fails(
 
 # Group Namespace Tests:
 # ✔︎ user connects, creates, updates, and deletes a group
+# ✔︎ get all groups on connect
+
+group_client_config = [
+    {
+        "namespace": "/group",
+        "events": [
+            "transfer",
+            "deleted",
+            "status",
+        ],
+    }
+]
 
 
 @pytest.mark.anyio
@@ -587,19 +632,9 @@ async def test_deletes_ueber_group_where_being_owner_fails(
 async def test_connect_create_read_update_delete_group(
     socketio_test_client,
 ):
-    """Test admin access to connect, create, update, and delete events in the user namespace."""
+    """Test admin access to connect, create, update, and delete events in the group namespace."""
 
-    client_config = [
-        {
-            "namespace": "/group",
-            "events": [
-                "transfer",
-                "deleted",
-                "status",
-            ],
-        }
-    ]
-    connection = await socketio_test_client(client_config)
+    connection = await socketio_test_client(group_client_config)
     # Connect to the user namespace:
     await connection.connect()
     await connection.client.sleep(0.5)
@@ -607,7 +642,7 @@ async def test_connect_create_read_update_delete_group(
 
     # Create group:
     test_group = many_test_groups[1]
-    await connection.client.emit("submit", test_group, namespace="/group")
+    await connection.client.emit("submit", {"payload": test_group}, namespace="/group")
     await connection.client.sleep(0.5)
     # Check if the user was created successfully:
     assert connection.responses("status")[0]["success"] == "created"
@@ -631,7 +666,9 @@ async def test_connect_create_read_update_delete_group(
         "id": created_group_id,
         "description": "Updated description",
     }
-    await connection.client.emit("submit", updated_group, namespace="/group")
+    await connection.client.emit(
+        "submit", {"payload": updated_group}, namespace="/group"
+    )
     await connection.client.sleep(0.3)
     assert connection.responses("status")[1]["success"] == "updated"
     assert connection.responses("status")[1]["id"] == created_group_id
@@ -656,4 +693,172 @@ async def test_connect_create_read_update_delete_group(
     assert (
         connection.responses("status")[4]["error"]
         == f"Resource {created_group_id} not found."
+    )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
+    indirect=True,
+)
+async def test_get_all_existing_groups_on_connect(
+    socketio_test_client,
+    add_many_test_groups,
+):
+    """Test at connect get all existing groups with access."""
+    connection = await socketio_test_client(group_client_config)
+    await add_many_test_groups(connection.token_payload())
+    # Connect to the ueber group namespace:
+    await connection.connect()
+    assert len(connection.responses("transfer")) == 4
+
+
+# Sub Group Namespace Tests:
+# ✔︎ user connects, creates, updates, and deletes a group
+
+sub_group_client_config = [
+    {
+        "namespace": "/sub-group",
+        "events": [
+            "transfer",
+            "deleted",
+            "status",
+        ],
+    }
+]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [[session_id_user1_read_write_socketio, session_id_user2_read_write_socketio]],
+    indirect=True,
+)
+# Required for add_one_parent in add_many_test_sub_groups fixture:
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write_socketio],
+    indirect=True,
+)
+async def test_connect_create_read_update_delete_sub_group(
+    socketio_test_client, add_many_test_sub_groups, add_many_test_groups, session_ids
+):
+    """Test admin access to connect, create, update, and delete events in the sub group namespace."""
+    connection_user1 = await socketio_test_client(sub_group_client_config)
+    connection_user2 = await socketio_test_client(
+        sub_group_client_config, session_ids[1]
+    )
+    added_test_sub_groups = await add_many_test_sub_groups(
+        connection_user1.token_payload()
+    )
+    current_user2 = await connection_user2.current_user()
+    # Connect to the user namespace:
+    await connection_user1.connect()
+    await connection_user2.connect()
+    await connection_user1.client.sleep(0.3)
+    assert len(connection_user1.responses("transfer")) == 5
+    assert len(connection_user2.responses("transfer")) == 0
+
+    # Create sub group - requires a parent group:
+    added_test_groups = await add_many_test_groups(connection_user2.token_payload())
+    test_sub_group = {
+        "name": "Dummy Sub Group",
+        "description": "A dummy sub group added via SocketIO.",
+    }
+    await connection_user2.client.emit(
+        "submit",
+        {
+            "payload": test_sub_group,
+            "parent_id": str(added_test_groups[3].id),
+            # "inherit": True,
+        },
+        namespace="/sub-group",
+    )
+    await connection_user2.client.sleep(0.3)
+    # Check if the sub group was created successfully:
+    assert connection_user2.responses("status")[0]["success"] == "created"
+    assert "id" in connection_user2.responses("status")[0]
+    created_sub_group_id = connection_user2.responses("status")[0]["id"]
+    assert len(connection_user2.responses("transfer")) == 0
+
+    # Read:
+    await connection_user2.client.emit(
+        "read", created_sub_group_id, namespace="/sub-group"
+    )
+    await connection_user2.client.sleep(0.3)
+    assert len(connection_user2.responses("transfer")) == 1
+    assert connection_user2.responses("transfer")[0]["id"] == created_sub_group_id
+    assert connection_user2.responses("transfer")[0]["name"] == test_sub_group["name"]
+    assert (
+        connection_user2.responses("transfer")[0]["description"]
+        == test_sub_group["description"]
+    )
+
+    # User 1 shares a sub-group with user 2:
+    shared_sub_group_id = str(added_test_sub_groups[3].id)
+    await connection_user1.client.emit(
+        "share",
+        {
+            "resource_id": shared_sub_group_id,
+            "identity_id": str(current_user2.user_id),
+            "action": "own",
+        },
+        namespace="/sub-group",
+    )
+    await connection_user1.client.sleep(0.3)
+    assert connection_user1.responses("status")[0]["success"] == "shared"
+    assert connection_user1.responses("status")[0]["id"] == shared_sub_group_id
+    assert len(connection_user2.responses("transfer")) == 1
+
+    # Update sub group:
+    updated_sub_group = {
+        "id": shared_sub_group_id,
+        "description": "Updated description",
+    }
+    await connection_user2.client.emit(
+        "submit", {"payload": updated_sub_group}, namespace="/sub-group"
+    )
+    await connection_user2.client.sleep(0.3)
+    assert connection_user2.responses("status")[1]["success"] == "updated"
+    assert connection_user2.responses("status")[1]["id"] == shared_sub_group_id
+    assert len(connection_user1.responses("transfer")) == 6
+    assert connection_user1.responses("transfer")[5]["id"] == shared_sub_group_id
+    assert connection_user1.responses("transfer")[5]["name"] == str(
+        added_test_sub_groups[3].name
+    )
+    assert (
+        connection_user1.responses("transfer")[5]["description"]
+        == "Updated description"
+    )
+    assert len(connection_user2.responses("transfer")) == 2
+    assert connection_user2.responses("transfer")[1]["id"] == shared_sub_group_id
+    assert connection_user2.responses("transfer")[1]["name"] == str(
+        added_test_sub_groups[3].name
+    )
+    assert (
+        connection_user2.responses("transfer")[1]["description"]
+        == "Updated description"
+    )
+
+    # Delete sub group:
+    await connection_user2.client.emit(
+        "delete", shared_sub_group_id, namespace="/sub-group"
+    )
+    await connection_user2.client.sleep(0.3)
+    assert connection_user2.responses("status")[2]["success"] == "deleted"
+    assert connection_user2.responses("status")[2]["id"] == shared_sub_group_id
+    assert connection_user2.responses("deleted")[0] == shared_sub_group_id
+
+    # Read deleted sub group fails:
+    await connection_user2.client.emit(
+        "read", shared_sub_group_id, namespace="/sub-group"
+    )
+    await connection_user2.client.sleep(0.3)
+    assert len(connection_user2.responses("transfer")) == 2
+    assert connection_user2.responses("status")[3]["success"] == "deleted"
+    assert connection_user2.responses("status")[3]["id"] == shared_sub_group_id
+    assert (
+        connection_user2.responses("status")[4]["error"]
+        == f"Resource {shared_sub_group_id} not found."
     )

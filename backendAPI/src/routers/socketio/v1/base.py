@@ -375,20 +375,20 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Gets data from client and issues a create or update based on id is present or not."""
         logger.info(f"🧦 Data submitted from client {sid}")
         try:
-
             if self.crud is not None:
+                payload = data.get("payload", None)
                 try:
                     database_object = None
                     if (
-                        "id" in data and data["id"][:4] != "new_"
+                        "id" in payload and payload["id"][:4] != "new_"
                     ):  # validate if id is a valid UUID
                         current_user = await self._get_current_user_and_check_guard(
                             sid, "submit:update"
                         )
-                        resource_id = UUID(data["id"])
+                        resource_id = UUID(payload["id"])
                         # if id is present, it is an update
                         # validate data with update model
-                        object_update = self.update_model(**data)
+                        object_update = self.update_model(**payload)
                         async with self.crud() as crud:
                             # TBD: check the hierarchical resource system all the way through other events as
                             database_object = await crud.update(
@@ -424,11 +424,11 @@ class BaseNamespace(socketio.AsyncNamespace):
                         current_user = await self._get_current_user_and_check_guard(
                             sid, "submit:create"
                         )
-                        object_create = self.create_model(**data)
+                        object_create = self.create_model(**payload)
+                        parent_id = data.get("parent_id", None)
+                        inherit = data.get("inherit", False)
                         async with self.crud() as crud:
                             # TBD: check the hierarchical resource system all the way through other events as well!
-                            parent_id = data.get("parent_id", None)
-                            inherit = data.get("inherit", False)
                             database_object = await crud.create(
                                 object_create, current_user, parent_id, inherit
                             )
@@ -442,7 +442,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                                 {
                                     "success": "created",
                                     "id": str(database_object.id),
-                                    "submitted_id": data.get("id"),
+                                    "submitted_id": payload.get("id", None),
                                 },
                             )
                             await self.server.emit(

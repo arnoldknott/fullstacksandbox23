@@ -287,7 +287,7 @@ async def test_user_submits_resource_without_id_for_creation(
     await connection_admin.connect()
 
     await connection_user.client.emit(
-        "submit", many_test_demo_resources[1], namespace="/demo-resource"
+        "submit", {"payload": many_test_demo_resources[1]}, namespace="/demo-resource"
     )
 
     # Wait for the response to be set
@@ -339,7 +339,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
     await connection.connect()
 
     await connection.client.emit(
-        "submit", many_test_demo_resources[1], namespace="/demo-resource"
+        "submit", {"payload": many_test_demo_resources[1]}, namespace="/demo-resource"
     )
 
     # Wait for the response to be set
@@ -376,7 +376,9 @@ async def test_admin_submits_resource_with_new__string_in_id_field_for_creation(
     connection = await socketio_test_client_demo_resource_namespace()
     await connection.connect()
 
-    await connection.client.emit("submit", test_resource, namespace="/demo-resource")
+    await connection.client.emit(
+        "submit", {"payload": test_resource}, namespace="/demo-resource"
+    )
 
     # Wait for the response to be set
     await connection.client.sleep(0.3)
@@ -411,7 +413,9 @@ async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
     connection = await socketio_test_client_demo_resource_namespace()
     await connection.connect()
 
-    await connection.client.emit("submit", test_resource, namespace="/demo-resource")
+    await connection.client.emit(
+        "submit", {"payload": test_resource}, namespace="/demo-resource"
+    )
 
     # Wait for the response to be set
     await connection.client.sleep(0.3)
@@ -444,7 +448,9 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
     await connection.connect()
 
     time_before_first_submit = datetime.now()
-    await connection.client.emit("submit", test_resource, namespace="/demo-resource")
+    await connection.client.emit(
+        "submit", {"payload": test_resource}, namespace="/demo-resource"
+    )
 
     # Wait for the response to be set
     await connection.client.sleep(0.2)
@@ -457,7 +463,9 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
     assert status_data[0]["success"] == "created"
 
     time_before_second_submit = datetime.now()
-    await connection.client.emit("submit", test_resource2, namespace="/demo-resource")
+    await connection.client.emit(
+        "submit", {"payload": test_resource2}, namespace="/demo-resource"
+    )
 
     # Wait for the response to be set
     await connection.client.sleep(0.2)
@@ -494,7 +502,9 @@ async def test_user_submits_resource_with_random_string_in_id_field_fails(
     connection = await socketio_test_client_demo_resource_namespace()
     await connection.connect()
 
-    await connection.client.emit("submit", test_resource, namespace="/demo-resource")
+    await connection.client.emit(
+        "submit", {"payload": test_resource}, namespace="/demo-resource"
+    )
 
     # Wait for the response to be set
     await connection.client.sleep(0.2)
@@ -518,7 +528,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_name(
     await connection.connect()
     await connection.client.emit(
         "submit",
-        {"description": "Description of test resource"},
+        {"payload": {"description": "Description of test resource"}},
         namespace="/demo-resource",
     )
 
@@ -552,7 +562,7 @@ async def test_user_submits_resource_with_nonexisting_uuid_fails(
     test_demo_resource["id"] = str(uuid4())  # Set a non-existing UUID
 
     await connection.client.emit(
-        "submit", test_demo_resource, namespace="/demo-resource"
+        "submit", {"payload": test_demo_resource}, namespace="/demo-resource"
     )
 
     # Wait for the response to be set
@@ -590,7 +600,9 @@ async def test_user_submits_existing_resource_for_update(
         modified_demo_resource.category_id = str(modified_demo_resource.category_id)
 
     await connection.client.emit(
-        "submit", modified_demo_resource.model_dump(), namespace="/demo-resource"
+        "submit",
+        {"payload": modified_demo_resource.model_dump()},
+        namespace="/demo-resource",
     )
 
     # Wait for the response to be set
@@ -657,7 +669,9 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
         modified_demo_resource.category_id = str(modified_demo_resource.category_id)
 
     await connection.client.emit(
-        "submit", modified_demo_resource.model_dump(), namespace="/demo-resource"
+        "submit",
+        {"payload": modified_demo_resource.model_dump()},
+        namespace="/demo-resource",
     )
 
     # Wait for the response to be set
@@ -704,7 +718,9 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
         modified_demo_resource.category_id = str(modified_demo_resource.category_id)
 
     await connection.client.emit(
-        "submit", modified_demo_resource.model_dump(), namespace="/demo-resource"
+        "submit",
+        {"payload": modified_demo_resource.model_dump()},
+        namespace="/demo-resource",
     )
 
     # Wait for the response to be set
