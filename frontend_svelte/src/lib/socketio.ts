@@ -24,8 +24,6 @@ export type SocketioStatus =
 	| { error: string };
 
 export class SocketIO {
-	// TBD: remove event and rooms from SocketioConnection
-	// private connection: SocketioConnection;
 	public client: Socket;
 
 	constructor(connection: SocketioConnection) {
@@ -36,8 +34,6 @@ export class SocketIO {
 			? `http://${backendFqdn}`
 			: `https://${backendFqdn}`;
 		// Before sending the session_id, make sure to acquire a token silently on server side to update the cache!
-		// console.log('=== socketio.ts - SocketIO - connection - query_params ===');
-		// console.log(connection.query_params);
 		this.client = io(socketioServerUrl + connection.namespace, {
 			path: `/socketio/v1`,
 			auth: { 'session-id': connection.cookie_session_id },
@@ -47,33 +43,5 @@ export class SocketIO {
 		this.client.connect();
 	}
 
-	// sendMessage(message: string) {
-	//     this.socket.send(message);
-	// }
-	// sendMessage(message: string) {
-	// 	console.log('Message sent:', message);
-	// }
 }
 
-// import { io } from 'socket.io-client';
-
-// let socketio_client: any;
-// let new_message: string = '';
-// let old_messages: string[] = [];
-
-// implement check for localhost here
-// socketio_client = io('http://localhost:8660');
-// socketio_client.on('connect', () => {
-//     console.log('=== socket opened ===');
-//     socketio_client.send('Hello from the client!');
-// });
-
-// socketio_client.on('demo_message', (data: string) => {
-//     console.log('Message from server:', data);
-//     old_messages.push(data);
-// });
-// });
-
-// const sendMessage = (event: Event) => {
-// event.preventDefault();
-// socketio_client.emit('demo_message', new_message);
