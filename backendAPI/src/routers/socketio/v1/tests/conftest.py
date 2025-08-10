@@ -286,10 +286,10 @@ class SocketIOTestConnection:
 
 
 @pytest.fixture(scope="function")
-def socketio_test_client_class(request, session_ids):
+def socketio_test_client(request, session_ids):
     """Fixture to provide a class-based socket.io test client."""
 
-    async def _socketio_test_client_class(
+    async def _socketio_test_client(
         client_config: ClientConfig,
         session_id: Optional[uuid.UUID] = None,
     ):
@@ -311,11 +311,11 @@ def socketio_test_client_class(request, session_ids):
 
         return connection
 
-    return _socketio_test_client_class
+    return _socketio_test_client
 
 
 @pytest.fixture(scope="function")
-def socketio_test_client_demo_namespace(socketio_test_client_class):
+def socketio_test_client_demo_namespace(socketio_test_client):
     """Fixture to provide a socket.io test client for the demo namespace."""
 
     async def _socketio_test_client_demo_namespace(
@@ -330,13 +330,13 @@ def socketio_test_client_demo_namespace(socketio_test_client_class):
         ]
 
         """Creates an instance of SocketIOTestClient for the demo namespace."""
-        return await socketio_test_client_class(client_config, session_id)
+        return await socketio_test_client(client_config, session_id)
 
     return _socketio_test_client_demo_namespace
 
 
 @pytest.fixture(scope="function")
-def socketio_test_client_demo_resource_namespace(socketio_test_client_class):
+def socketio_test_client_demo_resource_namespace(socketio_test_client):
     """Fixture to provide a socket.io test client for the demo resource namespace."""
 
     async def _socketio_test_client_demo_resource_namespace(
@@ -355,13 +355,13 @@ def socketio_test_client_demo_resource_namespace(socketio_test_client_class):
         ]
 
         """Creates an instance of SocketIOTestClient for the demo namespace."""
-        return await socketio_test_client_class(client_config, session_id)
+        return await socketio_test_client(client_config, session_id)
 
     return _socketio_test_client_demo_resource_namespace
 
 
 @pytest.fixture(scope="function")
-def socketio_test_client_user_namespace(socketio_test_client_class):
+def socketio_test_client_user_namespace(socketio_test_client):
     """Fixture to provide a socket.io test client for the user namespace."""
 
     async def _socketio_test_client_user_namespace(
@@ -380,13 +380,13 @@ def socketio_test_client_user_namespace(socketio_test_client_class):
         ]
 
         """Creates an instance of SocketIOTestClient for the user namespace."""
-        return await socketio_test_client_class(client_config, session_id)
+        return await socketio_test_client(client_config, session_id)
 
     return _socketio_test_client_user_namespace
 
 
 @pytest.fixture(scope="function")
-def socketio_test_client_ueber_group_namespace(socketio_test_client_class):
+def socketio_test_client_ueber_group_namespace(socketio_test_client):
     """Fixture to provide a socket.io test client for the ueber group namespace."""
 
     async def _socketio_test_client_ueber_group_namespace(
@@ -405,6 +405,6 @@ def socketio_test_client_ueber_group_namespace(socketio_test_client_class):
         ]
 
         """Creates an instance of SocketIOTestClient for the demo namespace."""
-        return await socketio_test_client_class(client_config, session_id)
+        return await socketio_test_client(client_config, session_id)
 
     return _socketio_test_client_ueber_group_namespace
