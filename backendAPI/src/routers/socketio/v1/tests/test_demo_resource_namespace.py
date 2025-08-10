@@ -362,7 +362,42 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "session_ids",
-    [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
+    [[session_id_admin_read_write_socketio]],
+    indirect=True,
+)
+async def test_admin_submits_resource_with_new__string_in_id_field_for_creation(
+    socketio_test_client_demo_resource_namespace,
+):
+    """Test the demo resource submit event with non-UUID in ID field."""
+
+    test_resource = copy.deepcopy(many_test_demo_resources[1])
+    test_resource["id"] = "new_34ab56z"
+
+    connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect()
+
+    await connection.client.emit("submit", test_resource, namespace="/demo-resource")
+
+    # Wait for the response to be set
+    await connection.client.sleep(0.3)
+    status_data = connection.responses("status")
+
+    assert len(status_data) == 2
+
+    # assert "id" in status[0]
+    assert status_data[0]["success"] == "created"
+    assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
+    assert status_data[0]["submitted_id"] == test_resource["id"]
+
+    # admin also gets a shared notification for each created resource:
+    assert status_data[1]["success"] == "shared"
+    assert status_data[1]["id"] == status_data[0]["id"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [[session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
@@ -391,7 +426,7 @@ async def test_user_submits_resource_with_new__string_in_id_field_for_creation(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "session_ids",
-    [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
+    [[session_id_user1_read_write_socketio]],
     indirect=True,
 )
 async def test_user_submits_two_resource_with_new__string_in_id_field_for_creation(
@@ -1225,10 +1260,20 @@ async def test_user_removes_share_with_group(
     status_data1 = connection1.responses("status")
     status_data2 = connection2.responses("status")
     status_data3 = connection3.responses("status")
-    assert status_data1 == [{"success": "unshared", "id": str(resources[1].id)}]
+    assert status_data1 == [
+        {
+            "success": "unshared",
+            "resource_id": str(resources[1].id),
+            "identity_id": str(common_group_id),
+        }
+    ]
     # After read event, triggered by unshare, user2 has no longer access:
     assert status_data2 == [
-        {"success": "unshared", "id": str(resources[1].id)},
+        {
+            "success": "unshared",
+            "resource_id": str(resources[1].id),
+            "identity_id": str(common_group_id),
+        },
         {"success": "deleted", "id": str(resources[1].id)},
         {"error": f"Resource {str(resources[1].id)} not found."},
     ]
@@ -1443,7 +1488,11 @@ async def test_user_removes_last_inherited_owner_access(
     await connection.client.sleep(0.3)
 
     assert connection.responses("status") == [
-        {"success": "unshared", "id": str(resources[0].id)}
+        {
+            "success": "unshared",
+            "resource_id": str(resources[0].id),
+            "identity_id": str(ueber_groups[0].id),
+        }
     ]
 
     await connection.client.emit(
