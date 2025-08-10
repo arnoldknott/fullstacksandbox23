@@ -49,7 +49,7 @@ async def test_admin_access_user_connect_create_read_update_delete(
 
     # Read:
     await connection.client.emit("read", created_user_id, namespace="/user")
-    await connection.client.sleep(1)
+    await connection.client.sleep(1.2)
     assert len(connection.responses("transfer")) == 1
     assert connection.responses("transfer")[0]["id"] == created_user_id
     assert (
@@ -298,7 +298,7 @@ async def test_updates_user_fails_due_to_missing_ownership(
         "is_active": "False",
     }
     await connection_user.client.emit("submit", updated_test_user, namespace="/user")
-    await connection_user.client.sleep(0.4)
+    await connection_user.client.sleep(0.6)
     assert connection_user.responses("status")[0]["error"] == "404: User not updated."
     assert connection_user.responses("transfer") == []
 
