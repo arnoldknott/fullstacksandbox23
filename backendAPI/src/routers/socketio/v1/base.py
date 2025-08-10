@@ -507,7 +507,11 @@ class BaseNamespace(socketio.AsyncNamespace):
                     # print("=== socketio - DELETE - access_policy ===", flush=True)
                     await self._emit_status(
                         sid,
-                        {"success": "unshared", "id": str(access_policy.resource_id)},
+                        {
+                            "success": "unshared",
+                            "resource_id": str(access_policy.resource_id),
+                            "identity_id": str(access_policy.identity_id),
+                        },
                         rooms=[f"identity:{str(access_policy.identity_id)}"],
                     )
                 # print("=== socketio - DELETE - access_policy ===", flush=True)

@@ -114,7 +114,18 @@
 				} else if (data.success === 'unshared') {
 					// TBD: consider not to emit read, but to remove the resource from the list!
 					// socketio.client.emit('read', data.id);
-					demoResources = demoResources.filter((res) => res.id !== data.id);
+					// Re-read to see, if there is still access to the resource any other way.
+					// If that fails, remove it from the list
+					// rerun check on access policies for this resource after removing the unshared policy:
+					demoResources = demoResources.map((res) => {
+						if (res.id === data.resource_id) {
+							res.access_policies = res.access_policies?.filter(
+								(policy) => policy.identity_id !== data.identity_id
+							);
+						}
+						return res;
+					});
+					// demoResources = demoResources.filter((res) => res.id !== data.id);
 				}
 			}
 		});
@@ -271,18 +282,22 @@
 						>
 							{#if message.success === 'created'}
 								<span class="bg-success-container-content icon-[tabler--check]"></span>
+								<div class="mr-1 w-fit text-right">{message.id}</div>
 							{:else if message.success === 'updated'}
 								<span
 									class="bg-success-container-content icon-[material-symbols--edit-outline-rounded]"
 								></span>
+								<div class="mr-1 w-fit text-right">{message.id}</div>
 							{:else if message.success === 'deleted'}
 								<span class="bg-success-container-content icon-[tabler--trash]"></span>
+								<div class="mr-1 w-fit text-right">{message.id}</div>
 							{:else if message.success === 'shared'}
 								<span class="bg-success-container-content icon-[ic--outline-share]"></span>
+								<div class="mr-1 w-fit text-right">{message.id}</div>
 							{:else if message.success === 'unshared'}
 								<span class="bg-success-container-content icon-[fe--disabled]"></span>
+								<div class="mr-1 w-fit text-right">{message.resource_id}</div>
 							{/if}
-							<div class="mr-1 w-fit text-right">{message.id}</div>
 						</div>
 					</li>
 				{/if}

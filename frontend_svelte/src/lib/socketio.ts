@@ -20,7 +20,7 @@ export type SocketioStatus =
 	| { success: 'updated'; id: string }
 	| { success: 'deleted'; id: string }
 	| { success: 'shared'; id: string }
-	| { success: 'unshared'; id: string }
+	| { success: 'unshared'; resource_id: string, identity_id: string }
 	| { error: string };
 
 export class SocketIO {
