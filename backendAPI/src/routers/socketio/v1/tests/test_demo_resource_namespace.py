@@ -269,30 +269,42 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "session_ids",
-    [[session_id_admin_read_write_socketio, session_id_user1_read_write_socketio]],
+    [[session_id_user1_read_write_socketio, session_id_admin_read_write_socketio]],
     indirect=True,
 )
 async def test_user_submits_resource_without_id_for_creation(
     socketio_test_client_demo_resource_namespace,
+    session_ids: list[str],
 ):
     """Test the demo resource submit event without ID."""
 
     status_data = []
-    connection = await socketio_test_client_demo_resource_namespace()
-    await connection.connect()
+    connection_user = await socketio_test_client_demo_resource_namespace()
+    connection_admin = await socketio_test_client_demo_resource_namespace(
+        session_ids[1]
+    )
+    await connection_user.connect()
+    await connection_admin.connect()
 
-    await connection.client.emit(
+    await connection_user.client.emit(
         "submit", many_test_demo_resources[1], namespace="/demo-resource"
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection_user.client.sleep(0.2)
 
-    status_data = connection.responses("status")
+    status_data = connection_user.responses("status")
+
+    print("=== test - create demo_resource - Status data ===")
+    print(status_data, flush=True)
 
     assert status_data[0]["submitted_id"] is None
     assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
     assert status_data[0]["success"] == "created"
+
+    assert len(connection_admin.responses("status")) == 1
+    assert connection_admin.responses("status")[0]["success"] == "shared"
+    assert connection_admin.responses("status")[0]["id"] == status_data[0]["id"]
 
 
 @pytest.mark.anyio

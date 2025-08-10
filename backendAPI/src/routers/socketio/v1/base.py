@@ -283,6 +283,12 @@ class BaseNamespace(socketio.AsyncNamespace):
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
                 )
+                if "Admin" in current_user.azure_token_roles:
+                    await self.server.enter_room(
+                        sid,
+                        "role:Admin",
+                        namespace=self.namespace,
+                    )
                 logger.info(
                     f"🧦 Client authenticated to access protected namespace {self.namespace}."
                 )
@@ -426,13 +432,21 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object = await crud.create(
                                 object_create, current_user, parent_id, inherit
                             )
-                            # TBD: delete! Should not be necessary!
                             # await self.server.emit(
-                            #     "transfer",
+                            #     "share",
                             #     database_object.model_dump(mode="json"),
                             #     namespace=self.namespace,
-                            #     to=sid,
+                            #     to=["role:Admin"],
                             # )
+                            await self.server.emit(
+                                "status",
+                                {
+                                    "success": "shared",
+                                    "id": str(database_object.id),
+                                },
+                                namespace=self.namespace,
+                                to=["role:Admin"],
+                            )
                             await self.server.enter_room(
                                 sid,
                                 f"resource:{str(database_object.id)}",
