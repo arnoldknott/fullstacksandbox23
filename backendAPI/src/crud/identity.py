@@ -401,6 +401,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             user.user_account = current_account
             user.user_profile = current_profile
             me = Me.model_validate(user)
+            me.azure_token_roles = current_user.azure_token_roles
+            me.azure_token_groups = current_user.azure_token_groups
             access_log = AccessLogCreate(
                 resource_id=current_user.user_id,
                 action=Action.write,

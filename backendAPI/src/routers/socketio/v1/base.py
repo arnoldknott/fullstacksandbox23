@@ -310,7 +310,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                 sid, current_user=current_user, request_access_data=request_access_data
             )
 
-    # TBD: write test for this!
     async def on_read(self, sid, resource_id: UUID):
         """Read event for socket.io namespaces."""
         logger.info(f"🧦 Read request from client {sid} for resource {resource_id}.")
@@ -385,9 +384,19 @@ class BaseNamespace(socketio.AsyncNamespace):
                         # validate data with update model
                         object_update = self.update_model(**data)
                         async with self.crud() as crud:
+                            # TBD: check the hierarchical resource system all the way through other events as
                             database_object = await crud.update(
                                 current_user, resource_id, object_update
                             )
+                            # if updating user is not in the resource room yet, add that user:
+                            if database_object.id not in self.server.rooms(
+                                sid, self.namespace
+                            ):
+                                await self.server.enter_room(
+                                    sid,
+                                    f"resource:{str(database_object.id)}",
+                                    namespace=self.namespace,
+                                )
                             # transfer after update is necessary for other clients,
                             # which are in the same room of this resource_id to get the updated data
                             await self.server.emit(

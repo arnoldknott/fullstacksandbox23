@@ -15,7 +15,13 @@ from routers.socketio.v1.demo_namespace import demo_namespace_router
 from routers.socketio.v1.demo_resource import (
     demo_resource_router as demo_resource_namespace_router,
 )
-from routers.socketio.v1.identities import ueber_group_router
+from routers.socketio.v1.identities import (
+    user_router,
+    ueber_group_router,
+    group_router,
+    sub_group_router,
+    sub_sub_group_router,
+)
 from routers.socketio.v1.interactive_documentation import (
     interactive_documentation_router,
 )
@@ -135,7 +141,11 @@ async def socketio_test_server(
             sio.register_namespace(public_namespace_router)
             sio.register_namespace(demo_namespace_router)
             sio.register_namespace(demo_resource_namespace_router)
+            sio.register_namespace(user_router)
             sio.register_namespace(ueber_group_router)
+            sio.register_namespace(group_router)
+            sio.register_namespace(sub_group_router)
+            sio.register_namespace(sub_sub_group_router)
             sio.register_namespace(interactive_documentation_router)
             await asyncio.sleep(1)
             yield sio
@@ -348,6 +358,31 @@ def socketio_test_client_demo_resource_namespace(socketio_test_client_class):
         return await socketio_test_client_class(client_config, session_id)
 
     return _socketio_test_client_demo_resource_namespace
+
+
+@pytest.fixture(scope="function")
+def socketio_test_client_user_namespace(socketio_test_client_class):
+    """Fixture to provide a socket.io test client for the user namespace."""
+
+    async def _socketio_test_client_user_namespace(
+        session_id: Optional[uuid.UUID] = None,
+    ):
+        """Factory function for creating a socket.io test client for the user namespace."""
+        client_config = [
+            {
+                "namespace": "/user",
+                "events": [
+                    "transfer",
+                    "deleted",
+                    "status",
+                ],
+            }
+        ]
+
+        """Creates an instance of SocketIOTestClient for the user namespace."""
+        return await socketio_test_client_class(client_config, session_id)
+
+    return _socketio_test_client_user_namespace
 
 
 @pytest.fixture(scope="function")
