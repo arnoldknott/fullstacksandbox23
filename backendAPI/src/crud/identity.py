@@ -338,6 +338,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
 
             # Add detailed logging before model_validate
             me = Me.model_validate(user)
+            me.azure_token_roles = current_user.azure_token_roles
+            me.azure_token_groups = current_user.azure_token_groups
             return me
         except Exception as err:
             logging.error(err)

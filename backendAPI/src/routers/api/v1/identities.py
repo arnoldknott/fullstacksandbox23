@@ -97,8 +97,8 @@ async def get_me(
     current_user = await check_token_against_guards(token_payload, guards)
     async with UserCRUD() as crud:
         me = await crud.read_me(current_user)
-    me.azure_token_roles = current_user.azure_token_roles
-    me.azure_token_groups = current_user.azure_token_groups
+    # me.azure_token_roles = current_user.azure_token_roles
+    # me.azure_token_groups = current_user.azure_token_groups
     me = Me.model_validate(me)
     return me
 
@@ -477,7 +477,7 @@ async def post_existing_subgroups_to_group(
 @group_router.get("/", status_code=200)
 async def get_all_groups(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[GroupRead]:
     """Returns all groups."""
     return await group_view.get(token_payload, guards)
