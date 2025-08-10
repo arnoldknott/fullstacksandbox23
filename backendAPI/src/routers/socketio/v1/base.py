@@ -432,21 +432,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object = await crud.create(
                                 object_create, current_user, parent_id, inherit
                             )
-                            # await self.server.emit(
-                            #     "share",
-                            #     database_object.model_dump(mode="json"),
-                            #     namespace=self.namespace,
-                            #     to=["role:Admin"],
-                            # )
-                            await self.server.emit(
-                                "status",
-                                {
-                                    "success": "shared",
-                                    "id": str(database_object.id),
-                                },
-                                namespace=self.namespace,
-                                to=["role:Admin"],
-                            )
                             await self.server.enter_room(
                                 sid,
                                 f"resource:{str(database_object.id)}",
@@ -459,6 +444,15 @@ class BaseNamespace(socketio.AsyncNamespace):
                                     "id": str(database_object.id),
                                     "submitted_id": data.get("id"),
                                 },
+                            )
+                            await self.server.emit(
+                                "status",
+                                {
+                                    "success": "shared",
+                                    "id": str(database_object.id),
+                                },
+                                namespace=self.namespace,
+                                to=["role:Admin"],
                             )
                     # if database_object is not None:
                     #     await self.server.emit(
