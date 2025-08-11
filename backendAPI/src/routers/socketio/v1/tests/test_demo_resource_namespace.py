@@ -1005,7 +1005,7 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
     ],
     indirect=True,
 )
-async def test_user_updates_access_to_owned_resource_for_an_group_identity(
+async def test_user_updates_access_to_owned_resource_for_a_group_identity(
     session_ids,
     add_test_demo_resources: list[DemoResource],
     add_many_test_groups: list[Group],
@@ -1104,7 +1104,7 @@ async def test_user_updates_access_to_owned_resource_for_an_group_identity(
     ],
     indirect=True,
 )
-async def test_user_updates_access_to_owned_resource_for_an_group_identity_to_same_access(
+async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_same_access(
     session_ids,
     add_test_demo_resources: list[DemoResource],
     add_many_test_groups: list[Group],
@@ -1279,16 +1279,14 @@ async def test_user_removes_share_with_group(
     assert status_data1 == [
         {
             "success": "unshared",
-            "resource_id": str(resources[1].id),
-            "identity_id": str(common_group_id),
+            "id": str(resources[1].id),
         }
     ]
     # After read event, triggered by unshare, user2 has no longer access:
     assert status_data2 == [
         {
             "success": "unshared",
-            "resource_id": str(resources[1].id),
-            "identity_id": str(common_group_id),
+            "id": str(resources[1].id),
         },
         {"success": "deleted", "id": str(resources[1].id)},
         {"error": f"Resource {str(resources[1].id)} not found."},
@@ -1446,7 +1444,7 @@ async def test_user_downgrades_last_inherited_owner_access(
     ],
     indirect=True,
 )
-async def test_user_removes_last_inherited_owner_access(
+async def test_user_removes_last_inherited_owner_access_and_reread_fails(
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
     add_many_test_ueber_groups: list[UeberGroup],
@@ -1490,7 +1488,7 @@ async def test_user_removes_last_inherited_owner_access(
     assert connection.responses("transfer")[0]["access_right"] == "own"
     assert len(connection.responses("transfer")[0]["access_policies"]) == 2
 
-    # Downgrade the UeberGroup access to read:
+    # Remove the UeberGroup access:
     await connection.client.emit(
         "share",
         {
@@ -1506,8 +1504,7 @@ async def test_user_removes_last_inherited_owner_access(
     assert connection.responses("status") == [
         {
             "success": "unshared",
-            "resource_id": str(resources[0].id),
-            "identity_id": str(ueber_groups[0].id),
+            "id": str(resources[0].id),
         }
     ]
 
