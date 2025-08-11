@@ -391,28 +391,6 @@ class BaseNamespace(socketio.AsyncNamespace):
             )
             # await self._emit_status(sid, {"error": str(error)})
 
-    # async def on_read_access(self, sid, resource_id: UUID):
-    #     """Read access event for socket.io namespaces."""
-    #     logger.info(
-    #         f"🧦 Read access request from client {sid} for resource {resource_id}."
-    #     )
-    #     try:
-    #         current_user = await self._get_current_user_and_check_guard(sid, "connect")
-    #         access_data = await self._get_access_data(sid, current_user, resource_id)
-    #         await self.server.emit(
-    #             "access",
-    #             {
-    #                 "id": resource_id,
-    #                 "access_data": access_data,
-    #             },
-    #             namespace=self.namespace,
-    #             to=sid,
-    #         )
-    #     except Exception as error:
-    #         logger.error(f"🧦 Failed to read access data from client {sid}.")
-    #         print(error)
-    #         await self._emit_status(sid, {"error": str(error)})
-
     # "submit" is communication from client to server
     async def on_submit(self, sid, data):
         """Gets data from client and issues a create or update based on id is present or not."""
