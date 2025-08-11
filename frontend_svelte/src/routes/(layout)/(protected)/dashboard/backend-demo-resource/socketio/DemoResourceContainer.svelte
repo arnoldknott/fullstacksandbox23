@@ -14,14 +14,14 @@
 		edit = $bindable(false),
 		deleteResource = (_id: string) => {},
 		submitResource = (_resource: DemoResourceExtended) => {},
-		share = (_accessPolicy: AccessPolicy) => {}
+		shareResource = (_accessPolicy: AccessPolicy) => {}
 	}: {
 		demoResource: DemoResourceExtended;
 		identities?: Identity[];
 		edit?: boolean;
 		deleteResource?: (id: string) => void;
 		submitResource?: (resource: DemoResourceExtended) => void;
-		share?: (accessPolicy: AccessPolicy) => void;
+		shareResource?: (accessPolicy: AccessPolicy) => void;
 	} = $props();
 
 	// let editableDemoResource: DemoResourceExtended = $derived({ ...demoResource });
@@ -183,7 +183,7 @@
 										{@attach initDropdown}
 										resourceId={demoResource.id as string}
 										{shareOption}
-										{share}
+										share={shareResource}
 										{closeShareMenu}
 									/>
 								{/each}

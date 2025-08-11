@@ -103,7 +103,7 @@ interface WithAccessShareOptions {
 
 // specific resources:
 export interface DemoResource {
-	id?: string;
+	id: string;
 	name: string;
 	description?: string;
 	language?: string;
@@ -208,3 +208,11 @@ export type GroupExtended = ExtendEntity<Group>;
 export type SubGroupExtended = ExtendEntity<SubGroup>;
 export type SubSubGroupExtended = ExtendEntity<SubSubGroup>;
 export type MicrosoftTeamExtended = MicrosoftTeam & Partial<WithAccessRights & WithAccessPolicies>;
+
+export type AnyEntityExtended =
+	| DemoResourceExtended
+	| UserExtended
+	| UeberGroupExtended
+	| GroupExtended
+	| SubGroupExtended
+	| SubSubGroupExtended;
