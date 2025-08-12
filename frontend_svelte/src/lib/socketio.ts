@@ -54,7 +54,6 @@ export class SocketIO {
 		this.client.connect();
 	}
 
-
 	// Emitters:
 	public addEntity(newEntity: AnyEntityExtended): void {
 		this.entities.unshift(newEntity);
@@ -84,7 +83,6 @@ export class SocketIO {
 			this.client.emit('delete', entityId);
 		}
 	}
-
 
 	public shareEntity(accessPolicy: AccessPolicy): void {
 		this.client.emit('share', accessPolicy);
