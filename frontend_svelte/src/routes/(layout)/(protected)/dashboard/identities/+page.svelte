@@ -57,10 +57,6 @@
 		name: '',
 		description: ''
 	});
-
-	// const addUeberGroup = () => {
-	// 	socketio.addEntity(newUeberGroup());
-	// };
 </script>
 
 <div>

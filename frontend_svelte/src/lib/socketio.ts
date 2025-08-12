@@ -106,9 +106,9 @@ export class SocketIO {
 	}
 
 	public handleDeleted(resource_id: string): void {
-		console.log("=== SocketIO - handleDeleted - resource_id ===");
+		console.log('=== SocketIO - handleDeleted - resource_id ===');
 		console.log(resource_id);
-		console.log("=== SocketIO - handleDeleted - this.entities ===");
+		console.log('=== SocketIO - handleDeleted - this.entities ===');
 		console.log(this.entities);
 		const index = this.entities.findIndex((entity) => entity.id === resource_id);
 		if (index > -1) {
