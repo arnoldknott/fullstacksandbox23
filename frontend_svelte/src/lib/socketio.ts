@@ -4,6 +4,7 @@ import type { Socket } from 'socket.io-client';
 import { getContext } from 'svelte';
 import type { AccessPolicy, AnyEntityExtended, BackendAPIConfiguration } from '$lib/types.d.ts';
 import { SvelteSet } from 'svelte/reactivity';
+import type { S } from 'vitest/dist/chunks/config.d.D2ROskhv.js';
 
 export type SocketioConnection = {
 	namespace?: string;
@@ -28,13 +29,14 @@ export class SocketIO {
 	public client: Socket;
 	// TBD: consider passing the entities at instantiation?
 	private entities: AnyEntityExtended[] = [];
-	private editIds: Set<string> = new Set();
+	private editIds?: SvelteSet<string>;
 	// private getEditIds?: () => Set<string>;
 
 	constructor(
 		connection: SocketioConnection,
 		getEntities?: () => AnyEntityExtended[],
-		getEditIds?: () => Set<string>
+		// editIds?: SvelteSet<string>
+		getEditIds?: () => SvelteSet<string>
 	) {
 		// TBD: put a try catch here?
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
@@ -51,14 +53,20 @@ export class SocketIO {
 		});
 		// TBD: consider passing the entities at instantiation?
 		this.entities = getEntities ? getEntities() : [];
-		this.editIds = getEditIds ? getEditIds() : new SvelteSet<string>();
-		// this.getEditIds = getEditIds;
+		if (getEditIds) {
+			this.editIds = getEditIds();
+		}
+		// this.editIds = editIds;
 		this.client.connect();
 	}
 
 	// private get editIds(): Set<string> | undefined {
 	// 	return this.getEditIds ? this.getEditIds() : undefined;
 	// }
+
+	public get getEditIds(): SvelteSet<string> {
+		return this.editIds ? this.editIds : new SvelteSet<string>;
+	}
 
 	// Emitters:
 	public addEntity(newEntity: AnyEntityExtended): void {
@@ -91,6 +99,7 @@ export class SocketIO {
 		// console.log(this.editIds);
 		// if (this.editIds && this.editIds.has(entityId)) {
 		// 	this.editIds.delete(entityId);
+		// 	this.editIds = new SvelteSet(this.editIds); // trigger reactivity
 		// }
 	}
 
@@ -101,11 +110,12 @@ export class SocketIO {
 		// 		this.editIds = new Set(this.editIds); // trigger reactivity
 		// 	}
 		// }
-		console.log('=== socketio - submitEntity - editIds ===');
-		console.log(this.editIds);
+		// console.log('=== socketio - submitEntity - editIds ===');
+		// console.log(this.editIds);
 		// Deletes the priliminary id from editIds, if it is a new entity.
 		if (this.editIds && this.editIds.has(entity.id) && entity.id.slice(0, 4) === 'new_') {
 			this.editIds.delete(entity.id);
+			this.editIds = new SvelteSet(this.editIds); // trigger reactivity
 		}
 		this.client.emit('submit', { payload: entity });
 	}
@@ -136,38 +146,42 @@ export class SocketIO {
 			if (index > -1) {
 				this.entities.splice(index, 1);
 			}
-			// TBD: fix reactivity of editIds for receivers (which are not triggered inside component)
-			// if (this.editIds) {
-			// 	console.log('=== socketio - deleted - this.editIds ===');
-			// 	console.log(this.editIds)
-			// 	this.editIds.delete(resource_id);
-			// 	console.log('=== socketio - deleted - this.editIds - after deletion ===');
-			// 	console.log(this.editIds);
-			// 	// if (this.getEditIds) {
-			// 	// 	this.getEditIds();
-			// 	// }
-			// 	// if (this.editIds.has(resource_id)) {
-			// 	// 	console.log('=== socketio - deleted receiver - deleting resource from editIds ===');
-			// 	// 	this.editIds.delete(resource_id);
-			// 	// }
-			// }
+			// TBD: debug reactivity:
+			if (this.editIds) {
+				// console.log('=== socketio - deleted - this.editIds ===');
+				// console.log(this.editIds);
+				this.editIds.delete(resource_id);
+				this.editIds = new SvelteSet(this.editIds); // trigger reactivity
+				// console.log('=== socketio - deleted - this.editIds - after deletion ===');
+				// console.log(this.editIds);
+			}
 			// Creates a new array and breaks reactivity:
 			// this.entities = this.entities.filter((entity) => entity.id !== resource_id);
 		});
 		this.client.on('status', (data: SocketioStatus) => {
+			console.log('=== socketio - status - data ===');
+			console.log(data);
 			if ('success' in data) {
 				if (data.success === 'created') {
+					if (this.editIds) {
+						// console.log('=== socketio - created - this.editIds ===');
+						// console.log(this.editIds);
+						this.editIds.add(data.id);
+						this.editIds = new SvelteSet(this.editIds); // trigger reactivity
+						// console.log('=== socketio - created - this.editIds - after addition ===');
+						// console.log(this.editIds);
+					}
+					// console.log('=== socketio - created - data ===');
+					// console.log(data);
 					this.entities.forEach((entity) => {
 						if (entity.id === data.submitted_id) {
 							entity.id = data.id;
 						}
-						// TBD: fix reactivity of editIds for receivers (which are not triggered inside component)
-						// Adds the created id (as a replacement for the prelimnary id) to editIds.
-						// This is needed to keep editing on after newly created resources.
-						// if (this.editIds) {
-						// 	this.editIds.add(data.id);
-						// }
 					});
+					// Adds the created id (as a replacement for the prelimnary id) to editIds.
+					// This is needed to keep editing on after newly created resources.
+					// TBD: debug reactivity:
+
 				} else if (data.success === 'shared') {
 					this.client.emit('read', data.id);
 				} else if (data.success === 'unshared') {
@@ -179,4 +193,74 @@ export class SocketIO {
 			}
 		});
 	}
+
+	public handleTransfer(data: AnyEntityExtended): void {
+		const existingIndex = this.entities.findIndex((entity) => entity.id === data.id);
+		if (existingIndex > -1) {
+			// Update existing entity in place
+			this.entities[existingIndex] = { ...this.entities[existingIndex], ...data };
+			// creates a new array and breaks reactivity:
+			// this.entities = this.entities.map((entity) =>
+			// 	// only replaces the keys, where the newly incoming data is defined.
+			// 	entity.id === data.id ? { ...entity, ...data } : entity
+			// );
+		} else {
+			// Add new entity
+			this.entities.push(data);
+		}
+	}
+
+	public handleDeleted(resource_id: string, editIds?: SvelteSet<string>): SvelteSet<string> {
+		const index = this.entities.findIndex((entity) => entity.id === resource_id);
+		if (index > -1) {
+			this.entities.splice(index, 1);
+		}
+		// TBD: debug reactivity:
+		if (editIds) {
+			// console.log('=== socketio - deleted - this.editIds ===');
+			// console.log(this.editIds);
+			editIds.delete(resource_id);
+			editIds = new SvelteSet(editIds); // trigger reactivity
+			// console.log('=== socketio - deleted - this.editIds - after deletion ===');
+			// console.log(this.editIds);
+		}
+		// Creates a new array and breaks reactivity:
+		// this.entities = this.entities.filter((entity) => entity.id !== resource_id);
+		return editIds ? editIds : new SvelteSet<string>();
+	}
+
+	public handleStatus(data: SocketioStatus, editIds?: SvelteSet<string>): SvelteSet<string> {
+		if ('success' in data) {
+			if (data.success === 'created') {
+				if (editIds) {
+					// console.log('=== socketio - created - this.editIds ===');
+					// console.log(this.editIds);
+					editIds.add(data.id);
+					editIds = new SvelteSet(editIds); // trigger reactivity
+					// console.log('=== socketio - created - this.editIds - after addition ===');
+					// console.log(this.editIds);
+				}
+				// console.log('=== socketio - created - data ===');
+				// console.log(data);
+				this.entities.forEach((entity) => {
+					if (entity.id === data.submitted_id) {
+						entity.id = data.id;
+					}
+				});
+				// Adds the created id (as a replacement for the prelimnary id) to editIds.
+				// This is needed to keep editing on after newly created resources.
+				// TBD: debug reactivity:
+
+			} else if (data.success === 'shared') {
+				this.client.emit('read', data.id);
+			} else if (data.success === 'unshared') {
+				// Re-read to see, if there is still access to the resource any other way,
+				// for example inherited access.
+				// if not, server emits a 'deleted' event.
+				this.client.emit('read', data.id);
+			}
+		}
+		return editIds ? editIds : new SvelteSet<string>();
+	};
 }
+

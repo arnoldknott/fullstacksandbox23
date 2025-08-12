@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
-	import type { AccessPolicy, AccessShareOption, DemoResourceExtended, Identity } from '$lib/types';
+	import type { AccessShareOption, DemoResourceExtended, Identity } from '$lib/types';
 	import { fade } from 'svelte/transition';
 	import { Action } from '$lib/accessHandler';
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
