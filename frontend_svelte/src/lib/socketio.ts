@@ -4,7 +4,6 @@ import type { Socket } from 'socket.io-client';
 import { getContext } from 'svelte';
 import type { AccessPolicy, AnyEntityExtended, BackendAPIConfiguration } from '$lib/types.d.ts';
 import { SvelteSet } from 'svelte/reactivity';
-import type { S } from 'vitest/dist/chunks/config.d.D2ROskhv.js';
 
 export type SocketioConnection = {
 	namespace?: string;
@@ -65,7 +64,7 @@ export class SocketIO {
 	// }
 
 	public get getEditIds(): SvelteSet<string> {
-		return this.editIds ? this.editIds : new SvelteSet<string>;
+		return this.editIds ? this.editIds : new SvelteSet<string>();
 	}
 
 	// Emitters:
@@ -181,7 +180,6 @@ export class SocketIO {
 					// Adds the created id (as a replacement for the prelimnary id) to editIds.
 					// This is needed to keep editing on after newly created resources.
 					// TBD: debug reactivity:
-
 				} else if (data.success === 'shared') {
 					this.client.emit('read', data.id);
 				} else if (data.success === 'unshared') {
@@ -250,7 +248,6 @@ export class SocketIO {
 				// Adds the created id (as a replacement for the prelimnary id) to editIds.
 				// This is needed to keep editing on after newly created resources.
 				// TBD: debug reactivity:
-
 			} else if (data.success === 'shared') {
 				this.client.emit('read', data.id);
 			} else if (data.success === 'unshared') {
@@ -261,6 +258,5 @@ export class SocketIO {
 			}
 		}
 		return editIds ? editIds : new SvelteSet<string>();
-	};
+	}
 }
-
