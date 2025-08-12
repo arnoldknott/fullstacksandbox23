@@ -7,6 +7,9 @@
 	import JsonData from '$components/JsonData.svelte';
 	import IdentityAccordion from './IdentityAccordion.svelte';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
+
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
+	import type { UeberGroup, UeberGroupExtended } from '$lib/types';
 	let { data }: { data: PageData } = $props();
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
@@ -33,6 +36,31 @@
 			goto(`?`, { replaceState: true });
 		}
 	});
+
+	const connection: SocketioConnection = {
+		namespace: '/ueber-group',
+		cookie_session_id: page.data.session.sessionId
+		// query_params: {
+		// 	'request-access-data': true,
+		// }
+	};
+
+	let ueberGroups = $state<UeberGroup[]>(data.ueberGroups);
+	const socketio = new SocketIO(connection, () => ueberGroups);
+
+	socketio.client.on('transfer', (data: UeberGroupExtended) => socketio.handleTransfer(data));
+	socketio.client.on('deleted', (resource_id: string) => socketio.handleDeleted(resource_id));
+	socketio.client.on('status', (status: SocketioStatus) => socketio.handleStatus(status));
+
+	const newUeberGroup = $state<UeberGroup>({
+		id: 'new_' + Math.random().toString(36).substring(2, 9),
+		name: '',
+		description: ''
+	});
+
+	// const addUeberGroup = () => {
+	// 	socketio.addEntity(newUeberGroup());
+	// };
 </script>
 
 <div>
@@ -171,6 +199,7 @@
 									class="input input-sm md:input-md shadow-shadow shadow-inner"
 									id="name_id_new_element"
 									name="name"
+									bind:value={newUeberGroup.name}
 								/>
 								<label class="input-filled-label" for="name_id_new_element">Name</label>
 							</div>
@@ -180,6 +209,7 @@
 									placeholder="Describe the demo resource here."
 									id="description_id_new_element"
 									name="description"
+									bind:value={newUeberGroup.description}
 								>
 								</textarea>
 								<label class="textarea-filled-label" for="description_id_new_element">
@@ -192,6 +222,13 @@
 						<button
 							class="btn-warning-container btn btn-circle btn-gradient"
 							aria-label="Send Icon Button"
+							onclick={() => {
+								socketio.submitEntity(newUeberGroup);
+								newUeberGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
+								newUeberGroup.name = '';
+								newUeberGroup.description = '';
+							}}
+							data-overlay="#add-ueber-group-modal"
 						>
 							<span class="icon-[tabler--send-2]"></span>
 						</button>
@@ -205,13 +242,13 @@
 	class="accordion accordion-bordered bg-primary-container text-primary-container-content"
 	data-accordion-always-open=""
 >
-	{#if data.ueberGroups.length === 0}
+	{#if ueberGroups.length === 0}
 		<div class="alert alert-warning label-large text-center" role="alert">
 			No Ueber-Groups found for this user.
 		</div>
 	{/if}
 
-	{#each data.ueberGroups as uberGroup (uberGroup.id)}
+	{#each ueberGroups as uberGroup (uberGroup.id)}
 		<IdentityAccordion
 			icon={AccessHandler.identityIcon(IdentityType.UEBER_GROUP)}
 			title={uberGroup.name || 'Unknown Group'}
@@ -232,6 +269,17 @@
 						<button class="btn btn-accent-container shadow-outline shadow-md"
 							><span class="icon-[fa6-solid--plus]"></span> Add User</button
 						>
+						{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
+							<button
+								class="btn btn-error-container shadow-outline shadow-md"
+								aria-label="Delete Ueber Group"
+								onclick={() => {
+									socketio.deleteEntity(uberGroup.id);
+								}}
+							>
+								<span class="icon-[tabler--trash]"></span> Delete Group
+							</button>
+						{/if}
 					</div>
 				</div>
 				{#if debug}
