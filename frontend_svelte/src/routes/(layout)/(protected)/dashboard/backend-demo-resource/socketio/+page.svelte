@@ -14,8 +14,6 @@
 	import { SvelteSet } from 'svelte/reactivity';
 
 	let { data }: { data: PageData } = $props();
-	let editIds = new SvelteSet<string>();
-	let statusMessages = $state<SocketioStatus[]>([]);
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	$effect(() => {
@@ -36,164 +34,13 @@
 	};
 
 	let demoResources = $state<DemoResourceExtended[]>([]);
-	// $effect(() => {
-
-	// 	// demoResources = socketio.entities as DemoResourceExtended[];
-	// });
+	let editIds = new SvelteSet<string>();
+	let statusMessages = $state<SocketioStatus[]>([]);
 	const socketio = new SocketIO(
 		connection,
 		() => demoResources,
 		() => editIds
 	);
-	// $effect(() => {
-	// 	editIds = socketio.editIds ? socketio.editIds : new SvelteSet<string>();
-	// });
-
-	// let demoResources = $state(socketio.entities as DemoResourceExtended[]);
-
-	// console.log(
-	// 	data.microsoftTeams
-	// 		.filter((team) => team.id)
-	// 		.map((team) => {
-	// 			return {
-	// 				id: team.id,
-	// 				name: team.displayName || 'Unknown Team',
-	// 				type: IdentityType.MICROSOFT_TEAM,
-	// 				accessRight: undefined
-	// 			};
-	// 		})
-	// );
-
-	// let identities: Identity[] | undefined = $derived.by(() =>
-	// 	data.microsoftTeams
-	// 		.filter((team) => team.id)
-	// 		.map((team) => {
-	// 			return {
-	// 				id: team.id,
-	// 				name: team.displayName || 'Unknown Team',
-	// 				type: IdentityType.MICROSOFT_TEAM,
-	// 				accessRight: undefined
-	// 			};
-	// 		})
-	// );
-
-	// $effect(() => {
-	// 	editIds = socketio.getEditIds;
-	// 	console.log('=== dashboard - backend-demo-resource - socketio - +page.svelte - editIds ===');
-	// 	console.log(editIds);
-	// });
-	// socketio.receivers.bind(socketio)();
-	// socketio.client.on('deleted', (resource_id: string) => {
-	// 	// if (debug) {
-	// 	// 	console.log(
-	// 	// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
-	// 	// 	);
-	// 	// 	console.log(resource_id);
-	// 	// }
-	// 	editIds = socketio.getEditIds;
-	// 	// if (editIds.has(resource_id)) {
-	// 	// 	// console.log('=== socketio - deleted receiver - deleting resource from editIds ===');
-	// 	// 	// editIds.delete(resource_id);
-	// 	// 	// editIds = new SvelteSet(editIds); // trigger reactivity
-	// 	// }
-	// 	// 	demoResources = demoResources.filter((res) => res.id !== resource_id);
-	// });
-	// socketio.client.on('status', (data: SocketioStatus) => {
-	// 	console.log('=== backend-demo-resource - socketio - +page.svelte - status received ===');
-	// 	console.log(data);
-	// 	statusMessages.unshift(data);
-	// 	editIds = socketio.getEditIds;
-	// 	// if (debug) {
-	// 	// 	console.log(
-	// 	// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
-	// 	// 	);
-	// 	// 	console.log('Status update:', data);
-	// 	// }
-	// 	// if ('success' in data) {
-	// 	// 	if (data.success === 'created') {
-	// 	// 		editIds = socketio.getEditIds;
-	// 	// 		// editIds.add(data.id); // keep editing on after newly created resources
-	// 	// 		// editIds = new SvelteSet(editIds); // trigger reactivity
-	// 	// 	}
-	// 	// }
-	// });
-	// $effect(() => {
-	// 	// socketio.receivers();
-	// 	// socketio.client.on('transfer', (data: DemoResourceExtended) => {
-	// 	// 	// if (debug) {
-	// 	// 	// 	console.log(
-	// 	// 	// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-	// 	// 	// 	);
-	// 	// 	// 	console.log(data);
-	// 	// 	// }
-	// 	// 	if (demoResources.some((res) => res.id === data.id)) {
-	// 	// 		// Update existing resource
-	// 	// 		demoResources = demoResources.map((res) =>
-	// 	// 			// only replaces the keys, where the newly incoming data is defined.
-	// 	// 			res.id === data.id ? { ...res, ...data } : res
-	// 	// 		);
-	// 	// 		// TBD: examin the workflow: access policies of recently changed accesses in resources change the icon,
-	// 	// 		// but the data, e.g. in debugging information stays outdated!
-	// 	// 	} else {
-	// 	// 		// Add new resource
-	// 	// 		demoResources.push(data);
-	// 	// 	}
-	// 	// });
-	// 	socketio.client.on('deleted', (resource_id: string) => {
-	// 		if (debug) {
-	// 			console.log(
-	// 				'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
-	// 			);
-	// 			console.log(resource_id);
-	// 		}
-	// 		// if (editIds.has(resource_id)) {
-	// 		// 	console.log('=== socketio - deleted receiver - deleting resource from editIds ===');
-	// 		// editIds.delete(resource_id);
-	// 		// editIds = new Set(editIds); // trigger reactivity
-	// 		// }
-	// 		// 	demoResources = demoResources.filter((res) => res.id !== resource_id);
-	// 	});
-	// 	socketio.client.on('status', (data: SocketioStatus) => {
-	// 		statusMessages.unshift(data);
-	// 		if (debug) {
-	// 			console.log(
-	// 				'=== dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
-	// 			);
-	// 			console.log('Status update:', data);
-	// 		}
-	// 		// if ('success' in data) {
-	// 		// 	if (data.success === 'created') {
-	// 		// 		// 		demoResources.forEach((demoResource) => {
-	// 		// 		// 			if (demoResource.id === data.submitted_id) {
-	// 		// 		// 				demoResource.id = data.id;
-	// 		// 		// 			}
-	// 		// 		// 		});
-	// 		// 		// editIds.add(data.id); // keep editing on after newly created resources
-	// 		// 		// editIds = new Set(editIds); // trigger reactivity
-	// 		// 		// 	} else if (data.success === 'shared') {
-	// 		// 		// 		socketio.client.emit('read', data.id);
-	// 		// 		// 	} else if (data.success === 'unshared') {
-	// 		// 		// 		// TBD: consider not to emit read, but to remove the resource from the list!
-	// 		// 		// 		socketio.client.emit('read', data.id);
-	// 		// 		// 		// Re-read to see, if there is still access to the resource any other way.
-	// 		// 		// 		// If that fails, remove it from the list
-	// 		// 		// 		// rerun check on access policies for this resource after removing the unshared policy:
-	// 		// 		// 		// TBD: reload all access for the resource,
-	// 		// 		// 		// as other users access_policies are still part of the resource, e.g. admin, that created it.
-	// 		// 		// 		// however that does not give the current user access any more!
-	// 		// 		// 		// demoResources = demoResources.map((res) => {
-	// 		// 		// 		// 	if (res.id === data.resource_id) {
-	// 		// 		// 		// 		res.access_policies = res.access_policies?.filter(
-	// 		// 		// 		// 			(policy) => policy.identity_id !== data.identity_id
-	// 		// 		// 		// 		);
-	// 		// 		// 		// 	}
-	// 		// 		// 		// 	return res;
-	// 		// 		// 		// });
-	// 		// 		// 		// demoResources = demoResources.filter((res) => res.id !== data.id);
-	// 		// 	}
-	// 		// }
-	// 	});
-	// });
 
 	socketio.client.on('transfer', (data: DemoResourceExtended) => {
 		// if (debug) {
@@ -238,44 +85,7 @@
 
 	const addDemoResource = () => {
 		socketio.addEntity(newDemoResource());
-		// demoResources.unshift(newDemoResource());
 	};
-
-	// // The backend is handling it, whether it's new or existing. If the id is a UUID, it tries to update an existing resource.
-	// const submitResource = (demoResource: DemoResourceExtended) => {
-	// 	socketio.submitEntity(demoResource);
-	// 	// if (demoResource.id?.slice(0, 4) === 'new_') {
-	// 	// 	editIds.delete(demoResource.id);
-	// 	// 	editIds = new Set(editIds); // trigger reactivity
-	// 	// }
-	// 	// socketio.client.emit('submit', { payload: demoResource });
-	// };
-
-	// // TBD: consider adding those directly to the onclick() event handler
-	// const deleteResource = (resourceId: string) => {
-	// 	socketio.deleteEntity(resourceId);
-	// 	// if (resourceId.slice(0, 4) === 'new_') {
-	// 	// 	// If the resource is new and has no id, we can just remove it from the local array
-	// 	// 	demoResources = demoResources.filter((res) => res.id !== resourceId);
-	// 	// } else {
-	// 	// 	socketio.client.emit('delete', resourceId);
-	// 	// }
-	// 	// if (editIds.has(resourceId)) {
-	// 	// 	editIds.delete(resourceId);
-	// 	// 	editIds = new Set(editIds); // trigger reactivity
-	// 	// }
-	// };
-
-	// const shareResource = (accessPolicy: AccessPolicy) => {
-	// 	socketio.shareEntity(accessPolicy);
-	// 	// if (debug) {
-	// 	// 	console.log(
-	// 	// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - share accessPolicy ==='
-	// 	// 	);
-	// 	// 	console.log(accessPolicy);
-	// 	// }
-	// 	// socketio.client.emit('share', accessPolicy);
-	// };
 
 	const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
 		if (a.creation_date && b.creation_date) {
@@ -530,35 +340,3 @@
 		{/each}
 	</div>
 </div>
-
-<!-- <ul
-    class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
-    role="menu"
-    aria-orientation="vertical"
-    aria-labelledby="action-share"
->
-    <form
-        method="POST"
-        name="actionButtonShareForm"
-        use:enhance={async () => {
-            actionButtonShareMenu?.close();
-            return async ({ result, update }) => {
-                handleRightsChangeResponse(result, update);
-            };
-        }}
-    >
-        {#each teams as team, i (i)}
-            <ShareItem
-                resourceId="actionButtonShareResourceId"
-                icon="icon-[fluent--people-team-16-filled]"
-                identity={team}
-            />
-        {/each}
-    </form>
-    <li class="dropdown-footer gap-2">
-        <button
-            class="btn dropdown-item btn-text text-secondary content-center justify-start"
-            >... more options</button
-        >
-    </li>
-</ul> -->
