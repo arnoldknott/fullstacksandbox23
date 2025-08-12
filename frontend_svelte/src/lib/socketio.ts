@@ -26,9 +26,15 @@ export type SocketioStatus =
 export class SocketIO {
 	public client: Socket;
 	// TBD: consider passing the entities at instantiation?
-	public entities: AnyEntityExtended[] = [];
+	private entities: AnyEntityExtended[] = [];
+	// private editIds: Set<string> = new Set();
+	private getEditIds?: () => Set<string>;
 
-	constructor(connection: SocketioConnection, entities: AnyEntityExtended[] = []) {
+	constructor(
+		connection: SocketioConnection,
+		getEntities?: () => AnyEntityExtended[],
+		getEditIds?: () => Set<string>
+	) {
 		// TBD: put a try catch here?
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
 		const backendFqdn = backendAPIConfiguration.backendFqdn;
@@ -43,16 +49,23 @@ export class SocketIO {
 			query: connection.query_params || {} // Use the query_params from the connection object
 		});
 		// TBD: consider passing the entities at instantiation?
-		this.entities = entities;
+		this.entities = getEntities ? getEntities() : [];
+		// this.editIds = getEditIds ? getEditIds() : new Set();
+		this.getEditIds = getEditIds;
 		this.client.connect();
+	}
+
+	private get editIds(): Set<string> | undefined {
+		return this.getEditIds ? this.getEditIds() : undefined;
 	}
 
 	// Emitters:
 	public addEntity(newEntity: AnyEntityExtended): void {
+		console.log('=== socketio - adding entity ===');
 		this.entities.unshift(newEntity);
 	}
 
-	public deleteEntity(entityId: string, editIds?: Set<string>): void {
+	public deleteEntity(entityId: string): void {
 		if (entityId.slice(0, 4) === 'new_') {
 			// If the resource is new and has no id, we can just remove it from the local array
 			const index = this.entities.findIndex((entity) => entity.id === entityId);
@@ -64,20 +77,34 @@ export class SocketIO {
 		} else {
 			this.client.emit('delete', entityId);
 		}
-		if (editIds) {
-			if (editIds.has(entityId)) {
-				editIds.delete(entityId);
-				editIds = new Set(editIds); // trigger reactivity
-			}
-		}
+		// Handling of deleting the editIds moved to receiver status - deleted,
+		// so that other users, that were currently editing the same resource,
+		// can also remove it from their editIds.
+		// if (this.editIds) {
+		// 	if (this.editIds.has(entityId)) {
+		// 		this.editIds.delete(entityId);
+		// 		this.editIds = new Set(this.editIds); // trigger reactivity
+		// 	}
+		// }
+		// console.log('=== socketio - deleteEntity - editIds ===');
+		// console.log(this.editIds);
+		// if (this.editIds && this.editIds.has(entityId)) {
+		// 	this.editIds.delete(entityId);
+		// }
 	}
 
-	public submitEntity(entity: AnyEntityExtended, editIds?: Set<string>): void {
-		if (editIds) {
-			if (entity.id.slice(0, 4) === 'new_') {
-				editIds.delete(entity.id);
-				editIds = new Set(editIds); // trigger reactivity
-			}
+	public submitEntity(entity: AnyEntityExtended): void {
+		// if (this.editIds) {
+		// 	if (entity.id.slice(0, 4) === 'new_') {
+		// 		this.editIds.delete(entity.id);
+		// 		this.editIds = new Set(this.editIds); // trigger reactivity
+		// 	}
+		// }
+		console.log('=== socketio - submitEntity - editIds ===');
+		console.log(this.editIds);
+		// Deletes the priliminary id from editIds, if it is a new entity.
+		if (this.editIds && this.editIds.has(entity.id) && entity.id.slice(0, 4) === 'new_') {
+			this.editIds.delete(entity.id);
 		}
 		this.client.emit('submit', { payload: entity });
 	}
@@ -87,7 +114,7 @@ export class SocketIO {
 	}
 
 	// Receivers:
-	public receivers(editIds?: Set<string>): void {
+	public receivers(): void {
 		this.client.on('transfer', (data: AnyEntityExtended) => {
 			const existingIndex = this.entities.findIndex((entity) => entity.id === data.id);
 			if (existingIndex > -1) {
@@ -108,6 +135,21 @@ export class SocketIO {
 			if (index > -1) {
 				this.entities.splice(index, 1);
 			}
+			// TBD: fix reactivity of editIds for receivers (which are not triggered inside component)
+			// if (this.editIds) {
+			// 	console.log('=== socketio - deleted - this.editIds ===');
+			// 	console.log(this.editIds)
+			// 	this.editIds.delete(resource_id);
+			// 	console.log('=== socketio - deleted - this.editIds - after deletion ===');
+			// 	console.log(this.editIds);
+			// 	// if (this.getEditIds) {
+			// 	// 	this.getEditIds();
+			// 	// }
+			// 	// if (this.editIds.has(resource_id)) {
+			// 	// 	console.log('=== socketio - deleted receiver - deleting resource from editIds ===');
+			// 	// 	this.editIds.delete(resource_id);
+			// 	// }
+			// }
 			// Creates a new array and breaks reactivity:
 			// this.entities = this.entities.filter((entity) => entity.id !== resource_id);
 		});
@@ -118,10 +160,12 @@ export class SocketIO {
 						if (entity.id === data.submitted_id) {
 							entity.id = data.id;
 						}
-						if (editIds) {
-							editIds.add(data.id); // keep editing on after newly created resources
-							editIds = new Set(editIds); // trigger reactivity
-						}
+						// TBD: fix reactivity of editIds for receivers (which are not triggered inside component)
+						// Adds the created id (as a replacement for the prelimnary id) to editIds.
+						// This is needed to keep editing on after newly created resources.
+						// if (this.editIds) {
+						// 	this.editIds.add(data.id);
+						// }
 					});
 				} else if (data.success === 'shared') {
 					this.client.emit('read', data.id);
