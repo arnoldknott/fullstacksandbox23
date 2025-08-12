@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
 import { getContext } from 'svelte';
 import type { AccessPolicy, AnyEntityExtended, BackendAPIConfiguration } from '$lib/types.d.ts';
+import { SvelteSet } from 'svelte/reactivity';
 
 export type SocketioConnection = {
 	namespace?: string;
@@ -27,8 +28,8 @@ export class SocketIO {
 	public client: Socket;
 	// TBD: consider passing the entities at instantiation?
 	private entities: AnyEntityExtended[] = [];
-	// private editIds: Set<string> = new Set();
-	private getEditIds?: () => Set<string>;
+	private editIds: Set<string> = new Set();
+	// private getEditIds?: () => Set<string>;
 
 	constructor(
 		connection: SocketioConnection,
@@ -50,14 +51,14 @@ export class SocketIO {
 		});
 		// TBD: consider passing the entities at instantiation?
 		this.entities = getEntities ? getEntities() : [];
-		// this.editIds = getEditIds ? getEditIds() : new Set();
-		this.getEditIds = getEditIds;
+		this.editIds = getEditIds ? getEditIds() : new SvelteSet<string>();
+		// this.getEditIds = getEditIds;
 		this.client.connect();
 	}
 
-	private get editIds(): Set<string> | undefined {
-		return this.getEditIds ? this.getEditIds() : undefined;
-	}
+	// private get editIds(): Set<string> | undefined {
+	// 	return this.getEditIds ? this.getEditIds() : undefined;
+	// }
 
 	// Emitters:
 	public addEntity(newEntity: AnyEntityExtended): void {

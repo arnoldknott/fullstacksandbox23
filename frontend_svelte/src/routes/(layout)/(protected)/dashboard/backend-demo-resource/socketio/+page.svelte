@@ -11,9 +11,10 @@
 	import { fade, scale } from 'svelte/transition';
 	import IdBadge from '../../IdBadge.svelte';
 	import { onDestroy } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	let { data }: { data: PageData } = $props();
-	let editIds = $state(new Set<string>());
+	let editIds = $state(new SvelteSet<string>());
 	let statusMessages = $state<SocketioStatus[]>([]);
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
@@ -106,7 +107,7 @@
 			// if (editIds.has(resource_id)) {
 			// 	console.log('=== socketio - deleted receiver - deleting resource from editIds ===');
 			editIds.delete(resource_id);
-			editIds = new Set(editIds); // trigger reactivity
+			// editIds = new Set(editIds); // trigger reactivity
 			// }
 			// 	demoResources = demoResources.filter((res) => res.id !== resource_id);
 		});
@@ -126,7 +127,7 @@
 					// 			}
 					// 		});
 					editIds.add(data.id); // keep editing on after newly created resources
-					editIds = new Set(editIds); // trigger reactivity
+					// editIds = new Set(editIds); // trigger reactivity
 					// 	} else if (data.success === 'shared') {
 					// 		socketio.client.emit('read', data.id);
 					// 	} else if (data.success === 'unshared') {
@@ -356,7 +357,7 @@
 							} else {
 								editIds.delete(demoResource.id || '');
 							}
-							editIds = new Set(editIds);
+							// editIds = new Set(editIds); // trigger reactivity
 						}
 					}
 				}
