@@ -63,9 +63,9 @@ export class SocketIO {
 	// If the id is a UUID, it tries to update an existing resource.
 	public submitEntity(entity: AnyEntityExtended): void {
 		// Deletes the preliminary id from editIds, if it is a new entity.
+		// if (this.editIds && this.editIds.has(entity.id) && entity.id.slice(0, 4) === 'new_') {
 		if (this.editIds && this.editIds.has(entity.id) && entity.id.slice(0, 4) === 'new_') {
 			this.editIds.delete(entity.id);
-			this.editIds = new SvelteSet(this.editIds); // trigger reactivity
 		}
 		this.client.emit('submit', { payload: entity });
 	}
@@ -89,60 +89,6 @@ export class SocketIO {
 	}
 
 	// Receivers:
-	public receivers(): void {
-		this.client.on('transfer', (data: AnyEntityExtended) => {
-			const existingIndex = this.entities.findIndex((entity) => entity.id === data.id);
-			if (existingIndex > -1) {
-				// Update existing entity in place
-				this.entities[existingIndex] = { ...this.entities[existingIndex], ...data };
-				// Creates a new array and breaks reactivity:
-				// this.entities = this.entities.map((entity) =>
-				// 	// only replaces the keys, where the newly incoming data is defined.
-				// 	entity.id === data.id ? { ...entity, ...data } : entity
-				// );
-			} else {
-				// Add new entity
-				this.entities.push(data);
-			}
-		});
-		this.client.on('deleted', (resource_id: string) => {
-			const index = this.entities.findIndex((entity) => entity.id === resource_id);
-			if (index > -1) {
-				this.entities.splice(index, 1);
-			}
-			if (this.editIds) {
-				this.editIds.delete(resource_id);
-				this.editIds = new SvelteSet(this.editIds); // trigger reactivity
-			}
-			// Creates a new array and breaks reactivity:
-			// this.entities = this.entities.filter((entity) => entity.id !== resource_id);
-		});
-		this.client.on('status', (data: SocketioStatus) => {
-			if ('success' in data) {
-				if (data.success === 'created') {
-					if (this.editIds) {
-						this.editIds.add(data.id);
-						this.editIds = new SvelteSet(this.editIds); // trigger reactivity
-					}
-					this.entities.forEach((entity) => {
-						if (entity.id === data.submitted_id) {
-							entity.id = data.id;
-						}
-					});
-					// Adds the created id (as a replacement for the preliminary id) to editIds.
-					// This is needed to keep editing on after newly created resources.
-				} else if (data.success === 'shared') {
-					this.client.emit('read', data.id);
-				} else if (data.success === 'unshared') {
-					// Re-read to see, if there is still access to the resource any other way,
-					// for example inherited access.
-					// if not, server emits a 'deleted' event.
-					this.client.emit('read', data.id);
-				}
-			}
-		});
-	}
-
 	public handleTransfer(data: AnyEntityExtended): void {
 		const existingIndex = this.entities.findIndex((entity) => entity.id === data.id);
 		if (existingIndex > -1) {
@@ -159,26 +105,23 @@ export class SocketIO {
 		}
 	}
 
-	public handleDeleted(resource_id: string, editIds?: SvelteSet<string>): SvelteSet<string> {
+	public handleDeleted(resource_id: string): void {
 		const index = this.entities.findIndex((entity) => entity.id === resource_id);
 		if (index > -1) {
 			this.entities.splice(index, 1);
 		}
-		if (editIds) {
-			editIds.delete(resource_id);
-			editIds = new SvelteSet(editIds); // trigger reactivity
+		if (this.editIds) {
+			this.editIds.delete(resource_id);
 		}
 		// Creates a new array and breaks reactivity:
 		// this.entities = this.entities.filter((entity) => entity.id !== resource_id);
-		return editIds ? editIds : new SvelteSet<string>();
 	}
 
-	public handleStatus(data: SocketioStatus, editIds?: SvelteSet<string>): SvelteSet<string> {
+	public handleStatus(data: SocketioStatus): void {
 		if ('success' in data) {
 			if (data.success === 'created') {
-				if (editIds) {
-					editIds.add(data.id);
-					editIds = new SvelteSet(editIds); // trigger reactivity
+				if (this.editIds) {
+					this.editIds.add(data.id);
 				}
 
 				this.entities.forEach((entity) => {
@@ -197,6 +140,5 @@ export class SocketIO {
 				this.client.emit('read', data.id);
 			}
 		}
-		return editIds ? editIds : new SvelteSet<string>();
 	}
 }

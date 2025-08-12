@@ -59,7 +59,7 @@
 		// 	);
 		// 	console.log(resource_id);
 		// }
-		editIds = socketio.handleDeleted(resource_id, editIds);
+		socketio.handleDeleted(resource_id);
 	});
 
 	socketio.client.on('status', (data: SocketioStatus) => {
@@ -70,7 +70,7 @@
 		// 	console.log('Status update:', data);
 		// }
 		statusMessages.unshift(data);
-		editIds = socketio.handleStatus(data, editIds);
+		socketio.handleStatus(data);
 	});
 
 	const newDemoResource = (): DemoResourceExtended => {
