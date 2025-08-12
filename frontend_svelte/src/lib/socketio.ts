@@ -89,7 +89,7 @@ export class SocketIO {
 	}
 
 	// Receivers:
-	public handleTransfered(data: AnyEntityExtended): void {
+	public handleTransferred(data: AnyEntityExtended): void {
 		const existingIndex = this.entities.findIndex((entity) => entity.id === data.id);
 		if (existingIndex > -1) {
 			// Update existing entity in place

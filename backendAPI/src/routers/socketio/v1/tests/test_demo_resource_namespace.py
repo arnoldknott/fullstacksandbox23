@@ -103,7 +103,7 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
     await connection.connect()
 
     await connection.client.sleep(0.2)
-    transfer_data = connection.responses("transfered")
+    transfer_data = connection.responses("transferred")
 
     assert len(transfer_data) == 4
     for transfer, resource in zip(transfer_data, resources):
@@ -147,7 +147,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     transfer_data = []
 
     await connection.client.sleep(0.2)
-    transfer_data = connection.responses("transfered")
+    transfer_data = connection.responses("transferred")
 
     resources_with_user_acccess = [
         resources[1],  # Read access
@@ -202,7 +202,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     await connection.connect(query_parameters={"request-access-data": "true"})
 
     await connection.client.sleep(1)
-    transfer_data = connection.responses("transfered")
+    transfer_data = connection.responses("transferred")
 
     resources_with_user_acccess = [
         resources[1],  # Own access
@@ -259,7 +259,7 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
         # Wait for the response to be set
         # await client.sleep(0.2)
 
-        transfer_data = connection.responses("transfered")
+        transfer_data = connection.responses("transferred")
         status_data = connection.responses("status")
 
         assert transfer_data == []
@@ -345,7 +345,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
     # Wait for the response to be set
     await connection.client.sleep(0.2)
     status_data = connection.responses("status")
-    transfer_data = connection.responses("transfered")
+    transfer_data = connection.responses("transferred")
 
     # The get all resources on connect works: requires only "socketio" and "api.read" scope
     assert len(transfer_data) == len(existing_demo_resources)
@@ -974,8 +974,8 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
     # Unless the admin also has the team in the groups from token.
     assert status_data3 == []
 
-    transfer_data1 = connection1.responses("transfered")
-    transfer_data2 = connection2.responses("transfered")
+    transfer_data1 = connection1.responses("transferred")
+    transfer_data2 = connection2.responses("transferred")
     assert len(transfer_data1) == len(resources)
     # Even though the access has been granted, no resources are transferred yet.
     # User needs to make another emit to event read, to get the resource,
@@ -1075,8 +1075,8 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
     # Unless the admin also has the team in the groups from token.
     assert status_data3 == []
 
-    transfer_data1 = connection1.responses("transfered")
-    transfer_data2 = connection2.responses("transfered")
+    transfer_data1 = connection1.responses("transferred")
+    transfer_data2 = connection2.responses("transferred")
     assert len(transfer_data1) == len(resources)
     # Group had access before, so user2 got the resource on_connect:
     assert len(transfer_data2) == 1
@@ -1172,8 +1172,8 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
     # Unless the admin also has the team in the groups from token.
     assert connection3.responses("status") == []
 
-    transfer_data1 = connection1.responses("transfered")
-    transfer_data2 = connection2.responses("transfered")
+    transfer_data1 = connection1.responses("transferred")
+    transfer_data2 = connection2.responses("transferred")
     assert len(transfer_data1) == len(resources)
     # Group had access before, so user2 got the resource on_connect:
     assert len(transfer_data2) == 1
@@ -1298,9 +1298,9 @@ async def test_user_removes_share_with_group(
 
     # user one gets the resource again after the unshare event
     # still has access from own access policy:
-    assert len(connection1.responses("transfered")) == len(resources) + 1
+    assert len(connection1.responses("transferred")) == len(resources) + 1
     # Group had access before, so user2 got the resource on_connect:
-    assert len(connection2.responses("transfered")) == 1
+    assert len(connection2.responses("transferred")) == 1
 
 
 @pytest.mark.anyio
@@ -1341,7 +1341,7 @@ async def test_user_shares_tries_to_share_resource_without_having_access(
 
     assert connection.responses("status") == [{"error": "403: Forbidden."}]
 
-    assert len(connection.responses("transfered")) == 0
+    assert len(connection.responses("transferred")) == 0
 
 
 @pytest.mark.anyio
@@ -1387,17 +1387,17 @@ async def test_user_downgrades_last_inherited_owner_access(
     # Wait for the response to be set
     await connection.client.sleep(0.3)
 
-    assert len(connection.responses("transfered")) == 1
-    assert connection.responses("transfered")[0]["id"] == str(resources[0].id)
-    assert connection.responses("transfered")[0]["name"] == str(resources[0].name)
-    assert connection.responses("transfered")[0]["language"] == str(
+    assert len(connection.responses("transferred")) == 1
+    assert connection.responses("transferred")[0]["id"] == str(resources[0].id)
+    assert connection.responses("transferred")[0]["name"] == str(resources[0].name)
+    assert connection.responses("transferred")[0]["language"] == str(
         resources[0].language
     )
-    assert connection.responses("transfered")[0]["description"] == str(
+    assert connection.responses("transferred")[0]["description"] == str(
         resources[0].description
     )
-    assert connection.responses("transfered")[0]["access_right"] == "own"
-    assert len(connection.responses("transfered")[0]["access_policies"]) == 2
+    assert connection.responses("transferred")[0]["access_right"] == "own"
+    assert len(connection.responses("transferred")[0]["access_policies"]) == 2
 
     # Downgrade the UeberGroup access to read:
     await connection.client.emit(
@@ -1426,17 +1426,17 @@ async def test_user_downgrades_last_inherited_owner_access(
     # Wait for the response to be set
     await connection.client.sleep(0.4)
 
-    assert len(connection.responses("transfered")) == 2
-    assert connection.responses("transfered")[1]["id"] == str(resources[0].id)
-    assert connection.responses("transfered")[1]["name"] == str(resources[0].name)
-    assert connection.responses("transfered")[1]["language"] == str(
+    assert len(connection.responses("transferred")) == 2
+    assert connection.responses("transferred")[1]["id"] == str(resources[0].id)
+    assert connection.responses("transferred")[1]["name"] == str(resources[0].name)
+    assert connection.responses("transferred")[1]["language"] == str(
         resources[0].language
     )
-    assert connection.responses("transfered")[1]["description"] == str(
+    assert connection.responses("transferred")[1]["description"] == str(
         resources[0].description
     )
-    assert connection.responses("transfered")[1]["access_right"] == "read"
-    assert connection.responses("transfered")[1]["access_policies"] is None
+    assert connection.responses("transferred")[1]["access_right"] == "read"
+    assert connection.responses("transferred")[1]["access_policies"] is None
 
 
 @pytest.mark.anyio
@@ -1482,17 +1482,17 @@ async def test_user_removes_last_inherited_owner_access_and_reread_fails(
     # Wait for the response to be set
     await connection.client.sleep(0.3)
 
-    assert len(connection.responses("transfered")) == 1
-    assert connection.responses("transfered")[0]["id"] == str(resources[0].id)
-    assert connection.responses("transfered")[0]["name"] == str(resources[0].name)
-    assert connection.responses("transfered")[0]["language"] == str(
+    assert len(connection.responses("transferred")) == 1
+    assert connection.responses("transferred")[0]["id"] == str(resources[0].id)
+    assert connection.responses("transferred")[0]["name"] == str(resources[0].name)
+    assert connection.responses("transferred")[0]["language"] == str(
         resources[0].language
     )
-    assert connection.responses("transfered")[0]["description"] == str(
+    assert connection.responses("transferred")[0]["description"] == str(
         resources[0].description
     )
-    assert connection.responses("transfered")[0]["access_right"] == "own"
-    assert len(connection.responses("transfered")[0]["access_policies"]) == 2
+    assert connection.responses("transferred")[0]["access_right"] == "own"
+    assert len(connection.responses("transferred")[0]["access_policies"]) == 2
 
     # Remove the UeberGroup access:
     await connection.client.emit(
@@ -1528,4 +1528,4 @@ async def test_user_removes_last_inherited_owner_access_and_reread_fails(
     assert connection.responses("status")[2] == {
         "error": f"Resource {str(resources[0].id)} not found."
     }
-    assert len(connection.responses("transfered")) == 1
+    assert len(connection.responses("transferred")) == 1

@@ -84,7 +84,7 @@ class UserNamespace(BaseNamespace):
     #         async with self.crud() as crud:
     #             me = await crud.read_me(current_user)
     #         await self.server.emit(
-    #             "transfered",
+    #             "transferred",
     #             me.model_dump(mode="json"),
     #             namespace=self.namespace,
     #             to=sid,
@@ -104,7 +104,7 @@ class UserNamespace(BaseNamespace):
             async with self.crud() as crud:
                 me = await crud.read_me(current_user)
             await self.server.emit(
-                "transfered",
+                "transferred",
                 me.model_dump(mode="json"),
                 namespace=self.namespace,
                 to=sid,
@@ -126,7 +126,7 @@ class UserNamespace(BaseNamespace):
             async with self.crud() as crud:
                 updated_me = await crud.update_me(current_user, new_me)
             await self.server.emit(
-                "transfered",
+                "transferred",
                 updated_me.model_dump(mode="json"),
                 namespace=self.namespace,
                 to=sid,

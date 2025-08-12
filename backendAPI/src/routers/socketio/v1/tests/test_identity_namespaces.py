@@ -37,7 +37,7 @@ async def test_admin_access_user_connect_create_read_update_delete(
     # Connect to the user namespace:
     await connection.connect()
     await connection.client.sleep(0.5)
-    assert len(connection.responses("transfer")) == 0
+    assert len(connection.responses("transferred")) == 0
 
     # Create user:
     test_user = many_test_azure_users[1]
@@ -50,19 +50,19 @@ async def test_admin_access_user_connect_create_read_update_delete(
     # Admin automatically gets a shared notification:
     assert connection.responses("status")[1]["success"] == "shared"
     assert connection.responses("status")[1]["id"] == created_user_id
-    assert len(connection.responses("transfer")) == 0
+    assert len(connection.responses("transferred")) == 0
 
     # Read:
     await connection.client.emit("read", created_user_id, namespace="/user")
     await connection.client.sleep(1.3)
-    assert len(connection.responses("transfer")) == 1
-    assert connection.responses("transfer")[0]["id"] == created_user_id
+    assert len(connection.responses("transferred")) == 1
+    assert connection.responses("transferred")[0]["id"] == created_user_id
     assert (
-        connection.responses("transfer")[0]["azure_user_id"]
+        connection.responses("transferred")[0]["azure_user_id"]
         == test_user["azure_user_id"]
     )
     assert (
-        connection.responses("transfer")[0]["azure_tenant_id"]
+        connection.responses("transferred")[0]["azure_tenant_id"]
         == test_user["azure_tenant_id"]
     )
 
@@ -76,9 +76,9 @@ async def test_admin_access_user_connect_create_read_update_delete(
     await connection.client.sleep(0.3)
     assert connection.responses("status")[2]["success"] == "updated"
     assert connection.responses("status")[2]["id"] == created_user_id
-    assert len(connection.responses("transfer")) == 2
-    assert connection.responses("transfer")[1]["id"] == created_user_id
-    assert connection.responses("transfer")[1]["is_active"] is False
+    assert len(connection.responses("transferred")) == 2
+    assert connection.responses("transferred")[1]["id"] == created_user_id
+    assert connection.responses("transferred")[1]["is_active"] is False
 
     # Delete user:
     await connection.client.emit("delete", created_user_id, namespace="/user")
@@ -90,7 +90,7 @@ async def test_admin_access_user_connect_create_read_update_delete(
     # Read deleted user fails:
     await connection.client.emit("read", created_user_id, namespace="/user")
     await connection.client.sleep(1)
-    assert len(connection.responses("transfer")) == 2
+    assert len(connection.responses("transferred")) == 2
     assert connection.responses("status")[4]["success"] == "deleted"
     assert connection.responses("status")[4]["id"] == created_user_id
     assert (
@@ -120,31 +120,33 @@ async def test_read_me(
     # Connect to the user namespace:
     await connection.connect()
     await connection.client.sleep(0.5)
-    assert len(connection.responses("transfer")) == 0
+    assert len(connection.responses("transferred")) == 0
 
     await connection.client.emit("read_me", namespace="/user")
     await connection.client.sleep(1.5)
     # it's only the admin, that is so slow (users get response within 0.3 seconds!)
-    assert len(connection.responses("transfer")) == 1
-    assert connection.responses("transfer")[0]["id"] == str(current_user.user_id)
+    assert len(connection.responses("transferred")) == 1
+    assert connection.responses("transferred")[0]["id"] == str(current_user.user_id)
     assert (
-        connection.responses("transfer")[0]["azure_token_roles"]
+        connection.responses("transferred")[0]["azure_token_roles"]
         == current_user.azure_token_roles
     )
     assert (
-        connection.responses("transfer")[0]["azure_token_groups"]
+        connection.responses("transferred")[0]["azure_token_groups"]
         == current_user.azure_token_groups
     )
-    assert connection.responses("transfer")[0]["user_profile"]["contrast"] == 0.0
+    assert connection.responses("transferred")[0]["user_profile"]["contrast"] == 0.0
     assert (
-        connection.responses("transfer")[0]["user_profile"]["theme_color"] == "#353c6e"
+        connection.responses("transferred")[0]["user_profile"]["theme_color"]
+        == "#353c6e"
     )
     assert (
-        connection.responses("transfer")[0]["user_profile"]["theme_variant"]
+        connection.responses("transferred")[0]["user_profile"]["theme_variant"]
         == "Tonal Spot"
     )
     assert (
-        connection.responses("transfer")[0]["user_account"]["is_publicAIuser"] is False
+        connection.responses("transferred")[0]["user_account"]["is_publicAIuser"]
+        is False
     )
 
 
@@ -169,12 +171,12 @@ async def test_update_me(
     # Connect to the user namespace:
     await connection.connect()
     await connection.client.sleep(0.5)
-    assert len(connection.responses("transfer")) == 0
+    assert len(connection.responses("transferred")) == 0
 
     await connection.client.emit("read_me", namespace="/user")
     await connection.client.sleep(1.5)
-    assert len(connection.responses("transfer")) == 1
-    me = connection.responses("transfer")[0]
+    assert len(connection.responses("transferred")) == 1
+    me = connection.responses("transferred")[0]
 
     # Update user profile:
     updated_me = {
@@ -191,26 +193,28 @@ async def test_update_me(
     await connection.client.emit("update_me", updated_me, namespace="/user")
     await connection.client.sleep(2.5)
     # it's only the admin, that is so slow (users get response within 0.3 seconds!)
-    assert len(connection.responses("transfer")) == 2
-    assert connection.responses("transfer")[1]["id"] == str(current_user.user_id)
+    assert len(connection.responses("transferred")) == 2
+    assert connection.responses("transferred")[1]["id"] == str(current_user.user_id)
     assert (
-        connection.responses("transfer")[1]["azure_token_roles"]
+        connection.responses("transferred")[1]["azure_token_roles"]
         == current_user.azure_token_roles
     )
     assert (
-        connection.responses("transfer")[1]["azure_token_groups"]
+        connection.responses("transferred")[1]["azure_token_groups"]
         == current_user.azure_token_groups
     )
-    assert connection.responses("transfer")[1]["user_profile"]["contrast"] == 0.4
+    assert connection.responses("transferred")[1]["user_profile"]["contrast"] == 0.4
     assert (
-        connection.responses("transfer")[1]["user_profile"]["theme_color"] == "#FF5733"
+        connection.responses("transferred")[1]["user_profile"]["theme_color"]
+        == "#FF5733"
     )
     assert (
-        connection.responses("transfer")[1]["user_profile"]["theme_variant"]
+        connection.responses("transferred")[1]["user_profile"]["theme_variant"]
         == "Vibrant"
     )
     assert (
-        connection.responses("transfer")[1]["user_account"]["is_publicAIuser"] is True
+        connection.responses("transferred")[1]["user_account"]["is_publicAIuser"]
+        is True
     )
 
 
@@ -232,7 +236,7 @@ async def test_user_creates_user_fails(
     await connection.client.sleep(0.3)
     assert connection.responses("status")[0]["error"] == "401: Invalid token."
     assert len(connection.responses("status")) == 1
-    assert len(connection.responses("transfer")) == 0
+    assert len(connection.responses("transferred")) == 0
 
 
 @pytest.mark.anyio
@@ -284,9 +288,9 @@ async def test_updates_user_where_being_owner(
     await connection_user.client.sleep(0.3)
     assert connection_user.responses("status")[0]["success"] == "updated"
     assert connection_user.responses("status")[0]["id"] == updated_test_user["id"]
-    assert len(connection_user.responses("transfer")) == 1
-    assert connection_user.responses("transfer")[0]["id"] == updated_test_user["id"]
-    assert connection_user.responses("transfer")[0]["is_active"] is False
+    assert len(connection_user.responses("transferred")) == 1
+    assert connection_user.responses("transferred")[0]["id"] == updated_test_user["id"]
+    assert connection_user.responses("transferred")[0]["is_active"] is False
 
 
 @pytest.mark.anyio
@@ -325,7 +329,7 @@ async def test_updates_user_fails_due_to_missing_ownership(
     )
     await connection_user.client.sleep(0.3)
     assert connection_user.responses("status")[0]["error"] == "404: User not updated."
-    assert connection_user.responses("transfer") == []
+    assert connection_user.responses("transferred") == []
 
 
 @pytest.mark.anyio
@@ -362,7 +366,7 @@ async def test_deletes_user_where_being_owner_fails(
     )
     await connection_user.client.sleep(0.3)
     assert connection_user.responses("status")[0]["error"] == "401: Invalid token."
-    assert connection_user.responses("transfer") == []
+    assert connection_user.responses("transferred") == []
 
 
 # Ueber Group Namespace Tests:
@@ -385,7 +389,7 @@ async def test_admin_access_ueber_group_connect_create_update_delete(
     connection = await socketio_test_client_ueber_group_namespace()
     # Connect to the ueber group namespace:
     await connection.connect()
-    assert connection.responses("transfer") == []
+    assert connection.responses("transferred") == []
 
     # Create ueber group:
     test_group = {
@@ -402,7 +406,7 @@ async def test_admin_access_ueber_group_connect_create_update_delete(
     # Admin automatically gets a shared notification:
     assert connection.responses("status")[1]["success"] == "shared"
     assert connection.responses("status")[1]["id"] == created_uber_group_id
-    assert len(connection.responses("transfer")) == 0
+    assert len(connection.responses("transferred")) == 0
 
     # Update ueber group:
     updated_group = {
@@ -416,10 +420,12 @@ async def test_admin_access_ueber_group_connect_create_update_delete(
     await connection.client.sleep(0.3)
     assert connection.responses("status")[2]["success"] == "updated"
     assert connection.responses("status")[2]["id"] == created_uber_group_id
-    assert len(connection.responses("transfer")) == 1
-    assert connection.responses("transfer")[0]["id"] == created_uber_group_id
-    assert connection.responses("transfer")[0]["description"] == "Updated description"
-    assert connection.responses("transfer")[0]["name"] == "Dummy Ueber Group"
+    assert len(connection.responses("transferred")) == 1
+    assert connection.responses("transferred")[0]["id"] == created_uber_group_id
+    assert (
+        connection.responses("transferred")[0]["description"] == "Updated description"
+    )
+    assert connection.responses("transferred")[0]["name"] == "Dummy Ueber Group"
 
     # Delete ueber group event:
     await connection.client.emit(
@@ -444,7 +450,7 @@ async def test_admin_gets_all_existing_ueber_groups_on_connect(
     await add_many_test_ueber_groups()
     # Connect to the ueber group namespace:
     await connection.connect()
-    assert len(connection.responses("transfer")) == 3
+    assert len(connection.responses("transferred")) == 3
 
 
 @pytest.mark.anyio
@@ -458,7 +464,7 @@ async def test_user_creates_ueber_group_fails(
     connection = await socketio_test_client_ueber_group_namespace()
     # Connect to the ueber group namespace:
     await connection.connect()
-    assert connection.responses("transfer") == []
+    assert connection.responses("transferred") == []
 
     # Create ueber group:
     test_group = {
@@ -471,7 +477,7 @@ async def test_user_creates_ueber_group_fails(
     await connection.client.sleep(0.3)
     assert connection.responses("status")[0]["error"] == "401: Invalid token."
     assert len(connection.responses("status")) == 1
-    assert len(connection.responses("transfer")) == 0
+    assert len(connection.responses("transferred")) == 0
 
 
 @pytest.mark.anyio
@@ -502,8 +508,8 @@ async def test_updates_ueber_group_where_being_owner(
     await connection_admin.connect()
     await connection_user.connect()
 
-    assert len(connection_admin.responses("transfer")) == 3
-    assert len(connection_user.responses("transfer")) == 1
+    assert len(connection_admin.responses("transferred")) == 3
+    assert len(connection_user.responses("transferred")) == 1
 
     # User updates ueber group:
     updated_test_group = {
@@ -517,14 +523,15 @@ async def test_updates_ueber_group_where_being_owner(
     await connection_user.client.sleep(0.3)
     assert connection_user.responses("status")[0]["success"] == "updated"
     assert connection_user.responses("status")[0]["id"] == updated_test_group["id"]
-    assert len(connection_user.responses("transfer")) == 2
-    assert connection_user.responses("transfer")[1]["id"] == updated_test_group["id"]
+    assert len(connection_user.responses("transferred")) == 2
+    assert connection_user.responses("transferred")[1]["id"] == updated_test_group["id"]
     assert (
-        connection_user.responses("transfer")[1]["description"]
+        connection_user.responses("transferred")[1]["description"]
         == updated_test_group["description"]
     )
     assert (
-        connection_user.responses("transfer")[1]["name"] == updated_test_group["name"]
+        connection_user.responses("transferred")[1]["name"]
+        == updated_test_group["name"]
     )
 
 
@@ -547,8 +554,8 @@ async def test_updates_ueber_group_fails_due_to_missing_ownership(
     await connection_admin.connect()
     await connection_user.connect()
 
-    assert len(connection_admin.responses("transfer")) == 3
-    assert connection_user.responses("transfer") == []
+    assert len(connection_admin.responses("transferred")) == 3
+    assert connection_user.responses("transferred") == []
 
     # User updates ueber group:
     updated_test_group = {
@@ -564,7 +571,7 @@ async def test_updates_ueber_group_fails_due_to_missing_ownership(
         connection_user.responses("status")[0]["error"]
         == "404: UeberGroup not updated."
     )
-    assert connection_user.responses("transfer") == []
+    assert connection_user.responses("transferred") == []
 
 
 @pytest.mark.anyio
@@ -595,8 +602,8 @@ async def test_deletes_ueber_group_where_being_owner_fails(
     await connection_admin.connect()
     await connection_user.connect()
 
-    assert len(connection_admin.responses("transfer")) == 3
-    assert len(connection_user.responses("transfer")) == 1
+    assert len(connection_admin.responses("transferred")) == 3
+    assert len(connection_user.responses("transferred")) == 1
 
     # User deletes ueber group:
     await connection_user.client.emit(
@@ -604,7 +611,7 @@ async def test_deletes_ueber_group_where_being_owner_fails(
     )
     await connection_user.client.sleep(0.3)
     assert connection_user.responses("status")[0]["error"] == "401: Invalid token."
-    assert len(connection_user.responses("transfer")) == 1
+    assert len(connection_user.responses("transferred")) == 1
 
 
 # Group Namespace Tests:
@@ -615,7 +622,7 @@ group_client_config = [
     {
         "namespace": "/group",
         "events": [
-            "transfer",
+            "transferred",
             "deleted",
             "status",
         ],
@@ -638,7 +645,7 @@ async def test_connect_create_read_update_delete_group(
     # Connect to the user namespace:
     await connection.connect()
     await connection.client.sleep(0.5)
-    assert len(connection.responses("transfer")) == 0
+    assert len(connection.responses("transferred")) == 0
 
     # Create group:
     test_group = many_test_groups[1]
@@ -648,16 +655,17 @@ async def test_connect_create_read_update_delete_group(
     assert connection.responses("status")[0]["success"] == "created"
     assert "id" in connection.responses("status")[0]
     created_group_id = connection.responses("status")[0]["id"]
-    assert len(connection.responses("transfer")) == 0
+    assert len(connection.responses("transferred")) == 0
 
     # Read:
     await connection.client.emit("read", created_group_id, namespace="/group")
     await connection.client.sleep(0.3)
-    assert len(connection.responses("transfer")) == 1
-    assert connection.responses("transfer")[0]["id"] == created_group_id
-    assert connection.responses("transfer")[0]["name"] == test_group["name"]
+    assert len(connection.responses("transferred")) == 1
+    assert connection.responses("transferred")[0]["id"] == created_group_id
+    assert connection.responses("transferred")[0]["name"] == test_group["name"]
     assert (
-        connection.responses("transfer")[0]["description"] == test_group["description"]
+        connection.responses("transferred")[0]["description"]
+        == test_group["description"]
     )
 
     # Update group:
@@ -672,10 +680,12 @@ async def test_connect_create_read_update_delete_group(
     await connection.client.sleep(0.3)
     assert connection.responses("status")[1]["success"] == "updated"
     assert connection.responses("status")[1]["id"] == created_group_id
-    assert len(connection.responses("transfer")) == 2
-    assert connection.responses("transfer")[1]["id"] == created_group_id
-    assert connection.responses("transfer")[1]["name"] == test_group["name"]
-    assert connection.responses("transfer")[1]["description"] == "Updated description"
+    assert len(connection.responses("transferred")) == 2
+    assert connection.responses("transferred")[1]["id"] == created_group_id
+    assert connection.responses("transferred")[1]["name"] == test_group["name"]
+    assert (
+        connection.responses("transferred")[1]["description"] == "Updated description"
+    )
 
     # Delete group:
     await connection.client.emit("delete", created_group_id, namespace="/group")
@@ -687,7 +697,7 @@ async def test_connect_create_read_update_delete_group(
     # Read deleted group fails:
     await connection.client.emit("read", created_group_id, namespace="/group")
     await connection.client.sleep(1)
-    assert len(connection.responses("transfer")) == 2
+    assert len(connection.responses("transferred")) == 2
     assert connection.responses("status")[3]["success"] == "deleted"
     assert connection.responses("status")[3]["id"] == created_group_id
     assert (
@@ -711,7 +721,7 @@ async def test_get_all_existing_groups_on_connect(
     await add_many_test_groups(connection.token_payload())
     # Connect to the ueber group namespace:
     await connection.connect()
-    assert len(connection.responses("transfer")) == 4
+    assert len(connection.responses("transferred")) == 4
 
 
 # Sub Group Namespace Tests:
@@ -721,7 +731,7 @@ sub_group_client_config = [
     {
         "namespace": "/sub-group",
         "events": [
-            "transfer",
+            "transferred",
             "deleted",
             "status",
         ],
@@ -757,8 +767,8 @@ async def test_connect_create_read_update_delete_sub_group(
     await connection_user1.connect()
     await connection_user2.connect()
     await connection_user1.client.sleep(0.3)
-    assert len(connection_user1.responses("transfer")) == 5
-    assert len(connection_user2.responses("transfer")) == 0
+    assert len(connection_user1.responses("transferred")) == 5
+    assert len(connection_user2.responses("transferred")) == 0
 
     # Create sub group - requires a parent group:
     added_test_groups = await add_many_test_groups(connection_user2.token_payload())
@@ -780,18 +790,20 @@ async def test_connect_create_read_update_delete_sub_group(
     assert connection_user2.responses("status")[0]["success"] == "created"
     assert "id" in connection_user2.responses("status")[0]
     created_sub_group_id = connection_user2.responses("status")[0]["id"]
-    assert len(connection_user2.responses("transfer")) == 0
+    assert len(connection_user2.responses("transferred")) == 0
 
     # Read:
     await connection_user2.client.emit(
         "read", created_sub_group_id, namespace="/sub-group"
     )
     await connection_user2.client.sleep(0.3)
-    assert len(connection_user2.responses("transfer")) == 1
-    assert connection_user2.responses("transfer")[0]["id"] == created_sub_group_id
-    assert connection_user2.responses("transfer")[0]["name"] == test_sub_group["name"]
+    assert len(connection_user2.responses("transferred")) == 1
+    assert connection_user2.responses("transferred")[0]["id"] == created_sub_group_id
     assert (
-        connection_user2.responses("transfer")[0]["description"]
+        connection_user2.responses("transferred")[0]["name"] == test_sub_group["name"]
+    )
+    assert (
+        connection_user2.responses("transferred")[0]["description"]
         == test_sub_group["description"]
     )
 
@@ -809,7 +821,7 @@ async def test_connect_create_read_update_delete_sub_group(
     await connection_user1.client.sleep(0.3)
     assert connection_user1.responses("status")[0]["success"] == "shared"
     assert connection_user1.responses("status")[0]["id"] == shared_sub_group_id
-    assert len(connection_user2.responses("transfer")) == 1
+    assert len(connection_user2.responses("transferred")) == 1
 
     # Update sub group:
     updated_sub_group = {
@@ -822,22 +834,22 @@ async def test_connect_create_read_update_delete_sub_group(
     await connection_user2.client.sleep(0.3)
     assert connection_user2.responses("status")[1]["success"] == "updated"
     assert connection_user2.responses("status")[1]["id"] == shared_sub_group_id
-    assert len(connection_user1.responses("transfer")) == 6
-    assert connection_user1.responses("transfer")[5]["id"] == shared_sub_group_id
-    assert connection_user1.responses("transfer")[5]["name"] == str(
+    assert len(connection_user1.responses("transferred")) == 6
+    assert connection_user1.responses("transferred")[5]["id"] == shared_sub_group_id
+    assert connection_user1.responses("transferred")[5]["name"] == str(
         added_test_sub_groups[3].name
     )
     assert (
-        connection_user1.responses("transfer")[5]["description"]
+        connection_user1.responses("transferred")[5]["description"]
         == "Updated description"
     )
-    assert len(connection_user2.responses("transfer")) == 2
-    assert connection_user2.responses("transfer")[1]["id"] == shared_sub_group_id
-    assert connection_user2.responses("transfer")[1]["name"] == str(
+    assert len(connection_user2.responses("transferred")) == 2
+    assert connection_user2.responses("transferred")[1]["id"] == shared_sub_group_id
+    assert connection_user2.responses("transferred")[1]["name"] == str(
         added_test_sub_groups[3].name
     )
     assert (
-        connection_user2.responses("transfer")[1]["description"]
+        connection_user2.responses("transferred")[1]["description"]
         == "Updated description"
     )
 
@@ -855,7 +867,7 @@ async def test_connect_create_read_update_delete_sub_group(
         "read", shared_sub_group_id, namespace="/sub-group"
     )
     await connection_user2.client.sleep(0.3)
-    assert len(connection_user2.responses("transfer")) == 2
+    assert len(connection_user2.responses("transferred")) == 2
     assert connection_user2.responses("status")[3]["success"] == "deleted"
     assert connection_user2.responses("status")[3]["id"] == shared_sub_group_id
     assert (
