@@ -184,7 +184,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                         sid, f"resource:{str(item.id)}", namespace=self.namespace
                     )
                 await self.server.emit(
-                    "transfer",
+                    "transfered",
                     item.model_dump(mode="json"),
                     namespace=self.namespace,
                     to=sid,
@@ -363,7 +363,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                         namespace=self.namespace,
                     )
                 await self.server.emit(
-                    "transfer",
+                    "transfered",
                     database_object.model_dump(mode="json"),
                     namespace=self.namespace,
                     to=sid,
@@ -427,7 +427,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                             # transfer after update is necessary for other clients,
                             # which are in the same room of this resource_id to get the updated data
                             await self.server.emit(
-                                "transfer",
+                                "transfered",
                                 database_object.model_dump(mode="json"),
                                 namespace=self.namespace,
                                 to=f"resource:{str(database_object.id)}",
@@ -482,7 +482,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                             )
                     # if database_object is not None:
                     #     await self.server.emit(
-                    #         "transfer",
+                    #         "transfered",
                     #         database_object.model_dump(mode="json"),
                     #         namespace=self.namespace,
                     #         to=sid,
@@ -493,9 +493,9 @@ class BaseNamespace(socketio.AsyncNamespace):
                     await self._emit_status(sid, {"error": str(error)})
             else:
                 # Distributes incoming data to all clients in the namespace
-                # "transfer" is communication from server to client
+                # "transfered" is communication from server to client
                 self.server.emit(
-                    "transfer",
+                    "transfered",
                     data,
                     namespace=self.namespace,
                 )

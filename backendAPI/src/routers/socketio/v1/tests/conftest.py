@@ -169,7 +169,7 @@ def session_ids(request):
 #     client_config (List[ClientConfig]): List of namespaces and their events,
 #         where each namespace is a dictionary with keys
 #         - "name" (string), for example "/demo-namespace"
-#         - "events" (list of strings), ["submit", "transfer", "deleted"].
+#         - "events" (list of strings), ["submit", "transfered", "deleted"].
 #     session_id (uuid.UUID): The session ID to use for the connection.
 #     query_parameters (dict): Query parameters to include in the connection.
 #         e.g. {"request-access-data": "true", "parent-id": "123e4567-e89b-12d3-a456-426614174000"}
@@ -347,7 +347,7 @@ def socketio_test_client_demo_resource_namespace(socketio_test_client):
             {
                 "namespace": "/demo-resource",
                 "events": [
-                    "transfer",
+                    "transfered",
                     "deleted",
                     "status",
                 ],
@@ -372,7 +372,7 @@ def socketio_test_client_user_namespace(socketio_test_client):
             {
                 "namespace": "/user",
                 "events": [
-                    "transfer",
+                    "transfered",
                     "deleted",
                     "status",
                 ],
@@ -397,7 +397,7 @@ def socketio_test_client_ueber_group_namespace(socketio_test_client):
             {
                 "namespace": "/ueber-group",
                 "events": [
-                    "transfer",
+                    "transfered",
                     "deleted",
                     "status",
                 ],

@@ -42,14 +42,14 @@
 		() => editIds
 	);
 
-	socketio.client.on('transfer', (data: DemoResourceExtended) => {
+	socketio.client.on('transfered', (data: DemoResourceExtended) => {
 		// if (debug) {
 		// 	console.log(
 		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
 		// 	);
 		// 	console.log(data);
 		// }
-		socketio.handleTransfer(data);
+		socketio.handleTransfered(data);
 	});
 
 	socketio.client.on('deleted', (resource_id: string) => {

@@ -48,7 +48,7 @@
 	let ueberGroups = $state<UeberGroup[]>(data.ueberGroups);
 	const socketio = new SocketIO(connection, () => ueberGroups);
 
-	socketio.client.on('transfer', (data: UeberGroupExtended) => socketio.handleTransfer(data));
+	socketio.client.on('transfered', (data: UeberGroupExtended) => socketio.handleTransfered(data));
 	socketio.client.on('deleted', (resource_id: string) => socketio.handleDeleted(resource_id));
 	socketio.client.on('status', (status: SocketioStatus) => socketio.handleStatus(status));
 
