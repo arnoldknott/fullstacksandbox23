@@ -7,21 +7,24 @@
 	import { AccessHandler } from '$lib/accessHandler';
 	import IdBadge from '../../IdBadge.svelte';
 	import type { HSDropdown, IHTMLElementFloatingUI } from 'flyonui/flyonui';
+	import { SocketIO } from '$lib/socketio';
 
 	let {
 		demoResource, // = $bindable(),
 		identities,
 		edit = $bindable(false),
-		deleteResource = (_id: string) => {},
-		submitResource = (_resource: DemoResourceExtended) => {},
-		shareResource = (_accessPolicy: AccessPolicy) => {}
+		// deleteResource = (_id: string) => {},
+		// submitResource = (_resource: DemoResourceExtended) => {},
+		// shareResource = (_accessPolicy: AccessPolicy) => {},
+		socketio
 	}: {
 		demoResource: DemoResourceExtended;
 		identities?: Identity[];
 		edit?: boolean;
-		deleteResource?: (id: string) => void;
-		submitResource?: (resource: DemoResourceExtended) => void;
-		shareResource?: (accessPolicy: AccessPolicy) => void;
+		// deleteResource?: (id: string) => void;
+		// submitResource?: (resource: DemoResourceExtended) => void;
+		// shareResource?: (accessPolicy: AccessPolicy) => void;
+		socketio?: SocketIO;
 	} = $props();
 
 	// let editableDemoResource: DemoResourceExtended = $derived({ ...demoResource });
@@ -74,7 +77,7 @@
 					id="name_{demoResource.id}"
 					class="input input-sm md:input-md"
 					name="name"
-					onblur={() => submitResource(demoResource)}
+					onblur={() => socketio?.submitEntity(demoResource)}
 					bind:value={demoResource.name}
 				/>
 				<label class="input-filled-label" for="name_{demoResource.id}">Name</label>
@@ -108,7 +111,7 @@
 						class="textarea h-fit"
 						placeholder="Describe the demo resource here."
 						id="description_{demoResource.id}"
-						onblur={() => submitResource(demoResource)}
+						onblur={() => socketio?.submitEntity(demoResource)}
 						name="description"
 						bind:value={demoResource.description}
 					>
@@ -172,7 +175,7 @@
 						</button>
 
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share-{demoResource.id}"
@@ -183,7 +186,7 @@
 										{@attach initDropdown}
 										resourceId={demoResource.id as string}
 										{shareOption}
-										share={shareResource}
+										share={socketio?.shareEntity.bind(socketio)}
 										{closeShareMenu}
 									/>
 								{/each}
@@ -200,7 +203,7 @@
 						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
 						aria-label="Delete Button"
 						name="id"
-						onclick={() => !demoResource.id || deleteResource(demoResource.id)}
+						onclick={() => !demoResource.id || socketio?.deleteEntity(demoResource.id)}
 					>
 						<span class="icon-[tabler--trash]"></span>
 					</button>

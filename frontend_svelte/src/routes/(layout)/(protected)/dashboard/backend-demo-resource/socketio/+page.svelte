@@ -362,9 +362,7 @@
 				}
 				identities={AccessHandler.reduceMicrosoftTeamsToIdentities(data.microsoftTeams)}
 				{demoResource}
-				{deleteResource}
-				{submitResource}
-				{shareResource}
+				{socketio}
 			/>
 			<!-- bind:demoResource={demoResources[idx]} -->
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
@@ -427,7 +425,7 @@
 			Demo Resources with write access: {writeDemoResources.length}
 		</h3>
 		{#each writeDemoResources as demoResource, idx (demoResource.id)}
-			<DemoResourceContainer {demoResource} {submitResource} />
+			<DemoResourceContainer {demoResource} {socketio} />
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
 				<p class="title">🚧 Debug Information 🚧</p>
 				<JsonData data={demoResource} />
