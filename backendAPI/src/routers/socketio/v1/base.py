@@ -19,14 +19,6 @@ from models.access import AccessPolicyCreate, AccessPolicyDelete, AccessPolicyUp
 logger = logging.getLogger(__name__)
 
 
-class SocketIoSessionData(BaseModel):
-    """Data stored in the socket.io session."""
-
-    user_name: str
-    current_user: CurrentUserData
-    session_id: str  # That's the Redis session-id, not the socket.io session-id (sid)
-
-
 socketio_server = socketio.AsyncServer(
     async_mode="asgi",
     cors_allowed_origins=[],  # disable CORS in Socket.IO, as FastAPI handles CORS!
@@ -71,6 +63,14 @@ async def catch_all(event, sid, data):
 
 
 BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=SQLModel)
+
+
+class SocketIoSessionData(BaseModel):
+    """Data stored in the socket.io session."""
+
+    user_name: str
+    current_user: CurrentUserData
+    session_id: str  # That's the Redis session-id, not the socket.io session-id (sid)
 
 
 class BaseNamespace(socketio.AsyncNamespace):
@@ -171,13 +171,20 @@ class BaseNamespace(socketio.AsyncNamespace):
                     data[idx] = self.read_model.model_validate(item)
             for item in data:
                 if request_access_data:
-                    item = await self._get_access_data(sid, current_user, item)
+                    access_data = await self._get_access_data(
+                        sid, current_user, item.id
+                    )
+                    item = self.read_extended_model.model_validate(item)
+                    item.access_right = access_data["access_right"]
+                    item.access_policies = access_data["access_policies"]
+                    item.creation_date = access_data["creation_date"]
+                    item.last_modified_date = access_data["last_modified_date"]
                 if item.id not in self.server.rooms(sid, self.namespace):
                     await self.server.enter_room(
                         sid, f"resource:{str(item.id)}", namespace=self.namespace
                     )
                 await self.server.emit(
-                    "transfer",
+                    "transferred",
                     item.model_dump(mode="json"),
                     namespace=self.namespace,
                     to=sid,
@@ -187,36 +194,40 @@ class BaseNamespace(socketio.AsyncNamespace):
             print(error)
             await self._emit_status(sid, {"error": str(error)})
 
-    async def _get_access_data(self, sid, current_user, item: BaseSchemaTypeRead):
+    async def _get_access_data(self, sid, current_user, resource_id: UUID):
         """Get access data from the socketio session."""
-        logger.info(f"🧦 Get access data for resource {item.id} for client {sid}.")
+        logger.info(f"🧦 Get access data for resource {resource_id} for client {sid}.")
         # session = await self._get_session_data(sid)
         # Consider splitting the accesss policy and access log CRUDs into separate methods
         async with AccessPolicyCRUD() as policy_crud:
-            access_permission = await policy_crud.check_access(current_user, item.id)
+            access_permission = await policy_crud.check_access(
+                current_user, resource_id
+            )
             try:
                 access_policies = await policy_crud.read_access_policies_by_resource_id(
-                    current_user, item.id
+                    current_user, resource_id
                 )
             except Exception:
                 access_policies = []
         async with AccessLoggingCRUD() as logging_crud:
             try:
                 creation_date = await logging_crud.read_resource_created_at(
-                    current_user, resource_id=item.id
+                    current_user, resource_id=resource_id
                 )
                 last_modified_date = await logging_crud.read_resource_last_modified_at(
-                    current_user, resource_id=item.id
+                    current_user, resource_id=resource_id
                 )
             except Exception:
                 creation_date = None
                 last_modified_date = None
-        item = self.read_extended_model.model_validate(item)
-        item.access_right = access_permission.action
-        item.access_policies = access_policies if access_policies else None
-        item.creation_date = creation_date if creation_date else None
-        item.last_modified_date = last_modified_date if last_modified_date else None
-        return item
+        # TBD: add typing AccessData for access_data
+        access_data = {
+            "access_right": access_permission.action,
+            "access_policies": access_policies if access_policies else None,
+            "creation_date": creation_date if creation_date else None,
+            "last_modified_date": last_modified_date if last_modified_date else None,
+        }
+        return access_data
         # {
         # "access_right": access_permission.action,
         # "access_policies": access_policies,
@@ -283,6 +294,12 @@ class BaseNamespace(socketio.AsyncNamespace):
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
                 )
+                if "Admin" in current_user.azure_token_roles:
+                    await self.server.enter_room(
+                        sid,
+                        "role:Admin",
+                        namespace=self.namespace,
+                    )
                 logger.info(
                     f"🧦 Client authenticated to access protected namespace {self.namespace}."
                 )
@@ -310,7 +327,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                 sid, current_user=current_user, request_access_data=request_access_data
             )
 
-    # TBD: write test for this!
     async def on_read(self, sid, resource_id: UUID):
         """Read event for socket.io namespaces."""
         logger.info(f"🧦 Read request from client {sid} for resource {resource_id}.")
@@ -328,9 +344,18 @@ class BaseNamespace(socketio.AsyncNamespace):
                     else None
                 )
                 if request_access_data:
-                    database_object = await self._get_access_data(
-                        sid, current_user, database_object
+                    access_data = await self._get_access_data(
+                        sid, current_user, database_object.id
                     )
+                    database_object = self.read_extended_model.model_validate(
+                        database_object
+                    )
+                    database_object.access_right = access_data["access_right"]
+                    database_object.access_policies = access_data["access_policies"]
+                    database_object.creation_date = access_data["creation_date"]
+                    database_object.last_modified_date = access_data[
+                        "last_modified_date"
+                    ]
                 if database_object.id not in self.server.rooms(sid, self.namespace):
                     await self.server.enter_room(
                         sid,
@@ -338,7 +363,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                         namespace=self.namespace,
                     )
                 await self.server.emit(
-                    "transfer",
+                    "transferred",
                     database_object.model_dump(mode="json"),
                     namespace=self.namespace,
                     to=sid,
@@ -358,7 +383,8 @@ class BaseNamespace(socketio.AsyncNamespace):
                 namespace=self.namespace,
                 to=sid,
             )
-            # TBD: consider changing this - can be misleading!
+            # TBD: consider changing this - can be misleading:
+            # it's not necessarily deleted: might be the user's access has changed.
             await self._emit_status(sid, {"success": "deleted", "id": str(resource_id)})
             await self._emit_status(
                 sid, {"error": f"Resource {str(resource_id)} not found."}
@@ -370,26 +396,38 @@ class BaseNamespace(socketio.AsyncNamespace):
         """Gets data from client and issues a create or update based on id is present or not."""
         logger.info(f"🧦 Data submitted from client {sid}")
         try:
-
             if self.crud is not None:
+                payload = data.get("payload", None)
                 try:
                     database_object = None
                     if (
-                        "id" in data and data["id"][:4] != "new_"
+                        "id" in payload and payload["id"][:4] != "new_"
                     ):  # validate if id is a valid UUID
                         current_user = await self._get_current_user_and_check_guard(
                             sid, "submit:update"
                         )
-                        resource_id = UUID(data["id"])
+                        resource_id = UUID(payload["id"])
                         # if id is present, it is an update
                         # validate data with update model
-                        object_update = self.update_model(**data)
+                        object_update = self.update_model(**payload)
                         async with self.crud() as crud:
+                            # TBD: check the hierarchical resource system all the way through other events as
                             database_object = await crud.update(
                                 current_user, resource_id, object_update
                             )
+                            # if updating user is not in the resource room yet, add that user:
+                            if database_object.id not in self.server.rooms(
+                                sid, self.namespace
+                            ):
+                                await self.server.enter_room(
+                                    sid,
+                                    f"resource:{str(database_object.id)}",
+                                    namespace=self.namespace,
+                                )
+                            # transfer after update is necessary for other clients,
+                            # which are in the same room of this resource_id to get the updated data
                             await self.server.emit(
-                                "transfer",
+                                "transferred",
                                 database_object.model_dump(mode="json"),
                                 namespace=self.namespace,
                                 to=f"resource:{str(database_object.id)}",
@@ -407,21 +445,14 @@ class BaseNamespace(socketio.AsyncNamespace):
                         current_user = await self._get_current_user_and_check_guard(
                             sid, "submit:create"
                         )
-                        object_create = self.create_model(**data)
+                        object_create = self.create_model(**payload)
+                        parent_id = data.get("parent_id", None)
+                        inherit = data.get("inherit", False)
                         async with self.crud() as crud:
                             # TBD: check the hierarchical resource system all the way through other events as well!
-                            parent_id = data.get("parent_id", None)
-                            inherit = data.get("inherit", False)
                             database_object = await crud.create(
                                 object_create, current_user, parent_id, inherit
                             )
-                            # TBD: delete! Should not be necessary!
-                            # await self.server.emit(
-                            #     "transfer",
-                            #     database_object.model_dump(mode="json"),
-                            #     namespace=self.namespace,
-                            #     to=sid,
-                            # )
                             await self.server.enter_room(
                                 sid,
                                 f"resource:{str(database_object.id)}",
@@ -432,12 +463,26 @@ class BaseNamespace(socketio.AsyncNamespace):
                                 {
                                     "success": "created",
                                     "id": str(database_object.id),
-                                    "submitted_id": data.get("id"),
+                                    "submitted_id": payload.get("id", None),
                                 },
+                            )
+                            print(
+                                "=== routers - socketio - v1 - on_submit - database_object ==="
+                            )
+                            print(database_object, flush=True)
+                            # transfer after create is necessary for other clients,
+                            await self.server.emit(
+                                "status",
+                                {
+                                    "success": "shared",
+                                    "id": str(database_object.id),
+                                },
+                                namespace=self.namespace,
+                                to=["role:Admin"],
                             )
                     # if database_object is not None:
                     #     await self.server.emit(
-                    #         "transfer",
+                    #         "transferred",
                     #         database_object.model_dump(mode="json"),
                     #         namespace=self.namespace,
                     #         to=sid,
@@ -448,9 +493,9 @@ class BaseNamespace(socketio.AsyncNamespace):
                     await self._emit_status(sid, {"error": str(error)})
             else:
                 # Distributes incoming data to all clients in the namespace
-                # "transfer" is communication from server to client
+                # "transferred" is communication from server to client
                 self.server.emit(
-                    "transfer",
+                    "transferred",
                     data,
                     namespace=self.namespace,
                 )
@@ -478,7 +523,6 @@ class BaseNamespace(socketio.AsyncNamespace):
             print(error)
             await self._emit_status(sid, {"error": str(error)})
 
-    # TBD: write test for this!
     async def on_share(
         self, sid, access_policy: AccessPolicyCreate | AccessPolicyUpdate
     ):
@@ -496,7 +540,10 @@ class BaseNamespace(socketio.AsyncNamespace):
                     # print("=== socketio - DELETE - access_policy ===", flush=True)
                     await self._emit_status(
                         sid,
-                        {"success": "unshared", "id": str(access_policy.resource_id)},
+                        {
+                            "success": "unshared",
+                            "id": str(access_policy.resource_id),
+                        },
                         rooms=[f"identity:{str(access_policy.identity_id)}"],
                     )
                 # print("=== socketio - DELETE - access_policy ===", flush=True)

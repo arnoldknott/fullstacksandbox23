@@ -97,8 +97,8 @@ async def get_me(
     current_user = await check_token_against_guards(token_payload, guards)
     async with UserCRUD() as crud:
         me = await crud.read_me(current_user)
-    me.azure_token_roles = current_user.azure_token_roles
-    me.azure_token_groups = current_user.azure_token_groups
+    # me.azure_token_roles = current_user.azure_token_roles
+    # me.azure_token_groups = current_user.azure_token_groups
     me = Me.model_validate(me)
     return me
 
@@ -313,7 +313,7 @@ async def put_ueber_group(
     ueber_group_id: UUID,
     ueber_group: UeberGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> UeberGroup:
     """Updates an ueber_group."""
     return await ueber_group_view.put(
@@ -328,7 +328,7 @@ async def put_ueber_group(
 async def delete_ueber_group(
     ueber_group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 ) -> None:
     """Deletes an ueber_group."""
     return await ueber_group_view.delete(ueber_group_id, token_payload, guards)
@@ -477,7 +477,7 @@ async def post_existing_subgroups_to_group(
 @group_router.get("/", status_code=200)
 async def get_all_groups(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[GroupRead]:
     """Returns all groups."""
     return await group_view.get(token_payload, guards)
@@ -502,7 +502,7 @@ async def put_group(
     group_id: UUID,
     group: UeberGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> Group:
     """Updates a group."""
     return await group_view.put(
@@ -650,7 +650,7 @@ async def post_sub_sub_group_to_sub_group(
     sub_group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> SubGroup:
     """Creates a new sub_sub_group as a child of sub_group with sub_group_id."""
     logger.info("POST sub_sub_group to sub_group")
@@ -685,7 +685,7 @@ async def post_existing_subsubgroups_to_subgroup(
 @sub_group_router.get("/", status_code=200)
 async def get_all_sub_groups(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[SubGroupRead]:
     """Returns all sub_groups."""
     return await sub_group_view.get(token_payload, guards)
@@ -710,7 +710,7 @@ async def put_sub_group(
     sub_group_id: UUID,
     sub_group: SubGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> SubGroup:
     """Updates a sub_group."""
     return await sub_group_view.put(
@@ -882,7 +882,7 @@ async def put_sub_sub_group(
     sub_sub_group_id: UUID,
     sub_sub_group: SubGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> SubGroup:
     """Updates a sub_sub_group."""
     return await sub_sub_group_view.put(

@@ -41,9 +41,9 @@ event_guards = [
 class DemoResourceNamespace(BaseNamespace):
     """Socket.IO interface for Demo Resources."""
 
-    def __init__(self, namespace=None):
+    def __init__(self):
         super().__init__(
-            namespace=namespace,
+            namespace="/demo-resource",
             event_guards=event_guards,
             crud=DemoResourceCRUD,
             create_model=DemoResourceCreate,
@@ -60,4 +60,4 @@ class DemoResourceNamespace(BaseNamespace):
         await self._get_all(sid, *args, **kwargs)
 
 
-demo_resource_router = DemoResourceNamespace("/demo-resource")
+demo_resource_router = DemoResourceNamespace()

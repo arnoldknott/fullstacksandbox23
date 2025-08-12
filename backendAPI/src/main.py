@@ -32,6 +32,13 @@ from routers.socketio.v1.demo_namespace import demo_namespace_router
 from routers.socketio.v1.demo_resource import (
     demo_resource_router as demo_resource_namespace_router,
 )
+from routers.socketio.v1.identities import (
+    user_router as user_namespace_router,
+    ueber_group_router as ueber_group_namespace_router,
+    group_router as group_namespace_router,
+    sub_group_router as sub_group_namespace_router,
+    sub_sub_group_router as sub_sub_group_namespace_router,
+)
 from routers.socketio.v1.interactive_documentation import (
     interactive_documentation_router,
 )
@@ -250,7 +257,14 @@ app.include_router(
 socketio_server.register_namespace(public_namespace_router)
 socketio_server.register_namespace(demo_namespace_router)
 socketio_server.register_namespace(demo_resource_namespace_router)
+socketio_server.register_namespace(user_namespace_router)
+socketio_server.register_namespace(ueber_group_namespace_router)
+socketio_server.register_namespace(group_namespace_router)
+socketio_server.register_namespace(sub_group_namespace_router)
+socketio_server.register_namespace(sub_sub_group_namespace_router)
 # socketio_server.register_namespace(presentation_interests_router)
+# TBD: refactor the interactive documentation
+# into more generic features, like polls, quizzes, surveys, etc.
 socketio_server.register_namespace(interactive_documentation_router)
 socketio_app = ASGIApp(socketio_server, socketio_path="socketio/v1")
 app.mount("/socketio/v1", app=socketio_app)
