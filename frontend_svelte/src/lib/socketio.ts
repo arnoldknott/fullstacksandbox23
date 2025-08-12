@@ -26,7 +26,7 @@ export type SocketioStatus =
 export class SocketIO {
 	public client: Socket;
 	// TBD: consider passing the entities at instantiation?
-	private entities: AnyEntityExtended[] = [];
+	public entities: AnyEntityExtended[] = [];
 
 	constructor(connection: SocketioConnection, entities: AnyEntityExtended[] = []) {
 		// TBD: put a try catch here?

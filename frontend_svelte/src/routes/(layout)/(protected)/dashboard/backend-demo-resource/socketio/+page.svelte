@@ -34,8 +34,8 @@
 		}
 	};
 
-	let demoResources: DemoResourceExtended[] = $state([]);
-	const socketio = $derived(new SocketIO(connection, demoResources));
+	const socketio = new SocketIO(connection, []);
+	let demoResources = $state(socketio.entities as DemoResourceExtended[]);
 
 	// console.log(
 	// 	data.microsoftTeams
@@ -64,130 +64,127 @@
 	// );
 
 	$effect(() => {
-		socketio.receivers(editIds);
-		// socketio.client.on('transfer', (data: DemoResourceExtended) => {
-		// 	if (debug) {
-		// 		console.log(
-		// 			'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-		// 		);
-		// 		console.log(data);
-		// 	}
-		// 	if (demoResources.some((res) => res.id === data.id)) {
-		// 		// Update existing resource
-		// 		demoResources = demoResources.map((res) =>
-		// 			// only replaces the keys, where the newly incoming data is defined.
-		// 			res.id === data.id ? { ...res, ...data } : res
-		// 		);
-		// 		// TBD: examin the workflow: access policies of recently changed accesses in resources change the icon,
-		// 		// but the data, e.g. in debugging information stays outdated!
-		// 	} else {
-		// 		// Add new resource
-		// 		demoResources.push(data);
-		// 	}
-		// });
-		// socketio.client.on('deleted', (resource_id: string) => {
-		// 	if (debug) {
-		// 		console.log(
-		// 			'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
-		// 		);
-		// 		console.log(resource_id);
-		// 	}
-		// 	demoResources = demoResources.filter((res) => res.id !== resource_id);
-		// });
-		socketio.client.on('status', (data: SocketioStatus) => {
-			statusMessages.unshift(data);
+		// socketio.receivers(editIds);
+		socketio.client.on('transfer', (data: DemoResourceExtended) => {
 			// if (debug) {
 			// 	console.log(
-			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
 			// 	);
-			// 	console.log('Status update:', data);
+			// 	console.log(data);
 			// }
-			// if ('success' in data) {
-			// 	if (data.success === 'created') {
-			// 		demoResources.forEach((demoResource) => {
-			// 			if (demoResource.id === data.submitted_id) {
-			// 				demoResource.id = data.id;
-			// 			}
-			// 			editIds.add(data.id); // keep editing on after newly created resources
-			// 			editIds = new Set(editIds); // trigger reactivity
-			// 		});
-			// 	} else if (data.success === 'shared') {
-			// 		socketio.client.emit('read', data.id);
-			// 	} else if (data.success === 'unshared') {
-			// 		// TBD: consider not to emit read, but to remove the resource from the list!
-			// 		socketio.client.emit('read', data.id);
-			// 		// Re-read to see, if there is still access to the resource any other way.
-			// 		// If that fails, remove it from the list
-			// 		// rerun check on access policies for this resource after removing the unshared policy:
-			// 		// TBD: reload all access for the resource,
-			// 		// as other users access_policies are still part of the resource, e.g. admin, that created it.
-			// 		// however that does not give the current user access any more!
-			// 		// demoResources = demoResources.map((res) => {
-			// 		// 	if (res.id === data.resource_id) {
-			// 		// 		res.access_policies = res.access_policies?.filter(
-			// 		// 			(policy) => policy.identity_id !== data.identity_id
-			// 		// 		);
-			// 		// 	}
-			// 		// 	return res;
-			// 		// });
-			// 		// demoResources = demoResources.filter((res) => res.id !== data.id);
-			// 	}
-			// }
+			if (demoResources.some((res) => res.id === data.id)) {
+				// Update existing resource
+				demoResources = demoResources.map((res) =>
+					// only replaces the keys, where the newly incoming data is defined.
+					res.id === data.id ? { ...res, ...data } : res
+				);
+				// TBD: examin the workflow: access policies of recently changed accesses in resources change the icon,
+				// but the data, e.g. in debugging information stays outdated!
+			} else {
+				// Add new resource
+				demoResources.push(data);
+			}
+		});
+		socketio.client.on('deleted', (resource_id: string) => {
+			if (debug) {
+				console.log(
+					'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
+				);
+				console.log(resource_id);
+			}
+			demoResources = demoResources.filter((res) => res.id !== resource_id);
+		});
+		socketio.client.on('status', (data: SocketioStatus) => {
+			statusMessages.unshift(data);
+			if (debug) {
+				console.log(
+					'=== dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+				);
+				console.log('Status update:', data);
+			}
+			if ('success' in data) {
+				if (data.success === 'created') {
+					demoResources.forEach((demoResource) => {
+						if (demoResource.id === data.submitted_id) {
+							demoResource.id = data.id;
+						}
+						editIds.add(data.id); // keep editing on after newly created resources
+						editIds = new Set(editIds); // trigger reactivity
+					});
+				} else if (data.success === 'shared') {
+					socketio.client.emit('read', data.id);
+				} else if (data.success === 'unshared') {
+					// TBD: consider not to emit read, but to remove the resource from the list!
+					socketio.client.emit('read', data.id);
+					// Re-read to see, if there is still access to the resource any other way.
+					// If that fails, remove it from the list
+					// rerun check on access policies for this resource after removing the unshared policy:
+					// TBD: reload all access for the resource,
+					// as other users access_policies are still part of the resource, e.g. admin, that created it.
+					// however that does not give the current user access any more!
+					// demoResources = demoResources.map((res) => {
+					// 	if (res.id === data.resource_id) {
+					// 		res.access_policies = res.access_policies?.filter(
+					// 			(policy) => policy.identity_id !== data.identity_id
+					// 		);
+					// 	}
+					// 	return res;
+					// });
+					// demoResources = demoResources.filter((res) => res.id !== data.id);
+				}
+			}
 		});
 	});
 
-	const addDemoResource = () => {
-		socketio.addEntity({
+	const newDemoResource = (): DemoResourceExtended => {
+		return {
 			id: 'new_' + Math.random().toString(36).substring(2, 9),
 			name: '',
 			description: '',
 			access_right: Action.OWN,
 			creation_date: new Date(Date.now())
-		});
-		// const newResource: DemoResourceExtended = {
-		// 	id: 'new_' + Math.random().toString(36).substring(2, 9),
-		// 	name: '',
-		// 	description: '',
-		// 	access_right: Action.OWN,
-		// 	creation_date: new Date(Date.now())
-		// };
-		// demoResources.unshift(newResource);
+		};
+	};
+
+	const addDemoResource = () => {
+		// socketio.addEntity(newDemoResource());
+		demoResources.unshift(newDemoResource());
 	};
 
 	// TBD: consider adding those directly to the onclick() event handler
 	const deleteResource = (resourceId: string) => {
-		socketio.deleteEntity(resourceId, editIds);
-		// if (resourceId.slice(0, 4) === 'new_') {
-		// 	// If the resource is new and has no id, we can just remove it from the local array
-		// 	demoResources = demoResources.filter((res) => res.id !== resourceId);
-		// } else {
-		// 	socketio.client.emit('delete', resourceId);
-		// }
-		// if (editIds.has(resourceId)) {
-		// 	editIds.delete(resourceId);
-		// 	editIds = new Set(editIds); // trigger reactivity
-		// }
+		// socketio.deleteEntity(resourceId, editIds);
+		if (resourceId.slice(0, 4) === 'new_') {
+			// If the resource is new and has no id, we can just remove it from the local array
+			demoResources = demoResources.filter((res) => res.id !== resourceId);
+		} else {
+			socketio.client.emit('delete', resourceId);
+		}
+		if (editIds.has(resourceId)) {
+			editIds.delete(resourceId);
+			editIds = new Set(editIds); // trigger reactivity
+		}
 	};
 
 	// The backend is handling it, whether it's new or existing. If the id is a UUID, it tries to update an existing resource.
 	const submitResource = (demoResource: DemoResourceExtended) => {
-		socketio.submitEntity(demoResource);
-		// if (demoResource.id?.slice(0, 4) === 'new_') {
-		// 	editIds.delete(demoResource.id);
-		// 	editIds = new Set(editIds); // trigger reactivity
-		// }
-		// socketio.client.emit('submit', { payload: demoResource });
+		// socketio.submitEntity(demoResource, editIds);
+		if (demoResource.id?.slice(0, 4) === 'new_') {
+			editIds.delete(demoResource.id);
+			editIds = new Set(editIds); // trigger reactivity
+		}
+		socketio.client.emit('submit', { payload: demoResource });
 	};
 
 	const shareResource = (accessPolicy: AccessPolicy) => {
-		socketio.shareEntity(accessPolicy);
-		// if (debug) {
-		// 	console.log(
-		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - share accessPolicy ==='
-		// 	);
-		// 	console.log(accessPolicy);
-		// }
-		// socketio.client.emit('share', accessPolicy);
+		// socketio.shareEntity(accessPolicy);
+		if (debug) {
+			console.log(
+				'=== dashboard - backend-demo-resource - socketio - +page.svelte - share accessPolicy ==='
+			);
+			console.log(accessPolicy);
+		}
+		socketio.client.emit('share', accessPolicy);
 	};
 
 	const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
