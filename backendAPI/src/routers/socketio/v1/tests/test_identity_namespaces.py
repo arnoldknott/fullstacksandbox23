@@ -777,7 +777,9 @@ async def test_connect_create_read_update_delete_sub_group(
     ]
     current_user2 = await connection_user2.current_user()
     # Connect to the user namespace:
-    await connection_user1.connect()
+    await connection_user1.connect(
+        query_parameters={"resource-ids": ",".join(selected_sub_group_ids)}
+    )
     await connection_user2.connect()
     await connection_user1.client.sleep(0.3)
     assert len(connection_user1.responses("transferred")) == 3
@@ -856,13 +858,13 @@ async def test_connect_create_read_update_delete_sub_group(
     await connection_user2.client.sleep(0.3)
     assert connection_user2.responses("status")[1]["success"] == "updated"
     assert connection_user2.responses("status")[1]["id"] == shared_sub_group_id
-    assert len(connection_user1.responses("transferred")) == 6
-    assert connection_user1.responses("transferred")[5]["id"] == shared_sub_group_id
-    assert connection_user1.responses("transferred")[5]["name"] == str(
+    assert len(connection_user1.responses("transferred")) == 4
+    assert connection_user1.responses("transferred")[3]["id"] == shared_sub_group_id
+    assert connection_user1.responses("transferred")[3]["name"] == str(
         added_test_sub_groups[3].name
     )
     assert (
-        connection_user1.responses("transferred")[5]["description"]
+        connection_user1.responses("transferred")[3]["description"]
         == "Updated description"
     )
     assert len(connection_user2.responses("transferred")) == 2
