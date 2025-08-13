@@ -7,14 +7,14 @@ import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
 // }
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	console.log(
-		'=== src - routes - layout - protected - identities - teams - [msteamsId]  - +page.server.ts - locals ==='
-	);
-	console.log(locals);
-	console.log(
-		'=== src - routes - layout - protected - identities - teams - [msteamsId]  - +page.server.ts - params ==='
-	);
-	console.log(params);
+	// console.log(
+	// 	'=== src - routes - layout - protected - identities - teams - [msteamsId]  - +page.server.ts - locals ==='
+	// );
+	// console.log(locals);
+	// console.log(
+	// 	'=== src - routes - layout - protected - identities - teams - [msteamsId]  - +page.server.ts - params ==='
+	// );
+	// console.log(params);
 	const sessionId = locals.sessionData.sessionId;
 
 	let thisTeam: MicrosoftTeam = {};
@@ -27,9 +27,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		console.error('Error fetching Microsoft Team:', response.status);
 	}
 
-	console.log(
-		'=== src - routes - layout - protected - identities - +page.server.ts - thisTeam ==='
-	);
+	// console.log(
+	// 	'=== src - routes - layout - protected - identities - +page.server.ts - thisTeam ==='
+	// );
 	// console.log(thisTeam);
 
 	return {

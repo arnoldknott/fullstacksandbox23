@@ -229,7 +229,10 @@ class GroupNamespace(BaseNamespace):
     async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
         # trigger the read all event to fetch all groups:
-        await self._get_all(sid, *args, **kwargs)
+        # await self._get_all(sid, *args, **kwargs)
+        resource_ids = kwargs.pop("resource_ids", None)
+        for resource_id in resource_ids or []:
+            await self.on_read(sid, resource_id=resource_id)
 
 
 group_router = GroupNamespace()
