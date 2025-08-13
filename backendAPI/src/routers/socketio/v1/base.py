@@ -266,10 +266,25 @@ class BaseNamespace(socketio.AsyncNamespace):
             else None
         )
         identity_ids = (
-            parse_qs(query_strings).get("identity-id")[0].split(",")
-            if "identity-id" in query_strings
+            parse_qs(query_strings).get("identity-ids")[0].split(",")
+            if "identity-ids" in query_strings
             else []
         )
+        resource_ids = (
+            parse_qs(query_strings).get("resource-ids")[0].split(",")
+            if "resource-ids" in query_strings
+            else []
+        )
+        # TBD: consider switching the if and for
+        for identity_id in identity_ids:
+            if identity_id:
+                # Assign the identity id to the room for hierarchical resource system
+                await self.server.enter_room(
+                    sid, f"identity:{identity_id}", namespace=self.namespace
+                )
+                logger.info(
+                    f"🧦 Client with session id {sid} entered room {identity_id}."
+                )
         # TBD: consider only relying on information from the backend
         # instead of retrieving identities from client side!
         # But allow the frontend client to request identity spaces!
@@ -311,20 +326,12 @@ class BaseNamespace(socketio.AsyncNamespace):
             logger.info(
                 f"🧦 Client authenticated to public namespace {self.namespace}."
             )
-        # TBD: consider switching the if and for
-        # TBD: add admin to room admin.
-        for identity_id in identity_ids:
-            if identity_id:
-                # Assign the identity id to the room for hierarchical resource system
-                await self.server.enter_room(
-                    sid, f"identity:{identity_id}", namespace=self.namespace
-                )
-                logger.info(
-                    f"🧦 Client with session id {sid} entered room {identity_id}."
-                )
         if self.callback_on_connect is not None:
             await self.callback_on_connect(
-                sid, current_user=current_user, request_access_data=request_access_data
+                sid,
+                current_user=current_user,
+                request_access_data=request_access_data,
+                resource_ids=resource_ids,
             )
 
     async def on_read(self, sid, resource_id: UUID):

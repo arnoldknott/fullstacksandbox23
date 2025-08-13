@@ -718,10 +718,18 @@ async def test_get_all_existing_groups_on_connect(
 ):
     """Test at connect get all existing groups with access."""
     connection = await socketio_test_client(group_client_config)
-    await add_many_test_groups(connection.token_payload())
-    # Connect to the ueber group namespace:
-    await connection.connect()
-    assert len(connection.responses("transferred")) == 4
+    added_test_groups = await add_many_test_groups(connection.token_payload())
+    resource_ids = [
+        str(added_test_groups[0].id),
+        str(added_test_groups[2].id),
+        str(added_test_groups[3].id),
+    ]
+    # Connect to the group namespace:
+    await connection.connect(query_parameters={"resource-ids": ",".join(resource_ids)})
+    assert len(connection.responses("transferred")) == 3
+    assert connection.responses("transferred")[0]["id"] == str(resource_ids[0])
+    assert connection.responses("transferred")[1]["id"] == str(resource_ids[1])
+    assert connection.responses("transferred")[2]["id"] == str(resource_ids[2])
 
 
 # Sub Group Namespace Tests:
@@ -762,12 +770,28 @@ async def test_connect_create_read_update_delete_sub_group(
     added_test_sub_groups = await add_many_test_sub_groups(
         connection_user1.token_payload()
     )
+    selected_sub_group_ids = [
+        str(added_test_sub_groups[2].id),
+        str(added_test_sub_groups[3].id),
+        str(added_test_sub_groups[4].id),
+    ]
     current_user2 = await connection_user2.current_user()
     # Connect to the user namespace:
-    await connection_user1.connect()
+    await connection_user1.connect(
+        query_parameters={"resource-ids": ",".join(selected_sub_group_ids)}
+    )
     await connection_user2.connect()
     await connection_user1.client.sleep(0.3)
-    assert len(connection_user1.responses("transferred")) == 5
+    assert len(connection_user1.responses("transferred")) == 3
+    assert connection_user1.responses("transferred")[0]["id"] == str(
+        selected_sub_group_ids[0]
+    )
+    assert connection_user1.responses("transferred")[1]["id"] == str(
+        selected_sub_group_ids[1]
+    )
+    assert connection_user1.responses("transferred")[2]["id"] == str(
+        selected_sub_group_ids[2]
+    )
     assert len(connection_user2.responses("transferred")) == 0
 
     # Create sub group - requires a parent group:
@@ -834,13 +858,13 @@ async def test_connect_create_read_update_delete_sub_group(
     await connection_user2.client.sleep(0.3)
     assert connection_user2.responses("status")[1]["success"] == "updated"
     assert connection_user2.responses("status")[1]["id"] == shared_sub_group_id
-    assert len(connection_user1.responses("transferred")) == 6
-    assert connection_user1.responses("transferred")[5]["id"] == shared_sub_group_id
-    assert connection_user1.responses("transferred")[5]["name"] == str(
+    assert len(connection_user1.responses("transferred")) == 4
+    assert connection_user1.responses("transferred")[3]["id"] == shared_sub_group_id
+    assert connection_user1.responses("transferred")[3]["name"] == str(
         added_test_sub_groups[3].name
     )
     assert (
-        connection_user1.responses("transferred")[5]["description"]
+        connection_user1.responses("transferred")[3]["description"]
         == "Updated description"
     )
     assert len(connection_user2.responses("transferred")) == 2

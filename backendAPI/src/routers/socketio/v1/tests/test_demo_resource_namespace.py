@@ -930,17 +930,17 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
     query_parameters_user1 = {}
     if "groups" in token_user1:
         identity_ids_user1 = [identity_id for identity_id in token_user1["groups"]]
-        query_parameters_user1 = {"identity-id": ",".join(identity_ids_user1)}
+        query_parameters_user1 = {"identity-ids": ",".join(identity_ids_user1)}
 
     query_parameters_user2 = {}
     if "groups" in token_user2:
         identity_ids_user2 = [identity_id for identity_id in token_user2["groups"]]
-        query_parameters_user2 = {"identity-id": ",".join(identity_ids_user2)}
+        query_parameters_user2 = {"identity-ids": ",".join(identity_ids_user2)}
 
     query_parameters_user3 = {}
     if "groups" in token_user3:
         identity_ids_user3 = [identity_id for identity_id in token_user3["groups"]]
-        query_parameters_user3 = {"identity-id": ",".join(identity_ids_user3)}
+        query_parameters_user3 = {"identity-ids": ",".join(identity_ids_user3)}
 
     resources = await add_test_demo_resources(token_user1)
     # resources = await add_test_demo_resources(token_admin_read_write_socketio)
@@ -1020,8 +1020,8 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
 
     many_test_groups = await add_many_test_groups()
     common_group_id = many_test_groups[2].id
-    query_parameters_user1 = {"identity-id": str(common_group_id)}
-    query_parameters_user2 = {"identity-id": str(common_group_id)}
+    query_parameters_user1 = {"identity-ids": str(common_group_id)}
+    query_parameters_user2 = {"identity-ids": str(common_group_id)}
 
     # First user owns the resources:
     token_user1 = connection1.token_payload()
@@ -1120,8 +1120,8 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
 
     many_test_groups = await add_many_test_groups()
     common_group_id = many_test_groups[2].id
-    query_parameters_user1 = {"identity-id": str(common_group_id)}
-    query_parameters_user2 = {"identity-id": str(common_group_id)}
+    query_parameters_user1 = {"identity-ids": str(common_group_id)}
+    query_parameters_user2 = {"identity-ids": str(common_group_id)}
 
     token_user1 = connection1.token_payload()
     current_user1 = await connection1.current_user()
@@ -1217,8 +1217,8 @@ async def test_user_removes_share_with_group(
     # First user owns the resources:
     many_test_groups = await add_many_test_groups()
     common_group_id = many_test_groups[2].id
-    query_parameters_user1 = {"identity-id": str(common_group_id)}
-    query_parameters_user2 = {"identity-id": str(common_group_id)}
+    query_parameters_user1 = {"identity-ids": str(common_group_id)}
+    query_parameters_user2 = {"identity-ids": str(common_group_id)}
 
     token_user1 = connection1.token_payload()
     current_user1 = await connection1.current_user()

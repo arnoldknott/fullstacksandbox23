@@ -11,8 +11,8 @@ export type SocketioConnection = {
 	query_params?: Record<string, string | number | boolean>; // Query parameters to be sent to the server, e.g. for filtering or other purposes.
 	// can be:
 	// request-access-data?: boolean
-	// identity-id?: string // getting added to rooms
-	// resource-id?: string // getting added to room
+	// identity-ids?: string // getting added to rooms
+	// resource-ids?: string // getting added to room
 	// parent-resource-id?: string // potentially getting added to room?
 };
 
