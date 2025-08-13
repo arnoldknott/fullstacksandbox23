@@ -6,7 +6,7 @@ export const actions: Actions = {
 		const data = await request.formData();
 		// const sessionId = locals.sessionData.sessionId;
 
-		const identityId = url.searchParams.get('identity-id')?.toString();
+		const identityId = url.searchParams.get('identity-ids')?.toString();
 		const action = url.searchParams.get('action')?.toString();
 		const newAction = url.searchParams.get('new-action')?.toString();
 

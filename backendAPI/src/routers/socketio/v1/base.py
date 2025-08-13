@@ -266,13 +266,13 @@ class BaseNamespace(socketio.AsyncNamespace):
             else None
         )
         identity_ids = (
-            parse_qs(query_strings).get("identity-id")[0].split(",")
-            if "identity-id" in query_strings
+            parse_qs(query_strings).get("identity-ids")[0].split(",")
+            if "identity-ids" in query_strings
             else []
         )
         resource_ids = (
-            parse_qs(query_strings).get("resource-id")[0].split(",")
-            if "resource-id" in query_strings
+            parse_qs(query_strings).get("resource-ids")[0].split(",")
+            if "resource-ids" in query_strings
             else []
         )
         # TBD: consider switching the if and for
