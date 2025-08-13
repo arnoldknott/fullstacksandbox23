@@ -16,6 +16,8 @@
 		// }
 	};
 
+	let ueberGroup = $state(data.thisUeberGroup);
+
 	let groups = $state<Group[]>(data.thisUeberGroup?.groups || []);
 	const socketioGroup = new SocketIO(groupConnection, () => groups);
 
@@ -39,12 +41,48 @@
 	</button>
 </a>
 
-{#if data.thisUeberGroup}
-	<Heading>{data.thisUeberGroup.name}</Heading>
-	<p>{data.thisUeberGroup.description}</p>
+{#if ueberGroup}
+	<Heading>{ueberGroup.name}</Heading>
+	<p>{ueberGroup.description}</p>
+	<button class="btn btn-accent-container shadow-outline shadow-md"
+		><span class="icon-[fa6-solid--plus]"></span> Add Group</button
+	>
+	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
+		<li>Change group list into a table - to allow for title, description and action buttons</li>
+		<li>Add a selection list for existing groups and a field for creating a new group.</li>
+		<li>Make the selection list drag-and-dropable.</li>
+		<li>Add the event to base namespace to add a child to a parent resource.</li>
+	</ul>
+
+	<ul>
+		{#if ueberGroup.groups !== undefined && ueberGroup.groups.length > 0}
+			{#each ueberGroup.groups as group (group.id)}
+				<li>
+					<a href={`/dashboard/identities/group/${group.id}`}>
+						{group.name}
+					</a>
+					<div class="divider divider-outline"></div>
+				</li>
+			{/each}
+		{:else}
+			<li>No groups found in this ueber group.</li>
+		{/if}
+	</ul>
+	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
+		<li>Add the modify / edit functionality.</li>
+		<li>Add the delete functionality, removing the group from the ueber group.</li>
+		<li>
+			Also add the delete functionality, deleting the group fully - should also remove from ueber
+			group!
+		</li>
+	</ul>
 {:else}
 	<Heading>Error</Heading>
 	<p>No Ueber Group found.</p>
 {/if}
+
+<p class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
+	For resource hierarchies (protected resources) also add the order functionality by drag and drop.
+</p>
 
 <!-- <JsonData data={pageWithoutData} /> -->
