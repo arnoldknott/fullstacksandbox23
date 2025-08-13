@@ -770,20 +770,26 @@ async def test_connect_create_read_update_delete_sub_group(
     added_test_sub_groups = await add_many_test_sub_groups(
         connection_user1.token_payload()
     )
-    # selected_sub_group_ids = [
-    #     str(added_test_sub_groups[2].id),
-    #     str(added_test_sub_groups[3].id),
-    #     str(added_test_sub_groups[4].id),
-    # ]
+    selected_sub_group_ids = [
+        str(added_test_sub_groups[2].id),
+        str(added_test_sub_groups[3].id),
+        str(added_test_sub_groups[4].id),
+    ]
     current_user2 = await connection_user2.current_user()
     # Connect to the user namespace:
     await connection_user1.connect()
     await connection_user2.connect()
     await connection_user1.client.sleep(0.3)
-    assert len(connection_user1.responses("transferred")) == 5
-    # assert connection_user1.responses("transferred")[0]["id"] == str(selected_sub_group_ids[0])
-    # assert connection_user1.responses("transferred")[1]["id"] == str(selected_sub_group_ids[1])
-    # assert connection_user1.responses("transferred")[2]["id"] == str(selected_sub_group_ids[2])
+    assert len(connection_user1.responses("transferred")) == 3
+    assert connection_user1.responses("transferred")[0]["id"] == str(
+        selected_sub_group_ids[0]
+    )
+    assert connection_user1.responses("transferred")[1]["id"] == str(
+        selected_sub_group_ids[1]
+    )
+    assert connection_user1.responses("transferred")[2]["id"] == str(
+        selected_sub_group_ids[2]
+    )
     assert len(connection_user2.responses("transferred")) == 0
 
     # Create sub group - requires a parent group:
