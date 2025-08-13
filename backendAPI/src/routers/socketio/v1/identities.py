@@ -181,7 +181,9 @@ class UeberGroupNamespace(BaseNamespace):
     async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
         # trigger the read all event to fetch all ueber groups:
-        await self._get_all(sid, *args, **kwargs)
+        current_user = kwargs.get("current_user")
+        request_access_data = kwargs.get("request_access_data")
+        await self._get_all(sid, current_user, request_access_data)
 
 
 ueber_group_router = UeberGroupNamespace()
@@ -229,10 +231,12 @@ class GroupNamespace(BaseNamespace):
     async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
         # trigger the read all event to fetch all groups:
-        # await self._get_all(sid, *args, **kwargs)
-        resource_ids = kwargs.pop("resource_ids", None)
-        for resource_id in resource_ids or []:
-            await self.on_read(sid, resource_id=resource_id)
+        current_user = kwargs.get("current_user")
+        request_access_data = kwargs.get("request_access_data")
+        await self._get_all(sid, current_user, request_access_data)
+        # resource_ids = kwargs.pop("resource_ids", None)
+        # for resource_id in resource_ids or []:
+        #     await self.on_read(sid, resource_id=resource_id)
 
 
 group_router = GroupNamespace()
@@ -279,7 +283,9 @@ class SubGroupNamespace(BaseNamespace):
     async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
         # trigger the read all event to fetch all sub groups:
-        await self._get_all(sid, *args, **kwargs)
+        current_user = kwargs.get("current_user")
+        request_access_data = kwargs.get("request_access_data")
+        await self._get_all(sid, current_user, request_access_data)
 
 
 sub_group_router = SubGroupNamespace()
@@ -326,7 +332,9 @@ class SubSubGroupNamespace(BaseNamespace):
     async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
         # trigger the read all event to fetch all sub sub groups:
-        await self._get_all(sid, *args, **kwargs)
+        current_user = kwargs.get("current_user")
+        request_access_data = kwargs.get("request_access_data")
+        await self._get_all(sid, current_user, request_access_data)
 
 
 sub_sub_group_router = SubSubGroupNamespace()
