@@ -27,11 +27,11 @@
 	);
 	socketioGroup.client.on('status', (status: SocketioStatus) => socketioGroup.handleStatus(status));
 
-	const newGroup = $state<Group>({
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		name: '',
-		description: ''
-	});
+	// const newGroup = $state<Group>({
+	// 	id: 'new_' + Math.random().toString(36).substring(2, 9),
+	// 	name: '',
+	// 	description: ''
+	// });
 </script>
 
 <a href="../">
