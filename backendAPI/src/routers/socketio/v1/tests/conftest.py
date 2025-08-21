@@ -16,11 +16,11 @@ from routers.socketio.v1.demo_resource import (
     demo_resource_router as demo_resource_namespace_router,
 )
 from routers.socketio.v1.identities import (
-    user_router,
-    ueber_group_router,
     group_router,
     sub_group_router,
     sub_sub_group_router,
+    ueber_group_router,
+    user_router,
 )
 from routers.socketio.v1.interactive_documentation import (
     interactive_documentation_router,

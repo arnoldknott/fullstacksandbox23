@@ -1,12 +1,12 @@
 import pytest
 
 from tests.utils import (
+    many_test_azure_users,
+    many_test_groups,
     session_id_admin_read_write_socketio,
     session_id_user1_read_write_socketio,
     session_id_user2_read_write_socketio,
     token_user1_read_write_socketio,
-    many_test_azure_users,
-    many_test_groups,
 )
 
 # Nomenclature:
