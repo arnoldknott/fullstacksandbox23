@@ -32,13 +32,17 @@ from routers.socketio.v1.demo_namespace import demo_namespace_router
 from routers.socketio.v1.demo_resource import (
     demo_resource_router as demo_resource_namespace_router,
 )
+from routers.socketio.v1.identities import group_router as group_namespace_router
 from routers.socketio.v1.identities import (
-    user_router as user_namespace_router,
-    ueber_group_router as ueber_group_namespace_router,
-    group_router as group_namespace_router,
     sub_group_router as sub_group_namespace_router,
+)
+from routers.socketio.v1.identities import (
     sub_sub_group_router as sub_sub_group_namespace_router,
 )
+from routers.socketio.v1.identities import (
+    ueber_group_router as ueber_group_namespace_router,
+)
+from routers.socketio.v1.identities import user_router as user_namespace_router
 from routers.socketio.v1.interactive_documentation import (
     interactive_documentation_router,
 )

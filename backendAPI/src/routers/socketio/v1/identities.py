@@ -1,34 +1,35 @@
 import logging
+
 from core.types import EventGuard, GuardTypes
 from crud.identity import (
-    UserCRUD,
     GroupCRUD,
     SubGroupCRUD,
     SubSubGroupCRUD,
     UeberGroupCRUD,
+    UserCRUD,
 )
 from models.identity import (
+    GroupCreate,
+    GroupExtended,
+    GroupRead,
+    GroupUpdate,
     Me,
-    UserCreate,
-    UserRead,
-    UserExtended,
-    UserUpdate,
+    SubGroupCreate,
+    SubGroupExtended,
+    SubGroupRead,
+    SubGroupUpdate,
+    SubSubGroupCreate,
+    SubSubGroupExtended,
+    SubSubGroupRead,
+    SubSubGroupUpdate,
     UeberGroupCreate,
     UeberGroupExtended,
     UeberGroupRead,
     UeberGroupUpdate,
-    GroupCreate,
-    GroupRead,
-    GroupExtended,
-    GroupUpdate,
-    SubGroupCreate,
-    SubGroupRead,
-    SubGroupExtended,
-    SubGroupUpdate,
-    SubSubGroupCreate,
-    SubSubGroupRead,
-    SubSubGroupExtended,
-    SubSubGroupUpdate,
+    UserCreate,
+    UserExtended,
+    UserRead,
+    UserUpdate,
 )
 
 from .base import BaseNamespace
