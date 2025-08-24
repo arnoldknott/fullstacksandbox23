@@ -1,4 +1,4 @@
-FROM node:22.11.0-alpine3.20 AS build
+FROM node:24.6.0-alpine3.21 AS build
 WORKDIR /app
 # ARG REDIS_HOST
 # ARG REDIS_PORT
