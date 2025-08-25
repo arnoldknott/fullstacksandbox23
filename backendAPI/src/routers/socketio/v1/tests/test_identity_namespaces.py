@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 
 from tests.utils import (
@@ -225,7 +227,7 @@ async def test_update_me(
 async def test_user_creates_user_fails(
     socketio_test_client_user_namespace,
 ):
-    """Test user access to connect, create, update, and delete events in the user namespace."""
+    """Test user creates user fails, as Admin role is required in access token."""
     connection = await socketio_test_client_user_namespace()
     # Connect to the user namespace:
     await connection.connect()
@@ -303,7 +305,7 @@ async def test_updates_user_fails_due_to_missing_ownership(
     socketio_test_client_user_namespace,
     session_ids,
 ):
-    """Test user access to connect, create, update, and delete events in the user namespace."""
+    """Test user updates without ownership fails."""
     connection_admin = await socketio_test_client_user_namespace()
     connection_user = await socketio_test_client_user_namespace(session_ids[1])
     # Connect to the user namespace:
@@ -344,14 +346,19 @@ async def test_deletes_user_where_being_owner_fails(
     session_ids,
     add_one_test_access_policy,
 ):
-    """Test user access to connect, create, update, and delete events in the user namespace."""
+    """Test user deletes another user fails, as delete event requires Admin role in token."""
     connection_admin = await socketio_test_client_user_namespace()
     connection_user = await socketio_test_client_user_namespace(session_ids[1])
     many_test_users = await add_many_azure_test_users()
     current_user = await connection_user.current_user()
+    # give the test_user a new id,
+    # in case the current_user is the same
+    # as the selected entry from many_test_users
+    test_user = many_test_users[2]
+    test_user.id = uuid.uuid4()
     await add_one_test_access_policy(
         {
-            "resource_id": str(many_test_users[2].id),
+            "resource_id": str(test_user.id),
             "identity_id": str(current_user.user_id),
             "action": "own",
         }
@@ -361,9 +368,7 @@ async def test_deletes_user_where_being_owner_fails(
     await connection_user.connect()
 
     # User deletes user:
-    await connection_user.client.emit(
-        "delete", str(many_test_users[1].id), namespace="/user"
-    )
+    await connection_user.client.emit("delete", str(test_user.id), namespace="/user")
     await connection_user.client.sleep(0.3)
     assert connection_user.responses("status")[0]["error"] == "401: Invalid token."
     assert connection_user.responses("transferred") == []
