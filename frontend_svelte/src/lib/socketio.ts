@@ -61,13 +61,18 @@ export class SocketIO {
 
 	// The backend is handling it, whether it's new or existing.
 	// If the id is a UUID, it tries to update an existing resource.
-	public submitEntity(entity: AnyEntityExtended): void {
+	public submitEntity(entity: AnyEntityExtended, parent_id?: string, inherit?: boolean): void {
 		// Deletes the preliminary id from editIds, if it is a new entity.
 		// if (this.editIds && this.editIds.has(entity.id) && entity.id.slice(0, 4) === 'new_') {
 		if (this.editIds && this.editIds.has(entity.id) && entity.id.slice(0, 4) === 'new_') {
 			this.editIds.delete(entity.id);
 		}
-		this.client.emit('submit', { payload: entity });
+		const data = {
+			payload: entity,
+			...(parent_id ? { parent_id } : {}),
+			...(inherit ? { inherit } : {})
+		};
+		this.client.emit('submit', data);
 	}
 
 	public deleteEntity(entityId: string): void {
@@ -106,10 +111,6 @@ export class SocketIO {
 	}
 
 	public handleDeleted(resource_id: string): void {
-		console.log('=== SocketIO - handleDeleted - resource_id ===');
-		console.log(resource_id);
-		console.log('=== SocketIO - handleDeleted - this.entities ===');
-		console.log(this.entities);
 		const index = this.entities.findIndex((entity) => entity.id === resource_id);
 		if (index > -1) {
 			this.entities.splice(index, 1);
@@ -121,27 +122,27 @@ export class SocketIO {
 		// this.entities = this.entities.filter((entity) => entity.id !== resource_id);
 	}
 
-	public handleStatus(data: SocketioStatus): void {
-		if ('success' in data) {
-			if (data.success === 'created') {
+	public handleStatus(status: SocketioStatus): void {
+		if ('success' in status) {
+			if (status.success === 'created') {
 				if (this.editIds) {
-					this.editIds.add(data.id);
+					this.editIds.add(status.id);
 				}
 
 				this.entities.forEach((entity) => {
-					if (entity.id === data.submitted_id) {
-						entity.id = data.id;
+					if (entity.id === status.submitted_id) {
+						entity.id = status.id;
 					}
 				});
 				// Adds the created id (as a replacement for the prelimnary id) to editIds.
 				// This is needed to keep editing on after newly created resources.
-			} else if (data.success === 'shared') {
-				this.client.emit('read', data.id);
-			} else if (data.success === 'unshared') {
+			} else if (status.success === 'shared') {
+				this.client.emit('read', status.id);
+			} else if (status.success === 'unshared') {
 				// Re-read to see, if there is still access to the resource any other way,
 				// for example inherited access.
 				// if not, server emits a 'deleted' event.
-				this.client.emit('read', data.id);
+				this.client.emit('read', status.id);
 			}
 		}
 	}

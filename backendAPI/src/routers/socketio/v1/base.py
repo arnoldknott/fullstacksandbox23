@@ -473,10 +473,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                                     "submitted_id": payload.get("id", None),
                                 },
                             )
-                            print(
-                                "=== routers - socketio - v1 - on_submit - database_object ==="
-                            )
-                            print(database_object, flush=True)
                             # transfer after create is necessary for other clients,
                             await self.server.emit(
                                 "status",
