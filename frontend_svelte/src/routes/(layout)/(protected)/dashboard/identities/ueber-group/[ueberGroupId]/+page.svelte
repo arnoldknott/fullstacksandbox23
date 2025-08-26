@@ -40,7 +40,11 @@
 	const socketioGroup = new SocketIO(groupConnection, () => allGroups);
 
 	socketioGroup.client.emit('read');
-	socketioGroup.client.on('transferred', (data: Group) => socketioGroup.handleTransferred(data));
+	socketioGroup.client.on('transferred', (data: Group) => {
+		if (!linkedGroups.some((group) => group.id === data.id)) {
+			socketioGroup.handleTransferred(data);
+		}
+	});
 	socketioGroup.client.on('deleted', (resource_id: string) =>
 		socketioGroup.handleDeleted(resource_id)
 	);
@@ -205,6 +209,10 @@
 		<JsonData data={linkedGroups} />
 	{/if}
 	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
+		<li>Add a "multi-create" to new group card with numerical index at the end</li>
+		<li>Add inherit checkbox to new group card</li>
+	</ul>
+	<ul class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add the modify / edit functionality.</li>
 		<li>Add the delete functionality, removing the group from the ueber group.</li>
 		<li>
@@ -217,7 +225,7 @@
 	<p>No Ueber Group found.</p>
 {/if}
 
-<p class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
+<p class="title bg-warning-container/20 text-warning-container-content mt-4 rounded-2xl">
 	For resource hierarchies (protected resources) also add the order functionality by drag and drop.
 </p>
 
