@@ -10,7 +10,7 @@
 	import { SocketIO } from '$lib/socketio';
 
 	let {
-		demoResource, // = $bindable(),
+		demoResource = $bindable(),
 		identities,
 		edit = $bindable(false),
 		// deleteResource = (_id: string) => {},
@@ -175,7 +175,7 @@
 						</button>
 
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share-{demoResource.id}"
