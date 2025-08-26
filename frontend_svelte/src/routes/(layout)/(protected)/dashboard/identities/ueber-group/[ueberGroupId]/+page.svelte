@@ -9,6 +9,7 @@
 	import type { Group, Hierarchy } from '$lib/types';
 	import Card from '$components/Card.svelte';
 	import IdentityListItem from '../../IdentityListItem.svelte';
+	import { crossfade } from 'svelte/transition';
 	let { data }: { data: PageData } = $props();
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
@@ -33,6 +34,7 @@
 
 	let linkedGroups = $state<Group[]>(data.thisUeberGroup?.groups || []);
 	let allGroups = $state<Group[]>([]);
+	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 500 });
 	const newGroup = $state<Group>({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		name: '',
@@ -194,7 +196,12 @@
 				<dl class="divider-outline divide-y">
 					{#if allGroups !== undefined && allGroups.length > 0}
 						{#each allGroups as group (group.id)}
-							<IdentityListItem identity={group} link={linkGroup} />
+							<div
+								in:receiveGroupCrossfade={{ key: group, duration: 500 }}
+								out:sendGroupCrossfade={{ key: group, duration: 500 }}
+							>
+								<IdentityListItem identity={group} link={linkGroup} />
+							</div>
 						{/each}
 					{:else}
 						<div
@@ -217,7 +224,12 @@
 			<dl class="divider-outline divide-y">
 				{#if linkedGroups !== undefined && linkedGroups.length > 0}
 					{#each linkedGroups as group (group.id)}
-						<IdentityListItem identity={group} unlink={unlinkGroup} remove={deleteGroup} />
+						<div
+							in:receiveGroupCrossfade={{ key: group, duration: 500 }}
+							out:sendGroupCrossfade={{ key: group, duration: 500 }}
+						>
+							<IdentityListItem identity={group} unlink={unlinkGroup} remove={deleteGroup} />
+						</div>
 					{/each}
 				{:else}
 					<div
