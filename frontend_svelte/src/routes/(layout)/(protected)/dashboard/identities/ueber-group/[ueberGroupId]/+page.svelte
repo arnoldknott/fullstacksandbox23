@@ -141,14 +141,26 @@
 			<Card id={newGroup.id} header={newGroupHeader}>
 				<dl class="divider-outline divide-y">
 					{#each allGroups as group (group.id)}
-						<div class="px-4 py-6 text-base sm:grid sm:grid-cols-2 sm:gap-4 sm:px-0">
-							<dt class="text-base-content title-small">
-								<a href={`/dashboard/identities/group/${group.id}`}>
-									{group.name}
-								</a>
+						<div class="smg:flex-row px-4 py-6 text-base sm:flex sm:gap-4 sm:px-0">
+							<dt class="text-base-content title-small flex-1">
+								{group.name}
 							</dt>
-							<dd class="text-base-content/80 mt-1 sm:col-span-2 sm:mt-0 md:col-span-1">
+							<dd class="text-base-content/80 mt-1 flex-1">
 								{group.description}
+							</dd>
+							<dd class="flex-none">
+								<a
+									id="info-about-{group.id}"
+									href="./identities/group/{group.id}"
+									aria-label="Info about {group.name}"
+								>
+									<button
+										class="btn btn-info-container shadow-outline shadow-md"
+										aria-labelledby="info-about-{group.id}"
+									>
+										<span class="icon-[tabler--info-triangle]"></span>
+									</button>
+								</a>
 							</dd>
 						</div>
 						<!-- <div class="divider divider-outline"></div> -->
