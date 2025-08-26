@@ -759,7 +759,7 @@ async def test_user_reads_all_groups(
     await connection.client.emit("read", namespace="/group")
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
 
     transferred_data_client = connection.responses("transferred")
 
