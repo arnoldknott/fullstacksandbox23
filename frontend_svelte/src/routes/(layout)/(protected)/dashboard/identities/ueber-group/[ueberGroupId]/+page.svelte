@@ -96,13 +96,19 @@
 	</h5>
 {/snippet}
 
+{#snippet linkedGroupsHeader()}
+	<h5 class="title-small md:title lg:title-large text-base-content card-title">
+		Groups in {ueberGroup?.name || 'this UeberGroup'}
+	</h5>
+{/snippet}
+
 {#if ueberGroup}
 	<Heading>{ueberGroup.name}</Heading>
 	<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
 
-	<div class="grid grid-cols-2 justify-around gap-4">
-		<Card id={newGroup.id} header={newGroupHeader}>
-			<div class="max-h-44 w-full overflow-x-auto">
+	<div class="grid grid-cols-2 justify-around gap-4 pb-4">
+		<Card id={newGroup.id} extraClasses="max-h-70" header={newGroupHeader}>
+			<div class="w-full overflow-x-auto">
 				<div class="input-filled input-base-content mb-2 w-fit grow">
 					<input
 						type="text"
@@ -144,7 +150,7 @@
 			<JsonData data={newGroup} />
 		{/if}
 		<div>
-			<Card id={newGroup.id} header={existingGroupsHeader}>
+			<Card id="existing-groups" header={existingGroupsHeader}>
 				<dl class="divider-outline divide-y">
 					{#if allGroups !== undefined && allGroups.length > 0}
 						{#each allGroups as group (group.id)}
@@ -152,7 +158,7 @@
 								<dt class="text-base-content title-small flex-1">
 									{group.name}
 								</dt>
-								<dd class="text-base-content/80 mt-1 flex-1">
+								<dd class="text-base-content/80 flex-2 mt-1">
 									{group.description}
 								</dd>
 								<dd class="flex-none">
@@ -186,28 +192,54 @@
 			<JsonData data={allGroups} />
 		{/if}
 	</div>
+
+	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : ''}>
+		<Card id="linked-groups" header={linkedGroupsHeader}>
+			<dl class="divider-outline divide-y">
+				{#if linkedGroups !== undefined && linkedGroups.length > 0}
+					{#each linkedGroups as group (group.id)}
+						<div class="smg:flex-row px-4 py-6 text-base sm:flex sm:gap-4 sm:px-0">
+							<dt class="text-base-content title-small flex-1">
+								{group.name}
+							</dt>
+							<dd class="text-base-content/80 flex-2 mt-1">
+								{group.description}
+							</dd>
+							<dd class="flex-none">
+								<a
+									id="info-about-{group.id}"
+									href="./identities/group/{group.id}"
+									aria-label="Info about {group.name}"
+								>
+									<button
+										class="btn btn-info-container shadow-outline shadow-md"
+										aria-labelledby="info-about-{group.id}"
+									>
+										<span class="icon-[tabler--info-triangle]"></span>
+									</button>
+								</a>
+							</dd>
+						</div>
+					{/each}
+				{:else}
+					<div
+						class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
+						role="alert"
+					>
+						No Groups found for this user.
+					</div>
+				{/if}
+			</dl>
+		</Card>
+		{#if debug}
+			<JsonData data={linkedGroups} />
+		{/if}
+	</div>
+
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
 		<li>Make the selection list crossfade.</li>
 		<li>Add the event to base namespace to add a child to a parent resource.</li>
 	</ul>
-
-	<ul>
-		{#if linkedGroups !== undefined && linkedGroups.length > 0}
-			{#each linkedGroups as group (group.id)}
-				<li>
-					<a href={`/dashboard/identities/group/${group.id}`}>
-						{group.name}
-					</a>
-					<div class="divider divider-outline"></div>
-				</li>
-			{/each}
-		{:else}
-			<li>No groups found in this ueber group.</li>
-		{/if}
-	</ul>
-	{#if debug}
-		<JsonData data={linkedGroups} />
-	{/if}
 	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add a "multi-create" to new group card with numerical index at the end</li>
 		<li>Add inherit checkbox to new group card</li>
