@@ -197,8 +197,8 @@
 					{#if allGroups !== undefined && allGroups.length > 0}
 						{#each allGroups as group (group.id)}
 							<div
-								in:receiveGroupCrossfade={{ key: group, duration: 500 }}
-								out:sendGroupCrossfade={{ key: group, duration: 500 }}
+								in:receiveGroupCrossfade={{ key: group }}
+								out:sendGroupCrossfade={{ key: group }}
 							>
 								<IdentityListItem identity={group} link={linkGroup} />
 							</div>
@@ -224,10 +224,7 @@
 			<dl class="divider-outline divide-y">
 				{#if linkedGroups !== undefined && linkedGroups.length > 0}
 					{#each linkedGroups as group (group.id)}
-						<div
-							in:receiveGroupCrossfade={{ key: group, duration: 500 }}
-							out:sendGroupCrossfade={{ key: group, duration: 500 }}
-						>
+						<div in:receiveGroupCrossfade={{ key: group }} out:sendGroupCrossfade={{ key: group }}>
 							<IdentityListItem identity={group} unlink={unlinkGroup} remove={deleteGroup} />
 						</div>
 					{/each}
