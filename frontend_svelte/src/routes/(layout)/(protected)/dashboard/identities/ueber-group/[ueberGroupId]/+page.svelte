@@ -45,8 +45,6 @@
 	socketioGroup.client.on('status', (status: SocketioStatus) => {
 		if ('success' in status) {
 			if (status.success === 'created') {
-				console.log('=== status - created - group - status ===');
-				console.log(status);
 				if (status.submitted_id === newGroup.id) {
 					groups.push({ ...newGroup, id: status.id });
 					newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
@@ -61,8 +59,6 @@
 	const addNewGroup = () => {
 		// TBD: make inherit a parameter in the form.
 		socketioGroup.submitEntity(newGroup, ueberGroup?.id, true);
-		console.log('=== addNewGroup ===');
-		console.log(newGroup);
 	};
 </script>
 
