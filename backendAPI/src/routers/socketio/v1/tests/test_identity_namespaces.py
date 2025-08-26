@@ -741,7 +741,6 @@ async def test_get_requested_existing_groups_on_connect(
     assert connection.responses("transferred")[2]["id"] == str(resource_ids[2])
 
 
-
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "session_ids",
@@ -756,12 +755,9 @@ async def test_user_reads_all_groups(
     connection = await socketio_test_client(group_client_config)
     existing_groups = await add_many_test_groups(connection.token_payload())
 
-
     await connection.connect()
 
-    await connection.client.emit(
-        "read", namespace="/group"
-    )
+    await connection.client.emit("read", namespace="/group")
 
     # Wait for the response to be set
     await connection.client.sleep(0.2)
@@ -790,12 +786,9 @@ async def test_user_reads_one_group(
     connection = await socketio_test_client(group_client_config)
     existing_groups = await add_many_test_groups(connection.token_payload())
 
-
     await connection.connect()
 
-    await connection.client.emit(
-        "read", str(existing_groups[2].id), namespace="/group"
-    )
+    await connection.client.emit("read", str(existing_groups[2].id), namespace="/group")
 
     # Wait for the response to be set
     await connection.client.sleep(0.2)

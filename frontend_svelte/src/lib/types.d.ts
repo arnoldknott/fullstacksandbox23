@@ -217,8 +217,4 @@ export type AnyEntityExtended =
 	| SubGroupExtended
 	| SubSubGroupExtended;
 
-export type AnyGroupIdentity =
-	| UeberGroup
-	| Group
-	| SubGroup
-	| SubSubGroup
+export type AnyGroupIdentity = UeberGroup | Group | SubGroup | SubSubGroup;

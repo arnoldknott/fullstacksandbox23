@@ -15,7 +15,7 @@
 	<dt class="text-base-content title-small flex-1">
 		{identity.name}
 	</dt>
-	<dd class="text-base-content/80 flex-2 mt-1">
+	<dd class="text-base-content/80 mt-1 flex-2">
 		{identity.description}
 	</dd>
 	<dd class="flex-none">

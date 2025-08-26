@@ -625,7 +625,10 @@ async def test_user_submits_existing_resource_for_update(
             updated_resource.description
             == resources[index_of_resource_to_update].description
         )
-        assert updated_resource.category_id == resources[index_of_resource_to_update].category_id
+        assert (
+            updated_resource.category_id
+            == resources[index_of_resource_to_update].category_id
+        )
         assert updated_resource.tags == resources[index_of_resource_to_update].tags
         assert updated_resource.name == "Altering the name of this demo resource"
         assert updated_resource.language == "fr-FR"
