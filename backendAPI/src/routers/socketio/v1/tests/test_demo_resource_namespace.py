@@ -595,13 +595,13 @@ async def test_user_submits_existing_resource_for_update(
     modified_demo_resource = resources[index_of_resource_to_update]
     modified_demo_resource.name = "Altering the name of this demo resource"
     modified_demo_resource.language = "fr-FR"
-    modified_demo_resource.id = str(modified_demo_resource.id)
+    # modified_demo_resource.id = modified_demo_resource.id
     if modified_demo_resource.category_id:
-        modified_demo_resource.category_id = str(modified_demo_resource.category_id)
+        modified_demo_resource.category_id = modified_demo_resource.category_id
 
     await connection.client.emit(
         "submit",
-        {"payload": modified_demo_resource.model_dump()},
+        {"payload": modified_demo_resource.model_dump(mode="json")},
         namespace="/demo-resource",
     )
 
@@ -623,13 +623,11 @@ async def test_user_submits_existing_resource_for_update(
             updated_resource.description
             == resources[index_of_resource_to_update].description
         )
-        assert updated_resource.category_id == UUID(
-            resources[index_of_resource_to_update].category_id
-        )
+        assert updated_resource.category_id == resources[index_of_resource_to_update].category_id
         assert updated_resource.tags == resources[index_of_resource_to_update].tags
         assert updated_resource.name == "Altering the name of this demo resource"
         assert updated_resource.language == "fr-FR"
-        assert updated_resource.id == UUID(resources[index_of_resource_to_update].id)
+        assert updated_resource.id == resources[index_of_resource_to_update].id
 
 
 @pytest.mark.anyio
@@ -664,13 +662,13 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
     modified_demo_resource = resources[3]
     modified_demo_resource.name = "Altering the name of this demo resource"
     modified_demo_resource.language = "fr-FR"
-    modified_demo_resource.id = str(modified_demo_resource.id)
+    modified_demo_resource.id = modified_demo_resource.id
     if modified_demo_resource.category_id:
-        modified_demo_resource.category_id = str(modified_demo_resource.category_id)
+        modified_demo_resource.category_id = modified_demo_resource.category_id
 
     await connection.client.emit(
         "submit",
-        {"payload": modified_demo_resource.model_dump()},
+        {"payload": modified_demo_resource.model_dump(mode="json")},
         namespace="/demo-resource",
     )
 
@@ -713,13 +711,13 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
     modified_demo_resource = resources[3]
     modified_demo_resource.name = "Altering the name of this demo resource"
     modified_demo_resource.language = "fr-FR"
-    modified_demo_resource.id = str(modified_demo_resource.id)
+    modified_demo_resource.id = modified_demo_resource.id
     if modified_demo_resource.category_id:
-        modified_demo_resource.category_id = str(modified_demo_resource.category_id)
+        modified_demo_resource.category_id = modified_demo_resource.category_id
 
     await connection.client.emit(
         "submit",
-        {"payload": modified_demo_resource.model_dump()},
+        {"payload": modified_demo_resource.model_dump(mode="json")},
         namespace="/demo-resource",
     )
 

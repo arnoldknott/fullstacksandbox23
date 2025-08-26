@@ -1,4 +1,5 @@
 import copy
+from typing import List
 from os import path, remove
 from uuid import UUID
 
@@ -148,7 +149,7 @@ async def add_test_categories(
 async def add_test_demo_resources(
     current_user_from_azure_token: User,
     add_test_categories: list[Category],
-):
+ ) -> List[DemoResource]:
     """Adds demo resources to the database."""
     # TBD, when refactoring add_test_demo_resources, the mocked token should be available here and
     # needs to be provided to to add_test_categories as well!
