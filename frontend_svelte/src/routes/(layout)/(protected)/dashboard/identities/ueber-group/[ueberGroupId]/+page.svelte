@@ -8,6 +8,7 @@
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { Group } from '$lib/types';
 	import Card from '$components/Card.svelte';
+	import IdentityListItem from '../../IdentityListItem.svelte';
 	let { data }: { data: PageData } = $props();
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
@@ -65,6 +66,32 @@
 	const addNewGroup = () => {
 		// TBD: make inherit a parameter in the form.
 		socketioGroup.submitEntity(newGroup, ueberGroup?.id, true);
+	};
+
+	const unlinkGroup = (groupId: string) => {
+		// if (ueberGroup) {
+		// 	socketioGroup.client.emit('removeLink', {
+		// 		ueber_group_id: ueberGroup.id,
+		// 		group_id: groupId
+		// 	});
+		// 	allGroups.push(linkedGroups.filter((group) => group.id === groupId)[0]);
+		// 	linkedGroups = linkedGroups.filter((group) => group.id !== groupId);
+		// }
+		console.log('=== ueberGroup - unlinking group ===');
+		console.log('ueber-group.id:', ueberGroup?.id);
+		console.log('group.id:', groupId);
+	};
+
+	const deleteGroup = (groupId: string) => {
+		// if (ueberGroup) {
+		// 	socketioGroup.client.emit('delete', {
+		// 		id: groupId
+		// 	});
+		// 	linkedGroups = linkedGroups.filter((group) => group.id !== groupId);
+		// }
+		console.log('=== ueberGroup - deleting group ===');
+		console.log('ueber-group.id:', ueberGroup?.id);
+		console.log('group.id:', groupId);
 	};
 </script>
 
@@ -134,9 +161,9 @@
 					</label>
 				</div>
 				<!-- TBD: make snippet and put into footer -->
-				<div class="text-right">
+				<div class="h-11 text-right">
 					<button
-						class="btn-warning-container btn btn-circle btn-gradient"
+						class="btn-success-container btn btn-circle btn-gradient shadow-outline shadow-md"
 						aria-label="Send Icon Button"
 						onclick={() => addNewGroup()}
 						data-overlay="#add-ueber-group-modal"
@@ -154,28 +181,7 @@
 				<dl class="divider-outline divide-y">
 					{#if allGroups !== undefined && allGroups.length > 0}
 						{#each allGroups as group (group.id)}
-							<div class="smg:flex-row px-4 py-6 text-base sm:flex sm:gap-4 sm:px-0">
-								<dt class="text-base-content title-small flex-1">
-									{group.name}
-								</dt>
-								<dd class="text-base-content/80 flex-2 mt-1">
-									{group.description}
-								</dd>
-								<dd class="flex-none">
-									<a
-										id="info-about-{group.id}"
-										href="./identities/group/{group.id}"
-										aria-label="Info about {group.name}"
-									>
-										<button
-											class="btn btn-info-container shadow-outline shadow-md"
-											aria-labelledby="info-about-{group.id}"
-										>
-											<span class="icon-[tabler--info-triangle]"></span>
-										</button>
-									</a>
-								</dd>
-							</div>
+							<IdentityListItem identity={group} />
 						{/each}
 					{:else}
 						<div
@@ -198,28 +204,7 @@
 			<dl class="divider-outline divide-y">
 				{#if linkedGroups !== undefined && linkedGroups.length > 0}
 					{#each linkedGroups as group (group.id)}
-						<div class="smg:flex-row px-4 py-6 text-base sm:flex sm:gap-4 sm:px-0">
-							<dt class="text-base-content title-small flex-1">
-								{group.name}
-							</dt>
-							<dd class="text-base-content/80 flex-2 mt-1">
-								{group.description}
-							</dd>
-							<dd class="flex-none">
-								<a
-									id="info-about-{group.id}"
-									href="./identities/group/{group.id}"
-									aria-label="Info about {group.name}"
-								>
-									<button
-										class="btn btn-info-container shadow-outline shadow-md"
-										aria-labelledby="info-about-{group.id}"
-									>
-										<span class="icon-[tabler--info-triangle]"></span>
-									</button>
-								</a>
-							</dd>
-						</div>
+						<IdentityListItem identity={group} unlink={unlinkGroup} remove={deleteGroup} />
 					{/each}
 				{:else}
 					<div

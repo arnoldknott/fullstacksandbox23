@@ -216,3 +216,9 @@ export type AnyEntityExtended =
 	| GroupExtended
 	| SubGroupExtended
 	| SubSubGroupExtended;
+
+export type AnyGroupIdentity =
+	| UeberGroup
+	| Group
+	| SubGroup
+	| SubSubGroup
