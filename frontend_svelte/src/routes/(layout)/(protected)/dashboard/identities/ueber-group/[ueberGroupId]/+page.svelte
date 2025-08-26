@@ -86,17 +86,19 @@
 {#snippet existingGroupsHeader()}
 	<h5 class="title-small md:title lg:title-large text-base-content card-title">
 		Add existing group to {ueberGroup?.name || 'this UeberGroup'}
+		<p class="title text-base-content card-title text-center">
+			Click on a group to add to this UeberGroup.
+		</p>
 	</h5>
 {/snippet}
 
 {#if ueberGroup}
 	<Heading>{ueberGroup.name}</Heading>
-	<p>{ueberGroup.description}</p>
+	<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
 
-	<Heading>Add group to {ueberGroup.name}</Heading>
 	<div class="grid grid-cols-2 justify-around gap-4">
 		<Card id={newGroup.id} header={newGroupHeader}>
-			<div class="w-full overflow-x-auto">
+			<div class="max-h-44 w-full overflow-x-auto">
 				<div class="input-filled input-base-content mb-2 w-fit grow">
 					<input
 						type="text"
@@ -138,33 +140,41 @@
 			<JsonData data={newGroup} />
 		{/if}
 		<div>
-			<Card id={newGroup.id} header={newGroupHeader}>
+			<Card id={newGroup.id} header={existingGroupsHeader}>
 				<dl class="divider-outline divide-y">
-					{#each allGroups as group (group.id)}
-						<div class="smg:flex-row px-4 py-6 text-base sm:flex sm:gap-4 sm:px-0">
-							<dt class="text-base-content title-small flex-1">
-								{group.name}
-							</dt>
-							<dd class="text-base-content/80 mt-1 flex-1">
-								{group.description}
-							</dd>
-							<dd class="flex-none">
-								<a
-									id="info-about-{group.id}"
-									href="./identities/group/{group.id}"
-									aria-label="Info about {group.name}"
-								>
-									<button
-										class="btn btn-info-container shadow-outline shadow-md"
-										aria-labelledby="info-about-{group.id}"
+					{#if allGroups !== undefined && allGroups.length > 0}
+						{#each allGroups as group (group.id)}
+							<div class="smg:flex-row px-4 py-6 text-base sm:flex sm:gap-4 sm:px-0">
+								<dt class="text-base-content title-small flex-1">
+									{group.name}
+								</dt>
+								<dd class="text-base-content/80 mt-1 flex-1">
+									{group.description}
+								</dd>
+								<dd class="flex-none">
+									<a
+										id="info-about-{group.id}"
+										href="./identities/group/{group.id}"
+										aria-label="Info about {group.name}"
 									>
-										<span class="icon-[tabler--info-triangle]"></span>
-									</button>
-								</a>
-							</dd>
+										<button
+											class="btn btn-info-container shadow-outline shadow-md"
+											aria-labelledby="info-about-{group.id}"
+										>
+											<span class="icon-[tabler--info-triangle]"></span>
+										</button>
+									</a>
+								</dd>
+							</div>
+						{/each}
+					{:else}
+						<div
+							class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
+							role="alert"
+						>
+							No Groups found for this user.
 						</div>
-						<!-- <div class="divider divider-outline"></div> -->
-					{/each}
+					{/if}
 				</dl>
 			</Card>
 		</div>
@@ -173,9 +183,7 @@
 		{/if}
 	</div>
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
-		<li>Change group list into a table - to allow for title, description and action buttons</li>
-		<li>Add a selection list for existing groups and a field for creating a new group.</li>
-		<li>Make the selection list drag-and-dropable.</li>
+		<li>Make the selection list crossfade.</li>
 		<li>Add the event to base namespace to add a child to a parent resource.</li>
 	</ul>
 
