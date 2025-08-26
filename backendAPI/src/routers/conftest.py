@@ -1,6 +1,6 @@
 import copy
-from typing import List
 from os import path, remove
+from typing import List
 from uuid import UUID
 
 import pytest

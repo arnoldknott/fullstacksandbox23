@@ -3,7 +3,6 @@ import uuid
 import pytest
 
 from models.identity import Group
-
 from tests.utils import (
     many_test_azure_users,
     many_test_groups,

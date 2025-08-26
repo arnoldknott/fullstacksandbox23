@@ -1,23 +1,42 @@
 <script lang="ts">
 	import type { AnyGroupIdentity } from '$lib/types';
+	import { crossfade } from 'svelte/transition';
 	let {
 		identity,
+		link,
 		unlink,
 		remove
 	}: {
 		identity: AnyGroupIdentity;
+		link?: (id: string) => void;
 		unlink?: (id: string) => void;
 		remove?: (id: string) => void;
 	} = $props();
+
+	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 300 });
 </script>
 
-<div class="smg:flex-row px-4 py-6 text-base sm:flex sm:gap-4 sm:px-0">
+{#snippet listContent()}
 	<dt class="text-base-content title-small flex-1">
 		{identity.name}
 	</dt>
 	<dd class="text-base-content/80 mt-1 flex-2">
 		{identity.description}
 	</dd>
+{/snippet}
+
+<div
+	class="px-4 py-6 text-base sm:flex sm:flex-row sm:gap-4 sm:px-0"
+	in:receiveGroupCrossfade={{ key: identity, duration: 300 }}
+	out:sendGroupCrossfade={{ key: identity, duration: 300 }}
+>
+	{#if link}
+		<button class="w-full text-left sm:flex sm:flex-row" onclick={() => link?.(identity.id)}>
+			{@render listContent()}
+		</button>
+	{:else}
+		{@render listContent()}
+	{/if}
 	<dd class="flex-none">
 		<div class="flex flex-row gap-3">
 			<a

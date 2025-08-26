@@ -2,7 +2,12 @@
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
 import { getContext } from 'svelte';
-import type { AccessPolicy, AnyEntityExtended, BackendAPIConfiguration } from '$lib/types.d.ts';
+import type {
+	AccessPolicy,
+	AnyEntityExtended,
+	BackendAPIConfiguration,
+	Hierarchy
+} from '$lib/types.d.ts';
 import { SvelteSet } from 'svelte/reactivity';
 
 export type SocketioConnection = {
@@ -22,6 +27,8 @@ export type SocketioStatus =
 	| { success: 'deleted'; id: string }
 	| { success: 'shared'; id: string }
 	| { success: 'unshared'; id: string }
+	| { success: 'linked'; id: string; parent_id: string; inherit: boolean }
+	| { success: 'unlinked'; id: string; parent_id: string }
 	| { error: string };
 
 export class SocketIO {
@@ -91,6 +98,14 @@ export class SocketIO {
 
 	public shareEntity(accessPolicy: AccessPolicy): void {
 		this.client.emit('share', accessPolicy);
+	}
+
+	public linkEntities(hierarchy: Hierarchy): void {
+		this.client.emit('link', hierarchy);
+	}
+
+	public unlinkEntities(hierarchy: Hierarchy): void {
+		this.client.emit('unlink', hierarchy);
 	}
 
 	// Receivers:

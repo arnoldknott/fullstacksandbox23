@@ -30,12 +30,11 @@ from models.access import (
     AccessPolicyUpdate,
     AccessRequest,
     BaseHierarchy,
+    BaseHierarchyCreate,
     IdentifierTypeLink,
     IdentityHierarchy,
-    IdentityHierarchyCreate,
     IdentityHierarchyRead,
     ResourceHierarchy,
-    ResourceHierarchyCreate,
     ResourceHierarchyRead,
 )
 
@@ -965,7 +964,7 @@ class BaseHierarchyCRUD(
 
 
 class ResourceHierarchyCRUD(
-    BaseHierarchyCRUD[ResourceHierarchyCreate, ResourceHierarchy, ResourceHierarchyRead]
+    BaseHierarchyCRUD[BaseHierarchyCreate, ResourceHierarchy, ResourceHierarchyRead]
 ):
     """CRUD for resource hierarchies."""
 
@@ -1079,7 +1078,7 @@ class ResourceHierarchyCRUD(
 
 
 class IdentityHierarchyCRUD(
-    BaseHierarchyCRUD[IdentityHierarchyCreate, IdentityHierarchy, IdentityHierarchyRead]
+    BaseHierarchyCRUD[BaseHierarchyCreate, IdentityHierarchy, IdentityHierarchyRead]
 ):
     """CRUD for resource hierarchies."""
 

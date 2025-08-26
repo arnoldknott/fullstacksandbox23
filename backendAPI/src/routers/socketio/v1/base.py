@@ -14,7 +14,12 @@ from core.security import (
 )
 from core.types import CurrentUserData, EventGuard, GuardTypes
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
-from models.access import AccessPolicyCreate, AccessPolicyDelete, AccessPolicyUpdate
+from models.access import (
+    AccessPolicyCreate,
+    AccessPolicyDelete,
+    AccessPolicyUpdate,
+    BaseHierarchyCreate,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -350,7 +355,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                     else None
                 )
                 if resource_id is None:
-                    print("=== trigger _get_all ===")
                     await self._get_all(sid, current_user, request_access_data)
                 else:
                     database_object = await crud.read_by_id(resource_id, current_user)
@@ -510,21 +514,20 @@ class BaseNamespace(socketio.AsyncNamespace):
             logger.error(f"🧦 Failed to write data from client {sid}.")
             await self._emit_status(sid, {"error": str(error)})
 
-    # TBD: consider renaming resource_id into id - it should also work for identities!
-    async def on_delete(self, sid, resource_id: UUID):
+    async def on_delete(self, sid, entity_id: UUID):
         """Delete event for socket.io namespaces."""
         logger.info(f"🧦 Delete request from client {sid}.")
         try:
             current_user = await self._get_current_user_and_check_guard(sid, "delete")
             async with self.crud() as crud:
-                await crud.delete(current_user, resource_id)
-            await self.server.close_room(resource_id, namespace=self.namespace)
+                await crud.delete(current_user, entity_id)
+            await self.server.close_room(entity_id, namespace=self.namespace)
             await self.server.emit(
                 "deleted",
-                resource_id,
+                entity_id,
                 namespace=self.namespace,
             )
-            await self._emit_status(sid, {"success": "deleted", "id": resource_id})
+            await self._emit_status(sid, {"success": "deleted", "id": entity_id})
         except Exception as error:
             logger.error(f"🧦 Failed to delete item for client {sid}.")
             print(error)
@@ -587,8 +590,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                 )
                 # print("=== socketio - UPDATE - access_policy ===", flush=True)
         except Exception as error:
-            print("=== socketio - share - access_policy ===")
-            print(access_policy, flush=True)
             logger.error(f"🧦 Failed update access attempted from client {sid}.")
             print(error, flush=True)
             await self._emit_status(sid, {"error": str(error)})
@@ -615,6 +616,60 @@ class BaseNamespace(socketio.AsyncNamespace):
     #         logger.error(f"🧦 Failed to share item for client {sid}.")
     #         print(error)
     #         await self._emit_status(sid, {"error": str(error)})
+
+    async def on_link(self, sid, hierarchy: BaseHierarchyCreate):
+        """Link event for socket.io namespaces."""
+        logger.info(f"🧦 Link request from client {sid}.")
+        try:
+            hierarchy = BaseHierarchyCreate(**hierarchy)
+            current_user = await self._get_current_user_and_check_guard(
+                sid, "submit:create"
+            )
+            async with self.crud() as crud:
+                await crud.add_child_to_parent(
+                    hierarchy.child_id,
+                    hierarchy.parent_id,
+                    current_user,
+                    hierarchy.inherit,
+                )
+            await self._emit_status(
+                sid,
+                {
+                    "success": "linked",
+                    "id": str(hierarchy.child_id),
+                    "parent_id": str(hierarchy.parent_id),
+                    "inherit": hierarchy.inherit,
+                },
+            )
+        except Exception as error:
+            logger.error(f"🧦 Failed to link item for client {sid}.")
+            print(error)
+            await self._emit_status(sid, {"error": str(error)})
+
+    async def on_unlink(self, sid, hierarchy: BaseHierarchyCreate):
+        """Unlink event for socket.io namespaces."""
+        logger.info(f"🧦 Unlink request from client {sid}.")
+        try:
+            hierarchy = BaseHierarchyCreate(**hierarchy)
+            current_user = await self._get_current_user_and_check_guard(
+                sid, "submit:update"
+            )
+            async with self.crud() as crud:
+                await crud.remove_child_from_parent(
+                    hierarchy.child_id, hierarchy.parent_id, current_user
+                )
+            await self._emit_status(
+                sid,
+                {
+                    "success": "unlinked",
+                    "id": str(hierarchy.child_id),
+                    "parent_id": str(hierarchy.parent_id),
+                },
+            )
+        except Exception as error:
+            logger.error(f"🧦 Failed to unlink item for client {sid}.")
+            print(error)
+            await self._emit_status(sid, {"error": str(error)})
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""

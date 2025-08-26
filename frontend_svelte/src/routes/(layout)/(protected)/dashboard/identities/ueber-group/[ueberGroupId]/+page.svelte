@@ -6,7 +6,7 @@
 	import Heading from '$components/Heading.svelte';
 	// const { data, ...pageWithoutData } = page;
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
-	import type { Group } from '$lib/types';
+	import type { Group, Hierarchy } from '$lib/types';
 	import Card from '$components/Card.svelte';
 	import IdentityListItem from '../../IdentityListItem.svelte';
 	let { data }: { data: PageData } = $props();
@@ -58,8 +58,13 @@
 					newGroup.name = '';
 					newGroup.description = '';
 				}
+			} else if (status.success === 'linked') {
+				linkedGroups.push(allGroups.find((group) => group.id === status.id) as Group);
+				allGroups = allGroups.filter((group) => group.id !== status.id);
+			} else if (status.success === 'unlinked') {
+				allGroups.push(linkedGroups.find((group) => group.id === status.id) as Group);
+				linkedGroups = linkedGroups.filter((group) => group.id !== status.id);
 			}
-			// socketioGroup.handleStatus(status);
 		}
 	});
 
@@ -68,18 +73,25 @@
 		socketioGroup.submitEntity(newGroup, ueberGroup?.id, true);
 	};
 
+	const linkGroup = (groupId: string) => {
+		if (ueberGroup) {
+			const hierarchy: Hierarchy = {
+				child_id: groupId,
+				parent_id: ueberGroup.id
+				// inherit: true // TBD: make a checkbox
+			};
+			socketioGroup.linkEntities(hierarchy);
+		}
+	};
+
 	const unlinkGroup = (groupId: string) => {
-		// if (ueberGroup) {
-		// 	socketioGroup.client.emit('removeLink', {
-		// 		ueber_group_id: ueberGroup.id,
-		// 		group_id: groupId
-		// 	});
-		// 	allGroups.push(linkedGroups.filter((group) => group.id === groupId)[0]);
-		// 	linkedGroups = linkedGroups.filter((group) => group.id !== groupId);
-		// }
-		console.log('=== ueberGroup - unlinking group ===');
-		console.log('ueber-group.id:', ueberGroup?.id);
-		console.log('group.id:', groupId);
+		if (ueberGroup) {
+			const hierarchy: Hierarchy = {
+				child_id: groupId,
+				parent_id: ueberGroup.id
+			};
+			socketioGroup.unlinkEntities(hierarchy);
+		}
 	};
 
 	const deleteGroup = (groupId: string) => {
@@ -120,6 +132,7 @@
 		<p class="title text-base-content card-title text-center">
 			Click on a group to add to this UeberGroup.
 		</p>
+		<!-- TBD: add inherit checkbox -->
 	</h5>
 {/snippet}
 
@@ -134,7 +147,7 @@
 	<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
 
 	<div class="grid grid-cols-2 justify-around gap-4 pb-4">
-		<Card id={newGroup.id} extraClasses="max-h-70" header={newGroupHeader}>
+		<Card id={newGroup.id} extraClasses="max-h-80" header={newGroupHeader}>
 			<div class="w-full overflow-x-auto">
 				<div class="input-filled input-base-content mb-2 w-fit grow">
 					<input
@@ -181,7 +194,7 @@
 				<dl class="divider-outline divide-y">
 					{#if allGroups !== undefined && allGroups.length > 0}
 						{#each allGroups as group (group.id)}
-							<IdentityListItem identity={group} />
+							<IdentityListItem identity={group} link={linkGroup} />
 						{/each}
 					{:else}
 						<div
@@ -223,7 +236,7 @@
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
 		<li>Make the selection list crossfade.</li>
-		<li>Add the event to base namespace to add a child to a parent resource.</li>
+		<li>Add tests for link and unlink functionality and status.</li>
 	</ul>
 	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add a "multi-create" to new group card with numerical index at the end</li>
