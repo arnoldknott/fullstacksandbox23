@@ -30,14 +30,16 @@
 
 	let ueberGroup = $state(data.thisUeberGroup);
 
-	let groups = $state<Group[]>(data.thisUeberGroup?.groups || []);
+	let linkedGroups = $state<Group[]>(data.thisUeberGroup?.groups || []);
+	let allGroups = $state<Group[]>([]);
 	const newGroup = $state<Group>({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		name: '',
 		description: ''
 	});
-	const socketioGroup = new SocketIO(groupConnection);
+	const socketioGroup = new SocketIO(groupConnection, () => allGroups);
 
+	socketioGroup.client.emit('read');
 	socketioGroup.client.on('transferred', (data: Group) => socketioGroup.handleTransferred(data));
 	socketioGroup.client.on('deleted', (resource_id: string) =>
 		socketioGroup.handleDeleted(resource_id)
@@ -46,7 +48,7 @@
 		if ('success' in status) {
 			if (status.success === 'created') {
 				if (status.submitted_id === newGroup.id) {
-					groups.push({ ...newGroup, id: status.id });
+					linkedGroups.push({ ...newGroup, id: status.id });
 					newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
 					newGroup.name = '';
 					newGroup.description = '';
@@ -75,15 +77,26 @@
 	</div>
 </div>
 
+{#snippet newGroupHeader()}
+	<h5 class="title-small md:title lg:title-large text-base-content card-title">
+		New group for {ueberGroup?.name || 'this UeberGroup'}
+	</h5>
+{/snippet}
+
+{#snippet existingGroupsHeader()}
+	<h5 class="title-small md:title lg:title-large text-base-content card-title">
+		Add existing group to {ueberGroup?.name || 'this UeberGroup'}
+	</h5>
+{/snippet}
+
 {#if ueberGroup}
 	<Heading>{ueberGroup.name}</Heading>
 	<p>{ueberGroup.description}</p>
 
 	<Heading>Add group to {ueberGroup.name}</Heading>
-	<div class="grid grid-cols-2 justify-around">
-		<Card id={newGroup.id}>
+	<div class="grid grid-cols-2 justify-around gap-4">
+		<Card id={newGroup.id} header={newGroupHeader}>
 			<div class="w-full overflow-x-auto">
-				<p>Create and add a new group to {ueberGroup.name}</p>
 				<div class="input-filled input-base-content mb-2 w-fit grow">
 					<input
 						type="text"
@@ -122,13 +135,30 @@
 			</div>
 		</Card>
 		{#if debug}
-			<JsonData data={groups} />
+			<JsonData data={newGroup} />
 		{/if}
 		<div>
-			<ul>
-				<li></li>
-			</ul>
+			<Card id={newGroup.id} header={newGroupHeader}>
+				<dl class="divider-outline divide-y">
+					{#each allGroups as group (group.id)}
+						<div class="px-4 py-6 text-base sm:grid sm:grid-cols-2 sm:gap-4 sm:px-0">
+							<dt class="text-base-content title-small">
+								<a href={`/dashboard/identities/group/${group.id}`}>
+									{group.name}
+								</a>
+							</dt>
+							<dd class="text-base-content/80 mt-1 sm:col-span-2 sm:mt-0 md:col-span-1">
+								{group.description}
+							</dd>
+						</div>
+						<!-- <div class="divider divider-outline"></div> -->
+					{/each}
+				</dl>
+			</Card>
 		</div>
+		{#if debug}
+			<JsonData data={allGroups} />
+		{/if}
 	</div>
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
 		<li>Change group list into a table - to allow for title, description and action buttons</li>
@@ -138,8 +168,8 @@
 	</ul>
 
 	<ul>
-		{#if groups !== undefined && groups.length > 0}
-			{#each groups as group (group.id)}
+		{#if linkedGroups !== undefined && linkedGroups.length > 0}
+			{#each linkedGroups as group (group.id)}
 				<li>
 					<a href={`/dashboard/identities/group/${group.id}`}>
 						{group.name}
@@ -151,6 +181,9 @@
 			<li>No groups found in this ueber group.</li>
 		{/if}
 	</ul>
+	{#if debug}
+		<JsonData data={linkedGroups} />
+	{/if}
 	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add the modify / edit functionality.</li>
 		<li>Add the delete functionality, removing the group from the ueber group.</li>
