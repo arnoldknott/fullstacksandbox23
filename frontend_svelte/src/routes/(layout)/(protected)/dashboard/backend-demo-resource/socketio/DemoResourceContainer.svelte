@@ -10,7 +10,7 @@
 	import { SocketIO } from '$lib/socketio';
 
 	let {
-		demoResource, // = $bindable(),
+		demoResource = $bindable(),
 		identities,
 		edit = $bindable(false),
 		// deleteResource = (_id: string) => {},

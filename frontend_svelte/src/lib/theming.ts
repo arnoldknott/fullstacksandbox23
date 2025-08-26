@@ -11,7 +11,7 @@ import {
 	argbFromHex,
 	Hct,
 	customColor,
-	TonalPalette,
+	type TonalPalette,
 	DynamicColor,
 	type DynamicScheme,
 	type ColorGroup,
@@ -41,22 +41,22 @@ export enum Variant {
 // these are all the fixed colors from the DynamicScheme:
 /* prettier-ignore */
 const materialDesignColors = [
-    "primary", "onPrimary", "primaryContainer", "onPrimaryContainer", 
-    "secondary", "onSecondary", "secondaryContainer", "onSecondaryContainer",
-    "tertiary", "onTertiary", "tertiaryContainer", "onTertiaryContainer",
-    "error", "onError", "errorContainer", "onErrorContainer",
-    "primaryFixed", "primaryFixedDim", "onPrimaryFixed", "onPrimaryFixedVariant", // avoid using those
-    "secondaryFixed", "secondaryFixedDim", "onSecondaryFixed", "onSecondaryFixedVariant", // avoid using those
-    "tertiaryFixed", "tertiaryFixedDim", "onTertiaryFixed", "onTertiaryFixedVariant", // avoid using those
-    "surfaceContainerLowest", "surfaceContainerLow", "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest",
-    "surfaceDim", "surface", "surfaceBright", "surfaceVariant", "surfaceTint", // avoid using those
-    "onSurface", "onSurfaceVariant",
-    "outline", "outlineVariant",
-    "inverseSurface", "inverseOnSurface", "inversePrimary",
-    "scrim", "shadow",
-    "neutralPaletteKeyColor", "neutralVariantPaletteKeyColor", // might be useful for mapping with FlyonUI
-    "primaryPaletteKeyColor", "secondaryPaletteKeyColor", "tertiaryPaletteKeyColor",// missing in DynamicScheme: "errorPaletteKeyColor", // avoid using those
-    "background", "onBackground", // seems to be legacy
+	"primary", "onPrimary", "primaryContainer", "onPrimaryContainer",
+	"secondary", "onSecondary", "secondaryContainer", "onSecondaryContainer",
+	"tertiary", "onTertiary", "tertiaryContainer", "onTertiaryContainer",
+	"error", "onError", "errorContainer", "onErrorContainer",
+	"primaryFixed", "primaryFixedDim", "onPrimaryFixed", "onPrimaryFixedVariant", // avoid using those
+	"secondaryFixed", "secondaryFixedDim", "onSecondaryFixed", "onSecondaryFixedVariant", // avoid using those
+	"tertiaryFixed", "tertiaryFixedDim", "onTertiaryFixed", "onTertiaryFixedVariant", // avoid using those
+	"surfaceContainerLowest", "surfaceContainerLow", "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest",
+	"surfaceDim", "surface", "surfaceBright", "surfaceVariant", "surfaceTint", // avoid using those
+	"onSurface", "onSurfaceVariant",
+	"outline", "outlineVariant",
+	"inverseSurface", "inverseOnSurface", "inversePrimary",
+	"scrim", "shadow",
+	"neutralPaletteKeyColor", "neutralVariantPaletteKeyColor", // might be useful for mapping with FlyonUI
+	"primaryPaletteKeyColor", "secondaryPaletteKeyColor", "tertiaryPaletteKeyColor",// missing in DynamicScheme: "errorPaletteKeyColor", // avoid using those
+	"background", "onBackground", // seems to be legacy
 ] as const;
 
 type MaterialDesignColor = Record<(typeof materialDesignColors)[number], number>;

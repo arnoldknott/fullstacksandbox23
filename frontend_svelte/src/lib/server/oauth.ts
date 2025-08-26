@@ -14,7 +14,7 @@ import {
 	type ICacheClient,
 	type IPartitionManager
 } from '@azure/msal-node';
-import { type AccountInfo, AccountEntity } from '@azure/msal-common';
+import type { AccountInfo, AccountEntity } from '@azure/msal-common';
 import { redirect } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();

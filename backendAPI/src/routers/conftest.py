@@ -1,5 +1,6 @@
 import copy
 from os import path, remove
+from typing import List
 from uuid import UUID
 
 import pytest
@@ -153,7 +154,9 @@ async def add_test_demo_resources(
     # TBD, when refactoring add_test_demo_resources, the mocked token should be available here and
     # needs to be provided to to add_test_categories as well!
 
-    async def _add_test_demo_resources(token_payload: dict = None):
+    async def _add_test_demo_resources(
+        token_payload: dict = None,
+    ) -> List[DemoResource]:
         existing_test_categories = await add_test_categories(token_payload)
         many_test_demo_resources_with_categories = copy.deepcopy(
             many_test_demo_resources

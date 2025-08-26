@@ -70,6 +70,12 @@ export interface AccessRight {
 	action: Action;
 }
 
+export interface Hierarchy {
+	child_id: string;
+	parent_id: string;
+	inherit?: boolean;
+}
+
 // Generic for resources - and partially relevant for identities:
 // Create a generic type that extends a base type with additional properties
 type ExtendEntity<T> = T &
@@ -216,3 +222,5 @@ export type AnyEntityExtended =
 	| GroupExtended
 	| SubGroupExtended
 	| SubSubGroupExtended;
+
+export type AnyGroupIdentity = UeberGroup | Group | SubGroup | SubSubGroup;

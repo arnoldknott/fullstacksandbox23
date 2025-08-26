@@ -141,8 +141,8 @@
 			<a href="./identities/msteams/{microsoftTeam.id}"
 				><button class="btn btn-info-container shadow-outline shadow-md"
 					><span class="icon-[tabler--info-triangle]"></span>More information</button
-				></a
-			>
+				>
+			</a>
 			{#if debug}
 				<JsonData data={microsoftTeam} />
 			{/if}
@@ -239,7 +239,10 @@
 	data-accordion-always-open=""
 >
 	{#if ueberGroups.length === 0}
-		<div class="alert alert-warning label-large text-center" role="alert">
+		<div
+			class="alert alert-warning bg-warning-container text-warning-container-content/80 label-large text-center"
+			role="alert"
+		>
 			No Ueber-Groups found for this user.
 		</div>
 	{/if}
