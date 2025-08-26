@@ -149,12 +149,12 @@ async def add_test_categories(
 async def add_test_demo_resources(
     current_user_from_azure_token: User,
     add_test_categories: list[Category],
- ) -> List[DemoResource]:
+ ):
     """Adds demo resources to the database."""
     # TBD, when refactoring add_test_demo_resources, the mocked token should be available here and
     # needs to be provided to to add_test_categories as well!
 
-    async def _add_test_demo_resources(token_payload: dict = None):
+    async def _add_test_demo_resources(token_payload: dict = None) -> List[DemoResource]:
         existing_test_categories = await add_test_categories(token_payload)
         many_test_demo_resources_with_categories = copy.deepcopy(
             many_test_demo_resources

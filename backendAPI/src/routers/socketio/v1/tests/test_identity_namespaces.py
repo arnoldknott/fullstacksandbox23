@@ -2,6 +2,8 @@ import uuid
 
 import pytest
 
+from models.identity import Group
+
 from tests.utils import (
     many_test_azure_users,
     many_test_groups,
@@ -621,7 +623,9 @@ async def test_deletes_ueber_group_where_being_owner_fails(
 
 # Group Namespace Tests:
 # ✔︎ user connects, creates, updates, and deletes a group
-# ✔︎ get all groups on connect
+# ✔︎ user retrieves requested groups on connect
+# X user reads all groups => success
+# X user reads a group by ID => success
 
 group_client_config = [
     {
@@ -717,7 +721,7 @@ async def test_connect_create_read_update_delete_group(
     [[session_id_admin_read_write_socketio], [session_id_user1_read_write_socketio]],
     indirect=True,
 )
-async def test_get_all_existing_groups_on_connect(
+async def test_get_requested_existing_groups_on_connect(
     socketio_test_client,
     add_many_test_groups,
 ):
@@ -735,6 +739,74 @@ async def test_get_all_existing_groups_on_connect(
     assert connection.responses("transferred")[0]["id"] == str(resource_ids[0])
     assert connection.responses("transferred")[1]["id"] == str(resource_ids[1])
     assert connection.responses("transferred")[2]["id"] == str(resource_ids[2])
+
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [[session_id_user1_read_write_socketio]],
+    indirect=True,
+)
+async def test_user_reads_all_groups(
+    add_many_test_groups: list[Group],
+    socketio_test_client,
+):
+    """Test the demo resource read event without argument reads all resources."""
+    connection = await socketio_test_client(group_client_config)
+    existing_groups = await add_many_test_groups(connection.token_payload())
+
+
+    await connection.connect()
+
+    await connection.client.emit(
+        "read", namespace="/group"
+    )
+
+    # Wait for the response to be set
+    await connection.client.sleep(0.2)
+
+    transferred_data_client = connection.responses("transferred")
+
+    assert len(transferred_data_client) == 4
+    for i, group in enumerate(existing_groups):
+        group_data = group.model_dump(mode="json")
+        assert transferred_data_client[i]["id"] == group_data["id"]
+        assert transferred_data_client[i]["name"] == group_data["name"]
+        assert transferred_data_client[i]["description"] == group_data["description"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [[session_id_user1_read_write_socketio]],
+    indirect=True,
+)
+async def test_user_reads_one_group(
+    add_many_test_groups: list[Group],
+    socketio_test_client,
+):
+    """Test the demo resource read event without argument reads all resources."""
+    connection = await socketio_test_client(group_client_config)
+    existing_groups = await add_many_test_groups(connection.token_payload())
+
+
+    await connection.connect()
+
+    await connection.client.emit(
+        "read", str(existing_groups[2].id), namespace="/group"
+    )
+
+    # Wait for the response to be set
+    await connection.client.sleep(0.2)
+
+    transferred_data_client = connection.responses("transferred")
+
+    assert len(transferred_data_client) == 1
+    group = existing_groups[2].model_dump(mode="json")
+    assert transferred_data_client[0]["id"] == group["id"]
+    assert transferred_data_client[0]["name"] == group["name"]
+    assert transferred_data_client[0]["description"] == group["description"]
 
 
 # Sub Group Namespace Tests:

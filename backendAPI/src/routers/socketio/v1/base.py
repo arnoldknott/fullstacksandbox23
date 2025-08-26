@@ -159,7 +159,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             return current_user
 
     async def _get_all(
-        self, sid, current_user: CurrentUserData, request_access_data=False
+        self, sid, current_user: CurrentUserData, request_access_data: bool = False
     ):
         """Get all event for socket.io namespaces."""
         logger.info(f"🧦 Get all data request from client {sid}.")
@@ -334,7 +334,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 resource_ids=resource_ids,
             )
 
-    async def on_read(self, sid, resource_id: UUID):
+    async def on_read(self, sid, resource_id: Optional[UUID] = None):
         """Read event for socket.io namespaces."""
         logger.info(f"🧦 Read request from client {sid} for resource {resource_id}.")
         try:
@@ -343,43 +343,47 @@ class BaseNamespace(socketio.AsyncNamespace):
             # if not even allowed to read anything?
             current_user = await self._get_current_user_and_check_guard(sid, "connect")
             async with self.crud() as crud:
-                database_object = await crud.read_by_id(resource_id, current_user)
                 session = await self._get_session_data(sid)
                 request_access_data = (
                     parse_qs(session["query_strings"]).get("request-access-data")[0]
                     if "request-access-data" in session["query_strings"]
                     else None
                 )
-                if request_access_data:
-                    access_data = await self._get_access_data(
-                        sid, current_user, database_object.id
-                    )
-                    database_object = self.read_extended_model.model_validate(
-                        database_object
-                    )
-                    database_object.access_right = access_data["access_right"]
-                    database_object.access_policies = access_data["access_policies"]
-                    database_object.creation_date = access_data["creation_date"]
-                    database_object.last_modified_date = access_data[
-                        "last_modified_date"
-                    ]
-                if database_object.id not in self.server.rooms(sid, self.namespace):
-                    await self.server.enter_room(
-                        sid,
-                        f"resource:{str(database_object.id)}",
+                if resource_id is None:
+                    print("=== trigger _get_all ===")
+                    await self._get_all(sid, current_user, request_access_data)
+                else:
+                    database_object = await crud.read_by_id(resource_id, current_user)
+                    if request_access_data:
+                        access_data = await self._get_access_data(
+                            sid, current_user, database_object.id
+                        )
+                        database_object = self.read_extended_model.model_validate(
+                            database_object
+                        )
+                        database_object.access_right = access_data["access_right"]
+                        database_object.access_policies = access_data["access_policies"]
+                        database_object.creation_date = access_data["creation_date"]
+                        database_object.last_modified_date = access_data[
+                            "last_modified_date"
+                        ]
+                    if database_object.id not in self.server.rooms(sid, self.namespace):
+                        await self.server.enter_room(
+                            sid,
+                            f"resource:{str(database_object.id)}",
+                            namespace=self.namespace,
+                        )
+                    await self.server.emit(
+                        "transferred",
+                        database_object.model_dump(mode="json"),
                         namespace=self.namespace,
+                        to=sid,
                     )
-                await self.server.emit(
-                    "transferred",
-                    database_object.model_dump(mode="json"),
-                    namespace=self.namespace,
-                    to=sid,
-                )
-                # await self.server.enter_room(
-                #     sid,
-                #     f"resource:{str(database_object.id)}",
-                #     namespace=self.namespace,
-                # )
+                    # await self.server.enter_room(
+                    #     sid,
+                    #     f"resource:{str(database_object.id)}",
+                    #     namespace=self.namespace,
+                    # )
         except Exception as error:
             logger.error(f"🧦 Failed to read data from client {sid}.")
             print(error)

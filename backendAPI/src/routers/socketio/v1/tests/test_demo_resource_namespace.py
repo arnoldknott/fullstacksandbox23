@@ -46,10 +46,12 @@ from tests.utils import (
 # ✔︎ user submits resource with random string in id field => new resource created
 # ✔︎ user submits resource with mandatory data (here name) missing => error
 # ✔︎ user submits resources with a UUID that does not exist fails
+# Updating
 # ✔︎ user submits resource with a UUID that exists => update
 # ✔︎ user submits resource with a UUID that exists and has no write access => error
 # Deletion:
-# ✔︎ one client deletes a demo resource and another client gets the remove event
+# ✔︎ one client deletes a demo resource and another client (same user) gets the remove event
+# ✔︎ one client deletes a demo resource and another client (different user) gets the remove event
 # ✔︎ client tries to delete demo resource without owner rights fails and returns status
 
 
