@@ -41,7 +41,7 @@
 	// };
 
 	let linkedGroups = $state<Group[]>(data.thisUeberGroup?.groups || []);
-	let allGroups = $state<Group[]>([]);
+	let allGroups = $state<Group[]>(data.allOtherGroups || []);
 	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
 	const newGroup = $state<Group>({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
@@ -194,11 +194,11 @@
 				<!-- TBD: make snippet and put into footer -->
 				<div class="flex h-11 flex-row">
 					<div class="mb-2 flex flex-1 items-center gap-1">
-						<label class="label label-text text-base" for="new_group-inherit"
+						<label class="label label-text text-base" for="existing_group-inherit"
 							>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
 						</label>
 						<input
-							id="new_group-inherit"
+							id="existing_group-inherit"
 							type="checkbox"
 							class="switch-info switch"
 							bind:checked={newGroupInherit}
@@ -271,8 +271,6 @@
 	</div>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
-		<li>Maybe: debug crossfade in connection with empty lists?</li>
-		<li>Load all groups on server side via RestAPI to hydrate allGroups array faster.</li>
 		<li>Add tests for link and unlink functionality and status.</li>
 		<li>
 			Check if there is a "hierarchy read" anywhere, otherwise implement a read_relations in
@@ -287,12 +285,8 @@
 		<li>Add a "multi-create" to new group card with numerical index at the end</li>
 	</ul>
 	<ul class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
+		<li>Maybe: debug crossfade in connection with empty lists?</li>
 		<li>Add the modify / edit functionality.</li>
-		<li>Add the delete functionality, removing the group from the ueber group.</li>
-		<li>
-			Also add the delete functionality, deleting the group fully - should also remove from ueber
-			group!
-		</li>
 	</ul>
 {:else}
 	<Heading>Error</Heading>
