@@ -34,7 +34,7 @@
 
 	let linkedGroups = $state<Group[]>(data.thisUeberGroup?.groups || []);
 	let allGroups = $state<Group[]>([]);
-	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 500 });
+	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
 	const newGroup = $state<Group>({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		name: '',
