@@ -117,8 +117,8 @@
 		</button>
 	</a>
 	<div class="mb-2 flex items-center gap-1">
-		<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
-		<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
+		<label class="label label-text text-base" for="debug-switcher">Debug: </label>
+		<input id="debug-switcher" type="checkbox" class="switch-neutral switch" bind:checked={debug} />
 	</div>
 </div>
 
@@ -153,27 +153,25 @@
 			<div class="w-full overflow-x-auto">
 				<div class="input-filled input-base-content mb-2 w-fit grow">
 					<input
+						id="new-group-name"
 						type="text"
 						placeholder="Name the demo resource"
 						class="input input-sm md:input-md shadow-shadow shadow-inner"
-						id="name_id_new_element"
-						name="name"
+						name="group-name"
 						bind:value={newGroup.name}
 					/>
-					<label class="input-filled-label" for="name_id_new_element">Name</label>
+					<label class="input-filled-label" for="new-group-name">Name</label>
 				</div>
 				<div class="textarea-filled textarea-base-content w-full">
 					<textarea
+						id="new-group-description"
 						class="textarea shadow-shadow shadow-inner"
 						placeholder="Describe the demo resource here."
-						id="description_id_new_element"
-						name="description"
+						name="groupdescription"
 						bind:value={newGroup.description}
 					>
 					</textarea>
-					<label class="textarea-filled-label" for="description_id_new_element">
-						Description
-					</label>
+					<label class="textarea-filled-label" for="new-group-description"> Description </label>
 				</div>
 				<!-- TBD: make snippet and put into footer -->
 				<div class="h-11 text-right">
