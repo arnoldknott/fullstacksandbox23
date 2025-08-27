@@ -277,8 +277,8 @@
 							<span class="icon-[material-symbols--palette-outline] size-6"></span>
 							<span class="grow"> Theming</span>
 							<button aria-label="modeToggler" type="button">
-								<label id="modeToggler" class="swap swap-rotate">
-									<input type="checkbox" onclick={toggleMode} />
+								<label for="mode-toggler" class="swap swap-rotate">
+									<input id="mode-toggler" type="checkbox" onclick={toggleMode} />
 									<span class="icon-[tabler--moon] swap-on size-6"></span>
 									<span class="icon-[tabler--sun] swap-off size-6"></span>
 								</label>

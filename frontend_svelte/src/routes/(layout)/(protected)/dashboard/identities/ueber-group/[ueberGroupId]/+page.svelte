@@ -32,14 +32,24 @@
 
 	let ueberGroup = $state(data.thisUeberGroup);
 
+	// const shortUeberGroupName = () => {
+	// 	let shortName = ueberGroup?.name.slice(0, 15) || 'this UeberGroup';
+	// 	if (ueberGroup && ueberGroup?.name.length > 15) {
+	// 		shortName = shortName + '...';
+	// 	}
+	// 	return shortName;
+	// };
+
 	let linkedGroups = $state<Group[]>(data.thisUeberGroup?.groups || []);
-	let allGroups = $state<Group[]>([]);
-	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 500 });
+	let allGroups = $state<Group[]>(data.allOtherGroups || []);
+	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
 	const newGroup = $state<Group>({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		name: '',
 		description: ''
 	});
+	let newGroupInherit = $state(true);
+	let existingGroupInherit = $state(true);
 	const socketioGroup = new SocketIO(groupConnection, () => allGroups);
 
 	socketioGroup.client.emit('read');
@@ -48,9 +58,10 @@
 			socketioGroup.handleTransferred(data);
 		}
 	});
-	socketioGroup.client.on('deleted', (resource_id: string) =>
-		socketioGroup.handleDeleted(resource_id)
-	);
+	socketioGroup.client.on('deleted', (resource_id: string) => {
+		// socketioGroup.handleDeleted(resource_id)
+		linkedGroups = linkedGroups.filter((group) => group.id !== resource_id);
+	});
 	socketioGroup.client.on('status', (status: SocketioStatus) => {
 		if ('success' in status) {
 			if (status.success === 'created') {
@@ -72,15 +83,15 @@
 
 	const addNewGroup = () => {
 		// TBD: make inherit a parameter in the form.
-		socketioGroup.submitEntity(newGroup, ueberGroup?.id, true);
+		socketioGroup.submitEntity(newGroup, ueberGroup?.id, newGroupInherit);
 	};
 
 	const linkGroup = (groupId: string) => {
 		if (ueberGroup) {
 			const hierarchy: Hierarchy = {
 				child_id: groupId,
-				parent_id: ueberGroup.id
-				// inherit: true // TBD: make a checkbox
+				parent_id: ueberGroup.id,
+				inherit: existingGroupInherit
 			};
 			socketioGroup.linkEntities(hierarchy);
 		}
@@ -97,15 +108,8 @@
 	};
 
 	const deleteGroup = (groupId: string) => {
-		// if (ueberGroup) {
-		// 	socketioGroup.client.emit('delete', {
-		// 		id: groupId
-		// 	});
-		// 	linkedGroups = linkedGroups.filter((group) => group.id !== groupId);
-		// }
-		console.log('=== ueberGroup - deleting group ===');
-		console.log('ueber-group.id:', ueberGroup?.id);
-		console.log('group.id:', groupId);
+		// TBD: unlink before (or after) delete?
+		socketioGroup.deleteEntity(groupId);
 	};
 </script>
 
@@ -117,8 +121,8 @@
 		</button>
 	</a>
 	<div class="mb-2 flex items-center gap-1">
-		<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
-		<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
+		<label class="label label-text text-base" for="debug-switcher">Debug: </label>
+		<input id="debug-switcher" type="checkbox" class="switch-neutral switch" bind:checked={debug} />
 	</div>
 </div>
 
@@ -134,7 +138,17 @@
 		<p class="title text-base-content card-title text-center">
 			Click on a group to add to this UeberGroup.
 		</p>
-		<!-- TBD: add inherit checkbox -->
+		<div class="mb-2 flex flex-1 items-center gap-1">
+			<label class="label label-text text-base" for="new_group-inherit"
+				>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
+			</label>
+			<input
+				id="new_group-inherit"
+				type="checkbox"
+				class="switch-info switch"
+				bind:checked={existingGroupInherit}
+			/>
+		</div>
 	</h5>
 {/snippet}
 
@@ -148,37 +162,50 @@
 	<Heading>{ueberGroup.name}</Heading>
 	<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
 
-	<div class="grid grid-cols-2 justify-around gap-4 pb-4">
+	{#if debug}
+		<JsonData data={ueberGroup} />
+	{/if}
+
+	<div class="grid grid-cols-1 justify-around gap-4 pb-4 md:grid-cols-2">
 		<Card id={newGroup.id} extraClasses="max-h-80" header={newGroupHeader}>
 			<div class="w-full overflow-x-auto">
 				<div class="input-filled input-base-content mb-2 w-fit grow">
 					<input
+						id="new-group-name"
 						type="text"
 						placeholder="Name the demo resource"
 						class="input input-sm md:input-md shadow-shadow shadow-inner"
-						id="name_id_new_element"
-						name="name"
+						name="group-name"
 						bind:value={newGroup.name}
 					/>
-					<label class="input-filled-label" for="name_id_new_element">Name</label>
+					<label class="input-filled-label" for="new-group-name">Name</label>
 				</div>
 				<div class="textarea-filled textarea-base-content w-full">
 					<textarea
+						id="new-group-description"
 						class="textarea shadow-shadow shadow-inner"
 						placeholder="Describe the demo resource here."
-						id="description_id_new_element"
-						name="description"
+						name="groupdescription"
 						bind:value={newGroup.description}
 					>
 					</textarea>
-					<label class="textarea-filled-label" for="description_id_new_element">
-						Description
-					</label>
+					<label class="textarea-filled-label" for="new-group-description"> Description </label>
 				</div>
 				<!-- TBD: make snippet and put into footer -->
-				<div class="h-11 text-right">
+				<div class="flex h-11 flex-row">
+					<div class="mb-2 flex flex-1 items-center gap-1">
+						<label class="label label-text text-base" for="existing_group-inherit"
+							>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
+						</label>
+						<input
+							id="existing_group-inherit"
+							type="checkbox"
+							class="switch-info switch"
+							bind:checked={newGroupInherit}
+						/>
+					</div>
 					<button
-						class="btn-success-container btn btn-circle btn-gradient shadow-outline shadow-md"
+						class="btn-success-container btn btn-circle btn-gradient shadow-outline shrink shadow-md"
 						aria-label="Send Icon Button"
 						onclick={() => addNewGroup()}
 						data-overlay="#add-ueber-group-modal"
@@ -233,7 +260,7 @@
 						class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
 						role="alert"
 					>
-						No Groups found for this user.
+						No Groups found for in this ueber-group.
 					</div>
 				{/if}
 			</dl>
@@ -244,20 +271,22 @@
 	</div>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
-		<li>Make the selection list crossfade.</li>
 		<li>Add tests for link and unlink functionality and status.</li>
+		<li>
+			Check if there is a "hierarchy read" anywhere, otherwise implement a read_relations in
+			BaseCRUD
+		</li>
+		<li>
+			In BaseCRUD, delete Access policies and hierarchies (based on child_id) when deleting an
+			entity.
+		</li>
 	</ul>
 	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add a "multi-create" to new group card with numerical index at the end</li>
-		<li>Add inherit checkbox to new group card</li>
 	</ul>
 	<ul class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
+		<li>Maybe: debug crossfade in connection with empty lists?</li>
 		<li>Add the modify / edit functionality.</li>
-		<li>Add the delete functionality, removing the group from the ueber group.</li>
-		<li>
-			Also add the delete functionality, deleting the group fully - should also remove from ueber
-			group!
-		</li>
 	</ul>
 {:else}
 	<Heading>Error</Heading>

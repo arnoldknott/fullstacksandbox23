@@ -157,7 +157,7 @@
 	</p>
 	{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
 		<button
-			class="btn-warning-container btn shadow-outline mr-2 self-center shadow-md"
+			class="btn-success-container btn shadow-outline mr-2 self-center shadow-md"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="add-element-modal"
@@ -276,7 +276,7 @@
 									socketio.deleteEntity(uberGroup.id);
 								}}
 							>
-								<span class="icon-[tabler--trash]"></span> Delete Group
+								<span class="icon-[tabler--trash]"></span> Delete Ueber-Group
 							</button>
 						{/if}
 					</div>
