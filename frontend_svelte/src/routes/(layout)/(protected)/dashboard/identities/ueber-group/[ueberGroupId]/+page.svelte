@@ -48,9 +48,10 @@
 			socketioGroup.handleTransferred(data);
 		}
 	});
-	socketioGroup.client.on('deleted', (resource_id: string) =>
-		socketioGroup.handleDeleted(resource_id)
-	);
+	socketioGroup.client.on('deleted', (resource_id: string) => {
+		// socketioGroup.handleDeleted(resource_id)
+		linkedGroups = linkedGroups.filter((group) => group.id !== resource_id);
+	});
 	socketioGroup.client.on('status', (status: SocketioStatus) => {
 		if ('success' in status) {
 			if (status.success === 'created') {
@@ -97,15 +98,8 @@
 	};
 
 	const deleteGroup = (groupId: string) => {
-		// if (ueberGroup) {
-		// 	socketioGroup.client.emit('delete', {
-		// 		id: groupId
-		// 	});
-		// 	linkedGroups = linkedGroups.filter((group) => group.id !== groupId);
-		// }
-		console.log('=== ueberGroup - deleting group ===');
-		console.log('ueber-group.id:', ueberGroup?.id);
-		console.log('group.id:', groupId);
+		// TBD: unlink before (or after) delete?
+		socketioGroup.deleteEntity(groupId);
 	};
 </script>
 
@@ -147,6 +141,10 @@
 {#if ueberGroup}
 	<Heading>{ueberGroup.name}</Heading>
 	<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
+
+	{#if debug}
+		<JsonData data={ueberGroup} />
+	{/if}
 
 	<div class="grid grid-cols-2 justify-around gap-4 pb-4">
 		<Card id={newGroup.id} extraClasses="max-h-80" header={newGroupHeader}>
@@ -244,6 +242,11 @@
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
 		<li>Make the selection list crossfade.</li>
 		<li>Add tests for link and unlink functionality and status.</li>
+		<li>Load all groups on server side via RestAPI to hydrate allGroups array faster.</li>
+		<li>
+			In BaseCRUD, delete Access policies and hierarchies (based on child_id) when deleting an
+			entity.
+		</li>
 	</ul>
 	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add a "multi-create" to new group card with numerical index at the end</li>
