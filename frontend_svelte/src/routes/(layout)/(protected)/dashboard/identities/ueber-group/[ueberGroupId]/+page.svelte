@@ -233,7 +233,7 @@
 						class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
 						role="alert"
 					>
-						No Groups found for this user.
+						No Groups found for in this ueber-group.
 					</div>
 				{/if}
 			</dl>
