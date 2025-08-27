@@ -166,7 +166,7 @@
 		<JsonData data={ueberGroup} />
 	{/if}
 
-	<div class="grid grid-cols-2 justify-around gap-4 pb-4">
+	<div class="grid grid-cols-1 justify-around gap-4 pb-4 md:grid-cols-2">
 		<Card id={newGroup.id} extraClasses="max-h-80" header={newGroupHeader}>
 			<div class="w-full overflow-x-auto">
 				<div class="input-filled input-base-content mb-2 w-fit grow">
