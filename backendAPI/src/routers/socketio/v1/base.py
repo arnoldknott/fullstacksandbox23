@@ -642,9 +642,9 @@ class BaseNamespace(socketio.AsyncNamespace):
                 },
                 # TBD: check functionality:
                 [
-                  f"resource_id:group_{str(hierarchy.child_id)}",
-                  f"resource_id:group_{str(hierarchy.parent_id)}",
-                ]
+                    f"resource_id:group_{str(hierarchy.child_id)}",
+                    f"resource_id:group_{str(hierarchy.parent_id)}",
+                ],
             )
         except Exception as error:
             logger.error(f"🧦 Failed to link item for client {sid}.")
@@ -672,9 +672,9 @@ class BaseNamespace(socketio.AsyncNamespace):
                 },
                 # TBD: check functionality:
                 [
-                  f"resource_id:group_{str(hierarchy.child_id)}",
-                  f"resource_id:group_{str(hierarchy.parent_id)}",
-                ]
+                    f"resource_id:group_{str(hierarchy.child_id)}",
+                    f"resource_id:group_{str(hierarchy.parent_id)}",
+                ],
             )
         except Exception as error:
             logger.error(f"🧦 Failed to unlink item for client {sid}.")
