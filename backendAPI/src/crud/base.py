@@ -58,7 +58,7 @@ class BaseCRUD(
         self,
         base_model: Type[BaseModelType],
         directory: str = None,
-        allow_standalone: Optional[List[str]] = [],
+        allow_standalone: Optional[bool] = False,
     ):
         """Provides a database session for CRUD operations."""
         self.session = None
