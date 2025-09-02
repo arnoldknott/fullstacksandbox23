@@ -2416,6 +2416,25 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource_mi
     assert response.json()["detail"] == "Hierarchy not found."
 
 
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_deletes_child_and_all_hierarchy_table_entries_for_child_are_deleted(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_test_access_policy,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    app_override_provide_http_token_payload
+
 # endregion ## resource hierarchy tests
 
 
@@ -2460,6 +2479,9 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource_mi
 # ✔︎ Admin removes a child from parent resource
 # ✔︎ User removes a child from parent resource
 # ✔︎ User removes a child from parent resource fails due to missing access to child
+# - User deletes a child and all hierarchy table entries for child are deleted
+# - User deletes a parent and all hierarchy table entries for parent are deleted
+# - User deletes a parent with children, that cannot be standalone results in also deleting the children
 
 # - User reads a protected resource: children and grand children get returned as well - but only the ones the user has access to
 # ? more grand child tests?

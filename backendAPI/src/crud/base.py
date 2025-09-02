@@ -725,11 +725,12 @@ class BaseCRUD(
                 )
             await self.session.commit()
 
-            # TBD: delete hierarchies for the object_id!
+            # TBD: delete hierarchy table entries for the object_id!
+            # TBD: delete hierarchies for both parent_id and child_id?!
             # TBD: implement to delete orphaned children,
             # either in the model or in the CRUD
             # if CRUD: don't delete the object,
-            # if the child type is allowed standalone!
+            # if the child type is allowed standalone
 
             access_log = AccessLogCreate(
                 resource_id=object_id,
@@ -739,8 +740,6 @@ class BaseCRUD(
             )
             async with self.logging_CRUD as logging_CRUD:
                 await logging_CRUD.create(access_log)
-            # TBD: delete hierarchy only if exists?
-            # TBD: delete hierarchies for both parent_id and child_id?
 
             if self.type == ResourceType:
                 delete_policies = AccessPolicyDelete(
