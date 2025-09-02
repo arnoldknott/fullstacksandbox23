@@ -2435,6 +2435,48 @@ async def test_user_deletes_child_and_all_hierarchy_table_entries_for_child_are_
     """Tests if missing permission for parent resource is handled correctly."""
     app_override_provide_http_token_payload
 
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+    mocked_protected_children = await add_many_test_protected_children()
+    current_test_user = current_test_user
+
+    # Adding a child to a protected resource
+    connected_child = await add_one_parent_child_resource_relationship(
+        child_id=mocked_protected_children[0].id,
+        parent_id=mocked_protected_resources[0].id,
+        type=ResourceType.protected_child,
+    )
+    assert connected_child.parent_id == mocked_protected_resources[0].id
+    assert connected_child.child_id == mocked_protected_children[0].id
+    assert connected_child.inherit is False
+    policy_first_child = {
+        "resource_id": str(connected_child.child_id),
+        "identity_id": current_test_user.user_id,
+        "action": "own",
+    }
+    await add_one_test_access_policy(policy_first_child)
+
+    # Check for created hierarchy entry:
+    async with ResourceHierarchyCRUD() as crud:
+        hierarchy_entry = await crud.read(
+            current_test_user,
+            parent_id=mocked_protected_resources[0].id,
+            child_id=mocked_protected_children[0].id,
+        )
+    assert len(hierarchy_entry) == 1
+    assert hierarchy_entry[0].parent_id == mocked_protected_resources[0].id
+    assert hierarchy_entry[0].child_id == mocked_protected_children[0].id
+    assert hierarchy_entry[0].inherit is False
+
+    # Make a DELETE request to delete one protected child
+    delete_response = await async_client.delete(
+        f"/api/v1/protected/child/{str(connected_child.child_id)}",
+    )
+    assert delete_response.status_code == 200
+
+
+
 # endregion ## resource hierarchy tests
 
 
