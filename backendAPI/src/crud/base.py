@@ -725,7 +725,6 @@ class BaseCRUD(
                 )
             await self.session.commit()
 
-            # TBD: delete AccessPolicies for the object_id!
             # TBD: delete hierarchies for the object_id!
             # TBD: implement to delete orphaned children,
             # either in the model or in the CRUD

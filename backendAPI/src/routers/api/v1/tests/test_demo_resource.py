@@ -464,6 +464,12 @@ async def test_delete_demo_resource(
     content = response.json()
     assert content["detail"] == "DemoResource not found."
 
+    # Check if access policy for resource is deleted after deleting the demo resource
+    response_access_after = await async_client.get(f"/api/v1/access/policy/resource/{str(resources[0].id)}")
+    assert response_access_after.status_code == 200
+    access_policies_after = response_access_after.json()
+    assert len(access_policies_after) == 0
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
