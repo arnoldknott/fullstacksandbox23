@@ -923,36 +923,50 @@ class BaseHierarchyCRUD(
     # in case a child gets deleted and all parent-child relations to all parents need to be deleted
     async def delete(
         self,
-        parent_id: UUID,
-        child_id: UUID,
         current_user: CurrentUserData,
+        parent_id: Optional[UUID] = None,
+        child_id: Optional[UUID] = None,
     ) -> None:
         """Deletes a parent-child relationship."""
+        if parent_id is None and child_id is None:
+            logger.error(f"Error in deleting hierarchy: {e}")
+            raise HTTPException(status_code=422, detail="parent_id and/or child_id are required.")
         try:
             model_alias = aliased(self.model)
             subquery = (
                 select(model_alias.child_id)
-                .where(
-                    and_(
-                        model_alias.parent_id == parent_id,
-                        model_alias.child_id == child_id,
-                    )
-                )
                 .join(
                     IdentifierTypeLink,
                     IdentifierTypeLink.id == model_alias.child_id,
                 )
             )
+            if parent_id and child_id:
+                subquery = subquery.where(
+                    and_(
+                        model_alias.parent_id == parent_id,
+                        model_alias.child_id == child_id,
+                    )
+                )
+            elif parent_id:
+                subquery = subquery.where(model_alias.parent_id == parent_id)
+            elif child_id:
+                subquery = subquery.where(model_alias.child_id == child_id)
             subquery = self.policy_crud.filters_allowed(
                 subquery, Action.own, IdentifierTypeLink, current_user
             )
-            statement = delete(self.model).where(
-                and_(
-                    self.model.child_id.in_(subquery),
-                    self.model.parent_id == parent_id,
+            statement = delete(self.model)
+            if parent_id and child_id:
+                statement = statement.where(
+                    and_(
+                        self.model.child_id.in_(subquery),
+                        self.model.parent_id == parent_id,
+
+                    )
                 )
-            )
-            # TBD: consider also deleting the identifier type link for the child_id and/or parent_id?
+            if parent_id:
+                statement = statement.where(self.model.parent_id == parent_id)
+            if child_id:
+                statement = statement.where(self.model.child_id == child_id)
 
             response = await self.session.exec(statement)
             await self.session.commit()

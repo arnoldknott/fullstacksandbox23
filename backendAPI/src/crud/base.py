@@ -725,13 +725,6 @@ class BaseCRUD(
                 )
             await self.session.commit()
 
-            # TBD: delete hierarchy table entries for the object_id!
-            # TBD: delete hierarchies for both parent_id and child_id?!
-            # TBD: implement to delete orphaned children,
-            # either in the model or in the CRUD
-            # if CRUD: don't delete the object,
-            # if the child type is allowed standalone
-
             access_log = AccessLogCreate(
                 resource_id=object_id,
                 action=own,
@@ -740,6 +733,19 @@ class BaseCRUD(
             )
             async with self.logging_CRUD as logging_CRUD:
                 await logging_CRUD.create(access_log)
+
+            async with self.hierarchy_CRUD as hierarchy_CRUD:
+                # Delete all parent-child relationships, where object_id is parent:
+                try:
+                    # await hierarchy_CRUD.delete(parent_id=object_id, current_user=current_user)
+                    await hierarchy_CRUD.delete(current_user=current_user, parent_id=object_id)
+                except Exception:
+                    pass
+                # Delete all parent-child relationships, where object_id is child:
+                try:
+                    await hierarchy_CRUD.delete(current_user=current_user, child_id=object_id)
+                except Exception:
+                    pass
 
             if self.type == ResourceType:
                 delete_policies = AccessPolicyDelete(
@@ -754,6 +760,15 @@ class BaseCRUD(
                     await policy_CRUD.delete(current_user, delete_policies)
             except Exception:
                 pass
+
+
+
+            # TBD: delete hierarchy table entries for the object_id!
+            # TBD: delete hierarchies for both parent_id and child_id?!
+            # TBD: implement to delete orphaned children,
+            # either in the model or in the CRUD
+            # if CRUD: don't delete the object,
+            # if the child type is allowed standalone
 
             # Leave the identifier type link, as it's referred to the log table, which stays even after deletion
             # await self._delete_identifier_type_link(object_id)

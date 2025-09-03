@@ -2429,7 +2429,6 @@ async def test_admin_deletes_child_and_all_hierarchy_table_entries_for_child_are
     current_test_user,
     add_many_test_protected_resources,
     add_many_test_protected_children,
-    add_one_test_access_policy,
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
@@ -2478,6 +2477,67 @@ async def test_admin_deletes_child_and_all_hierarchy_table_entries_for_child_are
         )
     assert hierarchy_entry_after == []
 
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_deletes_parent_and_all_hierarchy_table_entries_for_parent_are_deleted(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+    mocked_protected_children = await add_many_test_protected_children()
+    current_test_user = current_test_user
+
+    # Adding a child to a protected resource
+    connected_child = await add_one_parent_child_resource_relationship(
+        child_id=mocked_protected_children[0].id,
+        parent_id=mocked_protected_resources[0].id,
+        type=ResourceType.protected_child,
+    )
+    assert connected_child.parent_id == mocked_protected_resources[0].id
+    assert connected_child.child_id == mocked_protected_children[0].id
+    assert connected_child.inherit is False
+
+    # Check for created hierarchy entry:
+    async with ResourceHierarchyCRUD() as crud:
+        hierarchy_entry_before = await crud.read(
+            current_test_user,
+            parent_id=mocked_protected_resources[0].id,
+            child_id=mocked_protected_children[0].id,
+        )
+    assert len(hierarchy_entry_before) == 1
+    assert hierarchy_entry_before[0].parent_id == mocked_protected_resources[0].id
+    assert hierarchy_entry_before[0].child_id == mocked_protected_children[0].id
+    assert hierarchy_entry_before[0].inherit is False
+
+    # Make a DELETE request to delete one protected child
+    delete_response = await async_client.delete(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[0].id)}",
+    )
+    assert delete_response.status_code == 200
+
+    # Check for created hierarchy entry:
+    async with ResourceHierarchyCRUD() as crud:
+        hierarchy_entry_after = await crud.read(
+            current_test_user,
+            parent_id=mocked_protected_resources[0].id,
+            # child_id=mocked_protected_children[0].id,
+        )
+    assert hierarchy_entry_after == []
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -2542,7 +2602,7 @@ async def test_user_deletes_child_and_all_hierarchy_table_entries_for_child_are_
     async with ResourceHierarchyCRUD() as crud:
         hierarchy_entry_after = await crud.read(
             current_test_user,
-            # parent_id=mocked_protected_resources[0].id,
+            parent_id=mocked_protected_resources[0].id,
             child_id=mocked_protected_children[0].id,
         )
     assert hierarchy_entry_after == []
@@ -2594,14 +2654,16 @@ async def test_user_deletes_child_and_all_hierarchy_table_entries_for_child_are_
 # ✔︎ Admin removes a child from parent resource
 # ✔︎ User removes a child from parent resource
 # ✔︎ User removes a child from parent resource fails due to missing access to child
-# - User deletes a child and all hierarchy table entries for child are deleted
-# - User deletes a parent and all hierarchy table entries for parent are deleted
-# - User deletes a parent with children, that cannot be standalone results in also deleting the children
+# ✔︎ Admin deletes a child and all hierarchy table entries for child are deleted
+# ✔︎ Admin deletes a parent and all hierarchy table entries for parent are deleted
+# - Admin deletes a parent with children, that cannot be standalone results in also deleting the children (TBD: move to identities, as there are sub-groups, that cannot be standalone!)
+# ✔︎ User deletes a child and all hierarchy table entries for child are deleted
 
 # - User reads a protected resource: children and grand children get returned as well - but only the ones the user has access to
 # ? more grand child tests?
 
 # Tests for identity hierarchy:
+# TBD: update status: all of this should be implemented in test_identities.py
 # X User2 reads child and grand child where access to the parent resource through is inherited through subsubgroup / subgroup / group to parent resource
 # - User reads a protected resource, where user inherits access from a group
 # - User reads a protected resource, where user is in a sub_sub_group and inherits access from membership in a group

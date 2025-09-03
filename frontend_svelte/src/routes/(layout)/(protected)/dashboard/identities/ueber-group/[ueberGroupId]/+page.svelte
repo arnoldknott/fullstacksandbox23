@@ -276,10 +276,6 @@
 			Check if there is a "hierarchy read" anywhere, otherwise implement a read_relations in
 			BaseCRUD
 		</li>
-		<li>
-			In BaseCRUD, delete Access policies and hierarchies (based on child_id) when deleting an
-			entity.
-		</li>
 	</ul>
 	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add a "multi-create" to new group card with numerical index at the end</li>
