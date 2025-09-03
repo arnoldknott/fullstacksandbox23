@@ -467,10 +467,7 @@ class BaseCRUD(
                             related_model,
                             related_model.id == foreign(aliased_hierarchy.parent_id),
                         )
-                        # TBD: consider if this ordering makes sense:
-                        # if self.hierarchy == ResourceHierarchy:
-                        #     statement = statement.order_by(asc(aliased_hierarchy.order))
-                        # else:
+                        # here no ordering, as parents don't have an order seen from the child:
                         statement = statement.order_by(asc(related_model.id))
 
                 count_related_statement = select(func.count()).select_from(
