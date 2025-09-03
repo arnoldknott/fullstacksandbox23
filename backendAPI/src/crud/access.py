@@ -929,16 +929,16 @@ class BaseHierarchyCRUD(
     ) -> None:
         """Deletes a parent-child relationship."""
         if parent_id is None and child_id is None:
-            logger.error(f"Error in deleting hierarchy: {e}")
-            raise HTTPException(status_code=422, detail="parent_id and/or child_id are required.")
+            logger.error("Error in deleting hierarchy:")
+            raise HTTPException(
+                status_code=422,
+                detail="At least one of parent_id and child_id are required.",
+            )
         try:
             model_alias = aliased(self.model)
-            subquery = (
-                select(model_alias.child_id)
-                .join(
-                    IdentifierTypeLink,
-                    IdentifierTypeLink.id == model_alias.child_id,
-                )
+            subquery = select(model_alias.child_id).join(
+                IdentifierTypeLink,
+                IdentifierTypeLink.id == model_alias.child_id,
             )
             if parent_id and child_id:
                 subquery = subquery.where(
@@ -960,7 +960,6 @@ class BaseHierarchyCRUD(
                     and_(
                         self.model.child_id.in_(subquery),
                         self.model.parent_id == parent_id,
-
                     )
                 )
             if parent_id:

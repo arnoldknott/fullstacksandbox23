@@ -738,12 +738,16 @@ class BaseCRUD(
                 # Delete all parent-child relationships, where object_id is parent:
                 try:
                     # await hierarchy_CRUD.delete(parent_id=object_id, current_user=current_user)
-                    await hierarchy_CRUD.delete(current_user=current_user, parent_id=object_id)
+                    await hierarchy_CRUD.delete(
+                        current_user=current_user, parent_id=object_id
+                    )
                 except Exception:
                     pass
                 # Delete all parent-child relationships, where object_id is child:
                 try:
-                    await hierarchy_CRUD.delete(current_user=current_user, child_id=object_id)
+                    await hierarchy_CRUD.delete(
+                        current_user=current_user, child_id=object_id
+                    )
                 except Exception:
                     pass
 
@@ -760,8 +764,6 @@ class BaseCRUD(
                     await policy_CRUD.delete(current_user, delete_policies)
             except Exception:
                 pass
-
-
 
             # TBD: delete hierarchy table entries for the object_id!
             # TBD: delete hierarchies for both parent_id and child_id?!

@@ -421,7 +421,7 @@ async def test_delete_demo_resource(
     add_test_demo_resources: list[DemoResource],
     app_override_provide_http_token_payload: FastAPI,
     mocked_provide_http_token_payload,
-    current_test_user
+    current_test_user,
 ):
     """Tests DELETE of a demo resource."""
 
@@ -440,14 +440,16 @@ async def test_delete_demo_resource(
     assert content["language"] == resources[0].language
 
     # Check if access policy for resource is present before delete
-    response_access_before = await async_client.get(f"/api/v1/access/policy/resource/{str(resources[0].id)}")
+    response_access_before = await async_client.get(
+        f"/api/v1/access/policy/resource/{str(resources[0].id)}"
+    )
     assert response_access_before.status_code == 200
     access_policies_before = response_access_before.json()
     assert len(access_policies_before) == 1
     assert access_policies_before[0]["resource_id"] == str(resources[0].id)
     assert access_policies_before[0]["identity_id"] == str(current_user.user_id)
     assert access_policies_before[0]["action"] == Action.own
-    assert access_policies_before[0]["public"] == False
+    assert access_policies_before[0]["public"] is False
 
     # Delete resource:
     response = await async_client.delete(f"/api/v1/demoresource/{str(resources[0].id)}")
@@ -465,7 +467,9 @@ async def test_delete_demo_resource(
     assert content["detail"] == "DemoResource not found."
 
     # Check if access policy for resource is deleted after deleting the demo resource
-    response_access_after = await async_client.get(f"/api/v1/access/policy/resource/{str(resources[0].id)}")
+    response_access_after = await async_client.get(
+        f"/api/v1/access/policy/resource/{str(resources[0].id)}"
+    )
     assert response_access_after.status_code == 200
     access_policies_after = response_access_after.json()
     assert len(access_policies_after) == 0

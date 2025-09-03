@@ -2539,6 +2539,7 @@ async def test_admin_deletes_parent_and_all_hierarchy_table_entries_for_parent_a
         )
     assert hierarchy_entry_after == []
 
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
@@ -2606,8 +2607,6 @@ async def test_user_deletes_child_and_all_hierarchy_table_entries_for_child_are_
             child_id=mocked_protected_children[0].id,
         )
     assert hierarchy_entry_after == []
-
-
 
 
 # endregion ## resource hierarchy tests
