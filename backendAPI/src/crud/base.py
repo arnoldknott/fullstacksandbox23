@@ -730,8 +730,8 @@ class BaseCRUD(
             await self.session.commit()
 
             # Delete all stand-alone orphan children of the object
-            # TBD: might leve some children, that the current_user does not have access to
-            # So they might be floating alone.
+            # might leave some children, that the current_user does not have access to,
+            # so they might be floating alone - should be ok for now.
             async with self.hierarchy_CRUD as hierarchy_CRUD:
                 children_relationships = await hierarchy_CRUD.read(
                     current_user=current_user, parent_id=object_id
@@ -742,25 +742,8 @@ class BaseCRUD(
             )
             children_types_response = await self.session.exec(children_types_statement)
             children_types_result = children_types_response.all()
-            # print("=== BaseCrud - delete - children_types_result - all entries ===")
-            # for child_types in children_types_result:
-            #     print(child_types)
-            # print("=== BaseCrud - delete - registry_CRUD ===")
-            # print(registry_CRUD)
-            # print("=== BaseCrud - delete - registry_CRUD - all entries ===")
-            # for model_crud in registry_CRUD:
-            #     print(model_crud)
-            # print("=== BaseCrud - delete - matched CRUDs for children - all entries ===")
             for child in children_types_result:
-                # print("=== Child type ===")
-                # print(child.type)
-                # print("=== Type of child.type ===")
-                # print(type(child.type))
                 crud = registry_CRUD.get(child.type)
-                # print(f"child.type: {child.type}, \t CRUD: {crud}")
-                # print(f"child_CRUD.model:            {crud.model}")
-                # print(f"child_CRUD.data_directory:   {crud.data_directory}")
-                # print(f"child_CRUD.allow_standalone: {crud.allow_standalone}")
                 if not crud.allow_standalone:
                     async with self.hierarchy_CRUD as hierarchy_CRUD:
                         all_parents = await hierarchy_CRUD.read(
@@ -776,17 +759,12 @@ class BaseCRUD(
             async with self.hierarchy_CRUD as hierarchy_CRUD:
                 # Delete all parent-child relationships, where object_id is parent:
                 try:
-                    # await hierarchy_CRUD.delete(parent_id=object_id, current_user=current_user)
-                    await hierarchy_CRUD.delete(
-                        current_user=current_user, parent_id=object_id
-                    )
+                    await hierarchy_CRUD.delete(current_user=current_user, parent_id=object_id)
                 except Exception:
                     pass
                 # Delete all parent-child relationships, where object_id is child:
                 try:
-                    await hierarchy_CRUD.delete(
-                        current_user=current_user, child_id=object_id
-                    )
+                    await hierarchy_CRUD.delete(current_user=current_user, child_id=object_id)
                 except Exception:
                     pass
 
@@ -814,11 +792,6 @@ class BaseCRUD(
             )
             async with self.logging_CRUD as logging_CRUD:
                 await logging_CRUD.create(access_log)
-
-            # TBD: implement to delete orphaned children,
-            # either in the model or in the CRUD
-            # if CRUD: don't delete the object,
-            # if the child type is allowed standalone
 
             # Leave the identifier type link, as it's referred to the log table, which stays even after deletion
             # Only identifier-type links and logs stay, when a resource is deleted.
