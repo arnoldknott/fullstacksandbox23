@@ -786,12 +786,7 @@ async def add_test_sub_group(
     if not current_user:
         current_user = await current_user_from_azure_token()
     async with SubGroupCRUD() as crud:
-        added_sub_group = await crud.create(
-            sub_group,
-            current_user,
-            parent_id,
-            inherit
-        )
+        added_sub_group = await crud.create(sub_group, current_user, parent_id, inherit)
 
     return added_sub_group
 

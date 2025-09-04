@@ -66,7 +66,8 @@ class BaseCRUD(
         self.model = base_model
         self.data_directory = directory
         self.allow_standalone = allow_standalone
-        registry_CRUD[base_model.__name__] = self
+        if base_model.__name__ not in registry_CRUD:
+            registry_CRUD[base_model.__name__] = self
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType
@@ -701,7 +702,7 @@ class BaseCRUD(
                 detail=f"{self.model.__name__} - Forbidden.",
             )
 
-    async def delete(
+    async def delete(  # noqa: C901
         self,
         current_user: "CurrentUserData",
         object_id: uuid.UUID,
@@ -732,32 +733,44 @@ class BaseCRUD(
             # TBD: might leve some children, that the current_user does not have access to
             # So they might be floating alone.
             async with self.hierarchy_CRUD as hierarchy_CRUD:
-                children_relationships = await hierarchy_CRUD.read(current_user=current_user, parent_id=object_id)
+                children_relationships = await hierarchy_CRUD.read(
+                    current_user=current_user, parent_id=object_id
+                )
             children_ids = [child.child_id for child in children_relationships]
             children_types_statement = select(IdentifierTypeLink).where(
                 IdentifierTypeLink.id.in_(children_ids),
             )
             children_types_response = await self.session.exec(children_types_statement)
             children_types_result = children_types_response.all()
-            print("=== BaseCrud - delete - children_types_result - all entries ===")
-            for child_types in children_types_result:
-                print(child_types)
-            print("=== BaseCrud - delete - registry_CRUD ===")
-            print(registry_CRUD)
-            print("=== BaseCrud - delete - registry_CRUD - all entries ===")
-            for model_crud in registry_CRUD:
-                print(model_crud)
-            print("=== BaseCrud - delete - matched CRUDs for children - all entries ===")
+            # print("=== BaseCrud - delete - children_types_result - all entries ===")
+            # for child_types in children_types_result:
+            #     print(child_types)
+            # print("=== BaseCrud - delete - registry_CRUD ===")
+            # print(registry_CRUD)
+            # print("=== BaseCrud - delete - registry_CRUD - all entries ===")
+            # for model_crud in registry_CRUD:
+            #     print(model_crud)
+            # print("=== BaseCrud - delete - matched CRUDs for children - all entries ===")
             for child in children_types_result:
+                # print("=== Child type ===")
+                # print(child.type)
+                # print("=== Type of child.type ===")
+                # print(type(child.type))
                 crud = registry_CRUD.get(child.type)
-                print(f"child.type: {child.type}, \t CRUD: {crud}")
-                print(f"child_CRUD.standalone: {crud.allow_standalone}")
+                # print(f"child.type: {child.type}, \t CRUD: {crud}")
+                # print(f"child_CRUD.model:            {crud.model}")
+                # print(f"child_CRUD.data_directory:   {crud.data_directory}")
+                # print(f"child_CRUD.allow_standalone: {crud.allow_standalone}")
                 if not crud.allow_standalone:
                     async with self.hierarchy_CRUD as hierarchy_CRUD:
-                        all_parents = await hierarchy_CRUD.read(current_user=current_user, child_id=child.id)
+                        all_parents = await hierarchy_CRUD.read(
+                            current_user=current_user, child_id=child.id
+                        )
                         if len(all_parents) == 1:
                             async with crud as child_crud:
-                                await child_crud.delete(current_user=current_user, object_id=child.id)
+                                await child_crud.delete(
+                                    current_user=current_user, object_id=child.id
+                                )
 
             # Delete all hierarchy entries for the object
             async with self.hierarchy_CRUD as hierarchy_CRUD:
