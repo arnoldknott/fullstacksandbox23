@@ -93,6 +93,8 @@ from tests.utils import (
 # ✔︎ all endpoints of group
 # ✔︎ all endpoints of sub-group
 # ✔︎ all endpoints of sub-sub-group
+
+# Hierarchy tests:
 # ✔ add user to ueber-group and remove again
 # ✔︎ bulk add users to ueber-group and bulk remove again
 # ✔︎ bulk add groups to ueber-group and bulk remove again
@@ -115,6 +117,9 @@ from tests.utils import (
 # ✔ access to resource through inheritance through multiple generations (user in ueber-group can access resource in sub-sub-group)
 # ✔ access to resource through inheritance through multiple generations with lack of inheritance
 # ✔ user inherits access to resource from group, group gets deleted, user no longer has access to resource
+# - admin deletes a parent with children, that cannot be standalone results in also deleting the children
+# - admin deletes a parent with children, that can be standalone does not delete the child
+# - admin deletes a parent with children, where one child has another parent does not delete the child
 
 # region: ## POST tests:
 
@@ -4087,5 +4092,58 @@ async def test_user_access_prohibited_after_deleting_group_with_direct_group_mem
     assert response.status_code == 404
     assert response.text == '{"detail":"ProtectedResource not found."}'
 
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_deletes_parent_and_all_nonstandalone_children_without_other_parent_get_deleted(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_one_test_group,
+    add_one_test_sub_group,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    app_override_provide_http_token_payload
+
+    
+
+    # setting up the database:
+    parent_group = await add_one_test_group(many_test_groups[0])
+    children_sub_groups = []
+    for sub_group in many_test_sub_groups:
+        added_sub_group = await add_one_test_sub_group(sub_group, parent_id=parent_group.id)
+        children_sub_groups.append(added_sub_group)
+    children_sub_groups = sorted(children_sub_groups, key=lambda x: x.id)
+
+    # Check for existance of sub-groups in groups
+    get_group_response = await async_client.get(
+        f"/api/v1/group/{str(parent_group.id)}",
+    )
+    read_group = get_group_response.json()
+    assert get_group_response.status_code == 200
+    assert uuid.UUID(read_group["id"]) == parent_group.id
+    assert read_group["name"] == parent_group.name
+    assert read_group["description"] == parent_group.description
+    for existing, read in zip(children_sub_groups, read_group["sub_groups"]):
+        assert existing.id == uuid.UUID(read["id"])
+        assert existing.name == read["name"]
+        assert existing.description == read["description"]
+
+    # Make a DELETE request to delete group
+    delete_response = await async_client.delete(
+        f"/api/v1/group/{str(parent_group.id)}",
+    )
+    assert delete_response.status_code == 200
+
+    # Check for deleted subgroups
+    for child in children_sub_groups:
+        response = await async_client.get(
+            f"/api/v1/subgroup/{str(child.id)}",
+        )
+        assert response.status_code == 404
+        assert response.text == '{"detail":"SubGroup not found."}'
 
 # endregion identity hierarchy tests

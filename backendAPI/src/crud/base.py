@@ -10,6 +10,7 @@ from sqlalchemy.orm import aliased, class_mapper, contains_eager, foreign, noloa
 from sqlmodel import SQLModel, asc, delete, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from crud import registry_CRUD
 from core.databases import get_async_session
 from crud.access import (
     AccessLoggingCRUD,
@@ -65,6 +66,7 @@ class BaseCRUD(
         self.model = base_model
         self.data_directory = directory
         self.allow_standalone = allow_standalone
+        registry_CRUD[base_model.__name__] = self
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType
@@ -726,15 +728,36 @@ class BaseCRUD(
                 )
             await self.session.commit()
 
-            access_log = AccessLogCreate(
-                resource_id=object_id,
-                action=own,
-                identity_id=current_user.user_id,
-                status_code=200,
+            # Delete all stand-alone orphan children of the object
+            # TBD: might leve some children, that the current_user does not have access to
+            # So they might be floating alone.
+            async with self.hierarchy_CRUD as hierarchy_CRUD:
+                children_relationships = await hierarchy_CRUD.read(current_user=current_user, parent_id=object_id)
+            children_ids = [child.child_id for child in children_relationships]
+            children_types_statement = select(IdentifierTypeLink).where(
+                IdentifierTypeLink.id.in_(children_ids),
             )
-            async with self.logging_CRUD as logging_CRUD:
-                await logging_CRUD.create(access_log)
+            children_types_response = await self.session.exec(children_types_statement)
+            children_types_result = children_types_response.all()
+            print("=== BaseCrud - delete - children_types_result - all entries ===")
+            for child_types in children_types_result:
+                print(child_types)
+            print("=== BaseCrud - delete - registry_CRUD ===")
+            print(registry_CRUD)
+            print("=== BaseCrud - delete - registry_CRUD - all entries ===")
+            for model_crud in registry_CRUD:
+                print(model_crud)
+            print("=== BaseCrud - delete - matched CRUDs for children - all entries ===")
+            for child in children_types_result:
+                crud = registry_CRUD.get(child.type)
+                print(f"child.type: {child.type}, \t CRUD: {crud}")
+                print(f"child_CRUD.standalone: {crud.allow_standalone}")
+                if not crud.allow_standalone:
+                    # TBD: check if child has other parents!
+                    async with crud as child_crud:
+                        await child_crud.delete(current_user=current_user, object_id=child.id)
 
+            # Delete all hierarchy entries for the object
             async with self.hierarchy_CRUD as hierarchy_CRUD:
                 # Delete all parent-child relationships, where object_id is parent:
                 try:
@@ -752,6 +775,7 @@ class BaseCRUD(
                 except Exception:
                     pass
 
+            # Delete all access policies, where object_id is resource:
             if self.type == ResourceType:
                 delete_policies = AccessPolicyDelete(
                     resource_id=object_id,
@@ -766,14 +790,23 @@ class BaseCRUD(
             except Exception:
                 pass
 
-            # TBD: delete hierarchy table entries for the object_id!
-            # TBD: delete hierarchies for both parent_id and child_id?!
+            # Create the successful access log
+            access_log = AccessLogCreate(
+                resource_id=object_id,
+                action=own,
+                identity_id=current_user.user_id,
+                status_code=200,
+            )
+            async with self.logging_CRUD as logging_CRUD:
+                await logging_CRUD.create(access_log)
+
             # TBD: implement to delete orphaned children,
             # either in the model or in the CRUD
             # if CRUD: don't delete the object,
             # if the child type is allowed standalone
 
             # Leave the identifier type link, as it's referred to the log table, which stays even after deletion
+            # Only identifier-type links and logs stay, when a resource is deleted.
             # await self._delete_identifier_type_link(object_id)
             # self.session = self.logging_CRUD.add_log_to_session(
             #     access_log, self.session

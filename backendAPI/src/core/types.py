@@ -52,7 +52,11 @@ class Action(str, Enum):
     own = "own"
 
 
-# Types identify resources in teh identifier type table - used for registering resources and identities.
+
+
+
+
+# Types identify resources in the identifier type table - used for registering resources and identities.
 class BaseType(str, Enum):
     """Base enum for types of entities in the database"""
 

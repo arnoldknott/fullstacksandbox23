@@ -778,8 +778,8 @@ async def add_test_sub_group(
     current_user_from_azure_token: User,
     sub_group: dict,
     current_user: CurrentUserData = None,
-    # parent_id: UUID = None,
-    # inherit: bool = False,
+    parent_id: UUID = None,
+    inherit: bool = False,
 ):
     """Adds a test sub-group to the database."""
 
@@ -788,7 +788,9 @@ async def add_test_sub_group(
     async with SubGroupCRUD() as crud:
         added_sub_group = await crud.create(
             sub_group,
-            current_user,  # , parent_id, inherit
+            current_user,
+            parent_id,
+            inherit
         )
 
     return added_sub_group
@@ -803,15 +805,15 @@ async def add_one_test_sub_group(
     async def _add_one_test_sub_group(
         sub_group: dict,
         current_user: CurrentUserData = None,
-        # parent_id: UUID = None,
-        # inherit: bool = False,
+        parent_id: UUID = None,
+        inherit: bool = False,
     ):
         return await add_test_sub_group(
             current_user_from_azure_token,
             sub_group,
             current_user,
-            # parent_id,
-            # inherit,
+            parent_id,
+            inherit,
         )
 
     yield _add_one_test_sub_group

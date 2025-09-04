@@ -805,6 +805,7 @@ class BaseHierarchyCRUD(
 ):
     """Base CRUD for hierarchies."""
 
+
     def __init__(self, hierarchy: BaseHierarchy, base_model: Type[BaseHierarchyModel]):
         self.session = None
         self.hierarchy = hierarchy

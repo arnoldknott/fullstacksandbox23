@@ -2655,7 +2655,6 @@ async def test_user_deletes_child_and_all_hierarchy_table_entries_for_child_are_
 # ✔︎ User removes a child from parent resource fails due to missing access to child
 # ✔︎ Admin deletes a child and all hierarchy table entries for child are deleted
 # ✔︎ Admin deletes a parent and all hierarchy table entries for parent are deleted
-# - Admin deletes a parent with children, that cannot be standalone results in also deleting the children (TBD: move to identities, as there are sub-groups, that cannot be standalone!)
 # ✔︎ User deletes a child and all hierarchy table entries for child are deleted
 
 # X User reads a protected resource: children and grand children get returned as well - but only the ones the user has access to
