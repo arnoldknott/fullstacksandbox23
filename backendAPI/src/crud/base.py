@@ -759,12 +759,16 @@ class BaseCRUD(
             async with self.hierarchy_CRUD as hierarchy_CRUD:
                 # Delete all parent-child relationships, where object_id is parent:
                 try:
-                    await hierarchy_CRUD.delete(current_user=current_user, parent_id=object_id)
+                    await hierarchy_CRUD.delete(
+                        current_user=current_user, parent_id=object_id
+                    )
                 except Exception:
                     pass
                 # Delete all parent-child relationships, where object_id is child:
                 try:
-                    await hierarchy_CRUD.delete(current_user=current_user, child_id=object_id)
+                    await hierarchy_CRUD.delete(
+                        current_user=current_user, child_id=object_id
+                    )
                 except Exception:
                     pass
 
