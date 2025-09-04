@@ -753,9 +753,11 @@ class BaseCRUD(
                 print(f"child.type: {child.type}, \t CRUD: {crud}")
                 print(f"child_CRUD.standalone: {crud.allow_standalone}")
                 if not crud.allow_standalone:
-                    # TBD: check if child has other parents!
-                    async with crud as child_crud:
-                        await child_crud.delete(current_user=current_user, object_id=child.id)
+                    async with self.hierarchy_CRUD as hierarchy_CRUD:
+                        all_parents = await hierarchy_CRUD.read(current_user=current_user, child_id=child.id)
+                        if len(all_parents) == 1:
+                            async with crud as child_crud:
+                                await child_crud.delete(current_user=current_user, object_id=child.id)
 
             # Delete all hierarchy entries for the object
             async with self.hierarchy_CRUD as hierarchy_CRUD:

@@ -4201,7 +4201,7 @@ async def test_admin_deletes_parent_and_all_nonstandalone_children_without_other
     )
     assert response.status_code == 200
     subgroup_read = response.json()
-    assert subgroup_read["id"] == added_sub_group.id
+    assert uuid.UUID(subgroup_read["id"]) == added_sub_group.id
     assert subgroup_read["name"] == added_sub_group.name
     assert subgroup_read["description"] == added_sub_group.description
 
