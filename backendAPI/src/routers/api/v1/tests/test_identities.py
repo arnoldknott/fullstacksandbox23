@@ -4146,4 +4146,71 @@ async def test_admin_deletes_parent_and_all_nonstandalone_children_without_other
         assert response.status_code == 404
         assert response.text == '{"detail":"SubGroup not found."}'
 
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_deletes_parent_and_all_nonstandalone_children_without_other_parent_get_deleted(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_one_test_group,
+    add_one_test_sub_group,
+    add_one_parent_child_identity_relationship
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    app_override_provide_http_token_payload
+
+    
+
+    # setting up the database:
+    parent_group0 = await add_one_test_group(many_test_groups[0])
+    parent_group1 = await add_one_test_group(many_test_groups[1])
+    added_sub_group = await add_one_test_sub_group(many_test_sub_groups[0], parent_id=parent_group0.id)
+    await add_one_parent_child_identity_relationship(child_id=added_sub_group.id, parent_id=parent_group1.id)
+
+    # Check for existance of sub-group in groups
+    get_group0_response = await async_client.get(
+        f"/api/v1/group/{str(parent_group0.id)}",
+    )
+    read_group0 = get_group0_response.json()
+    assert get_group0_response.status_code == 200
+    assert uuid.UUID(read_group0["id"]) == parent_group0.id
+    assert uuid.UUID(read_group0["sub_groups"][0]["id"]) == added_sub_group.id
+
+    get_group1_response = await async_client.get(
+        f"/api/v1/group/{str(parent_group1.id)}",
+    )
+    read_group1 = get_group1_response.json()
+    assert get_group1_response.status_code == 200
+    assert uuid.UUID(read_group1["id"]) == parent_group1.id
+    assert uuid.UUID(read_group1["sub_groups"][0]["id"]) == added_sub_group.id
+
+
+    # Make a DELETE request to delete group
+    delete_response = await async_client.delete(
+        f"/api/v1/group/{str(parent_group0.id)}",
+    )
+    assert delete_response.status_code == 200
+
+    # Check for deleted subgroups
+    response = await async_client.get(
+        f"/api/v1/subgroup/{str(added_sub_group.id)}",
+    )
+    assert response.status_code == 200
+    subgroup_read = response.json()
+    assert subgroup_read["id"] == added_sub_group.id
+    assert subgroup_read["name"] == added_sub_group.name
+    assert subgroup_read["description"] == added_sub_group.description
+
+    get_group1_response_after_delete = await async_client.get(
+        f"/api/v1/group/{str(parent_group1.id)}",
+    )
+    read_group1_after_delete = get_group1_response_after_delete.json()
+    assert get_group1_response_after_delete.status_code == 200
+    assert uuid.UUID(read_group1_after_delete["id"]) == parent_group1.id
+    assert uuid.UUID(read_group1_after_delete["sub_groups"][0]["id"]) == added_sub_group.id
+
 # endregion identity hierarchy tests
