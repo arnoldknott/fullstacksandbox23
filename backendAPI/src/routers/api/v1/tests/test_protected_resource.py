@@ -2658,17 +2658,13 @@ async def test_user_deletes_child_and_all_hierarchy_table_entries_for_child_are_
 # - Admin deletes a parent with children, that cannot be standalone results in also deleting the children (TBD: move to identities, as there are sub-groups, that cannot be standalone!)
 # ✔︎ User deletes a child and all hierarchy table entries for child are deleted
 
-# - User reads a protected resource: children and grand children get returned as well - but only the ones the user has access to
+# X User reads a protected resource: children and grand children get returned as well - but only the ones the user has access to
 # ? more grand child tests?
 
 # Tests for identity hierarchy:
 # TBD: update status: all of this should be implemented in test_identities.py
 # X User2 reads child and grand child where access to the parent resource through is inherited through subsubgroup / subgroup / group to parent resource
-# - User reads a protected resource, where user inherits access from a group
-# - User reads a protected resource, where user is in a sub_sub_group and inherits access from membership in a group
-# - User reads a protected resource fails, where inheritance is set to false (resource inheritance)
-# - User reads a protected resource fails, where inheritance is set to false (group inheritance)
-# - User updates a protected resource: with inherited write access from parent / grand parent (resource inheritance)
-# - User updates a protected resource: with inherited write access from group, where user is in group / sub-group / sub-sub-group (group inheritance)
-# - User deletes a protected resource: with inherited owner access from parent / grand parent (resource inheritance)
-# - User deletes a protected resource: with inherited owner access from group, where user is in group / sub-group / sub-sub-group (group inheritance)
+# X User updates a protected resource: with inherited write access from parent / grand parent (resource inheritance)
+# X User updates a protected resource: with inherited write access from group, where user is in group / sub-group / sub-sub-group (group inheritance)
+# X User deletes a protected resource: with inherited owner access from parent / grand parent (resource inheritance)
+# X User deletes a protected resource: with inherited owner access from group, where user is in group / sub-group / sub-sub-group (group inheritance)
