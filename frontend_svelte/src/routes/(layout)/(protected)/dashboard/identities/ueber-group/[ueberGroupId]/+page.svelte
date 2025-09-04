@@ -274,7 +274,8 @@
 		<li>Add tests for link and unlink functionality and status.</li>
 		<li>
 			Check if there is a "hierarchy read" anywhere, otherwise implement a read_relations in
-			BaseCRUD
+			BaseCRUD - well there is BaseHierarchyCRUD.read. Not exposed, but secured, should be enough.
+			for now.
 		</li>
 	</ul>
 	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
