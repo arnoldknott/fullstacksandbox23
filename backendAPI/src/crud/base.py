@@ -163,11 +163,11 @@ class BaseCRUD(
         await self.session.exec(statement)
         await self.session.commit()
 
-    async def _get_types_from_ids(self, ids: List[uuid.UUID]) -> List[IdentityType | ResourceType]:
+    async def _get_types_from_ids(
+        self, ids: List[uuid.UUID]
+    ) -> List[IdentityType | ResourceType]:
         """Gets the resource types for a list of object IDs."""
-        statement = select(IdentifierTypeLink).where(
-            IdentifierTypeLink.id.in_(ids)
-        )
+        statement = select(IdentifierTypeLink).where(IdentifierTypeLink.id.in_(ids))
         response = await self.session.exec(statement)
         return response.all()
 
@@ -755,8 +755,8 @@ class BaseCRUD(
             # print(children_types_result)
             for child in children_typelinks:
                 crud = registry_CRUDs.get(child.type)
-            # for child in children_types:
-            #     crud = registry_CRUDs.get(child.type)
+                # for child in children_types:
+                #     crud = registry_CRUDs.get(child.type)
                 if not crud.allow_standalone:
                     async with self.hierarchy_CRUD as hierarchy_CRUD:
                         all_parents = await hierarchy_CRUD.read(
