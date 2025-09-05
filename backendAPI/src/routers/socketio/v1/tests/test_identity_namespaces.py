@@ -623,8 +623,9 @@ async def test_deletes_ueber_group_where_being_owner_fails(
 # Group Namespace Tests:
 # ✔︎ user connects, creates, updates, and deletes a group
 # ✔︎ user retrieves requested groups on connect
-# X user reads all groups => success
-# X user reads a group by ID => success
+# ✔︎ user reads all groups => success
+# ✔︎ user reads a group by ID => success
+# ✔︎ user links group to ueber-group and groups and ueber-groups get status notification
 
 group_client_config = [
     {

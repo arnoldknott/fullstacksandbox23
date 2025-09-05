@@ -271,7 +271,7 @@
 	</div>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
-		<li>Add tests for link and unlink functionality and status.</li>
+		<li>Add tests for unlink functionality and status.</li>
 	</ul>
 	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add a "multi-create" to new group card with numerical index at the end</li>
