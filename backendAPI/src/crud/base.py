@@ -744,19 +744,8 @@ class BaseCRUD(
                 )
             children_ids = [child.child_id for child in children_relationships]
             children_typelinks = await self._get_types_from_ids(children_ids)
-            # print("=== BaseCRUD - delete - children_types ")
-            # print(children_types)
-            # children_types_statement = select(IdentifierTypeLink).where(
-            #     IdentifierTypeLink.id.in_(children_ids),
-            # )
-            # children_types_response = await self.session.exec(children_types_statement)
-            # children_types_result = children_types_response.all()
-            # print("=== BaseCRUD - delete - children_types_result ===")
-            # print(children_types_result)
             for child in children_typelinks:
                 crud = registry_CRUDs.get(child.type)
-                # for child in children_types:
-                #     crud = registry_CRUDs.get(child.type)
                 if not crud.allow_standalone:
                     async with self.hierarchy_CRUD as hierarchy_CRUD:
                         all_parents = await hierarchy_CRUD.read(
