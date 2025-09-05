@@ -66,8 +66,6 @@ class BaseCRUD(
         self.model = base_model
         self.data_directory = directory
         self.allow_standalone = allow_standalone
-        if base_model.__name__ not in registry_CRUD:
-            registry_CRUD[base_model.__name__] = self
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType

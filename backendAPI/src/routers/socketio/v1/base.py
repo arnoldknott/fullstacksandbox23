@@ -7,6 +7,7 @@ import socketio
 from pydantic import BaseModel
 from sqlmodel import SQLModel
 
+from crud import register_crud
 from core.config import config
 from core.security import (
     check_token_against_guards,
@@ -97,6 +98,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         super().__init__(namespace=namespace)
         self.event_guards = event_guards
         self.crud = crud
+        register_crud(crud()) if crud is not None else None
         self.create_model = create_model
         self.read_model = read_model
         self.read_extended_model = read_extended_model
