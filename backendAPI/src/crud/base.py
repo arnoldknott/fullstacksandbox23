@@ -10,7 +10,7 @@ from sqlalchemy.orm import aliased, class_mapper, contains_eager, foreign, noloa
 from sqlmodel import SQLModel, asc, delete, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from crud import registry_CRUD
+from crud import registry_CRUDs
 from core.databases import get_async_session
 from crud.access import (
     AccessLoggingCRUD,
@@ -162,6 +162,14 @@ class BaseCRUD(
         statement = self._add_identifier_type_link_to_session(object_id, type)
         await self.session.exec(statement)
         await self.session.commit()
+
+    async def _get_types_from_ids(self, ids: List[uuid.UUID]) -> List[IdentityType | ResourceType]:
+        """Gets the resource types for a list of object IDs."""
+        statement = select(IdentifierTypeLink).where(
+            IdentifierTypeLink.id.in_(ids)
+        )
+        response = await self.session.exec(statement)
+        return response.all()
 
     async def check_identifier_type_link(
         self,
@@ -735,13 +743,20 @@ class BaseCRUD(
                     current_user=current_user, parent_id=object_id
                 )
             children_ids = [child.child_id for child in children_relationships]
-            children_types_statement = select(IdentifierTypeLink).where(
-                IdentifierTypeLink.id.in_(children_ids),
-            )
-            children_types_response = await self.session.exec(children_types_statement)
-            children_types_result = children_types_response.all()
-            for child in children_types_result:
-                crud = registry_CRUD.get(child.type)
+            children_typelinks = await self._get_types_from_ids(children_ids)
+            # print("=== BaseCRUD - delete - children_types ")
+            # print(children_types)
+            # children_types_statement = select(IdentifierTypeLink).where(
+            #     IdentifierTypeLink.id.in_(children_ids),
+            # )
+            # children_types_response = await self.session.exec(children_types_statement)
+            # children_types_result = children_types_response.all()
+            # print("=== BaseCRUD - delete - children_types_result ===")
+            # print(children_types_result)
+            for child in children_typelinks:
+                crud = registry_CRUDs.get(child.type)
+            # for child in children_types:
+            #     crud = registry_CRUDs.get(child.type)
                 if not crud.allow_standalone:
                     async with self.hierarchy_CRUD as hierarchy_CRUD:
                         all_parents = await hierarchy_CRUD.read(
