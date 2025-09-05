@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from sqlmodel import SQLModel
 
 from crud import register_crud
+from routers.socketio.v1 import registry_namespaces, register_namespace
 from core.config import config
 from core.security import (
     check_token_against_guards,
@@ -99,6 +100,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         self.event_guards = event_guards
         self.crud = crud
         register_crud(crud()) if crud is not None else None
+        register_namespace(crud(), namespace) if crud is not None else None
         self.create_model = create_model
         self.read_model = read_model
         self.read_extended_model = read_extended_model
@@ -242,16 +244,23 @@ class BaseNamespace(socketio.AsyncNamespace):
         #     "last_modified_date": last_modified_date,
         # }
 
-    async def _emit_status(self, sid, data: object, rooms: Optional[List[str]] = None):
+    async def _emit_status(
+        self,
+        sid,
+        data: object,
+        rooms: Optional[List[str]] = None,
+        namespace: str = None,
+    ):
         """Emit a status event to the client."""
         receivers = [sid]
         if rooms is not None:
-            # receivers.append(*rooms)
             receivers += rooms
+        if namespace is None:
+            namespace = self.namespace
         await self.server.emit(
             "status",
             data,
-            namespace=self.namespace,
+            namespace=namespace,
             to=receivers,  # TBD: consider adding admin room here
         )
 
@@ -634,25 +643,32 @@ class BaseNamespace(socketio.AsyncNamespace):
                     current_user,
                     hierarchy.inherit,
                 )
-            await self._emit_status(
-                sid,
+                parent_types = await crud._get_types_from_ids([hierarchy.parent_id])
+                parent_type = parent_types[0].type if parent_types else None
+            status = (
                 {
                     "success": "linked",
                     "id": str(hierarchy.child_id),
                     "parent_id": str(hierarchy.parent_id),
                     "inherit": hierarchy.inherit,
                 },
-                # TBD: check functionality:
-                [
-                    f"resource_id:group_{str(hierarchy.child_id)}",
-                    f"resource_id:group_{str(hierarchy.parent_id)}",
-                ],
+            )
+            await self._emit_status(
+                sid, status, [f"resource:{str(hierarchy.child_id)}"]
+            )
+            parent_namespace = registry_namespaces.get(parent_type)
+            await self._emit_status(
+                sid,
+                status,
+                [f"resource:{str(hierarchy.parent_id)}"],
+                namespace=parent_namespace,
             )
         except Exception as error:
             logger.error(f"🧦 Failed to link item for client {sid}.")
             print(error)
             await self._emit_status(sid, {"error": str(error)})
 
+    # TBD: write tests for this:
     async def on_unlink(self, sid, hierarchy: BaseHierarchyCreate):
         """Unlink event for socket.io namespaces."""
         logger.info(f"🧦 Unlink request from client {sid}.")
@@ -665,18 +681,28 @@ class BaseNamespace(socketio.AsyncNamespace):
                 await crud.remove_child_from_parent(
                     hierarchy.child_id, hierarchy.parent_id, current_user
                 )
-            await self._emit_status(
-                sid,
+                parent_types = await crud._get_types_from_ids([hierarchy.parent_id])
+                parent_type = parent_types[0].type if parent_types else None
+            status = (
                 {
                     "success": "unlinked",
                     "id": str(hierarchy.child_id),
                     "parent_id": str(hierarchy.parent_id),
                 },
-                # TBD: check functionality:
+            )
+            await self._emit_status(
+                sid,
+                status,
                 [
-                    f"resource_id:group_{str(hierarchy.child_id)}",
-                    f"resource_id:group_{str(hierarchy.parent_id)}",
+                    f"resource:{str(hierarchy.child_id)}",
                 ],
+            )
+            parent_namespace = registry_namespaces.get(parent_type)
+            await self._emit_status(
+                sid,
+                status,
+                [f"resource:{str(hierarchy.parent_id)}"],
+                namespace=parent_namespace,
             )
         except Exception as error:
             logger.error(f"🧦 Failed to unlink item for client {sid}.")
