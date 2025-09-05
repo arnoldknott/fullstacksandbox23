@@ -6,6 +6,7 @@ from /model and database configuration dependencies/databases.py."""
 # Format: <Model_class.__name__>: <CRUD_class>
 registry_CRUD = {}
 
+
 def register_crud(crud_instance):
     if (
         hasattr(crud_instance, "model")
