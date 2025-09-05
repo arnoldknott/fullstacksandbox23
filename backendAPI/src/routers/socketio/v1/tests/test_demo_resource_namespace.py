@@ -53,6 +53,8 @@ from tests.utils import (
 # ✔︎ one client deletes a demo resource and another client (same user) gets the remove event
 # ✔︎ one client deletes a demo resource and another client (different user) gets the remove event
 # ✔︎ client tries to delete demo resource without owner rights fails and returns status
+# Sharing:
+# TBD: add all the already implemented tests!
 
 
 @pytest.mark.anyio

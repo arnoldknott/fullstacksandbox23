@@ -10,6 +10,7 @@ from sqlalchemy.orm import aliased, class_mapper, contains_eager, foreign, noloa
 from sqlmodel import SQLModel, asc, delete, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from crud import registry_CRUDs
 from core.databases import get_async_session
 from crud.access import (
     AccessLoggingCRUD,
@@ -58,7 +59,7 @@ class BaseCRUD(
         self,
         base_model: Type[BaseModelType],
         directory: str = None,
-        allow_standalone: Optional[List[str]] = [],
+        allow_standalone: Optional[bool] = False,
     ):
         """Provides a database session for CRUD operations."""
         self.session = None
@@ -161,6 +162,14 @@ class BaseCRUD(
         statement = self._add_identifier_type_link_to_session(object_id, type)
         await self.session.exec(statement)
         await self.session.commit()
+
+    async def _get_types_from_ids(
+        self, ids: List[uuid.UUID]
+    ) -> List[IdentityType | ResourceType]:
+        """Gets the resource types for a list of object IDs."""
+        statement = select(IdentifierTypeLink).where(IdentifierTypeLink.id.in_(ids))
+        response = await self.session.exec(statement)
+        return response.all()
 
     async def check_identifier_type_link(
         self,
@@ -467,6 +476,7 @@ class BaseCRUD(
                             related_model,
                             related_model.id == foreign(aliased_hierarchy.parent_id),
                         )
+                        # here no ordering, as parents don't have an order seen from the child:
                         statement = statement.order_by(asc(related_model.id))
 
                 count_related_statement = select(func.count()).select_from(
@@ -698,7 +708,7 @@ class BaseCRUD(
                 detail=f"{self.model.__name__} - Forbidden.",
             )
 
-    async def delete(
+    async def delete(  # noqa: C901
         self,
         current_user: "CurrentUserData",
         object_id: uuid.UUID,
@@ -725,24 +735,46 @@ class BaseCRUD(
                 )
             await self.session.commit()
 
-            # TBD: delete AccessPolicies for the object_id!
-            # TBD: delete hierarchies for the object_id!
-            # TBD: implement to delete orphaned children,
-            # either in the model or in the CRUD
-            # if CRUD: don't delete the object,
-            # if the child type is allowed standalone!
+            # Delete all stand-alone orphan children of the object
+            # might leave some children, that the current_user does not have access to,
+            # so they might be floating alone - should be ok for now.
+            async with self.hierarchy_CRUD as hierarchy_CRUD:
+                children_relationships = await hierarchy_CRUD.read(
+                    current_user=current_user, parent_id=object_id
+                )
+            children_ids = [child.child_id for child in children_relationships]
+            children_typelinks = await self._get_types_from_ids(children_ids)
+            for child in children_typelinks:
+                crud = registry_CRUDs.get(child.type)
+                if not crud.allow_standalone:
+                    async with self.hierarchy_CRUD as hierarchy_CRUD:
+                        all_parents = await hierarchy_CRUD.read(
+                            current_user=current_user, child_id=child.id
+                        )
+                        if len(all_parents) == 1:
+                            async with crud as child_crud:
+                                await child_crud.delete(
+                                    current_user=current_user, object_id=child.id
+                                )
 
-            access_log = AccessLogCreate(
-                resource_id=object_id,
-                action=own,
-                identity_id=current_user.user_id,
-                status_code=200,
-            )
-            async with self.logging_CRUD as logging_CRUD:
-                await logging_CRUD.create(access_log)
-            # TBD: delete hierarchy only if exists?
-            # TBD: delete hierarchies for both parent_id and child_id?
+            # Delete all hierarchy entries for the object
+            async with self.hierarchy_CRUD as hierarchy_CRUD:
+                # Delete all parent-child relationships, where object_id is parent:
+                try:
+                    await hierarchy_CRUD.delete(
+                        current_user=current_user, parent_id=object_id
+                    )
+                except Exception:
+                    pass
+                # Delete all parent-child relationships, where object_id is child:
+                try:
+                    await hierarchy_CRUD.delete(
+                        current_user=current_user, child_id=object_id
+                    )
+                except Exception:
+                    pass
 
+            # Delete all access policies, where object_id is resource:
             if self.type == ResourceType:
                 delete_policies = AccessPolicyDelete(
                     resource_id=object_id,
@@ -757,7 +789,18 @@ class BaseCRUD(
             except Exception:
                 pass
 
+            # Create the successful access log
+            access_log = AccessLogCreate(
+                resource_id=object_id,
+                action=own,
+                identity_id=current_user.user_id,
+                status_code=200,
+            )
+            async with self.logging_CRUD as logging_CRUD:
+                await logging_CRUD.create(access_log)
+
             # Leave the identifier type link, as it's referred to the log table, which stays even after deletion
+            # Only identifier-type links and logs stay, when a resource is deleted.
             # await self._delete_identifier_type_link(object_id)
             # self.session = self.logging_CRUD.add_log_to_session(
             #     access_log, self.session

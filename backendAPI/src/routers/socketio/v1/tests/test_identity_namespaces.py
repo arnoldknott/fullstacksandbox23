@@ -1,14 +1,14 @@
 import uuid
 
 import pytest
-
-from models.identity import Group
+from models.identity import UeberGroup, Group
 from tests.utils import (
     many_test_azure_users,
     many_test_groups,
     session_id_admin_read_write_socketio,
     session_id_user1_read_write_socketio,
     session_id_user2_read_write_socketio,
+    session_id_user3_read_write_socketio,
     token_user1_read_write_socketio,
 )
 
@@ -623,8 +623,9 @@ async def test_deletes_ueber_group_where_being_owner_fails(
 # Group Namespace Tests:
 # ✔︎ user connects, creates, updates, and deletes a group
 # ✔︎ user retrieves requested groups on connect
-# X user reads all groups => success
-# X user reads a group by ID => success
+# ✔︎ user reads all groups => success
+# ✔︎ user reads a group by ID => success
+# ✔︎ user links group to ueber-group and groups and ueber-groups get status notification
 
 group_client_config = [
     {
@@ -799,6 +800,123 @@ async def test_user_reads_one_group(
     assert transferred_data_client[0]["id"] == group["id"]
     assert transferred_data_client[0]["name"] == group["name"]
     assert transferred_data_client[0]["description"] == group["description"]
+
+
+group_and_ueber_group_client_config = [
+    {
+        "namespace": "/group",
+        "events": [
+            "transferred",
+            "deleted",
+            "status",
+        ],
+    },
+    {
+        "namespace": "/ueber-group",
+        "events": [
+            "transferred",
+            "deleted",
+            "status",
+        ],
+    },
+]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [
+        [
+            session_id_user1_read_write_socketio,
+            session_id_user2_read_write_socketio,
+            session_id_user3_read_write_socketio,
+        ]
+    ],
+    indirect=True,
+)
+async def test_user_links_group_to_ueber_group(
+    session_ids,
+    socketio_test_client,
+    socketio_test_client_ueber_group_namespace,
+    add_many_test_ueber_groups: list[UeberGroup],
+    add_many_test_groups: list[Group],
+    add_one_test_access_policy,
+):
+    """Test the demo resource read event without argument reads all resources."""
+    connection1 = await socketio_test_client(group_and_ueber_group_client_config)
+    existing_ueber_groups = await add_many_test_ueber_groups(
+        connection1.token_payload()
+    )
+    existing_groups = await add_many_test_groups(connection1.token_payload())
+    connection2 = await socketio_test_client_ueber_group_namespace(session_ids[1])
+    current_user2 = await connection2.current_user()
+    connection3 = await socketio_test_client(group_client_config, session_ids[2])
+    current_user3 = await connection3.current_user()
+
+    await add_one_test_access_policy(
+        {
+            "resource_id": str(existing_ueber_groups[1].id),
+            "identity_id": str(current_user2.user_id),
+            "action": "read",
+        }
+    )
+    await add_one_test_access_policy(
+        {
+            "resource_id": str(existing_groups[2].id),
+            "identity_id": str(current_user3.user_id),
+            "action": "read",
+        }
+    )
+
+    await connection1.connect()
+    # User 2 gets automatically all ueber groups on connect, therefore added to room with resource_id
+    await connection2.connect()
+    # User 3 specifically requests group 2 on connect, therefore added to room with resource_id
+    await connection3.connect(
+        query_parameters={"resource-ids": str(existing_groups[2].id)}
+    )
+    # await connection3.connect()
+
+    # Link group to ueber group
+    await connection1.client.emit(
+        "link",
+        {
+            "child_id": str(existing_groups[2].id),
+            "parent_id": str(existing_ueber_groups[1].id),
+            "inherit": True,
+        },
+        namespace="/group",
+    )
+
+    # Read the ueber group with attached group:
+    await connection1.client.emit(
+        "read", str(existing_ueber_groups[1].id), namespace="/ueber-group"
+    )
+    # Wait for the response to be set
+    await connection1.client.sleep(0.2)
+    status_data_client1 = connection1.responses("status", namespace="/ueber-group")
+    assert len(status_data_client1) == 2
+    # Connection 1 gets the status twice: once in group namespace and once in ueber-group-namespace:
+    assert status_data_client1[0]["success"] == "linked"
+    assert uuid.UUID(status_data_client1[0]["id"]) == existing_groups[2].id
+    assert uuid.UUID(status_data_client1[0]["parent_id"]) == existing_ueber_groups[1].id
+    assert status_data_client1[0]["inherit"] is True
+    assert status_data_client1[1]["success"] == "linked"
+    assert uuid.UUID(status_data_client1[1]["id"]) == existing_groups[2].id
+    assert uuid.UUID(status_data_client1[1]["parent_id"]) == existing_ueber_groups[1].id
+    assert status_data_client1[1]["inherit"] is True
+    status_data_client2 = connection2.responses("status")
+    assert len(status_data_client2) == 1
+    assert status_data_client2[0]["success"] == "linked"
+    assert uuid.UUID(status_data_client2[0]["id"]) == existing_groups[2].id
+    assert uuid.UUID(status_data_client2[0]["parent_id"]) == existing_ueber_groups[1].id
+    assert status_data_client2[0]["inherit"] is True
+    status_data_client3 = connection3.responses("status")
+    assert len(status_data_client3) == 1
+    assert status_data_client3[0]["success"] == "linked"
+    assert uuid.UUID(status_data_client3[0]["id"]) == existing_groups[2].id
+    assert uuid.UUID(status_data_client3[0]["parent_id"]) == existing_ueber_groups[1].id
+    assert status_data_client3[0]["inherit"] is True
 
 
 # Sub Group Namespace Tests:

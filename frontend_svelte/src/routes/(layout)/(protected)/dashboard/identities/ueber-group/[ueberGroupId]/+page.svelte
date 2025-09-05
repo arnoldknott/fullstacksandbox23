@@ -271,22 +271,20 @@
 	</div>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
-		<li>Add tests for link and unlink functionality and status.</li>
-		<li>
-			Check if there is a "hierarchy read" anywhere, otherwise implement a read_relations in
-			BaseCRUD
-		</li>
-		<li>
-			In BaseCRUD, delete Access policies and hierarchies (based on child_id) when deleting an
-			entity.
-		</li>
+		<li>Add tests for unlink functionality and status.</li>
 	</ul>
 	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add a "multi-create" to new group card with numerical index at the end</li>
+		<li>Add the modify / edit functionality.</li>
 	</ul>
 	<ul class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
 		<li>Maybe: debug crossfade in connection with empty lists?</li>
-		<li>Add the modify / edit functionality.</li>
+		<li>
+			Maybe: check if there is a "hierarchy read" anywhere, otherwise implement a read_relations in
+			BaseCRUD - well there is BaseHierarchyCRUD.read. Not exposed, but secured, should be enough
+			for now. and can get exposed via endpoint or socket.io event. So far the parents had all
+			children included - the BaseCRUD.read ensures that.
+		</li>
 	</ul>
 {:else}
 	<Heading>Error</Heading>

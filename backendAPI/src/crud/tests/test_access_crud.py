@@ -2445,6 +2445,41 @@ async def test_user_deletes_identity_hierarchy_child_with_owner_rights(
 
 
 @pytest.mark.anyio
+async def test_admin_tries_to_delete_identity_hierarchy_without_parent_id_and_child_id(
+    add_many_parent_child_identity_relationships,
+    register_current_user,
+    add_one_test_access_policy,
+):
+    """Test deleting a child."""
+    current_user = await register_current_user(current_user_data_admin)
+    add_many_parent_child_identity_relationships
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user.user_id,
+            "resource_id": child_identity_id5,
+            "action": Action.own,
+        },
+    )
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.delete(
+                current_user=current_user,
+            )
+        except Exception as err:
+            assert err.status_code == 422
+            assert err.detail == "At least one of parent_id and child_id are required."
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        result = await hierarchy_crud.read(
+            current_user=current_user, child_id=child_identity_id5
+        )
+        assert result[0].child_id == uuid.UUID(child_identity_id5)
+        assert result[0].parent_id == uuid.UUID(identity_id_group2)
+
+
+@pytest.mark.anyio
 async def test_user_deletes_identity_hierarchy_child_without_owner_rights(
     add_many_parent_child_identity_relationships,
     register_current_user,
