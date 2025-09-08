@@ -370,7 +370,9 @@ class BaseNamespace(socketio.AsyncNamespace):
                 else:
                     database_object = await crud.read_by_id(resource_id, current_user)
                     if self.read_model is not None:
-                        database_object = self.read_model.model_validate(database_object)
+                        database_object = self.read_model.model_validate(
+                            database_object
+                        )
                     if request_access_data:
                         access_data = await self._get_access_data(
                             sid, current_user, database_object.id

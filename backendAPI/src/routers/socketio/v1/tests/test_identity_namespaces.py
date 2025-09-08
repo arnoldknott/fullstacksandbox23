@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 from models.identity import UeberGroup, Group
+from core.types import IdentityType
 from tests.utils import (
     many_test_azure_users,
     many_test_groups,
@@ -917,6 +918,152 @@ async def test_user_links_group_to_ueber_group(
     assert uuid.UUID(status_data_client3[0]["id"]) == existing_groups[2].id
     assert uuid.UUID(status_data_client3[0]["parent_id"]) == existing_ueber_groups[1].id
     assert status_data_client3[0]["inherit"] is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [
+        [
+            session_id_user1_read_write_socketio,
+            session_id_user2_read_write_socketio,
+            session_id_user3_read_write_socketio,
+        ]
+    ],
+    indirect=True,
+)
+async def test_user_unlinks_group_from_ueber_group(
+    session_ids,
+    socketio_test_client,
+    socketio_test_client_ueber_group_namespace,
+    add_many_test_ueber_groups: list[UeberGroup],
+    add_many_test_groups: list[Group],
+    add_one_parent_child_identity_relationship,
+    add_one_test_access_policy,
+):
+    """Test the demo resource read event without argument reads all resources."""
+    connection1 = await socketio_test_client(group_and_ueber_group_client_config)
+    existing_ueber_groups = await add_many_test_ueber_groups(
+        connection1.token_payload()
+    )
+    existing_groups = await add_many_test_groups(connection1.token_payload())
+    await add_one_parent_child_identity_relationship(
+        parent_id=existing_ueber_groups[1].id,
+        child_id=existing_groups[2].id,
+        child_type=IdentityType.group,
+        inherit=True,
+    )
+    connection2 = await socketio_test_client_ueber_group_namespace(session_ids[1])
+    current_user2 = await connection2.current_user()
+    connection3 = await socketio_test_client(group_client_config, session_ids[2])
+    current_user3 = await connection3.current_user()
+
+    await add_one_test_access_policy(
+        {
+            "resource_id": str(existing_ueber_groups[1].id),
+            "identity_id": str(current_user2.user_id),
+            "action": "read",
+        }
+    )
+    await add_one_test_access_policy(
+        {
+            "resource_id": str(existing_groups[2].id),
+            "identity_id": str(current_user3.user_id),
+            "action": "read",
+        }
+    )
+
+    await connection1.connect()
+    # User 2 gets automatically all ueber groups on connect, therefore added to room with resource_id
+    await connection2.connect()
+    # User 3 specifically requests group 2 on connect, therefore added to room with resource_id
+    await connection3.connect(
+        query_parameters={"resource-ids": str(existing_groups[2].id)}
+    )
+    # await connection3.connect()
+
+    # Read the ueber group with attached group:
+    await connection1.client.emit(
+        "read", str(existing_ueber_groups[1].id), namespace="/ueber-group"
+    )
+    # Wait for the response to be set
+    await connection1.client.sleep(0.2)
+    transferred_data_client1 = connection1.responses(
+        "transferred", namespace="/ueber-group"
+    )
+    assert len(transferred_data_client1) == 4
+    # Connection 1 gets the status twice: once in group namespace and once in ueber-group-namespace:
+    assert uuid.UUID(transferred_data_client1[3]["id"]) == existing_ueber_groups[1].id
+    assert transferred_data_client1[3]["name"] == existing_ueber_groups[1].name
+    assert (
+        transferred_data_client1[3]["description"]
+        == existing_ueber_groups[1].description
+    )
+    assert (
+        uuid.UUID(transferred_data_client1[0]["groups"][0]["id"])
+        == existing_groups[2].id
+    )
+    assert transferred_data_client1[0]["groups"][0]["name"] == existing_groups[2].name
+    assert (
+        transferred_data_client1[0]["groups"][0]["description"]
+        == existing_groups[2].description
+    )
+
+    # Unlink group from ueber-group
+    await connection1.client.emit(
+        "unlink",
+        {
+            "child_id": str(existing_groups[2].id),
+            "parent_id": str(existing_ueber_groups[1].id),
+        },
+        namespace="/group",
+    )
+    # Wait for the response to be set
+    await connection1.client.sleep(0.2)
+
+    # # Connection 1 gets the status twice: once in group namespace and once in ueber-group-namespace:
+    status_data_client1 = connection1.responses("status", namespace="/ueber-group")
+    assert status_data_client1[0]["success"] == "unlinked"
+    assert uuid.UUID(status_data_client1[0]["id"]) == existing_groups[2].id
+    assert uuid.UUID(status_data_client1[0]["parent_id"]) == existing_ueber_groups[1].id
+    assert status_data_client1[1]["success"] == "unlinked"
+    assert uuid.UUID(status_data_client1[1]["id"]) == existing_groups[2].id
+    assert uuid.UUID(status_data_client1[1]["parent_id"]) == existing_ueber_groups[1].id
+    status_data_client2 = connection2.responses("status")
+    assert len(status_data_client2) == 1
+    assert status_data_client2[0]["success"] == "unlinked"
+    assert uuid.UUID(status_data_client2[0]["id"]) == existing_groups[2].id
+    assert uuid.UUID(status_data_client2[0]["parent_id"]) == existing_ueber_groups[1].id
+    status_data_client3 = connection3.responses("status")
+    assert len(status_data_client3) == 1
+    assert status_data_client3[0]["success"] == "unlinked"
+    assert uuid.UUID(status_data_client3[0]["id"]) == existing_groups[2].id
+    assert uuid.UUID(status_data_client3[0]["parent_id"]) == existing_ueber_groups[1].id
+
+    # Read the ueber group that has no longer the group attached:
+    await connection1.client.emit(
+        "read", str(existing_ueber_groups[1].id), namespace="/ueber-group"
+    )
+    # Wait for the response to be set
+    await connection1.client.sleep(0.2)
+    transferred_data_client1_after_unlinking = connection1.responses(
+        "transferred", namespace="/ueber-group"
+    )
+    assert len(transferred_data_client1) == 5
+    # Connection 1 gets the status twice: once in group namespace and once in ueber-group-namespace:
+    assert (
+        uuid.UUID(transferred_data_client1_after_unlinking[4]["id"])
+        == existing_ueber_groups[1].id
+    )
+    assert (
+        transferred_data_client1_after_unlinking[4]["name"]
+        == existing_ueber_groups[1].name
+    )
+    assert (
+        transferred_data_client1_after_unlinking[4]["description"]
+        == existing_ueber_groups[1].description
+    )
+    assert len(transferred_data_client1_after_unlinking[4]["groups"]) == 0
 
 
 # Sub Group Namespace Tests:
