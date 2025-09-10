@@ -386,8 +386,9 @@
 	</div>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
-		<li>Add a "multi-create" to new group card with numerical index at the end</li>
 		<li>Add the modify / edit functionality.</li>
+		<li>Add the delete functionality.</li>
+		<li>Turn into components to reuse with groups and subgroups.</li>
 	</ul>
 {:else}
 	<Heading>Error</Heading>
