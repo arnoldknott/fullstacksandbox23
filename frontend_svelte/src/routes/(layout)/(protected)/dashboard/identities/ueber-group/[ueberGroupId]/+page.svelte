@@ -11,6 +11,7 @@
 	import IdentityListItem from '../../IdentityListItem.svelte';
 	import IdBadge from '../../../IdBadge.svelte';
 	import { crossfade } from 'svelte/transition';
+	import { SvelteMap } from 'svelte/reactivity';
 	let { data }: { data: PageData } = $props();
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
@@ -53,7 +54,7 @@
 	let existingGroupInherit = $state(true);
 	let newMultipleGroups = $state(false);
 	let multipleGroupsSuffixes = $state({ start: 1, end: 2 });
-	let newGroupIdsSuffixes = new Map([[newGroup.id, '']]);
+	let newGroupIdsSuffixes = new SvelteMap([[newGroup.id, '']]);
 	let newGroupSuffix = $derived(
 		newMultipleGroups
 			? '_[' + multipleGroupsSuffixes.start + ':' + multipleGroupsSuffixes.end + ']'
@@ -79,14 +80,14 @@
 	socketioGroup.client.on('status', (status: SocketioStatus) => {
 		if ('success' in status) {
 			if (status.success === 'created') {
-				console.log('=== newGroup ===');
-				console.log($state.snapshot(newGroup));
-				console.log('=== status ===');
-				console.log(status);
-				console.log('=== newGroupIdsSuffixes ===');
-				console.log(newGroupIdsSuffixes);
+				// console.log('=== newGroup ===');
+				// console.log($state.snapshot(newGroup));
+				// console.log('=== status ===');
+				// console.log(status);
+				// console.log('=== newGroupIdsSuffixes ===');
+				// console.log(newGroupIdsSuffixes);
 				if (newGroupIdsSuffixes.has(status.submitted_id)) {
-					console.log('=== match for submitted_id ===');
+					// console.log('=== match for submitted_id ===');
 					// if (status.submitted_id === newGroup.id) {
 					const suffix = newGroupIdsSuffixes.get(status.submitted_id);
 					const thisGroup: Group = Object.assign({}, newGroup);
@@ -327,6 +328,8 @@
 				<button class="btn btn-secondary-container" onclick={() => console.log(newGroupIdsSuffixes)}
 					>newGroupIdsSuffixes -> console</button
 				>
+				<!-- <p>newGroupIdsSuffixes</p>
+				<JsonData data={newGroupIdsSuffixes} /> -->
 			</div>
 		{/if}
 		<div>
