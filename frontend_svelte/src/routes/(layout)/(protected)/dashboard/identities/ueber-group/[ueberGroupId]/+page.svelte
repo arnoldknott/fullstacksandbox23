@@ -311,7 +311,7 @@
 						<span class="flex-grow"></span>
 					</div>
 					<button
-						class="btn-success-container btn btn-circle btn-gradient shadow-outline shrink shadow-md"
+						class="btn-success-container btn btn-circle btn-gradient shadow-outline shrink shadow-sm"
 						aria-label="Send Icon Button"
 						onclick={() => addNewGroup()}
 						data-overlay="#add-ueber-group-modal"
