@@ -848,11 +848,13 @@ class BaseCRUD(
         # if yes, delete the hierarchy entry
         if await self.check_identifier_type_link(child_id):
             async with self.hierarchy_CRUD as hierarchy_CRUD:
-                await hierarchy_CRUD.delete(
+                deleted_rows = await hierarchy_CRUD.delete(
                     current_user=current_user,
                     parent_id=parent_id,
                     child_id=child_id,
                 )
+                if deleted_rows == 0:
+                    raise HTTPException(status_code=404, detail="Hierarchy not found.")
             return None
         else:
             raise HTTPException(

@@ -565,7 +565,7 @@ class AccessPolicyCRUD:
         self,
         current_user: Optional["CurrentUserData"],
         access_policy: AccessPolicyDelete,
-    ) -> None:
+    ) -> int:
         """Deletes an access control policy."""
 
         try:
@@ -598,9 +598,8 @@ class AccessPolicyCRUD:
 
             await self.session.commit()
 
-            # TBD: is this exception really necessary?
-            if response.rowcount == 0:
-                raise HTTPException(status_code=404, detail="Access policy not found.")
+            return response.rowcount
+
         except Exception as e:
             logger.error(f"Error in deleting policy: {e}")
             raise HTTPException(status_code=404, detail="Access policy not found.")
@@ -930,7 +929,7 @@ class BaseHierarchyCRUD(
         current_user: CurrentUserData,
         parent_id: Optional[UUID] = None,
         child_id: Optional[UUID] = None,
-    ) -> None:
+    ) -> int:
         """Deletes a parent-child relationship."""
         if parent_id is None and child_id is None:
             logger.error("Error in deleting hierarchy:")
@@ -973,9 +972,8 @@ class BaseHierarchyCRUD(
 
             response = await self.session.exec(statement)
             await self.session.commit()
-            # TBD: is this exception really necessary?
-            if response.rowcount == 0:
-                raise HTTPException(status_code=404, detail="Hierarchy not found.")
+
+            return response.rowcount
         except Exception as e:
             logger.error(f"Error in deleting hierarchy: {e}")
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
