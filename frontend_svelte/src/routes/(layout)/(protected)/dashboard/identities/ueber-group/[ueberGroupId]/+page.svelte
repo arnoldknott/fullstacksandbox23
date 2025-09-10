@@ -50,6 +50,13 @@
 	});
 	let newGroupInherit = $state(true);
 	let existingGroupInherit = $state(true);
+	let newMultipleGroups = $state(false);
+	let multipleGroupsSuffixes = $state({ start: 1, end: 2 });
+	$effect(() => {
+		if (multipleGroupsSuffixes.end <= multipleGroupsSuffixes.start) {
+			multipleGroupsSuffixes.end = multipleGroupsSuffixes.start + 1;
+		}
+	});
 	const socketioGroup = new SocketIO(groupConnection, () => allGroups);
 
 	socketioGroup.client.emit('read');
@@ -192,18 +199,18 @@
 					<label class="textarea-filled-label" for="new-group-description"> Description </label>
 				</div>
 				<!-- TBD: make snippet and put into footer -->
+				<div class="mb-2 flex flex-1 items-center gap-1">
+					<input
+						id="existing_group-inherit"
+						type="checkbox"
+						class="switch-info switch"
+						bind:checked={newGroupInherit}
+					/>
+					<label class="label label-text text-base" for="existing_group-inherit"
+						>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}
+					</label>
+				</div>
 				<div class="flex h-11 flex-row">
-					<div class="mb-2 flex flex-1 items-center gap-1">
-						<label class="label label-text text-base" for="existing_group-inherit"
-							>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
-						</label>
-						<input
-							id="existing_group-inherit"
-							type="checkbox"
-							class="switch-info switch"
-							bind:checked={newGroupInherit}
-						/>
-					</div>
 					<button
 						class="btn-success-container btn btn-circle btn-gradient shadow-outline shrink shadow-md"
 						aria-label="Send Icon Button"
@@ -223,6 +230,7 @@
 				<dl class="divider-outline divide-y">
 					{#if allGroups !== undefined && allGroups.length > 0}
 						{#each allGroups as group (group.id)}
+							<!-- TBD: debug crossfade in connection with empty lists -->
 							<div
 								in:receiveGroupCrossfade={{ key: group }}
 								out:sendGroupCrossfade={{ key: group }}
@@ -271,27 +279,15 @@
 	</div>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
-		<li>Add tests for unlink functionality and status.</li>
-	</ul>
-	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add a "multi-create" to new group card with numerical index at the end</li>
 		<li>Add the modify / edit functionality.</li>
-	</ul>
-	<ul class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
-		<li>Maybe: debug crossfade in connection with empty lists?</li>
-		<li>
-			Maybe: check if there is a "hierarchy read" anywhere, otherwise implement a read_relations in
-			BaseCRUD - well there is BaseHierarchyCRUD.read. Not exposed, but secured, should be enough
-			for now. and can get exposed via endpoint or socket.io event. So far the parents had all
-			children included - the BaseCRUD.read ensures that.
-		</li>
 	</ul>
 {:else}
 	<Heading>Error</Heading>
 	<p>No Ueber Group found.</p>
 {/if}
 
-<p class="title bg-warning-container/20 text-warning-container-content mt-4 rounded-2xl">
+<p class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 	For resource hierarchies (protected resources) also add the order functionality by drag and drop.
 </p>
 

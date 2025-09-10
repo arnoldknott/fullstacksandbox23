@@ -870,6 +870,9 @@ class BaseHierarchyCRUD(
             logger.error(f"Error in creating hierarchy: {err}")
             raise HTTPException(status_code=403, detail="Forbidden.")
 
+    # TBD: consider exposing as endpoint and/or sock.io event?
+    # Currently not absolutely necesary,
+    # as all children get transferred in the read event of a parent resource
     async def read(
         self,
         current_user: CurrentUserData,
