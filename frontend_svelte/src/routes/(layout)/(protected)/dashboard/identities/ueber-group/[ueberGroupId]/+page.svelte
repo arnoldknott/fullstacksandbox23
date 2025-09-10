@@ -52,6 +52,11 @@
 	let existingGroupInherit = $state(true);
 	let newMultipleGroups = $state(false);
 	let multipleGroupsSuffixes = $state({ start: 1, end: 2 });
+	let newGroupSuffix = $derived(
+		newMultipleGroups
+			? '_[' + multipleGroupsSuffixes.start + ':' + multipleGroupsSuffixes.end + ']'
+			: null
+	);
 	$effect(() => {
 		if (multipleGroupsSuffixes.end <= multipleGroupsSuffixes.start) {
 			multipleGroupsSuffixes.end = multipleGroupsSuffixes.start + 1;
@@ -128,7 +133,7 @@
 		</button>
 	</a>
 	<div class="mb-2 flex items-center gap-1">
-		<label class="label label-text text-base" for="debug-switcher">Debug: </label>
+		<label class="label label-text text-base-content" for="debug-switcher">Debug: </label>
 		<input id="debug-switcher" type="checkbox" class="switch-neutral switch" bind:checked={debug} />
 	</div>
 </div>
@@ -139,6 +144,20 @@
 	</h5>
 {/snippet}
 
+{#snippet newGroupNameField()}
+	<div class="input-filled input-base-content mb-2 {newMultipleGroups ? '' : ''}">
+		<input
+			id="new-group-name"
+			type="text"
+			placeholder="Name the demo resource"
+			class="input input-sm md:input-md shadow-shadow flex-1 shadow-inner"
+			name="group-name"
+			bind:value={newGroup.name}
+		/>
+		<label class="input-filled-label" for="new-group-name">Name</label>
+	</div>
+{/snippet}
+
 {#snippet existingGroupsHeader()}
 	<h5 class="title-small md:title lg:title-large text-base-content card-title">
 		Add existing group to {ueberGroup?.name || 'this UeberGroup'}
@@ -146,7 +165,7 @@
 			Click on a group to add to this UeberGroup.
 		</p>
 		<div class="mb-2 flex flex-1 items-center gap-1">
-			<label class="label label-text text-base" for="new_group-inherit"
+			<label class="label label-text text-base-content" for="new_group-inherit"
 				>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
 			</label>
 			<input
@@ -176,17 +195,26 @@
 	<div class="grid grid-cols-1 justify-around gap-4 pb-4 md:grid-cols-2">
 		<Card id={newGroup.id} extraClasses="max-h-80" header={newGroupHeader}>
 			<div class="w-full overflow-x-auto">
-				<div class="input-filled input-base-content mb-2 w-fit grow">
+				{#if newMultipleGroups}
+					<div class="flex flex-row items-end">
+						{@render newGroupNameField()}
+						<span class="flex-1 pb-3">{newGroupSuffix}</span>
+					</div>
+				{:else}
+					{@render newGroupNameField()}
+				{/if}
+				<!-- <div class="input-filled input-base-content mb-2 {newMultipleGroups ? '' : ''}">
 					<input
 						id="new-group-name"
 						type="text"
 						placeholder="Name the demo resource"
-						class="input input-sm md:input-md shadow-shadow shadow-inner"
+						class="input input-sm md:input-md shadow-shadow flex-1 shadow-inner"
 						name="group-name"
 						bind:value={newGroup.name}
 					/>
 					<label class="input-filled-label" for="new-group-name">Name</label>
-				</div>
+					<span class="flex-1">test{newGroupSuffix}</span>
+				</div> -->
 				<div class="textarea-filled textarea-base-content w-full">
 					<textarea
 						id="new-group-description"
@@ -199,18 +227,55 @@
 					<label class="textarea-filled-label" for="new-group-description"> Description </label>
 				</div>
 				<!-- TBD: make snippet and put into footer -->
-				<div class="mb-2 flex flex-1 items-center gap-1">
+				<div
+					class="label-text mb-2 flex flex-1 items-center gap-1 {newGroupInherit
+						? 'text-base-content'
+						: 'text-base-content/30'}"
+				>
 					<input
 						id="existing_group-inherit"
 						type="checkbox"
 						class="switch-info switch"
 						bind:checked={newGroupInherit}
 					/>
-					<label class="label label-text text-base" for="existing_group-inherit"
+					<label class="label" for="existing_group-inherit"
 						>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}
 					</label>
 				</div>
 				<div class="flex h-11 flex-row">
+					<div
+						class="label-text mb-2 flex flex-1 items-center gap-1 {newMultipleGroups
+							? 'text-base-content'
+							: 'text-base-content/30'}"
+					>
+						<input
+							id="multiple-new-groups"
+							type="checkbox"
+							class="switch-info switch"
+							bind:checked={newMultipleGroups}
+						/>
+						<label class="label" for="multiple-new-groups">Add multiple groups with suffix </label>
+						<input
+							id="multiple-groups-start"
+							type="number"
+							placeholder={multipleGroupsSuffixes.start.toString()}
+							class="input shadow-shadow flex-2 shadow-inner"
+							name="multiple-groups-suffix-start"
+							disabled={!newMultipleGroups}
+							bind:value={multipleGroupsSuffixes.start}
+						/>
+						<span class="label flex-1"> to</span>
+						<input
+							id="multiple-groups-end"
+							type="number"
+							placeholder={multipleGroupsSuffixes.end.toString()}
+							class="input shadow-shadow flex-2 shadow-inner"
+							name="multiple-groups-suffix-end"
+							disabled={!newMultipleGroups}
+							bind:value={multipleGroupsSuffixes.end}
+						/>
+						<span class="flex-grow"></span>
+					</div>
 					<button
 						class="btn-success-container btn btn-circle btn-gradient shadow-outline shrink shadow-md"
 						aria-label="Send Icon Button"
