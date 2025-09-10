@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { AnyGroupIdentity } from '$lib/types';
+	import IdBadge from '../IdBadge.svelte';
 	let {
 		identity,
 		link,
@@ -15,9 +16,10 @@
 
 {#snippet listContent()}
 	<dt class="text-base-content title-small flex-1">
+		<IdBadge id={identity.id} />
 		{identity.name}
 	</dt>
-	<dd class="text-base-content/80 mt-1 flex-2">
+	<dd class="text-base-content/80 flex-2 mt-1">
 		{identity.description}
 	</dd>
 {/snippet}

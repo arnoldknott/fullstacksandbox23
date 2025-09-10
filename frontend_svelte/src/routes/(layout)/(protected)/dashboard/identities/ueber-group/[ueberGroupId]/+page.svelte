@@ -9,6 +9,7 @@
 	import type { Group, Hierarchy } from '$lib/types';
 	import Card from '$components/Card.svelte';
 	import IdentityListItem from '../../IdentityListItem.svelte';
+	import IdBadge from '../../../IdBadge.svelte';
 	import { crossfade } from 'svelte/transition';
 	let { data }: { data: PageData } = $props();
 
@@ -52,6 +53,7 @@
 	let existingGroupInherit = $state(true);
 	let newMultipleGroups = $state(false);
 	let multipleGroupsSuffixes = $state({ start: 1, end: 2 });
+	let newGroupIdsSuffixes = new Map([[newGroup.id, '']]);
 	let newGroupSuffix = $derived(
 		newMultipleGroups
 			? '_[' + multipleGroupsSuffixes.start + ':' + multipleGroupsSuffixes.end + ']'
@@ -77,11 +79,28 @@
 	socketioGroup.client.on('status', (status: SocketioStatus) => {
 		if ('success' in status) {
 			if (status.success === 'created') {
-				if (status.submitted_id === newGroup.id) {
-					linkedGroups.push({ ...newGroup, id: status.id });
-					newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
-					newGroup.name = '';
-					newGroup.description = '';
+				console.log('=== newGroup ===');
+				console.log($state.snapshot(newGroup));
+				console.log('=== status ===');
+				console.log(status);
+				console.log('=== newGroupIdsSuffixes ===');
+				console.log(newGroupIdsSuffixes);
+				if (newGroupIdsSuffixes.has(status.submitted_id)) {
+					console.log('=== match for submitted_id ===');
+					// if (status.submitted_id === newGroup.id) {
+					const suffix = newGroupIdsSuffixes.get(status.submitted_id);
+					const thisGroup: Group = Object.assign({}, newGroup);
+					thisGroup.name = newGroup.name + suffix;
+					linkedGroups.push({ ...thisGroup, id: status.id });
+					newGroupIdsSuffixes.delete(status.submitted_id);
+					if (suffix === '' || newGroupIdsSuffixes.size === 1) {
+						newGroup.name = '';
+						newGroup.description = '';
+						if (suffix === '') {
+							newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
+							newGroupIdsSuffixes.set(newGroup.id, '');
+						}
+					}
 				}
 			} else if (status.success === 'linked') {
 				linkedGroups.push(allGroups.find((group) => group.id === status.id) as Group);
@@ -95,7 +114,21 @@
 
 	const addNewGroup = () => {
 		// TBD: make inherit a parameter in the form.
-		socketioGroup.submitEntity(newGroup, ueberGroup?.id, newGroupInherit);
+		if (newMultipleGroups) {
+			for (
+				let suffix = multipleGroupsSuffixes.start;
+				suffix <= multipleGroupsSuffixes.end;
+				suffix++
+			) {
+				const thisGroup = Object.assign({}, newGroup);
+				thisGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
+				thisGroup.name = thisGroup.name + `_${suffix}`;
+				newGroupIdsSuffixes.set(thisGroup.id, `_${suffix}`);
+				socketioGroup.submitEntity(thisGroup, ueberGroup?.id, newGroupInherit);
+			}
+		} else {
+			socketioGroup.submitEntity(newGroup, ueberGroup?.id, newGroupInherit);
+		}
 	};
 
 	const linkGroup = (groupId: string) => {
@@ -185,7 +218,7 @@
 {/snippet}
 
 {#if ueberGroup}
-	<Heading>{ueberGroup.name}</Heading>
+	<Heading>{ueberGroup.name}<IdBadge id={ueberGroup.id} /></Heading>
 	<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
 
 	{#if debug}
@@ -288,7 +321,13 @@
 			</div>
 		</Card>
 		{#if debug}
-			<JsonData data={newGroup} />
+			<div class="flex flex-col gap-2">
+				<p>newGroup</p>
+				<JsonData data={newGroup} />
+				<button class="btn btn-secondary-container" onclick={() => console.log(newGroupIdsSuffixes)}
+					>newGroupIdsSuffixes -> console</button
+				>
+			</div>
 		{/if}
 		<div>
 			<Card id="existing-groups" header={existingGroupsHeader}>

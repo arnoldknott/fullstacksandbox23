@@ -598,6 +598,7 @@ class AccessPolicyCRUD:
 
             await self.session.commit()
 
+            # TBD: is this exception really necessary?
             if response.rowcount == 0:
                 raise HTTPException(status_code=404, detail="Access policy not found.")
         except Exception as e:
@@ -972,6 +973,7 @@ class BaseHierarchyCRUD(
 
             response = await self.session.exec(statement)
             await self.session.commit()
+            # TBD: is this exception really necessary?
             if response.rowcount == 0:
                 raise HTTPException(status_code=404, detail="Hierarchy not found.")
         except Exception as e:
