@@ -10,6 +10,7 @@
 
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { UeberGroup, UeberGroupExtended } from '$lib/types';
+	import { stringify } from 'postcss';
 	let { data }: { data: PageData } = $props();
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
@@ -111,6 +112,25 @@
 	{/if}
 </div>
 
+{#snippet microsoftTeamsActions(url: URL, id: string)}
+	<a href={url.toString()} aria-label="Open in Microsoft Teams">
+		<button
+			class="btn btn-primary-container btn-gradient shadow-outline btn-circle shadow-sm"
+			aria-label="Open in Microsoft Teams"
+		>
+			<span class="icon-[bi--microsoft-teams]"></span>
+		</button>
+	</a>
+	<a href="./identities/msteams/{id}" aria-label="More information">
+		<button
+			class="btn btn-info-container btn-gradient shadow-outline btn-circle shadow-sm"
+			aria-label="More information"
+		>
+			<span class="icon-[tabler--info-triangle]"></span>
+		</button>
+	</a>
+{/snippet}
+
 <Heading id="microsoft-teams">Microsoft Teams</Heading>
 <p>
 	associated with this fullstack sandbox application, that {data.session?.microsoftProfile
@@ -131,6 +151,7 @@
 			icon={AccessHandler.identityIcon(IdentityType.MICROSOFT_TEAM)}
 			title={microsoftTeam.displayName || 'Unknown Team'}
 			id={microsoftTeam.id || 'random_' + Math.random().toString(36).substring(2, 9)}
+			actions={microsoftTeamsActions}
 		>
 			<p class="body">{microsoftTeam.description}</p>
 			<a href={microsoftTeam.webUrl} target="_blank" rel="noopener"

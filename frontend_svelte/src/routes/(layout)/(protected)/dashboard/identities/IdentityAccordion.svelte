@@ -13,7 +13,7 @@
 		title: string;
 		id: string;
 		active?: boolean;
-		actions?: Snippet;
+		actions?: Snippet<[url: URL, id: string]>;
 		children: Snippet;
 	} = $props();
 
@@ -71,6 +71,9 @@
 		{/if}
 		<div class="flex w-full flex-row">
 			<p class="title grow">{title}</p>
+			{#if actions}
+				<div class="mr-4">{@render actions(new URL('https://example.com'), id)}</div>
+			{/if}
 			<IdBadge {id} />
 		</div>
 	</button>

@@ -7,7 +7,7 @@
 </script>
 
 <a href="../"
-	><button class="btn btn-accent-container">
+	><button class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm">
 		<span class="icon-[tabler--chevron-left]"></span>
 		Back to all identities
 	</button></a
