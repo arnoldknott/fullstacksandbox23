@@ -6,7 +6,7 @@
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import IdentityAccordion from './IdentityAccordion.svelte';
-	// import ActionsMicrosoftTeams from './ActionsMicrosoftTeams.svelte';
+	import IdentityListItem from './IdentityListItem.svelte';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
 
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
@@ -264,24 +264,24 @@
 		</div>
 	{/if}
 
-	{#each ueberGroups as uberGroup (uberGroup.id)}
+	{#each ueberGroups as ueberGroup (ueberGroup.id)}
 		{#snippet ueberGroupsActions()}
 			<div class="flex gap-2">
 				<a
-					href="./identities/ueber-group/{uberGroup.id}"
-					aria-label="More information about {uberGroup.name}"
+					href="./identities/ueber-group/{ueberGroup.id}"
+					aria-label="More information about {ueberGroup.name}"
 					><button
 						class="btn btn-info-container btn-gradient shadow-outline btn-circle shadow-sm"
-						aria-label="More information about {uberGroup.name}"
+						aria-label="More information about {ueberGroup.name}"
 						><span class="icon-[tabler--info-triangle]"></span></button
 					></a
 				>
 				{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
 					<button
 						class="btn btn-error-container btn-gradient shadow-outline btn-circle shadow-sm"
-						aria-label="Delete Ueber Group {uberGroup.name}"
+						aria-label="Delete Ueber Group {ueberGroup.name}"
 						onclick={() => {
-							socketio.deleteEntity(uberGroup.id);
+							socketio.deleteEntity(ueberGroup.id);
 						}}
 					>
 						<span class="icon-[tabler--trash]"></span>
@@ -291,16 +291,27 @@
 		{/snippet}
 		<IdentityAccordion
 			icon={AccessHandler.identityIcon(IdentityType.UEBER_GROUP)}
-			title={uberGroup.name || 'Unknown Group'}
-			id={uberGroup.id}
+			title={ueberGroup.name || 'Unknown Group'}
+			id={ueberGroup.id}
 			actions={ueberGroupsActions}
 		>
 			<div class="flex gap-2">
 				<div class="flex flex-col">
-					<p class="body">{uberGroup.description}</p>
+					<p class="body">{ueberGroup.description}</p>
+					<p class="title-small md:title lg:title-large text-base-content pl-5 pt-5">
+						Linked Groups
+					</p>
+					{#if ueberGroup.groups && ueberGroup.groups.length > 0}
+						<dl class="divider-outline divide-y">
+							{#each ueberGroup.groups as group (group.id)}
+								<!-- TBD: debug crossfade in connection with empty lists -->
+								<IdentityListItem identity={group} />
+							{/each}
+						</dl>
+					{/if}
 				</div>
 				{#if debug}
-					<JsonData data={uberGroup} />
+					<JsonData data={ueberGroup} />
 				{/if}
 			</div>
 		</IdentityAccordion>
