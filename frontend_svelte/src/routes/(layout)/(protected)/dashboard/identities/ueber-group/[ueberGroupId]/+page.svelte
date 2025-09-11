@@ -169,7 +169,7 @@
 	};
 </script>
 
-<div class="flex flex-row gap-2">
+<div class="flex flex-row gap-2 pb-4">
 	<a href="../">
 		<button class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm">
 			<span class="icon-[tabler--chevron-left]"></span>
@@ -264,7 +264,7 @@
 					<label class="textarea-filled-label" for="description-ueber-group"> Description </label>
 				</div>
 			{/if}
-			<div class="flex gap-2 py-4">
+			<div class="flex flex-wrap gap-2 py-4">
 				<button
 					class="btn btn-success-container btn-gradient shadow-outline rounded-full shadow-sm"
 					onclick={() => goto('#add-group')}
