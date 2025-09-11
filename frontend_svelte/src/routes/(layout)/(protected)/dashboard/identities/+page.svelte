@@ -6,11 +6,11 @@
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import IdentityAccordion from './IdentityAccordion.svelte';
+	// import ActionsMicrosoftTeams from './ActionsMicrosoftTeams.svelte';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
 
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { UeberGroup, UeberGroupExtended } from '$lib/types';
-	import { stringify } from 'postcss';
 	let { data }: { data: PageData } = $props();
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
@@ -70,7 +70,7 @@
 <Heading>My user data in this app</Heading>
 
 <div
-	class="accordion accordion-bordered bg-primary-container text-primary-container-content mb-5"
+	class="accordion accordion-bordered bg-primary-container text-primary-container-content shadow-outline-variant mb-5 shadow-lg"
 	data-accordion-always-open=""
 >
 	{#if azureAccountLink.azure_user_id}
@@ -112,32 +112,13 @@
 	{/if}
 </div>
 
-{#snippet microsoftTeamsActions(url: URL, id: string)}
-	<a href={url.toString()} aria-label="Open in Microsoft Teams">
-		<button
-			class="btn btn-primary-container btn-gradient shadow-outline btn-circle shadow-sm"
-			aria-label="Open in Microsoft Teams"
-		>
-			<span class="icon-[bi--microsoft-teams]"></span>
-		</button>
-	</a>
-	<a href="./identities/msteams/{id}" aria-label="More information">
-		<button
-			class="btn btn-info-container btn-gradient shadow-outline btn-circle shadow-sm"
-			aria-label="More information"
-		>
-			<span class="icon-[tabler--info-triangle]"></span>
-		</button>
-	</a>
-{/snippet}
-
 <Heading id="microsoft-teams">Microsoft Teams</Heading>
 <p>
 	associated with this fullstack sandbox application, that {data.session?.microsoftProfile
 		?.displayName || 'current user'} is a member of:
 </p>
 <div
-	class="accordion accordion-bordered bg-primary-container text-primary-container-content mb-5"
+	class="accordion accordion-bordered bg-primary-container text-primary-container-content shadow-outline-variant mb-5 shadow-lg"
 	data-accordion-always-open=""
 >
 	{#if data.microsoftTeams.length === 0}
@@ -147,6 +128,31 @@
 	{/if}
 
 	{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
+		{#snippet microsoftTeamsActions()}
+			<!-- <ActionsMicrosoftTeams url={new URL(microsoftTeam.webUrl)} id={microsoftTeam.id} /> -->
+			<a
+				href={microsoftTeam.webUrl}
+				aria-label="Open in Microsoft Teams"
+				target="_blank"
+				rel="noopener"
+			>
+				<!-- TBD: consider creating a global style class for btn-fssb-small (with argument color) nad btn-fssb-large (with argument color) -->
+				<button
+					class="btn btn-primary-container btn-gradient shadow-outline btn-circle shadow-sm"
+					aria-label="Open in Microsoft Teams"
+				>
+					<span class="icon-[bi--microsoft-teams]"></span>
+				</button>
+			</a>
+			<a href="./identities/msteams/{microsoftTeam.id}" aria-label="More information">
+				<button
+					class="btn btn-info-container btn-gradient shadow-outline btn-circle shadow-sm"
+					aria-label="More information"
+				>
+					<span class="icon-[tabler--info-triangle]"></span>
+				</button>
+			</a>
+		{/snippet}
 		<IdentityAccordion
 			icon={AccessHandler.identityIcon(IdentityType.MICROSOFT_TEAM)}
 			title={microsoftTeam.displayName || 'Unknown Team'}
@@ -154,17 +160,6 @@
 			actions={microsoftTeamsActions}
 		>
 			<p class="body">{microsoftTeam.description}</p>
-			<a href={microsoftTeam.webUrl} target="_blank" rel="noopener"
-				><button
-					class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow-sm"
-					><span class="icon-[bi--microsoft-teams]"></span>Open in Microsoft Teams</button
-				></a
-			>
-			<a href="./identities/msteams/{microsoftTeam.id}"
-				><button class="btn btn-info-container btn-gradient shadow-outline rounded-full shadow-sm"
-					><span class="icon-[tabler--info-triangle]"></span>More information</button
-				>
-			</a>
 			{#if debug}
 				<JsonData data={microsoftTeam} />
 			{/if}
@@ -179,7 +174,7 @@
 	</p>
 	{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
 		<button
-			class="btn-success-container btn btn-gradient shadow-outline mr-2 self-center rounded-full shadow-md"
+			class="btn-success-container btn btn-gradient shadow-outline mr-2 self-center rounded-full shadow-sm"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="add-element-modal"
@@ -238,7 +233,7 @@
 					</div>
 					<div class="modal-footer">
 						<button
-							class="btn-warning-container btn btn-circle btn-gradient"
+							class="btn-success-container btn btn-circle btn-gradient shadow-outline shadow-sm"
 							aria-label="Send Icon Button"
 							onclick={() => {
 								socketio.submitEntity(newUeberGroup);
@@ -257,7 +252,7 @@
 	{/if}
 </div>
 <div
-	class="accordion accordion-bordered bg-primary-container text-primary-container-content"
+	class="accordion accordion-bordered bg-primary-container text-primary-container-content shadow-outline-variant mb-5 shadow-lg"
 	data-accordion-always-open=""
 >
 	{#if ueberGroups.length === 0}
@@ -270,41 +265,39 @@
 	{/if}
 
 	{#each ueberGroups as uberGroup (uberGroup.id)}
+		{#snippet ueberGroupsActions()}
+			<div class="flex gap-2">
+				<a
+					href="./identities/ueber-group/{uberGroup.id}"
+					aria-label="More information about {uberGroup.name}"
+					><button
+						class="btn btn-info-container btn-gradient shadow-outline btn-circle shadow-sm"
+						aria-label="More information about {uberGroup.name}"
+						><span class="icon-[tabler--info-triangle]"></span></button
+					></a
+				>
+				{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
+					<button
+						class="btn btn-error-container btn-gradient shadow-outline btn-circle shadow-sm"
+						aria-label="Delete Ueber Group {uberGroup.name}"
+						onclick={() => {
+							socketio.deleteEntity(uberGroup.id);
+						}}
+					>
+						<span class="icon-[tabler--trash]"></span>
+					</button>
+				{/if}
+			</div>
+		{/snippet}
 		<IdentityAccordion
 			icon={AccessHandler.identityIcon(IdentityType.UEBER_GROUP)}
 			title={uberGroup.name || 'Unknown Group'}
 			id={uberGroup.id}
+			actions={ueberGroupsActions}
 		>
 			<div class="flex gap-2">
 				<div class="flex flex-col">
 					<p class="body">{uberGroup.description}</p>
-					<div class="flex gap-2">
-						<a href="./identities/ueber-group/{uberGroup.id}"
-							><button
-								class="btn btn-info-container btn-gradient shadow-outline rounded-full shadow-sm"
-								><span class="icon-[tabler--info-triangle]"></span>More information</button
-							></a
-						>
-						<button
-							class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm"
-							><span class="icon-[fa6-solid--plus]"></span> Add Group</button
-						>
-						<button
-							class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm"
-							><span class="icon-[fa6-solid--plus]"></span> Add User</button
-						>
-						{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
-							<button
-								class="btn btn-error-container btn-gradient shadow-outline rounded-full shadow-sm"
-								aria-label="Delete Ueber Group"
-								onclick={() => {
-									socketio.deleteEntity(uberGroup.id);
-								}}
-							>
-								<span class="icon-[tabler--trash]"></span> Delete Ueber-Group
-							</button>
-						{/if}
-					</div>
 				</div>
 				{#if debug}
 					<JsonData data={uberGroup} />

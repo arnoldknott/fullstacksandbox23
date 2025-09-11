@@ -1,6 +1,7 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import type { Component, Snippet } from 'svelte';
 	import IdBadge from '../IdBadge.svelte';
+	import type { S } from 'vitest/dist/chunks/config.d.D2ROskhv.js';
 	let {
 		icon,
 		title,
@@ -13,7 +14,9 @@
 		title: string;
 		id: string;
 		active?: boolean;
-		actions?: Snippet<[url: URL, id: string]>;
+		// actions?: Snippet<[url: URL, id: string]>;
+		actions?: Snippet;
+		// Actions?: Component;
 		children: Snippet;
 	} = $props();
 
@@ -72,7 +75,9 @@
 		<div class="flex w-full flex-row">
 			<p class="title grow">{title}</p>
 			{#if actions}
-				<div class="mr-4">{@render actions(new URL('https://example.com'), id)}</div>
+				<!-- <div class="mr-4">{@render actions(new URL('https://example.com'), id)}</div> -->
+				<!-- <Actions /> -->
+				<div class="mr-4">{@render actions()}</div>
 			{/if}
 			<IdBadge {id} />
 		</div>

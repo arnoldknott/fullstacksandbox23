@@ -4,6 +4,7 @@
 	import IdentityAccordion from '../../IdentityAccordion.svelte';
 
 	let { data }: { data: PageData } = $props();
+	let team = $derived(data.thisTeam);
 </script>
 
 <a href="../"
@@ -12,8 +13,12 @@
 		Back to all identities
 	</button></a
 >
-
-<div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
+<a href={team.webUrl} target="_blank" rel="noopener"
+	><button class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow-sm"
+		><span class="icon-[bi--microsoft-teams]"></span>Open in Microsoft Teams</button
+	></a
+>
+<div class="accordion accordion-bordered bg-base-150 mt-5" data-accordion-always-open="">
 	<IdentityAccordion
 		icon="icon-[fluent--people-team-16-filled]"
 		title={data.thisTeam.displayName || 'Unknown Team'}

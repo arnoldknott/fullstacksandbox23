@@ -159,7 +159,7 @@
 	};
 </script>
 
-<div class="flex flex-row">
+<div class="flex flex-row gap-2">
 	<a href="../">
 		<button class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm">
 			<span class="icon-[tabler--chevron-left]"></span>
@@ -220,11 +220,63 @@
 
 {#if ueberGroup}
 	<Heading>{ueberGroup.name + ' '}<IdBadge id={ueberGroup.id} /></Heading>
-	<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
+	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : ''}>
+		<div class="flex flex-col">
+			<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
+			<div class="flex gap-2 py-4">
+				<button
+					class="btn btn-success-container btn-gradient shadow-outline rounded-full shadow-sm"
+					onclick={() => goto('#add-group')}
+					><span class="icon-[fa6-solid--plus]"></span> Add Group</button
+				>
+				<button
+					class="btn btn-success-container btn-gradient shadow-outline rounded-full shadow-sm"
+					onclick={() => goto('#add-user')}
+					><span class="icon-[fa6-solid--plus]"></span> Add User</button
+				>
+				{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
+					<!-- <button
+						class="btn btn-error-container btn-gradient shadow-outline rounded-full shadow-sm"
+						aria-label="Delete Ueber Group"
+						onclick={() => {
+							socketioUeberGroup.deleteEntity(ueberGroup.id);
+						}}
+					>
+						<span class="icon-[tabler--trash]"></span> Delete Ueber-Group
+					</button> -->
+				{/if}
+			</div>
+		</div>
+		{#if debug}
+			<JsonData data={ueberGroup} />
+		{/if}
+	</div>
 
-	{#if debug}
-		<JsonData data={ueberGroup} />
-	{/if}
+	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : 'py-4'}>
+		<Card id="linked-groups" header={linkedGroupsHeader} extraClasses="shadow-outline shadow-md">
+			<dl class="divider-outline divide-y">
+				{#if linkedGroups !== undefined && linkedGroups.length > 0}
+					{#each linkedGroups as group (group.id)}
+						<div in:receiveGroupCrossfade={{ key: group }} out:sendGroupCrossfade={{ key: group }}>
+							<IdentityListItem identity={group} unlink={unlinkGroup} remove={deleteGroup} />
+						</div>
+					{/each}
+				{:else}
+					<div
+						class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
+						role="alert"
+					>
+						No Groups found for in this ueber-group.
+					</div>
+				{/if}
+			</dl>
+		</Card>
+		{#if debug}
+			<JsonData data={linkedGroups} />
+		{/if}
+	</div>
+
+	<Heading id="add-group">Add group</Heading>
 
 	<div class="grid grid-cols-1 justify-around gap-4 pb-4 md:grid-cols-2">
 		<Card id={newGroup.id} extraClasses="max-h-90" header={newGroupHeader}>
@@ -361,29 +413,7 @@
 		{/if}
 	</div>
 
-	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : ''}>
-		<Card id="linked-groups" header={linkedGroupsHeader}>
-			<dl class="divider-outline divide-y">
-				{#if linkedGroups !== undefined && linkedGroups.length > 0}
-					{#each linkedGroups as group (group.id)}
-						<div in:receiveGroupCrossfade={{ key: group }} out:sendGroupCrossfade={{ key: group }}>
-							<IdentityListItem identity={group} unlink={unlinkGroup} remove={deleteGroup} />
-						</div>
-					{/each}
-				{:else}
-					<div
-						class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
-						role="alert"
-					>
-						No Groups found for in this ueber-group.
-					</div>
-				{/if}
-			</dl>
-		</Card>
-		{#if debug}
-			<JsonData data={linkedGroups} />
-		{/if}
-	</div>
+	<Heading id="add-user">Add user</Heading>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add the modify / edit functionality.</li>
