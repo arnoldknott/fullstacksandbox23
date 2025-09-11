@@ -6,13 +6,15 @@
 	import Heading from '$components/Heading.svelte';
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { Group, Hierarchy, UeberGroup } from '$lib/types';
+	import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
 	import Card from '$components/Card.svelte';
 	import IdentityListItem from '../../IdentityListItem.svelte';
 	import IdBadge from '../../../IdBadge.svelte';
 	import { crossfade } from 'svelte/transition';
 	import { SvelteMap } from 'svelte/reactivity';
-	let { data }: { data: PageData } = $props();
 
+	// Page related stuff:
+	let { data }: { data: PageData } = $props();
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	$effect(() => {
@@ -23,6 +25,7 @@
 		}
 	});
 
+	// Ueber-Group realted stuff:
 	let ueberGroup = $state(data.thisUeberGroup);
 	let editUeberGroup = $state(false);
 
@@ -47,6 +50,7 @@
 		}
 	});
 
+	// Group related stuff:
 	const groupConnection: SocketioConnection = {
 		namespace: '/group',
 		cookie_session_id: page.data.session.sessionId
@@ -167,6 +171,17 @@
 	const deleteGroup = (groupId: string) => {
 		socketioGroup.deleteEntity(groupId);
 	};
+
+	// User related stuff:
+	const userConnection: SocketioConnection = {
+		namespace: '/user',
+		cookie_session_id: page.data.session.sessionId
+	};
+	// TBD: when porting to group,
+	// remember to request the data of this group
+	// via query-parameters on the socket connection
+	const socketioUser = new SocketIO(userConnection);
+	let allUsers = $state<AzureUser[]>(data.allUsers || []);
 </script>
 
 <div class="flex flex-row gap-2 pb-4">
@@ -181,46 +196,6 @@
 		<input id="debug-switcher" type="checkbox" class="switch-neutral switch" bind:checked={debug} />
 	</div>
 </div>
-
-{#snippet newGroupHeader()}
-	<h5 class="title-small md:title lg:title-large text-base-content card-title">
-		New group for {ueberGroup?.name || 'this UeberGroup'}
-	</h5>
-{/snippet}
-
-{#snippet newGroupNameField()}
-	<div class="input-filled input-base-content mb-2 {newMultipleGroups ? '' : ''}">
-		<input
-			id="new-group-name"
-			type="text"
-			placeholder="Name the demo resource"
-			class="input input-sm md:input-md shadow-shadow flex-1 shadow-inner"
-			name="group-name"
-			bind:value={newGroup.name}
-		/>
-		<label class="input-filled-label" for="new-group-name">Name</label>
-	</div>
-{/snippet}
-
-{#snippet existingGroupsHeader()}
-	<h5 class="title-small md:title lg:title-large text-base-content card-title">
-		Add existing group to {ueberGroup?.name || 'this UeberGroup'}
-		<p class="title text-base-content card-title text-center">
-			Click on a group to add to this UeberGroup.
-		</p>
-		<div class="mb-2 flex flex-1 items-center gap-1">
-			<label class="label label-text text-base-content" for="new_group-inherit"
-				>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
-			</label>
-			<input
-				id="new_group-inherit"
-				type="checkbox"
-				class="switch-info switch"
-				bind:checked={existingGroupInherit}
-			/>
-		</div>
-	</h5>
-{/snippet}
 
 {#snippet linkedGroupsHeader()}
 	<h5 class="title-small md:title lg:title-large text-base-content card-title">
@@ -337,6 +312,46 @@
 
 	<Heading id="add-group">Add group</Heading>
 
+	{#snippet newGroupHeader()}
+		<h5 class="title-small md:title lg:title-large text-base-content card-title">
+			New group for {ueberGroup?.name || 'this UeberGroup'}
+		</h5>
+	{/snippet}
+
+	{#snippet newGroupNameField()}
+		<div class="input-filled input-base-content mb-2 {newMultipleGroups ? '' : ''}">
+			<input
+				id="new-group-name"
+				type="text"
+				placeholder="Name the demo resource"
+				class="input input-sm md:input-md shadow-shadow flex-1 shadow-inner"
+				name="group-name"
+				bind:value={newGroup.name}
+			/>
+			<label class="input-filled-label" for="new-group-name">Name</label>
+		</div>
+	{/snippet}
+
+	{#snippet existingGroupsHeader()}
+		<h5 class="title-small md:title lg:title-large text-base-content card-title">
+			Add existing groups to {ueberGroup?.name || 'this UeberGroup'}
+			<p class="title text-base-content card-title text-center">
+				Click on a groups to add to this UeberGroup.
+			</p>
+			<div class="mb-2 flex flex-1 items-center gap-1">
+				<label class="label label-text text-base-content" for="new_group-inherit"
+					>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
+				</label>
+				<input
+					id="new_group-inherit"
+					type="checkbox"
+					class="switch-info switch"
+					bind:checked={existingGroupInherit}
+				/>
+			</div>
+		</h5>
+	{/snippet}
+
 	<div class="grid grid-cols-1 justify-around gap-4 pb-4 md:grid-cols-2">
 		<Card id={newGroup.id} extraClasses="max-h-90" header={newGroupHeader}>
 			<div class="w-full overflow-x-auto">
@@ -431,36 +446,79 @@
 				<JsonData data={newGroupIdsSuffixes} /> -->
 			</div>
 		{/if}
-		<div>
-			<Card id="existing-groups" header={existingGroupsHeader}>
-				{#if allGroups !== undefined && allGroups.length > 0}
-					<dl class="divider-outline divide-y">
-						{#each allGroups as group (group.id)}
-							<!-- TBD: debug crossfade in connection with empty lists -->
-							<div
-								in:receiveGroupCrossfade={{ key: group }}
-								out:sendGroupCrossfade={{ key: group }}
-							>
-								<IdentityListItem identity={group} link={linkGroup} />
-							</div>
-						{/each}
-					</dl>
-				{:else}
-					<div
-						class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
-						role="alert"
-					>
-						No Groups found for this user.
-					</div>
-				{/if}
-			</Card>
-		</div>
+		<Card id="existing-groups" header={existingGroupsHeader}>
+			{#if allGroups !== undefined && allGroups.length > 0}
+				<dl class="divider-outline divide-y">
+					{#each allGroups as group (group.id)}
+						<!-- TBD: debug crossfade in connection with empty lists -->
+						<div in:receiveGroupCrossfade={{ key: group }} out:sendGroupCrossfade={{ key: group }}>
+							<IdentityListItem identity={group} link={linkGroup} />
+						</div>
+					{/each}
+				</dl>
+			{:else}
+				<div
+					class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
+					role="alert"
+				>
+					No Groups found for this user.
+				</div>
+			{/if}
+		</Card>
 		{#if debug}
 			<JsonData data={allGroups} />
 		{/if}
 	</div>
 
 	<Heading id="add-user">Add user</Heading>
+
+	{#snippet existingUserHeader()}
+		<h5 class="title-small md:title lg:title-large text-base-content card-title">
+			Add existing users to {ueberGroup?.name || 'this UeberGroup'}
+			<p class="title text-base-content card-title text-center">
+				Click on a users to add to this UeberGroup.
+			</p>
+			<div class="mb-2 flex flex-1 items-center gap-1">
+				<label class="label label-text text-base-content" for="new_group-inherit"
+					>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
+				</label>
+				<input
+					id="new_group-inherit"
+					type="checkbox"
+					class="switch-info switch"
+					bind:checked={existingGroupInherit}
+				/>
+			</div>
+		</h5>
+	{/snippet}
+
+	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : 'py-4'}>
+		<Card id="users" header={existingUserHeader}>
+			{#if allUsers !== undefined && allUsers.length > 0}
+				<dl class="divider-outline divide-y">
+					{#each allUsers as user (user.id)}
+						<div class="px-4 py-6 text-base sm:flex sm:flex-row sm:gap-4 sm:px-0">
+							<dt class="text-base-content title-small flex-1">{user.displayName}</dt>
+							<dd class="text-base-content/80 flex-2 mt-1">{user.mail}</dd>
+							<!-- TBD: debug crossfade in connection with empty lists -->
+							<!-- <div in:receiveUserCrossfade={{ key: user }} out:sendUserCrossfade={{ key: user }}>
+						<IdentityListItem identity={user} link={linkUser} /> -->
+						</div>
+					{/each}
+				</dl>
+			{:else}
+				<div
+					class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
+					role="alert"
+				>
+					No Users found.
+				</div>
+			{/if}
+		</Card>
+		{#if debug}
+			<JsonData data={allUsers} />
+		{/if}
+	</div>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
 		<li>Add user to ueber-group.</li>
