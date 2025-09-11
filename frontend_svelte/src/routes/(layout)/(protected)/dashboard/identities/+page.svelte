@@ -62,12 +62,12 @@
 
 <div class="flex gap-2 py-4">
 	<button
-		class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow-sm"
+		class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm"
 		onclick={() => goto('#microsoft-teams')}
 		><span class="icon-[tabler--chevron-right]"></span> Microsoft Teams</button
 	>
 	<button
-		class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow-sm"
+		class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm"
 		onclick={() => goto('#ueber-groups')}
 		><span class="icon-[tabler--chevron-right]"></span> Ueber Groups</button
 	>
@@ -309,7 +309,7 @@
 				<div class="flex flex-col">
 					<p class="body">{ueberGroup.description}</p>
 					{#if ueberGroup.groups && ueberGroup.groups.length > 0}
-						<p class="title-small md:title lg:title-large text-base-content pt-5 pl-5">
+						<p class="title-small md:title lg:title-large text-base-content pl-5 pt-5">
 							Linked Groups
 						</p>
 						<dl class="divider-outline divide-y">
