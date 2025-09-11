@@ -309,7 +309,7 @@
 				<div class="flex flex-col">
 					<p class="body">{ueberGroup.description}</p>
 					{#if ueberGroup.groups && ueberGroup.groups.length > 0}
-						<p class="title-small md:title lg:title-large text-base-content pl-5 pt-5">
+						<p class="title-small md:title lg:title-large text-base-content pt-5 pl-5">
 							Linked Groups
 						</p>
 						<dl class="divider-outline divide-y">

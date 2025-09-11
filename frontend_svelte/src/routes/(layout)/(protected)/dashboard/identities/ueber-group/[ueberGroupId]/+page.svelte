@@ -4,7 +4,6 @@
 	import JsonData from '$components/JsonData.svelte';
 	import type { PageData } from './$types';
 	import Heading from '$components/Heading.svelte';
-	// const { data, ...pageWithoutData } = page;
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { Group, Hierarchy, UeberGroup } from '$lib/types';
 	import Card from '$components/Card.svelte';
@@ -96,21 +95,12 @@
 		}
 	});
 	socketioGroup.client.on('deleted', (resource_id: string) => {
-		// socketioGroup.handleDeleted(resource_id)
 		linkedGroups = linkedGroups.filter((group) => group.id !== resource_id);
 	});
 	socketioGroup.client.on('status', (status: SocketioStatus) => {
 		if ('success' in status) {
 			if (status.success === 'created') {
-				// console.log('=== newGroup ===');
-				// console.log($state.snapshot(newGroup));
-				// console.log('=== status ===');
-				// console.log(status);
-				// console.log('=== newGroupIdsSuffixes ===');
-				// console.log(newGroupIdsSuffixes);
 				if (newGroupIdsSuffixes.has(status.submitted_id)) {
-					// console.log('=== match for submitted_id ===');
-					// if (status.submitted_id === newGroup.id) {
 					const suffix = newGroupIdsSuffixes.get(status.submitted_id);
 					const thisGroup: Group = Object.assign({}, newGroup);
 					thisGroup.name = newGroup.name + suffix;
@@ -136,7 +126,6 @@
 	});
 
 	const addNewGroup = () => {
-		// TBD: make inherit a parameter in the form.
 		if (newMultipleGroups) {
 			for (
 				let suffix = multipleGroupsSuffixes.start;
@@ -176,7 +165,6 @@
 	};
 
 	const deleteGroup = (groupId: string) => {
-		// TBD: unlink before (or after) delete?
 		socketioGroup.deleteEntity(groupId);
 	};
 </script>
@@ -360,18 +348,6 @@
 				{:else}
 					{@render newGroupNameField()}
 				{/if}
-				<!-- <div class="input-filled input-base-content mb-2 {newMultipleGroups ? '' : ''}">
-					<input
-						id="new-group-name"
-						type="text"
-						placeholder="Name the demo resource"
-						class="input input-sm md:input-md shadow-shadow flex-1 shadow-inner"
-						name="group-name"
-						bind:value={newGroup.name}
-					/>
-					<label class="input-filled-label" for="new-group-name">Name</label>
-					<span class="flex-1">test{newGroupSuffix}</span>
-				</div> -->
 				<div class="textarea-filled textarea-base-content w-full">
 					<textarea
 						id="new-group-description"

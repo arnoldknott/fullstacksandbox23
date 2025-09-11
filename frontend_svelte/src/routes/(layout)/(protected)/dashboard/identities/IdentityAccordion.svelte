@@ -1,7 +1,6 @@
 <script lang="ts">
-	import type { Component, Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
 	import IdBadge from '../IdBadge.svelte';
-	import type { S } from 'vitest/dist/chunks/config.d.D2ROskhv.js';
 	let {
 		icon,
 		title,
@@ -14,9 +13,7 @@
 		title: string;
 		id: string;
 		active?: boolean;
-		// actions?: Snippet<[url: URL, id: string]>;
 		actions?: Snippet;
-		// Actions?: Component;
 		children: Snippet;
 	} = $props();
 
