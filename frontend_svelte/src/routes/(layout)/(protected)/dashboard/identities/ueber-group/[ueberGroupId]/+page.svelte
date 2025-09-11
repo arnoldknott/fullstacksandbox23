@@ -6,7 +6,7 @@
 	import Heading from '$components/Heading.svelte';
 	// const { data, ...pageWithoutData } = page;
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
-	import type { Group, Hierarchy } from '$lib/types';
+	import type { Group, Hierarchy, UeberGroup } from '$lib/types';
 	import Card from '$components/Card.svelte';
 	import IdentityListItem from '../../IdentityListItem.svelte';
 	import IdBadge from '../../../IdBadge.svelte';
@@ -24,6 +24,30 @@
 		}
 	});
 
+	let ueberGroup = $state(data.thisUeberGroup);
+	let editUeberGroup = $state(false);
+
+	const ueberGroupConnection: SocketioConnection = {
+		namespace: '/ueber-group',
+		cookie_session_id: page.data.session.sessionId
+	};
+	// TBD: when porting to group,
+	// remember to request the data of this group
+	// via query-parameters on the socket connection
+	const socketioUeberGroup = new SocketIO(ueberGroupConnection);
+
+	socketioUeberGroup.client.on('deleted', (resource_id: string) => {
+		if (ueberGroup && ueberGroup.id === resource_id) {
+			goto('../');
+		}
+	});
+
+	socketioUeberGroup.client.on('transferred', (data: UeberGroup) => {
+		if (ueberGroup && ueberGroup.id === data.id) {
+			ueberGroup = data;
+		}
+	});
+
 	const groupConnection: SocketioConnection = {
 		namespace: '/group',
 		cookie_session_id: page.data.session.sessionId
@@ -31,8 +55,6 @@
 		// 	'request-access-data': true,
 		// }
 	};
-
-	let ueberGroup = $state(data.thisUeberGroup);
 
 	// const shortUeberGroupName = () => {
 	// 	let shortName = ueberGroup?.name.slice(0, 15) || 'this UeberGroup';
@@ -219,10 +241,41 @@
 {/snippet}
 
 {#if ueberGroup}
-	<Heading>{ueberGroup.name + ' '}<IdBadge id={ueberGroup.id} /></Heading>
+	<Heading>
+		{#if !editUeberGroup}
+			{ueberGroup.name + ' '}
+		{:else}
+			<div class="input-filled input-base-content mb-2">
+				<input
+					type="text"
+					placeholder="Name the Ueber-Group"
+					class="input input-lg shadow-shadow heading-small md:heading lg:heading-large text-center shadow-inner"
+					id="name-ueber-group"
+					name="name"
+					bind:value={ueberGroup.name}
+				/>
+				<label class="input-filled-label" for="name-ueber-group">Name</label>
+			</div>
+		{/if}
+		<IdBadge id={ueberGroup.id} />
+	</Heading>
 	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : ''}>
 		<div class="flex flex-col">
-			<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
+			{#if !editUeberGroup}
+				<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
+			{:else}
+				<div class="textarea-filled textarea-base-content w-full">
+					<textarea
+						class="textarea shadow-shadow shadow-inner"
+						placeholder="Describe the Ueber-Group here."
+						id="description-ueber-group"
+						name="description"
+						bind:value={ueberGroup.description}
+					>
+					</textarea>
+					<label class="textarea-filled-label" for="description-ueber-group"> Description </label>
+				</div>
+			{/if}
 			<div class="flex gap-2 py-4">
 				<button
 					class="btn btn-success-container btn-gradient shadow-outline rounded-full shadow-sm"
@@ -234,8 +287,26 @@
 					onclick={() => goto('#add-user')}
 					><span class="icon-[fa6-solid--plus]"></span> Add User</button
 				>
+				{#if !editUeberGroup}
+					<button
+						class="btn btn-warning-container btn-gradient shadow-outline rounded-full shadow-sm"
+						onclick={() => (editUeberGroup = true)}
+					>
+						<span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit Ueber-Group
+					</button>
+				{:else}
+					<button
+						class="btn btn-success-container btn-gradient shadow-outline rounded-full shadow-sm"
+						onclick={() => {
+							editUeberGroup = false;
+							socketioUeberGroup.submitEntity(ueberGroup);
+						}}
+					>
+						<span class="icon-[fa6-solid--plus]"></span> Update Ueber-Group
+					</button>
+				{/if}
 				{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
-					<!-- <button
+					<button
 						class="btn btn-error-container btn-gradient shadow-outline rounded-full shadow-sm"
 						aria-label="Delete Ueber Group"
 						onclick={() => {
@@ -243,7 +314,7 @@
 						}}
 					>
 						<span class="icon-[tabler--trash]"></span> Delete Ueber-Group
-					</button> -->
+					</button>
 				{/if}
 			</div>
 		</div>
@@ -416,8 +487,7 @@
 	<Heading id="add-user">Add user</Heading>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
-		<li>Add the modify / edit functionality.</li>
-		<li>Add the delete functionality.</li>
+		<li>Add user to ueber-group.</li>
 		<li>Turn into components to reuse with groups and subgroups.</li>
 	</ul>
 {:else}

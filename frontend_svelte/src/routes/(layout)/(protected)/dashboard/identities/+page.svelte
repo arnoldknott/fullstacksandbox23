@@ -60,7 +60,17 @@
 	});
 </script>
 
-<div>
+<div class="flex gap-2 py-4">
+	<button
+		class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow-sm"
+		onclick={() => goto('#microsoft-teams')}
+		><span class="icon-[tabler--chevron-right]"></span> Microsoft Teams</button
+	>
+	<button
+		class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow-sm"
+		onclick={() => goto('#ueber-groups')}
+		><span class="icon-[tabler--chevron-right]"></span> Ueber Groups</button
+	>
 	<div class="mb-2 flex items-center gap-1">
 		<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
 		<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
@@ -208,24 +218,24 @@
 							<div class="input-filled input-base-content mb-2 w-fit grow">
 								<input
 									type="text"
-									placeholder="Name the demo resource"
+									placeholder="Name Ueber-Group"
 									class="input input-sm md:input-md shadow-shadow shadow-inner"
-									id="name_id_new_element"
+									id="name-new-ueber-group"
 									name="name"
 									bind:value={newUeberGroup.name}
 								/>
-								<label class="input-filled-label" for="name_id_new_element">Name</label>
+								<label class="input-filled-label" for="name-new-ueber-group">Name</label>
 							</div>
 							<div class="textarea-filled textarea-base-content w-full">
 								<textarea
 									class="textarea shadow-shadow shadow-inner"
-									placeholder="Describe the demo resource here."
-									id="description_id_new_element"
+									placeholder="Describe the Ueber-Group here."
+									id="description-new-ueber-group"
 									name="description"
 									bind:value={newUeberGroup.description}
 								>
 								</textarea>
-								<label class="textarea-filled-label" for="description_id_new_element">
+								<label class="textarea-filled-label" for="description-new-ueber-group">
 									Description
 								</label>
 							</div>
@@ -298,10 +308,10 @@
 			<div class="flex gap-2">
 				<div class="flex flex-col">
 					<p class="body">{ueberGroup.description}</p>
-					<p class="title-small md:title lg:title-large text-base-content pl-5 pt-5">
-						Linked Groups
-					</p>
 					{#if ueberGroup.groups && ueberGroup.groups.length > 0}
+						<p class="title-small md:title lg:title-large text-base-content pl-5 pt-5">
+							Linked Groups
+						</p>
 						<dl class="divider-outline divide-y">
 							{#each ueberGroup.groups as group (group.id)}
 								<!-- TBD: debug crossfade in connection with empty lists -->

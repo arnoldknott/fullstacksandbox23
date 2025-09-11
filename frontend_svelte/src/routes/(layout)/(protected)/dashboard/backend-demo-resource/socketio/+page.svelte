@@ -265,7 +265,10 @@
 			<span class="icon-[fluent--people-team-16-filled]"></span>
 			Teams access to demoresources: {data.microsoftTeams.length}
 		</h3>
-		<div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="true">
+		<div
+			class="accordion accordion-bordered bg-base-150 shadow-outline-variant shadow-lg"
+			data-accordion-always-open="true"
+		>
 			{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
 				<div>
 					<IdentityAccordion
