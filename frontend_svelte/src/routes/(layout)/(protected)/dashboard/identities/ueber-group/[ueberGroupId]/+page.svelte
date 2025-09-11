@@ -35,7 +35,9 @@
 	};
 	// TBD: when porting to group,
 	// remember to request the data of this group
-	// via query-parameters on the socket connection
+	// via resource-ids,
+	// as there is only read(id) callback-on-connect
+	// and not read-all callback on connect
 	const socketioUeberGroup = new SocketIO(ueberGroupConnection);
 
 	socketioUeberGroup.client.on('deleted', (resource_id: string) => {
@@ -173,14 +175,15 @@
 	};
 
 	// User related stuff:
-	const userConnection: SocketioConnection = {
-		namespace: '/user',
-		cookie_session_id: page.data.session.sessionId
-	};
-	// TBD: when porting to group,
-	// remember to request the data of this group
-	// via query-parameters on the socket connection
-	const socketioUser = new SocketIO(userConnection);
+	// const userConnection: SocketioConnection = {
+	// 	namespace: '/user',
+	// 	cookie_session_id: page.data.session.sessionId
+	// };
+	// // TBD: when porting to group,
+	// // remember to request the data of this user
+	// // via query-parameters on the socket connection
+	// /// as there is no callback on connect
+	// const socketioUser = new SocketIO(userConnection);
 	let allUsers = $state<AzureUser[]>(data.allUsers || []);
 </script>
 
@@ -499,7 +502,7 @@
 					{#each allUsers as user (user.id)}
 						<div class="px-4 py-6 text-base sm:flex sm:flex-row sm:gap-4 sm:px-0">
 							<dt class="text-base-content title-small flex-1">{user.displayName}</dt>
-							<dd class="text-base-content/80 flex-2 mt-1">{user.mail}</dd>
+							<dd class="text-base-content/80 mt-1 flex-2">{user.mail}</dd>
 							<!-- TBD: debug crossfade in connection with empty lists -->
 							<!-- <div in:receiveUserCrossfade={{ key: user }} out:sendUserCrossfade={{ key: user }}>
 						<IdentityListItem identity={user} link={linkUser} /> -->

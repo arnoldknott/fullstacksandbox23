@@ -7,7 +7,7 @@ import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
 export const load: PageServerLoad = async ({ parent, locals, params }) => {
 	const sessionId = locals.sessionData.sessionId;
 	const parentData = await parent();
-	console.log("=== Parent Data ===");
+	console.log('=== Parent Data ===');
 	console.log(parentData);
 
 	const responsePayload = {
@@ -35,15 +35,18 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 		console.error('Error fetching all Groups:', responseAllGroups.status);
 	}
 
-	if (parentData.session?.currentUser?.azure_token_roles?.includes("Admin")) {
+	if (parentData.session?.currentUser?.azure_token_roles?.includes('Admin')) {
 		const responseUsers = await backendAPI.get(sessionId, `/user/`);
 		const users = await responseUsers.json();
 		if (responseUsers.status === 200) {
-			let azureUsers: AzureUser[] = [];
+			const azureUsers: AzureUser[] = [];
 			for (const user of users) {
-				const responseAzureUsers = await microsoftGraph.get(sessionId, `/users/${user.azure_user_id}`);
+				const responseAzureUsers = await microsoftGraph.get(
+					sessionId,
+					`/users/${user.azure_user_id}`
+				);
 				const azureUser: AzureUser = await responseAzureUsers.json();
-				console.log("=== Azure User ===");
+				console.log('=== Azure User ===');
 				console.log(azureUser);
 				azureUsers.push(azureUser);
 			}
