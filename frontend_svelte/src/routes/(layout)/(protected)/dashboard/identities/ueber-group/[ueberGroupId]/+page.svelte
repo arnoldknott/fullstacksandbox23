@@ -4,14 +4,17 @@
 	import JsonData from '$components/JsonData.svelte';
 	import type { PageData } from './$types';
 	import Heading from '$components/Heading.svelte';
-	// const { data, ...pageWithoutData } = page;
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
-	import type { Group, Hierarchy } from '$lib/types';
+	import type { Group, Hierarchy, UeberGroup } from '$lib/types';
+	import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
 	import Card from '$components/Card.svelte';
 	import IdentityListItem from '../../IdentityListItem.svelte';
+	import IdBadge from '../../../IdBadge.svelte';
 	import { crossfade } from 'svelte/transition';
-	let { data }: { data: PageData } = $props();
+	import { SvelteMap } from 'svelte/reactivity';
 
+	// Page related stuff:
+	let { data }: { data: PageData } = $props();
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	$effect(() => {
@@ -22,6 +25,34 @@
 		}
 	});
 
+	// Ueber-Group realted stuff:
+	let ueberGroup = $state(data.thisUeberGroup);
+	let editUeberGroup = $state(false);
+
+	const ueberGroupConnection: SocketioConnection = {
+		namespace: '/ueber-group',
+		cookie_session_id: page.data.session.sessionId
+	};
+	// TBD: when porting to group,
+	// remember to request the data of this group
+	// via resource-ids,
+	// as there is only read(id) callback-on-connect
+	// and not read-all callback on connect
+	const socketioUeberGroup = new SocketIO(ueberGroupConnection);
+
+	socketioUeberGroup.client.on('deleted', (resource_id: string) => {
+		if (ueberGroup && ueberGroup.id === resource_id) {
+			goto('../');
+		}
+	});
+
+	socketioUeberGroup.client.on('transferred', (data: UeberGroup) => {
+		if (ueberGroup && ueberGroup.id === data.id) {
+			ueberGroup = data;
+		}
+	});
+
+	// Group related stuff:
 	const groupConnection: SocketioConnection = {
 		namespace: '/group',
 		cookie_session_id: page.data.session.sessionId
@@ -29,8 +60,6 @@
 		// 	'request-access-data': true,
 		// }
 	};
-
-	let ueberGroup = $state(data.thisUeberGroup);
 
 	// const shortUeberGroupName = () => {
 	// 	let shortName = ueberGroup?.name.slice(0, 15) || 'this UeberGroup';
@@ -50,6 +79,19 @@
 	});
 	let newGroupInherit = $state(true);
 	let existingGroupInherit = $state(true);
+	let newMultipleGroups = $state(false);
+	let multipleGroupsSuffixes = $state({ start: 1, end: 2 });
+	let newGroupIdsSuffixes = new SvelteMap([[newGroup.id, '']]);
+	let newGroupSuffix = $derived(
+		newMultipleGroups
+			? '_[' + multipleGroupsSuffixes.start + ':' + multipleGroupsSuffixes.end + ']'
+			: null
+	);
+	$effect(() => {
+		if (multipleGroupsSuffixes.end <= multipleGroupsSuffixes.start) {
+			multipleGroupsSuffixes.end = multipleGroupsSuffixes.start + 1;
+		}
+	});
 	const socketioGroup = new SocketIO(groupConnection, () => allGroups);
 
 	socketioGroup.client.emit('read');
@@ -59,17 +101,25 @@
 		}
 	});
 	socketioGroup.client.on('deleted', (resource_id: string) => {
-		// socketioGroup.handleDeleted(resource_id)
 		linkedGroups = linkedGroups.filter((group) => group.id !== resource_id);
 	});
 	socketioGroup.client.on('status', (status: SocketioStatus) => {
 		if ('success' in status) {
 			if (status.success === 'created') {
-				if (status.submitted_id === newGroup.id) {
-					linkedGroups.push({ ...newGroup, id: status.id });
-					newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
-					newGroup.name = '';
-					newGroup.description = '';
+				if (newGroupIdsSuffixes.has(status.submitted_id)) {
+					const suffix = newGroupIdsSuffixes.get(status.submitted_id);
+					const thisGroup: Group = Object.assign({}, newGroup);
+					thisGroup.name = newGroup.name + suffix;
+					linkedGroups.push({ ...thisGroup, id: status.id });
+					newGroupIdsSuffixes.delete(status.submitted_id);
+					if (suffix === '' || newGroupIdsSuffixes.size === 1) {
+						newGroup.name = '';
+						newGroup.description = '';
+						if (suffix === '') {
+							newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
+							newGroupIdsSuffixes.set(newGroup.id, '');
+						}
+					}
 				}
 			} else if (status.success === 'linked') {
 				linkedGroups.push(allGroups.find((group) => group.id === status.id) as Group);
@@ -82,8 +132,21 @@
 	});
 
 	const addNewGroup = () => {
-		// TBD: make inherit a parameter in the form.
-		socketioGroup.submitEntity(newGroup, ueberGroup?.id, newGroupInherit);
+		if (newMultipleGroups) {
+			for (
+				let suffix = multipleGroupsSuffixes.start;
+				suffix <= multipleGroupsSuffixes.end;
+				suffix++
+			) {
+				const thisGroup = Object.assign({}, newGroup);
+				thisGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
+				thisGroup.name = thisGroup.name + `_${suffix}`;
+				newGroupIdsSuffixes.set(thisGroup.id, `_${suffix}`);
+				socketioGroup.submitEntity(thisGroup, ueberGroup?.id, newGroupInherit);
+			}
+		} else {
+			socketioGroup.submitEntity(newGroup, ueberGroup?.id, newGroupInherit);
+		}
 	};
 
 	const linkGroup = (groupId: string) => {
@@ -108,49 +171,34 @@
 	};
 
 	const deleteGroup = (groupId: string) => {
-		// TBD: unlink before (or after) delete?
 		socketioGroup.deleteEntity(groupId);
 	};
+
+	// User related stuff:
+	// const userConnection: SocketioConnection = {
+	// 	namespace: '/user',
+	// 	cookie_session_id: page.data.session.sessionId
+	// };
+	// // TBD: when porting to group,
+	// // remember to request the data of this user
+	// // via query-parameters on the socket connection
+	// /// as there is no callback on connect
+	// const socketioUser = new SocketIO(userConnection);
+	let allUsers = $state<AzureUser[]>(data.allUsers || []);
 </script>
 
-<div class="flex flex-row">
+<div class="flex flex-row gap-2 pb-4">
 	<a href="../">
-		<button class="btn btn-accent-container">
+		<button class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm">
 			<span class="icon-[tabler--chevron-left]"></span>
 			Back to all identities
 		</button>
 	</a>
 	<div class="mb-2 flex items-center gap-1">
-		<label class="label label-text text-base" for="debug-switcher">Debug: </label>
+		<label class="label label-text text-base-content" for="debug-switcher">Debug: </label>
 		<input id="debug-switcher" type="checkbox" class="switch-neutral switch" bind:checked={debug} />
 	</div>
 </div>
-
-{#snippet newGroupHeader()}
-	<h5 class="title-small md:title lg:title-large text-base-content card-title">
-		New group for {ueberGroup?.name || 'this UeberGroup'}
-	</h5>
-{/snippet}
-
-{#snippet existingGroupsHeader()}
-	<h5 class="title-small md:title lg:title-large text-base-content card-title">
-		Add existing group to {ueberGroup?.name || 'this UeberGroup'}
-		<p class="title text-base-content card-title text-center">
-			Click on a group to add to this UeberGroup.
-		</p>
-		<div class="mb-2 flex flex-1 items-center gap-1">
-			<label class="label label-text text-base" for="new_group-inherit"
-				>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
-			</label>
-			<input
-				id="new_group-inherit"
-				type="checkbox"
-				class="switch-info switch"
-				bind:checked={existingGroupInherit}
-			/>
-		</div>
-	</h5>
-{/snippet}
 
 {#snippet linkedGroupsHeader()}
 	<h5 class="title-small md:title lg:title-large text-base-content card-title">
@@ -159,27 +207,165 @@
 {/snippet}
 
 {#if ueberGroup}
-	<Heading>{ueberGroup.name}</Heading>
-	<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
+	<Heading>
+		{#if !editUeberGroup}
+			{ueberGroup.name + ' '}
+		{:else}
+			<div class="input-filled input-base-content mb-2">
+				<input
+					type="text"
+					placeholder="Name the Ueber-Group"
+					class="input input-lg shadow-shadow heading-small md:heading lg:heading-large text-center shadow-inner"
+					id="name-ueber-group"
+					name="name"
+					bind:value={ueberGroup.name}
+				/>
+				<label class="input-filled-label" for="name-ueber-group">Name</label>
+			</div>
+		{/if}
+		<IdBadge id={ueberGroup.id} />
+	</Heading>
+	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : ''}>
+		<div class="flex flex-col">
+			{#if !editUeberGroup}
+				<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
+			{:else}
+				<div class="textarea-filled textarea-base-content w-full">
+					<textarea
+						class="textarea shadow-shadow shadow-inner"
+						placeholder="Describe the Ueber-Group here."
+						id="description-ueber-group"
+						name="description"
+						bind:value={ueberGroup.description}
+					>
+					</textarea>
+					<label class="textarea-filled-label" for="description-ueber-group"> Description </label>
+				</div>
+			{/if}
+			<div class="flex flex-wrap gap-2 py-4">
+				<button
+					class="btn btn-success-container btn-gradient shadow-outline rounded-full shadow-sm"
+					onclick={() => goto('#add-group')}
+					><span class="icon-[fa6-solid--plus]"></span> Add Group</button
+				>
+				<button
+					class="btn btn-success-container btn-gradient shadow-outline rounded-full shadow-sm"
+					onclick={() => goto('#add-user')}
+					><span class="icon-[fa6-solid--plus]"></span> Add User</button
+				>
+				{#if !editUeberGroup}
+					<button
+						class="btn btn-warning-container btn-gradient shadow-outline rounded-full shadow-sm"
+						onclick={() => (editUeberGroup = true)}
+					>
+						<span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit Ueber-Group
+					</button>
+				{:else}
+					<button
+						class="btn btn-success-container btn-gradient shadow-outline rounded-full shadow-sm"
+						onclick={() => {
+							editUeberGroup = false;
+							socketioUeberGroup.submitEntity(ueberGroup);
+						}}
+					>
+						<span class="icon-[fa6-solid--plus]"></span> Update Ueber-Group
+					</button>
+				{/if}
+				{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
+					<button
+						class="btn btn-error-container btn-gradient shadow-outline rounded-full shadow-sm"
+						aria-label="Delete Ueber Group"
+						onclick={() => {
+							socketioUeberGroup.deleteEntity(ueberGroup.id);
+						}}
+					>
+						<span class="icon-[tabler--trash]"></span> Delete Ueber-Group
+					</button>
+				{/if}
+			</div>
+		</div>
+		{#if debug}
+			<JsonData data={ueberGroup} />
+		{/if}
+	</div>
 
-	{#if debug}
-		<JsonData data={ueberGroup} />
-	{/if}
+	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : 'py-4'}>
+		<Card id="linked-groups" header={linkedGroupsHeader} extraClasses="shadow-outline shadow-md">
+			{#if linkedGroups !== undefined && linkedGroups.length > 0}
+				<dl class="divider-outline divide-y">
+					{#each linkedGroups as group (group.id)}
+						<div in:receiveGroupCrossfade={{ key: group }} out:sendGroupCrossfade={{ key: group }}>
+							<IdentityListItem identity={group} unlink={unlinkGroup} remove={deleteGroup} />
+						</div>
+					{/each}
+				</dl>
+			{:else}
+				<div
+					class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
+					role="alert"
+				>
+					No Groups found for in this ueber-group.
+				</div>
+			{/if}
+		</Card>
+		{#if debug}
+			<JsonData data={linkedGroups} />
+		{/if}
+	</div>
+
+	<Heading id="add-group">Add group</Heading>
+
+	{#snippet newGroupHeader()}
+		<h5 class="title-small md:title lg:title-large text-base-content card-title">
+			New group for {ueberGroup?.name || 'this UeberGroup'}
+		</h5>
+	{/snippet}
+
+	{#snippet newGroupNameField()}
+		<div class="input-filled input-base-content mb-2 {newMultipleGroups ? '' : ''}">
+			<input
+				id="new-group-name"
+				type="text"
+				placeholder="Name the demo resource"
+				class="input input-sm md:input-md shadow-shadow flex-1 shadow-inner"
+				name="group-name"
+				bind:value={newGroup.name}
+			/>
+			<label class="input-filled-label" for="new-group-name">Name</label>
+		</div>
+	{/snippet}
+
+	{#snippet existingGroupsHeader()}
+		<h5 class="title-small md:title lg:title-large text-base-content card-title">
+			Add existing groups to {ueberGroup?.name || 'this UeberGroup'}
+			<p class="title text-base-content card-title text-center">
+				Click on a groups to add to this UeberGroup.
+			</p>
+			<div class="mb-2 flex flex-1 items-center gap-1">
+				<label class="label label-text text-base-content" for="new_group-inherit"
+					>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
+				</label>
+				<input
+					id="new_group-inherit"
+					type="checkbox"
+					class="switch-info switch"
+					bind:checked={existingGroupInherit}
+				/>
+			</div>
+		</h5>
+	{/snippet}
 
 	<div class="grid grid-cols-1 justify-around gap-4 pb-4 md:grid-cols-2">
-		<Card id={newGroup.id} extraClasses="max-h-80" header={newGroupHeader}>
+		<Card id={newGroup.id} extraClasses="max-h-90" header={newGroupHeader}>
 			<div class="w-full overflow-x-auto">
-				<div class="input-filled input-base-content mb-2 w-fit grow">
-					<input
-						id="new-group-name"
-						type="text"
-						placeholder="Name the demo resource"
-						class="input input-sm md:input-md shadow-shadow shadow-inner"
-						name="group-name"
-						bind:value={newGroup.name}
-					/>
-					<label class="input-filled-label" for="new-group-name">Name</label>
-				</div>
+				{#if newMultipleGroups}
+					<div class="flex flex-row items-end">
+						{@render newGroupNameField()}
+						<span class="flex-1 pb-3">{newGroupSuffix}</span>
+					</div>
+				{:else}
+					{@render newGroupNameField()}
+				{/if}
 				<div class="textarea-filled textarea-base-content w-full">
 					<textarea
 						id="new-group-description"
@@ -192,20 +378,57 @@
 					<label class="textarea-filled-label" for="new-group-description"> Description </label>
 				</div>
 				<!-- TBD: make snippet and put into footer -->
+				<div
+					class="label-text mb-2 flex flex-1 items-center gap-1 {newGroupInherit
+						? 'text-base-content'
+						: 'text-base-content/30'}"
+				>
+					<input
+						id="existing_group-inherit"
+						type="checkbox"
+						class="switch-info switch"
+						bind:checked={newGroupInherit}
+					/>
+					<label class="label" for="existing_group-inherit"
+						>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}
+					</label>
+				</div>
 				<div class="flex h-11 flex-row">
-					<div class="mb-2 flex flex-1 items-center gap-1">
-						<label class="label label-text text-base" for="existing_group-inherit"
-							>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
-						</label>
+					<div
+						class="label-text mb-2 flex flex-1 items-center gap-1 {newMultipleGroups
+							? 'text-base-content'
+							: 'text-base-content/30'}"
+					>
 						<input
-							id="existing_group-inherit"
+							id="multiple-new-groups"
 							type="checkbox"
 							class="switch-info switch"
-							bind:checked={newGroupInherit}
+							bind:checked={newMultipleGroups}
 						/>
+						<label class="label" for="multiple-new-groups">Add multiple groups with suffix </label>
+						<input
+							id="multiple-groups-start"
+							type="number"
+							placeholder={multipleGroupsSuffixes.start.toString()}
+							class="input shadow-shadow flex-2 shadow-inner"
+							name="multiple-groups-suffix-start"
+							disabled={!newMultipleGroups}
+							bind:value={multipleGroupsSuffixes.start}
+						/>
+						<span class="label flex-1"> to</span>
+						<input
+							id="multiple-groups-end"
+							type="number"
+							placeholder={multipleGroupsSuffixes.end.toString()}
+							class="input shadow-shadow flex-2 shadow-inner"
+							name="multiple-groups-suffix-end"
+							disabled={!newMultipleGroups}
+							bind:value={multipleGroupsSuffixes.end}
+						/>
+						<span class="flex-grow"></span>
 					</div>
 					<button
-						class="btn-success-container btn btn-circle btn-gradient shadow-outline shrink shadow-md"
+						class="btn-success-container btn btn-circle btn-gradient shadow-outline shrink shadow-sm"
 						aria-label="Send Icon Button"
 						onclick={() => addNewGroup()}
 						data-overlay="#add-ueber-group-modal"
@@ -216,82 +439,100 @@
 			</div>
 		</Card>
 		{#if debug}
-			<JsonData data={newGroup} />
+			<div class="flex flex-col gap-2">
+				<p>newGroup</p>
+				<JsonData data={newGroup} />
+				<button class="btn btn-secondary-container" onclick={() => console.log(newGroupIdsSuffixes)}
+					>newGroupIdsSuffixes -> console</button
+				>
+				<!-- <p>newGroupIdsSuffixes</p>
+				<JsonData data={newGroupIdsSuffixes} /> -->
+			</div>
 		{/if}
-		<div>
-			<Card id="existing-groups" header={existingGroupsHeader}>
+		<Card id="existing-groups" header={existingGroupsHeader}>
+			{#if allGroups !== undefined && allGroups.length > 0}
 				<dl class="divider-outline divide-y">
-					{#if allGroups !== undefined && allGroups.length > 0}
-						{#each allGroups as group (group.id)}
-							<div
-								in:receiveGroupCrossfade={{ key: group }}
-								out:sendGroupCrossfade={{ key: group }}
-							>
-								<IdentityListItem identity={group} link={linkGroup} />
-							</div>
-						{/each}
-					{:else}
-						<div
-							class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
-							role="alert"
-						>
-							No Groups found for this user.
+					{#each allGroups as group (group.id)}
+						<!-- TBD: debug crossfade in connection with empty lists -->
+						<div in:receiveGroupCrossfade={{ key: group }} out:sendGroupCrossfade={{ key: group }}>
+							<IdentityListItem identity={group} link={linkGroup} />
 						</div>
-					{/if}
+					{/each}
 				</dl>
-			</Card>
-		</div>
+			{:else}
+				<div
+					class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
+					role="alert"
+				>
+					No Groups found for this user.
+				</div>
+			{/if}
+		</Card>
 		{#if debug}
 			<JsonData data={allGroups} />
 		{/if}
 	</div>
 
-	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : ''}>
-		<Card id="linked-groups" header={linkedGroupsHeader}>
-			<dl class="divider-outline divide-y">
-				{#if linkedGroups !== undefined && linkedGroups.length > 0}
-					{#each linkedGroups as group (group.id)}
-						<div in:receiveGroupCrossfade={{ key: group }} out:sendGroupCrossfade={{ key: group }}>
-							<IdentityListItem identity={group} unlink={unlinkGroup} remove={deleteGroup} />
+	<Heading id="add-user">Add user</Heading>
+
+	{#snippet existingUserHeader()}
+		<h5 class="title-small md:title lg:title-large text-base-content card-title">
+			Add existing users to {ueberGroup?.name || 'this UeberGroup'}
+			<p class="title text-base-content card-title text-center">
+				Click on a users to add to this UeberGroup.
+			</p>
+			<div class="mb-2 flex flex-1 items-center gap-1">
+				<label class="label label-text text-base-content" for="new_group-inherit"
+					>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
+				</label>
+				<input
+					id="new_group-inherit"
+					type="checkbox"
+					class="switch-info switch"
+					bind:checked={existingGroupInherit}
+				/>
+			</div>
+		</h5>
+	{/snippet}
+
+	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : 'py-4'}>
+		<Card id="users" header={existingUserHeader}>
+			{#if allUsers !== undefined && allUsers.length > 0}
+				<dl class="divider-outline divide-y">
+					{#each allUsers as user (user.id)}
+						<div class="px-4 py-6 text-base sm:flex sm:flex-row sm:gap-4 sm:px-0">
+							<dt class="text-base-content title-small flex-1">{user.displayName}</dt>
+							<dd class="text-base-content/80 mt-1 flex-2">{user.mail}</dd>
+							<!-- TBD: debug crossfade in connection with empty lists -->
+							<!-- <div in:receiveUserCrossfade={{ key: user }} out:sendUserCrossfade={{ key: user }}>
+						<IdentityListItem identity={user} link={linkUser} /> -->
 						</div>
 					{/each}
-				{:else}
-					<div
-						class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
-						role="alert"
-					>
-						No Groups found for in this ueber-group.
-					</div>
-				{/if}
-			</dl>
+				</dl>
+			{:else}
+				<div
+					class="alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
+					role="alert"
+				>
+					No Users found.
+				</div>
+			{/if}
 		</Card>
 		{#if debug}
-			<JsonData data={linkedGroups} />
+			<JsonData data={allUsers} />
 		{/if}
 	</div>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
-		<li>Add tests for unlink functionality and status.</li>
-	</ul>
-	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
-		<li>Add a "multi-create" to new group card with numerical index at the end</li>
-		<li>Add the modify / edit functionality.</li>
-	</ul>
-	<ul class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
-		<li>Maybe: debug crossfade in connection with empty lists?</li>
-		<li>
-			Maybe: check if there is a "hierarchy read" anywhere, otherwise implement a read_relations in
-			BaseCRUD - well there is BaseHierarchyCRUD.read. Not exposed, but secured, should be enough
-			for now. and can get exposed via endpoint or socket.io event. So far the parents had all
-			children included - the BaseCRUD.read ensures that.
-		</li>
+		<li>Add user to ueber-group.</li>
+		<li>Turn into components to reuse with groups and subgroups.</li>
 	</ul>
 {:else}
 	<Heading>Error</Heading>
 	<p>No Ueber Group found.</p>
 {/if}
 
-<p class="title bg-warning-container/20 text-warning-container-content mt-4 rounded-2xl">
+<p class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 	For resource hierarchies (protected resources) also add the order functionality by drag and drop.
 </p>
 

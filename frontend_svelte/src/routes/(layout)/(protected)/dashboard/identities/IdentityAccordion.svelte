@@ -6,8 +6,16 @@
 		title,
 		id,
 		active = true,
+		actions,
 		children
-	}: { icon?: string; title: string; id: string; active?: boolean; children: Snippet } = $props();
+	}: {
+		icon?: string;
+		title: string;
+		id: string;
+		active?: boolean;
+		actions?: Snippet;
+		children: Snippet;
+	} = $props();
 
 	// export interface MicrosoftTeamBasic {
 	// 	id: string;
@@ -63,6 +71,11 @@
 		{/if}
 		<div class="flex w-full flex-row">
 			<p class="title grow">{title}</p>
+			{#if actions}
+				<!-- <div class="mr-4">{@render actions(new URL('https://example.com'), id)}</div> -->
+				<!-- <Actions /> -->
+				<div class="mr-4">{@render actions()}</div>
+			{/if}
 			<IdBadge {id} />
 		</div>
 	</button>

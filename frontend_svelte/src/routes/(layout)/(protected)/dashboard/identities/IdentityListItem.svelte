@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { AnyGroupIdentity } from '$lib/types';
+	import IdBadge from '../IdBadge.svelte';
+	// import IdentityActionButton from './IdentityActionButton.svelte';
 	let {
 		identity,
 		link,
@@ -15,6 +17,7 @@
 
 {#snippet listContent()}
 	<dt class="text-base-content title-small flex-1">
+		<IdBadge id={identity.id} />
 		{identity.name}
 	</dt>
 	<dd class="text-base-content/80 mt-1 flex-2">
@@ -38,7 +41,7 @@
 				aria-label="Info about {identity.name}"
 			>
 				<button
-					class="btn btn-info-container btn btn-circle btn-gradient shadow-outline shadow-md"
+					class="btn btn-info-container btn-circle btn-gradient shadow-outline shadow-sm"
 					aria-labelledby="info-about-{identity.id}"
 				>
 					<span class="icon-[tabler--info-triangle]"></span>
@@ -46,7 +49,7 @@
 			</a>
 			{#if unlink}
 				<button
-					class="btn btn-warning-container btn-circle btn-gradient shadow-outline shadow-md"
+					class="btn btn-warning-container btn-circle btn-gradient shadow-outline shadow-sm"
 					aria-label="Unlink {identity.name}"
 					onclick={() => unlink(identity.id)}
 				>
@@ -55,7 +58,7 @@
 			{/if}
 			{#if remove}
 				<button
-					class="btn btn-error-container btn-circle btn-gradient shadow-outline shadow-md"
+					class="btn btn-error-container btn-circle btn-gradient shadow-outline shadow-sm"
 					aria-label="Remove {identity.name}"
 					onclick={() => remove(identity.id)}
 				>

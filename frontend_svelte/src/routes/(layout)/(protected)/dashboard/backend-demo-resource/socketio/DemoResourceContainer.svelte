@@ -144,7 +144,7 @@
 		{#if demoResource.access_right === Action.WRITE || demoResource.access_right === Action.OWN}
 			<div class="join flex flex-row items-end justify-center">
 				<button
-					class="btn btn-secondary-container text-secondary-container-content btn-sm join-item grow"
+					class="btn btn-secondary-container text-secondary-container-content btn-sm join-item shadow-outline grow shadow-inner shadow-sm"
 					aria-label="Edit Button"
 					onclick={() => (edit = !edit)}
 				>
@@ -165,7 +165,7 @@
 						<!-- bind:this={actionButtonShareMenuElement} -->
 						<button
 							id="share-{demoResource.id}"
-							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content btn-sm w-full rounded-none"
+							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content btn-sm shadow-outline w-full rounded-none shadow-sm"
 							aria-haspopup="menu"
 							aria-expanded="false"
 							aria-label="Share with"
@@ -200,7 +200,7 @@
 						</ul>
 					</div>
 					<button
-						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
+						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item shadow-outline grow border-0 shadow-sm"
 						aria-label="Delete Button"
 						name="id"
 						onclick={() => !demoResource.id || socketio?.deleteEntity(demoResource.id)}

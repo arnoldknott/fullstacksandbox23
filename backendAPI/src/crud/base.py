@@ -775,19 +775,27 @@ class BaseCRUD(
                     pass
 
             # Delete all access policies, where object_id is resource:
-            if self.type == ResourceType:
-                delete_policies = AccessPolicyDelete(
-                    resource_id=object_id,
-                )
-            elif self.type == IdentityType:
-                delete_policies = AccessPolicyDelete(
-                    identity_id=object_id,
-                )
+            # The resource_id can be an identity_id!
+            # TBD: write a test for deleting a policy, where the resource_id is an identity_id
             try:
                 async with self.policy_CRUD as policy_CRUD:
-                    await policy_CRUD.delete(current_user, delete_policies)
+                    await policy_CRUD.delete(
+                        current_user,
+                        AccessPolicyDelete(
+                            resource_id=object_id,
+                        ),
+                    )
             except Exception:
                 pass
+            if self.type == IdentityType:
+                try:
+                    async with self.policy_CRUD as policy_CRUD:
+                        await policy_CRUD.delete(
+                            current_user,
+                            AccessPolicyDelete(identity_id=object_id),
+                        )
+                except Exception:
+                    pass
 
             # Create the successful access log
             access_log = AccessLogCreate(
@@ -840,11 +848,13 @@ class BaseCRUD(
         # if yes, delete the hierarchy entry
         if await self.check_identifier_type_link(child_id):
             async with self.hierarchy_CRUD as hierarchy_CRUD:
-                await hierarchy_CRUD.delete(
+                deleted_rows = await hierarchy_CRUD.delete(
                     current_user=current_user,
                     parent_id=parent_id,
                     child_id=child_id,
                 )
+                if deleted_rows == 0:
+                    raise HTTPException(status_code=404, detail="Hierarchy not found.")
             return None
         else:
             raise HTTPException(
