@@ -219,7 +219,7 @@
 {/snippet}
 
 {#if ueberGroup}
-	<Heading>{ueberGroup.name}<IdBadge id={ueberGroup.id} /></Heading>
+	<Heading>{ueberGroup.name + ' '}<IdBadge id={ueberGroup.id} /></Heading>
 	<p class="title text-base-content card-title py-4 text-center">{ueberGroup.description}</p>
 
 	{#if debug}
@@ -227,7 +227,7 @@
 	{/if}
 
 	<div class="grid grid-cols-1 justify-around gap-4 pb-4 md:grid-cols-2">
-		<Card id={newGroup.id} extraClasses="max-h-80" header={newGroupHeader}>
+		<Card id={newGroup.id} extraClasses="max-h-90" header={newGroupHeader}>
 			<div class="w-full overflow-x-auto">
 				{#if newMultipleGroups}
 					<div class="flex flex-row items-end">

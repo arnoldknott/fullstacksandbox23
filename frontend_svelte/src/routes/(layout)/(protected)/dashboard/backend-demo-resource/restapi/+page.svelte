@@ -40,7 +40,7 @@
 </div>
 <div class="mb-5">
 	<button
-		class="btn-neutral-container btn btn-gradient rounded-full"
+		class="btn-neutral-container btn btn-gradient shadow-outline rounded-full shadow-sm"
 		onclick={() => addDemoResource()}
 		aria-label="Add Button"
 	>

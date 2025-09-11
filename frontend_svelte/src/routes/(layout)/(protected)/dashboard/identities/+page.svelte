@@ -111,7 +111,7 @@
 	{/if}
 </div>
 
-<Heading>Microsoft Teams</Heading>
+<Heading id="microsoft-teams">Microsoft Teams</Heading>
 <p>
 	associated with this fullstack sandbox application, that {data.session?.microsoftProfile
 		?.displayName || 'current user'} is a member of:
@@ -134,12 +134,13 @@
 		>
 			<p class="body">{microsoftTeam.description}</p>
 			<a href={microsoftTeam.webUrl} target="_blank" rel="noopener"
-				><button class="btn btn-primary-container shadow-outline shadow-md"
+				><button
+					class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow-sm"
 					><span class="icon-[bi--microsoft-teams]"></span>Open in Microsoft Teams</button
 				></a
 			>
 			<a href="./identities/msteams/{microsoftTeam.id}"
-				><button class="btn btn-info-container shadow-outline shadow-md"
+				><button class="btn btn-info-container btn-gradient shadow-outline rounded-full shadow-sm"
 					><span class="icon-[tabler--info-triangle]"></span>More information</button
 				>
 			</a>
@@ -150,14 +151,14 @@
 	{/each}
 </div>
 
-<Heading>Ueber-Groups</Heading>
+<Heading id="ueber-groups">Ueber-Groups</Heading>
 <div class="my-5 flex flex-row justify-between">
 	<p>
 		that {data.session?.microsoftProfile?.displayName || 'current user'} is a member of:
 	</p>
 	{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
 		<button
-			class="btn-success-container btn shadow-outline mr-2 self-center shadow-md"
+			class="btn-success-container btn btn-gradient shadow-outline mr-2 self-center rounded-full shadow-md"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="add-element-modal"
@@ -258,19 +259,22 @@
 					<p class="body">{uberGroup.description}</p>
 					<div class="flex gap-2">
 						<a href="./identities/ueber-group/{uberGroup.id}"
-							><button class="btn btn-info-container shadow-outline shadow-md"
+							><button
+								class="btn btn-info-container btn-gradient shadow-outline rounded-full shadow-sm"
 								><span class="icon-[tabler--info-triangle]"></span>More information</button
 							></a
 						>
-						<button class="btn btn-accent-container shadow-outline shadow-md"
+						<button
+							class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm"
 							><span class="icon-[fa6-solid--plus]"></span> Add Group</button
 						>
-						<button class="btn btn-accent-container shadow-outline shadow-md"
+						<button
+							class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm"
 							><span class="icon-[fa6-solid--plus]"></span> Add User</button
 						>
 						{#if data.session?.currentUser?.azure_token_roles?.find((roles) => roles === 'Admin')}
 							<button
-								class="btn btn-error-container shadow-outline shadow-md"
+								class="btn btn-error-container btn-gradient shadow-outline rounded-full shadow-sm"
 								aria-label="Delete Ueber Group"
 								onclick={() => {
 									socketio.deleteEntity(uberGroup.id);

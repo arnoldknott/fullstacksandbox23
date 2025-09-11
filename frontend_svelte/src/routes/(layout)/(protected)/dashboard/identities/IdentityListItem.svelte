@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { AnyGroupIdentity } from '$lib/types';
 	import IdBadge from '../IdBadge.svelte';
+	// import IdentityActionButton from './IdentityActionButton.svelte';
 	let {
 		identity,
 		link,
@@ -40,7 +41,7 @@
 				aria-label="Info about {identity.name}"
 			>
 				<button
-					class="btn btn-info-container btn btn-circle btn-gradient shadow-outline shadow-sm"
+					class="btn btn-info-container btn-circle btn-gradient shadow-outline shadow-sm"
 					aria-labelledby="info-about-{identity.id}"
 				>
 					<span class="icon-[tabler--info-triangle]"></span>
