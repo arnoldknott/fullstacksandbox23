@@ -7,7 +7,7 @@
 
 	export const ssr = false;
 	// let { children, keyboard=true }: {  children: Snippet, keyboard: boolean} = $props();
-	let { children, keyboard = true }: { children: Snippet; keyboard: boolean } = $props();
+	let { children, keyboard = true }: { children: Snippet; keyboard?: boolean } = $props();
 
 	onMount(() => {
 		const reveal = new Reveal({});
