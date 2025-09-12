@@ -948,21 +948,21 @@
 			<div class="col-span-5 ml-5 text-2xl font-semibold">
 				from-"COLOR-NAME" via-"COLOR-NAME" to-"COLOR-NAME"
 			</div>
-			<div class="from-primary via-secondary to-accent h-24 bg-linear-to-r">
+			<div class="from-primary via-secondary to-accent bg-linear-to-r h-24">
 				from-primary via-scondary to-accent
 			</div>
-			<div class="from-success via-warning to-error h-24 bg-linear-to-r">
+			<div class="from-success via-warning to-error bg-linear-to-r h-24">
 				from-success via-warning to-error
 			</div>
 			<div
-				class="from-success via-warning to-error h-24 w-fit bg-linear-to-r bg-clip-text text-xl font-black text-transparent"
+				class="from-success via-warning to-error bg-linear-to-r h-24 w-fit bg-clip-text text-xl font-black text-transparent"
 			>
 				from-success via-warning to-error applied to text
 			</div>
-			<div class="from-primary via-inverse-primary to-primary-fixed-dim h-24 bg-linear-to-r">
+			<div class="from-primary via-inverse-primary to-primary-fixed-dim bg-linear-to-r h-24">
 				from-primary via-inverse-primary to-primary-fixed-dim
 			</div>
-			<div class="from-primary/50 via-secondary/50 to-accent/50 h-24 bg-linear-to-r">
+			<div class="from-primary/50 via-secondary/50 to-accent/50 bg-linear-to-r h-24">
 				from-primary/50 via-scondary/50 to-accent/50
 			</div>
 
@@ -1892,6 +1892,8 @@
 				<span class="icon-[tabler--share-2] size-12"></span>
 				<span class="icon-[tabler--ban] size-12"></span>
 				<span class="icon-[tabler--info-triangle] size-12"></span>
+				<span class="icon-[tabler--link-off] size-12"></span>
+				<span class="icon-[tabler--link] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
