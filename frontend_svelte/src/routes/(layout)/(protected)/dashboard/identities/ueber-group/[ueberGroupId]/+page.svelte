@@ -168,6 +168,9 @@
 				parent_id: ueberGroup.id
 			};
 			socketioGroup.unlinkEntities(hierarchy);
+			linkedIdentities.delete(
+				linkedIdentities.keys().find((identity) => identity.id === groupId) as Group
+			);
 		}
 	};
 
