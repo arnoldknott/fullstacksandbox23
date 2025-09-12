@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { IdentityType, AccessHandler } from '$lib/accessHandler';
 	import type { AnyGroupIdentity } from '$lib/types';
-	import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
+	// import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
 	import IdBadge from '../IdBadge.svelte';
 	// import IdentityActionButton from './IdentityActionButton.svelte';
 	type LocalAzureUser = {
@@ -32,7 +32,7 @@
 		<IdBadge id={identity.id} />
 		{identity.name}
 	</dt>
-	<dd class="text-base-content/80 flex-2 mt-1">
+	<dd class="text-base-content/80 mt-1 flex-2">
 		{identity.description}
 	</dd>
 {/snippet}

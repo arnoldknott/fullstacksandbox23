@@ -5,7 +5,7 @@
 	import type { PageData } from './$types';
 	import Heading from '$components/Heading.svelte';
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
-	import type { Group, Hierarchy, UeberGroup, User } from '$lib/types';
+	import type { Group, Hierarchy, UeberGroup } from '$lib/types';
 	import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
 	import Card from '$components/Card.svelte';
 	import IdentityListItem from '../../IdentityListItem.svelte';
@@ -73,6 +73,7 @@
 	let linkedGroups = $state<Group[]>(data.thisUeberGroup?.groups || []);
 	let allGroups = $state<Group[]>(data.allOtherGroups || []);
 	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
+	// const [sendIdentityCrossfade, receiveIdentityCrossfade] = crossfade({ duration: 400 });
 	const newGroup = $state<Group>({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		name: '',
@@ -547,7 +548,7 @@
 					{#each allOtherAzureUsers as user (user.id)}
 						<div class="px-4 py-6 text-base sm:flex sm:flex-row sm:gap-4 sm:px-0">
 							<dt class="text-base-content title-small flex-1">{user.displayName}</dt>
-							<dd class="text-base-content/80 flex-2 mt-1">{user.mail}</dd>
+							<dd class="text-base-content/80 mt-1 flex-2">{user.mail}</dd>
 							<!-- TBD: debug crossfade in connection with empty lists -->
 							<!-- <div in:receiveUserCrossfade={{ key: user }} out:sendUserCrossfade={{ key: user }}>
 						<IdentityListItem identity={user} link={linkUser} /> -->
