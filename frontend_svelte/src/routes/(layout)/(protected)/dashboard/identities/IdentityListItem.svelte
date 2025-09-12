@@ -1,14 +1,23 @@
 <script lang="ts">
+	import { IdentityType, AccessHandler } from '$lib/accessHandler';
 	import type { AnyGroupIdentity } from '$lib/types';
+	import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
 	import IdBadge from '../IdBadge.svelte';
 	// import IdentityActionButton from './IdentityActionButton.svelte';
+	type LocalAzureUser = {
+		id: string;
+		name?: string | null;
+		description?: string | null;
+	};
 	let {
 		identity,
+		type,
 		link,
 		unlink,
 		remove
 	}: {
-		identity: AnyGroupIdentity;
+		identity: AnyGroupIdentity | LocalAzureUser;
+		type?: IdentityType;
 		link?: (id: string) => void;
 		unlink?: (id: string) => void;
 		remove?: (id: string) => void;
@@ -17,10 +26,13 @@
 
 {#snippet listContent()}
 	<dt class="text-base-content title-small flex-1">
+		{#if type}
+			<span class="{AccessHandler.identityIcon(type)} shrink-0"></span>
+		{/if}
 		<IdBadge id={identity.id} />
 		{identity.name}
 	</dt>
-	<dd class="text-base-content/80 mt-1 flex-2">
+	<dd class="text-base-content/80 flex-2 mt-1">
 		{identity.description}
 	</dd>
 {/snippet}
