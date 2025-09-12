@@ -570,6 +570,15 @@
 	</div>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
+		<li>Develop Account linking module. Return a SvelteMap with [userId, foreignAccount]</li>
+		<li>
+			map foreign accounts into strucutre of fssb23 identities for displaying possibilities, for
+			eksample in ShareItems, lists, and so on.
+		</li>
+		<li>
+			Debug triggers for color picker, variant and contrast - the color triggers wrong (on second
+			select), variant works in Safari and contrast works in Chrome.
+		</li>
 		<li>Add user to ueber-group.</li>
 		<li>Turn into components to reuse with groups and subgroups.</li>
 	</ul>
