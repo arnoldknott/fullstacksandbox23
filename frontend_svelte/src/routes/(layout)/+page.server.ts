@@ -26,8 +26,8 @@ export const actions: Actions = {
 					contrast: contrast
 				}
 			};
-			// console.log('=== layout - layout.server - putProfile - payload ===');
-			// console.log(payload);
+			// console.log('=== layout - layout.server - putProfile - payload - user_profile ===');
+			// console.log(payload.user_profile);
 			const response = await backendAPI.put(sessionId, '/user/me', JSON.stringify(payload));
 			if (response.status !== 200) {
 				return fail(response.status, { error: response.statusText });

@@ -13,7 +13,7 @@
 	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
-
+	import { Variant } from '$lib/theming';
 	import { enhance } from '$app/forms';
 	import ShareItem from './ShareItem.svelte';
 	// import type { PageProps } from '../$types';
@@ -211,7 +211,7 @@
 
 	// for theme picker:
 	let sourceColor = $state('#769CDF');
-	let variant = $state('TONAL_SPOT');
+	let variant = $state(Variant.TONAL_SPOT);
 	const contrastMin = -1.0;
 	const contrastMax = 1.0;
 	const contrastStep = 0.2;
@@ -447,7 +447,7 @@
 								aria-label="Dropdown"
 							></span>
 							<ul
-								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
+								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden"
 								role="menu"
 								aria-orientation="vertical"
 								aria-labelledby="dropdown-menu-icon"
@@ -514,7 +514,7 @@
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="action-share"
@@ -612,7 +612,7 @@
 					<span class="icon-[tabler--dots-vertical] text-secondary size-6"></span>
 				</div>
 				<ul
-					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
+					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden"
 					role="menu"
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon"
@@ -642,7 +642,7 @@
 							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
 						</button>
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share"
@@ -860,15 +860,15 @@
 					id="themeVariant"
 					bind:value={variant}
 				>
-					<option value="TONAL_SPOT">Tonal Spot</option>
-					<option value="MONOCHROME">Monochrome</option>
-					<option value="NEUTRAL">Neutral</option>
-					<option value="VIBRANT">Vibrant</option>
-					<option value="EXPRESSIVE">Expressive</option>
-					<option value="FIDELITY">Fidelity</option>
-					<option value="CONTENT">Content</option>
-					<option value="RAINBOW">Rainbow</option>
-					<option value="FRUIT_SALAD">Fruit Salad</option>
+					<option value={Variant.TONAL_SPOT}>Tonal Spot</option>
+					<!-- <option value={Variant.MONOCHROME}>Monochrome</option> -->
+					<option value={Variant.NEUTRAL}>Neutral</option>
+					<option value={Variant.VIBRANT}>Vibrant</option>
+					<!-- <option value={Variant.EXPRESSIVE}>Expressive</option> -->
+					<option value={Variant.FIDELITY}>Fidelity</option>
+					<option value={Variant.CONTENT}>Content</option>
+					<option value={Variant.RAINBOW}>Rainbow</option>
+					<!-- <option value={Variant.FRUIT_SALAD}>Fruit Salad</option> -->
 				</select>
 			</div>
 			<div class="w-48">
