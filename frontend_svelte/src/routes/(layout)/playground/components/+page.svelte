@@ -447,7 +447,7 @@
 								aria-label="Dropdown"
 							></span>
 							<ul
-								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
+								class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden"
 								role="menu"
 								aria-orientation="vertical"
 								aria-labelledby="dropdown-menu-icon"
@@ -514,7 +514,7 @@
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="action-share"
@@ -612,7 +612,7 @@
 					<span class="icon-[tabler--dots-vertical] text-secondary size-6"></span>
 				</div>
 				<ul
-					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden shadow-xs"
+					class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden"
 					role="menu"
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon"
@@ -642,7 +642,7 @@
 							<span class="icon-[tabler--chevron-right] size-4 rtl:rotate-180"></span>
 						</button>
 						<ul
-							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 shadow-xs hidden min-w-[15rem]"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="share"
@@ -849,6 +849,7 @@
 					type="color"
 					id="colorPicker"
 					name="color-picker"
+					onblur={() => console.log('=== color selector blurred ===')}
 					bind:value={sourceColor}
 				/>
 			</div>
@@ -858,6 +859,7 @@
 					class="select select-floating max-w-sm"
 					aria-label="Select variant"
 					id="themeVariant"
+					onblur={() => console.log('=== variant selector blurred ===')}
 					bind:value={variant}
 				>
 					<option value={Variant.TONAL_SPOT}>Tonal Spot</option>
@@ -886,6 +888,7 @@
 					class="range w-full"
 					aria-label="contrast"
 					id="contrast"
+					onblur={() => console.log('=== contrast slider blurred ===')}
 					bind:value={contrast}
 				/>
 				<div class="flex w-full justify-between px-2 text-xs">
