@@ -7,8 +7,6 @@ import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
 export const load: PageServerLoad = async ({ parent, locals, params }) => {
 	const sessionId = locals.sessionData.sessionId;
 	const parentData = await parent();
-	console.log('=== Parent Data ===');
-	console.log(parentData);
 
 	const responsePayload = {
 		thisUeberGroup: {} as UeberGroup,
@@ -16,11 +14,11 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 		allUsers: [] as AzureUser[]
 	};
 
-	const responseUeberGroups = await backendAPI.get(sessionId, `/uebergroup/${params.ueberGroupId}`);
-	if (responseUeberGroups.status === 200) {
-		responsePayload.thisUeberGroup = await responseUeberGroups.json();
+	const responseUeberGroup = await backendAPI.get(sessionId, `/uebergroup/${params.ueberGroupId}`);
+	if (responseUeberGroup.status === 200) {
+		responsePayload.thisUeberGroup = await responseUeberGroup.json();
 	} else {
-		console.error('Error fetching Ueber Group:', responseUeberGroups.status);
+		console.error('Error fetching Ueber Group:', responseUeberGroup.status);
 	}
 
 	const responseAllGroups = await backendAPI.get(sessionId, `/group/`);
@@ -46,8 +44,6 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 					`/users/${user.azure_user_id}`
 				);
 				const azureUser: AzureUser = await responseAzureUsers.json();
-				console.log('=== Azure User ===');
-				console.log(azureUser);
 				azureUsers.push(azureUser);
 			}
 			responsePayload.allUsers = azureUsers;
