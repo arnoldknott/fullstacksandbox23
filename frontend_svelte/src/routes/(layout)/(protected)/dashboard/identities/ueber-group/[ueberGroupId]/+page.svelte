@@ -588,4 +588,6 @@
 	For resource hierarchies (protected resources) also add the order functionality by drag and drop.
 </p>
 
-<JsonData data={page} />
+{#if debug}
+	<JsonData data={page} />
+{/if}
