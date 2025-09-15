@@ -137,7 +137,7 @@
 		if (page.data.session?.loggedIn) {
 			profileAccountForm?.requestSubmit();
 			console.log('=== layout - saveProfileAccount - themeConfiguration ===');
-			console.log(themeConfiguration);
+			console.log($state.snapshot(themeConfiguration));
 		}
 	};
 

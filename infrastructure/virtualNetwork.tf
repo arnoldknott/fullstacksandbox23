@@ -132,7 +132,7 @@ resource "azurerm_public_ip" "adminVirtualMachineIPadress" {
   location            = azurerm_resource_group.resourceGroup.location
   allocation_method   = "Static"
 
-  sku = "Basic"
+  sku = "Standard"
 
   tags = {
     Costcenter  = var.costcenter

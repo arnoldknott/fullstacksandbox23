@@ -1,26 +1,25 @@
 import type { PageServerLoad } from './$types';
 import { backendAPI } from '$lib/server/apis/backendApi';
-import { microsoftGraph } from '$lib/server/apis/msgraph';
-import type { Group, UeberGroup } from '$lib/types';
+import { microsoftAccountLinking } from '$lib/server/apis/integrations';
+import type { Group, UeberGroup, User } from '$lib/types';
 import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
 
 export const load: PageServerLoad = async ({ parent, locals, params }) => {
 	const sessionId = locals.sessionData.sessionId;
 	const parentData = await parent();
-	console.log('=== Parent Data ===');
-	console.log(parentData);
 
 	const responsePayload = {
 		thisUeberGroup: {} as UeberGroup,
+		linkedAzureUsers: [] as AzureUser[],
 		allOtherGroups: [] as Group[],
-		allUsers: [] as AzureUser[]
+		allOtherAzureUsers: [] as AzureUser[]
 	};
 
-	const responseUeberGroups = await backendAPI.get(sessionId, `/uebergroup/${params.ueberGroupId}`);
-	if (responseUeberGroups.status === 200) {
-		responsePayload.thisUeberGroup = await responseUeberGroups.json();
+	const responseUeberGroup = await backendAPI.get(sessionId, `/uebergroup/${params.ueberGroupId}`);
+	if (responseUeberGroup.status === 200) {
+		responsePayload.thisUeberGroup = await responseUeberGroup.json();
 	} else {
-		console.error('Error fetching Ueber Group:', responseUeberGroups.status);
+		console.error('Error fetching Ueber Group:', responseUeberGroup.status);
 	}
 
 	const responseAllGroups = await backendAPI.get(sessionId, `/group/`);
@@ -38,19 +37,21 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 	if (parentData.session?.currentUser?.azure_token_roles?.includes('Admin')) {
 		const responseUsers = await backendAPI.get(sessionId, `/user/`);
 		const users = await responseUsers.json();
+		const usersInUeberGroupIds =
+			responsePayload.thisUeberGroup.users?.map((user: User) => user.id) ?? [];
+		const linkedUsers = users.filter((user: User) => usersInUeberGroupIds.includes(user.id));
+		const allOtherUsers = users.filter((user: User) => !usersInUeberGroupIds.includes(user.id));
 		if (responseUsers.status === 200) {
-			const azureUsers: AzureUser[] = [];
-			for (const user of users) {
-				const responseAzureUsers = await microsoftGraph.get(
-					sessionId,
-					`/users/${user.azure_user_id}`
-				);
-				const azureUser: AzureUser = await responseAzureUsers.json();
-				console.log('=== Azure User ===');
-				console.log(azureUser);
-				azureUsers.push(azureUser);
-			}
-			responsePayload.allUsers = azureUsers;
+			const linkedAzureUsers = await microsoftAccountLinking.getMicrosoftUser(
+				sessionId,
+				linkedUsers
+			);
+			responsePayload.linkedAzureUsers = linkedAzureUsers;
+			const allOtherAzureUsers = await microsoftAccountLinking.getMicrosoftUser(
+				sessionId,
+				allOtherUsers
+			);
+			responsePayload.allOtherAzureUsers = allOtherAzureUsers;
 		} else {
 			console.error('Error fetching Users:', responseUsers.status);
 		}

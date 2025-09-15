@@ -12,6 +12,7 @@
 	import IdBadge from '../../../IdBadge.svelte';
 	import { crossfade } from 'svelte/transition';
 	import { SvelteMap } from 'svelte/reactivity';
+	import { IdentityType } from '$lib/accessHandler';
 
 	// Page related stuff:
 	let { data }: { data: PageData } = $props();
@@ -72,6 +73,7 @@
 	let linkedGroups = $state<Group[]>(data.thisUeberGroup?.groups || []);
 	let allGroups = $state<Group[]>(data.allOtherGroups || []);
 	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
+	// const [sendIdentityCrossfade, receiveIdentityCrossfade] = crossfade({ duration: 400 });
 	const newGroup = $state<Group>({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		name: '',
@@ -167,6 +169,9 @@
 				parent_id: ueberGroup.id
 			};
 			socketioGroup.unlinkEntities(hierarchy);
+			linkedIdentities.delete(
+				linkedIdentities.keys().find((identity) => identity.id === groupId) as Group
+			);
 		}
 	};
 
@@ -175,6 +180,45 @@
 	};
 
 	// User related stuff:
+	let allOtherAzureUsers = $state<AzureUser[]>(data.allOtherAzureUsers || []);
+	let linkedAzureUsers = $state<AzureUser[]>(data.linkedAzureUsers || []);
+	// TBD: rethink this typing - also loosing the local id here and only leaving the azure_user_id as id.
+	// Maybe this could be another Map with user.id (from this app) as key and AzureUser as value?
+	type LocalAzureUser = {
+		id: string;
+		name?: string | null;
+		description?: string | null;
+	};
+	let linkedIdentities = $derived<SvelteMap<Group | LocalAzureUser, IdentityType>>(new SvelteMap());
+	$effect(() => {
+		linkedGroups.forEach((group) => {
+			linkedIdentities.set(group, IdentityType.GROUP);
+		});
+		linkedAzureUsers.forEach((user) => {
+			if (user.id) {
+				linkedIdentities.set(
+					{
+						id: user.id,
+						name: user.displayName,
+						description: user.mail
+					},
+					IdentityType.USER
+				);
+			}
+		});
+	});
+
+	// let linkedIdentities = $derived<
+	// 	((Group & { identityType: IdentityType }) | (AzureUser & { identityType: IdentityType }))[]
+	// >([
+	// 	...linkedGroups.map((group) => ({ ...group, identityType: IdentityType.GROUP })),
+	// 	...linkedUsers.map((user) => ({
+	// 		id: user.id || 'unknown',
+	// 		name: user.displayName,
+	// 		description: user.mail,
+	// 		identityType: IdentityType.USER
+	// 	}))
+	// ]);
 	// const userConnection: SocketioConnection = {
 	// 	namespace: '/user',
 	// 	cookie_session_id: page.data.session.sessionId
@@ -184,7 +228,6 @@
 	// // via query-parameters on the socket connection
 	// /// as there is no callback on connect
 	// const socketioUser = new SocketIO(userConnection);
-	let allUsers = $state<AzureUser[]>(data.allUsers || []);
 </script>
 
 <div class="flex flex-row gap-2 pb-4">
@@ -202,7 +245,7 @@
 
 {#snippet linkedGroupsHeader()}
 	<h5 class="title-small md:title lg:title-large text-base-content card-title">
-		Groups in {ueberGroup?.name || 'this UeberGroup'}
+		Groups and Users in {ueberGroup?.name || 'this UeberGroup'}
 	</h5>
 {/snippet}
 
@@ -291,11 +334,14 @@
 
 	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : 'py-4'}>
 		<Card id="linked-groups" header={linkedGroupsHeader} extraClasses="shadow-outline shadow-md">
-			{#if linkedGroups !== undefined && linkedGroups.length > 0}
+			{#if linkedIdentities?.size > 0}
 				<dl class="divider-outline divide-y">
-					{#each linkedGroups as group (group.id)}
-						<div in:receiveGroupCrossfade={{ key: group }} out:sendGroupCrossfade={{ key: group }}>
-							<IdentityListItem identity={group} unlink={unlinkGroup} remove={deleteGroup} />
+					{#each [...linkedIdentities] as [identity, type] (identity.id)}
+						<div
+							in:receiveGroupCrossfade={{ key: identity }}
+							out:sendGroupCrossfade={{ key: identity }}
+						>
+							<IdentityListItem {identity} {type} unlink={unlinkGroup} remove={deleteGroup} />
 						</div>
 					{/each}
 				</dl>
@@ -497,9 +543,9 @@
 
 	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : 'py-4'}>
 		<Card id="users" header={existingUserHeader}>
-			{#if allUsers !== undefined && allUsers.length > 0}
+			{#if allOtherAzureUsers?.length > 0}
 				<dl class="divider-outline divide-y">
-					{#each allUsers as user (user.id)}
+					{#each allOtherAzureUsers as user (user.id)}
 						<div class="px-4 py-6 text-base sm:flex sm:flex-row sm:gap-4 sm:px-0">
 							<dt class="text-base-content title-small flex-1">{user.displayName}</dt>
 							<dd class="text-base-content/80 mt-1 flex-2">{user.mail}</dd>
@@ -519,21 +565,38 @@
 			{/if}
 		</Card>
 		{#if debug}
-			<JsonData data={allUsers} />
+			<JsonData data={allOtherAzureUsers} />
 		{/if}
 	</div>
 
 	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
+		<li>Develop Account linking module. Return a SvelteMap with [userId, foreignAccount]</li>
+		<li>
+			map foreign accounts into strucutre of fssb23 identities for displaying possibilities, for
+			eksample in ShareItems, lists, and so on.
+		</li>
+		<li>
+			Debug triggers for color picker, variant and contrast - the color triggers wrong (on second
+			select), variant works in Safari and contrast works in Chrome.
+		</li>
 		<li>Add user to ueber-group.</li>
 		<li>Turn into components to reuse with groups and subgroups.</li>
+	</ul>
+	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
+		<li>
+			Maybe add a read hierarchy endpoint anyways, to get the information if a child inherits from
+			parent? This is not visualized in the current mapped children here.
+		</li>
 	</ul>
 {:else}
 	<Heading>Error</Heading>
 	<p>No Ueber Group found.</p>
 {/if}
 
-<p class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
+<p class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
 	For resource hierarchies (protected resources) also add the order functionality by drag and drop.
 </p>
 
-<!-- <JsonData data={pageWithoutData} /> -->
+{#if debug}
+	<JsonData data={page} />
+{/if}

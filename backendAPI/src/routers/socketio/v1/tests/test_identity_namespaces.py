@@ -1,8 +1,9 @@
 import uuid
 
 import pytest
-from models.identity import UeberGroup, Group
+
 from core.types import IdentityType
+from models.identity import Group, UeberGroup
 from tests.utils import (
     many_test_azure_users,
     many_test_groups,

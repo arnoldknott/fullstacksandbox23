@@ -13,7 +13,7 @@
 	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
-
+	import { Variant } from '$lib/theming';
 	import { enhance } from '$app/forms';
 	import ShareItem from './ShareItem.svelte';
 	// import type { PageProps } from '../$types';
@@ -211,7 +211,7 @@
 
 	// for theme picker:
 	let sourceColor = $state('#769CDF');
-	let variant = $state('TONAL_SPOT');
+	let variant = $state(Variant.TONAL_SPOT);
 	const contrastMin = -1.0;
 	const contrastMax = 1.0;
 	const contrastStep = 0.2;
@@ -560,6 +560,34 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Buttons</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Buttons 🚧</Heading>
+		<div class="flex flex-row gap-4">
+			<button class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm"
+				><span class="icon-[tabler--chevron-right]"></span>Big button</button
+			>
+			<button
+				class="btn btn-success-container btn-gradient shadow-outline btn-circle shadow-sm"
+				aria-label="Open in Microsoft Teams"
+			>
+				<span class="icon-[tabler--send-2]"></span>
+			</button>
+			<a href="./" aria-label="Top">
+				<button
+					class="btn btn-info-container btn-gradient shadow-outline btn-circle shadow-sm"
+					aria-label="Top"
+				>
+					<span class="icon-[tabler--link]"></span>
+				</button>
+			</a>
+		</div>
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
 		<Heading>Dropdown menus</Heading>
 		{@render underConstruction()}
 	</div>
@@ -821,6 +849,7 @@
 					type="color"
 					id="colorPicker"
 					name="color-picker"
+					onblur={() => console.log('=== color selector blurred ===')}
 					bind:value={sourceColor}
 				/>
 			</div>
@@ -830,17 +859,18 @@
 					class="select select-floating max-w-sm"
 					aria-label="Select variant"
 					id="themeVariant"
+					onblur={() => console.log('=== variant selector blurred ===')}
 					bind:value={variant}
 				>
-					<option value="TONAL_SPOT">Tonal Spot</option>
-					<option value="MONOCHROME">Monochrome</option>
-					<option value="NEUTRAL">Neutral</option>
-					<option value="VIBRANT">Vibrant</option>
-					<option value="EXPRESSIVE">Expressive</option>
-					<option value="FIDELITY">Fidelity</option>
-					<option value="CONTENT">Content</option>
-					<option value="RAINBOW">Rainbow</option>
-					<option value="FRUIT_SALAD">Fruit Salad</option>
+					<option value={Variant.TONAL_SPOT}>Tonal Spot</option>
+					<!-- <option value={Variant.MONOCHROME}>Monochrome</option> -->
+					<option value={Variant.NEUTRAL}>Neutral</option>
+					<option value={Variant.VIBRANT}>Vibrant</option>
+					<!-- <option value={Variant.EXPRESSIVE}>Expressive</option> -->
+					<option value={Variant.FIDELITY}>Fidelity</option>
+					<option value={Variant.CONTENT}>Content</option>
+					<option value={Variant.RAINBOW}>Rainbow</option>
+					<!-- <option value={Variant.FRUIT_SALAD}>Fruit Salad</option> -->
 				</select>
 			</div>
 			<div class="w-48">
@@ -858,6 +888,7 @@
 					class="range w-full"
 					aria-label="contrast"
 					id="contrast"
+					onblur={() => console.log('=== contrast slider blurred ===')}
 					bind:value={contrast}
 				/>
 				<div class="flex w-full justify-between px-2 text-xs">

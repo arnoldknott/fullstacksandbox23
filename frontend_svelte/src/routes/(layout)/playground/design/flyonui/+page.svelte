@@ -1892,6 +1892,8 @@
 				<span class="icon-[tabler--share-2] size-12"></span>
 				<span class="icon-[tabler--ban] size-12"></span>
 				<span class="icon-[tabler--info-triangle] size-12"></span>
+				<span class="icon-[tabler--link-off] size-12"></span>
+				<span class="icon-[tabler--link] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
