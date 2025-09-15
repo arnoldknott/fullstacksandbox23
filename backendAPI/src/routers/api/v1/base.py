@@ -2,9 +2,9 @@ import logging
 
 from fastapi import HTTPException
 
-from crud import register_crud
 from core.security import check_token_against_guards  # CurrentAccessToken
 from core.types import GuardTypes
+from crud import register_crud
 
 logger = logging.getLogger(__name__)
 

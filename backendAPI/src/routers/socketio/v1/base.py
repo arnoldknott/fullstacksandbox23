@@ -7,14 +7,13 @@ import socketio
 from pydantic import BaseModel
 from sqlmodel import SQLModel
 
-from crud import register_crud
-from routers.socketio.v1 import registry_namespaces, register_namespace
 from core.config import config
 from core.security import (
     check_token_against_guards,
     get_token_payload_from_cache,
 )
 from core.types import CurrentUserData, EventGuard, GuardTypes
+from crud import register_crud
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 from models.access import (
     AccessPolicyCreate,
@@ -22,6 +21,7 @@ from models.access import (
     AccessPolicyUpdate,
     BaseHierarchyCreate,
 )
+from routers.socketio.v1 import register_namespace, registry_namespaces
 
 logger = logging.getLogger(__name__)
 
