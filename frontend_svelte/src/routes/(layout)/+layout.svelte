@@ -295,7 +295,7 @@
 									type="color"
 									id="colorPicker"
 									name="color-picker"
-									onblur={() => saveProfileAccount()}
+									onchange={() => saveProfileAccount()}
 									bind:value={themeConfiguration.sourceColor}
 								/>
 							</div>
@@ -308,7 +308,7 @@
 									aria-label="Select variant"
 									id="themeVariant"
 									name="variant-picker"
-									onblur={() => saveProfileAccount()}
+									onchange={() => saveProfileAccount()}
 									bind:value={themeConfiguration.variant}
 								>
 									<option value={Variant.TONAL_SPOT}>Tonal Spot</option>
@@ -339,7 +339,7 @@
 									aria-label="contrast"
 									name="contrast"
 									id="contrast"
-									onblur={() => saveProfileAccount()}
+									onchange={() => saveProfileAccount()}
 									bind:value={themeConfiguration.contrast}
 								/>
 								<!-- <div class="flex w-full justify-between px-2 text-xs">
