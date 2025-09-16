@@ -189,7 +189,7 @@
 
 <div bind:this={mainContent} class="mx-5 mt-5 h-full" use:applyTheming>
 	<nav
-		class="navbar rounded-box bg-base-100 sticky start-0 top-0 z-1 justify-between shadow-sm md:flex md:items-stretch"
+		class="navbar rounded-box bg-base-100 z-1 sticky start-0 top-0 justify-between shadow-sm md:flex md:items-stretch"
 	>
 		<div class="dropdown navbar-start inline-flex md:hidden rtl:[--placement:bottom-end]">
 			<button
@@ -246,6 +246,40 @@
 			<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 		</div>
 		<div class="navbar-end flex items-center">
+			<!-- Debugging select - auto closes the dropdown - START-->
+			<!-- <div class="dropdown relative inline-flex">
+				<button
+					id="dropdown-default"
+					type="button"
+					class="dropdown-toggle btn btn-primary"
+					aria-haspopup="menu"
+					aria-expanded="false"
+					aria-label="Dropdown"
+				>
+					Dropdown
+					<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"></span>
+				</button>
+				<ul
+					class="dropdown-menu dropdown-open:opacity-100 hidden min-w-60"
+					role="menu"
+					aria-orientation="vertical"
+					aria-labelledby="dropdown-default"
+				>
+					<li>Dropdown item 1</li>
+					<li>Dropdown item 2</li>
+					<li>
+						<select class="select max-w-sm appearance-none" aria-label="select">
+							<option disabled selected>Pick your favorite Movie</option>
+							<option>The Godfather</option>
+							<option>The Shawshank Redemption</option>
+							<option>Pulp Fiction</option>
+							<option>The Dark Knight</option>
+							<option>Schindler's List</option>
+						</select>
+					</li>
+				</ul>
+			</div> -->
+			<!-- Debugging select - auto closes the dropdown - END -->
 			<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
 				<span
 					id="dropdown-menu-icon-user"
@@ -259,7 +293,6 @@
 						<img class="h-10 w-10 rounded-full" src="/api/v1/user/me/picture" alt="you" />
 					{/if}
 				</span>
-
 				<ul
 					class="dropdown-menu bg-base-200 text-neutral shadow-outline dropdown-open:opacity-100 hidden shadow-md"
 					role="menu"
@@ -286,29 +319,29 @@
 						</li>
 						<li>
 							<div class="w-48">
-								<label class="label label-text flex" for="colorPicker">
+								<label class="label label-text flex" for="color-picker">
 									<span class="grow">Source color:</span>
 									<code>{themeConfiguration.sourceColor}</code>
 								</label>
 								<input
 									class="w-full"
 									type="color"
-									id="colorPicker"
+									id="color-picker"
 									name="color-picker"
-									onblur={() => saveProfileAccount()}
+									onchange={() => saveProfileAccount()}
 									bind:value={themeConfiguration.sourceColor}
 								/>
 							</div>
 						</li>
 						<li>
 							<div class="relative w-48">
-								<label class="label label-text" for="themeVariant">Variant</label>
+								<label class="label label-text" for="theme-variant">Variant</label>
 								<select
 									class="select select-floating max-w-sm"
 									aria-label="Select variant"
-									id="themeVariant"
+									id="theme-variant"
 									name="variant-picker"
-									onblur={() => saveProfileAccount()}
+									onchange={() => saveProfileAccount()}
 									bind:value={themeConfiguration.variant}
 								>
 									<option value={Variant.TONAL_SPOT}>Tonal Spot</option>
@@ -339,7 +372,7 @@
 									aria-label="contrast"
 									name="contrast"
 									id="contrast"
-									onblur={() => saveProfileAccount()}
+									onchange={() => saveProfileAccount()}
 									bind:value={themeConfiguration.contrast}
 								/>
 								<!-- <div class="flex w-full justify-between px-2 text-xs">
