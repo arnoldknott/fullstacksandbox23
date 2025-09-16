@@ -247,7 +247,7 @@
 		</div>
 		<div class="navbar-end flex items-center">
 			<!-- Debugging select - auto closes the dropdown - START-->
-			<div class="dropdown relative inline-flex">
+			<!-- <div class="dropdown relative inline-flex">
 				<button
 					id="dropdown-default"
 					type="button"
@@ -278,7 +278,7 @@
 						</select>
 					</li>
 				</ul>
-			</div>
+			</div> -->
 			<!-- Debugging select - auto closes the dropdown - END -->
 			<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
 				<span
