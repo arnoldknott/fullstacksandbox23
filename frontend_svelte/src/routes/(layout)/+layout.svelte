@@ -259,7 +259,6 @@
 						<img class="h-10 w-10 rounded-full" src="/api/v1/user/me/picture" alt="you" />
 					{/if}
 				</span>
-
 				<ul
 					class="dropdown-menu bg-base-200 text-neutral shadow-outline dropdown-open:opacity-100 hidden shadow-md"
 					role="menu"
@@ -286,14 +285,14 @@
 						</li>
 						<li>
 							<div class="w-48">
-								<label class="label label-text flex" for="colorPicker">
+								<label class="label label-text flex" for="color-picker">
 									<span class="grow">Source color:</span>
 									<code>{themeConfiguration.sourceColor}</code>
 								</label>
 								<input
 									class="w-full"
 									type="color"
-									id="colorPicker"
+									id="color-picker"
 									name="color-picker"
 									onchange={() => saveProfileAccount()}
 									bind:value={themeConfiguration.sourceColor}
@@ -302,11 +301,11 @@
 						</li>
 						<li>
 							<div class="relative w-48">
-								<label class="label label-text" for="themeVariant">Variant</label>
+								<label class="label label-text" for="theme-variant">Variant</label>
 								<select
 									class="select select-floating max-w-sm"
 									aria-label="Select variant"
-									id="themeVariant"
+									id="theme-variant"
 									name="variant-picker"
 									onchange={() => saveProfileAccount()}
 									bind:value={themeConfiguration.variant}
