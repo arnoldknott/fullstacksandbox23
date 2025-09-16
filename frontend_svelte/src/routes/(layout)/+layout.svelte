@@ -246,6 +246,7 @@
 			<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 		</div>
 		<div class="navbar-end flex items-center">
+			<!-- Debugging select - auto closes the dropdown - START-->
 			<div class="dropdown relative inline-flex">
 				<button
 					id="dropdown-default"
@@ -278,6 +279,7 @@
 					</li>
 				</ul>
 			</div>
+			<!-- Debugging select - auto closes the dropdown - END -->
 			<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
 				<span
 					id="dropdown-menu-icon-user"
