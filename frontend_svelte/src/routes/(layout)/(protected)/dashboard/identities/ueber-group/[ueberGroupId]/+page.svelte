@@ -548,7 +548,7 @@
 					{#each allOtherAzureUsers as user (user.id)}
 						<div class="px-4 py-6 text-base sm:flex sm:flex-row sm:gap-4 sm:px-0">
 							<dt class="text-base-content title-small flex-1">{user.displayName}</dt>
-							<dd class="text-base-content/80 mt-1 flex-2">{user.mail}</dd>
+							<dd class="text-base-content/80 flex-2 mt-1">{user.mail}</dd>
 							<!-- TBD: debug crossfade in connection with empty lists -->
 							<!-- <div in:receiveUserCrossfade={{ key: user }} out:sendUserCrossfade={{ key: user }}>
 						<IdentityListItem identity={user} link={linkUser} /> -->
@@ -575,10 +575,6 @@
 			map foreign accounts into strucutre of fssb23 identities for displaying possibilities, for
 			eksample in ShareItems, lists, and so on.
 		</li>
-		<li>
-			Debug triggers for color picker, variant and contrast - the color triggers wrong (on second
-			select), variant works in Safari and contrast works in Chrome.
-		</li>
 		<li>Add user to ueber-group.</li>
 		<li>Turn into components to reuse with groups and subgroups.</li>
 	</ul>
@@ -593,9 +589,16 @@
 	<p>No Ueber Group found.</p>
 {/if}
 
-<p class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
-	For resource hierarchies (protected resources) also add the order functionality by drag and drop.
-</p>
+<ul class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
+	<li>
+		For resource hierarchies (protected resources) also add the order functionality by drag and
+		drop.
+	</li>
+	<li>
+		Update FlyonuUI to version 2.5.0 (when dropdown - select issue is resolved) and
+		eslint-plugin-svelte, when types are fixed.
+	</li>
+</ul>
 
 {#if debug}
 	<JsonData data={page} />
