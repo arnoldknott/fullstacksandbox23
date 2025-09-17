@@ -548,7 +548,7 @@
 					{#each allOtherAzureUsers as user (user.id)}
 						<div class="px-4 py-6 text-base sm:flex sm:flex-row sm:gap-4 sm:px-0">
 							<dt class="text-base-content title-small flex-1">{user.displayName}</dt>
-							<dd class="text-base-content/80 mt-1 flex-2">{user.mail}</dd>
+							<dd class="text-base-content/80 flex-2 mt-1">{user.mail}</dd>
 							<!-- TBD: debug crossfade in connection with empty lists -->
 							<!-- <div in:receiveUserCrossfade={{ key: user }} out:sendUserCrossfade={{ key: user }}>
 						<IdentityListItem identity={user} link={linkUser} /> -->
