@@ -246,40 +246,6 @@
 			<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 		</div>
 		<div class="navbar-end flex items-center">
-			<!-- Debugging select - auto closes the dropdown - START-->
-			<div class="dropdown relative inline-flex [--auto-close:inside]">
-				<button
-					id="dropdown-default"
-					type="button"
-					class="dropdown-toggle btn btn-primary"
-					aria-haspopup="menu"
-					aria-expanded="false"
-					aria-label="Dropdown"
-				>
-					Dropdown
-					<span class="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"></span>
-				</button>
-				<ul
-					class="dropdown-menu dropdown-open:opacity-100 hidden min-w-60"
-					role="menu"
-					aria-orientation="vertical"
-					aria-labelledby="dropdown-default"
-				>
-					<li>Dropdown item 1</li>
-					<li>Dropdown item 2</li>
-					<li>
-						<select class="select max-w-sm appearance-none" aria-label="select">
-							<option disabled selected>Pick your favorite Movie</option>
-							<option>The Godfather</option>
-							<option>The Shawshank Redemption</option>
-							<option>Pulp Fiction</option>
-							<option>The Dark Knight</option>
-							<option>Schindler's List</option>
-						</select>
-					</li>
-				</ul>
-			</div>
-			<!-- Debugging select - auto closes the dropdown - END -->
 			<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
 				<span
 					id="dropdown-menu-icon-user"

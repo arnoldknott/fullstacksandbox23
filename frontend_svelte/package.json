@@ -67,6 +67,6 @@
 		"uuid": "^11.1.0"
 	},
 	"optionalDependencies": {
-		"@rollup/rollup-darwin-arm64": "^4.48.0"
+		"@rollup/rollup-darwin-arm64": "^4.50.2"
 	}
 }
