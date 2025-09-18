@@ -51,13 +51,20 @@
 
 	<p class="body-large w-1/6">
 		<img
-			class="rounded-full"
+			class="mask rounded-full"
 			src={resolve('/apiproxies/msgraph') + '?endpoint=/me/photo/$value'}
 			alt="you"
 		/>
 		This picture comes from the generic API endpoint in Svelte which is forwards the fetch to the Microsoft
 		Graph API
 	</p>
+	<div
+		class="mask-radial-from-1% mask-radial-t-0% flex w-1/6 bg-[url(/apiproxies/msgraph?endpoint=/me/photo/$value)] bg-cover"
+	>
+		<p class="body-large m-8 self-end">
+			Same generic endpoint, just applying mask to the image and use it as a background image.
+		</p>
+	</div>
 </div>
 
 <Heading>Microsoft User Profile on DTU Tenant</Heading>

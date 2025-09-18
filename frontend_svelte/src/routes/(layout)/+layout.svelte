@@ -258,7 +258,7 @@
 				>
 					{#if loggedIn}
 						<img
-							class="h-10 w-10 rounded-full"
+							class="not-hover:mask-radial-from-40% not-hover:mask-radial-t-0% h-10 w-10 rounded-full"
 							src={resolve('/apiproxies/msgraph') + '?endpoint=/me/photo/$value'}
 							alt="you"
 						/>
