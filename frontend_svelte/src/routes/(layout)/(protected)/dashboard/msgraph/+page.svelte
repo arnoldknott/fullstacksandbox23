@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import Heading from '$components/Heading.svelte';
 	import { resolve } from '$app/paths';
+	import { onDestroy } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
 	// TBD refactor using sessionData
@@ -16,6 +17,8 @@
 			userPictureURL = URL.createObjectURL(userPictureBlob);
 		}
 	});
+
+	onDestroy(() => userPictureURL && URL.revokeObjectURL(userPictureURL));
 
 	// let userPictureURL: string | undefined = $state(undefined);
 	// onMount(async () => {
@@ -62,7 +65,7 @@
 		Graph API
 	</p>
 	<div
-		class="mask-radial-t-0% mask-radial-from-1% flex w-1/6 bg-[url(/apiproxies/msgraph?endpoint=/me/photo/$value)] bg-cover"
+		class="mask-radial-t-0% flex w-1/6 bg-[url(/apiproxies/msgraph?endpoint=/me/photo/$value)] mask-radial-from-1% bg-cover"
 	>
 		<p class="body-large m-8 self-end">
 			Same generic endpoint, just applying mask to the image and use it as a background image.
