@@ -17,6 +17,7 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import type { LayoutData } from './$types';
+	import { resolve } from '$app/paths';
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
 	const theming = $state(new Theming());
@@ -189,7 +190,7 @@
 
 <div bind:this={mainContent} class="mx-5 mt-5 h-full" use:applyTheming>
 	<nav
-		class="navbar rounded-box bg-base-100 sticky start-0 top-0 z-1 justify-between shadow-sm md:flex md:items-stretch"
+		class="navbar rounded-box bg-base-100 z-1 sticky start-0 top-0 justify-between shadow-sm md:flex md:items-stretch"
 	>
 		<div class="dropdown navbar-start inline-flex md:hidden rtl:[--placement:bottom-end]">
 			<button
@@ -256,7 +257,11 @@
 					aria-label="User Menu"
 				>
 					{#if loggedIn}
-						<img class="h-10 w-10 rounded-full" src="/api/v1/user/me/picture" alt="you" />
+						<img
+							class="h-10 w-10 rounded-full"
+							src={resolve('/apiproxies/msgraph') + '?endpoint=/me/photo/$value'}
+							alt="you"
+						/>
 					{/if}
 				</span>
 				<ul

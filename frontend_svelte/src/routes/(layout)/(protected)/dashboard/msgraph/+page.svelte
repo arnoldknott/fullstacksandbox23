@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import Heading from '$components/Heading.svelte';
+	import { resolve } from '$app/paths';
 
 	let { data }: { data: PageData } = $props();
 	// TBD refactor using sessionData
@@ -9,8 +10,8 @@
 	const userProfile = data.userProfile;
 	const userPicture = data.userPicture;
 	//  This is the raw data fo the file - try demonstrating with a text file or md-file!
-	console.log('ms_graph_me - userPicture');
-	console.log(userPicture);
+	// console.log('ms_graph_me - userPicture');
+	// console.log(userPicture);
 
 	let userPictureURL: string | undefined = $state(undefined);
 	onMount(async () => {
@@ -32,12 +33,32 @@
 <Heading>First: Directly from SvelteAPI (works also without client side JavaScript):</Heading>
 <Heading>Second: Passed through server load function and uses client side JavaScript:</Heading>
 <!-- TBD: needs a check if user is logged in -> using store data?  -->
-<img class="rounded-full" src="/api/v1/user/me/picture" alt="you" />
+<div class="flex flex-row gap-4">
+	<p class="body-large w-1/6">
+		<img class="rounded-full" src="/api/v1/user/me/picture" alt="you" />
+		This picture comes from the specific API endpoint in Svelte which is server side fetching from the
+		Microsoft Graph API
+	</p>
 
-<!-- TBD: remove the following one: -->
-{#if userPictureURL}
-	<img class="h-100 w-100" src={userPictureURL} alt="you" />
-{/if}
+	<!-- TBD: remove the following one: -->
+	{#if userPictureURL}
+		<p class="body-large w-1/6">
+			<img class="rounded-2xl" src={userPictureURL} alt="you" />
+			Whereas this one is transferred from the server load function to the client as binary large object
+			and then displayed using client side JavaScript.
+		</p>
+	{/if}
+
+	<p class="body-large w-1/6">
+		<img
+			class="rounded-full"
+			src={resolve('/apiproxies/msgraph') + '?endpoint=/me/photo/$value'}
+			alt="you"
+		/>
+		This picture comes from the generic API endpoint in Svelte which is forwards the fetch to the Microsoft
+		Graph API
+	</p>
+</div>
 
 <Heading>Microsoft User Profile on DTU Tenant</Heading>
 <code><pre>{JSON.stringify(userProfile, null, ' ')}</pre></code>
