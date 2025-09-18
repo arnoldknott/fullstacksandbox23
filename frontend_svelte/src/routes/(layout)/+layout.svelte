@@ -190,7 +190,7 @@
 
 <div bind:this={mainContent} class="mx-5 mt-5 h-full" use:applyTheming>
 	<nav
-		class="navbar rounded-box bg-base-100 z-1 sticky start-0 top-0 justify-between shadow-sm md:flex md:items-stretch"
+		class="navbar rounded-box bg-base-100 sticky start-0 top-0 z-1 justify-between shadow-sm md:flex md:items-stretch"
 	>
 		<div class="dropdown navbar-start inline-flex md:hidden rtl:[--placement:bottom-end]">
 			<button
@@ -258,7 +258,7 @@
 				>
 					{#if loggedIn}
 						<img
-							class="not-hover:mask-radial-from-40% not-hover:mask-radial-t-0% h-10 w-10 rounded-full"
+							class="not-hover:mask-radial-t-0% h-10 w-10 rounded-full not-hover:mask-radial-from-40%"
 							src={resolve('/apiproxies/msgraph') + '?endpoint=/me/photo/$value'}
 							alt="you"
 						/>

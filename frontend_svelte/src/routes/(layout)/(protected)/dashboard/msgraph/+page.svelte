@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import Heading from '$components/Heading.svelte';
 	import { resolve } from '$app/paths';
@@ -8,26 +7,30 @@
 	// TBD refactor using sessionData
 	const account = data.account;
 	const userProfile = data.userProfile;
-	const userPicture = data.userPicture;
 	//  This is the raw data fo the file - try demonstrating with a text file or md-file!
-	// console.log('ms_graph_me - userPicture');
-	// console.log(userPicture);
+	let userPictureBlob = $derived(new Blob([data.userPicture], { type: 'image/jpeg' }));
 
-	let userPictureURL: string | undefined = $state(undefined);
-	onMount(async () => {
-		// this call does not have any authentication - remove it!
-		const response = await fetch('/api/v1/user/me/picture', { method: 'GET' });
-		if (!response.ok && response.status !== 200) {
-			console.log('layout - userPictureURL - response not ok');
-		} else {
-			const pictureBlob = await response.blob();
-			if (pictureBlob.size === 0) {
-				console.log('layout - userPictureURL - no User picture available');
-			} else {
-				userPictureURL = URL.createObjectURL(pictureBlob);
-			}
+	let userPictureURL = $state<string | undefined>(undefined);
+	$effect(() => {
+		if (!userPictureURL) {
+			userPictureURL = URL.createObjectURL(userPictureBlob);
 		}
 	});
+
+	// let userPictureURL: string | undefined = $state(undefined);
+	// onMount(async () => {
+	// 	const response = await fetch('/api/v1/user/me/picture', { method: 'GET' });
+	// 	if (!response.ok && response.status !== 200) {
+	// 		console.log('layout - userPictureURL - response not ok');
+	// 	} else {
+	// 		const pictureBlob = await response.blob();
+	// 		if (pictureBlob.size === 0) {
+	// 			console.log('layout - userPictureURL - no User picture available');
+	// 		} else {
+	// 			userPictureURL = URL.createObjectURL(pictureBlob);
+	// 		}
+	// 	}
+	// });
 </script>
 
 <Heading>First: Directly from SvelteAPI (works also without client side JavaScript):</Heading>
@@ -59,7 +62,7 @@
 		Graph API
 	</p>
 	<div
-		class="mask-radial-from-1% mask-radial-t-0% flex w-1/6 bg-[url(/apiproxies/msgraph?endpoint=/me/photo/$value)] bg-cover"
+		class="mask-radial-t-0% mask-radial-from-1% flex w-1/6 bg-[url(/apiproxies/msgraph?endpoint=/me/photo/$value)] bg-cover"
 	>
 		<p class="body-large m-8 self-end">
 			Same generic endpoint, just applying mask to the image and use it as a background image.
