@@ -36,9 +36,12 @@
 	// });
 </script>
 
-<Heading>First: Directly from SvelteAPI (works also without client side JavaScript):</Heading>
-<Heading>Second: Passed through server load function and uses client side JavaScript:</Heading>
-<!-- TBD: needs a check if user is logged in -> using store data?  -->
+<Heading>My user Data in Azure</Heading>
+
+<!-- <div
+	class="accordion accordion-bordered bg-primary-container text-primary-container-content shadow-outline-variant mb-5 shadow-lg"
+	data-accordion-always-open=""
+> -->
 <div class="flex flex-row gap-4">
 	<p class="body-large w-1/6">
 		<img class="rounded-full" src="/api/v1/user/me/picture" alt="you" />
@@ -72,9 +75,13 @@
 		</p>
 	</div>
 </div>
+<!-- </div> -->
 
 <Heading>Microsoft User Profile on DTU Tenant</Heading>
 <code><pre>{JSON.stringify(userProfile, null, ' ')}</pre></code>
 
 <Heading>Azure Account</Heading>
 <code><pre>{JSON.stringify(account, null, ' ')}</pre></code>
+
+<Heading>All Users</Heading>
+<code><pre>{JSON.stringify(data.allUsers, null, ' ')}</pre></code>
