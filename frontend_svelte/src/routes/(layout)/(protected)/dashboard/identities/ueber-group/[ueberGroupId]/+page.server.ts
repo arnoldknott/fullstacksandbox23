@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftAccountLinking } from '$lib/server/apis/integrations';
 import type { Group, UeberGroup, User } from '$lib/types';
-import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
+import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
 
 export const load: PageServerLoad = async ({ parent, locals, params }) => {
 	const sessionId = locals.sessionData.sessionId;
@@ -10,9 +10,9 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 
 	const responsePayload = {
 		thisUeberGroup: {} as UeberGroup,
-		linkedAzureUsers: [] as AzureUser[],
+		linkedMicrosoftUsers: [] as MicrosoftUser[],
 		allOtherGroups: [] as Group[],
-		allOtherAzureUsers: [] as AzureUser[]
+		allOtherMicrosoftUsers: [] as MicrosoftUser[]
 	};
 
 	const responseUeberGroup = await backendAPI.get(sessionId, `/uebergroup/${params.ueberGroupId}`);
@@ -42,16 +42,13 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 		const linkedUsers = users.filter((user: User) => usersInUeberGroupIds.includes(user.id));
 		const allOtherUsers = users.filter((user: User) => !usersInUeberGroupIds.includes(user.id));
 		if (responseUsers.status === 200) {
-			const linkedAzureUsers = await microsoftAccountLinking.getMicrosoftUser(
-				sessionId,
-				linkedUsers
-			);
-			responsePayload.linkedAzureUsers = linkedAzureUsers;
-			const allOtherAzureUsers = await microsoftAccountLinking.getMicrosoftUser(
+			const linkedMicrosoftUsers = await microsoftAccountLinking.getUser(sessionId, linkedUsers);
+			responsePayload.linkedMicrosoftUsers = linkedMicrosoftUsers;
+			const allOtherMicrosoftUsers = await microsoftAccountLinking.getUser(
 				sessionId,
 				allOtherUsers
 			);
-			responsePayload.allOtherAzureUsers = allOtherAzureUsers;
+			responsePayload.allOtherMicrosoftUsers = allOtherMicrosoftUsers;
 		} else {
 			console.error('Error fetching Users:', responseUsers.status);
 		}

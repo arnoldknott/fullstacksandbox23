@@ -1,24 +1,24 @@
 import { microsoftGraph } from './msgraph';
 import type { User } from '$lib/types';
-import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
-// import type { SvelteMap } from 'svelte/reactivity';
+import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
+import type { SvelteMap } from 'svelte/reactivity';
 
-// type linkedAzureAccount = SvelteMap<string, AzureUser>;
+type linkedMicrosoftAccount = SvelteMap<string, MicrosoftUser>;
 
 class MicrosoftAccountLinking {
 	constructor() {}
 
-	async getMicrosoftUser(sessionId: string, users: User[]) {
-		const azureUsers: AzureUser[] = [];
+	async getUser(sessionId: string, users: User[]) {
+		const microsoftUsers: MicrosoftUser[] = [];
 		for (const user of users) {
-			const responseAzureUsers = await microsoftGraph.get(
+			const responseMicrosoftUsers = await microsoftGraph.get(
 				sessionId,
 				`/users/${user.azure_user_id}`
 			);
-			const azureUser: AzureUser = await responseAzureUsers.json();
-			azureUsers.push(azureUser);
+			const microsoftUser: MicrosoftUser = await responseMicrosoftUsers.json();
+			microsoftUsers.push(microsoftUser);
 		}
-		return azureUsers;
+		return microsoftUsers;
 	}
 }
 
