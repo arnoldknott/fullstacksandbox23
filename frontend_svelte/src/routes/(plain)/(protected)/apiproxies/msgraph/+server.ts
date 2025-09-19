@@ -3,8 +3,6 @@ import { microsoftGraph } from '$lib/server/apis/msgraph';
 
 export const GET: RequestHandler = async ({ locals, url, setHeaders }): Promise<Response> => {
 	try {
-		console.log('apiproxies/msgraph/+server.ts - GET - url');
-
 		const sessionId = locals.sessionData.sessionId;
 		const endpoint = url.searchParams.get('endpoint');
 		if (!endpoint) {
