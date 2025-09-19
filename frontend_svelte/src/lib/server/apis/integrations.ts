@@ -8,16 +8,10 @@ type linkedMicrosoftAccount = SvelteMap<string, MicrosoftUser>;
 export class MicrosoftAccountLinking {
 	constructor() {}
 
-	static async getUser(sessionId: string, users: User[]) {
-		const microsoftUsers: MicrosoftUser[] = [];
-		for (const user of users) {
-			const responseMicrosoftUsers = await microsoftGraph.get(
-				sessionId,
-				`/users/${user.azure_user_id}`
-			);
-			const microsoftUser: MicrosoftUser = await responseMicrosoftUsers.json();
-			microsoftUsers.push(microsoftUser);
-		}
-		return microsoftUsers;
+	static async getUsers(sessionId: string, users: User[]) {
+		const filter = users.map((user) => `id eq '${user.azure_user_id}'`).join(' or ');
+		const response = await microsoftGraph.get(sessionId, `/users?$filter=(${filter})`);
+		const responseData = await response.json();
+		return responseData.value;
 	}
 }

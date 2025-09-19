@@ -42,9 +42,9 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 		const linkedUsers = users.filter((user: User) => usersInUeberGroupIds.includes(user.id));
 		const allOtherUsers = users.filter((user: User) => !usersInUeberGroupIds.includes(user.id));
 		if (responseUsers.status === 200) {
-			const linkedMicrosoftUsers = await MicrosoftAccountLinking.getUser(sessionId, linkedUsers);
+			const linkedMicrosoftUsers = await MicrosoftAccountLinking.getUsers(sessionId, linkedUsers);
 			responsePayload.linkedMicrosoftUsers = linkedMicrosoftUsers;
-			const allOtherMicrosoftUsers = await MicrosoftAccountLinking.getUser(
+			const allOtherMicrosoftUsers = await MicrosoftAccountLinking.getUsers(
 				sessionId,
 				allOtherUsers
 			);
@@ -53,8 +53,6 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 			console.error('Error fetching Users:', responseUsers.status);
 		}
 	}
-	// console.log('=== responsePayload ===');
-	// console.log(responsePayload);
 
 	return { ...responsePayload };
 };
