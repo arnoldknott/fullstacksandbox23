@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { backendAPI } from '$lib/server/apis/backendApi';
-import { microsoftAccountLinking } from '$lib/server/apis/integrations';
+import { MicrosoftAccountLinking } from '$lib/server/apis/integrations';
 import type { Group, UeberGroup, User } from '$lib/types';
 import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
 
@@ -42,9 +42,9 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 		const linkedUsers = users.filter((user: User) => usersInUeberGroupIds.includes(user.id));
 		const allOtherUsers = users.filter((user: User) => !usersInUeberGroupIds.includes(user.id));
 		if (responseUsers.status === 200) {
-			const linkedMicrosoftUsers = await microsoftAccountLinking.getUser(sessionId, linkedUsers);
+			const linkedMicrosoftUsers = await MicrosoftAccountLinking.getUser(sessionId, linkedUsers);
 			responsePayload.linkedMicrosoftUsers = linkedMicrosoftUsers;
-			const allOtherMicrosoftUsers = await microsoftAccountLinking.getUser(
+			const allOtherMicrosoftUsers = await MicrosoftAccountLinking.getUser(
 				sessionId,
 				allOtherUsers
 			);
@@ -53,6 +53,8 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 			console.error('Error fetching Users:', responseUsers.status);
 		}
 	}
+	// console.log('=== responsePayload ===');
+	// console.log(responsePayload);
 
 	return { ...responsePayload };
 };

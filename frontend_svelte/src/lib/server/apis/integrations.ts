@@ -5,10 +5,10 @@ import type { SvelteMap } from 'svelte/reactivity';
 
 type linkedMicrosoftAccount = SvelteMap<string, MicrosoftUser>;
 
-class MicrosoftAccountLinking {
+export class MicrosoftAccountLinking {
 	constructor() {}
 
-	async getUser(sessionId: string, users: User[]) {
+	static async getUser(sessionId: string, users: User[]) {
 		const microsoftUsers: MicrosoftUser[] = [];
 		for (const user of users) {
 			const responseMicrosoftUsers = await microsoftGraph.get(
@@ -21,5 +21,3 @@ class MicrosoftAccountLinking {
 		return microsoftUsers;
 	}
 }
-
-export const microsoftAccountLinking = new MicrosoftAccountLinking();
