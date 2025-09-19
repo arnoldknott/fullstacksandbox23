@@ -32,22 +32,22 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	// TBD: move the pagination functionality into msgraph API class
 	// TBD: this is too much data to fetch and return to the client
-	const allUsers: MicrosoftUser[] = [];
-	let usersEndpoint: string | null = '/users';
-	while (usersEndpoint) {
-		const response = await microsoftGraph.get(sessionId, usersEndpoint);
-		const data = await response.json();
-		allUsers.push(...data.value);
-		const nextLink = data['@odata.nextLink'];
-		console.log('=== dashboard - identities - msgraph - nextLink ===');
-		console.log(nextLink);
-		if (nextLink) {
-			const relativeLink = nextLink.replace(/^https:\/\/graph\.microsoft\.com\/v1\.0/, '');
-			usersEndpoint = relativeLink;
-		} else {
-			usersEndpoint = null;
-		}
-	}
+	// const allUsers: MicrosoftUser[] = [];
+	// let usersEndpoint: string | null = '/users';
+	// while (usersEndpoint) {
+	// 	const response = await microsoftGraph.get(sessionId, usersEndpoint);
+	// 	const data = await response.json();
+	// 	allUsers.push(...data.value);
+	// 	const nextLink = data['@odata.nextLink'];
+	// 	console.log('=== dashboard - identities - msgraph - nextLink ===');
+	// 	console.log(nextLink);
+	// 	if (nextLink) {
+	// 		const relativeLink = nextLink.replace(/^https:\/\/graph\.microsoft\.com\/v1\.0/, '');
+	// 		usersEndpoint = relativeLink;
+	// 	} else {
+	// 		usersEndpoint = null;
+	// 	}
+	// }
 
 	return {
 		account: locals.sessionData.microsoftAccount,
