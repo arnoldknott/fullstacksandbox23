@@ -83,5 +83,5 @@
 <Heading>Azure Account</Heading>
 <code><pre>{JSON.stringify(account, null, ' ')}</pre></code>
 
-<Heading>All Users</Heading>
-<code><pre>{JSON.stringify(data.allUsers, null, ' ')}</pre></code>
+<!-- <Heading>All Users</Heading>
+<code><pre>{JSON.stringify(data.allUsers, null, ' ')}</pre></code> -->

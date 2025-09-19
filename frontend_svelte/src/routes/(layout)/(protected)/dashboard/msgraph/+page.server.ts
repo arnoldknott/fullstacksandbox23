@@ -30,7 +30,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const userPictureBlob = await pictureResponse.blob();
 	const userPicture = await userPictureBlob.arrayBuffer();
 
-	// move this functionality into msgraph api class!
+	// TBD: move the pagination functionality into msgraph API class
+	// TBD: this is too much data to fetch and return to the client
 	const allUsers: MicrosoftUser[] = [];
 	let usersEndpoint: string | null = '/users';
 	while (usersEndpoint) {
@@ -51,7 +52,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return {
 		account: locals.sessionData.microsoftAccount,
 		userProfile: userProfile,
-		userPicture: userPicture,
-		allUsers: allUsers
+		userPicture: userPicture
+		// allUsers: allUsers
 	};
 };
