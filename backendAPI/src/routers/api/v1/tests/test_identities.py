@@ -27,6 +27,7 @@ from models.protected_resource import ProtectedResourceRead
 from routers.api.v1.identities import (
     delete_group,
     get_user_by_id,
+    post_invite_azure_user,
     post_existing_groups_to_uebergroup,
     post_existing_subgroup_to_group,
     post_existing_user_to_group,
@@ -446,6 +447,47 @@ async def test_post_user_invites_azure_user_from_another_tenant(
     assert created_user.user_account is None
     assert created_user.user_profile is None
 
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user2_read_write],
+    indirect=True,
+)
+async def test_invited_azure_user_self_signup_creates_profile_and_account(
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI, mock_guards
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_provide_http_token_payload
+
+    # Call function of POST request as user1 to invite an user2:
+    created_user = await post_invite_azure_user(
+        many_test_azure_users[1]["azure_user_id"], many_test_azure_users[1]["azure_tenant_id"], token_user1_read_write, mock_guards(roles=["User"], scopes=["api.read", "api.write"])
+    )
+
+    assert created_user.azure_user_id == uuid.UUID(many_test_azure_users[1]["azure_user_id"])
+    assert created_user.azure_tenant_id == uuid.UUID(many_test_azure_users[1]["azure_tenant_id"])
+    assert created_user.is_active is False
+    assert created_user.id is not None
+    assert created_user.user_account is None
+    assert created_user.user_profile is None
+
+    # Call endpoint GET me to self-sign-up user2:
+    response = await async_client.get("/api/v1/user/me")
+    assert response.status_code == 200
+    user = response.json()
+    modelled_response_user = Me(**user)
+    assert user["azure_user_id"] == many_test_azure_users[1]["azure_user_id"]
+    assert user["azure_tenant_id"] == many_test_azure_users[1]["azure_tenant_id"]
+    assert user["is_active"] is True
+    assert "id" in user
+    assert user["id"] == str(modelled_response_user.id) == created_user.id
+    assert "id" in user["user_account"]
+    assert user["user_account"]["user_id"] == user["id"]
+    assert user["user_account"]["is_publicAIuser"] is False
+    assert "id" in user["user_profile"]
+    assert user["user_profile"]["theme_color"] == "#353c6e"
+    assert user["user_profile"]["theme_variant"] == ThemeVariants.tonal_spot
+    assert user["user_profile"]["contrast"] == 0.0
 
 
 # endregion: ## POST tests
