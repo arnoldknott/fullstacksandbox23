@@ -68,28 +68,21 @@ async def post_user(
         guards,
     )
 
-
 @user_router.post("/azure/invite/{azure_user_id}", status_code=201)
-async def post_user_invite(
-    user: UserCreate,
-    azure_user_id: UUID,  # The Azure user ID to invite as path parameter
+async def post_invite_azure_user(
+    azure_user_id: str,  # The Azure user ID to invite as path parameter
     azure_tenant_id: Annotated[
         UUID, Query()
     ] = None,  # The Azure tenant ID as optional query parameter
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> User:
-    """Invites a new user."""
+    """Invites an existing user in Azure as new user in the app."""
     logger.info("POST user invite")
     current_user = await check_token_against_guards(token_payload, guards)
-    if current_user.user_id != user.id:
-        raise HTTPException(status_code=403, detail="Forbidden.")
     async with UserCRUD() as crud:
-        me = await crud.invite_user(current_user, user, azure_user_id, azure_tenant_id)
-    me.azure_token_roles = current_user.azure_token_roles
-    me.azure_token_groups = current_user.azure_token_groups
-    me = Me.model_validate(me)
-    return me
+        invited_user = await crud.create_invited_azure_user(current_user, azure_user_id, azure_tenant_id)
+    return User.model_validate(invited_user)
 
 
 @user_router.post("/{user_id}/group/{group_id}", status_code=201)

@@ -8,6 +8,7 @@ from httpx import AsyncClient
 
 from core.types import Action, CurrentUserData, IdentityType
 from crud.access import AccessLoggingCRUD
+from core.config import config
 from models.identity import (
     Group,
     GroupRead,
@@ -392,6 +393,59 @@ async def test_post_user_invalid_token(
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Invalid token."}
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_post_user_invites_azure_user(
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_provide_http_token_payload
+
+    # Make a POST request to invite an azure user
+    response = await async_client.post(
+        f"/api/v1/user/azure/invite/{str(many_test_azure_users[1]['azure_user_id'])}",
+    )
+
+    assert response.status_code == 201
+    created_user = User(**response.json())
+    assert created_user.azure_user_id == many_test_azure_users[1]["azure_user_id"]
+    assert created_user.azure_tenant_id == config.AZURE_TENANT_ID
+    assert created_user.is_active is False
+    assert created_user.id is not None
+    assert created_user.user_account is None
+    assert created_user.user_profile is None
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_post_user_invites_azure_user_from_another_tenant(
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_provide_http_token_payload
+
+    # Make a POST request to invite an azure user
+    response = await async_client.post(
+        f"/api/v1/user/azure/invite/{many_test_azure_users[1]['azure_user_id']}?azure_tenant_id={many_test_azure_users[1]['azure_tenant_id']}",
+    )
+
+    assert response.status_code == 201
+    created_user = User(**response.json())
+    assert created_user.azure_user_id == many_test_azure_users[1]["azure_user_id"]
+    assert created_user.azure_tenant_id == many_test_azure_users[1]["azure_tenant_id"]
+    assert created_user.is_active is False
+    assert created_user.id is not None
+    assert created_user.user_account is None
+    assert created_user.user_profile is None
+
 
 
 # endregion: ## POST tests

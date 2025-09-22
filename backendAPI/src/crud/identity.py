@@ -132,6 +132,11 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             if err.status_code == 404 and err.detail == "User not found":
                 # create user and groups:
                 try:
+                    # database_user = None
+                    # if current_user.is_active is False:
+                    #     database_user = current_user
+                    #     database_user.is_active = True
+                    # else:
                     user_create = UserCreate(
                         azure_user_id=azure_user_id,
                         azure_tenant_id=azure_tenant_id,
@@ -304,6 +309,45 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         #     azure_user_id  # , update_last_access
         # )
         return current_user
+
+
+    async def create_invited_azure_user(
+        self,
+        current_user: CurrentUserData,
+        azure_user_id: UUID,
+        azure_tenant_id: Optional[UUID] = None,
+    ) -> UserRead:
+        """Creates a new user with azure_user_id and azure_tenant_id - if it does not exist - and keeps that user disabled until that user signs in the first time."""
+
+        try:
+            user_create = UserCreate(
+                azure_user_id=azure_user_id,
+                azure_tenant_id=(
+                    azure_tenant_id if azure_tenant_id else None
+                ),  # database sets default, if no value is provided
+                is_active=False,
+            )
+            # The model-validation adds the default values (id) to the user_create object!
+            # Can be used for linked tables: avoids multiple round trips to database
+            database_user = User.model_validate(user_create)
+            await self._write_identifier_type_link(database_user.id)
+
+            self.session.add(database_user)
+            await self.session.commit()
+            await self.session.refresh(database_user)
+
+            access_log = AccessLogCreate(
+                resource_id=database_user.id,
+                action=Action.write,  # Using a write and not a own, as the inviting user is not owning the invited user!
+                identity_id=current_user.user_id,
+                status_code=201,
+            )
+            async with self.logging_CRUD as logging_CRUD:
+                await logging_CRUD.create(access_log)
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="User not found")
+        return database_user
 
     async def read_me(self, current_user: CurrentUserData) -> Me:
         """Returns the current user."""
