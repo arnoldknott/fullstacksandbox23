@@ -135,7 +135,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     user_create = UserCreate(
                         azure_user_id=azure_user_id,
                         azure_tenant_id=azure_tenant_id,
-                        is_active=True
+                        is_active=True,
                     )
                     # The model-validation adds the default values (id) to the user_create object!
                     # Can be used for linked tables: avoids multiple round trips to database
