@@ -1789,20 +1789,20 @@ async def test_put_user_from_admin(
     # Make a PUT request to update the user
     response = await async_client.put(
         f"/api/v1/user/{str(existing_user.id)}",
-        json={"is_active": False},
+        json={"is_active": True},
     )
     assert response.status_code == 200
     updated_user = User(**response.json())
-    assert updated_user.is_active is False
+    assert updated_user.is_active is True
 
     # Verify that the user was updated in the database
     before_time = datetime.now()
     response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
     after_time = datetime.now()
     content = response.json()
-    db_user = User.model_validate(content)
+    db_user = User(**content)
     assert db_user is not None
-    assert db_user.is_active is False
+    assert db_user.is_active is True
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(

@@ -112,7 +112,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             statement = select(User).where(User.azure_user_id == azure_user_id)
             results = await session.exec(statement)
             current_user = results.first()
-            if current_user is None:
+            if current_user is None or not current_user.is_active:
                 raise HTTPException(status_code=404, detail="User not found")
             else:
                 access_log = AccessLogCreate(
@@ -143,8 +143,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     await self._write_identifier_type_link(database_user.id)
 
                     session.add(database_user)
-                    await session.commit()
-                    await session.refresh(database_user)
+                    # await session.commit()
+                    # await session.refresh(database_user)
 
                     # The settings in user account and user profile cannot be changed, before the user is created.
                     user_account = UserAccount(user_id=database_user.id)
@@ -158,20 +158,26 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     await self._write_identifier_type_link(
                         user_profile.id, IdentityType.user_profile
                     )
+                    user_account = UserAccount.model_validate(user_account)
+                    user_profile = UserProfile.model_validate(user_profile)
+                    # Now the id's of user_account and user_profile are known as well  - add to user:
+                    database_user.user_account_id = user_account.id
+                    database_user.user_profile_id = user_profile.id
                     # Commit again to save the user_account and user_profile:
-
                     session.add(user_account)
                     session.add(user_profile)
                     # session.add(database_user)
                     await session.commit()
+                    await session.refresh(database_user)
                     await session.refresh(user_account)
                     await session.refresh(user_profile)
 
-                    database_user.user_account_id = user_account.id
-                    database_user.user_profile_id = user_profile.id
-                    session.add(database_user)
-                    await session.commit()
-                    await session.refresh(database_user)
+                    # Link user to user_account and user_profile:
+                    # database_user.user_account_id = user_account.id
+                    # database_user.user_profile_id = user_profile.id
+                    # session.add(database_user)
+                    # await session.commit()
+                    # await session.refresh(database_user)
 
                     current_user = database_user
                     current_user_data = CurrentUserData(
@@ -237,7 +243,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 #         group_crud.create(group_create)
                 # when using this elsewhere, consider if update is needed in else if statement
                 # But should also be covered already by the base.update!
-            session = self.session
+            # session = self.session
 
             # azure_user_group_link = await session.exec(
             #     select(AzureGroupUserLink).where(
