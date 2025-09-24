@@ -1,7 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import AppConfig from '$lib/server/config';
 import type { BackendAPIConfiguration } from '$lib/types.d.ts';
-import { SessionStatus } from '$lib/session';
 // import { session } from '$lib/stores';
 // import type { User as MicrosoftProfile } from "@microsoft/microsoft-graph-types";
 
@@ -27,8 +26,6 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 	// console.log('=== layout.server.ts - load - locals.sessionData ===');
 	// console.log(locals.sessionData.loggedIn);
 	if (locals.sessionData && locals.sessionData.loggedIn) {
-		console.log('=== layout.server.ts - load - locals.sessionData.status ===');
-		console.log(locals.sessionData.status);
 		const globalClientData = {
 			backendAPIConfiguration: backendAPIConfiguration,
 			session: {
@@ -39,8 +36,6 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 				currentUser: locals.sessionData.currentUser
 			}
 		};
-		// console.log('=== layout.server.ts - load - globalClientData ===');
-		// console.log(globalClientData);
 		return {
 			...globalClientData
 		};

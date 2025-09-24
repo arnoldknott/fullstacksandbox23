@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { LayoutData } from './$types';
 	import { SessionStatus } from '$lib/session';
 	import {
 		Variant,
@@ -17,13 +18,10 @@
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
-	import type { LayoutData } from './$types';
 	import { resolve } from '$app/paths';
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
-	let userRegistered = $derived(
-		page.data.session?.status === SessionStatus.REGISTERED ? true : false
-	);
+	let userRegistered = $derived(data.session?.status === SessionStatus.REGISTERED ? true : false);
 
 	const theming = $state(new Theming());
 
