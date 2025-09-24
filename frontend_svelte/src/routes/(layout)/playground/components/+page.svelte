@@ -233,11 +233,11 @@
 	let profileAccountForm = $state<HTMLFormElement | null>(null);
 
 	const saveProfileAccount = async () => {
-		if (page.data.session?.loggedIn) {
-			profileAccountForm?.requestSubmit();
-			console.log('=== layout - saveProfileAccount - themeConfiguration ===');
-			console.log($state.snapshot(themeConfiguration));
-		}
+		// if (page.data.session?.loggedIn) {
+		profileAccountForm?.requestSubmit();
+		console.log('=== layout - saveProfileAccount - themeConfiguration ===');
+		console.log($state.snapshot(themeConfiguration));
+		// }
 	};
 
 	const updateProfileAccount: SubmitFunction = async () => {
