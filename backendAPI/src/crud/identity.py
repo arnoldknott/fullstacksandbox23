@@ -452,14 +452,13 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         except Exception as err:
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not updated.")
-        
-        
+
     async def delete(
         self,
         current_user: "CurrentUserData",
         user_id: UUID,
     ) -> None:
-        """ Deletes a user, user_account and user_profile.""" 
+        """Deletes a user, user_account and user_profile."""
         await super().delete(current_user, user_id)
         # Access control is handled in the super().delete() call above!
         delete_user_account = delete(UserAccount).where(
@@ -471,7 +470,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         )
         await self.session.exec(delete_user_profile)
         await self.session.commit()
-
 
 
 class UeberGroupCRUD(
