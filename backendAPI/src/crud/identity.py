@@ -114,35 +114,28 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             results = await session.exec(statement)
             current_user = results.first()
             if current_user is None or not current_user.is_active:
-
-
-                # raise HTTPException(status_code=404, detail="User not found")
-            
-                # database_user = None
-                # if current_user.is_active is False:
-                #     database_user = current_user
-                #     database_user.is_active = True
-                # else:
-                user_create = UserCreate(
-                    azure_user_id=azure_user_id,
-                    azure_tenant_id=azure_tenant_id,
-                    is_active=True,
-                )
+                database_user = None
+                if not current_user:
+                    user_create = UserCreate(
+                        azure_user_id=azure_user_id,
+                        azure_tenant_id=azure_tenant_id,
+                        is_active=True,
+                    )
+                    database_user = User.model_validate(user_create)
+                    await self._write_identifier_type_link(database_user.id)
+                elif current_user.is_active is False:
+                    print("=== activating user ===")
+                    database_user = current_user
+                    database_user.is_active = True  
                 # The model-validation adds the default values (id) to the user_create object!
                 # Can be used for linked tables: avoids multiple round trips to database
-                database_user = User.model_validate(user_create)
-                await self._write_identifier_type_link(database_user.id)
 
                 session.add(database_user)
-                # await session.commit()
-                # await session.refresh(database_user)
 
                 # The settings in user account and user profile cannot be changed, before the user is created.
+                # TBD: don't create if already existing, that is, when a disabled user get's reactivated!
                 user_account = UserAccount(user_id=database_user.id)
                 user_profile = UserProfile(user_id=database_user.id)
-                # TBD: is the model_validate needed here right after creating the model?
-                # user_account = UserAccount.model_validate(user_account)
-                # user_profile = UserProfile.model_validate(user_profile)
                 await self._write_identifier_type_link(
                     user_account.id, IdentityType.user_account
                 )
@@ -162,13 +155,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 await session.refresh(database_user)
                 await session.refresh(user_account)
                 await session.refresh(user_profile)
-
-                # Link user to user_account and user_profile:
-                # database_user.user_account_id = user_account.id
-                # database_user.user_profile_id = user_profile.id
-                # session.add(database_user)
-                # await session.commit()
-                # await session.refresh(database_user)
 
                 current_user = database_user
                 current_user_data = CurrentUserData(
@@ -197,8 +183,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 #     current_user.id, Action.own, current_user_data, 201
                 # )
                 logger.info("USER created in database")
-            
-            
             else:
                 access_log = AccessLogCreate(
                     resource_id=current_user.id,
@@ -228,18 +212,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 # )
             logger.error(f"Error in BaseCRUD.create: {err}")
             raise HTTPException(status_code=404, detail="User not found")
-            # if err.status_code == 404 and err.detail == "User not found":
-            #     # create user and groups:
-            #     try:
-
-
-
-
-
-            #     except Exception as err:
-
-            # else:
-            #     raise err
         for azure_group_id in groups:
             # call group crud to check if group exists, if not create it!
             # TBD: refactor into using the access controlled protected methods:

@@ -480,7 +480,7 @@ async def test_invited_azure_user_self_signup_creates_profile_and_account(
     assert user["azure_tenant_id"] == many_test_azure_users[1]["azure_tenant_id"]
     assert user["is_active"] is True
     assert "id" in user
-    assert user["id"] == str(modelled_response_user.id) == created_user.id
+    assert uuid.UUID(user["id"]) == modelled_response_user.id == created_user.id
     assert "id" in user["user_account"]
     assert user["user_account"]["user_id"] == user["id"]
     assert user["user_account"]["is_publicAIuser"] is False
@@ -489,6 +489,8 @@ async def test_invited_azure_user_self_signup_creates_profile_and_account(
     assert user["user_profile"]["theme_variant"] == ThemeVariants.tonal_spot
     assert user["user_profile"]["contrast"] == 0.0
 
+
+# TBD: write tests for reactivating an inactive user and make sure that the user keeps its old user_account and user_profile
 
 # endregion: ## POST tests
 
