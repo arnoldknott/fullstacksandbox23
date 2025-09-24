@@ -125,7 +125,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     database_user = User.model_validate(user_create)
                     await self._write_identifier_type_link(database_user.id)
                 elif current_user.is_active is False:
-                    print("=== activating user ===")
                     database_user = current_user
                     database_user.is_active = True
                 # The model-validation adds the default values (id) to the user_create object!

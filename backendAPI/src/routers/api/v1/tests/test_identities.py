@@ -77,6 +77,10 @@ from tests.utils import (
 # groups: groups are not part of the user endpoints - need their own endpoints, but security is taking care of the sign-up!
 # ✔︎ users connections to groups are created in the database - checked through security tests: adding a new group to a user.
 # ✔︎ a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
+# ✔︎ user invites other azure user
+# ✔︎ user invites other azure user from another tenant
+# ✔︎ invited user self-signs-up and creates user_account and user_profile
+# X user reactivates itself - keeps old user_account and user_profile
 
 # Failing tests:
 # - modify the user_id
@@ -505,8 +509,6 @@ async def test_invited_azure_user_self_signup_creates_profile_and_account(
     assert user["user_profile"]["theme_variant"] == ThemeVariants.tonal_spot
     assert user["user_profile"]["contrast"] == 0.0
 
-
-# TBD: write tests for reactivating an inactive user and make sure that the user keeps its old user_account and user_profile
 
 # endregion: ## POST tests
 
@@ -1374,7 +1376,7 @@ async def test_user_put_user(
     app_override_provide_http_token_payload: FastAPI,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1413,7 +1415,7 @@ async def test_user_puts_own_user_account(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1466,7 +1468,7 @@ async def test_user_puts_own_user_profile(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1525,7 +1527,7 @@ async def test_user_puts_own_user_account_and_profile(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1586,7 +1588,7 @@ async def test_user_puts_user_profile_with_missing_hashtag_in_color(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1656,7 +1658,7 @@ async def test_user_puts_user_profile_with_wrong_color(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1691,7 +1693,7 @@ async def test_user_puts_user_profile_with_wrong_theme(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1760,7 +1762,7 @@ async def test_user_puts_user_profile_contrast_too_high(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1794,7 +1796,7 @@ async def test_user_puts_other_users_user_account(
     add_one_azure_test_user,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1826,7 +1828,7 @@ async def test_user_puts_other_users_user_profile(
     add_one_azure_test_user,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1876,6 +1878,9 @@ async def test_user_puts_other_users_user_profile(
 #     )
 #     assert response.status_code == 401
 #     assert response.json() == {"detail": "Invalid token."}
+
+
+# TBD: write tests for reactivating an inactive user and make sure that the user keeps its old user_account and user_profile
 
 
 @pytest.mark.anyio
