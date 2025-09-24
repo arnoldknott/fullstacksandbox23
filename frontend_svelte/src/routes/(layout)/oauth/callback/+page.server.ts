@@ -48,6 +48,9 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 				JSON.stringify(microsoftProfile)
 			);
 			const responseMe = await backendAPI.get(sessionId, '/user/me');
+			// TBD: consider leaving user.is_active at False after creatation and
+			// show the modal dialog for updating profile and account.
+			// The put -me endpoint will set is_active to True
 			if (responseMe.status === 200) {
 				await redisCache.setSession(
 					sessionId,
