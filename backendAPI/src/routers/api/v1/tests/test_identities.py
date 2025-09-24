@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 from datetime import datetime, timedelta
 from typing import List
@@ -2206,16 +2207,13 @@ async def test_user_deletes_itself(
     assert content["detail"] == "User not found."
     # assert response.text == '{"detail":"Access denied"}'
 
-
     async with await  get_async_session() as session:
-        select_user_profile_and_account = select(UserProfile, UserAccount).where(
-            UserProfile.user_id == existing_user.id,
-            UserAccount.user_id == existing_user.id,
-        )
-        result = await session.execute(select_user_profile_and_account)
-        user_profile, user_account = result.fetchone()
-        assert user_profile is None
-        assert user_account is None
+        accounts = await session.exec(select(UserAccount).where(UserAccount.user_id == existing_user.id))
+        assert accounts.all() == []
+        
+        profiles = await session.exec(select(UserProfile).where(UserProfile.user_id == existing_user.id))
+        assert profiles.all() == []
+
 
 
 @pytest.mark.anyio

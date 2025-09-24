@@ -3,7 +3,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlmodel import select
+from sqlmodel import select, delete
 
 from core.types import Action, CurrentUserData, IdentityType
 from models.access import AccessLogCreate, AccessPolicyCreate
@@ -452,6 +452,30 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         except Exception as err:
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not updated.")
+        
+        
+    async def delete(
+        self,
+        current_user: "CurrentUserData",
+        user_id: UUID,
+    ) -> None:
+        """ Deletes a user, user_account and user_profile.""" 
+        await super().delete(current_user, user_id)
+        # Access control is handled in the super().delete() call above!
+        # delete_user_account = delete(UserAccount).where(
+        #     UserAccount.user_id == user_id,
+        # )
+        # result_deleted_account = await self.session.exec(delete_user_account)
+        # print("=== UserCRUD - delete - result_deleted_account.rowcount ===")
+        # print(result_deleted_account.rowcount)
+        # delete_user_profile = delete(UserProfile).where(
+        #     UserProfile.user_id == user_id,
+        # )
+        # result_deleted_profile = await self.session.exec(delete_user_profile)
+        # print("=== UserCRUD - delete - result_deleted_profile.rowcount ===")
+        # print(result_deleted_profile.rowcount)
+        # await self.session.commit()
+
 
 
 class UeberGroupCRUD(
