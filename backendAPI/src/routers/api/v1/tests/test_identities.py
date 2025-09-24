@@ -1886,6 +1886,73 @@ async def test_user_puts_other_users_user_profile(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_reactives_and_keeps_old_profile(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_one_azure_test_user: List[User],
+    mocked_provide_http_token_payload,
+    mock_guards,
+):
+    """Test a admin updates a user"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+
+    # access get me endpoint
+    response_me = await async_client.get("/api/v1/user/me")
+    assert response_me.status_code == 201
+    current_user = Me(**response_me.json())
+    assert current_user is not None
+    assert current_user.id is not None
+    assert current_user.is_active is True
+    assert current_user.azure_user_id == uuid.UUID(
+        mocked_provide_http_token_payload["oid"]
+    )
+    assert current_user.azure_tenant_id == uuid.UUID(
+        mocked_provide_http_token_payload["tid"]
+    )
+    assert current_user.azure_token_roles == mocked_provide_http_token_payload["roles"]
+    assert current_user.user_account.is_publicAIuser is False
+    assert current_user.user_profile.theme_color == "#353c6e"
+    assert current_user.user_profile.theme_variant == ThemeVariants.tonal_spot
+    assert current_user.user_profile.contrast == 0.0
+
+    # deactivate self
+    response_deactivate = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": str(current_user.id),
+            "is_active": False,
+            "user_profile": {"theme_color": "#B0FA22"},
+            "user_account": {"is_publicAIuser": True},
+        },
+    )
+    assert response_deactivate.status_code == 200
+    deactivated_user = User(**response_deactivate.json())
+    assert deactivated_user.is_active is False
+
+    # reactivate self
+    response_reactivate = await async_client.get("/api/v1/user/me")
+    assert response_reactivate.status_code == 201
+    reactivated_user = Me(**response_reactivate.json())
+    assert reactivated_user is not None
+    assert reactivated_user.id == current_user.id
+    assert reactivated_user.azure_user_id == current_user.azure_user_id
+    assert reactivated_user.azure_tenant_id == current_user.azure_tenant_id
+    assert reactivated_user.azure_token_roles == current_user.azure_token_roles
+    assert reactivated_user.is_active is True
+    assert reactivated_user.user_account.is_publicAIuser is True
+    assert reactivated_user.user_profile.theme_color == "#B0FA22"
+    assert reactivated_user.user_profile.theme_variant == ThemeVariants.tonal_spot
+    assert reactivated_user.user_profile.contrast == 0.0
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
     [token_admin_read_write],
     indirect=True,
 )

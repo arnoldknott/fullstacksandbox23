@@ -99,7 +99,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     # Any user passed in, get's checked for existence, if not existing, it get's created!
     # no matter if the user existed or not, group membership gets checked and created if needed!
     # Note the difference between user_id and azure_user_id as well as group_id and azure_group_id!
-    async def azure_user_self_sign_up(
+    async def azure_user_self_sign_up( # noqa: C901
         self,
         azure_user_id: UUID,
         azure_tenant_id: UUID,
@@ -116,73 +116,90 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             current_user = results.first()
             if current_user is None or not current_user.is_active:
                 database_user = None
+                user_account = None
+                user_profile = None
                 if not current_user:
                     user_create = UserCreate(
                         azure_user_id=azure_user_id,
                         azure_tenant_id=azure_tenant_id,
                         is_active=True,
                     )
+                    # The model-validation adds the default values (id) to the user_create object!
+                    # Can be used for linked tables: avoids multiple round trips to database
                     database_user = User.model_validate(user_create)
                     await self._write_identifier_type_link(database_user.id)
                 elif current_user.is_active is False:
                     database_user = current_user
                     database_user.is_active = True
-                # The model-validation adds the default values (id) to the user_create object!
-                # Can be used for linked tables: avoids multiple round trips to database
+                    # The model-validation adds the default values (id) to the user_create object!
+                    # Can be used for linked tables: avoids multiple round trips to database
+                    existing_user = Me.model_validate(current_user)
+                    user_account = (
+                        existing_user.user_account
+                        if existing_user.user_account
+                        else None
+                    )
+                    user_profile = (
+                        existing_user.user_profile
+                        if existing_user.user_profile
+                        else None
+                    )
+
+
+                # check if user_account and user_profile already exist:
+                if not database_user.user_account:
+                    user_account = UserAccount(user_id=database_user.id)
+                    await self._write_identifier_type_link(
+                        user_account.id, IdentityType.user_account
+                    )
+                    user_account = UserAccount.model_validate(user_account)
+                    database_user.user_account_id = user_account.id
+                    session.add(user_account)
+                if not database_user.user_profile:
+                    user_profile = UserProfile(user_id=database_user.id)
+                    await self._write_identifier_type_link(
+                        user_profile.id, IdentityType.user_profile
+                    )
+                    user_profile = UserProfile.model_validate(user_profile)
+                    database_user.user_profile_id = user_profile.id
+                    session.add(user_profile)
 
                 session.add(database_user)
-
-                # The settings in user account and user profile cannot be changed, before the user is created.
-                # TBD: don't create if already existing, that is, when a disabled user get's reactivated!
-                user_account = UserAccount(user_id=database_user.id)
-                user_profile = UserProfile(user_id=database_user.id)
-                await self._write_identifier_type_link(
-                    user_account.id, IdentityType.user_account
-                )
-                await self._write_identifier_type_link(
-                    user_profile.id, IdentityType.user_profile
-                )
-                user_account = UserAccount.model_validate(user_account)
-                user_profile = UserProfile.model_validate(user_profile)
-                # Now the id's of user_account and user_profile are known as well  - add to user:
-                database_user.user_account_id = user_account.id
-                database_user.user_profile_id = user_profile.id
-                # Commit again to save the user_account and user_profile:
-                session.add(user_account)
-                session.add(user_profile)
-                # session.add(database_user)
                 await session.commit()
                 await session.refresh(database_user)
                 await session.refresh(user_account)
                 await session.refresh(user_profile)
 
-                current_user = database_user
                 response_status_code = 201
                 current_user_data = CurrentUserData(
-                    user_id=current_user.id,
+                    user_id=database_user.id,
                     azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
                     azure_token_groups=groups,
                 )
+
                 # User is owner of itself:
-                access_policy = AccessPolicyCreate(
+                if not current_user:
+                    access_policy = AccessPolicyCreate(
+                        resource_id=database_user.id,
+                        action=Action.own,
+                        identity_id=current_user_data.user_id,
+                    )
+                    async with self.policy_CRUD as policy_CRUD:
+                        await policy_CRUD.create(access_policy, current_user_data)
+
+                access_log = AccessLogCreate(
                     resource_id=database_user.id,
                     action=Action.own,
                     identity_id=current_user_data.user_id,
-                )
-                async with self.policy_CRUD as policy_CRUD:
-                    await policy_CRUD.create(access_policy, current_user_data)
-
-                access_log = AccessLogCreate(
-                    resource_id=current_user.id,
-                    action=Action.own,
-                    identity_id=current_user_data.user_id,
-                    status_code=201,
+                    status_code=response_status_code,
                 )
                 async with self.logging_CRUD as log_CRUD:
                     await log_CRUD.create(access_log)
                 # await self._write_log(
                 #     current_user.id, Action.own, current_user_data, 201
                 # )
+                # current_user = UserRead.model_validate(database_user)
+                current_user = database_user
                 logger.info("USER created in database")
             else:
                 access_log = AccessLogCreate(
@@ -320,6 +337,17 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             self.session.add(database_user)
             await self.session.commit()
             await self.session.refresh(database_user)
+
+            # The new user owns itself - not the user, that invites!
+            access_policy = AccessPolicyCreate(
+                resource_id=database_user.id,
+                action=Action.own,
+                identity_id=database_user.id,
+            )
+            async with self.policy_CRUD as policy_CRUD:
+                await policy_CRUD.create(
+                    access_policy, current_user, allow_override=True
+                )
 
             access_log = AccessLogCreate(
                 resource_id=database_user.id,
