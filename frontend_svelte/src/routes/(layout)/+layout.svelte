@@ -391,7 +391,10 @@
 			{@render children?.()}
 		</div>
 	{:else}
-		<div class="text-display-small text-error">User not registered</div>
+		<div class="text-display-small text-error text-center">User not registered!</div>
+		<div class="mt-5">
+			{@render children?.()}
+		</div>
 	{/if}
 
 	<!-- <JsonData data={theme}></JsonData> -->
