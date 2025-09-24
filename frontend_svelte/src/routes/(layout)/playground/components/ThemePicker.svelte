@@ -8,7 +8,7 @@
 		updateProfileAccount,
 		saveProfileAccount,
 		mode = $bindable<'light' | 'dark'>(),
-		themeConfiguration
+		themeConfiguration = $bindable()
 	}: {
 		profileAccountForm: HTMLFormElement | null;
 		updateProfileAccount: SubmitFunction;
