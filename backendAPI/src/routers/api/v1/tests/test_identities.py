@@ -473,7 +473,7 @@ async def test_invited_azure_user_self_signup_creates_profile_and_account(
 
     # Call endpoint GET me to self-sign-up user2:
     response = await async_client.get("/api/v1/user/me")
-    assert response.status_code == 200
+    assert response.status_code == 201
     user = response.json()
     modelled_response_user = Me(**user)
     assert user["azure_user_id"] == many_test_azure_users[1]["azure_user_id"]

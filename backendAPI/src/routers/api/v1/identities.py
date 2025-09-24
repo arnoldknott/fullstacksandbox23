@@ -2,7 +2,7 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from core.security import (
     Guards,
@@ -106,11 +106,14 @@ async def post_existing_user_to_group(
 
 @user_router.get("/me", status_code=200)
 async def get_me(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(roles=["User"])),
 ) -> Me:
-    """Returns the current user with account and profile."""
+    """Returns the current user with account and profile or creates through self-sign-up."""
     current_user = await check_token_against_guards(token_payload, guards)
+    print("""=== get_me current_user - response ===""")
+    print(response)
     async with UserCRUD() as crud:
         me = await crud.read_me(current_user)
     # me.azure_token_roles = current_user.azure_token_roles
