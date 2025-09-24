@@ -395,6 +395,7 @@ async def test_post_user_invalid_token(
     assert response.status_code == 401
     assert response.json() == {"detail": "Invalid token."}
 
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
@@ -420,6 +421,7 @@ async def test_post_user_invites_azure_user(
     assert created_user.id is not None
     assert created_user.user_account is None
     assert created_user.user_profile is None
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -447,6 +449,7 @@ async def test_post_user_invites_azure_user_from_another_tenant(
     assert created_user.user_account is None
     assert created_user.user_profile is None
 
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
@@ -454,18 +457,27 @@ async def test_post_user_invites_azure_user_from_another_tenant(
     indirect=True,
 )
 async def test_invited_azure_user_self_signup_creates_profile_and_account(
-    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI, mock_guards
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mock_guards,
 ):
     """Tests the post_user endpoint of the API."""
     app_override_provide_http_token_payload
 
     # Call function of POST request as user1 to invite an user2:
     created_user = await post_invite_azure_user(
-        many_test_azure_users[1]["azure_user_id"], many_test_azure_users[1]["azure_tenant_id"], token_user1_read_write, mock_guards(roles=["User"], scopes=["api.read", "api.write"])
+        many_test_azure_users[1]["azure_user_id"],
+        many_test_azure_users[1]["azure_tenant_id"],
+        token_user1_read_write,
+        mock_guards(roles=["User"], scopes=["api.read", "api.write"]),
     )
 
-    assert created_user.azure_user_id == uuid.UUID(many_test_azure_users[1]["azure_user_id"])
-    assert created_user.azure_tenant_id == uuid.UUID(many_test_azure_users[1]["azure_tenant_id"])
+    assert created_user.azure_user_id == uuid.UUID(
+        many_test_azure_users[1]["azure_user_id"]
+    )
+    assert created_user.azure_tenant_id == uuid.UUID(
+        many_test_azure_users[1]["azure_tenant_id"]
+    )
     assert created_user.is_active is False
     assert created_user.id is not None
     assert created_user.user_account is None
@@ -515,13 +527,17 @@ async def test_user_gets_own_user_through_me_endpoint(
     # mocks the access token:
     app_override_provide_http_token_payload
     # the target user:
+
     await add_one_azure_test_user(0)
 
     before_time = datetime.now()
     response = await async_client.get("/api/v1/user/me")
     after_time = datetime.now()
 
-    assert response.status_code == 200
+    if "Admin" in mocked_provide_http_token_payload["roles"]:
+        assert response.status_code == 201
+    else:
+        assert response.status_code == 200
     user = response.json()
     modelled_response_user = Me(**user)
     assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]

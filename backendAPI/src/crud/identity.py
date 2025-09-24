@@ -57,7 +57,7 @@ class AzureGroupCRUD(
         try:
             existing_group = await self.session.get(AzureGroup, azure_group_id)
             if existing_group is None:
-            
+
                 # TBD: refactor to use create from base class!
                 group_create = AzureGroupCreate(
                     id=azure_group_id,
@@ -108,6 +108,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         """Checks if user and its groups exist, if not create and link them."""
         session = self.session
         current_user_data = None
+        response_status_code = 200
         try:
             # Note: current_user is not available here during self-sign-up! So no access control here!
             statement = select(User).where(User.azure_user_id == azure_user_id)
@@ -126,7 +127,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 elif current_user.is_active is False:
                     print("=== activating user ===")
                     database_user = current_user
-                    database_user.is_active = True  
+                    database_user.is_active = True
                 # The model-validation adds the default values (id) to the user_create object!
                 # Can be used for linked tables: avoids multiple round trips to database
 
@@ -157,6 +158,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 await session.refresh(user_profile)
 
                 current_user = database_user
+                response_status_code = 201
                 current_user_data = CurrentUserData(
                     user_id=current_user.id,
                     azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
@@ -293,8 +295,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # current_user = await self.read_by_azure_user_id(
         #     azure_user_id  # , update_last_access
         # )
-        return current_user
-
+        return current_user, response_status_code
 
     async def create_invited_azure_user(
         self,

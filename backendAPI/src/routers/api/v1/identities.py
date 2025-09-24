@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from core.security import (
+    CurrentAccessToken,
     Guards,
     check_token_against_guards,
     get_http_access_token_payload,
@@ -68,6 +69,7 @@ async def post_user(
         guards,
     )
 
+
 @user_router.post("/azure/invite/{azure_user_id}", status_code=201)
 async def post_invite_azure_user(
     azure_user_id: str,  # The Azure user ID to invite as path parameter
@@ -81,7 +83,9 @@ async def post_invite_azure_user(
     logger.info("POST user invite")
     current_user = await check_token_against_guards(token_payload, guards)
     async with UserCRUD() as crud:
-        invited_user = await crud.create_invited_azure_user(current_user, azure_user_id, azure_tenant_id)
+        invited_user = await crud.create_invited_azure_user(
+            current_user, azure_user_id, azure_tenant_id
+        )
     return User.model_validate(invited_user)
 
 
@@ -111,9 +115,10 @@ async def get_me(
     guards=Depends(Guards(roles=["User"])),
 ) -> Me:
     """Returns the current user with account and profile or creates through self-sign-up."""
+    _, response.status_code = await CurrentAccessToken(
+        token_payload
+    ).gets_or_signs_up_current_user()
     current_user = await check_token_against_guards(token_payload, guards)
-    print("""=== get_me current_user - response ===""")
-    print(response)
     async with UserCRUD() as crud:
         me = await crud.read_me(current_user)
     # me.azure_token_roles = current_user.azure_token_roles
