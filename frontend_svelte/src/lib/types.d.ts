@@ -5,6 +5,7 @@ import type {
 } from '@microsoft/microsoft-graph-types';
 import type { Action, IdentityType } from '$lib/accessHandler';
 import type { Variant } from '$lib/theming';
+import type { SessionStatus } from '$lib/server/oauth';
 
 // App specific:
 export type BackendAPIConfiguration = {
@@ -32,7 +33,7 @@ export type BackendAPIConfiguration = {
 // TBD: rename into ServerSession:
 export type Session = {
 	loggedIn: boolean;
-	status?: string;
+	status?: SessionStatus;
 	microsoftAccount?: AccountInfo;
 	microsoftProfile?: MicrosoftProfile;
 	userAgent?: string;

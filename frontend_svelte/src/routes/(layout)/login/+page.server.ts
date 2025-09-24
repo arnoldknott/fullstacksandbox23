@@ -4,6 +4,7 @@ import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import type { Session } from '$lib/types';
+import { SessionStatus } from '$lib/server/oauth';
 import AppConfig from '$lib/server/config';
 
 const appConfig = await AppConfig.getInstance();
@@ -16,7 +17,7 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 		const userAgent = request.headers.get('user-agent');
 		// TBD: check the typing of that one:
 		const sessionData: Session = {
-			status: 'authentication_pending',
+			status: SessionStatus.AUTHENTICATION_PENDING,
 			loggedIn: false,
 			userAgent: userAgent || '',
 			sessionId: sessionId
