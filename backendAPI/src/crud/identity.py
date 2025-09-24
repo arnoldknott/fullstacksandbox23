@@ -462,19 +462,15 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         """ Deletes a user, user_account and user_profile.""" 
         await super().delete(current_user, user_id)
         # Access control is handled in the super().delete() call above!
-        # delete_user_account = delete(UserAccount).where(
-        #     UserAccount.user_id == user_id,
-        # )
-        # result_deleted_account = await self.session.exec(delete_user_account)
-        # print("=== UserCRUD - delete - result_deleted_account.rowcount ===")
-        # print(result_deleted_account.rowcount)
-        # delete_user_profile = delete(UserProfile).where(
-        #     UserProfile.user_id == user_id,
-        # )
-        # result_deleted_profile = await self.session.exec(delete_user_profile)
-        # print("=== UserCRUD - delete - result_deleted_profile.rowcount ===")
-        # print(result_deleted_profile.rowcount)
-        # await self.session.commit()
+        delete_user_account = delete(UserAccount).where(
+            UserAccount.user_id == user_id,
+        )
+        await self.session.exec(delete_user_account)
+        delete_user_profile = delete(UserProfile).where(
+            UserProfile.user_id == user_id,
+        )
+        await self.session.exec(delete_user_profile)
+        await self.session.commit()
 
 
 
