@@ -17,11 +17,16 @@
 	import ThemePicker from './playground/components/ThemePicker.svelte';
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
-	let userRegistered = $derived(data.session?.status === SessionStatus.REGISTERED ? true : false);
+	let userUnregistered = $derived(
+		!data.session?.loggedIn
+			? false
+			: data.session?.status === SessionStatus.REGISTERED
+				? false
+				: true
+	);
 
 	const theming = $state(new Theming());
 
@@ -57,10 +62,6 @@
 			data.session.currentUser.user_profile.contrast = themeConfiguration.contrast;
 		}
 	});
-
-	const contrastMin = -1.0;
-	const contrastMax = 1.0;
-	const contrastStep = 0.2;
 
 	// let { children }: { children: Snippet } = $props();
 
@@ -126,10 +127,6 @@
 		$effect(() => {
 			themeStore.set(theme);
 		});
-	};
-
-	const toggleMode = () => {
-		mode = mode === 'dark' ? 'light' : 'dark';
 	};
 
 	const { loggedIn } = page.data.session || false;
@@ -302,12 +299,12 @@
 		</div>
 	</nav>
 
-	{#if userRegistered}
+	{#if userUnregistered}
+		<div class="text-display-small text-error text-center">User not registered!</div>
 		<div class="mt-5">
 			{@render children?.()}
 		</div>
 	{:else}
-		<div class="text-display-small text-error text-center">User not registered!</div>
 		<div class="mt-5">
 			{@render children?.()}
 		</div>
