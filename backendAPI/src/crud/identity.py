@@ -54,9 +54,10 @@ class AzureGroupCRUD(
         self, azure_group_id: UUID, azure_tenant_id: UUID
     ) -> AzureGroupRead:
         """Creates a new group if it does not exist."""
-        existing_group = await self.session.get(AzureGroup, azure_group_id)
-        if existing_group is None:
-            try:
+        try:
+            existing_group = await self.session.get(AzureGroup, azure_group_id)
+            if existing_group is None:
+            
                 # TBD: refactor to use create from base class!
                 group_create = AzureGroupCreate(
                     id=azure_group_id,
@@ -72,10 +73,10 @@ class AzureGroupCRUD(
                 await session.commit()
                 await session.refresh(database_group)
                 existing_group = database_group
-            except Exception as err:
-                logging.error(err)
-                raise HTTPException(status_code=404, detail="Group not found.")
-        return existing_group
+            return existing_group
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="Group not found.")
 
 
 class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
