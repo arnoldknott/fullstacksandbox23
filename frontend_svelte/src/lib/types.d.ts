@@ -5,7 +5,7 @@ import type {
 } from '@microsoft/microsoft-graph-types';
 import type { Action, IdentityType } from '$lib/accessHandler';
 import type { Variant } from '$lib/theming';
-import type { SessionStatus } from '$lib/server/oauth';
+import type { SessionStatus } from '$lib/session';
 
 // App specific:
 export type BackendAPIConfiguration = {

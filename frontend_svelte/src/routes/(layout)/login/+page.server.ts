@@ -4,7 +4,7 @@ import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import type { Session } from '$lib/types';
-import { SessionStatus } from '$lib/server/oauth';
+import { SessionStatus } from '$lib/session';
 import AppConfig from '$lib/server/config';
 
 const appConfig = await AppConfig.getInstance();

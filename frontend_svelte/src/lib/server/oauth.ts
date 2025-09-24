@@ -34,12 +34,6 @@ const scopesMsGraph = [
 ];
 const scopesAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
 
-export enum SessionStatus {
-	AUTHENTICATION_PENDING = 'authentication_pending',
-	REGISTRATION_PENDING = 'registration_pending',
-	REGISTERED = 'registered'
-}
-
 // Note: this is only exporting the BaseOauthProvider type, not the class itself!
 class BaseOauthProvider {
 	constructor() {}

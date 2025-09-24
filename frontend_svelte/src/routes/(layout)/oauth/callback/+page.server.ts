@@ -8,7 +8,7 @@ import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types'
 // import type { AuthenticationResult } from '@azure/msal-node';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
-import { SessionStatus } from '$lib/server/oauth';
+import { SessionStatus } from '$lib/session';
 
 const appConfig = await AppConfig.getInstance();
 
@@ -52,7 +52,10 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 				await redisCache.setSession(
 					sessionId,
 					'$.status',
-					JSON.stringify(SessionStatus.REGISTERED)
+					// JSON.stringify(SessionStatus.REGISTERED)
+					// TBD: for devloping registration flow, set to registration pending:
+					// change back to registered when registration flow is done:
+					JSON.stringify(SessionStatus.REGISTRATION_PENDING)
 				);
 			} else if (responseMe.status === 201) {
 				await redisCache.setSession(

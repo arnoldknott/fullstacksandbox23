@@ -1,6 +1,7 @@
 import type { LayoutServerLoad } from './$types';
 import AppConfig from '$lib/server/config';
 import type { BackendAPIConfiguration } from '$lib/types.d.ts';
+import { SessionStatus } from '$lib/session';
 // import { session } from '$lib/stores';
 // import type { User as MicrosoftProfile } from "@microsoft/microsoft-graph-types";
 
@@ -32,6 +33,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			backendAPIConfiguration: backendAPIConfiguration,
 			session: {
 				loggedIn: locals.sessionData.loggedIn,
+				status: locals.sessionData.status,
 				microsoftProfile: locals.sessionData.microsoftProfile,
 				sessionId: locals.sessionData.sessionId,
 				currentUser: locals.sessionData.currentUser

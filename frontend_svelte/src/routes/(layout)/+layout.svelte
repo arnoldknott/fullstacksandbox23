@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SessionStatus } from '$lib/session';
 	import {
 		Variant,
 		Theming,
@@ -19,6 +20,10 @@
 	import type { LayoutData } from './$types';
 	import { resolve } from '$app/paths';
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
+
+	let userRegistered = $derived(
+		page.data.session?.status === SessionStatus.REGISTERED ? true : false
+	);
 
 	const theming = $state(new Theming());
 
@@ -383,9 +388,13 @@
 		</div>
 	</nav>
 
-	<div class="mt-5">
-		{@render children?.()}
-	</div>
+	{#if userRegistered}
+		<div class="mt-5">
+			{@render children?.()}
+		</div>
+	{:else}
+		<div class="text-display-small text-error">User not registered</div>
+	{/if}
 
 	<!-- <JsonData data={theme}></JsonData> -->
 </div>
