@@ -121,8 +121,6 @@ async def get_me(
     current_user = await check_token_against_guards(token_payload, guards)
     async with UserCRUD() as crud:
         me = await crud.read_me(current_user)
-    # me.azure_token_roles = current_user.azure_token_roles
-    # me.azure_token_groups = current_user.azure_token_groups
     me = Me.model_validate(me)
     return me
 
