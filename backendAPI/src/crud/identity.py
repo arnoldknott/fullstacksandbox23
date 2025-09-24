@@ -114,7 +114,91 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             results = await session.exec(statement)
             current_user = results.first()
             if current_user is None or not current_user.is_active:
-                raise HTTPException(status_code=404, detail="User not found")
+
+
+                # raise HTTPException(status_code=404, detail="User not found")
+            
+                # database_user = None
+                # if current_user.is_active is False:
+                #     database_user = current_user
+                #     database_user.is_active = True
+                # else:
+                user_create = UserCreate(
+                    azure_user_id=azure_user_id,
+                    azure_tenant_id=azure_tenant_id,
+                    is_active=True,
+                )
+                # The model-validation adds the default values (id) to the user_create object!
+                # Can be used for linked tables: avoids multiple round trips to database
+                database_user = User.model_validate(user_create)
+                await self._write_identifier_type_link(database_user.id)
+
+                session.add(database_user)
+                # await session.commit()
+                # await session.refresh(database_user)
+
+                # The settings in user account and user profile cannot be changed, before the user is created.
+                user_account = UserAccount(user_id=database_user.id)
+                user_profile = UserProfile(user_id=database_user.id)
+                # TBD: is the model_validate needed here right after creating the model?
+                # user_account = UserAccount.model_validate(user_account)
+                # user_profile = UserProfile.model_validate(user_profile)
+                await self._write_identifier_type_link(
+                    user_account.id, IdentityType.user_account
+                )
+                await self._write_identifier_type_link(
+                    user_profile.id, IdentityType.user_profile
+                )
+                user_account = UserAccount.model_validate(user_account)
+                user_profile = UserProfile.model_validate(user_profile)
+                # Now the id's of user_account and user_profile are known as well  - add to user:
+                database_user.user_account_id = user_account.id
+                database_user.user_profile_id = user_profile.id
+                # Commit again to save the user_account and user_profile:
+                session.add(user_account)
+                session.add(user_profile)
+                # session.add(database_user)
+                await session.commit()
+                await session.refresh(database_user)
+                await session.refresh(user_account)
+                await session.refresh(user_profile)
+
+                # Link user to user_account and user_profile:
+                # database_user.user_account_id = user_account.id
+                # database_user.user_profile_id = user_profile.id
+                # session.add(database_user)
+                # await session.commit()
+                # await session.refresh(database_user)
+
+                current_user = database_user
+                current_user_data = CurrentUserData(
+                    user_id=current_user.id,
+                    azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
+                    azure_token_groups=groups,
+                )
+                # User is owner of itself:
+                access_policy = AccessPolicyCreate(
+                    resource_id=database_user.id,
+                    action=Action.own,
+                    identity_id=current_user_data.user_id,
+                )
+                async with self.policy_CRUD as policy_CRUD:
+                    await policy_CRUD.create(access_policy, current_user_data)
+
+                access_log = AccessLogCreate(
+                    resource_id=current_user.id,
+                    action=Action.own,
+                    identity_id=current_user_data.user_id,
+                    status_code=201,
+                )
+                async with self.logging_CRUD as log_CRUD:
+                    await log_CRUD.create(access_log)
+                # await self._write_log(
+                #     current_user.id, Action.own, current_user_data, 201
+                # )
+                logger.info("USER created in database")
+            
+            
             else:
                 access_log = AccessLogCreate(
                     resource_id=current_user.id,
@@ -130,104 +214,32 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     azure_token_groups=groups,
                 )
         except HTTPException as err:
-            if err.status_code == 404 and err.detail == "User not found":
-                # create user and groups:
-                try:
-                    # database_user = None
-                    # if current_user.is_active is False:
-                    #     database_user = current_user
-                    #     database_user.is_active = True
-                    # else:
-                    user_create = UserCreate(
-                        azure_user_id=azure_user_id,
-                        azure_tenant_id=azure_tenant_id,
-                        is_active=True,
-                    )
-                    # The model-validation adds the default values (id) to the user_create object!
-                    # Can be used for linked tables: avoids multiple round trips to database
-                    database_user = User.model_validate(user_create)
-                    await self._write_identifier_type_link(database_user.id)
+            if current_user_data is not None and current_user_data.user_id is not None:
+                access_log = AccessLogCreate(
+                    resource_id=current_user.id,
+                    action=Action.own,
+                    identity_id=current_user_data.user_id,
+                    status_code=404,
+                )
+                async with self.logging_CRUD as log_CRUD:
+                    await log_CRUD.create(access_log)
+                # await self._write_log(
+                #     current_user.id, Action.own, current_user_data, 404
+                # )
+            logger.error(f"Error in BaseCRUD.create: {err}")
+            raise HTTPException(status_code=404, detail="User not found")
+            # if err.status_code == 404 and err.detail == "User not found":
+            #     # create user and groups:
+            #     try:
 
-                    session.add(database_user)
-                    # await session.commit()
-                    # await session.refresh(database_user)
 
-                    # The settings in user account and user profile cannot be changed, before the user is created.
-                    user_account = UserAccount(user_id=database_user.id)
-                    user_profile = UserProfile(user_id=database_user.id)
-                    # TBD: is the model_validate needed here right after creating the model?
-                    # user_account = UserAccount.model_validate(user_account)
-                    # user_profile = UserProfile.model_validate(user_profile)
-                    await self._write_identifier_type_link(
-                        user_account.id, IdentityType.user_account
-                    )
-                    await self._write_identifier_type_link(
-                        user_profile.id, IdentityType.user_profile
-                    )
-                    user_account = UserAccount.model_validate(user_account)
-                    user_profile = UserProfile.model_validate(user_profile)
-                    # Now the id's of user_account and user_profile are known as well  - add to user:
-                    database_user.user_account_id = user_account.id
-                    database_user.user_profile_id = user_profile.id
-                    # Commit again to save the user_account and user_profile:
-                    session.add(user_account)
-                    session.add(user_profile)
-                    # session.add(database_user)
-                    await session.commit()
-                    await session.refresh(database_user)
-                    await session.refresh(user_account)
-                    await session.refresh(user_profile)
 
-                    # Link user to user_account and user_profile:
-                    # database_user.user_account_id = user_account.id
-                    # database_user.user_profile_id = user_profile.id
-                    # session.add(database_user)
-                    # await session.commit()
-                    # await session.refresh(database_user)
 
-                    current_user = database_user
-                    current_user_data = CurrentUserData(
-                        user_id=current_user.id,
-                        azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
-                        azure_token_groups=groups,
-                    )
-                    # User is owner of itself:
-                    access_policy = AccessPolicyCreate(
-                        resource_id=database_user.id,
-                        action=Action.own,
-                        identity_id=current_user_data.user_id,
-                    )
-                    async with self.policy_CRUD as policy_CRUD:
-                        await policy_CRUD.create(access_policy, current_user_data)
 
-                    access_log = AccessLogCreate(
-                        resource_id=current_user.id,
-                        action=Action.own,
-                        identity_id=current_user_data.user_id,
-                        status_code=201,
-                    )
-                    async with self.logging_CRUD as log_CRUD:
-                        await log_CRUD.create(access_log)
-                    # await self._write_log(
-                    #     current_user.id, Action.own, current_user_data, 201
-                    # )
-                    logger.info("USER created in database")
-                except Exception as err:
-                    access_log = AccessLogCreate(
-                        resource_id=current_user.id,
-                        action=Action.own,
-                        identity_id=current_user_data.user_id,
-                        status_code=404,
-                    )
-                    async with self.logging_CRUD as log_CRUD:
-                        await log_CRUD.create(access_log)
-                    # await self._write_log(
-                    #     current_user.id, Action.own, current_user_data, 404
-                    # )
-                    logger.error(f"Error in BaseCRUD.create: {err}")
-                    raise HTTPException(status_code=404, detail="User not found")
-            else:
-                raise err
+            #     except Exception as err:
+
+            # else:
+            #     raise err
         for azure_group_id in groups:
             # call group crud to check if group exists, if not create it!
             # TBD: refactor into using the access controlled protected methods:
