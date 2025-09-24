@@ -5,10 +5,12 @@ from typing import List
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
+from sqlmodel import select
 
 from core.types import Action, CurrentUserData, IdentityType
 from crud.access import AccessLoggingCRUD
 from core.config import config
+from core.databases import get_async_session
 from models.identity import (
     Group,
     GroupRead,
@@ -21,6 +23,8 @@ from models.identity import (
     UeberGroup,
     UeberGroupRead,
     User,
+    UserAccount,
+    UserProfile,
     UserRead,
 )
 from models.protected_resource import ProtectedResourceRead
@@ -2201,6 +2205,17 @@ async def test_user_deletes_itself(
     content = response.json()
     assert content["detail"] == "User not found."
     # assert response.text == '{"detail":"Access denied"}'
+
+
+    async with await  get_async_session() as session:
+        select_user_profile_and_account = select(UserProfile, UserAccount).where(
+            UserProfile.user_id == existing_user.id,
+            UserAccount.user_id == existing_user.id,
+        )
+        result = await session.execute(select_user_profile_and_account)
+        user_profile, user_account = result.fetchone()
+        assert user_profile is None
+        assert user_account is None
 
 
 @pytest.mark.anyio
