@@ -6,7 +6,9 @@
 	import { goto } from '$app/navigation';
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
-	data.session?.status === SessionStatus.REGISTRATION_PENDING ? goto('/(layout)/index') : null;
+	if (data.session?.status === SessionStatus.REGISTRATION_PENDING) {
+		goto('/(layout)/index');
+	}
 </script>
 
 <main>
