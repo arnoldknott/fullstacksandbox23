@@ -13,7 +13,8 @@
 	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
-	import { Variant } from '$lib/theming';
+	import { Variant, type ColorConfig } from '$lib/theming';
+	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import ShareItem from './ShareItem.svelte';
 	// import type { PageProps } from '../$types';
@@ -21,6 +22,7 @@
 	import type { ActionResult } from '@sveltejs/kit';
 	import { Action, IdentityType } from '$lib/accessHandler';
 	import type { AccessShareOption } from '$lib/types';
+	import ThemePicker from './ThemePicker.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
@@ -210,8 +212,14 @@
 	let edit = $state(false);
 
 	// for theme picker:
-	let sourceColor = $state('#769CDF');
-	let variant = $state(Variant.TONAL_SPOT);
+	let themeConfiguration: ColorConfig = $state({
+		sourceColor: '#769CDF',
+		variant: Variant.TONAL_SPOT,
+		contrast: 0.0
+	});
+	let sourceColor = $derived(themeConfiguration.sourceColor);
+	let variant = $derived(themeConfiguration.variant);
+	let contrast = $derived(themeConfiguration.contrast);
 	const contrastMin = -1.0;
 	const contrastMax = 1.0;
 	const contrastStep = 0.2;
@@ -219,7 +227,22 @@
 		{ length: (contrastMax - contrastMin) / contrastStep + 1 },
 		(_, i) => contrastMin + i * contrastStep
 	);
-	let contrast = $state(0.0);
+
+	let mode = $state<'light' | 'dark'>('light');
+
+	let profileAccountForm = $state<HTMLFormElement | null>(null);
+
+	const saveProfileAccount = async () => {
+		if (page.data.session?.loggedIn) {
+			profileAccountForm?.requestSubmit();
+			console.log('=== layout - saveProfileAccount - themeConfiguration ===');
+			console.log($state.snapshot(themeConfiguration));
+		}
+	};
+
+	const updateProfileAccount: SubmitFunction = async () => {
+		return () => {};
+	};
 
 	// // for modal and drawer:
 	// const loadHSOverlay = async () => {
@@ -836,6 +859,7 @@
 
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Theme Picker 🚧</Heading>
+		<p class="title-large text-primary">Building blocks</p>
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div class="w-48">
 				<label class="label label-text" for="colorPicker"
@@ -898,6 +922,14 @@
 				</div>
 			</div>
 		</div>
+		<p class="title-large text-primary">as SvelteComponent</p>
+		<ThemePicker
+			{updateProfileAccount}
+			{saveProfileAccount}
+			bind:profileAccountForm
+			bind:mode
+			{themeConfiguration}
+		/>
 		<HorizontalRule />
 	</div>
 
