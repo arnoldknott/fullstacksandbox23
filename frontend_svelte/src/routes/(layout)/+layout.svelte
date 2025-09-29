@@ -308,7 +308,7 @@
 		tabindex="-1"
 	>
 		<div class="modal-dialog">
-			<div class="modal-content">
+			<div class="modal-content bg-base-300">
 				<div class="modal-header">
 					<h3 class="modal-title">Welcome</h3>
 					<button
