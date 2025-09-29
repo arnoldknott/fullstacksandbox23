@@ -307,7 +307,7 @@
 		role="dialog"
 		tabindex="-1"
 	>
-		<div class="modal-dialog">
+		<div class="modal-dialog modal-dialog-lg">
 			<div class="modal-content bg-base-300 shadow-outline ring-outline-variant shadow-lg ring">
 				<div class="modal-header">
 					<span class="icon-[ph--smiley] size-6"></span>
@@ -321,7 +321,91 @@
 						<span class="icon-[tabler--x] size-4"></span>
 					</button>
 				</div>
-				<div class="modal-body">This is some placeholder content to show a welcome message.</div>
+				<div class="modal-body">
+					<div id="vertical-thumbnails" data-carousel class="relative w-full">
+						<div class="carousel flex space-x-2 rounded-none">
+							<div class="flex-none">
+								<div
+									class="carousel-pagination flex h-full w-[200px] flex-col justify-between gap-y-2 overflow-hidden max-sm:w-8"
+								>
+									<img
+										src="/Matterhorn20230628.jpg"
+										class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
+										alt="mountain"
+									/>
+									<img
+										src="https://cdn.flyonui.com/fy-assets/components/carousel/image-14.png"
+										class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
+										alt="sand"
+									/>
+									<!-- <div class="carousel-slide active">
+										<div class="bg-base-200/80 flex h-full justify-center p-6">
+											<span class="self-center text-2xl sm:text-4xl">Second slide</span>
+										</div>
+									</div> -->
+									<img
+										src="https://cdn.flyonui.com/fy-assets/components/carousel/image-7.png"
+										class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
+										alt="cloud"
+									/>
+								</div>
+							</div>
+							<div class="relative grow overflow-hidden rounded-2xl">
+								<div class="carousel-body h-80 opacity-0">
+									<!-- Slide 1 -->
+									<div class="carousel-slide">
+										<div class="bg-base-200/60 flex h-full justify-center p-6">
+											<span class="self-center text-2xl sm:text-4xl">First slide</span>
+										</div>
+									</div>
+									<!-- Slide 2 -->
+									<div class="carousel-slide">
+										<div class="flex size-full justify-center">
+											<img
+												src="https://cdn.flyonui.com/fy-assets/components/carousel/image-14.png"
+												class="size-full object-cover"
+												alt="sand"
+											/>
+										</div>
+									</div>
+									<!-- Slide 3 -->
+									<div class="carousel-slide">
+										<div class="flex size-full justify-center">
+											<!-- <img
+												src="https://cdn.flyonui.com/fy-assets/components/carousel/image-7.png"
+												class="size-full object-cover"
+												alt="cloud"
+											/> -->
+											<ThemePicker
+												{updateProfileAccount}
+												{saveProfileAccount}
+												bind:profileAccountForm
+												bind:mode
+												bind:themeConfiguration
+											/>
+										</div>
+									</div>
+								</div>
+								<!-- Previous Slide -->
+								<button
+									type="button"
+									class="carousel-prev carousel-disabled:opacity-50 bg-base-100 shadow-base-300/20 start-5 flex size-9.5 items-center justify-center rounded-full shadow-sm max-sm:start-3"
+								>
+									<span class="icon-[tabler--chevron-left] size-5 cursor-pointer"></span>
+									<span class="sr-only">Previous</span>
+								</button>
+								<!-- Next Slide -->
+								<button
+									type="button"
+									class="carousel-next carousel-disabled:opacity-50 bg-base-100 shadow-base-300/20 end-5 flex size-9.5 items-center justify-center rounded-full shadow-sm max-sm:end-3"
+								>
+									<span class="icon-[tabler--chevron-right] size-5"></span>
+									<span class="sr-only">Next</span>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
 				<div class="modal-footer">
 					<button
 						type="button"
