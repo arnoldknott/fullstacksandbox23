@@ -596,10 +596,7 @@
 		For resource hierarchies (protected resources) also add the order functionality by drag and
 		drop.
 	</li>
-	<li>
-		Update FlyonuUI to version 2.5.0 (when dropdown - select issue is resolved) and
-		eslint-plugin-svelte, when types are fixed.
-	</li>
+	<li>Update eslint-plugin-svelte, when types are fixed.</li>
 </ul>
 
 {#if debug}
