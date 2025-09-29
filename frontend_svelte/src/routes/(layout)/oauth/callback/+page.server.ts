@@ -51,6 +51,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			// TBD: consider leaving user.is_active at False after creatation and
 			// show the modal dialog for updating profile and account.
 			// The put -me endpoint will set is_active to True
+			// No - leave as is: make the app less annoying for first time users!
 			if (responseMe.status === 200) {
 				await redisCache.setSession(
 					sessionId,

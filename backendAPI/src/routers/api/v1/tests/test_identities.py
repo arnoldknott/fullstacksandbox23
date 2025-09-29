@@ -7,10 +7,10 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlmodel import select
 
-from core.types import Action, CurrentUserData, IdentityType
-from crud.access import AccessLoggingCRUD
 from core.config import config
 from core.databases import get_async_session
+from core.types import Action, CurrentUserData, IdentityType
+from crud.access import AccessLoggingCRUD
 from models.identity import (
     Group,
     GroupRead,
@@ -31,11 +31,11 @@ from models.protected_resource import ProtectedResourceRead
 from routers.api.v1.identities import (
     delete_group,
     get_user_by_id,
-    post_invite_azure_user,
     post_existing_groups_to_uebergroup,
     post_existing_subgroup_to_group,
     post_existing_user_to_group,
     post_existing_users_to_subgroup,
+    post_invite_azure_user,
 )
 from tests.utils import (
     current_user_data_admin,

@@ -3,7 +3,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlmodel import select, delete
+from sqlmodel import delete, select
 
 from core.types import Action, CurrentUserData, IdentityType
 from models.access import AccessLogCreate, AccessPolicyCreate
@@ -99,7 +99,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     # Any user passed in, get's checked for existence, if not existing, it get's created!
     # no matter if the user existed or not, group membership gets checked and created if needed!
     # Note the difference between user_id and azure_user_id as well as group_id and azure_group_id!
-    async def azure_user_self_sign_up( # noqa: C901
+    async def azure_user_self_sign_up(  # noqa: C901
         self,
         azure_user_id: UUID,
         azure_tenant_id: UUID,
@@ -144,7 +144,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                         if existing_user.user_profile
                         else None
                     )
-
 
                 # check if user_account and user_profile already exist:
                 if not database_user.user_account:
