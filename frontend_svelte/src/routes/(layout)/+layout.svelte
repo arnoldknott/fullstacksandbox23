@@ -299,6 +299,37 @@
 		</div>
 	</nav>
 
+	<div
+		id="welcome-modal"
+		class="overlay modal overlay-open:opacity-100 {userUnregistered
+			? 'open opened'
+			: 'hidden'} overlay-open:duration-300 modal-middle"
+		role="dialog"
+		tabindex="-1"
+	>
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 class="modal-title">Welcome</h3>
+					<button
+						type="button"
+						class="btn btn-text btn-circle btn-sm absolute end-3 top-3"
+						aria-label="Close"
+						data-overlay="#welcome-modal"
+					>
+						<span class="icon-[tabler--x] size-4"></span>
+					</button>
+				</div>
+				<div class="modal-body">This is some placeholder content to show a welcome message.</div>
+				<div class="modal-footer">
+					<button type="button" onclick={() => (userUnregistered = false)} class="btn btn-primary"
+						>Save profile</button
+					>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	{#if userUnregistered}
 		<div class="text-display-small text-error text-center">User not registered!</div>
 		<div class="mt-5">
