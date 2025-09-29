@@ -323,9 +323,13 @@
 				</div>
 				<div class="modal-body">This is some placeholder content to show a welcome message.</div>
 				<div class="modal-footer">
-					<button type="button" onclick={() => (userUnregistered = false)} class="btn btn-primary"
-						>Save profile</button
+					<button
+						type="button"
+						onclick={() => (userUnregistered = false)}
+						class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow-sm"
 					>
+						<span class="icon-[tabler--send-2]"></span>Save profile
+					</button>
 				</div>
 			</div>
 		</div>
