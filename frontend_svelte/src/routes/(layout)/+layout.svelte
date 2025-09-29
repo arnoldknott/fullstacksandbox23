@@ -308,9 +308,10 @@
 		tabindex="-1"
 	>
 		<div class="modal-dialog">
-			<div class="modal-content bg-base-300">
+			<div class="modal-content bg-base-300 shadow-outline ring-outline-variant shadow-lg ring">
 				<div class="modal-header">
-					<h3 class="modal-title">Welcome</h3>
+					<span class="icon-[ph--smiley] size-6"></span>
+					<h3 class="modal-title grow pl-2">Welcome</h3>
 					<button
 						type="button"
 						class="btn btn-text btn-circle btn-sm absolute end-3 top-3"

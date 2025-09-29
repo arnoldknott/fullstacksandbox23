@@ -1961,6 +1961,8 @@
 					Extension library <span class="label-prominent badge min-h-fit">Phosphor</span>
 				</p>
 				<span class="icon-[ph--users-four-fill] size-12"></span>
+				<span class="icon-[ph--smiley] size-12"></span>
+				<span class="icon-[ph--smiley-duotone] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
