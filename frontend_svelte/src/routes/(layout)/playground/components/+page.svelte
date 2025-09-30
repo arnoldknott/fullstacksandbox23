@@ -1043,7 +1043,7 @@
 		<Heading>🚧 Vertical Tabs 🚧</Heading>
 		<div class="flex">
 			<div
-				class="tabs tabs-bordered tabs-vertical w-[130px]"
+				class="tabs tabs-bordered tabs-vertical mr-5 w-[130px]"
 				aria-label="Tabs"
 				role="tablist"
 				data-tabs-vertical="true"
@@ -1086,7 +1086,7 @@
 
 			<div class="ms-3 h-[259px] w-[224px]">
 				<div
-					class="relative flex h-full w-full"
+					class="relative mx-5 flex h-full w-full"
 					id="tabs-vertical-welcome"
 					role="tabpanel"
 					aria-labelledby="tabs-vertical-item-welcome"
@@ -1115,23 +1115,31 @@
 				</div>
 				<div
 					id="tabs-vertical-ai"
-					class="hidden"
+					class="mx-5 hidden h-full"
 					role="tabpanel"
 					aria-labelledby="tabs-vertical-item-ai"
 				>
-					<p class="text-base-content/80">
-						This is your <span class="text-base-content font-semibold">Profile</span> tab, where you
-						can update your personal information and manage your account details.
-					</p>
+					<ul
+						class="m-1 h-full w-full rounded-xl p-4 shadow-inner shadow-md"
+						role="menu"
+						aria-orientation="vertical"
+						aria-labelledby="dropdown-menu-icon-user"
+					>
+						<li class="flex items-center gap-2">
+							<span class="icon-[tabler--settings] bg-neutral size-6"></span>
+							<span class="text-neutral grow">AI Settings</span>
+						</li>
+						<li><p class="text-base-content/80">Add settings here</p></li>
+					</ul>
 				</div>
 				<div
 					id="tabs-vertical-theme"
-					class="hidden"
+					class="mx-5 hidden"
 					role="tabpanel"
 					aria-labelledby="tabs-vertical-item-theme"
 				>
 					<ul
-						class="m-1 w-fit rounded-xl p-4 shadow-inner shadow-md"
+						class="m-1 w-fit p-4"
 						role="menu"
 						aria-orientation="vertical"
 						aria-labelledby="dropdown-menu-icon-user"

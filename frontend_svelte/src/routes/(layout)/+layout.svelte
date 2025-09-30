@@ -314,7 +314,7 @@
 		role="dialog"
 		tabindex="-1"
 	>
-		<div class="modal-dialog modal-dialog-lg">
+		<div class="modal-dialog modal-dialog-md">
 			<div class="modal-content bg-base-300 shadow-outline ring-outline-variant shadow-lg ring">
 				<div class="modal-header">
 					<span class="icon-[ph--smiley] size-6"></span>
@@ -328,99 +328,117 @@
 						<span class="icon-[tabler--x] size-4"></span>
 					</button>
 				</div>
-				<div class="modal-body">
-					<div id="vertical-thumbnails" data-carousel class="relative w-full">
-						<div class="carousel flex space-x-2 rounded-none">
-							<div class="flex-none">
-								<div
-									class="carousel-pagination flex h-full w-[200px] flex-col justify-between gap-y-2 overflow-hidden max-sm:w-8"
-								>
-									<img
-										src="/matterhorn-20230628.jpg"
-										class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
-										alt="mountain"
-									/>
-									<img
-										src="https://cdn.flyonui.com/fy-assets/components/carousel/image-14.png"
-										class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
-										alt="sand"
-									/>
-									<!-- <div class="carousel-slide active">
-										<div class="bg-base-200/80 flex h-full justify-center p-6">
-											<span class="self-center text-2xl sm:text-4xl">Second slide</span>
+				<div class="modal-body flex justify-center">
+					<div
+						class="tabs tabs-bordered tabs-vertical mr-5 w-[130px]"
+						aria-label="Tabs"
+						role="tablist"
+						data-tabs-vertical="true"
+						aria-orientation="horizontal"
+					>
+						<button
+							type="button"
+							class="tab active-tab:tab-active active py-11 text-left"
+							id="welcome-item-welcome"
+							data-tab="#welcome-welcome"
+							aria-controls="welcome-welcome"
+							role="tab"
+							aria-selected="true"
+						>
+							Welcome
+						</button>
+						<button
+							type="button"
+							class="tab active-tab:tab-active py-11 text-left"
+							id="welcome-item-ai"
+							data-tab="#welcome-ai"
+							aria-controls="welcome-ai"
+							role="tab"
+							aria-selected="false"
+						>
+							Artificial Intelligence
+						</button>
+						<button
+							type="button"
+							class="tab active-tab:tab-active py-11 text-left"
+							id="welcome-item-theme"
+							data-tab="#welcome-theme"
+							aria-controls="welcome-theme"
+							role="tab"
+							aria-selected="false"
+						>
+							Theme Configuration
+						</button>
+					</div>
+
+					<div class="ms-3 h-[259px] w-[224px]">
+						<div
+							class="relative mx-5 flex h-full w-full"
+							id="welcome-welcome"
+							role="tabpanel"
+							aria-labelledby="welcome-item-welcome"
+						>
+							<div
+								class="absolute inset-0 m-1 h-full w-full bg-[url(/matterhorn-20230628.jpg)] mask-y-from-95% mask-y-to-100% mask-x-from-95% mask-x-to-100% bg-cover bg-center p-4 opacity-70"
+							></div>
+							<div
+								class="text-base-content/80 relative m-1 h-full w-full content-center rounded-xl p-4"
+							>
+								Welcome to the
+								<div class="align-center flex flex-row justify-center">
+									<div class="flex flex-col justify-center">
+										<div class="title-small text-primary italic" style="line-height: 1;">
+											Fullstack
 										</div>
-									</div> -->
-									<img
-										src="https://cdn.flyonui.com/fy-assets/components/carousel/image-7.png"
-										class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
-										alt="cloud"
-									/>
+										<div
+											class="title-small text-secondary font-bold tracking-widest"
+											style="line-height: 1"
+										>
+											Sandbox
+										</div>
+									</div>
+									<div class="heading-large navbar-center text-accent ml-1 flex items-center">
+										23
+									</div>
 								</div>
+								<div class="text-right">Have fun exploring the content and trying things out!</div>
 							</div>
-							<div class="relative grow overflow-hidden rounded-2xl">
-								<div class="carousel-body h-80 opacity-0">
-									<!-- Slide 1 -->
-									<div class="carousel-slide">
-										<div class="bg-base-200/60 flex h-full justify-center p-6">
-											<span class="self-center text-2xl sm:text-4xl">First slide</span>
-										</div>
-									</div>
-									<!-- Slide 2 -->
-									<div class="carousel-slide">
-										<div class="flex size-full justify-center">
-											<img
-												src="https://cdn.flyonui.com/fy-assets/components/carousel/image-14.png"
-												class="size-full object-cover"
-												alt="sand"
-											/>
-										</div>
-									</div>
-									<!-- Slide 3 -->
-									<div class="carousel-slide">
-										<div class="flex size-full justify-center">
-											<!-- <img
-												src="https://cdn.flyonui.com/fy-assets/components/carousel/image-7.png"
-												class="size-full object-cover"
-												alt="cloud"
-											/> -->
-											<ul
-												class="bg-base-200 text-neutral shadow-outline m-1 w-fit rounded-xl p-4 shadow-inner shadow-md"
-												role="menu"
-												aria-orientation="vertical"
-												aria-labelledby="dropdown-menu-icon-user"
-											>
-												<ThemePicker
-													{updateProfileAccount}
-													{saveProfileAccount}
-													bind:profileAccountForm
-													bind:mode
-													bind:themeConfiguration
-												/>
-											</ul>
-										</div>
-									</div>
-								</div>
-								<!-- Previous Slide -->
-								<button
-									type="button"
-									class="carousel-prev carousel-disabled:opacity-50 bg-base-100 shadow-base-300/20 start-5 flex size-9.5 items-center justify-center rounded-full shadow-sm max-sm:start-3"
-								>
-									<span class="icon-[tabler--chevron-left] size-5 cursor-pointer"></span>
-									<span class="sr-only">Previous</span>
-								</button>
-								<!-- Next Slide -->
-								<button
-									type="button"
-									class="carousel-next carousel-disabled:opacity-50 bg-base-100 shadow-base-300/20 end-5 flex size-9.5 items-center justify-center rounded-full shadow-sm max-sm:end-3"
-								>
-									<span class="icon-[tabler--chevron-right] size-5"></span>
-									<span class="sr-only">Next</span>
-								</button>
-							</div>
+						</div>
+						<div
+							id="welcome-ai"
+							class="mx-5 hidden"
+							role="tabpanel"
+							aria-labelledby="welcome-item-ai"
+						>
+							<p class="text-base-content/80">
+								This is your <span class="text-base-content font-semibold">Profile</span> tab, where
+								you can update your personal information and manage your account details.
+							</p>
+						</div>
+						<div
+							id="welcome-theme"
+							class="mx-5 hidden"
+							role="tabpanel"
+							aria-labelledby="welcome-item-theme"
+						>
+							<ul
+								class="m-1 w-fit p-4"
+								role="menu"
+								aria-orientation="vertical"
+								aria-labelledby="dropdown-menu-icon-user"
+							>
+								<ThemePicker
+									{updateProfileAccount}
+									{saveProfileAccount}
+									bind:profileAccountForm
+									bind:mode
+									bind:themeConfiguration
+								/>
+							</ul>
 						</div>
 					</div>
 				</div>
-				<div class="modal-footer">
+				<!-- <div class="modal-footer">
 					<button
 						type="button"
 						onclick={() => (userUnregistered = false)}
@@ -428,7 +446,7 @@
 					>
 						<span class="icon-[tabler--send-2]"></span>Save profile
 					</button>
-				</div>
+				</div> -->
 			</div>
 		</div>
 	</div>
