@@ -329,7 +329,7 @@
 									class="carousel-pagination flex h-full w-[200px] flex-col justify-between gap-y-2 overflow-hidden max-sm:w-8"
 								>
 									<img
-										src="/Matterhorn20230628.jpg"
+										src="/matterhorn-20230628.jpg"
 										class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
 										alt="mountain"
 									/>
@@ -376,13 +376,20 @@
 												class="size-full object-cover"
 												alt="cloud"
 											/> -->
-											<ThemePicker
-												{updateProfileAccount}
-												{saveProfileAccount}
-												bind:profileAccountForm
-												bind:mode
-												bind:themeConfiguration
-											/>
+											<ul
+												class="bg-base-200 text-neutral shadow-outline m-1 w-fit rounded-xl p-4 shadow-inner shadow-md"
+												role="menu"
+												aria-orientation="vertical"
+												aria-labelledby="dropdown-menu-icon-user"
+											>
+												<ThemePicker
+													{updateProfileAccount}
+													{saveProfileAccount}
+													bind:profileAccountForm
+													bind:mode
+													bind:themeConfiguration
+												/>
+											</ul>
 										</div>
 									</div>
 								</div>

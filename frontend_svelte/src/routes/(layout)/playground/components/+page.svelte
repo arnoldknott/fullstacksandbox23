@@ -930,13 +930,20 @@
 			</div>
 		</div>
 		<p class="title-large text-primary">as SvelteComponent</p>
-		<ThemePicker
-			{updateProfileAccount}
-			{saveProfileAccount}
-			bind:profileAccountForm
-			bind:mode
-			{themeConfiguration}
-		/>
+		<ul
+			class="bg-base-200 text-neutral shadow-outline w-fit rounded-xl p-4 shadow-md"
+			role="menu"
+			aria-orientation="vertical"
+			aria-labelledby="dropdown-menu-icon-user"
+		>
+			<ThemePicker
+				{updateProfileAccount}
+				{saveProfileAccount}
+				bind:profileAccountForm
+				bind:mode
+				{themeConfiguration}
+			/>
+		</ul>
 		<HorizontalRule />
 	</div>
 
@@ -1044,51 +1051,55 @@
 			>
 				<button
 					type="button"
-					class="tab active-tab:tab-active active"
-					id="tabs-vertical-item-1"
-					data-tab="#tabs-vertical-1"
-					aria-controls="tabs-vertical-1"
+					class="tab active-tab:tab-active active whitespace-nowrap"
+					id="tabs-vertical-item-welcome"
+					data-tab="#tabs-vertical-welcome"
+					aria-controls="tabs-vertical-welcome"
 					role="tab"
 					aria-selected="true"
 				>
-					Home
+					Welcome
 				</button>
 				<button
 					type="button"
-					class="tab active-tab:tab-active"
-					id="tabs-vertical-item-2"
-					data-tab="#tabs-vertical-2"
-					aria-controls="tabs-vertical-2"
+					class="tab active-tab:tab-active whitespace-nowrap"
+					id="tabs-vertical-item-ai"
+					data-tab="#tabs-vertical-ai"
+					aria-controls="tabs-vertical-ai"
 					role="tab"
 					aria-selected="false"
 				>
-					Profile
+					Artificial Intelligence
 				</button>
 				<button
 					type="button"
-					class="tab active-tab:tab-active"
-					id="tabs-vertical-item-3"
-					data-tab="#tabs-vertical-3"
-					aria-controls="tabs-vertical-3"
+					class="tab active-tab:tab-active whitespace-nowrap"
+					id="tabs-vertical-item-theme"
+					data-tab="#tabs-vertical-theme"
+					aria-controls="tabs-vertical-theme"
 					role="tab"
 					aria-selected="false"
 				>
-					Messages
+					Theme Configuration
 				</button>
 			</div>
 
 			<div class="ms-3">
-				<div id="tabs-vertical-1" role="tabpanel" aria-labelledby="tabs-vertical-item-1">
+				<div
+					id="tabs-vertical-welcome"
+					role="tabpanel"
+					aria-labelledby="tabs-vertical-item-welcome"
+				>
 					<p class="text-base-content/80">
 						Welcome to the <span class="text-base-content font-semibold">Home tab!</span> Explore the
 						latest updates and news here.
 					</p>
 				</div>
 				<div
-					id="tabs-vertical-2"
+					id="tabs-vertical-ai"
 					class="hidden"
 					role="tabpanel"
-					aria-labelledby="tabs-vertical-item-2"
+					aria-labelledby="tabs-vertical-item-ai"
 				>
 					<p class="text-base-content/80">
 						This is your <span class="text-base-content font-semibold">Profile</span> tab, where you
@@ -1096,10 +1107,10 @@
 					</p>
 				</div>
 				<div
-					id="tabs-vertical-3"
+					id="tabs-vertical-theme"
 					class="hidden"
 					role="tabpanel"
-					aria-labelledby="tabs-vertical-item-3"
+					aria-labelledby="tabs-vertical-item-theme"
 				>
 					<p class="text-base-content/80">
 						<span class="text-base-content font-semibold">Messages:</span> View your recent messages,
