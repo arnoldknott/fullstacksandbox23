@@ -4,13 +4,13 @@
 	import { Variant, type ColorConfig } from '$lib/theming';
 
 	let {
-		profileAccountForm = $bindable<HTMLFormElement | null>(),
+		themeForm = $bindable<HTMLFormElement | null>(),
 		updateProfileAccount,
 		saveProfileAccount,
 		mode = $bindable<'light' | 'dark'>(),
 		themeConfiguration = $bindable()
 	}: {
-		profileAccountForm: HTMLFormElement | null;
+		themeForm: HTMLFormElement | null;
 		updateProfileAccount: SubmitFunction;
 		saveProfileAccount: () => void;
 		mode: 'light' | 'dark';
@@ -29,9 +29,9 @@
 <form
 	method="POST"
 	action="/?/putme"
-	id="user_profile_and_account"
+	id="theme-form"
 	use:enhance={updateProfileAccount}
-	bind:this={profileAccountForm}
+	bind:this={themeForm}
 >
 	<li class="flex items-center gap-2">
 		<span class="icon-[material-symbols--palette-outline] bg-neutral size-6"></span>
