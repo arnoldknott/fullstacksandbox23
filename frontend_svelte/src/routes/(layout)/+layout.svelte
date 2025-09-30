@@ -275,6 +275,7 @@
 		</div>
 		<div class="navbar-end flex items-center">
 			<div
+				id="settings-menu"
 				class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
 				{@attach initDropdown}
 				bind:this={settingsMenuElement}
