@@ -1894,6 +1894,7 @@
 				<span class="icon-[tabler--info-triangle] size-12"></span>
 				<span class="icon-[tabler--link-off] size-12"></span>
 				<span class="icon-[tabler--link] size-12"></span>
+				<span class="icon-[tabler--ai] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
@@ -1975,6 +1976,13 @@
 					Extension library <span class="label-prominent badge min-h-fit">Bootstrap Icons</span>
 				</p>
 				<span class="icon-[bi--microsoft-teams] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Mingcute</span>
+				</p>
+				<span class="icon-[mingcute--check-2-fill] size-12"></span>
+				<span class="icon-[mingcute--ai-fill] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
