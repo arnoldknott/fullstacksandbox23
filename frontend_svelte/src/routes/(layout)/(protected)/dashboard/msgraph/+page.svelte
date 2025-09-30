@@ -67,10 +67,14 @@
 		This picture comes from the generic API endpoint in Svelte which is forwards the fetch to the Microsoft
 		Graph API
 	</p>
-	<div
-		class="mask-radial-t-0% flex w-1/6 bg-[url(/apiproxies/msgraph?endpoint=/me/photo/$value)] mask-radial-from-1% bg-cover"
-	>
-		<p class="body-large m-8 self-end">
+	<div class="relative w-1/6">
+		<div
+			class="absolute inset-0 bg-[url(/apiproxies/msgraph?endpoint=/me/photo/$value)] mask-y-from-95% mask-y-to-100% mask-x-from-95% mask-x-to-100% bg-cover bg-center p-4 opacity-70"
+		></div>
+		<!-- <div
+		class=" flex w-1/6 bg-[url(/apiproxies/msgraph?endpoint=/me/photo/$value)] mask-y-from-95% mask-y-to-100% mask-x-from-95% mask-x-to-100% bg-cover"
+	> -->
+		<p class="body-large text-base-content-variant relative m-8 self-end">
 			Same generic endpoint, just applying mask to the image and use it as a background image.
 		</p>
 	</div>

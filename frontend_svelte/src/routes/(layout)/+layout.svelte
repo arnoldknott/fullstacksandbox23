@@ -265,7 +265,7 @@
 					{/if}
 				</span>
 				<ul
-					class="dropdown-menu bg-base-200 text-neutral shadow-outline dropdown-open:opacity-100 hidden shadow-md"
+					class="dropdown-menu bg-base-200 shadow-outline dropdown-open:opacity-100 hidden shadow-md"
 					role="menu"
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon-user"
@@ -277,6 +277,13 @@
 						bind:mode
 						bind:themeConfiguration
 					/>
+					<li>
+						<hr class="border-outline -mx-2 my-5" />
+					</li>
+					<li class="flex items-center gap-2">
+						<span class="icon-[tabler--settings] bg-neutral size-6"></span>
+						<span class="text-neutral grow"> Settings</span>
+					</li>
 				</ul>
 			</div>
 			<div class="flex items-center md:ml-2">

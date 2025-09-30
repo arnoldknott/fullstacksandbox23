@@ -1043,7 +1043,7 @@
 		<Heading>🚧 Vertical Tabs 🚧</Heading>
 		<div class="flex">
 			<div
-				class="tabs tabs-bordered tabs-vertical"
+				class="tabs tabs-bordered tabs-vertical w-[130px]"
 				aria-label="Tabs"
 				role="tablist"
 				data-tabs-vertical="true"
@@ -1051,7 +1051,7 @@
 			>
 				<button
 					type="button"
-					class="tab active-tab:tab-active active whitespace-nowrap"
+					class="tab active-tab:tab-active active py-11 text-left"
 					id="tabs-vertical-item-welcome"
 					data-tab="#tabs-vertical-welcome"
 					aria-controls="tabs-vertical-welcome"
@@ -1062,7 +1062,7 @@
 				</button>
 				<button
 					type="button"
-					class="tab active-tab:tab-active whitespace-nowrap"
+					class="tab active-tab:tab-active py-11 text-left"
 					id="tabs-vertical-item-ai"
 					data-tab="#tabs-vertical-ai"
 					aria-controls="tabs-vertical-ai"
@@ -1073,7 +1073,7 @@
 				</button>
 				<button
 					type="button"
-					class="tab active-tab:tab-active whitespace-nowrap"
+					class="tab active-tab:tab-active py-11 text-left"
 					id="tabs-vertical-item-theme"
 					data-tab="#tabs-vertical-theme"
 					aria-controls="tabs-vertical-theme"
@@ -1084,16 +1084,34 @@
 				</button>
 			</div>
 
-			<div class="ms-3">
+			<div class="ms-3 h-[259px] w-[224px]">
 				<div
+					class="relative flex h-full w-full"
 					id="tabs-vertical-welcome"
 					role="tabpanel"
 					aria-labelledby="tabs-vertical-item-welcome"
 				>
-					<p class="text-base-content/80">
-						Welcome to the <span class="text-base-content font-semibold">Home tab!</span> Explore the
-						latest updates and news here.
-					</p>
+					<div
+						class="absolute inset-0 m-1 h-full w-full bg-[url(/matterhorn-20230628.jpg)] mask-y-from-95% mask-y-to-100% mask-x-from-95% mask-x-to-100% bg-cover bg-center p-4 opacity-70"
+					></div>
+					<div
+						class="text-base-content/80 relative m-1 h-full w-full content-center rounded-xl p-4"
+					>
+						Welcome to the
+						<div class="align-center flex flex-row justify-center">
+							<div class="flex flex-col justify-center">
+								<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
+								<div
+									class="title-small text-secondary font-bold tracking-widest"
+									style="line-height: 1"
+								>
+									Sandbox
+								</div>
+							</div>
+							<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
+						</div>
+						<div class="text-right">Have fun exploring the content and trying things out!</div>
+					</div>
 				</div>
 				<div
 					id="tabs-vertical-ai"
@@ -1112,10 +1130,20 @@
 					role="tabpanel"
 					aria-labelledby="tabs-vertical-item-theme"
 				>
-					<p class="text-base-content/80">
-						<span class="text-base-content font-semibold">Messages:</span> View your recent messages,
-						chat with friends, and manage your conversations.
-					</p>
+					<ul
+						class="m-1 w-fit rounded-xl p-4 shadow-inner shadow-md"
+						role="menu"
+						aria-orientation="vertical"
+						aria-labelledby="dropdown-menu-icon-user"
+					>
+						<ThemePicker
+							{updateProfileAccount}
+							{saveProfileAccount}
+							bind:profileAccountForm
+							bind:mode
+							bind:themeConfiguration
+						/>
+					</ul>
 				</div>
 			</div>
 		</div>

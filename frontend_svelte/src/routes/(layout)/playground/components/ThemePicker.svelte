@@ -34,8 +34,8 @@
 	bind:this={profileAccountForm}
 >
 	<li class="flex items-center gap-2">
-		<span class="icon-[material-symbols--palette-outline] size-6"></span>
-		<span class="grow"> Theming</span>
+		<span class="icon-[material-symbols--palette-outline] bg-neutral size-6"></span>
+		<span class="text-neutral grow"> Theming</span>
 		<button aria-label="modeToggler" type="button">
 			<label for="mode-toggler" class="swap swap-rotate">
 				<input id="mode-toggler" type="checkbox" onclick={toggleMode} />
@@ -108,12 +108,5 @@
                     {/each}
                 </div> -->
 		</div>
-	</li>
-	<li>
-		<hr class="border-outline -mx-2 my-5" />
-	</li>
-	<li class="flex items-center gap-2">
-		<span class="icon-[tabler--settings] size-6"></span>
-		<span class="grow"> Settings</span>
 	</li>
 </form>
