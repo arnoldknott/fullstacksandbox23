@@ -45,7 +45,7 @@
 		</button>
 	</li>
 	<li>
-		<div class="w-48">
+		<div class="w-58 pt-2">
 			<label class="label label-text flex" for="color-picker">
 				<span class="grow">Source color:</span>
 				<code>{themeConfiguration.sourceColor}</code>
@@ -61,7 +61,7 @@
 		</div>
 	</li>
 	<li>
-		<div class="relative w-48">
+		<div class="relative w-58 pt-1">
 			<label class="label label-text" for="theme-variant">Variant</label>
 			<select
 				class="select select-floating max-w-sm"
@@ -84,7 +84,7 @@
 		</div>
 	</li>
 	<li>
-		<div class="w-48">
+		<div class="w-58 pt-2">
 			<label class="label label-text flex" for="contrast">
 				<span class="grow">Contrast: </span>
 				<code>{themeConfiguration.contrast}</code>

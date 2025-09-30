@@ -28,6 +28,13 @@
 				: true
 	);
 
+	let artificialIntelligenceConfiguration = $state({
+		enabled: true,
+		model: 'Model 1',
+		temperature: 0.7
+		// max_tokens: 2048
+	});
+
 	const theming = $state(new Theming());
 
 	// let themeConfiguration: ColorConfig = $state({
@@ -318,7 +325,20 @@
 			<div class="modal-content bg-base-300 shadow-outline ring-outline-variant shadow-lg ring">
 				<div class="modal-header">
 					<span class="icon-[ph--smiley] size-6"></span>
-					<h3 class="modal-title grow pl-2">Welcome</h3>
+					<h3 class="modal-title grow pl-2">Welcome to</h3>
+
+					<div class="align-center flex grow flex-row justify-center">
+						<div class="flex flex-col justify-center">
+							<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
+							<div
+								class="title-small text-secondary font-bold tracking-widest"
+								style="line-height: 1"
+							>
+								Sandbox
+							</div>
+						</div>
+						<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
+					</div>
 					<button
 						type="button"
 						class="btn btn-text btn-circle btn-sm absolute end-3 top-3"
@@ -328,9 +348,29 @@
 						<span class="icon-[tabler--x] size-4"></span>
 					</button>
 				</div>
-				<div class="modal-body flex justify-center">
+				<div class="modal-body flex flex-wrap justify-between">
+					<!-- <div class="w-full"> -->
+					<!-- <div
+							class="m-1 h-full w-full bg-[url(/starnberger-see-unset-20230807.jpg)] mask-y-from-75% mask-y-to-100% mask-x-from-95% mask-x-to-100% bg-cover bg-center p-4 opacity-40"
+						></div> -->
+					<img
+						src="/starnberger-see-unset-20230807.jpg"
+						class="w-full rounded-lg mask-y-from-75% mask-y-to-100% mask-x-from-95% mask-x-to-100% opacity-70"
+						alt="Bavarian lake Starnberger See in sunset"
+					/>
+					<div class="m-1 h-full w-full content-center p-4 text-justify font-semibold">
+						Adjust your settings for Artificial Intelligence and Theme configuration in the tabs now
+						or later by clicking at your user icon in the top right corner.
+						<!-- <p
+								class="from-primary via-secondary to-accent text-label w-fit bg-linear-to-b bg-clip-text px-5 text-justify font-semibold text-transparent"
+							>
+								Adjust your settings for Artificial Intelligence and Theme configuration in the tabs
+								now or later by clicking at your user icon in the top right corner.
+							</p> -->
+					</div>
+					<!-- </div> -->
 					<div
-						class="tabs tabs-bordered tabs-vertical mr-5 w-[130px]"
+						class="tabs tabs-bordered tabs-vertical w-[130px]"
 						aria-label="Tabs"
 						role="tablist"
 						data-tabs-vertical="true"
@@ -338,18 +378,7 @@
 					>
 						<button
 							type="button"
-							class="tab active-tab:tab-active active py-11 text-left"
-							id="welcome-item-welcome"
-							data-tab="#welcome-welcome"
-							aria-controls="welcome-welcome"
-							role="tab"
-							aria-selected="true"
-						>
-							Welcome
-						</button>
-						<button
-							type="button"
-							class="tab active-tab:tab-active py-11 text-left"
+							class="tab active-tab:tab-active active py-14 text-left"
 							id="welcome-item-ai"
 							data-tab="#welcome-ai"
 							aria-controls="welcome-ai"
@@ -360,7 +389,7 @@
 						</button>
 						<button
 							type="button"
-							class="tab active-tab:tab-active py-11 text-left"
+							class="tab active-tab:tab-active py-14 text-left"
 							id="welcome-item-theme"
 							data-tab="#welcome-theme"
 							aria-controls="welcome-theme"
@@ -371,53 +400,80 @@
 						</button>
 					</div>
 
-					<div class="ms-3 h-[259px] w-[224px]">
-						<div
-							class="relative mx-5 flex h-full w-full"
-							id="welcome-welcome"
-							role="tabpanel"
-							aria-labelledby="welcome-item-welcome"
-						>
-							<div
-								class="absolute inset-0 m-1 h-full w-full bg-[url(/matterhorn-20230628.jpg)] mask-y-from-95% mask-y-to-100% mask-x-from-95% mask-x-to-100% bg-cover bg-center p-4 opacity-70"
-							></div>
-							<div
-								class="text-base-content/80 relative m-1 h-full w-full content-center rounded-xl p-4"
+					<div class="h-[245px] w-[264px]">
+						<div id="welcome-ai" role="tabpanel" aria-labelledby="welcome-item-ai">
+							<ul
+								class="m-1 h-full w-full p-4"
+								role="menu"
+								aria-orientation="vertical"
+								aria-labelledby="dropdown-menu-icon-user"
 							>
-								Welcome to the
-								<div class="align-center flex flex-row justify-center">
-									<div class="flex flex-col justify-center">
-										<div class="title-small text-primary italic" style="line-height: 1;">
-											Fullstack
-										</div>
-										<div
-											class="title-small text-secondary font-bold tracking-widest"
-											style="line-height: 1"
-										>
-											Sandbox
-										</div>
+								<li class="flex items-center gap-2">
+									<span class="icon-[mingcute--ai-fill] bg-neutral size-6"></span>
+									<span class="text-neutral grow">Artificial Intelligence</span>
+								</li>
+								<li>
+									<div class="flex w-58 flex-row pt-2">
+										<label class="label label-text text-base" for="ai-enabled">off</label>
+										<input
+											type="checkbox"
+											class="switch switch-neutral"
+											bind:checked={artificialIntelligenceConfiguration.enabled}
+											id="ai-enabled"
+										/>
+										<label class="label label-text text-base" for="ai-enabled"> on</label>
 									</div>
-									<div class="heading-large navbar-center text-accent ml-1 flex items-center">
-										23
-									</div>
-								</div>
-								<div class="text-right">Have fun exploring the content and trying things out!</div>
-							</div>
-						</div>
-						<div
-							id="welcome-ai"
-							class="mx-5 hidden"
-							role="tabpanel"
-							aria-labelledby="welcome-item-ai"
-						>
-							<p class="text-base-content/80">
-								This is your <span class="text-base-content font-semibold">Profile</span> tab, where
-								you can update your personal information and manage your account details.
-							</p>
+								</li>
+								<li class="relative w-58 pt-1">
+									<label
+										class="label label-text {artificialIntelligenceConfiguration.enabled
+											? ''
+											: 'text-base-content-variant'}"
+										for="ai-model">Model</label
+									>
+									<select
+										class="select select-floating max-w-sm"
+										aria-label="Select model"
+										id="ai-model"
+										name="model-picker"
+										disabled={!artificialIntelligenceConfiguration.enabled}
+										onchange={() => saveProfileAccount()}
+										bind:value={artificialIntelligenceConfiguration.model}
+									>
+										<option value="Model 1">Model 1</option>
+										<option value="Model 2">Model 2</option>
+										<option value="Model 3">Model 3</option>
+									</select>
+								</li>
+								<li class="relative w-58 pt-2">
+									<label
+										class="label label-text flex {artificialIntelligenceConfiguration.enabled
+											? ''
+											: 'text-base-content-variant'}"
+										for="ai-temperature"
+									>
+										<span class="grow">Temperature: </span>
+										<code>{artificialIntelligenceConfiguration.temperature}</code>
+									</label>
+									<input
+										type="range"
+										min="0.2"
+										max="1"
+										step="0.1"
+										class="range {artificialIntelligenceConfiguration.enabled
+											? ''
+											: 'disabled'} w-full"
+										id="ai-temperature"
+										name="temperature"
+										onchange={() => saveProfileAccount()}
+										bind:value={artificialIntelligenceConfiguration.temperature}
+									/>
+								</li>
+							</ul>
 						</div>
 						<div
 							id="welcome-theme"
-							class="mx-5 hidden"
+							class="hidden"
 							role="tabpanel"
 							aria-labelledby="welcome-item-theme"
 						>

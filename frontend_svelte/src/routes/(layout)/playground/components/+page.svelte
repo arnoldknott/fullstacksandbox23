@@ -211,6 +211,14 @@
 	// for edit button:
 	let edit = $state(false);
 
+	// for artificial intelligence settings:
+	let artificialIntelligenceConfiguration = $state({
+		enabled: true,
+		model: 'Model 1',
+		temperature: 0.7
+		// max_tokens: 2048
+	});
+
 	// for theme picker:
 	let themeConfiguration: ColorConfig = $state({
 		sourceColor: '#769CDF',
@@ -1043,7 +1051,7 @@
 		<Heading>🚧 Vertical Tabs 🚧</Heading>
 		<div class="flex">
 			<div
-				class="tabs tabs-bordered tabs-vertical mr-5 w-[130px]"
+				class="tabs tabs-bordered tabs-vertical w-[130px]"
 				aria-label="Tabs"
 				role="tablist"
 				data-tabs-vertical="true"
@@ -1084,9 +1092,9 @@
 				</button>
 			</div>
 
-			<div class="ms-3 h-[259px] w-[224px]">
+			<div class="h-[245px] w-[264px]">
 				<div
-					class="relative mx-5 flex h-full w-full"
+					class="relative flex h-full w-full"
 					id="tabs-vertical-welcome"
 					role="tabpanel"
 					aria-labelledby="tabs-vertical-item-welcome"
@@ -1120,16 +1128,70 @@
 					aria-labelledby="tabs-vertical-item-ai"
 				>
 					<ul
-						class="m-1 h-full w-full rounded-xl p-4 shadow-inner shadow-md"
+						class="m-1 h-full w-full p-4"
 						role="menu"
 						aria-orientation="vertical"
 						aria-labelledby="dropdown-menu-icon-user"
 					>
 						<li class="flex items-center gap-2">
-							<span class="icon-[tabler--settings] bg-neutral size-6"></span>
-							<span class="text-neutral grow">AI Settings</span>
+							<span class="icon-[mingcute--ai-fill] bg-neutral size-6"></span>
+							<span class="text-neutral grow">Artificial Intelligence</span>
 						</li>
-						<li><p class="text-base-content/80">Add settings here</p></li>
+						<li>
+							<div class="flex w-58 flex-row pt-2">
+								<label class="label label-text text-base" for="ai-enabled">off</label>
+								<input
+									type="checkbox"
+									class="switch switch-neutral"
+									bind:checked={artificialIntelligenceConfiguration.enabled}
+									id="ai-enabled"
+								/>
+								<label class="label label-text text-base" for="ai-enabled"> on</label>
+							</div>
+						</li>
+						<li class="relative w-58 pt-1">
+							<label
+								class="label label-text {artificialIntelligenceConfiguration.enabled
+									? ''
+									: 'text-base-content-variant'}"
+								for="ai-model">Model</label
+							>
+							<select
+								class="select select-floating max-w-sm"
+								aria-label="Select model"
+								id="ai-model"
+								name="model-picker"
+								disabled={!artificialIntelligenceConfiguration.enabled}
+								onchange={() => saveProfileAccount()}
+								bind:value={artificialIntelligenceConfiguration.model}
+							>
+								<option value="Model 1">Model 1</option>
+								<option value="Model 2">Model 2</option>
+								<option value="Model 3">Model 3</option>
+							</select>
+						</li>
+						<li class="relative w-58 pt-2">
+							<label
+								class="label label-text flex {artificialIntelligenceConfiguration.enabled
+									? ''
+									: 'text-base-content-variant'}"
+								for="ai-temperature"
+							>
+								<span class="grow">Temperature: </span>
+								<code>{artificialIntelligenceConfiguration.temperature}</code>
+							</label>
+							<input
+								type="range"
+								min="0.2"
+								max="1"
+								step="0.1"
+								class="range {artificialIntelligenceConfiguration.enabled ? '' : 'disabled'} w-full"
+								id="ai-temperature"
+								name="temperature"
+								onchange={() => saveProfileAccount()}
+								bind:value={artificialIntelligenceConfiguration.temperature}
+							/>
+						</li>
 					</ul>
 				</div>
 				<div
