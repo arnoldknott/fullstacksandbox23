@@ -956,19 +956,19 @@
 						class="carousel-pagination flex h-full w-[200px] flex-col justify-between gap-y-2 overflow-hidden max-sm:w-8"
 					>
 						<img
-							src="https://cdn.flyonui.com/fy-assets/components/carousel/image-21.png"
+							src="/matterhorn-20230628.jpg"
 							class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
-							alt="mountain"
+							alt="Swiss mountain Matterhorn in sunset"
 						/>
 						<img
-							src="https://cdn.flyonui.com/fy-assets/components/carousel/image-14.png"
+							src="/mountain-salamander-20240702.jpg"
 							class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
-							alt="sand"
+							alt="Mountain salamander on a rock"
 						/>
 						<img
-							src="https://cdn.flyonui.com/fy-assets/components/carousel/image-7.png"
+							src="/starnberger-see-unset-20230807.jpg"
 							class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
-							alt="cloud"
+							alt="Bavarian lake Starnberger See in sunset"
 						/>
 					</div>
 				</div>
@@ -978,9 +978,9 @@
 						<div class="carousel-slide">
 							<div class="flex size-full justify-center">
 								<img
-									src="https://cdn.flyonui.com/fy-assets/components/carousel/image-21.png"
+									src="/matterhorn-20230628.jpg"
 									class="size-full object-cover"
-									alt="mountain"
+									alt="Swiss mountain Matterhorn in sunset"
 								/>
 							</div>
 						</div>
@@ -988,9 +988,9 @@
 						<div class="carousel-slide">
 							<div class="flex size-full justify-center">
 								<img
-									src="https://cdn.flyonui.com/fy-assets/components/carousel/image-14.png"
+									src="/mountain-salamander-20240702.jpg"
 									class="size-full object-cover"
-									alt="sand"
+									alt="Mountain Salamander on a rock"
 								/>
 							</div>
 						</div>
@@ -998,9 +998,9 @@
 						<div class="carousel-slide">
 							<div class="flex size-full justify-center">
 								<img
-									src="https://cdn.flyonui.com/fy-assets/components/carousel/image-7.png"
+									src="/starnberger-see-unset-20230807.jpg"
 									class="size-full object-cover"
-									alt="cloud"
+									alt="Bavarian lake Starnberger See in sunset"
 								/>
 							</div>
 						</div>
@@ -1024,52 +1024,90 @@
 				</div>
 			</div>
 		</div>
-		<!-- Slider -->
-		<!-- TBD. pass those data-carousel attributes:
-		  {JSON.parse(
-				'{"loadingClasses": "opacity-0", "dotsItemClasses": "carousel-box carousel-active:bg-primary"}'
-			)} -->
-		<div data-carousel class="relative w-full">
-			<div class="carousel h-80">
-				<div class="carousel-body h-full opacity-0">
-					<div class="carousel-slide">
-						<div class="bg-base-200/60 flex h-full justify-center p-6">
-							<span class="self-center text-2xl sm:text-4xl">First slide</span>
-						</div>
-					</div>
-					<div class="carousel-slide active">
-						<div class="bg-base-200/80 flex h-full justify-center p-6">
-							<span class="self-center text-2xl sm:text-4xl">Second slide</span>
-						</div>
-					</div>
-					<div class="carousel-slide">
-						<div class="bg-base-200 flex h-full justify-center p-6">
-							<span class="self-center text-2xl sm:text-4xl">Third slide</span>
-						</div>
-					</div>
-				</div>
+		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Vertical Tabs</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Vertical Tabs 🚧</Heading>
+		<div class="flex">
+			<div
+				class="tabs tabs-bordered tabs-vertical"
+				aria-label="Tabs"
+				role="tablist"
+				data-tabs-vertical="true"
+				aria-orientation="horizontal"
+			>
+				<button
+					type="button"
+					class="tab active-tab:tab-active active"
+					id="tabs-vertical-item-1"
+					data-tab="#tabs-vertical-1"
+					aria-controls="tabs-vertical-1"
+					role="tab"
+					aria-selected="true"
+				>
+					Home
+				</button>
+				<button
+					type="button"
+					class="tab active-tab:tab-active"
+					id="tabs-vertical-item-2"
+					data-tab="#tabs-vertical-2"
+					aria-controls="tabs-vertical-2"
+					role="tab"
+					aria-selected="false"
+				>
+					Profile
+				</button>
+				<button
+					type="button"
+					class="tab active-tab:tab-active"
+					id="tabs-vertical-item-3"
+					data-tab="#tabs-vertical-3"
+					aria-controls="tabs-vertical-3"
+					role="tab"
+					aria-selected="false"
+				>
+					Messages
+				</button>
 			</div>
 
-			<button
-				type="button"
-				class="carousel-prev carousel-disabled:opacity-50 bg-base-100 shadow-base-300/20 start-5 flex size-9.5 items-center justify-center rounded-full shadow-sm max-sm:start-3"
-			>
-				<span class="icon-[tabler--chevron-left] size-5"></span>
-				<span class="sr-only">Previous</span>
-			</button>
-			<button
-				type="button"
-				class="carousel-next carousel-disabled:opacity-50 bg-base-100 shadow-base-300/20 end-5 flex size-9.5 items-center justify-center rounded-full shadow-sm max-sm:end-3"
-			>
-				<span class="icon-[tabler--chevron-right] size-5"></span>
-				<span class="sr-only">Next</span>
-			</button>
-
-			<div
-				class="carousel-pagination absolute start-0 end-0 bottom-3 flex justify-center gap-3"
-			></div>
+			<div class="ms-3">
+				<div id="tabs-vertical-1" role="tabpanel" aria-labelledby="tabs-vertical-item-1">
+					<p class="text-base-content/80">
+						Welcome to the <span class="text-base-content font-semibold">Home tab!</span> Explore the
+						latest updates and news here.
+					</p>
+				</div>
+				<div
+					id="tabs-vertical-2"
+					class="hidden"
+					role="tabpanel"
+					aria-labelledby="tabs-vertical-item-2"
+				>
+					<p class="text-base-content/80">
+						This is your <span class="text-base-content font-semibold">Profile</span> tab, where you
+						can update your personal information and manage your account details.
+					</p>
+				</div>
+				<div
+					id="tabs-vertical-3"
+					class="hidden"
+					role="tabpanel"
+					aria-labelledby="tabs-vertical-item-3"
+				>
+					<p class="text-base-content/80">
+						<span class="text-base-content font-semibold">Messages:</span> View your recent messages,
+						chat with friends, and manage your conversations.
+					</p>
+				</div>
+			</div>
 		</div>
-		<!-- End Slider -->
 		<HorizontalRule />
 	</div>
 
