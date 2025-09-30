@@ -20,23 +20,7 @@
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
-	import type { Attachment } from 'svelte/attachments';
-	import type { HSDropdown, IHTMLElementFloatingUI } from 'flyonui/flyonui';
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
-
-	let settingsMenuElement = $state<HTMLElement | null>(null);
-	let settingsMenu: HSDropdown | null = $state(null);
-
-	const initDropdown: Attachment = (_node: Element) => {
-		import('flyonui/flyonui')
-			.then(({ HSDropdown }) => {
-				settingsMenu = new HSDropdown(settingsMenuElement as unknown as IHTMLElementFloatingUI);
-				HSDropdown.autoInit();
-			})
-			.catch((error) => {
-				console.error('Error loading HSDropdown:', error);
-			});
-	};
 
 	let userUnregistered = $derived(
 		!data.session?.loggedIn
@@ -274,12 +258,7 @@
 			<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 		</div>
 		<div class="navbar-end flex items-center">
-			<div
-				id="settings-menu"
-				class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
-				{@attach initDropdown}
-				bind:this={settingsMenuElement}
-			>
+			<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
 				<span
 					id="dropdown-menu-icon-user"
 					class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-6' : ''}"
@@ -325,9 +304,8 @@
 						<button
 							aria-label="show Modal"
 							type="button"
-							class="dropdown-item"
+							class="dropdown-item dropdown-close"
 							onclick={() => {
-								settingsMenu?.close();
 								userUnregistered = true;
 							}}
 						>
