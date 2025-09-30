@@ -11,6 +11,7 @@ declare global {
 
 		// FlyonUI
 		HSStaticMethods: IStaticMethods;
+		// HSDropdown: HSDropdown;
 	}
 
 	namespace App {

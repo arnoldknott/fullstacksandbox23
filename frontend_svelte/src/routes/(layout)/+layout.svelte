@@ -20,7 +20,23 @@
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
+	import type { Attachment } from 'svelte/attachments';
+	import type { HSDropdown, IHTMLElementFloatingUI } from 'flyonui/flyonui';
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
+
+	let settingsMenuElement = $state<HTMLElement | null>(null);
+	let settingsMenu: HSDropdown | null = $state(null);
+
+	const initDropdown: Attachment = (_node: Element) => {
+		import('flyonui/flyonui')
+			.then(({ HSDropdown }) => {
+				settingsMenu = new HSDropdown(settingsMenuElement as unknown as IHTMLElementFloatingUI);
+				HSDropdown.autoInit();
+			})
+			.catch((error) => {
+				console.error('Error loading HSDropdown:', error);
+			});
+	};
 
 	let userUnregistered = $derived(
 		!data.session?.loggedIn
@@ -258,7 +274,11 @@
 			<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 		</div>
 		<div class="navbar-end flex items-center">
-			<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
+			<div
+				class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
+				{@attach initDropdown}
+				bind:this={settingsMenuElement}
+			>
 				<span
 					id="dropdown-menu-icon-user"
 					class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-6' : ''}"
@@ -281,6 +301,15 @@
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon-user"
 				>
+					<ArtificialIntelligencePicker
+						{updateProfileAccount}
+						{saveProfileAccount}
+						bind:artificialIntelligenceForm
+						bind:artificialIntelligenceConfiguration
+					/>
+					<li>
+						<hr class="border-outline -mx-2 my-5" />
+					</li>
 					<ThemePicker
 						{updateProfileAccount}
 						{saveProfileAccount}
@@ -292,8 +321,18 @@
 						<hr class="border-outline -mx-2 my-5" />
 					</li>
 					<li class="flex items-center gap-2">
-						<span class="icon-[tabler--settings] bg-neutral size-6"></span>
-						<span class="text-neutral grow"> Settings</span>
+						<button
+							aria-label="show Modal"
+							type="button"
+							class="dropdown-item"
+							onclick={() => {
+								settingsMenu?.close();
+								userUnregistered = true;
+							}}
+						>
+							<span class="icon-[tabler--eye] bg-neutral size-6"></span>
+							<span class="text-neutral grow">Show welcome modal</span>
+						</button>
 					</li>
 				</ul>
 			</div>
@@ -346,6 +385,7 @@
 					<button
 						type="button"
 						class="btn btn-text btn-circle btn-sm absolute end-3 top-3"
+						onclick={() => (userUnregistered = false)}
 						aria-label="Close"
 						data-overlay="#welcome-modal"
 					>

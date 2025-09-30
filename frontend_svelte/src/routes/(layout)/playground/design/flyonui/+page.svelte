@@ -1895,6 +1895,7 @@
 				<span class="icon-[tabler--link-off] size-12"></span>
 				<span class="icon-[tabler--link] size-12"></span>
 				<span class="icon-[tabler--ai] size-12"></span>
+				<span class="icon-[tabler--eye] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
