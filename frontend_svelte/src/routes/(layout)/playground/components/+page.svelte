@@ -820,18 +820,27 @@
 
 						<!-- <option value="">Please select a pet</option> -->
 						<!-- TBD: add emojis as alternative for older browsers! -->
-						<option class="dropdown-item dropdown-close bg-base-300" value={Action.OWN}
-							>{@render shareSelect(Action.OWN)} own</option
+						<option
+							class="dropdown-item dropdown-close bg-base-300 text-success"
+							value={Action.OWN}
 						>
-						<option class="dropdown-item dropdown-close bg-base-300" value={Action.WRITE}
-							>{@render shareSelect(Action.WRITE)} write</option
+							{@render shareSelect(Action.OWN)} own
+						</option>
+						<option
+							class="dropdown-item dropdown-close bg-base-300 text-warning"
+							value={Action.WRITE}
 						>
-						<option class="dropdown-item dropdown-close bg-base-300" value={Action.READ}
-							>{@render shareSelect(Action.READ)} read</option
+							{@render shareSelect(Action.WRITE)} write
+						</option>
+						<option
+							class="dropdown-item dropdown-close bg-base-300 text-neutral"
+							value={Action.READ}
 						>
-						<option class="dropdown-item dropdown-close bg-base-300" value={undefined}
-							>{@render shareSelect(undefined)} none</option
-						>
+							{@render shareSelect(Action.READ)} read
+						</option>
+						<option class="dropdown-item dropdown-close bg-base-300 text-error" value={undefined}>
+							{@render shareSelect(undefined)} none
+						</option>
 					</select>
 				</form>
 			</div>
