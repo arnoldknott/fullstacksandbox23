@@ -801,16 +801,19 @@
 	{/snippet}
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Selections 🚧</Heading>
-		<div class="bg-base-300 mb-20 flex flex-wrap gap-4">
+		<div class="bg-base-300 mb-20 flex w-fit flex-wrap gap-4 rounded rounded-xl p-4">
 			<!-- <div> -->
 			<!-- <label class="label label-text" for="right-selector" -->
-			<span class="{AccessHandler.rightsIcon(selectedAction)} size-6"></span>
+			<!-- <span class="{AccessHandler.rightsIcon(selectedAction)} size-6"></span> -->
 			<div class="">
-				<form class=" w-17">
+				<form class=" w-10">
 					<!-- <label for="rights"><span class={AccessHandler.rightsIcon(selectedAction)}></span></label> -->
 					<select
-						class="custom-select bg-base-300 w-full pr-3"
+						class="select custom-select bg-base-300 w-full pr-3 {AccessHandler.rightsIcon(
+							selectedAction
+						)} icon-[tabler--chevron-down] size-6"
 						id="rights"
+						required
 						aria-label="Select rights"
 						bind:value={selectedAction}
 					>
@@ -821,19 +824,19 @@
 						<!-- <option value="">Please select a pet</option> -->
 						<!-- TBD: add emojis as alternative for older browsers! -->
 						<option
-							class="dropdown-item dropdown-close bg-base-300 text-success"
+							class="dropdown-item dropdown-close bg-base-300 text-success custom-option-own"
 							value={Action.OWN}
 						>
 							{@render shareSelect(Action.OWN)} own
 						</option>
 						<option
-							class="dropdown-item dropdown-close bg-base-300 text-warning"
+							class="dropdown-item dropdown-close bg-base-300 text-warning custom-option-write"
 							value={Action.WRITE}
 						>
 							{@render shareSelect(Action.WRITE)} write
 						</option>
 						<option
-							class="dropdown-item dropdown-close bg-base-300 text-neutral"
+							class="dropdown-item dropdown-close bg-base-300 text-neutral custom-option-read"
 							value={Action.READ}
 						>
 							{@render shareSelect(Action.READ)} read
@@ -842,6 +845,7 @@
 							{@render shareSelect(undefined)} none
 						</option>
 					</select>
+					<!-- <span class="icon-[tabler--chevron-down] size-6"></span> -->
 				</form>
 			</div>
 			<!-- <select
@@ -1602,12 +1606,19 @@
 		&::picker(select) {
 			appearance: base-select;
 		}
+		/* :open::picker-icon {
+			rotate: 180deg;
+		}
+		::picker-icon {
+			color: var(--md-sys-color-primary);
+			transition: 0.4s rotate;
+		} */
 	}
-	select:open::picker-icon {
+	/* select:open::picker-icon {
 		rotate: 180deg;
 	}
 	select::picker-icon {
 		color: var(--md-sys-color-primary);
 		transition: 0.4s rotate;
-	}
+	} */
 </style>
