@@ -167,7 +167,6 @@
 	);
 
 	// selections
-
 	let selectedAction: Action | undefined = $state(Action.READ);
 
 	let browser = $derived.by(() => {
@@ -187,6 +186,8 @@
 		}
 		return 'Unknown';
 	});
+
+	let focused = $state(false);
 
 	// for status sliders:
 	let theme = $state({} as AppTheme);
@@ -806,15 +807,17 @@
 			<!-- <label class="label label-text" for="right-selector" -->
 			<!-- <span class="{AccessHandler.rightsIcon(selectedAction)} size-6"></span> -->
 			<div class="">
-				<form class=" w-10">
+				<form class="relative w-fit">
 					<!-- <label for="rights"><span class={AccessHandler.rightsIcon(selectedAction)}></span></label> -->
 					<select
 						class="select custom-select bg-base-300 w-full pr-3 {AccessHandler.rightsIcon(
 							selectedAction
-						)} icon-[tabler--chevron-down] size-6"
+						)}  size-6"
 						id="rights"
 						required
 						aria-label="Select rights"
+						onfocus={() => (focused = true)}
+						onblur={() => (focused = false)}
 						bind:value={selectedAction}
 					>
 						<!-- <button>
@@ -845,6 +848,14 @@
 							{@render shareSelect(undefined)} none
 						</option>
 					</select>
+					<span
+						class="icon-[tabler--chevron-down] pointer-events-none absolute top-1/2 right-1 size-6 -translate-y-1/2 transition-transform duration-400"
+						class:rotate-180={focused}
+					>
+					</span>
+					<!-- <label for="rights"
+						><span class="icon-[tabler--chevron-down] select-open:rotate-180 size-4"></span></label
+					> -->
 					<!-- <span class="icon-[tabler--chevron-down] size-6"></span> -->
 				</form>
 			</div>
