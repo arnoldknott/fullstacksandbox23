@@ -20,7 +20,7 @@
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
 	import type { ActionResult } from '@sveltejs/kit';
-	import { Action, IdentityType } from '$lib/accessHandler';
+	import { Action, AccessHandler, IdentityType } from '$lib/accessHandler';
 	import type { AccessShareOption } from '$lib/types';
 	import ThemePicker from './ThemePicker.svelte';
 	import ArtificialIntelligencePicker from './ArtificialIntelligencePicker.svelte';
@@ -165,6 +165,28 @@
 			(a, b) => a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name)
 		)
 	);
+
+	// selections
+
+	let selectedAction: Action | undefined = $state(Action.READ);
+
+	let browser = $derived.by(() => {
+		if (typeof navigator !== 'undefined') {
+			const userAgent = navigator.userAgent;
+			if (userAgent.includes('Chrome')) {
+				return 'Chrome';
+			} else if (userAgent.includes('Firefox')) {
+				return 'Firefox';
+			} else if (userAgent.includes('Safari')) {
+				return 'Safari';
+			} else if (userAgent.includes('Edge')) {
+				return 'Edge';
+			} else {
+				return 'Other';
+			}
+		}
+		return 'Unknown';
+	});
 
 	// for status sliders:
 	let theme = $state({} as AppTheme);
@@ -538,6 +560,8 @@
 					>
 						<span class="icon-[material-symbols--edit-outline-rounded]"></span>Edit
 					</button>
+					<!-- Add to class [--auto-close:inside] 
+					 after refactoring into select menu -->
 					<div
 						class="dropdown join-item relative inline-flex grow [--placement:top]"
 						bind:this={actionButtonShareMenuElement}
@@ -667,6 +691,8 @@
 							<span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit
 						</button>
 					</li>
+					<!-- Add to class [--auto-close:inside] 
+					 after refactoring into select menu -->
 					<li
 						class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
 						bind:this={dropdownShareDropdownElement}
@@ -722,6 +748,8 @@
 				</ul>
 			</div>
 			<div>
+				<!-- Add to class [--auto-close:inside]
+					 after refactoring into select menu -->
 				<div class="dropdown relative inline-flex" bind:this={dropdownShareElement}>
 					<button
 						id="dropdown-share"
@@ -757,6 +785,83 @@
 			</div>
 		</div>
 		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Selections</Heading>
+		{@render underConstruction()}
+	</div>
+
+	{#snippet shareSelect(right: Action | undefined)}
+		{#if browser === 'Firefox' || browser === 'Safari'}
+			<!-- {right || 'none'} -->
+		{:else}
+			<span class={AccessHandler.rightsIcon(right)}></span>
+		{/if}
+	{/snippet}
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Selections 🚧</Heading>
+		<div class="bg-base-300 mb-20 flex flex-wrap gap-4">
+			<!-- <div> -->
+			<!-- <label class="label label-text" for="right-selector" -->
+			<span class="{AccessHandler.rightsIcon(selectedAction)} size-6"></span>
+			<div class="">
+				<form class=" w-17">
+					<!-- <label for="rights"><span class={AccessHandler.rightsIcon(selectedAction)}></span></label> -->
+					<select
+						class="custom-select bg-base-300 w-full pr-3"
+						id="rights"
+						aria-label="Select rights"
+						bind:value={selectedAction}
+					>
+						<!-- <button>
+							<selectedcontent></selectedcontent>
+						</button> -->
+
+						<!-- <option value="">Please select a pet</option> -->
+						<!-- TBD: add emojis as alternative for older browsers! -->
+						<option class="dropdown-item dropdown-close bg-base-300" value={Action.OWN}
+							>{@render shareSelect(Action.OWN)} own</option
+						>
+						<option class="dropdown-item dropdown-close bg-base-300" value={Action.WRITE}
+							>{@render shareSelect(Action.WRITE)} write</option
+						>
+						<option class="dropdown-item dropdown-close bg-base-300" value={Action.READ}
+							>{@render shareSelect(Action.READ)} read</option
+						>
+						<option class="dropdown-item dropdown-close bg-base-300" value={undefined}
+							>{@render shareSelect(undefined)} none</option
+						>
+					</select>
+				</form>
+			</div>
+			<!-- <select
+				class="select select-floating max-w-sm"
+				aria-label="Select right"
+				id="rights-{shareOption.identity_id}"
+				name="right-selector"
+				onclick={() => {
+					if (share) {
+						share({
+							resource_id: resourceId,
+							identity_id: shareOption.identity_id,
+							action: desiredActions(selectedAction).action,
+							new_action: desiredActions(selectedAction).new_action
+						});
+						// if (closeShareMenu) {
+						// 	closeShareMenu();
+						// }
+					} else {
+						goto(
+							`?/share&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
+						);
+					}
+				}}
+				bind:value={selectedAction}
+			>
+			</select>
+		</div> -->
+		</div>
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
@@ -1481,3 +1586,19 @@
 		<HorizontalRule />
 	</div>
 </div>
+
+<style>
+	.custom-select {
+		&,
+		&::picker(select) {
+			appearance: base-select;
+		}
+	}
+	select:open::picker-icon {
+		rotate: 180deg;
+	}
+	select::picker-icon {
+		color: var(--md-sys-color-primary);
+		transition: 0.4s rotate;
+	}
+</style>
