@@ -810,7 +810,7 @@
 				<form class="w-fit">
 					<!-- <label for="rights"><span class={AccessHandler.rightsIcon(selectedAction)}></span></label> -->
 					<select
-						class="select custom-select bg-base-300 -mx-5 w-full {AccessHandler.rightsIcon(
+						class="select custom-select bg-base-300 -mx-4 w-full {AccessHandler.rightsIcon(
 							selectedAction
 						)}  size-6"
 						id="rights"
@@ -854,7 +854,7 @@
 					<!-- <span class="icon-[tabler--chevron-down] size-6"></span> -->
 				</form>
 				<span
-					class="icon-[tabler--chevron-down] bg-secondary pointer-events-none absolute top-1/2 right-3 size-6 -translate-y-1/2 transition-transform duration-400"
+					class="icon-[tabler--chevron-down] bg-secondary pointer-events-none absolute top-1/2 right-2 size-6 -translate-y-1/2 transition-transform duration-400"
 					class:rotate-180={selectionFocused}
 				>
 				</span>
