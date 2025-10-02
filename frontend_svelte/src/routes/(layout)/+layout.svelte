@@ -12,7 +12,7 @@
 	import type { Action } from 'svelte/action';
 	// import NavButton from '$components/NavButton.svelte';
 	// import UserButton from '$components/UserButton.svelte';
-	import { type Snippet } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import ThemePicker from './playground/components/ThemePicker.svelte';
@@ -20,6 +20,7 @@
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
+	// import type { HSOverlay } from 'flyonui/flyonui';
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
 	let userUnregistered = $derived(
@@ -29,6 +30,49 @@
 				? false
 				: true
 	);
+
+	let welcomeModal: HTMLDivElement;
+
+	// $effect(() => {
+	// 	// if (userUnregistered) {
+	// 	// 	window.HSOverlay.open(welcomeModal);
+	// 	// }
+	// 	const { element } = window.HSOverlay.getInstance(welcomeModal, true);
+	// 	element.on('close', () => {
+	// 		userUnregistered = false;
+	// 		console.log('close');
+	// 	});
+	// 	element.on('open', () => {
+	// 		userUnregistered = true;
+	// 		console.log('open');
+	// 	});
+	// });
+
+	let testModal: HTMLDivElement;
+	// let testModal: HSOverlay | null = $state(null);
+
+	// $effect(() => {
+	// testModal = new window.HSOverlay(testModalDiv);
+	// });
+
+	// $effect(() => {
+	// testModal?.on('close', () => {
+	// 	console.log('close');
+	// 	window.HSStaticMethods.autoInit();
+	// });
+	// testModal?.on('open', () => {
+	// 	console.log('open');
+	// 	window.HSStaticMethods.autoInit();
+	// });
+	// });
+
+	// $effect(() => {
+	// 	const testModalOverlay = new window.HSOverlay(testModal);
+	// 	testModalOverlay?.on('close', () => {
+	// 		// userUnregistered = false;
+	// 		console.log('close');
+	// 	});
+	// });
 
 	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
 		enabled: true,
@@ -305,10 +349,12 @@
 							aria-label="show Modal"
 							type="button"
 							class="dropdown-item dropdown-close"
-							onclick={() => {
-								userUnregistered = true;
-							}}
+							aria-haspopup="dialog"
+							aria-expanded="false"
+							aria-controls="welcome-modal"
+							onclick={() => window.HSOverlay.open(welcomeModal)}
 						>
+							<!-- data-overlay="#welcome-modal" -->
 							<span class="icon-[tabler--eye] bg-neutral size-6"></span>
 							<span class="text-neutral grow">Show welcome modal</span>
 						</button>
@@ -337,12 +383,12 @@
 
 	<div
 		id="welcome-modal"
-		class="overlay modal overlay-open:opacity-100 {userUnregistered
-			? 'open opened'
-			: 'hidden'} overlay-open:duration-300 modal-middle"
+		class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 modal-middle hidden"
 		role="dialog"
 		tabindex="-1"
+		bind:this={welcomeModal}
 	>
+		<!-- bind:this={welcomeModalDiv} -->
 		<div class="modal-dialog modal-dialog-md">
 			<div class="modal-content bg-base-300 shadow-outline ring-outline-variant shadow-lg ring">
 				<div class="modal-header">
@@ -364,10 +410,10 @@
 					<button
 						type="button"
 						class="btn btn-text btn-circle btn-sm absolute end-3 top-3"
-						onclick={() => (userUnregistered = false)}
 						aria-label="Close"
 						data-overlay="#welcome-modal"
 					>
+						<!-- onclick={() => welcomeModal?.close()} -->
 						<span class="icon-[tabler--x] size-4"></span>
 					</button>
 				</div>
@@ -471,6 +517,56 @@
 						<span class="icon-[tabler--send-2]"></span>Save profile
 					</button>
 				</div> -->
+			</div>
+		</div>
+	</div>
+
+	<button
+		type="button"
+		class="btn btn-primary"
+		aria-haspopup="dialog"
+		aria-expanded="false"
+		aria-controls="basic-modal"
+		onclick={() => {
+			window.HSOverlay.open(testModal);
+		}}
+	>
+		Open modal
+	</button>
+
+	<div
+		id="test-modal"
+		class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 hidden"
+		role="dialog"
+		tabindex="-1"
+		bind:this={testModal}
+	>
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 class="modal-title">Dialog Title</h3>
+					<button
+						type="button"
+						class="btn btn-text btn-circle btn-sm absolute end-3 top-3"
+						aria-label="Close"
+						data-overlay="#test-modal"
+					>
+						<span class="icon-[tabler--x] size-4"></span>
+					</button>
+				</div>
+				<div class="modal-body">
+					This is some placeholder content to show the scrolling behavior for modals. Instead of
+					repeating the text in the modal, we use an inline style to set a minimum height, thereby
+					extending the length of the overall modal and demonstrating the overflow scrolling. When
+					content becomes longer than the height of the viewport, scrolling will move the modal as
+					needed.
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-soft btn-secondary" data-overlay="#test-modal"
+						>Close</button
+					>
+					<button type="button" class="btn btn-primary">Save changes</button>
+				</div>
 			</div>
 		</div>
 	</div>

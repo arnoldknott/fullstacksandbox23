@@ -85,6 +85,26 @@
 
 	// end works with <svelte:window use:initFlyonui />
 
+	// afterNavigate(() => {
+	// 	// Runs after navigating between pages
+	// 	if (window.HSStaticMethods) {
+	// 		window.HSStaticMethods.autoInit();
+	// 	} else {
+	// 		console.error('layout - client - afterNavigate - window.HSStaticMethods not available');
+	// 	}
+	// });
+
+	// const initFlyonUI = () => {
+	// 	// await loadHSStaticMethods();
+	// 	// hssStaticMethods.autoInit();
+	// 	// console.log(element.nodeName)
+	// 	if (window.HSStaticMethods) {
+	// 		window.HSStaticMethods.autoInit();
+	// 	} else {
+	// 		console.error('layout - client - initFlyonUI - window.HSStaticMethods not available');
+	// 	}
+	// };
+
 	// works:
 
 	// $effect(() => {
@@ -101,14 +121,15 @@
 
 	// update to FlyonUI 2.1.3:
 
-	afterNavigate(async () => {
-		// Runs after navigating between pages
-		if (!window.HSStaticMethods) {
-			await import('flyonui/flyonui.js');
-		}
-		window.HSStaticMethods.autoInit();
-		// HSStaticMethods.autoInit();
-	});
+	// move to hooks.client.ts
+	// afterNavigate(async () => {
+	// 	// Runs after navigating between pages
+	// 	if (!window.HSStaticMethods) {
+	// 		await import('flyonui/flyonui.js');
+	// 	}
+	// 	window.HSStaticMethods.autoInit();
+	// 	// HSStaticMethods.autoInit();
+	// });
 
 	// prepares for using attachments, introduced in Svelte 5.29:
 	// const initFlyonUI: Attachment = () => {
@@ -149,6 +170,7 @@
 
 <!-- <svelte:window onload={foo} /> -->
 <!-- <svelte:window use:initFlyonui /> -->
+<!-- <svelte:document onload={initFlyonUI} /> -->
 
 <!-- TBD: add toggle switch for light and dark mode -->
 <!-- <main {@attach initFlyonUI} class="h-100" > -->

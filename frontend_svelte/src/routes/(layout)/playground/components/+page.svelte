@@ -6,10 +6,6 @@
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import NavigationCard from '$components/NavigationCard.svelte';
-	// import type { IOverlay } from 'flyonui/flyonui';
-	// import { HSDropdown, type IHTMLElementPopper } from 'flyonui/flyonui';
-	// import type { IHTMLElementPopper, HSDropdown } from 'flyonui/flyonui';
-	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
@@ -20,6 +16,7 @@
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
 	import type { ActionResult } from '@sveltejs/kit';
+	import type { Attachment } from 'svelte/attachments';
 	import { Action, AccessHandler, IdentityType } from '$lib/accessHandler';
 	import type { AccessShareOption } from '$lib/types';
 	import ThemePicker from './ThemePicker.svelte';
@@ -52,20 +49,13 @@
 	];
 
 	// for dropdown menus:
-	// let dropdownMenu = $state<HTMLUListElement | undefined>(undefined);
-	let actionButtonShareMenuElement = $state<HTMLElement | undefined>(undefined);
-	let dropdownShareDropdownElement = $state<HTMLElement | undefined>(undefined);
-	let dropdownMenuElement = $state<HTMLElement | undefined>(undefined);
-	let dropdownShareElement = $state<HTMLElement | undefined>(undefined);
-	// let dropdownMenuElement = $state<HTMLElement | undefined>(undefined);
-	let actionButtonShareMenu = $state<HSDropdown | undefined>(undefined);
-	let dropdownShareDropdown = $state<HSDropdown | undefined>(undefined);
-	let dropdownMenu = $state<HSDropdown | undefined>(undefined);
-	let dropdownShare = $state<HSDropdown | undefined>(undefined);
+	let actionButtonShareMenu: HTMLElement;
+	let dropdownShareDropdown: HTMLElement;
+	let dropdownMenu: HTMLElement;
+	let dropdownShare: HTMLElement;
 
-	const loadHSDropdown = async () => {
-		const { HSDropdown } = await import('flyonui/flyonui');
-		return HSDropdown;
+	const initDropdown: Attachment = (node: Element) => {
+		window.HSDropdown.autoInit(node);
 	};
 
 	// // TBD: is this stopping the dropdown from stalling? No, it doesn't, but the issue only exists in development mode.
@@ -76,23 +66,6 @@
 	// const closeChildDropdowns: Attachment = () => {
 	// 	dropdownMenu?.on("close", dropdownShareDropdown?.close());
 	// TBD: potentially using {@attach} for this?
-
-	$effect(() => {
-		// afterNavigate(() => {
-		loadHSDropdown().then((LoadedHSDropdown) => {
-			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
-			dropdownShareDropdown = new LoadedHSDropdown(
-				dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI
-			);
-			actionButtonShareMenu = new LoadedHSDropdown(
-				actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI
-			);
-			dropdownShare = new LoadedHSDropdown(
-				dropdownShareElement as unknown as IHTMLElementFloatingUI
-			);
-			// });
-		});
-	});
 
 	// data for share menu:
 	const shareOptions: AccessShareOption[] = $state(
@@ -591,7 +564,8 @@
 					</button>
 					<div
 						class="dropdown join-item relative inline-flex grow [--auto-close:inside] [--placement:top]"
-						bind:this={actionButtonShareMenuElement}
+						bind:this={actionButtonShareMenu}
+						{@attach initDropdown}
 					>
 						<button
 							id="action-share"
@@ -620,7 +594,7 @@
 								method="POST"
 								name="actionButtonShareForm"
 								use:enhance={async () => {
-									actionButtonShareMenu?.close();
+									window.HSDropdown.close(actionButtonShareMenu);
 									return async ({ result, update }) => {
 										handleRightsChangeResponse(result, update);
 									};
@@ -696,7 +670,8 @@
 		<div class="mb-20 flex flex-wrap gap-4">
 			<div
 				class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
-				bind:this={dropdownMenuElement}
+				bind:this={dropdownMenu}
+				{@attach initDropdown}
 			>
 				<!-- {@attach closeChildDropdowns()} -->
 				<!-- onload={async()=> await  loadHSDropdown()} -->
@@ -727,7 +702,8 @@
 					</li>
 					<li
 						class="dropdown relative items-center [--auto-close:inside] [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
-						bind:this={dropdownShareDropdownElement}
+						bind:this={dropdownShareDropdown}
+						{@attach initDropdown}
 					>
 						<button
 							id="share"
@@ -757,8 +733,8 @@
 								method="POST"
 								name="dropDownShareDropdownForm"
 								use:enhance={async () => {
-									dropdownMenu?.close();
-									dropdownShareDropdown?.close();
+									window.HSDropdown.close(dropdownMenu);
+									window.HSDropdown.close(dropdownShareDropdown);
 									return async ({ result, update }) => {
 										handleRightsChangeResponse(result, update);
 									};
@@ -789,7 +765,8 @@
 			<div>
 				<div
 					class="dropdown relative inline-flex [--auto-close:inside]"
-					bind:this={dropdownShareElement}
+					bind:this={dropdownShare}
+					{@attach initDropdown}
 				>
 					<button
 						id="dropdown-share"
@@ -817,7 +794,7 @@
 							method="POST"
 							name="dropdownShareForm"
 							use:enhance={async () => {
-								dropdownShare?.close();
+								window.HSDropdown.close(dropdownShare);
 								return async ({ result, update }) => {
 									handleRightsChangeResponse(result, update);
 								};
