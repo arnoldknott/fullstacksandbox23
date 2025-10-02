@@ -793,11 +793,31 @@
 		{@render underConstruction()}
 	</div>
 
+	{#snippet shareSelectOptionIcon(right: Action | undefined)}
+		<span class={AccessHandler.rightsIcon(right)}></span>
+	{/snippet}
+
 	{#snippet shareSelectOption(right: Action | undefined)}
 		{#if browser === 'Firefox' || browser === 'Safari'}
-			<!-- {right || 'none'} -->
+			<option
+				class="dropdown-item dropdown-close bg-base-300 text-{AccessHandler.rightsIconColor(
+					right
+				)} custom-option-own border-none"
+				value={right}
+			>
+				{right || 'none'}
+			</option>
 		{:else}
-			<span class={AccessHandler.rightsIcon(right)}></span>
+			<option
+				class="dropdown-item dropdown-close bg-base-300 text-{AccessHandler.rightsIconColor(
+					right
+				)} custom-option-own border-none"
+				value={right}
+			>
+				{@render shareSelectOptionIcon(right)}
+				{right || 'none'}
+			</option>
+			<!-- <span class={AccessHandler.rightsIcon(right)}></span> -->
 		{/if}
 	{/snippet}
 	<div class={develop ? 'block' : 'hidden'}>
@@ -825,27 +845,34 @@
 
 						<!-- <option value="">Please select a pet</option> -->
 						<!-- TBD: add emojis as alternative for older browsers! -->
-						<option
+						{@render shareSelectOption(Action.OWN)}
+						{@render shareSelectOption(Action.WRITE)}
+						{@render shareSelectOption(Action.READ)}
+						{@render shareSelectOption(undefined)}
+						<!-- <option
 							class="dropdown-item dropdown-close bg-base-300 text-success custom-option-own border-none"
 							value={Action.OWN}
 						>
-							{@render shareSelectOption(Action.OWN)} own
+							{@render shareSelectOption(Action.OWN)}
+							{Action.OWN}
 						</option>
 						<option
 							class="dropdown-item dropdown-close bg-base-300 text-warning custom-option-write"
 							value={Action.WRITE}
 						>
-							{@render shareSelectOption(Action.WRITE)} write
+							{@render shareSelectOption(Action.WRITE)}
+							{Action.WRITE}
 						</option>
 						<option
 							class="dropdown-item dropdown-close bg-base-300 text-neutral custom-option-read"
 							value={Action.READ}
 						>
-							{@render shareSelectOption(Action.READ)} read
+							{@render shareSelectOption(Action.READ)}
+							{Action.READ}
 						</option>
 						<option class="dropdown-item dropdown-close bg-base-300 text-error" value={undefined}>
 							{@render shareSelectOption(undefined)} none
-						</option>
+						</option> -->
 					</select>
 
 					<!-- <label for="rights"

@@ -71,13 +71,26 @@ export class AccessHandler {
 	static rightsIcon = (right?: Action) => {
 		switch (right) {
 			case Action.OWN:
-				return 'icon-[tabler--key-filled] bg-success';
+				return `icon-[tabler--key-filled] bg-${this.rightsIconColor(right)}`;
 			case Action.WRITE:
-				return 'icon-[material-symbols--edit-outline-rounded] bg-warning';
+				return `icon-[material-symbols--edit-outline-rounded] bg-${this.rightsIconColor(right)}`;
 			case Action.READ:
-				return 'icon-[tabler--eye] bg-neutral';
+				return `icon-[tabler--eye] bg-${this.rightsIconColor(right)}`;
 			default:
-				return 'icon-[tabler--ban] bg-error';
+				return `icon-[tabler--ban] bg-${this.rightsIconColor(right)}`;
+		}
+	};
+
+	static rightsIconColor = (right?: Action) => {
+		switch (right) {
+			case Action.OWN:
+				return 'success';
+			case Action.WRITE:
+				return 'warning';
+			case Action.READ:
+				return 'neutral';
+			default:
+				return 'error';
 		}
 	};
 
