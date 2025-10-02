@@ -94,6 +94,19 @@ export class AccessHandler {
 		}
 	};
 
+	static rightsIconEmoji = (right?: Action) => {
+		switch (right) {
+			case Action.OWN:
+				return '🔑';
+			case Action.WRITE:
+				return '✏️';
+			case Action.READ:
+				return '👁️';
+			default:
+				return '🚫';
+		}
+	};
+
 	static identityIcon = (identityType: IdentityType) => {
 		switch (identityType) {
 			case IdentityType.USER:

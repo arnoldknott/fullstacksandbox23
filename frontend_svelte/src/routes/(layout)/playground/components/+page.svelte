@@ -805,7 +805,8 @@
 				)} custom-option-own border-none"
 				value={right}
 			>
-				{right || 'none'}
+				<!-- TBD: add emojis as alternative for older browsers! -->
+				{AccessHandler.rightsIconEmoji(right)}&nbsp;{right || 'none'}
 			</option>
 		{:else}
 			<option
@@ -844,35 +845,10 @@
 						</button> -->
 
 						<!-- <option value="">Please select a pet</option> -->
-						<!-- TBD: add emojis as alternative for older browsers! -->
 						{@render shareSelectOption(Action.OWN)}
 						{@render shareSelectOption(Action.WRITE)}
 						{@render shareSelectOption(Action.READ)}
 						{@render shareSelectOption(undefined)}
-						<!-- <option
-							class="dropdown-item dropdown-close bg-base-300 text-success custom-option-own border-none"
-							value={Action.OWN}
-						>
-							{@render shareSelectOption(Action.OWN)}
-							{Action.OWN}
-						</option>
-						<option
-							class="dropdown-item dropdown-close bg-base-300 text-warning custom-option-write"
-							value={Action.WRITE}
-						>
-							{@render shareSelectOption(Action.WRITE)}
-							{Action.WRITE}
-						</option>
-						<option
-							class="dropdown-item dropdown-close bg-base-300 text-neutral custom-option-read"
-							value={Action.READ}
-						>
-							{@render shareSelectOption(Action.READ)}
-							{Action.READ}
-						</option>
-						<option class="dropdown-item dropdown-close bg-base-300 text-error" value={undefined}>
-							{@render shareSelectOption(undefined)} none
-						</option> -->
 					</select>
 
 					<!-- <label for="rights"
