@@ -173,7 +173,16 @@
 							<span class="icon-[tabler--share-2]"></span>
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
-
+						<!-- {#if shareOptions}
+							{#each shareOptions as shareOption (shareOption.identity_id)}
+								{@attach initDropdown}
+								<ShareItem
+									resourceId={demoResource.id as string}
+									{shareOption}
+									share={socketio?.shareEntity.bind(socketio)}
+								/>
+							{/each}
+						{/if} -->
 						<ul
 							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
 							role="menu"

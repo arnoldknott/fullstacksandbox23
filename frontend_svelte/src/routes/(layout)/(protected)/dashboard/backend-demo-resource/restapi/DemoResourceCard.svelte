@@ -218,6 +218,11 @@
 										class="icon-[tabler--chevron-right] dropdown-open:rotate-180 size-4 rtl:rotate-180"
 									></span>
 								</button>
+								<!-- {#if shareOptions}
+									{#each shareOptions as shareOption (shareOption.identity_id)}
+										<ShareItem resourceId={id} {shareOption} {handleRightsChangeResponse} />
+									{/each}
+								{/if} -->
 								<ul
 									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-60 shadow-xs"
 									role="menu"

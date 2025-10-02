@@ -589,10 +589,8 @@
 					>
 						<span class="icon-[material-symbols--edit-outline-rounded]"></span>Edit
 					</button>
-					<!-- Add to class [--auto-close:inside] 
-					 after refactoring into select menu -->
 					<div
-						class="dropdown join-item relative inline-flex grow [--placement:top]"
+						class="dropdown join-item relative inline-flex grow [--auto-close:inside] [--placement:top]"
 						bind:this={actionButtonShareMenuElement}
 					>
 						<button
@@ -611,6 +609,13 @@
 							aria-orientation="vertical"
 							aria-labelledby="action-share"
 						>
+							<!-- {#each shareOptions as shareOption, i (i)}
+								<ShareItem
+									resourceId="actionButtonShareResourceId"
+									{shareOption}
+									{handleRightsChangeResponse}
+								/>
+							{/each} -->
 							<form
 								method="POST"
 								name="actionButtonShareForm"
@@ -720,10 +725,8 @@
 							<span class="icon-[material-symbols--edit-outline-rounded]"></span> Edit
 						</button>
 					</li>
-					<!-- Add to class [--auto-close:inside] 
-					 after refactoring into select menu -->
 					<li
-						class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+						class="dropdown relative items-center [--auto-close:inside] [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
 						bind:this={dropdownShareDropdownElement}
 					>
 						<button
@@ -743,6 +746,13 @@
 							aria-orientation="vertical"
 							aria-labelledby="share"
 						>
+							<!-- {#each shareOptions as shareOption, i (i)}
+								<ShareItem
+									resourceId="dropdownShareDropdownResourceId"
+									{shareOption}
+									{handleRightsChangeResponse}
+								/>
+							{/each} -->
 							<form
 								method="POST"
 								name="dropDownShareDropdownForm"
@@ -777,9 +787,10 @@
 				</ul>
 			</div>
 			<div>
-				<!-- Add to class [--auto-close:inside]
-					 after refactoring into select menu -->
-				<div class="dropdown relative inline-flex" bind:this={dropdownShareElement}>
+				<div
+					class="dropdown relative inline-flex [--auto-close:inside]"
+					bind:this={dropdownShareElement}
+				>
 					<button
 						id="dropdown-share"
 						type="button"
@@ -797,6 +808,11 @@
 						aria-orientation="vertical"
 						aria-labelledby="dropdown-share"
 					>
+						<!-- <ShareItem
+							resourceId="dropdownShareResourceId"
+							shareOption={shareOptions[0]}
+							{handleRightsChangeResponse}
+						/> -->
 						<form
 							method="POST"
 							name="dropdownShareForm"
@@ -852,7 +868,8 @@
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Selections 🚧</Heading>
 		<div class="bg-base-300 mb-20 flex w-fit flex-wrap gap-4 rounded rounded-xl p-4">
-			<div class="relative flex flex-row">
+			<div class="relative flex items-center [--placement:top]">
+				<!-- <div class="relative flex flex-row"> -->
 				<form
 					class="w-fit"
 					method="POST"
