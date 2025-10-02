@@ -8,7 +8,6 @@
 	// import type { LayoutData } from './$types';
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state'; // TBD: change page to new import
-	import { afterNavigate } from '$app/navigation';
 	// import type { Attachment } from 'svelte/attachments';
 	// import 'flyonui/flyonui.js';
 	// import type { HSStaticMethods } from 'flyonui/flyonui.js';

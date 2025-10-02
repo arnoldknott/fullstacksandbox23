@@ -187,7 +187,7 @@
 		} else {
 			// handle error: show error message
 		}
-		// update();
+		update();
 	};
 
 	// for status sliders:

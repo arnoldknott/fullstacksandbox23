@@ -12,7 +12,7 @@
 	import type { Action } from 'svelte/action';
 	// import NavButton from '$components/NavButton.svelte';
 	// import UserButton from '$components/UserButton.svelte';
-	import { onMount, type Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import ThemePicker from './playground/components/ThemePicker.svelte';

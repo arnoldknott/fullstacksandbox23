@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Action, AccessHandler } from '$lib/accessHandler';
 	import type { AccessPolicy, AccessShareOption } from '$lib/types';
-	import { enhance } from '$app/forms';
-	import type { ActionResult } from '@sveltejs/kit';
+	// import { enhance } from '$app/forms';
+	// import type { ActionResult } from '@sveltejs/kit';
 
 	let {
 		resourceId,
