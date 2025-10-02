@@ -14,6 +14,7 @@
 		closeShareMenu?: () => void;
 	} = $props();
 
+	// TBD: consider moving to AccessHandler
 	const desiredActions = (selectedAction?: Action) => {
 		let action = shareOption.action;
 		let newAction = undefined;

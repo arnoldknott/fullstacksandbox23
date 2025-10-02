@@ -94,22 +94,6 @@
 		});
 	});
 
-	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
-		if (result.type === 'success') {
-			const identity = shareOptions.find(
-				(option) => option.identity_id === result.data?.identityId
-			);
-			if (identity) {
-				identity.action = result.data?.confirmedNewAction
-					? (result.data.confirmedNewAction.toString() as Action)
-					: undefined;
-			}
-		} else {
-			// handle error: show error message
-		}
-		update();
-	};
-
 	// data for share menu:
 	const shareOptions: AccessShareOption[] = $state(
 		[
@@ -186,6 +170,52 @@
 	});
 
 	let selectionFocused = $state(false);
+	let share = $state(false);
+	let selectedAction = $state(shareOptions[1].action);
+
+	const desiredActions = (selectedAction?: Action) => {
+		let action = shareOptions[1].action;
+		let newAction = undefined;
+		// deleting access policy:
+		if (selectedAction === undefined && action) {
+			action = undefined;
+			newAction = undefined;
+		}
+		// creating a new access policy:
+		else if (shareOptions[1].action === undefined) {
+			action = selectedAction;
+		}
+		// updating an existing access policy:
+		// else if (selectedAction && shareOption.action !== selectedAction) {
+		else {
+			newAction = selectedAction;
+		}
+		// console.log(
+		// 	'=== shareItem - desiredActions - Values for access policy ===',
+		// 	shareOption.action,
+		// 	selectedAction
+		// );
+		return {
+			action: action,
+			new_action: newAction
+		};
+	};
+
+	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
+		if (result.type === 'success') {
+			const identity = shareOptions.find(
+				(option) => option.identity_id === result.data?.identityId
+			);
+			if (identity) {
+				identity.action = result.data?.confirmedNewAction
+					? (result.data.confirmedNewAction.toString() as Action)
+					: undefined;
+			}
+		} else {
+			// handle error: show error message
+		}
+		// update();
+	};
 
 	// for status sliders:
 	let theme = $state({} as AppTheme);
@@ -823,7 +853,18 @@
 		<Heading>🚧 Selections 🚧</Heading>
 		<div class="bg-base-300 mb-20 flex w-fit flex-wrap gap-4 rounded rounded-xl p-4">
 			<div class="relative flex flex-row">
-				<form class="w-fit">
+				<form
+					class="w-fit"
+					method="POST"
+					name="selection-right-form"
+					action={`?/share&identity-id=${shareOptions[1].identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`}
+					use:enhance={async ({ formData }) => {
+						formData.append('id', 'selection-resource-id');
+						return async ({ result, update }) => {
+							handleRightsChangeResponse(result, update);
+						};
+					}}
+				>
 					<select
 						class="select custom-select bg-base-300 -mx-4 w-full {AccessHandler.rightsIcon(
 							shareOptions[1].action
@@ -831,9 +872,25 @@
 						id="rights-{shareOptions[1].identity_id}-selection"
 						required
 						aria-label="Select rights"
-						name="right-selector"
+						name="right"
 						onclick={() => (selectionFocused = !selectionFocused)}
-						bind:value={shareOptions[1].action}
+						onchange={(event) => {
+							if (share) {
+								// 	share({
+								// 	resource_id: resourceId,
+								// 	identity_id: shareOption.identity_id,
+								// 	action: desiredActions(selectedAction).action,
+								// 	new_action: desiredActions(selectedAction).new_action
+								// });
+								// if (closeShareMenu) {
+								// 	closeShareMenu();
+								// }
+							} else {
+								const form = (event.target as HTMLSelectElement).form;
+								form?.requestSubmit();
+							}
+						}}
+						bind:value={selectedAction}
 					>
 						{@render shareSelectOption(Action.OWN)}
 						{@render shareSelectOption(Action.WRITE)}
