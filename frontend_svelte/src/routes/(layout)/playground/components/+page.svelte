@@ -123,13 +123,13 @@
 				identity_id: '2',
 				identity_name: 'Awesome Team',
 				identity_type: IdentityType.MICROSOFT_TEAM,
-				action: undefined
+				action: Action.WRITE
 			},
 			{
 				identity_id: '3',
 				identity_name: 'Ueber Group',
 				identity_type: IdentityType.UEBER_GROUP,
-				action: Action.WRITE
+				action: undefined
 			},
 			{
 				identity_id: '4',
@@ -167,8 +167,6 @@
 	);
 
 	// selections
-	let selectedAction: Action | undefined = $state(Action.READ);
-
 	let browser = $derived.by(() => {
 		if (typeof navigator !== 'undefined') {
 			const userAgent = navigator.userAgent;
@@ -824,37 +822,24 @@
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Selections 🚧</Heading>
 		<div class="bg-base-300 mb-20 flex w-fit flex-wrap gap-4 rounded rounded-xl p-4">
-			<!-- <div> -->
-			<!-- <label class="label label-text" for="right-selector" -->
-			<!-- <span class="{AccessHandler.rightsIcon(selectedAction)} size-6"></span> -->
 			<div class="relative flex flex-row">
 				<form class="w-fit">
-					<!-- <label for="rights"><span class={AccessHandler.rightsIcon(selectedAction)}></span></label> -->
 					<select
 						class="select custom-select bg-base-300 -mx-4 w-full {AccessHandler.rightsIcon(
-							selectedAction
+							shareOptions[1].action
 						)}  size-6"
-						id="rights"
+						id="rights-{shareOptions[1].identity_id}-selection"
 						required
 						aria-label="Select rights"
+						name="right-selector"
 						onclick={() => (selectionFocused = !selectionFocused)}
-						bind:value={selectedAction}
+						bind:value={shareOptions[1].action}
 					>
-						<!-- <button>
-							<selectedcontent></selectedcontent>
-						</button> -->
-
-						<!-- <option value="">Please select a pet</option> -->
 						{@render shareSelectOption(Action.OWN)}
 						{@render shareSelectOption(Action.WRITE)}
 						{@render shareSelectOption(Action.READ)}
 						{@render shareSelectOption(undefined)}
 					</select>
-
-					<!-- <label for="rights"
-						><span class="icon-[tabler--chevron-down] select-open:rotate-180 size-4"></span></label
-					> -->
-					<!-- <span class="icon-[tabler--chevron-down] size-6"></span> -->
 				</form>
 				<span
 					class="icon-[tabler--chevron-down] bg-secondary pointer-events-none absolute top-1/2 right-2 size-6 -translate-y-1/2 transition-transform duration-400"
@@ -864,9 +849,6 @@
 			</div>
 			<!-- <select
 				class="select select-floating max-w-sm"
-				aria-label="Select right"
-				id="rights-{shareOption.identity_id}"
-				name="right-selector"
 				onclick={() => {
 					if (share) {
 						share({
