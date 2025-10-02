@@ -187,7 +187,7 @@
 		return 'Unknown';
 	});
 
-	let focused = $state(false);
+	let selectionFocused = $state(false);
 
 	// for status sliders:
 	let theme = $state({} as AppTheme);
@@ -793,7 +793,7 @@
 		{@render underConstruction()}
 	</div>
 
-	{#snippet shareSelect(right: Action | undefined)}
+	{#snippet shareSelectOption(right: Action | undefined)}
 		{#if browser === 'Firefox' || browser === 'Safari'}
 			<!-- {right || 'none'} -->
 		{:else}
@@ -806,18 +806,17 @@
 			<!-- <div> -->
 			<!-- <label class="label label-text" for="right-selector" -->
 			<!-- <span class="{AccessHandler.rightsIcon(selectedAction)} size-6"></span> -->
-			<div class="">
-				<form class="relative w-fit">
+			<div class="relative flex flex-row">
+				<form class="w-fit">
 					<!-- <label for="rights"><span class={AccessHandler.rightsIcon(selectedAction)}></span></label> -->
 					<select
-						class="select custom-select bg-base-300 w-full pr-3 {AccessHandler.rightsIcon(
+						class="select custom-select bg-base-300 -mx-5 w-full {AccessHandler.rightsIcon(
 							selectedAction
 						)}  size-6"
 						id="rights"
 						required
 						aria-label="Select rights"
-						onfocus={() => (focused = true)}
-						onblur={() => (focused = false)}
+						onclick={() => (selectionFocused = !selectionFocused)}
 						bind:value={selectedAction}
 					>
 						<!-- <button>
@@ -827,37 +826,38 @@
 						<!-- <option value="">Please select a pet</option> -->
 						<!-- TBD: add emojis as alternative for older browsers! -->
 						<option
-							class="dropdown-item dropdown-close bg-base-300 text-success custom-option-own"
+							class="dropdown-item dropdown-close bg-base-300 text-success custom-option-own border-none"
 							value={Action.OWN}
 						>
-							{@render shareSelect(Action.OWN)} own
+							{@render shareSelectOption(Action.OWN)} own
 						</option>
 						<option
 							class="dropdown-item dropdown-close bg-base-300 text-warning custom-option-write"
 							value={Action.WRITE}
 						>
-							{@render shareSelect(Action.WRITE)} write
+							{@render shareSelectOption(Action.WRITE)} write
 						</option>
 						<option
 							class="dropdown-item dropdown-close bg-base-300 text-neutral custom-option-read"
 							value={Action.READ}
 						>
-							{@render shareSelect(Action.READ)} read
+							{@render shareSelectOption(Action.READ)} read
 						</option>
 						<option class="dropdown-item dropdown-close bg-base-300 text-error" value={undefined}>
-							{@render shareSelect(undefined)} none
+							{@render shareSelectOption(undefined)} none
 						</option>
 					</select>
-					<span
-						class="icon-[tabler--chevron-down] pointer-events-none absolute top-1/2 right-1 size-6 -translate-y-1/2 transition-transform duration-400"
-						class:rotate-180={focused}
-					>
-					</span>
+
 					<!-- <label for="rights"
 						><span class="icon-[tabler--chevron-down] select-open:rotate-180 size-4"></span></label
 					> -->
 					<!-- <span class="icon-[tabler--chevron-down] size-6"></span> -->
 				</form>
+				<span
+					class="icon-[tabler--chevron-down] bg-secondary pointer-events-none absolute top-1/2 right-3 size-6 -translate-y-1/2 transition-transform duration-400"
+					class:rotate-180={selectionFocused}
+				>
+				</span>
 			</div>
 			<!-- <select
 				class="select select-floating max-w-sm"
