@@ -330,7 +330,7 @@
 							aria-controls="welcome-modal"
 							data-overlay="#welcome-modal"
 						>
-							<!-- onclick={() => window.HSOverlay.open(welcomeModal)}  -->
+							<!-- works via JavaScript: onclick={() => window.HSOverlay.open(welcomeModal)}  -->
 							<span class="icon-[tabler--eye] bg-neutral size-6"></span>
 							<span class="text-neutral grow">Show welcome modal</span>
 						</button>

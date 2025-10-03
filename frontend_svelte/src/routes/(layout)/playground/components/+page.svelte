@@ -276,25 +276,6 @@
 	const updateProfileAccount: SubmitFunction = async () => {
 		return () => {};
 	};
-
-	// // for modal and drawer:
-	// const loadHSOverlay = async () => {
-	// 	const { HSOverlay } = await import('flyonui/flyonui.js');
-	// 	return HSOverlay;
-	// };
-
-	// let myModal: HTMLElement;
-	// let overlay: IOverlay | undefined = $state();
-
-	// $effect(() => {
-	// 	loadHSOverlay().then((loadHSOverlay) => {
-	// 		overlay = new loadHSOverlay(myModal);
-	// 	});
-	// });
-
-	// const openModal = () => {
-	// 	overlay?.open();
-	// };
 </script>
 
 <!-- <svelte:window use:mapDropdown /> -->
@@ -669,8 +650,6 @@
 				bind:this={dropdownMenu}
 				{@attach initDropdown}
 			>
-				<!-- {@attach closeChildDropdowns()} -->
-				<!-- onload={async()=> await  loadHSDropdown()} -->
 				<div
 					id="dropdown-menu-icon"
 					role="button"
