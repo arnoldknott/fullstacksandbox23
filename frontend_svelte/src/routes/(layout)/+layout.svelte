@@ -363,7 +363,8 @@
 
 	<div
 		id="welcome-modal"
-		class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 modal-middle hidden [--body-scroll:true]"
+		class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 modal-middle hidden [--body-scroll:true] [--overlay-backdrop:static] "
+		data-overlay-keyboard="false"
 		role="dialog"
 		tabindex="-1"
 		bind:this={welcomeModal}
