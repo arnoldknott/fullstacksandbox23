@@ -155,13 +155,13 @@ jobs:
       #       -f compose.yml \
       #       -f compose.override.test.yml \
       #       down
-      # - name: Unit testing
-      #   run: |
-      #     docker compose \
-      #       -f compose.yml \
-      #       -f compose.override.test.yml \
-      #       exec -T backend_api \
-      #       sh -c "pytest -v"
+      - name: Unit testing
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T backend_api \
+            sh -c "pytest -v"
       - name: Stop containers
         run: |
           docker compose \
