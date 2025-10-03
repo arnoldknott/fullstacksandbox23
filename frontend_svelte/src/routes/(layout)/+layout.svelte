@@ -328,9 +328,9 @@
 							aria-haspopup="dialog"
 							aria-expanded="false"
 							aria-controls="welcome-modal"
-							onclick={() => window.HSOverlay.open(welcomeModal)}
+							data-overlay="#welcome-modal"
 						>
-							<!-- data-overlay="#welcome-modal" -->
+							<!-- onclick={() => window.HSOverlay.open(welcomeModal)}  -->
 							<span class="icon-[tabler--eye] bg-neutral size-6"></span>
 							<span class="text-neutral grow">Show welcome modal</span>
 						</button>
@@ -364,7 +364,6 @@
 		tabindex="-1"
 		bind:this={welcomeModal}
 	>
-		<!-- bind:this={welcomeModalDiv} -->
 		<div class="modal-dialog modal-dialog-md">
 			<div class="modal-content bg-base-300 shadow-outline ring-outline-variant shadow-lg ring">
 				<div class="modal-header">
