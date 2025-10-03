@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Attachment } from 'svelte/attachments';
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResourceExtended, AccessPolicy, Identity } from '$lib/types';
@@ -43,28 +44,20 @@
 	let card: Card;
 	let createUpdateForm = $state<HTMLFormElement | null>(null);
 
-	let dropdownMenuElement = $state<HTMLElement | null>(null);
-	let dropdownShareDropdownElement = $state<HTMLElement | null>(null);
-	let dropdownMenu = $state<HSDropdown | null>(null);
-	let dropdownShareDropdown = $state<HSDropdown | null>(null);
+	let dropdownMenu = $state<HTMLElement | null>(null);
+	let dropdownShareDropdown = $state<HTMLElement | null>(null);
 
-	const loadHSDropdown = async () => {
-		const { HSDropdown } = await import('flyonui/flyonui');
-		return HSDropdown;
+	const initDropdown: Attachment = (node: Element) => {
+		window.HSDropdown.autoInit(node);
 	};
 
-	$effect(() => {
-		loadHSDropdown().then((LoadedHSDropdown) => {
-			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
-			dropdownShareDropdown = new LoadedHSDropdown(
-				dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI
-			);
-		});
-	});
+	const closeMenu = (menu: HTMLElement | null) => {
+		window.HSDropdown.close(menu);
+	};
 
 	let minWidthMenu = $derived.by(() =>
-		dropdownMenuElement
-			? window.innerWidth - dropdownMenuElement.getBoundingClientRect().right < 70
+		dropdownMenu
+			? window.innerWidth - dropdownMenu.getBoundingClientRect().right < 70
 				? 'min-w-60'
 				: ''
 			: ''
@@ -174,7 +167,8 @@
 			{#if accessRight === Action.WRITE || accessRight === Action.OWN}
 				<div
 					class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
-					bind:this={dropdownMenuElement}
+					bind:this={dropdownMenu}
+					{@attach initDropdown}
 				>
 					<span
 						id="dropdown-menu-icon-{id}"
@@ -203,7 +197,8 @@
 						{#if accessRight === Action.OWN}
 							<li
 								class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
-								bind:this={dropdownShareDropdownElement}
+								bind:this={dropdownShareDropdown}
+								{@attach initDropdown}
 							>
 								<button
 									id="share-{id}"
@@ -234,8 +229,8 @@
 											method="POST"
 											name="shareForm-resource-{id}"
 											use:enhance={async () => {
-												dropdownShareDropdown?.close();
-												dropdownMenu?.close();
+												closeMenu(dropdownShareDropdown);
+												closeMenu(dropdownMenu);
 												return async ({ result, update }) => {
 													handleRightsChangeResponse(result, update);
 												};
