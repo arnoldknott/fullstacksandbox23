@@ -530,7 +530,7 @@
 							formData.append('color-picker', themeConfiguration.sourceColor);
 							formData.append('variant-picker', themeConfiguration.variant);
 							formData.append('contrast', themeConfiguration.contrast.toString());
-							updateProfileAccount;
+							// updateProfileAccount;
 						}}
 					>
 						<button
