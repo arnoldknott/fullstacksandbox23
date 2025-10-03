@@ -47,32 +47,6 @@
 		});
 	});
 
-	let testModal: HTMLDivElement;
-	// let testModal: HSOverlay | null = $state(null);
-
-	// $effect(() => {
-	// testModal = new window.HSOverlay(testModalDiv);
-	// });
-
-	// $effect(() => {
-	// testModal?.on('close', () => {
-	// 	console.log('close');
-	// 	window.HSStaticMethods.autoInit();
-	// });
-	// testModal?.on('open', () => {
-	// 	console.log('open');
-	// 	window.HSStaticMethods.autoInit();
-	// });
-	// });
-
-	// $effect(() => {
-	// 	const testModalOverlay = new window.HSOverlay(testModal);
-	// 	testModalOverlay?.on('close', () => {
-	// 		// userUnregistered = false;
-	// 		console.log('close');
-	// 	});
-	// });
-
 	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
 		enabled: true,
 		model: Model.MODEL1,
@@ -519,56 +493,6 @@
 						<span class="icon-[tabler--send-2]"></span>Save profile
 					</button>
 				</div> -->
-			</div>
-		</div>
-	</div>
-
-	<button
-		type="button"
-		class="btn btn-primary"
-		aria-haspopup="dialog"
-		aria-expanded="false"
-		aria-controls="basic-modal"
-		onclick={() => {
-			window.HSOverlay.open(testModal);
-		}}
-	>
-		Open modal
-	</button>
-
-	<div
-		id="test-modal"
-		class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 hidden"
-		role="dialog"
-		tabindex="-1"
-		bind:this={testModal}
-	>
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h3 class="modal-title">Dialog Title</h3>
-					<button
-						type="button"
-						class="btn btn-text btn-circle btn-sm absolute end-3 top-3"
-						aria-label="Close"
-						data-overlay="#test-modal"
-					>
-						<span class="icon-[tabler--x] size-4"></span>
-					</button>
-				</div>
-				<div class="modal-body">
-					This is some placeholder content to show the scrolling behavior for modals. Instead of
-					repeating the text in the modal, we use an inline style to set a minimum height, thereby
-					extending the length of the overall modal and demonstrating the overflow scrolling. When
-					content becomes longer than the height of the viewport, scrolling will move the modal as
-					needed.
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-soft btn-secondary" data-overlay="#test-modal"
-						>Close</button
-					>
-					<button type="button" class="btn btn-primary">Save changes</button>
-				</div>
 			</div>
 		</div>
 	</div>
