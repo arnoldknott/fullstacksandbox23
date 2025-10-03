@@ -418,7 +418,7 @@
 					<!-- </div> -->
 					<div class="grid grid-cols-1 gap-2 max-sm:w-full sm:grid-cols-2">
 						<ul
-							class="sm:border-outline m-1 h-[257px] w-full p-4 sm:border-r"
+							class="sm:border-outline shadow-shadow bg-base-250 m-1 h-[257px] w-full rounded rounded-xl p-4 shadow shadow-inner shadow-lg"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="dropdown-menu-icon-user"
@@ -432,7 +432,7 @@
 						</ul>
 						<hr class="border-outline -mx-2 my-5 sm:hidden" />
 						<ul
-							class="m-1 w-full p-4"
+							class="shadow-shadow bg-base-250 m-1 w-full rounded rounded-xl p-4 shadow shadow-inner shadow-lg"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="dropdown-menu-icon-user"
