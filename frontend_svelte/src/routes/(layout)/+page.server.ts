@@ -10,9 +10,10 @@ export const actions: Actions = {
 		const sessionId = locals.sessionData.sessionId;
 		// console.log('=== layout - layout.server - putProfile - sessionData.currentUser.id ===');
 		// console.log(locals.sessionData.currentUser?.id);
-		// console.log('=== layout - layout.server - putProfile - data ===');
-		// console.log(data);
+		console.log('=== layout - layout.server - putProfile - data ===');
+		console.log(data);
 		if (locals.sessionData.currentUser?.id) {
+			const color = data.get('color-picker');
 			const variant = data.get('variant-picker');
 			const contrast = parseFloat(data.get('contrast') as string);
 
@@ -20,7 +21,7 @@ export const actions: Actions = {
 			const payload = {
 				id: locals.sessionData.currentUser.id,
 				user_profile: {
-					theme_color: data.get('color-picker'),
+					theme_color: color,
 					theme_variant: variant,
 					// theme_variant: "Neutral",
 					contrast: contrast
@@ -50,19 +51,13 @@ export const actions: Actions = {
 				JSON.stringify(payload.user_profile.contrast)
 			);
 			if (payload.user_profile.theme_color) {
-				locals.sessionData.currentUser.user_profile.theme_color = data.get(
-					'color-picker'
-				) as string;
+				locals.sessionData.currentUser.user_profile.theme_color = color as string;
 			}
 			if (payload.user_profile.theme_variant) {
-				locals.sessionData.currentUser.user_profile.theme_variant = data.get(
-					'variant-picker'
-				) as Variant;
+				locals.sessionData.currentUser.user_profile.theme_variant = variant as Variant;
 			}
 			if (payload.user_profile.contrast) {
-				locals.sessionData.currentUser.user_profile.contrast = Number(
-					data.get('contrast') as string
-				);
+				locals.sessionData.currentUser.user_profile.contrast = Number(contrast);
 			}
 			// console.log('=== layout - layout.server - putProfile - locals.sessionData.currentUser ===');
 			// console.log(locals.sessionData.currentUser);

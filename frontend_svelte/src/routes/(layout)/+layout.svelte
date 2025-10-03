@@ -20,6 +20,7 @@
 	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
+	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
@@ -516,15 +517,32 @@
 					</div> -->
 				</div>
 				<div class="modal-footer">
-					<button
-						type="button"
-						onclick={() => (userUnregistered = false)}
-						data-overlay="#welcome-modal"
-						aria-label="Save profile"
-						class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow-sm"
+					<form
+						method="POST"
+						action="/?/putme"
+						use:enhance={async ({ formData }) => {
+							formData.append('ai-enabled', artificialIntelligenceConfiguration.enabled.toString());
+							formData.append('model-picker', artificialIntelligenceConfiguration.model);
+							formData.append(
+								'ai-temperature',
+								artificialIntelligenceConfiguration.temperature.toString()
+							);
+							formData.append('color-picker', themeConfiguration.sourceColor);
+							formData.append('variant-picker', themeConfiguration.variant);
+							formData.append('contrast', themeConfiguration.contrast.toString());
+							updateProfileAccount;
+						}}
 					>
-						<span class="icon-[tabler--send-2]"></span>Save profile
-					</button>
+						<button
+							type="submit"
+							onclick={() => (userUnregistered = false)}
+							data-overlay="#welcome-modal"
+							aria-label="Save profile"
+							class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow-sm"
+						>
+							<span class="icon-[tabler--send-2]"></span>Save profile
+						</button>
+					</form>
 				</div>
 			</div>
 		</div>

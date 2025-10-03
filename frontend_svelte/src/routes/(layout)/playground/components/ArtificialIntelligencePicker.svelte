@@ -38,6 +38,7 @@
 			<input
 				type="checkbox"
 				class="switch switch-neutral"
+				onchange={() => saveProfileAccount()}
 				bind:checked={artificialIntelligenceConfiguration.enabled}
 				id="ai-enabled"
 			/>
