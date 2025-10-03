@@ -15,6 +15,7 @@
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
+	import { initDropdown } from '$lib/userInterface';
 	import ThemePicker from './playground/components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
 	import { themeStore } from '$lib/stores';
@@ -302,7 +303,10 @@
 			<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 		</div>
 		<div class="navbar-end flex items-center">
-			<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
+			<div
+				class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
+				{@attach initDropdown}
+			>
 				<span
 					id="dropdown-menu-icon-user"
 					class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-6' : ''}"

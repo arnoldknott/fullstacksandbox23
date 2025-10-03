@@ -16,7 +16,7 @@
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
 	import type { ActionResult } from '@sveltejs/kit';
-	import type { Attachment } from 'svelte/attachments';
+	import { initDropdown } from '$lib/userInterface';
 	import { Action, AccessHandler, IdentityType } from '$lib/accessHandler';
 	import type { AccessShareOption } from '$lib/types';
 	import ThemePicker from './ThemePicker.svelte';
@@ -53,10 +53,6 @@
 	let dropdownShareDropdown: HTMLElement;
 	let dropdownMenu: HTMLElement;
 	let dropdownShare: HTMLElement;
-
-	const initDropdown: Attachment = (node: Element) => {
-		window.HSDropdown.autoInit(node);
-	};
 
 	// // TBD: is this stopping the dropdown from stalling? No, it doesn't, but the issue only exists in development mode.
 	// window.HSStaticMethods.autoInit(["dropdown"]);

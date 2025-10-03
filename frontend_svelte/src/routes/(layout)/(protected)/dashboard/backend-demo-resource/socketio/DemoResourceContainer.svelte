@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Attachment } from 'svelte/attachments';
+	import { initDropdown } from '$lib/userInterface';
 	import type { DemoResourceExtended, Identity, AccessShareOption } from '$lib/types';
 	import { fade } from 'svelte/transition';
 	import { Action } from '$lib/accessHandler';
@@ -30,10 +30,6 @@
 
 	let shareMenu: HTMLElement | null = $state(null);
 	// let shareMenu: HSDropdown | undefined = $derived(undefined);
-
-	const initDropdown: Attachment = (node: Element) => {
-		window.HSDropdown.autoInit(node);
-	};
 
 	const closeShareMenu = () => {
 		window.HSDropdown.close(shareMenu);

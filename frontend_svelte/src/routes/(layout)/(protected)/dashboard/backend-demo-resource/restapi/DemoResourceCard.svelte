@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { Attachment } from 'svelte/attachments';
+	import { initDropdown } from '$lib/userInterface';
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResourceExtended, AccessPolicy, Identity } from '$lib/types';
 	import { enhance } from '$app/forms';
 	import { Action, AccessHandler } from '$lib/accessHandler';
-	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
+	// import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// TBD: move to components folder
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import type { ActionResult } from '@sveltejs/kit';
@@ -46,10 +46,6 @@
 
 	let dropdownMenu = $state<HTMLElement | null>(null);
 	let dropdownShareDropdown = $state<HTMLElement | null>(null);
-
-	const initDropdown: Attachment = (node: Element) => {
-		window.HSDropdown.autoInit(node);
-	};
 
 	const closeMenu = (menu: HTMLElement | null) => {
 		window.HSDropdown.close(menu);
