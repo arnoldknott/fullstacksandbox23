@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import JsonData from '$components/JsonData.svelte';
 	import IdentityAccordion from '../../IdentityAccordion.svelte';
+	import { initAccordion } from '$lib/userInterface';
 
 	let { data }: { data: PageData } = $props();
 	let team = $derived(data.thisTeam);
@@ -18,7 +19,11 @@
 		><span class="icon-[bi--microsoft-teams]"></span>Open in Microsoft Teams</button
 	></a
 >
-<div class="accordion accordion-bordered bg-base-150 mt-5" data-accordion-always-open="">
+<div
+	class="accordion accordion-bordered bg-base-150 mt-5"
+	data-accordion-always-open=""
+	{@attach initAccordion}
+>
 	<IdentityAccordion
 		icon="icon-[fluent--people-team-16-filled]"
 		title={data.thisTeam.displayName || 'Unknown Team'}

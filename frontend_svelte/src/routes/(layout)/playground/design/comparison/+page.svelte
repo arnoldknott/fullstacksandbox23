@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Heading from '$components/Heading.svelte';
+	import { initAccordion } from '$lib/userInterface';
 	import AccordionItem from '../AccordionItem.svelte';
 	import ColorTiles from './ColorTiles.svelte';
 </script>
@@ -8,7 +9,11 @@
 	<div class="col-span-2">
 		<Heading>Colors</Heading>
 		<p class="title text-center text-2xl">Color matching Material Design => FlyonUI:</p>
-		<div class="accordion accordion-bordered divide-y" data-accordion-always-open="">
+		<div
+			class="accordion accordion-bordered divide-y"
+			data-accordion-always-open=""
+			{@attach initAccordion}
+		>
 			<AccordionItem title="Foreground Colors">
 				<div class="grid grid-cols-2 gap-2">
 					<ColorTiles
