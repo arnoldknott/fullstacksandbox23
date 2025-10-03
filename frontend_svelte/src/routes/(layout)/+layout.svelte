@@ -515,15 +515,17 @@
 						</div>
 					</div> -->
 				</div>
-				<!-- <div class="modal-footer">
+				<div class="modal-footer">
 					<button
 						type="button"
 						onclick={() => (userUnregistered = false)}
+						data-overlay="#welcome-modal"
+						aria-label="Save profile"
 						class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow-sm"
 					>
 						<span class="icon-[tabler--send-2]"></span>Save profile
 					</button>
-				</div> -->
+				</div>
 			</div>
 		</div>
 	</div>
