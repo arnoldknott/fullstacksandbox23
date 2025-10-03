@@ -21,7 +21,7 @@
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
-	// import type { HSOverlay } from 'flyonui/flyonui';
+
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
 	let userUnregistered = $derived(
@@ -34,20 +34,18 @@
 
 	let welcomeModal: HTMLDivElement;
 
-	// $effect(() => {
-	// 	// if (userUnregistered) {
-	// 	// 	window.HSOverlay.open(welcomeModal);
-	// 	// }
-	// 	const { element } = window.HSOverlay.getInstance(welcomeModal, true);
-	// 	element.on('close', () => {
-	// 		userUnregistered = false;
-	// 		console.log('close');
-	// 	});
-	// 	element.on('open', () => {
-	// 		userUnregistered = true;
-	// 		console.log('open');
-	// 	});
-	// });
+	$effect(() => {
+		if (userUnregistered) {
+			window.HSOverlay.open(welcomeModal);
+		}
+		const { element } = window.HSOverlay.getInstance(welcomeModal, true);
+		element.on('close', () => {
+			userUnregistered = false;
+		});
+		element.on('open', () => {
+			userUnregistered = true;
+		});
+	});
 
 	let testModal: HTMLDivElement;
 	// let testModal: HSOverlay | null = $state(null);
