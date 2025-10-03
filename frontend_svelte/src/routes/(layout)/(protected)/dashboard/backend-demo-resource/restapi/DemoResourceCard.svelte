@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { initDropdown } from '$lib/userInterface';
 	import Card from '$components/Card.svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import type { DemoResourceExtended, AccessPolicy, Identity } from '$lib/types';
 	import { enhance } from '$app/forms';
 	import { Action, AccessHandler } from '$lib/accessHandler';
-	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
+	// import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// TBD: move to components folder
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import type { ActionResult } from '@sveltejs/kit';
@@ -43,28 +44,16 @@
 	let card: Card;
 	let createUpdateForm = $state<HTMLFormElement | null>(null);
 
-	let dropdownMenuElement = $state<HTMLElement | null>(null);
-	let dropdownShareDropdownElement = $state<HTMLElement | null>(null);
-	let dropdownMenu = $state<HSDropdown | null>(null);
-	let dropdownShareDropdown = $state<HSDropdown | null>(null);
+	let dropdownMenu = $state<HTMLElement | null>(null);
+	let dropdownShareDropdown = $state<HTMLElement | null>(null);
 
-	const loadHSDropdown = async () => {
-		const { HSDropdown } = await import('flyonui/flyonui');
-		return HSDropdown;
+	const closeMenu = (menu: HTMLElement | null) => {
+		window.HSDropdown.close(menu);
 	};
 
-	$effect(() => {
-		loadHSDropdown().then((LoadedHSDropdown) => {
-			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
-			dropdownShareDropdown = new LoadedHSDropdown(
-				dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI
-			);
-		});
-	});
-
 	let minWidthMenu = $derived.by(() =>
-		dropdownMenuElement
-			? window.innerWidth - dropdownMenuElement.getBoundingClientRect().right < 70
+		dropdownMenu
+			? window.innerWidth - dropdownMenu.getBoundingClientRect().right < 70
 				? 'min-w-60'
 				: ''
 			: ''
@@ -174,7 +163,8 @@
 			{#if accessRight === Action.WRITE || accessRight === Action.OWN}
 				<div
 					class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
-					bind:this={dropdownMenuElement}
+					bind:this={dropdownMenu}
+					{@attach initDropdown}
 				>
 					<span
 						id="dropdown-menu-icon-{id}"
@@ -203,7 +193,8 @@
 						{#if accessRight === Action.OWN}
 							<li
 								class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
-								bind:this={dropdownShareDropdownElement}
+								bind:this={dropdownShareDropdown}
+								{@attach initDropdown}
 							>
 								<button
 									id="share-{id}"
@@ -218,6 +209,11 @@
 										class="icon-[tabler--chevron-right] dropdown-open:rotate-180 size-4 rtl:rotate-180"
 									></span>
 								</button>
+								<!-- {#if shareOptions}
+									{#each shareOptions as shareOption (shareOption.identity_id)}
+										<ShareItem resourceId={id} {shareOption} {handleRightsChangeResponse} />
+									{/each}
+								{/if} -->
 								<ul
 									class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-60 shadow-xs"
 									role="menu"
@@ -229,8 +225,8 @@
 											method="POST"
 											name="shareForm-resource-{id}"
 											use:enhance={async () => {
-												dropdownShareDropdown?.close();
-												dropdownMenu?.close();
+												closeMenu(dropdownShareDropdown);
+												closeMenu(dropdownMenu);
 												return async ({ result, update }) => {
 													handleRightsChangeResponse(result, update);
 												};

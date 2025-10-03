@@ -6,21 +6,22 @@
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import NavigationCard from '$components/NavigationCard.svelte';
-	// import type { IOverlay } from 'flyonui/flyonui';
-	// import { HSDropdown, type IHTMLElementPopper } from 'flyonui/flyonui';
-	// import type { IHTMLElementPopper, HSDropdown } from 'flyonui/flyonui';
-	import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
-	import { Variant } from '$lib/theming';
+	import { Variant, type ColorConfig } from '$lib/theming';
+	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import ShareItem from './ShareItem.svelte';
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
 	import type { ActionResult } from '@sveltejs/kit';
-	import { Action, IdentityType } from '$lib/accessHandler';
+	import { initDropdown, initOverlay, initCarousel, initTabs } from '$lib/userInterface';
+	import { Action, AccessHandler, IdentityType } from '$lib/accessHandler';
 	import type { AccessShareOption } from '$lib/types';
+	import ThemePicker from './ThemePicker.svelte';
+	import ArtificialIntelligencePicker from './ArtificialIntelligencePicker.svelte';
+	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
@@ -48,21 +49,10 @@
 	];
 
 	// for dropdown menus:
-	// let dropdownMenu = $state<HTMLUListElement | undefined>(undefined);
-	let actionButtonShareMenuElement = $state<HTMLElement | undefined>(undefined);
-	let dropdownShareDropdownElement = $state<HTMLElement | undefined>(undefined);
-	let dropdownMenuElement = $state<HTMLElement | undefined>(undefined);
-	let dropdownShareElement = $state<HTMLElement | undefined>(undefined);
-	// let dropdownMenuElement = $state<HTMLElement | undefined>(undefined);
-	let actionButtonShareMenu = $state<HSDropdown | undefined>(undefined);
-	let dropdownShareDropdown = $state<HSDropdown | undefined>(undefined);
-	let dropdownMenu = $state<HSDropdown | undefined>(undefined);
-	let dropdownShare = $state<HSDropdown | undefined>(undefined);
-
-	const loadHSDropdown = async () => {
-		const { HSDropdown } = await import('flyonui/flyonui');
-		return HSDropdown;
-	};
+	let actionButtonShareMenu: HTMLElement;
+	let dropdownShareDropdown: HTMLElement;
+	let dropdownMenu: HTMLElement;
+	let dropdownShare: HTMLElement;
 
 	// // TBD: is this stopping the dropdown from stalling? No, it doesn't, but the issue only exists in development mode.
 	// window.HSStaticMethods.autoInit(["dropdown"]);
@@ -72,39 +62,6 @@
 	// const closeChildDropdowns: Attachment = () => {
 	// 	dropdownMenu?.on("close", dropdownShareDropdown?.close());
 	// TBD: potentially using {@attach} for this?
-
-	$effect(() => {
-		// afterNavigate(() => {
-		loadHSDropdown().then((LoadedHSDropdown) => {
-			dropdownMenu = new LoadedHSDropdown(dropdownMenuElement as unknown as IHTMLElementFloatingUI);
-			dropdownShareDropdown = new LoadedHSDropdown(
-				dropdownShareDropdownElement as unknown as IHTMLElementFloatingUI
-			);
-			actionButtonShareMenu = new LoadedHSDropdown(
-				actionButtonShareMenuElement as unknown as IHTMLElementFloatingUI
-			);
-			dropdownShare = new LoadedHSDropdown(
-				dropdownShareElement as unknown as IHTMLElementFloatingUI
-			);
-			// });
-		});
-	});
-
-	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
-		if (result.type === 'success') {
-			const identity = shareOptions.find(
-				(option) => option.identity_id === result.data?.identityId
-			);
-			if (identity) {
-				identity.action = result.data?.confirmedNewAction
-					? (result.data.confirmedNewAction.toString() as Action)
-					: undefined;
-			}
-		} else {
-			// handle error: show error message
-		}
-		update();
-	};
 
 	// data for share menu:
 	const shareOptions: AccessShareOption[] = $state(
@@ -119,13 +76,13 @@
 				identity_id: '2',
 				identity_name: 'Awesome Team',
 				identity_type: IdentityType.MICROSOFT_TEAM,
-				action: undefined
+				action: Action.WRITE
 			},
 			{
 				identity_id: '3',
 				identity_name: 'Ueber Group',
 				identity_type: IdentityType.UEBER_GROUP,
-				action: Action.WRITE
+				action: undefined
 			},
 			{
 				identity_id: '4',
@@ -161,6 +118,73 @@
 			(a, b) => a.identity_type - b.identity_type || a.identity_name.localeCompare(b.identity_name)
 		)
 	);
+
+	// selections
+	let browser = $derived.by(() => {
+		if (typeof navigator !== 'undefined') {
+			const userAgent = navigator.userAgent;
+			if (userAgent.includes('Chrome')) {
+				return 'Chrome';
+			} else if (userAgent.includes('Firefox')) {
+				return 'Firefox';
+			} else if (userAgent.includes('Safari')) {
+				return 'Safari';
+			} else if (userAgent.includes('Edge')) {
+				return 'Edge';
+			} else {
+				return 'Other';
+			}
+		}
+		return 'Unknown';
+	});
+
+	let selectionFocused = $state(false);
+	let share = $state(false);
+	let selectedAction = $state(shareOptions[1].action);
+
+	const desiredActions = (selectedAction?: Action) => {
+		let action = shareOptions[1].action;
+		let newAction = undefined;
+		// deleting access policy:
+		if (selectedAction === undefined && action) {
+			action = undefined;
+			newAction = undefined;
+		}
+		// creating a new access policy:
+		else if (shareOptions[1].action === undefined) {
+			action = selectedAction;
+		}
+		// updating an existing access policy:
+		// else if (selectedAction && shareOption.action !== selectedAction) {
+		else {
+			newAction = selectedAction;
+		}
+		// console.log(
+		// 	'=== shareItem - desiredActions - Values for access policy ===',
+		// 	shareOption.action,
+		// 	selectedAction
+		// );
+		return {
+			action: action,
+			new_action: newAction
+		};
+	};
+
+	const handleRightsChangeResponse = async (result: ActionResult, update: () => void) => {
+		if (result.type === 'success') {
+			const identity = shareOptions.find(
+				(option) => option.identity_id === result.data?.identityId
+			);
+			if (identity) {
+				identity.action = result.data?.confirmedNewAction
+					? (result.data.confirmedNewAction.toString() as Action)
+					: undefined;
+			}
+		} else {
+			// handle error: show error message
+		}
+		update();
+	};
 
 	// for status sliders:
 	let theme = $state({} as AppTheme);
@@ -209,9 +233,25 @@
 	// for edit button:
 	let edit = $state(false);
 
+	// for artificial intelligence settings:
+	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
+		enabled: true,
+		model: Model.MODEL1,
+		temperature: 0.7
+		// max_tokens: 2048
+	});
+
+	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
+
 	// for theme picker:
-	let sourceColor = $state('#769CDF');
-	let variant = $state(Variant.TONAL_SPOT);
+	let themeConfiguration: ColorConfig = $state({
+		sourceColor: '#769CDF',
+		variant: Variant.TONAL_SPOT,
+		contrast: 0.0
+	});
+	let sourceColor = $derived(themeConfiguration.sourceColor);
+	let variant = $derived(themeConfiguration.variant);
+	let contrast = $derived(themeConfiguration.contrast);
 	const contrastMin = -1.0;
 	const contrastMax = 1.0;
 	const contrastStep = 0.2;
@@ -219,26 +259,23 @@
 		{ length: (contrastMax - contrastMin) / contrastStep + 1 },
 		(_, i) => contrastMin + i * contrastStep
 	);
-	let contrast = $state(0.0);
 
-	// // for modal and drawer:
-	// const loadHSOverlay = async () => {
-	// 	const { HSOverlay } = await import('flyonui/flyonui.js');
-	// 	return HSOverlay;
-	// };
+	let mode = $state<'light' | 'dark'>('light');
 
-	// let myModal: HTMLElement;
-	// let overlay: IOverlay | undefined = $state();
+	let themeForm = $state<HTMLFormElement | null>(null);
 
-	// $effect(() => {
-	// 	loadHSOverlay().then((loadHSOverlay) => {
-	// 		overlay = new loadHSOverlay(myModal);
-	// 	});
-	// });
+	// shared for artificial intelligence and theme picker:
+	const saveProfileAccount = async () => {
+		// if (page.data.session?.loggedIn) {
+		themeForm?.requestSubmit();
+		console.log('=== layout - saveProfileAccount - themeConfiguration ===');
+		console.log($state.snapshot(themeConfiguration));
+		// }
+	};
 
-	// const openModal = () => {
-	// 	overlay?.open();
-	// };
+	const updateProfileAccount: SubmitFunction = async () => {
+		return () => {};
+	};
 </script>
 
 <!-- <svelte:window use:mapDropdown /> -->
@@ -291,7 +328,7 @@
 			{/snippet}
 			<Card id="chatCard" extraClasses="md:w-4/5" header={headerChat} footer={footerChat}>
 				<div
-					class="bg-base-200 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
+					class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
 				>
 					<div class="chat chat-receiver">
 						<div class="avatar chat-avatar">
@@ -354,6 +391,7 @@
 				</div>
 			{/snippet}
 		</div>
+		<HorizontalRule />
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
@@ -421,6 +459,7 @@
 				</div>
 			</div>
 		</div>
+		<HorizontalRule />
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
@@ -474,12 +513,13 @@
 			{/snippet}
 			<Card id="cardEdit" extraClasses="md:w-4/5" header={headerEdit}>
 				<div
-					class="bg-base-200 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
+					class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
 				>
 					Some text
 				</div>
 			</Card>
 		</div>
+		<HorizontalRule />
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
@@ -500,8 +540,9 @@
 						<span class="icon-[material-symbols--edit-outline-rounded]"></span>Edit
 					</button>
 					<div
-						class="dropdown join-item relative inline-flex grow [--placement:top]"
-						bind:this={actionButtonShareMenuElement}
+						class="dropdown join-item relative inline-flex grow [--auto-close:inside] [--placement:top]"
+						bind:this={actionButtonShareMenu}
+						{@attach initDropdown}
 					>
 						<button
 							id="action-share"
@@ -519,11 +560,18 @@
 							aria-orientation="vertical"
 							aria-labelledby="action-share"
 						>
+							<!-- {#each shareOptions as shareOption, i (i)}
+								<ShareItem
+									resourceId="actionButtonShareResourceId"
+									{shareOption}
+									{handleRightsChangeResponse}
+								/>
+							{/each} -->
 							<form
 								method="POST"
 								name="actionButtonShareForm"
 								use:enhance={async () => {
-									actionButtonShareMenu?.close();
+									window.HSDropdown.close(actionButtonShareMenu);
 									return async ({ result, update }) => {
 										handleRightsChangeResponse(result, update);
 									};
@@ -557,6 +605,7 @@
 				</p>
 			</Card>
 		</div>
+		<HorizontalRule />
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
@@ -585,6 +634,7 @@
 				</button>
 			</a>
 		</div>
+		<HorizontalRule />
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
@@ -597,10 +647,9 @@
 		<div class="mb-20 flex flex-wrap gap-4">
 			<div
 				class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
-				bind:this={dropdownMenuElement}
+				bind:this={dropdownMenu}
+				{@attach initDropdown}
 			>
-				<!-- {@attach closeChildDropdowns()} -->
-				<!-- onload={async()=> await  loadHSDropdown()} -->
 				<div
 					id="dropdown-menu-icon"
 					role="button"
@@ -627,8 +676,9 @@
 						</button>
 					</li>
 					<li
-						class="dropdown relative items-center [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
-						bind:this={dropdownShareDropdownElement}
+						class="dropdown relative items-center [--auto-close:inside] [--offset:15] [--placement:right-start] max-sm:[--placement:bottom-start]"
+						bind:this={dropdownShareDropdown}
+						{@attach initDropdown}
 					>
 						<button
 							id="share"
@@ -647,12 +697,19 @@
 							aria-orientation="vertical"
 							aria-labelledby="share"
 						>
+							<!-- {#each shareOptions as shareOption, i (i)}
+								<ShareItem
+									resourceId="dropdownShareDropdownResourceId"
+									{shareOption}
+									{handleRightsChangeResponse}
+								/>
+							{/each} -->
 							<form
 								method="POST"
 								name="dropDownShareDropdownForm"
 								use:enhance={async () => {
-									dropdownMenu?.close();
-									dropdownShareDropdown?.close();
+									window.HSDropdown.close(dropdownMenu);
+									window.HSDropdown.close(dropdownShareDropdown);
 									return async ({ result, update }) => {
 										handleRightsChangeResponse(result, update);
 									};
@@ -681,7 +738,11 @@
 				</ul>
 			</div>
 			<div>
-				<div class="dropdown relative inline-flex" bind:this={dropdownShareElement}>
+				<div
+					class="dropdown relative inline-flex [--auto-close:inside]"
+					bind:this={dropdownShare}
+					{@attach initDropdown}
+				>
 					<button
 						id="dropdown-share"
 						type="button"
@@ -699,11 +760,16 @@
 						aria-orientation="vertical"
 						aria-labelledby="dropdown-share"
 					>
+						<!-- <ShareItem
+							resourceId="dropdownShareResourceId"
+							shareOption={shareOptions[0]}
+							{handleRightsChangeResponse}
+						/> -->
 						<form
 							method="POST"
 							name="dropdownShareForm"
 							use:enhance={async () => {
-								dropdownShare?.close();
+								window.HSDropdown.close(dropdownShare);
 								return async ({ result, update }) => {
 									handleRightsChangeResponse(result, update);
 								};
@@ -714,6 +780,122 @@
 					</ul>
 				</div>
 			</div>
+		</div>
+		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Selections</Heading>
+		{@render underConstruction()}
+	</div>
+
+	{#snippet shareSelectOptionIcon(right: Action | undefined)}
+		<span class={AccessHandler.rightsIcon(right)}></span>
+	{/snippet}
+
+	{#snippet shareSelectOption(right: Action | undefined)}
+		{#if browser === 'Firefox' || browser === 'Safari'}
+			<option
+				class="dropdown-item dropdown-close bg-base-300 text-{AccessHandler.rightsIconColor(
+					right
+				)} custom-option-own border-none"
+				value={right}
+			>
+				<!-- TBD: add emojis as alternative for older browsers! -->
+				{AccessHandler.rightsIconEmoji(right)}&nbsp;{right || 'none'}
+			</option>
+		{:else}
+			<option
+				class="dropdown-item dropdown-close bg-base-300 text-{AccessHandler.rightsIconColor(
+					right
+				)} custom-option-own border-none"
+				value={right}
+			>
+				{@render shareSelectOptionIcon(right)}
+				{right || 'none'}
+			</option>
+			<!-- <span class={AccessHandler.rightsIcon(right)}></span> -->
+		{/if}
+	{/snippet}
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Selections 🚧</Heading>
+		<div class="bg-base-300 mb-20 flex w-fit flex-wrap gap-4 rounded rounded-xl p-4">
+			<div class="relative flex items-center [--placement:top]">
+				<!-- <div class="relative flex flex-row"> -->
+				<form
+					class="w-fit"
+					method="POST"
+					name="selection-right-form"
+					action={`?/share&identity-id=${shareOptions[1].identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`}
+					use:enhance={async ({ formData }) => {
+						formData.append('id', 'selection-resource-id');
+						return async ({ result, update }) => {
+							handleRightsChangeResponse(result, update);
+						};
+					}}
+				>
+					<select
+						class="select custom-select bg-base-300 -mx-4 w-full {AccessHandler.rightsIcon(
+							shareOptions[1].action
+						)}  size-6"
+						id="rights-{shareOptions[1].identity_id}-selection"
+						required
+						aria-label="Select rights"
+						name="right"
+						onclick={() => (selectionFocused = !selectionFocused)}
+						onchange={(event) => {
+							if (share) {
+								// 	share({
+								// 	resource_id: resourceId,
+								// 	identity_id: shareOption.identity_id,
+								// 	action: desiredActions(selectedAction).action,
+								// 	new_action: desiredActions(selectedAction).new_action
+								// });
+								// if (closeShareMenu) {
+								// 	closeShareMenu();
+								// }
+							} else {
+								const form = (event.target as HTMLSelectElement).form;
+								form?.requestSubmit();
+							}
+						}}
+						bind:value={selectedAction}
+					>
+						{@render shareSelectOption(Action.OWN)}
+						{@render shareSelectOption(Action.WRITE)}
+						{@render shareSelectOption(Action.READ)}
+						{@render shareSelectOption(undefined)}
+					</select>
+				</form>
+				<span
+					class="icon-[tabler--chevron-down] bg-secondary pointer-events-none absolute top-1/2 right-2 size-6 -translate-y-1/2 transition-transform duration-400"
+					class:rotate-180={selectionFocused}
+				>
+				</span>
+			</div>
+			<!-- <select
+				class="select select-floating max-w-sm"
+				onclick={() => {
+					if (share) {
+						share({
+							resource_id: resourceId,
+							identity_id: shareOption.identity_id,
+							action: desiredActions(selectedAction).action,
+							new_action: desiredActions(selectedAction).new_action
+						});
+						// if (closeShareMenu) {
+						// 	closeShareMenu();
+						// }
+					} else {
+						goto(
+							`?/share&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
+						);
+					}
+				}}
+				bind:value={selectedAction}
+			>
+			</select>
+		</div> -->
 		</div>
 	</div>
 
@@ -827,6 +1009,7 @@
 				</span>
 			</div>
 		</div>
+		<HorizontalRule />
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
@@ -836,6 +1019,7 @@
 
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Theme Picker 🚧</Heading>
+		<p class="title-large text-primary">Building blocks</p>
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div class="w-48">
 				<label class="label label-text" for="colorPicker"
@@ -898,6 +1082,234 @@
 				</div>
 			</div>
 		</div>
+		<p class="title-large text-primary">as SvelteComponent</p>
+		<ul
+			class="bg-base-200 text-neutral shadow-outline w-fit rounded-xl p-4 shadow-md"
+			role="menu"
+			aria-orientation="vertical"
+			aria-labelledby="dropdown-menu-icon-user"
+		>
+			<ThemePicker
+				{updateProfileAccount}
+				{saveProfileAccount}
+				bind:themeForm
+				bind:mode
+				{themeConfiguration}
+			/>
+		</ul>
+		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Caroussels</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Caroussels 🚧</Heading>
+		<!-- TBD: pass those data-carousel arguments:
+		 " '{' "loadingClasses": "opacity-0" '}'" -->
+		<div id="vertical-thumbnails" data-carousel class="relative w-full">
+			<div class="carousel flex space-x-2 rounded-none" {@attach initCarousel}>
+				<div class="flex-none">
+					<div
+						class="carousel-pagination flex h-full w-[200px] flex-col justify-between gap-y-2 overflow-hidden max-sm:w-8"
+					>
+						<img
+							src="/matterhorn-20230628.jpg"
+							class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
+							alt="Swiss mountain Matterhorn in sunset"
+						/>
+						<img
+							src="/mountain-salamander-20240702.jpg"
+							class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
+							alt="Mountain salamander on a rock"
+						/>
+						<img
+							src="/starnberger-see-unset-20230807.jpg"
+							class="carousel-pagination-item carousel-active:opacity-100 grow rounded-lg object-cover opacity-30"
+							alt="Bavarian lake Starnberger See in sunset"
+						/>
+					</div>
+				</div>
+				<div class="relative grow overflow-hidden rounded-2xl">
+					<div class="carousel-body h-80 opacity-0">
+						<!-- Slide 1 -->
+						<div class="carousel-slide">
+							<div class="flex size-full justify-center">
+								<img
+									src="/matterhorn-20230628.jpg"
+									class="size-full object-cover"
+									alt="Swiss mountain Matterhorn in sunset"
+								/>
+							</div>
+						</div>
+						<!-- Slide 2 -->
+						<div class="carousel-slide">
+							<div class="flex size-full justify-center">
+								<img
+									src="/mountain-salamander-20240702.jpg"
+									class="size-full object-cover"
+									alt="Mountain Salamander on a rock"
+								/>
+							</div>
+						</div>
+						<!-- Slide 3 -->
+						<div class="carousel-slide">
+							<div class="flex size-full justify-center">
+								<img
+									src="/starnberger-see-unset-20230807.jpg"
+									class="size-full object-cover"
+									alt="Bavarian lake Starnberger See in sunset"
+								/>
+							</div>
+						</div>
+					</div>
+					<!-- Previous Slide -->
+					<button
+						type="button"
+						class="carousel-prev carousel-disabled:opacity-50 bg-base-100 shadow-base-300/20 start-5 flex size-9.5 items-center justify-center rounded-full shadow-sm max-sm:start-3"
+					>
+						<span class="icon-[tabler--chevron-left] size-5 cursor-pointer"></span>
+						<span class="sr-only">Previous</span>
+					</button>
+					<!-- Next Slide -->
+					<button
+						type="button"
+						class="carousel-next carousel-disabled:opacity-50 bg-base-100 shadow-base-300/20 end-5 flex size-9.5 items-center justify-center rounded-full shadow-sm max-sm:end-3"
+					>
+						<span class="icon-[tabler--chevron-right] size-5"></span>
+						<span class="sr-only">Next</span>
+					</button>
+				</div>
+			</div>
+		</div>
+		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Vertical Tabs</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Vertical Tabs 🚧</Heading>
+		<div class="flex">
+			<div
+				class="tabs tabs-bordered tabs-vertical w-[130px]"
+				aria-label="Tabs"
+				role="tablist"
+				data-tabs-vertical="true"
+				aria-orientation="horizontal"
+				{@attach initTabs}
+			>
+				<button
+					type="button"
+					class="tab active-tab:tab-active active py-11 text-left"
+					id="tabs-vertical-item-welcome"
+					data-tab="#tabs-vertical-welcome"
+					aria-controls="tabs-vertical-welcome"
+					role="tab"
+					aria-selected="true"
+				>
+					Welcome
+				</button>
+				<button
+					type="button"
+					class="tab active-tab:tab-active py-11 text-left"
+					id="tabs-vertical-item-ai"
+					data-tab="#tabs-vertical-ai"
+					aria-controls="tabs-vertical-ai"
+					role="tab"
+					aria-selected="false"
+				>
+					Artificial Intelligence
+				</button>
+				<button
+					type="button"
+					class="tab active-tab:tab-active py-11 text-left"
+					id="tabs-vertical-item-theme"
+					data-tab="#tabs-vertical-theme"
+					aria-controls="tabs-vertical-theme"
+					role="tab"
+					aria-selected="false"
+				>
+					Theme Configuration
+				</button>
+			</div>
+
+			<div class="h-[245px] w-[264px]">
+				<div
+					class="relative flex h-full w-full"
+					id="tabs-vertical-welcome"
+					role="tabpanel"
+					aria-labelledby="tabs-vertical-item-welcome"
+				>
+					<div
+						class="absolute inset-0 m-1 h-full w-full bg-[url(/matterhorn-20230628.jpg)] mask-y-from-95% mask-y-to-100% mask-x-from-95% mask-x-to-100% bg-cover bg-center p-4 opacity-70"
+					></div>
+					<div
+						class="text-base-content/80 relative m-1 h-full w-full content-center rounded-xl p-4"
+					>
+						Welcome to the
+						<div class="align-center flex flex-row justify-center">
+							<div class="flex flex-col justify-center">
+								<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
+								<div
+									class="title-small text-secondary font-bold tracking-widest"
+									style="line-height: 1"
+								>
+									Sandbox
+								</div>
+							</div>
+							<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
+						</div>
+						<div class="text-right">Have fun exploring the content and trying things out!</div>
+					</div>
+				</div>
+				<div
+					id="tabs-vertical-ai"
+					class="mx-5 hidden h-full"
+					role="tabpanel"
+					aria-labelledby="tabs-vertical-item-ai"
+				>
+					<ul
+						class="m-1 h-full w-full p-4"
+						role="menu"
+						aria-orientation="vertical"
+						aria-labelledby="dropdown-menu-icon-user"
+					>
+						<ArtificialIntelligencePicker
+							{updateProfileAccount}
+							{saveProfileAccount}
+							bind:artificialIntelligenceForm
+							bind:artificialIntelligenceConfiguration
+						/>
+					</ul>
+				</div>
+				<div
+					id="tabs-vertical-theme"
+					class="mx-5 hidden"
+					role="tabpanel"
+					aria-labelledby="tabs-vertical-item-theme"
+				>
+					<ul
+						class="m-1 w-fit p-4"
+						role="menu"
+						aria-orientation="vertical"
+						aria-labelledby="dropdown-menu-icon-user"
+					>
+						<ThemePicker
+							{updateProfileAccount}
+							{saveProfileAccount}
+							bind:themeForm
+							bind:mode
+							bind:themeConfiguration
+						/>
+					</ul>
+				</div>
+			</div>
+		</div>
 		<HorizontalRule />
 	</div>
 
@@ -932,6 +1344,7 @@
 			class="overlay modal overlay-open:opacity-100 hidden"
 			role="dialog"
 			tabindex="-1"
+			{@attach initOverlay}
 		>
 			<div class="modal-dialog overlay-open:opacity-100">
 				<div class="modal-content bg-base-300">
@@ -1210,3 +1623,26 @@
 		<HorizontalRule />
 	</div>
 </div>
+
+<style>
+	.custom-select {
+		&,
+		&::picker(select) {
+			appearance: base-select;
+		}
+		/* :open::picker-icon {
+			rotate: 180deg;
+		}
+		::picker-icon {
+			color: var(--md-sys-color-primary);
+			transition: 0.4s rotate;
+		} */
+	}
+	/* select:open::picker-icon {
+		rotate: 180deg;
+	}
+	select::picker-icon {
+		color: var(--md-sys-color-primary);
+		transition: 0.4s rotate;
+	} */
+</style>

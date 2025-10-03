@@ -223,12 +223,8 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 				scopes: scopes,
 				redirectUri: `${origin}/oauth/callback`
 			});
-
 			const accountData = response.account ? JSON.parse(JSON.stringify(response.account)) : null;
-			await redisCache.setSession(sessionId, '$.loggedIn', JSON.stringify(true));
-			await redisCache.setSession(sessionId, '$.status', JSON.stringify('authenticated'));
 			await redisCache.setSession(sessionId, '$.microsoftAccount', JSON.stringify(accountData));
-			await redisCache.setSession(sessionId, '$.sessionId', JSON.stringify(sessionId));
 
 			return response;
 		} catch (error) {

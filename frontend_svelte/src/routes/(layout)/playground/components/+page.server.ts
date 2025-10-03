@@ -6,7 +6,7 @@ export const actions: Actions = {
 		const data = await request.formData();
 		// const sessionId = locals.sessionData.sessionId;
 
-		const identityId = url.searchParams.get('identity-ids')?.toString();
+		const identityId = url.searchParams.get('identity-id')?.toString();
 		const action = url.searchParams.get('action')?.toString();
 		const newAction = url.searchParams.get('new-action')?.toString();
 
@@ -44,5 +44,11 @@ export const actions: Actions = {
 		console.log('=== playground - server - share action executed - returning following object ===');
 		console.log(returnObject);
 		return returnObject;
+	},
+
+	putMe: async ({ request }) => {
+		const data = await request.formData();
+		console.log('=== playground - server - putMe action executed - following data received ===');
+		console.log(data);
 	}
 };

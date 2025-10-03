@@ -1,12 +1,11 @@
 <script lang="ts">
-	import type { Attachment } from 'svelte/attachments';
-	import type { AccessShareOption, DemoResourceExtended, Identity } from '$lib/types';
+	import { initDropdown } from '$lib/userInterface';
+	import type { DemoResourceExtended, Identity, AccessShareOption } from '$lib/types';
 	import { fade } from 'svelte/transition';
 	import { Action } from '$lib/accessHandler';
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import { AccessHandler } from '$lib/accessHandler';
 	import IdBadge from '../../IdBadge.svelte';
-	import type { HSDropdown, IHTMLElementFloatingUI } from 'flyonui/flyonui';
 	import { SocketIO } from '$lib/socketio';
 
 	let {
@@ -29,23 +28,11 @@
 
 	// let editableDemoResource: DemoResourceExtended = $derived({ ...demoResource });
 
-	let shareMenuElement: HTMLElement | undefined = $state(undefined);
-	let shareMenu: HSDropdown | undefined = $derived(undefined);
+	let shareMenu: HTMLElement | null = $state(null);
+	// let shareMenu: HSDropdown | undefined = $derived(undefined);
 
-	const initDropdown: Attachment = (_node: Element) => {
-		import('flyonui/flyonui')
-			.then(({ HSDropdown }) => {
-				shareMenu = new HSDropdown(shareMenuElement as unknown as IHTMLElementFloatingUI);
-				HSDropdown.autoInit();
-			})
-			.catch((error) => {
-				console.error('Error loading HSDropdown:', error);
-			});
-	};
 	const closeShareMenu = () => {
-		if (shareMenu) {
-			shareMenu.close();
-		}
+		window.HSDropdown.close(shareMenu);
 	};
 
 	let formatedDate = $derived(
@@ -158,9 +145,9 @@
 				</button>
 				{#if demoResource.access_right === Action.OWN}
 					<div
-						{@attach initDropdown}
-						bind:this={shareMenuElement}
 						class="dropdown join-item relative inline-flex grow [--placement:top]"
+						bind:this={shareMenu}
+						{@attach initDropdown}
 					>
 						<!-- bind:this={actionButtonShareMenuElement} -->
 						<button
@@ -173,7 +160,16 @@
 							<span class="icon-[tabler--share-2]"></span>
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
-
+						<!-- {#if shareOptions}
+							{#each shareOptions as shareOption (shareOption.identity_id)}
+								{@attach initDropdown}
+								<ShareItem
+									resourceId={demoResource.id as string}
+									{shareOption}
+									share={socketio?.shareEntity.bind(socketio)}
+								/>
+							{/each}
+						{/if} -->
 						<ul
 							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
 							role="menu"
@@ -183,7 +179,6 @@
 							{#if shareOptions}
 								{#each shareOptions as shareOption (shareOption.identity_id)}
 									<ShareItem
-										{@attach initDropdown}
 										resourceId={demoResource.id as string}
 										{shareOption}
 										share={socketio?.shareEntity.bind(socketio)}

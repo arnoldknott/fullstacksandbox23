@@ -2,9 +2,10 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from core.security import (
+    CurrentAccessToken,
     Guards,
     check_token_against_guards,
     get_http_access_token_payload,
@@ -69,6 +70,25 @@ async def post_user(
     )
 
 
+@user_router.post("/azure/invite/{azure_user_id}", status_code=201)
+async def post_invite_azure_user(
+    azure_user_id: str,  # The Azure user ID to invite as path parameter
+    azure_tenant_id: Annotated[
+        UUID, Query()
+    ] = None,  # The Azure tenant ID as optional query parameter
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> User:
+    """Invites an existing user in Azure as new user in the app."""
+    logger.info("POST user invite")
+    current_user = await check_token_against_guards(token_payload, guards)
+    async with UserCRUD() as crud:
+        invited_user = await crud.create_invited_azure_user(
+            current_user, azure_user_id, azure_tenant_id
+        )
+    return User.model_validate(invited_user)
+
+
 @user_router.post("/{user_id}/group/{group_id}", status_code=201)
 async def post_existing_user_to_group(
     user_id: UUID,
@@ -90,15 +110,17 @@ async def post_existing_user_to_group(
 
 @user_router.get("/me", status_code=200)
 async def get_me(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(roles=["User"])),
 ) -> Me:
-    """Returns the current user with account and profile."""
+    """Returns the current user with account and profile or creates through self-sign-up."""
+    _, response.status_code = await CurrentAccessToken(
+        token_payload
+    ).gets_or_signs_up_current_user()
     current_user = await check_token_against_guards(token_payload, guards)
     async with UserCRUD() as crud:
         me = await crud.read_me(current_user)
-    # me.azure_token_roles = current_user.azure_token_roles
-    # me.azure_token_groups = current_user.azure_token_groups
     me = Me.model_validate(me)
     return me
 

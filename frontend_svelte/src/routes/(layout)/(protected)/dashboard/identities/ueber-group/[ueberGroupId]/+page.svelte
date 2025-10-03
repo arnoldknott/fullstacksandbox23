@@ -6,7 +6,7 @@
 	import Heading from '$components/Heading.svelte';
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { Group, Hierarchy, UeberGroup } from '$lib/types';
-	import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
+	import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
 	import Card from '$components/Card.svelte';
 	import IdentityListItem from '../../IdentityListItem.svelte';
 	import IdBadge from '../../../IdBadge.svelte';
@@ -180,21 +180,23 @@
 	};
 
 	// User related stuff:
-	let allOtherAzureUsers = $state<AzureUser[]>(data.allOtherAzureUsers || []);
-	let linkedAzureUsers = $state<AzureUser[]>(data.linkedAzureUsers || []);
+	let allOtherMicrosoftUsers = $state<MicrosoftUser[]>(data.allOtherMicrosoftUsers || []);
+	let linkedMicrosoftUsers = $state<MicrosoftUser[]>(data.linkedMicrosoftUsers || []);
 	// TBD: rethink this typing - also loosing the local id here and only leaving the azure_user_id as id.
-	// Maybe this could be another Map with user.id (from this app) as key and AzureUser as value?
-	type LocalAzureUser = {
+	// Maybe this could be another Map with user.id (from this app) as key and MicrosoftUser as value?
+	type LocalMicrosoftUser = {
 		id: string;
 		name?: string | null;
 		description?: string | null;
 	};
-	let linkedIdentities = $derived<SvelteMap<Group | LocalAzureUser, IdentityType>>(new SvelteMap());
+	let linkedIdentities = $derived<SvelteMap<Group | LocalMicrosoftUser, IdentityType>>(
+		new SvelteMap()
+	);
 	$effect(() => {
 		linkedGroups.forEach((group) => {
 			linkedIdentities.set(group, IdentityType.GROUP);
 		});
-		linkedAzureUsers.forEach((user) => {
+		linkedMicrosoftUsers.forEach((user) => {
 			if (user.id) {
 				linkedIdentities.set(
 					{
@@ -209,7 +211,7 @@
 	});
 
 	// let linkedIdentities = $derived<
-	// 	((Group & { identityType: IdentityType }) | (AzureUser & { identityType: IdentityType }))[]
+	// 	((Group & { identityType: IdentityType }) | (MicrosoftUser & { identityType: IdentityType }))[]
 	// >([
 	// 	...linkedGroups.map((group) => ({ ...group, identityType: IdentityType.GROUP })),
 	// 	...linkedUsers.map((user) => ({
@@ -543,9 +545,9 @@
 
 	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : 'py-4'}>
 		<Card id="users" header={existingUserHeader}>
-			{#if allOtherAzureUsers?.length > 0}
+			{#if allOtherMicrosoftUsers?.length > 0}
 				<dl class="divider-outline divide-y">
-					{#each allOtherAzureUsers as user (user.id)}
+					{#each allOtherMicrosoftUsers as user (user.id)}
 						<div class="px-4 py-6 text-base sm:flex sm:flex-row sm:gap-4 sm:px-0">
 							<dt class="text-base-content title-small flex-1">{user.displayName}</dt>
 							<dd class="text-base-content/80 mt-1 flex-2">{user.mail}</dd>
@@ -565,7 +567,7 @@
 			{/if}
 		</Card>
 		{#if debug}
-			<JsonData data={allOtherAzureUsers} />
+			<JsonData data={allOtherMicrosoftUsers} />
 		{/if}
 	</div>
 
@@ -574,10 +576,6 @@
 		<li>
 			map foreign accounts into strucutre of fssb23 identities for displaying possibilities, for
 			eksample in ShareItems, lists, and so on.
-		</li>
-		<li>
-			Debug triggers for color picker, variant and contrast - the color triggers wrong (on second
-			select), variant works in Safari and contrast works in Chrome.
 		</li>
 		<li>Add user to ueber-group.</li>
 		<li>Turn into components to reuse with groups and subgroups.</li>
@@ -593,9 +591,13 @@
 	<p>No Ueber Group found.</p>
 {/if}
 
-<p class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
-	For resource hierarchies (protected resources) also add the order functionality by drag and drop.
-</p>
+<ul class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
+	<li>
+		For resource hierarchies (protected resources) also add the order functionality by drag and
+		drop.
+	</li>
+	<li>Update eslint-plugin-svelte, when types are fixed.</li>
+</ul>
 
 {#if debug}
 	<JsonData data={page} />

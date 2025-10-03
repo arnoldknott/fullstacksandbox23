@@ -60,7 +60,7 @@
 		"@material/material-color-utilities": "^0.3.0",
 		"colorjs.io": "^0.5.2",
 		"dotenv": "^17.2.2",
-		"flyonui": "2.3.0",
+		"flyonui": "^2.4.1",
 		"redis": "^5.8.2",
 		"reveal.js": "^5.2.1",
 		"socket.io-client": "^4.8.1",

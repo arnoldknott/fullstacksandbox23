@@ -1,23 +1,63 @@
 <script lang="ts">
+	import type { LayoutData } from './$types';
+	import { SessionStatus } from '$lib/session';
 	import {
 		Variant,
 		Theming,
 		// extendingFlyonUIwithAdditionalMaterialDesignColors,
 		type ColorConfig
 	} from '$lib/theming';
+	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 
 	import type { Action } from 'svelte/action';
 	// import NavButton from '$components/NavButton.svelte';
 	// import UserButton from '$components/UserButton.svelte';
-	import { type Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
-	// import ThemePicker from '$components/ThemePicker.svelte';
+	import { initDropdown } from '$lib/userInterface';
+	import ThemePicker from './playground/components/ThemePicker.svelte';
+	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
-	import type { LayoutData } from './$types';
+	import { resolve } from '$app/paths';
+
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
+
+	let userUnregistered = $derived(
+		!data.session?.loggedIn
+			? false
+			: data.session?.status === SessionStatus.REGISTERED
+				? false
+				: true
+	);
+
+	let welcomeModal: HTMLDivElement | null = $state(null);
+
+	$effect(() => {
+		if (userUnregistered) {
+			window.HSOverlay.open(welcomeModal);
+		}
+		if (welcomeModal) {
+			const { element } = window.HSOverlay.getInstance(welcomeModal, true);
+			element.on('close', () => {
+				userUnregistered = false;
+			});
+			element.on('open', () => {
+				userUnregistered = true;
+			});
+		}
+	});
+
+	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
+		enabled: true,
+		model: Model.MODEL1,
+		temperature: 0.7
+		// max_tokens: 2048
+	});
+
+	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
 	const theming = $state(new Theming());
 
@@ -53,10 +93,6 @@
 			data.session.currentUser.user_profile.contrast = themeConfiguration.contrast;
 		}
 	});
-
-	const contrastMin = -1.0;
-	const contrastMax = 1.0;
-	const contrastStep = 0.2;
 
 	// let { children }: { children: Snippet } = $props();
 
@@ -124,18 +160,14 @@
 		});
 	};
 
-	const toggleMode = () => {
-		mode = mode === 'dark' ? 'light' : 'dark';
-	};
-
 	const { loggedIn } = page.data.session || false;
 
 	// Write theming to database:
-	let profileAccountForm = $state<HTMLFormElement | null>(null);
+	let themeForm = $state<HTMLFormElement | null>(null);
 
 	const saveProfileAccount = async () => {
 		if (page.data.session?.loggedIn) {
-			profileAccountForm?.requestSubmit();
+			themeForm?.requestSubmit();
 			console.log('=== layout - saveProfileAccount - themeConfiguration ===');
 			console.log($state.snapshot(themeConfiguration));
 		}
@@ -246,7 +278,10 @@
 			<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 		</div>
 		<div class="navbar-end flex items-center">
-			<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
+			<div
+				class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
+				{@attach initDropdown}
+			>
 				<span
 					id="dropdown-menu-icon-user"
 					class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-6' : ''}"
@@ -256,106 +291,53 @@
 					aria-label="User Menu"
 				>
 					{#if loggedIn}
-						<img class="h-10 w-10 rounded-full" src="/api/v1/user/me/picture" alt="you" />
+						<img
+							class="not-hover:mask-radial-t-0% h-10 w-10 rounded-full not-hover:mask-radial-from-40%"
+							src={resolve('/apiproxies/msgraph') + '?endpoint=/me/photo/$value'}
+							alt="you"
+						/>
 					{/if}
 				</span>
 				<ul
-					class="dropdown-menu bg-base-200 text-neutral shadow-outline dropdown-open:opacity-100 hidden shadow-md"
+					class="dropdown-menu bg-base-200 shadow-outline dropdown-open:opacity-100 hidden shadow-md"
 					role="menu"
 					aria-orientation="vertical"
 					aria-labelledby="dropdown-menu-icon-user"
 				>
-					<form
-						method="POST"
-						action="/?/putme"
-						id="user_profile_and_account"
-						use:enhance={updateProfileAccount}
-						bind:this={profileAccountForm}
-					>
-						<li class="flex items-center gap-2">
-							<span class="icon-[material-symbols--palette-outline] size-6"></span>
-							<span class="grow"> Theming</span>
-							<button aria-label="modeToggler" type="button">
-								<label for="mode-toggler" class="swap swap-rotate">
-									<input id="mode-toggler" type="checkbox" onclick={toggleMode} />
-									<span class="icon-[tabler--moon] swap-on size-6"></span>
-									<span class="icon-[tabler--sun] swap-off size-6"></span>
-								</label>
-							</button>
-						</li>
-						<li>
-							<div class="w-48">
-								<label class="label label-text flex" for="color-picker">
-									<span class="grow">Source color:</span>
-									<code>{themeConfiguration.sourceColor}</code>
-								</label>
-								<input
-									class="w-full"
-									type="color"
-									id="color-picker"
-									name="color-picker"
-									onchange={() => saveProfileAccount()}
-									bind:value={themeConfiguration.sourceColor}
-								/>
-							</div>
-						</li>
-						<li>
-							<div class="relative w-48">
-								<label class="label label-text" for="theme-variant">Variant</label>
-								<select
-									class="select select-floating max-w-sm"
-									aria-label="Select variant"
-									id="theme-variant"
-									name="variant-picker"
-									onchange={() => saveProfileAccount()}
-									bind:value={themeConfiguration.variant}
-								>
-									<option value={Variant.TONAL_SPOT}>Tonal Spot</option>
-									<!-- <option value={Variant.MONOCHROME}>Monochrome</option> -->
-									<option value={Variant.NEUTRAL}>Neutral</option>
-									<option value={Variant.VIBRANT}>Vibrant</option>
-									<!-- <option value={Variant.EXPRESSIVE}>Expressive</option> -->
-									<option value={Variant.FIDELITY}>Fidelity</option>
-									<option value={Variant.CONTENT}>Content</option>
-									<option value={Variant.RAINBOW}>Rainbow</option>
-									<!-- <option value={Variant.FRUIT_SALAD}>Fruit Salad</option> -->
-								</select>
-							</div>
-						</li>
-						<li>
-							<div class="w-48">
-								<label class="label label-text flex" for="contrast">
-									<span class="grow">Contrast: </span>
-									<code>{themeConfiguration.contrast}</code>
-								</label>
-
-								<input
-									type="range"
-									min={contrastMin}
-									max={contrastMax}
-									step={contrastStep}
-									class="range w-full"
-									aria-label="contrast"
-									name="contrast"
-									id="contrast"
-									onchange={() => saveProfileAccount()}
-									bind:value={themeConfiguration.contrast}
-								/>
-								<!-- <div class="flex w-full justify-between px-2 text-xs">
-										{#each allContrasts as _}
-											<span>|</span>
-										{/each}
-									</div> -->
-							</div>
-						</li>
-						<li>
-							<hr class="border-outline -mx-2 my-5" />
-						</li>
-						<li class="flex items-center gap-2">
-							<span class="icon-[tabler--settings] size-6"></span>
-							<span class="grow"> Settings</span>
-						</li>
-					</form>
+					<ArtificialIntelligencePicker
+						{updateProfileAccount}
+						{saveProfileAccount}
+						bind:artificialIntelligenceForm
+						bind:artificialIntelligenceConfiguration
+					/>
+					<li>
+						<hr class="border-outline -mx-2 my-5" />
+					</li>
+					<ThemePicker
+						{updateProfileAccount}
+						{saveProfileAccount}
+						bind:themeForm
+						bind:mode
+						bind:themeConfiguration
+					/>
+					<li>
+						<hr class="border-outline -mx-2 my-5" />
+					</li>
+					<li class="flex items-center gap-2">
+						<button
+							aria-label="show Modal"
+							type="button"
+							class="dropdown-item dropdown-close"
+							aria-haspopup="dialog"
+							aria-expanded="false"
+							aria-controls="welcome-modal"
+							data-overlay="#welcome-modal"
+						>
+							<!-- works via JavaScript: onclick={() => window.HSOverlay.open(welcomeModal)}  -->
+							<span class="icon-[tabler--eye] bg-neutral size-6"></span>
+							<span class="text-neutral grow">Show welcome modal</span>
+						</button>
+					</li>
 				</ul>
 			</div>
 			<div class="flex items-center md:ml-2">
@@ -378,9 +360,207 @@
 		</div>
 	</nav>
 
-	<div class="mt-5">
-		{@render children?.()}
+	<div
+		id="welcome-modal"
+		class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 modal-middle hidden"
+		role="dialog"
+		tabindex="-1"
+		bind:this={welcomeModal}
+	>
+		<div class="modal-dialog modal-dialog-md">
+			<div class="modal-content bg-base-300 shadow-outline ring-outline-variant shadow-lg ring">
+				<div class="modal-header">
+					<span class="icon-[ph--smiley] size-6"></span>
+					<h3 class="modal-title grow pl-2">Welcome to</h3>
+
+					<div class="align-center flex grow flex-row justify-center">
+						<div class="flex flex-col justify-center">
+							<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
+							<div
+								class="title-small text-secondary font-bold tracking-widest"
+								style="line-height: 1"
+							>
+								Sandbox
+							</div>
+						</div>
+						<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
+					</div>
+					<button
+						type="button"
+						class="btn btn-text btn-circle btn-sm absolute end-3 top-3"
+						aria-label="Close"
+						data-overlay="#welcome-modal"
+					>
+						<!-- onclick={() => welcomeModal?.close()} -->
+						<span class="icon-[tabler--x] size-4"></span>
+					</button>
+				</div>
+				<div class="modal-body flex flex-wrap justify-between">
+					<!-- <div class="w-full"> -->
+					<!-- <div
+							class="m-1 h-full w-full bg-[url(/starnberger-see-unset-20230807.jpg)] mask-y-from-75% mask-y-to-100% mask-x-from-95% mask-x-to-100% bg-cover bg-center p-4 opacity-40"
+						></div> -->
+					<img
+						src="/starnberger-see-unset-20230807.jpg"
+						class="w-full rounded-lg mask-y-from-75% mask-y-to-100% mask-x-from-95% mask-x-to-100% opacity-70"
+						alt="Bavarian lake Starnberger See in sunset"
+					/>
+					<div class="m-1 h-full w-full content-center p-4 text-justify font-semibold">
+						Adjust your settings for Artificial Intelligence and Theme configuration now or later by
+						clicking at your user icon in the top right corner.
+						<!-- <p
+								class="from-primary via-secondary to-accent text-label w-fit bg-linear-to-b bg-clip-text px-5 text-justify font-semibold text-transparent"
+							>
+								Adjust your settings for Artificial Intelligence and Theme configuration in the tabs
+								now or later by clicking at your user icon in the top right corner.
+							</p> -->
+					</div>
+					<!-- </div> -->
+					<div class="grid grid-cols-1 gap-2 max-sm:w-full sm:grid-cols-2">
+						<ul
+							class="sm:border-outline shadow-shadow bg-base-250 m-1 h-[257px] w-full rounded rounded-xl p-4 shadow shadow-inner shadow-lg"
+							role="menu"
+							aria-orientation="vertical"
+							aria-labelledby="dropdown-menu-icon-user"
+						>
+							<ArtificialIntelligencePicker
+								{updateProfileAccount}
+								{saveProfileAccount}
+								bind:artificialIntelligenceForm
+								bind:artificialIntelligenceConfiguration
+							/>
+						</ul>
+						<hr class="border-outline -mx-2 my-5 sm:hidden" />
+						<ul
+							class="shadow-shadow bg-base-250 m-1 w-full rounded rounded-xl p-4 shadow shadow-inner shadow-lg"
+							role="menu"
+							aria-orientation="vertical"
+							aria-labelledby="dropdown-menu-icon-user"
+						>
+							<ThemePicker
+								{updateProfileAccount}
+								{saveProfileAccount}
+								bind:themeForm
+								bind:mode
+								bind:themeConfiguration
+							/>
+						</ul>
+					</div>
+					<!-- <div
+						class="tabs tabs-bordered tabs-vertical w-[130px]"
+						aria-label="Tabs"
+						role="tablist"
+						data-tabs-vertical="true"
+						aria-orientation="horizontal"
+					>
+						<button
+							type="button"
+							class="tab active-tab:tab-active active py-14 text-left"
+							id="welcome-item-ai"
+							data-tab="#welcome-ai"
+							aria-controls="welcome-ai"
+							role="tab"
+							aria-selected="false"
+						>
+							Artificial Intelligence
+						</button>
+						<button
+							type="button"
+							class="tab active-tab:tab-active py-14 text-left"
+							id="welcome-item-theme"
+							data-tab="#welcome-theme"
+							aria-controls="welcome-theme"
+							role="tab"
+							aria-selected="false"
+						>
+							Theme Configuration
+						</button>
+					</div>
+
+					<div class="h-[245px] w-[264px]">
+						<div id="welcome-ai" role="tabpanel" aria-labelledby="welcome-item-ai">
+							<ul
+								class="m-1 h-full w-full p-4"
+								role="menu"
+								aria-orientation="vertical"
+								aria-labelledby="dropdown-menu-icon-user"
+							>
+								<ArtificialIntelligencePicker
+									{updateProfileAccount}
+									{saveProfileAccount}
+									bind:artificialIntelligenceForm
+									bind:artificialIntelligenceConfiguration
+								/>
+							</ul>
+						</div>
+						<div
+							id="welcome-theme"
+							class="hidden"
+							role="tabpanel"
+							aria-labelledby="welcome-item-theme"
+						>
+							<ul
+								class="m-1 w-fit p-4"
+								role="menu"
+								aria-orientation="vertical"
+								aria-labelledby="dropdown-menu-icon-user"
+							>
+								<ThemePicker
+									{updateProfileAccount}
+									{saveProfileAccount}
+									bind:themeForm
+									bind:mode
+									bind:themeConfiguration
+								/>
+							</ul>
+						</div>
+					</div> -->
+				</div>
+				<div class="modal-footer">
+					<form
+						method="POST"
+						action="/?/putme"
+						use:enhance={async (input) => {
+							input.formData.append(
+								'ai-enabled',
+								artificialIntelligenceConfiguration.enabled.toString()
+							);
+							input.formData.append('model-picker', artificialIntelligenceConfiguration.model);
+							input.formData.append(
+								'ai-temperature',
+								artificialIntelligenceConfiguration.temperature.toString()
+							);
+							input.formData.append('color-picker', themeConfiguration.sourceColor);
+							input.formData.append('variant-picker', themeConfiguration.variant);
+							input.formData.append('contrast', themeConfiguration.contrast.toString());
+							updateProfileAccount(input);
+						}}
+					>
+						<button
+							type="submit"
+							onclick={() => (userUnregistered = false)}
+							data-overlay="#welcome-modal"
+							aria-label="Save profile"
+							class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow-sm"
+						>
+							<span class="icon-[tabler--send-2]"></span>Save profile
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
 	</div>
+
+	{#if userUnregistered}
+		<div class="text-display-small text-error text-center">User not registered!</div>
+		<div class="mt-5">
+			{@render children?.()}
+		</div>
+	{:else}
+		<div class="mt-5">
+			{@render children?.()}
+		</div>
+	{/if}
 
 	<!-- <JsonData data={theme}></JsonData> -->
 </div>

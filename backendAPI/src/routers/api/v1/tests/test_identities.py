@@ -5,7 +5,10 @@ from typing import List
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
+from sqlmodel import select
 
+from core.config import config
+from core.databases import get_async_session
 from core.types import Action, CurrentUserData, IdentityType
 from crud.access import AccessLoggingCRUD
 from models.identity import (
@@ -20,6 +23,8 @@ from models.identity import (
     UeberGroup,
     UeberGroupRead,
     User,
+    UserAccount,
+    UserProfile,
     UserRead,
 )
 from models.protected_resource import ProtectedResourceRead
@@ -30,6 +35,7 @@ from routers.api.v1.identities import (
     post_existing_subgroup_to_group,
     post_existing_user_to_group,
     post_existing_users_to_subgroup,
+    post_invite_azure_user,
 )
 from tests.utils import (
     current_user_data_admin,
@@ -71,6 +77,10 @@ from tests.utils import (
 # groups: groups are not part of the user endpoints - need their own endpoints, but security is taking care of the sign-up!
 # ✔︎ users connections to groups are created in the database - checked through security tests: adding a new group to a user.
 # ✔︎ a user, that is already signed up was added in Azure to a new group: does the new connection show up in the database?
+# ✔︎ user invites other azure user
+# ✔︎ user invites other azure user from another tenant
+# ✔︎ invited user self-signs-up and creates user_account and user_profile
+# X user reactivates itself - keeps old user_account and user_profile
 
 # Failing tests:
 # - modify the user_id
@@ -394,6 +404,112 @@ async def test_post_user_invalid_token(
     assert response.json() == {"detail": "Invalid token."}
 
 
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_post_user_invites_azure_user(
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_provide_http_token_payload
+
+    # Make a POST request to invite an azure user
+    response = await async_client.post(
+        f"/api/v1/user/azure/invite/{str(many_test_azure_users[1]['azure_user_id'])}",
+    )
+
+    assert response.status_code == 201
+    created_user = User(**response.json())
+    assert created_user.azure_user_id == many_test_azure_users[1]["azure_user_id"]
+    assert created_user.azure_tenant_id == config.AZURE_TENANT_ID
+    assert created_user.is_active is False
+    assert created_user.id is not None
+    assert created_user.user_account is None
+    assert created_user.user_profile is None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_post_user_invites_azure_user_from_another_tenant(
+    async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_provide_http_token_payload
+
+    # Make a POST request to invite an azure user
+    response = await async_client.post(
+        f"/api/v1/user/azure/invite/{many_test_azure_users[1]['azure_user_id']}?azure_tenant_id={many_test_azure_users[1]['azure_tenant_id']}",
+    )
+
+    assert response.status_code == 201
+    created_user = User(**response.json())
+    assert created_user.azure_user_id == many_test_azure_users[1]["azure_user_id"]
+    assert created_user.azure_tenant_id == many_test_azure_users[1]["azure_tenant_id"]
+    assert created_user.is_active is False
+    assert created_user.id is not None
+    assert created_user.user_account is None
+    assert created_user.user_profile is None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user2_read_write],
+    indirect=True,
+)
+async def test_invited_azure_user_self_signup_creates_profile_and_account(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mock_guards,
+):
+    """Tests the post_user endpoint of the API."""
+    app_override_provide_http_token_payload
+
+    # Call function of POST request as user1 to invite an user2:
+    created_user = await post_invite_azure_user(
+        many_test_azure_users[1]["azure_user_id"],
+        many_test_azure_users[1]["azure_tenant_id"],
+        token_user1_read_write,
+        mock_guards(roles=["User"], scopes=["api.read", "api.write"]),
+    )
+
+    assert created_user.azure_user_id == uuid.UUID(
+        many_test_azure_users[1]["azure_user_id"]
+    )
+    assert created_user.azure_tenant_id == uuid.UUID(
+        many_test_azure_users[1]["azure_tenant_id"]
+    )
+    assert created_user.is_active is False
+    assert created_user.id is not None
+    assert created_user.user_account is None
+    assert created_user.user_profile is None
+
+    # Call endpoint GET me to self-sign-up user2:
+    response = await async_client.get("/api/v1/user/me")
+    assert response.status_code == 201
+    user = response.json()
+    modelled_response_user = Me(**user)
+    assert user["azure_user_id"] == many_test_azure_users[1]["azure_user_id"]
+    assert user["azure_tenant_id"] == many_test_azure_users[1]["azure_tenant_id"]
+    assert user["is_active"] is True
+    assert "id" in user
+    assert uuid.UUID(user["id"]) == modelled_response_user.id == created_user.id
+    assert "id" in user["user_account"]
+    assert user["user_account"]["user_id"] == user["id"]
+    assert user["user_account"]["ai_enabled"] is False
+    assert "id" in user["user_profile"]
+    assert user["user_profile"]["theme_color"] == "#353c6e"
+    assert user["user_profile"]["theme_variant"] == ThemeVariants.tonal_spot
+    assert user["user_profile"]["contrast"] == 0.0
+
+
 # endregion: ## POST tests
 
 # region: ## GET tests:
@@ -417,13 +533,17 @@ async def test_user_gets_own_user_through_me_endpoint(
     # mocks the access token:
     app_override_provide_http_token_payload
     # the target user:
+
     await add_one_azure_test_user(0)
 
     before_time = datetime.now()
     response = await async_client.get("/api/v1/user/me")
     after_time = datetime.now()
 
-    assert response.status_code == 200
+    if "Admin" in mocked_provide_http_token_payload["roles"]:
+        assert response.status_code == 201
+    else:
+        assert response.status_code == 200
     user = response.json()
     modelled_response_user = Me(**user)
     assert user["azure_token_roles"] == mocked_provide_http_token_payload["roles"]
@@ -437,7 +557,7 @@ async def test_user_gets_own_user_through_me_endpoint(
     assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
     assert "id" in user["user_account"]
     assert user["user_account"]["user_id"] == user["id"]
-    assert user["user_account"]["is_publicAIuser"] is False
+    assert user["user_account"]["ai_enabled"] is False
     assert "id" in user["user_profile"]
     assert user["user_profile"]["theme_color"] == "#353c6e"
     assert user["user_profile"]["theme_variant"] == ThemeVariants.tonal_spot
@@ -518,7 +638,7 @@ async def test_user_gets_own_user_through_me_endpoint_with_ueber_groups(
     )
     assert modelled_user.user_account.id is not None
     assert uuid.UUID(modelled_user.user_account.user_id) == modelled_user.id
-    assert modelled_user.user_account.is_publicAIuser is False
+    assert modelled_user.user_account.ai_enabled is False
     assert modelled_user.user_profile is not None
     assert modelled_user.user_profile.theme_color == "#353c6e"
     assert modelled_user.user_profile.theme_variant == ThemeVariants.tonal_spot
@@ -1256,7 +1376,7 @@ async def test_user_put_user(
     app_override_provide_http_token_payload: FastAPI,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1295,7 +1415,7 @@ async def test_user_puts_own_user_account(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1306,12 +1426,12 @@ async def test_user_puts_own_user_account(
         "/api/v1/user/me",
         json={
             "id": str(current_user.user_id),
-            "user_account": {"is_publicAIuser": True},
+            "user_account": {"ai_enabled": True},
         },
     )
     assert response.status_code == 200
     updated_user = Me(**response.json())
-    assert updated_user.user_account.is_publicAIuser is True
+    assert updated_user.user_account.ai_enabled is True
 
     response_read = await async_client.get("/api/v1/user/me")
 
@@ -1329,7 +1449,7 @@ async def test_user_puts_own_user_account(
     assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
     assert "id" in user["user_account"]
     assert user["user_account"]["user_id"] == user["id"]
-    assert user["user_account"]["is_publicAIuser"] is True
+    assert user["user_account"]["ai_enabled"] is True
     assert "id" in user["user_profile"]
     assert user["user_profile"]["theme_color"] == "#353c6e"
     assert user["user_profile"]["theme_variant"] == ThemeVariants.tonal_spot
@@ -1348,7 +1468,7 @@ async def test_user_puts_own_user_profile(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1388,7 +1508,7 @@ async def test_user_puts_own_user_profile(
     assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
     assert "id" in user["user_account"]
     assert user["user_account"]["user_id"] == user["id"]
-    assert user["user_account"]["is_publicAIuser"] is False
+    assert user["user_account"]["ai_enabled"] is False
     assert "id" in user["user_profile"]
     assert user["user_profile"]["theme_color"] == "#769CDF"
     assert user["user_profile"]["theme_variant"] == ThemeVariants.vibrant
@@ -1407,7 +1527,7 @@ async def test_user_puts_own_user_account_and_profile(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1418,7 +1538,7 @@ async def test_user_puts_own_user_account_and_profile(
         "/api/v1/user/me",
         json={
             "id": str(current_user.user_id),
-            "user_account": {"is_publicAIuser": True},
+            "user_account": {"ai_enabled": True},
             "user_profile": {
                 "theme_color": "#769CDF",
                 "theme_variant": "Vibrant",
@@ -1428,7 +1548,7 @@ async def test_user_puts_own_user_account_and_profile(
     )
     assert response.status_code == 200
     updated_user = Me(**response.json())
-    assert updated_user.user_account.is_publicAIuser is True
+    assert updated_user.user_account.ai_enabled is True
     assert updated_user.user_profile.theme_color == "#769CDF"
     assert updated_user.user_profile.theme_variant == ThemeVariants.vibrant
     assert updated_user.user_profile.contrast == 1.0
@@ -1449,7 +1569,7 @@ async def test_user_puts_own_user_account_and_profile(
     assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
     assert "id" in user["user_account"]
     assert user["user_account"]["user_id"] == user["id"]
-    assert user["user_account"]["is_publicAIuser"] is True
+    assert user["user_account"]["ai_enabled"] is True
     assert "id" in user["user_profile"]
     assert user["user_profile"]["theme_color"] == "#769CDF"
     assert user["user_profile"]["theme_variant"] == ThemeVariants.vibrant
@@ -1468,7 +1588,7 @@ async def test_user_puts_user_profile_with_missing_hashtag_in_color(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1538,7 +1658,7 @@ async def test_user_puts_user_profile_with_wrong_color(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1573,7 +1693,7 @@ async def test_user_puts_user_profile_with_wrong_theme(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1642,7 +1762,7 @@ async def test_user_puts_user_profile_contrast_too_high(
     mocked_provide_http_token_payload,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1676,7 +1796,7 @@ async def test_user_puts_other_users_user_account(
     add_one_azure_test_user,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1688,7 +1808,7 @@ async def test_user_puts_other_users_user_account(
         "/api/v1/user/me",
         json={
             "id": str(other_user.id),
-            "user_account": {"is_publicAIuser": True},
+            "user_account": {"ai_enabled": True},
         },
     )
     assert response.status_code == 403
@@ -1708,7 +1828,7 @@ async def test_user_puts_other_users_user_profile(
     add_one_azure_test_user,
     current_test_user,
 ):
-    """Tests put user endpoint"""
+    """Tests PUT user endpoint"""
 
     # mocks the access token:
     app_override_provide_http_token_payload
@@ -1720,7 +1840,7 @@ async def test_user_puts_other_users_user_profile(
         "/api/v1/user/me",
         json={
             "id": str(other_user.id),
-            "user_profile": {"is_publicAIuser": True},
+            "user_profile": {"ai_enabled": True},
         },
     )
     assert response.status_code == 403
@@ -1760,6 +1880,76 @@ async def test_user_puts_other_users_user_profile(
 #     assert response.json() == {"detail": "Invalid token."}
 
 
+# TBD: write tests for reactivating an inactive user and make sure that the user keeps its old user_account and user_profile
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_reactives_and_keeps_old_profile(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_one_azure_test_user: List[User],
+    mocked_provide_http_token_payload,
+    mock_guards,
+):
+    """Test a admin updates a user"""
+
+    # mocks the access token:
+    app_override_provide_http_token_payload
+
+    # access get me endpoint
+    response_me = await async_client.get("/api/v1/user/me")
+    assert response_me.status_code == 201
+    current_user = Me(**response_me.json())
+    assert current_user is not None
+    assert current_user.id is not None
+    assert current_user.is_active is True
+    assert current_user.azure_user_id == uuid.UUID(
+        mocked_provide_http_token_payload["oid"]
+    )
+    assert current_user.azure_tenant_id == uuid.UUID(
+        mocked_provide_http_token_payload["tid"]
+    )
+    assert current_user.azure_token_roles == mocked_provide_http_token_payload["roles"]
+    assert current_user.user_account.ai_enabled is False
+    assert current_user.user_profile.theme_color == "#353c6e"
+    assert current_user.user_profile.theme_variant == ThemeVariants.tonal_spot
+    assert current_user.user_profile.contrast == 0.0
+
+    # deactivate self
+    response_deactivate = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": str(current_user.id),
+            "is_active": False,
+            "user_profile": {"theme_color": "#B0FA22"},
+            "user_account": {"ai_enabled": True},
+        },
+    )
+    assert response_deactivate.status_code == 200
+    deactivated_user = User(**response_deactivate.json())
+    assert deactivated_user.is_active is False
+
+    # reactivate self
+    response_reactivate = await async_client.get("/api/v1/user/me")
+    assert response_reactivate.status_code == 201
+    reactivated_user = Me(**response_reactivate.json())
+    assert reactivated_user is not None
+    assert reactivated_user.id == current_user.id
+    assert reactivated_user.azure_user_id == current_user.azure_user_id
+    assert reactivated_user.azure_tenant_id == current_user.azure_tenant_id
+    assert reactivated_user.azure_token_roles == current_user.azure_token_roles
+    assert reactivated_user.is_active is True
+    assert reactivated_user.user_account.ai_enabled is True
+    assert reactivated_user.user_profile.theme_color == "#B0FA22"
+    assert reactivated_user.user_profile.theme_variant == ThemeVariants.tonal_spot
+    assert reactivated_user.user_profile.contrast == 0.0
+
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
@@ -1789,20 +1979,20 @@ async def test_put_user_from_admin(
     # Make a PUT request to update the user
     response = await async_client.put(
         f"/api/v1/user/{str(existing_user.id)}",
-        json={"is_active": False},
+        json={"is_active": True},
     )
     assert response.status_code == 200
     updated_user = User(**response.json())
-    assert updated_user.is_active is False
+    assert updated_user.is_active is True
 
     # Verify that the user was updated in the database
     before_time = datetime.now()
     response = await async_client.get(f"/api/v1/user/{str(existing_user.id)}")
     after_time = datetime.now()
     content = response.json()
-    db_user = User.model_validate(content)
+    db_user = User(**content)
     assert db_user is not None
-    assert db_user.is_active is False
+    assert db_user.is_active is True
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -2087,6 +2277,17 @@ async def test_user_deletes_itself(
     content = response.json()
     assert content["detail"] == "User not found."
     # assert response.text == '{"detail":"Access denied"}'
+
+    async with await get_async_session() as session:
+        accounts = await session.exec(
+            select(UserAccount).where(UserAccount.user_id == existing_user.id)
+        )
+        assert accounts.all() == []
+
+        profiles = await session.exec(
+            select(UserProfile).where(UserProfile.user_id == existing_user.id)
+        )
+        assert profiles.all() == []
 
 
 @pytest.mark.anyio

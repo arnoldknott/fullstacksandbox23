@@ -435,7 +435,7 @@ class CurrentAccessToken:
             # if the user information stored in this class is not valid: get or sign-up the user.
             async with UserCRUD() as crud:
                 # TBD: this variable is misleading. The current_user here is not CurrentUserData, but a UserRead object!
-                current_user = await crud.azure_user_self_sign_up(
+                current_user, status_code = await crud.azure_user_self_sign_up(
                     user_id, tenant_id, groups
                 )
                 if current_user:
@@ -444,15 +444,14 @@ class CurrentAccessToken:
                     # print(current_user)
                     # TBD: no - don't do that - it's a security risk to store the user in the class instance!
                     # self.user_id = current_user.user_id
-                    return current_user
+                    return current_user, status_code
                 else:
                     raise HTTPException(status_code=404, detail="404 User not found")
         except Exception as err:
             logger.error(f"🔑 User not found in database: ${err}")
             raise HTTPException(status_code=401, detail="Invalid token.")
 
-    # TBD: call get_or_sign_up_current_user from all checks that require a user
-    # TBD: merge with gets_or_signs_up_current_user?
+    # call provide_current_user from all checks that require a user
     async def provides_current_user(self) -> CurrentUserData:
         """Returns the current user"""
         roles = None
@@ -461,7 +460,7 @@ class CurrentAccessToken:
             roles = self.payload["roles"]
         if "groups" in self.payload:
             groups = self.payload["groups"]
-        user_in_database = await self.gets_or_signs_up_current_user()
+        user_in_database, _ = await self.gets_or_signs_up_current_user()
         # TBD: use CurrentUserData class instead of dict for type safety!
         current_user = CurrentUserData(
             user_id=user_in_database.id,
@@ -469,7 +468,6 @@ class CurrentAccessToken:
             azure_token_groups=groups,
         )
         # current_user = {
-        #     # TBD: every check needs to call the gets_or_signs_up_current_user method
         #     # Then change azure_user_id to user_id here:
         #     # "azure_user_id": self.payload["oid"],
         #     "user_id": user_in_database.id,
@@ -574,7 +572,8 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
         self, payload: dict = Depends(provide_http_token_payload)
     ) -> UserRead:
         super().__init__(payload)
-        return await self.gets_or_signs_up_current_user()
+        current_user, _ = await self.gets_or_signs_up_current_user()
+        return current_user
 
 
 async def check_token_against_guards(

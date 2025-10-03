@@ -30,13 +30,12 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			backendAPIConfiguration: backendAPIConfiguration,
 			session: {
 				loggedIn: locals.sessionData.loggedIn,
+				status: locals.sessionData.status,
 				microsoftProfile: locals.sessionData.microsoftProfile,
 				sessionId: locals.sessionData.sessionId,
 				currentUser: locals.sessionData.currentUser
 			}
 		};
-		// console.log('=== layout.server.ts - load - globalClientData ===');
-		// console.log(globalClientData);
 		return {
 			...globalClientData
 		};
