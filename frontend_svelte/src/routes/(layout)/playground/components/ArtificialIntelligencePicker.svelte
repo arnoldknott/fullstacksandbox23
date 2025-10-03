@@ -32,7 +32,7 @@
 		<span class="text-neutral grow">Artificial Intelligence</span>
 	</li>
 	<li>
-		<div class="flex w-58 flex-row pt-2">
+		<div class="flex w-full flex-row pt-2">
 			<label class="label label-text text-base" for="ai-enabled">off</label>
 			<input
 				type="checkbox"
@@ -43,7 +43,7 @@
 			<label class="label label-text text-base" for="ai-enabled"> on</label>
 		</div>
 	</li>
-	<li class="relative w-58 pt-1">
+	<li class="relative w-full pt-1">
 		<label
 			class="label label-text {artificialIntelligenceConfiguration.enabled
 				? ''
@@ -64,7 +64,7 @@
 			<option value="Model 3">Model 3</option>
 		</select>
 	</li>
-	<li class="relative w-58 pt-2">
+	<li class="relative w-full pt-2">
 		<label
 			class="label label-text flex {artificialIntelligenceConfiguration.enabled
 				? ''

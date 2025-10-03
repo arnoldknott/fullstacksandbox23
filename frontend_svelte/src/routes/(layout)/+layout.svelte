@@ -38,15 +38,15 @@
 		if (userUnregistered) {
 			window.HSOverlay.open(welcomeModal);
 		}
-		if (welcomeModal) {
-			const { element } = window.HSOverlay.getInstance(welcomeModal, true);
-			element.on('close', () => {
-				userUnregistered = false;
-			});
-			element.on('open', () => {
-				userUnregistered = true;
-			});
-		}
+		// if (welcomeModal) {
+		// 	const { element } = window.HSOverlay.getInstance(welcomeModal, true);
+		// 	element.on('close', () => {
+		// 		userUnregistered = false;
+		// 	});
+		// 	element.on('open', () => {
+		// 		userUnregistered = true;
+		// 	});
+		// }
 	});
 
 	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
@@ -415,7 +415,37 @@
 							</p> -->
 					</div>
 					<!-- </div> -->
-					<div
+					<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+						<ul
+							class="m-1 w-full p-4"
+							role="menu"
+							aria-orientation="vertical"
+							aria-labelledby="dropdown-menu-icon-user"
+						>
+							<ArtificialIntelligencePicker
+								{updateProfileAccount}
+								{saveProfileAccount}
+								bind:artificialIntelligenceForm
+								bind:artificialIntelligenceConfiguration
+							/>
+						</ul>
+						<hr class="border-outline -mx-2 my-5 sm:hidden" />
+						<ul
+							class="m-1 w-full p-4"
+							role="menu"
+							aria-orientation="vertical"
+							aria-labelledby="dropdown-menu-icon-user"
+						>
+							<ThemePicker
+								{updateProfileAccount}
+								{saveProfileAccount}
+								bind:themeForm
+								bind:mode
+								bind:themeConfiguration
+							/>
+						</ul>
+					</div>
+					<!-- <div
 						class="tabs tabs-bordered tabs-vertical w-[130px]"
 						aria-label="Tabs"
 						role="tablist"
@@ -483,7 +513,7 @@
 								/>
 							</ul>
 						</div>
-					</div>
+					</div> -->
 				</div>
 				<!-- <div class="modal-footer">
 					<button
