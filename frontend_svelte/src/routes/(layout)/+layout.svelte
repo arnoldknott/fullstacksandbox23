@@ -520,17 +520,20 @@
 					<form
 						method="POST"
 						action="/?/putme"
-						use:enhance={async ({ formData }) => {
-							formData.append('ai-enabled', artificialIntelligenceConfiguration.enabled.toString());
-							formData.append('model-picker', artificialIntelligenceConfiguration.model);
-							formData.append(
+						use:enhance={async (input) => {
+							input.formData.append(
+								'ai-enabled',
+								artificialIntelligenceConfiguration.enabled.toString()
+							);
+							input.formData.append('model-picker', artificialIntelligenceConfiguration.model);
+							input.formData.append(
 								'ai-temperature',
 								artificialIntelligenceConfiguration.temperature.toString()
 							);
-							formData.append('color-picker', themeConfiguration.sourceColor);
-							formData.append('variant-picker', themeConfiguration.variant);
-							formData.append('contrast', themeConfiguration.contrast.toString());
-							// updateProfileAccount;
+							input.formData.append('color-picker', themeConfiguration.sourceColor);
+							input.formData.append('variant-picker', themeConfiguration.variant);
+							input.formData.append('contrast', themeConfiguration.contrast.toString());
+							updateProfileAccount(input);
 						}}
 					>
 						<button
