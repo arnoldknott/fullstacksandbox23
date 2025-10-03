@@ -22,16 +22,17 @@
 
 <form
 	method="POST"
+	class="align-between flex h-full flex-col"
 	action="/?/putme"
 	id="ai-form"
 	use:enhance={updateProfileAccount}
 	bind:this={artificialIntelligenceForm}
 >
-	<li class="flex items-center gap-2">
+	<li class="flex grow items-center gap-2">
 		<span class="icon-[mingcute--ai-fill] bg-neutral size-6"></span>
 		<span class="text-neutral grow">Artificial Intelligence</span>
 	</li>
-	<li>
+	<li class="grow">
 		<div class="flex w-full flex-row pt-2">
 			<label class="label label-text text-base" for="ai-enabled">off</label>
 			<input
@@ -43,7 +44,7 @@
 			<label class="label label-text text-base" for="ai-enabled"> on</label>
 		</div>
 	</li>
-	<li class="relative w-full pt-1">
+	<li class="relative w-full grow pt-1">
 		<label
 			class="label label-text {artificialIntelligenceConfiguration.enabled
 				? ''

@@ -32,21 +32,21 @@
 				: true
 	);
 
-	let welcomeModal: HTMLDivElement;
+	let welcomeModal: HTMLDivElement | null = $state(null);
 
 	$effect(() => {
 		if (userUnregistered) {
 			window.HSOverlay.open(welcomeModal);
 		}
-		// if (welcomeModal) {
-		// 	const { element } = window.HSOverlay.getInstance(welcomeModal, true);
-		// 	element.on('close', () => {
-		// 		userUnregistered = false;
-		// 	});
-		// 	element.on('open', () => {
-		// 		userUnregistered = true;
-		// 	});
-		// }
+		if (welcomeModal) {
+			const { element } = window.HSOverlay.getInstance(welcomeModal, true);
+			element.on('close', () => {
+				userUnregistered = false;
+			});
+			element.on('open', () => {
+				userUnregistered = true;
+			});
+		}
 	});
 
 	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
@@ -405,8 +405,8 @@
 						alt="Bavarian lake Starnberger See in sunset"
 					/>
 					<div class="m-1 h-full w-full content-center p-4 text-justify font-semibold">
-						Adjust your settings for Artificial Intelligence and Theme configuration in the tabs now
-						or later by clicking at your user icon in the top right corner.
+						Adjust your settings for Artificial Intelligence and Theme configuration now or later by
+						clicking at your user icon in the top right corner.
 						<!-- <p
 								class="from-primary via-secondary to-accent text-label w-fit bg-linear-to-b bg-clip-text px-5 text-justify font-semibold text-transparent"
 							>
@@ -415,9 +415,9 @@
 							</p> -->
 					</div>
 					<!-- </div> -->
-					<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+					<div class="grid grid-cols-1 gap-2 max-sm:w-full sm:grid-cols-2">
 						<ul
-							class="m-1 w-full p-4"
+							class="sm:border-outline m-1 h-[257px] w-full p-4 sm:border-r"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="dropdown-menu-icon-user"
