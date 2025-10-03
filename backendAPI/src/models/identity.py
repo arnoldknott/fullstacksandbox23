@@ -268,7 +268,7 @@ class UserAccount(SQLModel, table=True):
             # "primaryjoin": "UserAccount.user_id == foreign(User.id)",
         },
     )
-    is_publicAIuser: bool = False
+    ai_enabled: bool = False
 
 
 class ThemeVariants(str, Enum):

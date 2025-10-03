@@ -149,10 +149,7 @@ async def test_read_me(
         connection.responses("transferred")[0]["user_profile"]["theme_variant"]
         == "Tonal Spot"
     )
-    assert (
-        connection.responses("transferred")[0]["user_account"]["is_publicAIuser"]
-        is False
-    )
+    assert connection.responses("transferred")[0]["user_account"]["ai_enabled"] is False
 
 
 @pytest.mark.anyio
@@ -192,7 +189,7 @@ async def test_update_me(
             "theme_variant": "Vibrant",
         },
         "user_account": {
-            "is_publicAIuser": True,
+            "ai_enabled": True,
         },
     }
     await connection.client.emit("update_me", updated_me, namespace="/user")
@@ -217,10 +214,7 @@ async def test_update_me(
         connection.responses("transferred")[1]["user_profile"]["theme_variant"]
         == "Vibrant"
     )
-    assert (
-        connection.responses("transferred")[1]["user_account"]["is_publicAIuser"]
-        is True
-    )
+    assert connection.responses("transferred")[1]["user_account"]["ai_enabled"] is True
 
 
 @pytest.mark.anyio

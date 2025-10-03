@@ -503,7 +503,7 @@ async def test_invited_azure_user_self_signup_creates_profile_and_account(
     assert uuid.UUID(user["id"]) == modelled_response_user.id == created_user.id
     assert "id" in user["user_account"]
     assert user["user_account"]["user_id"] == user["id"]
-    assert user["user_account"]["is_publicAIuser"] is False
+    assert user["user_account"]["ai_enabled"] is False
     assert "id" in user["user_profile"]
     assert user["user_profile"]["theme_color"] == "#353c6e"
     assert user["user_profile"]["theme_variant"] == ThemeVariants.tonal_spot
@@ -557,7 +557,7 @@ async def test_user_gets_own_user_through_me_endpoint(
     assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
     assert "id" in user["user_account"]
     assert user["user_account"]["user_id"] == user["id"]
-    assert user["user_account"]["is_publicAIuser"] is False
+    assert user["user_account"]["ai_enabled"] is False
     assert "id" in user["user_profile"]
     assert user["user_profile"]["theme_color"] == "#353c6e"
     assert user["user_profile"]["theme_variant"] == ThemeVariants.tonal_spot
@@ -638,7 +638,7 @@ async def test_user_gets_own_user_through_me_endpoint_with_ueber_groups(
     )
     assert modelled_user.user_account.id is not None
     assert uuid.UUID(modelled_user.user_account.user_id) == modelled_user.id
-    assert modelled_user.user_account.is_publicAIuser is False
+    assert modelled_user.user_account.ai_enabled is False
     assert modelled_user.user_profile is not None
     assert modelled_user.user_profile.theme_color == "#353c6e"
     assert modelled_user.user_profile.theme_variant == ThemeVariants.tonal_spot
@@ -1426,12 +1426,12 @@ async def test_user_puts_own_user_account(
         "/api/v1/user/me",
         json={
             "id": str(current_user.user_id),
-            "user_account": {"is_publicAIuser": True},
+            "user_account": {"ai_enabled": True},
         },
     )
     assert response.status_code == 200
     updated_user = Me(**response.json())
-    assert updated_user.user_account.is_publicAIuser is True
+    assert updated_user.user_account.ai_enabled is True
 
     response_read = await async_client.get("/api/v1/user/me")
 
@@ -1449,7 +1449,7 @@ async def test_user_puts_own_user_account(
     assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
     assert "id" in user["user_account"]
     assert user["user_account"]["user_id"] == user["id"]
-    assert user["user_account"]["is_publicAIuser"] is True
+    assert user["user_account"]["ai_enabled"] is True
     assert "id" in user["user_profile"]
     assert user["user_profile"]["theme_color"] == "#353c6e"
     assert user["user_profile"]["theme_variant"] == ThemeVariants.tonal_spot
@@ -1508,7 +1508,7 @@ async def test_user_puts_own_user_profile(
     assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
     assert "id" in user["user_account"]
     assert user["user_account"]["user_id"] == user["id"]
-    assert user["user_account"]["is_publicAIuser"] is False
+    assert user["user_account"]["ai_enabled"] is False
     assert "id" in user["user_profile"]
     assert user["user_profile"]["theme_color"] == "#769CDF"
     assert user["user_profile"]["theme_variant"] == ThemeVariants.vibrant
@@ -1538,7 +1538,7 @@ async def test_user_puts_own_user_account_and_profile(
         "/api/v1/user/me",
         json={
             "id": str(current_user.user_id),
-            "user_account": {"is_publicAIuser": True},
+            "user_account": {"ai_enabled": True},
             "user_profile": {
                 "theme_color": "#769CDF",
                 "theme_variant": "Vibrant",
@@ -1548,7 +1548,7 @@ async def test_user_puts_own_user_account_and_profile(
     )
     assert response.status_code == 200
     updated_user = Me(**response.json())
-    assert updated_user.user_account.is_publicAIuser is True
+    assert updated_user.user_account.ai_enabled is True
     assert updated_user.user_profile.theme_color == "#769CDF"
     assert updated_user.user_profile.theme_variant == ThemeVariants.vibrant
     assert updated_user.user_profile.contrast == 1.0
@@ -1569,7 +1569,7 @@ async def test_user_puts_own_user_account_and_profile(
     assert user["azure_tenant_id"] == str(mocked_provide_http_token_payload["tid"])
     assert "id" in user["user_account"]
     assert user["user_account"]["user_id"] == user["id"]
-    assert user["user_account"]["is_publicAIuser"] is True
+    assert user["user_account"]["ai_enabled"] is True
     assert "id" in user["user_profile"]
     assert user["user_profile"]["theme_color"] == "#769CDF"
     assert user["user_profile"]["theme_variant"] == ThemeVariants.vibrant
@@ -1808,7 +1808,7 @@ async def test_user_puts_other_users_user_account(
         "/api/v1/user/me",
         json={
             "id": str(other_user.id),
-            "user_account": {"is_publicAIuser": True},
+            "user_account": {"ai_enabled": True},
         },
     )
     assert response.status_code == 403
@@ -1840,7 +1840,7 @@ async def test_user_puts_other_users_user_profile(
         "/api/v1/user/me",
         json={
             "id": str(other_user.id),
-            "user_profile": {"is_publicAIuser": True},
+            "user_profile": {"ai_enabled": True},
         },
     )
     assert response.status_code == 403
@@ -1915,7 +1915,7 @@ async def test_user_reactives_and_keeps_old_profile(
         mocked_provide_http_token_payload["tid"]
     )
     assert current_user.azure_token_roles == mocked_provide_http_token_payload["roles"]
-    assert current_user.user_account.is_publicAIuser is False
+    assert current_user.user_account.ai_enabled is False
     assert current_user.user_profile.theme_color == "#353c6e"
     assert current_user.user_profile.theme_variant == ThemeVariants.tonal_spot
     assert current_user.user_profile.contrast == 0.0
@@ -1927,7 +1927,7 @@ async def test_user_reactives_and_keeps_old_profile(
             "id": str(current_user.id),
             "is_active": False,
             "user_profile": {"theme_color": "#B0FA22"},
-            "user_account": {"is_publicAIuser": True},
+            "user_account": {"ai_enabled": True},
         },
     )
     assert response_deactivate.status_code == 200
@@ -1944,7 +1944,7 @@ async def test_user_reactives_and_keeps_old_profile(
     assert reactivated_user.azure_tenant_id == current_user.azure_tenant_id
     assert reactivated_user.azure_token_roles == current_user.azure_token_roles
     assert reactivated_user.is_active is True
-    assert reactivated_user.user_account.is_publicAIuser is True
+    assert reactivated_user.user_account.ai_enabled is True
     assert reactivated_user.user_profile.theme_color == "#B0FA22"
     assert reactivated_user.user_profile.theme_variant == ThemeVariants.tonal_spot
     assert reactivated_user.user_profile.contrast == 0.0
