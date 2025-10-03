@@ -363,7 +363,7 @@
 
 	<div
 		id="welcome-modal"
-		class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 modal-middle hidden [--body-scroll:true] [--overlay-backdrop:static] "
+		class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 modal-middle hidden [--body-scroll:true] [--overlay-backdrop:static]"
 		data-overlay-keyboard="false"
 		role="dialog"
 		tabindex="-1"
@@ -374,7 +374,9 @@
 				<div class="modal-header">
 					<span class="icon-[ph--smiley] size-6"></span>
 					<h3 class="modal-title grow pl-2">Welcome</h3>
-					<div class="align-center flex grow flex-row justify-center">{page.data.session?.microsoftProfile.displayName}</div>
+					<div class="align-center flex grow flex-row justify-center">
+						{page.data.session?.microsoftProfile.displayName}
+					</div>
 
 					<button
 						type="button"
@@ -392,7 +394,7 @@
 							class="m-1 h-full w-full bg-[url(/starnberger-see-unset-20230807.jpg)] mask-y-from-75% mask-y-to-100% mask-x-from-95% mask-x-to-100% bg-cover bg-center p-4 opacity-40"
 						></div> -->
 
-										<div class="align-center flex grow flex-row justify-center">
+					<div class="align-center flex grow flex-row justify-center">
 						<div class="flex flex-col justify-center">
 							<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
 							<div
@@ -422,7 +424,7 @@
 					<!-- </div> -->
 					<div class="grid grid-cols-1 gap-2 max-sm:w-full sm:grid-cols-2">
 						<ul
-							class="sm:border-outline shadow-shadow bg-base-250 m-1 h-[257px] w-full rounded rounded-xl p-4 shadow shadow-inner shadow-lg"
+							class="shadow-outline bg-base-250 m-1 h-[257px] w-full rounded rounded-xl p-4 shadow-inner"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="dropdown-menu-icon-user"
@@ -434,9 +436,8 @@
 								bind:artificialIntelligenceConfiguration
 							/>
 						</ul>
-						<hr class="border-outline -mx-2 my-5 sm:hidden" />
 						<ul
-							class="shadow-shadow bg-base-250 m-1 w-full rounded rounded-xl p-4 shadow shadow-inner shadow-lg"
+							class="shadow-outline bg-base-250 m-1 h-[257px] w-full rounded rounded-xl p-4 shadow-inner"
 							role="menu"
 							aria-orientation="vertical"
 							aria-labelledby="dropdown-menu-icon-user"
