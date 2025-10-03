@@ -13,6 +13,8 @@ declare global {
 		HSStaticMethods: IStaticMethods;
 		HSDropdown: HSDropdown;
 		HSOverlay: HSOverlay;
+		HSCarousel: HSCarousel;
+		HSTabs: HSTabs;
 	}
 
 	namespace App {

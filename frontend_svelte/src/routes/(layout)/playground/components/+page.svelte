@@ -16,7 +16,7 @@
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
 	import type { ActionResult } from '@sveltejs/kit';
-	import { initDropdown } from '$lib/userInterface';
+	import { initDropdown, initOverlay, initCarousel, initTabs } from '$lib/userInterface';
 	import { Action, AccessHandler, IdentityType } from '$lib/accessHandler';
 	import type { AccessShareOption } from '$lib/types';
 	import ThemePicker from './ThemePicker.svelte';
@@ -1110,7 +1110,7 @@
 		<!-- TBD: pass those data-carousel arguments:
 		 " '{' "loadingClasses": "opacity-0" '}'" -->
 		<div id="vertical-thumbnails" data-carousel class="relative w-full">
-			<div class="carousel flex space-x-2 rounded-none">
+			<div class="carousel flex space-x-2 rounded-none" {@attach initCarousel}>
 				<div class="flex-none">
 					<div
 						class="carousel-pagination flex h-full w-[200px] flex-col justify-between gap-y-2 overflow-hidden max-sm:w-8"
@@ -1201,6 +1201,7 @@
 				role="tablist"
 				data-tabs-vertical="true"
 				aria-orientation="horizontal"
+				{@attach initTabs}
 			>
 				<button
 					type="button"
@@ -1343,6 +1344,7 @@
 			class="overlay modal overlay-open:opacity-100 hidden"
 			role="dialog"
 			tabindex="-1"
+			{@attach initOverlay}
 		>
 			<div class="modal-dialog overlay-open:opacity-100">
 				<div class="modal-content bg-base-300">
