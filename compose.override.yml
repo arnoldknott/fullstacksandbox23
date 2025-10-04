@@ -1,91 +1,112 @@
 # version: "3.9"
 
 services:
-    backend_api:
-        build:
-            target: dev
-        env_file:
-            - ./backendAPI/src/.env
-        ports:
-            - "8660:80"
-        volumes:
-            - dev-app-data:/data
-            # mount container app to development on localhost
-            - ./backendAPI/:/app
-        restart: unless-stopped
-        networks:
-            - dev_network
+  backend_api:
+    build:
+      target: dev
+    env_file:
+      - ./backendAPI/src/.env
+    ports:
+      - "8660:80"
+    volumes:
+      - dev-app-data:/data
+      # mount container app to development on localhost
+      - ./backendAPI/:/app
+    restart: unless-stopped
+    networks:
+      - dev_network
 
-    postgres:
-        container_name: dev_postgres
-        # environment:
-        #     - POSTGRES_HOST=$POSTGRES_HOST
-        volumes:
-            - dev-postgres-data:/var/lib/postgresql/data/
-        env_file:
-            - ./backendAPI/src/.env
-        ports:
-            - "5432:5432"
-        networks:
-            - dev_network
+  postgres:
+    container_name: dev_postgres
+    # environment:
+    #     - POSTGRES_HOST=$POSTGRES_HOST
+    volumes:
+      - dev-postgres-data:/var/lib/postgresql/data/
+    env_file:
+      - ./backendAPI/src/.env
+    ports:
+      - "5432:5432"
+    networks:
+      - dev_network
 
-    # Mainly replaced by pgadmin app - reinstate if changing from app to containerization for pgadmin:
-    # pgadmin:
-    #     image: dpage/pgadmin4:8.3
-    #     depends_on:
-    #         - postgres
-    #     env_file:
-    #         - ./backendAPI/src/.env
-    #     environment:
-    #         - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
-    #         - MASTER_PASSWORD_REQUIRED=False
-    #     ports:
-    #         - "5555:80"
-    #     volumes:
-    #         - dev-pgadmin-data:/var/lib/pgadmin
-    #     restart: unless-stopped
-    #     networks:
-    #         - dev_network
+  # Mainly replaced by pgadmin app - reinstate if changing from app to containerization for pgadmin:
+  # pgadmin:
+  #     image: dpage/pgadmin4:8.3
+  #     depends_on:
+  #         - postgres
+  #     env_file:
+  #         - ./backendAPI/src/.env
+  #     environment:
+  #         - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
+  #         - MASTER_PASSWORD_REQUIRED=False
+  #     ports:
+  #         - "5555:80"
+  #     volumes:
+  #         - dev-pgadmin-data:/var/lib/pgadmin
+  #     restart: unless-stopped
+  #     networks:
+  #         - dev_network
 
-    frontend_svelte:
-        build:
-            target: build
-        env_file:
-            - ./frontend_svelte/src/.env
-        ports:
-            - "8661:80"
-        volumes:
-            - ./frontend_svelte:/app
-            #- /app/node_modules
-            - ./frontend_svelte/node_modules:/app/node_modules
-        restart: unless-stopped
-        networks:
-            - dev_network
-        command: 
-            # sh -c "/bin/sh"
-            sh -c "npm install && npm run dev"
+  frontend_svelte:
+    build:
+      target: build
+    env_file:
+      - ./frontend_svelte/src/.env
+    ports:
+      - "8661:80"
+    volumes:
+      - ./frontend_svelte:/app
+      #- /app/node_modules
+      - ./frontend_svelte/node_modules:/app/node_modules
+    restart: unless-stopped
+    networks:
+      - dev_network
+    command:
+      # sh -c "/bin/sh"
+      sh -c "npm install && npm run dev"
 
-    redis:
-        container_name: dev_redis
-        image: redis/redis-stack:7.2.0-v13
-        env_file:
-            - ./backendAPI/src/.env
-        volumes:
-            - dev-redis-data:/data
-        ports:
-            # redis-stack-server port:
-            # - "6379:6379"
-            # redisInsight port:
-            - "8001:8001"
-        restart: unless-stopped
-        networks:
-            - dev_network
+  redis:
+    container_name: dev_redis
+    image: redis/redis:8.2.2-alpine3.22
+    env_file:
+      - ./backendAPI/src/.env
+    volumes:
+      - dev-redis-data:/data
+      - ./cacheRedis/redis.conf:/redis.conf:ro
+      - ./cacheRedis/redis-full.conf:/redis-full.conf:ro
+      # Note this would need to be rw if redis was to modify it via ACL commands and save the modifications.
+      - ./chacheRedis/users_template.acl:/users_template.acl:ro
+      - ./scripts/redis/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
+    ports:
+      # redis-stack-server port:
+      # - "6379:6379"
+      # redisInsight port:
+      - "8001:8001"
+    restart: unless-stopped
+    networks:
+      - dev_network
+    command:
+      - sh
+      - -c
+      - sh /usr/local/bin/entrypoint.sh
+
+    redisInsight:
+      image: redislabs/redisinsight:2.70
+      container_name: redisinsight
+      ports:
+        - "5540:5540"
+      volumes:
+        - dev-redis-insght-data:/data
+      restart: unless-stopped
+      networks:
+        - dev_network
 
 volumes:
-    dev-postgres-data:
-    dev-pgadmin-data:
-    dev-app-data:
-    dev-redis-data:
+  dev-postgres-data:
+  dev-pgadmin-data:
+  dev-app-data:
+  dev-redis-data:
+  dev-redis-insight-data:
 
 networks:
-    dev_network:
+  dev_network:
