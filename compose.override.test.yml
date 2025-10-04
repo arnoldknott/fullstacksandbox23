@@ -80,29 +80,19 @@ services:
 
   redis:
     container_name: test_redis
-    image: redis/redis:8.2.2-alpine3.22
+    volumes:
+      - test-redis-data:/data
     environment:
       - REDIS_ARGS=$REDIS_ARGS
       - REDIS_PASSWORD=$REDIS_PASSWORD
       - REDIS_SESSION_PASSWORD=$REDIS_SESSION_PASSWORD
       - REDIS_SOCKETIO_PASSWORD=$REDIS_SOCKETIO_PASSWORD
       - REDIS_WORKER_PASSWORD=$REDIS_WORKER_PASSWORD
-    volumes:
-      - test-redis-data:/data
-      - ./chacheRedis/redis.conf:/redis.conf:ro
-      - ./chacheRedis/redis-full.conf:/redis-full.conf:ro
-      # Note this would need to be rw if redis was to modify it via ACL commands and save the modifications.
-      - ./chacheRedis/users_template.acl:/users_template.acl:ro
-      - ./scripts/redis/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
     # environment:
     # - REDIS_HOST=$REDIS_HOST
     # - REDIS_PORT=$REDIS_PORT
     networks:
       - test_network
-    command:
-      - sh
-      - -c
-      - sh /usr/local/bin/entrypoint.sh
 
 volumes:
   test-postgres-data:

@@ -3,7 +3,7 @@ set -eu
 
 TEMPLATE_PATH=${TEMPLATE_PATH:-/users_template.acl}
 ACL_PATH=${ACL_PATH:-/users.acl}
-CONF_PATH=${CONF_PATH:-/redis.conf}
+CONF_PATH=${CONF_PATH:-/redis-full.conf}
 
 missing=""
 [ -n "${REDIS_PASSWORD:-}" ] || missing="$missing REDIS_PASSWORD"
