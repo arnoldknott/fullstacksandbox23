@@ -2,7 +2,7 @@
 set -eu
 
 TEMPLATE_PATH=${TEMPLATE_PATH:-/users_template.acl}
-ACL_PATH=${ACL_PATH:-/etc/redis/users.acl}
+ACL_PATH=${ACL_PATH:-/users.acl}
 CONF_PATH=${CONF_PATH:-/redis.conf}
 
 missing=""
@@ -20,16 +20,19 @@ if [ ! -f "$TEMPLATE_PATH" ]; then
   exit 1
 fi
 
-# Escape string for safe sed replacement
-esc() { printf '%s' "$1" | sed -e 's/[\\&/]/\\&/g'; }
-
-sed \
-  -e "s/\\${REDIS_PASSWORD}/$(esc "${REDIS_PASSWORD}")/g" \
-  -e "s/\\${REDIS_SESSION_PASSWORD}/$(esc "${REDIS_SESSION_PASSWORD}")/g" \
-  -e "s/\\${REDIS_SOCKETIO_PASSWORD}/$(esc "${REDIS_SOCKETIO_PASSWORD}")/g" \
-  -e "s/\\${REDIS_WORKER_PASSWORD}/$(esc "${REDIS_WORKER_PASSWORD}")/g" \
-  "$TEMPLATE_PATH" \
-  > "$ACL_PATH"
+# Render template using awk literal replacements
+awk \
+  -v RP="${REDIS_PASSWORD}" \
+  -v RSP="${REDIS_SESSION_PASSWORD}" \
+  -v RSPIO="${REDIS_SOCKETIO_PASSWORD}" \
+  -v RWP="${REDIS_WORKER_PASSWORD}" \
+  '{
+     gsub(/\$\{REDIS_PASSWORD\}/, RP);
+     gsub(/\$\{REDIS_SESSION_PASSWORD\}/, RSP);
+     gsub(/\$\{REDIS_SOCKETIO_PASSWORD\}/, RSPIO);
+     gsub(/\$\{REDIS_WORKER_PASSWORD\}/, RWP);
+     print
+   }' "$TEMPLATE_PATH" > "$ACL_PATH"
 
 # Validate no unresolved placeholders remain
 if grep -q '\${' "$ACL_PATH"; then

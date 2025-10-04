@@ -67,7 +67,7 @@ services:
 
   redis:
     container_name: dev_redis
-    image: redis/redis:8.2.2-alpine3.22
+    image: redis:8.2.2-alpine3.22
     env_file:
       - ./backendAPI/src/.env
     volumes:
@@ -75,7 +75,7 @@ services:
       - ./cacheRedis/redis.conf:/redis.conf:ro
       - ./cacheRedis/redis-full.conf:/redis-full.conf:ro
       # Note this would need to be rw if redis was to modify it via ACL commands and save the modifications.
-      - ./chacheRedis/users_template.acl:/users_template.acl:ro
+      - ./cacheRedis/users_template.acl:/users_template.acl:ro
       - ./scripts/redis/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
     ports:
       # redis-stack-server port:
@@ -90,16 +90,18 @@ services:
       - -c
       - sh /usr/local/bin/entrypoint.sh
 
-    redisInsight:
-      image: redislabs/redisinsight:2.70
-      container_name: redisinsight
-      ports:
-        - "5540:5540"
-      volumes:
-        - dev-redis-insght-data:/data
-      restart: unless-stopped
-      networks:
-        - dev_network
+  redisInsight:
+    image: redis/redisinsight:2.70
+    container_name: redisinsight
+    depends_on:
+      - redis
+    ports:
+      - "5540:5540"
+    volumes:
+      - dev-redis-insight-data:/data
+    restart: unless-stopped
+    networks:
+      - dev_network
 
 volumes:
   dev-postgres-data:

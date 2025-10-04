@@ -1,5 +1,5 @@
 # Redis ACL template (dev/test and reusable for stage/prod via Terraform templatefile)
-# Replace placeholders of the form ${VAR_NAME} with real values.
+# Replace placeholders of the form VAR_NAME with real values.
 # Safe to commit (no secrets). Do not put real passwords here.
 # All four password variables are REQUIRED: REDIS_PASSWORD, REDIS_SESSION_PASSWORD,
 # REDIS_SOCKETIO_PASSWORD, REDIS_WORKER_PASSWORD.
