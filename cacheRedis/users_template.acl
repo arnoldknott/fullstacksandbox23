@@ -1,18 +1,4 @@
-# Redis ACL template (dev/test and reusable for stage/prod via Terraform templatefile)
-# Replace placeholders of the form VAR_NAME with real values.
-# Safe to commit (no secrets). Do not put real passwords here.
-# All four password variables are REQUIRED: REDIS_PASSWORD, REDIS_SESSION_PASSWORD,
-# REDIS_SOCKETIO_PASSWORD, REDIS_WORKER_PASSWORD.
-# '~' patterns restrict key access and '&' patterns restrict Pub/Sub channels.
-
-# Default user: enable, set password, allow all commands and keys by default.
-# Required env: REDIS_PASSWORD
 user default on >${REDIS_PASSWORD} ~* &* +@all
-
-# Optional role-based users. Lines will be dropped if their password env vars are absent.
-# Env vars (optional): REDIS_SESSION_PASSWORD, REDIS_SOCKETIO_PASSWORD, REDIS_WORKER_PASSWORD
-# ~stands for keys
-# & stands for pu/sub channels
 user session on >${REDIS_SESSION_PASSWORD} ~session:* ~msal:* ~jwks:* +@read +@write -@dangerous
 user socketio on >${REDIS_SOCKETIO_PASSWORD} ~socketio:* +@read +@write -@dangerous
 user worker on >${REDIS_WORKER_PASSWORD} &notifications: +@read +@write -@dangerous
