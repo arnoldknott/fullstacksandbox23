@@ -12,6 +12,7 @@ on:
   push:
     paths:
       - "backendAPI/**"
+      - "compose*.yml"
       - ".github/workflows/backendAPI.yml"
 
 env:
