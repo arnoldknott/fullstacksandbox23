@@ -1,0 +1,82 @@
+<script lang="ts">
+	import { IdentityType, AccessHandler } from '$lib/accessHandler';
+	import type { AnyGroupIdentity } from '$lib/types';
+	// import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
+	import IdBadge from '../IdBadge.svelte';
+	// import IdentityActionButton from './IdentityActionButton.svelte';
+	type LocalAzureUser = {
+		id: string;
+		name?: string | null;
+		description?: string | null;
+	};
+	let {
+		identity,
+		type,
+		link,
+		unlink,
+		remove
+	}: {
+		identity: AnyGroupIdentity | LocalAzureUser;
+		type?: IdentityType;
+		link?: (id: string) => void;
+		unlink?: (id: string) => void;
+		remove?: (id: string) => void;
+	} = $props();
+</script>
+
+{#snippet listContent()}
+	<dt class="text-base-content title-small flex-1">
+		{#if type}
+			<span class="{AccessHandler.identityIcon(type)} shrink-0"></span>
+		{/if}
+		<IdBadge id={identity.id} />
+		{identity.name}
+	</dt>
+	<dd class="text-base-content/80 mt-1 flex-2">
+		{identity.description}
+	</dd>
+{/snippet}
+
+<div class="px-4 py-6 text-base sm:flex sm:flex-row sm:gap-4 sm:px-0">
+	{#if link}
+		<button class="w-full text-left sm:flex sm:flex-row" onclick={() => link?.(identity.id)}>
+			{@render listContent()}
+		</button>
+	{:else}
+		{@render listContent()}
+	{/if}
+	<dd class="flex-none">
+		<div class="flex flex-row gap-3">
+			<a
+				id="info-about-{identity.id}"
+				href="/dashboard/identities/group/{identity.id}"
+				aria-label="Info about {identity.name}"
+			>
+				<button
+					class="btn btn-info-container btn-circle btn-gradient shadow-outline shadow-sm"
+					aria-labelledby="info-about-{identity.id}"
+				>
+					<span class="icon-[tabler--info-triangle]"></span>
+				</button>
+			</a>
+			{#if unlink}
+				<button
+					class="btn btn-warning-container btn-circle btn-gradient shadow-outline shadow-sm"
+					aria-label="Unlink {identity.name}"
+					onclick={() => unlink(identity.id)}
+				>
+					<span class="icon-[tabler--link-off]"></span>
+				</button>
+			{/if}
+			{#if remove}
+				<button
+					class="btn btn-error-container btn-circle btn-gradient shadow-outline shadow-sm"
+					aria-label="Remove {identity.name}"
+					onclick={() => remove(identity.id)}
+				>
+					<span class="icon-[tabler--trash]"></span>
+				</button>
+			{/if}
+		</div>
+	</dd>
+</div>

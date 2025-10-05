@@ -44,5 +44,11 @@ export const actions: Actions = {
 		console.log('=== playground - server - share action executed - returning following object ===');
 		console.log(returnObject);
 		return returnObject;
+	},
+
+	putMe: async ({ request }) => {
+		const data = await request.formData();
+		console.log('=== playground - server - putMe action executed - following data received ===');
+		console.log(data);
 	}
 };

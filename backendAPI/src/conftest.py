@@ -168,7 +168,7 @@ def mock_guards():
 # async def add_one_test_user_with_groups(get_async_test_session: AsyncSession) -> User:
 #     """Adds a tst user with group membership to the database."""
 #     async with UserCRUD() as crud:
-#         user = await crud.azure_user_self_sign_up(
+#         user, _ = await crud.azure_user_self_sign_up(
 #             many_test_azure_users[0]["azure_user_id"],
 #             many_test_azure_users[0]["azure_tenant_id"],
 #             token_payload_many_groups["groups"],
@@ -624,7 +624,7 @@ async def add_one_azure_test_user(current_user_from_azure_token: User):
         # TBD: Fix that the current_user is not the same as the many_test_azure_users[user_number]!
         # therefore access policy missing form current_user to the created user.
         async with UserCRUD() as crud:
-            user = await crud.azure_user_self_sign_up(
+            user, _ = await crud.azure_user_self_sign_up(
                 **many_test_azure_users[user_number]
             )
         return user
@@ -641,7 +641,7 @@ async def add_many_azure_test_users():
         users = []
         for user in many_test_azure_users:
             async with UserCRUD() as crud:
-                user = await crud.azure_user_self_sign_up(**user)
+                user, _ = await crud.azure_user_self_sign_up(**user)
             users.append(user)
         users = sorted(users, key=lambda x: x.id)
         return users
@@ -778,18 +778,15 @@ async def add_test_sub_group(
     current_user_from_azure_token: User,
     sub_group: dict,
     current_user: CurrentUserData = None,
-    # parent_id: UUID = None,
-    # inherit: bool = False,
+    parent_id: UUID = None,
+    inherit: bool = False,
 ):
     """Adds a test sub-group to the database."""
 
     if not current_user:
         current_user = await current_user_from_azure_token()
     async with SubGroupCRUD() as crud:
-        added_sub_group = await crud.create(
-            sub_group,
-            current_user,  # , parent_id, inherit
-        )
+        added_sub_group = await crud.create(sub_group, current_user, parent_id, inherit)
 
     return added_sub_group
 
@@ -803,15 +800,15 @@ async def add_one_test_sub_group(
     async def _add_one_test_sub_group(
         sub_group: dict,
         current_user: CurrentUserData = None,
-        # parent_id: UUID = None,
-        # inherit: bool = False,
+        parent_id: UUID = None,
+        inherit: bool = False,
     ):
         return await add_test_sub_group(
             current_user_from_azure_token,
             sub_group,
             current_user,
-            # parent_id,
-            # inherit,
+            parent_id,
+            inherit,
         )
 
     yield _add_one_test_sub_group

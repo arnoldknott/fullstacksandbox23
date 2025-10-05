@@ -30,12 +30,11 @@ from models.access import (
     AccessPolicyUpdate,
     AccessRequest,
     BaseHierarchy,
+    BaseHierarchyCreate,
     IdentifierTypeLink,
     IdentityHierarchy,
-    IdentityHierarchyCreate,
     IdentityHierarchyRead,
     ResourceHierarchy,
-    ResourceHierarchyCreate,
     ResourceHierarchyRead,
 )
 
@@ -496,29 +495,66 @@ class AccessPolicyCRUD:
         access_policy: AccessPolicyUpdate,
     ) -> AccessPolicyRead:
         """Deletes an existing policy if exists already and creates a new access control policy."""
-        # reuses delete and create methods
 
         try:
-            # TBD: should the attribute public be a part of the update?
-            # => yes, needs to, because it's a mandatory part of the AccessPolicyCreate,
-            # which AccessPolicyUpdate inherits from!
             # TBD: add business logic: can last owner delete it's owner rights?
-            # => no, there needs to be another owner left - should be handled in delete!
-            if hasattr(access_policy, "action") and access_policy.action is not None:
+            # => no, there needs to be another owner left, so last downgrade from owner should not be accepted.
+            updated_policy = None
+            # Creates a new policy if action not provided but new_action is provided.
+            if not hasattr(access_policy, "action"):
+                query = select(AccessPolicy).where(
+                    AccessPolicy.resource_id == access_policy.resource_id
+                )
+                query = self.filters_allowed(query, own, current_user=current_user)
+                access_check_response = await self.session.exec(query)
+                current_access_policy = access_check_response.unique().all()
+                if not current_access_policy:
+                    logger.info("Access policy not found for update.")
+                    raise HTTPException(
+                        status_code=404, detail="Access policy not found."
+                    )
+                new_policy = AccessPolicyCreate(
+                    resource_id=access_policy.resource_id,
+                    identity_id=access_policy.identity_id,
+                    action=access_policy.new_action,
+                    public=access_policy.public,
+                )
+                updated_policy = await self.create(new_policy, current_user)
+            else:
                 old_policy = AccessPolicy(
                     resource_id=access_policy.resource_id,
                     identity_id=access_policy.identity_id,
                     action=access_policy.action,
                     public=access_policy.public,
                 )
+                query = select(AccessPolicy).where(
+                    AccessPolicy.resource_id == old_policy.resource_id,
+                    AccessPolicy.identity_id == old_policy.identity_id,
+                    AccessPolicy.action == old_policy.action,
+                    AccessPolicy.public == old_policy.public,
+                )
+                query = self.filters_allowed(query, own, current_user=current_user)
+                access_check_response = await self.session.exec(query)
+                current_access_policy = access_check_response.unique().one()
+                if not current_access_policy:
+                    logger.info("Access policy not found for update.")
+                    raise HTTPException(
+                        status_code=404, detail="Access policy not found."
+                    )
+
                 await self.delete(current_user, old_policy)
-            new_policy = AccessPolicyCreate(
-                resource_id=access_policy.resource_id,
-                identity_id=access_policy.identity_id,
-                action=access_policy.new_action,
-                public=access_policy.public,
-            )
-            return await self.create(new_policy, current_user)
+                new_policy = AccessPolicy(
+                    id=current_access_policy.id,  # keep the id of the old policy
+                    resource_id=access_policy.resource_id,
+                    identity_id=access_policy.identity_id,
+                    action=access_policy.new_action,
+                    public=access_policy.public,
+                )
+                self.session.add(new_policy)
+                await self.session.commit()
+                await self.session.refresh(new_policy)
+                updated_policy = new_policy
+            return updated_policy
 
         except Exception as e:
             logger.error(f"Error in updating policy: {e}")
@@ -529,7 +565,7 @@ class AccessPolicyCRUD:
         self,
         current_user: Optional["CurrentUserData"],
         access_policy: AccessPolicyDelete,
-    ) -> None:
+    ) -> int:
         """Deletes an access control policy."""
 
         try:
@@ -562,8 +598,8 @@ class AccessPolicyCRUD:
 
             await self.session.commit()
 
-            if response.rowcount == 0:
-                raise HTTPException(status_code=404, detail="Access policy not found.")
+            return response.rowcount
+
         except Exception as e:
             logger.error(f"Error in deleting policy: {e}")
             raise HTTPException(status_code=404, detail="Access policy not found.")
@@ -834,6 +870,9 @@ class BaseHierarchyCRUD(
             logger.error(f"Error in creating hierarchy: {err}")
             raise HTTPException(status_code=403, detail="Forbidden.")
 
+    # TBD: consider exposing as endpoint and/or sock.io event?
+    # Currently not absolutely necesary,
+    # as all children get transferred in the read event of a parent resource
     async def read(
         self,
         current_user: CurrentUserData,
@@ -887,48 +926,61 @@ class BaseHierarchyCRUD(
     # in case a child gets deleted and all parent-child relations to all parents need to be deleted
     async def delete(
         self,
-        parent_id: UUID,
-        child_id: UUID,
         current_user: CurrentUserData,
-    ) -> None:
+        parent_id: Optional[UUID] = None,
+        child_id: Optional[UUID] = None,
+    ) -> int:
         """Deletes a parent-child relationship."""
+        if parent_id is None and child_id is None:
+            logger.error("Error in deleting hierarchy:")
+            raise HTTPException(
+                status_code=422,
+                detail="At least one of parent_id and child_id are required.",
+            )
         try:
             model_alias = aliased(self.model)
-            subquery = (
-                select(model_alias.child_id)
-                .where(
+            subquery = select(model_alias.child_id).join(
+                IdentifierTypeLink,
+                IdentifierTypeLink.id == model_alias.child_id,
+            )
+            if parent_id and child_id:
+                subquery = subquery.where(
                     and_(
                         model_alias.parent_id == parent_id,
                         model_alias.child_id == child_id,
                     )
                 )
-                .join(
-                    IdentifierTypeLink,
-                    IdentifierTypeLink.id == model_alias.child_id,
-                )
-            )
+            elif parent_id:
+                subquery = subquery.where(model_alias.parent_id == parent_id)
+            elif child_id:
+                subquery = subquery.where(model_alias.child_id == child_id)
             subquery = self.policy_crud.filters_allowed(
                 subquery, Action.own, IdentifierTypeLink, current_user
             )
-            statement = delete(self.model).where(
-                and_(
-                    self.model.child_id.in_(subquery),
-                    self.model.parent_id == parent_id,
+            statement = delete(self.model)
+            if parent_id and child_id:
+                statement = statement.where(
+                    and_(
+                        self.model.child_id.in_(subquery),
+                        self.model.parent_id == parent_id,
+                    )
                 )
-            )
-            # TBD: consider also deleting the identifier type link for the child_id and/or parent_id?
+            if parent_id:
+                statement = statement.where(self.model.parent_id == parent_id)
+            if child_id:
+                statement = statement.where(self.model.child_id == child_id)
 
             response = await self.session.exec(statement)
             await self.session.commit()
-            if response.rowcount == 0:
-                raise HTTPException(status_code=404, detail="Hierarchy not found.")
+
+            return response.rowcount
         except Exception as e:
             logger.error(f"Error in deleting hierarchy: {e}")
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
 
 
 class ResourceHierarchyCRUD(
-    BaseHierarchyCRUD[ResourceHierarchyCreate, ResourceHierarchy, ResourceHierarchyRead]
+    BaseHierarchyCRUD[BaseHierarchyCreate, ResourceHierarchy, ResourceHierarchyRead]
 ):
     """CRUD for resource hierarchies."""
 
@@ -1042,7 +1094,7 @@ class ResourceHierarchyCRUD(
 
 
 class IdentityHierarchyCRUD(
-    BaseHierarchyCRUD[IdentityHierarchyCreate, IdentityHierarchy, IdentityHierarchyRead]
+    BaseHierarchyCRUD[BaseHierarchyCreate, IdentityHierarchy, IdentityHierarchyRead]
 ):
     """CRUD for resource hierarchies."""
 

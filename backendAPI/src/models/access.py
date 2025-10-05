@@ -173,8 +173,8 @@ class BaseHierarchy:
         return cls.relations.get(entity_type, [])
 
 
-class ResourceHierarchyCreate(SQLModel):
-    """Create model for resource hierarchy"""
+class BaseHierarchyCreate(SQLModel):
+    """Create model for entity hierarchy"""
 
     parent_id: uuid.UUID
     child_id: uuid.UUID
@@ -187,11 +187,11 @@ class ResourceHierarchyCreate(SQLModel):
     def not_child_to_self(self):
         """Validates that the parent is not child to itself"""
         if self.parent_id == self.child_id:
-            raise ValueError("A resource cannot be its own child.")
+            raise ValueError("An entity cannot be its own child.")
         return self
 
 
-class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
+class ResourceHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
     """Table for resource hierarchy and its types"""
 
     parent_id: uuid.UUID = Field(primary_key=True)
@@ -233,31 +233,13 @@ class ResourceHierarchy(ResourceHierarchyCreate, BaseHierarchy, table=True):
     }
 
 
-class ResourceHierarchyRead(ResourceHierarchyCreate):
+class ResourceHierarchyRead(BaseHierarchyCreate):
     """Read model for resource hierarchy"""
 
     pass
 
 
-class IdentityHierarchyCreate(SQLModel):
-    """Create model for identity hierarchy"""
-
-    parent_id: uuid.UUID
-    child_id: uuid.UUID
-    inherit: bool = Field(
-        default=False,
-        description="Set to true, if the child inherits permissions from this parent.",
-    )
-
-    @model_validator(mode="after")
-    def not_child_to_self(self):
-        """Validates that the parent is not child to itself"""
-        if self.parent_id == self.child_id:
-            raise ValueError("An identity cannot be its own child.")
-        return self
-
-
-class IdentityHierarchy(IdentityHierarchyCreate, BaseHierarchy, table=True):
+class IdentityHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
     """Table for identity hierarchy"""
 
     parent_id: uuid.UUID = Field(primary_key=True)
@@ -274,7 +256,7 @@ class IdentityHierarchy(IdentityHierarchyCreate, BaseHierarchy, table=True):
     }
 
 
-class IdentityHierarchyRead(IdentityHierarchyCreate):
+class IdentityHierarchyRead(BaseHierarchyCreate):
     """Read model for identity hierarchy"""
 
     pass

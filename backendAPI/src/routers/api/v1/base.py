@@ -4,6 +4,7 @@ from fastapi import HTTPException
 
 from core.security import check_token_against_guards  # CurrentAccessToken
 from core.types import GuardTypes
+from crud import register_crud
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ class BaseView:
 
     def __init__(self, crud):
         self.crud = crud
+        register_crud(crud())
 
     # TBD: In a similar manner
     # - implement rate limiting

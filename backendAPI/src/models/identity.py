@@ -19,9 +19,6 @@ from .base import (
 # region account linking
 
 
-# region Azure Account
-
-
 # class AzureGroupUserLink(SQLModel, table=True):
 #     azure_group_id: Optional[uuid.UUID] = Field(
 #         default=None, foreign_key="azuregroup.id", primary_key=True
@@ -124,7 +121,7 @@ class UserCreate(SQLModel):
     azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
     # Could be an option in future to implement roles for the app:
     # app_roles: Optional[List[AppRoles]] = None
-    is_active: bool = True
+    is_active: bool = False
 
 
 class User(UserCreate, table=True):
@@ -271,7 +268,7 @@ class UserAccount(SQLModel, table=True):
             # "primaryjoin": "UserAccount.user_id == foreign(User.id)",
         },
     )
-    is_publicAIuser: bool = False
+    ai_enabled: bool = False
 
 
 class ThemeVariants(str, Enum):

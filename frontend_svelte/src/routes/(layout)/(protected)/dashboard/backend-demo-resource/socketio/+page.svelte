@@ -2,7 +2,7 @@
 	import JsonData from '$components/JsonData.svelte';
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import { page } from '$app/state';
-	import type { AccessPolicy, DemoResourceExtended } from '$lib/types';
+	import type { DemoResourceExtended } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
@@ -10,10 +10,10 @@
 	import DemoResourceContainer from './DemoResourceContainer.svelte';
 	import { fade, scale } from 'svelte/transition';
 	import IdBadge from '../../IdBadge.svelte';
+	import { onDestroy } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	let { data }: { data: PageData } = $props();
-	let editIds = $state(new Set<string>());
-	let statusMessages = $state<SocketioStatus[]>([]);
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	$effect(() => {
@@ -29,133 +29,62 @@
 		cookie_session_id: page.data.session.sessionId,
 		query_params: {
 			'request-access-data': true,
-			'identity-id': data.microsoftTeams.map((team) => team.id).join(',')
+			'identity-ids': data.microsoftTeams.map((team) => team.id).join(',')
 		}
 	};
 
-	const socketio = new SocketIO(connection);
+	let demoResources = $state<DemoResourceExtended[]>([]);
+	let editIds = new SvelteSet<string>();
+	let statusMessages = $state<SocketioStatus[]>([]);
+	const socketio = new SocketIO(
+		connection,
+		() => demoResources,
+		() => editIds
+	);
 
-	// console.log(
-	// 	data.microsoftTeams
-	// 		.filter((team) => team.id)
-	// 		.map((team) => {
-	// 			return {
-	// 				id: team.id,
-	// 				name: team.displayName || 'Unknown Team',
-	// 				type: IdentityType.MICROSOFT_TEAM,
-	// 				accessRight: undefined
-	// 			};
-	// 		})
-	// );
-
-	// let identities: Identity[] | undefined = $derived.by(() =>
-	// 	data.microsoftTeams
-	// 		.filter((team) => team.id)
-	// 		.map((team) => {
-	// 			return {
-	// 				id: team.id,
-	// 				name: team.displayName || 'Unknown Team',
-	// 				type: IdentityType.MICROSOFT_TEAM,
-	// 				accessRight: undefined
-	// 			};
-	// 		})
-	// );
-
-	let demoResources: DemoResourceExtended[] = $state([]);
-	$effect(() => {
-		socketio.client.on('transfer', (data: DemoResourceExtended) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-			// 	);
-			// 	console.log(data);
-			// }
-			if (demoResources.some((res) => res.id === data.id)) {
-				// Update existing resource
-				demoResources = demoResources.map((res) =>
-					// only replaces the keys, where the newly incoming data is defined.
-					res.id === data.id ? { ...res, ...data } : res
-				);
-				// TBD: examin the workflow: access policies of recently changed accesses in resources change the icon,
-				// but the data, e.g. in debugging information stays outdated!
-			} else {
-				// Add new resource
-				demoResources.push(data);
-			}
-		});
-		socketio.client.on('deleted', (resource_id: string) => {
-			if (debug) {
-				console.log(
-					'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
-				);
-				console.log(resource_id);
-			}
-			demoResources = demoResources.filter((res) => res.id !== resource_id);
-		});
-		socketio.client.on('status', (data: SocketioStatus) => {
-			statusMessages.unshift(data);
-			if (debug) {
-				console.log(
-					'=== dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
-				);
-				console.log('Status update:', data);
-			}
-			if ('success' in data) {
-				if (data.success === 'created') {
-					demoResources.forEach((demoResource) => {
-						if (demoResource.id === data.submitted_id) {
-							demoResource.id = data.id;
-						}
-						editIds.add(data.id); // keep editing on after newly created resources
-						editIds = new Set(editIds); // trigger reactivity
-					});
-				} else if (data.success === 'shared') {
-					socketio.client.emit('read', data.id);
-				} else if (data.success === 'unshared') {
-					socketio.client.emit('read', data.id);
-				}
-			}
-		});
+	socketio.client.on('transferred', (data: DemoResourceExtended) => {
+		// if (debug) {
+		// 	console.log(
+		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+		// 	);
+		// 	console.log(data);
+		// }
+		socketio.handleTransferred(data);
 	});
 
-	const addDemoResource = () => {
-		const newResource: DemoResourceExtended = {
+	socketio.client.on('deleted', (resource_id: string) => {
+		// if (debug) {
+		// 	console.log(
+		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
+		// 	);
+		// 	console.log(resource_id);
+		// }
+		socketio.handleDeleted(resource_id);
+	});
+
+	socketio.client.on('status', (data: SocketioStatus) => {
+		// if (debug) {
+		// 	console.log(
+		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+		// 	);
+		// 	console.log('Status update:', data);
+		// }
+		statusMessages.unshift(data);
+		socketio.handleStatus(data);
+	});
+
+	const newDemoResource = (): DemoResourceExtended => {
+		return {
 			id: 'new_' + Math.random().toString(36).substring(2, 9),
 			name: '',
+			description: '',
 			access_right: Action.OWN,
 			creation_date: new Date(Date.now())
 		};
-		demoResources.unshift(newResource);
 	};
 
-	const deleteResource = (resourceId: string) => {
-		if (resourceId.slice(0, 4) === 'new_') {
-			// If the resource is new and has no id, we can just remove it from the local array
-			demoResources = demoResources.filter((res) => res.id !== resourceId);
-		} else {
-			socketio.client.emit('delete', resourceId);
-		}
-		if (editIds.has(resourceId)) {
-			editIds.delete(resourceId);
-			editIds = new Set(editIds); // trigger reactivity
-		}
-	};
-
-	// The backend is handling it, whether it's new or existing. If the id is a UUID, it tries to update an existing resource.
-	const submitResource = (demoResource: DemoResourceExtended) => {
-		if (demoResource.id?.slice(0, 4) === 'new_') {
-			editIds.delete(demoResource.id);
-			editIds = new Set(editIds); // trigger reactivity
-		}
-		socketio.client.emit('submit', demoResource);
-	};
-
-	const share = (accessPolicy: AccessPolicy) => {
-		console.log(
-			'=== dashboard - backend-demo-resource - socketio - +page.svelte - share accessPolicy ==='
-		);
-		console.log(accessPolicy);
-		socketio.client.emit('share', accessPolicy);
+	const addDemoResource = () => {
+		socketio.addEntity(newDemoResource());
 	};
 
 	const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
@@ -197,6 +126,8 @@
 			})
 			.sort(sortResourcesByCreationDate)
 	);
+
+	onDestroy(() => socketio.client.disconnect());
 </script>
 
 <div class="flex flex-row flex-wrap justify-between">
@@ -213,7 +144,7 @@
 
 		<div class="mb-5">
 			<button
-				class="btn-neutral-container btn btn-gradient rounded-full"
+				class="btn-neutral-container btn btn-gradient shadow-outline rounded-full shadow-sm"
 				aria-label="Add Button"
 				onclick={() => addDemoResource()}
 			>
@@ -309,15 +240,13 @@
 							} else {
 								editIds.delete(demoResource.id || '');
 							}
-							editIds = new Set(editIds);
+							// editIds = new Set(editIds); // trigger reactivity
 						}
 					}
 				}
 				identities={AccessHandler.reduceMicrosoftTeamsToIdentities(data.microsoftTeams)}
 				{demoResource}
-				{deleteResource}
-				{submitResource}
-				{share}
+				{socketio}
 			/>
 			<!-- bind:demoResource={demoResources[idx]} -->
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
@@ -336,13 +265,16 @@
 			<span class="icon-[fluent--people-team-16-filled]"></span>
 			Teams access to demoresources: {data.microsoftTeams.length}
 		</h3>
-		<div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="true">
+		<div
+			class="accordion accordion-bordered bg-base-150 shadow-outline-variant shadow-lg"
+			data-accordion-always-open="true"
+		>
 			{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
 				<div>
 					<IdentityAccordion
 						title={microsoftTeam.displayName || 'Unknown Team'}
 						id={microsoftTeam.id || Math.random().toString(36).substring(2, 9)}
-						open={false}
+						active={false}
 					>
 						<div class="bg-success-container mb-2 rounded-xl p-2">
 							<p class="title-small text-success-container-content p-2">
@@ -380,7 +312,7 @@
 			Demo Resources with write access: {writeDemoResources.length}
 		</h3>
 		{#each writeDemoResources as demoResource, idx (demoResource.id)}
-			<DemoResourceContainer {demoResource} {submitResource} />
+			<DemoResourceContainer {demoResource} {socketio} />
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
 				<p class="title">🚧 Debug Information 🚧</p>
 				<JsonData data={demoResource} />
@@ -411,35 +343,3 @@
 		{/each}
 	</div>
 </div>
-
-<!-- <ul
-    class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
-    role="menu"
-    aria-orientation="vertical"
-    aria-labelledby="action-share"
->
-    <form
-        method="POST"
-        name="actionButtonShareForm"
-        use:enhance={async () => {
-            actionButtonShareMenu?.close();
-            return async ({ result, update }) => {
-                handleRightsChangeResponse(result, update);
-            };
-        }}
-    >
-        {#each teams as team, i (i)}
-            <ShareItem
-                resourceId="actionButtonShareResourceId"
-                icon="icon-[fluent--people-team-16-filled]"
-                identity={team}
-            />
-        {/each}
-    </form>
-    <li class="dropdown-footer gap-2">
-        <button
-            class="btn dropdown-item btn-text text-secondary content-center justify-start"
-            >... more options</button
-        >
-    </li>
-</ul> -->

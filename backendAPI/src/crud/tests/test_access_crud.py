@@ -512,7 +512,7 @@ async def test_admin_changes_access_policy_from_write_to_own(
         )
 
     assert int(updated_policy.id)
-    assert int(updated_policy.id) != policies[2].id
+    assert int(updated_policy.id) == policies[2].id
     assert updated_policy.identity_id == policies[2].identity_id
     assert updated_policy.resource_id == policies[2].resource_id
     assert updated_policy.action == Action.own
@@ -557,7 +557,7 @@ async def test_owner_user_changes_access_policy_from_write_to_own(
         )
 
     assert int(updated_policy.id)
-    assert int(updated_policy.id) != policies[2].id
+    assert int(updated_policy.id) == policies[2].id
     assert updated_policy.identity_id == policies[2].identity_id
     assert updated_policy.resource_id == policies[2].resource_id
     assert updated_policy.action == Action.own
@@ -616,6 +616,31 @@ async def test_owner_user_creates_new_access_policy_through_update(
         )
 
     assert created_policy == read_policy[0]
+
+
+@pytest.mark.anyio
+async def test_user_fails_to_create_new_access_policy_through_update_missing_access(
+    register_many_resources,
+    register_many_current_users,
+):
+    """Test updating an access policy."""
+    register_many_resources
+    register_many_current_users
+    create_policy = AccessPolicyUpdate(
+        identity_id=identity_id_user2, resource_id=resource_id2, new_action=Action.write
+    )
+    del create_policy.action
+    try:
+        async with AccessPolicyCRUD() as policy_crud:
+            await policy_crud.update(
+                access_policy=create_policy,
+                current_user=CurrentUserData(**current_user_data_user1),
+            )
+    except Exception as err:
+        assert err.status_code == 404
+        assert str(err.detail) == "Access policy not found."
+    else:
+        pytest.fail("No HTTPexception raised!")
 
 
 @pytest.mark.anyio
@@ -1061,16 +1086,10 @@ async def test_user_deletes_all_access_policies_for_a_resource_without_owner_rig
 
     delete_policies = AccessPolicyDelete(resource_id=resource_id2)
     async with AccessPolicyCRUD() as policy_crud:
-        try:
-            await policy_crud.delete(
-                access_policy=delete_policies,
-                current_user=CurrentUserData(**current_user_data_user3),
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        await policy_crud.delete(
+            access_policy=delete_policies,
+            current_user=CurrentUserData(**current_user_data_user3),
+        )
 
     # read all policies to check if the number of policies is still the same
     async with AccessPolicyCRUD() as policy_crud:
@@ -1145,18 +1164,12 @@ async def test_user_deletes_access_policy_without_owner_rights(
 
     delete_policy = policies[2]  # write access for user3 to resource2
     async with AccessPolicyCRUD() as policy_crud:
-        try:
-            await policy_crud.delete(
-                access_policy=delete_policy,
-                current_user=CurrentUserData(
-                    **current_user_data_user2
-                ),  # no policy gives user2 own access to resource2
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        await policy_crud.delete(
+            access_policy=delete_policy,
+            current_user=CurrentUserData(
+                **current_user_data_user2
+            ),  # no policy gives user2 own access to resource2
+        )
 
     # read the specific policy to check if it still exists
     async with AccessPolicyCRUD() as policy_crud:
@@ -1780,17 +1793,12 @@ async def test_user_deletes_resource_hierarchy_child_without_owner_rights(
     add_many_parent_child_resource_relationships
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
-        try:
-            await hierarchy_crud.delete(
-                current_user=current_user,
-                parent_id=resource_id3,
-                child_id=child_resource_id8,
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        deleted_rows = await hierarchy_crud.delete(
+            current_user=current_user,
+            parent_id=resource_id3,
+            child_id=child_resource_id8,
+        )
+        assert deleted_rows == 0
 
 
 # Nomenclature:
@@ -2420,6 +2428,41 @@ async def test_user_deletes_identity_hierarchy_child_with_owner_rights(
 
 
 @pytest.mark.anyio
+async def test_admin_tries_to_delete_identity_hierarchy_without_parent_id_and_child_id(
+    add_many_parent_child_identity_relationships,
+    register_current_user,
+    add_one_test_access_policy,
+):
+    """Test deleting a child."""
+    current_user = await register_current_user(current_user_data_admin)
+    add_many_parent_child_identity_relationships
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user.user_id,
+            "resource_id": child_identity_id5,
+            "action": Action.own,
+        },
+    )
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.delete(
+                current_user=current_user,
+            )
+        except Exception as err:
+            assert err.status_code == 422
+            assert err.detail == "At least one of parent_id and child_id are required."
+
+    async with IdentityHierarchyCRUD() as hierarchy_crud:
+        result = await hierarchy_crud.read(
+            current_user=current_user, child_id=child_identity_id5
+        )
+        assert result[0].child_id == uuid.UUID(child_identity_id5)
+        assert result[0].parent_id == uuid.UUID(identity_id_group2)
+
+
+@pytest.mark.anyio
 async def test_user_deletes_identity_hierarchy_child_without_owner_rights(
     add_many_parent_child_identity_relationships,
     register_current_user,
@@ -2430,17 +2473,12 @@ async def test_user_deletes_identity_hierarchy_child_without_owner_rights(
     add_many_parent_child_identity_relationships
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:
-        try:
-            await hierarchy_crud.delete(
-                current_user=current_user,
-                parent_id=identity_id_group2,
-                child_id=child_identity_id5,
-            )
-        except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
-        else:
-            pytest.fail("No HTTPexception raised!")
+        deleted_rows = await hierarchy_crud.delete(
+            current_user=current_user,
+            parent_id=identity_id_group2,
+            child_id=child_identity_id5,
+        )
+        assert deleted_rows == 0
 
 
 # endregion IdentityHierarchy CRUD tests

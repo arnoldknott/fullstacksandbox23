@@ -5,6 +5,7 @@ import type {
 } from '@microsoft/microsoft-graph-types';
 import type { Action, IdentityType } from '$lib/accessHandler';
 import type { Variant } from '$lib/theming';
+import type { SessionStatus } from '$lib/session';
 
 // App specific:
 export type BackendAPIConfiguration = {
@@ -32,7 +33,7 @@ export type BackendAPIConfiguration = {
 // TBD: rename into ServerSession:
 export type Session = {
 	loggedIn: boolean;
-	status?: string;
+	status?: SessionStatus;
 	microsoftAccount?: AccountInfo;
 	microsoftProfile?: MicrosoftProfile;
 	userAgent?: string;
@@ -70,6 +71,12 @@ export interface AccessRight {
 	action: Action;
 }
 
+export interface Hierarchy {
+	child_id: string;
+	parent_id: string;
+	inherit?: boolean;
+}
+
 // Generic for resources - and partially relevant for identities:
 // Create a generic type that extends a base type with additional properties
 type ExtendEntity<T> = T &
@@ -103,7 +110,7 @@ interface WithAccessShareOptions {
 
 // specific resources:
 export interface DemoResource {
-	id?: string;
+	id: string;
 	name: string;
 	description?: string;
 	language?: string;
@@ -208,3 +215,13 @@ export type GroupExtended = ExtendEntity<Group>;
 export type SubGroupExtended = ExtendEntity<SubGroup>;
 export type SubSubGroupExtended = ExtendEntity<SubSubGroup>;
 export type MicrosoftTeamExtended = MicrosoftTeam & Partial<WithAccessRights & WithAccessPolicies>;
+
+export type AnyEntityExtended =
+	| DemoResourceExtended
+	| UserExtended
+	| UeberGroupExtended
+	| GroupExtended
+	| SubGroupExtended
+	| SubSubGroupExtended;
+
+export type AnyGroupIdentity = UeberGroup | Group | SubGroup | SubSubGroup;

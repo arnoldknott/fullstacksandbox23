@@ -41,9 +41,9 @@ event_guards = [
 class DemoResourceNamespace(BaseNamespace):
     """Socket.IO interface for Demo Resources."""
 
-    def __init__(self, namespace=None):
+    def __init__(self):
         super().__init__(
-            namespace=namespace,
+            namespace="/demo-resource",
             event_guards=event_guards,
             crud=DemoResourceCRUD,
             create_model=DemoResourceCreate,
@@ -57,7 +57,9 @@ class DemoResourceNamespace(BaseNamespace):
     async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
         # trigger the read all event to fetch all demo resources:
-        await self._get_all(sid, *args, **kwargs)
+        current_user = kwargs.get("current_user")
+        request_access_data = kwargs.get("request_access_data")
+        await self._get_all(sid, current_user, request_access_data)
 
 
-demo_resource_router = DemoResourceNamespace("/demo-resource")
+demo_resource_router = DemoResourceNamespace()

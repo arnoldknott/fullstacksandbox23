@@ -8,6 +8,7 @@ import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types'
 // import type { AuthenticationResult } from '@azure/msal-node';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
+import { SessionStatus } from '$lib/session';
 
 const appConfig = await AppConfig.getInstance();
 
@@ -26,6 +27,9 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			// but still needs to execute, as this sets the access token in cache!
 			// const _authenticationResult: AuthenticationResult =
 			await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
+			await redisCache.setSession(sessionId, '$.loggedIn', JSON.stringify(true));
+			await redisCache.setSession(sessionId, '$.sessionId', JSON.stringify(sessionId));
+			// TBD: Does the cookie really need to set again in callback? It's set already in login endpoint!
 			cookies.set('session_id', sessionId, {
 				path: '/',
 				...appConfig.session_cookie_options
@@ -44,6 +48,26 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 				JSON.stringify(microsoftProfile)
 			);
 			const responseMe = await backendAPI.get(sessionId, '/user/me');
+			// TBD: consider leaving user.is_active at False after creatation and
+			// show the modal dialog for updating profile and account.
+			// The put -me endpoint will set is_active to True
+			// No - leave as is: make the app less annoying for first time users!
+			if (responseMe.status === 200) {
+				await redisCache.setSession(
+					sessionId,
+					'$.status',
+					// JSON.stringify(SessionStatus.REGISTERED)
+					// TBD: for devloping registration flow, set to registration pending:
+					// change back to registered when registration flow is done:
+					JSON.stringify(SessionStatus.REGISTRATION_PENDING)
+				);
+			} else if (responseMe.status === 201) {
+				await redisCache.setSession(
+					sessionId,
+					'$.status',
+					JSON.stringify(SessionStatus.REGISTRATION_PENDING)
+				);
+			}
 			const currentUser = await responseMe.json();
 			await redisCache.setSession(sessionId, '$.currentUser', JSON.stringify(currentUser));
 		} else {

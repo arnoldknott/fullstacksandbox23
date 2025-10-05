@@ -11,5 +11,7 @@
   "svelte.plugin.html.hover.enable": true,
   "svelte.plugin.svelte.hover.enable": true,
   "svelte.plugin.typescript.hover.enable": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
+  "prettier.prettierPath": "./frontend_svelte/node_modules/prettier"
 }

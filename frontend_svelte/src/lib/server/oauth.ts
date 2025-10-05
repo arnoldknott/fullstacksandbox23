@@ -14,7 +14,7 @@ import {
 	type ICacheClient,
 	type IPartitionManager
 } from '@azure/msal-node';
-import { type AccountInfo, AccountEntity } from '@azure/msal-common';
+import type { AccountInfo, AccountEntity } from '@azure/msal-common';
 import { redirect } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
@@ -223,12 +223,8 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 				scopes: scopes,
 				redirectUri: `${origin}/oauth/callback`
 			});
-
 			const accountData = response.account ? JSON.parse(JSON.stringify(response.account)) : null;
-			await redisCache.setSession(sessionId, '$.loggedIn', JSON.stringify(true));
-			await redisCache.setSession(sessionId, '$.status', JSON.stringify('authenticated'));
 			await redisCache.setSession(sessionId, '$.microsoftAccount', JSON.stringify(accountData));
-			await redisCache.setSession(sessionId, '$.sessionId', JSON.stringify(sessionId));
 
 			return response;
 		} catch (error) {

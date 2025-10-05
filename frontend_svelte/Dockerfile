@@ -1,4 +1,4 @@
-FROM node:22.11.0-alpine3.20 AS build
+FROM node:24.6.0-alpine3.21 AS build
 WORKDIR /app
 # ARG REDIS_HOST
 # ARG REDIS_PORT
@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 # CMD ["sh" "-c"]
 
-FROM node:22.11.0-alpine3.20
+FROM node:24.6.0-alpine3.21
 WORKDIR /app
 # TBD: remove when error with internal ingres is fixed.
 # RUN apk add --no-cache redis tcptraceroute

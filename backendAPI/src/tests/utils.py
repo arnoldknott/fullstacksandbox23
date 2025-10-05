@@ -67,6 +67,10 @@ token_payload_random_user_id = {
     "oid": many_test_azure_users[2]["azure_user_id"],
     "name": "Random Test User",
 }
+token_payload_another_random_user_id = {
+    "oid": many_test_azure_users[3]["azure_user_id"],
+    "name": "Random Test User",
+}
 token_payload_tenant_id = {
     "tid": many_test_azure_users[0]["azure_tenant_id"],
 }
@@ -243,6 +247,13 @@ token_user2_read_write_socketio_groups = {
     **token_payload_many_groups,
 }
 
+token_user3_read_write_socketio = {
+    **token_payload_another_random_user_id,
+    **token_payload_tenant_id,
+    **token_payload_scope_api_read_write_socketio,
+    **token_payload_roles_user,
+}
+
 token_admin = {
     **token_payload_random_user_id,
     **token_payload_tenant_id,
@@ -330,6 +341,8 @@ session_id_user2_write_socketio = uuid4()
 session_id_user2_read_write_socketio = uuid4()
 session_id_user2_read_write_socketio_groups = uuid4()
 
+session_id_user3_read_write_socketio = uuid4()
+
 session_id_admin = uuid4()
 session_id_admin_read = uuid4()
 session_id_admin_write = uuid4()
@@ -415,6 +428,10 @@ sessions = [
     {
         "session_id": session_id_user2_read_write_socketio_groups,
         "token_payload": token_user2_read_write_socketio_groups,
+    },
+    {
+        "session_id": session_id_user3_read_write_socketio,
+        "token_payload": token_user3_read_write_socketio,
     },
     {"session_id": session_id_admin_read, "token_payload": token_admin_read},
     {"session_id": session_id_admin_write, "token_payload": token_admin_write},

@@ -1892,6 +1892,10 @@
 				<span class="icon-[tabler--share-2] size-12"></span>
 				<span class="icon-[tabler--ban] size-12"></span>
 				<span class="icon-[tabler--info-triangle] size-12"></span>
+				<span class="icon-[tabler--link-off] size-12"></span>
+				<span class="icon-[tabler--link] size-12"></span>
+				<span class="icon-[tabler--ai] size-12"></span>
+				<span class="icon-[tabler--eye] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
@@ -1959,6 +1963,8 @@
 					Extension library <span class="label-prominent badge min-h-fit">Phosphor</span>
 				</p>
 				<span class="icon-[ph--users-four-fill] size-12"></span>
+				<span class="icon-[ph--smiley] size-12"></span>
+				<span class="icon-[ph--smiley-duotone] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
@@ -1971,6 +1977,13 @@
 					Extension library <span class="label-prominent badge min-h-fit">Bootstrap Icons</span>
 				</p>
 				<span class="icon-[bi--microsoft-teams] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit">Mingcute</span>
+				</p>
+				<span class="icon-[mingcute--check-2-fill] size-12"></span>
+				<span class="icon-[mingcute--ai-fill] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">

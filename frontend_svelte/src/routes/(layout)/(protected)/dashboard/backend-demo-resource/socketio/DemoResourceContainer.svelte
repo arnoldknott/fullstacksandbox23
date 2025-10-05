@@ -1,48 +1,38 @@
 <script lang="ts">
-	import type { Attachment } from 'svelte/attachments';
-	import type { AccessPolicy, AccessShareOption, DemoResourceExtended, Identity } from '$lib/types';
+	import { initDropdown } from '$lib/userInterface';
+	import type { DemoResourceExtended, Identity, AccessShareOption } from '$lib/types';
 	import { fade } from 'svelte/transition';
 	import { Action } from '$lib/accessHandler';
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import { AccessHandler } from '$lib/accessHandler';
 	import IdBadge from '../../IdBadge.svelte';
-	import type { HSDropdown, IHTMLElementFloatingUI } from 'flyonui/flyonui';
+	import { SocketIO } from '$lib/socketio';
 
 	let {
-		demoResource, // = $bindable(),
+		demoResource = $bindable(),
 		identities,
 		edit = $bindable(false),
-		deleteResource = (_id: string) => {},
-		submitResource = (_resource: DemoResourceExtended) => {},
-		share = (_accessPolicy: AccessPolicy) => {}
+		// deleteResource = (_id: string) => {},
+		// submitResource = (_resource: DemoResourceExtended) => {},
+		// shareResource = (_accessPolicy: AccessPolicy) => {},
+		socketio
 	}: {
 		demoResource: DemoResourceExtended;
 		identities?: Identity[];
 		edit?: boolean;
-		deleteResource?: (id: string) => void;
-		submitResource?: (resource: DemoResourceExtended) => void;
-		share?: (accessPolicy: AccessPolicy) => void;
+		// deleteResource?: (id: string) => void;
+		// submitResource?: (resource: DemoResourceExtended) => void;
+		// shareResource?: (accessPolicy: AccessPolicy) => void;
+		socketio?: SocketIO;
 	} = $props();
 
 	// let editableDemoResource: DemoResourceExtended = $derived({ ...demoResource });
 
-	let shareMenuElement: HTMLElement | undefined = $state(undefined);
-	let shareMenu: HSDropdown | undefined = $derived(undefined);
+	let shareMenu: HTMLElement | null = $state(null);
+	// let shareMenu: HSDropdown | undefined = $derived(undefined);
 
-	const initDropdown: Attachment = (_node: Element) => {
-		import('flyonui/flyonui')
-			.then(({ HSDropdown }) => {
-				shareMenu = new HSDropdown(shareMenuElement as unknown as IHTMLElementFloatingUI);
-				HSDropdown.autoInit();
-			})
-			.catch((error) => {
-				console.error('Error loading HSDropdown:', error);
-			});
-	};
 	const closeShareMenu = () => {
-		if (shareMenu) {
-			shareMenu.close();
-		}
+		window.HSDropdown.close(shareMenu);
 	};
 
 	let formatedDate = $derived(
@@ -74,7 +64,7 @@
 					id="name_{demoResource.id}"
 					class="input input-sm md:input-md"
 					name="name"
-					onblur={() => submitResource(demoResource)}
+					onblur={() => socketio?.submitEntity(demoResource)}
 					bind:value={demoResource.name}
 				/>
 				<label class="input-filled-label" for="name_{demoResource.id}">Name</label>
@@ -108,7 +98,7 @@
 						class="textarea h-fit"
 						placeholder="Describe the demo resource here."
 						id="description_{demoResource.id}"
-						onblur={() => submitResource(demoResource)}
+						onblur={() => socketio?.submitEntity(demoResource)}
 						name="description"
 						bind:value={demoResource.description}
 					>
@@ -141,7 +131,7 @@
 		{#if demoResource.access_right === Action.WRITE || demoResource.access_right === Action.OWN}
 			<div class="join flex flex-row items-end justify-center">
 				<button
-					class="btn btn-secondary-container text-secondary-container-content btn-sm join-item grow"
+					class="btn btn-secondary-container text-secondary-container-content btn-sm join-item shadow-outline grow shadow-inner shadow-sm"
 					aria-label="Edit Button"
 					onclick={() => (edit = !edit)}
 				>
@@ -155,14 +145,14 @@
 				</button>
 				{#if demoResource.access_right === Action.OWN}
 					<div
-						{@attach initDropdown}
-						bind:this={shareMenuElement}
 						class="dropdown join-item relative inline-flex grow [--placement:top]"
+						bind:this={shareMenu}
+						{@attach initDropdown}
 					>
 						<!-- bind:this={actionButtonShareMenuElement} -->
 						<button
 							id="share-{demoResource.id}"
-							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content btn-sm w-full rounded-none"
+							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content btn-sm shadow-outline w-full rounded-none shadow-sm"
 							aria-haspopup="menu"
 							aria-expanded="false"
 							aria-label="Share with"
@@ -170,7 +160,16 @@
 							<span class="icon-[tabler--share-2]"></span>
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
-
+						<!-- {#if shareOptions}
+							{#each shareOptions as shareOption (shareOption.identity_id)}
+								{@attach initDropdown}
+								<ShareItem
+									resourceId={demoResource.id as string}
+									{shareOption}
+									share={socketio?.shareEntity.bind(socketio)}
+								/>
+							{/each}
+						{/if} -->
 						<ul
 							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
 							role="menu"
@@ -180,10 +179,9 @@
 							{#if shareOptions}
 								{#each shareOptions as shareOption (shareOption.identity_id)}
 									<ShareItem
-										{@attach initDropdown}
 										resourceId={demoResource.id as string}
 										{shareOption}
-										{share}
+										share={socketio?.shareEntity.bind(socketio)}
 										{closeShareMenu}
 									/>
 								{/each}
@@ -197,10 +195,10 @@
 						</ul>
 					</div>
 					<button
-						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item grow border-0"
+						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item shadow-outline grow border-0 shadow-sm"
 						aria-label="Delete Button"
 						name="id"
-						onclick={() => !demoResource.id || deleteResource(demoResource.id)}
+						onclick={() => !demoResource.id || socketio?.deleteEntity(demoResource.id)}
 					>
 						<span class="icon-[tabler--trash]"></span>
 					</button>
