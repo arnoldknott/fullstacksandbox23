@@ -340,15 +340,32 @@ jobs:
       # TBD: this is weird: here the variable is named AZ_KEYVAULT_HOST, but in the container it is named AZURE_KEYVAULT_HOST
       # when renaming it here - conatinerapp fails to start with managed identity error - cannot get to keyvault!
       # TBD: this should be ready to go. Remember to put into prod as well!
-      - name: Upgrade database
+      - name: Run stage database migrations
         run: |
+          set -euo pipefail
           mkdir -p postgres_migration
-          script -q -e -c "az containerapp exec \
-            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
-          echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
-          cat postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
+          LOG="postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log"
+          : > "$LOG"
+          for i in $(seq 1 30); do
+            echo "Exec attempt $i..." | tee -a "$LOG"
+            if script -q -e -c "az containerapp exec \
+              --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" >> "$LOG" 2>&1; then
+              echo "Exec succeeded on attempt $i" | tee -a "$LOG"
+              break
+            else
+              status=$?
+              echo "Attempt $i failed with exit $status" | tee -a "$LOG"
+              if [ "$i" -eq 30 ]; then
+                echo "Giving up after 30 attempts." | tee -a "$LOG"
+                exit "$status"
+              fi
+              sleep 10
+            fi
+          done
+          echo "=== Contents of $LOG ==="
+          cat "$LOG"
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -573,13 +590,30 @@ jobs:
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"
-      - name: Upgrade database
+      - name: Run prod database migrations
         run: |
+          set -euo pipefail
           mkdir -p postgres_migration
-          script -q -e -c "az containerapp exec \
-            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
+          LOG="postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log"
+          : > "$LOG"
+          for i in $(seq 1 30); do
+            echo "Exec attempt $i..." | tee -a "$LOG"
+            if script -q -e -c "az containerapp exec \
+              --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" >> "$LOG" 2>&1; then
+              echo "Exec succeeded on attempt $i" | tee -a "$LOG"
+              break
+            else
+              status=$?
+              echo "Attempt $i failed with exit $status" | tee -a "$LOG"
+              if [ "$i" -eq 30 ]; then
+                echo "Giving up after 30 attempts." | tee -a "$LOG"
+                exit "$status"
+              fi
+              sleep 10
+            fi
+          done
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v4
         with:

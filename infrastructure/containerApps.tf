@@ -231,7 +231,8 @@ resource "azurerm_container_app" "BackendContainer" {
       storage_name = azurerm_container_app_environment_storage.applicationDataConnect.name
       storage_type = "AzureFile"
     }
-    min_replicas = 0
+    # leave at least 1 bakend running now in stage & prod
+    min_replicas = terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
     max_replicas = 1 # SocketIO breaks with more than 1 replica!
     http_scale_rule {
       name                = "http-scaler"
@@ -354,7 +355,8 @@ resource "azurerm_container_app" "redisContainer" {
       storage_name = azurerm_container_app_environment_storage.redisDataConnect.name
       storage_type = "AzureFile"
     }
-    min_replicas = 0
+    # leave at least 1 min-replica for Redis - otherwise connections are lost when scaled to 0!
+    min_replicas = terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
     max_replicas = 1 # SocketIO breaks with more than 1 replica!
     tcp_scale_rule {
       name                = "tcp-scaler"
