@@ -209,5 +209,5 @@ resource "azurerm_subnet_network_security_group_association" "adminVirtualMachin
 # Safe to keep across workspaces; remove after one successful apply per workspace.
 moved {
   from = azurerm_subnet_network_security_group_association.example
-  to   = azurerm_subnet_network_security_group_association.adminVirtualMachineNetworkSecurityGroupAssociation
+  to   = azurerm_subnet_network_security_group_association.adminVirtualMachineNetworkSecurityGroupAssociation[0]
 }
