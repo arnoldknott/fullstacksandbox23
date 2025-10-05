@@ -344,28 +344,22 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p postgres_migration
-          LOG="postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log"
-          : > "$LOG"
-          for i in $(seq 1 30); do
-            echo "Exec attempt $i..." | tee -a "$LOG"
-            if script -q -e -c "az containerapp exec \
-              --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" >> "$LOG" 2>&1; then
-              echo "Exec succeeded on attempt $i" | tee -a "$LOG"
+          echo "Warming up backend via HTTP..."
+          FQDN=$(az containerapp show --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --query "properties.configuration.ingress.fqdn" -o tsv)
+          for i in $(seq 1 60); do
+            if curl -sS -m 10 "https://$FQDN/docs" >/dev/null 2>&1 ; then
+              echo "Warmup success on attempt $i"
               break
-            else
-              status=$?
-              echo "Attempt $i failed with exit $status" | tee -a "$LOG"
-              if [ "$i" -eq 30 ]; then
-                echo "Giving up after 30 attempts." | tee -a "$LOG"
-                exit "$status"
-              fi
-              sleep 10
             fi
+            echo "Warmup attempt $i failed; retrying..."
+            sleep 5
           done
-          echo "=== Contents of $LOG ==="
-          cat "$LOG"
+          script -q -e -c "az containerapp exec \
+            --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
+            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
+            --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
+          echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
+          cat postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -596,6 +590,17 @@ jobs:
           mkdir -p postgres_migration
           LOG="postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log"
           : > "$LOG"
+          echo "Warming up backend via HTTP..." | tee -a "$LOG"
+          FQDN=$(az containerapp show --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --query "properties.configuration.ingress.fqdn" -o tsv)
+          echo "Backend FQDN: $FQDN" | tee -a "$LOG"
+          for i in $(seq 1 60); do
+            if curl -fsS -m 5 "https://$FQDN/docs" >/dev/null 2>&1 || curl -fsS -m 5 "http://$FQDN/docs" >/dev/null 2>&1; then
+              echo "Warmup success on attempt $i" | tee -a "$LOG"
+              break
+            fi
+            echo "Warmup attempt $i failed; retrying..." | tee -a "$LOG"
+            sleep 5
+          done
           for i in $(seq 1 30); do
             echo "Exec attempt $i..." | tee -a "$LOG"
             if script -q -e -c "az containerapp exec \

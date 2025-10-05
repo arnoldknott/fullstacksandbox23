@@ -232,7 +232,7 @@ resource "azurerm_container_app" "BackendContainer" {
       storage_type = "AzureFile"
     }
     # leave at least 1 bakend running now in stage & prod
-    min_replicas = terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
+    min_replicas = 0
     max_replicas = 1 # SocketIO breaks with more than 1 replica!
     http_scale_rule {
       name                = "http-scaler"
