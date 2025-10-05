@@ -204,3 +204,10 @@ resource "azurerm_subnet_network_security_group_association" "adminVirtualMachin
   subnet_id                 = azurerm_subnet.subnetAdminVirtualMachine.id
   network_security_group_id = azurerm_network_security_group.adminVirtualMachineNetworkSecurityGroup[0].id
 }
+
+# Map previous resource address to the new name without destroying it.
+# Safe to keep across workspaces; remove after one successful apply per workspace.
+moved {
+  from = azurerm_subnet_network_security_group_association.example
+  to   = azurerm_subnet_network_security_group_association.adminVirtualMachineNetworkSecurityGroupAssociation
+}
