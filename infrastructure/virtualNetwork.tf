@@ -163,6 +163,7 @@ resource "azurerm_network_interface" "adminVirtualMachineNetworkInterface" {
 
 
 resource "azurerm_network_security_group" "adminVirtualMachineNetworkSecurityGroup" {
+  count               = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   name                = "${var.project_name}-virtualMachineNetworkSecurityGroup-${terraform.workspace}"
   location            = azurerm_resource_group.resourceGroup.location
   resource_group_name = azurerm_resource_group.resourceGroup.name
@@ -198,7 +199,8 @@ resource "azurerm_network_security_group" "adminVirtualMachineNetworkSecurityGro
   }
 }
 
-resource "azurerm_subnet_network_security_group_association" "example" {
+resource "azurerm_subnet_network_security_group_association" "adminVirtualMachineNetworkSecurityGroupAssociation" {
+  count               = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   subnet_id                 = azurerm_subnet.subnetAdminVirtualMachine.id
   network_security_group_id = azurerm_network_security_group.adminVirtualMachineNetworkSecurityGroup.id
 }
