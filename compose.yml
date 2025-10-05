@@ -24,7 +24,7 @@ services:
     volumes:
       - ./cacheRedis/redis.conf:/redis.conf:ro
       - ./cacheRedis/redis-full.conf:/redis-full.conf:ro
-      # Note this would need to be rw if redis was to modify it via ACL commands and save the modifications.
+      # Note the template is read-only, the created user.acl is read write, so redis-cli can alter the user list.
       - ./cacheRedis/users_template.acl:/users_template.acl:ro
       - ./cacheRedis/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
     command:
