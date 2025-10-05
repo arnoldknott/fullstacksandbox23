@@ -21,13 +21,7 @@ services:
   redis:
     container_name: "redis"
     image: redis:8.2.2-alpine3.22
-    volumes:
-      - ./cacheRedis/redis.conf:/redis.conf:ro
-      - ./cacheRedis/redis-full.conf:/redis-full.conf:ro
-      # Note the template is read-only, the created user.acl is read write, so redis-cli can alter the user list.
-      - ./cacheRedis/users_template.acl:/users_template.acl:ro
-      - ./cacheRedis/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
     command:
       - sh
       - -c
-      - sh /usr/local/bin/entrypoint.sh
+      - sh /data/entrypoint.sh

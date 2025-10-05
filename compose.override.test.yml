@@ -82,6 +82,11 @@ services:
     container_name: test_redis
     volumes:
       - test-redis-data:/data
+      - ./cacheRedis/redis.conf:/data/redis.conf:ro
+      - ./cacheRedis/redis-full.conf:/data/redis-full.conf:ro
+      # Note the template is read-only, the created user.acl is read write, so redis-cli can alter the user list.
+      - ./cacheRedis/users_template.acl:/data/users_template.acl:ro
+      - ./cacheRedis/entrypoint.sh:/data/entrypoint.sh:ro
     environment:
       - REDIS_PASSWORD=$REDIS_PASSWORD
       - REDIS_SESSION_PASSWORD=$REDIS_SESSION_PASSWORD
