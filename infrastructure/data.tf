@@ -99,30 +99,32 @@ resource "azurerm_storage_share" "redisData" {
   quota              = 10 #TBD: increase for production and keep an eye on cost!
 }
 
-# using .url insted of .id, due to bug:
+# - using .url insted of .id, due to bug:
 # https://github.com/hashicorp/terraform-provider-azurerm/issues/28032
+# - ../ in container goes to form /src to /
+# - ../ in piepline goes from /infrastructure to /
 resource "azurerm_storage_share_file" "redisEntrypoint" {
   name             = "entrypoint.sh"
   storage_share_id = azurerm_storage_share.redisData.url
-  source           = "./cacheRedis/entrypoint.sh"
+  source           = "../cacheRedis/entrypoint.sh"
 }
 
 resource "azurerm_storage_share_file" "redisConf" {
   name             = "redis.conf"
   storage_share_id = azurerm_storage_share.redisData.url
-  source           = "./cacheRedis/redis.conf"
+  source           = "../cacheRedis/redis.conf"
 }
 
 resource "azurerm_storage_share_file" "redisConfFull" {
   name             = "redis-full.conf"
   storage_share_id = azurerm_storage_share.redisData.url
-  source           = "./cacheRedis/redis-full.conf"
+  source           = "../cacheRedis/redis-full.conf"
 }
 
 resource "azurerm_storage_share_file" "redisUsersTemplate" {
   name             = "users_template.acl"
   storage_share_id = azurerm_storage_share.redisData.url
-  source           = "./cacheRedis/users_template.acl"
+  source           = "../cacheRedis/users_template.acl"
 }
 
 
