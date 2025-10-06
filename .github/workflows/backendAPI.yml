@@ -352,7 +352,6 @@ jobs:
           az storage file download \
             -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
             --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-            --auth-mode login \
             -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/upgrade_${{ env.COMMIT_SHA }}.log \
             --dest postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
           echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
@@ -399,13 +398,11 @@ jobs:
           az storage file download \
             -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
             --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-            --auth-mode login \
             -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_${{ env.COMMIT_SHA }}.log \
             --dest postgres_migration/check_${{ env.COMMIT_SHA }}.log
           az storage file download \
             -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
             --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-            --auth-mode login \
             -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_exit_code_${{ env.COMMIT_SHA }}.log \
             --dest postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
           ALEMBIC_EXIT_CODE=$(cat postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log)
@@ -477,13 +474,11 @@ jobs:
           az storage file download \
             -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
             --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-            --auth-mode login \
             -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_${{ env.COMMIT_SHA }}.log \
             --dest postgres_migration/revision_${{ env.COMMIT_SHA }}.log
           az storage file download \
             -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
             --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-            --auth-mode login \
             -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_filename_${{ env.COMMIT_SHA }}.log \
             --dest postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log
           cat postgres_migration/revision_connection_${{ env.COMMIT_SHA }}.log
@@ -496,7 +491,6 @@ jobs:
           az storage file download \
             -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
             --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-            --auth-mode login \
             -p migrations/stage_prod/versions/$MIGRATION_SCRIPT_FILENAME \
             --dest $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
           cat $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
@@ -617,7 +611,6 @@ jobs:
           az storage file download \
             -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
             --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-            --auth-mode login \
             -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/upgrade_${{ env.COMMIT_SHA }}.log \
             --dest postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
           echo "=== Contents of postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log ==="
