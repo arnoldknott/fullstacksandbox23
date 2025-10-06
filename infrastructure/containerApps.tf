@@ -328,19 +328,10 @@ resource "azurerm_container_app" "redisContainer" {
 
   template {
     container {
-      name = "redis"
-      # TBD: consider removing stage here as soon as the development is well on the way!
-      image = terraform.workspace == "dev" || terraform.workspace == "stage" ? "redis/redis-stack:7.2.0-v13" : "redis/redis-stack-server:7.2.0-v13" #  "redis:7.2-alpine"
-      # image = terraform.workspace == "dev" ? "redis/redis-stack:7.2.0-v6" : "redis/redis-stack-server:7.2.0-v6" #  "redis:7.2-alpine"
-      # args  = ["--save 180 1"]#["--requirepass", "fromTerraformChangedInGithubActions"]
-      # command = ["redis-server", "--save 180 1"]
-      # Note: this is not the bare minimum: redis and redis-stack-server can run on 0.5Gi, but not redis-stack!
-      # TBD: downgrade stage to 0.5Gi, when switching back to redis/redis-stack:6.2.6-v10
-      cpu    = terraform.workspace == "dev" || terraform.workspace == "stage" ? 0.5 : 0.25
-      memory = terraform.workspace == "dev" || terraform.workspace == "stage" ? "1Gi" : "0.5Gi"
-      # cpu    = terraform.workspace == "dev" ? 0.5 : 0.25
-      # memory = terraform.workspace == "dev" ? "1Gi" : "0.5Gi"
-      # memory = "0.5Gi"
+      name   = "redis"
+      image  = "redis:8.2.2-alpine3.22"
+      cpu    = 0.25
+      memory = "0.5Gi"
       # TBD: remove after upgrading to Redis 8
       env {
         name        = "REDIS_ARGS"
@@ -371,6 +362,12 @@ resource "azurerm_container_app" "redisContainer" {
       name         = "${terraform.workspace}-redis-data"
       storage_name = azurerm_container_app_environment_storage.redisDataConnect.name
       storage_type = "AzureFile"
+    }
+    init_container {
+      name    = "redis-init"
+      image   = "redis:8.2.2-alpine3.22"
+      command = ["sh", "-c", "sh /data/entrypoint.sh"]
+
     }
     # leave at least 1 min-replica for Redis - otherwise connections are lost when scaled to 0!
     min_replicas = terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
