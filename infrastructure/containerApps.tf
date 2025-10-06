@@ -330,6 +330,7 @@ resource "azurerm_container_app" "redisContainer" {
     container {
       name   = "redis"
       image  = "redis:8.2.2-alpine3.22"
+      command = ["sh", "-c", "sh /data/entrypoint.sh"]
       cpu    = 0.25
       memory = "0.5Gi"
       # TBD: remove after upgrading to Redis 8
@@ -362,17 +363,6 @@ resource "azurerm_container_app" "redisContainer" {
       name         = "${terraform.workspace}-redis-data"
       storage_name = azurerm_container_app_environment_storage.redisDataConnect.name
       storage_type = "AzureFile"
-    }
-    init_container {
-      name    = "redis-init"
-      image   = "redis:8.2.2-alpine3.22"
-      command = ["sh", "-c", "sh /data/entrypoint.sh"]
-      cpu     = 0.25
-      memory  = "0.5Gi"
-      volume_mounts {
-        name = "${terraform.workspace}-redis-data"
-        path = "/data"
-      }
     }
     # leave at least 1 min-replica for Redis - otherwise connections are lost when scaled to 0!
     min_replicas = terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
