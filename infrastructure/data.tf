@@ -99,6 +99,31 @@ resource "azurerm_storage_share" "redisData" {
   quota              = 10 #TBD: increase for production and keep an eye on cost!
 }
 
+resource "azurerm_storage_share_file" "redisEntrypoint" {
+  name             = "entrypoint.sh"
+  storage_share_id = azurerm_storage_share.redisData.id
+  source           = "./cacheRedis/entrypoint.sh"
+}
+
+resource "azurerm_storage_share_file" "redisConf" {
+  name             = "redis.conf"
+  storage_share_id = azurerm_storage_share.redisData.id
+  source           = "./cacheRedis/redis.conf"
+}
+
+resource "azurerm_storage_share_file" "redisConfFull" {
+  name             = "redis-full.conf"
+  storage_share_id = azurerm_storage_share.redisData.id
+  source           = "./cacheRedis/redis-full.conf"
+}
+
+resource "azurerm_storage_share_file" "redisUsersTemplate" {
+  name             = "users_template.acl"
+  storage_share_id = azurerm_storage_share.redisData.id
+  source           = "./cacheRedis/users_template.acl"
+}
+
+
 # resource "azurerm_storage_share" "mongodbData" {
 #   name                 = "${var.project_short_name}-mongodbdata-${terraform.workspace}"
 #   storage_account_id   = azurerm_storage_account.storage.id
