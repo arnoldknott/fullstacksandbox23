@@ -330,7 +330,7 @@ resource "azurerm_container_app" "redisContainer" {
     container {
       name   = "redis"
       image  = "redis:8.2.2-alpine3.22"
-      command = ["sh", "-c", "sh /data/entrypoint.sh"]
+      command = ["/bin/sh", "/data/entrypoint.sh"]
       cpu    = 0.25
       memory = "0.5Gi"
       # TBD: remove after upgrading to Redis 8
