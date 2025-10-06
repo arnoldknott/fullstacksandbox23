@@ -23,8 +23,6 @@ jobs:
   test:
     runs-on: ubuntu-24.04
     environment: test
-    # TBD: enable again after debugging!
-    if: false
     env:
       KEYVAULT_HEALTH: ${{ vars.KEYVAULT_HEALTH }}
       FRONTEND_SVELTE_ORIGIN: ${{ vars.FRONTEND_SVELTE_ORIGIN }}
@@ -226,9 +224,7 @@ jobs:
     # only run if no infrastructure changes were detected, but do run, if the workflow was triggered by a workflow_run event (then the github.event.workflow_run.head_sha is not null)
     # TBD: split into multiline if statement:
     if: ${{((github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage') && needs.check_for_infrastructure_change.outputs.infrastructure_changed == 'FALSE' ) || ( ( github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'stage' ) && github.event.workflow_run.name == 'Infrastructure' && github.event.workflow_run.conclusion == 'success') }}
-    # TBD: enable again after debugging!
-    needs: [check_for_infrastructure_change]
-    # needs: [test, check_for_infrastructure_change]
+    needs: [test, check_for_infrastructure_change]
     runs-on: ubuntu-24.04
     permissions:
       id-token: write
@@ -353,20 +349,18 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
             --command \"scripts/stage_prod/postgres_migration_upgrade.sh\""
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/upgrade_${{ env.COMMIT_SHA }}.log --dest postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
+          az storage file download \
+            -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
+            --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+            --auth-mode login \
+            -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/upgrade_${{ env.COMMIT_SHA }}.log \
+            --dest postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
           echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
-        # cat postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
-
-        # script -q -e -c "az containerapp exec \
-        #   --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-        #   --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-        #   --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v4
         with:
           name: postgres_migration_upgrade_stage_results_${{ env.COMMIT_SHA }}
           path: postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
-
       # TBD: consider deleting all existing environment variables before setting the new ones?
       # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
       # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
@@ -402,8 +396,18 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --command \"scripts/stage_prod/postgres_migration_check.sh\"" > postgres_migration/check_connection_${{ env.COMMIT_SHA }}.log
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_${{ env.COMMIT_SHA }}.log
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_exit_code_${{ env.COMMIT_SHA }}.log --dest postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
+          az storage file download \
+            -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
+            --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+            --auth-mode login \
+            -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_${{ env.COMMIT_SHA }}.log \
+            --dest postgres_migration/check_${{ env.COMMIT_SHA }}.log
+          az storage file download \
+            -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
+            --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+            --auth-mode login \
+            -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/check_exit_code_${{ env.COMMIT_SHA }}.log \
+            --dest postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log
           ALEMBIC_EXIT_CODE=$(cat postgres_migration/check_exit_code_${{ env.COMMIT_SHA }}.log)
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
@@ -470,8 +474,18 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --command \"scripts/stage_prod/postgres_migration_revision.sh\"" > postgres_migration/revision_connection_${{ env.COMMIT_SHA }}.log
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_${{ env.COMMIT_SHA }}.log
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_filename_${{ env.COMMIT_SHA }}.log --dest postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log
+          az storage file download \
+            -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
+            --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+            --auth-mode login \
+            -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_${{ env.COMMIT_SHA }}.log \
+            --dest postgres_migration/revision_${{ env.COMMIT_SHA }}.log
+          az storage file download \
+            -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
+            --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+            --auth-mode login \
+            -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/revision_filename_${{ env.COMMIT_SHA }}.log \
+            --dest postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log
           cat postgres_migration/revision_connection_${{ env.COMMIT_SHA }}.log
           cat postgres_migration/revision_${{ env.COMMIT_SHA }}.log
           cat postgres_migration/revision_filename_${{ env.COMMIT_SHA }}.log
@@ -479,7 +493,12 @@ jobs:
           MIGRATION_SCRIPT_PATH_REMOTE=${MIGRATION_SCRIPT_PATH_REMOTE#/}
           MIGRATION_SCRIPT_FILENAME=$(basename $MIGRATION_SCRIPT_PATH_REMOTE)
           echo "MIGRATION_SCRIPT_FILENAME=$MIGRATION_SCRIPT_FILENAME" >> $GITHUB_ENV
-          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p migrations/stage_prod/versions/$MIGRATION_SCRIPT_FILENAME --dest $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
+          az storage file download \
+            -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
+            --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+            --auth-mode login \
+            -p migrations/stage_prod/versions/$MIGRATION_SCRIPT_FILENAME \
+            --dest $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
           cat $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
         # For debugging enter container with:
         # az containerapp exec -n <resource_name> -g <resource_group> --command "/bin/sh"
@@ -585,15 +604,23 @@ jobs:
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"
-      - name: Run prod database migrations
+
+      # az containerapp exec needs script to wrap around in non-TTY environment:
+      # https://github.com/Azure/azure-cli/issues/13352#issuecomment-1810094440
+      - name: Run stage database migrations
         run: |
           mkdir -p postgres_migration
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --command \"scripts/stage_prod/postgres_migration_upgrade.sh\""
+          az storage file download \
+            -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
+            --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+            --auth-mode login \
+            -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/upgrade_${{ env.COMMIT_SHA }}.log \
+            --dest postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
           echo "=== Contents of postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log ==="
-          cat postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v4
         with:
