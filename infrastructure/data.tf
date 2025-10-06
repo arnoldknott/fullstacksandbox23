@@ -83,7 +83,7 @@ resource "azurerm_postgresql_flexible_server_database" "postgresDatabase" {
 # resource "random_uuid" "uuidPostgresAccessShare" {}
 # resource "azurerm_storage_share" "postgresData" {
 #   name                 = "${var.project_short_name}-postgresdata-${terraform.workspace}"
-#   storage_account_name = azurerm_storage_account.storage.name
+#   storage_account_id   = azurerm_storage_account.storage.id
 #   quota                = 100 #TBD: increase for production and keep an eye on cost!
 #   acl {
 #     id = random_uuid.uuidPostgresAccessShare.result
@@ -94,21 +94,48 @@ resource "azurerm_postgresql_flexible_server_database" "postgresDatabase" {
 # }
 
 resource "azurerm_storage_share" "redisData" {
-  name                 = "${var.project_short_name}-redisdata-${terraform.workspace}"
-  storage_account_name = azurerm_storage_account.storage.name
-  quota                = 10 #TBD: increase for production and keep an eye on cost!
+  name               = "${var.project_short_name}-redisdata-${terraform.workspace}"
+  storage_account_id = azurerm_storage_account.storage.id
+  quota              = 10 #TBD: increase for production and keep an eye on cost!
 }
+
+# using .url insted of .id, due to bug:
+# https://github.com/hashicorp/terraform-provider-azurerm/issues/28032
+resource "azurerm_storage_share_file" "redisEntrypoint" {
+  name             = "entrypoint.sh"
+  storage_share_id = azurerm_storage_share.redisData.url
+  source           = "./cacheRedis/entrypoint.sh"
+}
+
+resource "azurerm_storage_share_file" "redisConf" {
+  name             = "redis.conf"
+  storage_share_id = azurerm_storage_share.redisData.url
+  source           = "./cacheRedis/redis.conf"
+}
+
+resource "azurerm_storage_share_file" "redisConfFull" {
+  name             = "redis-full.conf"
+  storage_share_id = azurerm_storage_share.redisData.url
+  source           = "./cacheRedis/redis-full.conf"
+}
+
+resource "azurerm_storage_share_file" "redisUsersTemplate" {
+  name             = "users_template.acl"
+  storage_share_id = azurerm_storage_share.redisData.url
+  source           = "./cacheRedis/users_template.acl"
+}
+
 
 # resource "azurerm_storage_share" "mongodbData" {
 #   name                 = "${var.project_short_name}-mongodbdata-${terraform.workspace}"
-#   storage_account_name = azurerm_storage_account.storage.name
+#   storage_account_id   = azurerm_storage_account.storage.id
 #   quota                = 10 #TBD: increase for production and keep an eye on cost!
 # }
 
 resource "azurerm_storage_share" "applicationData" {
-  name                 = "${var.project_short_name}-applicationdata-${terraform.workspace}"
-  storage_account_name = azurerm_storage_account.storage.name
-  quota                = 100 #TBD: increase for production and keep an eye on cost!
+  name               = "${var.project_short_name}-applicationdata-${terraform.workspace}"
+  storage_account_id = azurerm_storage_account.storage.id
+  quota              = 100 #TBD: increase for production and keep an eye on cost!
 }
 
 # Backup:

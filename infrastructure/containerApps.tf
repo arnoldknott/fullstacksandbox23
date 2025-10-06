@@ -341,9 +341,26 @@ resource "azurerm_container_app" "redisContainer" {
       # cpu    = terraform.workspace == "dev" ? 0.5 : 0.25
       # memory = terraform.workspace == "dev" ? "1Gi" : "0.5Gi"
       # memory = "0.5Gi"
+      # TBD: remove after upgrading to Redis 8
       env {
         name        = "REDIS_ARGS"
         secret_name = "redis-args"
+      }
+      env {
+        name        = "REDIS_PASSWORD"
+        secret_name = "redis-password"
+      }
+      env {
+        name        = "REDIS_SESSION_PASSWORD"
+        secret_name = "redis-session-password"
+      }
+      env {
+        name        = "REDIS_SOCKETIO_PASSWORD"
+        secret_name = "redis-socketio-password"
+      }
+      env {
+        name        = "REDIS_WORKER_PASSWORD"
+        secret_name = "redis-worker-password"
       }
       volume_mounts {
         name = "${terraform.workspace}-redis-data"
@@ -387,9 +404,26 @@ resource "azurerm_container_app" "redisContainer" {
     transport    = "tcp"
   }
 
+  # TBD: remove after upgrading to Redis 8
   secret {
     name  = "redis-args"
     value = azurerm_key_vault_secret.redisArgs.value
+  }
+  secret {
+    name  = "redis-password"
+    value = azurerm_key_vault_secret.redisPassword.value
+  }
+  secret {
+    name  = "redis-session-password"
+    value = azurerm_key_vault_secret.redisSessionPassword.value
+  }
+  secret {
+    name  = "redis-socketio-password"
+    value = azurerm_key_vault_secret.redisSocketioPassword.value
+  }
+  secret {
+    name  = "redis-worker-password"
+    value = azurerm_key_vault_secret.redisWorkerPassword.value
   }
 
   # TBD: check what this is needed for in the other containers!
