@@ -339,6 +339,7 @@ resource "azurerm_key_vault_secret" "redisArgs" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+# TBD: not really a secret - use terraform variable and env variable in container?
 resource "azurerm_key_vault_secret" "redisSessionDb" {
   name         = "redis-session-db"
   value        = 15
