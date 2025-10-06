@@ -11,10 +11,10 @@ services:
     env_file: .env
     volumes:
       - .:/src
-      - ../cacheRedis/entrypoint.sh:/src/cacheRedis/entrypoint.sh:ro
-      - ../cacheRedis/redis.conf:/src/cacheRedis/redis.conf:ro
-      - ../cacheRedis/redis-full.conf:/src/cacheRedis/redis-full.conf:ro
-      - ../cacheRedis/users_template.acl:/src/cacheRedis/users_template.acl:ro
+      - ../cacheRedis/entrypoint.sh:/cacheRedis/entrypoint.sh:ro
+      - ../cacheRedis/redis.conf:/cacheRedis/redis.conf:ro
+      - ../cacheRedis/redis-full.conf:/cacheRedis/redis-full.conf:ro
+      - ../cacheRedis/users_template.acl:/cacheRedis/users_template.acl:ro
     # ports:
     #   - "443:443"
     # environment:
