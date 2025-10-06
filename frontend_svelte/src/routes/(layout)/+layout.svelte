@@ -22,7 +22,6 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import { display } from 'colorjs.io/fn';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
