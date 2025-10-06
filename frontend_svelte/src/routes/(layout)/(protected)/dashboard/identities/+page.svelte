@@ -11,6 +11,7 @@
 
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { UeberGroup, UeberGroupExtended } from '$lib/types';
+	import { initAccordion } from '$lib/userInterface';
 	let { data }: { data: PageData } = $props();
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
@@ -82,6 +83,7 @@
 <div
 	class="accordion accordion-bordered bg-primary-container text-primary-container-content shadow-outline-variant mb-5 shadow-lg"
 	data-accordion-always-open=""
+	{@attach initAccordion}
 >
 	{#if azureAccountLink.azure_user_id}
 		<IdentityAccordion
@@ -130,6 +132,7 @@
 <div
 	class="accordion accordion-bordered bg-primary-container text-primary-container-content shadow-outline-variant mb-5 shadow-lg"
 	data-accordion-always-open=""
+	{@attach initAccordion}
 >
 	{#if data.microsoftTeams.length === 0}
 		<div class="alert alert-warning label-large text-center" role="alert">
@@ -264,6 +267,7 @@
 <div
 	class="accordion accordion-bordered bg-primary-container text-primary-container-content shadow-outline-variant mb-5 shadow-lg"
 	data-accordion-always-open=""
+	{@attach initAccordion}
 >
 	{#if ueberGroups.length === 0}
 		<div

@@ -4,6 +4,7 @@
 	import Heading from '$components/Heading.svelte';
 	import AccordionItem from './AccordionItem.svelte';
 	import ColorTile from './ColorTile.svelte';
+	import { initAccordion } from '$lib/userInterface';
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
@@ -110,7 +111,11 @@
 	Turn on debug to get the names of teh CSS variables and the color values.
 </p>
 
-<div class="accordion accordion-bordered bg-base-150" data-accordion-always-open="">
+<div
+	class="accordion accordion-bordered bg-base-150"
+	data-accordion-always-open=""
+	{@attach initAccordion}
+>
 	<AccordionItem title="Backgrounds and Surfaces">
 		<p>
 			Background is the very background of the page. The base colors provide backgrounds to larger

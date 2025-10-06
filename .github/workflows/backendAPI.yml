@@ -12,6 +12,7 @@ on:
   push:
     paths:
       - "backendAPI/**"
+      - "compose*.yml"
       - ".github/workflows/backendAPI.yml"
 
 env:
@@ -38,6 +39,9 @@ jobs:
       REDIS_PORT: ${{ vars.REDIS_PORT }}
       REDIS_SESSION_DB: ${{ vars.REDIS_SESSION_DB }}
       REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+      REDIS_SESSION_PASSWORD: ${{ secrets.REDIS_SESSION_PASSWORD }}
+      REDIS_SOCKETIO_PASSWORD: ${{ secrets.REDIS_SOCKETIO_PASSWORD }}
+      REDIS_WORKER_PASSWORD: ${{ secrets.REDIS_WORKER_PASSWORD }}
       MONGODB_HOST: ${{ vars.MONGODB_HOST }}
       MONGODB_PORT: ${{ vars.MONGODB_PORT }}
       BACK_CLIENT_SECRET: ${{ secrets.BACK_CLIENT_SECRET }}
@@ -155,13 +159,13 @@ jobs:
       #       -f compose.yml \
       #       -f compose.override.test.yml \
       #       down
-      # - name: Unit testing
-      #   run: |
-      #     docker compose \
-      #       -f compose.yml \
-      #       -f compose.override.test.yml \
-      #       exec -T backend_api \
-      #       sh -c "pytest -v"
+      - name: Unit testing
+        run: |
+          docker compose \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T backend_api \
+            sh -c "pytest -v"
       - name: Stop containers
         run: |
           docker compose \

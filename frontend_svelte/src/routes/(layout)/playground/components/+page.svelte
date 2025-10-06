@@ -16,7 +16,13 @@
 	// import type { PageProps } from '../$types';
 	import { page } from '$app/state';
 	import type { ActionResult } from '@sveltejs/kit';
-	import { initDropdown, initOverlay, initCarousel, initTabs } from '$lib/userInterface';
+	import {
+		initDropdown,
+		initOverlay,
+		initCarousel,
+		initTabs,
+		initTooltip
+	} from '$lib/userInterface';
 	import { Action, AccessHandler, IdentityType } from '$lib/accessHandler';
 	import type { AccessShareOption } from '$lib/types';
 	import ThemePicker from './ThemePicker.svelte';
@@ -997,7 +1003,7 @@
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Tooltips 🚧</Heading>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
-			<div class="tooltip">
+			<div class="tooltip" {@attach initTooltip}>
 				<button type="button" class="tooltip-toggle btn btn-square" aria-label="Tooltip">
 					<span class="icon-[tabler--chevron-up]"></span>
 				</button>

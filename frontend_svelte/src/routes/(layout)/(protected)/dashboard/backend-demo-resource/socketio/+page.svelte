@@ -6,6 +6,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
+	import { initAccordion } from '$lib/userInterface';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import DemoResourceContainer from './DemoResourceContainer.svelte';
 	import { fade, scale } from 'svelte/transition';
@@ -268,6 +269,7 @@
 		<div
 			class="accordion accordion-bordered bg-base-150 shadow-outline-variant shadow-lg"
 			data-accordion-always-open="true"
+			{@attach initAccordion}
 		>
 			{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
 				<div>
