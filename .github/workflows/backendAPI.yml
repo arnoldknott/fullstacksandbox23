@@ -344,26 +344,29 @@ jobs:
       # TBD: this is weird: here the variable is named AZ_KEYVAULT_HOST, but in the container it is named AZURE_KEYVAULT_HOST
       # when renaming it here - conatinerapp fails to start with managed identity error - cannot get to keyvault!
       # TBD: this should be ready to go. Remember to put into prod as well!
+      # az containerapp exec needs script to wrap around in non-TTY environment:
+      # https://github.com/Azure/azure-cli/issues/13352#issuecomment-1810094440
       - name: Run stage database migrations
         run: |
           mkdir -p postgres_migration
-          az containerapp exec \
+          script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-            --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"
-        # echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --command \"scripts/stage_prod/postgres_migration_upgrade.sh\""
+          az storage file download -s ${{ vars.AZURE_FILESHARE_APPDATA }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} -p ${{env.FILESHARE_APPDATA_MIGRATIONS_PATH}}/logs/upgrade_${{ env.COMMIT_SHA }}.log --dest postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
+          echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
         # cat postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
 
         # script -q -e -c "az containerapp exec \
         #   --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
         #   --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
         #   --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"" > postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
-      # - name: Upload migration upgrade artifacts
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: postgres_migration_upgrade_stage_results_${{ env.COMMIT_SHA }}
-      #     path: postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
-      #
+      - name: Upload migration upgrade artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgres_migration_upgrade_stage_results_${{ env.COMMIT_SHA }}
+          path: postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
+
       # TBD: consider deleting all existing environment variables before setting the new ones?
       # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
       # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
