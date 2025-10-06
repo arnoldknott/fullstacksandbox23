@@ -350,7 +350,7 @@ jobs:
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
             --query 'properties.latestRevisionName' -o tsv)
           echo "Latest revision: $REV_LATEST"
-          for i in $(seq 1 24); do
+          for i in $(seq 1 60); do
             REV_READY=$(az containerapp show \
               --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
@@ -359,10 +359,10 @@ jobs:
               echo "Latest revision is ready: $REV_READY"
               break
             fi
-            if [ "$i" -eq 24 ]; then
+            if [ "$i" -eq 60 ]; then
               echo "Timeout waiting for latest revision to become ready; proceeding with latest ready revision: $REV_READY" >&2
             else
-              echo "Waiting for revision activation... ($i/24)" && sleep 5
+              echo "Waiting for revision activation... ($i/60)" && sleep 5
             fi
           done
           script -q -e -c "az containerapp exec \
@@ -629,7 +629,7 @@ jobs:
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
             --query 'properties.latestRevisionName' -o tsv)
           echo "Latest revision: $REV_LATEST"
-          for i in $(seq 1 24); do
+          for i in $(seq 1 60); do
             REV_READY=$(az containerapp show \
               --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
@@ -638,10 +638,10 @@ jobs:
               echo "Latest revision is ready: $REV_READY"
               break
             fi
-            if [ "$i" -eq 24 ]; then
+            if [ "$i" -eq 60 ]; then
               echo "Timeout waiting for latest revision to become ready; proceeding with latest ready revision: $REV_READY" >&2
             else
-              echo "Waiting for revision activation... ($i/24)" && sleep 5
+              echo "Waiting for revision activation... ($i/60)" && sleep 5
             fi
           done
           script -q -e -c "az containerapp exec \
