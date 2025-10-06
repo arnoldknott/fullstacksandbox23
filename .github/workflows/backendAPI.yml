@@ -350,7 +350,7 @@ jobs:
           az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-            --command \"scripts/stage_prod/postgres_migration_upgrade.sh\
+            --command \"scripts/stage_prod/postgres_migration_upgrade.sh\"
         # echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
         # cat postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
 
@@ -584,18 +584,7 @@ jobs:
               "POSTGRES_PASSWORD=secretref:postgres-password"
       - name: Run prod database migrations
         run: |
-          set -euo pipefail
           mkdir -p postgres_migration
-          echo "Warming up backend via HTTP..."
-          FQDN=$(az containerapp show --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --query "properties.configuration.ingress.fqdn" -o tsv)
-          for i in $(seq 1 60); do
-            if curl -sS -m 10 "https://$FQDN/docs" >/dev/null 2>&1 ; then
-              echo "Warmup success on attempt $i"
-              break
-            fi
-            echo "Warmup attempt $i failed; retrying..."
-            sleep 5
-          done
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
