@@ -83,7 +83,7 @@ resource "azurerm_postgresql_flexible_server_database" "postgresDatabase" {
 # resource "random_uuid" "uuidPostgresAccessShare" {}
 # resource "azurerm_storage_share" "postgresData" {
 #   name                 = "${var.project_short_name}-postgresdata-${terraform.workspace}"
-#   storage_account_name = azurerm_storage_account.storage.name
+#   storage_account_id   = azurerm_storage_account.storage.id
 #   quota                = 100 #TBD: increase for production and keep an eye on cost!
 #   acl {
 #     id = random_uuid.uuidPostgresAccessShare.result
@@ -95,19 +95,19 @@ resource "azurerm_postgresql_flexible_server_database" "postgresDatabase" {
 
 resource "azurerm_storage_share" "redisData" {
   name                 = "${var.project_short_name}-redisdata-${terraform.workspace}"
-  storage_account_name = azurerm_storage_account.storage.name
+  storage_account_id   = azurerm_storage_account.storage.id
   quota                = 10 #TBD: increase for production and keep an eye on cost!
 }
 
 # resource "azurerm_storage_share" "mongodbData" {
 #   name                 = "${var.project_short_name}-mongodbdata-${terraform.workspace}"
-#   storage_account_name = azurerm_storage_account.storage.name
+#   storage_account_id   = azurerm_storage_account.storage.id
 #   quota                = 10 #TBD: increase for production and keep an eye on cost!
 # }
 
 resource "azurerm_storage_share" "applicationData" {
   name                 = "${var.project_short_name}-applicationdata-${terraform.workspace}"
-  storage_account_name = azurerm_storage_account.storage.name
+  storage_account_id   = azurerm_storage_account.storage.id
   quota                = 100 #TBD: increase for production and keep an eye on cost!
 }
 
