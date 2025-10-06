@@ -200,7 +200,7 @@ resource "azurerm_network_security_group" "adminVirtualMachineNetworkSecurityGro
 }
 
 resource "azurerm_subnet_network_security_group_association" "adminVirtualMachineNetworkSecurityGroupAssociation" {
-  count               = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count                     = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   subnet_id                 = azurerm_subnet.subnetAdminVirtualMachine.id
   network_security_group_id = azurerm_network_security_group.adminVirtualMachineNetworkSecurityGroup[0].id
 }
