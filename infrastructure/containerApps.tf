@@ -367,7 +367,8 @@ resource "azurerm_container_app" "redisContainer" {
       name    = "redis-init"
       image   = "redis:8.2.2-alpine3.22"
       command = ["sh", "-c", "sh /data/entrypoint.sh"]
-
+      cpu     = 0.25
+      memory  = "0.5Gi"
     }
     # leave at least 1 min-replica for Redis - otherwise connections are lost when scaled to 0!
     min_replicas = terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
