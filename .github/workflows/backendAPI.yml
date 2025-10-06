@@ -345,7 +345,6 @@ jobs:
       - name: Run stage database migrations
         run: |
           mkdir -p postgres_migration
-          # Wait until the latest revision has become the latest ready revision
           REV_LATEST=$(az containerapp show \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
@@ -369,7 +368,6 @@ jobs:
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --revision $REV_READY \
             --command \"scripts/stage_prod/postgres_migration_upgrade.sh\""
           az storage file download \
             -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
@@ -526,10 +524,10 @@ jobs:
           path: |
             postgres_migration/revision_connection_${{ env.COMMIT_SHA }}.log
             postgres_migration/revision_${{ env.COMMIT_SHA }}.log
-            $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
+            $MIGRATION_FILES_PATH/${{ env.MIGRATION_SCRIPT_FILENAME }}
       - name: Echo the migration script
         run: |
-          cat $MIGRATION_FILES_PATH/$MIGRATION_SCRIPT_FILENAME
+          cat $MIGRATION_FILES_PATH/${{ env.MIGRATION_SCRIPT_FILENAME }}
       # - name: Commit migration script
       #   uses: EndBug/add-and-commit@v9
       #   with:
@@ -626,7 +624,6 @@ jobs:
       - name: Run stage database migrations
         run: |
           mkdir -p postgres_migration
-          # Wait until the latest revision has become the latest ready revision
           REV_LATEST=$(az containerapp show \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
@@ -650,7 +647,6 @@ jobs:
           script -q -e -c "az containerapp exec \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --revision $REV_READY \
             --command \"scripts/stage_prod/postgres_migration_upgrade.sh\""
           az storage file download \
             -s ${{ vars.AZURE_FILESHARE_APPDATA }} \
