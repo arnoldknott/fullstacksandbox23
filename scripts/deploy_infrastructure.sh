@@ -119,7 +119,7 @@ docker compose build
 # This worked without entrypoint in docker compose file  -until tofu workspace select:
 echo ""
 echo "=== tofu - version ==="
-docker compose run --rm tofu --version
+docker compose run --rm --entrypoint 'tofu' tofu --version
 # docker compose exec tofu tofu --version
 # docker compose exec tofu tofu --version
 
@@ -161,7 +161,7 @@ tofu workspace select -or-create \
         -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
         ${WORKSPACE}'
 echo "selected workspace:"
-docker compose run --rm tofu workspace show
+docker compose run --rm --entrypoint 'tofu' tofu workspace show
 
 echo ""
 echo "=== tofu - plan ==="
