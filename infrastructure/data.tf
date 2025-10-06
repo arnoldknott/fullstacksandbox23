@@ -94,9 +94,9 @@ resource "azurerm_postgresql_flexible_server_database" "postgresDatabase" {
 # }
 
 resource "azurerm_storage_share" "redisData" {
-  name                 = "${var.project_short_name}-redisdata-${terraform.workspace}"
-  storage_account_id   = azurerm_storage_account.storage.id
-  quota                = 10 #TBD: increase for production and keep an eye on cost!
+  name               = "${var.project_short_name}-redisdata-${terraform.workspace}"
+  storage_account_id = azurerm_storage_account.storage.id
+  quota              = 10 #TBD: increase for production and keep an eye on cost!
 }
 
 # resource "azurerm_storage_share" "mongodbData" {
@@ -106,9 +106,9 @@ resource "azurerm_storage_share" "redisData" {
 # }
 
 resource "azurerm_storage_share" "applicationData" {
-  name                 = "${var.project_short_name}-applicationdata-${terraform.workspace}"
-  storage_account_id   = azurerm_storage_account.storage.id
-  quota                = 100 #TBD: increase for production and keep an eye on cost!
+  name               = "${var.project_short_name}-applicationdata-${terraform.workspace}"
+  storage_account_id = azurerm_storage_account.storage.id
+  quota              = 100 #TBD: increase for production and keep an eye on cost!
 }
 
 # Backup:
