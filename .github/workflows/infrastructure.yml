@@ -7,14 +7,14 @@ on:
       - stage
       - main
     paths:
-      - 'infrastructure/**'
-      - '.github/workflows/infrastructure.yml'
-      - '!infrastructure/.terraform.lock.hcl'
+      - "infrastructure/**"
+      - ".github/workflows/infrastructure.yml"
+      - "!infrastructure/.terraform.lock.hcl"
 
 env:
   ### Configuration for pipeline
   COMMIT_SHA: ${{ github.sha }}
-  TOFU_VERSION: 1.8.2
+  TOFU_VERSION: 1.10.6
   ### Configuration of backend for infrastructure state:
   AZ_RESOURCE_GROUP_NAME: ${{ secrets.AZ_RESOURCE_GROUP_NAME }}
   AZ_STORAGE_ACCOUNT_NAME: ${{ secrets.AZ_STORAGE_ACCOUNT_NAME }}
@@ -113,7 +113,6 @@ jobs:
       #   --assignee <managed_identity_principle_id> \
       #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>
 
-
       - name: Login to Azure using managed identity
         uses: azure/login@v2
         with:
@@ -167,9 +166,9 @@ jobs:
       - name: Commit .terraform.lock.hcl file
         uses: EndBug/add-and-commit@v9
         with:
-            add: 'infrastructure/.terraform.lock.hcl'
-            fetch: false
-            message: 'ci: updates terraform lock file based on workflow run triggered by commit SHA ${{ env.COMMIT_SHA }}.'
+          add: "infrastructure/.terraform.lock.hcl"
+          fetch: false
+          message: "ci: updates terraform lock file based on workflow run triggered by commit SHA ${{ env.COMMIT_SHA }}."
 
       - name: tofu workspace select
         run: tofu workspace select -or-create ${WORKSPACE}

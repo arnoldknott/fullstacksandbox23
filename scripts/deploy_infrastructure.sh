@@ -119,7 +119,7 @@ docker compose build
 # This worked without entrypoint in docker compose file  -until tofu workspace select:
 echo ""
 echo "=== tofu - version ==="
-docker compose run --rm tofu --version
+docker compose run --rm --entrypoint 'tofu' tofu --version
 # docker compose exec tofu tofu --version
 # docker compose exec tofu tofu --version
 
@@ -137,6 +137,7 @@ echo ""
 echo "=== tofu - init ==="
 docker compose run --rm --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
 tofu init \
+        -upgrade \
         -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
         -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
         -backend-config="container_name=${AZ_CONTAINER_NAME}" \
@@ -160,7 +161,7 @@ tofu workspace select -or-create \
         -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
         ${WORKSPACE}'
 echo "selected workspace:"
-docker compose run --rm tofu workspace show
+docker compose run --rm --entrypoint 'tofu' tofu workspace show
 
 echo ""
 echo "=== tofu - plan ==="

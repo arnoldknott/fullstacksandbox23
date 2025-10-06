@@ -33,7 +33,8 @@ COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.overri
 
 cd infrastructure
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose build
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose run --rm --no-TTY tofu fmt
+COMPOSE_PROJECT_NAME=test-fssb23 docker compose run --rm --no-TTY --entrypoint 'tofu' tofu version
+COMPOSE_PROJECT_NAME=test-fssb23 docker compose run --rm --no-TTY --entrypoint 'tofu' tofu fmt
 TOFU_FMT_EXIT_CODE=$?
 git add .
 

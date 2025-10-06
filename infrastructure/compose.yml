@@ -1,16 +1,20 @@
 services:
   tofu:
     build: .
-    # build: 
+    # build:
     #   context: .
     #   args:
     #     - AZ_STORAGE_ACCOUNT_NAME=test
-        #${AZ_STORAGE_ACCOUNT_NAME}
+    #${AZ_STORAGE_ACCOUNT_NAME}
     # entrypoint: /bin/bash -c #tail -f /dev/null
     # entrypoint: /bin/sh
     env_file: .env
     volumes:
       - .:/src
+      - ../cacheRedis/entrypoint.sh:/src/cacheRedis/entrypoint.sh:ro
+      - ../cacheRedis/redis.conf:/src/cacheRedis/redis.conf:ro
+      - ../cacheRedis/redis-full.conf:/src/cacheRedis/redis-full.conf:ro
+      - ../cacheRedis/users_template.acl:/src/cacheRedis/users_template.acl:ro
     # ports:
     #   - "443:443"
     # environment:

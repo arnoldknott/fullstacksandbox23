@@ -301,15 +301,54 @@ resource "azurerm_key_vault_secret" "redisPassword" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+resource "random_password" "redisSessionPassword" {
+  length  = 32
+  special = false
+}
+resource "azurerm_key_vault_secret" "redisSessionPassword" {
+  name         = "redis-session-password"
+  value        = random_password.redisSessionPassword.result
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+resource "random_password" "redisSocketioPassword" {
+  length  = 32
+  special = false
+}
+resource "azurerm_key_vault_secret" "redisSocketioPassword" {
+  name         = "redis-socketio-password"
+  value        = random_password.redisSocketioPassword.result
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+resource "random_password" "redisWorkerPassword" {
+  length  = 32
+  special = false
+}
+resource "azurerm_key_vault_secret" "redisWorkerPassword" {
+  name         = "redis-worker-password"
+  value        = random_password.redisWorkerPassword.result
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+# TBD: remove afte upgrading to Redis 8
+# no longer needed after adding redis.conf and redis-full.conf
 resource "azurerm_key_vault_secret" "redisArgs" {
   name         = "redis-args"
   value        = "--save 500 1 --requirepass ${azurerm_key_vault_secret.redisPassword.value}"
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+# TBD: not really a secret - use terraform variable and env variable in container?
 resource "azurerm_key_vault_secret" "redisSessionDb" {
   name         = "redis-session-db"
   value        = 15
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+resource "azurerm_key_vault_secret" "redisSocketioDb" {
+  name         = "redis-socketio-db"
+  value        = 14
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
