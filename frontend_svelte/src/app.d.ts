@@ -11,10 +11,12 @@ declare global {
 
 		// FlyonUI
 		HSStaticMethods: IStaticMethods;
+		HSAccordion: HSAccordion;
+		HSCarousel: HSCarousel;
 		HSDropdown: HSDropdown;
 		HSOverlay: HSOverlay;
-		HSCarousel: HSCarousel;
 		HSTabs: HSTabs;
+		HSTooltip: HSTooltip;
 	}
 
 	namespace App {

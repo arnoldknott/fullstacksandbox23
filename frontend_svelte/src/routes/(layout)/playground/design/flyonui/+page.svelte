@@ -9,6 +9,7 @@
 	// import { hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import { initAccordion } from '$lib/userInterface';
 	// import {Theming }from '$lib/theming';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
@@ -163,6 +164,7 @@
 				? ''
 				: 'hidden'}"
 			data-accordion-always-open=""
+			{@attach initAccordion}
 		>
 			<!-- <div class="accordion-item accordion-item-active:scale-[1.05] accordion-item-active:mb-3 ease-in duration-300 delay-[1ms] active" id="default-colors"> -->
 			<div class="active accordion-item border-outline/40" id="default-colors">

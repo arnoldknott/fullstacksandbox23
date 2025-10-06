@@ -41,6 +41,7 @@
 <!-- <div
 	class="accordion accordion-bordered bg-primary-container text-primary-container-content shadow-outline-variant mb-5 shadow-lg"
 	data-accordion-always-open=""
+	{@attach initAccordion}
 > -->
 <div class="flex flex-row gap-4">
 	<p class="body-large w-1/6">

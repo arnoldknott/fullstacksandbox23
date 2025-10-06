@@ -1,103 +1,104 @@
 name: test-fssb23
 
 services:
-    backend_api:
-        build:
-            # context: 
-            #     ./backendAPI
-            target: dev
-        # image: backend_api:test
-        depends_on:
-            - postgres
-        environment:
-            - KEYVAULT_HEALTH=$KEYVAULT_HEALTH
-            - APP_REG_CLIENT_ID
-            - APP_CLIENT_SECRET
-            - FRONTEND_SVELTE_ORIGIN
-            - FRONTEND_SVELTE_FQDN
-            - AZURE_TENANT_ID=$AZURE_TENANT_ID
-            - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
-            - API_SCOPE=$API_SCOPE
-            - BACK_CLIENT_SECRET=$BACK_CLIENT_SECRET
-            - POSTGRES_HOST=$POSTGRES_HOST
-            # - POSTGRES_PORT=$POSTGRES_PORT
-            - POSTGRES_DB=$POSTGRES_DB
-            - POSTGRES_USER=$POSTGRES_USER
-            - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-            - REDIS_HOST=$REDIS_HOST
-            - REDIS_PORT=$REDIS_PORT
-            - REDIS_SESSION_DB=$REDIS_SESSION_DB
-            - REDIS_PASSWORD=$REDIS_PASSWORD
-        networks:
-            - test_network
-        ports: 
-            - "8670:80"
-        volumes:
-            - test-app-data:/data
+  backend_api:
+    build:
+      # context:
+      #     ./backendAPI
+      target: dev
+    # image: backend_api:test
+    depends_on:
+      - postgres
+    environment:
+      - KEYVAULT_HEALTH=$KEYVAULT_HEALTH
+      - APP_REG_CLIENT_ID
+      - APP_CLIENT_SECRET
+      - FRONTEND_SVELTE_ORIGIN
+      - FRONTEND_SVELTE_FQDN
+      - AZURE_TENANT_ID=$AZURE_TENANT_ID
+      - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
+      - API_SCOPE=$API_SCOPE
+      - BACK_CLIENT_SECRET=$BACK_CLIENT_SECRET
+      - POSTGRES_HOST=$POSTGRES_HOST
+      # - POSTGRES_PORT=$POSTGRES_PORT
+      - POSTGRES_DB=$POSTGRES_DB
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - REDIS_HOST=$REDIS_HOST
+      - REDIS_PORT=$REDIS_PORT
+      - REDIS_SESSION_DB=$REDIS_SESSION_DB
+      - REDIS_PASSWORD=$REDIS_PASSWORD
+    networks:
+      - test_network
+    ports:
+      - "8670:80"
+    volumes:
+      - test-app-data:/data
 
-    postgres:
-        container_name: test_postgres
-        volumes:
-            - test-postgres-data:/var/lib/postgresql/data/
-        environment:
-            - POSTGRES_HOST=$POSTGRES_HOST
-            - POSTGRES_DB=$POSTGRES_DB
-            - POSTGRES_USER=$POSTGRES_USER
-            - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-        networks:
-            - test_network
+  postgres:
+    container_name: test_postgres
+    volumes:
+      - test-postgres-data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_HOST=$POSTGRES_HOST
+      - POSTGRES_DB=$POSTGRES_DB
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+    networks:
+      - test_network
 
-    frontend_svelte:
-        build:
-            target: build
-            args:
-                - REDIS_HOST=$REDIS_HOST
-                - REDIS_PORT=$REDIS_PORT
-                - REDIS_SESSION_DB=$REDIS_SESSION_DB
-                - REDIS_PASSWORD=$REDIS_PASSWORD
-                - APP_REG_CLIENT_ID=$APP_REG_CLIENT_ID
-                - APP_CLIENT_SECRET=$APP_CLIENT_SECRET
-                - AZURE_TENANT_ID=$AZURE_TENANT_ID
-                - API_SCOPE=$API_SCOPE
-        environment:
-            - REDIS_HOST=$REDIS_HOST
-            - REDIS_PORT=$REDIS_PORT
-            - REDIS_SESSION_DB=$REDIS_SESSION_DB
-            - REDIS_PASSWORD=$REDIS_PASSWORD
-            - APP_REG_CLIENT_ID=$APP_REG_CLIENT_ID
-            - APP_CLIENT_SECRET=$APP_CLIENT_SECRET
-            - AZURE_TENANT_ID=$AZURE_TENANT_ID
-            - API_SCOPE=$API_SCOPE
-        networks:
-            - test_network
-        command: 
-            sh -c "npm install && npm run dev"
-            # npm run dev
-        volumes:
-            - ./frontend_svelte:/app
-            - /app/node_modules
-            # - ./frontend_svelte/node_modules:/app/node_modules
+  frontend_svelte:
+    build:
+      target: build
+      args:
+        - REDIS_HOST=$REDIS_HOST
+        - REDIS_PORT=$REDIS_PORT
+        - REDIS_SESSION_DB=$REDIS_SESSION_DB
+        - REDIS_PASSWORD=$REDIS_PASSWORD
+        - APP_REG_CLIENT_ID=$APP_REG_CLIENT_ID
+        - APP_CLIENT_SECRET=$APP_CLIENT_SECRET
+        - AZURE_TENANT_ID=$AZURE_TENANT_ID
+        - API_SCOPE=$API_SCOPE
+    environment:
+      - REDIS_HOST=$REDIS_HOST
+      - REDIS_PORT=$REDIS_PORT
+      - REDIS_SESSION_DB=$REDIS_SESSION_DB
+      - REDIS_PASSWORD=$REDIS_PASSWORD
+      - APP_REG_CLIENT_ID=$APP_REG_CLIENT_ID
+      - APP_CLIENT_SECRET=$APP_CLIENT_SECRET
+      - AZURE_TENANT_ID=$AZURE_TENANT_ID
+      - API_SCOPE=$API_SCOPE
+    networks:
+      - test_network
+    command:
+      sh -c "npm install && npm run dev"
+      # npm run dev
+    volumes:
+      - ./frontend_svelte:/app
+      - /app/node_modules
+      # - ./frontend_svelte/node_modules:/app/node_modules
 
-    redis:
-        container_name: test_redis
-        image: redis/redis-stack:7.2.0-v13
-        environment:
-            - REDIS_ARGS=$REDIS_ARGS
-        volumes:
-            - test-redis-data:/data
-        # environment:
-            # - REDIS_HOST=$REDIS_HOST
-            # - REDIS_PORT=$REDIS_PORT
-        networks:
-            - test_network
-
-    
-        
+  redis:
+    container_name: test_redis
+    volumes:
+      - test-redis-data:/data
+      - ./cacheRedis/redis.conf:/data/redis.conf:ro
+      - ./cacheRedis/redis-full.conf:/data/redis-full.conf:ro
+      # Note the template is read-only, the created user.acl is read write, so redis-cli can alter the user list.
+      - ./cacheRedis/users_template.acl:/data/users_template.acl:ro
+      - ./cacheRedis/entrypoint.sh:/data/entrypoint.sh:ro
+    environment:
+      - REDIS_PASSWORD=$REDIS_PASSWORD
+      - REDIS_SESSION_PASSWORD=$REDIS_SESSION_PASSWORD
+      - REDIS_SOCKETIO_PASSWORD=$REDIS_SOCKETIO_PASSWORD
+      - REDIS_WORKER_PASSWORD=$REDIS_WORKER_PASSWORD
+    networks:
+      - test_network
 
 volumes:
-    test-postgres-data:
-    test-app-data:
-    test-redis-data:
+  test-postgres-data:
+  test-app-data:
+  test-redis-data:
 
 networks:
-    test_network:
+  test_network:
