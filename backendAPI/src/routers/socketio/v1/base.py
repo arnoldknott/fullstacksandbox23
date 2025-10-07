@@ -26,9 +26,6 @@ from routers.socketio.v1 import register_namespace, registry_namespaces
 logger = logging.getLogger(__name__)
 
 
-
-
-
 @socketio_server.event
 async def connect(sid):
     """Connect event for socket.io."""
