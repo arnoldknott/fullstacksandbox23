@@ -108,6 +108,12 @@ variable "redis_session_db" {
   type        = number
 }
 
+variable "redis_socketio_db" {
+  description = "Database number for storing Socket.IO data in Redis cache"
+  type        = number
+}
+
+
 # Public SSH key configuration for virtual machines:
 variable "public_ssh_key_path" {
   description = "Path to public SSH key"

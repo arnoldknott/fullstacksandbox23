@@ -22,7 +22,7 @@ export default class AppConfig {
 	public redis_host: string;
 	public redis_port: string;
 	public redis_session_db: string;
-	public redis_password: string;
+	public redis_session_password: string;
 	public authentication_timeout: number;
 	public authentication_cookie_options: object;
 	public session_timeout: number;
@@ -43,7 +43,7 @@ export default class AppConfig {
 		this.redis_host = process.env.REDIS_HOST || '';
 		this.redis_port = process.env.REDIS_PORT || '';
 		this.redis_session_db = process.env.REDIS_SESSION_DB || '';
-		this.redis_password = '';
+		this.redis_session_password = '';
 		this.authentication_timeout = 60 * 10; // 10 minutes to authenticate
 		this.authentication_cookie_options = {};
 		this.session_timeout = 60 * 60; // 1 hour
@@ -116,7 +116,7 @@ export default class AppConfig {
 				const appClientSecret = await client?.getSecret('app-client-secret');
 				const apiScope = await client?.getSecret('api-scope');
 				const azTenantId = await client?.getSecret('azure-tenant-id');
-				const redisPassword = await client?.getSecret('redis-password');
+				const redisSessionPassword = await client?.getSecret('redis-session-password');
 				this.keyvault_health = keyvaultHealth?.value;
 				this.backend_host = backend_host?.value || '';
 				this.backend_origin = `http://${this.backend_host}:80`;
@@ -132,7 +132,7 @@ export default class AppConfig {
 				// console.log(this.api_scope_default);
 				this.az_authority = `https://login.microsoftonline.com/${azTenantId?.value}`;
 				this.az_logout_uri = `https://login.microsoftonline.com/${azTenantId?.value}/oauth2/v2.0/logout`;
-				this.redis_password = redisPassword?.value || '';
+				this.redis_session_password = redisSessionPassword?.value || '';
 				this.authentication_cookie_options = {
 					httpOnly: true,
 					sameSite: false,
@@ -162,7 +162,7 @@ export default class AppConfig {
 			this.api_scope_default = `api://${process.env.API_SCOPE}/.default`;
 			this.az_authority = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`;
 			this.az_logout_uri = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}/oauth2/v2.0/logout`;
-			this.redis_password = process.env.REDIS_PASSWORD || '';
+			this.redis_session_password = process.env.REDIS_SESSION_PASSWORD || '';
 			this.authentication_cookie_options = {
 				httpOnly: true,
 				sameSite: 'lax',
@@ -215,7 +215,7 @@ export default class AppConfig {
 // 		configuration.app_client_secret = appClientSecret.value || '';
 // 		configuration.api_scope = apiScope.value || '';
 // 		configuration.az_authority = `https://login.microsoftonline.com/${az_tenant_id.value}`,
-// 		configuration.redis_password = redisPassword.value || '';
+// 		configuration.redis_session_password = redisSessionPassword.value || '';
 // 	}
 // 	else {
 // 		console.log("app_config - process.env.AZ_KEYVAULT_HOST not set");

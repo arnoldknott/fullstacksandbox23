@@ -5,7 +5,7 @@ import { error } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
 
-const connectionString = `redis://default:${appConfig.redis_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
+const connectionString = `redis://session:${appConfig.redis_session_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
 const sessionTimeOut = appConfig.session_timeout;
 
 class RedisCache {
