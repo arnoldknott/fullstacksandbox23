@@ -225,6 +225,10 @@ resource "azurerm_container_app" "BackendContainer" {
         name  = "REDIS_SESSION_DB"
         value = var.redis_session_db
       }
+      env {
+        name  = "REDIS_SOCKETIO_DB"
+        value = var.redis_socketio_db
+      }
     }
     volume {
       name         = "${terraform.workspace}-application-data"
@@ -328,11 +332,11 @@ resource "azurerm_container_app" "redisContainer" {
 
   template {
     container {
-      name   = "redis"
-      image  = "redis:8.2.2-alpine3.22"
+      name    = "redis"
+      image   = "redis:8.2.2-alpine3.22"
       command = ["/bin/sh", "/data/entrypoint.sh"]
-      cpu    = 0.25
-      memory = "0.5Gi"
+      cpu     = 0.25
+      memory  = "0.5Gi"
       # TBD: remove after upgrading to Redis 8
       env {
         name        = "REDIS_ARGS"
@@ -364,7 +368,7 @@ resource "azurerm_container_app" "redisContainer" {
       }
       # Bump config version to trigger new revision when any mounted file changes
       env {
-        name  = "REDIS_CONFIG_VERSION"
+        name = "REDIS_CONFIG_VERSION"
         value = sha256(join(",", [
           filesha256("${path.module}/../cacheRedis/entrypoint.sh"),
           filesha256("${path.module}/../cacheRedis/redis.conf"),
@@ -390,7 +394,7 @@ resource "azurerm_container_app" "redisContainer" {
       concurrent_requests = "1000"
       # consider adjust to to less after load testing!
     }
-            
+
   }
 
   ingress {

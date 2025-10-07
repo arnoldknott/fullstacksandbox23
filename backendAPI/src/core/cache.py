@@ -7,7 +7,8 @@ from core.config import config
 redis_session_client = redis.Redis(
     host=config.REDIS_HOST,
     port=config.REDIS_PORT,
-    password=config.REDIS_PASSWORD,
+    username="session",
+    password=config.REDIS_SESSION_PASSWORD,
     db=config.REDIS_SESSION_DB,
 )
 

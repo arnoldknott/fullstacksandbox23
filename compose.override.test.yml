@@ -27,7 +27,9 @@ services:
       - REDIS_HOST=$REDIS_HOST
       - REDIS_PORT=$REDIS_PORT
       - REDIS_SESSION_DB=$REDIS_SESSION_DB
-      - REDIS_PASSWORD=$REDIS_PASSWORD
+      - REDIS_SOCKETIO_DB=$REDIS_SOCKETIO_DB
+      - REDIS_SESSION_PASSWORD=$REDIS_SESSION_PASSWORD
+      - REDIS_SOCKETIO_PASSWORD=$REDIS_SOCKETIO_PASSWORD
     networks:
       - test_network
     ports:
@@ -63,7 +65,7 @@ services:
       - REDIS_HOST=$REDIS_HOST
       - REDIS_PORT=$REDIS_PORT
       - REDIS_SESSION_DB=$REDIS_SESSION_DB
-      - REDIS_PASSWORD=$REDIS_PASSWORD
+      - REDIS_SESSION_PASSWORD=$REDIS_SESSION_PASSWORD
       - APP_REG_CLIENT_ID=$APP_REG_CLIENT_ID
       - APP_CLIENT_SECRET=$APP_CLIENT_SECRET
       - AZURE_TENANT_ID=$AZURE_TENANT_ID
@@ -88,7 +90,6 @@ services:
       - ./cacheRedis/users_template.acl:/data/users_template.acl:ro
       - ./cacheRedis/entrypoint.sh:/data/entrypoint.sh:ro
     environment:
-      # - REDIS_HOST=$REDIS_HOST
       - REDIS_PORT=$REDIS_PORT
       - REDIS_PASSWORD=$REDIS_PASSWORD
       - REDIS_SESSION_PASSWORD=$REDIS_SESSION_PASSWORD
