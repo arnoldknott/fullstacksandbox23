@@ -366,7 +366,7 @@ resource "azurerm_container_app" "redisContainer" {
       env {
         name  = "REDIS_CONFIG_VERSION"
         value = sha256(join(",", [
-          # filesha256("${path.module}/../cacheRedis/entrypoint.sh"),
+          filesha256("${path.module}/../cacheRedis/entrypoint.sh"),
           filesha256("${path.module}/../cacheRedis/redis.conf"),
           filesha256("${path.module}/../cacheRedis/redis-full.conf"),
           filesha256("${path.module}/../cacheRedis/users_template.acl"),
@@ -392,11 +392,6 @@ resource "azurerm_container_app" "redisContainer" {
     }
             
   }
-  # lifecycle {
-  #   replace_triggered_by = [
-  #     terraform_data.redisEntrypoint_hash, terraform_data.redisConf_hash, terraform_data.redisConfFull_hash, terraform_data.redisUsersTemplate_hash
-  #   ]
-  # }
 
   ingress {
     # does not make sense: all ports are internal!
