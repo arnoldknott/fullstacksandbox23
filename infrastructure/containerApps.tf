@@ -246,6 +246,9 @@ resource "azurerm_container_app" "BackendContainer" {
   }
 
   ingress {
+    # TBD: add session_affinity = true when available
+    # see here: https://github.com/Azure/terraform-azure-container-apps/issues/79
+    # before scaling backend to more than max_replicas > 1
     target_port      = 80
     external_enabled = true
     # allow_insecure_connections = false # consider adding this
