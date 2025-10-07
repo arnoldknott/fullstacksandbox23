@@ -328,23 +328,23 @@ resource "azurerm_container_app" "redisContainer" {
 
   template {
     container {
-      name = "redis"
-      # TBD: consider removing stage here as soon as the development is well on the way!
-      image = terraform.workspace == "dev" || terraform.workspace == "stage" ? "redis/redis-stack:7.2.0-v13" : "redis/redis-stack-server:7.2.0-v13" #  "redis:7.2-alpine"
-      # image = terraform.workspace == "dev" ? "redis/redis-stack:7.2.0-v6" : "redis/redis-stack-server:7.2.0-v6" #  "redis:7.2-alpine"
-      # args  = ["--save 180 1"]#["--requirepass", "fromTerraformChangedInGithubActions"]
-      # command = ["redis-server", "--save 180 1"]
-      # Note: this is not the bare minimum: redis and redis-stack-server can run on 0.5Gi, but not redis-stack!
-      # TBD: downgrade stage to 0.5Gi, when switching back to redis/redis-stack:6.2.6-v10
-      cpu    = terraform.workspace == "dev" || terraform.workspace == "stage" ? 0.5 : 0.25
-      memory = terraform.workspace == "dev" || terraform.workspace == "stage" ? "1Gi" : "0.5Gi"
-      # cpu    = terraform.workspace == "dev" ? 0.5 : 0.25
-      # memory = terraform.workspace == "dev" ? "1Gi" : "0.5Gi"
-      # memory = "0.5Gi"
+      name   = "redis"
+      image  = "redis:8.2.2-alpine3.22"
+      command = ["/bin/sh", "/data/entrypoint.sh"]
+      cpu    = 0.25
+      memory = "0.5Gi"
       # TBD: remove after upgrading to Redis 8
       env {
         name        = "REDIS_ARGS"
         secret_name = "redis-args"
+      }
+      # env {
+      #   name  = "REDIS_HOST"
+      #   value = "${var.project_short_name}-redis-${terraform.workspace}"
+      # }
+      env {
+        name  = "REDIS_PORT"
+        value = var.redis_port
       }
       env {
         name        = "REDIS_PASSWORD"
@@ -361,6 +361,16 @@ resource "azurerm_container_app" "redisContainer" {
       env {
         name        = "REDIS_WORKER_PASSWORD"
         secret_name = "redis-worker-password"
+      }
+      # Bump config version to trigger new revision when any mounted file changes
+      env {
+        name  = "REDIS_CONFIG_VERSION"
+        value = sha256(join(",", [
+          # filesha256("${path.module}/../cacheRedis/entrypoint.sh"),
+          filesha256("${path.module}/../cacheRedis/redis.conf"),
+          filesha256("${path.module}/../cacheRedis/redis-full.conf"),
+          filesha256("${path.module}/../cacheRedis/users_template.acl"),
+        ]))
       }
       volume_mounts {
         name = "${terraform.workspace}-redis-data"
@@ -380,7 +390,13 @@ resource "azurerm_container_app" "redisContainer" {
       concurrent_requests = "1000"
       # consider adjust to to less after load testing!
     }
+            
   }
+  # lifecycle {
+  #   replace_triggered_by = [
+  #     terraform_data.redisEntrypoint_hash, terraform_data.redisConf_hash, terraform_data.redisConfFull_hash, terraform_data.redisUsersTemplate_hash
+  #   ]
+  # }
 
   ingress {
     # does not make sense: all ports are internal!

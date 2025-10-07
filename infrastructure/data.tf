@@ -103,28 +103,72 @@ resource "azurerm_storage_share" "redisData" {
 # https://github.com/hashicorp/terraform-provider-azurerm/issues/28032
 # - ../ in container goes to form /src to /
 # - ../ in piepline goes from /infrastructure to /
+resource "terraform_data" "redisEntrypoint_hash" {
+  triggers_replace = {
+    sha256 = filesha256("${path.module}/../cacheRedis/entrypoint.sh")
+  }
+}
+
 resource "azurerm_storage_share_file" "redisEntrypoint" {
   name             = "entrypoint.sh"
   storage_share_id = azurerm_storage_share.redisData.url
   source           = "../cacheRedis/entrypoint.sh"
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.redisEntrypoint_hash,
+    ]
+  }
+}
+
+resource "terraform_data" "redisConf_hash" {
+  triggers_replace = {
+    sha256 = filesha256("${path.module}/../cacheRedis/redis.conf")
+  }
 }
 
 resource "azurerm_storage_share_file" "redisConf" {
   name             = "redis.conf"
   storage_share_id = azurerm_storage_share.redisData.url
   source           = "../cacheRedis/redis.conf"
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.redisConf_hash,
+    ]
+  }
+}
+
+resource "terraform_data" "redisConfFull_hash" {
+  triggers_replace = {
+    sha256 = filesha256("${path.module}/../cacheRedis/redis-full.conf")
+  }
 }
 
 resource "azurerm_storage_share_file" "redisConfFull" {
   name             = "redis-full.conf"
   storage_share_id = azurerm_storage_share.redisData.url
   source           = "../cacheRedis/redis-full.conf"
+    lifecycle {
+    replace_triggered_by = [
+      terraform_data.redisConfFull_hash,
+    ]
+  }
+}
+
+resource "terraform_data" "redisUsersTemplate_hash" {
+  triggers_replace = {
+    sha256 = filesha256("${path.module}/../cacheRedis/users_template.acl")
+  }
 }
 
 resource "azurerm_storage_share_file" "redisUsersTemplate" {
   name             = "users_template.acl"
   storage_share_id = azurerm_storage_share.redisData.url
   source           = "../cacheRedis/users_template.acl"
+    lifecycle {
+    replace_triggered_by = [
+      terraform_data.redisUsersTemplate_hash,
+    ]
+  }
 }
 
 

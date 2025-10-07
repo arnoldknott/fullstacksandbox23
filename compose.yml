@@ -22,6 +22,5 @@ services:
     container_name: "redis"
     image: redis:8.2.2-alpine3.22
     command:
-      - sh
-      - -c
-      - sh /data/entrypoint.sh
+      - /bin/sh
+      - /data/entrypoint.sh
