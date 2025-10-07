@@ -107,6 +107,13 @@ resource "azurerm_storage_share_file" "redisEntrypoint" {
   name             = "entrypoint.sh"
   storage_share_id = azurerm_storage_share.redisData.url
   source           = "../cacheRedis/entrypoint.sh"
+  content_md5 = filemd5("../cacheRedis/entrypoint.sh")
+  # # Force replacement/upload when the local file content changes
+  # lifecycle {
+  #   replace_triggered_by = [
+  #     filesha256("../cacheRedis/entrypoint.sh"),
+  #   ]
+  # }
 }
 
 resource "azurerm_storage_share_file" "redisConf" {
