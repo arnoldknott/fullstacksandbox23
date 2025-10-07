@@ -384,7 +384,7 @@ resource "azurerm_container_app" "redisContainer" {
   }
   lifecycle {
     replace_triggered_by = [
-      terraform_data.redisEntrypoint_hash, terraform_data.redisConf_hash, terraform_data.redisFullConf_hash, terraform_data.redisUsersTemplate_hash
+      terraform_data.redisEntrypoint_hash, terraform_data.redisConf_hash, terraform_data.redisConfFull_hash, terraform_data.redisUsersTemplate_hash
     ]
   }
 
