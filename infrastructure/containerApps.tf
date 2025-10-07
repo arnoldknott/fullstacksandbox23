@@ -384,7 +384,7 @@ resource "azurerm_container_app" "redisContainer" {
   }
   lifecycle {
     replace_triggered_by = [
-      filesha256("../cacheRedis/entrypoint.sh", "../cacheRedis/redis.conf", "../cacheRedis/redis-full.conf", "../cacheRedis/users_template.acl"),
+      terraform_data.redisEntrypoint_hash, terraform_data.redisConf_hash, terraform_data.redisFullConf_hash, terraform_data.redisUsersTemplate_hash
     ]
   }
 
