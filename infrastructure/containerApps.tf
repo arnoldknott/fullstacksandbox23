@@ -339,6 +339,14 @@ resource "azurerm_container_app" "redisContainer" {
         secret_name = "redis-args"
       }
       env {
+        name  = "REDIS_HOST"
+        value = azurerm_container_app.redisContainer.name
+      }
+      env {
+        name  = "REDIS_PORT"
+        value = var.redis_port
+      }
+      env {
         name        = "REDIS_PASSWORD"
         secret_name = "redis-password"
       }

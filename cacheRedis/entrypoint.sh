@@ -47,4 +47,7 @@ if [ ! -f "$CONF_PATH" ]; then
   echo "=== redis entrypoint - ERROR: Config not found at $CONF_PATH ===" >&2
   exit 1
 fi
-exec redis-server "$CONF_PATH" --aclfile "$ACL_PATH"
+exec redis-server "$CONF_PATH" \
+  --bind "$REDIS_HOST 127.0.0.1 -::1" \
+  --port "$REDIS_PORT" \
+  --aclfile "$ACL_PATH"
