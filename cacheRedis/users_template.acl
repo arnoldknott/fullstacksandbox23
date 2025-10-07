@@ -1,4 +1,4 @@
 user default on >${REDIS_PASSWORD} ~* &* +@all
-user session on >${REDIS_SESSION_PASSWORD} ~session:* ~msal:* ~jwks:* +@read +@write -@dangerous
-user socketio on >${REDIS_SOCKETIO_PASSWORD} ~socketio:* +@read +@write -@dangerous
-user worker on >${REDIS_WORKER_PASSWORD} &notifications: +@read +@write -@dangerous
+user session on >${REDIS_SESSION_PASSWORD} ~session:* ~msal:* ~jwks:* +@read +@write +select -@dangerous
+user socketio on >${REDIS_SOCKETIO_PASSWORD} ~socketio:* +@read +@write +select -@dangerous
+user worker on >${REDIS_WORKER_PASSWORD} &notifications: +@read +@write +select -@dangerous

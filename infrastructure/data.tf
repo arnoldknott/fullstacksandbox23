@@ -147,7 +147,7 @@ resource "azurerm_storage_share_file" "redisConfFull" {
   name             = "redis-full.conf"
   storage_share_id = azurerm_storage_share.redisData.url
   source           = "../cacheRedis/redis-full.conf"
-    lifecycle {
+  lifecycle {
     replace_triggered_by = [
       terraform_data.redisConfFull_hash,
     ]
@@ -164,7 +164,7 @@ resource "azurerm_storage_share_file" "redisUsersTemplate" {
   name             = "users_template.acl"
   storage_share_id = azurerm_storage_share.redisData.url
   source           = "../cacheRedis/users_template.acl"
-    lifecycle {
+  lifecycle {
     replace_triggered_by = [
       terraform_data.redisUsersTemplate_hash,
     ]

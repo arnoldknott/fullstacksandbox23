@@ -123,7 +123,9 @@ class Config(BaseSettings):
     # print("=== get_variable('REDIS_REDIS_SESSION_DB') ===")
     # print(get_variable("REDIS_SESSION_DB"))
     REDIS_SESSION_DB: int = int(get_variable("REDIS_SESSION_DB"))
-    REDIS_PASSWORD: str = get_variable("REDIS_PASSWORD")
+    REDIS_SOCKETIO_DB: int = int(get_variable("REDIS_SOCKETIO_DB"))
+    REDIS_SESSION_PASSWORD: str = get_variable("REDIS_SESSION_PASSWORD")
+    REDIS_SOCKETIO_PASSWORD: str = get_variable("REDIS_SOCKETIO_PASSWORD")
 
     # Socket.io configuration:
     SOCKETIO_ADMIN_USERNAME: Optional[str] = get_variable("SOCKETIO_ADMIN_USERNAME")
