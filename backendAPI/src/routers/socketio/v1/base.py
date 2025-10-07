@@ -7,7 +7,7 @@ import socketio
 from pydantic import BaseModel
 from sqlmodel import SQLModel
 
-from core.config import config
+from core.connections import socketio_server
 from core.security import (
     check_token_against_guards,
     get_token_payload_from_cache,
@@ -26,20 +26,7 @@ from routers.socketio.v1 import register_namespace, registry_namespaces
 logger = logging.getLogger(__name__)
 
 
-socketio_server = socketio.AsyncServer(
-    async_mode="asgi",
-    cors_allowed_origins=[],  # disable CORS in Socket.IO, as FastAPI handles CORS!
-    logger=False,
-    engineio_logger=False,  # prevents the ping and pong messages from being logged
-)
 
-if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD:
-    socketio_server.instrument(
-        auth={
-            "username": config.SOCKETIO_ADMIN_USERNAME,
-            "password": config.SOCKETIO_ADMIN_PASSWORD,
-        }
-    )
 
 
 @socketio_server.event
