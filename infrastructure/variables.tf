@@ -113,6 +113,7 @@ variable "redis_socketio_db" {
   type        = number
 }
 
+
 # Public SSH key configuration for virtual machines:
 variable "public_ssh_key_path" {
   description = "Path to public SSH key"
