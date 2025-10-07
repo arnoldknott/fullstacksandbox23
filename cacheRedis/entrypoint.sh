@@ -48,6 +48,6 @@ if [ ! -f "$CONF_PATH" ]; then
   exit 1
 fi
 exec redis-server "$CONF_PATH" \
-  --bind "$REDIS_HOST 127.0.0.1 -::1" \
+  --bind "* -::*" \
   --port "$REDIS_PORT" \
   --aclfile "$ACL_PATH"

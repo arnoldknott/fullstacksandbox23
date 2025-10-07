@@ -338,10 +338,10 @@ resource "azurerm_container_app" "redisContainer" {
         name        = "REDIS_ARGS"
         secret_name = "redis-args"
       }
-      env {
-        name  = "REDIS_HOST"
-        value = "${var.project_short_name}-redis-${terraform.workspace}"
-      }
+      # env {
+      #   name  = "REDIS_HOST"
+      #   value = "${var.project_short_name}-redis-${terraform.workspace}"
+      # }
       env {
         name  = "REDIS_PORT"
         value = var.redis_port
@@ -380,6 +380,12 @@ resource "azurerm_container_app" "redisContainer" {
       concurrent_requests = "1000"
       # consider adjust to to less after load testing!
     }
+            
+  }
+  lifecycle {
+    replace_triggered_by = [
+      filesha256("../cacheRedis/entrypoint.sh", "../cacheRedis/redis.conf", "../cacheRedis/redis-full.conf", "../cacheRedis/users_template.acl"),
+    ]
   }
 
   ingress {

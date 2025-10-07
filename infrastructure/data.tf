@@ -107,31 +107,44 @@ resource "azurerm_storage_share_file" "redisEntrypoint" {
   name             = "entrypoint.sh"
   storage_share_id = azurerm_storage_share.redisData.url
   source           = "../cacheRedis/entrypoint.sh"
-  content_md5 = filemd5("../cacheRedis/entrypoint.sh")
-  # # Force replacement/upload when the local file content changes
-  # lifecycle {
-  #   replace_triggered_by = [
-  #     filesha256("../cacheRedis/entrypoint.sh"),
-  #   ]
-  # }
+  lifecycle {
+    replace_triggered_by = [
+      filesha256("../cacheRedis/entrypoint.sh"),
+    ]
+  }
 }
 
 resource "azurerm_storage_share_file" "redisConf" {
   name             = "redis.conf"
   storage_share_id = azurerm_storage_share.redisData.url
   source           = "../cacheRedis/redis.conf"
+  lifecycle {
+    replace_triggered_by = [
+      filesha256("../cacheRedis/redis.conf"),
+    ]
+  }
 }
 
 resource "azurerm_storage_share_file" "redisConfFull" {
   name             = "redis-full.conf"
   storage_share_id = azurerm_storage_share.redisData.url
   source           = "../cacheRedis/redis-full.conf"
+    lifecycle {
+    replace_triggered_by = [
+      filesha256("../cacheRedis/redis-full.conf"),
+    ]
+  }
 }
 
 resource "azurerm_storage_share_file" "redisUsersTemplate" {
   name             = "users_template.acl"
   storage_share_id = azurerm_storage_share.redisData.url
   source           = "../cacheRedis/users_template.acl"
+    lifecycle {
+    replace_triggered_by = [
+      filesha256("../cacheRedis/users_template.acl"),
+    ]
+  }
 }
 
 
