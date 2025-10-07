@@ -340,7 +340,7 @@ resource "azurerm_container_app" "redisContainer" {
       }
       env {
         name  = "REDIS_HOST"
-        value = azurerm_container_app.redisContainer.name
+        value = "${var.project_short_name}-redis-${terraform.workspace}"
       }
       env {
         name  = "REDIS_PORT"
