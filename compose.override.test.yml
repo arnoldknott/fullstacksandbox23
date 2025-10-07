@@ -88,6 +88,8 @@ services:
       - ./cacheRedis/users_template.acl:/data/users_template.acl:ro
       - ./cacheRedis/entrypoint.sh:/data/entrypoint.sh:ro
     environment:
+      # - REDIS_HOST=$REDIS_HOST
+      - REDIS_PORT=$REDIS_PORT
       - REDIS_PASSWORD=$REDIS_PASSWORD
       - REDIS_SESSION_PASSWORD=$REDIS_SESSION_PASSWORD
       - REDIS_SOCKETIO_PASSWORD=$REDIS_SOCKETIO_PASSWORD
