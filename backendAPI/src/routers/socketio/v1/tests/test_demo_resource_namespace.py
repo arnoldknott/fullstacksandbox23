@@ -542,7 +542,8 @@ async def test_user_submits_resource_without_id_for_creation_missing_name(
     statuses_data = connection.responses("status")
 
     assert (
-     "1 validation error for DemoResourceCreate\nname\n  Field required [type=missing, input_value={'description': 'Description of test resource'}, input_type=dict]" in statuses_data[0]["error"]
+        "1 validation error for DemoResourceCreate\nname\n  Field required [type=missing, input_value={'description': 'Description of test resource'}, input_type=dict]"
+        in statuses_data[0]["error"]
     )
 
 
