@@ -366,7 +366,7 @@ resource "azurerm_container_app" "redisContainer" {
       env {
         name  = "REDIS_CONFIG_VERSION"
         value = sha256(join(",", [
-          # filesha256("${path.module}/../cacheRedis/entrypoint.sh"),
+          filesha256("${path.module}/../cacheRedis/entrypoint.sh"),
           filesha256("${path.module}/../cacheRedis/redis.conf"),
           filesha256("${path.module}/../cacheRedis/redis-full.conf"),
           filesha256("${path.module}/../cacheRedis/users_template.acl"),
