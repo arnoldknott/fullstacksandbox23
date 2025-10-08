@@ -80,19 +80,19 @@ resource "azurerm_postgresql_flexible_server_database" "postgresDatabase" {
   collation = "en_US.utf8"
 }
 
-# resource "random_uuid" "uuidPostgresAccessShare" {}
-resource "azurerm_storage_share" "postgresData" {
-  name                 = "${var.project_short_name}-postgresdata-${terraform.workspace}"
-  storage_account_id   = azurerm_storage_account.storage.id
-  quota                = 100 #TBD: increase for production and keep an eye on cost!
-  # TBD: Check if still needed with postgres version 18:
-  # acl {
-  #   id = random_uuid.uuidPostgresAccessShare.result
-  #   access_policy {
-  #     permissions = "rwdl"
-  #   }
-  # }
-}
+# # resource "random_uuid" "uuidPostgresAccessShare" {}
+# resource "azurerm_storage_share" "postgresData" {
+#   name                 = "${var.project_short_name}-postgresdata-${terraform.workspace}"
+#   storage_account_id   = azurerm_storage_account.storage.id
+#   quota                = 100 #TBD: increase for production and keep an eye on cost!
+#   # TBD: Check if still needed with postgres version 18:
+#   # acl {
+#   #   id = random_uuid.uuidPostgresAccessShare.result
+#   #   access_policy {
+#   #     permissions = "rwdl"
+#   #   }
+#   # }
+# }
 
 resource "azurerm_storage_share" "redisData" {
   name               = "${var.project_short_name}-redisdata-${terraform.workspace}"
@@ -270,13 +270,13 @@ resource "azurerm_backup_policy_file_share" "backupCachePolicy" {
 }
 
 
-resource "azurerm_backup_protected_file_share" "enablePostgresBackup" {
-  resource_group_name       = azurerm_resource_group.resourceGroup.name
-  recovery_vault_name       = azurerm_recovery_services_vault.recoveryServiceVault.name
-  source_storage_account_id = azurerm_backup_container_storage_account.backupContainer.storage_account_id
-  source_file_share_name    = azurerm_storage_share.postgresData.name
-  backup_policy_id          = azurerm_backup_policy_file_share.backupDatabasePolicy.id
-}
+# resource "azurerm_backup_protected_file_share" "enablePostgresBackup" {
+#   resource_group_name       = azurerm_resource_group.resourceGroup.name
+#   recovery_vault_name       = azurerm_recovery_services_vault.recoveryServiceVault.name
+#   source_storage_account_id = azurerm_backup_container_storage_account.backupContainer.storage_account_id
+#   source_file_share_name    = azurerm_storage_share.postgresData.name
+#   backup_policy_id          = azurerm_backup_policy_file_share.backupDatabasePolicy.id
+# }
 
 resource "azurerm_backup_protected_file_share" "enableRedisBackup" {
   resource_group_name       = azurerm_resource_group.resourceGroup.name

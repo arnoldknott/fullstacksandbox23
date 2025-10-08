@@ -19,14 +19,14 @@ resource "azurerm_container_app_environment" "ContainerEnvironment" {
   }
 }
 
-resource "azurerm_container_app_environment_storage" "postgresDataConnect" {
-  name                         = "${var.project_short_name}-postgresdataconnect-${terraform.workspace}"
-  container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
-  account_name                 = azurerm_storage_account.storage.name
-  access_key                   = azurerm_storage_account.storage.primary_access_key
-  share_name                   = azurerm_storage_share.postgresData.name
-  access_mode                  = "ReadWrite"
-}
+# resource "azurerm_container_app_environment_storage" "postgresDataConnect" {
+#   name                         = "${var.project_short_name}-postgresdataconnect-${terraform.workspace}"
+#   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
+#   account_name                 = azurerm_storage_account.storage.name
+#   access_key                   = azurerm_storage_account.storage.primary_access_key
+#   share_name                   = azurerm_storage_share.postgresData.name
+#   access_mode                  = "ReadWrite"
+# }
 
 resource "azurerm_container_app_environment_storage" "redisDataConnect" {
   name                         = "${var.project_short_name}-redisdataconnect-${terraform.workspace}"
@@ -526,51 +526,51 @@ resource "azurerm_container_app" "redisContainer" {
 #   }
 # }
 
-resource "azurerm_container_app" "postgresContainer" {
-  name                         = "${var.project_short_name}-postgres-${terraform.workspace}"
-  container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
-  resource_group_name          = azurerm_resource_group.resourceGroup.name
-  # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
-  # TBD: set to Single after this bug is fixed:
-  # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
-  revision_mode = "Single"
+# resource "azurerm_container_app" "postgresContainer" {
+#   name                         = "${var.project_short_name}-postgres-${terraform.workspace}"
+#   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
+#   resource_group_name          = azurerm_resource_group.resourceGroup.name
+#   # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
+#   # TBD: set to Single after this bug is fixed:
+#   # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
+#   revision_mode = "Single"
 
-  template {
-    container {
-      name   = "postgres"
-      image  = "postgres:18.0-alpine3.22"
-      cpu    = 0.25
-      memory = "0.5Gi"
-      volume_mounts {
-        name = "${terraform.workspace}-postgres-data"
-        path = "/var/lib/postgresql/data"
-      }
-    }
-    volume {
-      name         = "${terraform.workspace}-postgres-data"
-      storage_name = azurerm_container_app_environment_storage.postgresDataConnect.name
-      storage_type = "AzureFile"
-    }
-    # Keep awake in stage and production:
-    min_replicas = terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
-    max_replicas = 1
-  }
+#   template {
+#     container {
+#       name   = "postgres"
+#       image  = "postgres:18.0-alpine3.22"
+#       cpu    = 0.25
+#       memory = "0.5Gi"
+#       volume_mounts {
+#         name = "${terraform.workspace}-postgres-data"
+#         path = "/var/lib/postgresql/data"
+#       }
+#     }
+#     volume {
+#       name         = "${terraform.workspace}-postgres-data"
+#       storage_name = azurerm_container_app_environment_storage.postgresDataConnect.name
+#       storage_type = "AzureFile"
+#     }
+#     # Keep awake in stage and production:
+#     min_replicas = terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
+#     max_replicas = 1
+#   }
 
-  # TBD: add ingress when needed!
-  # ingress {}
+#   # TBD: add ingress when needed!
+#   # ingress {}
 
-  # # TBD: check what this is needed for in the other containers!
-  # # needed to access keyvault!
-  # identity {
-  #   type = "UserAssigned"
-  #   identity_ids = [
-  #     azurerm_user_assigned_identity.postgresIdentity.id,
-  #   ]
-  # }
+#   # # TBD: check what this is needed for in the other containers!
+#   # # needed to access keyvault!
+#   # identity {
+#   #   type = "UserAssigned"
+#   #   identity_ids = [
+#   #     azurerm_user_assigned_identity.postgresIdentity.id,
+#   #   ]
+#   # }
 
-  tags = {
-    Costcenter  = var.costcenter
-    Owner       = var.owner_name
-    Environment = terraform.workspace
-  }
-}
+#   tags = {
+#     Costcenter  = var.costcenter
+#     Owner       = var.owner_name
+#     Environment = terraform.workspace
+#   }
+# }
