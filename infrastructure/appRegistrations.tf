@@ -21,7 +21,7 @@ resource "random_uuid" "userGroupUUID" {} # Used for users in backend
 resource "azuread_application" "backendAPI" {
   display_name = "${var.project_name}-backendAPI-${terraform.workspace}"
   # owners                  = [data.azuread_client_config.current.object_id, var.owner_object_id]
-  owners                  = [var.owner_object_id, var.old_repo_service_principle_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
+  owners                  = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
   prevent_duplicate_names = true
   sign_in_audience        = "AzureADMyOrg"
   # Add the desired access groups manually in the portal
@@ -332,7 +332,7 @@ resource "azuread_service_principal" "servicePrinciple" { # TBD: consider renami
   app_role_assignment_required = false
   description                  = "Service principal for the fullStackSandbox23 application"
   # owners                       = [data.azuread_client_config.current.object_id, var.owner_object_id]
-  owners = [var.owner_object_id, var.old_repo_service_principle_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
+  owners = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
 }
 
 resource "azuread_application_pre_authorized" "preAuthorizeFrontendatBackend" {
@@ -351,7 +351,7 @@ resource "azuread_application" "frontend" {
   display_name = "${var.project_name}-frontend-${terraform.workspace}"
   description  = "Frontend for the ${var.project_name} application"
   # owners                  = [data.azuread_client_config.current.object_id, var.owner_object_id]
-  owners                  = [var.owner_object_id, var.old_repo_service_principle_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
+  owners                  = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
   prevent_duplicate_names = true
   sign_in_audience        = "AzureADMyOrg"
   group_membership_claims = ["ApplicationGroup"]

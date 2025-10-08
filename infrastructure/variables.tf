@@ -28,12 +28,6 @@ variable "azure_tenant_id" {
 #   type        = string
 # }
 
-# delete after full migration to full-stack-sandbox23 repo:
-variable "old_repo_service_principle_object_id" {
-  description = "Service principle object ID (the enterprise application object ID!) from the old infrastructure repository"
-  type        = string
-}
-
 variable "developer_localhost_object_id" {
   description = "Object ID of the service principle running in container on developers localhost"
   type        = string
