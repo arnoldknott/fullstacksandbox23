@@ -331,14 +331,6 @@ resource "azurerm_key_vault_secret" "redisWorkerPassword" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-# TBD: remove afte upgrading to Redis 8
-# no longer needed after adding redis.conf and redis-full.conf
-resource "azurerm_key_vault_secret" "redisArgs" {
-  name         = "redis-args"
-  value        = "--save 500 1 --requirepass ${azurerm_key_vault_secret.redisPassword.value}"
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
-
 # TBD: not really a secret - use terraform variable and env variable in container?
 resource "azurerm_key_vault_secret" "redisSessionDb" {
   name         = "redis-session-db"

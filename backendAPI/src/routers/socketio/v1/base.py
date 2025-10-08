@@ -7,8 +7,8 @@ import socketio
 from pydantic import BaseModel
 from sqlmodel import SQLModel
 
-from core.connections import socketio_server
 from core.config import config
+from core.connections import socketio_server
 from core.security import (
     check_token_against_guards,
     get_token_payload_from_cache,
