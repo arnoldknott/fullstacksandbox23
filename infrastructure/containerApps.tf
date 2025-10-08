@@ -340,11 +340,6 @@ resource "azurerm_container_app" "redisContainer" {
       command = ["/bin/sh", "/data/entrypoint.sh"]
       cpu     = 0.25
       memory  = "0.5Gi"
-      # TBD: remove after upgrading to Redis 8
-      env {
-        name        = "REDIS_ARGS"
-        secret_name = "redis-args"
-      }
       # env {
       #   name  = "REDIS_HOST"
       #   value = "${var.project_short_name}-redis-${terraform.workspace}"
@@ -422,11 +417,6 @@ resource "azurerm_container_app" "redisContainer" {
     transport    = "tcp"
   }
 
-  # TBD: remove after upgrading to Redis 8
-  secret {
-    name  = "redis-args"
-    value = azurerm_key_vault_secret.redisArgs.value
-  }
   secret {
     name  = "redis-password"
     value = azurerm_key_vault_secret.redisPassword.value

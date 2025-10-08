@@ -137,7 +137,6 @@ echo ""
 echo "=== tofu - init ==="
 docker compose run --rm --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
 tofu init \
-        -upgrade \
         -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
         -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
         -backend-config="container_name=${AZ_CONTAINER_NAME}" \
@@ -175,7 +174,6 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "azure_tenant_id=${AZURE_TENANT_ID}" \
         -var "azure_client_id=${AZURE_CLIENT_ID}" \
         -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
-        -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
         -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
         -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
         -var "project_name=${PROJECT_NAME}" \
@@ -189,6 +187,7 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "redis_port=${REDIS_PORT}" \
         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
         -var "redis_session_db=${REDIS_SESSION_DB}" \
+        -var "redis_socketio_db=${REDIS_SOCKETIO_DB}" \
         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 
 # Comes from ARM_ environment variable, as it is not needed with managed identity in the Github Actions workflow:
@@ -202,7 +201,6 @@ tofu plan -out=${WORKSPACE}.tfplan \
 #         -var "azure_client_id=${azure_client_id}" \
 #         -var "azure_client_secret=${azure_client_secret}" \
 #         -var "azure_subscription_id=${azure_subscription_id}" \
-#         -var "old_repo_service_principle_object_id=${OLD_REPO_SERVICE_PRINCIPLE_OBJECT_ID}" \
 #         -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
 #         -var "managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}" \
 #         -var "project_name=${PROJECT_NAME}" \

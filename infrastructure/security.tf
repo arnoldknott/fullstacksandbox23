@@ -90,48 +90,26 @@ resource "azurerm_key_vault" "keyVault" {
     ]
   }
 
-  # allow the apps running terraform to write secrets from the vualt for configuring the container apps:
-  # old repo service principle:
-  access_policy {
-    tenant_id = var.azure_tenant_id
-    # object_id = var.azure_client_id
-    object_id = var.old_repo_service_principle_object_id
-    # object_id = data.azuread_client_config.current.object_id
-    # object_id = azuread_service_principal.terraformServicePrincipal.object_id
-    # object_id = data.azuread_client_config.current.object_id
-
-    certificate_permissions = [
-      "Get", "Create", "Update"
-    ]
-
-    key_permissions = [
-      "Get", "Create", "Update"
-    ]
-
-    secret_permissions = [
-      "Get", "Set", "Recover"
-    ]
-  }
-
-  # container on developer localhost:
+  # Allow the apps running terraform to write secrets from the vault for configuring the container apps:
+  # - container on developer localhost:
   access_policy {
     tenant_id = var.azure_tenant_id
     object_id = var.developer_localhost_object_id
 
     certificate_permissions = [
-      "Get", "Create", "Delete", "Update"
+      "Get", "Create", "Delete", "Update", "Purge"
     ]
 
     key_permissions = [
-      "Get", "Create", "Delete", "Update"
+      "Get", "Create", "Delete", "Update", "Purge"
     ]
 
     secret_permissions = [
-      "Get", "Set", "Delete", "Recover"
+      "Get", "Set", "Delete", "Recover", "Purge"
     ]
   }
 
-  # github actions managed identity:
+  # - github actions managed identity:
   access_policy {
     tenant_id = var.azure_tenant_id
     object_id = var.managed_identity_github_actions_object_id
@@ -328,14 +306,6 @@ resource "random_password" "redisWorkerPassword" {
 resource "azurerm_key_vault_secret" "redisWorkerPassword" {
   name         = "redis-worker-password"
   value        = random_password.redisWorkerPassword.result
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
-
-# TBD: remove afte upgrading to Redis 8
-# no longer needed after adding redis.conf and redis-full.conf
-resource "azurerm_key_vault_secret" "redisArgs" {
-  name         = "redis-args"
-  value        = "--save 500 1 --requirepass ${azurerm_key_vault_secret.redisPassword.value}"
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
