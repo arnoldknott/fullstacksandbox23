@@ -137,7 +137,6 @@ echo ""
 echo "=== tofu - init ==="
 docker compose run --rm --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
 tofu init \
-        -upgrade \
         -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
         -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
         -backend-config="container_name=${AZ_CONTAINER_NAME}" \
