@@ -1,7 +1,8 @@
 import logging
-import socketio
-from core.config import config
 
+import socketio
+
+from core.config import config
 
 logger = logging.getLogger(__name__)
 
