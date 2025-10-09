@@ -80,17 +80,18 @@ resource "azurerm_postgresql_flexible_server_database" "postgresDatabase" {
   collation = "en_US.utf8"
 }
 
-# resource "random_uuid" "uuidPostgresAccessShare" {}
+# # resource "random_uuid" "uuidPostgresAccessShare" {}
 # resource "azurerm_storage_share" "postgresData" {
 #   name                 = "${var.project_short_name}-postgresdata-${terraform.workspace}"
 #   storage_account_id   = azurerm_storage_account.storage.id
 #   quota                = 100 #TBD: increase for production and keep an eye on cost!
-#   acl {
-#     id = random_uuid.uuidPostgresAccessShare.result
-#     access_policy {
-#       permissions = "rwdl"
-#     }
-#   }
+#   # TBD: Check if still needed with postgres version 18:
+#   # acl {
+#   #   id = random_uuid.uuidPostgresAccessShare.result
+#   #   access_policy {
+#   #     permissions = "rwdl"
+#   #   }
+#   # }
 # }
 
 resource "azurerm_storage_share" "redisData" {
@@ -105,14 +106,14 @@ resource "azurerm_storage_share" "redisData" {
 # - ../ in piepline goes from /infrastructure to /
 resource "terraform_data" "redisEntrypoint_hash" {
   triggers_replace = {
-    sha256 = filesha256("${path.module}/../cacheRedis/entrypoint.sh")
+    sha256 = filesha256("${path.module}/../cache/entrypoint.sh")
   }
 }
 
 resource "azurerm_storage_share_file" "redisEntrypoint" {
   name             = "entrypoint.sh"
   storage_share_id = azurerm_storage_share.redisData.url
-  source           = "../cacheRedis/entrypoint.sh"
+  source           = "../cache/entrypoint.sh"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisEntrypoint_hash,
@@ -122,14 +123,14 @@ resource "azurerm_storage_share_file" "redisEntrypoint" {
 
 resource "terraform_data" "redisConf_hash" {
   triggers_replace = {
-    sha256 = filesha256("${path.module}/../cacheRedis/redis.conf")
+    sha256 = filesha256("${path.module}/../cache/redis.conf")
   }
 }
 
 resource "azurerm_storage_share_file" "redisConf" {
   name             = "redis.conf"
   storage_share_id = azurerm_storage_share.redisData.url
-  source           = "../cacheRedis/redis.conf"
+  source           = "../cache/redis.conf"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisConf_hash,
@@ -139,14 +140,14 @@ resource "azurerm_storage_share_file" "redisConf" {
 
 resource "terraform_data" "redisConfFull_hash" {
   triggers_replace = {
-    sha256 = filesha256("${path.module}/../cacheRedis/redis-full.conf")
+    sha256 = filesha256("${path.module}/../cache/redis-full.conf")
   }
 }
 
 resource "azurerm_storage_share_file" "redisConfFull" {
   name             = "redis-full.conf"
   storage_share_id = azurerm_storage_share.redisData.url
-  source           = "../cacheRedis/redis-full.conf"
+  source           = "../cache/redis-full.conf"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisConfFull_hash,
@@ -156,14 +157,14 @@ resource "azurerm_storage_share_file" "redisConfFull" {
 
 resource "terraform_data" "redisUsersTemplate_hash" {
   triggers_replace = {
-    sha256 = filesha256("${path.module}/../cacheRedis/users_template.acl")
+    sha256 = filesha256("${path.module}/../cache/users_template.acl")
   }
 }
 
 resource "azurerm_storage_share_file" "redisUsersTemplate" {
   name             = "users_template.acl"
   storage_share_id = azurerm_storage_share.redisData.url
-  source           = "../cacheRedis/users_template.acl"
+  source           = "../cache/users_template.acl"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisUsersTemplate_hash,

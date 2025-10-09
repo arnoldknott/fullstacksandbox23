@@ -56,10 +56,10 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 				await redisCache.setSession(
 					sessionId,
 					'$.status',
-					// JSON.stringify(SessionStatus.REGISTERED)
+					JSON.stringify(SessionStatus.REGISTERED)
 					// TBD: for devloping registration flow, set to registration pending:
 					// change back to registered when registration flow is done:
-					JSON.stringify(SessionStatus.REGISTRATION_PENDING)
+					// JSON.stringify(SessionStatus.REGISTRATION_PENDING)
 				);
 			} else if (responseMe.status === 201) {
 				await redisCache.setSession(
