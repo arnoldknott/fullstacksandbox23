@@ -3,10 +3,10 @@
 services:
   backend_api:
     build:
-      context: ./backendAPI
+      context: ./backend
       target: prod
     volumes:
-      - ./backendAPI:/app
+      - ./backend:/app
     # ports:
     #     - "80:80"
 

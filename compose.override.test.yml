@@ -4,7 +4,7 @@ services:
   backend_api:
     build:
       # context:
-      #     ./backendAPI
+      #     ./backend
       target: dev
     # image: backend_api:test
     depends_on:

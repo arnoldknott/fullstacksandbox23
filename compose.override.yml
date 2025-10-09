@@ -5,13 +5,13 @@ services:
     build:
       target: dev
     env_file:
-      - ./backendAPI/src/.env
+      - ./backend/src/.env
     ports:
       - "8660:80"
     volumes:
       - dev-app-data:/data
       # mount container app to development on localhost
-      - ./backendAPI/:/app
+      - ./backend/:/app
     restart: unless-stopped
     networks:
       - dev_network
@@ -25,7 +25,7 @@ services:
       # - dev-postgres-data-18:/var/lib/postgresql/data/
       - dev-postgres-data:/var/lib/postgresql/data/
     env_file:
-      - ./backendAPI/src/.env
+      - ./backend/src/.env
     ports:
       - "5432:5432"
     networks:
@@ -37,7 +37,7 @@ services:
   #     depends_on:
   #         - postgres
   #     env_file:
-  #         - ./backendAPI/src/.env
+  #         - ./backend/src/.env
   #     environment:
   #         - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
   #         - MASTER_PASSWORD_REQUIRED=False
@@ -70,7 +70,7 @@ services:
   redis:
     container_name: dev_redis
     env_file:
-      - ./backendAPI/src/.env
+      - ./backend/src/.env
     volumes:
       - dev-redis-data:/data
       - ./cacheRedis/redis.conf:/data/redis.conf:ro
