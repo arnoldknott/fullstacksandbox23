@@ -9,10 +9,10 @@ on:
     paths:
       - "infrastructure/**"
       - ".github/workflows/infrastructure.yml"
-      - "cacheRedis/entrypoint.sh"
-      - "cacheRedis/redis.conf"
-      - "cacheRedis/redis-full.conf"
-      - "cacheRedis/users_template.acl"
+      - "cache/entrypoint.sh"
+      - "cache/redis.conf"
+      - "cache/redis-full.conf"
+      - "cache/users_template.acl"
       - "!infrastructure/.terraform.lock.hcl"
 
 env:
