@@ -106,7 +106,8 @@ async def lifespan(app: FastAPI):
 api_prefix = "/api/v1"
 ws_prefix = "/ws/v1"
 
-app = FastAPI(
+# TBD: put in seperate module
+fastapi_app = FastAPI(
     title="backendAPI",
     summary="Backend for fullstack Sandbox.",
     description="Playground for trying out anything freely before using in projects.",  # TBD: add the longer markdown description here
@@ -116,8 +117,10 @@ app = FastAPI(
     # TBD: add contact - also through environment variables?
 )
 
+# TBD: add celery_app
 
-app.add_middleware(
+
+fastapi_app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         config.FRONTEND_SVELTE_ORIGIN,
@@ -157,61 +160,61 @@ app.add_middleware(
 
 # TBD: no using underscores in routes - slashes instead, so nested routers. Or dashes. no uppercase letters either!
 # app.include_router(oauth_router, tags=["OAuth"])
-app.include_router(core_router, prefix=f"{api_prefix}/core", tags=["Core"])
-app.include_router(
+fastapi_app.include_router(core_router, prefix=f"{api_prefix}/core", tags=["Core"])
+fastapi_app.include_router(
     user_router,
     prefix=f"{api_prefix}/user",
     tags=["User"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
-app.include_router(
+fastapi_app.include_router(
     ueber_group_router,
     prefix=f"{api_prefix}/uebergroup",
     tags=["Ueber Group"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
-app.include_router(
+fastapi_app.include_router(
     group_router,
     prefix=f"{api_prefix}/group",
     tags=["Group"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
-app.include_router(
+fastapi_app.include_router(
     sub_group_router,
     prefix=f"{api_prefix}/subgroup",
     tags=["Sub Group"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
-app.include_router(
+fastapi_app.include_router(
     sub_sub_group_router,
     prefix=f"{api_prefix}/subsubgroup",
     tags=["Sub-sub Group"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
 
-app.include_router(
+fastapi_app.include_router(
     access_router,
     prefix=f"{api_prefix}/access",
     tags=["Access"],
     dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
 )
-app.include_router(
+fastapi_app.include_router(
     public_resource_router,
     prefix=f"{api_prefix}/publicresource",
     tags=["Public Resource"],
 )
 
-app.include_router(
+fastapi_app.include_router(
     demo_resource_router,
     prefix=f"{api_prefix}/demoresource",
     tags=["Demo Resource"],
 )
 
-app.include_router(
+fastapi_app.include_router(
     demo_file_router,
     prefix=f"{api_prefix}/demo",
     tags=["Demo File"],
@@ -219,19 +222,19 @@ app.include_router(
 )
 
 
-app.include_router(
+fastapi_app.include_router(
     category_router,
     prefix=f"{api_prefix}/category",
     tags=["Category"],
 )
-app.include_router(
+fastapi_app.include_router(
     tag_router,
     prefix=f"{api_prefix}/tag",
     tags=["Tag"],
 )
 # checked_scopes = ScopeChecker(["api.read", "api.write"])
 # protected_scopes = ScopeChecker(["api.read"])
-app.include_router(
+fastapi_app.include_router(
     protected_resource_router,
     prefix=f"{api_prefix}/protected",
     tags=["Protected Resource"],
@@ -242,7 +245,7 @@ app.include_router(
 # course_scopes = ScopeChecker(
 #     ["api.read", "api.write"]
 # )  # add artificial.read, artificial.write, mapped_account.read, mapped_account.write, ...
-# app.include_router(
+# fastapi_app.include_router(
 #     access_control_router,
 #     prefix=f"{api_prefix}/access",
 #     tags=["Access Control"],
@@ -251,7 +254,7 @@ app.include_router(
 # Sign-up is handled by security - controlled by token content!
 # TBD: this can be implemented later for admin dashboard or so.
 
-app.include_router(
+fastapi_app.include_router(
     websocket_router,
     prefix=f"{ws_prefix}",
     tags=["Web Sockets"],
@@ -271,11 +274,11 @@ socketio_server.register_namespace(sub_sub_group_namespace_router)
 # into more generic features, like polls, quizzes, surveys, etc.
 socketio_server.register_namespace(interactive_documentation_router)
 socketio_app = ASGIApp(socketio_server, socketio_path="socketio/v1")
-app.mount("/socketio/v1", app=socketio_app)
+fastapi_app.mount("/socketio/v1", app=socketio_app)
 
 
 # exception handler logs exceptions before passing them to the default exception handler
-@app.exception_handler(HTTPException)
+@fastapi_app.exception_handler(HTTPException)
 async def http_exception_handle_logging(request, exc):
     """Logs HTTPExceptions."""
     logger.error(f"HTTPException: {exc.status_code} {exc.detail}")
