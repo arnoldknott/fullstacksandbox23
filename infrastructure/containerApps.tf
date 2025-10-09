@@ -328,11 +328,6 @@ resource "azurerm_container_app" "redisContainer" {
   # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
   revision_mode = "Single"
 
-  # Never change the imaage of the container, as this is done through github actions!
-  # lifecycle {
-  #   ignore_changes = [template[0].container[0], secret ]
-  # }
-
   template {
     container {
       name    = "redis"
@@ -368,10 +363,10 @@ resource "azurerm_container_app" "redisContainer" {
       env {
         name = "REDIS_CONFIG_VERSION"
         value = sha256(join(",", [
-          filesha256("${path.module}/../cacheRedis/entrypoint.sh"),
-          filesha256("${path.module}/../cacheRedis/redis.conf"),
-          filesha256("${path.module}/../cacheRedis/redis-full.conf"),
-          filesha256("${path.module}/../cacheRedis/users_template.acl"),
+          filesha256("${path.module}/../cache/entrypoint.sh"),
+          filesha256("${path.module}/../cache/redis.conf"),
+          filesha256("${path.module}/../cache/redis-full.conf"),
+          filesha256("${path.module}/../cache/users_template.acl"),
         ]))
       }
       volume_mounts {
@@ -540,15 +535,10 @@ resource "azurerm_container_app" "redisContainer" {
 #   # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
 #   revision_mode = "Single"
 
-#   # Never change the imaage of the container, as this is done through github actions!
-#   lifecycle {
-#     ignore_changes = [template[0].container[0], secret ]
-#   }
-
 #   template {
 #     container {
 #       name   = "postgres"
-#       image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
+#       image  = "postgres:18.0-alpine3.22"
 #       cpu    = 0.25
 #       memory = "0.5Gi"
 #       volume_mounts {
@@ -561,16 +551,22 @@ resource "azurerm_container_app" "redisContainer" {
 #       storage_name = azurerm_container_app_environment_storage.postgresDataConnect.name
 #       storage_type = "AzureFile"
 #     }
+#     # Keep awake in stage and production:
+#     min_replicas = terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
+#     max_replicas = 1
 #   }
 
-#   # TBD: check what this is needed for in the other containers!
-#   # needed to access keyvault!
-#   identity {
-#     type = "UserAssigned"
-#     identity_ids = [
-#       azurerm_user_assigned_identity.postgresIdentity.id,
-#     ]
-#   }
+#   # TBD: add ingress when needed!
+#   # ingress {}
+
+#   # # TBD: check what this is needed for in the other containers!
+#   # # needed to access keyvault!
+#   # identity {
+#   #   type = "UserAssigned"
+#   #   identity_ids = [
+#   #     azurerm_user_assigned_identity.postgresIdentity.id,
+#   #   ]
+#   # }
 
 #   tags = {
 #     Costcenter  = var.costcenter

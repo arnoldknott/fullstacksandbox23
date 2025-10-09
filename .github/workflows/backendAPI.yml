@@ -11,7 +11,7 @@ on:
       - main
   push:
     paths:
-      - "backendAPI/**"
+      - "backend/**"
       - "compose*.yml"
       - ".github/workflows/backendAPI.yml"
 
@@ -465,7 +465,7 @@ jobs:
       pull-requests: write
     environment: stage
     env:
-      MIGRATION_FILES_PATH: backendAPI/src/migrations/stage_prod/versions
+      MIGRATION_FILES_PATH: backend/src/migrations/stage_prod/versions
     steps:
       - uses: actions/checkout@v4
       - name: Check what directory we are in

@@ -5,13 +5,13 @@ services:
     build:
       target: dev
     env_file:
-      - ./backendAPI/src/.env
+      - ./backend/src/.env
     ports:
       - "8660:80"
     volumes:
       - dev-app-data:/data
       # mount container app to development on localhost
-      - ./backendAPI/:/app
+      - ./backend/:/app
     restart: unless-stopped
     networks:
       - dev_network
@@ -21,9 +21,11 @@ services:
     # environment:
     #     - POSTGRES_HOST=$POSTGRES_HOST
     volumes:
+      # Works in dev - wait until terraform azurerm supports version 18 for postgres, then update stage & prod!
+      # - dev-postgres-data-18:/var/lib/postgresql/data/
       - dev-postgres-data:/var/lib/postgresql/data/
     env_file:
-      - ./backendAPI/src/.env
+      - ./backend/src/.env
     ports:
       - "5432:5432"
     networks:
@@ -35,7 +37,7 @@ services:
   #     depends_on:
   #         - postgres
   #     env_file:
-  #         - ./backendAPI/src/.env
+  #         - ./backend/src/.env
   #     environment:
   #         - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
   #         - MASTER_PASSWORD_REQUIRED=False
@@ -68,14 +70,14 @@ services:
   redis:
     container_name: dev_redis
     env_file:
-      - ./backendAPI/src/.env
+      - ./backend/src/.env
     volumes:
       - dev-redis-data:/data
-      - ./cacheRedis/redis.conf:/data/redis.conf:ro
-      - ./cacheRedis/redis-full.conf:/data/redis-full.conf:ro
+      - ./cache/redis.conf:/data/redis.conf:ro
+      - ./cache/redis-full.conf:/data/redis-full.conf:ro
       # Note the template is read-only, the created user.acl is read write, so redis-cli can alter the user list.
-      - ./cacheRedis/users_template.acl:/data/users_template.acl:ro
-      - ./cacheRedis/entrypoint.sh:/data/entrypoint.sh:ro
+      - ./cache/users_template.acl:/data/users_template.acl:ro
+      - ./cache/entrypoint.sh:/data/entrypoint.sh:ro
     ports:
       # redis-stack-server port:
       # - "6379:6379"
@@ -99,7 +101,8 @@ services:
       - dev_network
 
 volumes:
-  dev-postgres-data:
+  dev-postgres-data: # for postgres version 16.1-alpine
+  dev-postgres-data-18: # for postgres version 18
   dev-pgadmin-data:
   dev-app-data:
   dev-redis-data:

@@ -4,7 +4,7 @@ services:
   backend_api:
     build:
       # context:
-      #     ./backendAPI
+      #     ./backend
       target: dev
     # image: backend_api:test
     depends_on:
@@ -84,11 +84,11 @@ services:
     container_name: test_redis
     volumes:
       - test-redis-data:/data
-      - ./cacheRedis/redis.conf:/data/redis.conf:ro
-      - ./cacheRedis/redis-full.conf:/data/redis-full.conf:ro
+      - ./cache/redis.conf:/data/redis.conf:ro
+      - ./cache/redis-full.conf:/data/redis-full.conf:ro
       # Note the template is read-only, the created user.acl is read write, so redis-cli can alter the user list.
-      - ./cacheRedis/users_template.acl:/data/users_template.acl:ro
-      - ./cacheRedis/entrypoint.sh:/data/entrypoint.sh:ro
+      - ./cache/users_template.acl:/data/users_template.acl:ro
+      - ./cache/entrypoint.sh:/data/entrypoint.sh:ro
     environment:
       - REDIS_PORT=$REDIS_PORT
       - REDIS_PASSWORD=$REDIS_PASSWORD
