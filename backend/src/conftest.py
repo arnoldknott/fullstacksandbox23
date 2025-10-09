@@ -26,7 +26,7 @@ from crud.identity import (
     UeberGroupCRUD,
     UserCRUD,
 )
-from main import app
+from main import fastapi_app
 from models.access import (
     AccessLogCreate,
     AccessLogRead,
@@ -73,7 +73,7 @@ def client() -> Generator:
 async def async_client(client) -> AsyncGenerator:
     """Returns an AsyncClient instance."""
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url=client.base_url
+        transport=ASGITransport(app=fastapi_app), base_url=client.base_url
     ) as async_client:
         yield async_client
 
@@ -124,11 +124,11 @@ def mocked_provide_http_token_payload(request):
 @pytest.fixture(scope="function")
 def app_override_provide_http_token_payload(mocked_provide_http_token_payload):
     """Returns the FastAPI app with dependency override for provide_http_token_payload."""
-    app.dependency_overrides[provide_http_token_payload] = (
+    fastapi_app.dependency_overrides[provide_http_token_payload] = (
         lambda: mocked_provide_http_token_payload
     )
-    yield app
-    app.dependency_overrides = {}
+    yield fastapi_app
+    fastapi_app.dependency_overrides = {}
 
 
 @pytest.fixture(scope="function")
