@@ -20,7 +20,7 @@ RUFF_EXIT_CODE=$?
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "black ."
 BLACK_EXIT_CODE=$?
 git add ./backend/
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "pytest"
+COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "pytest -vv"
 PYTEST_EXIT_CODE=$?
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "npm run format"
 NPM_FORMAT_EXIT_CODE=$?

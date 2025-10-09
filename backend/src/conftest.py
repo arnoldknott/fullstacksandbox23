@@ -66,7 +66,7 @@ def anyio_backend():
 @pytest.fixture(scope="session")
 def client() -> Generator:
     """Returns a TestClient instance."""
-    yield TestClient(app)
+    yield TestClient(fastapi_app)
 
 
 @pytest.fixture(scope="session")
