@@ -21,8 +21,9 @@ services:
     # environment:
     #     - POSTGRES_HOST=$POSTGRES_HOST
     volumes:
-      - dev-postgres-data-18:/var/lib/postgresql/data/
-      # - dev-postgres-data:/var/lib/postgresql/data/
+      # Works in dev - wait until terraform azurerm supports version 18 for postgres, then update stage & prod!
+      # - dev-postgres-data-18:/var/lib/postgresql/data/
+      - dev-postgres-data:/var/lib/postgresql/data/
     env_file:
       - ./backendAPI/src/.env
     ports:
