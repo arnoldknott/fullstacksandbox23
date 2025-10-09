@@ -106,6 +106,7 @@ async def lifespan(app: FastAPI):
 api_prefix = "/api/v1"
 ws_prefix = "/ws/v1"
 
+# TBD: put in seperate module
 fastapi_app = FastAPI(
     title="backendAPI",
     summary="Backend for fullstack Sandbox.",
@@ -115,6 +116,8 @@ fastapi_app = FastAPI(
     # swagger_ui_parameters=swagger_ui_parameters,
     # TBD: add contact - also through environment variables?
 )
+
+# TBD: add celery_app
 
 
 fastapi_app.add_middleware(
