@@ -12,6 +12,7 @@ services:
 
   postgres:
     container_name: "postgres"
+    # Works in dev - wait until terraform azurerm supports version 18 for postgres, then update stage & prod!
     # image: postgres:18.0-alpine3.22
     image: postgres:16.1-alpine
 
