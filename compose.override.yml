@@ -3,7 +3,7 @@
 services:
   backend_api:
     build:
-      target: dev
+      target: api_dev
     env_file:
       - ./backend/src/.env
     ports:
