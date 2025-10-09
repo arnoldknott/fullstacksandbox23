@@ -5,7 +5,7 @@ services:
     build:
       # context:
       #     ./backend
-      target: dev
+      target: api_dev
     # image: backend_api:test
     depends_on:
       - postgres
