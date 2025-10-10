@@ -10,6 +10,13 @@ services:
     # ports:
     #     - "80:80"
 
+  backend_worker:
+    build:
+      context: ./backend
+      target: worker_prod
+    volumes:
+      - ./backend:/app
+
   postgres:
     container_name: "postgres"
     # Works in dev - wait until terraform azurerm supports version 18 for postgres, then update stage & prod!
