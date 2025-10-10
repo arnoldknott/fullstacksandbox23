@@ -63,7 +63,7 @@ user_guards = [
 class UserNamespace(BaseNamespace):
     """Socket.IO interface for Users."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__(
             namespace="/user",
             event_guards=user_guards,
@@ -73,6 +73,8 @@ class UserNamespace(BaseNamespace):
             read_extended_model=UserExtended,
             update_model=UserUpdate,
             # callback_on_connect=self.callback_on_connect,
+            *args,
+            **kwargs,
         )
 
     # # TBD: consider adding returning Me on connect to UserNamespace
@@ -138,8 +140,6 @@ class UserNamespace(BaseNamespace):
             await self._emit_status(sid, {"error": str(error)})
 
 
-user_router = UserNamespace()
-
 ueber_group_guards = [
     EventGuard(
         event="connect",
@@ -167,7 +167,7 @@ ueber_group_guards = [
 class UeberGroupNamespace(BaseNamespace):
     """Socket.IO interface for Ueber Groups."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__(
             namespace="/ueber-group",
             event_guards=ueber_group_guards,
@@ -177,6 +177,8 @@ class UeberGroupNamespace(BaseNamespace):
             read_extended_model=UeberGroupExtended,
             update_model=UeberGroupUpdate,
             callback_on_connect=self.callback_on_connect,
+            *args,
+            **kwargs,
         )
 
     async def callback_on_connect(self, sid, *args, **kwargs):
@@ -185,9 +187,6 @@ class UeberGroupNamespace(BaseNamespace):
         current_user = kwargs.get("current_user")
         request_access_data = kwargs.get("request_access_data")
         await self._get_all(sid, current_user, request_access_data)
-
-
-ueber_group_router = UeberGroupNamespace()
 
 
 group_guards = [
@@ -217,7 +216,7 @@ group_guards = [
 class GroupNamespace(BaseNamespace):
     """Socket.IO interface for Ueber Groups."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__(
             namespace="/group",
             event_guards=group_guards,
@@ -227,6 +226,8 @@ class GroupNamespace(BaseNamespace):
             read_extended_model=GroupExtended,
             update_model=GroupUpdate,
             callback_on_connect=self.callback_on_connect,
+            *args,
+            **kwargs,
         )
 
     async def callback_on_connect(self, sid, *args, **kwargs):
@@ -236,8 +237,6 @@ class GroupNamespace(BaseNamespace):
         for resource_id in resource_ids or []:
             await self.on_read(sid, resource_id=resource_id)
 
-
-group_router = GroupNamespace()
 
 sub_group_guards = [
     EventGuard(
@@ -266,7 +265,7 @@ sub_group_guards = [
 class SubGroupNamespace(BaseNamespace):
     """Socket.IO interface for Sub Groups."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__(
             namespace="/sub-group",
             event_guards=sub_group_guards,
@@ -276,6 +275,8 @@ class SubGroupNamespace(BaseNamespace):
             read_extended_model=SubGroupExtended,
             update_model=SubGroupUpdate,
             callback_on_connect=self.callback_on_connect,
+            *args,
+            **kwargs,
         )
 
     async def callback_on_connect(self, sid, *args, **kwargs):
@@ -285,8 +286,6 @@ class SubGroupNamespace(BaseNamespace):
         for resource_id in resource_ids or []:
             await self.on_read(sid, resource_id=resource_id)
 
-
-sub_group_router = SubGroupNamespace()
 
 sub_sub_group_guards = [
     EventGuard(
@@ -315,7 +314,7 @@ sub_sub_group_guards = [
 class SubSubGroupNamespace(BaseNamespace):
     """Socket.IO interface for Sub Sub Groups."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__(
             namespace="/sub-sub-group",
             event_guards=sub_sub_group_guards,
@@ -325,6 +324,8 @@ class SubSubGroupNamespace(BaseNamespace):
             read_extended_model=SubSubGroupExtended,
             update_model=SubSubGroupUpdate,
             callback_on_connect=self.callback_on_connect,
+            *args,
+            **kwargs,
         )
 
     async def callback_on_connect(self, sid, *args, **kwargs):
@@ -333,6 +334,3 @@ class SubSubGroupNamespace(BaseNamespace):
         current_user = kwargs.get("current_user")
         request_access_data = kwargs.get("request_access_data")
         await self._get_all(sid, current_user, request_access_data)
-
-
-sub_sub_group_router = SubSubGroupNamespace()

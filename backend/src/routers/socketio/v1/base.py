@@ -8,7 +8,6 @@ from pydantic import BaseModel
 from sqlmodel import SQLModel
 
 from core.config import config
-from core.connections import socketio_server
 from core.security import (
     check_token_against_guards,
     get_token_payload_from_cache,
@@ -27,33 +26,6 @@ from routers.socketio.v1 import register_namespace, registry_namespaces
 logger = logging.getLogger(__name__)
 
 
-@socketio_server.event
-async def connect(sid):
-    """Connect event for socket.io."""
-    logger.warning(f"Client connected with session id: {sid} outside namespaces.")
-    print(f"=== routers - socketio - v1 - connect - sid {sid} / outside namespaces ===")
-
-
-@socketio_server.event
-async def disconnect(sid):
-    """Disconnect event for socket.io."""
-    logger.warning(f"Client with session id {sid} disconnected / outside namespaces.")
-
-
-@socketio_server.on("*")
-async def catch_all(event, sid, data):
-    """Catch all events for socket.io, that don't have an event handler defined."""
-    logger.warning(
-        f"Caught an event from client {sid} to event {event} in unassigned namespace."
-    )
-    print("=== routers - socketio - v1 - catch_all - event ===")
-    print(event)
-    print("=== routers - socketio - v1 - catch_all - sid ===")
-    print(sid)
-    print("=== routers - socketio - v1 - catch_all - data ===")
-    print(data, flush=True)
-
-
 BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=SQLModel)
 
 
@@ -70,6 +42,7 @@ class BaseNamespace(socketio.AsyncNamespace):
 
     def __init__(
         self,
+        server: socketio.AsyncServer,
         namespace: str = None,
         room: str = None,
         event_guards: List[EventGuard] = [],
@@ -90,7 +63,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         self.read_model = read_model
         self.read_extended_model = read_extended_model
         self.update_model = update_model
-        self.server = socketio_server
+        self.server = server
         self.namespace = namespace
         self.room = room  # use in hierarchical resource system for parent resource id and/or identity (group) id? Can be assigned after authentication by using enter_room()
         self.callback_on_connect = callback_on_connect
