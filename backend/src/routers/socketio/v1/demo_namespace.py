@@ -29,13 +29,15 @@ event_guards = [
 class DemoNamespace(BaseNamespace):
     """Protected class for socket.io namespaces."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__(
             namespace="/demo-namespace",
             event_guards=event_guards,
             # crud=ProtectedResourceCRUD,
             callback_on_connect=self.callback_on_connect,
             callback_on_disconnect=self.callback_on_disconnect,
+            *args,
+            **kwargs,
         )
         # self.namespace = namespace
 
@@ -98,7 +100,3 @@ class DemoNamespace(BaseNamespace):
         # )
         await self.server.sleep(3)  # Give time for the messages to be sent
         return "callback_on_disconnect"
-
-
-demo_namespace_router = DemoNamespace()
-# socketio_server.register_namespace(ProtectedEvents())
