@@ -10,12 +10,12 @@ services:
     # ports:
     #     - "80:80"
 
-  backend_worker:
-    build:
-      context: ./backend
-      target: worker_prod
-    volumes:
-      - ./backend:/app
+  # backend_worker:
+  #   build:
+  #     context: ./backend
+  #     target: worker_prod
+  #   volumes:
+  #     - ./backend:/app
 
   postgres:
     container_name: "postgres"

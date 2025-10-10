@@ -6,19 +6,18 @@ import socketio
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
-from celery import Celery
+# from celery import Celery
 
 
 from core.config import config
 from core.databases import run_migrations
 from core.fastapi import mount_rest_api_routes
-
-# TBD: this does not execure all the code iinside core.socketio, i.e the server.on("*") is not available!
+# TBD: this does not execute all the code inside core.socketio, i.e the server.on("*") is not available!
 # Consider packing all of it in a function and execute here or
 # import core.socketio as socketio_settings or
 # build a Class SocketioSettings and instantiate it here, with the generic things called in the __init__
 from core.socketio import mount_socketio_app, socketio_server
-from core.celery import broker
+# from core.celery import broker
 from routers.ws.v1.websockets import router as websocket_router
 
 logger = logging.getLogger(__name__)
@@ -153,5 +152,5 @@ fastapi_app.mount(socketio_prefix, app=socketio_app)
 
 mount_socketio_app(fastapi_app)
 
-# TBD: add the logger
-celery_app = Celery("tasks", broker=broker)
+# # TBD: add the logger
+# celery_app = Celery("tasks", broker=broker)

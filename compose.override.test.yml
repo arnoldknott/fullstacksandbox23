@@ -38,35 +38,35 @@ services:
     volumes:
       - test-app-data:/data
 
-  backend_worker:
-    build:
-      target: worker_dev
-    environment:
-      - KEYVAULT_HEALTH=$KEYVAULT_HEALTH
-      - APP_REG_CLIENT_ID
-      - APP_CLIENT_SECRET
-      - FRONTEND_SVELTE_ORIGIN
-      - FRONTEND_SVELTE_FQDN
-      - AZURE_TENANT_ID=$AZURE_TENANT_ID
-      - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
-      - API_SCOPE=$API_SCOPE
-      - BACK_CLIENT_SECRET=$BACK_CLIENT_SECRET
-      - POSTGRES_HOST=$POSTGRES_HOST
-      # - POSTGRES_PORT=$POSTGRES_PORT
-      - POSTGRES_DB=$POSTGRES_DB
-      - POSTGRES_USER=$POSTGRES_USER
-      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-      - REDIS_HOST=$REDIS_HOST
-      - REDIS_PORT=$REDIS_PORT
-      - REDIS_WORKER_DB=$REDIS_WORKER_DB
-      - REDIS_WORKER_PASSWORD=$REDIS_WORKER_PASSWORD
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - test_network
-    volumes:
-      - test-app-data:/data
+  # backend_worker:
+  #   build:
+  #     target: worker_dev
+  #   environment:
+  #     - KEYVAULT_HEALTH=$KEYVAULT_HEALTH
+  #     - APP_REG_CLIENT_ID
+  #     - APP_CLIENT_SECRET
+  #     - FRONTEND_SVELTE_ORIGIN
+  #     - FRONTEND_SVELTE_FQDN
+  #     - AZURE_TENANT_ID=$AZURE_TENANT_ID
+  #     - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
+  #     - API_SCOPE=$API_SCOPE
+  #     - BACK_CLIENT_SECRET=$BACK_CLIENT_SECRET
+  #     - POSTGRES_HOST=$POSTGRES_HOST
+  #     # - POSTGRES_PORT=$POSTGRES_PORT
+  #     - POSTGRES_DB=$POSTGRES_DB
+  #     - POSTGRES_USER=$POSTGRES_USER
+  #     - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+  #     - REDIS_HOST=$REDIS_HOST
+  #     - REDIS_PORT=$REDIS_PORT
+  #     - REDIS_WORKER_DB=$REDIS_WORKER_DB
+  #     - REDIS_WORKER_PASSWORD=$REDIS_WORKER_PASSWORD
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   networks:
+  #     - test_network
+  #   volumes:
+  #     - test-app-data:/data
 
   postgres:
     container_name: test_postgres

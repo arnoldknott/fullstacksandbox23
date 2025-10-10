@@ -18,6 +18,8 @@ from routers.socketio.v1.public_namespace import PublicNamespace
 
 logger = logging.getLogger(__name__)
 
+print("👍 🧦 Socket.IO started")
+
 # TBD: adda check if REDIS_SOCKETIO_PASSWORD and REDIS_SOCKETIO_DB are set, else raise an error
 redis_manager = AsyncRedisManager(
     f"redis://socketio:{config.REDIS_SOCKETIO_PASSWORD}@{config.REDIS_HOST}:{config.REDIS_PORT}/{config.REDIS_SOCKETIO_DB}",
@@ -34,32 +36,32 @@ socketio_server = AsyncServer(
     client_manager=redis_manager,
 )
 
-
-@socketio_server.event
-async def connect(sid):
-    """Connect event for socket.io."""
-    logger.warning(f"Client connected with session id: {sid} outside namespaces.")
-    print(f"=== routers - socketio - v1 - connect - sid {sid} / outside namespaces ===")
-
-
-@socketio_server.event
-async def disconnect(sid):
-    """Disconnect event for socket.io."""
-    logger.warning(f"Client with session id {sid} disconnected / outside namespaces.")
+# TBD: unnecessary?
+# @socketio_server.event
+# async def connect(sid):
+#     """Connect event for socket.io."""
+#     logger.warning(f"Client connected with session id: {sid} outside namespaces.")
+#     print(f"=== routers - socketio - v1 - connect - sid {sid} / outside namespaces ===")
 
 
-@socketio_server.on("*")
-async def catch_all(event, sid, data):
-    """Catch all events for socket.io, that don't have an event handler defined."""
-    logger.warning(
-        f"Caught an event from client {sid} to event {event} in unassigned namespace."
-    )
-    print("=== routers - socketio - v1 - catch_all - event ===")
-    print(event)
-    print("=== routers - socketio - v1 - catch_all - sid ===")
-    print(sid)
-    print("=== routers - socketio - v1 - catch_all - data ===")
-    print(data, flush=True)
+# @socketio_server.event
+# async def disconnect(sid):
+#     """Disconnect event for socket.io."""
+#     logger.warning(f"Client with session id {sid} disconnected / outside namespaces.")
+
+
+# @socketio_server.on("*")
+# async def catch_all(event, sid, data):
+#     """Catch all events for socket.io, that don't have an event handler defined."""
+#     logger.warning(
+#         f"Caught an event from client {sid} to event {event} in unassigned namespace."
+#     )
+#     print("=== routers - socketio - v1 - catch_all - event ===")
+#     print(event)
+#     print("=== routers - socketio - v1 - catch_all - sid ===")
+#     print(sid)
+#     print("=== routers - socketio - v1 - catch_all - data ===")
+#     print(data, flush=True)
 
 
 def mount_socketio_app(fastapi_app: FastAPI):

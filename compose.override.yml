@@ -16,18 +16,18 @@ services:
     networks:
       - dev_network
 
-  backend_worker:
-    build:
-      target: worker_dev
-    env_file:
-      - ./backend/src/.env
-    volumes:
-      - dev-app-data:/data
-      # mount container app to development on localhost
-      - ./backend/:/app
-    restart: unless-stopped
-    networks:
-      - dev_network
+  # backend_worker:
+  #   build:
+  #     target: worker_dev
+  #   env_file:
+  #     - ./backend/src/.env
+  #   volumes:
+  #     - dev-app-data:/data
+  #     # mount container app to development on localhost
+  #     - ./backend/:/app
+  #   restart: unless-stopped
+  #   networks:
+  #     - dev_network
 
   postgres:
     container_name: dev_postgres

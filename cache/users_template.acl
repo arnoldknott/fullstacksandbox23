@@ -1,4 +1,4 @@
 user default on >${REDIS_PASSWORD} ~* &* +@all
 user session on >${REDIS_SESSION_PASSWORD} ~session:* ~msal:* ~jwks:* +@read +@write +select -@dangerous
 user socketio on >${REDIS_SOCKETIO_PASSWORD} &socketio* &socketio:* +publish +subscribe +psubscribe +unsubscribe +punsubscribe +select -@dangerous
-user worker on >${REDIS_WORKER_PASSWORD} &notifications: +@read +@write +select -@dangerous
+user worker on >${REDIS_WORKER_PASSWORD} ~celery* ~_kombu* ~unacked* ~unacked_index* &celery* &reply.celery.pidbox* &notifications:* +@read +@write +ping +select +publish +subscribe +psubscribe +unsubscribe +punsubscribe -@dangerous
