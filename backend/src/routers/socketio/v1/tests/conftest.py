@@ -11,21 +11,17 @@ from pydantic import BaseModel
 from core.cache import redis_session_client
 from core.security import CurrentAccessToken
 from core.types import CurrentUserData
-from routers.socketio.v1.demo_namespace import demo_namespace_router
-from routers.socketio.v1.demo_resource import (
-    demo_resource_router as demo_resource_namespace_router,
-)
+from routers.socketio.v1.demo_namespace import DemoNamespace
+from routers.socketio.v1.demo_resource import DemoResourceNamespace
 from routers.socketio.v1.identities import (
-    group_router,
-    sub_group_router,
-    sub_sub_group_router,
-    ueber_group_router,
-    user_router,
+    GroupNamespace,
+    SubGroupNamespace,
+    SubSubGroupNamespace,
+    UeberGroupNamespace,
+    UserNamespace,
 )
-from routers.socketio.v1.interactive_documentation import (
-    interactive_documentation_router,
-)
-from routers.socketio.v1.public_namespace import public_namespace_router
+from routers.socketio.v1.interactive_documentation import InteractiveDocumentation
+from routers.socketio.v1.public_namespace import PublicNamespace
 from tests.utils import sessions
 
 # Mocking the sessions for testing purposes.
@@ -138,15 +134,15 @@ async def socketio_test_server(
             server = uvicorn.Server(config)
 
             asyncio.create_task(server.serve())
-            sio.register_namespace(public_namespace_router)
-            sio.register_namespace(demo_namespace_router)
-            sio.register_namespace(demo_resource_namespace_router)
-            sio.register_namespace(user_router)
-            sio.register_namespace(ueber_group_router)
-            sio.register_namespace(group_router)
-            sio.register_namespace(sub_group_router)
-            sio.register_namespace(sub_sub_group_router)
-            sio.register_namespace(interactive_documentation_router)
+            sio.register_namespace(PublicNamespace(server=sio))
+            sio.register_namespace(DemoNamespace(server=sio))
+            sio.register_namespace(DemoResourceNamespace(server=sio))
+            sio.register_namespace(UserNamespace(server=sio))
+            sio.register_namespace(UeberGroupNamespace(server=sio))
+            sio.register_namespace(GroupNamespace(server=sio))
+            sio.register_namespace(SubGroupNamespace(server=sio))
+            sio.register_namespace(SubSubGroupNamespace(server=sio))
+            sio.register_namespace(InteractiveDocumentation(server=sio))
             await asyncio.sleep(1)
             yield sio
             await server.shutdown()

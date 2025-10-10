@@ -2,7 +2,8 @@ import pytest
 import socketio
 from socketio.exceptions import ConnectionError
 
-from routers.socketio.v1.demo_namespace import demo_namespace_router
+from core.socketio import socketio_server
+from routers.socketio.v1.demo_namespace import DemoNamespace
 from tests.utils import (
     session_id_admin_read,
     session_id_admin_read_socketio,
@@ -34,7 +35,7 @@ async def test_on_connect_to_production_on_server_side_fails_unpatched_server():
     # Should run into an uncaught exception from the decoding algorithm, depending on its implementation
 
     try:
-        await demo_namespace_router.on_connect(
+        await DemoNamespace(server=socketio_server).on_connect(
             sid="123",
             environ={},
             auth={"session-id": "fake-session-id"},

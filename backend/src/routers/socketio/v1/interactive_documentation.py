@@ -6,10 +6,12 @@ logger = logging.getLogger(__name__)
 
 
 class InteractiveDocumentation(BaseNamespace):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__(
             namespace="/interactive-documentation",
             callback_on_connect=self.initial_data_transfer,
+            *args,
+            **kwargs,
         )
         self.average = {
             "Repository": 0.0,
@@ -78,6 +80,3 @@ class InteractiveDocumentation(BaseNamespace):
             "averages",
             {"topic": data["topic"], "average": new_average, "count": new_count},
         )
-
-
-interactive_documentation_router = InteractiveDocumentation()
