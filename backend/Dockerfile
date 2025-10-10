@@ -34,7 +34,7 @@ RUN pip install --upgrade pip && \
     pip install -e .[dev]
 # TBD: switch to log-level warning, when app is more mature:
 # CMD ["uvicorn", "main:app", "--reload", "--log-level", "warning" ,"--host", "0.0.0.0", "--port", "80"]
-CMD ["celery", "-A", "main:celery_app", "worker", "--loglevel=info"]
+CMD ["celery", "-A", "core.celery:celery_app", "worker", "--loglevel=info"]
 
 FROM base AS worker_prod
 LABEL org.opencontainers.image.source https://github.com/arnoldknott/fullstacksandbox23
@@ -48,4 +48,4 @@ ARG COMMIT_SHA="noGitBuild"
 ENV COMMIT_SHA=$COMMIT_SHA
 # TBD: switch to log-level warning, when app is more mature:
 # CMD ["uvicorn", "main:app", "--log-level", "warning", "--host", "0.0.0.0", "--port", "80"]
-CMD ["celery", "-A", "main:celery_app", "worker", "--loglevel=warning"]
+CMD ["celery", "-A", "core.celery:celery_app", "worker", "--loglevel=warning"]

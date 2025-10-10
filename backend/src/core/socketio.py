@@ -36,32 +36,33 @@ socketio_server = AsyncServer(
     client_manager=redis_manager,
 )
 
-# TBD: unnecessary?
-# @socketio_server.event
-# async def connect(sid):
-#     """Connect event for socket.io."""
-#     logger.warning(f"Client connected with session id: {sid} outside namespaces.")
-#     print(f"=== routers - socketio - v1 - connect - sid {sid} / outside namespaces ===")
+
+# unnecessary?
+@socketio_server.event
+async def connect(sid):
+    """Connect event for socket.io."""
+    logger.warning(f"Client connected with session id: {sid} outside namespaces.")
+    print(f"=== routers - socketio - v1 - connect - sid {sid} / outside namespaces ===")
 
 
-# @socketio_server.event
-# async def disconnect(sid):
-#     """Disconnect event for socket.io."""
-#     logger.warning(f"Client with session id {sid} disconnected / outside namespaces.")
+@socketio_server.event
+async def disconnect(sid):
+    """Disconnect event for socket.io."""
+    logger.warning(f"Client with session id {sid} disconnected / outside namespaces.")
 
 
-# @socketio_server.on("*")
-# async def catch_all(event, sid, data):
-#     """Catch all events for socket.io, that don't have an event handler defined."""
-#     logger.warning(
-#         f"Caught an event from client {sid} to event {event} in unassigned namespace."
-#     )
-#     print("=== routers - socketio - v1 - catch_all - event ===")
-#     print(event)
-#     print("=== routers - socketio - v1 - catch_all - sid ===")
-#     print(sid)
-#     print("=== routers - socketio - v1 - catch_all - data ===")
-#     print(data, flush=True)
+@socketio_server.on("*")
+async def catch_all(event, sid, data):
+    """Catch all events for socket.io, that don't have an event handler defined."""
+    logger.warning(
+        f"Caught an event from client {sid} to event {event} in unassigned namespace."
+    )
+    print("=== routers - socketio - v1 - catch_all - event ===")
+    print(event)
+    print("=== routers - socketio - v1 - catch_all - sid ===")
+    print(sid)
+    print("=== routers - socketio - v1 - catch_all - data ===")
+    print(data, flush=True)
 
 
 def mount_socketio_app(fastapi_app: FastAPI):

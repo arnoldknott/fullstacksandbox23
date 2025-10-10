@@ -107,6 +107,11 @@ variable "redis_socketio_db" {
   type        = number
 }
 
+variable "redis_worker_db" {
+  description = "Database number for worker communication in Redis cache"
+  type        = number
+}
+
 
 # Public SSH key configuration for virtual machines:
 variable "public_ssh_key_path" {
