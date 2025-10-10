@@ -229,6 +229,10 @@ resource "azurerm_container_app" "BackendContainer" {
         name  = "REDIS_SOCKETIO_DB"
         value = var.redis_socketio_db
       }
+        env {
+        name  = "REDIS_WORKER_DB"
+        value = var.redis_worker_db
+      }
     }
     volume {
       name         = "${terraform.workspace}-application-data"
