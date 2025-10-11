@@ -28,6 +28,8 @@ dependencies = [
     'python-socketio[asyncio_client]==5.13.0',
     'python-engineio[asyncio_client]>=4.12.3,<5',
     'msal-extensions>=1.2.0,<2',
+    # cahnge to celery[redis] - currently creates a verion conflict, as kmbu requires redis <5.2.1
+    'celery>=5.5.3,<6',
 ]
 
 [project.optional-dependencies]

@@ -36,15 +36,15 @@ awk \
 
 # Validate no unresolved placeholders remain
 if grep -q '\${' "$ACL_PATH"; then
-  echo "=== redis entrypoint - ERROR: Unresolved placeholders remain in ACL file: ===" >&2
+  echo "🔥 🥞 redis entrypoint - ERROR: Unresolved placeholders remain in ACL file: ===" >&2
   exit 1
 fi
 chmod 600 "$ACL_PATH"
-echo "=== redis entrypoint - Wrote ACL to $ACL_PATH (masked) ==="
+echo "🥞 👍 redis entrypoint - Wrote ACL to $ACL_PATH (masked)"
 
 # Start redis with provided config and explicit aclfile
 if [ ! -f "$CONF_PATH" ]; then
-  echo "=== redis entrypoint - ERROR: Config not found at $CONF_PATH ===" >&2
+  echo " 🔥 🥞 redis entrypoint - ERROR: Config not found at $CONF_PATH ===" >&2
   exit 1
 fi
 exec redis-server "$CONF_PATH" \
