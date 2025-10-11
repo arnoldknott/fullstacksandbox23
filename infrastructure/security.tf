@@ -321,6 +321,11 @@ resource "azurerm_key_vault_secret" "redisSocketioDb" {
   value        = 14
   key_vault_id = azurerm_key_vault.keyVault.id
 }
+resource "azurerm_key_vault_secret" "redisWorkerDb" {
+  name         = "redis-worker-db"
+  value        = 13
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
 
 # Socket.io admin interface - user name and password to non-zero values,
 # enables the admin interface through https://admin.socket.io/#/
