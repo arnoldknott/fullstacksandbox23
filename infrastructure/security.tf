@@ -321,8 +321,8 @@ resource "azurerm_key_vault_secret" "redisSocketioDb" {
   value        = 14
   key_vault_id = azurerm_key_vault.keyVault.id
 }
-resource "azurerm_key_vault_secret" "redisSocketioDb" {
-  name         = "redis-socketio-db"
+resource "azurerm_key_vault_secret" "redisWorkerDb" {
+  name         = "redis-worker-db"
   value        = 13
   key_vault_id = azurerm_key_vault.keyVault.id
 }
