@@ -115,15 +115,15 @@ resource "azurerm_key_vault" "keyVault" {
     object_id = var.managed_identity_github_actions_object_id
 
     certificate_permissions = [
-      "Get", "Create", "Delete", "Update"
+      "Get", "Create", "Delete", "Update", "Purge"
     ]
 
     key_permissions = [
-      "Get", "Create", "Delete", "Update"
+      "Get", "Create", "Delete", "Update", "Purge"
     ]
 
     secret_permissions = [
-      "Get", "Set", "Delete", "Recover"
+      "Get", "Set", "Delete", "Recover", "Purge"
     ]
   }
 
