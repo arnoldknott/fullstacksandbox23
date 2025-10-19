@@ -229,7 +229,7 @@ resource "azurerm_container_app" "BackendContainer" {
         name  = "REDIS_SOCKETIO_DB"
         value = var.redis_socketio_db
       }
-        env {
+      env {
         name  = "REDIS_WORKER_DB"
         value = var.redis_worker_db
       }

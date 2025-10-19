@@ -115,15 +115,15 @@ resource "azurerm_key_vault" "keyVault" {
     object_id = var.managed_identity_github_actions_object_id
 
     certificate_permissions = [
-      "Get", "Create", "Delete", "Update"
+      "Get", "Create", "Delete", "Update", "Purge"
     ]
 
     key_permissions = [
-      "Get", "Create", "Delete", "Update"
+      "Get", "Create", "Delete", "Update", "Purge"
     ]
 
     secret_permissions = [
-      "Get", "Set", "Delete", "Recover"
+      "Get", "Set", "Delete", "Recover", "Purge"
     ]
   }
 
@@ -306,24 +306,6 @@ resource "random_password" "redisWorkerPassword" {
 resource "azurerm_key_vault_secret" "redisWorkerPassword" {
   name         = "redis-worker-password"
   value        = random_password.redisWorkerPassword.result
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
-
-# TBD: not really a secret - use terraform variable and env variable in container?
-resource "azurerm_key_vault_secret" "redisSessionDb" {
-  name         = "redis-session-db"
-  value        = 15
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
-
-resource "azurerm_key_vault_secret" "redisSocketioDb" {
-  name         = "redis-socketio-db"
-  value        = 14
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
-resource "azurerm_key_vault_secret" "redisWorkerDb" {
-  name         = "redis-worker-db"
-  value        = 13
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
