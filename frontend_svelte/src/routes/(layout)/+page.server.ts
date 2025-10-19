@@ -10,8 +10,8 @@ export const actions: Actions = {
 		const sessionId = locals.sessionData.sessionId;
 		// console.log('=== layout - layout.server - putProfile - sessionData.currentUser.id ===');
 		// console.log(locals.sessionData.currentUser?.id);
-		console.log('=== layout - layout.server - putProfile - data ===');
-		console.log(data);
+		// console.log('=== layout - layout.server - putProfile - data ===');
+		// console.log(data);
 		if (locals.sessionData.currentUser?.id) {
 			const color = data.get('color-picker');
 			const variant = data.get('variant-picker');

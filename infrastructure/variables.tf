@@ -99,16 +99,19 @@ variable "redis_insight_port" {
 
 variable "redis_session_db" {
   description = "Database number for storing session data in Redis cache"
+  default     = 15
   type        = number
 }
 
 variable "redis_socketio_db" {
   description = "Database number for storing Socket.IO data in Redis cache"
+  default     = 14
   type        = number
 }
 
 variable "redis_worker_db" {
   description = "Database number for worker communication in Redis cache"
+  default     = 13
   type        = number
 }
 

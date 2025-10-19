@@ -9,6 +9,7 @@ services:
     # image: backend_api:test
     depends_on:
       - postgres
+      - redis
     environment:
       - KEYVAULT_HEALTH=$KEYVAULT_HEALTH
       - APP_REG_CLIENT_ID
@@ -42,6 +43,10 @@ services:
   backend_worker:
     build:
       target: worker_dev
+    depends_on:
+      - backend_api
+      - postgres
+      - redis
     environment:
       - KEYVAULT_HEALTH=$KEYVAULT_HEALTH
       - APP_REG_CLIENT_ID
@@ -61,9 +66,6 @@ services:
       - REDIS_PORT=$REDIS_PORT
       - REDIS_WORKER_DB=$REDIS_WORKER_DB
       - REDIS_WORKER_PASSWORD=$REDIS_WORKER_PASSWORD
-    depends_on:
-      - postgres
-      - redis
     networks:
       - test_network
     volumes:

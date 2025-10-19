@@ -7,13 +7,12 @@ from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 
+# TBD: this is the one, that starts the celery app in backend_api:
+from core.celery import celery_app  # noqa: F401
 from core.config import config
 from core.databases import run_migrations
 from core.fastapi import mount_rest_api_routes
 from core.socketio import mount_socketio_app, socketio_server
-
-# TBD: this is the one, that starts the celery app in backend_api:
-from core.celery import celery_app  # noqa: F401
 from routers.ws.v1.websockets import router as websocket_router
 
 logger = logging.getLogger(__name__)

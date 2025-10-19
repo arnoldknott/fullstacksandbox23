@@ -67,7 +67,7 @@ resource "azurerm_container_app" "FrontendContainer" {
 
   # Never change the imaage of the container, as this is done in github actions!
   lifecycle {
-    ignore_changes = [template[0].container[0], secret, revision_mode] #  ingress
+    ignore_changes = [template[0].container[0].image, secret, revision_mode] #  ingress
   }
 
   template {
@@ -151,9 +151,9 @@ resource "azurerm_container_app" "BackendContainer" {
   # Don't change back to Multiple - which github actions changes to single - see bug below!
   # The change to single also changes the ingress -> so don't change that back either.
 
-  # TBD: get back in, when environment variables are set azure:
+  # TBD: get back in, when environment variables are set azure: 
   lifecycle {
-    ignore_changes = [template[0].container[0], secret, revision_mode, ingress] # TBD: get this back in once run on prod - to add volume mounts!
+    ignore_changes = [template[0].container[0].image, secret, revision_mode, ingress] # TBD: get this back in once run on prod - to add volume mounts!
   }
 
   # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
@@ -229,7 +229,7 @@ resource "azurerm_container_app" "BackendContainer" {
         name  = "REDIS_SOCKETIO_DB"
         value = var.redis_socketio_db
       }
-        env {
+      env {
         name  = "REDIS_WORKER_DB"
         value = var.redis_worker_db
       }
