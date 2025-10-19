@@ -122,6 +122,9 @@ class Config(BaseSettings):
     # print(REDIS_PORT)
     # print("=== get_variable('REDIS_REDIS_SESSION_DB') ===")
     # print(get_variable("REDIS_SESSION_DB"))
+    # TBD: remove database numbers from keyvault,
+    # define them in terraform as variable and
+    # use os.getenv() here insted.
     if get_variable("REDIS_SESSION_PASSWORD"):
         REDIS_SESSION_DB: int = int(get_variable("REDIS_SESSION_DB"))
         REDIS_SESSION_PASSWORD: str = get_variable("REDIS_SESSION_PASSWORD")
