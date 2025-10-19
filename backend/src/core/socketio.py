@@ -18,6 +18,9 @@ from routers.socketio.v1.public_namespace import PublicNamespace
 
 logger = logging.getLogger(__name__)
 
+print("👍 🧦 Socket.IO started")
+
+# TBD: adda check if REDIS_SOCKETIO_PASSWORD and REDIS_SOCKETIO_DB are set, else raise an error
 redis_manager = AsyncRedisManager(
     f"redis://socketio:{config.REDIS_SOCKETIO_PASSWORD}@{config.REDIS_HOST}:{config.REDIS_PORT}/{config.REDIS_SOCKETIO_DB}",
     channel="socketio",
@@ -34,6 +37,7 @@ socketio_server = AsyncServer(
 )
 
 
+# unnecessary?
 @socketio_server.event
 async def connect(sid):
     """Connect event for socket.io."""
