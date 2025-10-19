@@ -212,7 +212,6 @@ tofu plan -out=${WORKSPACE}.tfplan \
 #         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
 #         -var "redis_session_db=${REDIS_SESSION_DB}" \
 #         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
-# -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
 # -var "azure_sp_object_id=${ARM_OBJECT_ID}" \
 tofu_plan_exit_code=$?
 set -e
@@ -291,7 +290,6 @@ exit $tofu_changes_applied
 #         -var "costcenter=${COSTCENTER}" \
 #         -var "owner_name=${OWNER_NAME}" \
 #         -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
-#         -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
 #         -var "postgres_port=${POSTGRES_PORT}" \
 #         -var "redis_port=${REDIS_PORT}" \
 #         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
@@ -310,7 +308,6 @@ exit $tofu_changes_applied
     #     -var "costcenter=${COSTCENTER}" \
     #     -var "owner_name=${OWNER_NAME}" \
     #     -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
-    #     -var "owner_user_principal_name=${OWNER_USER_PRINCIPAL_NAME}" \
     #     -var "postgres_port=${POSTGRES_PORT}" \
     #     -var "redis_port=${REDIS_PORT}" \
     #     -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
