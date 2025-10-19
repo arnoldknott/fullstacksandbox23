@@ -309,24 +309,6 @@ resource "azurerm_key_vault_secret" "redisWorkerPassword" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-# TBD: not really a secret - use terraform variable and env variable in container?
-resource "azurerm_key_vault_secret" "redisSessionDb" {
-  name         = "redis-session-db"
-  value        = 15
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
-
-resource "azurerm_key_vault_secret" "redisSocketioDb" {
-  name         = "redis-socketio-db"
-  value        = 14
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
-resource "azurerm_key_vault_secret" "redisWorkerDb" {
-  name         = "redis-worker-db"
-  value        = 13
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
-
 # Socket.io admin interface - user name and password to non-zero values,
 # enables the admin interface through https://admin.socket.io/#/
 # use advanced settings options at log in to set the correct path to the socket.io server

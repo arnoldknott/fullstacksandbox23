@@ -186,9 +186,6 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "postgres_port=${POSTGRES_PORT}" \
         -var "redis_port=${REDIS_PORT}" \
         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-        -var "redis_session_db=${REDIS_SESSION_DB}" \
-        -var "redis_socketio_db=${REDIS_SOCKETIO_DB}" \
-        -var "redis_worker_db=${REDIS_WORKER_DB}" \
         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 
 # Comes from ARM_ environment variable, as it is not needed with managed identity in the Github Actions workflow:

@@ -1,5 +1,6 @@
-from core.config import config
 from celery import Celery
+
+from core.config import config
 
 print("👍 ⛏️ Celery started")
 
