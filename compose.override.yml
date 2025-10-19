@@ -4,6 +4,9 @@ services:
   backend_api:
     build:
       target: api_dev
+    depends_on:
+      - postgres
+      - redis
     env_file:
       - ./backend/src/.env
     ports:
@@ -19,6 +22,10 @@ services:
   backend_worker:
     build:
       target: worker_dev
+    depends_on:
+      - backend_api
+      - postgres
+      - redis
     env_file:
       - ./backend/src/.env
     volumes:
