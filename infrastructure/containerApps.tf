@@ -66,8 +66,9 @@ resource "azurerm_container_app" "FrontendContainer" {
   revision_mode = "Single"
 
   # Never change the imaage of the container, as this is done in github actions!
+  # template[0].container[0], 
   lifecycle {
-    ignore_changes = [template[0].container[0], secret, revision_mode] #  ingress
+    ignore_changes = [secret, revision_mode] #  ingress
   }
 
   template {
@@ -152,8 +153,9 @@ resource "azurerm_container_app" "BackendContainer" {
   # The change to single also changes the ingress -> so don't change that back either.
 
   # TBD: get back in, when environment variables are set azure:
+  # template[0].container[0], 
   lifecycle {
-    ignore_changes = [template[0].container[0], secret, revision_mode, ingress] # TBD: get this back in once run on prod - to add volume mounts!
+    ignore_changes = [secret, revision_mode, ingress] # TBD: get this back in once run on prod - to add volume mounts!
   }
 
   # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
