@@ -128,8 +128,8 @@ class Config(BaseSettings):
     if os.getenv("REDIS_SOCKETIO_DB"):
         REDIS_SOCKETIO_DB: int = int(os.getenv("REDIS_SOCKETIO_DB"))
         REDIS_SOCKETIO_PASSWORD: str = get_variable("REDIS_SOCKETIO_PASSWORD")
-    if os.getenv("REDIS_SESSION_DB") and os.getenv("REDIS_CELERY_BROKER_DB"):
-        REDIS_CELERY_BROKER_DB: int = int(os.getenv("REDIS_SESSION_DB"))
+    if os.getenv("REDIS_CELERY_BROKER_DB") and os.getenv("REDIS_CELERY_BACKEND_DB"):
+        REDIS_CELERY_BROKER_DB: int = int(os.getenv("REDIS_CELERY_BROKER_DB"))
         REDIS_CELERY_BACKEND_DB: int = int(os.getenv("REDIS_CELERY_BACKEND_DB"))
         REDIS_CELERY_PASSWORD: str = get_variable("REDIS_CELERY_PASSWORD")
 

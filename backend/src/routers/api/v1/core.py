@@ -130,7 +130,7 @@ async def run_demo_task_in_celery(
     result = celery_result.get(timeout=10)
     print("=== api - v1 - core - celery - result ===")
     print(result)
-    return result
+    return {"result": result}
 
 
 # # Don't put under protected resource, because the protected resource router requires scope "api.read"  for this API!
