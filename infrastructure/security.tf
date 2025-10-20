@@ -299,13 +299,13 @@ resource "azurerm_key_vault_secret" "redisSocketioPassword" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-resource "random_password" "redisWorkerPassword" {
+resource "random_password" "redisCeleryPassword" {
   length  = 32
   special = false
 }
-resource "azurerm_key_vault_secret" "redisWorkerPassword" {
-  name         = "redis-worker-password"
-  value        = random_password.redisWorkerPassword.result
+resource "azurerm_key_vault_secret" "redisCeleryPassword" {
+  name         = "redis-celery-password"
+  value        = random_password.redisCeleryPassword.result
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 

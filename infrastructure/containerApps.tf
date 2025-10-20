@@ -433,8 +433,8 @@ resource "azurerm_container_app" "redisContainer" {
     value = azurerm_key_vault_secret.redisSocketioPassword.value
   }
   secret {
-    name  = "redis-worker-password"
-    value = azurerm_key_vault_secret.redisWorkerPassword.value
+    name  = "redis-celery-password"
+    value = azurerm_key_vault_secret.redisCeleryPassword.value
   }
 
   # TBD: check what this is needed for in the other containers!

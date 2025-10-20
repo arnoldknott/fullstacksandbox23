@@ -19,9 +19,9 @@ services:
     networks:
       - dev_network
 
-  backend_worker:
+  backend_jobs:
     build:
-      target: worker_dev
+      target: jobs_dev
     depends_on:
       - backend_api
       - postgres
