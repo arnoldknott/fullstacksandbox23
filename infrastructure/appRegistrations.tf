@@ -305,10 +305,10 @@ resource "azuread_application" "backendAPI" {
     redirect_uris = (terraform.workspace == "dev" ?
       [
         "http://localhost:8660/docs/oauth2-redirect",
-        "https://${azurerm_container_app.BackendContainer.ingress[0].fqdn}/docs/oauth2-redirect",
+        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
       ] :
       [
-        "https://${azurerm_container_app.BackendContainer.ingress[0].fqdn}/docs/oauth2-redirect",
+        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
       ]
     )
   }
@@ -364,15 +364,15 @@ resource "azuread_application" "frontend" {
         "http://localhost:8661/oauth/callback",
         "https://www.thunderclient.com/oauth/callback",
         "https://oauth.pstmn.io/v1/callback",
-        "https://${azurerm_container_app.FrontendContainer.ingress[0].fqdn}/oauth/callback",
-        # "https://${azurerm_container_app.FrontendContainer.ingress[0].fqdn}/oauth/tokens"
+        "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/callback",
+        # "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/tokens"
       ] :
       [
         # TBD: remove thunderclient before scalling app to bigger audience! -> requires a working administrative and admin frontend
         "https://www.thunderclient.com/oauth/callback",
         "https://oauth.pstmn.io/v1/callback",
-        "https://${azurerm_container_app.FrontendContainer.ingress[0].fqdn}/oauth/callback",
-        # "https://${azurerm_container_app.FrontendContainer.ingress[0].fqdn}/oauth/tokens"
+        "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/callback",
+        # "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/tokens"
       ]
     )
   }
@@ -393,7 +393,7 @@ resource "azuread_application" "frontend" {
   # or
   # For Oauth2 Authorization Code Flow with PKCE from using PublicClientApplication from @azure/msal-browser
   # single_page_application {
-  #   redirect_uris = ["http://localhost:8661/oauth/callback", "https://${azurerm_container_app.FrontendContainer.ingress[0].fqdn}:${azurerm_container_app.FrontendContainer.ingress[0].target_port}/oauth/callback"]
+  #   redirect_uris = ["http://localhost:8661/oauth/callback", "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}:${azurerm_container_app.FrontendSvelteContainer.ingress[0].target_port}/oauth/callback"]
   # }
 
   tags = [var.costcenter, var.owner_name, terraform.workspace]

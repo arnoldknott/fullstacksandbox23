@@ -84,8 +84,8 @@ resource "azurerm_container_app" "FrontendSvelteContainer" {
       # Due to cyclic dependency, backend origin is moved into a keyvault secret.
       # env {
       #   name = "BACKEND_HOST"
-      #   # value = azurerm_container_app.BackendContainer.ingress[0].fqdn
-      #   value = azurerm_container_app.BackendContainer.name
+      #   # value = azurerm_container_app.BackendAPIContainer.ingress[0].fqdn
+      #   value = azurerm_container_app.BackendAPIContainer.name
       # }
       // required for keyvault access due to "working with AKS pod-identity" - see here:
       // https://learn.microsoft.com/en-us/javascript/api/@azure/identity/managedidentitycredential?view=azure-node-latest
@@ -181,11 +181,11 @@ resource "azurerm_container_app" "BackendAPIContainer" {
       }
       env {
         name  = "FRONTEND_SVELTE_ORIGIN"
-        value = azurerm_container_app.FrontendContainer.name
+        value = azurerm_container_app.FrontendSvelteContainer.name
       }
       env {
         name  = "FRONTEND_SVELTE_FQDN"
-        value = azurerm_container_app.FrontendContainer.ingress[0].fqdn
+        value = azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn
       }
       # BackendAPI:
       // Needs client id for Pod implmentations - see here:

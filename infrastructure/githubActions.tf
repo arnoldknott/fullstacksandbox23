@@ -21,7 +21,7 @@
 # # Needs Owner or User Access Administrator role to be able to assign roles to the service principal
 # resource "azurerm_role_assignment" "AssigningServicePrincipalAsFrontendContributor" {
 #   description          = "Allow Github Actions to update the frontend container app in ${var.project_name} in ${terraform.workspace} environment"
-#   scope                = azurerm_container_app.FrontendContainer.id
+#   scope                = azurerm_container_app.FrontendSvelteContainer.id
 #   role_definition_name = "Contributor"
 #   principal_id         = azuread_service_principal.GithubActionsServicePrincipal.object_id
 # }
@@ -29,7 +29,7 @@
 # # Needs Owner or User Access Administrator role to be able to assign roles to the service principal
 # resource "azurerm_role_assignment" "AssigningServicePrincipalAsBackendContributor" {
 #   description          = "Allow Github Actions to update the backend container app in ${var.project_name} in ${terraform.workspace} environment"
-#   scope                = azurerm_container_app.BackendContainer.id
+#   scope                = azurerm_container_app.BackendAPIContainer.id
 #   role_definition_name = "Contributor"
 #   principal_id         = azuread_service_principal.GithubActionsServicePrincipal.object_id
 # }
@@ -99,14 +99,14 @@ resource "azurerm_role_assignment" "github_runner" {
 # # doesn't work in container level - but works in portal on resource group level.
 # resource "azurerm_role_assignment" "AssigningManagedIdentityAsFrontendContributor" {
 #   description          = "Allow Github Actions to update the frontend container app in ${var.project_name} in ${terraform.workspace} environment"
-#   scope                = azurerm_container_app.FrontendContainer.id
+#   scope                = azurerm_container_app.FrontendSvelteContainer.id
 #   role_definition_name = "Contributor"
 #   principal_id         = azurerm_user_assigned_identity.GithubActionsManagedIdentity.principal_id
 # }
 
 # resource "azurerm_role_assignment" "AssigningManagedIdentityAsBackendContributor" {
 #   description          = "Allow Github Actions to update the backend container app in ${var.project_name} in ${terraform.workspace} environment"
-#   scope                = azurerm_container_app.BackendContainer.id
+#   scope                = azurerm_container_app.BackendAPIContainer.id
 #   role_definition_name = "Contributor"
 #   principal_id         = azurerm_user_assigned_identity.GithubActionsManagedIdentity.principal_id
 # }
