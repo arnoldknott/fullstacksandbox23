@@ -4,13 +4,14 @@ from typing import Annotated
 import httpx
 
 # from core.security import get_token_from_header
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, Query
 
 # from fastapi import APIRouter, Depends, Header, HTTPException, status
 # from fastapi.security import OAuth2AuthorizationCodeBearer
 from msal import ConfidentialClientApplication
 
 from core.config import config
+from jobs.demo.tasks import demo_task
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -116,6 +117,16 @@ async def get_keyvault():
 #     logger.info("Redis check")
 # access the Redis database to check if it is running
 
+@router.get("/celery")
+async def run_demo_task_in_celery(
+    x: Annotated[int, Query()] = 1,
+    y: Annotated[int, Query()] = 2
+):
+    """Executes a demo task in celery - adding two numbers."""
+    logger.info("Celery demo task executed")
+    result = demo_task.delay(x, y)
+    print("=== task result ===")
+    print(result.get(timeout=10))
 
 # # Don't put under protected resource, because the protected resource router requires scope "api.read"  for this API!
 # # This route is protected by the OAuth2AuthorizationCodeBearer scheme.
