@@ -124,9 +124,13 @@ async def run_demo_task_in_celery(
 ):
     """Executes a demo task in celery - adding two numbers."""
     logger.info("Celery demo task executed")
-    result = demo_task.delay(x, y)
-    print("=== task result ===")
-    print(result.get(timeout=10))
+    celery_result = demo_task.delay(x, y)
+    print("=== api - v1 - core - celery - celery_result ===")
+    print(celery_result)
+    result = celery_result.get(timeout=10)
+    print("=== api - v1 - core - celery - result ===")
+    print(result)
+    return result
 
 
 # # Don't put under protected resource, because the protected resource router requires scope "api.read"  for this API!
