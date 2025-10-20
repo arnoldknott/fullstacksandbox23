@@ -128,9 +128,10 @@ class Config(BaseSettings):
     if get_variable("REDIS_SOCKETIO_PASSWORD"):
         REDIS_SOCKETIO_DB: int = int(os.getenv("REDIS_SOCKETIO_DB"))
         REDIS_SOCKETIO_PASSWORD: str = get_variable("REDIS_SOCKETIO_PASSWORD")
-    if get_variable("REDIS_WORKER_PASSWORD"):
-        REDIS_WORKER_DB: int = int(os.getenv("REDIS_WORKER_DB"))
-        REDIS_WORKER_PASSWORD: str = get_variable("REDIS_WORKER_PASSWORD")
+    if get_variable("REDIS_CELERY_PASSWORD"):
+        REDIS_CELERY_BROKER_DB: int = int(os.getenv("REDIS_CELERY_BROKER_DB"))
+        REDIS_CELERY_BACKEND_DB: int = int(os.getenv("REDIS_CELERY_BACKEND_DB"))
+        REDIS_CELERY_PASSWORD: str = get_variable("REDIS_CELERY_PASSWORD")
 
     # Socket.io configuration:
     SOCKETIO_ADMIN_USERNAME: Optional[str] = get_variable("SOCKETIO_ADMIN_USERNAME")

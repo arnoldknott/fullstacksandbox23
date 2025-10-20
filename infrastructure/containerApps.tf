@@ -230,8 +230,12 @@ resource "azurerm_container_app" "BackendContainer" {
         value = var.redis_socketio_db
       }
       env {
-        name  = "REDIS_WORKER_DB"
-        value = var.redis_worker_db
+        name  = "REDIS_CELERY_BROKER_DB"
+        value = var.redis_celery_broker_db
+      }
+      env {
+        name  = "REDIS_CELERY_BACKEND_DB"
+        value = var.redis_celery_backend_db
       }
     }
     volume {
@@ -360,8 +364,8 @@ resource "azurerm_container_app" "redisContainer" {
         secret_name = "redis-socketio-password"
       }
       env {
-        name        = "REDIS_WORKER_PASSWORD"
-        secret_name = "redis-worker-password"
+        name        = "REDIS_CELERY_PASSWORD"
+        secret_name = "redis-celery-password"
       }
       # Bump config version to trigger new revision when any mounted file changes
       env {
@@ -429,8 +433,8 @@ resource "azurerm_container_app" "redisContainer" {
     value = azurerm_key_vault_secret.redisSocketioPassword.value
   }
   secret {
-    name  = "redis-worker-password"
-    value = azurerm_key_vault_secret.redisWorkerPassword.value
+    name  = "redis-celery-password"
+    value = azurerm_key_vault_secret.redisCeleryPassword.value
   }
 
   # TBD: check what this is needed for in the other containers!

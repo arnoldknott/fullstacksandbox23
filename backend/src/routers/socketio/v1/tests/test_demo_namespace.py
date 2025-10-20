@@ -109,7 +109,7 @@ async def test_connect_to_demo_namespace_missing_scopes_fails(
         await connection.connect()
         raise Exception("This should have failed due to invalid token.")
     except ConnectionError as err:
-        assert str(err) == "One or more namespaces failed to connect"
+        assert str(err) == "One or more namespaces failed to connect: "
 
 
 @pytest.mark.anyio
@@ -182,7 +182,7 @@ async def test_connection_to_production_server_fails_authorization(
         )
 
     except ConnectionError as err:
-        assert str(err) == "One or more namespaces failed to connect"
+        assert str(err) == "One or more namespaces failed to connect: "
 
 
 # @pytest.mark.anyio
