@@ -11,7 +11,6 @@ services:
     env_file: .env
     volumes:
       - .:/src
-      # Mount the entire cache directory to avoid per-file bind issues on macOS/Windows
       - ../cache:/cache:ro
     # ports:
     #   - "443:443"
