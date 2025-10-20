@@ -122,14 +122,14 @@ class Config(BaseSettings):
     # print(REDIS_PORT)
     # print("=== get_variable('REDIS_REDIS_SESSION_DB') ===")
     # print(get_variable("REDIS_SESSION_DB"))
-    if get_variable("REDIS_SESSION_PASSWORD"):
+    if os.getenv("REDIS_SESSION_DB"):
         REDIS_SESSION_DB: int = int(os.getenv("REDIS_SESSION_DB"))
         REDIS_SESSION_PASSWORD: str = get_variable("REDIS_SESSION_PASSWORD")
-    if get_variable("REDIS_SOCKETIO_PASSWORD"):
+    if os.getenv("REDIS_SOCKETIO_DB"):
         REDIS_SOCKETIO_DB: int = int(os.getenv("REDIS_SOCKETIO_DB"))
         REDIS_SOCKETIO_PASSWORD: str = get_variable("REDIS_SOCKETIO_PASSWORD")
-    if get_variable("REDIS_CELERY_PASSWORD"):
-        REDIS_CELERY_BROKER_DB: int = int(os.getenv("REDIS_CELERY_BROKER_DB"))
+    if os.getenv("REDIS_SESSION_DB") and os.getenv("REDIS_CELERY_BROKER_DB"):
+        REDIS_CELERY_BROKER_DB: int = int(os.getenv("REDIS_SESSION_DB"))
         REDIS_CELERY_BACKEND_DB: int = int(os.getenv("REDIS_CELERY_BACKEND_DB"))
         REDIS_CELERY_PASSWORD: str = get_variable("REDIS_CELERY_PASSWORD")
 
