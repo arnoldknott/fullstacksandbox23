@@ -55,10 +55,6 @@ resource "azurerm_container_app_environment_storage" "applicationDataConnect" {
   access_mode                  = "ReadWrite"
 }
 
-moved { 
-  from = azurerm_container_app.FrontendContainer
-  to = azurerm_container_app.FrontendSvelteContainer
-  }
 # stalled on 2024-01-12 in stage: https://fssb23-frontend-stage.gentlefield-715ad89b.northeurope.azurecontainerapps.io
 resource "azurerm_container_app" "FrontendSvelteContainer" {
   name                         = "${var.project_short_name}-frontend-${terraform.workspace}"
@@ -145,10 +141,6 @@ resource "azurerm_container_app" "FrontendSvelteContainer" {
   }
 }
 
-moved { 
-  from = azurerm_container_app.BackendContainer
-  to = azurerm_container_app.BackendAPIContainer
-  }
 resource "azurerm_container_app" "BackendAPIContainer" {
   name                         = "${var.project_short_name}-backend-${terraform.workspace}"
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
