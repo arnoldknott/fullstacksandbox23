@@ -41,9 +41,9 @@ services:
     volumes:
       - test-app-data:/data
 
-  backend_jobs:
+  backend_worker:
     build:
-      target: jobs_dev
+      target: worker_dev
     depends_on:
       - backend_api
       - postgres

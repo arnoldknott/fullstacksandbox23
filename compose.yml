@@ -10,10 +10,10 @@ services:
     # ports:
     #     - "80:80"
 
-  backend_jobs:
+  backend_worker:
     build:
       context: ./backend
-      target: celery_prod
+      target: worker_prod
     volumes:
       - ./backend:/app
 
