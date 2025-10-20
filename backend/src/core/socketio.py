@@ -18,8 +18,6 @@ from routers.socketio.v1.public_namespace import PublicNamespace
 
 logger = logging.getLogger(__name__)
 
-print("👍 🧦 Socket.IO started")
-
 # TBD: adda check if REDIS_SOCKETIO_PASSWORD and REDIS_SOCKETIO_DB are set, else raise an error
 redis_manager = AsyncRedisManager(
     f"redis://socketio:{config.REDIS_SOCKETIO_PASSWORD}@{config.REDIS_HOST}:{config.REDIS_PORT}/{config.REDIS_SOCKETIO_DB}",
@@ -35,6 +33,7 @@ socketio_server = AsyncServer(
     engineio_logger=False,  # prevents the ping and pong messages from being logged
     client_manager=redis_manager,
 )
+print("👍 🧦 Socket.IO started")
 
 
 # unnecessary?

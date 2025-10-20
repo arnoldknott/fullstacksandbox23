@@ -9,7 +9,7 @@ missing=""
 [ -n "${REDIS_PASSWORD:-}" ] || missing="$missing REDIS_PASSWORD"
 [ -n "${REDIS_SESSION_PASSWORD:-}" ] || missing="$missing REDIS_SESSION_PASSWORD"
 [ -n "${REDIS_SOCKETIO_PASSWORD:-}" ] || missing="$missing REDIS_SOCKETIO_PASSWORD"
-[ -n "${REDIS_WORKER_PASSWORD:-}" ] || missing="$missing REDIS_WORKER_PASSWORD"
+[ -n "${REDIS_CELERY_PASSWORD:-}" ] || missing="$missing REDIS_CELERY_PASSWORD"
 if [ -n "$missing" ]; then
   echo "=== redis entrypoint - ERROR: Missing required env vars:$missing ===" >&2
   exit 1
@@ -25,12 +25,12 @@ awk \
   -v RP="${REDIS_PASSWORD}" \
   -v RSP="${REDIS_SESSION_PASSWORD}" \
   -v RSPIO="${REDIS_SOCKETIO_PASSWORD}" \
-  -v RWP="${REDIS_WORKER_PASSWORD}" \
+  -v RWP="${REDIS_CELERY_PASSWORD}" \
   '{
      gsub(/\$\{REDIS_PASSWORD\}/, RP);
      gsub(/\$\{REDIS_SESSION_PASSWORD\}/, RSP);
      gsub(/\$\{REDIS_SOCKETIO_PASSWORD\}/, RSPIO);
-     gsub(/\$\{REDIS_WORKER_PASSWORD\}/, RWP);
+     gsub(/\$\{REDIS_CELERY_PASSWORD\}/, RWP);
      print
    }' "$TEMPLATE_PATH" > "$ACL_PATH"
 

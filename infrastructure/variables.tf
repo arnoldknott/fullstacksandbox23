@@ -109,9 +109,15 @@ variable "redis_socketio_db" {
   type        = number
 }
 
-variable "redis_worker_db" {
-  description = "Database number for worker communication in Redis cache"
+variable "redis_celery_broker_db" {
+  description = "Database number for Celery broker communication in Redis cache"
   default     = 13
+  type        = number
+}
+
+variable "redis_celery_backend_db" {
+  description = "Database number for Celery backend result storage in Redis cache"
+  default     = 12
   type        = number
 }
 
