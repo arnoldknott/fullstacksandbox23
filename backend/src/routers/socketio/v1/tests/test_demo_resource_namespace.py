@@ -81,7 +81,7 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
             "This should have failed due to missing authentication in on_connect."
         )
     except ConnectionError as err:
-        assert str(err) == "One or more namespaces failed to connect"
+        assert str(err) == "One or more namespaces failed to connect: "
 
 
 @pytest.mark.anyio
