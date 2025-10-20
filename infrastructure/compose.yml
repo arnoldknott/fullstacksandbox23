@@ -11,10 +11,7 @@ services:
     env_file: .env
     volumes:
       - .:/src
-      - ../cache/entrypoint.sh:/cache/entrypoint.sh:ro
-      - ../cache/redis.conf:/cache/redis.conf:ro
-      - ../cache/redis-full.conf:/cache/redis-full.conf:ro
-      - ../cache/users_template.acl:/cache/users_template.acl:ro
+      - ../cache:/cache:ro
     # ports:
     #   - "443:443"
     # environment:
