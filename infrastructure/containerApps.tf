@@ -55,8 +55,12 @@ resource "azurerm_container_app_environment_storage" "applicationDataConnect" {
   access_mode                  = "ReadWrite"
 }
 
+moved { 
+  from = azurerm_container_app.FrontendContainer
+  to = azurerm_container_app.FrontendSvelteContainer
+  }
 # stalled on 2024-01-12 in stage: https://fssb23-frontend-stage.gentlefield-715ad89b.northeurope.azurecontainerapps.io
-resource "azurerm_container_app" "FrontendContainer" {
+resource "azurerm_container_app" "FrontendSvelteContainer" {
   name                         = "${var.project_short_name}-frontend-${terraform.workspace}"
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   resource_group_name          = azurerm_resource_group.resourceGroup.name
@@ -80,8 +84,8 @@ resource "azurerm_container_app" "FrontendContainer" {
       # Due to cyclic dependency, backend origin is moved into a keyvault secret.
       # env {
       #   name = "BACKEND_HOST"
-      #   # value = azurerm_container_app.BackendContainer.ingress[0].fqdn
-      #   value = azurerm_container_app.BackendContainer.name
+      #   # value = azurerm_container_app.BackendAPIContainer.ingress[0].fqdn
+      #   value = azurerm_container_app.BackendAPIContainer.name
       # }
       // required for keyvault access due to "working with AKS pod-identity" - see here:
       // https://learn.microsoft.com/en-us/javascript/api/@azure/identity/managedidentitycredential?view=azure-node-latest
@@ -141,7 +145,11 @@ resource "azurerm_container_app" "FrontendContainer" {
   }
 }
 
-resource "azurerm_container_app" "BackendContainer" {
+moved { 
+  from = azurerm_container_app.BackendContainer
+  to = azurerm_container_app.BackendAPIContainer
+  }
+resource "azurerm_container_app" "BackendAPIContainer" {
   name                         = "${var.project_short_name}-backend-${terraform.workspace}"
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   resource_group_name          = azurerm_resource_group.resourceGroup.name
@@ -173,11 +181,11 @@ resource "azurerm_container_app" "BackendContainer" {
       }
       env {
         name  = "FRONTEND_SVELTE_ORIGIN"
-        value = azurerm_container_app.FrontendContainer.name
+        value = azurerm_container_app.FrontendSvelteContainer.name
       }
       env {
         name  = "FRONTEND_SVELTE_FQDN"
-        value = azurerm_container_app.FrontendContainer.ingress[0].fqdn
+        value = azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn
       }
       # BackendAPI:
       // Needs client id for Pod implmentations - see here:

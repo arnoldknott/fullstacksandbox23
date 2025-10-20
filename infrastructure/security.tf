@@ -232,13 +232,13 @@ resource "azurerm_key_vault_secret" "keyvaultHealth" {
 # but it's no really a secret!
 resource "azurerm_key_vault_secret" "backendHost" {
   name         = "backend-host"
-  value        = azurerm_container_app.BackendContainer.name
+  value        = azurerm_container_app.BackendAPIContainer.name
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
 resource "azurerm_key_vault_secret" "backendFqdn" {
   name         = "backend-fqdn"
-  value        = azurerm_container_app.BackendContainer.ingress[0].fqdn
+  value        = azurerm_container_app.BackendAPIContainer.ingress[0].fqdn
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
