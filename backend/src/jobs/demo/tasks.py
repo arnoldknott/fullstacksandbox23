@@ -1,5 +1,6 @@
 from core.celery_app import celery_app
 
+
 @celery_app.task
 def demo_task(x, y):
     """A simple demo task that adds two numbers."""
