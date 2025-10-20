@@ -34,7 +34,7 @@ RUN pip install --upgrade pip && \
     pip install -e .[dev] && \
     adduser -D -H worker-user
 USER worker-user
-CMD ["celery", "-A", "core.celery:celery_app", "worker", "--loglevel=info"]
+CMD ["celery", "-A", "core.celery_app:celery_app", "worker", "--loglevel=info"]
 
 FROM base AS worker_prod
 LABEL org.opencontainers.image.source https://github.com/arnoldknott/fullstacksandbox23
@@ -45,4 +45,4 @@ RUN pip install --no-cache-dir --upgrade pip && \
 USER worker-user
 ARG COMMIT_SHA="noGitBuild"
 ENV COMMIT_SHA=$COMMIT_SHA
-CMD ["celery", "-A", "core.celery:celery_app", "worker", "--loglevel=warning"]
+CMD ["celery", "-A", "core.celery_app:celery_app", "worker", "--loglevel=warning"]
