@@ -330,20 +330,6 @@ jobs:
               "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
               "POSTGRES_USER=secretref:postgres-user" \
               "POSTGRES_PASSWORD=secretref:postgres-password"
-      # TBD: remove AZ_KEYVAULT_HOST here - coming from terraform now!
-      # REMOVED NOW:
-      # "AZ_KEYVAULT_HOST=${{ vars.AZURE_KEYVAULT_HOST }}" \
-      # TBD: remove KEYVAULT_HEALTH here: the point is to read it in the application!
-      # REMOVED NOW HERE: from secret set & set-env-vars respectively:
-      # "keyvault-health=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/keyvault-health,identityref:$IDENTITY_REF" \
-      # "KEYVAULT_HEALTH=secretref:keyvault-health" \
-      # TBD: double check with POSTGRES USER & PSASSWORD - should be coming from Terraform now - but not as environment variable!
-      # TBD: double check with POSTGRES HOST - should be coming from Terraform now!
-      # REMOVED NOW HERE: from secret set & set-env-vars respectively:
-      # "postgres-host=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/postgres-host,identityref:$IDENTITY_REF" \
-      # "POSTGRES_HOST=secretref:postgres-host" \
-      # TBD: this is weird: here the variable is named AZ_KEYVAULT_HOST, but in the container it is named AZURE_KEYVAULT_HOST
-      # when renaming it here - conatinerapp fails to start with managed identity error - cannot get to keyvault!
       # TBD: this should be ready to go. Remember to put into prod as well!
       # az containerapp exec needs script to wrap around in non-TTY environment:
       # https://github.com/Azure/azure-cli/issues/13352#issuecomment-1810094440
