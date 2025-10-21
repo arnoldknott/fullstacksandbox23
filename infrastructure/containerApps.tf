@@ -415,19 +415,19 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
   secret {
     name = "postgres-password"
     # value = "fromTerraformChangedInGithubActions"
-    value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
+    value = data.azurerm_key_vault_secret.postgresPassword.value
   }
 
   secret {
     name = "postgres-user"
     # value = "fromTerraformChangedInGithubActions"
-    value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
+    value = data.azurerm_key_vault_secret.postgresUser.value
   }
 
   secret {
     name = "postgres-host"
     # value = "fromTerraformChangedInGithubActions"
-    value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
+    value = azurerm_postgresql_flexible_server.postgresServer.fqdn
   }
 
 
