@@ -58,6 +58,18 @@ resource "azurerm_user_assigned_identity" "redisIdentity" {
 #   }
 # }
 
+resource "azurerm_user_assigned_identity" "workerIdentity" {
+  name                = "${var.project_name}-workerIdentity-${terraform.workspace}"
+  resource_group_name = azurerm_resource_group.resourceGroup.name
+  location            = azurerm_resource_group.resourceGroup.location
+
+  tags = {
+    Costcenter  = var.costcenter
+    Owner       = var.owner_name
+    Environment = terraform.workspace
+  }
+}
+
 resource "azurerm_key_vault" "keyVault" {
   name                        = "${var.project_short_name}-keyVault-${terraform.workspace}"
   location                    = azurerm_resource_group.resourceGroup.location
@@ -211,6 +223,23 @@ resource "azurerm_key_vault" "keyVault" {
   #     "Get"
   #   ]
   # }
+
+  access_policy {
+    tenant_id = var.azure_tenant_id
+    object_id = azurerm_user_assigned_identity.workerIdentity.principal_id
+
+    certificate_permissions = [
+      "Get"
+    ]
+
+    key_permissions = [
+      "Get"
+    ]
+
+    secret_permissions = [
+      "Get"
+    ]
+  }
 
 
   tags = {
