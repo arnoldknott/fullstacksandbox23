@@ -28,7 +28,6 @@ jobs:
     environment: test
     env:
       KEYVAULT_HEALTH: ${{ vars.KEYVAULT_HEALTH }}
-      POSTGRES_DB: ${{ vars.POSTGRES_DB }}
       POSTGRES_HOST: ${{ vars.POSTGRES_HOST }}
       POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -208,10 +207,6 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to staging
-        # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
-        # env no longer necessary: all variables coming from terraform now!
-        # env:
-        #   IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
         run: |
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
@@ -260,10 +255,6 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy to production
-        # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
-        # env no longer necessary: all variables coming from terraform now!
-        # env:
-        #   IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_FRONTENDIDENTITY_NAME}}"
         run: |
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_FRONTEND }} \
