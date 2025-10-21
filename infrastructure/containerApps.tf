@@ -345,6 +345,13 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
         name = "${terraform.workspace}-application-data"
         path = "/data"
       }
+      # BackendWorker:
+      // Needs client id for Pod implmentations - see here:
+      // https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.managedidentitycredential?view=azure-python
+      env {
+        name  = "AZ_CLIENT_ID"
+        value = azurerm_user_assigned_identity.workerIdentity.client_id
+      }
       env {
         name  = "AZ_KEYVAULT_HOST"
         value = azurerm_key_vault.keyVault.vault_uri
