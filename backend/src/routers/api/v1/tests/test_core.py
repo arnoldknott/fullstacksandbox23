@@ -24,7 +24,7 @@ async def test_get_keyvault_health(async_client: AsyncClient):
 @pytest.mark.anyio
 async def test_run_demo_task_in_celery(async_client: AsyncClient):
     """Test that celery demo task adds two numbers."""
-    response = await async_client.get("/api/v1/core/celery?x=1&y=2")
+    response = await async_client.get("/api/v1/core/celery?x=4&y=5")
 
     assert response.status_code == 200
-    assert response.json() == {"result": 3}
+    assert response.json() == {"result": 9}

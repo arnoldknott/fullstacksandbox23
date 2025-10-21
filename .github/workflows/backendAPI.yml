@@ -30,7 +30,6 @@ jobs:
       FRONTEND_SVELTE_FQDN: ${{ vars.FRONTEND_SVELTE_FQDN }}
       APP_REG_CLIENT_ID: ${{ secrets.APP_REG_CLIENT_ID }}
       APP_CLIENT_SECRET: ${{ secrets.APP_CLIENT_SECRET }}
-      POSTGRES_DB: ${{ vars.POSTGRES_DB }}
       POSTGRES_HOST: ${{ vars.POSTGRES_HOST }}
       POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -326,31 +325,12 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_WORKER }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-backend_worker:$COMMIT_SHA
-        # --set-env-vars \
-        #   "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
-        #   "POSTGRES_USER=secretref:postgres-user" \
-        #   "POSTGRES_PASSWORD=secretref:postgres-password"
       - name: Deploy api to staging
-        # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
-        # env:
-        #   IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}"
-        # run: |
-        #   az containerapp secret set \
-        #     --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-        #     --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-        #     --secrets \
-        #       "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/postgres-user,identityref:$IDENTITY_REF" \
-        #       "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/postgres-password,identityref:$IDENTITY_REF"
-        #   sleep 10
         run: |
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA
-        # --set-env-vars \
-        #   "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
-        #   "POSTGRES_USER=secretref:postgres-user" \
-        #   "POSTGRES_PASSWORD=secretref:postgres-password"
       # TBD: this should be ready to go. Remember to put into prod as well!
       # az containerapp exec needs script to wrap around in non-TTY environment:
       # https://github.com/Azure/azure-cli/issues/13352#issuecomment-1810094440
@@ -613,32 +593,12 @@ jobs:
             --name ${{ vars.AZURE_CONTAINERAPP_WORKER }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-backend_worker:$COMMIT_SHA
-        # --set-env-vars \
-        #   "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
-        #   "POSTGRES_USER=secretref:postgres-user" \
-        #   "POSTGRES_PASSWORD=secretref:postgres-password"
       - name: Deploy api to production
-        # TBD: changing mode to single here, as there is a terraform bug with the time-out, when setting containerapp to single!
-        # env:
-        #   IDENTITY_REF: "/subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourcegroups/${{vars.AZURE_RESOURCE_GROUP}}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${{vars.AZURE_BACKENDIDENTITY_NAME}}"
-        # TBD: consider putting all of this into adeploymentscript and reuse her and in deploy_stage!
-        # run: |
-        #   az containerapp secret set \
-        #     --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
-        #     --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
-        #     --secrets \
-        #       "postgres-user=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/postgres-user,identityref:$IDENTITY_REF" \
-        #       "postgres-password=keyvaultref:${{ vars.AZURE_KEYVAULT_HOST }}secrets/postgres-password,identityref:$IDENTITY_REF"
-        #   sleep 10
         run: |
           az containerapp update \
             --name ${{ vars.AZURE_CONTAINERAPP_BACKEND }} \
             --resource-group ${{vars.AZURE_RESOURCE_GROUP}} \
             --image ${{env.REGISTRY}}/${{github.repository}}-backend_api:$COMMIT_SHA
-        # --set-env-vars \
-        #   "POSTGRES_DB=${{ vars.POSTGRES_DB }}" \
-        #   "POSTGRES_USER=secretref:postgres-user" \
-        #   "POSTGRES_PASSWORD=secretref:postgres-password"
       # az containerapp exec needs script to wrap around in non-TTY environment:
       # https://github.com/Azure/azure-cli/issues/13352#issuecomment-1810094440
       - name: Run stage database migrations
