@@ -60,14 +60,11 @@ resource "azurerm_container_app" "FrontendSvelteContainer" {
   name                         = "${var.project_short_name}-frontend-${terraform.workspace}"
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   resource_group_name          = azurerm_resource_group.resourceGroup.name
-  # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
-  # TBD: set to Single after this bug is fixed:
-  # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
-  revision_mode = "Single"
+  revision_mode                = "Single"
 
   # Never change the imaage of the container, as this is done in github actions!
   lifecycle {
-    ignore_changes = [template[0].container[0].image, secret, revision_mode] #  ingress
+    ignore_changes = [template[0].container[0].image, secret] #  ingress
   }
 
   template {
@@ -148,19 +145,12 @@ resource "azurerm_container_app" "BackendAPIContainer" {
 
   # Never change the imaage of the container, as this is done in github actions!
   # Never overwrite the secrets set from github actions!
-  # Don't change back to Multiple - which github actions changes to single - see bug below!
-  # The change to single also changes the ingress -> so don't change that back either.
 
   # TBD: get back in, when environment variables are set azure: 
   lifecycle {
-    ignore_changes = [template[0].container[0].image, secret, revision_mode, ingress] # TBD: get this back in once run on prod - to add volume mounts!
+    ignore_changes = [template[0].container[0].image, secret, ingress] # TBD: get this back in once run on prod - to add volume mounts!
   }
-
-  # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
-  # TBD: set to Single after this bug is fixed:
-  # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
-  # Looks like it's closed now - so can be set to single again!
-  revision_mode = "Multiple"
+  revision_mode = "Single"
 
   template {
     container {
@@ -321,18 +311,12 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
 
   # Never change the imaage of the container, as this is done in github actions!
   # Never overwrite the secrets set from github actions!
-  # Don't change back to Multiple - which github actions changes to single - see bug below!
-  # The change to single also changes the ingress -> so don't change that back either.
 
   # TBD: get back in, when environment variables are set azure: 
-  # lifecycle {
-  #   ignore_changes = [template[0].container[0].image, secret, revision_mode, ingress] # TBD: get this back in once run on prod - to add volume mounts!
-  # }
+  lifecycle {
+    ignore_changes = [template[0].container[0].image, ingress] # TBD: get this back in once run on prod - to add volume mounts!
+  }
 
-  # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
-  # TBD: set to Single after this bug is fixed:
-  # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
-  # Looks like it's closed now - so can be set to single again!
   revision_mode = "Single"
 
   template {
@@ -463,11 +447,7 @@ resource "azurerm_container_app" "redisContainer" {
   name                         = "${var.project_short_name}-redis-${terraform.workspace}"
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   resource_group_name          = azurerm_resource_group.resourceGroup.name
-  # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
-  # TBD: set to Single after this bug is fixed:
-  # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
-  # Looks like it's closed now - so can be set to single again!
-  revision_mode = "Single"
+  revision_mode                = "Single"
 
   template {
     container {
@@ -596,13 +576,9 @@ resource "azurerm_container_app" "redisContainer" {
 #   resource_group_name          = azurerm_resource_group.resourceGroup.name
 
 #   lifecycle {
-#     ignore_changes = [secret, revision_mode, ingress]
+#     ignore_changes = [secret, ingress]
 #   }
-
-#   # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
-#   # TBD: set to Single after this bug is fixed:
-#   # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
-#   revision_mode = "Multiple"
+#   revision_mode = "Single"
 
 #   template {
 #     container {
@@ -671,9 +647,6 @@ resource "azurerm_container_app" "redisContainer" {
 #   name                         = "${var.project_short_name}-postgres-${terraform.workspace}"
 #   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
 #   resource_group_name          = azurerm_resource_group.resourceGroup.name
-#   # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
-#   # TBD: set to Single after this bug is fixed:
-#   # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
 #   revision_mode = "Single"
 
 #   template {
