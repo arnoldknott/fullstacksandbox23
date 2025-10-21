@@ -159,6 +159,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
   # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
   # TBD: set to Single after this bug is fixed:
   # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
+  # Looks like it's closed now - so can be set to single again!
   revision_mode = "Multiple"
 
   template {
@@ -313,6 +314,130 @@ resource "azurerm_container_app" "BackendAPIContainer" {
   }
 }
 
+resource "azurerm_container_app" "BackendWorkerContainer" {
+  name                         = "${var.project_short_name}-worker-${terraform.workspace}"
+  container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
+  resource_group_name          = azurerm_resource_group.resourceGroup.name
+
+  # Never change the imaage of the container, as this is done in github actions!
+  # Never overwrite the secrets set from github actions!
+  # Don't change back to Multiple - which github actions changes to single - see bug below!
+  # The change to single also changes the ingress -> so don't change that back either.
+
+  # TBD: get back in, when environment variables are set azure: 
+  # lifecycle {
+  #   ignore_changes = [template[0].container[0].image, secret, revision_mode, ingress] # TBD: get this back in once run on prod - to add volume mounts!
+  # }
+
+  # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
+  # TBD: set to Single after this bug is fixed:
+  # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
+  # Looks like it's closed now - so can be set to single again!
+  revision_mode = "Single"
+
+  template {
+    container {
+      name   = "worker"
+      image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
+      cpu    = 0.25
+      memory = "0.5Gi"
+      volume_mounts {
+        name = "${terraform.workspace}-application-data"
+        path = "/data"
+      }
+      env {
+        name  = "AZ_KEYVAULT_HOST"
+        value = azurerm_key_vault.keyVault.vault_uri
+      }
+      # Postgres:
+      env {
+        name  = "POSTGRES_HOST"
+        value = azurerm_postgresql_flexible_server.postgresServer.fqdn
+      }
+      env {
+        name        = "POSTGRES_USER"
+        secret_name = "postgres-user"
+      }
+      env {
+        name        = "POSTGRES_PASSWORD"
+        secret_name = "postgres-password"
+      }
+      env {
+        name  = "POSTGRES_DB"
+        value = "${terraform.workspace}_db"
+      }
+      # Probably not needed!
+      env {
+        name  = "POSTGRES_PORT"
+        value = var.postgres_port
+      }
+      # Redis:
+      env {
+        name  = "REDIS_HOST"
+        value = azurerm_container_app.redisContainer.name
+      }
+      env {
+        name  = "REDIS_PORT"
+        value = var.redis_port
+      }
+      env {
+        name  = "REDIS_CELERY_BROKER_DB"
+        value = var.redis_celery_broker_db
+      }
+      env {
+        name  = "REDIS_CELERY_BACKEND_DB"
+        value = var.redis_celery_backend_db
+      }
+    }
+    volume {
+      name         = "${terraform.workspace}-application-data"
+      storage_name = azurerm_container_app_environment_storage.applicationDataConnect.name
+      storage_type = "AzureFile"
+    }
+    # leave at least 1 bakend running now in stage & prod
+    min_replicas = 0
+    max_replicas = 10
+    http_scale_rule {
+      name                = "http-scaler"
+      concurrent_requests = "1000"
+    }
+    # consider adjust to to less after load testing!
+  }
+
+
+  identity {
+    type = "UserAssigned"
+    identity_ids = [
+      azurerm_user_assigned_identity.workerIdentity.id,
+    ]
+  }
+
+  secret {
+    name = "postgres-password"
+    # value = "fromTerraformChangedInGithubActions"
+    value = azurerm_key_vault_secret.postgresPassword.value
+  }
+
+  secret {
+    name = "postgres-user"
+    # value = "fromTerraformChangedInGithubActions"
+    value = azurerm_key_vault_secret.postgresUser.value
+  }
+
+  secret {
+    name = "postgres-host"
+    # value = "fromTerraformChangedInGithubActions"
+    value = azurerm_postgresql_flexible_server.postgresServer.fqdn
+  }
+
+
+  tags = {
+    Costcenter  = var.costcenter
+    Owner       = var.owner_name
+    Environment = terraform.workspace
+  }
+}
+
 
 # DEBUGGING TCP connection to Redis on internal postgres:
 # in FRONTEND container:
@@ -334,6 +459,7 @@ resource "azurerm_container_app" "redisContainer" {
   # TBD: needs to change to single for now - but multiple is required for this script to run, otherwise time-out!
   # TBD: set to Single after this bug is fixed:
   # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
+  # Looks like it's closed now - so can be set to single again!
   revision_mode = "Single"
 
   template {
