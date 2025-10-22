@@ -107,6 +107,14 @@ class Orchestrator:
                     print(current_user)
                 print("== Orchestrator dispatch - planned route ===")
                 print(route)
+                # TBD: consider using partial from functools:
+                # from functools import partial
+                # Route(service="ai", action=partial(vectorize, preprocessor="ocr"))
+                # Then here, only the real arguments need to be passed:
+                # route.action(entity_type, object_id, current_user)
+                # Or for now just like this:
+                # if route.action is not None:
+                #     route.action(entity_type, object_id, current_user, **route.params)
 
                 # Placeholder for future: call a dispatcher, e.g.:
                 # self._dispatchers[r.service].dispatch(r, ctx)
