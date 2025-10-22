@@ -24,22 +24,15 @@ class Event(str, Enum):
 @dataclass(frozen=True)
 class EventContext:
     event: Event
-    idenetity_type: str
+    identity_type: str
     object_id: str
     current_user: CurrentUserData
-    correlation_id: Optional[str] = None
-    changed_fields: Optional[List[str]] = None
-    # free-form metadata for future needs (e.g., router hints)
-    metadata: Optional[Dict[str, Any]] = None
+
 
 
 @dataclass(frozen=True)
 class Route:
-    """A declarative route describing what service/action to trigger.
-
-    This intentionally carries only metadata; heavy lifting belongs to
-    service-specific adapters added later.
-    """
+    """A declarative route describing what dispatchers to trigger."""
 
     service: str  # e.g., "ai", "compiler", "housekeeping"
     version: str = "1"  # bump when behavior changes materially
