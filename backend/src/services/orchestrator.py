@@ -9,7 +9,7 @@ import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from core.types import CurrentUserData, EntityType
-from typing import Any, Mapping, Dict, List, Optional, Tuple
+from typing import Any, Mapping, Dict, List, Optional, Callable, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class Route:
 
     service: str  # e.g., "ai", "compiler", "housekeeping"
     # TBD: rename "action" into "pipeline_step" or "handler"?
-    action: Optional[str] = (
+    action: Optional[Callable] = (
         None  # e.g., "vectorize", "compile", optional if handler provided
     )
     # TBD: how to seperate different versions of the actions?
