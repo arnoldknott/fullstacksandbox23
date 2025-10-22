@@ -24,10 +24,9 @@ class Event(str, Enum):
 @dataclass(frozen=True)
 class EventContext:
     event: Event
-    identity_type: str
+    entity_type: str
     object_id: str
     current_user: CurrentUserData
-
 
 
 @dataclass(frozen=True)
@@ -45,6 +44,7 @@ class Orchestrator:
     def __init__(
         self,
     ) -> None:
+        # TBD: move mappings of events and routes to top of file
         self._routes: Dict[Tuple[str, str], List[Route]] = {
             Mapping(
                 (Event.AFTER_CREATE.value, "TextDocument"),
