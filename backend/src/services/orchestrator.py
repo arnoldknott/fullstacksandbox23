@@ -88,7 +88,7 @@ class Orchestrator:
         try:
             routes = list(self._event_route_map.get((event, entity_type), []))
             if not routes:
-                logger.debug(
+                logger.info(
                     f"orchestrator: no routes for event={event} resource_type={entity_type}"
                 )
                 return
