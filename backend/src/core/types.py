@@ -53,7 +53,7 @@ class Action(str, Enum):
 
 
 # Types identify resources in the identifier type table - used for registering resources and identities.
-class BaseType(str, Enum):
+class EntityType(str, Enum):
     """Base enum for types of entities in the database"""
 
     # The values need to match the exact name of the model class.
@@ -76,7 +76,7 @@ class BaseType(str, Enum):
 
 
 # Resource versions of types
-class ResourceType(BaseType):
+class ResourceType(EntityType):
     """Enum for the types of resources to identify which table a resource uuid belongs to"""
 
     # The values need to match the exact name of the model class.
@@ -100,7 +100,7 @@ class ResourceType(BaseType):
 
 
 # Identity versions of types
-class IdentityType(BaseType):
+class IdentityType(EntityType):
     """Enum for the types of identities to identify which table an identity uuid belongs"""
 
     # TBD: consider getting those values programmatically?

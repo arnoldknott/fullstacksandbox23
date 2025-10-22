@@ -290,6 +290,12 @@ class BaseCRUD(
             await self.session.commit()
             await self.session.refresh(database_object)
 
+            # call service orchestrator.handle here with
+            # - event = Event.AFTER_CREATE
+            # - self.entity_type
+            # - current_user
+            # - database_object.id
+
             return database_object
 
         except Exception as e:
