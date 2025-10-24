@@ -555,16 +555,9 @@
 		</div>
 	</div>
 
-	{#if userUnregistered}
-		<div class="text-display-small text-error text-center">User not registered!</div>
-		<div class="mt-5">
-			{@render children?.()}
-		</div>
-	{:else}
-		<div class="mt-5">
-			{@render children?.()}
-		</div>
-	{/if}
+	<div class="mt-5">
+		{@render children?.()}
+	</div>
 
 	<!-- <JsonData data={theme}></JsonData> -->
 </div>
