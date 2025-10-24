@@ -5,7 +5,6 @@
 	import Heading from '$components/Heading.svelte';
 	import { page } from '$app/state';
 	import NavigationCard from '$components/NavigationCard.svelte';
-	
 
 	const resources = [
 		{
@@ -20,10 +19,10 @@
 			description:
 				'The protected hierarchy family consisting of protected resource, protected child and protected grandchild',
 			url: '/backend-protected-hierarchy'
-		},
-	]
+		}
+	];
 	const identities = [
-				{
+		{
 			name: 'All Identities',
 			description:
 				'Identities: various kinds of groups and relationship to users from the backend API',
@@ -33,14 +32,14 @@
 			name: 'Microsoft Graph',
 			description: 'The Microsoft Graph API endpoint, all data in json',
 			url: '/msgraph'
-		},
-	]
+		}
+	];
 	const services = [
 		{
 			name: 'Socket.IO',
 			description: 'Establishing various Socket.IO connections to backend and using them',
 			url: '/socketio'
-		},
+		}
 	];
 	const application = [
 		{
@@ -95,8 +94,6 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 	{#each application as app (app.name)}
-		<NavigationCard title={app.name} href={`dashboard${app.url}`}
-			>{app.description}</NavigationCard
-		>
+		<NavigationCard title={app.name} href={`dashboard${app.url}`}>{app.description}</NavigationCard>
 	{/each}
 </div>
