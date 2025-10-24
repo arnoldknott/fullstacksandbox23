@@ -39,6 +39,15 @@
 		if (userUnregistered) {
 			window.HSOverlay.open(welcomeModal);
 		}
+		// if (welcomeModal) {
+		// 	const { element } = window.HSOverlay.getInstance(welcomeModal, true);
+		// 	element.on('close', () => {
+		// 		userUnregistered = false;
+		// 	});
+		// 	element.on('open', () => {
+		// 		userUnregistered = true;
+		// 	});
+		// }
 	});
 
 	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
