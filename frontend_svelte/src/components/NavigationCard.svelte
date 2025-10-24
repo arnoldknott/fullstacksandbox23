@@ -5,9 +5,11 @@
 	let { title, href, children }: { title: string; href: string; children: Snippet } = $props();
 </script>
 
+<!-- decide weather to use text-base-content or text-primary or text-secondary? -->
+
 {#snippet header()}
 	<a {href} class="link link-animated link-base-content">
-		<h5 class="title-small md:title lg:title-large text-base-content card-title">
+		<h5 class="title-small md:title lg:title-large text-accent card-title">
 			{title}
 		</h5>
 	</a>
