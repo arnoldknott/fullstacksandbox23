@@ -6,7 +6,7 @@
 	// let props = $props();
 </script>
 
-<div {...rest} class="{rest.class ?? ''}">
+<div {...rest} class={rest.class ?? ''}>
 	<h3 {id} class="title lg:title-large text-accent mb-2">
 		{@render children?.()}
 	</h3>

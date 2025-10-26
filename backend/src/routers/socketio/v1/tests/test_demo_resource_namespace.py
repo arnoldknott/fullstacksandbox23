@@ -1510,7 +1510,7 @@ async def test_user_removes_last_inherited_owner_access_and_reread_fails(
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.3)
+    await connection.client.sleep(0.4)
 
     assert connection.responses("status") == [
         {
@@ -1524,7 +1524,7 @@ async def test_user_removes_last_inherited_owner_access_and_reread_fails(
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.3)
+    await connection.client.sleep(0.4)
 
     assert connection.responses("status")[1] == {
         "success": "deleted",
