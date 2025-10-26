@@ -290,6 +290,12 @@ class BaseCRUD(
             await self.session.commit()
             await self.session.refresh(database_object)
 
+            # call service orchestrator.handle here with
+            # - event = Event.AFTER_CREATE
+            # - self.entity_type
+            # - current_user
+            # - database_object.id
+
             return database_object
 
         except Exception as e:
@@ -406,7 +412,11 @@ class BaseCRUD(
         return hierarchy
 
     # TBD: implement a create_if_not_exists method
+    # or UPSERT (update or insert)
 
+    # TBD: add "skip_services: Optional[bool] = False"
+    # to avoid calling orchestrator from services
+    # otherwise it creates a loop!
     # TBD: add skip and limit
     # use with pagination:
     # Model = await model_crud.read(order_by=[Model.name], limit=10)

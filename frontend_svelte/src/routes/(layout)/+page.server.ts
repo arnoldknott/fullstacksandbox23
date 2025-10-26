@@ -3,6 +3,7 @@ import { backendAPI } from '$lib/server/apis/backendApi';
 import { fail } from '@sveltejs/kit';
 import { redisCache } from '$lib/server/cache';
 import { Variant } from '$lib/theming';
+import { SessionStatus } from '$lib/session';
 
 export const actions: Actions = {
 	putme: async ({ locals, request }) => {
@@ -50,6 +51,7 @@ export const actions: Actions = {
 				'$.currentUser.user_profile.contrast',
 				JSON.stringify(payload.user_profile.contrast)
 			);
+			await redisCache.setSession(sessionId, '$.status', JSON.stringify(SessionStatus.REGISTERED));
 			if (payload.user_profile.theme_color) {
 				locals.sessionData.currentUser.user_profile.theme_color = color as string;
 			}

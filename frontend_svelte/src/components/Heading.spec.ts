@@ -1,15 +1,14 @@
-import { describe, test } from 'vitest';
+import { describe, test, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import Heading from './Heading.svelte';
 
-describe('Title', () => {
+describe('Heading', () => {
 	test('should contain an h1 header', async () => {
 		render(Heading);
 
-		screen.getByRole('heading', { level: 1 });
+		const heading = screen.getByRole('heading', { level: 2 });
 
-		// const heading = screen.getByRole('heading', { level: 1 });
-
-		// expect(heading).toBeTruthy();
+		expect(heading).toBeTruthy();
+		expect(heading.className).toContain('text-secondary');
 	});
 });

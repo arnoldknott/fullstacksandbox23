@@ -251,12 +251,9 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build worker for production
+      - name: Build images for production
         run: |
-          docker compose -f compose.yml -f compose.prod.yml build --build-arg COMMIT_SHA=${{env.COMMIT_SHA}} backend_worker
-      - name: Build api for production
-        run: |
-          docker compose -f compose.yml -f compose.prod.yml build --build-arg COMMIT_SHA=${{env.COMMIT_SHA}} backend_api
+          docker compose -f compose.yml -f compose.prod.yml build --build-arg COMMIT_SHA=${{env.COMMIT_SHA}} backend_worker backend_api
       - name: Show images
         run: docker image list
       - name: Tag and push with latest and commit hash
