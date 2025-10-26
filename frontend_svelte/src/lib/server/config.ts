@@ -112,8 +112,8 @@ export default class AppConfig {
 				// console.log(keyvaultHealth);
 				// console.log("📜 app_config - keyvaultHealth.value: ");
 				// console.log(keyvaultHealth?.value);
-				const appRegClientId = await client?.getSecret('app-reg-client-id');
-				const appClientSecret = await client?.getSecret('app-client-secret');
+				const appRegClientId = await client?.getSecret('frontend-svelte-client-id');
+				const appClientSecret = await client?.getSecret('frontend-svelte-client-secret');
 				const apiScope = await client?.getSecret('api-scope');
 				const azTenantId = await client?.getSecret('azure-tenant-id');
 				const redisSessionPassword = await client?.getSecret('redis-session-password');

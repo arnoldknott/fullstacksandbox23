@@ -27,9 +27,9 @@ def get_variable(variable_name):
     # note: the existence of the environment variable AZURE_KEYVAULT_URL is used to determine whether to use keyvault or not.
     if os.getenv("AZ_KEYVAULT_HOST"):
         # credential = DefaultAzureCredential()
-        # credential = ManagedIdentityCredential(client_id=os.getenv("AZURE_CLIENT_ID"))
+        # credential = ManagedIdentityCredential(client_id=os.getenv("BACKEND_API_CLIENT_ID"))
         credential = ManagedIdentityCredential(client_id=os.getenv("AZ_CLIENT_ID"))
-        # Following line works, when the environment variable AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET and AZURE_AUTHORITY_HOST are set.
+        # Following line works, when the environment variable AZURE_TENANT_ID, BACKEND_API_CLIENT_ID, AZURE_CLIENT_SECRET and AZURE_AUTHORITY_HOST are set.
         # credential = EnvironmentCredential()
         logger.info("Accessing keyvault")
         # print("== AZ_KEYVAULT_HOST ==")
@@ -76,7 +76,7 @@ class Config(BaseSettings):
     AZURE_ISSUER_URL: Optional[str] = (
         f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0"
     )
-    AZURE_CLIENT_ID: Optional[str] = get_variable("AZURE_CLIENT_ID")
+    BACKEND_API_CLIENT_ID: Optional[str] = get_variable("BACKEND_API_CLIENT_ID")
     API_SCOPE: Optional[str] = get_variable("API_SCOPE")
     BACK_CLIENT_SECRET: Optional[str] = get_variable("BACK_CLIENT_SECRET")
 
