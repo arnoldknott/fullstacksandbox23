@@ -252,8 +252,8 @@ async def get_azure_token_from_cache(user_account, scopes: List[str] = []) -> st
     # Create the PersistentTokenCache
     cache = get_persistent_cache(user_account)
     msal_conf_client = ConfidentialClientApplication(
-        client_id=config.APP_REG_CLIENT_ID,
-        client_credential=config.APP_CLIENT_SECRET,
+        client_id=config.FRONTEND_SVELTE_CLIENT_ID,
+        client_credential=config.FRONTEND_SVELTE_CLIENT_SECRET,
         authority=config.AZURE_AUTHORITY,
         token_cache=cache,
     )
@@ -282,8 +282,8 @@ async def get_token_payload_from_cache(session_id: str, scopes: List[str] = []) 
     # # Create the PersistentTokenCache
     # cache = get_persistent_cache(user_account)
     # msal_conf_client = ConfidentialClientApplication(
-    #     client_id=config.APP_REG_CLIENT_ID,
-    #     client_credential=config.APP_CLIENT_SECRET,
+    #     client_id=config.FRONTEND_SVELTE_CLIENT_ID,
+    #     client_credential=config.FRONTEND_SVELTE_CLIENT_SECRET,
     #     authority=config.AZURE_AUTHORITY,
     #     token_cache=cache,
     # )

@@ -121,9 +121,9 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 		// Common configuration for all users:
 		this.msalCommonConfig = {
 			auth: {
-				clientId: appConfig.app_reg_client_id,
+				clientId: appConfig.frontend_svelte_client_id,
 				authority: appConfig.az_authority,
-				clientSecret: appConfig.app_client_secret,
+				clientSecret: appConfig.frontend_svelte_client_secret,
 				scopes: [...scopesBackend, ...scopesMsGraph]
 			}
 		};

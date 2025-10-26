@@ -85,8 +85,10 @@ class Config(BaseSettings):
     FRONTEND_SVELTE_FQDN: Optional[str] = os.getenv("FRONTEND_SVELTE_FQDN")
     # Client ID of the frontend application registered in Azure AD:
     # add "customer" client registrations here!
-    APP_REG_CLIENT_ID: Optional[str] = get_variable("APP_REG_CLIENT_ID")
-    APP_CLIENT_SECRET: Optional[str] = get_variable("APP_CLIENT_SECRET")
+    FRONTEND_SVELTE_CLIENT_ID: Optional[str] = get_variable("FRONTEND_SVELTE_CLIENT_ID")
+    FRONTEND_SVELTE_CLIENT_SECRET: Optional[str] = get_variable(
+        "FRONTEND_SVELTE_CLIENT_SECRET"
+    )
     AZURE_AUTHORITY: Optional[str] = (
         f"https://login.microsoftonline.com/{AZURE_TENANT_ID}"
     )
