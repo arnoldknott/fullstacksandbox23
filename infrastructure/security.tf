@@ -353,20 +353,20 @@ resource "azurerm_key_vault_secret" "socketioAdminPassword" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-resource "azurerm_key_vault_secret" "frontend-svelte-client-id" {
+resource "azurerm_key_vault_secret" "frontendSvelteClientId" {
   name         = "frontend-svelte-client-id"
   value        = azuread_application.frontend.client_id
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
 
-resource "azurerm_key_vault_secret" "backend-api-client-id" {
+resource "azurerm_key_vault_secret" "backendApiClientId" {
   name         = "backend-api-client-id"
   value        = azuread_application.backendAPI.client_id
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-resource "azurerm_key_vault_secret" "frontend-svelte-client-secret" {
+resource "azurerm_key_vault_secret" "frontendSvelteClientSecret" {
   name         = "frontend-svelte-client-secret"
   value        = azuread_application_password.frontendClientSecret.value
   key_vault_id = azurerm_key_vault.keyVault.id
