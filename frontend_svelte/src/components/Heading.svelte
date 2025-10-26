@@ -9,8 +9,8 @@
 
 <!-- decide weather to use text-base-content or text-primary -->
 
-<div {...rest} class="mx-5 {rest.class ?? ''}">
-	<h2 class="heading-small md:heading lg:heading-large text-secondary mx-5 mt-0 mb-2">
+<div {...rest} class="{rest.class ?? ''}">
+	<h2 class="heading-small md:heading lg:heading-large text-secondary mt-0 mb-2">
 		{@render children?.()}
 	</h2>
 </div>
