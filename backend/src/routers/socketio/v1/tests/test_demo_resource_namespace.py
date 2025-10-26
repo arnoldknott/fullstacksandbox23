@@ -1186,7 +1186,8 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
     await connection1.client.disconnect()
     await connection2.client.disconnect()
     await connection3.client.disconnect()
-    
+
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "session_ids",
