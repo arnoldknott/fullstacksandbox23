@@ -35,8 +35,8 @@ jobs:
       REDIS_PORT: ${{ vars.REDIS_PORT }}
       MONGODB_HOST: ${{ vars.MONGODB_HOST }}
       MONGODB_PORT: ${{ vars.MONGODB_PORT }}
-      APP_REG_CLIENT_ID: ${{ secrets.APP_REG_CLIENT_ID }}
-      APP_CLIENT_SECRET: ${{ secrets.APP_CLIENT_SECRET }}
+      FRONTEND_SVELTE_CLIENT_ID: ${{ secrets.FRONTEND_SVELTE_CLIENT_ID }}
+      FRONTEND_SVELTE_CLIENT_SECRET: ${{ secrets.FRONTEND_SVELTE_CLIENT_SECRET }}
       AZ_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       API_SCOPE: ${{ secrets.API_SCOPE }}
     steps:

@@ -5,7 +5,7 @@
 	// let props = $props();
 </script>
 
-<div {...rest} class="{rest.class ?? ''}">
+<div {...rest} class={rest.class ?? ''}>
 	<h1 class="display-small lg:display text-primary mt-0 mb-2 text-center">
 		{@render children?.()}
 	</h1>

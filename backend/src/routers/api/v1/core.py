@@ -35,7 +35,7 @@ router = APIRouter()
 
 
 confClientApp = ConfidentialClientApplication(
-    config.AZURE_CLIENT_ID,
+    config.BACKEND_API_CLIENT_ID,
     authority=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}",
     client_credential=config.BACK_CLIENT_SECRET,
 )
@@ -45,7 +45,7 @@ confClientApp = ConfidentialClientApplication(
 #     data = {
 #         "grant_type": "authorization_code",
 #         "code": code,
-#         "client_id": config.AZURE_CLIENT_ID,
+#         "client_id": config.BACKEND_API_CLIENT_ID,
 #         "client_secret": config.BACK_CLIENT_SECRET,
 #         "redirect_uri": "http://localhost:8000/docs/oauth2-redirect",  # replace with your actual callback URL
 #     }
