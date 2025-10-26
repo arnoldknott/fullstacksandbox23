@@ -1183,6 +1183,10 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
     # Group had access before, so user2 got the resource on_connect:
     assert len(transfer_data2) == 1
 
+    await connection1.client.disconnect()
+    await connection2.client.disconnect()
+    await connection3.client.disconnect()
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
