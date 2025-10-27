@@ -84,9 +84,9 @@ fastapi_app = FastAPI(
     version="0.0.1",  # TBD: read from CHANGELOG.md or environment variable or so?
     lifespan=lifespan,
     swagger_ui_init_oauth={
-        'clientId': config.BACKEND_API_CLIENT_ID,
-        'useBasicAuthenticationWithAccessCodeGrant': True,
-        'usePkceWithAuthorizationCodeGrant': True,
+        "clientId": config.BACKEND_API_CLIENT_ID,
+        "useBasicAuthenticationWithAccessCodeGrant": True,
+        "usePkceWithAuthorizationCodeGrant": True,
         "scopes": [
             # "User.Read",
             "openid",
@@ -94,7 +94,7 @@ fastapi_app = FastAPI(
             f"api://{config.API_SCOPE}/api.read",
             f"api://{config.API_SCOPE}/api.write",
             f"api://{config.API_SCOPE}/socketio",
-        ]
+        ],
     },
     # swagger_ui_parameters=swagger_ui_parameters,
     # TBD: add contact - also through environment variables?

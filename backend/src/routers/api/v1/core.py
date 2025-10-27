@@ -2,8 +2,7 @@ import logging
 from typing import Annotated
 
 import httpx
-
-from fastapi import APIRouter, Header, Query, Depends
+from fastapi import APIRouter, Depends, Header, Query
 from fastapi.security import OAuth2AuthorizationCodeBearer
 
 # from fastapi import APIRouter, Depends, Header, HTTPException, status
@@ -23,8 +22,8 @@ oauth2_scheme = OAuth2AuthorizationCodeBearer(
     tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/token",
     scopes={
         # 'User.Read' : "Read user profile",
-	    'openid': "OpenID Connect scope",
-	    'profile': "Read user profile",
+        "openid": "OpenID Connect scope",
+        "profile": "Read user profile",
         f"api://{config.API_SCOPE}/api.read": "Read API",
         f"api://{config.API_SCOPE}/api.write": "Write API",
         f"api://{config.API_SCOPE}/socketio": "Socket.io",
@@ -143,15 +142,20 @@ async def run_demo_task_in_celery(
 #         "full_name": "John Doe"
 #     }
 
+
 async def get_token_payload(token: Annotated[str, Depends(oauth2_scheme)]):
     """Decodes the token from the request."""
     logger.info("Getting token payload")
     payload = await get_azure_token_payload(token)
     return payload
 
+
 @router.get("/oauth_token_payload")
-async def read_token_payload(token_payload: Annotated[dict, Depends(get_token_payload)]):
+async def read_token_payload(
+    token_payload: Annotated[dict, Depends(get_token_payload)],
+):
     return token_payload
+
 
 # # Don't put under protected resource, because the protected resource router requires scope "api.read"  for this API!
 # # This route is protected by the OAuth2AuthorizationCodeBearer scheme.
