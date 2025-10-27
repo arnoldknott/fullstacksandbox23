@@ -3,9 +3,9 @@
 
 	const links = [
 		{
-			name: 'Layout',
-			description: 'Playground for layouting components, using grid, flex, etc.',
-			url: '/layout'
+			name: 'User interface',
+			description: 'Playground for layouting navigation elements, components, and placements',
+			url: '/user_interface'
 		},
 		{
 			name: 'Components',

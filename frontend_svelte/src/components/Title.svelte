@@ -7,7 +7,7 @@
 </script>
 
 <div {...rest} class={rest.class ?? ''}>
-	<h3 {id} class="title lg:title-large text-accent mb-2">
+	<h3 {id} class="title lg:title-large text-accent">
 		{@render children?.()}
 	</h3>
 </div>

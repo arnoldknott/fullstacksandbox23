@@ -9,7 +9,7 @@
 	const resources = [
 		{
 			// TBD: don't do "_" in URLs, ideally just "/", but "-" is also ok.
-			name: 'Backend - Demo Resources',
+			name: 'Demo Resources',
 			description:
 				'The demo resources of the backend API, retrieved through the backend API from the postgres database',
 			url: '/backend-demo-resource'

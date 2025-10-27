@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Card from '$components/Card.svelte';
+	import Title from '$components/Title.svelte';
 	import { v4 } from 'uuid';
 	import type { Snippet } from 'svelte';
 	let { title, href, children }: { title: string; href: string; children: Snippet } = $props();
@@ -8,10 +9,11 @@
 <!-- decide weather to use text-base-content or text-primary or text-secondary? -->
 
 {#snippet header()}
-	<a {href} class="link link-animated link-base-content">
-		<h5 class="title-small md:title lg:title-large text-accent card-title">
+	<a {href} class="link link-animated link-accent">
+		<!-- <h5 class="title-small md:title lg:title-large text-accent card-title">
 			{title}
-		</h5>
+		</h5> -->
+		<Title id={href}>{title}</Title>
 		<!-- <Title id="" >Services</Title> -->
 	</a>
 {/snippet}
