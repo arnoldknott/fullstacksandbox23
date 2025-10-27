@@ -5,42 +5,32 @@ from contextlib import asynccontextmanager
 import socketio
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
-from fastapi.middleware.cors import CORSMiddleware
 
 # TBD: this is the one, that starts the celery app in backend_api:
 from core.celery_app import celery_app  # noqa: F401
 from core.config import config
 from core.databases import run_migrations
-from core.fastapi import mount_rest_api_routes
+from core.fastapi import attach_middeleware, mount_rest_api_routes
 from core.socketio import mount_socketio_app, socketio_server
-from routers.ws.v1.websockets import router as websocket_router
+
 
 logger = logging.getLogger(__name__)
-
-# print("Current directory:", os.getcwd())
-# print("sys.path:", sys.path)
 
 api_prefix = "/api/v1"
 socketio_prefix = "/socketio/v1"
 ws_prefix = "/ws/v1"
 
 
-# TBD: add postgres database:
 # context manager does setup and tear down
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Configures application startup and shutdown events."""
     logger.info("Application startup")
     # configure_logging()# TBD: add logging configuration
-    # Don't do that: use Sessions instead!
-    # await postgres.connect()
     asyncio.create_task(run_migrations())
     yield  # this is where the FastAPI runs - when its done, it comes back here and closes down
-    # await postgres.disconnect()
     await socketio_server.shutdown()
     logger.info("Application shutdown")
-
-
 
 
 fastapi_app = FastAPI(
@@ -74,40 +64,9 @@ print("👍 💨 FastAPI started")
 #     await postgres.disconnect()
 
 
-fastapi_app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        config.FRONTEND_SVELTE_ORIGIN,
-        (
-            f"https://{config.FRONTEND_SVELTE_FQDN}:80"
-            if config.FRONTEND_SVELTE_FQDN
-            else None
-        ),
-        (
-            f"https://{config.FRONTEND_SVELTE_FQDN}"
-            if config.FRONTEND_SVELTE_FQDN
-            else None
-        ),
-        (
-            "https://admin.socket.io"
-            if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD
-            else None
-        ),
-    ],
-    allow_credentials=True,
-    allow_methods=["POST", "GET", "PUT", "DELETE"],  # or ["*"],
-    allow_headers=["*"],
-)
+attach_middeleware(fastapi_app)
 
-mount_rest_api_routes(fastapi_app, api_prefix)
-
-
-fastapi_app.include_router(
-    websocket_router,
-    prefix=f"{ws_prefix}",
-    tags=["Web Sockets"],
-    # TBD: consider adding a dependency here for the token
-)
+mount_rest_api_routes(fastapi_app, api_prefix, ws_prefix)
 
 
 # exception handler logs exceptions before passing them to the default exception handler

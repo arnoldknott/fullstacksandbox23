@@ -113,7 +113,6 @@ async def run_demo_task_in_celery(
     return {"result": result}
 
 
-
 async def get_token_payload(token: Annotated[str, Depends(oauth2_scheme)]):
     """Decodes the token from the request."""
     logger.info("Getting token payload")

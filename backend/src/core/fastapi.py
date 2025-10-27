@@ -1,6 +1,8 @@
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from core.security import CurrentAccessTokenHasRole, CurrentAccessTokenHasScope
+from core.config import config
 from routers.api.v1.access import router as access_router
 from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router
@@ -16,9 +18,38 @@ from routers.api.v1.identities import (
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.public_resource import router as public_resource_router
 from routers.api.v1.tag import router as tag_router
+from routers.ws.v1.websockets import router as websocket_router
 
 
-def mount_rest_api_routes(app: FastAPI, api_prefix: str):
+def attach_middeleware(app: FastAPI):
+    """Attaches middleware to the FastAPI application."""
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            config.FRONTEND_SVELTE_ORIGIN,
+            (
+                f"https://{config.FRONTEND_SVELTE_FQDN}:80"
+                if config.FRONTEND_SVELTE_FQDN
+                else None
+            ),
+            (
+                f"https://{config.FRONTEND_SVELTE_FQDN}"
+                if config.FRONTEND_SVELTE_FQDN
+                else None
+            ),
+            (
+                "https://admin.socket.io"
+                if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD
+                else None
+            ),
+        ],
+        allow_credentials=True,
+        allow_methods=["POST", "GET", "PUT", "DELETE"],  # or ["*"],
+        allow_headers=["*"],
+    )
+
+
+def mount_rest_api_routes(app: FastAPI, api_prefix: str, ws_prefix: str):
     # TBD: no using underscores in routes - slashes instead, so nested routers. Or dashes. no uppercase letters either!
     # app.include_router(oauth_router, tags=["OAuth"])
     app.include_router(core_router, prefix=f"{api_prefix}/core", tags=["Core"])
@@ -101,6 +132,12 @@ def mount_rest_api_routes(app: FastAPI, api_prefix: str):
         dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
         # TBD: This is not ready to use - requires the redirect URI to be passed through Swagger UI
         # dependencies=[Depends(oauth2_scheme)],
+    )
+    app.include_router(
+        websocket_router,
+        prefix=f"{ws_prefix}",
+        tags=["Web Sockets"],
+        # TBD: consider adding a dependency here for the token
     )
     # course_scopes = ScopeChecker(
     #     ["api.read", "api.write"]
