@@ -49,10 +49,14 @@ async def lifespan(app: FastAPI):
 # here's the documentation for how to implement the redirect URL:
 # https://github.com/fastapi/fastapi/blob/0c7296b19ed5cecbafb01a8d0592bcd66e703153/fastapi/applications.py#L447
 # => add an endpoint /docs/oauth2-redirect to receive the token.
+# Works - move to /src/routers/api/v1/base.py ?
 # oauth2_scheme = OAuth2AuthorizationCodeBearer(
-#     authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize",
+#     authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize?code=1234",
 #     tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/token",
 #     scopes={
+#         'User.Read' : "Read user profile",
+# 	    'openid': "OpenID Connect scope",
+# 	    'profile': "Read user profile",
 #         f"api://{config.API_SCOPE}/api.read": "Read API",
 #         f"api://{config.API_SCOPE}/api.write": "Write API",
 #         f"api://{config.API_SCOPE}/socketio": "Socket.io",
@@ -79,6 +83,19 @@ fastapi_app = FastAPI(
     description="Playground for trying out anything freely before using in projects.",  # TBD: add the longer markdown description here
     version="0.0.1",  # TBD: read from CHANGELOG.md or environment variable or so?
     lifespan=lifespan,
+    swagger_ui_init_oauth={
+        'clientId': config.BACKEND_API_CLIENT_ID,
+        'useBasicAuthenticationWithAccessCodeGrant': True,
+        'usePkceWithAuthorizationCodeGrant': True,
+        "scopes": [
+            # "User.Read",
+            "openid",
+            "profile",
+            f"api://{config.API_SCOPE}/api.read",
+            f"api://{config.API_SCOPE}/api.write",
+            f"api://{config.API_SCOPE}/socketio",
+        ]
+    },
     # swagger_ui_parameters=swagger_ui_parameters,
     # TBD: add contact - also through environment variables?
 )

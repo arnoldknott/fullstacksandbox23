@@ -3,35 +3,35 @@ from typing import Annotated
 
 import httpx
 
-# from core.security import get_token_from_header
-from fastapi import APIRouter, Header, Query
+from fastapi import APIRouter, Header, Query, Depends
+from fastapi.security import OAuth2AuthorizationCodeBearer
 
 # from fastapi import APIRouter, Depends, Header, HTTPException, status
 # from fastapi.security import OAuth2AuthorizationCodeBearer
 from msal import ConfidentialClientApplication
 
 from core.config import config
+from core.security import get_azure_token_payload
 from jobs.demo.tasks import demo_task
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-# # TBD: add OAuth2AuthorizationCodeBearer, asks for client_id and client_secret
-# # needs scopes
-# # primarily this is relevant for Swagger UI, API can be accessed by other tools right now, as long as
-# # their callback URL is registered in the Azure AD app registration!
-# # move this to main.py?
-# oauth2_scheme = OAuth2AuthorizationCodeBearer(
-#     authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize",
-#     tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/token",
-#     scopes={
-#         f"api://{config.API_SCOPE}/api.read": "Read API",
-#         f"api://{config.API_SCOPE}/api.write": "Write API",
-#     },
-#     scheme_name="OAuth2 Authorization Code",
-#     description="OAuth2 Authorization Code Bearer implementeation for Swagger UI - identity provider is Microsoft Azure AD",
-# )
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize?code=1234",
+    tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/token",
+    scopes={
+        # 'User.Read' : "Read user profile",
+	    'openid': "OpenID Connect scope",
+	    'profile': "Read user profile",
+        f"api://{config.API_SCOPE}/api.read": "Read API",
+        f"api://{config.API_SCOPE}/api.write": "Write API",
+        f"api://{config.API_SCOPE}/socketio": "Socket.io",
+    },
+    scheme_name="OAuth2 Authorization Code",
+    description="OAuth2 Authorization Code Bearer implementation for Swagger UI - identity provider is Microsoft Azure AD",
+)
 
 
 confClientApp = ConfidentialClientApplication(
@@ -132,6 +132,26 @@ async def run_demo_task_in_celery(
     print(result)
     return {"result": result}
 
+
+# def fake_decode_token(_token: str):
+#     # Simulate token decoding
+#     print("=== access token from login ===")
+#     print(_token)
+#     return {
+#         "username": "John",
+#         "email": "john@example.com",
+#         "full_name": "John Doe"
+#     }
+
+async def get_token_payload(token: Annotated[str, Depends(oauth2_scheme)]):
+    """Decodes the token from the request."""
+    logger.info("Getting token payload")
+    payload = await get_azure_token_payload(token)
+    return payload
+
+@router.get("/oauth_token_payload")
+async def read_token_payload(token_payload: Annotated[dict, Depends(get_token_payload)]):
+    return token_payload
 
 # # Don't put under protected resource, because the protected resource router requires scope "api.read"  for this API!
 # # This route is protected by the OAuth2AuthorizationCodeBearer scheme.
