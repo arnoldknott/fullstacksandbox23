@@ -41,41 +41,7 @@ async def lifespan(app: FastAPI):
     logger.info("Application shutdown")
 
 
-# # TBD: add OAuth2AuthorizationCodeBearer, asks for client_id and client_secret
-# # needs scopes
-# # primarily this is relevant for Swagger UI, API can be accessed by other tools right now, as long as
-# # their callback URL is registered in the Azure AD app registration!
-# TBD: so far it works until the redirect URL is required:
-# here's the documentation for how to implement the redirect URL:
-# https://github.com/fastapi/fastapi/blob/0c7296b19ed5cecbafb01a8d0592bcd66e703153/fastapi/applications.py#L447
-# => add an endpoint /docs/oauth2-redirect to receive the token.
-# Works - move to /src/routers/api/v1/base.py ?
-# oauth2_scheme = OAuth2AuthorizationCodeBearer(
-#     authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize?code=1234",
-#     tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/token",
-#     scopes={
-#         'User.Read' : "Read user profile",
-# 	    'openid': "OpenID Connect scope",
-# 	    'profile': "Read user profile",
-#         f"api://{config.API_SCOPE}/api.read": "Read API",
-#         f"api://{config.API_SCOPE}/api.write": "Write API",
-#         f"api://{config.API_SCOPE}/socketio": "Socket.io",
-#     },
-#     scheme_name="OAuth2 Authorization Code",
-#     description="OAuth2 Authorization Code Bearer implementation for Swagger UI - identity provider is Microsoft Azure AD",
-# )
 
-
-# swagger_ui_parameters = {
-#     "oauth2RedirectUrl": "http://localhost:8000/docs/oauth2-redirect",  # replace with your actual callback URL
-# }
-
-# or:
-# swagger_ui_parameters = {
-#     "network": {
-#         "oauth2RedirectUrl": "http://localhost:8000/docs/oauth2-redirect",  # replace with your actual callback URL
-#     }
-# }
 
 fastapi_app = FastAPI(
     title="backendAPI",
@@ -100,14 +66,6 @@ fastapi_app = FastAPI(
     # TBD: add contact - also through environment variables?
 )
 print("👍 💨 FastAPI started")
-
-
-### DEPRECTATED: use lifespan instead
-# @app.on_event("startup")
-# async def startup():
-#     """Runs when the app starts."""
-#     # configure_logging()# TBD: add logging configuration
-#     SQLModel.metadata.create_all(postgres)
 
 
 # @app.on_event("shutdown")

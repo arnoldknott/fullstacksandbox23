@@ -4,9 +4,6 @@ from typing import Annotated
 import httpx
 from fastapi import APIRouter, Depends, Header, Query
 from fastapi.security import OAuth2AuthorizationCodeBearer
-
-# from fastapi import APIRouter, Depends, Header, HTTPException, status
-# from fastapi.security import OAuth2AuthorizationCodeBearer
 from msal import ConfidentialClientApplication
 
 from core.config import config
@@ -38,22 +35,6 @@ confClientApp = ConfidentialClientApplication(
     authority=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}",
     client_credential=config.BACK_CLIENT_SECRET,
 )
-
-
-# def exchange_code_for_token(code: str):
-#     data = {
-#         "grant_type": "authorization_code",
-#         "code": code,
-#         "client_id": config.BACKEND_API_CLIENT_ID,
-#         "client_secret": config.BACK_CLIENT_SECRET,
-#         "redirect_uri": "http://localhost:8000/docs/oauth2-redirect",  # replace with your actual callback URL
-#     }
-#     response = httpx.post(
-#         "https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/token",
-#         data=data,
-#     )
-#     token = response.json().get("access_token")
-#     return token
 
 
 # TBD: refactor to use dependency injection
@@ -132,16 +113,6 @@ async def run_demo_task_in_celery(
     return {"result": result}
 
 
-# def fake_decode_token(_token: str):
-#     # Simulate token decoding
-#     print("=== access token from login ===")
-#     print(_token)
-#     return {
-#         "username": "John",
-#         "email": "john@example.com",
-#         "full_name": "John Doe"
-#     }
-
 
 async def get_token_payload(token: Annotated[str, Depends(oauth2_scheme)]):
     """Decodes the token from the request."""
@@ -155,30 +126,6 @@ async def read_token_payload(
     token_payload: Annotated[dict, Depends(get_token_payload)],
 ):
     return token_payload
-
-
-# # Don't put under protected resource, because the protected resource router requires scope "api.read"  for this API!
-# # This route is protected by the OAuth2AuthorizationCodeBearer scheme.
-# @router.get("/oauth2")
-# def get_oauth(token: Annotated[str, Depends(oauth2_scheme)]):
-#     """Returns a protected resource."""
-#     logger.info("GET protected resource")
-
-#     return {
-#         "message": "Hello from a protected resource - enabling oAuth2 on Swagger UI!"
-#     }
-
-# # Not working yet, callback needs to handle the token
-# @router.get("/docs/oauth2-redirect")
-# def callback(code: str = Depends(oauth2_scheme)):
-#     token = exchange_code_for_token(code)
-#     if not token:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Could not authenticate",
-#             headers={"WWW-Authenticate": "Bearer"},
-#         )
-#     return {"access_token": token, "token_type": "bearer"}
 
 
 # Note: this one is protected under the scope "user_impersonization"" from https://management.azure.com
