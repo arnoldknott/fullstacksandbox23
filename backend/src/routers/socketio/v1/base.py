@@ -548,7 +548,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                     rooms=[f"identity:{access_policy.identity_id}"],
                 )
                 # print("=== socketio - CREATE - access_policy ===", flush=True)
-            elif "action" != "new_action":
+            elif access_policy["action"] != access_policy["new_action"]:
                 access_policy = AccessPolicyUpdate(**access_policy)
                 async with AccessPolicyCRUD() as crud:
                     await crud.update(current_user, access_policy)

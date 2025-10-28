@@ -1,17 +1,28 @@
-# resource "random_uuid" "apiURI" {}
-resource "random_uuid" "UuidScope1" {}
-resource "random_uuid" "UuidScope2" {}
-resource "random_uuid" "UuidScope3" {}
-resource "random_uuid" "UuidScope4" {}
-# resource "random_uuid" "UuidScope5" {}
-# resource "random_uuid" "UuidScope6" {}
-resource "random_uuid" "UuidRole1" {}     # Used for admins in backend
-resource "random_uuid" "userGroupUUID" {} # Used for users in backend
-# resource "random_uuid" "AIpublicRoleUUID" {}
-# resource "random_uuid" "AIprivateRoleUUID" {}
-# resource "random_uuid" "GitHubUserRoleUUID" {} # manage through account linking!
-# resource "random_uuid" "DiscordUserRoleUUID" {} # manage through account linking!
-# resource "random_uuid" "UuidRole5" {}
+moved {
+  from = random_uuid.UuidScope2
+  to  = random_uuid.ScopeApiRead
+}
+moved {
+  from = random_uuid.UuidScope3
+  to  = random_uuid.ScopeApiWrite
+}
+moved {
+  from = random_uuid.UuidScope4
+  to  = random_uuid.ScopeSocketio
+}
+resource "random_uuid" "ScopeApiRead" {}
+resource "random_uuid" "ScopeApiWrite" {}
+resource "random_uuid" "ScopeSocketio" {}
+moved {
+  from = random_uuid.UuidRole1
+  to  = random_uuid.RoleAdmin
+}
+moved {
+  from = random_uuid.userGroupUUID
+  to  = random_uuid.RoleUser
+}
+resource "random_uuid" "RoleAdmin" {}     # Used for admins in backend
+resource "random_uuid" "RoleUser" {} # Used for users in backend
 
 # # get the application ids for the well known applications to configure ms graph access:
 # data "azuread_service_principal" "msgraph" {
@@ -63,7 +74,7 @@ resource "azuread_application" "backendAPI" {
       admin_consent_description  = "Gives the users of Fullstack Sandbox Application read rights to its REST API."
       admin_consent_display_name = "Users can read from Fullstack Sandbox REST API"
       enabled                    = true
-      id                         = random_uuid.UuidScope2.result
+      id                         = random_uuid.ScopeApiRead.result
       type                       = "User"
       user_consent_description   = "Enables you as user to read data from the Fullstack Sandbox."
       user_consent_display_name  = "Read data from Fullstack Sandbox"
@@ -74,7 +85,7 @@ resource "azuread_application" "backendAPI" {
       admin_consent_description  = "Gives the users of Fullstack Sandbox Application write rights to its REST API."
       admin_consent_display_name = "Users can write to Fullstack Sandbox application's REST API"
       enabled                    = true
-      id                         = random_uuid.UuidScope3.result
+      id                         = random_uuid.ScopeApiWrite.result
       type                       = "User"
       user_consent_description   = "Enables you as user to write data to the Fullstack Sandbox."
       user_consent_display_name  = "Write data to Fullstack Sandbox"
@@ -85,39 +96,12 @@ resource "azuread_application" "backendAPI" {
       admin_consent_description  = "Gives the users of Fullstack Sandbox Application rights to interact with Fullstack application via socket.io."
       admin_consent_display_name = "Users can interact with Fullstack Sandbox via socket.io"
       enabled                    = true
-      id                         = random_uuid.UuidScope4.result
+      id                         = random_uuid.ScopeSocketio.result
       type                       = "User"
       user_consent_description   = "Enables you as user to use real-time communication, like chats in Fullstack Sandbox."
       user_consent_display_name  = "Real-time interaction with Fullstack Sandbox"
       value                      = "socketio"
     }
-
-    # Handle through Roles: AIUser.public, AIUser.private, GitHubUser, DiscordUser, ...
-    # oauth2_permission_scope {
-    #   admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to use public artifical intelligence within the app."
-    #   admin_consent_display_name = "Users can use public artificial intelligence in Fullstack Sandbox"
-    #   enabled                    = true
-    #   id                         = random_uuid.UuidScope5.result
-    #   type                       = "User"
-    #   user_consent_description   = "Enables you as user to use the public artifical intelligence capabilities of Fullstack Sandbox."
-    #   user_consent_display_name  = "Use public artificial intelligence in Fullstack Sandbox"
-    #   value                      = "artificial_intelligence.public"
-    # }
-
-    # oauth2_permission_scope {
-    #   admin_consent_description  = "Gives the users of Fullstack Sandox Application rights to use private artifical intelligence within the app."
-    #   admin_consent_display_name = "Users can use private artificial intelligence in Fullstack Sandbox"
-    #   enabled                    = true
-    #   id                         = random_uuid.UuidScope6.result
-    #   type                       = "User"
-    #   user_consent_description   = "Enables you as user to use the private artifical intelligence capabilities of Fullstack Sandbox."
-    #   user_consent_display_name  = "Use private artificial intelligence in Fullstack Sandbox"
-    #   value                      = "artificial_intelligence.private"
-    # }
-
-    # add further scopes here:
-    # add artificial.read, artificial.write, mapped_account.read, mapped_account.write, ...
-
   }
 
   # can be used to add groups to tokens and assign roles - but no correlation between role and group!
@@ -129,7 +113,7 @@ resource "azuread_application" "backendAPI" {
     description          = "Admins can manage the whole application"
     display_name         = "Admin"
     enabled              = true
-    id                   = random_uuid.UuidRole1.result
+    id                   = random_uuid.RoleAdmin.result
     value                = "Admin"
   }
 
@@ -138,64 +122,11 @@ resource "azuread_application" "backendAPI" {
     description          = "Users can access the content of the application"
     display_name         = "User" # Visible to end user
     enabled              = true
-    id                   = random_uuid.userGroupUUID.result
+    id                   = random_uuid.RoleUser.result
     value                = "User" # could be comething like "User.Write" or "User.Read"
   }
 
-  # User self-sign-up (after consent) - not possible without giving the
-  # frontend app 'AppRoleAssignment.ReadWrite.All' and 'Application.Read.All'"
-  # permissions, which appear overkill and need Admin consent.
-  # app_role {
-  #   allowed_member_types = ["User"]
-  #   description          = "Users can access the public artificial intelligence"
-  #   display_name         = "Public Artificial Intelligence Users"
-  #   enabled              = true
-  #   id                   = random_uuid.AIpublicRoleUUID.result
-  #   value                = "publicAIuser"
-  # }
-  #
-  # app_role {
-  #   allowed_member_types = ["User"]
-  #   description          = "Users can access the private artificial intelligence"
-  #   display_name         = "Private Artificial Intelligence Users"
-  #   enabled              = true
-  #   id                   = random_uuid.AIprivateRoleUUID.result
-  #   value                = "privateAIuser"
-  # }
-
-  # app_role {
-  #   allowed_member_types = ["User"]
-  #   description          = "Students can access their courses"
-  #   display_name         = "Student"
-  #   enabled              = true
-  #   id                   = random_uuid.GitHubUserRoleUUID.result
-  #   value                = "Student"
-  # }
-
-  # app_role {
-  #   allowed_member_types = ["User"]
-  #   description          = "Guest students can view courses"
-  #   display_name         = "Guest Student"
-  #   enabled              = true
-  #   id                   = random_uuid.DiscordUserRoleUUID.result
-  #   value                = "GuestStudent"
-  # }
-
   # Grants the app access to the Microsoft Graph API with specific roles and scopes
-  # required_resource_access {
-  #   resource_app_id = "00000003-0000-0000-c000-000000000000" # Microsoft Graph
-
-  #   resource_access {
-  #     id   = "df021288-bdef-4463-88db-98f22de89214" # User.Read.All
-  #     type = "Role"
-  #   }
-
-  #   # resource_access {
-  #   #   id   = "b4e74841-8e56-480b-be8b-910348b18b4c" # User.ReadWrite
-  #   #   type = "Scope"
-  #   # }
-  # }
-
   # MS Graph access to openid, profile and User.Read
   required_resource_access {
     resource_app_id = "00000003-0000-0000-c000-000000000000"
@@ -218,6 +149,12 @@ resource "azuread_application" "backendAPI" {
       id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d"
       type = "Scope"
     }
+
+    # User.ReadWrite
+    # resource_access {
+    #   id   = "b4e74841-8e56-480b-be8b-910348b18b4c" 
+    #   type = "Scope"
+    # }
 
     # Additional:
     # Calendars.ReadWrite - delegated
@@ -297,23 +234,6 @@ resource "azuread_application" "backendAPI" {
     }
   }
 
-
-  # TBD: consider adding for enabling swaggerUI authentication - change the host names for stage and prod:
-  # Example on how to connect SwaggerUI to AzureAD:
-  # https://stackoverflow.com/questions/79259104/fastapi-azure-auth-proof-key-for-code-exchange-is-required-for-cross-origin-au/79260558#79260558
-  single_page_application {
-    redirect_uris = (terraform.workspace == "dev" ?
-      [
-        "http://localhost:8660/docs/oauth2-redirect",
-        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
-      ] :
-      [
-        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
-      ]
-    )
-  }
-
-
   tags = [var.costcenter, var.owner_name, terraform.workspace]
 }
 
@@ -341,9 +261,9 @@ resource "azuread_application_pre_authorized" "preAuthorizeFrontendatBackend" {
 
   # TBD: add all scopes, that frontend needs to access backendAPI:
   permission_ids = [
-    random_uuid.UuidScope2.result,
-    random_uuid.UuidScope3.result,
-    random_uuid.UuidScope4.result,
+    random_uuid.ScopeApiRead.result,
+    random_uuid.ScopeApiWrite.result,
+    random_uuid.ScopeSocketio.result,
   ]
 }
 
@@ -373,6 +293,21 @@ resource "azuread_application" "frontend" {
         "https://oauth.pstmn.io/v1/callback",
         "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/callback",
         # "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/tokens"
+      ]
+    )
+  }
+
+  # For enabling swaggerUI authentication:
+  # Example on how to connect SwaggerUI to AzureAD:
+  # https://stackoverflow.com/questions/79259104/fastapi-azure-auth-proof-key-for-code-exchange-is-required-for-cross-origin-au/79260558#79260558
+  single_page_application {
+    redirect_uris = (terraform.workspace == "dev" ?
+      [
+        "http://localhost:8660/docs/oauth2-redirect",
+        "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/docs/oauth2-redirect",
+      ] :
+      [
+        "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/docs/oauth2-redirect",
       ]
     )
   }
