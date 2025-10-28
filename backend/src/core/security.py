@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 # from enum import Enum
 from uuid import UUID
@@ -9,7 +9,8 @@ from uuid import UUID
 # import asyncio
 import httpx
 import jwt
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2AuthorizationCodeBearer
 from jwt.algorithms import RSAAlgorithm
 from msal import ConfidentialClientApplication
 from msal_extensions.persistence import BasePersistence
@@ -141,38 +142,36 @@ async def get_azure_token_payload(token: str) -> Optional[dict]:
         return payload
 
 
-# From get_http_access_token_payload, optional_get_http_access_token_payload to provide_http_token_payload:
-# For http(s):// and ws:// routes only, as it uses FastAPI's dependency injection pattern
-async def provide_http_token_payload(request: Request) -> Optional[dict]:
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize?code=1234",
+    tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/token",
+    scopes={
+        # 'User.Read' : "Read user profile",
+        # "openid": "OpenID Connect scope",
+        # "profile": "Read user profile",
+        # f"api://{config.API_SCOPE}/.default": "Minimum scopes for backendAPI",
+        f"api://{config.API_SCOPE}/api.read": "Read API",
+        f"api://{config.API_SCOPE}/api.write": "Write API",
+        # f"api://{config.API_SCOPE}/socketio": "Socket.io",
+    },
+    scheme_name="OAuth2 Authorization Code",
+    description="OAuth2 Authorization Code Bearer implementation for Swagger UI - identity provider is Microsoft Azure AD",
+)
+
+
+async def provide_http_token_payload(
+    token: Annotated[str, Depends(oauth2_scheme)],
+) -> Optional[dict]:
     """General function to get the access token payload"""
     try:
-        auth_header = request.headers.get("Authorization")
-        token = auth_header.split("Bearer ")[1]
-        # can later be used for customizing different identity service providers
         return await get_azure_token_payload(token)
     except Exception as err:
         logger.error(f"🔑 Token validation failed: ${err}")
         return None
 
 
-# TBD: implement tests for this:
-# Or: consider removing this step:
-# are public access policies implementing the same desired behavior - just more fine grained?
-async def optional_get_http_access_token_payload(
-    payload=Depends(provide_http_token_payload),
-) -> Optional[dict]:
-    """General function to get the access token payload optionally"""
-    try:
-        return payload
-    except HTTPException as err:
-        if err.status_code == 401:
-            return None
-        else:
-            raise err
-
-
 async def get_http_access_token_payload(
-    payload: dict = Depends(optional_get_http_access_token_payload),
+    payload: dict = Depends(provide_http_token_payload),
 ) -> dict:
     """General function to get the access token payload"""
     # can later be used for customizing different identity service providers
