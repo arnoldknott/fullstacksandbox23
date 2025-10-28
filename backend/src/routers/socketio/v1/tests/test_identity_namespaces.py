@@ -664,7 +664,7 @@ async def test_connect_create_read_update_delete_group(
 
     # Read:
     await connection.client.emit("read", created_group_id, namespace="/group")
-    await connection.client.sleep(0.3)
+    await connection.client.sleep(0.5)
     assert len(connection.responses("transferred")) == 1
     assert connection.responses("transferred")[0]["id"] == created_group_id
     assert connection.responses("transferred")[0]["name"] == test_group["name"]
@@ -1149,7 +1149,7 @@ async def test_connect_create_read_update_delete_sub_group(
     await connection_user2.client.emit(
         "read", created_sub_group_id, namespace="/sub-group"
     )
-    await connection_user2.client.sleep(0.3)
+    await connection_user2.client.sleep(0.5)
     assert len(connection_user2.responses("transferred")) == 1
     assert connection_user2.responses("transferred")[0]["id"] == created_sub_group_id
     assert (

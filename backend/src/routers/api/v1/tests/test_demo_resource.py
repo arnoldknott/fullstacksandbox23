@@ -137,13 +137,22 @@ async def test_get_all_demo_resources(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user1_read_write],
+    indirect=True,
+)
 async def test_get_all_public_demo_resources(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Tests GET all demo resources."""
-    resources = await add_test_demo_resources()
+    app_override_provide_http_token_payload
+
+    resources = await add_test_demo_resources(token_admin_read_write)
     for resource in resources:
         policy = {
             "resource_id": resource.id,
@@ -207,13 +216,22 @@ async def test_get_demo_resource_by_id(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read, token_user1_read_write],
+    indirect=True,
+)
 async def test_get_public_demo_resource_by_id(
     async_client: AsyncClient,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
 ):
     """Tests GET of a demo resources."""
-    resources = await add_test_demo_resources()
+    app_override_provide_http_token_payload
+
+    resources = await add_test_demo_resources(token_admin_read_write)
     policy = {
         "resource_id": resources[0].id,
         # "resource_type": "DemoResource",
@@ -235,16 +253,36 @@ async def test_get_public_demo_resource_by_id(
 
 
 @pytest.mark.anyio
-async def test_get_demo_resource_by_invalid_id_type(async_client: AsyncClient):
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write, token_admin_read_write],
+    indirect=True,
+)
+async def test_get_demo_resource_by_invalid_id_type(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+):
     """Tests GET of a demo resources with invalid id."""
+    app_override_provide_http_token_payload
 
     response = await async_client.get("/api/v1/demoresource/invalid_id")
     assert response.status_code == 422
 
 
 @pytest.mark.anyio
-async def test_get_demo_resource_by_nonexisting_uuid(async_client: AsyncClient):
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write, token_admin_read_write],
+    indirect=True,
+)
+async def test_get_demo_resource_by_nonexisting_uuid(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+):
     """Tests GET of a demo resources with invalid id."""
+    app_override_provide_http_token_payload
 
     response = await async_client.get(f"/api/v1/demoresource/{str(uuid.uuid4())}")
     assert response.status_code == 404
