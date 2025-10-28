@@ -1,26 +1,6 @@
-moved {
-  from = random_uuid.UuidScope2
-  to  = random_uuid.ScopeApiRead
-}
-moved {
-  from = random_uuid.UuidScope3
-  to  = random_uuid.ScopeApiWrite
-}
-moved {
-  from = random_uuid.UuidScope4
-  to  = random_uuid.ScopeSocketio
-}
 resource "random_uuid" "ScopeApiRead" {}
 resource "random_uuid" "ScopeApiWrite" {}
 resource "random_uuid" "ScopeSocketio" {}
-moved {
-  from = random_uuid.UuidRole1
-  to  = random_uuid.RoleAdmin
-}
-moved {
-  from = random_uuid.userGroupUUID
-  to  = random_uuid.RoleUser
-}
 resource "random_uuid" "RoleAdmin" {}     # Used for admins in backend
 resource "random_uuid" "RoleUser" {} # Used for users in backend
 
@@ -278,6 +258,7 @@ resource "azuread_application" "frontend" {
 
 
   # For OAuth2 Authorization Code Flow / on-behalf-of flow with ConfidentialClientApplication from @azure/msal-node
+  # TBD: Consider moving Postman and Thunderclient to its own app registration: debugging!
   web {
     redirect_uris = (terraform.workspace == "dev" ?
       [
@@ -300,6 +281,7 @@ resource "azuread_application" "frontend" {
   # For enabling swaggerUI authentication:
   # Example on how to connect SwaggerUI to AzureAD:
   # https://stackoverflow.com/questions/79259104/fastapi-azure-auth-proof-key-for-code-exchange-is-required-for-cross-origin-au/79260558#79260558
+  # TBD: Consider moving OpenAPI (SwaggerUI) to another app registration: debugging!
   single_page_application {
     redirect_uris = (terraform.workspace == "dev" ?
       [
