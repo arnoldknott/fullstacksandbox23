@@ -8,7 +8,6 @@ from core.security import (
     Guards,
     check_token_against_guards,
     get_http_access_token_payload,
-    optional_get_http_access_token_payload,
 )
 from core.types import GuardTypes
 from crud.demo_resource import DemoResourceCRUD
@@ -44,8 +43,7 @@ async def post_demo_resource(
 # However still a policy is needed for the fine grained access control to make the resource public!
 @router.get("/", status_code=200)
 async def get_all_demo_resources(
-    # token_payload=Depends(get_http_access_token_payload),
-    token_payload=Depends(optional_get_http_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
 ) -> list[DemoResourceRead]:
     """Returns all demo resources resources."""
     return await demo_resource_view.get(token_payload)
@@ -54,10 +52,7 @@ async def get_all_demo_resources(
 @router.get("/{demo_resource_id}", status_code=200)
 async def get_demo_resource_by_id(
     demo_resource_id: UUID,
-    # note: optional allows public access to those resources
-    # where a public access policy is set
-    # Fine grained access control handles this in the CRUD.
-    token_payload=Depends(optional_get_http_access_token_payload),
+    token_payload=Depends(get_http_access_token_payload),
 ) -> DemoResourceRead:
     """Returns a demo resource by id."""
     return await demo_resource_view.get_by_id(demo_resource_id, token_payload)

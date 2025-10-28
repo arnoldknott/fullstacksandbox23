@@ -721,7 +721,7 @@ async def test_get_users_without_token(
 
     response = await async_client.get("/api/v1/user/")
     assert response.status_code == 401
-    assert response.json() == {"detail": "Invalid token."}
+    assert response.json() == {"detail": "Not authenticated"}
 
 
 @pytest.mark.anyio
@@ -1133,7 +1133,7 @@ async def test_get_user_by_azure_id_without_token(
         f"/api/v1/user/azure/{str(user_in_db.azure_user_id)}"
     )
     assert response.status_code == 401
-    assert response.json() == {"detail": "Invalid token."}
+    assert response.json() == {"detail": "Not authenticated"}
 
 
 @pytest.mark.anyio
@@ -1285,7 +1285,7 @@ async def test_get_user_by_id_without_token(
 
     response = await async_client.get(f"/api/v1/user/azure/{str(user_in_db.id)}")
     assert response.status_code == 401
-    assert response.json() == {"detail": "Invalid token."}
+    assert response.json() == {"detail": "Not authenticated"}
 
 
 @pytest.mark.anyio
