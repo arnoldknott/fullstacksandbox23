@@ -304,10 +304,10 @@ resource "azuread_application" "frontend" {
     redirect_uris = (terraform.workspace == "dev" ?
       [
         "http://localhost:8660/docs/oauth2-redirect",
-        "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/docs/oauth2-redirect",
+        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
       ] :
       [
-        "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/docs/oauth2-redirect",
+        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
       ]
     )
   }
