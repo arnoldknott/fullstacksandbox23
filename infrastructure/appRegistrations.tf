@@ -297,23 +297,6 @@ resource "azuread_application" "backendAPI" {
     }
   }
 
-
-  # TBD: consider adding for enabling swaggerUI authentication - change the host names for stage and prod:
-  # Example on how to connect SwaggerUI to AzureAD:
-  # https://stackoverflow.com/questions/79259104/fastapi-azure-auth-proof-key-for-code-exchange-is-required-for-cross-origin-au/79260558#79260558
-  single_page_application {
-    redirect_uris = (terraform.workspace == "dev" ?
-      [
-        "http://localhost:8660/docs/oauth2-redirect",
-        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
-      ] :
-      [
-        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
-      ]
-    )
-  }
-
-
   tags = [var.costcenter, var.owner_name, terraform.workspace]
 }
 
@@ -373,6 +356,21 @@ resource "azuread_application" "frontend" {
         "https://oauth.pstmn.io/v1/callback",
         "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/callback",
         # "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/tokens"
+      ]
+    )
+  }
+
+  # For enabling swaggerUI authentication:
+  # Example on how to connect SwaggerUI to AzureAD:
+  # https://stackoverflow.com/questions/79259104/fastapi-azure-auth-proof-key-for-code-exchange-is-required-for-cross-origin-au/79260558#79260558
+  single_page_application {
+    redirect_uris = (terraform.workspace == "dev" ?
+      [
+        "http://localhost:8660/docs/oauth2-redirect",
+        "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/docs/oauth2-redirect",
+      ] :
+      [
+        "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/docs/oauth2-redirect",
       ]
     )
   }
