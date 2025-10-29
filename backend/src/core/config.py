@@ -9,16 +9,8 @@ from azure.keyvault.secrets import SecretClient
 from pydantic import PostgresDsn, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings
 
-# from azure.identity import EnvironmentCredential
-# from azure.identity import DefaultAzureCredential
 
 logger = logging.getLogger(__name__)
-
-# def get_azure_client(vault_url):
-#     """Returns an Azure client instance."""
-#     credential = DefaultAzureCredential()
-#     client = SecretClient(vault_url=vault_url, credential=credential)
-#     return client
 
 
 def get_variable(variable_name):
@@ -26,16 +18,9 @@ def get_variable(variable_name):
 
     # note: the existence of the environment variable AZURE_KEYVAULT_URL is used to determine whether to use keyvault or not.
     if os.getenv("AZ_KEYVAULT_HOST"):
-        # credential = DefaultAzureCredential()
-        # credential = ManagedIdentityCredential(client_id=os.getenv("BACKEND_API_CLIENT_ID"))
         credential = ManagedIdentityCredential(client_id=os.getenv("AZ_CLIENT_ID"))
-        # Following line works, when the environment variable AZURE_TENANT_ID, BACKEND_API_CLIENT_ID, AZURE_CLIENT_SECRET and AZURE_AUTHORITY_HOST are set.
-        # credential = EnvironmentCredential()
         logger.info("Accessing keyvault")
-        # print("== AZ_KEYVAULT_HOST ==")
-        # print(os.getenv("AZ_KEYVAULT_HOST"))
         client = SecretClient(
-            # TBD: check if we need host or URL here?
             vault_url=os.getenv("AZ_KEYVAULT_HOST"),
             credential=credential,
         )
@@ -111,7 +96,6 @@ class Config(BaseSettings):
     @classmethod
     def build_postgres_url(cls, url: Optional[str], values: ValidationInfo) -> Any:
         """Validates and builds the postgres URL."""
-        # print("Building postgres URL")
         logger.info("Building postgres URL")
         if isinstance(url, str):
             return url
@@ -128,10 +112,6 @@ class Config(BaseSettings):
     # Redis configuration:
     REDIS_HOST: str = os.getenv("REDIS_HOST")
     REDIS_PORT: int = int(os.getenv("REDIS_PORT"))
-    # print("=== REDIS_PORT ===")
-    # print(REDIS_PORT)
-    # print("=== get_variable('REDIS_REDIS_SESSION_DB') ===")
-    # print(get_variable("REDIS_SESSION_DB"))
     if os.getenv("REDIS_SESSION_DB"):
         REDIS_SESSION_DB: int = int(os.getenv("REDIS_SESSION_DB"))
         REDIS_SESSION_PASSWORD: str = get_variable("REDIS_SESSION_PASSWORD")
@@ -169,11 +149,7 @@ def update_config(tries=0):
 @lru_cache(maxsize=None)
 def get_config():
     """Returns the configuration instance."""
-    # print("Configuration called")
     logger.info("Configuration called")
-    # configuration = Config()
-    # print(f"POSTGRES_DB: {configuration.POSTGRES_DB}")
-    # return Config()
     return update_config()
 
 
