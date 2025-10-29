@@ -33,7 +33,7 @@ terraform {
 provider "azurerm" {
   features {}
 
-  # Those variables should be comming from the environment variables ARM_*
+  # Those variables should be coming from the environment variables ARM_*
   client_id = var.azure_client_id # ARM_CLIENT_ID
   # client_secret   = var.azure_client_secret # ARM_CLIENT_SECRET - not necessary, when using managed identity, but needed, when using service principle - so provide through ARM_CLIENT_SECRET variable there!
   subscription_id = var.azure_subscription_id # ARM_SUBSCRIPTION_ID

@@ -1,8 +1,8 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from core.security import CurrentAccessTokenHasRole, CurrentAccessTokenHasScope
 from core.config import config
+from core.security import CurrentAccessTokenHasRole, CurrentAccessTokenHasScope
 from routers.api.v1.access import router as access_router
 from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router

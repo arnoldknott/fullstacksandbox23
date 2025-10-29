@@ -13,7 +13,6 @@ from core.databases import run_migrations
 from core.fastapi import attach_middeleware, mount_rest_api_routes
 from core.socketio import mount_socketio_app, socketio_server
 
-
 logger = logging.getLogger(__name__)
 
 api_prefix = "/api/v1"
@@ -41,7 +40,7 @@ fastapi_app = FastAPI(
     lifespan=lifespan,
     # swagger_ui_init_oauth={
     swagger_ui_init_oauth={
-        "clientId": config.FRONTEND_SVELTE_CLIENT_ID,
+        "clientId": config.DEVELOPER_CLIENTS_CLIENT_ID,
         "useBasicAuthenticationWithAccessCodeGrant": True,
         "usePkceWithAuthorizationCodeGrant": True,
         "scopes": [
