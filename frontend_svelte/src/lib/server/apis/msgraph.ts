@@ -6,6 +6,19 @@ import type { Team } from '@microsoft/microsoft-graph-types';
 
 const appConfig = await AppConfig.getInstance();
 
+/* Selected endpoints from Microsoft Graph API, might be very relevant for future:
+- OneDrive:
+	drive itself: 
+		GET https://graph.microsoft.com/v1.0/me/drives/
+		=> provides drive-id
+	items (files and folders):
+		GET https://graph.microsoft.com/v1.0/me/drives/{drive-id}/items?filter=...
+		requires a filter query!
+		=> provides item-id
+-> Groups: 
+	GET https://graph.microsoft.com/v1.0/me/transitiveMemberOf
+*/
+
 class MicrosoftGraph extends BaseAPI {
 	appConfig: AppConfig;
 
