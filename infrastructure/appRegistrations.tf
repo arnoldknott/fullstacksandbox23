@@ -30,7 +30,7 @@ resource "azuread_application" "backendAPI" {
   api {
     // There's also a an "Authorized client applications" (preAuthorizedApplications in Manifest) section in portal, that also binds to the scopes. But deosn't appear in Terraform.
     // add manually: frontend as preAuthorizedApplication!
-    known_client_applications      = [azuread_application.frontend.client_id]
+    known_client_applications      = [azuread_application.frontend.client_id, azuread_application.developerClients.client_id]
     requested_access_token_version = 2
 
     # add this one later to prevent useres being asked for consent in the frontend
@@ -108,6 +108,8 @@ resource "azuread_application" "backendAPI" {
 
   # Grants the app access to the Microsoft Graph API with specific roles and scopes
   # MS Graph access to openid, profile and User.Read
+  # Note: this is for on-behalf-of flow from backendAPI to MS Graph API
+  # The frontend gets those scopes directly from MS Graph when user logs in and sscopes are requested there.
   required_resource_access {
     resource_app_id = "00000003-0000-0000-c000-000000000000"
 
@@ -229,7 +231,7 @@ resource "azuread_application" "backendAPI" {
   tags = [var.costcenter, var.owner_name, terraform.workspace]
 }
 
-# # creates a client secret for the frontend:
+# creates a client secret - which is used for example in postman as client secret
 resource "azuread_application_password" "backendAPIClientSecret" {
   application_id = azuread_application.backendAPI.id
 }
@@ -270,7 +272,7 @@ resource "azuread_application" "frontend" {
 
 
   # For OAuth2 Authorization Code Flow / on-behalf-of flow with ConfidentialClientApplication from @azure/msal-node
-  # TBD: Consider moving Postman and Thunderclient to its own app registration: debugging!
+  # TBD: Consider moving Postman and Thunderclient to its own app registration: developerClients!
   web {
     redirect_uris = (terraform.workspace == "dev" ?
       [
@@ -289,11 +291,16 @@ resource "azuread_application" "frontend" {
       ]
     )
   }
+  # or
+  # For Oauth2 Authorization Code Flow with PKCE from using PublicClientApplication from @azure/msal-browser
+  # single_page_application {
+  #   redirect_uris = ["http://localhost:8661/oauth/callback", "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}:${azurerm_container_app.FrontendSvelteContainer.ingress[0].target_port}/oauth/callback"]
+  # }
 
   # For enabling swaggerUI authentication:
   # Example on how to connect SwaggerUI to AzureAD:
   # https://stackoverflow.com/questions/79259104/fastapi-azure-auth-proof-key-for-code-exchange-is-required-for-cross-origin-au/79260558#79260558
-  # TBD: Consider moving OpenAPI (SwaggerUI) to another app registration: debugging!
+  # TBD: Consider moving OpenAPI (SwaggerUI) to another app registration: developerClients!
   single_page_application {
     redirect_uris = (terraform.workspace == "dev" ?
       [
@@ -319,16 +326,44 @@ resource "azuread_application" "frontend" {
 
   privacy_statement_url = "https://www.dtu.dk/english/about/use-of-personal-data"
 
-  # or
-  # For Oauth2 Authorization Code Flow with PKCE from using PublicClientApplication from @azure/msal-browser
-  # single_page_application {
-  #   redirect_uris = ["http://localhost:8661/oauth/callback", "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}:${azurerm_container_app.FrontendSvelteContainer.ingress[0].target_port}/oauth/callback"]
-  # }
-
   tags = [var.costcenter, var.owner_name, terraform.workspace]
 }
 
-# # creates a client secret for the frontend:
+# creates a client secret for the frontend for the web application, which uses it for msal-client-node:
 resource "azuread_application_password" "frontendClientSecret" {
   application_id = azuread_application.frontend.id
+}
+
+
+resource "azuread_application" "developerClients" {
+  display_name = "${var.project_name}-developerClients-${terraform.workspace}"
+  description  = "Developer clients for the ${var.project_name} application"
+  owners                  = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
+  prevent_duplicate_names = true
+  sign_in_audience        = "AzureADMyOrg"
+  group_membership_claims = ["ApplicationGroup"]
+
+  web {
+    redirect_uris = [
+      # ThunderClient:
+      "https://www.thunderclient.com/oauth/callback",
+      # Postman:
+      "https://oauth.pstmn.io/v1/callback",
+    ]
+  }
+
+  single_page_application {
+    redirect_uris = (terraform.workspace == "dev" ?
+      # OpenAPI (former SwaggerUI) interface served from backendAPI:
+      [
+        "http://localhost:8660/docs/oauth2-redirect",
+        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
+      ] :
+      [
+        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
+      ]
+    )
+  }
+
+  tags = [var.costcenter, var.owner_name, terraform.workspace]
 }

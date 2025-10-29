@@ -384,7 +384,7 @@ resource "azurerm_key_vault_secret" "azure-tenant-id" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-# backend-client-secret is the secret for the backend API, to act on behalf of the user logged in in the frontend
+# backend-client-secret is used for example in postman as client secret to access the backend API app registration
 resource "azurerm_key_vault_secret" "back-client-secret" {
   name         = "back-client-secret"
   value        = azuread_application_password.backendAPIClientSecret.value
