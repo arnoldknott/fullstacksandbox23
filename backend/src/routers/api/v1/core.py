@@ -3,32 +3,15 @@ from typing import Annotated
 
 import httpx
 from fastapi import APIRouter, Depends, Header, Query
-from fastapi.security import OAuth2AuthorizationCodeBearer
 from msal import ConfidentialClientApplication
 
 from core.config import config
-from core.security import get_azure_token_payload
+from core.security import Guards, check_token_against_guards, get_http_access_token_payload
+from core.types import GuardTypes
 from jobs.demo.tasks import demo_task
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-
-oauth2_scheme = OAuth2AuthorizationCodeBearer(
-    authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize?code=1234",
-    tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/token",
-    scopes={
-        # 'User.Read' : "Read user profile",
-        # "openid": "OpenID Connect scope",
-        # "profile": "Read user profile",
-        # f"api://{config.API_SCOPE}/.default": "Minimum scopes for backendAPI",
-        f"api://{config.API_SCOPE}/api.read": "Read API",
-        f"api://{config.API_SCOPE}/api.write": "Write API",
-        # f"api://{config.API_SCOPE}/socketio": "Socket.io",
-    },
-    scheme_name="OAuth2 Authorization Code",
-    description="OAuth2 Authorization Code Bearer implementation for Swagger UI - identity provider is Microsoft Azure AD",
-)
 
 
 confClientApp = ConfidentialClientApplication(
@@ -114,11 +97,14 @@ async def run_demo_task_in_celery(
     return {"result": result}
 
 
-async def get_token_payload(token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_token_payload(
+        token_payload=Depends(get_http_access_token_payload),
+        guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"]))
+    ):
     """Decodes the token from the request."""
     logger.info("Getting token payload")
-    payload = await get_azure_token_payload(token)
-    return payload
+    await check_token_against_guards(token_payload, guards)
+    return token_payload
 
 
 @router.get("/oauth_token_payload")
