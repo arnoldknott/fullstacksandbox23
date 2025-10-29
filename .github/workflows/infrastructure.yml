@@ -256,7 +256,8 @@ jobs:
             exit 1
           fi
           echo "WORKSPACE=${WORKSPACE}"
-
+          mkdir ~/.ssh
+          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
       - name: Download plan file from container
         run: |
           az storage blob download \
