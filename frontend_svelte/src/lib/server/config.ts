@@ -112,8 +112,8 @@ export default class AppConfig {
 				// console.log(keyvaultHealth);
 				// console.log("📜 app_config - keyvaultHealth.value: ");
 				// console.log(keyvaultHealth?.value);
-				const appRegClientId = await client?.getSecret('frontend-svelte-client-id');
-				const appClientSecret = await client?.getSecret('frontend-svelte-client-secret');
+				const frontendSvelteClientId = await client?.getSecret('frontend-svelte-client-id');
+				const frontendSvelteClientSecret = await client?.getSecret('frontend-svelte-client-secret');
 				const apiScope = await client?.getSecret('api-scope');
 				const azTenantId = await client?.getSecret('azure-tenant-id');
 				const redisSessionPassword = await client?.getSecret('redis-session-password');
@@ -122,8 +122,8 @@ export default class AppConfig {
 				this.backend_origin = `http://${this.backend_host}:80`;
 				this.backend_fqdn = backend_fqdn?.value || '';
 				// this.backend_host = backend_host;
-				this.frontend_svelte_client_id = appRegClientId?.value || '';
-				this.frontend_svelte_client_secret = appClientSecret?.value || '';
+				this.frontend_svelte_client_id = frontendSvelteClientId?.value || '';
+				this.frontend_svelte_client_secret = frontendSvelteClientSecret?.value || '';
 				this.api_scope = apiScope?.value || '';
 				this.api_scope_default = `api://${apiScope?.value}/.default`;
 				// console.log("📜 app_config - keyvault - api-scope:");
@@ -205,14 +205,14 @@ export default class AppConfig {
 // 		console.log(keyvaultHealth);
 // 		console.log("app_config - keyvaultHealth.value: ");
 // 		console.log(keyvaultHealth.value);
-// 		const appRegClientId = await client.getSecret('app-reg-client-id');
-// 		const appClientSecret = await client.getSecret('app-client-secret');
+// 		const frontendSvelteClientId = await client.getSecret('app-reg-client-id');
+// 		const frontendSvelteClientSecret = await client.getSecret('app-client-secret');
 // 		const apiScope = await client.getSecret('api-scope');
 // 		const az_tenant_id = await client.getSecret('azure_tenant_id');
 // 		const redisPassword = await client.getSecret('redis-password');
 // 		configuration.keyvault_health = keyvaultHealth.value;
-// 		configuration.frontend_svelte_client_id = appRegClientId.value || '';
-// 		configuration.frontend_svelte_client_secret = appClientSecret.value || '';
+// 		configuration.frontend_svelte_client_id = frontendSvelteClientId.value || '';
+// 		configuration.frontend_svelte_client_secret = frontendSvelteClientSecret.value || '';
 // 		configuration.api_scope = apiScope.value || '';
 // 		configuration.az_authority = `https://login.microsoftonline.com/${az_tenant_id.value}`,
 // 		configuration.redis_session_password = redisSessionPassword.value || '';

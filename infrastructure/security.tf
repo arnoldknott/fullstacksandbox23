@@ -359,6 +359,18 @@ resource "azurerm_key_vault_secret" "frontendSvelteClientId" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+resource "azurerm_key_vault_secret" "frontendSvelteClientSecret" {
+  name         = "frontend-svelte-client-secret"
+  value        = azuread_application_password.frontendClientSecret.value
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+resource "azurerm_key_vault_secret" "developerClientsClientId" {
+  name         = "developer-clients-client-id"
+  value        = azuread_application.developerClients.client_id
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
 
 resource "azurerm_key_vault_secret" "backendApiClientId" {
   name         = "backend-api-client-id"
@@ -366,11 +378,6 @@ resource "azurerm_key_vault_secret" "backendApiClientId" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-resource "azurerm_key_vault_secret" "frontendSvelteClientSecret" {
-  name         = "frontend-svelte-client-secret"
-  value        = azuread_application_password.frontendClientSecret.value
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
 
 resource "azurerm_key_vault_secret" "api-scope" {
   name         = "api-scope"
@@ -384,10 +391,18 @@ resource "azurerm_key_vault_secret" "azure-tenant-id" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-# backend-client-secret is the secret for the backend API, to act on behalf of the user logged in in the frontend
+# backend uses for it for its msal-client for user-impersonation to access MS Graph API
 resource "azurerm_key_vault_secret" "back-client-secret" {
   name         = "back-client-secret"
   value        = azuread_application_password.backendAPIClientSecret.value
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+# Stores secret for developer clients, which are used in Postman and Thunderclient
+# (not used programmatically anywhere else for now)
+resource "azurerm_key_vault_secret" "developer-clients-secret" {
+  name         = "developer-clients-secret"
+  value        = azuread_application_password.developerClientsSecret.value
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
