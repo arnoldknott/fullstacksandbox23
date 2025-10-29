@@ -32,7 +32,7 @@ env:
   ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
   ARM_USE_AZUREAD: true
   # use as user --device-code login but keep also for managed-identity login:
-  BACKEND_API_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
+  GITHUBACTIONS_MANAGEDIDENTITY_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
   AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
 
@@ -179,7 +179,7 @@ jobs:
         run: |
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
-            -var "azure_client_id=${BACKEND_API_CLIENT_ID}" \
+            -var "azure_client_id=${GITHUBACTIONS_MANAGEDIDENTITY_CLIENT_ID}" \
             -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
             -var "azure_tenant_id=${AZURE_TENANT_ID}" \
             -var "developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}" \
