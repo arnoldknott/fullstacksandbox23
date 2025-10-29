@@ -272,20 +272,14 @@ resource "azuread_application" "frontend" {
 
 
   # For OAuth2 Authorization Code Flow / on-behalf-of flow with ConfidentialClientApplication from @azure/msal-node
-  # TBD: Consider moving Postman and Thunderclient to its own app registration: developerClients!
   web {
     redirect_uris = (terraform.workspace == "dev" ?
       [
         "http://localhost:8661/oauth/callback",
-        "https://www.thunderclient.com/oauth/callback",
-        "https://oauth.pstmn.io/v1/callback",
         "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/callback",
         # "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/tokens"
       ] :
       [
-        # TBD: remove thunderclient before scalling app to bigger audience! -> requires a working administrative and admin frontend
-        "https://www.thunderclient.com/oauth/callback",
-        "https://oauth.pstmn.io/v1/callback",
         "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/callback",
         # "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/tokens"
       ]
@@ -296,22 +290,6 @@ resource "azuread_application" "frontend" {
   # single_page_application {
   #   redirect_uris = ["http://localhost:8661/oauth/callback", "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}:${azurerm_container_app.FrontendSvelteContainer.ingress[0].target_port}/oauth/callback"]
   # }
-
-  # For enabling swaggerUI authentication:
-  # Example on how to connect SwaggerUI to AzureAD:
-  # https://stackoverflow.com/questions/79259104/fastapi-azure-auth-proof-key-for-code-exchange-is-required-for-cross-origin-au/79260558#79260558
-  # TBD: Consider moving OpenAPI (SwaggerUI) to another app registration: developerClients!
-  single_page_application {
-    redirect_uris = (terraform.workspace == "dev" ?
-      [
-        "http://localhost:8660/docs/oauth2-redirect",
-        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
-      ] :
-      [
-        "https://${azurerm_container_app.BackendAPIContainer.ingress[0].fqdn}/docs/oauth2-redirect",
-      ]
-    )
-  }
 
   # To allow backendAPI to impersonate the user, that is logged in in the frontend, to access the Microsoft Graph API:
   # https://github.com/Azure-Samples/ms-identity-python-on-behalf-of
@@ -369,6 +347,7 @@ resource "azuread_application" "developerClients" {
 }
 
 # creates a client secret for the developer clients, which are used in Postman and Thunderclient
+# TBD: consider different secrets for those two clients and one for each developer?
 resource "azuread_application_password" "developerClientsSecret" {
   application_id = azuread_application.developerClients.id
 }
