@@ -161,6 +161,18 @@ resource "azuread_application" "backendAPI" {
       type = "Scope"
     }
 
+    # Sites.Read.All - delegated
+    # resource_access {
+    #   id   = ""
+    #   type = "Scope"
+    # }
+
+    # Sites.ReadWrite.All - delegated
+    # resource_access {
+    #   id   = ""
+    #   type = "Scope"
+    # }
+
     # # Mail including the shared mailboxes - delegated:
     # # Mail.Read.Shared - delegated
     # resource_access {
