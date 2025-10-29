@@ -231,7 +231,7 @@ resource "azuread_application" "backendAPI" {
   tags = [var.costcenter, var.owner_name, terraform.workspace]
 }
 
-# creates a client secret - which is used for example in postman as client secret
+# creates a client secret - which the backend uses for it's msal-client for user-impersonation to access MS Graph API
 resource "azuread_application_password" "backendAPIClientSecret" {
   application_id = azuread_application.backendAPI.id
 }
@@ -366,4 +366,9 @@ resource "azuread_application" "developerClients" {
   }
 
   tags = [var.costcenter, var.owner_name, terraform.workspace]
+}
+
+# creates a client secret for the developer clients, which are used in Postman and Thunderclient
+resource "azuread_application_password" "developerClientsSecret" {
+  application_id = azuread_application.developerClients.id
 }

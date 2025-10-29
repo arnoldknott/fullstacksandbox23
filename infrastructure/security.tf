@@ -384,10 +384,18 @@ resource "azurerm_key_vault_secret" "azure-tenant-id" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-# backend-client-secret is used for example in postman as client secret to access the backend API app registration
+# backend uses for it for its msal-client for user-impersonation to access MS Graph API
 resource "azurerm_key_vault_secret" "back-client-secret" {
   name         = "back-client-secret"
   value        = azuread_application_password.backendAPIClientSecret.value
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+# Stores secret for developer clients, which are used in Postman and Thunderclient
+# (not used programmatically anywhere else for now)
+resource "azurerm_key_vault_secret" "developer-clients-secret" {
+  name         = "developer-clients-secret"
+  value        = azuread_application_password.developerClientsSecret.value
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
