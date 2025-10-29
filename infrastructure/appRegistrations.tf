@@ -1,8 +1,8 @@
 resource "random_uuid" "ScopeApiRead" {}
 resource "random_uuid" "ScopeApiWrite" {}
 resource "random_uuid" "ScopeSocketio" {}
-resource "random_uuid" "RoleAdmin" {}     # Used for admins in backend
-resource "random_uuid" "RoleUser" {} # Used for users in backend
+resource "random_uuid" "RoleAdmin" {} # Used for admins in backend
+resource "random_uuid" "RoleUser" {}  # Used for users in backend
 
 # # get the application ids for the well known applications to configure ms graph access:
 # data "azuread_service_principal" "msgraph" {
@@ -336,8 +336,8 @@ resource "azuread_application_password" "frontendClientSecret" {
 
 
 resource "azuread_application" "developerClients" {
-  display_name = "${var.project_name}-developerClients-${terraform.workspace}"
-  description  = "Developer clients for the ${var.project_name} application"
+  display_name            = "${var.project_name}-developerClients-${terraform.workspace}"
+  description             = "Developer clients for the ${var.project_name} application"
   owners                  = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
   prevent_duplicate_names = true
   sign_in_audience        = "AzureADMyOrg"

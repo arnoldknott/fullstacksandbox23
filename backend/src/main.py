@@ -13,7 +13,6 @@ from core.databases import run_migrations
 from core.fastapi import attach_middeleware, mount_rest_api_routes
 from core.socketio import mount_socketio_app, socketio_server
 
-
 logger = logging.getLogger(__name__)
 
 api_prefix = "/api/v1"
