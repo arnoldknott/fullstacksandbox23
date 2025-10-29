@@ -41,7 +41,7 @@ fastapi_app = FastAPI(
     lifespan=lifespan,
     # swagger_ui_init_oauth={
     swagger_ui_init_oauth={
-        "clientId": config.FRONTEND_SVELTE_CLIENT_ID,
+        "clientId": config.DEVELOPER_CLIENTS_CLIENT_ID,
         "useBasicAuthenticationWithAccessCodeGrant": True,
         "usePkceWithAuthorizationCodeGrant": True,
         "scopes": [

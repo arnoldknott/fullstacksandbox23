@@ -92,6 +92,10 @@ class Config(BaseSettings):
     AZURE_AUTHORITY: Optional[str] = (
         f"https://login.microsoftonline.com/{AZURE_TENANT_ID}"
     )
+    # uses devleopert clients app registration for the integrated OpenAPI (former SwaggerUI):
+    DEVELOPER_CLIENTS_CLIENT_ID: Optional[str] = get_variable(
+        "DEVELOPER_CLIENTS_CLIENT_ID"
+    )
 
     # Postgres configuration:
     # always get those variables from the environment:

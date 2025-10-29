@@ -359,6 +359,18 @@ resource "azurerm_key_vault_secret" "frontendSvelteClientId" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+resource "azurerm_key_vault_secret" "frontendSvelteClientSecret" {
+  name         = "frontend-svelte-client-secret"
+  value        = azuread_application_password.frontendClientSecret.value
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+resource "azurerm_key_vault_secret" "developerClientsClientId" {
+  name         = "developer-clients-client-id"
+  value        = azuread_application.developerClients.client_id
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
 
 resource "azurerm_key_vault_secret" "backendApiClientId" {
   name         = "backend-api-client-id"
@@ -366,11 +378,6 @@ resource "azurerm_key_vault_secret" "backendApiClientId" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-resource "azurerm_key_vault_secret" "frontendSvelteClientSecret" {
-  name         = "frontend-svelte-client-secret"
-  value        = azuread_application_password.frontendClientSecret.value
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
 
 resource "azurerm_key_vault_secret" "api-scope" {
   name         = "api-scope"
