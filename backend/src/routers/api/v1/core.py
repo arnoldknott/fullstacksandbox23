@@ -6,7 +6,11 @@ from fastapi import APIRouter, Depends, Header, Query
 from msal import ConfidentialClientApplication
 
 from core.config import config
-from core.security import Guards, check_token_against_guards, get_http_access_token_payload
+from core.security import (
+    Guards,
+    check_token_against_guards,
+    get_http_access_token_payload,
+)
 from core.types import GuardTypes
 from jobs.demo.tasks import demo_task
 
@@ -98,9 +102,9 @@ async def run_demo_task_in_celery(
 
 
 async def get_token_payload(
-        token_payload=Depends(get_http_access_token_payload),
-        guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"]))
-    ):
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+):
     """Decodes the token from the request."""
     logger.info("Getting token payload")
     await check_token_against_guards(token_payload, guards)
