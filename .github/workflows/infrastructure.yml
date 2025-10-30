@@ -35,6 +35,9 @@ env:
   GITHUBACTIONS_MANAGEDIDENTITY_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
   AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  # public ssh key for the VM:
+  SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+  PUBLIC_SSH_KEY_PATH: ${{ secrets.PUBLIC_SSH_KEY_PATH }}
 
 jobs:
   plan:
@@ -63,9 +66,6 @@ jobs:
       # Redis settings:
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
       REDIS_INSIGHT_PORT: ${{ secrets.REDIS_INSIGHT_PORT }}
-      # public ssh key for the VM:
-      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
-      PUBLIC_SSH_KEY_PATH: ${{ secrets.PUBLIC_SSH_KEY_PATH }}
     defaults:
       run:
         working-directory: infrastructure
