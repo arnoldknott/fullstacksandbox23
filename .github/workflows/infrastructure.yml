@@ -140,6 +140,7 @@ jobs:
           echo ${{ vars.SSH_PUBLIC_KEY }}
           echo "Creating public ssh key file at path: ${{ vars.PUBLIC_SSH_KEY_PATH }}"
           echo ${{ vars.SSH_PUBLIC_KEY }} > ${{ vars.PUBLIC_SSH_KEY_PATH }}
+          echo "less output:"
           less ${{ vars.PUBLIC_SSH_KEY_PATH }}
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
@@ -180,6 +181,7 @@ jobs:
       - name: tofu plan
         id: tofu_plan
         run: |
+          less ${{ vars.PUBLIC_SSH_KEY_PATH }}
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
             -var "azure_client_id=${GITHUBACTIONS_MANAGEDIDENTITY_CLIENT_ID}" \
@@ -269,6 +271,7 @@ jobs:
           echo ${{ vars.SSH_PUBLIC_KEY }}
           echo "Creating public ssh key file at path: ${{ vars.PUBLIC_SSH_KEY_PATH }}"
           echo ${{ vars.SSH_PUBLIC_KEY }} > ${{ vars.PUBLIC_SSH_KEY_PATH }}
+          echo "less output:"
           less ${{ vars.PUBLIC_SSH_KEY_PATH }}
       - name: Download plan file from container
         run: |
