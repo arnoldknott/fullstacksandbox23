@@ -127,6 +127,7 @@ async def get_onbehalfof(
     authorization: Annotated[str | None, Header()] = None,
     ):
     """Access Microsoft Graph as downstream API on behalf of the user."""
+    await check_token_against_guards(token_payload, guards)
     # print("=== header ===")
     # print(authorization)
     token = authorization.split("Bearer ")[1]
@@ -151,7 +152,7 @@ async def get_onbehalfof(
             # response = get_users_groups_ms_graph(on_behalf_of_token)
             response = get_me_ms_graph(on_behalf_of_token)
             logger.info("On behalf of access to Microsoft Graph")
-            return {"body": response}
+            return response
     except Exception as err:
         logger.error("🔑 Failed to fetch user groups from Microsoft Graph.")
         raise err
