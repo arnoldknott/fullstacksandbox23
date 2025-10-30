@@ -139,6 +139,8 @@ jobs:
           echo "Writing public key to: ${PUBLIC_SSH_KEY_PATH}"
           printf "%s\n" "${SSH_PUBLIC_KEY}" > "${PUBLIC_SSH_KEY_PATH}"
           chmod 600 "${PUBLIC_SSH_KEY_PATH}"
+          pwd
+          less ${PUBLIC_SSH_KEY_PATH}
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
@@ -179,6 +181,7 @@ jobs:
         id: tofu_plan
         run: |
           less ${PUBLIC_SSH_KEY_PATH}
+          pwd
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
             -var "azure_client_id=${GITHUBACTIONS_MANAGEDIDENTITY_CLIENT_ID}" \
@@ -198,11 +201,18 @@ jobs:
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" \
 
+      - name: Monitor the output file from tofu plan
+        run: |
+          echo "Tofu plan output 1:"
+          ls -la ${WORKSPACE}_${COMMIT_SHA}.tfplan
+          echo "Tofu plan output 2:"
+          ls -la ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.tfplan
+
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${WORKSPACE}_${COMMIT_SHA}.tfplan
-          path: ${WORKSPACE}_${COMMIT_SHA}.tfplan
+          name: ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.tfplan
+          path: ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.tfplan
 
       - name: Upload plan file to container
         if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
@@ -267,6 +277,8 @@ jobs:
           echo "Writing public key to: ${PUBLIC_SSH_KEY_PATH}"
           printf "%s\n" "${SSH_PUBLIC_KEY}" > "${PUBLIC_SSH_KEY_PATH}"
           chmod 600 "${PUBLIC_SSH_KEY_PATH}"
+          pwd
+          less ${PUBLIC_SSH_KEY_PATH}
       - name: Download plan file from container
         run: |
           az storage blob download \
@@ -295,6 +307,7 @@ jobs:
       - name: tofu apply
         run: |
           less ${PUBLIC_SSH_KEY_PATH}
+          pwd
           tofu apply -auto-approve ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
       # - name: OpenTofu Output
