@@ -7,12 +7,12 @@
 			name: 'Top Navbar',
 			description:
 				'The top navigation bar across the application for top level application navigation and user login and logout.',
-			url: '/playground/layout/navbar'
+			url: '/playground/user-interface/navbar'
 		},
 		{
 			name: 'Sidebar',
 			description: 'The sidebar navigation for secondary application navigation.',
-			url: '/playground/layout/sidebar'
+			url: '/playground/user-interface/sidebar'
 		}
 	];
 </script>

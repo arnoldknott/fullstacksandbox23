@@ -5,7 +5,7 @@
 		{
 			name: 'User interface',
 			description: 'Playground for layouting navigation elements, components, and placements',
-			url: '/user_interface'
+			url: '/user-interface'
 		},
 		{
 			name: 'Components',
@@ -45,7 +45,7 @@
 		{
 			name: 'UserAgent',
 			description: 'TBD: UserAgent data of the application: browser, OS, etc.',
-			url: '/user_agent'
+			url: '/user-agent'
 		},
 		{
 			name: 'Websockets',
