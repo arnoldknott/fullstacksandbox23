@@ -1326,7 +1326,7 @@
 
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Pane Dividers (Diffs) 🚧</Heading>
-		<div class="diff aspect-video">
+		<div class="diff aspect-video rounded-2xl">
 			<div class="diff-item-1">
 				<img
 					alt="Bavarian lake Starnberger See in sunset"
