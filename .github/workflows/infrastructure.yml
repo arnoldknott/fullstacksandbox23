@@ -212,7 +212,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.tfplan
-          path: ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.tfplan
+          path: infrastructure/${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.tfplan
 
       - name: Upload plan file to container
         if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
