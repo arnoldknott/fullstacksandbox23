@@ -125,7 +125,7 @@ async def get_onbehalfof(
     token_payload: Annotated[dict, Depends(get_token_payload)],
     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
     authorization: Annotated[str | None, Header()] = None,
-    ):
+):
     """Access Microsoft Graph as downstream API on behalf of the user."""
     await check_token_against_guards(token_payload, guards)
     # print("=== header ===")
