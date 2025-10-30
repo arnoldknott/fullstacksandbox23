@@ -204,9 +204,9 @@ jobs:
       - name: Monitor the output file from tofu plan
         run: |
           echo "Tofu plan output 1:"
-          less ${WORKSPACE}_${COMMIT_SHA}.tfplan
+          ls -la ${WORKSPACE}_${COMMIT_SHA}.tfplan
           echo "Tofu plan output 2:"
-          less ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.tfplan
+          ls -la ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.tfplan
 
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v4
