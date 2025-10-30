@@ -4,7 +4,7 @@ resource "azurerm_linux_virtual_machine" "adminVirtualMachine" {
   name                = "${var.project_name}-adminVirtualMachine-${terraform.workspace}"
   resource_group_name = azurerm_resource_group.resourceGroup.name
   location            = azurerm_resource_group.resourceGroup.location
-  size                = "Standard_B1ls"
+  size                = "Standard_DS1_v2"
   admin_username      = "adminuser"
   network_interface_ids = [
     azurerm_network_interface.adminVirtualMachineNetworkInterface[0].id,

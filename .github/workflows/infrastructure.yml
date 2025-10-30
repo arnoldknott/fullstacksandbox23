@@ -35,6 +35,9 @@ env:
   GITHUBACTIONS_MANAGEDIDENTITY_CLIENT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
   AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  # public ssh key for the VM:
+  PUBLIC_SSH_KEY_PATH: ${{ vars.PUBLIC_SSH_KEY_PATH }}
+  SSH_PUBLIC_KEY: ${{ vars.SSH_PUBLIC_KEY }}
 
 jobs:
   plan:
@@ -63,9 +66,6 @@ jobs:
       # Redis settings:
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
       REDIS_INSIGHT_PORT: ${{ secrets.REDIS_INSIGHT_PORT }}
-      # public ssh key for the VM:
-      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
-      PUBLIC_SSH_KEY_PATH: ${{ secrets.PUBLIC_SSH_KEY_PATH }}
     defaults:
       run:
         working-directory: infrastructure
@@ -135,9 +135,10 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          echo "WORKSPACE=${WORKSPACE}"
-          mkdir ~/.ssh
-          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
+          mkdir -p "$(dirname "${PUBLIC_SSH_KEY_PATH}")"
+          echo "Writing public key to: ${PUBLIC_SSH_KEY_PATH}"
+          printf "%s\n" "${SSH_PUBLIC_KEY}" > "${PUBLIC_SSH_KEY_PATH}"
+          chmod 600 "${PUBLIC_SSH_KEY_PATH}"
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
@@ -194,7 +195,21 @@ jobs:
             -var "postgres_port=${POSTGRES_PORT}" \
             -var "redis_port=${REDIS_PORT}" \
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
+            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" > ${WORKSPACE}_${COMMIT_SHA}.log
+          less ${WORKSPACE}_${COMMIT_SHA}.log
+
+      # - name: Monitor the output file from tofu plan
+      #   run: |
+      #     echo "Tofu plan output 1:"
+      #     ls -la ${WORKSPACE}_${COMMIT_SHA}.log
+      #     echo "Tofu plan output 2:"
+      #     ls -la ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.log
+
+      - name: Upload migration upgrade artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.log
+          path: infrastructure/${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.log
 
       - name: Upload plan file to container
         if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
@@ -255,8 +270,10 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          echo "WORKSPACE=${WORKSPACE}"
-
+          mkdir -p "$(dirname "${PUBLIC_SSH_KEY_PATH}")"
+          echo "Writing public key to: ${PUBLIC_SSH_KEY_PATH}"
+          printf "%s\n" "${SSH_PUBLIC_KEY}" > "${PUBLIC_SSH_KEY_PATH}"
+          chmod 600 "${PUBLIC_SSH_KEY_PATH}"
       - name: Download plan file from container
         run: |
           az storage blob download \
