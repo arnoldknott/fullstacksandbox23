@@ -121,7 +121,11 @@ async def read_token_payload(
 # Note: this one is protected under the scope "user_impersonization"" from https://management.azure.com
 # Cannot scopes from other audiences, like this backendAPI.
 @router.get("/onbehalfof")
-async def get_onbehalfof(authorization: Annotated[str | None, Header()] = None):
+async def get_onbehalfof(
+    token_payload: Annotated[dict, Depends(get_token_payload)],
+    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    authorization: Annotated[str | None, Header()] = None,
+    ):
     """Access Microsoft Graph as downstream API on behalf of the user."""
     # print("=== header ===")
     # print(authorization)
