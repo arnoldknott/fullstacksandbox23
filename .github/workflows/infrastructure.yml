@@ -135,12 +135,12 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          mkdir ~/.ssh
           echo ${SSH_PUBLIC_KEY}
           echo "Creating public ssh key file at path: ${PUBLIC_SSH_KEY_PATH}"
           echo ${{ vars.SSH_PUBLIC_KEY }}
           echo "Creating public ssh key file at path: ${{ vars.PUBLIC_SSH_KEY_PATH }}"
           echo ${{ vars.SSH_PUBLIC_KEY }} > ${{ vars.PUBLIC_SSH_KEY_PATH }}
+          less ${{ vars.PUBLIC_SSH_KEY_PATH }}
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
@@ -264,12 +264,12 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          mkdir ~/.ssh
           echo ${SSH_PUBLIC_KEY}
           echo "Creating public ssh key file at path: ${PUBLIC_SSH_KEY_PATH}"
           echo ${{ vars.SSH_PUBLIC_KEY }}
           echo "Creating public ssh key file at path: ${{ vars.PUBLIC_SSH_KEY_PATH }}"
           echo ${{ vars.SSH_PUBLIC_KEY }} > ${{ vars.PUBLIC_SSH_KEY_PATH }}
+          less ${{ vars.PUBLIC_SSH_KEY_PATH }}
       - name: Download plan file from container
         run: |
           az storage blob download \
