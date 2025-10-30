@@ -277,11 +277,9 @@ resource "azuread_application" "frontend" {
       [
         "http://localhost:8661/oauth/callback",
         "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/callback",
-        # "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/tokens"
       ] :
       [
-        "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/callback",
-        # "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/tokens"
+        "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}/oauth/callback"
       ]
     )
   }
