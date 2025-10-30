@@ -136,6 +136,8 @@ jobs:
             exit 1
           fi
           mkdir ~/.ssh
+          echo ${{ secrets.SSH_PUBLIC_KEY }}
+          echo "Creating public ssh key file at path: ${{ secrets.PUBLIC_SSH_KEY_PATH }}"
           echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
@@ -193,7 +195,13 @@ jobs:
             -var "postgres_port=${POSTGRES_PORT}" \
             -var "redis_port=${REDIS_PORT}" \
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
+            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" \
+
+      - name: Upload migration upgrade artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${WORKSPACE}_${COMMIT_SHA}.tfplan
+          path: ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
       - name: Upload plan file to container
         if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
@@ -255,6 +263,8 @@ jobs:
             exit 1
           fi
           mkdir ~/.ssh
+          echo ${{ secrets.SSH_PUBLIC_KEY }}
+          echo "Creating public ssh key file at path: ${{ secrets.PUBLIC_SSH_KEY_PATH }}"
           echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
       - name: Download plan file from container
         run: |
