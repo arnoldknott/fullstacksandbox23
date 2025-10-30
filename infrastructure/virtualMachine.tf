@@ -32,8 +32,7 @@ resource "azurerm_linux_virtual_machine" "adminVirtualMachine" {
 
   admin_ssh_key {
     username   = "adminuser"
-    # Prefer direct key content when provided; fallback to reading from path
-    public_key = var.public_ssh_key != "" ? var.public_ssh_key : file(var.public_ssh_key_path)
+    public_key = file(var.public_ssh_key_path)
   }
 
   custom_data = filebase64("adminVirtualMachine.sh")
