@@ -1326,21 +1326,18 @@
 
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Pane Dividers (Diffs) 🚧</Heading>
-		<div class="diff  aspect-video">
+		<div class="diff aspect-video">
 			<div class="diff-item-1">
-			<img
-			alt="Bavarian lake Starnberger See in sunset"
-			src="/starnberger-see-unset-20230807.jpg"
-			/>
-		</div>
-		<div class="diff-item-2">
-			<img
-			alt="Swiss mountain Matterhorn in sunset"
-			src="/matterhorn-20230628.jpg"
-			/>
-		</div>
+				<img
+					alt="Bavarian lake Starnberger See in sunset"
+					src="/starnberger-see-unset-20230807.jpg"
+				/>
+			</div>
+			<div class="diff-item-2">
+				<img alt="Swiss mountain Matterhorn in sunset" src="/matterhorn-20230628.jpg" />
+			</div>
 
-		<div class="diff-resizer"></div>
+			<div class="diff-resizer"></div>
 		</div>
 		<HorizontalRule />
 	</div>
