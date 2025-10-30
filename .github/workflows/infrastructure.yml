@@ -201,8 +201,8 @@ jobs:
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${WORKSPACE}_${COMMIT_SHA}.tfplan
-          path: ${WORKSPACE}_${COMMIT_SHA}.tfplan
+          name: ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.tfplan
+          path: ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.tfplan
 
       - name: Upload plan file to container
         if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
@@ -267,6 +267,8 @@ jobs:
           echo "Writing public key to: ${PUBLIC_SSH_KEY_PATH}"
           printf "%s\n" "${SSH_PUBLIC_KEY}" > "${PUBLIC_SSH_KEY_PATH}"
           chmod 600 "${PUBLIC_SSH_KEY_PATH}"
+          pwd
+          less ${PUBLIC_SSH_KEY_PATH}
       - name: Download plan file from container
         run: |
           az storage blob download \
@@ -295,6 +297,7 @@ jobs:
       - name: tofu apply
         run: |
           less ${PUBLIC_SSH_KEY_PATH}
+          pwd
           tofu apply -auto-approve ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
       # - name: OpenTofu Output
