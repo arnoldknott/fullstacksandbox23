@@ -282,6 +282,11 @@
 	const updateProfileAccount: SubmitFunction = async () => {
 		return () => {};
 	};
+
+	// for diff component:
+	let diffWidth: number = $state(0);
+	let leftDiffWidth: number = $state(0);
+	let rightDiffWidth: number = $state(0);
 </script>
 
 <!-- <svelte:window use:mapDropdown /> -->
@@ -1326,18 +1331,24 @@
 
 	<div class={develop ? 'block' : 'hidden'}>
 		<Heading>🚧 Pane Dividers (Diffs) 🚧</Heading>
-		<div class="diff aspect-video rounded-2xl">
-			<div class="diff-item-1">
+		<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidth}>
+			<div class="diff-item-1" bind:clientWidth={leftDiffWidth}>
 				<img
 					alt="Bavarian lake Starnberger See in sunset"
 					src="/starnberger-see-unset-20230807.jpg"
 				/>
 			</div>
-			<div class="diff-item-2">
+			<div class="diff-item-2" bind:clientWidth={rightDiffWidth}>
 				<img alt="Swiss mountain Matterhorn in sunset" src="/matterhorn-20230628.jpg" />
 			</div>
-
 			<div class="diff-resizer"></div>
+		</div>
+		<p class="caption text-primary-container-content mt-2 text-center text-sm">
+			Drag the divider to compare the two images.
+		</p>
+		<div class="text-primary-container-content mx-20 flex flex-row justify-between text-sm">
+			<div>Width: {leftDiffWidth}</div>
+			<div>Width: {diffWidth - rightDiffWidth}</div>
 		</div>
 		<HorizontalRule />
 	</div>
