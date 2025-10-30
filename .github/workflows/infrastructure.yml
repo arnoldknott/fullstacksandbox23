@@ -36,8 +36,8 @@ env:
   AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
   # public ssh key for the VM:
-  SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
-  PUBLIC_SSH_KEY_PATH: ${{ secrets.PUBLIC_SSH_KEY_PATH }}
+  SSH_PUBLIC_KEY: ${{ vars.SSH_PUBLIC_KEY }}
+  PUBLIC_SSH_KEY_PATH: ${{ vars.PUBLIC_SSH_KEY_PATH }}
 
 jobs:
   plan:
@@ -136,8 +136,10 @@ jobs:
             exit 1
           fi
           mkdir ~/.ssh
-          echo ${{ secrets.SSH_PUBLIC_KEY }}
-          echo "Creating public ssh key file at path: ${{ secrets.PUBLIC_SSH_KEY_PATH }}"
+          echo ${secrets.SSH_PUBLIC_KEY}
+          echo "Creating public ssh key file at path: $PUBLIC_SSH_KEY_PATH"
+          echo ${{ vars.SSH_PUBLIC_KEY }}
+          echo "Creating public ssh key file at path: ${{ vars.PUBLIC_SSH_KEY_PATH }}"
           echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
@@ -263,9 +265,9 @@ jobs:
             exit 1
           fi
           mkdir ~/.ssh
-          echo ${{ secrets.SSH_PUBLIC_KEY }}
-          echo "Creating public ssh key file at path: ${{ secrets.PUBLIC_SSH_KEY_PATH }}"
-          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
+          echo ${{ vars.SSH_PUBLIC_KEY }}
+          echo "Creating public ssh key file at path: ${{ vars.PUBLIC_SSH_KEY_PATH }}"
+          echo ${{ vars.SSH_PUBLIC_KEY }} > ${{ vars.PUBLIC_SSH_KEY_PATH }}
       - name: Download plan file from container
         run: |
           az storage blob download \
