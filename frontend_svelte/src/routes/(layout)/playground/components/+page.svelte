@@ -3,7 +3,7 @@
 	import type { AppTheme } from '$lib/theming';
 	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
-	import Heading from '$components/Heading.svelte';
+	import Title from '$components/Title.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import NavigationCard from '$components/NavigationCard.svelte';
 	// import type { Attachment } from 'svelte/attachments';
@@ -292,7 +292,7 @@
 
 <!-- <svelte:window use:mapDropdown /> -->
 
-<div class="flex flex-row justify-around">
+<div class="flex flex-col sm:flex-row justify-around">
 	<div class="mb-2 flex items-center gap-1">
 		<label class="label label-text text-base" for="prodSwitcher">Production: off </label>
 		<input type="checkbox" class="switch switch-accent" bind:checked={prod} id="prodSwitcher" />
@@ -328,12 +328,12 @@
 		: 'xl:grid xl:grid-cols-2 xl:gap-4'}"
 >
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Card with chat</Heading>
+		<Title id="card-with-chat">Card with chat</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Card with chat 🚧</Heading>
+		<Title id="card-with-chat-dev">🚧 Card with chat 🚧</Title>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet headerChat()}
 				<h5 class="title md:title-large card-title">Chat card</h5>
@@ -407,7 +407,7 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Card with text and title navigation</Heading>
+		<Title id="card-with-text-and-title-navigation">Card with text and title navigation</Title>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			{#each cardsNavigation as cardNavigation, i (i)}
 				<NavigationCard title={cardNavigation.title} href={cardNavigation.link}
@@ -418,7 +418,7 @@
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Card with text and title navigation 🚧</Heading>
+		<Title id="card-with-text-and-title-navigation-dev">🚧 Card with text and title navigation 🚧</Title>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			<div
 				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
@@ -475,12 +475,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Card with dropdown menu</Heading>
+		<Title id="card-with-dropdown-menu">Card with dropdown menu</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Card with dropdown menu 🚧</Heading>
+		<Title id="card-with-dropdown-menu-dev">🚧 Card with dropdown menu 🚧</Title>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet headerEdit()}
 				<div class="flex justify-between">
@@ -535,12 +535,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Card with action buttons</Heading>
+		<Title id="card-with-action-buttons"	>Card with action buttons</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Card with action buttons 🚧</Heading>
+		<Title id="card-with-action-buttons-dev">🚧 Card with action buttons 🚧</Title>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet footerAction()}
 				<div class="join flex flex-row items-center justify-center">
@@ -621,12 +621,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Buttons</Heading>
+		<Title id="buttons">Buttons</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Buttons 🚧</Heading>
+		<Title id="buttons-dev">🚧 Buttons 🚧</Title>
 		<div class="flex flex-row gap-4">
 			<button class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm"
 				><span class="icon-[tabler--chevron-right]"></span>Big button</button
@@ -650,12 +650,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Dropdown menus</Heading>
+		<Title id="dropdown-menus">Dropdown menus</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Dropdown menus 🚧</Heading>
+		<Title id="dropdown-menus-dev">🚧 Dropdown menus 🚧</Title>
 		<div class="mb-20 flex flex-wrap gap-4">
 			<div
 				class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
@@ -797,7 +797,7 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Selections</Heading>
+		<Title id="selections">Selections</Title>
 		{@render underConstruction()}
 	</div>
 
@@ -830,7 +830,7 @@
 		{/if}
 	{/snippet}
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Selections 🚧</Heading>
+		<Title id="selections-dev">🚧 Selections 🚧</Title>
 		<div class="bg-base-300 mb-20 flex w-fit flex-wrap gap-4 rounded rounded-xl p-4">
 			<div class="relative flex items-center [--placement:top]">
 				<!-- <div class="relative flex flex-row"> -->
@@ -912,12 +912,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
+		<Title id="status-sliders">Status sliders with Hue-Chroma-Tone</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Status sliders with Hue-Chroma-Tone 🚧</Heading>
+		<Title id="status-sliders-dev">🚧 Status sliders with Hue-Chroma-Tone 🚧</Title>
 		<div class="grid grid-cols-3 gap-4">
 			<div class="w-full">
 				<label class="label label-text" for="leftStatus"
@@ -1002,12 +1002,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Tooltips</Heading>
+		<Title id="tooltips">Tooltips</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Tooltips 🚧</Heading>
+		<Title id="tooltips-dev">🚧 Tooltips 🚧</Title>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div class="tooltip" {@attach initTooltip}>
 				<button type="button" class="tooltip-toggle btn btn-square" aria-label="Tooltip">
@@ -1025,12 +1025,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Theme Picker</Heading>
+		<Title id="theme-picker">Theme Picker</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Theme Picker 🚧</Heading>
+		<Title id="theme-picker-dev">🚧 Theme Picker 🚧</Title>
 		<p class="title-large text-primary">Building blocks</p>
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div class="w-48">
@@ -1113,12 +1113,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Caroussels</Heading>
+		<Title id="caroussels">Caroussels</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Caroussels 🚧</Heading>
+		<Title id="caroussels-dev">🚧 Caroussels 🚧</Title>
 		<!-- TBD: pass those data-carousel arguments:
 		 " '{' "loadingClasses": "opacity-0" '}'" -->
 		<div id="vertical-thumbnails" data-carousel class="relative w-full">
@@ -1200,12 +1200,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Vertical Tabs</Heading>
+		<Title id="vertical-tabs">Vertical Tabs</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Vertical Tabs 🚧</Heading>
+		<Title id="vertical-tabs-dev">🚧 Vertical Tabs 🚧</Title>
 		<div class="flex">
 			<div
 				class="tabs tabs-bordered tabs-vertical w-[130px]"
@@ -1274,7 +1274,7 @@
 									Sandbox
 								</div>
 							</div>
-							<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
+							<div class="Title-large navbar-center text-accent ml-1 flex items-center">23</div>
 						</div>
 						<div class="text-right">Have fun exploring the content and trying things out!</div>
 					</div>
@@ -1326,12 +1326,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Pane Dividers (Diffs)</Heading>
+		<Title id="pane-dividers">Pane Dividers (Diffs)</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Pane Dividers (Diffs) 🚧</Heading>
+		<Title id="pane-dividers-dev">🚧 Pane Dividers (Diffs) 🚧</Title>
 		<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidth}>
 			<div class="diff-item-1" bind:clientWidth={leftDiffWidth}>
 				<img
@@ -1370,12 +1370,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Modals</Heading>
+		<Title id="modals">Modals</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Modals 🚧</Heading>
+		<Title id="modals-dev">🚧 Modals 🚧</Title>
 		<button
 			type="button"
 			class="btn btn-accent"
@@ -1628,14 +1628,14 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Drawer (Sidebar)</Heading>
+		<Title id="drawer">Drawer (Sidebar)</Title>
 		{@render underConstruction()}
 	</div>
 
 	<!-- This local override works:
 		style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Drawer (Sidebar) 🚧</Heading>
+		<Title id="drawer-dev">🚧 Drawer (Sidebar) 🚧</Title>
 		<button
 			type="button"
 			class="btn btn-primary"
