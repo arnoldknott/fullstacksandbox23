@@ -121,8 +121,13 @@ async def read_token_payload(
 # Note: this one is protected under the scope "user_impersonization"" from https://management.azure.com
 # Cannot scopes from other audiences, like this backendAPI.
 @router.get("/onbehalfof")
-async def get_onbehalfof(authorization: Annotated[str | None, Header()] = None):
+async def get_onbehalfof(
+    token_payload: Annotated[dict, Depends(get_token_payload)],
+    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    authorization: Annotated[str | None, Header()] = None,
+):
     """Access Microsoft Graph as downstream API on behalf of the user."""
+    await check_token_against_guards(token_payload, guards)
     # print("=== header ===")
     # print(authorization)
     token = authorization.split("Bearer ")[1]
@@ -147,7 +152,7 @@ async def get_onbehalfof(authorization: Annotated[str | None, Header()] = None):
             # response = get_users_groups_ms_graph(on_behalf_of_token)
             response = get_me_ms_graph(on_behalf_of_token)
             logger.info("On behalf of access to Microsoft Graph")
-            return {"body": response}
+            return response
     except Exception as err:
         logger.error("🔑 Failed to fetch user groups from Microsoft Graph.")
         raise err

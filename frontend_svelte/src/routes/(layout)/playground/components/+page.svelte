@@ -282,6 +282,12 @@
 	const updateProfileAccount: SubmitFunction = async () => {
 		return () => {};
 	};
+
+	// for diff component:
+	let diffWidth: number = $state(0);
+	let leftDiffWidth: number = $state(0);
+	let rightDiffWidth: number = $state(0);
+	let resizer: HTMLDivElement | null = $state(null);
 </script>
 
 <!-- <svelte:window use:mapDropdown /> -->
@@ -1315,6 +1321,50 @@
 					</ul>
 				</div>
 			</div>
+		</div>
+		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Heading>Pane Dividers (Diffs)</Heading>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Heading>🚧 Pane Dividers (Diffs) 🚧</Heading>
+		<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidth}>
+			<div class="diff-item-1" bind:clientWidth={leftDiffWidth}>
+				<img
+					alt="Bavarian lake Starnberger See in sunset"
+					src="/starnberger-see-unset-20230807.jpg"
+				/>
+			</div>
+			<div class="diff-item-2" bind:clientWidth={rightDiffWidth}>
+				<img alt="Swiss mountain Matterhorn in sunset" src="/matterhorn-20230628.jpg" />
+			</div>
+			<div class="diff-resizer" bind:this={resizer}></div>
+		</div>
+		<p class="caption text-primary-container-content mt-2 text-center text-sm">
+			Drag the divider to compare the two images.
+		</p>
+		<div class="text-primary-container-content mx-20 flex flex-row justify-between text-sm">
+			<div>Left Width: {leftDiffWidth}</div>
+			<div>Resizer Position: {resizer?.clientWidth}</div>
+			<div>Right Width: {diffWidth - rightDiffWidth}</div>
+		</div>
+
+		<div class="text-center">
+			<button
+				type="button"
+				class="btn btn-secondary-container btn-sm mt-4"
+				onclick={() => {
+					if (resizer) {
+						resizer.style.width = diffWidth / 2 + 'px';
+					}
+				}}
+			>
+				Reset Resizer Position
+			</button>
 		</div>
 		<HorizontalRule />
 	</div>

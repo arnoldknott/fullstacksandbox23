@@ -220,6 +220,7 @@
 <!-- <JsonData data={theme.configuration}></JsonData> -->
 
 <div bind:this={mainContent} class="mx-5 mt-5 h-full" use:applyTheming>
+	<!-- TBD: put navbar into component -->
 	<nav
 		class="navbar rounded-box bg-base-100 sticky start-0 top-0 z-1 justify-between shadow-sm md:flex md:items-stretch"
 	>
@@ -292,7 +293,7 @@
 				>
 					{#if loggedIn}
 						<img
-							class="not-hover:mask-radial-t-0% h-10 w-10 rounded-full not-hover:mask-radial-from-40%"
+							class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full not-hover:mask-radial-from-40%"
 							src={resolve('/apiproxies/msgraph') + '?endpoint=/me/photo/$value'}
 							alt="you"
 						/>
@@ -360,6 +361,7 @@
 		</div>
 	</nav>
 
+	<!-- TBD: put welcome modal into component -->
 	<div
 		id="welcome-modal"
 		class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 modal-middle hidden [--body-scroll:true] [--overlay-backdrop:static]"
