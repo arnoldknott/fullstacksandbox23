@@ -127,3 +127,9 @@ variable "public_ssh_key_path" {
   description = "Path to public SSH key"
   type        = string
 }
+
+variable "public_ssh_key" {
+  description = "Public SSH key content for admin user"
+  type        = string
+  default     = ""
+}

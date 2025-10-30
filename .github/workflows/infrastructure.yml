@@ -137,11 +137,11 @@ jobs:
           fi
           echo ${SSH_PUBLIC_KEY}
           echo "Creating public ssh key file at path: ${PUBLIC_SSH_KEY_PATH}"
-          echo ${{ vars.SSH_PUBLIC_KEY }}
-          echo "Creating public ssh key file at path: ${{ vars.PUBLIC_SSH_KEY_PATH }}"
-          echo ${{ vars.SSH_PUBLIC_KEY }} > ${{ vars.PUBLIC_SSH_KEY_PATH }}
+          echo "${SSH_PUBLIC_KEY}"
+          echo "Creating public ssh key file at path: ${PUBLIC_SSH_KEY_PATH}"
+          printf "%s\n" "${SSH_PUBLIC_KEY}" > "${PUBLIC_SSH_KEY_PATH}"
           echo "less output:"
-          less ${{ vars.PUBLIC_SSH_KEY_PATH }}
+          less "${PUBLIC_SSH_KEY_PATH}"
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
@@ -181,7 +181,7 @@ jobs:
       - name: tofu plan
         id: tofu_plan
         run: |
-          less ${{ vars.PUBLIC_SSH_KEY_PATH }}
+          less "${PUBLIC_SSH_KEY_PATH}"
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
             -var "azure_client_id=${GITHUBACTIONS_MANAGEDIDENTITY_CLIENT_ID}" \
@@ -199,6 +199,7 @@ jobs:
             -var "postgres_port=${POSTGRES_PORT}" \
             -var "redis_port=${REDIS_PORT}" \
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
+            -var "public_ssh_key=${SSH_PUBLIC_KEY}" \
             -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" \
 
       - name: Upload migration upgrade artifacts
@@ -268,11 +269,11 @@ jobs:
           fi
           echo ${SSH_PUBLIC_KEY}
           echo "Creating public ssh key file at path: ${PUBLIC_SSH_KEY_PATH}"
-          echo ${{ vars.SSH_PUBLIC_KEY }}
-          echo "Creating public ssh key file at path: ${{ vars.PUBLIC_SSH_KEY_PATH }}"
-          echo ${{ vars.SSH_PUBLIC_KEY }} > ${{ vars.PUBLIC_SSH_KEY_PATH }}
+          echo "${SSH_PUBLIC_KEY}"
+          echo "Creating public ssh key file at path: ${PUBLIC_SSH_KEY_PATH}"
+          printf "%s\n" "${SSH_PUBLIC_KEY}" > "${PUBLIC_SSH_KEY_PATH}"
           echo "less output:"
-          less ${{ vars.PUBLIC_SSH_KEY_PATH }}
+          less "${PUBLIC_SSH_KEY_PATH}"
       - name: Download plan file from container
         run: |
           az storage blob download \
