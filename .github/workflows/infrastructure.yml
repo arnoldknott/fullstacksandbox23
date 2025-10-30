@@ -36,8 +36,8 @@ env:
   AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
   # public ssh key for the VM:
-  SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
-  PUBLIC_SSH_KEY_PATH: ${{ secrets.PUBLIC_SSH_KEY_PATH }}
+  PUBLIC_SSH_KEY_PATH: ${{ vars.PUBLIC_SSH_KEY_PATH }}
+  SSH_PUBLIC_KEY: ${{ vars.SSH_PUBLIC_KEY }}
 
 jobs:
   plan:
@@ -135,8 +135,10 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          mkdir ~/.ssh
-          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
+          mkdir -p "$(dirname "${PUBLIC_SSH_KEY_PATH}")"
+          echo "Writing public key to: ${PUBLIC_SSH_KEY_PATH}"
+          printf "%s\n" "${SSH_PUBLIC_KEY}" > "${PUBLIC_SSH_KEY_PATH}"
+          chmod 600 "${PUBLIC_SSH_KEY_PATH}"
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
@@ -176,6 +178,7 @@ jobs:
       - name: tofu plan
         id: tofu_plan
         run: |
+          less ${PUBLIC_SSH_KEY_PATH}
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
             -var "azure_client_id=${GITHUBACTIONS_MANAGEDIDENTITY_CLIENT_ID}" \
@@ -193,7 +196,13 @@ jobs:
             -var "postgres_port=${POSTGRES_PORT}" \
             -var "redis_port=${REDIS_PORT}" \
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"
+            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" \
+
+      - name: Upload migration upgrade artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${WORKSPACE}_${COMMIT_SHA}.tfplan
+          path: ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
       - name: Upload plan file to container
         if: ${{ steps.tofu_plan.outputs.exitcode == 2 }}
@@ -254,8 +263,10 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          mkdir ~/.ssh
-          echo ${{ secrets.SSH_PUBLIC_KEY }} > ${{ secrets.PUBLIC_SSH_KEY_PATH }}
+          mkdir -p "$(dirname "${PUBLIC_SSH_KEY_PATH}")"
+          echo "Writing public key to: ${PUBLIC_SSH_KEY_PATH}"
+          printf "%s\n" "${SSH_PUBLIC_KEY}" > "${PUBLIC_SSH_KEY_PATH}"
+          chmod 600 "${PUBLIC_SSH_KEY_PATH}"
       - name: Download plan file from container
         run: |
           az storage blob download \
@@ -282,7 +293,9 @@ jobs:
         run: tofu workspace select ${WORKSPACE}
 
       - name: tofu apply
-        run: tofu apply -auto-approve ${WORKSPACE}_${COMMIT_SHA}.tfplan
+        run: |
+          less ${PUBLIC_SSH_KEY_PATH}
+          tofu apply -auto-approve ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
       # - name: OpenTofu Output
       #   run: tofu output
