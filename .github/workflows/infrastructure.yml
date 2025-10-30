@@ -173,7 +173,6 @@ jobs:
       - name: tofu plan
         id: tofu_plan
         run: |
-          less "${PUBLIC_SSH_KEY_PATH}"
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
             -detailed-exitcode \
             -var "azure_client_id=${GITHUBACTIONS_MANAGEDIDENTITY_CLIENT_ID}" \
