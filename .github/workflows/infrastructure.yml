@@ -37,7 +37,6 @@ env:
   AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
   # public ssh key for the VM:
   SSH_PUBLIC_KEY: ${{ vars.SSH_PUBLIC_KEY }}
-  PUBLIC_SSH_KEY_PATH: ${{ vars.PUBLIC_SSH_KEY_PATH }}
 
 jobs:
   plan:
@@ -135,13 +134,6 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          echo ${SSH_PUBLIC_KEY}
-          echo "Creating public ssh key file at path: ${PUBLIC_SSH_KEY_PATH}"
-          echo "${SSH_PUBLIC_KEY}"
-          echo "Creating public ssh key file at path: ${PUBLIC_SSH_KEY_PATH}"
-          printf "%s\n" "${SSH_PUBLIC_KEY}" > "${PUBLIC_SSH_KEY_PATH}"
-          echo "less output:"
-          less "${PUBLIC_SSH_KEY_PATH}"
         # echo "ARM_USE_OIDC=true" >> "$GITHUB_ENV"
         # echo "ARM_CLIENT_ID=${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}" >> "$GITHUB_ENV"
         # echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> "$GITHUB_ENV"
@@ -200,7 +192,6 @@ jobs:
             -var "redis_port=${REDIS_PORT}" \
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
             -var "public_ssh_key=${SSH_PUBLIC_KEY}" \
-            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" \
 
       - name: Upload migration upgrade artifacts
         uses: actions/upload-artifact@v4
@@ -267,13 +258,6 @@ jobs:
             echo "This branch does not support infrastructure deployment"
             exit 1
           fi
-          echo ${SSH_PUBLIC_KEY}
-          echo "Creating public ssh key file at path: ${PUBLIC_SSH_KEY_PATH}"
-          echo "${SSH_PUBLIC_KEY}"
-          echo "Creating public ssh key file at path: ${PUBLIC_SSH_KEY_PATH}"
-          printf "%s\n" "${SSH_PUBLIC_KEY}" > "${PUBLIC_SSH_KEY_PATH}"
-          echo "less output:"
-          less "${PUBLIC_SSH_KEY_PATH}"
       - name: Download plan file from container
         run: |
           az storage blob download \
