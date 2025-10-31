@@ -1336,12 +1336,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Title id="pane-dividers">Pane Dividers (Diffs)</Title>
+		<Title id="pane-dividers">Horizontal Diffs</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Title id="pane-dividers-dev">🚧 Pane Dividers (Diffs) 🚧</Title>
+		<Title id="pane-dividers-dev">🚧 Horizontal Diffs 🚧</Title>
 		<div>
 			<p class="title text-primary">Two images, horizontal resizing.</p>
 			<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidth}>
@@ -1427,21 +1427,13 @@
 									{@render paneTile('info', '2')}
 									{@render paneTile('info', '3')}
 									{@render paneTile('info', '4')}
-									{@render paneTile('info', '5')}
-									{@render paneTile('info', '6')}
-									{@render paneTile('info', '7')}
-									{@render paneTile('info', '8')}
-									{@render paneTile('info', '9')}
-									{@render paneTile('info', '10')}
-									{@render paneTile('info', '11')}
-									{@render paneTile('info', '12')}
 								</div>
 							</div>
 						</div>
 					</div>
 					<div class="diff-item-2 @container/diff2" bind:clientWidth={secondDiffWidthAdoptiveGrid}>
 						<div
-							class="bg-accent grid w-full grid-cols-1 gap-4 p-4 @2xs/diff2:grid-cols-2 @md/diff2:grid-cols-3 @lg/diff2:grid-cols-4"
+							class="bg-accent grid w-full grid-cols-1 gap-4 p-4 @2xs/diff2:grid-cols-2 @md/diff2:grid-cols-3 @lg/diff2:grid-cols-4 overflow-y-auto"
 						>
 							{@render paneTile('accent', 'A')}
 							{@render paneTile('accent', 'B')}
@@ -1451,66 +1443,19 @@
 					</div>
 					<div class="diff-resizer"></div>
 				</div>
-				<div class="diff h-100 rounded-2xl" bind:clientWidth={diffWidthAdoptiveGrid}>
-					<div class="diff-item-1 h-full">
-						<div class="flex h-full justify-end">
-							<div
-								class="@container/diff1 m-5 h-full min-h-0 overflow-hidden rounded-xl"
-								style={`width: ${firstDiffWidthAdoptiveGrid}px;`}
-							>
-								<div
-									class="bg-accent grid h-full w-full grid-cols-1 gap-4 overflow-y-auto p-4 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 @lg/diff1:grid-cols-4"
-								>
-									{@render paneTile('accent', 'A')}
-									{@render paneTile('accent', 'B')}
-									{@render paneTile('accent', 'C')}
-									{@render paneTile('accent', 'D')}
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="grid h-100 w-full grid-cols-2 rounded-2xl">
-					<div class="@container/diff1 w-50 resize-x">
-						<div
-							class="bg-info grid h-100 w-full grid-cols-1 gap-4 overflow-y-auto p-4 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 @lg/diff1:grid-cols-4"
-						>
-							{@render paneTile('info', '1')}
-							{@render paneTile('info', '2')}
-							{@render paneTile('info', '3')}
-							{@render paneTile('info', '4')}
-							{@render paneTile('info', '5')}
-							{@render paneTile('info', '6')}
-							{@render paneTile('info', '7')}
-							{@render paneTile('info', '8')}
-							{@render paneTile('info', '9')}
-							{@render paneTile('info', '10')}
-							{@render paneTile('info', '11')}
-							{@render paneTile('info', '12')}
-						</div>
-					</div>
-					<div class="@container/diff2 w-50 resize-x">
-						<div
-							class="bg-accent grid h-100 w-full grid-cols-1 gap-4 overflow-y-auto p-4 @2xs/diff2:grid-cols-2 @md/diff2:grid-cols-3 @lg/diff2:grid-cols-4"
-						>
-							{@render paneTile('accent', 'A')}
-							{@render paneTile('accent', 'B')}
-							{@render paneTile('accent', 'C')}
-							{@render paneTile('accent', 'D')}
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="menu">
-				<div class="resizable-div">Hello, World!</div>
-				<div class="resizable-div">Hello, World!</div>
-				<div class="resizable-div">Hello, World!</div>
 			</div>
 		</div>
+		<HorizontalRule />
+	</div>
 
-		<!-- TBD: figure out how to avoid the manual fix with -my-100 -->
-		<!-- TBD: switch out the resizing handle to vertical double arrow-->
-		<div class="mt-10 flex flex-col">
+	<div class={prod ? 'block' : 'hidden'}>
+		<Title id="pane-dividers">Vertical Diffs</Title>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Title id="pane-dividers-dev">🚧 Vertical Diffs 🚧</Title>
+				<div class="mt-10 flex flex-col">
 			<p class="title text-primary">Vertical resizing - for mobile. (missing height adjustment)</p>
 
 			<div class="diff aspect-9/16 rotate-90 rounded-2xl">
@@ -1531,6 +1476,9 @@
 
 				<div class="diff-resizer"></div>
 			</div>
+						<p class="caption text-primary-container-content mt-2 text-center text-sm">
+				Figure out how to avoid the manual fix with -my-100 and switch out the resizing handle to vertical double arrow
+			</p>
 		</div>
 
 		<HorizontalRule />
@@ -1868,17 +1816,4 @@
 		color: var(--md-sys-color-primary);
 		transition: 0.4s rotate;
 	} */
-	.resizable-div {
-		resize: horizontal;
-		width: 100%;
-		overflow: auto;
-		border: 1px solid;
-	}
-	.menu {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 10px;
-		height: 300px;
-		/* Try height: 100% or height: 100vh */
-	}
 </style>
