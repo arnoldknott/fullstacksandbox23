@@ -1623,7 +1623,7 @@
 				</div>
 				{@render resizer(startResizingDualPanes, resizeDualPanesActive)}
 				<div
-					class="bg-secondary-container/50 grow rounded-lg"
+					class="bg-accent-container/50 grow rounded-lg"
 					style={`width: ${dualPaneRightWidth}px`}
 				>
 					Right Pane
