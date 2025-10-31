@@ -319,16 +319,16 @@
 
 	// Reactive init when container is ready and widths are zero
 	$effect(() => {
-	if(triplePaneLeftContainer){
-		triplePaneLeftWidth = triplePaneLeftContainer.clientWidth + resizerWidth;
-	}
-	if(triplePaneCenterContainer){
-		triplePaneCenterWidth = triplePaneCenterContainer.clientWidth + resizerWidth;
-	}
-	if(triplePaneRightContainer){
-		triplePaneRightWidth = triplePaneRightContainer.clientWidth + resizerWidth;
-	}
-});
+		if (triplePaneLeftContainer) {
+			triplePaneLeftWidth = triplePaneLeftContainer.clientWidth + resizerWidth;
+		}
+		if (triplePaneCenterContainer) {
+			triplePaneCenterWidth = triplePaneCenterContainer.clientWidth + resizerWidth;
+		}
+		if (triplePaneRightContainer) {
+			triplePaneRightWidth = triplePaneRightContainer.clientWidth + resizerWidth;
+		}
+	});
 
 	const startResizingDualPanes = (event: MouseEvent) => {
 		// Prevent text selection and mark dragging active
@@ -358,7 +358,7 @@
 		}
 		if (triplePaneContainer) {
 			const rect = triplePaneContainer.getBoundingClientRect();
-				const totalInner = rect.width - 2 * resizerWidth; // space available for the three panes only
+			const totalInner = rect.width - 2 * resizerWidth; // space available for the three panes only
 
 			if (resizeLeftTriplePanesActive) {
 				// Dragging the left resizer: adjust Left and Center, keep Right constant
@@ -366,13 +366,15 @@
 				const maxLeft = totalInner - triplePaneRightWidth - minPane; // ensure center >= min
 				triplePaneLeftWidth = Math.max(minPane, Math.min(x, Math.max(minPane, maxLeft)));
 				triplePaneCenterWidth = totalInner - triplePaneLeftWidth - triplePaneRightWidth;
-			}
-			else if (resizeRightTriplePanesActive) {
+			} else if (resizeRightTriplePanesActive) {
 				// Dragging the right resizer: adjust Center and Right, keep Left constant
 				const x = event.clientX - rect.left; // position from left edge
 				const rightCandidate = rect.width - x - resizerWidth; // width from resizer to right edge
 				const maxRight = totalInner - triplePaneLeftWidth - minPane; // ensure center >= min
-				triplePaneRightWidth = Math.max(minPane, Math.min(rightCandidate, Math.max(minPane, maxRight)));
+				triplePaneRightWidth = Math.max(
+					minPane,
+					Math.min(rightCandidate, Math.max(minPane, maxRight))
+				);
 				triplePaneCenterWidth = totalInner - triplePaneLeftWidth - triplePaneRightWidth;
 			}
 		}
@@ -381,11 +383,9 @@
 	const stopResizingPanes = (_event: MouseEvent) => {
 		if (resizeDualPanesActive) {
 			resizeDualPanesActive = false;
-		}
-		else if (resizeLeftTriplePanesActive) {
+		} else if (resizeLeftTriplePanesActive) {
 			resizeLeftTriplePanesActive = false;
-		}
-		else if (resizeRightTriplePanesActive) {
+		} else if (resizeRightTriplePanesActive) {
 			resizeRightTriplePanesActive = false;
 		}
 	};
@@ -393,8 +393,12 @@
 
 <!-- <svelte:window use:mapDropdown /> -->
 <svelte:window
-	onmousemove={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive ? resizePanes : undefined}
-	onmouseup={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive ? stopResizingPanes : undefined}
+	onmousemove={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive
+		? resizePanes
+		: undefined}
+	onmouseup={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive
+		? stopResizingPanes
+		: undefined}
 />
 
 <div class="flex flex-col justify-around sm:flex-row">
@@ -1476,9 +1480,9 @@
 				</button>
 			</div>
 
-			{#snippet paneTile(color: string, number: string)}
+			{#snippet paneTile(color: string, number: string, size: number = 25)}
 				<div
-					class="bg-{color}-container text-{color}-container-content display h-25 w-25 rounded-xl text-center"
+					class="bg-{color}-container text-{color}-container-content display h-{size.toString()} w-{size.toString()} rounded-xl text-center"
 				>
 					{number}
 				</div>
@@ -1582,7 +1586,6 @@
 		<HorizontalRule />
 	</div>
 
-
 	{#snippet resizer(resizerFunction: (event: MouseEvent) => void, isActive: boolean)}
 		<div
 			class="resizer bg-base-200 flex h-full w-3 cursor-col-resize items-center justify-center"
@@ -1591,7 +1594,11 @@
 			tabindex="0"
 			onmousedown={resizerFunction}
 		>
-			<div class="resizer-handle {isActive ? 'bg-outline' : 'bg-outline-variant'} h-20 w-1 rounded-full"></div>
+			<div
+				class="resizer-handle {isActive
+					? 'bg-outline'
+					: 'bg-outline-variant'} h-20 w-1 rounded-full"
+			></div>
 		</div>
 	{/snippet}
 
@@ -1602,9 +1609,12 @@
 
 	<div class="{develop ? 'block' : 'hidden'} col-span-2">
 		<Title id="dual-panes-dev">🚧 Dual Panes 🚧</Title>
-			<div class="mt-10 flex flex-col bg-base-200 rounded-2xl">
-				<div class="flex h-screen w-full p-4" bind:this={dualPaneContainer}>
-				<div class="bg-primary-container/50 grow rounded-lg" style={`width: ${dualPaneLeftWidth}px`}>
+		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
+			<div class="flex h-screen w-full p-4" bind:this={dualPaneContainer}>
+				<div
+					class="bg-primary-container/50 grow rounded-lg"
+					style={`width: ${dualPaneLeftWidth}px`}
+				>
 					Left Pane
 				</div>
 				{@render resizer(startResizingDualPanes, resizeDualPanesActive)}
@@ -1626,17 +1636,29 @@
 
 	<div class="{develop ? 'block' : 'hidden'} col-span-2">
 		<Title id="triple-panes-dev">🚧 Triple Panes 🚧</Title>
-		<div class="mt-10 flex flex-col bg-base-200 rounded-2xl">
+		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
 			<div class="flex h-screen w-full p-4" bind:this={triplePaneContainer}>
-				<div class="bg-success-container/50 grow-2 rounded-lg" bind:this={triplePaneLeftContainer} style={`width: ${triplePaneLeftWidth}px`}>
+				<div
+					class="bg-secondary-container/50 grow-2 rounded-lg"
+					bind:this={triplePaneLeftContainer}
+					style={`width: ${triplePaneLeftWidth}px`}
+				>
 					Left Pane
 				</div>
 				{@render resizer(startResizingLeftTriplePanes, resizeLeftTriplePanesActive)}
-				<div class="bg-warning-container/50 grow-4 rounded-lg" bind:this={triplePaneCenterContainer} style={`width: ${triplePaneCenterWidth}px`}>
+				<div
+					class="bg-neutral-container/50 grow-4 rounded-lg"
+					bind:this={triplePaneCenterContainer}
+					style={`width: ${triplePaneCenterWidth}px`}
+				>
 					Center Pane
 				</div>
 				{@render resizer(startResizingRightTriplePanes, resizeRightTriplePanesActive)}
-				<div class="bg-error-container/40 grow rounded-lg" bind:this={triplePaneRightContainer} style={`width: ${triplePaneRightWidth}px`}>
+				<div
+					class="bg-info-container/50 grow rounded-lg"
+					bind:this={triplePaneRightContainer}
+					style={`width: ${triplePaneRightWidth}px`}
+				>
 					Right Pane
 				</div>
 			</div>
