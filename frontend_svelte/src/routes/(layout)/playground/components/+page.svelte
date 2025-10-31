@@ -1390,14 +1390,16 @@
 				<p class="title text-primary">Resizing with adoptive content size.</p>
 				<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidthAdoptiveContent}>
 					<div class="diff-item-1" bind:clientWidth={firstDiffWidthAdoptiveContent}>
-						<div class="bg-secondary flex flex-wrap justify-end gap-4 p-4">
-							{@render paneTile('secondary', '1')}
-							{@render paneTile('secondary', '2')}
-							{@render paneTile('secondary', '3')}
+						<div class="@container flex justify-end" >
+							<div class="bg-secondary flex flex-wrap justify-end gap-4 p-4" style={`width: ${secondDiffWidthAdoptiveContent}px;`}>
+								{@render paneTile('secondary', '1')}
+								{@render paneTile('secondary', '2')}
+								{@render paneTile('secondary', '3')}
+							</div>
 						</div>
 					</div>
 					<div class="diff-item-2">
-						<div class="bg-primary flex flex-wrap gap-4 p-4 w-fit">
+						<div class="bg-primary flex flex-wrap gap-4 p-4 w-full">
 							{@render paneTile('primary', 'A')}
 							{@render paneTile('primary', 'B')}
 							{@render paneTile('primary', 'C')}
