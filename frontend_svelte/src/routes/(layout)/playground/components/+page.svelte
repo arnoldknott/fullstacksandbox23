@@ -298,6 +298,7 @@
 	let firstDiffWidthAdoptiveGrid = $derived(diffWidthAdoptiveGrid - secondDiffWidthAdoptiveGrid);
 
 	// for panes:
+	// inspired by: https://blog.openreplay.com/resizable-split-panes-from-scratch/
 	let resizeDualPanesActive: boolean = $state(false);
 	let dualPaneLeftWidth: number = $state(0);
 	let dualPaneRightWidth: number = $state(0);
@@ -1435,7 +1436,13 @@
 		</div>
 		<HorizontalRule />
 	</div>
-
+	{#snippet paneTile(color: string, content: string)}
+		<div
+			class="bg-{color}-container text-{color}-container-content display h-25 w-25 content-center rounded-xl text-center"
+		>
+			{content}
+		</div>
+	{/snippet}
 	<div class={prod ? 'block' : 'hidden'}>
 		<Title id="horizontal-diffs">Horizontal Diffs</Title>
 		{@render underConstruction()}
@@ -1479,14 +1486,6 @@
 					Reset Resizer Position
 				</button>
 			</div>
-
-			{#snippet paneTile(color: string, number: string, size: number = 25)}
-				<div
-					class="bg-{color}-container text-{color}-container-content display h-{size.toString()} w-{size.toString()} rounded-xl text-center"
-				>
-					{number}
-				</div>
-			{/snippet}
 
 			<div class="mt-10">
 				<p class="title text-primary">Resizing two flex containers with adoptive content size.</p>
@@ -1639,27 +1638,104 @@
 		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
 			<div class="flex h-screen w-full p-4" bind:this={triplePaneContainer}>
 				<div
-					class="bg-secondary-container/50 grow-2 rounded-lg"
+					class=" @container/paneLeft grow-2 rounded-lg"
 					bind:this={triplePaneLeftContainer}
 					style={`width: ${triplePaneLeftWidth}px`}
 				>
-					Left Pane
+					<div
+						class="bg-secondary-container/50  grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneLeft:grid-cols-2 @sm/paneLeft:grid-cols-3 @md/paneLeft:grid-cols-4 @xl/paneLeft:grid-cols-5 @2xl/paneLeft:grid-cols-6 @4xl/paneLeft:grid-cols-7 @6xl/paneLeft:grid-cols-8 @8xl/paneLeft:grid-cols-9 @10xl/paneLeft:grid-cols-10 "
+					>
+						{@render paneTile('secondary', 'A')}
+						{@render paneTile('secondary', 'B')}
+						{@render paneTile('secondary', 'C')}
+						{@render paneTile('secondary', 'D')}
+						{@render paneTile('secondary', 'E')}
+						{@render paneTile('secondary', 'F')}
+						{@render paneTile('secondary', 'G')}
+						{@render paneTile('secondary', 'H')}
+						{@render paneTile('secondary', 'I')}
+						{@render paneTile('secondary', 'J')}
+						{@render paneTile('secondary', 'K')}
+						{@render paneTile('secondary', 'L')}
+						{@render paneTile('secondary', 'M')}
+						{@render paneTile('secondary', 'N')}
+						{@render paneTile('secondary', 'O')}
+						{@render paneTile('secondary', 'P')}
+						{@render paneTile('secondary', 'Q')}
+						{@render paneTile('secondary', 'R')}
+						{@render paneTile('secondary', 'S')}
+						{@render paneTile('secondary', 'T')}
+						{@render paneTile('secondary', 'U')}
+						{@render paneTile('secondary', 'V')}
+						{@render paneTile('secondary', 'W')}
+						{@render paneTile('secondary', 'X')}
+						{@render paneTile('secondary', 'Y')}
+						{@render paneTile('secondary', 'Z')}
+					</div>
 				</div>
 				{@render resizer(startResizingLeftTriplePanes, resizeLeftTriplePanesActive)}
 				<div
-					class="bg-neutral-container/50 grow-4 rounded-lg"
+					class=" @container/paneCenter grow-4 rounded-lg"
 					bind:this={triplePaneCenterContainer}
 					style={`width: ${triplePaneCenterWidth}px`}
 				>
-					Center Pane
+					<div
+						class="bg-neutral-container/50 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneCenter:grid-cols-2 @sm/paneCenter:grid-cols-3 @md/paneCenter:grid-cols-4 @xl/paneCenter:grid-cols-5 @2xl/paneCenter:grid-cols-6 @4xl/paneCenter:grid-cols-7 @6xl/paneCenter:grid-cols-8 @8xl/paneCenter:grid-cols-9 @10xl/paneCenter:grid-cols-10 "
+					>
+						{@render paneTile('neutral', 'A')}
+						{@render paneTile('neutral', 'B')}
+						{@render paneTile('neutral', 'C')}
+						{@render paneTile('neutral', 'D')}
+						{@render paneTile('neutral', 'E')}
+						{@render paneTile('neutral', 'F')}
+						{@render paneTile('neutral', 'G')}
+						{@render paneTile('neutral', 'H')}
+						{@render paneTile('neutral', 'I')}
+						{@render paneTile('neutral', 'J')}
+						{@render paneTile('neutral', 'K')}
+						{@render paneTile('neutral', 'L')}
+						{@render paneTile('neutral', 'M')}
+						{@render paneTile('neutral', 'N')}
+						{@render paneTile('neutral', 'O')}
+						{@render paneTile('neutral', 'P')}
+						{@render paneTile('neutral', 'Q')}
+						{@render paneTile('neutral', 'R')}
+						{@render paneTile('neutral', 'S')}
+						{@render paneTile('neutral', 'T')}
+						{@render paneTile('neutral', 'U')}
+						{@render paneTile('neutral', 'V')}
+						{@render paneTile('neutral', 'W')}
+						{@render paneTile('neutral', 'X')}
+						{@render paneTile('neutral', 'Y')}
+						{@render paneTile('neutral', 'Z')}
+					</div>
 				</div>
 				{@render resizer(startResizingRightTriplePanes, resizeRightTriplePanesActive)}
 				<div
-					class="bg-info-container/50 grow rounded-lg"
+					class="bg-info-container/50 flex grow flex-wrap justify-end gap-4 overflow-y-scroll rounded-lg p-4"
 					bind:this={triplePaneRightContainer}
 					style={`width: ${triplePaneRightWidth}px`}
 				>
-					Right Pane
+					{@render paneTile('info', '1')}
+					{@render paneTile('info', '2')}
+					{@render paneTile('info', '3')}
+					{@render paneTile('info', '4')}
+					{@render paneTile('info', '5')}
+					{@render paneTile('info', '6')}
+					{@render paneTile('info', '7')}
+					{@render paneTile('info', '8')}
+					{@render paneTile('info', '9')}
+					{@render paneTile('info', '10')}
+					{@render paneTile('info', '11')}
+					{@render paneTile('info', '12')}
+					{@render paneTile('info', '13')}
+					{@render paneTile('info', '14')}
+					{@render paneTile('info', '15')}
+					{@render paneTile('info', '16')}
+					{@render paneTile('info', '17')}
+					{@render paneTile('info', '18')}
+					{@render paneTile('info', '19')}
+					{@render paneTile('info', '20')}
 				</div>
 			</div>
 		</div>
