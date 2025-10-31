@@ -303,50 +303,98 @@
 	let dualPaneRightWidth: number = $state(0);
 	let dualPaneContainer: HTMLDivElement | null = $state(null);
 
+	let resizeLeftTriplePanesActive: boolean = $state(false);
+	let resizeRightTriplePanesActive: boolean = $state(false);
+	let triplePaneContainer: HTMLDivElement | null = $state(null);
+	let triplePaneLeftContainer: HTMLDivElement | null = $state(null);
+	let triplePaneCenterContainer: HTMLDivElement | null = $state(null);
+	let triplePaneRightContainer: HTMLDivElement | null = $state(null);
 	let triplePaneLeftWidth: number = $state(0);
 	let triplePaneCenterWidth: number = $state(0);
 	let triplePaneRightWidth: number = $state(0);
 
-	// $effect(() => {
-	// 	console.log('=== dualPaneLeftWidth ===', dualPaneLeftWidth);
-	// 	console.log('=== dualPaneRightWidth ===', dualPaneRightWidth);
-	// });
+	// constants for layout
+	const resizerWidth = 12; // px (Tailwind w-3 ~ 0.75rem)
+	const minPane = 80; // px
+
+	// Reactive init when container is ready and widths are zero
+	$effect(() => {
+	if(triplePaneLeftContainer){
+		triplePaneLeftWidth = triplePaneLeftContainer.clientWidth + resizerWidth;
+	}
+	if(triplePaneCenterContainer){
+		triplePaneCenterWidth = triplePaneCenterContainer.clientWidth + resizerWidth;
+	}
+	if(triplePaneRightContainer){
+		triplePaneRightWidth = triplePaneRightContainer.clientWidth + resizerWidth;
+	}
+});
 
 	const startResizingDualPanes = (event: MouseEvent) => {
 		// Prevent text selection and mark dragging active
 		event.preventDefault();
-		if (!resizeDualPanesActive) {
-			resizeDualPanesActive = true;
+		resizeDualPanesActive = true;
+	};
+
+	const startResizingLeftTriplePanes = (event: MouseEvent) => {
+		// Prevent text selection and mark dragging active
+		event.preventDefault();
+		resizeLeftTriplePanesActive = true;
+	};
+
+	const startResizingRightTriplePanes = (event: MouseEvent) => {
+		// Prevent text selection and mark dragging active
+		event.preventDefault();
+		resizeRightTriplePanesActive = true;
+	};
+
+	const resizePanes = (event: MouseEvent) => {
+		if (resizeDualPanesActive && dualPaneContainer) {
+			const rect = dualPaneContainer.getBoundingClientRect();
+			// Compute left pane width from absolute mouse position
+			const left = event.clientX - rect.left;
+			dualPaneLeftWidth = Math.max(minPane, Math.min(left, rect.width - minPane - resizerWidth));
+			dualPaneRightWidth = rect.width - dualPaneLeftWidth - resizerWidth;
+		}
+		if (triplePaneContainer) {
+			const rect = triplePaneContainer.getBoundingClientRect();
+				const totalInner = rect.width - 2 * resizerWidth; // space available for the three panes only
+
+			if (resizeLeftTriplePanesActive) {
+				// Dragging the left resizer: adjust Left and Center, keep Right constant
+				const x = event.clientX - rect.left; // position from left edge
+				const maxLeft = totalInner - triplePaneRightWidth - minPane; // ensure center >= min
+				triplePaneLeftWidth = Math.max(minPane, Math.min(x, Math.max(minPane, maxLeft)));
+				triplePaneCenterWidth = totalInner - triplePaneLeftWidth - triplePaneRightWidth;
+			}
+			else if (resizeRightTriplePanesActive) {
+				// Dragging the right resizer: adjust Center and Right, keep Left constant
+				const x = event.clientX - rect.left; // position from left edge
+				const rightCandidate = rect.width - x - resizerWidth; // width from resizer to right edge
+				const maxRight = totalInner - triplePaneLeftWidth - minPane; // ensure center >= min
+				triplePaneRightWidth = Math.max(minPane, Math.min(rightCandidate, Math.max(minPane, maxRight)));
+				triplePaneCenterWidth = totalInner - triplePaneLeftWidth - triplePaneRightWidth;
+			}
 		}
 	};
 
-	const resizeDualPanes = (event: MouseEvent) => {
-		if (!resizeDualPanesActive || !dualPaneContainer) return;
-
-		const rect = dualPaneContainer.getBoundingClientRect();
-		// Minimum pane widths to avoid negative sizes
-		const MIN_PANE = 80; // px
-		const RESIZER_WIDTH = 12; // px (Tailwind w-3 ~ 0.75rem)
-
-		// Compute left pane width from absolute mouse position
-		let left = event.clientX - rect.left;
-		left = Math.max(MIN_PANE, Math.min(left, rect.width - MIN_PANE - RESIZER_WIDTH));
-
-		dualPaneLeftWidth = left;
-		dualPaneRightWidth = rect.width - left - RESIZER_WIDTH;
-	};
-
-	const stopResizingDualPanes = (_event: MouseEvent) => {
+	const stopResizingPanes = (_event: MouseEvent) => {
 		if (resizeDualPanesActive) {
 			resizeDualPanesActive = false;
+		}
+		else if (resizeLeftTriplePanesActive) {
+			resizeLeftTriplePanesActive = false;
+		}
+		else if (resizeRightTriplePanesActive) {
+			resizeRightTriplePanesActive = false;
 		}
 	};
 </script>
 
 <!-- <svelte:window use:mapDropdown /> -->
 <svelte:window
-	onmousemove={resizeDualPanesActive ? resizeDualPanes : undefined}
-	onmouseup={resizeDualPanesActive ? stopResizingDualPanes : undefined}
+	onmousemove={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive ? resizePanes : undefined}
+	onmouseup={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive ? stopResizingPanes : undefined}
 />
 
 <div class="flex flex-col justify-around sm:flex-row">
@@ -1534,36 +1582,32 @@
 		<HorizontalRule />
 	</div>
 
+
+	{#snippet resizer(resizerFunction: (event: MouseEvent) => void, isActive: boolean)}
+		<div
+			class="resizer bg-base-200 flex h-full w-3 cursor-col-resize items-center justify-center"
+			role="button"
+			aria-label="Resizing panes"
+			tabindex="0"
+			onmousedown={resizerFunction}
+		>
+			<div class="resizer-handle {isActive ? 'bg-outline' : 'bg-outline-variant'} h-20 w-1 rounded-full"></div>
+		</div>
+	{/snippet}
+
 	<div class={prod ? 'block' : 'hidden'}>
 		<Title id="dual-panes">Dual Panes</Title>
 		{@render underConstruction()}
 	</div>
 
-	<div class={develop ? 'block' : 'hidden'}>
+	<div class="{develop ? 'block' : 'hidden'} col-span-2">
 		<Title id="dual-panes-dev">🚧 Dual Panes 🚧</Title>
-			<div class="mt-10 flex flex-col">
-				<div class="flex h-screen w-full p-10" bind:this={dualPaneContainer}>
+			<div class="mt-10 flex flex-col bg-base-200 rounded-2xl">
+				<div class="flex h-screen w-full p-4" bind:this={dualPaneContainer}>
 				<div class="bg-primary-container/50 grow rounded-lg" style={`width: ${dualPaneLeftWidth}px`}>
 					Left Pane
 				</div>
-				<div
-					class="resizer bg-base-200 flex h-full w-3 cursor-col-resize items-center justify-center"
-					role="button"
-					aria-label="Resizing panes"
-					tabindex="0"
-					onmousedown={startResizingDualPanes}
-				>
-					<div class="resizer-handle {resizeDualPanesActive ? 'bg-outline' : 'bg-outline-variant'} h-20 w-1 rounded-full"></div>
-				</div>
-				<!-- <button
-					type="button"
-					class="w-30 cursor-col-resize bg-base-200 hover:bg-info-container"
-					aria-label="Start resizing panes"
-					onmousedown={startResizingDualPanes}
-					onmouseup={stopResizingDualPanes}
-				>
-					<span class="icon-[bi--three-dots-vertical] text-outline size-8"></span>
-				</button> -->
+				{@render resizer(startResizingDualPanes, resizeDualPanesActive)}
 				<div
 					class="bg-secondary-container/50 grow rounded-lg"
 					style={`width: ${dualPaneRightWidth}px`}
@@ -1580,19 +1624,19 @@
 		{@render underConstruction()}
 	</div>
 
-	<div class={develop ? 'block' : 'hidden'}>
+	<div class="{develop ? 'block' : 'hidden'} col-span-2">
 		<Title id="triple-panes-dev">🚧 Triple Panes 🚧</Title>
-		<div class="mt-10 flex flex-col">
-			<div class="flex h-screen w-full p-10">
-				<div class="bg-success-container/50 rounded-lg" bind:clientWidth={triplePaneLeftWidth}>
+		<div class="mt-10 flex flex-col bg-base-200 rounded-2xl">
+			<div class="flex h-screen w-full p-4" bind:this={triplePaneContainer}>
+				<div class="bg-success-container/50 grow-2 rounded-lg" bind:this={triplePaneLeftContainer} style={`width: ${triplePaneLeftWidth}px`}>
 					Left Pane
 				</div>
-				<div>Resizer</div>
-				<div class="bg-warning-container/50 grow rounded-lg" bind:clientWidth={triplePaneCenterWidth}>
+				{@render resizer(startResizingLeftTriplePanes, resizeLeftTriplePanesActive)}
+				<div class="bg-warning-container/50 grow-4 rounded-lg" bind:this={triplePaneCenterContainer} style={`width: ${triplePaneCenterWidth}px`}>
 					Center Pane
 				</div>
-				<div>Resizer</div>
-				<div class="bg-error-container/50 rounded-lg" bind:clientWidth={triplePaneRightWidth}>
+				{@render resizer(startResizingRightTriplePanes, resizeRightTriplePanesActive)}
+				<div class="bg-error-container/40 grow rounded-lg" bind:this={triplePaneRightContainer} style={`width: ${triplePaneRightWidth}px`}>
 					Right Pane
 				</div>
 			</div>
