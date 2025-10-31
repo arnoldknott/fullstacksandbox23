@@ -397,7 +397,9 @@
 
 <!-- <svelte:window use:mapDropdown /> -->
 <svelte:window
-	onpointermove={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive
+	onpointermove={resizeDualPanesActive ||
+	resizeLeftTriplePanesActive ||
+	resizeRightTriplePanesActive
 		? resizePanes
 		: undefined}
 	onpointerup={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive
@@ -1646,7 +1648,7 @@
 					style={`width: ${triplePaneLeftWidth}px`}
 				>
 					<div
-						class="bg-secondary-container/50  grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneLeft:grid-cols-2 @sm/paneLeft:grid-cols-3 @md/paneLeft:grid-cols-4 @xl/paneLeft:grid-cols-5 @2xl/paneLeft:grid-cols-6 @4xl/paneLeft:grid-cols-7 @6xl/paneLeft:grid-cols-8 @8xl/paneLeft:grid-cols-9 @10xl/paneLeft:grid-cols-10 "
+						class="bg-secondary-container/50 @8xl/paneLeft:grid-cols-9 @10xl/paneLeft:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneLeft:grid-cols-2 @sm/paneLeft:grid-cols-3 @md/paneLeft:grid-cols-4 @xl/paneLeft:grid-cols-5 @2xl/paneLeft:grid-cols-6 @4xl/paneLeft:grid-cols-7 @6xl/paneLeft:grid-cols-8"
 					>
 						{@render paneTile('secondary', 'A')}
 						{@render paneTile('secondary', 'B')}
@@ -1683,7 +1685,7 @@
 					style={`width: ${triplePaneCenterWidth}px`}
 				>
 					<div
-						class="bg-neutral-container/50 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneCenter:grid-cols-2 @sm/paneCenter:grid-cols-3 @md/paneCenter:grid-cols-4 @xl/paneCenter:grid-cols-5 @2xl/paneCenter:grid-cols-6 @4xl/paneCenter:grid-cols-7 @6xl/paneCenter:grid-cols-8 @8xl/paneCenter:grid-cols-9 @10xl/paneCenter:grid-cols-10 "
+						class="bg-neutral-container/50 @8xl/paneCenter:grid-cols-9 @10xl/paneCenter:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneCenter:grid-cols-2 @sm/paneCenter:grid-cols-3 @md/paneCenter:grid-cols-4 @xl/paneCenter:grid-cols-5 @2xl/paneCenter:grid-cols-6 @4xl/paneCenter:grid-cols-7 @6xl/paneCenter:grid-cols-8"
 					>
 						{@render paneTile('neutral', 'A')}
 						{@render paneTile('neutral', 'B')}
@@ -2073,7 +2075,8 @@
 		background: var(--md-sys-color-outline);
 	}
 	/* Prevent touch scrolling from hijacking drags on mobile */
-	.resizer, .resizer-handle {
+	.resizer,
+	.resizer-handle {
 		touch-action: none;
 	}
 	/* select:open::picker-icon {
