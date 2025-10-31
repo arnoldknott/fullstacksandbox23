@@ -1421,7 +1421,7 @@
 						<div class="flex justify-end">
 							<div class="@container/diff1" style={`width: ${firstDiffWidthAdoptiveGrid}px;`}>
 								<div
-									class="bg-info h-full grid  justify-items-end grid-cols-1 gap-4 p-4 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 @lg/diff1:grid-cols-4"
+									class="bg-info grid h-full grid-cols-1 justify-items-end gap-4 p-4 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 @lg/diff1:grid-cols-4"
 								>
 									{@render paneTile('info', '1')}
 									{@render paneTile('info', '2')}
