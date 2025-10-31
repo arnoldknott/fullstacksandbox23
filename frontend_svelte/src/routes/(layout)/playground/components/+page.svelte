@@ -289,12 +289,9 @@
 	let secondDiffWidth: number = $state(0);
 	let resizer: HTMLDivElement | null = $state(null);
 
-	let diffWidthAdoptiveContent: number = $state(0);
-	let firstDiffWidthAdoptiveContent: number = $state(0);
-	// let secondDiffWidthAdoptiveContent: number = $state(0);
-	let resizerAdoptiveContent: HTMLDivElement | null = $state(null);
-
-	let secondDiffWidthAdoptiveContent = $derived(diffWidthAdoptiveContent - firstDiffWidthAdoptiveContent);
+	let diffWidthAdoptiveFlex: number = $state(0);
+	let secondDiffWidthAdoptiveFlex: number = $state(0);
+	let firstDiffWidthAdoptiveFlex = $derived(diffWidthAdoptiveFlex - secondDiffWidthAdoptiveFlex);
 </script>
 
 <!-- <svelte:window use:mapDropdown /> -->
@@ -1387,36 +1384,26 @@
 			{/snippet}
 
 			<div class="mt-10">
-				<p class="title text-primary">Resizing with adoptive content size.</p>
-				<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidthAdoptiveContent}>
-					<div class="diff-item-1" bind:clientWidth={firstDiffWidthAdoptiveContent}>
-						<div class="@container flex justify-end" >
-							<div class="bg-secondary flex flex-wrap justify-end gap-4 p-4" style={`width: ${secondDiffWidthAdoptiveContent}px;`}>
+				<p class="title text-primary">Resizing two flex containers with adoptive content size.</p>
+				<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidthAdoptiveFlex}>
+					<div class="diff-item-1" >
+						<div class="flex justify-end" >
+							<div class="bg-secondary flex flex-wrap justify-end gap-4 p-4" style={`width: ${firstDiffWidthAdoptiveFlex}px;`}>
 								{@render paneTile('secondary', '1')}
 								{@render paneTile('secondary', '2')}
 								{@render paneTile('secondary', '3')}
 							</div>
 						</div>
 					</div>
-					<div class="diff-item-2">
+					<div class="diff-item-2" bind:clientWidth={secondDiffWidthAdoptiveFlex}>
 						<div class="bg-primary flex flex-wrap gap-4 p-4 w-full">
 							{@render paneTile('primary', 'A')}
 							{@render paneTile('primary', 'B')}
 							{@render paneTile('primary', 'C')}
 						</div>
 					</div>
-					<div class="diff-resizer" bind:this={resizerAdoptiveContent}></div>
+					<div class="diff-resizer"></div>
 				</div>
-				<div class="text-primary-container-content mx-20 flex flex-row justify-between text-sm">
-					<div>Left Width: {firstDiffWidthAdoptiveContent}</div>
-					<div>Resizer Position: {resizerAdoptiveContent?.clientWidth}</div>
-					<div>Right Width: {secondDiffWidthAdoptiveContent}</div>
-				</div>
-			</div>
-			<div class="bg-primary flex flex-wrap gap-4 p-4 w-[300px]">
-				{@render paneTile('primary', 'A')}
-				{@render paneTile('primary', 'B')}
-				{@render paneTile('primary', 'C')}
 			</div>
 		</div>
 
