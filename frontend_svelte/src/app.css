@@ -182,6 +182,11 @@
 	--color-surface-bright: rgb(var(--md-rgb-color-surface-bright));
 	--color-surface-variant: rgb(var(--md-rgb-color-surface-variant));
 	--color-surface-tint: rgb(var(--md-rgb-color-surface-tint));
+
+	/* Material Design utility classes for container sizes */
+	--container-8xl: 96rem;
+	--container-9xl: 108rem;
+	--container-10xl: 120rem;
 }
 
 /*

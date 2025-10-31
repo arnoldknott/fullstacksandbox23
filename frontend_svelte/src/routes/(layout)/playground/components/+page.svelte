@@ -3,7 +3,7 @@
 	import type { AppTheme } from '$lib/theming';
 	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
-	import Heading from '$components/Heading.svelte';
+	import Title from '$components/Title.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import NavigationCard from '$components/NavigationCard.svelte';
 	// import type { Attachment } from 'svelte/attachments';
@@ -282,11 +282,132 @@
 	const updateProfileAccount: SubmitFunction = async () => {
 		return () => {};
 	};
+
+	// for diff component:
+	let diffWidth: number = $state(0);
+	let firstDiffWidth: number = $state(0);
+	let secondDiffWidth: number = $state(0);
+	let resizerDiff: HTMLDivElement | null = $state(null);
+
+	let diffWidthAdoptiveFlex: number = $state(0);
+	let secondDiffWidthAdoptiveFlex: number = $state(0);
+	let firstDiffWidthAdoptiveFlex = $derived(diffWidthAdoptiveFlex - secondDiffWidthAdoptiveFlex);
+
+	let diffWidthAdoptiveGrid: number = $state(0);
+	let secondDiffWidthAdoptiveGrid: number = $state(0);
+	let firstDiffWidthAdoptiveGrid = $derived(diffWidthAdoptiveGrid - secondDiffWidthAdoptiveGrid);
+
+	// for panes:
+	// inspired by: https://blog.openreplay.com/resizable-split-panes-from-scratch/
+	let resizeDualPanesActive: boolean = $state(false);
+	let dualPaneLeftWidth: number = $state(0);
+	let dualPaneRightWidth: number = $state(0);
+	let dualPaneContainer: HTMLDivElement | null = $state(null);
+
+	let resizeLeftTriplePanesActive: boolean = $state(false);
+	let resizeRightTriplePanesActive: boolean = $state(false);
+	let triplePaneContainer: HTMLDivElement | null = $state(null);
+	let triplePaneLeftContainer: HTMLDivElement | null = $state(null);
+	let triplePaneCenterContainer: HTMLDivElement | null = $state(null);
+	let triplePaneRightContainer: HTMLDivElement | null = $state(null);
+	let triplePaneLeftWidth: number = $state(0);
+	let triplePaneCenterWidth: number = $state(0);
+	let triplePaneRightWidth: number = $state(0);
+
+	// constants for layout
+	const resizerWidth = 12; // px (Tailwind w-3 ~ 0.75rem)
+	const minPane = 80; // px
+
+	// Reactive init when container is ready and widths are zero
+	$effect(() => {
+		if (triplePaneLeftContainer) {
+			triplePaneLeftWidth = triplePaneLeftContainer.clientWidth + resizerWidth;
+		}
+		if (triplePaneCenterContainer) {
+			triplePaneCenterWidth = triplePaneCenterContainer.clientWidth + resizerWidth;
+		}
+		if (triplePaneRightContainer) {
+			triplePaneRightWidth = triplePaneRightContainer.clientWidth + resizerWidth;
+		}
+	});
+
+	const startResizingDualPanes = (event: PointerEvent) => {
+		// Prevent text selection and mark dragging active
+		event.preventDefault();
+		(event.currentTarget as HTMLElement)?.setPointerCapture?.(event.pointerId);
+		resizeDualPanesActive = true;
+	};
+
+	const startResizingLeftTriplePanes = (event: PointerEvent) => {
+		// Prevent text selection and mark dragging active
+		event.preventDefault();
+		(event.currentTarget as HTMLElement)?.setPointerCapture?.(event.pointerId);
+		resizeLeftTriplePanesActive = true;
+	};
+
+	const startResizingRightTriplePanes = (event: PointerEvent) => {
+		// Prevent text selection and mark dragging active
+		event.preventDefault();
+		(event.currentTarget as HTMLElement)?.setPointerCapture?.(event.pointerId);
+		resizeRightTriplePanesActive = true;
+	};
+
+	const resizePanes = (event: PointerEvent) => {
+		if (resizeDualPanesActive && dualPaneContainer) {
+			const rect = dualPaneContainer.getBoundingClientRect();
+			// Compute left pane width from absolute mouse position
+			const left = event.clientX - rect.left;
+			dualPaneLeftWidth = Math.max(minPane, Math.min(left, rect.width - minPane - resizerWidth));
+			dualPaneRightWidth = rect.width - dualPaneLeftWidth - resizerWidth;
+		}
+		if (triplePaneContainer) {
+			const rect = triplePaneContainer.getBoundingClientRect();
+			const totalInner = rect.width - 2 * resizerWidth; // space available for the three panes only
+
+			if (resizeLeftTriplePanesActive) {
+				// Dragging the left resizer: adjust Left and Center, keep Right constant
+				const x = event.clientX - rect.left; // position from left edge
+				const maxLeft = totalInner - triplePaneRightWidth - minPane; // ensure center >= min
+				triplePaneLeftWidth = Math.max(minPane, Math.min(x, Math.max(minPane, maxLeft)));
+				triplePaneCenterWidth = totalInner - triplePaneLeftWidth - triplePaneRightWidth;
+			} else if (resizeRightTriplePanesActive) {
+				// Dragging the right resizer: adjust Center and Right, keep Left constant
+				const x = event.clientX - rect.left; // position from left edge
+				const rightCandidate = rect.width - x - resizerWidth; // width from resizer to right edge
+				const maxRight = totalInner - triplePaneLeftWidth - minPane; // ensure center >= min
+				triplePaneRightWidth = Math.max(
+					minPane,
+					Math.min(rightCandidate, Math.max(minPane, maxRight))
+				);
+				triplePaneCenterWidth = totalInner - triplePaneLeftWidth - triplePaneRightWidth;
+			}
+		}
+	};
+
+	const stopResizingPanes = (_event: PointerEvent) => {
+		if (resizeDualPanesActive) {
+			resizeDualPanesActive = false;
+		} else if (resizeLeftTriplePanesActive) {
+			resizeLeftTriplePanesActive = false;
+		} else if (resizeRightTriplePanesActive) {
+			resizeRightTriplePanesActive = false;
+		}
+	};
 </script>
 
 <!-- <svelte:window use:mapDropdown /> -->
+<svelte:window
+	onpointermove={resizeDualPanesActive ||
+	resizeLeftTriplePanesActive ||
+	resizeRightTriplePanesActive
+		? resizePanes
+		: undefined}
+	onpointerup={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive
+		? stopResizingPanes
+		: undefined}
+/>
 
-<div class="flex flex-row justify-around">
+<div class="flex flex-col justify-around sm:flex-row">
 	<div class="mb-2 flex items-center gap-1">
 		<label class="label label-text text-base" for="prodSwitcher">Production: off </label>
 		<input type="checkbox" class="switch switch-accent" bind:checked={prod} id="prodSwitcher" />
@@ -322,12 +443,12 @@
 		: 'xl:grid xl:grid-cols-2 xl:gap-4'}"
 >
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Card with chat</Heading>
+		<Title id="card-with-chat">Card with chat</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Card with chat 🚧</Heading>
+		<Title id="card-with-chat-dev">🚧 Card with chat 🚧</Title>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet headerChat()}
 				<h5 class="title md:title-large card-title">Chat card</h5>
@@ -401,7 +522,7 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Card with text and title navigation</Heading>
+		<Title id="card-with-text-and-title-navigation">Card with text and title navigation</Title>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			{#each cardsNavigation as cardNavigation, i (i)}
 				<NavigationCard title={cardNavigation.title} href={cardNavigation.link}
@@ -412,7 +533,9 @@
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Card with text and title navigation 🚧</Heading>
+		<Title id="card-with-text-and-title-navigation-dev"
+			>🚧 Card with text and title navigation 🚧</Title
+		>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			<div
 				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
@@ -469,12 +592,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Card with dropdown menu</Heading>
+		<Title id="card-with-dropdown-menu">Card with dropdown menu</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Card with dropdown menu 🚧</Heading>
+		<Title id="card-with-dropdown-menu-dev">🚧 Card with dropdown menu 🚧</Title>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet headerEdit()}
 				<div class="flex justify-between">
@@ -529,12 +652,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Card with action buttons</Heading>
+		<Title id="card-with-action-buttons">Card with action buttons</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Card with action buttons 🚧</Heading>
+		<Title id="card-with-action-buttons-dev">🚧 Card with action buttons 🚧</Title>
 		<div class="mb-5 grid justify-items-center">
 			{#snippet footerAction()}
 				<div class="join flex flex-row items-center justify-center">
@@ -615,12 +738,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Buttons</Heading>
+		<Title id="buttons">Buttons</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Buttons 🚧</Heading>
+		<Title id="buttons-dev">🚧 Buttons 🚧</Title>
 		<div class="flex flex-row gap-4">
 			<button class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm"
 				><span class="icon-[tabler--chevron-right]"></span>Big button</button
@@ -644,12 +767,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Dropdown menus</Heading>
+		<Title id="dropdown-menus">Dropdown menus</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Dropdown menus 🚧</Heading>
+		<Title id="dropdown-menus-dev">🚧 Dropdown menus 🚧</Title>
 		<div class="mb-20 flex flex-wrap gap-4">
 			<div
 				class="dropdown relative inline-flex rtl:[--placement:bottom-end]"
@@ -791,7 +914,7 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Selections</Heading>
+		<Title id="selections">Selections</Title>
 		{@render underConstruction()}
 	</div>
 
@@ -824,7 +947,7 @@
 		{/if}
 	{/snippet}
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Selections 🚧</Heading>
+		<Title id="selections-dev">🚧 Selections 🚧</Title>
 		<div class="bg-base-300 mb-20 flex w-fit flex-wrap gap-4 rounded rounded-xl p-4">
 			<div class="relative flex items-center [--placement:top]">
 				<!-- <div class="relative flex flex-row"> -->
@@ -906,12 +1029,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Status sliders with Hue-Chroma-Tone</Heading>
+		<Title id="status-sliders">Status sliders with Hue-Chroma-Tone</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Status sliders with Hue-Chroma-Tone 🚧</Heading>
+		<Title id="status-sliders-dev">🚧 Status sliders with Hue-Chroma-Tone 🚧</Title>
 		<div class="grid grid-cols-3 gap-4">
 			<div class="w-full">
 				<label class="label label-text" for="leftStatus"
@@ -996,12 +1119,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Tooltips</Heading>
+		<Title id="tooltips">Tooltips</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Tooltips 🚧</Heading>
+		<Title id="tooltips-dev">🚧 Tooltips 🚧</Title>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div class="tooltip" {@attach initTooltip}>
 				<button type="button" class="tooltip-toggle btn btn-square" aria-label="Tooltip">
@@ -1019,12 +1142,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Theme Picker</Heading>
+		<Title id="theme-picker">Theme Picker</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Theme Picker 🚧</Heading>
+		<Title id="theme-picker-dev">🚧 Theme Picker 🚧</Title>
 		<p class="title-large text-primary">Building blocks</p>
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div class="w-48">
@@ -1107,12 +1230,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Caroussels</Heading>
+		<Title id="caroussels">Caroussels</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Caroussels 🚧</Heading>
+		<Title id="caroussels-dev">🚧 Caroussels 🚧</Title>
 		<!-- TBD: pass those data-carousel arguments:
 		 " '{' "loadingClasses": "opacity-0" '}'" -->
 		<div id="vertical-thumbnails" data-carousel class="relative w-full">
@@ -1194,12 +1317,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Vertical Tabs</Heading>
+		<Title id="vertical-tabs">Vertical Tabs</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Vertical Tabs 🚧</Heading>
+		<Title id="vertical-tabs-dev">🚧 Vertical Tabs 🚧</Title>
 		<div class="flex">
 			<div
 				class="tabs tabs-bordered tabs-vertical w-[130px]"
@@ -1268,7 +1391,7 @@
 									Sandbox
 								</div>
 							</div>
-							<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
+							<div class="Title-large navbar-center text-accent ml-1 flex items-center">23</div>
 						</div>
 						<div class="text-right">Have fun exploring the content and trying things out!</div>
 					</div>
@@ -1318,14 +1441,318 @@
 		</div>
 		<HorizontalRule />
 	</div>
-
+	{#snippet paneTile(color: string, content: string)}
+		<div
+			class="bg-{color}-container text-{color}-container-content display h-25 w-25 content-center rounded-xl text-center"
+		>
+			{content}
+		</div>
+	{/snippet}
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Modals</Heading>
+		<Title id="horizontal-diffs">Horizontal Diffs</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Modals 🚧</Heading>
+		<Title id="horizontal-diffs-dev">🚧 Horizontal Diffs 🚧</Title>
+		<div>
+			<p class="title text-primary">Two images, horizontal resizing.</p>
+			<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidth}>
+				<div class="diff-item-1" bind:clientWidth={firstDiffWidth}>
+					<img
+						alt="Bavarian lake Starnberger See in sunset"
+						src="/starnberger-see-unset-20230807.jpg"
+					/>
+				</div>
+				<div class="diff-item-2" bind:clientWidth={secondDiffWidth}>
+					<img alt="Swiss mountain Matterhorn in sunset" src="/matterhorn-20230628.jpg" />
+				</div>
+				<div class="diff-resizer" bind:this={resizerDiff}></div>
+			</div>
+			<p class="caption text-primary-container-content mt-2 text-center text-sm">
+				Drag the divider to compare the two images.
+			</p>
+			<div class="text-primary-container-content mx-20 flex flex-row justify-between text-sm">
+				<div>Left Width: {firstDiffWidth}</div>
+				<div>Resizer Position: {resizerDiff?.clientWidth}</div>
+				<div>Right Width: {diffWidth - secondDiffWidth}</div>
+			</div>
+
+			<div class="text-center">
+				<button
+					type="button"
+					class="btn btn-secondary-container btn-sm mt-4"
+					onclick={() => {
+						if (resizerDiff) {
+							resizerDiff.style.width = diffWidth / 2 + 'px';
+						}
+					}}
+				>
+					Reset Resizer Position
+				</button>
+			</div>
+
+			<div class="mt-10">
+				<p class="title text-primary">Resizing two flex containers with adoptive content size.</p>
+				<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidthAdoptiveFlex}>
+					<div class="diff-item-1 h-full">
+						<div class="flex h-full justify-end">
+							<div
+								class="bg-secondary flex flex-wrap justify-end gap-4 p-4"
+								style={`width: ${firstDiffWidthAdoptiveFlex}px;`}
+							>
+								{@render paneTile('secondary', '1')}
+								{@render paneTile('secondary', '2')}
+								{@render paneTile('secondary', '3')}
+								{@render paneTile('secondary', '4')}
+							</div>
+						</div>
+					</div>
+					<div class="diff-item-2" bind:clientWidth={secondDiffWidthAdoptiveFlex}>
+						<div class="bg-primary flex w-full flex-wrap gap-4 p-4">
+							{@render paneTile('primary', 'A')}
+							{@render paneTile('primary', 'B')}
+							{@render paneTile('primary', 'C')}
+							{@render paneTile('primary', 'D')}
+						</div>
+					</div>
+					<div class="diff-resizer"></div>
+				</div>
+			</div>
+			<div class="mt-10">
+				<p class="title text-primary">Resizing two grids with adoptive content size.</p>
+				<div class="diff h-100 rounded-2xl" bind:clientWidth={diffWidthAdoptiveGrid}>
+					<div class="diff-item-1">
+						<div class="flex justify-end">
+							<div class="@container/diff1" style={`width: ${firstDiffWidthAdoptiveGrid}px;`}>
+								<div
+									class="bg-info grid h-full grid-cols-1 justify-items-end gap-4 overflow-y-auto p-4 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 @lg/diff1:grid-cols-4"
+								>
+									{@render paneTile('info', '1')}
+									{@render paneTile('info', '2')}
+									{@render paneTile('info', '3')}
+									{@render paneTile('info', '4')}
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="diff-item-2 @container/diff2" bind:clientWidth={secondDiffWidthAdoptiveGrid}>
+						<div
+							class="bg-accent grid w-full grid-cols-1 gap-4 overflow-y-auto p-4 @2xs/diff2:grid-cols-2 @md/diff2:grid-cols-3 @lg/diff2:grid-cols-4"
+						>
+							{@render paneTile('accent', 'A')}
+							{@render paneTile('accent', 'B')}
+							{@render paneTile('accent', 'C')}
+							{@render paneTile('accent', 'D')}
+						</div>
+					</div>
+					<div class="diff-resizer"></div>
+				</div>
+			</div>
+		</div>
+		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Title id="vertical-diffs">Vertical Diffs</Title>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Title id="vertical-diffs-dev">🚧 Vertical Diffs 🚧</Title>
+		<div class="mt-10 flex flex-col">
+			<p class="title text-primary">Vertical resizing - for mobile. (missing height adjustment)</p>
+
+			<div class="diff aspect-9/16 rotate-90 rounded-2xl">
+				<div class="diff-item-1">
+					<img
+						class="-rotate-90 object-contain"
+						alt="Lake below Hohe Tajaköpfe"
+						src="/hohe-tajakoepfe-20230709.jpg"
+					/>
+				</div>
+				<div class="diff-item-2">
+					<img
+						class="-rotate-90 object-contain"
+						alt="Mountain salamanders on rock"
+						src="/mountain-salamander-20240702.jpg"
+					/>
+				</div>
+
+				<div class="diff-resizer"></div>
+			</div>
+			<p class="caption text-primary-container-content mt-2 text-center text-sm">
+				Figure out how to avoid the manual fix with -my-100 and switch out the resizing handle to
+				vertical double arrow
+			</p>
+		</div>
+
+		<HorizontalRule />
+	</div>
+
+	{#snippet resizer(resizerFunction: (event: PointerEvent) => void, isActive: boolean)}
+		<div
+			class="resizer bg-base-200 flex h-full w-3 cursor-col-resize items-center justify-center"
+			role="button"
+			aria-label="Resizing panes"
+			tabindex="0"
+			onpointerdown={resizerFunction}
+		>
+			<div
+				class="resizer-handle {isActive
+					? 'bg-outline'
+					: 'bg-outline-variant'} h-20 w-1 rounded-full"
+			></div>
+		</div>
+	{/snippet}
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Title id="dual-panes">Dual Panes</Title>
+		{@render underConstruction()}
+	</div>
+
+	<div class="{develop ? 'block' : 'hidden'} col-span-2">
+		<Title id="dual-panes-dev">🚧 Dual Panes 🚧</Title>
+		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
+			<div class="flex h-screen w-full p-4" bind:this={dualPaneContainer}>
+				<div
+					class="bg-primary-container/50 grow rounded-lg"
+					style={`width: ${dualPaneLeftWidth}px`}
+				>
+					Left Pane
+				</div>
+				{@render resizer(startResizingDualPanes, resizeDualPanesActive)}
+				<div
+					class="bg-secondary-container/50 grow rounded-lg"
+					style={`width: ${dualPaneRightWidth}px`}
+				>
+					Right Pane
+				</div>
+			</div>
+		</div>
+		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Title id="triple-panes">Triple Panes</Title>
+		{@render underConstruction()}
+	</div>
+
+	<div class="{develop ? 'block' : 'hidden'} col-span-2">
+		<Title id="triple-panes-dev">🚧 Triple Panes 🚧</Title>
+		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
+			<div class="flex h-screen w-full p-4" bind:this={triplePaneContainer}>
+				<div
+					class=" @container/paneLeft grow-2 rounded-lg"
+					bind:this={triplePaneLeftContainer}
+					style={`width: ${triplePaneLeftWidth}px`}
+				>
+					<div
+						class="bg-secondary-container/50 @8xl/paneLeft:grid-cols-9 @10xl/paneLeft:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneLeft:grid-cols-2 @sm/paneLeft:grid-cols-3 @md/paneLeft:grid-cols-4 @xl/paneLeft:grid-cols-5 @2xl/paneLeft:grid-cols-6 @4xl/paneLeft:grid-cols-7 @6xl/paneLeft:grid-cols-8"
+					>
+						{@render paneTile('secondary', 'A')}
+						{@render paneTile('secondary', 'B')}
+						{@render paneTile('secondary', 'C')}
+						{@render paneTile('secondary', 'D')}
+						{@render paneTile('secondary', 'E')}
+						{@render paneTile('secondary', 'F')}
+						{@render paneTile('secondary', 'G')}
+						{@render paneTile('secondary', 'H')}
+						{@render paneTile('secondary', 'I')}
+						{@render paneTile('secondary', 'J')}
+						{@render paneTile('secondary', 'K')}
+						{@render paneTile('secondary', 'L')}
+						{@render paneTile('secondary', 'M')}
+						{@render paneTile('secondary', 'N')}
+						{@render paneTile('secondary', 'O')}
+						{@render paneTile('secondary', 'P')}
+						{@render paneTile('secondary', 'Q')}
+						{@render paneTile('secondary', 'R')}
+						{@render paneTile('secondary', 'S')}
+						{@render paneTile('secondary', 'T')}
+						{@render paneTile('secondary', 'U')}
+						{@render paneTile('secondary', 'V')}
+						{@render paneTile('secondary', 'W')}
+						{@render paneTile('secondary', 'X')}
+						{@render paneTile('secondary', 'Y')}
+						{@render paneTile('secondary', 'Z')}
+					</div>
+				</div>
+				{@render resizer(startResizingLeftTriplePanes, resizeLeftTriplePanesActive)}
+				<div
+					class=" @container/paneCenter grow-4 rounded-lg"
+					bind:this={triplePaneCenterContainer}
+					style={`width: ${triplePaneCenterWidth}px`}
+				>
+					<div
+						class="bg-neutral-container/50 @8xl/paneCenter:grid-cols-9 @10xl/paneCenter:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneCenter:grid-cols-2 @sm/paneCenter:grid-cols-3 @md/paneCenter:grid-cols-4 @xl/paneCenter:grid-cols-5 @2xl/paneCenter:grid-cols-6 @4xl/paneCenter:grid-cols-7 @6xl/paneCenter:grid-cols-8"
+					>
+						{@render paneTile('neutral', 'A')}
+						{@render paneTile('neutral', 'B')}
+						{@render paneTile('neutral', 'C')}
+						{@render paneTile('neutral', 'D')}
+						{@render paneTile('neutral', 'E')}
+						{@render paneTile('neutral', 'F')}
+						{@render paneTile('neutral', 'G')}
+						{@render paneTile('neutral', 'H')}
+						{@render paneTile('neutral', 'I')}
+						{@render paneTile('neutral', 'J')}
+						{@render paneTile('neutral', 'K')}
+						{@render paneTile('neutral', 'L')}
+						{@render paneTile('neutral', 'M')}
+						{@render paneTile('neutral', 'N')}
+						{@render paneTile('neutral', 'O')}
+						{@render paneTile('neutral', 'P')}
+						{@render paneTile('neutral', 'Q')}
+						{@render paneTile('neutral', 'R')}
+						{@render paneTile('neutral', 'S')}
+						{@render paneTile('neutral', 'T')}
+						{@render paneTile('neutral', 'U')}
+						{@render paneTile('neutral', 'V')}
+						{@render paneTile('neutral', 'W')}
+						{@render paneTile('neutral', 'X')}
+						{@render paneTile('neutral', 'Y')}
+						{@render paneTile('neutral', 'Z')}
+					</div>
+				</div>
+				{@render resizer(startResizingRightTriplePanes, resizeRightTriplePanesActive)}
+				<div
+					class="bg-info-container/50 flex grow flex-wrap justify-end gap-4 overflow-y-scroll rounded-lg p-4"
+					bind:this={triplePaneRightContainer}
+					style={`width: ${triplePaneRightWidth}px`}
+				>
+					{@render paneTile('info', '1')}
+					{@render paneTile('info', '2')}
+					{@render paneTile('info', '3')}
+					{@render paneTile('info', '4')}
+					{@render paneTile('info', '5')}
+					{@render paneTile('info', '6')}
+					{@render paneTile('info', '7')}
+					{@render paneTile('info', '8')}
+					{@render paneTile('info', '9')}
+					{@render paneTile('info', '10')}
+					{@render paneTile('info', '11')}
+					{@render paneTile('info', '12')}
+					{@render paneTile('info', '13')}
+					{@render paneTile('info', '14')}
+					{@render paneTile('info', '15')}
+					{@render paneTile('info', '16')}
+					{@render paneTile('info', '17')}
+					{@render paneTile('info', '18')}
+					{@render paneTile('info', '19')}
+					{@render paneTile('info', '20')}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Title id="modals">Modals</Title>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Title id="modals-dev">🚧 Modals 🚧</Title>
 		<button
 			type="button"
 			class="btn btn-accent"
@@ -1578,14 +2005,14 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Heading>Drawer (Sidebar)</Heading>
+		<Title id="drawer">Drawer (Sidebar)</Title>
 		{@render underConstruction()}
 	</div>
 
 	<!-- This local override works:
 		style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
 	<div class={develop ? 'block' : 'hidden'}>
-		<Heading>🚧 Drawer (Sidebar) 🚧</Heading>
+		<Title id="drawer-dev">🚧 Drawer (Sidebar) 🚧</Title>
 		<button
 			type="button"
 			class="btn btn-primary"
@@ -1643,6 +2070,14 @@
 			color: var(--md-sys-color-primary);
 			transition: 0.4s rotate;
 		} */
+	}
+	.resizer:hover .resizer-handle {
+		background: var(--md-sys-color-outline);
+	}
+	/* Prevent touch scrolling from hijacking drags on mobile */
+	.resizer,
+	.resizer-handle {
+		touch-action: none;
 	}
 	/* select:open::picker-icon {
 		rotate: 180deg;
