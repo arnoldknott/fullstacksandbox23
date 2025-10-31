@@ -1553,7 +1553,7 @@
 					tabindex="0"
 					onmousedown={startResizingDualPanes}
 				>
-					<div class="resizer-handle bg-outline-variant h-20 w-1 rounded-full"></div>
+					<div class="resizer-handle {resizeDualPanesActive ? 'bg-outline' : 'bg-outline-variant'} h-20 w-1 rounded-full"></div>
 				</div>
 				<!-- <button
 					type="button"
