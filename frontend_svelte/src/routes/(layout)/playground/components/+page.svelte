@@ -1381,7 +1381,7 @@
 
 			{#snippet paneTile(color: string, number: string)}
 				<div
-					class="bg-{color}-container text-{color}-container-content display h-30 w-30 rounded-xl text-center"
+					class="bg-{color}-container text-{color}-container-content display h-25 w-25 rounded-xl text-center"
 				>
 					{number}
 				</div>
@@ -1390,20 +1390,25 @@
 			<div class="mt-10">
 				<p class="title text-primary">Resizing two flex containers with adoptive content size.</p>
 				<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidthAdoptiveFlex}>
-					<div class="diff-item-1" >
-						<div class="flex justify-end" >
-							<div class="bg-secondary flex flex-wrap justify-end gap-4 p-4" style={`width: ${firstDiffWidthAdoptiveFlex}px;`}>
+					<div class="diff-item-1">
+						<div class="flex justify-end">
+							<div
+								class="bg-secondary flex flex-wrap justify-end gap-4 p-4"
+								style={`width: ${firstDiffWidthAdoptiveFlex}px;`}
+							>
 								{@render paneTile('secondary', '1')}
 								{@render paneTile('secondary', '2')}
 								{@render paneTile('secondary', '3')}
+								{@render paneTile('secondary', '4')}
 							</div>
 						</div>
 					</div>
 					<div class="diff-item-2" bind:clientWidth={secondDiffWidthAdoptiveFlex}>
-						<div class="bg-primary flex flex-wrap gap-4 p-4 w-full">
+						<div class="bg-primary flex w-full flex-wrap gap-4 p-4">
 							{@render paneTile('primary', 'A')}
 							{@render paneTile('primary', 'B')}
 							{@render paneTile('primary', 'C')}
+							{@render paneTile('primary', 'D')}
 						</div>
 					</div>
 					<div class="diff-resizer"></div>
@@ -1412,22 +1417,28 @@
 			<div class="mt-10">
 				<p class="title text-primary">Resizing two grids with adoptive content size.</p>
 				<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidthAdoptiveGrid}>
-					<div class="diff-item-1" >
+					<div class="diff-item-1">
 						<div class="flex justify-end">
-							<div class="@container/diff1 " style={`width: ${firstDiffWidthAdoptiveGrid}px;`}>
-							<div class="bg-secondary grid grid-cols-1 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 justify-end gap-4 p-4 h-full" >
-								{@render paneTile('secondary', '1')}
-								{@render paneTile('secondary', '2')}
-								{@render paneTile('secondary', '3')}
-							</div>
+							<div class="@container/diff1" style={`width: ${firstDiffWidthAdoptiveGrid}px;`}>
+								<div
+									class="bg-info grid h-full grid-cols-1 justify-end gap-4 p-4 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 @lg/diff1:grid-cols-4"
+								>
+									{@render paneTile('info', '1')}
+									{@render paneTile('info', '2')}
+									{@render paneTile('info', '3')}
+									{@render paneTile('info', '4')}
+								</div>
 							</div>
 						</div>
 					</div>
 					<div class="diff-item-2 @container/diff2" bind:clientWidth={secondDiffWidthAdoptiveGrid}>
-						<div class="bg-primary grid grid-cols-1 @2xs/diff2:grid-cols-2 @md/diff2:grid-cols-3 gap-4 p-4 w-full">
-							{@render paneTile('primary', 'A')}
-							{@render paneTile('primary', 'B')}
-							{@render paneTile('primary', 'C')}
+						<div
+							class="bg-accent grid w-full grid-cols-1 gap-4 p-4 @2xs/diff2:grid-cols-2 @md/diff2:grid-cols-3 @lg/diff2:grid-cols-4"
+						>
+							{@render paneTile('accent', 'A')}
+							{@render paneTile('accent', 'B')}
+							{@render paneTile('accent', 'C')}
+							{@render paneTile('accent', 'D')}
 						</div>
 					</div>
 					<div class="diff-resizer"></div>
@@ -1436,10 +1447,10 @@
 		</div>
 
 		<!-- TBD: figure out how to avoid the manual fix with -my-100 -->
-		 <!-- TBD: switch out the resizing handle to vertical double arrow-->
+		<!-- TBD: switch out the resizing handle to vertical double arrow-->
 		<div class="mt-10 flex flex-col">
 			<p class="title text-primary">Vertical resizing - for mobile. (missing height adjustment)</p>
-			
+
 			<div class="diff aspect-9/16 rotate-90 rounded-2xl">
 				<div class="diff-item-1">
 					<img
@@ -1455,7 +1466,7 @@
 						src="/mountain-salamander-20240702.jpg"
 					/>
 				</div>
-				
+
 				<div class="diff-resizer"></div>
 			</div>
 		</div>
