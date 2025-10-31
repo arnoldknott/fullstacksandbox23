@@ -285,14 +285,21 @@
 
 	// for diff component:
 	let diffWidth: number = $state(0);
-	let leftDiffWidth: number = $state(0);
-	let rightDiffWidth: number = $state(0);
+	let firstDiffWidth: number = $state(0);
+	let secondDiffWidth: number = $state(0);
 	let resizer: HTMLDivElement | null = $state(null);
+
+	let diffWidthAdoptiveContent: number = $state(0);
+	let firstDiffWidthAdoptiveContent: number = $state(0);
+	// let secondDiffWidthAdoptiveContent: number = $state(0);
+	let resizerAdoptiveContent: HTMLDivElement | null = $state(null);
+
+	let secondDiffWidthAdoptiveContent = $derived(diffWidthAdoptiveContent - firstDiffWidthAdoptiveContent);
 </script>
 
 <!-- <svelte:window use:mapDropdown /> -->
 
-<div class="flex flex-col sm:flex-row justify-around">
+<div class="flex flex-col justify-around sm:flex-row">
 	<div class="mb-2 flex items-center gap-1">
 		<label class="label label-text text-base" for="prodSwitcher">Production: off </label>
 		<input type="checkbox" class="switch switch-accent" bind:checked={prod} id="prodSwitcher" />
@@ -418,7 +425,9 @@
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Title id="card-with-text-and-title-navigation-dev">🚧 Card with text and title navigation 🚧</Title>
+		<Title id="card-with-text-and-title-navigation-dev"
+			>🚧 Card with text and title navigation 🚧</Title
+		>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			<div
 				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
@@ -535,7 +544,7 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Title id="card-with-action-buttons"	>Card with action buttons</Title>
+		<Title id="card-with-action-buttons">Card with action buttons</Title>
 		{@render underConstruction()}
 	</div>
 
@@ -1333,64 +1342,107 @@
 	<div class={develop ? 'block' : 'hidden'}>
 		<Title id="pane-dividers-dev">🚧 Pane Dividers (Diffs) 🚧</Title>
 		<div>
-		<p class="title text-primary">
-			Two images, horizontal resizing.
-		</p>
-		<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidth}>
-			<div class="diff-item-1" bind:clientWidth={leftDiffWidth}>
-				<img
-					alt="Bavarian lake Starnberger See in sunset"
-					src="/starnberger-see-unset-20230807.jpg"
-				/>
+			<p class="title text-primary">Two images, horizontal resizing.</p>
+			<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidth}>
+				<div class="diff-item-1" bind:clientWidth={firstDiffWidth}>
+					<img
+						alt="Bavarian lake Starnberger See in sunset"
+						src="/starnberger-see-unset-20230807.jpg"
+					/>
+				</div>
+				<div class="diff-item-2" bind:clientWidth={secondDiffWidth}>
+					<img alt="Swiss mountain Matterhorn in sunset" src="/matterhorn-20230628.jpg" />
+				</div>
+				<div class="diff-resizer" bind:this={resizer}></div>
 			</div>
-			<div class="diff-item-2" bind:clientWidth={rightDiffWidth}>
-				<img alt="Swiss mountain Matterhorn in sunset" src="/matterhorn-20230628.jpg" />
+			<p class="caption text-primary-container-content mt-2 text-center text-sm">
+				Drag the divider to compare the two images.
+			</p>
+			<div class="text-primary-container-content mx-20 flex flex-row justify-between text-sm">
+				<div>Left Width: {firstDiffWidth}</div>
+				<div>Resizer Position: {resizer?.clientWidth}</div>
+				<div>Right Width: {diffWidth - secondDiffWidth}</div>
 			</div>
-			<div class="diff-resizer" bind:this={resizer}></div>
-		</div>
-		<p class="caption text-primary-container-content mt-2 text-center text-sm">
-			Drag the divider to compare the two images.
-		</p>
-		<div class="text-primary-container-content mx-20 flex flex-row justify-between text-sm">
-			<div>Left Width: {leftDiffWidth}</div>
-			<div>Resizer Position: {resizer?.clientWidth}</div>
-			<div>Right Width: {diffWidth - rightDiffWidth}</div>
+
+			<div class="text-center">
+				<button
+					type="button"
+					class="btn btn-secondary-container btn-sm mt-4"
+					onclick={() => {
+						if (resizer) {
+							resizer.style.width = diffWidth / 2 + 'px';
+						}
+					}}
+				>
+					Reset Resizer Position
+				</button>
+			</div>
+
+			{#snippet paneTile(color: string, number: string)}
+				<div
+					class="bg-{color}-container text-{color}-container-content display h-30 w-30 rounded-xl text-center"
+				>
+					{number}
+				</div>
+			{/snippet}
+
+			<div class="mt-10">
+				<p class="title text-primary">Resizing with adoptive content size.</p>
+				<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidthAdoptiveContent}>
+					<div class="diff-item-1" bind:clientWidth={firstDiffWidthAdoptiveContent}>
+						<div class="bg-secondary flex flex-wrap justify-end gap-4 p-4">
+							{@render paneTile('secondary', '1')}
+							{@render paneTile('secondary', '2')}
+							{@render paneTile('secondary', '3')}
+						</div>
+					</div>
+					<div class="diff-item-2">
+						<div class="bg-primary flex flex-wrap gap-4 p-4 w-fit">
+							{@render paneTile('primary', 'A')}
+							{@render paneTile('primary', 'B')}
+							{@render paneTile('primary', 'C')}
+						</div>
+					</div>
+					<div class="diff-resizer" bind:this={resizerAdoptiveContent}></div>
+				</div>
+				<div class="text-primary-container-content mx-20 flex flex-row justify-between text-sm">
+					<div>Left Width: {firstDiffWidthAdoptiveContent}</div>
+					<div>Resizer Position: {resizerAdoptiveContent?.clientWidth}</div>
+					<div>Right Width: {secondDiffWidthAdoptiveContent}</div>
+				</div>
+			</div>
+			<div class="bg-primary flex flex-wrap gap-4 p-4 w-[300px]">
+				{@render paneTile('primary', 'A')}
+				{@render paneTile('primary', 'B')}
+				{@render paneTile('primary', 'C')}
+			</div>
 		</div>
 
-		<div class="text-center">
-			<button
-				type="button"
-				class="btn btn-secondary-container btn-sm mt-4"
-				onclick={() => {
-					if (resizer) {
-						resizer.style.width = diffWidth / 2 + 'px';
-					}
-				}}
-			>
-				Reset Resizer Position
-			</button>
-		</div>
-		</div>
-		<div class="mt-10 flex flex-col ">
-			<p class="title text-primary">
-				Vertical resizing - for mobile. (missing height adjustment)
-			</p>
-			<!-- TBD: figure out how to avoid the manual fix with -my-100 -->
-			<div class="diff aspect-9/16 rounded-2xl rotate-90">
-			<div class="diff-item-1 ">
-				<img
-					class="-rotate-90 object-contain"
-					alt="Lake below Hohe Tajaköpfe"
-					src="/hohe-tajakoepfe-20230709.jpg"
-				/>
+		<!-- TBD: figure out how to avoid the manual fix with -my-100 -->
+		 <!-- TBD: switch out the resizing handle to vertical double arrow-->
+		<div class="mt-10 flex flex-col">
+			<p class="title text-primary">Vertical resizing - for mobile. (missing height adjustment)</p>
+			
+			<div class="diff aspect-9/16 rotate-90 rounded-2xl">
+				<div class="diff-item-1">
+					<img
+						class="-rotate-90 object-contain"
+						alt="Lake below Hohe Tajaköpfe"
+						src="/hohe-tajakoepfe-20230709.jpg"
+					/>
+				</div>
+				<div class="diff-item-2">
+					<img
+						class="-rotate-90 object-contain"
+						alt="Mountain salamanders on rock"
+						src="/mountain-salamander-20240702.jpg"
+					/>
+				</div>
+				
+				<div class="diff-resizer"></div>
 			</div>
-			<div class="diff-item-2">
-				<img class="-rotate-90 object-contain" alt="Mountain salamanders on rock" src="/mountain-salamander-20240702.jpg" />
-			</div>
-			<!-- TBD: switch out the resizing handle -->
-			<div class="diff-resizer"></div>
 		</div>
-		</div>
+
 		<HorizontalRule />
 	</div>
 
