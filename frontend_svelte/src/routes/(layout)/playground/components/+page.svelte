@@ -1390,8 +1390,8 @@
 			<div class="mt-10">
 				<p class="title text-primary">Resizing two flex containers with adoptive content size.</p>
 				<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidthAdoptiveFlex}>
-					<div class="diff-item-1">
-						<div class="flex justify-end">
+					<div class="diff-item-1 h-full">
+						<div class="flex h-full justify-end">
 							<div
 								class="bg-secondary flex flex-wrap justify-end gap-4 p-4"
 								style={`width: ${firstDiffWidthAdoptiveFlex}px;`}
@@ -1416,17 +1416,25 @@
 			</div>
 			<div class="mt-10">
 				<p class="title text-primary">Resizing two grids with adoptive content size.</p>
-				<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidthAdoptiveGrid}>
+				<div class="diff h-100 rounded-2xl" bind:clientWidth={diffWidthAdoptiveGrid}>
 					<div class="diff-item-1">
 						<div class="flex justify-end">
 							<div class="@container/diff1" style={`width: ${firstDiffWidthAdoptiveGrid}px;`}>
 								<div
-									class="bg-info grid h-full grid-cols-1 justify-items-end gap-4 p-4 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 @lg/diff1:grid-cols-4"
+									class="bg-info grid h-full grid-cols-1 justify-items-end gap-4 overflow-y-auto p-4 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 @lg/diff1:grid-cols-4"
 								>
 									{@render paneTile('info', '1')}
 									{@render paneTile('info', '2')}
 									{@render paneTile('info', '3')}
 									{@render paneTile('info', '4')}
+									{@render paneTile('info', '5')}
+									{@render paneTile('info', '6')}
+									{@render paneTile('info', '7')}
+									{@render paneTile('info', '8')}
+									{@render paneTile('info', '9')}
+									{@render paneTile('info', '10')}
+									{@render paneTile('info', '11')}
+									{@render paneTile('info', '12')}
 								</div>
 							</div>
 						</div>
@@ -1443,6 +1451,60 @@
 					</div>
 					<div class="diff-resizer"></div>
 				</div>
+				<div class="diff h-100 rounded-2xl" bind:clientWidth={diffWidthAdoptiveGrid}>
+					<div class="diff-item-1 h-full">
+						<div class="flex h-full justify-end">
+							<div
+								class="@container/diff1 m-5 h-full min-h-0 overflow-hidden rounded-xl"
+								style={`width: ${firstDiffWidthAdoptiveGrid}px;`}
+							>
+								<div
+									class="bg-accent grid h-full w-full grid-cols-1 gap-4 overflow-y-auto p-4 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 @lg/diff1:grid-cols-4"
+								>
+									{@render paneTile('accent', 'A')}
+									{@render paneTile('accent', 'B')}
+									{@render paneTile('accent', 'C')}
+									{@render paneTile('accent', 'D')}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="grid h-100 w-full grid-cols-2 rounded-2xl">
+					<div class="@container/diff1 w-50 resize-x">
+						<div
+							class="bg-info grid h-100 w-full grid-cols-1 gap-4 overflow-y-auto p-4 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 @lg/diff1:grid-cols-4"
+						>
+							{@render paneTile('info', '1')}
+							{@render paneTile('info', '2')}
+							{@render paneTile('info', '3')}
+							{@render paneTile('info', '4')}
+							{@render paneTile('info', '5')}
+							{@render paneTile('info', '6')}
+							{@render paneTile('info', '7')}
+							{@render paneTile('info', '8')}
+							{@render paneTile('info', '9')}
+							{@render paneTile('info', '10')}
+							{@render paneTile('info', '11')}
+							{@render paneTile('info', '12')}
+						</div>
+					</div>
+					<div class="@container/diff2 w-50 resize-x">
+						<div
+							class="bg-accent grid h-100 w-full grid-cols-1 gap-4 overflow-y-auto p-4 @2xs/diff2:grid-cols-2 @md/diff2:grid-cols-3 @lg/diff2:grid-cols-4"
+						>
+							{@render paneTile('accent', 'A')}
+							{@render paneTile('accent', 'B')}
+							{@render paneTile('accent', 'C')}
+							{@render paneTile('accent', 'D')}
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="menu">
+				<div class="resizable-div">Hello, World!</div>
+				<div class="resizable-div">Hello, World!</div>
+				<div class="resizable-div">Hello, World!</div>
 			</div>
 		</div>
 
@@ -1806,4 +1868,17 @@
 		color: var(--md-sys-color-primary);
 		transition: 0.4s rotate;
 	} */
+	.resizable-div {
+		resize: horizontal;
+		width: 100%;
+		overflow: auto;
+		border: 1px solid;
+	}
+	.menu {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 10px;
+		height: 300px;
+		/* Try height: 100% or height: 100vh */
+	}
 </style>
