@@ -331,25 +331,28 @@
 		}
 	});
 
-	const startResizingDualPanes = (event: MouseEvent) => {
+	const startResizingDualPanes = (event: PointerEvent) => {
 		// Prevent text selection and mark dragging active
 		event.preventDefault();
+		(event.currentTarget as HTMLElement)?.setPointerCapture?.(event.pointerId);
 		resizeDualPanesActive = true;
 	};
 
-	const startResizingLeftTriplePanes = (event: MouseEvent) => {
+	const startResizingLeftTriplePanes = (event: PointerEvent) => {
 		// Prevent text selection and mark dragging active
 		event.preventDefault();
+		(event.currentTarget as HTMLElement)?.setPointerCapture?.(event.pointerId);
 		resizeLeftTriplePanesActive = true;
 	};
 
-	const startResizingRightTriplePanes = (event: MouseEvent) => {
+	const startResizingRightTriplePanes = (event: PointerEvent) => {
 		// Prevent text selection and mark dragging active
 		event.preventDefault();
+		(event.currentTarget as HTMLElement)?.setPointerCapture?.(event.pointerId);
 		resizeRightTriplePanesActive = true;
 	};
 
-	const resizePanes = (event: MouseEvent) => {
+	const resizePanes = (event: PointerEvent) => {
 		if (resizeDualPanesActive && dualPaneContainer) {
 			const rect = dualPaneContainer.getBoundingClientRect();
 			// Compute left pane width from absolute mouse position
@@ -381,7 +384,7 @@
 		}
 	};
 
-	const stopResizingPanes = (_event: MouseEvent) => {
+	const stopResizingPanes = (_event: PointerEvent) => {
 		if (resizeDualPanesActive) {
 			resizeDualPanesActive = false;
 		} else if (resizeLeftTriplePanesActive) {
@@ -394,10 +397,10 @@
 
 <!-- <svelte:window use:mapDropdown /> -->
 <svelte:window
-	onmousemove={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive
+	onpointermove={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive
 		? resizePanes
 		: undefined}
-	onmouseup={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive
+	onpointerup={resizeDualPanesActive || resizeLeftTriplePanesActive || resizeRightTriplePanesActive
 		? stopResizingPanes
 		: undefined}
 />
@@ -1585,13 +1588,13 @@
 		<HorizontalRule />
 	</div>
 
-	{#snippet resizer(resizerFunction: (event: MouseEvent) => void, isActive: boolean)}
+	{#snippet resizer(resizerFunction: (event: PointerEvent) => void, isActive: boolean)}
 		<div
 			class="resizer bg-base-200 flex h-full w-3 cursor-col-resize items-center justify-center"
 			role="button"
 			aria-label="Resizing panes"
 			tabindex="0"
-			onmousedown={resizerFunction}
+			onpointerdown={resizerFunction}
 		>
 			<div
 				class="resizer-handle {isActive
@@ -2068,6 +2071,10 @@
 	}
 	.resizer:hover .resizer-handle {
 		background: var(--md-sys-color-outline);
+	}
+	/* Prevent touch scrolling from hijacking drags on mobile */
+	.resizer, .resizer-handle {
+		touch-action: none;
 	}
 	/* select:open::picker-icon {
 		rotate: 180deg;
