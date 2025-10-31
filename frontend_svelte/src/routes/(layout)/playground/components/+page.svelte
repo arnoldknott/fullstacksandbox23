@@ -1332,6 +1332,10 @@
 
 	<div class={develop ? 'block' : 'hidden'}>
 		<Title id="pane-dividers-dev">🚧 Pane Dividers (Diffs) 🚧</Title>
+		<div>
+		<p class="title text-primary">
+			Two images, horizontal resizing.
+		</p>
 		<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidth}>
 			<div class="diff-item-1" bind:clientWidth={leftDiffWidth}>
 				<img
@@ -1365,6 +1369,26 @@
 			>
 				Reset Resizer Position
 			</button>
+		</div>
+		</div>
+		<div class="mt-10">
+			<p class="title text-primary">
+				Vertical resizing - for mobile.
+			</p>
+			<!-- TBD: figure out how to avoid the manual fix with -my-100 -->
+			<div class="diff aspect-9/16 rounded-2xl rotate-90 -my-100">
+			<div class="diff-item-1 ">
+				<img
+					class="-rotate-90 object-contain"
+					alt="Lake below Hohe Tajaköpfe"
+					src="/hohe-tajakoepfe-20230709.jpg"
+				/>
+			</div>
+			<div class="diff-item-2">
+				<img class="-rotate-90 object-contain" alt="Mountain salamanders on rock" src="/mountain-salamander-20240702.jpg" />
+			</div>
+			<div class="diff-resizer"></div>
+		</div>
 		</div>
 		<HorizontalRule />
 	</div>
