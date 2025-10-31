@@ -287,7 +287,7 @@
 	let diffWidth: number = $state(0);
 	let firstDiffWidth: number = $state(0);
 	let secondDiffWidth: number = $state(0);
-	let resizer: HTMLDivElement | null = $state(null);
+	let resizerDiff: HTMLDivElement | null = $state(null);
 
 	let diffWidthAdoptiveFlex: number = $state(0);
 	let secondDiffWidthAdoptiveFlex: number = $state(0);
@@ -296,9 +296,58 @@
 	let diffWidthAdoptiveGrid: number = $state(0);
 	let secondDiffWidthAdoptiveGrid: number = $state(0);
 	let firstDiffWidthAdoptiveGrid = $derived(diffWidthAdoptiveGrid - secondDiffWidthAdoptiveGrid);
+
+	// for panes:
+	let resizeDualPanesActive: boolean = $state(false);
+	let dualPaneLeftWidth: number = $state(0);
+	let dualPaneRightWidth: number = $state(0);
+	let dualPaneContainer: HTMLDivElement | null = $state(null);
+
+	let triplePaneLeftWidth: number = $state(0);
+	let triplePaneCenterWidth: number = $state(0);
+	let triplePaneRightWidth: number = $state(0);
+
+	// $effect(() => {
+	// 	console.log('=== dualPaneLeftWidth ===', dualPaneLeftWidth);
+	// 	console.log('=== dualPaneRightWidth ===', dualPaneRightWidth);
+	// });
+
+	const startResizingDualPanes = (event: MouseEvent) => {
+		// Prevent text selection and mark dragging active
+		event.preventDefault();
+		if (!resizeDualPanesActive) {
+			resizeDualPanesActive = true;
+		}
+	};
+
+	const resizeDualPanes = (event: MouseEvent) => {
+		if (!resizeDualPanesActive || !dualPaneContainer) return;
+
+		const rect = dualPaneContainer.getBoundingClientRect();
+		// Minimum pane widths to avoid negative sizes
+		const MIN_PANE = 80; // px
+		const RESIZER_WIDTH = 12; // px (Tailwind w-3 ~ 0.75rem)
+
+		// Compute left pane width from absolute mouse position
+		let left = event.clientX - rect.left;
+		left = Math.max(MIN_PANE, Math.min(left, rect.width - MIN_PANE - RESIZER_WIDTH));
+
+		dualPaneLeftWidth = left;
+		dualPaneRightWidth = rect.width - left - RESIZER_WIDTH;
+	};
+
+	const stopResizingDualPanes = (_event: MouseEvent) => {
+		if (resizeDualPanesActive) {
+			resizeDualPanesActive = false;
+		}
+	};
 </script>
 
 <!-- <svelte:window use:mapDropdown /> -->
+<svelte:window
+	onmousemove={resizeDualPanesActive ? resizeDualPanes : undefined}
+	onmouseup={resizeDualPanesActive ? stopResizingDualPanes : undefined}
+/>
 
 <div class="flex flex-col justify-around sm:flex-row">
 	<div class="mb-2 flex items-center gap-1">
@@ -1336,12 +1385,12 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Title id="pane-dividers">Horizontal Diffs</Title>
+		<Title id="horizontal-diffs">Horizontal Diffs</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Title id="pane-dividers-dev">🚧 Horizontal Diffs 🚧</Title>
+		<Title id="horizontal-diffs-dev">🚧 Horizontal Diffs 🚧</Title>
 		<div>
 			<p class="title text-primary">Two images, horizontal resizing.</p>
 			<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidth}>
@@ -1354,14 +1403,14 @@
 				<div class="diff-item-2" bind:clientWidth={secondDiffWidth}>
 					<img alt="Swiss mountain Matterhorn in sunset" src="/matterhorn-20230628.jpg" />
 				</div>
-				<div class="diff-resizer" bind:this={resizer}></div>
+				<div class="diff-resizer" bind:this={resizerDiff}></div>
 			</div>
 			<p class="caption text-primary-container-content mt-2 text-center text-sm">
 				Drag the divider to compare the two images.
 			</p>
 			<div class="text-primary-container-content mx-20 flex flex-row justify-between text-sm">
 				<div>Left Width: {firstDiffWidth}</div>
-				<div>Resizer Position: {resizer?.clientWidth}</div>
+				<div>Resizer Position: {resizerDiff?.clientWidth}</div>
 				<div>Right Width: {diffWidth - secondDiffWidth}</div>
 			</div>
 
@@ -1370,8 +1419,8 @@
 					type="button"
 					class="btn btn-secondary-container btn-sm mt-4"
 					onclick={() => {
-						if (resizer) {
-							resizer.style.width = diffWidth / 2 + 'px';
+						if (resizerDiff) {
+							resizerDiff.style.width = diffWidth / 2 + 'px';
 						}
 					}}
 				>
@@ -1433,7 +1482,7 @@
 					</div>
 					<div class="diff-item-2 @container/diff2" bind:clientWidth={secondDiffWidthAdoptiveGrid}>
 						<div
-							class="bg-accent grid w-full grid-cols-1 gap-4 p-4 @2xs/diff2:grid-cols-2 @md/diff2:grid-cols-3 @lg/diff2:grid-cols-4 overflow-y-auto"
+							class="bg-accent grid w-full grid-cols-1 gap-4 overflow-y-auto p-4 @2xs/diff2:grid-cols-2 @md/diff2:grid-cols-3 @lg/diff2:grid-cols-4"
 						>
 							{@render paneTile('accent', 'A')}
 							{@render paneTile('accent', 'B')}
@@ -1449,13 +1498,13 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Title id="pane-dividers">Vertical Diffs</Title>
+		<Title id="vertical-diffs">Vertical Diffs</Title>
 		{@render underConstruction()}
 	</div>
 
 	<div class={develop ? 'block' : 'hidden'}>
-		<Title id="pane-dividers-dev">🚧 Vertical Diffs 🚧</Title>
-				<div class="mt-10 flex flex-col">
+		<Title id="vertical-diffs-dev">🚧 Vertical Diffs 🚧</Title>
+		<div class="mt-10 flex flex-col">
 			<p class="title text-primary">Vertical resizing - for mobile. (missing height adjustment)</p>
 
 			<div class="diff aspect-9/16 rotate-90 rounded-2xl">
@@ -1476,12 +1525,78 @@
 
 				<div class="diff-resizer"></div>
 			</div>
-						<p class="caption text-primary-container-content mt-2 text-center text-sm">
-				Figure out how to avoid the manual fix with -my-100 and switch out the resizing handle to vertical double arrow
+			<p class="caption text-primary-container-content mt-2 text-center text-sm">
+				Figure out how to avoid the manual fix with -my-100 and switch out the resizing handle to
+				vertical double arrow
 			</p>
 		</div>
 
 		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Title id="dual-panes">Dual Panes</Title>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Title id="dual-panes-dev">🚧 Dual Panes 🚧</Title>
+			<div class="mt-10 flex flex-col">
+				<div class="flex h-screen w-full p-10" bind:this={dualPaneContainer}>
+				<div class="bg-primary-container/50 grow rounded-lg" style={`width: ${dualPaneLeftWidth}px`}>
+					Left Pane
+				</div>
+				<div
+					class="resizer bg-base-200 flex h-full w-3 cursor-col-resize items-center justify-center"
+					role="button"
+					aria-label="Resizing panes"
+					tabindex="0"
+					onmousedown={startResizingDualPanes}
+				>
+					<div class="resizer-handle bg-outline-variant h-20 w-1 rounded-full"></div>
+				</div>
+				<!-- <button
+					type="button"
+					class="w-30 cursor-col-resize bg-base-200 hover:bg-info-container"
+					aria-label="Start resizing panes"
+					onmousedown={startResizingDualPanes}
+					onmouseup={stopResizingDualPanes}
+				>
+					<span class="icon-[bi--three-dots-vertical] text-outline size-8"></span>
+				</button> -->
+				<div
+					class="bg-secondary-container/50 grow rounded-lg"
+					style={`width: ${dualPaneRightWidth}px`}
+				>
+					Right Pane
+				</div>
+			</div>
+		</div>
+		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Title id="triple-panes">Triple Panes</Title>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Title id="triple-panes-dev">🚧 Triple Panes 🚧</Title>
+		<div class="mt-10 flex flex-col">
+			<div class="flex h-screen w-full p-10">
+				<div class="bg-success-container/50 rounded-lg" bind:clientWidth={triplePaneLeftWidth}>
+					Left Pane
+				</div>
+				<div>Resizer</div>
+				<div class="bg-warning-container/50 grow rounded-lg" bind:clientWidth={triplePaneCenterWidth}>
+					Center Pane
+				</div>
+				<div>Resizer</div>
+				<div class="bg-error-container/50 rounded-lg" bind:clientWidth={triplePaneRightWidth}>
+					Right Pane
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
@@ -1808,6 +1923,9 @@
 			color: var(--md-sys-color-primary);
 			transition: 0.4s rotate;
 		} */
+	}
+	.resizer:hover .resizer-handle {
+		background: var(--md-sys-color-outline);
 	}
 	/* select:open::picker-icon {
 		rotate: 180deg;
