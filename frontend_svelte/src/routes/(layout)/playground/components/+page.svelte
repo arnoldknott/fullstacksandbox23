@@ -292,6 +292,10 @@
 	let diffWidthAdoptiveFlex: number = $state(0);
 	let secondDiffWidthAdoptiveFlex: number = $state(0);
 	let firstDiffWidthAdoptiveFlex = $derived(diffWidthAdoptiveFlex - secondDiffWidthAdoptiveFlex);
+
+	let diffWidthAdoptiveGrid: number = $state(0);
+	let secondDiffWidthAdoptiveGrid: number = $state(0);
+	let firstDiffWidthAdoptiveGrid = $derived(diffWidthAdoptiveGrid - secondDiffWidthAdoptiveGrid);
 </script>
 
 <!-- <svelte:window use:mapDropdown /> -->
@@ -1397,6 +1401,30 @@
 					</div>
 					<div class="diff-item-2" bind:clientWidth={secondDiffWidthAdoptiveFlex}>
 						<div class="bg-primary flex flex-wrap gap-4 p-4 w-full">
+							{@render paneTile('primary', 'A')}
+							{@render paneTile('primary', 'B')}
+							{@render paneTile('primary', 'C')}
+						</div>
+					</div>
+					<div class="diff-resizer"></div>
+				</div>
+			</div>
+			<div class="mt-10">
+				<p class="title text-primary">Resizing two grids with adoptive content size.</p>
+				<div class="diff aspect-video rounded-2xl" bind:clientWidth={diffWidthAdoptiveGrid}>
+					<div class="diff-item-1" >
+						<div class="flex justify-end">
+							<div class="@container/diff1 " style={`width: ${firstDiffWidthAdoptiveGrid}px;`}>
+							<div class="bg-secondary grid grid-cols-1 @2xs/diff1:grid-cols-2 @md/diff1:grid-cols-3 justify-end gap-4 p-4 h-full" >
+								{@render paneTile('secondary', '1')}
+								{@render paneTile('secondary', '2')}
+								{@render paneTile('secondary', '3')}
+							</div>
+							</div>
+						</div>
+					</div>
+					<div class="diff-item-2 @container/diff2" bind:clientWidth={secondDiffWidthAdoptiveGrid}>
+						<div class="bg-primary grid grid-cols-1 @2xs/diff2:grid-cols-2 @md/diff2:grid-cols-3 gap-4 p-4 w-full">
 							{@render paneTile('primary', 'A')}
 							{@render paneTile('primary', 'B')}
 							{@render paneTile('primary', 'C')}
