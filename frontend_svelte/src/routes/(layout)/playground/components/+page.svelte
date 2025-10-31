@@ -1371,12 +1371,12 @@
 			</button>
 		</div>
 		</div>
-		<div class="mt-10">
+		<div class="mt-10 flex flex-col ">
 			<p class="title text-primary">
-				Vertical resizing - for mobile.
+				Vertical resizing - for mobile. (missing height adjustment)
 			</p>
 			<!-- TBD: figure out how to avoid the manual fix with -my-100 -->
-			<div class="diff aspect-9/16 rounded-2xl rotate-90 -my-100">
+			<div class="diff aspect-9/16 rounded-2xl rotate-90">
 			<div class="diff-item-1 ">
 				<img
 					class="-rotate-90 object-contain"
@@ -1387,6 +1387,7 @@
 			<div class="diff-item-2">
 				<img class="-rotate-90 object-contain" alt="Mountain salamanders on rock" src="/mountain-salamander-20240702.jpg" />
 			</div>
+			<!-- TBD: switch out the resizing handle -->
 			<div class="diff-resizer"></div>
 		</div>
 		</div>
