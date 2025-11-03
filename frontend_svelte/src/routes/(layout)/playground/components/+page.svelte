@@ -316,7 +316,7 @@
 	// Initialize with a placeholder so bindings like dualPanes[0].resizeObservers have a target
 	let dualPanes: Pane[] = $state([
 		{ pane: null as unknown as HTMLDivElement, left: 0, width: 0, resizer: null },
-		{ pane: null as unknown as HTMLDivElement, left: 0, width: 0, resizer: null },
+		{ pane: null as unknown as HTMLDivElement, left: 0, width: 0, resizer: null }
 	]);
 	// let dualPanes: HTMLDivElement[] | null = $state([]);
 	// let resizerPositions: number[] = $state([]);
@@ -384,7 +384,7 @@
 			// Setting upper boundary for left pane:
 			// ensure right pane >= ( minPane + space for resizer )
 			// equals lower boundary for right pane:
-			const leftMax = Math.min(left, rect.width - minPane - resizerWidth) 
+			const leftMax = Math.min(left, rect.width - minPane - resizerWidth);
 			// sets a lower boundary for the left pane
 			// equals upper boundary for right pane:
 			dualPaneLeftWidth = Math.max(minPane, leftMax);
@@ -1645,24 +1645,19 @@
 		<Title id="dual-panes-dev">🚧 Dual Panes 🚧</Title>
 		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
 			<div class="flex h-80 w-full p-4" bind:this={dualPaneContainer}>
-				<div
-					class="bg-primary-container/50 grow rounded-lg"
-					style:width={dualPaneLeftWidth+"px"}
-				>
+				<div class="bg-primary-container/50 grow rounded-lg" style:width={dualPaneLeftWidth + 'px'}>
 					Left Pane
 				</div>
 				{@render resizer(startResizingDualPanes, resizeDualPanesActive)}
-				<div
-					class="bg-accent-container/50 grow rounded-lg"
-					style:width={dualPaneRightWidth+"px"}
-				>
+				<div class="bg-accent-container/50 grow rounded-lg" style:width={dualPaneRightWidth + 'px'}>
 					Right Pane
 				</div>
 			</div>
 		</div>
 		<p class="body mt-5">
 			Refactoring to put panes and resizers in arrays and loop over them to reduce code duplication
-			and make it easier to switch between dual and triple panes and potentially extend to more panes in the future
+			and make it easier to switch between dual and triple panes and potentially extend to more
+			panes in the future
 		</p>
 		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
 			<div class="flex h-80 w-full p-4">
@@ -1670,9 +1665,9 @@
 					class="bg-base-250 grow rounded-lg"
 					bind:this={dualPanes[0].pane}
 					bind:clientWidth={dualPanes[0].width}
-					style:width={dualPaneLeftWidth+"px"}
+					style:width={dualPaneLeftWidth + 'px'}
 				>
-				<!-- bind:this={
+					<!-- bind:this={
 						() => null,
 						(pane) => {
 							console.log('pane:', pane);
@@ -1689,7 +1684,7 @@
 					class="bg-base-300 grow rounded-lg"
 					bind:this={dualPanes[1].pane}
 					bind:clientWidth={dualPanes[1].width}
-					style:width={dualPaneRightWidth+"px"}
+					style:width={dualPaneRightWidth + 'px'}
 				>
 					Right Pane
 					<p>Left: {Math.floor(dualPanes[1].left)}px</p>
@@ -1712,7 +1707,7 @@
 				<div
 					class="@container/paneLeft grow-2 rounded-lg"
 					bind:this={triplePaneLeftContainer}
-					style:width={triplePaneLeftWidth+"px"}
+					style:width={triplePaneLeftWidth + 'px'}
 				>
 					<div
 						class="bg-secondary-container/50 @8xl/paneLeft:grid-cols-9 @10xl/paneLeft:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneLeft:grid-cols-2 @sm/paneLeft:grid-cols-3 @md/paneLeft:grid-cols-4 @xl/paneLeft:grid-cols-5 @2xl/paneLeft:grid-cols-6 @4xl/paneLeft:grid-cols-7 @6xl/paneLeft:grid-cols-8"
@@ -1749,7 +1744,7 @@
 				<div
 					class="@container/paneCenter grow-4 rounded-lg"
 					bind:this={triplePaneCenterContainer}
-					style:width={triplePaneCenterWidth+"px"}
+					style:width={triplePaneCenterWidth + 'px'}
 				>
 					<div
 						class="bg-neutral-container/50 @8xl/paneCenter:grid-cols-9 @10xl/paneCenter:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneCenter:grid-cols-2 @sm/paneCenter:grid-cols-3 @md/paneCenter:grid-cols-4 @xl/paneCenter:grid-cols-5 @2xl/paneCenter:grid-cols-6 @4xl/paneCenter:grid-cols-7 @6xl/paneCenter:grid-cols-8"
@@ -1786,7 +1781,7 @@
 				<div
 					class="bg-info-container/50 flex grow flex-wrap justify-end gap-4 overflow-y-scroll rounded-lg p-4"
 					bind:this={triplePaneRightContainer}
-					style:width={triplePaneRightWidth+"px"}
+					style:width={triplePaneRightWidth + 'px'}
 				>
 					{@render paneTile('info', '1')}
 					{@render paneTile('info', '2')}
