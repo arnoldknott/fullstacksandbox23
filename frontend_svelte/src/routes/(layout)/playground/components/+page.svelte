@@ -303,6 +303,14 @@
 	let dualPaneLeftWidth: number = $state(0);
 	let dualPaneRightWidth: number = $state(0);
 	let dualPaneContainer: HTMLDivElement | null = $state(null);
+	// refactoring into an array of panes and make reusable for scaling of pane numbers:
+	let dualPanes = $state([]);
+	let dualResizers = $state([]);
+	// let dualPanes: HTMLDivElement[] | null = $state([]);
+	// let resizerPositions: number[] = $state([]);
+	// let leftPaneBoxWidth: number | null = $derived.by(() => {if(dualPanes[1]) {return dualPanes[1].getBoundingClientRect().width;} else {return null}});;
+	// let leftPaneBox: ResizeObserverSize[] = $state({} as ResizeObserverSize[]);
+	// let rightPaneBox: DOMRect | null = $derived.by(() => {if(dualPanes[1]) {return dualPanes[1].getBoundingClientRect();} else {return null}});
 
 	let resizeLeftTriplePanesActive: boolean = $state(false);
 	let resizeRightTriplePanesActive: boolean = $state(false);
@@ -357,7 +365,13 @@
 			const rect = dualPaneContainer.getBoundingClientRect();
 			// Compute left pane width from absolute mouse position
 			const left = event.clientX - rect.left;
-			dualPaneLeftWidth = Math.max(minPane, Math.min(left, rect.width - minPane - resizerWidth));
+			// Setting upper boundary for left pane:
+			// ensure right pane >= ( minPane + space for resizer )
+			// equals lower boundary for right pane:
+			const leftMax = Math.min(left, rect.width - minPane - resizerWidth) 
+			// sets a lower boundary for the left pane
+			// equals upper boundary for right pane:
+			dualPaneLeftWidth = Math.max(minPane, leftMax);
 			dualPaneRightWidth = rect.width - dualPaneLeftWidth - resizerWidth;
 		}
 		if (triplePaneContainer) {
@@ -1614,7 +1628,7 @@
 	<div class="{develop ? 'block' : 'hidden'} col-span-2">
 		<Title id="dual-panes-dev">🚧 Dual Panes 🚧</Title>
 		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
-			<div class="flex h-screen w-full p-4" bind:this={dualPaneContainer}>
+			<div class="flex h-80 w-full p-4" bind:this={dualPaneContainer}>
 				<div
 					class="bg-primary-container/50 grow rounded-lg"
 					style={`width: ${dualPaneLeftWidth}px`}
@@ -1624,6 +1638,23 @@
 				{@render resizer(startResizingDualPanes, resizeDualPanesActive)}
 				<div
 					class="bg-accent-container/50 grow rounded-lg"
+					style={`width: ${dualPaneRightWidth}px`}
+				>
+					Right Pane
+				</div>
+			</div>
+		</div>
+		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
+			<div class="flex h-80 w-full p-4" bind:this={dualPaneContainer}>
+				<div
+					class="bg-base-250 grow rounded-lg"
+					style={`width: ${dualPaneLeftWidth}px`}
+				>
+					Left Pane
+				</div>
+				{@render resizer(startResizingDualPanes, resizeDualPanesActive)}
+				<div
+					class="bg-base-300 grow rounded-lg"
 					style={`width: ${dualPaneRightWidth}px`}
 				>
 					Right Pane
@@ -1643,7 +1674,7 @@
 		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
 			<div class="flex h-screen w-full p-4" bind:this={triplePaneContainer}>
 				<div
-					class=" @container/paneLeft grow-2 rounded-lg"
+					class="@container/paneLeft grow-2 rounded-lg"
 					bind:this={triplePaneLeftContainer}
 					style={`width: ${triplePaneLeftWidth}px`}
 				>
@@ -1680,7 +1711,7 @@
 				</div>
 				{@render resizer(startResizingLeftTriplePanes, resizeLeftTriplePanesActive)}
 				<div
-					class=" @container/paneCenter grow-4 rounded-lg"
+					class="@container/paneCenter grow-4 rounded-lg"
 					bind:this={triplePaneCenterContainer}
 					style={`width: ${triplePaneCenterWidth}px`}
 				>
