@@ -13,14 +13,13 @@
 		// set active for the right pane of the pair, that is currently being resized.
 		resizerActive?: boolean;
 	};
-    let panes: Pane[] = $state(contents.map((_content) => ({ pane: null as unknown as HTMLDivElement, left: NaN, width: 0, minWidth: 100, maxWidth: 300, resizer: null })));
+    let panes: Pane[] = $state(contents.map((_content) => ({ pane: null as unknown as HTMLDivElement, left: NaN, width: 0, minWidth: 100, maxWidth: 400, resizer: null })));
 
     const activateResizer = (paneIndex: number) => {
         panes[paneIndex].resizerActive = true;
     };
 
     const resizePanes = (event: PointerEvent, rightResizingPaneIndex: number) => {
-        // console.log("resizePanes", rightResizingPaneIndex, event.clientX);
         // assing the panes involved:
         const leftPane = panes[rightResizingPaneIndex - 1];
         const rightPane = panes[rightResizingPaneIndex ];
@@ -33,43 +32,23 @@
         const minLeft = leftPane.minWidth ?? 0;
         const maxLeft = leftPane.maxWidth ?? Infinity;
         const minRight = rightPane.minWidth ?? 0;
-        // TBD: implment the static maxWidth if specified:
         const maxRight = rightPane.maxWidth ?? Infinity;
-        const boundLeft = Math.min(
-            maxLeft,
-            Math.max(minLeft, pairTotalWidth - minRight)
-        );
+        // Left must be within its own [minLeft, maxLeft]
+        // and also satisfy right constraints:
+        //  - right >= minRight  -> left <= pairTotalWidth - minRight
+        //  - right <= maxRight  -> left >= pairTotalWidth - maxRight
+        let leftLowerBound = Math.max(minLeft, pairTotalWidth - maxRight);
+        let leftUpperBound = Math.min(maxLeft, pairTotalWidth - minRight);
+        if (leftLowerBound > leftUpperBound) {
+            // If constraints contradict, collapse to nearest feasible value
+            leftUpperBound = leftLowerBound;
+        }
         // Compute left pane candidate width from absolute pointer position
         const leftCandidate = event.clientX - leftPane.left;
-        // Clamp left width between its min and the max that preserves the right min
-        leftPane.width = Math.max(minLeft, Math.min(leftCandidate, boundLeft));
+        // Clamp left within derived bounds
+        leftPane.width = Math.max(leftLowerBound, Math.min(leftCandidate, leftUpperBound));
         // Right width is whatever remains from the pair total (no resizer width involved here)
         rightPane.width = pairTotalWidth - leftPane.width;
-        // console.log("leftPane.width", leftPane.width, "rightPane.width", rightPane.width);
-        // console.log("leftPaneWidthDirect", panes[rightResizingPaneIndex - 1].width);
-        // console.log("rightPaneWidthDirect", rightPane.width);
-		// if (triplePaneContainer) {
-		// 	const rect = triplePaneContainer.getBoundingClientRect();
-		// 	const totalInner = rect.width - 2 * resizerWidth; // space available for the three panes only
-
-		// 	if (resizeLeftTriplePanesActive) {
-		// 		// Dragging the left resizer: adjust Left and Center, keep Right constant
-		// 		const x = event.clientX - rect.left; // position from left edge
-		// 		const maxLeft = totalInner - triplePaneRightWidth - minPane; // ensure center >= min
-		// 		triplePaneLeftWidth = Math.max(minPane, Math.min(x, Math.max(minPane, maxLeft)));
-		// 		triplePaneCenterWidth = totalInner - triplePaneLeftWidth - triplePaneRightWidth;
-		// 	} else if (resizeRightTriplePanesActive) {
-		// 		// Dragging the right resizer: adjust Center and Right, keep Left constant
-		// 		const x = event.clientX - rect.left; // position from left edge
-		// 		const rightCandidate = rect.width - x - resizerWidth; // width from resizer to right edge
-		// 		const maxRight = totalInner - triplePaneLeftWidth - minPane; // ensure center >= min
-		// 		triplePaneRightWidth = Math.max(
-		// 			minPane,
-		// 			Math.min(rightCandidate, Math.max(minPane, maxRight))
-		// 		);
-		// 		triplePaneCenterWidth = totalInner - triplePaneLeftWidth - triplePaneRightWidth;
-		// 	}
-		// }
 	};
 
 </script>
