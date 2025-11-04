@@ -13,7 +13,7 @@
 		// set active for the right pane of the pair, that is currently being resized.
 		resizerActive?: boolean;
 	};
-    let panes: Pane[] = $state(contents.map((_content) => ({ pane: null as unknown as HTMLDivElement, left: NaN, width: 0, resizer: null })));
+    let panes: Pane[] = $state(contents.map((_content) => ({ pane: null as unknown as HTMLDivElement, left: NaN, width: 0, minWidth: 100, maxWidth: 300, resizer: null })));
 
     const activateResizer = (paneIndex: number) => {
         panes[paneIndex].resizerActive = true;
@@ -27,19 +27,24 @@
         // update left in inforamtion in both panes (needs initialization)
 		leftPane.left = leftPane.pane.getBoundingClientRect().left;
 		rightPane.left = rightPane.pane.getBoundingClientRect().left;
-        // console.log("leftPane.left", leftPane.left);
-        const resizerWidth = rightPane?.resizer?.clientWidth || 12;
-        // Compute left pane width from absolute mouse position
-        const left = event.clientX - leftPane.left;
-        // Setting upper boundary for left pane:
-        // ensure right pane >= ( minPane + space for resizer )
-        // equals lower boundary for right pane:
-        const leftMax = Math.min(left, leftPane.left - (rightPane.minWidth || 0) - resizerWidth);
-        // sets a lower boundary for the left pane
-        // equals upper boundary for right pane:
-        leftPane.width = Math.max((leftPane.minWidth || 0), leftMax);
-        const bothPanesWidth = leftPane.width + rightPane.width;
-        rightPane.width = bothPanesWidth - leftPane.width - resizerWidth;
+        // Keep only the two adjacent panes affected by this resizer.
+        // Maintain their combined width constant during the drag.
+        const pairTotalWidth = leftPane.width + rightPane.width; // capture BEFORE updating either
+        const minLeft = leftPane.minWidth ?? 0;
+        const maxLeft = leftPane.maxWidth ?? Infinity;
+        const minRight = rightPane.minWidth ?? 0;
+        // TBD: implment the static maxWidth if specified:
+        const maxRight = rightPane.maxWidth ?? Infinity;
+        const boundLeft = Math.min(
+            maxLeft,
+            Math.max(minLeft, pairTotalWidth - minRight)
+        );
+        // Compute left pane candidate width from absolute pointer position
+        const leftCandidate = event.clientX - leftPane.left;
+        // Clamp left width between its min and the max that preserves the right min
+        leftPane.width = Math.max(minLeft, Math.min(leftCandidate, boundLeft));
+        // Right width is whatever remains from the pair total (no resizer width involved here)
+        rightPane.width = pairTotalWidth - leftPane.width;
         // console.log("leftPane.width", leftPane.width, "rightPane.width", rightPane.width);
         // console.log("leftPaneWidthDirect", panes[rightResizingPaneIndex - 1].width);
         // console.log("rightPaneWidthDirect", rightPane.width);
@@ -72,9 +77,7 @@
 <svelte:window
 	onpointermove={(event) => {
         if (panes.some(pane => pane.resizerActive)) {
-            const activeResizer = panes.findIndex((pane) => pane.resizerActive);
-            console.log("pointermove activeResizer", activeResizer);
-            resizePanes(event, activeResizer);
+            resizePanes(event, panes.findIndex((pane) => pane.resizerActive));
     }
     }}
 	onpointerup={() => panes.forEach(pane => pane.resizerActive = false)}
