@@ -1,10 +1,16 @@
 <script lang="ts">
 	import JsonData from "$components/JsonData.svelte";
     import { type Snippet } from "svelte"
-    let {contents}: {contents: Snippet[]} = $props();
+    type Inputs = {
+        content: Snippet;
+        minWidth?: number;
+        maxWidth?: number;
+    }
+    let {inputs}: {inputs: Inputs[]} = $props();
 
     type Pane = {
 		pane: HTMLDivElement;
+        content: Snippet;
 		left: number;
 		width: number;
 		minWidth?: number;
@@ -13,7 +19,19 @@
 		// set active for the right pane of the pair, that is currently being resized.
 		resizerActive?: boolean;
 	};
-    let panes: Pane[] = $state(contents.map((_content) => ({ pane: null as unknown as HTMLDivElement, left: NaN, width: 0, minWidth: 100, maxWidth: 400, resizer: null })));
+    let panes: Pane[] = $state(
+        inputs.map((input) => (
+            {
+                pane: null as unknown as HTMLDivElement,
+                content: input.content,
+                left: NaN,
+                width: 0, 
+                minWidth: input.minWidth,
+                maxWidth: input.maxWidth,
+                resizer: null
+            }
+        ))
+    );
 
     const activateResizer = (paneIndex: number) => {
         panes[paneIndex].resizerActive = true;
@@ -82,23 +100,26 @@
 
 
 <div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
-    <div class="flex h-80 w-full p-4">
+    <div class="flex h-screen w-full p-4">
         {#each panes as pane, i}
+        
             <div
                 class="grow bg-base-250"
                 bind:this={pane.pane}
                 bind:clientWidth={pane.width}
                 style:width={pane.width + 'px'}
             >
-                {@render contents[i]?.()}
-                <p>Left: {pane.left} px</p>
-                <p>Width: {pane.width} px</p>
-                <p>MinWidth: {pane.minWidth} px</p>
-                <p>MaxWidth: {pane.maxWidth} px</p>
-                <p>ResizerActive: {pane.resizerActive ? 'true' : 'false'}</p>
-                <p>Resizer.width: {pane.resizer?.clientWidth || 12} px</p>
-                <JsonData data={$state.snapshot(pane.left)} />
+            <!-- Degugging inforamtion of pane: -->
+                <!-- <div class="flex flex-col label-small">
+                    <div class="label">Left: {pane.left} px</div>
+                    <div class="label">Width: {pane.width} px</div>
+                    <div class="label">MinWidth: {pane.minWidth} px</div>
+                    <div class="label">MaxWidth: {pane.maxWidth} px</div>
+                    <div class="label">ResizerActive: {pane.resizerActive ? 'true' : 'false'}</div>
+                </div> -->
+                {@render pane.content?.()}
             </div>
+        
             {#if i !== panes.length - 1}
                 {@render resizer(i + 1)}
             {/if}

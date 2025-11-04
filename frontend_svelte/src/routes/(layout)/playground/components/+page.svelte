@@ -1663,20 +1663,98 @@
 			panes in the future
 		</p>
 
+		{#snippet alphabet(color: string, container: string)}
+		<!-- <div class="@container/{container}">
+				<div
+		class="bg-{color}-container/50 text-{color}-container-content rounded-lg @8xl/{container}:grid-cols-9 @10xl/{container}:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/{container}:grid-cols-2 @sm/{container}:grid-cols-3 @md/{container}:grid-cols-4 @xl/{container}:grid-cols-5 @2xl/{container}:grid-cols-6 @4xl/{container}:grid-cols-7 @6xl/{container}:grid-cols-8"
+		> -->
+		<div class="bg-{color}-container/50 text-{color}-container-content h-full flex grow flex-wrap justify-end gap-4 overflow-y-scroll rounded-lg p-4">
+			{@render paneTile(color, 'A')}
+			{@render paneTile(color, 'B')}
+			{@render paneTile(color, 'C')}
+			{@render paneTile(color, 'D')}
+			{@render paneTile(color, 'E')}
+			{@render paneTile(color, 'F')}
+			{@render paneTile(color, 'G')}
+			{@render paneTile(color, 'H')}
+			{@render paneTile(color, 'I')}
+			{@render paneTile(color, 'J')}
+			{@render paneTile(color, 'K')}
+			{@render paneTile(color, 'L')}
+			{@render paneTile(color, 'M')}
+			{@render paneTile(color, 'N')}
+			{@render paneTile(color, 'O')}
+			{@render paneTile(color, 'P')}
+			{@render paneTile(color, 'Q')}
+			{@render paneTile(color, 'R')}
+			{@render paneTile(color, 'S')}
+			{@render paneTile(color, 'T')}
+			{@render paneTile(color, 'U')}
+			{@render paneTile(color, 'V')}
+			{@render paneTile(color, 'W')}
+			{@render paneTile(color, 'X')}
+			{@render paneTile(color, 'Y')}
+			{@render paneTile(color, 'Z')}
+		</div>
+	{/snippet}
+
 		{#snippet leftPane()}
-		<div class="bg-success-container/50 text-success-container-content rounded-lg">Left pane</div>
+		 
+		 {@render alphabet('success', 'leftPane')}
 		{/snippet}
 		{#snippet leftCenterPane()}
-			<div class="bg-warning-container/50 text-warning-container-content rounded-lg">Left Center pane</div>
+			 {@render alphabet('warning', 'leftCenterPane')}
+		
 		{/snippet}
 		{#snippet rightCenterPane()}
-			<div class="bg-error-container/50 text-error-container-content rounded-lg">Right Center pane</div>
+			 <!-- {@render alphabet('error', 'rightCenterPane')} -->
+			  				<div
+					class="@container/rightCenterPane h-full grow-2 rounded-lg"
+				>
+					<div
+						class="bg-error-container/50 text-error-container-content @8xl/rightCenterPane:grid-cols-9 @10xl/rightCenterPane:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/rightCenterPane:grid-cols-2 @sm/rightCenterPane:grid-cols-3 @md/rightCenterPane:grid-cols-4 @xl/rightCenterPane:grid-cols-5 @2xl/rightCenterPane:grid-cols-6 @4xl/rightCenterPane:grid-cols-7 @6xl/rightCenterPane:grid-cols-8"
+					>
+						{@render paneTile('error', 'A')}
+						{@render paneTile('error', 'B')}
+						{@render paneTile('error', 'C')}
+						{@render paneTile('error', 'D')}
+						{@render paneTile('error', 'E')}
+						{@render paneTile('error', 'F')}
+						{@render paneTile('error', 'G')}
+						{@render paneTile('error', 'H')}
+						{@render paneTile('error', 'I')}
+						{@render paneTile('error', 'J')}
+						{@render paneTile('error', 'K')}
+						{@render paneTile('error', 'L')}
+						{@render paneTile('error', 'M')}
+						{@render paneTile('error', 'N')}
+						{@render paneTile('error', 'O')}
+						{@render paneTile('error', 'P')}
+						{@render paneTile('error', 'Q')}
+						{@render paneTile('error', 'R')}
+						{@render paneTile('error', 'S')}
+						{@render paneTile('error', 'T')}
+						{@render paneTile('error', 'U')}
+						{@render paneTile('error', 'V')}
+						{@render paneTile('error', 'W')}
+						{@render paneTile('error', 'X')}
+						{@render paneTile('error', 'Y')}
+						{@render paneTile('error', 'Z')}
+					</div>
+				</div>
+
 		{/snippet}
 		{#snippet rightPane()}
-		<div class="bg-info-container/50 text-info-container-content rounded-lg">Right pane</div>
+			 {@render alphabet('info', 'rightPane')}
 		{/snippet}
 
-		<Panes contents={[leftPane, leftCenterPane, rightCenterPane, rightPane]} />
+		<Panes inputs={
+			[
+				{ content: leftPane, minWidth: 50 , maxWidth: 500},
+				{ content: leftCenterPane, minWidth: 250},
+				{ content: rightCenterPane, minWidth: 250 , maxWidth: 1000},
+				{ content: rightPane, minWidth: 250 , maxWidth: 400},
+			]} />
 
 		<HorizontalRule />
 	</div>
