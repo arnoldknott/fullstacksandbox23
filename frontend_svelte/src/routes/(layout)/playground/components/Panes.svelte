@@ -16,7 +16,6 @@
     let panes: Pane[] = $state(contents.map((_content) => ({ pane: null as unknown as HTMLDivElement, left: NaN, width: 0, resizer: null })));
 
     const activateResizer = (paneIndex: number) => {
-        console.log("activateResizer", paneIndex);
         panes[paneIndex].resizerActive = true;
     };
 
@@ -24,7 +23,7 @@
         // console.log("resizePanes", rightResizingPaneIndex, event.clientX);
         // assing the panes involved:
         const leftPane = panes[rightResizingPaneIndex - 1];
-        const rightPane = panes[rightResizingPaneIndex];
+        const rightPane = panes[rightResizingPaneIndex ];
         // update left in inforamtion in both panes (needs initialization)
 		leftPane.left = leftPane.pane.getBoundingClientRect().left;
 		rightPane.left = rightPane.pane.getBoundingClientRect().left;
