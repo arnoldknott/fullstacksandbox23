@@ -28,6 +28,7 @@
 	import ThemePicker from './ThemePicker.svelte';
 	import ArtificialIntelligencePicker from './ArtificialIntelligencePicker.svelte';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
+	import Panes from './Panes.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
@@ -309,9 +310,11 @@
 		pane: HTMLDivElement;
 		left: number;
 		width: number;
-		// minWidth: number;
-		// maxWidth: number;
+		minWidth?: number;
+		maxWidth?: number;
 		resizer?: HTMLDivElement | null;
+		// set active for the right pane of the pair, that is currently being resized.
+		resizerActive?: boolean;
 	};
 	// Initialize with a placeholder so bindings like dualPanes[0].resizeObservers have a target
 	let dualPanes: Pane[] = $state([
@@ -1620,13 +1623,13 @@
 		<HorizontalRule />
 	</div>
 
-	{#snippet resizer(resizerFunction: (event: PointerEvent) => void, isActive: boolean)}
+	{#snippet resizer(resizerStartFunction: (event: PointerEvent) => void, isActive: boolean)}
 		<div
 			class="resizer bg-base-200 flex h-full w-3 cursor-col-resize items-center justify-center"
 			role="button"
 			aria-label="Resizing panes"
 			tabindex="0"
-			onpointerdown={resizerFunction}
+			onpointerdown={resizerStartFunction}
 		>
 			<div
 				class="resizer-handle {isActive
@@ -1659,39 +1662,22 @@
 			and make it easier to switch between dual and triple panes and potentially extend to more
 			panes in the future
 		</p>
-		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
-			<div class="flex h-80 w-full p-4">
-				<div
-					class="bg-base-250 grow rounded-lg"
-					bind:this={dualPanes[0].pane}
-					bind:clientWidth={dualPanes[0].width}
-					style:width={dualPaneLeftWidth + 'px'}
-				>
-					<!-- bind:this={
-						() => null,
-						(pane) => {
-							console.log('pane:', pane);
-							dualPanes[0].left = pane.getBoundingClientRect().left;
-							dualPanes[0].width = pane.getBoundingClientRect().width;
-						}
-					} -->
-					Left Pane
-					<p>Left: {dualPanes[0].left}px</p>
-					<p>Width: {dualPanes[0].width}px</p>
-				</div>
-				{@render resizer(startResizingDualPanes, resizeDualPanesActive)}
-				<div
-					class="bg-base-300 grow rounded-lg"
-					bind:this={dualPanes[1].pane}
-					bind:clientWidth={dualPanes[1].width}
-					style:width={dualPaneRightWidth + 'px'}
-				>
-					Right Pane
-					<p>Left: {Math.floor(dualPanes[1].left)}px</p>
-					<p>Width: {Math.floor(dualPanes[1].width)}px</p>
-				</div>
-			</div>
-		</div>
+
+		{#snippet leftPane()}
+		<div class="bg-success-container/50 text-success-container-content rounded-lg">Left pane</div>
+		{/snippet}
+		{#snippet leftCenterPane()}
+			<div class="bg-warning-container/50 text-warning-container-content rounded-lg">Left Center pane</div>
+		{/snippet}
+		{#snippet rightCenterPane()}
+			<div class="bg-error-container/50 text-error-container-content rounded-lg">Right Center pane</div>
+		{/snippet}
+		{#snippet rightPane()}
+		<div class="bg-info-container/50 text-info-container-content rounded-lg">Right pane</div>
+		{/snippet}
+
+		<Panes contents={[leftPane, leftCenterPane, rightCenterPane, rightPane]} />
+
 		<HorizontalRule />
 	</div>
 
