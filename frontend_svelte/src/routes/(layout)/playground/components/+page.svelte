@@ -315,8 +315,8 @@
 	};
 	// Initialize with a placeholder so bindings like dualPanes[0].resizeObservers have a target
 	let dualPanes: Pane[] = $state([
-		{ pane: null as unknown as HTMLDivElement, left: 0, width: 0, resizer: null },
-		{ pane: null as unknown as HTMLDivElement, left: 0, width: 0, resizer: null }
+		{ pane: null as unknown as HTMLDivElement, left: NaN, width: 0, resizer: null },
+		{ pane: null as unknown as HTMLDivElement, left: NaN, width: 0, resizer: null }
 	]);
 	// let dualPanes: HTMLDivElement[] | null = $state([]);
 	// let resizerPositions: number[] = $state([]);
@@ -340,10 +340,8 @@
 
 	// Reactive init when container is ready and widths are zero
 	$effect(() => {
-		console.log('=== pane resizing - dualPanes ===');
-		console.log($state.snapshot(dualPanes));
-		dualPanes[0].left = dualPanes[0].pane.getBoundingClientRect().left;
-		dualPanes[1].left = dualPanes[1].pane.getBoundingClientRect().left;
+		// console.log('=== pane resizing - dualPanes ===');
+		// console.log($state.snapshot(dualPanes));
 		if (triplePaneLeftContainer) {
 			triplePaneLeftWidth = triplePaneLeftContainer.clientWidth + resizerWidth;
 		}
@@ -377,6 +375,8 @@
 	};
 
 	const resizePanes = (event: PointerEvent) => {
+		dualPanes[0].left = dualPanes[0].pane.getBoundingClientRect().left;
+		dualPanes[1].left = dualPanes[1].pane.getBoundingClientRect().left;
 		if (resizeDualPanesActive && dualPaneContainer) {
 			const rect = dualPaneContainer.getBoundingClientRect();
 			// Compute left pane width from absolute mouse position
