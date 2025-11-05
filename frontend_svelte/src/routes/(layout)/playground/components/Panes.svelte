@@ -110,8 +110,8 @@
 				bind:clientWidth={pane.width}
 				style:width={pane.width + 'px'}
 			>
-				<div class="flex justify-between">
-					<h2 class="text-lg font-medium">Close Header</h2>
+				<div class="flex justify-end">
+					<!-- <h2 class="text-lg font-medium">Close Header</h2> -->
 					<button
 						class=" btn btn-text btn-sm btn-circle"
 						aria-label="Close Button"
