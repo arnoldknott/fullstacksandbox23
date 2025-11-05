@@ -28,6 +28,7 @@
 	import ThemePicker from './ThemePicker.svelte';
 	import ArtificialIntelligencePicker from './ArtificialIntelligencePicker.svelte';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
+	// import Panes, { type PaneAPI } from './Panes.svelte';
 	import Panes from './Panes.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 
@@ -304,6 +305,13 @@
 	let dualPaneLeftWidth: number = $state(0);
 	let dualPaneRightWidth: number = $state(0);
 	let dualPaneContainer: HTMLDivElement | null = $state(null);
+
+	let dataPanes: string[] = $state([
+		'Hello Pane 1!',
+		'Hello Pane 2!',
+		'Hello Pane 3!',
+		'Hello Pane 4!'
+	]);
 
 	let resizeLeftTriplePanesActive: boolean = $state(false);
 	let resizeRightTriplePanesActive: boolean = $state(false);
@@ -1677,13 +1685,26 @@
 		{/snippet}
 
 		{#snippet leftPane()}
+			<div class="p-4">
+				{dataPanes[0]}
+				<!-- <button class="btn btn-primary" onclick={() => api.closePane('leftPane')}>Close pane 0</button>
+				<button class="btn btn-primary" onclick={() => api.closePane('leftCenterPane')}>Close pane 1</button>
+				<button class="btn btn-primary" onclick={() => api.closePane('rightCenterPane')}>Close pane 2</button>
+				<button class="btn btn-primary" onclick={() => api.closePane('rightPane')}>Close pane 3</button> -->
+			</div>
 			{@render alphabet('success')}
 		{/snippet}
 		{#snippet leftCenterPane()}
+			<div class="p-4">
+				{dataPanes[1]}
+			</div>
 			{@render alphabet('warning')}
 		{/snippet}
 		{#snippet rightCenterPane()}
 			<!-- {@render alphabet('error', 'rightCenterPane')} -->
+			<div class="p-4">
+				{dataPanes[2]}
+			</div>
 			<div class="@container/rightCenterPane grow-2 rounded-lg">
 				<div
 					class="bg-error-container/50 text-error-container-content @8xl/rightCenterPane:grid-cols-9 @10xl/rightCenterPane:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/rightCenterPane:grid-cols-2 @sm/rightCenterPane:grid-cols-3 @md/rightCenterPane:grid-cols-4 @xl/rightCenterPane:grid-cols-5 @2xl/rightCenterPane:grid-cols-6 @4xl/rightCenterPane:grid-cols-7 @6xl/rightCenterPane:grid-cols-8"
@@ -1718,15 +1739,83 @@
 			</div>
 		{/snippet}
 		{#snippet rightPane()}
+			<div class="p-4">
+				{dataPanes[3]}
+				<div
+					class="input-filled input-success shadow-base-shadow w-100 grow rounded-md shadow-inner"
+				>
+					<input
+						type="text"
+						placeholder="Data for left Pane"
+						class="input input-xl"
+						id="leftPaneInput"
+						bind:value={dataPanes[0]}
+					/>
+					<label class="input-filled-label" for="leftPaneInput">Data for Left Pane:</label>
+				</div>
+			</div>
 			{@render alphabet('info')}
 		{/snippet}
 
+		<div class="flex flex-row p-4">
+			<div class="input-filled input-success shadow-base-shadow w-100 grow rounded-md shadow-inner">
+				<input
+					type="text"
+					placeholder="Data for left Pane"
+					class="input input-xl"
+					id="leftPaneInput"
+					bind:value={dataPanes[0]}
+				/>
+				<label class="input-filled-label" for="leftPaneInput">Data for Left Pane:</label>
+			</div>
+			<div
+				class="input-filled input-warning shadow-base-shadow ml-4 w-100 grow rounded-md shadow-inner"
+			>
+				<input
+					type="text"
+					placeholder="Data for right Pane"
+					class="input input-xl"
+					id="rightPaneInput"
+					bind:value={dataPanes[1]}
+				/>
+				<label class="input-filled-label" for="rightPaneInput">Data for Right Pane:</label>
+			</div>
+			<div
+				class="input-filled input-error shadow-base-shadow ml-4 w-100 grow rounded-md shadow-inner"
+			>
+				<input
+					type="text"
+					placeholder="Data for right Center Pane"
+					class="input input-xl"
+					id="rightCenterPaneInput"
+					bind:value={dataPanes[2]}
+				/>
+				<label class="input-filled-label" for="rightCenterPaneInput"
+					>Data for Right Center Pane:</label
+				>
+			</div>
+			<div
+				class="input-filled input-info shadow-base-shadow ml-4 w-100 grow rounded-md shadow-inner"
+			>
+				<input
+					type="text"
+					placeholder="Data for left Center Pane"
+					class="input input-xl"
+					id="leftCenterPaneInput"
+					bind:value={dataPanes[3]}
+				/>
+				<label class="input-filled-label" for="leftCenterPaneInput"
+					>Data for Left Center Pane:</label
+				>
+			</div>
+		</div>
+
 		<Panes
 			inputs={[
-				{ content: leftPane, minWidth: 50, maxWidth: 500 },
-				{ content: leftCenterPane, minWidth: 250 },
-				{ content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
-				{ content: rightPane, minWidth: 250, maxWidth: 400 }
+				{ id: 'leftPane', content: leftPane, minWidth: 50, maxWidth: 500 },
+				{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
+				{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
+				{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 }
 			]}
 		/>
 

@@ -2,10 +2,14 @@
 	// import JsonData from '$components/JsonData.svelte';
 	import { type Snippet } from 'svelte';
 	export type PaneInputs = {
+		id: string;
 		content: Snippet;
 		minWidth?: number;
 		maxWidth?: number;
 	};
+	// export type PaneAPI = {
+	// 	closePane: (paneIndex: string) => void;
+	// };
 	let { inputs }: { inputs: PaneInputs[] } = $props();
 
 	type Pane = PaneInputs & {
@@ -21,6 +25,7 @@
 	};
 	let panes: Pane[] = $state(
 		inputs.map((input) => ({
+			id: input.id,
 			pane: null as unknown as HTMLDivElement,
 			content: input.content,
 			left: NaN,
@@ -31,8 +36,8 @@
 		}))
 	);
 
-	const closePane = (paneIndex: number) => {
-		panes.splice(paneIndex, 1);
+	const closePane = (paneId: string) => {
+		panes = panes.filter((pane) => pane.id !== paneId);
 	};
 
 	const activateResizer = (paneIndex: number) => {
@@ -114,7 +119,7 @@
 					<button
 						class=" btn btn-text btn-sm btn-circle"
 						aria-label="Close Button"
-						onclick={() => closePane(i)}
+						onclick={() => closePane(pane.id)}
 					>
 						<span class="icon-[tabler--x] size-5"></span>
 					</button>
