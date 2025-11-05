@@ -123,7 +123,10 @@
 						<button
 							class=" btn btn-text btn-sm btn-circle"
 							aria-label="Close Button"
-							onclick={() => closePane(pane.id)}
+							onclick={() => {
+                                closePane(pane.id);
+                                panes = panes.filter((p) => p.id !== pane.id);
+                                }}
 						>
 							<span class="icon-[tabler--x] size-5"></span>
 						</button>
