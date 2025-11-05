@@ -24,6 +24,7 @@
 		// set active for the right pane of the pair, that is currently being resized.
 		resizerActive?: boolean;
 	};
+    // TBD: changing declaration to $derived enables close Pane functionality - however breaks resizing
 	let panes: Pane[] = $state(
 		inputs.map((input) => ({
 			id: input.id,
