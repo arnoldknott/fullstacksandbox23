@@ -8,13 +8,14 @@
 	};
 	let { inputs }: { inputs: Inputs[] } = $props();
 
-	type Pane = {
-		pane: HTMLDivElement;
-		content: Snippet;
+
+	type Pane = Inputs & {
+		pane: HTMLDivElement,
+		// content: Snippet;
 		left: number;
 		width: number;
-		minWidth?: number;
-		maxWidth?: number;
+		// minWidth?: number;
+		// maxWidth?: number;
 		resizer?: HTMLDivElement | null;
 		// set active for the right pane of the pair, that is currently being resized.
 		resizerActive?: boolean;
@@ -30,6 +31,10 @@
 			resizer: null
 		}))
 	);
+
+    const closePane = (paneIndex: number) => {
+        panes.splice(paneIndex, 1);
+    };
 
 	const activateResizer = (paneIndex: number) => {
 		panes[paneIndex].resizerActive = true;
@@ -97,15 +102,22 @@
 	</div>
 {/snippet}
 
+
 <div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
 	<div class="flex h-screen w-full p-4">
 		{#each panes as pane, i (i)}
 			<div
-				class="bg-base-250 grow overflow-y-scroll"
+				class="bg-base-250 grow overflow-y-scroll rounded-xl"
 				bind:this={pane.pane}
 				bind:clientWidth={pane.width}
 				style:width={pane.width + 'px'}
 			>
+                <div class="flex justify-between">
+                    <h2 class="text-lg font-medium">Close Header</h2>
+                    <button class=" btn btn-text btn-sm btn-circle" aria-label="Close Button" onclick={() => closePane(i)}>
+                        <span class="icon-[tabler--x] size-5"></span>
+                    </button>
+                </div>
 				<!-- Degugging inforamtion of pane: -->
 				<div class="flex flex-col label-small">
                     <div class="label">Left: {pane.left} px</div>

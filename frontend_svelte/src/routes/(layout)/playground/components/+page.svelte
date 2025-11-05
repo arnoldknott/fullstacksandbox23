@@ -304,28 +304,6 @@
 	let dualPaneLeftWidth: number = $state(0);
 	let dualPaneRightWidth: number = $state(0);
 	let dualPaneContainer: HTMLDivElement | null = $state(null);
-	// refactoring into an array of panes and make reusable for scaling of pane numbers:
-	type Pane = {
-		// resizeObservers: ResizeObserverSize[];
-		pane: HTMLDivElement;
-		left: number;
-		width: number;
-		minWidth?: number;
-		maxWidth?: number;
-		resizer?: HTMLDivElement | null;
-		// set active for the right pane of the pair, that is currently being resized.
-		resizerActive?: boolean;
-	};
-	// Initialize with a placeholder so bindings like dualPanes[0].resizeObservers have a target
-	let dualPanes: Pane[] = $state([
-		{ pane: null as unknown as HTMLDivElement, left: NaN, width: 0, resizer: null },
-		{ pane: null as unknown as HTMLDivElement, left: NaN, width: 0, resizer: null }
-	]);
-	// let dualPanes: HTMLDivElement[] | null = $state([]);
-	// let resizerPositions: number[] = $state([]);
-	// let leftPaneBoxWidth: number | null = $derived.by(() => {if(dualPanes[1]) {return dualPanes[1].getBoundingClientRect().width;} else {return null}});;
-	// let leftPaneBox: ResizeObserverSize[] = $state({} as ResizeObserverSize[]);
-	// let rightPaneBox: DOMRect | null = $derived.by(() => {if(dualPanes[1]) {return dualPanes[1].getBoundingClientRect();} else {return null}});
 
 	let resizeLeftTriplePanesActive: boolean = $state(false);
 	let resizeRightTriplePanesActive: boolean = $state(false);
@@ -378,8 +356,6 @@
 	};
 
 	const resizePanes = (event: PointerEvent) => {
-		dualPanes[0].left = dualPanes[0].pane.getBoundingClientRect().left;
-		dualPanes[1].left = dualPanes[1].pane.getBoundingClientRect().left;
 		if (resizeDualPanesActive && dualPaneContainer) {
 			const rect = dualPaneContainer.getBoundingClientRect();
 			// Compute left pane width from absolute mouse position
