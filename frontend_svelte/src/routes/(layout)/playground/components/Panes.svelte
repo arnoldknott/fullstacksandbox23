@@ -24,7 +24,7 @@
 		// set active for the right pane of the pair, that is currently being resized.
 		resizerActive?: boolean;
 	};
-    // TBD: changing declaration to $derived enables close Pane functionality - however breaks resizing
+	// TBD: changing declaration to $derived enables close Pane functionality - however breaks resizing
 	let panes: Pane[] = $state(
 		inputs.map((input) => ({
 			id: input.id,
@@ -124,9 +124,9 @@
 							class=" btn btn-text btn-sm btn-circle"
 							aria-label="Close Button"
 							onclick={() => {
-                                closePane(pane.id);
-                                panes = panes.filter((p) => p.id !== pane.id);
-                                }}
+								closePane(pane.id);
+								panes = panes.filter((p) => p.id !== pane.id);
+							}}
 						>
 							<span class="icon-[tabler--x] size-5"></span>
 						</button>
