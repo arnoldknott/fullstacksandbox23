@@ -28,8 +28,8 @@
 	import ThemePicker from './ThemePicker.svelte';
 	import ArtificialIntelligencePicker from './ArtificialIntelligencePicker.svelte';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
-	// import Panes, { type PaneAPI } from './Panes.svelte';
-	import Panes from './Panes.svelte';
+	import Panes, { type PaneInputs } from './Panes.svelte';
+	// import Panes from './Panes.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
@@ -306,12 +306,30 @@
 	let dualPaneRightWidth: number = $state(0);
 	let dualPaneContainer: HTMLDivElement | null = $state(null);
 
+	// filled in second script tag underneath - after creation of snippets
+	let panes: PaneInputs[] = $state([
+		{ id: 'leftPane', content: leftPane, minWidth: 50, maxWidth: 500 },
+		{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
+		{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
+		{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 }
+	]);
+
 	let dataPanes: string[] = $state([
 		'Hello Pane 1!',
 		'Hello Pane 2!',
 		'Hello Pane 3!',
 		'Hello Pane 4!'
 	]);
+
+	const closePane = (paneId: string) => {
+		console.log('=== +page - closePane - paneId ===');
+		console.log(paneId);
+		console.log('=== +page - closePane - panes before filter ===');
+		console.log($state.snapshot(panes));
+		panes = panes.filter((pane) => pane.id !== paneId);
+		console.log('=== +page - closePane - panes after filter ===');
+		console.log($state.snapshot(panes));
+	};
 
 	let resizeLeftTriplePanesActive: boolean = $state(false);
 	let resizeRightTriplePanesActive: boolean = $state(false);
@@ -412,6 +430,14 @@
 	};
 </script>
 
+{#snippet paneTile(color: string, content: string)}
+	<div
+		class="bg-{color}-container text-{color}-container-content display h-25 w-25 content-center rounded-xl text-center"
+	>
+		{content}
+	</div>
+{/snippet}
+
 <!-- <svelte:window use:mapDropdown /> -->
 <svelte:window
 	onpointermove={resizeDualPanesActive ||
@@ -423,6 +449,126 @@
 		? stopResizingPanes
 		: undefined}
 />
+
+{#snippet alphabet(color: string)}
+	<!-- <div class="@container/{container}">
+				<div
+		class="bg-{color}-container/50 text-{color}-container-content rounded-lg @8xl/{container}:grid-cols-9 @10xl/{container}:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/{container}:grid-cols-2 @sm/{container}:grid-cols-3 @md/{container}:grid-cols-4 @xl/{container}:grid-cols-5 @2xl/{container}:grid-cols-6 @4xl/{container}:grid-cols-7 @6xl/{container}:grid-cols-8"
+		> -->
+	<div
+		class="bg-{color}-container/50 text-{color}-container-content flex grow flex-wrap justify-end gap-4 rounded-lg p-4"
+	>
+		{@render paneTile(color, 'A')}
+		{@render paneTile(color, 'B')}
+		{@render paneTile(color, 'C')}
+		{@render paneTile(color, 'D')}
+		{@render paneTile(color, 'E')}
+		{@render paneTile(color, 'F')}
+		{@render paneTile(color, 'G')}
+		{@render paneTile(color, 'H')}
+		{@render paneTile(color, 'I')}
+		{@render paneTile(color, 'J')}
+		{@render paneTile(color, 'K')}
+		{@render paneTile(color, 'L')}
+		{@render paneTile(color, 'M')}
+		{@render paneTile(color, 'N')}
+		{@render paneTile(color, 'O')}
+		{@render paneTile(color, 'P')}
+		{@render paneTile(color, 'Q')}
+		{@render paneTile(color, 'R')}
+		{@render paneTile(color, 'S')}
+		{@render paneTile(color, 'T')}
+		{@render paneTile(color, 'U')}
+		{@render paneTile(color, 'V')}
+		{@render paneTile(color, 'W')}
+		{@render paneTile(color, 'X')}
+		{@render paneTile(color, 'Y')}
+		{@render paneTile(color, 'Z')}
+	</div>
+{/snippet}
+
+{#snippet leftPane()}
+	<div class="flex flex-col gap-2 p-4">
+		{dataPanes[0]}
+		{#if panes.some((pane) => pane.id === 'leftPane')}
+			<button class="btn btn-primary" onclick={() => closePane('leftPane')}>Close pane 0</button>
+		{/if}
+		{#if panes.some((pane) => pane.id === 'leftCenterPane')}
+			<button class="btn btn-primary" onclick={() => closePane('leftCenterPane')}
+				>Close pane 1</button
+			>
+		{/if}
+		{#if panes.some((pane) => pane.id === 'rightCenterPane')}
+			<button class="btn btn-primary" onclick={() => closePane('rightCenterPane')}
+				>Close pane 2</button
+			>
+		{/if}
+		{#if panes.some((pane) => pane.id === 'rightPane')}
+			<button class="btn btn-primary" onclick={() => closePane('rightPane')}>Close pane 3</button>
+		{/if}
+	</div>
+	{@render alphabet('success')}
+{/snippet}
+{#snippet leftCenterPane()}
+	<div class="p-4">
+		{dataPanes[1]}
+	</div>
+	{@render alphabet('warning')}
+{/snippet}
+{#snippet rightCenterPane()}
+	<!-- {@render alphabet('error', 'rightCenterPane')} -->
+	<div class="p-4">
+		{dataPanes[2]}
+	</div>
+	<div class="@container/rightCenterPane grow-2 rounded-lg">
+		<div
+			class="bg-error-container/50 text-error-container-content @8xl/rightCenterPane:grid-cols-9 @10xl/rightCenterPane:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/rightCenterPane:grid-cols-2 @sm/rightCenterPane:grid-cols-3 @md/rightCenterPane:grid-cols-4 @xl/rightCenterPane:grid-cols-5 @2xl/rightCenterPane:grid-cols-6 @4xl/rightCenterPane:grid-cols-7 @6xl/rightCenterPane:grid-cols-8"
+		>
+			{@render paneTile('error', 'A')}
+			{@render paneTile('error', 'B')}
+			{@render paneTile('error', 'C')}
+			{@render paneTile('error', 'D')}
+			{@render paneTile('error', 'E')}
+			{@render paneTile('error', 'F')}
+			{@render paneTile('error', 'G')}
+			{@render paneTile('error', 'H')}
+			{@render paneTile('error', 'I')}
+			{@render paneTile('error', 'J')}
+			{@render paneTile('error', 'K')}
+			{@render paneTile('error', 'L')}
+			{@render paneTile('error', 'M')}
+			{@render paneTile('error', 'N')}
+			{@render paneTile('error', 'O')}
+			{@render paneTile('error', 'P')}
+			{@render paneTile('error', 'Q')}
+			{@render paneTile('error', 'R')}
+			{@render paneTile('error', 'S')}
+			{@render paneTile('error', 'T')}
+			{@render paneTile('error', 'U')}
+			{@render paneTile('error', 'V')}
+			{@render paneTile('error', 'W')}
+			{@render paneTile('error', 'X')}
+			{@render paneTile('error', 'Y')}
+			{@render paneTile('error', 'Z')}
+		</div>
+	</div>
+{/snippet}
+{#snippet rightPane()}
+	<div class="p-4">
+		{dataPanes[3]}
+		<div class="input-filled input-success shadow-base-shadow w-100 grow rounded-md shadow-inner">
+			<input
+				type="text"
+				placeholder="Data for left Pane"
+				class="input input-xl"
+				id="leftPaneInput"
+				bind:value={dataPanes[0]}
+			/>
+			<label class="input-filled-label" for="leftPaneInput">Data for Left Pane:</label>
+		</div>
+	</div>
+	{@render alphabet('info')}
+{/snippet}
 
 <div class="flex flex-col justify-around sm:flex-row">
 	<div class="mb-2 flex items-center gap-1">
@@ -1458,13 +1604,13 @@
 		</div>
 		<HorizontalRule />
 	</div>
-	{#snippet paneTile(color: string, content: string)}
+	<!-- {#snippet paneTile(color: string, content: string)}
 		<div
 			class="bg-{color}-container text-{color}-container-content display h-25 w-25 content-center rounded-xl text-center"
 		>
 			{content}
 		</div>
-	{/snippet}
+	{/snippet} -->
 	<div class={prod ? 'block' : 'hidden'}>
 		<Title id="horizontal-diffs">Horizontal Diffs</Title>
 		{@render underConstruction()}
@@ -1647,11 +1793,8 @@
 			panes in the future
 		</p>
 
-		{#snippet alphabet(color: string)}
-			<!-- <div class="@container/{container}">
-				<div
-		class="bg-{color}-container/50 text-{color}-container-content rounded-lg @8xl/{container}:grid-cols-9 @10xl/{container}:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/{container}:grid-cols-2 @sm/{container}:grid-cols-3 @md/{container}:grid-cols-4 @xl/{container}:grid-cols-5 @2xl/{container}:grid-cols-6 @4xl/{container}:grid-cols-7 @6xl/{container}:grid-cols-8"
-		> -->
+		<!-- {#snippet alphabet(color: string)}
+		
 			<div
 				class="bg-{color}-container/50 text-{color}-container-content flex grow flex-wrap justify-end gap-4 rounded-lg p-4"
 			>
@@ -1687,10 +1830,6 @@
 		{#snippet leftPane()}
 			<div class="p-4">
 				{dataPanes[0]}
-				<!-- <button class="btn btn-primary" onclick={() => api.closePane('leftPane')}>Close pane 0</button>
-				<button class="btn btn-primary" onclick={() => api.closePane('leftCenterPane')}>Close pane 1</button>
-				<button class="btn btn-primary" onclick={() => api.closePane('rightCenterPane')}>Close pane 2</button>
-				<button class="btn btn-primary" onclick={() => api.closePane('rightPane')}>Close pane 3</button> -->
 			</div>
 			{@render alphabet('success')}
 		{/snippet}
@@ -1701,7 +1840,6 @@
 			{@render alphabet('warning')}
 		{/snippet}
 		{#snippet rightCenterPane()}
-			<!-- {@render alphabet('error', 'rightCenterPane')} -->
 			<div class="p-4">
 				{dataPanes[2]}
 			</div>
@@ -1755,7 +1893,7 @@
 				</div>
 			</div>
 			{@render alphabet('info')}
-		{/snippet}
+		{/snippet} -->
 
 		<div class="flex flex-row p-4">
 			<div class="input-filled input-success shadow-base-shadow w-100 grow rounded-md shadow-inner">
@@ -1778,7 +1916,7 @@
 					id="rightPaneInput"
 					bind:value={dataPanes[1]}
 				/>
-				<label class="input-filled-label" for="rightPaneInput">Data for Right Pane:</label>
+				<label class="input-filled-label" for="rightPaneInput">Data for Left Center Pane:</label>
 			</div>
 			<div
 				class="input-filled input-error shadow-base-shadow ml-4 w-100 grow rounded-md shadow-inner"
@@ -1804,23 +1942,23 @@
 					id="leftCenterPaneInput"
 					bind:value={dataPanes[3]}
 				/>
-				<label class="input-filled-label" for="leftCenterPaneInput"
-					>Data for Left Center Pane:</label
-				>
+				<label class="input-filled-label" for="leftCenterPaneInput">Data for Right Pane:</label>
 			</div>
 		</div>
 
-		<Panes
-			inputs={[
-				{ id: 'leftPane', content: leftPane, minWidth: 50, maxWidth: 500 },
-				{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
-				{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
-				{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 }
-			]}
-		/>
-
-		<HorizontalRule />
+		<!-- <div {@attach () => {
+			panes = [
+					{ id: 'leftPane', content: leftPane, minWidth: 50, maxWidth: 500 },
+					{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
+					{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
+					{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 },
+				];
+			}}> -->
+		<Panes inputs={panes} {closePane} />
 	</div>
+
+	<HorizontalRule />
+	<!-- </div> -->
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Title id="triple-panes">Triple Panes</Title>

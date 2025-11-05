@@ -10,7 +10,8 @@
 	// export type PaneAPI = {
 	// 	closePane: (paneIndex: string) => void;
 	// };
-	let { inputs }: { inputs: PaneInputs[] } = $props();
+	let { inputs, closePane }: { inputs: PaneInputs[]; closePane?: (paneId: string) => void } =
+		$props();
 
 	type Pane = PaneInputs & {
 		pane: HTMLDivElement;
@@ -35,16 +36,17 @@
 			resizer: null
 		}))
 	);
-
-	const closePane = (paneId: string) => {
-		panes = panes.filter((pane) => pane.id !== paneId);
-	};
+	$effect(() => {
+		// Keep only panes that still exist in inputs
+		// panes = panes.filter((pane) => inputs.some((input) => input.id === pane.id));
+	});
 
 	const activateResizer = (paneIndex: number) => {
 		panes[paneIndex].resizerActive = true;
 	};
 
 	const resizePanes = (event: PointerEvent, rightResizingPaneIndex: number) => {
+		// console.log('Resizing panes at index:', rightResizingPaneIndex);
 		// assing the panes involved:
 		const leftPane = panes[rightResizingPaneIndex - 1];
 		const rightPane = panes[rightResizingPaneIndex];
@@ -108,22 +110,24 @@
 
 <div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
 	<div class="flex h-screen w-full p-4">
-		{#each panes as pane, i (i)}
+		{#each panes as pane, i (pane.id)}
 			<div
 				class="bg-base-250 grow overflow-y-scroll rounded-xl"
 				bind:this={pane.pane}
 				bind:clientWidth={pane.width}
 				style:width={pane.width + 'px'}
 			>
-				<div class="flex justify-end">
-					<button
-						class=" btn btn-text btn-sm btn-circle"
-						aria-label="Close Button"
-						onclick={() => closePane(pane.id)}
-					>
-						<span class="icon-[tabler--x] size-5"></span>
-					</button>
-				</div>
+				{#if closePane}
+					<div class="flex justify-end">
+						<button
+							class=" btn btn-text btn-sm btn-circle"
+							aria-label="Close Button"
+							onclick={() => closePane(pane.id)}
+						>
+							<span class="icon-[tabler--x] size-5"></span>
+						</button>
+					</div>
+				{/if}
 				<!-- Degugging inforamtion of pane: -->
 				<div class="label-small flex flex-col">
 					<div class="label">Left: {pane.left} px</div>
