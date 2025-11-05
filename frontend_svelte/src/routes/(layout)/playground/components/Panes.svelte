@@ -101,19 +101,19 @@
 	<div class="flex h-screen w-full p-4">
 		{#each panes as pane, i (i)}
 			<div
-				class="bg-base-250 grow"
+				class="bg-base-250 grow overflow-y-scroll"
 				bind:this={pane.pane}
 				bind:clientWidth={pane.width}
 				style:width={pane.width + 'px'}
 			>
 				<!-- Degugging inforamtion of pane: -->
-				<!-- <div class="flex flex-col label-small">
+				<div class="flex flex-col label-small">
                     <div class="label">Left: {pane.left} px</div>
                     <div class="label">Width: {pane.width} px</div>
                     <div class="label">MinWidth: {pane.minWidth} px</div>
                     <div class="label">MaxWidth: {pane.maxWidth} px</div>
                     <div class="label">ResizerActive: {pane.resizerActive ? 'true' : 'false'}</div>
-                </div> -->
+                </div>
 				{@render pane.content?.()}
 			</div>
 

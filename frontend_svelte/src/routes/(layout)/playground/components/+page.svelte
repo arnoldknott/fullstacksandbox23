@@ -1669,7 +1669,7 @@
 		class="bg-{color}-container/50 text-{color}-container-content rounded-lg @8xl/{container}:grid-cols-9 @10xl/{container}:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/{container}:grid-cols-2 @sm/{container}:grid-cols-3 @md/{container}:grid-cols-4 @xl/{container}:grid-cols-5 @2xl/{container}:grid-cols-6 @4xl/{container}:grid-cols-7 @6xl/{container}:grid-cols-8"
 		> -->
 			<div
-				class="bg-{color}-container/50 text-{color}-container-content flex h-full grow flex-wrap justify-end gap-4 overflow-y-scroll rounded-lg p-4"
+				class="bg-{color}-container/50 text-{color}-container-content flex grow flex-wrap justify-end gap-4 rounded-lg p-4"
 			>
 				{@render paneTile(color, 'A')}
 				{@render paneTile(color, 'B')}
@@ -1708,7 +1708,7 @@
 		{/snippet}
 		{#snippet rightCenterPane()}
 			<!-- {@render alphabet('error', 'rightCenterPane')} -->
-			<div class="@container/rightCenterPane h-full grow-2 rounded-lg">
+			<div class="@container/rightCenterPane grow-2 rounded-lg">
 				<div
 					class="bg-error-container/50 text-error-container-content @8xl/rightCenterPane:grid-cols-9 @10xl/rightCenterPane:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/rightCenterPane:grid-cols-2 @sm/rightCenterPane:grid-cols-3 @md/rightCenterPane:grid-cols-4 @xl/rightCenterPane:grid-cols-5 @2xl/rightCenterPane:grid-cols-6 @4xl/rightCenterPane:grid-cols-7 @6xl/rightCenterPane:grid-cols-8"
 				>
