@@ -6,11 +6,10 @@
 		minWidth?: number;
 		maxWidth?: number;
 	};
-	let { inputs}: { inputs: PaneInputs[] } = $props();
-
+	let { inputs }: { inputs: PaneInputs[] } = $props();
 
 	type Pane = PaneInputs & {
-		pane: HTMLDivElement,
+		pane: HTMLDivElement;
 		// content: Snippet;
 		left: number;
 		width: number;
@@ -32,9 +31,9 @@
 		}))
 	);
 
-    const closePane = (paneIndex: number) => {
-        panes.splice(paneIndex, 1);
-    };
+	const closePane = (paneIndex: number) => {
+		panes.splice(paneIndex, 1);
+	};
 
 	const activateResizer = (paneIndex: number) => {
 		panes[paneIndex].resizerActive = true;
@@ -102,7 +101,6 @@
 	</div>
 {/snippet}
 
-
 <div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
 	<div class="flex h-screen w-full p-4">
 		{#each panes as pane, i (i)}
@@ -112,20 +110,24 @@
 				bind:clientWidth={pane.width}
 				style:width={pane.width + 'px'}
 			>
-                <div class="flex justify-between">
-                    <h2 class="text-lg font-medium">Close Header</h2>
-                    <button class=" btn btn-text btn-sm btn-circle" aria-label="Close Button" onclick={() => closePane(i)}>
-                        <span class="icon-[tabler--x] size-5"></span>
-                    </button>
-                </div>
+				<div class="flex justify-between">
+					<h2 class="text-lg font-medium">Close Header</h2>
+					<button
+						class=" btn btn-text btn-sm btn-circle"
+						aria-label="Close Button"
+						onclick={() => closePane(i)}
+					>
+						<span class="icon-[tabler--x] size-5"></span>
+					</button>
+				</div>
 				<!-- Degugging inforamtion of pane: -->
-				<div class="flex flex-col label-small">
-                    <div class="label">Left: {pane.left} px</div>
-                    <div class="label">Width: {pane.width} px</div>
-                    <div class="label">MinWidth: {pane.minWidth} px</div>
-                    <div class="label">MaxWidth: {pane.maxWidth} px</div>
-                    <div class="label">ResizerActive: {pane.resizerActive ? 'true' : 'false'}</div>
-                </div>
+				<div class="label-small flex flex-col">
+					<div class="label">Left: {pane.left} px</div>
+					<div class="label">Width: {pane.width} px</div>
+					<div class="label">MinWidth: {pane.minWidth} px</div>
+					<div class="label">MaxWidth: {pane.maxWidth} px</div>
+					<div class="label">ResizerActive: {pane.resizerActive ? 'true' : 'false'}</div>
+				</div>
 				{@render pane.content?.()}
 			</div>
 
