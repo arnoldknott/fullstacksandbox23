@@ -1,15 +1,15 @@
 <script lang="ts">
 	// import JsonData from '$components/JsonData.svelte';
 	import { type Snippet } from 'svelte';
-	type Inputs = {
+	export type PaneInputs = {
 		content: Snippet;
 		minWidth?: number;
 		maxWidth?: number;
 	};
-	let { inputs }: { inputs: Inputs[] } = $props();
+	let { inputs}: { inputs: PaneInputs[] } = $props();
 
 
-	type Pane = Inputs & {
+	type Pane = PaneInputs & {
 		pane: HTMLDivElement,
 		// content: Snippet;
 		left: number;
