@@ -28,6 +28,8 @@
 	import ThemePicker from './ThemePicker.svelte';
 	import ArtificialIntelligencePicker from './ArtificialIntelligencePicker.svelte';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
+	import Panes, { type PaneData } from './Panes.svelte';
+	// import Panes from './Panes.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 
 	let prod = $state(page.url.searchParams.get('prod') === 'false' ? false : true);
@@ -304,6 +306,35 @@
 	let dualPaneRightWidth: number = $state(0);
 	let dualPaneContainer: HTMLDivElement | null = $state(null);
 
+	// filled in second script tag underneath - after creation of snippets
+	let panes: PaneData[] = $state([
+		{ id: 'leftPane', content: leftPane, minWidth: 50, maxWidth: 500 },
+		{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
+		{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
+		{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 }
+	]);
+
+	let dataPanes: string[] = $state([
+		'Hello Pane 1!',
+		'Hello Pane 2!',
+		'Hello Pane 3!',
+		'Hello Pane 4!'
+	]);
+
+	const closePane = (paneId: string) => {
+		console.log('=== +page - closePane - paneId ===');
+		console.log(paneId);
+		console.log('=== +page - closePane - panes before filter ===');
+		console.log($state.snapshot(panes));
+		// panes = panes.filter((pane) => pane.id !== paneId);
+		const index = panes.findIndex((pane) => pane.id === paneId);
+		if (index > -1) {
+			panes.splice(index, 1);
+		}
+		console.log('=== +page - closePane - panes after filter ===');
+		console.log($state.snapshot(panes));
+	};
+
 	let resizeLeftTriplePanesActive: boolean = $state(false);
 	let resizeRightTriplePanesActive: boolean = $state(false);
 	let triplePaneContainer: HTMLDivElement | null = $state(null);
@@ -320,6 +351,8 @@
 
 	// Reactive init when container is ready and widths are zero
 	$effect(() => {
+		// console.log('=== pane resizing - dualPanes ===');
+		// console.log($state.snapshot(dualPanes));
 		if (triplePaneLeftContainer) {
 			triplePaneLeftWidth = triplePaneLeftContainer.clientWidth + resizerWidth;
 		}
@@ -357,7 +390,13 @@
 			const rect = dualPaneContainer.getBoundingClientRect();
 			// Compute left pane width from absolute mouse position
 			const left = event.clientX - rect.left;
-			dualPaneLeftWidth = Math.max(minPane, Math.min(left, rect.width - minPane - resizerWidth));
+			// Setting upper boundary for left pane:
+			// ensure right pane >= ( minPane + space for resizer )
+			// equals lower boundary for right pane:
+			const leftMax = Math.min(left, rect.width - minPane - resizerWidth);
+			// sets a lower boundary for the left pane
+			// equals upper boundary for right pane:
+			dualPaneLeftWidth = Math.max(minPane, leftMax);
 			dualPaneRightWidth = rect.width - dualPaneLeftWidth - resizerWidth;
 		}
 		if (triplePaneContainer) {
@@ -395,6 +434,14 @@
 	};
 </script>
 
+{#snippet paneTile(color: string, content: string)}
+	<div
+		class="bg-{color}-container text-{color}-container-content display h-25 w-25 content-center rounded-xl text-center"
+	>
+		{content}
+	</div>
+{/snippet}
+
 <!-- <svelte:window use:mapDropdown /> -->
 <svelte:window
 	onpointermove={resizeDualPanesActive ||
@@ -406,6 +453,126 @@
 		? stopResizingPanes
 		: undefined}
 />
+
+{#snippet alphabet(color: string)}
+	<!-- <div class="@container/{container}">
+				<div
+		class="bg-{color}-container/50 text-{color}-container-content rounded-lg @8xl/{container}:grid-cols-9 @10xl/{container}:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/{container}:grid-cols-2 @sm/{container}:grid-cols-3 @md/{container}:grid-cols-4 @xl/{container}:grid-cols-5 @2xl/{container}:grid-cols-6 @4xl/{container}:grid-cols-7 @6xl/{container}:grid-cols-8"
+		> -->
+	<div
+		class="bg-{color}-container/50 text-{color}-container-content flex grow flex-wrap justify-end gap-4 rounded-lg p-4"
+	>
+		{@render paneTile(color, 'A')}
+		{@render paneTile(color, 'B')}
+		{@render paneTile(color, 'C')}
+		{@render paneTile(color, 'D')}
+		{@render paneTile(color, 'E')}
+		{@render paneTile(color, 'F')}
+		{@render paneTile(color, 'G')}
+		{@render paneTile(color, 'H')}
+		{@render paneTile(color, 'I')}
+		{@render paneTile(color, 'J')}
+		{@render paneTile(color, 'K')}
+		{@render paneTile(color, 'L')}
+		{@render paneTile(color, 'M')}
+		{@render paneTile(color, 'N')}
+		{@render paneTile(color, 'O')}
+		{@render paneTile(color, 'P')}
+		{@render paneTile(color, 'Q')}
+		{@render paneTile(color, 'R')}
+		{@render paneTile(color, 'S')}
+		{@render paneTile(color, 'T')}
+		{@render paneTile(color, 'U')}
+		{@render paneTile(color, 'V')}
+		{@render paneTile(color, 'W')}
+		{@render paneTile(color, 'X')}
+		{@render paneTile(color, 'Y')}
+		{@render paneTile(color, 'Z')}
+	</div>
+{/snippet}
+
+{#snippet leftPane()}
+	<div class="flex flex-col gap-2 p-4">
+		{dataPanes[0]}
+		{#if panes.some((pane) => pane.id === 'leftPane')}
+			<button class="btn btn-success" onclick={() => closePane('leftPane')}>Close pane 1</button>
+		{/if}
+		{#if panes.some((pane) => pane.id === 'leftCenterPane')}
+			<button class="btn btn-warning" onclick={() => closePane('leftCenterPane')}
+				>Close pane 2</button
+			>
+		{/if}
+		{#if panes.some((pane) => pane.id === 'rightCenterPane')}
+			<button class="btn btn-error" onclick={() => closePane('rightCenterPane')}
+				>Close pane 3</button
+			>
+		{/if}
+		{#if panes.some((pane) => pane.id === 'rightPane')}
+			<button class="btn btn-info" onclick={() => closePane('rightPane')}>Close pane 4</button>
+		{/if}
+	</div>
+	{@render alphabet('success')}
+{/snippet}
+{#snippet leftCenterPane()}
+	<div class="p-4">
+		{dataPanes[1]}
+	</div>
+	{@render alphabet('warning')}
+{/snippet}
+{#snippet rightCenterPane()}
+	<!-- {@render alphabet('error', 'rightCenterPane')} -->
+	<div class="p-4">
+		{dataPanes[2]}
+	</div>
+	<div class="@container/rightCenterPane grow-2 rounded-lg">
+		<div
+			class="bg-error-container/50 text-error-container-content @8xl/rightCenterPane:grid-cols-9 @10xl/rightCenterPane:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/rightCenterPane:grid-cols-2 @sm/rightCenterPane:grid-cols-3 @md/rightCenterPane:grid-cols-4 @xl/rightCenterPane:grid-cols-5 @2xl/rightCenterPane:grid-cols-6 @4xl/rightCenterPane:grid-cols-7 @6xl/rightCenterPane:grid-cols-8"
+		>
+			{@render paneTile('error', 'A')}
+			{@render paneTile('error', 'B')}
+			{@render paneTile('error', 'C')}
+			{@render paneTile('error', 'D')}
+			{@render paneTile('error', 'E')}
+			{@render paneTile('error', 'F')}
+			{@render paneTile('error', 'G')}
+			{@render paneTile('error', 'H')}
+			{@render paneTile('error', 'I')}
+			{@render paneTile('error', 'J')}
+			{@render paneTile('error', 'K')}
+			{@render paneTile('error', 'L')}
+			{@render paneTile('error', 'M')}
+			{@render paneTile('error', 'N')}
+			{@render paneTile('error', 'O')}
+			{@render paneTile('error', 'P')}
+			{@render paneTile('error', 'Q')}
+			{@render paneTile('error', 'R')}
+			{@render paneTile('error', 'S')}
+			{@render paneTile('error', 'T')}
+			{@render paneTile('error', 'U')}
+			{@render paneTile('error', 'V')}
+			{@render paneTile('error', 'W')}
+			{@render paneTile('error', 'X')}
+			{@render paneTile('error', 'Y')}
+			{@render paneTile('error', 'Z')}
+		</div>
+	</div>
+{/snippet}
+{#snippet rightPane()}
+	<div class="p-4">
+		{dataPanes[3]}
+		<div class="input-filled input-success shadow-base-shadow w-100 grow rounded-md shadow-inner">
+			<input
+				type="text"
+				placeholder="Data for left Pane"
+				class="input input-xl"
+				id="leftPaneInput"
+				bind:value={dataPanes[0]}
+			/>
+			<label class="input-filled-label" for="leftPaneInput">Data for Left Pane:</label>
+		</div>
+	</div>
+	{@render alphabet('info')}
+{/snippet}
 
 <div class="flex flex-col justify-around sm:flex-row">
 	<div class="mb-2 flex items-center gap-1">
@@ -1441,13 +1608,13 @@
 		</div>
 		<HorizontalRule />
 	</div>
-	{#snippet paneTile(color: string, content: string)}
+	<!-- {#snippet paneTile(color: string, content: string)}
 		<div
 			class="bg-{color}-container text-{color}-container-content display h-25 w-25 content-center rounded-xl text-center"
 		>
 			{content}
 		</div>
-	{/snippet}
+	{/snippet} -->
 	<div class={prod ? 'block' : 'hidden'}>
 		<Title id="horizontal-diffs">Horizontal Diffs</Title>
 		{@render underConstruction()}
@@ -1590,13 +1757,13 @@
 		<HorizontalRule />
 	</div>
 
-	{#snippet resizer(resizerFunction: (event: PointerEvent) => void, isActive: boolean)}
+	{#snippet resizer(resizerStartFunction: (event: PointerEvent) => void, isActive: boolean)}
 		<div
 			class="resizer bg-base-200 flex h-full w-3 cursor-col-resize items-center justify-center"
 			role="button"
 			aria-label="Resizing panes"
 			tabindex="0"
-			onpointerdown={resizerFunction}
+			onpointerdown={resizerStartFunction}
 		>
 			<div
 				class="resizer-handle {isActive
@@ -1614,24 +1781,188 @@
 	<div class="{develop ? 'block' : 'hidden'} col-span-2">
 		<Title id="dual-panes-dev">🚧 Dual Panes 🚧</Title>
 		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
-			<div class="flex h-screen w-full p-4" bind:this={dualPaneContainer}>
-				<div
-					class="bg-primary-container/50 grow rounded-lg"
-					style={`width: ${dualPaneLeftWidth}px`}
-				>
+			<div class="flex h-80 w-full p-4" bind:this={dualPaneContainer}>
+				<div class="bg-primary-container/50 grow rounded-lg" style:width={dualPaneLeftWidth + 'px'}>
 					Left Pane
 				</div>
 				{@render resizer(startResizingDualPanes, resizeDualPanesActive)}
-				<div
-					class="bg-secondary-container/50 grow rounded-lg"
-					style={`width: ${dualPaneRightWidth}px`}
-				>
+				<div class="bg-accent-container/50 grow rounded-lg" style:width={dualPaneRightWidth + 'px'}>
 					Right Pane
 				</div>
 			</div>
 		</div>
-		<HorizontalRule />
+		<p class="body mt-5">
+			Refactoring to put panes and resizers in arrays and loop over them to reduce code duplication
+			and make it easier to switch between dual and triple panes and potentially extend to more
+			panes in the future
+		</p>
+
+		<!-- {#snippet alphabet(color: string)}
+		
+			<div
+				class="bg-{color}-container/50 text-{color}-container-content flex grow flex-wrap justify-end gap-4 rounded-lg p-4"
+			>
+				{@render paneTile(color, 'A')}
+				{@render paneTile(color, 'B')}
+				{@render paneTile(color, 'C')}
+				{@render paneTile(color, 'D')}
+				{@render paneTile(color, 'E')}
+				{@render paneTile(color, 'F')}
+				{@render paneTile(color, 'G')}
+				{@render paneTile(color, 'H')}
+				{@render paneTile(color, 'I')}
+				{@render paneTile(color, 'J')}
+				{@render paneTile(color, 'K')}
+				{@render paneTile(color, 'L')}
+				{@render paneTile(color, 'M')}
+				{@render paneTile(color, 'N')}
+				{@render paneTile(color, 'O')}
+				{@render paneTile(color, 'P')}
+				{@render paneTile(color, 'Q')}
+				{@render paneTile(color, 'R')}
+				{@render paneTile(color, 'S')}
+				{@render paneTile(color, 'T')}
+				{@render paneTile(color, 'U')}
+				{@render paneTile(color, 'V')}
+				{@render paneTile(color, 'W')}
+				{@render paneTile(color, 'X')}
+				{@render paneTile(color, 'Y')}
+				{@render paneTile(color, 'Z')}
+			</div>
+		{/snippet}
+
+		{#snippet leftPane()}
+			<div class="p-4">
+				{dataPanes[0]}
+			</div>
+			{@render alphabet('success')}
+		{/snippet}
+		{#snippet leftCenterPane()}
+			<div class="p-4">
+				{dataPanes[1]}
+			</div>
+			{@render alphabet('warning')}
+		{/snippet}
+		{#snippet rightCenterPane()}
+			<div class="p-4">
+				{dataPanes[2]}
+			</div>
+			<div class="@container/rightCenterPane grow-2 rounded-lg">
+				<div
+					class="bg-error-container/50 text-error-container-content @8xl/rightCenterPane:grid-cols-9 @10xl/rightCenterPane:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/rightCenterPane:grid-cols-2 @sm/rightCenterPane:grid-cols-3 @md/rightCenterPane:grid-cols-4 @xl/rightCenterPane:grid-cols-5 @2xl/rightCenterPane:grid-cols-6 @4xl/rightCenterPane:grid-cols-7 @6xl/rightCenterPane:grid-cols-8"
+				>
+					{@render paneTile('error', 'A')}
+					{@render paneTile('error', 'B')}
+					{@render paneTile('error', 'C')}
+					{@render paneTile('error', 'D')}
+					{@render paneTile('error', 'E')}
+					{@render paneTile('error', 'F')}
+					{@render paneTile('error', 'G')}
+					{@render paneTile('error', 'H')}
+					{@render paneTile('error', 'I')}
+					{@render paneTile('error', 'J')}
+					{@render paneTile('error', 'K')}
+					{@render paneTile('error', 'L')}
+					{@render paneTile('error', 'M')}
+					{@render paneTile('error', 'N')}
+					{@render paneTile('error', 'O')}
+					{@render paneTile('error', 'P')}
+					{@render paneTile('error', 'Q')}
+					{@render paneTile('error', 'R')}
+					{@render paneTile('error', 'S')}
+					{@render paneTile('error', 'T')}
+					{@render paneTile('error', 'U')}
+					{@render paneTile('error', 'V')}
+					{@render paneTile('error', 'W')}
+					{@render paneTile('error', 'X')}
+					{@render paneTile('error', 'Y')}
+					{@render paneTile('error', 'Z')}
+				</div>
+			</div>
+		{/snippet}
+		{#snippet rightPane()}
+			<div class="p-4">
+				{dataPanes[3]}
+				<div
+					class="input-filled input-success shadow-base-shadow w-100 grow rounded-md shadow-inner"
+				>
+					<input
+						type="text"
+						placeholder="Data for left Pane"
+						class="input input-xl"
+						id="leftPaneInput"
+						bind:value={dataPanes[0]}
+					/>
+					<label class="input-filled-label" for="leftPaneInput">Data for Left Pane:</label>
+				</div>
+			</div>
+			{@render alphabet('info')}
+		{/snippet} -->
+
+		<div class="flex flex-row p-4">
+			<div class="input-filled input-success shadow-base-shadow w-100 grow rounded-md shadow-inner">
+				<input
+					type="text"
+					placeholder="Data for left Pane"
+					class="input input-xl"
+					id="leftPaneInput"
+					bind:value={dataPanes[0]}
+				/>
+				<label class="input-filled-label" for="leftPaneInput">Data for Left Pane:</label>
+			</div>
+			<div
+				class="input-filled input-warning shadow-base-shadow ml-4 w-100 grow rounded-md shadow-inner"
+			>
+				<input
+					type="text"
+					placeholder="Data for right Pane"
+					class="input input-xl"
+					id="rightPaneInput"
+					bind:value={dataPanes[1]}
+				/>
+				<label class="input-filled-label" for="rightPaneInput">Data for Left Center Pane:</label>
+			</div>
+			<div
+				class="input-filled input-error shadow-base-shadow ml-4 w-100 grow rounded-md shadow-inner"
+			>
+				<input
+					type="text"
+					placeholder="Data for right Center Pane"
+					class="input input-xl"
+					id="rightCenterPaneInput"
+					bind:value={dataPanes[2]}
+				/>
+				<label class="input-filled-label" for="rightCenterPaneInput"
+					>Data for Right Center Pane:</label
+				>
+			</div>
+			<div
+				class="input-filled input-info shadow-base-shadow ml-4 w-100 grow rounded-md shadow-inner"
+			>
+				<input
+					type="text"
+					placeholder="Data for left Center Pane"
+					class="input input-xl"
+					id="leftCenterPaneInput"
+					bind:value={dataPanes[3]}
+				/>
+				<label class="input-filled-label" for="leftCenterPaneInput">Data for Right Pane:</label>
+			</div>
+		</div>
+
+		<!-- <div {@attach () => {
+			panes = [
+					{ id: 'leftPane', content: leftPane, minWidth: 50, maxWidth: 500 },
+					{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
+					{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
+					{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 },
+				];
+			}}> -->
+		<Panes panesData={panes} {closePane} />
 	</div>
+
+	<HorizontalRule />
+	<!-- </div> -->
 
 	<div class={prod ? 'block' : 'hidden'}>
 		<Title id="triple-panes">Triple Panes</Title>
@@ -1643,9 +1974,9 @@
 		<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
 			<div class="flex h-screen w-full p-4" bind:this={triplePaneContainer}>
 				<div
-					class=" @container/paneLeft grow-2 rounded-lg"
+					class="@container/paneLeft grow-2 rounded-lg"
 					bind:this={triplePaneLeftContainer}
-					style={`width: ${triplePaneLeftWidth}px`}
+					style:width={triplePaneLeftWidth + 'px'}
 				>
 					<div
 						class="bg-secondary-container/50 @8xl/paneLeft:grid-cols-9 @10xl/paneLeft:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneLeft:grid-cols-2 @sm/paneLeft:grid-cols-3 @md/paneLeft:grid-cols-4 @xl/paneLeft:grid-cols-5 @2xl/paneLeft:grid-cols-6 @4xl/paneLeft:grid-cols-7 @6xl/paneLeft:grid-cols-8"
@@ -1680,9 +2011,9 @@
 				</div>
 				{@render resizer(startResizingLeftTriplePanes, resizeLeftTriplePanesActive)}
 				<div
-					class=" @container/paneCenter grow-4 rounded-lg"
+					class="@container/paneCenter grow-4 rounded-lg"
 					bind:this={triplePaneCenterContainer}
-					style={`width: ${triplePaneCenterWidth}px`}
+					style:width={triplePaneCenterWidth + 'px'}
 				>
 					<div
 						class="bg-neutral-container/50 @8xl/paneCenter:grid-cols-9 @10xl/paneCenter:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/paneCenter:grid-cols-2 @sm/paneCenter:grid-cols-3 @md/paneCenter:grid-cols-4 @xl/paneCenter:grid-cols-5 @2xl/paneCenter:grid-cols-6 @4xl/paneCenter:grid-cols-7 @6xl/paneCenter:grid-cols-8"
@@ -1719,7 +2050,7 @@
 				<div
 					class="bg-info-container/50 flex grow flex-wrap justify-end gap-4 overflow-y-scroll rounded-lg p-4"
 					bind:this={triplePaneRightContainer}
-					style={`width: ${triplePaneRightWidth}px`}
+					style:width={triplePaneRightWidth + 'px'}
 				>
 					{@render paneTile('info', '1')}
 					{@render paneTile('info', '2')}
