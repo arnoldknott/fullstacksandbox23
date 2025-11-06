@@ -47,6 +47,8 @@
 
     let panes: SvelteMap<string, Pane> = $state(new SvelteMap<string, Pane>())
 
+    let paneElements: SvelteMap<string, HTMLDivElement> = $state(new SvelteMap<string, HTMLDivElement>())
+
     $effect(() => {
         panesData.forEach((paneData, index) => {
             panes.set(
@@ -128,14 +130,26 @@
 		// update left in inforamtion in both panes (needs initialization)
 	    // leftPane.left = leftPane.paneElement?.getBoundingClientRect().left ?? 0;
 	    // rightPane.left = rightPane.paneElement?.getBoundingClientRect().left ?? 0;
+	    // panes.set(leftId, {
+        //     ...leftPane,
+        //     left: leftPane.paneElement?.getBoundingClientRect().left ?? 0,
+        // })
+        // panes.set(rightId, {
+        //     ...rightPane,
+        //     left: rightPane.paneElement?.getBoundingClientRect().left ?? 0,
+        // })
+        const leftPaneElement = paneElements.get(leftId);
+        const rightPaneElement = paneElements.get(rightId);
 	    panes.set(leftId, {
             ...leftPane,
-            left: leftPane.paneElement?.getBoundingClientRect().left ?? 0,
+            left: leftPaneElement?.getBoundingClientRect().left ?? 0,
         })
         panes.set(rightId, {
             ...rightPane,
-            left: rightPane.paneElement?.getBoundingClientRect().left ?? 0,
+            left: rightPaneElement?.getBoundingClientRect().left ?? 0,
         })
+        leftPane.left = leftPaneElement?.getBoundingClientRect().left ?? 0;
+        rightPane.left = rightPaneElement?.getBoundingClientRect().left ?? 0;
 		// Keep only the two adjacent panes affected by this resizer.
 		// Maintain their combined width constant during the drag.
 		const pairTotalWidth = leftPane.width + rightPane.width; // capture BEFORE updating either
@@ -159,10 +173,27 @@
 		}
 		// Compute left pane candidate width from absolute pointer position
 		const leftCandidate = event.clientX - leftPane.left;
-		// Clamp left within derived bounds
-		leftPane.width = Math.max(leftLowerBound, Math.min(leftCandidate, leftUpperBound));
-		// Right width is whatever remains from the pair total (no resizer width involved here)
-		rightPane.width = pairTotalWidth - leftPane.width;
+		// // Clamp left within derived bounds
+		// leftPane.width = Math.max(leftLowerBound, Math.min(leftCandidate, leftUpperBound));
+		// // Right width is whatever remains from the pair total (no resizer width involved here)
+		// rightPane.width = pairTotalWidth - leftPane.width;
+        // Clamp left within derived bounds
+        const setLeftWidth = Math.max(leftLowerBound, Math.min(leftCandidate, leftUpperBound));
+        // Right width is whatever remains from the pair total (no resizer width involved here)
+        const setRightWidth = pairTotalWidth - setLeftWidth;
+        // if (isNaN(setLeftWidth) || isNaN(setRightWidth)) {
+        //     console.log('""" Computed NaN widths, skipping update ===');
+        //     return;
+        // }
+        panes.set(leftId, {
+            ...panes.get(leftId)!,
+            width: Math.max(leftLowerBound, Math.min(leftCandidate, leftUpperBound))
+        })
+        
+        panes.set(rightId, {
+            ...panes.get(rightId)!,
+            width: pairTotalWidth - panes.get(leftId)!.width,
+        })
 	};
 </script>
 
@@ -233,8 +264,13 @@
 		{#each panesData as pane, i (pane.id)}
 			<div
 				class="bg-base-250 grow overflow-y-scroll rounded-xl"
-				bind:this={dummyElement
-                    // TBD: refactor!
+				bind:this={
+                    () => paneElements.get(pane.id),
+                    (element) => {
+                        paneElements.set(pane.id, element);
+                    }
+                    // // dummyElement
+                    // // TBD: refactor!
                     // () => panes.get(pane.id).paneElement,
                     // (element) => {
                     //     // panes.get(pane.id).paneElement = element;
@@ -249,19 +285,31 @@
                     //         paneElement: element
                     //     })
                     // }
-                    }
+                }
 				bind:clientWidth={
-					null,
-					() => {
-						const paneSet = panes.get(pane.id);
-						if (paneSet) {
-							return paneSet.width;
-						}
-						return 300;
-					}
+                    null,
+                    (clientWidth) => {
+                        if (typeof clientWidth === 'number' && !isNaN(clientWidth)) {
+                            panes.set(pane.id,
+                            { 
+                                ...panes.get(pane.id),
+                                width: clientWidth
+
+                            } as Pane)
+                        }
+                    }
+                    // null,
+					// () => {
+					// 	const paneSet = panes.get(pane.id);
+					// 	if (paneSet) {
+					// 		return paneSet.width;
+					// 	}
+					// 	return 300;
+					// }
 				}
-				style:width={(panes.get(pane.id)?.width ?? 300) + "px"}
+                style:width={(panes.get(pane.id)?.width ?? 300) + "px"}
 			>
+            
 				{#if closePane}
 					<div class="flex justify-end">
 						<button
