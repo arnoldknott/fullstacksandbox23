@@ -495,20 +495,20 @@
 	<div class="flex flex-col gap-2 p-4">
 		{dataPanes[0]}
 		{#if panes.some((pane) => pane.id === 'leftPane')}
-			<button class="btn btn-primary" onclick={() => closePane('leftPane')}>Close pane 1</button>
+			<button class="btn btn-success" onclick={() => closePane('leftPane')}>Close pane 1</button>
 		{/if}
 		{#if panes.some((pane) => pane.id === 'leftCenterPane')}
-			<button class="btn btn-primary" onclick={() => closePane('leftCenterPane')}
+			<button class="btn btn-warning" onclick={() => closePane('leftCenterPane')}
 				>Close pane 2</button
 			>
 		{/if}
 		{#if panes.some((pane) => pane.id === 'rightCenterPane')}
-			<button class="btn btn-primary" onclick={() => closePane('rightCenterPane')}
+			<button class="btn btn-error" onclick={() => closePane('rightCenterPane')}
 				>Close pane 3</button
 			>
 		{/if}
 		{#if panes.some((pane) => pane.id === 'rightPane')}
-			<button class="btn btn-primary" onclick={() => closePane('rightPane')}>Close pane 4</button>
+			<button class="btn btn-info" onclick={() => closePane('rightPane')}>Close pane 4</button>
 		{/if}
 	</div>
 	{@render alphabet('success')}

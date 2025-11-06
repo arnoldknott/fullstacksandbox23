@@ -1,7 +1,7 @@
 <script lang="ts">
 	// import JsonData from '$components/JsonData.svelte';
 	import { type Snippet } from 'svelte';
-    import { SvelteMap} from 'svelte/reactivity'
+	import { SvelteMap } from 'svelte/reactivity';
 	export type PaneData = {
 		id: string;
 		content: Snippet;
@@ -16,147 +16,140 @@
 
 	// Unified runtime pane state merged with incoming PaneData
 	type Pane = {
-        paneIndex: number;
+		paneIndex: number;
 		paneElement: HTMLDivElement | null;
 		left: number;
 		width: number;
 		resizerElement?: HTMLDivElement | null;
 		resizerActive?: boolean;
 	};
-    // let panes: SvelteMap<string, Pane> = $derived.by(() => 
-    // {
-    //     const panesMap = new SvelteMap<string, Pane>()
-    //     panesData.forEach((paneData, index) => {
-    //         panesMap.set(
-    //             paneData.id,
-    //             {
-    //                 paneIndex: index,
-    //                 paneElement: null,
-    //                 left: NaN,
-    //                 width: 300,
-    //                 resizerElement: null,
-    //                 resizerActive: false,
-    //             }
-    //         )
-    //     })
-    //     return panesMap
-    // }
-    // )
+	// let panes: SvelteMap<string, Pane> = $derived.by(() =>
+	// {
+	//     const panesMap = new SvelteMap<string, Pane>()
+	//     panesData.forEach((paneData, index) => {
+	//         panesMap.set(
+	//             paneData.id,
+	//             {
+	//                 paneIndex: index,
+	//                 paneElement: null,
+	//                 left: NaN,
+	//                 width: 300,
+	//                 resizerElement: null,
+	//                 resizerActive: false,
+	//             }
+	//         )
+	//     })
+	//     return panesMap
+	// }
+	// )
 
-    let dummyElement: HTMLDivElement | null = $state(null);
+	let panes: SvelteMap<string, Pane> = new SvelteMap<string, Pane>();
 
-    let panes: SvelteMap<string, Pane> = $state(new SvelteMap<string, Pane>())
+	let paneElements: SvelteMap<string, HTMLDivElement> = new SvelteMap<string, HTMLDivElement>();
 
-    let paneElements: SvelteMap<string, HTMLDivElement> = $state(new SvelteMap<string, HTMLDivElement>())
+	$effect(() => {
+		panesData.forEach((paneData, index) => {
+			panes.set(paneData.id, {
+				paneIndex: index,
+				paneElement: null,
+				left: NaN,
+				width: 300,
+				resizerElement: null,
+				resizerActive: false
+			});
+		});
+	});
 
-    $effect(() => {
-        panesData.forEach((paneData, index) => {
-            panes.set(
-                paneData.id,
-                {
-                    paneIndex: index,
-                    paneElement: null,
-                    left: NaN,
-                    width: 300,
-                    resizerElement: null,
-                    resizerActive: false,
-                }
-            )
-        })
-    }
-    )
-
-    // $effect(() => 
-    //     panesData.forEach((paneData) => {
-    //         panes.set(
-    //             paneData.id,
-    //             {paneElement: null,
-    //             left: NaN,
-    //             width: 300,
-    //             resizerElement: null,
-    //             resizerActive: false,}
-    //         )
-    //     }
-    // )
-    // )
+	// $effect(() =>
+	//     panesData.forEach((paneData) => {
+	//         panes.set(
+	//             paneData.id,
+	//             {paneElement: null,
+	//             left: NaN,
+	//             width: 300,
+	//             resizerElement: null,
+	//             resizerActive: false,}
+	//         )
+	//     }
+	// )
+	// )
 
 	// let panes: Pane[] = $derived(
-    //     panesData.map((pd) => ({
-    //         ...pd,
-    //         paneElement: null,
-    //         left: NaN,
-    //         width: 300,
-    //         resizerElement: null,
-    //         resizerActive: false,
-    //     }))
-    // );
+	//     panesData.map((pd) => ({
+	//         ...pd,
+	//         paneElement: null,
+	//         left: NaN,
+	//         width: 300,
+	//         resizerElement: null,
+	//         resizerActive: false,
+	//     }))
+	// );
 
 	// $effect(() => {
-    //     const previous = $state.snapshot(panes);
+	//     const previous = $state.snapshot(panes);
 	// 	// panes = previous.filter((pane) => panesData.some((pd) => pd.id === pane.id))
 	// });
 
-
 	// const activateResizer = (paneIndex: number) => {
 	const activateResizer = (paneId: string) => {
-        panes.set(paneId, {
-            ...panes.get(paneId)!,
-            resizerActive: true,
-        })
+		panes.set(paneId, {
+			...panes.get(paneId)!,
+			resizerActive: true
+		});
 	};
 
 	// const resizePanes = (event: PointerEvent, rightResizingPaneId: string) => {
 	const resizePanes = (event: PointerEvent, rightResizingPaneIndex: number) => {
 		// console.log('Resizing panes at index:', rightResizingPaneIndex);
 		// finding the panes involved:
-	    // const leftPane = panes[rightResizingPaneIndex - 1];
-	    // const rightPane = panes[rightResizingPaneIndex];
-        const keyValues = panes.entries();
-        let leftId = ""
-        let rightId = ""
-        for (const [key, pane] of keyValues) {
-            if (pane.paneIndex === rightResizingPaneIndex - 1) {
-                leftId = key;
-            }
-            if (pane.paneIndex === rightResizingPaneIndex) {
-                rightId = key;
-            }
-        }
-	    const leftPane = panes.get(leftId)!;
-	    const rightPane = panes.get(rightId)!;
-        const leftPaneData = panesData[rightResizingPaneIndex - 1];
-	    const rightPaneData = panesData[rightResizingPaneIndex];
+		// const leftPane = panes[rightResizingPaneIndex - 1];
+		// const rightPane = panes[rightResizingPaneIndex];
+		const keyValues = panes.entries();
+		let leftId = '';
+		let rightId = '';
+		for (const [key, pane] of keyValues) {
+			if (pane.paneIndex === rightResizingPaneIndex - 1) {
+				leftId = key;
+			}
+			if (pane.paneIndex === rightResizingPaneIndex) {
+				rightId = key;
+			}
+		}
+		const leftPane = panes.get(leftId)!;
+		const rightPane = panes.get(rightId)!;
+		const leftPaneData = panesData[rightResizingPaneIndex - 1];
+		const rightPaneData = panesData[rightResizingPaneIndex];
 
 		// update left in inforamtion in both panes (needs initialization)
-	    // leftPane.left = leftPane.paneElement?.getBoundingClientRect().left ?? 0;
-	    // rightPane.left = rightPane.paneElement?.getBoundingClientRect().left ?? 0;
-	    // panes.set(leftId, {
-        //     ...leftPane,
-        //     left: leftPane.paneElement?.getBoundingClientRect().left ?? 0,
-        // })
-        // panes.set(rightId, {
-        //     ...rightPane,
-        //     left: rightPane.paneElement?.getBoundingClientRect().left ?? 0,
-        // })
-        const leftPaneElement = paneElements.get(leftId);
-        const rightPaneElement = paneElements.get(rightId);
-	    panes.set(leftId, {
-            ...leftPane,
-            left: leftPaneElement?.getBoundingClientRect().left ?? 0,
-        })
-        panes.set(rightId, {
-            ...rightPane,
-            left: rightPaneElement?.getBoundingClientRect().left ?? 0,
-        })
-        leftPane.left = leftPaneElement?.getBoundingClientRect().left ?? 0;
-        rightPane.left = rightPaneElement?.getBoundingClientRect().left ?? 0;
+		// leftPane.left = leftPane.paneElement?.getBoundingClientRect().left ?? 0;
+		// rightPane.left = rightPane.paneElement?.getBoundingClientRect().left ?? 0;
+		// panes.set(leftId, {
+		//     ...leftPane,
+		//     left: leftPane.paneElement?.getBoundingClientRect().left ?? 0,
+		// })
+		// panes.set(rightId, {
+		//     ...rightPane,
+		//     left: rightPane.paneElement?.getBoundingClientRect().left ?? 0,
+		// })
+		const leftPaneElement = paneElements.get(leftId);
+		const rightPaneElement = paneElements.get(rightId);
+		panes.set(leftId, {
+			...leftPane,
+			left: leftPaneElement?.getBoundingClientRect().left ?? 0
+		});
+		panes.set(rightId, {
+			...rightPane,
+			left: rightPaneElement?.getBoundingClientRect().left ?? 0
+		});
+		leftPane.left = leftPaneElement?.getBoundingClientRect().left ?? 0;
+		rightPane.left = rightPaneElement?.getBoundingClientRect().left ?? 0;
 		// Keep only the two adjacent panes affected by this resizer.
 		// Maintain their combined width constant during the drag.
 		const pairTotalWidth = leftPane.width + rightPane.width; // capture BEFORE updating either
-        // const minLeft = leftPane.minWidth ?? 0;
-        // const maxLeft = leftPane.maxWidth ?? Infinity;
-        // const minRight = rightPane.minWidth ?? 0;
-        // const maxRight = rightPane.maxWidth ?? Infinity;
+		// const minLeft = leftPane.minWidth ?? 0;
+		// const maxLeft = leftPane.maxWidth ?? Infinity;
+		// const minRight = rightPane.minWidth ?? 0;
+		// const maxRight = rightPane.maxWidth ?? Infinity;
 		const minLeft = leftPaneData.minWidth ?? 0;
 		const maxLeft = leftPaneData.maxWidth ?? Infinity;
 		const minRight = rightPaneData.minWidth ?? 0;
@@ -177,37 +170,30 @@
 		// leftPane.width = Math.max(leftLowerBound, Math.min(leftCandidate, leftUpperBound));
 		// // Right width is whatever remains from the pair total (no resizer width involved here)
 		// rightPane.width = pairTotalWidth - leftPane.width;
-        // Clamp left within derived bounds
-        const setLeftWidth = Math.max(leftLowerBound, Math.min(leftCandidate, leftUpperBound));
-        // Right width is whatever remains from the pair total (no resizer width involved here)
-        const setRightWidth = pairTotalWidth - setLeftWidth;
-        // if (isNaN(setLeftWidth) || isNaN(setRightWidth)) {
-        //     console.log('""" Computed NaN widths, skipping update ===');
-        //     return;
-        // }
-        panes.set(leftId, {
-            ...panes.get(leftId)!,
-            width: Math.max(leftLowerBound, Math.min(leftCandidate, leftUpperBound))
-        })
-        
-        panes.set(rightId, {
-            ...panes.get(rightId)!,
-            width: pairTotalWidth - panes.get(leftId)!.width,
-        })
+		// if (isNaN(setLeftWidth) || isNaN(setRightWidth)) {
+		//     console.log('""" Computed NaN widths, skipping update ===');
+		//     return;
+		// }
+		// Clamp left within derived bounds
+		panes.set(leftId, {
+			...panes.get(leftId)!,
+			width: Math.max(leftLowerBound, Math.min(leftCandidate, leftUpperBound))
+		});
+		// Right width is whatever remains from the pair total (no resizer width involved here)
+		panes.set(rightId, {
+			...panes.get(rightId)!,
+			width: pairTotalWidth - panes.get(leftId)!.width
+		});
 	};
 </script>
 
 <svelte:window
 	onpointermove={(event) => {
-        const keyValues = panes.entries();
-        for (const [key, pane] of keyValues) {
-            if (pane.resizerActive) {
-                resizePanes(
-                    event,
-                    pane.paneIndex
-                );
-            }
-        }
+		for (const pane of panes.values()) {
+			if (pane.resizerActive) {
+				resizePanes(event, pane.paneIndex);
+			}
+		}
 		// if (panes.some((pane) => pane.resizerActive)) {
 		// 	resizePanes(
 		// 		event,
@@ -215,22 +201,22 @@
 		// 	);
 		// }
 	}}
-    onpointerup={() => {
-        // panes.forEach((pane) => (pane.resizerActive = false))
-        // panes.values().forEach((pane) => {
-        //     panes.set(pane.id, {
-        //         ...pane,
-        //         resizerActive: false,
-        //     })
-        // });
-        const keyValues = panes.entries();
-        for (const [key, pane] of keyValues) {
-            panes.set(key, {
-                ...pane,
-                resizerActive: false,
-            })
-        }
-    }}
+	onpointerup={() => {
+		// panes.forEach((pane) => (pane.resizerActive = false))
+		// panes.values().forEach((pane) => {
+		//     panes.set(pane.id, {
+		//         ...pane,
+		//         resizerActive: false,
+		//     })
+		// });
+		const keyValues = panes.entries();
+		for (const [key, pane] of keyValues) {
+			panes.set(key, {
+				...pane,
+				resizerActive: false
+			});
+		}
+	}}
 />
 
 <!-- {#snippet resizer(paneIndex: number)} -->
@@ -240,12 +226,11 @@
 		role="button"
 		aria-label="Resizing panes"
 		tabindex="0"
-        onpointerdown={() => activateResizer(paneId)}
-        
+		onpointerdown={() => activateResizer(paneId)}
 	>
-        <!-- onpointerdown={() => activateResizer(paneIndex)} -->
-        <!-- bind:this={resizerElement} -->
-        <!-- bind:this={panes[paneIndex].resizerElement} -->
+		<!-- onpointerdown={() => activateResizer(paneIndex)} -->
+		<!-- bind:this={resizerElement} -->
+		<!-- bind:this={panes[paneIndex].resizerElement} -->
 		<!-- <div
 			class="resizer-handle {panes[paneIndex].resizerActive
 				? 'bg-outline'
@@ -265,60 +250,33 @@
 			<div
 				class="bg-base-250 grow overflow-y-scroll rounded-xl"
 				bind:this={
-                    () => paneElements.get(pane.id),
-                    (element) => {
-                        paneElements.set(pane.id, element);
-                    }
-                    // // dummyElement
-                    // // TBD: refactor!
-                    // () => panes.get(pane.id).paneElement,
-                    // (element) => {
-                    //     // panes.get(pane.id).paneElement = element;
-                    //     // TBD: refactor!
-                    //     // panes.set(pane.id, {
-                    //     //     left: panes.get(pane.id)?.left || NaN,
-                    //     //     width: panes.get(pane.id)?.width || 300,
-                    //     //     paneElement: element
-                    //     // })
-                    //     panes.set(pane.id, {
-                    //         ...panes.get(pane.id)!,
-                    //         paneElement: element
-                    //     })
-                    // }
-                }
-				bind:clientWidth={
-                    null,
-                    (clientWidth) => {
-                        if (typeof clientWidth === 'number' && !isNaN(clientWidth)) {
-                            panes.set(pane.id,
-                            { 
-                                ...panes.get(pane.id),
-                                width: clientWidth
-
-                            } as Pane)
-                        }
-                    }
-                    // null,
-					// () => {
-					// 	const paneSet = panes.get(pane.id);
-					// 	if (paneSet) {
-					// 		return paneSet.width;
-					// 	}
-					// 	return 300;
-					// }
+					() => paneElements.get(pane.id),
+					(element) => {
+						paneElements.set(pane.id, element);
+					}
 				}
-                style:width={(panes.get(pane.id)?.width ?? 300) + "px"}
+				bind:clientWidth={
+					null,
+					(clientWidth) => {
+						if (typeof clientWidth === 'number' && !isNaN(clientWidth)) {
+							panes.set(pane.id, {
+								...panes.get(pane.id),
+								width: clientWidth
+							} as Pane);
+						}
+					}
+				}
+				style:width={(panes.get(pane.id)?.width ?? 300) + 'px'}
 			>
-            
 				{#if closePane}
 					<div class="flex justify-end">
 						<button
 							class=" btn btn-text btn-sm btn-circle"
 							aria-label="Close Button"
 							onclick={() => {
-                                // panes = panes.filter((p) => p.id !== pane.id);
-                                closePane(pane.id)
-                            }}
+								// panes = panes.filter((p) => p.id !== pane.id);
+								closePane(pane.id);
+							}}
 						>
 							<span class="icon-[tabler--x] size-5"></span>
 						</button>
@@ -329,11 +287,13 @@
 					<!-- <div class="label">Left: {pane.left} px</div>
 					<div class="label">Width: {pane.width} px</div>-->
 					<div class="label">Left: {panes.get(pane.id)?.left} px</div>
-					<div class="label">Width: {panes.get(pane.id)?.width } px</div>
+					<div class="label">Width: {panes.get(pane.id)?.width} px</div>
 					<div class="label">MinWidth: {pane.minWidth} px</div>
 					<div class="label">MaxWidth: {pane.maxWidth} px</div>
 					<!-- <div class="label">ResizerActive: {pane.resizerActive ? 'true' : 'false'}</div> -->
-					<div class="label">ResizerActive: {panes.get(pane.id)?.resizerActive ? 'true' : 'false'}</div>
+					<div class="label">
+						ResizerActive: {panes.get(pane.id)?.resizerActive ? 'true' : 'false'}
+					</div>
 				</div>
 				{@render pane.content?.()}
 			</div>
