@@ -17,7 +17,7 @@
 	// Unified runtime pane state merged with incoming PaneData
 	type Pane = {
 		paneIndex: number;
-		paneElement: HTMLDivElement | null;
+		// paneElement: HTMLDivElement | null;
 		left: number;
 		width: number;
 		resizerElement?: HTMLDivElement | null;
@@ -51,7 +51,7 @@
 		panesData.forEach((paneData, index) => {
 			panes.set(paneData.id, {
 				paneIndex: index,
-				paneElement: null,
+				// paneElement: null,
 				left: NaN,
 				width: 300,
 				resizerElement: null,
@@ -258,12 +258,10 @@
 				bind:clientWidth={
 					null,
 					(clientWidth) => {
-						if (typeof clientWidth === 'number' && !isNaN(clientWidth)) {
-							panes.set(pane.id, {
-								...panes.get(pane.id),
-								width: clientWidth
-							} as Pane);
-						}
+                        panes.set(pane.id, {
+                            ...panes.get(pane.id),
+                            width: clientWidth
+                        } as Pane);
 					}
 				}
 				style:width={(panes.get(pane.id)?.width ?? 300) + 'px'}
