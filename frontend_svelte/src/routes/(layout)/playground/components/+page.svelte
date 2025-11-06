@@ -28,7 +28,7 @@
 	import ThemePicker from './ThemePicker.svelte';
 	import ArtificialIntelligencePicker from './ArtificialIntelligencePicker.svelte';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
-	import Panes, { type PaneInputs } from './Panes.svelte';
+	import Panes, { type PaneData } from './Panes.svelte';
 	// import Panes from './Panes.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 
@@ -307,7 +307,7 @@
 	let dualPaneContainer: HTMLDivElement | null = $state(null);
 
 	// filled in second script tag underneath - after creation of snippets
-	let panes: PaneInputs[] = $state([
+	let panes: PaneData[] = $state([
 		{ id: 'leftPane', content: leftPane, minWidth: 50, maxWidth: 500 },
 		{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
 		{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
@@ -326,7 +326,11 @@
 		console.log(paneId);
 		console.log('=== +page - closePane - panes before filter ===');
 		console.log($state.snapshot(panes));
-		panes = panes.filter((pane) => pane.id !== paneId);
+		// panes = panes.filter((pane) => pane.id !== paneId);
+		const index = panes.findIndex((pane) => pane.id === paneId);
+		if (index > -1) {
+			panes.splice(index, 1);
+		}
 		console.log('=== +page - closePane - panes after filter ===');
 		console.log($state.snapshot(panes));
 	};
@@ -491,20 +495,20 @@
 	<div class="flex flex-col gap-2 p-4">
 		{dataPanes[0]}
 		{#if panes.some((pane) => pane.id === 'leftPane')}
-			<button class="btn btn-primary" onclick={() => closePane('leftPane')}>Close pane 0</button>
+			<button class="btn btn-primary" onclick={() => closePane('leftPane')}>Close pane 1</button>
 		{/if}
 		{#if panes.some((pane) => pane.id === 'leftCenterPane')}
 			<button class="btn btn-primary" onclick={() => closePane('leftCenterPane')}
-				>Close pane 1</button
+				>Close pane 2</button
 			>
 		{/if}
 		{#if panes.some((pane) => pane.id === 'rightCenterPane')}
 			<button class="btn btn-primary" onclick={() => closePane('rightCenterPane')}
-				>Close pane 2</button
+				>Close pane 3</button
 			>
 		{/if}
 		{#if panes.some((pane) => pane.id === 'rightPane')}
-			<button class="btn btn-primary" onclick={() => closePane('rightPane')}>Close pane 3</button>
+			<button class="btn btn-primary" onclick={() => closePane('rightPane')}>Close pane 4</button>
 		{/if}
 	</div>
 	{@render alphabet('success')}
@@ -1954,7 +1958,7 @@
 					{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 },
 				];
 			}}> -->
-		<Panes inputs={panes} {closePane} />
+		<Panes panesData={panes} {closePane} />
 	</div>
 
 	<HorizontalRule />
