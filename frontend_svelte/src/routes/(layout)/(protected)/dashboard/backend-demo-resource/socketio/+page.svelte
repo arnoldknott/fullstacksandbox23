@@ -34,6 +34,7 @@
 		}
 	};
 
+	// TBD: populate by REST-API call initially?
 	let demoResources = $state<DemoResourceExtended[]>([]);
 	let editIds = new SvelteSet<string>();
 	let statusMessages = $state<SocketioStatus[]>([]);
