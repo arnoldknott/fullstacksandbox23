@@ -1812,213 +1812,6 @@
 				</div>
 			</div>
 		</div>
-
-		<!-- {#snippet alphabet(color: string)}
-		
-			<div
-				class="bg-{color}-container/50 text-{color}-container-content flex grow flex-wrap justify-end gap-4 rounded-lg p-4"
-			>
-				{@render paneTile(color, 'A')}
-				{@render paneTile(color, 'B')}
-				{@render paneTile(color, 'C')}
-				{@render paneTile(color, 'D')}
-				{@render paneTile(color, 'E')}
-				{@render paneTile(color, 'F')}
-				{@render paneTile(color, 'G')}
-				{@render paneTile(color, 'H')}
-				{@render paneTile(color, 'I')}
-				{@render paneTile(color, 'J')}
-				{@render paneTile(color, 'K')}
-				{@render paneTile(color, 'L')}
-				{@render paneTile(color, 'M')}
-				{@render paneTile(color, 'N')}
-				{@render paneTile(color, 'O')}
-				{@render paneTile(color, 'P')}
-				{@render paneTile(color, 'Q')}
-				{@render paneTile(color, 'R')}
-				{@render paneTile(color, 'S')}
-				{@render paneTile(color, 'T')}
-				{@render paneTile(color, 'U')}
-				{@render paneTile(color, 'V')}
-				{@render paneTile(color, 'W')}
-				{@render paneTile(color, 'X')}
-				{@render paneTile(color, 'Y')}
-				{@render paneTile(color, 'Z')}
-			</div>
-		{/snippet}
-
-		{#snippet leftPane()}
-			<div class="p-4">
-				{dataPanes[0]}
-			</div>
-			{@render alphabet('success')}
-		{/snippet}
-		{#snippet leftCenterPane()}
-			<div class="p-4">
-				{dataPanes[1]}
-			</div>
-			{@render alphabet('warning')}
-		{/snippet}
-		{#snippet rightCenterPane()}
-			<div class="p-4">
-				{dataPanes[2]}
-			</div>
-			<div class="@container/rightCenterPane grow-2 rounded-lg">
-				<div
-					class="bg-error-container/50 text-error-container-content @8xl/rightCenterPane:grid-cols-9 @10xl/rightCenterPane:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/rightCenterPane:grid-cols-2 @sm/rightCenterPane:grid-cols-3 @md/rightCenterPane:grid-cols-4 @xl/rightCenterPane:grid-cols-5 @2xl/rightCenterPane:grid-cols-6 @4xl/rightCenterPane:grid-cols-7 @6xl/rightCenterPane:grid-cols-8"
-				>
-					{@render paneTile('error', 'A')}
-					{@render paneTile('error', 'B')}
-					{@render paneTile('error', 'C')}
-					{@render paneTile('error', 'D')}
-					{@render paneTile('error', 'E')}
-					{@render paneTile('error', 'F')}
-					{@render paneTile('error', 'G')}
-					{@render paneTile('error', 'H')}
-					{@render paneTile('error', 'I')}
-					{@render paneTile('error', 'J')}
-					{@render paneTile('error', 'K')}
-					{@render paneTile('error', 'L')}
-					{@render paneTile('error', 'M')}
-					{@render paneTile('error', 'N')}
-					{@render paneTile('error', 'O')}
-					{@render paneTile('error', 'P')}
-					{@render paneTile('error', 'Q')}
-					{@render paneTile('error', 'R')}
-					{@render paneTile('error', 'S')}
-					{@render paneTile('error', 'T')}
-					{@render paneTile('error', 'U')}
-					{@render paneTile('error', 'V')}
-					{@render paneTile('error', 'W')}
-					{@render paneTile('error', 'X')}
-					{@render paneTile('error', 'Y')}
-					{@render paneTile('error', 'Z')}
-				</div>
-			</div>
-		{/snippet}
-		{#snippet rightPane()}
-			<div class="p-4">
-				{dataPanes[3]}
-				<div
-					class="input-filled input-success shadow-base-shadow w-100 grow rounded-md shadow-inner"
-				>
-					<input
-						type="text"
-						placeholder="Data for left Pane"
-						class="input input-xl"
-						id="leftPaneInput"
-						bind:value={dataPanes[0]}
-					/>
-					<label class="input-filled-label" for="leftPaneInput">Data for Left Pane:</label>
-				</div>
-			</div>
-			{@render alphabet('info')}
-		{/snippet} -->
-
-		<div class="flex flex-row gap-2 p-4">
-			{#if panes.some((pane) => pane.id === 'leftPane')}
-				<div class="flex w-full grow flex-col gap-1">
-					<button class="btn btn-success" onclick={() => closePane('leftPane')}>Close pane 1</button
-					>
-					<div
-						class="input-filled input-success shadow-base-shadow w-full grow rounded-md shadow-inner"
-					>
-						<input
-							type="text"
-							placeholder="Data for left Pane"
-							class="input input-xl"
-							id="leftPaneInput"
-							bind:value={dataPanes[0]}
-						/>
-						<label class="input-filled-label" for="leftPaneInput">Data for Left Pane:</label>
-					</div>
-				</div>
-			{:else}
-				<button class="btn btn-success" onclick={() => panes.push(leftPaneData)}>
-					Open pane 1
-				</button>
-			{/if}
-			{#if panes.some((pane) => pane.id === 'leftCenterPane')}
-				<div class="flex w-full grow flex-col gap-1">
-					<button class="btn btn-warning" onclick={() => closePane('leftCenterPane')}
-						>Close pane 2</button
-					>
-					<div
-						class="input-filled input-warning shadow-base-shadow w-100 grow rounded-md shadow-inner"
-					>
-						<input
-							type="text"
-							placeholder="Data for right Pane"
-							class="input input-xl"
-							id="rightPaneInput"
-							bind:value={dataPanes[1]}
-						/>
-						<label class="input-filled-label" for="rightPaneInput">Data for Left Center Pane:</label
-						>
-					</div>
-				</div>
-			{:else}
-				<button class="btn btn-warning" onclick={() => panes.push(leftCenterPaneData)}>
-					Open pane 2
-				</button>
-			{/if}
-			{#if panes.some((pane) => pane.id === 'rightCenterPane')}
-				<div class="flex w-full grow flex-col gap-1">
-					<button class="btn btn-error" onclick={() => closePane('rightCenterPane')}>
-						Close pane 3
-					</button>
-					<div
-						class="input-filled input-error shadow-base-shadow w-100 grow rounded-md shadow-inner"
-					>
-						<input
-							type="text"
-							placeholder="Data for right Center Pane"
-							class="input input-xl"
-							id="rightCenterPaneInput"
-							bind:value={dataPanes[2]}
-						/>
-						<label class="input-filled-label" for="rightCenterPaneInput"
-							>Data for Right Center Pane:</label
-						>
-					</div>
-				</div>
-			{:else}
-				<button class="btn btn-error" onclick={() => panes.push(rightCenterPaneData)}>
-					Open pane 3
-				</button>
-			{/if}
-			{#if panes.some((pane) => pane.id === 'rightPane')}
-				<div class="flex w-full grow flex-col gap-1">
-					<button class="btn btn-info" onclick={() => closePane('rightPane')}>Close pane 4</button>
-					<div
-						class="input-filled input-info shadow-base-shadow w-100 grow rounded-md shadow-inner"
-					>
-						<input
-							type="text"
-							placeholder="Data for left Center Pane"
-							class="input input-xl"
-							id="leftCenterPaneInput"
-							bind:value={dataPanes[3]}
-						/>
-						<label class="input-filled-label" for="leftCenterPaneInput">Data for Right Pane:</label>
-					</div>
-				</div>
-			{:else}
-				<button class="btn btn-info" onclick={() => panes.push(rightPaneData)}>
-					Open pane 4
-				</button>
-			{/if}
-		</div>
-
-		<!-- <div {@attach () => {
-			panes = [
-					{ id: 'leftPane', content: leftPane, minWidth: 50, maxWidth: 500 },
-					{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
-					{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
-					{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 },
-				];
-			}}> -->
-		<Panes panesData={panes} {closePane} />
 	</div>
 
 	<HorizontalRule />
@@ -2135,6 +1928,120 @@
 				</div>
 			</div>
 		</div>
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Title id="triple-panes">Dynamic Panes</Title>
+		{@render underConstruction()}
+	</div>
+
+	<div class="{develop ? 'block' : 'hidden'} col-span-2 mt-10">
+		<Title id="dynamic-panes-dev">🚧 Dynamic Panes 🚧</Title>
+		<div class="flex flex-row gap-2 p-4">
+			{#if panes.some((pane) => pane.id === 'leftPane')}
+				<div class="flex w-full grow flex-col gap-1">
+					<button class="btn btn-success" onclick={() => closePane('leftPane')}>Close pane 1</button
+					>
+					<div
+						class="input-filled input-success shadow-base-shadow w-full grow rounded-md shadow-inner"
+					>
+						<input
+							type="text"
+							placeholder="Data for left Pane"
+							class="input input-xl"
+							id="leftPaneInput"
+							bind:value={dataPanes[0]}
+						/>
+						<label class="input-filled-label" for="leftPaneInput">Data for Left Pane:</label>
+					</div>
+				</div>
+			{:else}
+				<button class="btn btn-success" onclick={() => panes.push(leftPaneData)}>
+					Open pane 1
+				</button>
+			{/if}
+			{#if panes.some((pane) => pane.id === 'leftCenterPane')}
+				<div class="flex w-full grow flex-col gap-1">
+					<button class="btn btn-warning" onclick={() => closePane('leftCenterPane')}
+						>Close pane 2</button
+					>
+					<div
+						class="input-filled input-warning shadow-base-shadow w-100 grow rounded-md shadow-inner"
+					>
+						<input
+							type="text"
+							placeholder="Data for right Pane"
+							class="input input-xl"
+							id="rightPaneInput"
+							bind:value={dataPanes[1]}
+						/>
+						<label class="input-filled-label" for="rightPaneInput">Data for Left Center Pane:</label
+						>
+					</div>
+				</div>
+			{:else}
+				<button class="btn btn-warning" onclick={() => panes.push(leftCenterPaneData)}>
+					Open pane 2
+				</button>
+			{/if}
+			{#if panes.some((pane) => pane.id === 'rightCenterPane')}
+				<div class="flex w-full grow flex-col gap-1">
+					<button class="btn btn-error" onclick={() => closePane('rightCenterPane')}>
+						Close pane 3
+					</button>
+					<div
+						class="input-filled input-error shadow-base-shadow w-100 grow rounded-md shadow-inner"
+					>
+						<input
+							type="text"
+							placeholder="Data for right Center Pane"
+							class="input input-xl"
+							id="rightCenterPaneInput"
+							bind:value={dataPanes[2]}
+						/>
+						<label class="input-filled-label" for="rightCenterPaneInput"
+							>Data for Right Center Pane:</label
+						>
+					</div>
+				</div>
+			{:else}
+				<button class="btn btn-error" onclick={() => panes.push(rightCenterPaneData)}>
+					Open pane 3
+				</button>
+			{/if}
+			{#if panes.some((pane) => pane.id === 'rightPane')}
+				<div class="flex w-full grow flex-col gap-1">
+					<button class="btn btn-info" onclick={() => closePane('rightPane')}>Close pane 4</button>
+					<div
+						class="input-filled input-info shadow-base-shadow w-100 grow rounded-md shadow-inner"
+					>
+						<input
+							type="text"
+							placeholder="Data for left Center Pane"
+							class="input input-xl"
+							id="leftCenterPaneInput"
+							bind:value={dataPanes[3]}
+						/>
+						<label class="input-filled-label" for="leftCenterPaneInput">Data for Right Pane:</label>
+					</div>
+				</div>
+			{:else}
+				<button class="btn btn-info" onclick={() => panes.push(rightPaneData)}>
+					Open pane 4
+				</button>
+			{/if}
+		</div>
+
+		<!-- <div {@attach () => {
+			panes = [
+					{ id: 'leftPane', content: leftPane, minWidth: 50, maxWidth: 500 },
+					{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
+					{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
+					{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 },
+				];
+			}}> -->
+		<Panes panesData={panes} {closePane} />
+		<HorizontalRule />
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
