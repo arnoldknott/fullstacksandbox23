@@ -143,7 +143,7 @@
 	</div>
 {/snippet}
 
-<div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
+<div class="bg-base-200 flex flex-col rounded-2xl">
 	<div class="flex h-screen w-full p-4" bind:clientWidth={allPanesWidth}>
 		{#each panesData as pane, i (pane.id)}
 			<div

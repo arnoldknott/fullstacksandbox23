@@ -307,12 +307,29 @@
 	let dualPaneContainer: HTMLDivElement | null = $state(null);
 
 	// filled in second script tag underneath - after creation of snippets
+	const leftPaneData = {
+		id: 'leftPane',
+		content: leftPane,
+		initialRelativeWidth: 1 / 2,
+		minWidth: 50,
+		maxWidth: 500
+	};
+	const leftCenterPaneData = { id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 };
+	const rightCenterPaneData = {
+		id: 'rightCenterPane',
+		content: rightCenterPane,
+		minWidth: 250,
+		maxWidth: 1000
+	};
+	const rightPaneData = { id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 };
+
 	let panes: PaneData[] = $state([
-		{ id: 'leftPane', content: leftPane, initialRelativeWidth: 1 / 2, minWidth: 50, maxWidth: 500 },
-		{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
-		{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
-		{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 }
+		leftPaneData,
+		leftCenterPaneData,
+		rightCenterPaneData,
+		rightPaneData
 	]);
+	let panesIds: string[] = $derived(panes.map((pane) => pane.id));
 
 	let dataPanes: string[] = $state([
 		'Hello Pane 1!',
@@ -492,10 +509,14 @@
 {/snippet}
 
 {#snippet leftPane()}
-	<div class="flex grow-3 flex-col gap-2 p-4">
+	<div class="flex flex-col gap-2 p-4">
 		{dataPanes[0]}
 		{#if panes.some((pane) => pane.id === 'leftPane')}
 			<button class="btn btn-success" onclick={() => closePane('leftPane')}>Close pane 1</button>
+		{:else}
+			<button class="btn btn-primary" onclick={() => panes.push(leftPaneData)}>
+				Open pane 1
+			</button>
 		{/if}
 		{#if panes.some((pane) => pane.id === 'leftCenterPane')}
 			<button class="btn btn-warning" onclick={() => closePane('leftCenterPane')}
@@ -524,7 +545,7 @@
 	<div class="p-4">
 		{dataPanes[2]}
 	</div>
-	<div class="@container/rightCenterPane grow-3 rounded-lg">
+	<div class="@container/rightCenterPane rounded-lg">
 		<div
 			class="bg-error-container/50 text-error-container-content @8xl/rightCenterPane:grid-cols-9 @10xl/rightCenterPane:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/rightCenterPane:grid-cols-2 @sm/rightCenterPane:grid-cols-3 @md/rightCenterPane:grid-cols-4 @xl/rightCenterPane:grid-cols-5 @2xl/rightCenterPane:grid-cols-6 @4xl/rightCenterPane:grid-cols-7 @6xl/rightCenterPane:grid-cols-8"
 		>
@@ -560,7 +581,7 @@
 {#snippet rightPane()}
 	<div class="p-4">
 		{dataPanes[3]}
-		<div class="input-filled input-success shadow-base-shadow w-100 grow rounded-md shadow-inner">
+		<div class="input-filled input-success shadow-base-shadow w-100 rounded-md shadow-inner">
 			<input
 				type="text"
 				placeholder="Data for left Pane"
@@ -1791,11 +1812,6 @@
 				</div>
 			</div>
 		</div>
-		<p class="body mt-5">
-			Refactoring to put panes and resizers in arrays and loop over them to reduce code duplication
-			and make it easier to switch between dual and triple panes and potentially extend to more
-			panes in the future
-		</p>
 
 		<!-- {#snippet alphabet(color: string)}
 		
@@ -1899,55 +1915,99 @@
 			{@render alphabet('info')}
 		{/snippet} -->
 
-		<div class="flex flex-row p-4">
-			<div class="input-filled input-success shadow-base-shadow w-100 grow rounded-md shadow-inner">
-				<input
-					type="text"
-					placeholder="Data for left Pane"
-					class="input input-xl"
-					id="leftPaneInput"
-					bind:value={dataPanes[0]}
-				/>
-				<label class="input-filled-label" for="leftPaneInput">Data for Left Pane:</label>
-			</div>
-			<div
-				class="input-filled input-warning shadow-base-shadow ml-4 w-100 grow rounded-md shadow-inner"
-			>
-				<input
-					type="text"
-					placeholder="Data for right Pane"
-					class="input input-xl"
-					id="rightPaneInput"
-					bind:value={dataPanes[1]}
-				/>
-				<label class="input-filled-label" for="rightPaneInput">Data for Left Center Pane:</label>
-			</div>
-			<div
-				class="input-filled input-error shadow-base-shadow ml-4 w-100 grow rounded-md shadow-inner"
-			>
-				<input
-					type="text"
-					placeholder="Data for right Center Pane"
-					class="input input-xl"
-					id="rightCenterPaneInput"
-					bind:value={dataPanes[2]}
-				/>
-				<label class="input-filled-label" for="rightCenterPaneInput"
-					>Data for Right Center Pane:</label
-				>
-			</div>
-			<div
-				class="input-filled input-info shadow-base-shadow ml-4 w-100 grow rounded-md shadow-inner"
-			>
-				<input
-					type="text"
-					placeholder="Data for left Center Pane"
-					class="input input-xl"
-					id="leftCenterPaneInput"
-					bind:value={dataPanes[3]}
-				/>
-				<label class="input-filled-label" for="leftCenterPaneInput">Data for Right Pane:</label>
-			</div>
+		<div class="flex flex-row gap-2 p-4">
+			{#if panes.some((pane) => pane.id === 'leftPane')}
+				<div class="flex w-full grow flex-col gap-1">
+					<button class="btn btn-success" onclick={() => closePane('leftPane')}>Close pane 1</button
+					>
+					<div
+						class="input-filled input-success shadow-base-shadow w-full grow rounded-md shadow-inner"
+					>
+						<input
+							type="text"
+							placeholder="Data for left Pane"
+							class="input input-xl"
+							id="leftPaneInput"
+							bind:value={dataPanes[0]}
+						/>
+						<label class="input-filled-label" for="leftPaneInput">Data for Left Pane:</label>
+					</div>
+				</div>
+			{:else}
+				<button class="btn btn-success" onclick={() => panes.push(leftPaneData)}>
+					Open pane 1
+				</button>
+			{/if}
+			{#if panes.some((pane) => pane.id === 'leftCenterPane')}
+				<div class="flex w-full grow flex-col gap-1">
+					<button class="btn btn-warning" onclick={() => closePane('leftCenterPane')}
+						>Close pane 2</button
+					>
+					<div
+						class="input-filled input-warning shadow-base-shadow w-100 grow rounded-md shadow-inner"
+					>
+						<input
+							type="text"
+							placeholder="Data for right Pane"
+							class="input input-xl"
+							id="rightPaneInput"
+							bind:value={dataPanes[1]}
+						/>
+						<label class="input-filled-label" for="rightPaneInput">Data for Left Center Pane:</label
+						>
+					</div>
+				</div>
+			{:else}
+				<button class="btn btn-warning" onclick={() => panes.push(leftCenterPaneData)}>
+					Open pane 2
+				</button>
+			{/if}
+			{#if panes.some((pane) => pane.id === 'rightCenterPane')}
+				<div class="flex w-full grow flex-col gap-1">
+					<button class="btn btn-error" onclick={() => closePane('rightCenterPane')}>
+						Close pane 3
+					</button>
+					<div
+						class="input-filled input-error shadow-base-shadow w-100 grow rounded-md shadow-inner"
+					>
+						<input
+							type="text"
+							placeholder="Data for right Center Pane"
+							class="input input-xl"
+							id="rightCenterPaneInput"
+							bind:value={dataPanes[2]}
+						/>
+						<label class="input-filled-label" for="rightCenterPaneInput"
+							>Data for Right Center Pane:</label
+						>
+					</div>
+				</div>
+			{:else}
+				<button class="btn btn-error" onclick={() => panes.push(rightCenterPaneData)}>
+					Open pane 3
+				</button>
+			{/if}
+			{#if panes.some((pane) => pane.id === 'rightPane')}
+				<div class="flex w-full grow flex-col gap-1">
+					<button class="btn btn-info" onclick={() => closePane('rightPane')}>Close pane 4</button>
+					<div
+						class="input-filled input-info shadow-base-shadow w-100 grow rounded-md shadow-inner"
+					>
+						<input
+							type="text"
+							placeholder="Data for left Center Pane"
+							class="input input-xl"
+							id="leftCenterPaneInput"
+							bind:value={dataPanes[3]}
+						/>
+						<label class="input-filled-label" for="leftCenterPaneInput">Data for Right Pane:</label>
+					</div>
+				</div>
+			{:else}
+				<button class="btn btn-info" onclick={() => panes.push(rightPaneData)}>
+					Open pane 4
+				</button>
+			{/if}
 		</div>
 
 		<!-- <div {@attach () => {
