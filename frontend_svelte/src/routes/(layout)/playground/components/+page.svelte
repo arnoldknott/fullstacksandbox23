@@ -329,7 +329,7 @@
 		rightCenterPaneData,
 		rightPaneData
 	]);
-	let panesIds: string[] = $derived(panes.map((pane) => pane.id));
+	// let panesIds: string[] = $derived(panes.map((pane) => pane.id));
 
 	let dataPanes: string[] = $state([
 		'Hello Pane 1!',
@@ -339,17 +339,12 @@
 	]);
 
 	const closePane = (paneId: string) => {
-		console.log('=== +page - closePane - paneId ===');
-		console.log(paneId);
-		console.log('=== +page - closePane - panes before filter ===');
-		console.log($state.snapshot(panes));
-		// panes = panes.filter((pane) => pane.id !== paneId);
-		const index = panes.findIndex((pane) => pane.id === paneId);
-		if (index > -1) {
-			panes.splice(index, 1);
-		}
-		console.log('=== +page - closePane - panes after filter ===');
-		console.log($state.snapshot(panes));
+		panes = panes.filter((pane) => pane.id !== paneId);
+		// TBD: consider to replace filter with findIndex and splice, if issues with reactivity occur
+		// const index = panes.findIndex((pane) => pane.id === paneId);
+		// if (index > -1) {
+		// 	panes.splice(index, 1);
+		// }
 	};
 
 	let resizeLeftTriplePanesActive: boolean = $state(false);
@@ -1748,7 +1743,7 @@
 
 	<div class={develop ? 'block' : 'hidden'}>
 		<Title id="vertical-diffs-dev">🚧 Vertical Diffs 🚧</Title>
-		<div class="mt-10 flex flex-col">
+		<div class="mt-10 flex flex-col overflow-hidden">
 			<p class="title text-primary">Vertical resizing - for mobile. (missing height adjustment)</p>
 
 			<div class="diff aspect-9/16 rotate-90 rounded-2xl">
@@ -2032,14 +2027,6 @@
 			{/if}
 		</div>
 
-		<!-- <div {@attach () => {
-			panes = [
-					{ id: 'leftPane', content: leftPane, minWidth: 50, maxWidth: 500 },
-					{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
-					{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
-					{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 },
-				];
-			}}> -->
 		<Panes panesData={panes} {closePane} />
 		<HorizontalRule />
 	</div>
