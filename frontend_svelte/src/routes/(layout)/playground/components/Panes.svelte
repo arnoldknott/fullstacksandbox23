@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
-	import { get } from 'svelte/store';
 	export type PaneData = {
 		id: string;
 		content: Snippet;
@@ -157,7 +156,9 @@
 				bind:clientWidth={
 					null,
 					(clientWidth) => {
-						typeof clientWidth === 'number' && setPanesSettings(pane.id, { width: clientWidth });
+						if (typeof clientWidth === 'number') {
+							setPanesSettings(pane.id, { width: clientWidth });
+						}
 					}
 				}
 				style:width={panesSettings.get(pane.id)?.width

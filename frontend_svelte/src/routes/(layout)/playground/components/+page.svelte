@@ -1747,7 +1747,7 @@
 		<div class="mt-10 flex flex-col overflow-hidden">
 			<p class="title text-primary">Vertical resizing - for mobile.</p>
 
-			<div class="diff aspect-9/16 rotate-90 rounded-2xl" style:height={'500px'}>
+			<div class="diff aspect-9/16 rotate-90 rounded-2xl" style:height="500px">
 				<div class="diff-item-1">
 					<img
 						class="-rotate-90 object-contain"
