@@ -1624,6 +1624,7 @@
 		</div>
 		<HorizontalRule />
 	</div>
+
 	<!-- {#snippet paneTile(color: string, content: string)}
 		<div
 			class="bg-{color}-container text-{color}-container-content display h-25 w-25 content-center rounded-xl text-center"
@@ -2028,6 +2029,91 @@
 
 		<Panes panesData={panes} {closePane} />
 		<HorizontalRule />
+	</div>
+
+	<div class={prod ? 'block' : 'hidden'}>
+		<Title id="tabs">Tabs</Title>
+		{@render underConstruction()}
+	</div>
+
+	<div class={develop ? 'block' : 'hidden'}>
+		<Title id="tabs-dev">🚧 Tabs 🚧</Title>
+		<div class="bg-base-200 mt-10 rounded-xl">
+			<div
+				class="tabs tabs-lifted bg-base-200 shadow-outline h-full rounded-lg"
+				aria-label="Tabs"
+				role="tablist"
+				aria-orientation="horizontal"
+				{@attach initTabs}
+			>
+				<button
+					type="button"
+					class="tab active-tab:tab-active active w-full"
+					id="left-tabs-lifted"
+					data-tab="#left-tab-content"
+					aria-controls="left-tab-content"
+					role="tab"
+					aria-selected="true"
+				>
+					<!-- <div
+						class="active-tab:bg-primary-container active:tab:text-primary-container-content h-full w-full"
+					>
+						Left
+					</div> -->
+					<!-- Left -->
+					<div class="active-tab:text-secondary">Left</div>
+				</button>
+				<button
+					type="button"
+					class="tab active-tab:tab-active w-full"
+					id="center-tabs-lifted"
+					data-tab="#center-tabs-content"
+					aria-controls="center-tabs-content"
+					role="tab"
+					aria-selected="false"
+				>
+					<div class="active-tab:text-neutral">Center</div>
+				</button>
+				<button
+					type="button"
+					class="tab active-tab:tab-active w-full"
+					id="right-tabs-lifted"
+					data-tab="#right-tabs-content"
+					aria-controls="right-tabs-content"
+					role="tab"
+					aria-selected="false"
+				>
+					<div class="active-tab:text-info">Right</div>
+				</button>
+			</div>
+
+			<div class=" h-100">
+				<div
+					id="left-tab-content"
+					class="h-full overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="left-tabs-lifted"
+				>
+					{@render alphabet('secondary')}
+				</div>
+				<div
+					id="center-tabs-content"
+					class="hidden h-full overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="center-tabs-lifted"
+				>
+					{@render alphabet('neutral')}
+				</div>
+				<div
+					id="right-tabs-content"
+					class="hidden h-full overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="right-tabs-lifted"
+				>
+					{@render alphabet('info')}
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
