@@ -1,14 +1,34 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
+	import { get } from 'svelte/store';
 	export type PaneData = {
 		id: string;
 		content: Snippet;
+		initialRelativeWidth?: number; // between 0 and 1
+		// defines the initial width of the pane relative to the total width of all panes
+		// might be scaled to lower, in case there the total number is more than 1 or
+		// there is not enough space for all panes at their initial widths
+		// per default a pane gets at least the width of 1 / number of panes
 		minWidth?: number;
 		maxWidth?: number;
 	};
 	let { panesData, closePane }: { panesData: PaneData[]; closePane?: (paneId: string) => void } =
 		$props();
+
+	let allPanesWidth: number = $state(0);
+
+	const getInitalAbsolutWidth = (initalRelativeWidth: number = 1 / panesData.length) => {
+		// In case not all panes have initialRelativeWidth defined,
+		// distribute remaining width equally
+		// and prevent total relative width from exceeding 1.
+		console.log(panesData.length);
+		const allRelativeWidths = panesData.reduce(
+			(sum, pane) => sum + (pane.initialRelativeWidth ?? 1 / panesData.length),
+			0
+		);
+		return (allPanesWidth * initalRelativeWidth) / allRelativeWidths;
+	};
 
 	type PaneSettings = {
 		paneIndex: number;
@@ -20,12 +40,12 @@
 
 	let panesSettings: SvelteMap<string, PaneSettings> = new SvelteMap<string, PaneSettings>();
 
-    const setPanesSettings = (paneId: string, settings: Partial<PaneSettings>) => {
-        panesSettings.set(paneId, {
-            ...panesSettings.get(paneId)!,
-            ...settings
-        });
-    }
+	const setPanesSettings = (paneId: string, settings: Partial<PaneSettings>) => {
+		panesSettings.set(paneId, {
+			...panesSettings.get(paneId)!,
+			...settings
+		});
+	};
 
 	let paneElements: SvelteMap<string, HTMLDivElement> = new SvelteMap<string, HTMLDivElement>();
 
@@ -34,7 +54,7 @@
 			panesSettings.set(paneData.id, {
 				paneIndex: index,
 				left: NaN,
-				width: 300,
+				width: getInitalAbsolutWidth(paneData.initialRelativeWidth),
 				resizerElement: null,
 				resizerActive: false
 			});
@@ -42,7 +62,7 @@
 	});
 
 	const activateResizer = (paneId: string) => {
-        setPanesSettings(paneId, {resizerActive: true});
+		setPanesSettings(paneId, { resizerActive: true });
 	};
 
 	const resizePanes = (event: PointerEvent, rightResizingPaneIndex: number) => {
@@ -63,8 +83,8 @@
 		// update left in inforamtion in both panes (needs initialization)
 		const leftPaneElement = paneElements.get(leftId);
 		const rightPaneElement = paneElements.get(rightId);
-        setPanesSettings(leftId, {left: leftPaneElement?.getBoundingClientRect().left ?? 0});
-        setPanesSettings(rightId, {left: rightPaneElement?.getBoundingClientRect().left ?? 0});
+		setPanesSettings(leftId, { left: leftPaneElement?.getBoundingClientRect().left ?? 0 });
+		setPanesSettings(rightId, { left: rightPaneElement?.getBoundingClientRect().left ?? 0 });
 		const leftPane = panesSettings.get(leftId)!;
 		const rightPane = panesSettings.get(rightId)!;
 		// Keep only the two adjacent panes affected by this resizer.
@@ -83,11 +103,13 @@
 			leftUpperBound = leftLowerBound;
 		}
 		// Compute left pane candidate width from absolute pointer position
-        const leftCandidate = event.clientX - panesSettings.get(leftId)!.left;
-        // Clamp left within derived bounds
-        setPanesSettings(leftId, {width: Math.max(leftLowerBound, Math.min(leftCandidate, leftUpperBound))});
-        // Right width is whatever remains from the pair total (no resizer width involved here)
-        setPanesSettings(rightId, {width: pairTotalWidth - panesSettings.get(leftId)!.width});
+		const leftCandidate = event.clientX - panesSettings.get(leftId)!.left;
+		// Clamp left within derived bounds
+		setPanesSettings(leftId, {
+			width: Math.max(leftLowerBound, Math.min(leftCandidate, leftUpperBound))
+		});
+		// Right width is whatever remains from the pair total (no resizer width involved here)
+		setPanesSettings(rightId, { width: pairTotalWidth - panesSettings.get(leftId)!.width });
 	};
 </script>
 
@@ -101,7 +123,7 @@
 	}}
 	onpointerup={() => {
 		const keys = panesSettings.keys();
-        keys.forEach((key) =>  setPanesSettings(key, {resizerActive: false}));
+		keys.forEach((key) => setPanesSettings(key, { resizerActive: false }));
 	}}
 />
 
@@ -122,7 +144,7 @@
 {/snippet}
 
 <div class="bg-base-200 mt-10 flex flex-col rounded-2xl">
-	<div class="flex h-screen w-full p-4">
+	<div class="flex h-screen w-full p-4" bind:clientWidth={allPanesWidth}>
 		{#each panesData as pane, i (pane.id)}
 			<div
 				class="bg-base-250 grow overflow-y-scroll rounded-xl"
@@ -134,17 +156,22 @@
 				}
 				bind:clientWidth={
 					null,
-					(clientWidth) => { typeof clientWidth === 'number' && setPanesSettings(pane.id, {width: clientWidth});
+					(clientWidth) => {
+						typeof clientWidth === 'number' && setPanesSettings(pane.id, { width: clientWidth });
 					}
 				}
-				style:width={(panesSettings.get(pane.id)?.width ?? 300) + 'px'}
+				style:width={panesSettings.get(pane.id)?.width
+					? panesSettings.get(pane.id)?.width + 'px'
+					: null}
 			>
 				{#if closePane}
 					<div class="flex justify-end">
 						<button
 							class=" btn btn-text btn-sm btn-circle"
 							aria-label="Close Button"
-							onclick={() => {closePane(pane.id);}}
+							onclick={() => {
+								closePane(pane.id);
+							}}
 						>
 							<span class="icon-[tabler--x] size-5"></span>
 						</button>
@@ -162,7 +189,6 @@
 				</div>
 				{@render pane.content?.()}
 			</div>
-
 			{#if i !== panesData.length - 1}
 				{@render resizer(panesData[i + 1].id)}
 			{/if}

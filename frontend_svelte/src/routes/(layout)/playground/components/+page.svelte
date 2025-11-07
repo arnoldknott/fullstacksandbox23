@@ -308,7 +308,7 @@
 
 	// filled in second script tag underneath - after creation of snippets
 	let panes: PaneData[] = $state([
-		{ id: 'leftPane', content: leftPane, minWidth: 50, maxWidth: 500 },
+		{ id: 'leftPane', content: leftPane, initialRelativeWidth: 1 / 2, minWidth: 50, maxWidth: 500 },
 		{ id: 'leftCenterPane', content: leftCenterPane, minWidth: 250 },
 		{ id: 'rightCenterPane', content: rightCenterPane, minWidth: 250, maxWidth: 1000 },
 		{ id: 'rightPane', content: rightPane, minWidth: 250, maxWidth: 400 }
@@ -492,7 +492,7 @@
 {/snippet}
 
 {#snippet leftPane()}
-	<div class="flex flex-col gap-2 p-4">
+	<div class="flex grow-3 flex-col gap-2 p-4">
 		{dataPanes[0]}
 		{#if panes.some((pane) => pane.id === 'leftPane')}
 			<button class="btn btn-success" onclick={() => closePane('leftPane')}>Close pane 1</button>
@@ -524,7 +524,7 @@
 	<div class="p-4">
 		{dataPanes[2]}
 	</div>
-	<div class="@container/rightCenterPane grow-2 rounded-lg">
+	<div class="@container/rightCenterPane grow-3 rounded-lg">
 		<div
 			class="bg-error-container/50 text-error-container-content @8xl/rightCenterPane:grid-cols-9 @10xl/rightCenterPane:grid-cols-10 grid h-full grid-cols-1 gap-4 overflow-y-scroll rounded-lg p-4 @xs/rightCenterPane:grid-cols-2 @sm/rightCenterPane:grid-cols-3 @md/rightCenterPane:grid-cols-4 @xl/rightCenterPane:grid-cols-5 @2xl/rightCenterPane:grid-cols-6 @4xl/rightCenterPane:grid-cols-7 @6xl/rightCenterPane:grid-cols-8"
 		>
