@@ -1744,9 +1744,9 @@
 	<div class={develop ? 'block' : 'hidden'}>
 		<Title id="vertical-diffs-dev">🚧 Vertical Diffs 🚧</Title>
 		<div class="mt-10 flex flex-col overflow-hidden">
-			<p class="title text-primary">Vertical resizing - for mobile. (missing height adjustment)</p>
+			<p class="title text-primary">Vertical resizing - for mobile.</p>
 
-			<div class="diff aspect-9/16 rotate-90 rounded-2xl">
+			<div class="diff aspect-9/16 rotate-90 rounded-2xl" style:height={'500px'}>
 				<div class="diff-item-1">
 					<img
 						class="-rotate-90 object-contain"
@@ -1765,8 +1765,7 @@
 				<div class="diff-resizer"></div>
 			</div>
 			<p class="caption text-primary-container-content mt-2 text-center text-sm">
-				Figure out how to avoid the manual fix with -my-100 and switch out the resizing handle to
-				vertical double arrow
+				Switch the resizing handle to vertical double arrow
 			</p>
 		</div>
 
