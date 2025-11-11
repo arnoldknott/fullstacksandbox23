@@ -25,33 +25,30 @@
 <Display>User Interface Elements</Display>
 
 <div class="mx-5 my-5 grid grid-cols-12 gap-5">
-	<Heading
-		id="navigation-elements"
-		class="col-span-12 lg:col-start-2 lg:col-end-11 xl:col-span-6 xl:col-start-1 xl:col-end-6 "
-	>
-		Navigation Elements
-	</Heading>
 	<div
-		class="col-span-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:col-start-2 lg:col-end-11 xl:col-span-6 xl:col-start-1 xl:col-end-6"
+		class="col-span-12 md:col-start-2 md:col-end-11 xl:col-span-6 xl:col-start-1 xl:col-end-7 2xl:col-start-2 2xl:col-end-6"
 	>
-		{#each navigation as item (item.name)}
-			<NavigationCard title={item.name} href={item.url}>
-				{item.description}
-			</NavigationCard>
-		{/each}
+		<Heading id="navigation-elements">Navigation Elements</Heading>
+		<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+			{#each navigation as item (item.name)}
+				<NavigationCard title={item.name} href={item.url}>
+					{item.description}
+				</NavigationCard>
+			{/each}
+		</div>
 	</div>
 
-	<Heading
-		id="components"
-		class="col-span-12 lg:col-start-2 lg:col-end-11 xl:col-span-6 xl:col-start-7 xl:col-end-12"
+	<div
+		class="col-span-12 md:col-start-2 md:col-end-11 xl:col-span-6 xl:col-start-7 xl:col-end-12 xl:mt-30 2xl:col-start-8 2xl:col-end-11"
 	>
-		Components
-	</Heading>
+		<Heading id="components">Components</Heading>
+		<div>Components coming here.</div>
+	</div>
 
-	<Heading
-		id="services"
-		class="col-span-12 lg:col-start-2 lg:col-end-11 xl:col-span-6 xl:col-start-7 xl:col-end-12"
+	<div
+		class="col-span-12 md:col-start-2 md:col-end-11 xl:col-span-6 xl:col-start-1 xl:col-end-7 xl:mt-30 2xl:col-start-2 2xl:col-end-6"
 	>
-		Services
-	</Heading>
+		<Heading id="services">Services</Heading>
+		<div>Services coming here.</div>
+	</div>
 </div>
