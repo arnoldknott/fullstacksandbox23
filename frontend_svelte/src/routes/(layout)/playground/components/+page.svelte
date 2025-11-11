@@ -1789,7 +1789,7 @@
 		</div>
 	{/snippet}
 
-	<div class={prod ? 'block' : 'hidden'}>
+	<div class="{prod ? 'block' : 'hidden'} col-span-2">
 		<Title id="dual-panes">Dual Panes</Title>
 		{@render underConstruction()}
 	</div>
@@ -1812,7 +1812,7 @@
 	<HorizontalRule />
 	<!-- </div> -->
 
-	<div class={prod ? 'block' : 'hidden'}>
+	<div class="{prod ? 'block' : 'hidden'} col-span-2">
 		<Title id="triple-panes">Triple Panes</Title>
 		{@render underConstruction()}
 	</div>
@@ -2031,13 +2031,14 @@
 		<HorizontalRule />
 	</div>
 
-	<div class={prod ? 'block' : 'hidden'}>
+	<div class="{prod ? 'block' : 'hidden'} col-span-2">
 		<Title id="tabs">Tabs</Title>
 		{@render underConstruction()}
 	</div>
 
-	<div class={develop ? 'block' : 'hidden'}>
+	<div class="{develop ? 'block' : 'hidden'} col-span-2">
 		<Title id="tabs-dev">🚧 Tabs 🚧</Title>
+		<p class="title text-primary mt-5">Settings from FlyonUI</p>
 		<div class="bg-base-200 mt-10 rounded-xl">
 			<div
 				class="tabs tabs-lifted bg-base-200 shadow-outline h-full rounded-lg"
@@ -2055,13 +2056,7 @@
 					role="tab"
 					aria-selected="true"
 				>
-					<!-- <div
-						class="active-tab:bg-primary-container active:tab:text-primary-container-content h-full w-full"
-					>
-						Left
-					</div> -->
-					<!-- Left -->
-					<div class="active-tab:text-secondary">Left</div>
+					Left
 				</button>
 				<button
 					type="button"
@@ -2072,7 +2067,7 @@
 					role="tab"
 					aria-selected="false"
 				>
-					<div class="active-tab:text-neutral">Center</div>
+					Center
 				</button>
 				<button
 					type="button"
@@ -2083,11 +2078,11 @@
 					role="tab"
 					aria-selected="false"
 				>
-					<div class="active-tab:text-info">Right</div>
+					Right
 				</button>
 			</div>
 
-			<div class=" h-100">
+			<div class="h-100">
 				<div
 					id="left-tab-content"
 					class="h-full overflow-scroll"
@@ -2109,6 +2104,78 @@
 					class="hidden h-full overflow-scroll"
 					role="tabpanel"
 					aria-labelledby="right-tabs-lifted"
+				>
+					{@render alphabet('info')}
+				</div>
+			</div>
+		</div>
+
+		<p class="title text-primary mt-5">Color configured with Material Design</p>
+		<div class="bg-base-200 mt-10 rounded-xl">
+			<div
+				class="tabs tabs-lifted bg-base-200 shadow-outline h-full rounded-lg"
+				aria-label="Tabs styled with Material Design"
+				role="tablist"
+				aria-orientation="horizontal"
+				{@attach initTabs}
+			>
+				<button
+					type="button"
+					class="tab active-tab:bg-accent-container active:bg-accent active w-full"
+					id="left-material-tabs"
+					data-tab="#left-material-tabs-content"
+					aria-controls="left-material-tabs-content"
+					role="tab"
+					aria-selected="true"
+				>
+					<div class="active-tab:text-accent">Left</div>
+				</button>
+				<button
+					type="button"
+					class="tab active-tab:bg-neutral-container active:bg-neutral w-full"
+					id="center-material-tabs"
+					data-tab="#center-material-tabs-content"
+					aria-controls="center-material-tabs-content"
+					role="tab"
+					aria-selected="false"
+				>
+					<div class="active-tab:text-neutral">Center</div>
+				</button>
+				<button
+					type="button"
+					class="tab active-tab:bg-info-container active:bg-info bg-success-container w-full"
+					id="right-material-tabs"
+					data-tab="#right-material-tabs-content"
+					aria-controls="right-material-tabs-content"
+					role="tab"
+					aria-selected="false"
+				>
+					<div class="active-tab:text-info text-success-container-content">Right</div>
+				</button>
+			</div>
+
+			<div class=" h-100">
+				<div
+					id="left-material-tabs-content"
+					class="h-full overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="left-material-tabs"
+				>
+					{@render alphabet('accent')}
+				</div>
+				<div
+					id="center-material-tabs-content"
+					class="hidden h-full overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="center-material-tabs"
+				>
+					{@render alphabet('neutral')}
+				</div>
+				<div
+					id="right-material-tabs-content"
+					class="hidden h-full overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="right-material-tabs"
 				>
 					{@render alphabet('info')}
 				</div>
