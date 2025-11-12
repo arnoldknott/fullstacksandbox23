@@ -2442,14 +2442,14 @@
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
-		<Title id="drawer">Drawer (Sidebar)</Title>
+		<Title id="drawer">Drawer</Title>
 		{@render underConstruction()}
 	</div>
 
 	<!-- This local override works:
 		style="background-color: var(--my-color); color: var(--md-sys-color-on-primary);" -->
 	<div class={develop ? 'block' : 'hidden'}>
-		<Title id="drawer-dev">🚧 Drawer (Sidebar) 🚧</Title>
+		<Title id="drawer-dev">🚧 Drawer 🚧</Title>
 		<button
 			type="button"
 			class="btn btn-primary"
