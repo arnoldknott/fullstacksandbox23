@@ -6,15 +6,24 @@
 		{
 			name: 'Top Navbar',
 			description:
-				'The top navigation bar across the application for top level application navigation and user login and logout.',
+				'across the upper part of the screent for top level application navigation and user login and logout.',
 			url: 'user-interface/navbar'
 		},
 		{
 			name: 'Sidebar',
-			description: 'The sidebar navigation for secondary application navigation.',
+			description: 'on the side of the screen for navigation for secondary application navigation.',
 			url: 'user-interface/sidebar'
+		},
+		{
+			name: 'Panes',
+			description: 'sectioning the screen for displaying content in a split view.',
+			url: 'user-interface/panes'
+		},
+		{
+			name: 'Tabs',
+			description: 'switching to different aspects of a specific content.',
+			url: 'user-interface/tabs'
 		}
-		// {}
 	];
 </script>
 
