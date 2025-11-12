@@ -2082,10 +2082,10 @@
 				</button>
 			</div>
 
-			<div class="h-100">
+			<div class="h-full max-h-100">
 				<div
 					id="left-tab-content"
-					class="h-full overflow-scroll"
+					class="h-full max-h-100 overflow-scroll"
 					role="tabpanel"
 					aria-labelledby="left-tabs-lifted"
 				>
@@ -2093,7 +2093,7 @@
 				</div>
 				<div
 					id="center-tabs-content"
-					class="hidden h-full overflow-scroll"
+					class="hidden h-full max-h-100 overflow-scroll"
 					role="tabpanel"
 					aria-labelledby="center-tabs-lifted"
 				>
@@ -2101,7 +2101,7 @@
 				</div>
 				<div
 					id="right-tabs-content"
-					class="hidden h-full overflow-scroll"
+					class="hidden h-full max-h-100 overflow-scroll"
 					role="tabpanel"
 					aria-labelledby="right-tabs-lifted"
 				>
@@ -2154,10 +2154,10 @@
 				</button>
 			</div>
 
-			<div class=" h-100">
+			<div class="h-full max-h-100">
 				<div
 					id="left-material-tabs-content"
-					class="h-full overflow-scroll"
+					class="h-full max-h-100 overflow-scroll"
 					role="tabpanel"
 					aria-labelledby="left-material-tabs"
 				>
@@ -2165,7 +2165,7 @@
 				</div>
 				<div
 					id="center-material-tabs-content"
-					class="hidden h-full overflow-scroll"
+					class="hidden h-full max-h-100 overflow-scroll"
 					role="tabpanel"
 					aria-labelledby="center-material-tabs"
 				>
@@ -2173,7 +2173,7 @@
 				</div>
 				<div
 					id="right-material-tabs-content"
-					class="hidden h-full overflow-scroll"
+					class="hidden h-full max-h-100 overflow-scroll"
 					role="tabpanel"
 					aria-labelledby="right-material-tabs"
 				>
