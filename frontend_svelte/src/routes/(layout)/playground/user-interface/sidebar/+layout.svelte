@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { initOverlay } from '$lib/userInterface';
+	import { initCollapse, initOverlay } from '$lib/userInterface';
 	import type { Snippet } from 'svelte';
 	let { children }: { children: Snippet } = $props();
 </script>
@@ -30,6 +30,7 @@
 						class="collapse-toggle collapse-open:bg-base-content/10"
 						id="menu-app"
 						data-collapse="#menu-app-collapse"
+						{@attach initCollapse}
 					>
 						<span class="icon-[tabler--apps] size-5"></span>
 						Apps
@@ -59,6 +60,7 @@
 								class="collapse-toggle collapse-open:bg-base-content/10"
 								id="sub-menu-academy"
 								data-collapse="#sub-menu-academy-collapse"
+								{@attach initCollapse}
 							>
 								<span class="icon-[tabler--book] size-5"></span>
 								Academy
@@ -86,6 +88,7 @@
 										class="collapse-toggle collapse-open:bg-base-content/10"
 										id="sub-menu-academy-stats"
 										data-collapse="#sub-menu-academy-stats-collapse"
+										{@attach initCollapse}
 									>
 										<span class="icon-[tabler--chart-bar] size-5"></span>
 										Stats
