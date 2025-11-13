@@ -7,7 +7,7 @@
 <div class="relative">
 	<dialog
 		id="collapsible-sidebar"
-		class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e pt-16 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
+		class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
 		tabindex="-1"
 		{@attach initOverlay}
 	>
@@ -129,9 +129,7 @@
 		</div>
 	</dialog>
 
-	<div
-		class="sm:overlay-layout-open:ps-64 bg-base-100 min-h-full pt-16 transition-all duration-300"
-	>
+	<div class="sm:overlay-layout-open:ps-64 bg-base-100 min-h-full transition-all duration-300">
 		<div class="px-2">
 			<button
 				type="button"
