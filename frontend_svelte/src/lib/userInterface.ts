@@ -27,3 +27,7 @@ export const initTabs: Attachment = (node: Element) => {
 export const initTooltip: Attachment = (node: Element) => {
 	window.HSTooltip.autoInit(node);
 };
+
+export const initScrollspy: Attachment = (node: Element) => {
+	window.HSScrollspy.autoInit(node);
+};

@@ -18,6 +18,7 @@ declare global {
 		HSOverlay: HSOverlay;
 		HSTabs: HSTabs;
 		HSTooltip: HSTooltip;
+		HSScrollspy: HSScrollspy;
 	}
 
 	namespace App {

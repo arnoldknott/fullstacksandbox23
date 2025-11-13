@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { initCollapse, initOverlay } from '$lib/userInterface';
+	import { initCollapse, initOverlay, initScrollspy } from '$lib/userInterface';
 	import type { Snippet } from 'svelte';
 	let { children }: { children: Snippet } = $props();
 </script>
 
-<div class="relative">
+<div id="scrollspy-scrollable-parent" class="relative">
 	<dialog
 		id="collapsible-sidebar"
 		class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
@@ -12,20 +12,25 @@
 		{@attach initOverlay}
 	>
 		<div class="drawer-body px-2 pt-4">
-			<ul class="menu p-0">
-				<li>
-					<a href="./sidebar#loreum1">
+			<ul
+				class="menu sticky p-0"
+				data-scrollspy="#scrollspy"
+				data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
+				{@attach initScrollspy}
+			>
+				<li class="scrollspy-active:text-primary">
+					<a href="#loreum1">
 						<span class="icon-[tabler--home] size-5"></span>
 						Home
 					</a>
 				</li>
-				<li>
-					<a href="./sidebar#loreum2">
+				<li class="scrollspy-active:text-primary">
+					<a href="#loreum2">
 						<span class="icon-[tabler--user] size-5"></span>
 						Account
 					</a>
 				</li>
-				<li class="space-y-0.5">
+				<li data-scrollspy-group="" class="space-y-0.5">
 					<a
 						class="collapse-toggle collapse-open:bg-base-content/10"
 						id="menu-app"
@@ -43,14 +48,14 @@
 						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby="menu-app"
 					>
-						<li>
-							<a href="./sidebar#loreum3">
+						<li class="scrollspy-active:text-primary">
+							<a href="#loreum3">
 								<span class="icon-[tabler--message] size-5"></span>
 								Chat
 							</a>
 						</li>
-						<li>
-							<a href="./sidebar#loreum4">
+						<li class="scrollspy-active:text-primary">
+							<a href="#loreum4">
 								<span class="icon-[tabler--calendar] size-5"></span>
 								Calendar
 							</a>
@@ -72,13 +77,13 @@
 								aria-labelledby="sub-menu-academy"
 							>
 								<li>
-									<a href="./sidebar#loreum5">
+									<a href="#loreum5">
 										<span class="icon-[tabler--books] size-5"></span>
 										Courses
 									</a>
 								</li>
 								<li>
-									<a href="./sidebar#loreum6">
+									<a href="#loreum6">
 										<span class="icon-[tabler--list-details] size-5"></span>
 										Course details
 									</a>
@@ -101,7 +106,7 @@
 										aria-labelledby="sub-menu-academy-stats"
 									>
 										<li>
-											<a href="./sidebar#loreum7">
+											<a href="#loreum7">
 												<span class="icon-[tabler--chart-donut] size-5"></span>
 												Goals
 											</a>
@@ -113,14 +118,14 @@
 					</ul>
 				</li>
 				<li>
-					<a href="./sidebar#loreum8">
+					<a href="#loreum8">
 						<span class="icon-[tabler--mail] size-5"></span>
 						Email
 					</a>
 				</li>
 
 				<li>
-					<a href="./sidebar#loreum9">
+					<a href="#loreum9">
 						<span class="icon-[tabler--shopping-bag] size-5"></span>
 						Product
 					</a>
