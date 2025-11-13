@@ -5,7 +5,7 @@
 </script>
 
 <div id="scrollspy-scrollable-parent" class="relative">
-	<dialog
+	<aside
 		id="collapsible-sidebar"
 		class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
 		tabindex="-1"
@@ -13,7 +13,7 @@
 	>
 		<div class="drawer-body px-2 pt-4">
 			<ul
-				class="menu sticky p-0"
+				class="menu p-0"
 				data-scrollspy="#scrollspy"
 				data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
 				{@attach initScrollspy}
@@ -132,7 +132,7 @@
 				</li>
 			</ul>
 		</div>
-	</dialog>
+	</aside>
 
 	<div class="sm:overlay-layout-open:ps-64 bg-base-100 min-h-full transition-all duration-300">
 		<div class="px-2">
@@ -150,7 +150,7 @@
 		</div>
 	</div>
 
-	<div class="overlay-layout-open:ps-64 transition-all duration-300">
+	<div id="scrollspy" class="overlay-layout-open:ps-64 transition-all duration-300">
 		<p class="text-base-content/50 label label-large px-2 py-1">
 			Note, for demonstration of the sidebar, it is not all the way left in the window, but relative
 			to the content of this page.
