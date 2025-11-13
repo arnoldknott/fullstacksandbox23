@@ -58,7 +58,17 @@
 	<div
 		class="col-span-12 md:col-start-2 md:col-end-11 xl:col-span-6 xl:col-start-1 xl:col-end-7 xl:mt-30 2xl:col-start-2 2xl:col-end-6"
 	>
-		<Heading id="services">Services</Heading>
-		<div>Services coming here.</div>
+		<Heading id="services">Design</Heading>
+		<div>Theming of color, typography and spacing coming here.</div>
+	</div>
+
+	<div
+		class="col-span-12 md:col-start-2 md:col-end-11 xl:col-span-6 xl:col-start-7 xl:col-end-12 xl:mt-30 2xl:col-start-8 2xl:col-end-11"
+	>
+		<Heading id="components">Services</Heading>
+		<div>
+			Integrations, interfaces, identity management and content handling coming here. TBD: move
+			somewhere else or rename user interface.
+		</div>
 	</div>
 </div>
