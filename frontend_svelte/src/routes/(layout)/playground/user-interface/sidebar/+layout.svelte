@@ -4,7 +4,6 @@
 	let { children }: { children: Snippet } = $props();
 </script>
 
-<!-- FlyonUI Collapsible Sidebar Component -->
 <aside
 	id="collapsible-sidebar"
 	class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
