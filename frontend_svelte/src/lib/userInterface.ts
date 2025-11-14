@@ -4,6 +4,10 @@ export const initAccordion: Attachment = (node: Element) => {
 	window.HSAccordion.autoInit(node);
 };
 
+export const initCollapse: Attachment = (node: Element) => {
+	window.HSCollapse.autoInit(node);
+};
+
 export const initCarousel: Attachment = (node: Element) => {
 	window.HSCarousel.autoInit(node);
 };
@@ -22,4 +26,8 @@ export const initTabs: Attachment = (node: Element) => {
 
 export const initTooltip: Attachment = (node: Element) => {
 	window.HSTooltip.autoInit(node);
+};
+
+export const initScrollspy: Attachment = (node: Element) => {
+	window.HSScrollspy.autoInit(node);
 };
