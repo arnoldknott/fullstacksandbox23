@@ -2,7 +2,7 @@
 	let { repetition = 5 }: { repetition?: number } = $props();
 </script>
 
-{#each Array(repetition) as _, index}
+{#each Array(repetition) as _, index (index)}
 	<p>
 		Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae
 		pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean
