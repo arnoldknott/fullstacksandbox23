@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { initCollapse, initOverlay, initScrollspy } from '$lib/userInterface';
+	import { initOverlay, initScrollspy } from '$lib/userInterface';
 	import type { Snippet } from 'svelte';
 	let { children }: { children: Snippet } = $props();
 </script>
@@ -19,6 +19,7 @@
 					class="sticky top-0 text-sm leading-6"
 					data-scrollspy="#scrollspy"
 					data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
+					{@attach initScrollspy}
 				>
 					<li class="text-base-content text-xl font-medium">Index</li>
 					<li data-scrollspy-group="">

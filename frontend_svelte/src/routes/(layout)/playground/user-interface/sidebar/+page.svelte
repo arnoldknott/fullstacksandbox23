@@ -17,6 +17,11 @@
 			name: 'Integrate with Navbar',
 			description: '',
 			url: 'sidebar/navbar'
+		},
+		{
+			name: 'Combined Navbar and Scrollspy',
+			description: '',
+			url: 'sidebar/navbar-scrollspy'
 		}
 	];
 </script>
