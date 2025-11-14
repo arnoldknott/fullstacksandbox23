@@ -4,7 +4,115 @@
 	let { children }: { children: Snippet } = $props();
 </script>
 
-<div id="scrollspy-scrollable-parent" class="relative">
+<div class="h-screen w-screen pt-50">
+	<div id="scrollspy-scrollable-parent" class="max-h-96 overflow-y-auto">
+		<!-- <div class="grid grid-cols-5">
+			<div class="col-span-2 sm:col-span-1"> -->
+		<aside
+			id="collapsible-sidebar"
+			class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
+			tabindex="-1"
+			{@attach initOverlay}
+		>
+			<div class="drawer-body px-2 pt-4">
+				<ul
+					class="sticky top-0 text-sm leading-6"
+					data-scrollspy="#scrollspy"
+					data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
+				>
+					<li class="text-base-content text-xl font-medium">Index</li>
+					<li data-scrollspy-group="">
+						<a
+							href="#chapter-1"
+							class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
+						>
+							Chapter 1
+						</a>
+						<ul>
+							<li class="ms-0.5 sm:ms-4">
+								<a
+									href="#chapter-1-1"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+								>
+									<span class="icon-[tabler--point] size-4"></span>
+									Chapter 1-1
+								</a>
+							</li>
+							<li class="ms-0.5 sm:ms-4">
+								<a
+									href="#chapter-1-2"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+								>
+									<span class="icon-[tabler--point] size-4"></span>
+									Chapter 1-2
+								</a>
+							</li>
+						</ul>
+					</li>
+					<li>
+						<a
+							href="#chapter-2"
+							class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content block py-0.5 font-medium"
+						>
+							Chapter 2
+						</a>
+					</li>
+					<li data-scrollspy-group="">
+						<a
+							href="#chapter-3"
+							class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content block py-0.5 font-medium"
+						>
+							Chapter 3
+						</a>
+						<ul>
+							<li class="ms-0.5 sm:ms-4">
+								<a
+									href="#chapter-3-1"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+								>
+									<span class="icon-[tabler--point] size-4"></span>
+									Chapter 3-1
+								</a>
+							</li>
+							<li class="ms-0.5 sm:ms-4">
+								<a
+									href="#chapter-3-2"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+								>
+									<span class="icon-[tabler--point] size-4"></span>
+									Chapter 3-2
+								</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</aside>
+		<div class="sm:overlay-layout-open:ps-64 bg-base-100 transition-all duration-300">
+			<div class="px-2">
+				<button
+					type="button"
+					class="btn btn-text btn-square"
+					aria-haspopup="dialog"
+					aria-expanded="false"
+					aria-controls="collapsible-sidebar"
+					data-overlay="#collapsible-sidebar"
+					aria-label="Toggle Sidebar"
+				>
+					<span class="icon-[tabler--menu-2] size-5"></span>
+				</button>
+			</div>
+		</div>
+		<!-- <div class="col-span-3 sm:col-span-4"> -->
+		<div class="sm:overlay-layout-open:ps-64">
+			<div id="scrollspy" class="max-w-lg space-y-4 pe-1">
+				{@render children?.()}
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- <div id="scrollspy-scrollable-parent" class="relative">
 	<div class="grid grid-cols-4">
 		<div class="col-span-2 sm:col-span-1">
 			<aside
@@ -237,4 +345,4 @@
 			</div>
 		</div>
 	</div>
-</div>
+</div> -->
