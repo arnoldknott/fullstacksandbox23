@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { initCollapse, initOverlay, initScrollspy } from '$lib/userInterface';
 	import type { Snippet } from 'svelte';
 	let { children }: { children: Snippet } = $props();
@@ -17,13 +16,13 @@
 				<div class="drawer-body px-2 pt-4">
 					<ul class="menu p-0">
 						<li>
-							<a href={resolve('/')}>
+							<a href="/">
 								<span class="icon-[tabler--home] size-5"></span>
 								Home
 							</a>
 						</li>
 						<li>
-							<a href={resolve('/playground/user-interface/sidebar/scrollspy/')}>
+							<a href="./scrollspy/">
 								<span class="icon-[tabler--user] size-5"></span>
 								Account
 							</a>
