@@ -12,12 +12,12 @@
 			name: 'Adding Scrollspy',
 			description: '',
 			url: 'sidebar/scrollspy'
+		},
+		{
+			name: 'Integrate with Navbar',
+			description: '',
+			url: 'sidebar/navbar'
 		}
-		// {
-		// 	name: 'Integrate with Navbar',
-		// 	description: '',
-		// 	url: 'sidebar/navbar'
-		// }
 	];
 </script>
 
