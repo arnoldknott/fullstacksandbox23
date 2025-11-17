@@ -2,6 +2,7 @@
 	import { initCollapse, initOverlay, initScrollspy } from '$lib/userInterface';
 	import Display from '$components/Display.svelte';
 	import type { Snippet } from 'svelte';
+	import { resolve } from '$app/paths';
 	let { children }: { children: Snippet } = $props();
 </script>
 
@@ -212,14 +213,84 @@
 			tabindex="-1"
 		>
 			<div class="drawer-body px-2 pt-4">
-				<ul class="menu p-0">
-					<li>
-						<a href="#">
+				<ul
+					class="sticky top-0 text-sm leading-6"
+					data-scrollspy="#scrollspy"
+					data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
+					{@attach initScrollspy}
+				>
+					<li class="text-base-content text-xl font-medium">Index</li>
+					<li data-scrollspy-group="">
+						<a
+							href="#loreum1"
+							class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
+						>
+							Loreum 1
+						</a>
+						<ul>
+							<li class="ms-0.5 sm:ms-4">
+								<a
+									href="#loreum2"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+								>
+									<span class="icon-[tabler--point] size-4"></span>
+									Loreum 2
+								</a>
+							</li>
+							<li class="ms-0.5 sm:ms-4">
+								<a
+									href="#loreum3"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+								>
+									<span class="icon-[tabler--point] size-4"></span>
+									Loreum 3
+								</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul
+					class="menu p-0"
+					data-scrollspy="#scrollspy"
+					data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
+					{@attach initScrollspy}
+				>
+					<li class="text-base-content text-xl font-medium">Index</li>
+					<li data-scrollspy-group="">
+						<a
+							href="#loreum1"
+							class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
+						>
+							Loreum 1
+						</a>
+						<ul>
+							<li class="ms-0.5 sm:ms-4">
+								<a
+									href="#loreum2"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+								>
+									<span class="icon-[tabler--point] size-4"></span>
+									Loreum 2
+								</a>
+							</li>
+							<li class="ms-0.5 sm:ms-4">
+								<a
+									href="#loreum3"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+								>
+									<span class="icon-[tabler--point] size-4"></span>
+									Loreum 3
+								</a>
+							</li>
+						</ul>
+					</li>
+					<!-- <li>
+						<a href={resolve('/')}>
 							<span class="icon-[tabler--home] size-5"></span>
 							Home
 						</a>
-					</li>
-					<li>
+					</li> -->
+					<!-- <li>
 						<a href="#">
 							<span class="icon-[tabler--user] size-5"></span>
 							Account
@@ -260,8 +331,8 @@
 							<span class="icon-[tabler--logout-2] size-5"></span>
 							Sign Out
 						</a>
-					</li>
-					<li data-scrollspy-group="" class="space-y-0.5">
+					</li> -->
+					<li class="space-y-0.5">
 						<a
 							class="collapse-toggle collapse-open:bg-base-content/10"
 							id="menu-this-page"
@@ -274,6 +345,43 @@
 								class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
 							></span>
 						</a>
+						<!-- <ul
+							id="menu-this-page-collapse"
+							class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+							aria-labelledby="menu-this-page"
+							data-scrollspy="#scrollspy"
+							data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
+							{@attach initScrollspy}
+						>
+							<li data-scrollspy-group="">
+								<a
+									href="#loreum1"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
+								>
+									Loreum 1
+								</a>
+								<ul>
+									<li class="ms-0.5 sm:ms-4">
+										<a
+											href="#loreum2"
+											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+										>
+											<span class="icon-[tabler--point] size-4"></span>
+											Loreum 2
+										</a>
+									</li>
+									<li class="ms-0.5 sm:ms-4">
+										<a
+											href="#loreum3"
+											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+										>
+											<span class="icon-[tabler--point] size-4"></span>
+											Loreum 3
+										</a>
+									</li>
+								</ul>
+							</li>
+						</ul> -->
 						<ul
 							id="menu-this-page-collapse"
 							class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
@@ -282,18 +390,64 @@
 							data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
 							{@attach initScrollspy}
 						>
-							<li class="scrollspy-active:text-primary">
+							<li data-scrollspy-group="">
+								<a
+									href="#loreum1"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
+								>
+									Loreum 1
+								</a>
+								<ul>
+									<li class="ms-0.5 sm:ms-4">
+										<a
+											href="#loreum2"
+											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+										>
+											<span class="icon-[tabler--point] size-4"></span>
+											Loreum 2
+										</a>
+									</li>
+									<li class="ms-0.5 sm:ms-4">
+										<a
+											href="#loreum3"
+											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+										>
+											<span class="icon-[tabler--point] size-4"></span>
+											Loreum 3
+										</a>
+									</li>
+								</ul>
+							</li>
+							<!-- </ul>
+						<ul
+							id="menu-this-page-collapse"
+							class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+							aria-labelledby="menu-this-page"
+							data-scrollspy="#scrollspy"
+							data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
+							{@attach initScrollspy}
+						>
+							<li
+								data-scrollspy-group=""
+								class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
+							>
 								<a href="#loreum1">
 									<span class="icon-[mdi--text] size-5"></span>
 									Loreum 1
 								</a>
 							</li>
-							<li class="scrollspy-active:text-primary">
+							<li
+								data-scrollspy-group=""
+								class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content block py-0.5 font-medium"
+							>
 								<a href="#loreum2">
 									<span class="icon-[mdi--text] size-5"></span>
 									Loreum 2
 								</a>
-							</li>
+							</li> -->
+							<!-- In <li>: -->
+							<!-- class="scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active" -->
+							<!-- class="scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content" -->
 							<li data-scrollspy-group="" class="space-y-0.5">
 								<a
 									class="collapse-toggle collapse-open:bg-base-content/10"
@@ -311,27 +465,39 @@
 									aria-labelledby="sub-menu-academy"
 								>
 									<li class="scrollspy-active:text-primary">
-										<a href="#loreum3">
+										<a
+											href="#loreum3"
+											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+										>
 											<span class="icon-[mdi--text] size-5"></span>
 											Loreum 3
 										</a>
 									</li>
-									<li class="scrollspy-active:text-primary">
-										<a href="#loreum4">
+									<li>
+										<a
+											href="#loreum4"
+											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+										>
 											<span class="icon-[mdi--text] size-5"></span>
 											Loreum 4
 										</a>
 									</li>
 								</ul>
 							</li>
-							<li class="scrollspy-active:text-primary">
-								<a href="#loreum5">
+							<li>
+								<a
+									href="#loreum5"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+								>
 									<span class="icon-[mdi--text] size-5"></span>
 									Loreum 5
 								</a>
 							</li>
-							<li class="scrollspy-active:text-primary">
-								<a href="#loreum6">
+							<li>
+								<a
+									href="#loreum6"
+									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+								>
 									<span class="icon-[mdi--text] size-5"></span>
 									Loreum 6
 								</a>
