@@ -69,7 +69,7 @@
 								<a
 									class="scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content"
 									href="#sub-category"
-									id="sub-menu-academy"
+									id="sub-menu-category"
 									{@attach initCollapse}
 								>
 									<span class="icon-[tabler--book] size-5"></span>
@@ -77,16 +77,16 @@
 								</a>
 								<button
 									class="collapse-toggle collapse-open:bg-base-content/10"
-									data-collapse="#sub-menu-academy-collapse"
+									data-collapse="#sub-menu-category-collapse"
 									aria-label="Sub category menu"
 								>
 									<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"></span>
 								</button>
 
 								<ul
-									id="sub-menu-academy-collapse"
+									id="sub-menu-category-collapse"
 									class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-									aria-labelledby="sub-menu-academy"
+									aria-labelledby="sub-menu-category"
 								>
 									<li>
 										<a
@@ -133,7 +133,6 @@
 							class="collapse-toggle collapse-open:bg-base-content/10"
 							id="menu-app"
 							data-collapse="#menu-app-collapse"
-							{@attach initCollapse}
 						>
 							<span class="icon-[tabler--apps] size-5"></span>
 							Page on Apps
@@ -145,6 +144,7 @@
 							id="menu-app-collapse"
 							class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 							aria-labelledby="menu-app"
+							{@attach initCollapse}
 						>
 							<li>
 								<a href="./scrollspy/#">
@@ -163,27 +163,27 @@
 									class="collapse-toggle collapse-open:bg-base-content/10"
 									id="sub-menu-academy"
 									data-collapse="#sub-menu-academy-collapse"
-									{@attach initCollapse}
 								>
 									<span class="icon-[tabler--book] size-5"></span>
-									App Category
+									Academy
 									<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"></span>
 								</a>
 								<ul
 									id="sub-menu-academy-collapse"
 									class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 									aria-labelledby="sub-menu-academy"
+									{@attach initCollapse}
 								>
 									<li>
 										<a href="./scrollspy/#">
 											<span class="icon-[tabler--books] size-5"></span>
-											CategoryApp1
+											Courses
 										</a>
 									</li>
 									<li>
 										<a href="./scrollspy/#">
 											<span class="icon-[tabler--list-details] size-5"></span>
-											CategoryApp2
+											Course details
 										</a>
 									</li>
 									<li class="space-y-0.5">
@@ -191,10 +191,9 @@
 											class="collapse-toggle collapse-open:bg-base-content/10"
 											id="sub-menu-academy-stats"
 											data-collapse="#sub-menu-academy-stats-collapse"
-											{@attach initCollapse}
 										>
 											<span class="icon-[tabler--chart-bar] size-5"></span>
-											SubCategory
+											Stats
 											<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"
 											></span>
 										</a>
@@ -206,7 +205,7 @@
 											<li>
 												<a href="./scrollspy/#">
 													<span class="icon-[tabler--chart-donut] size-5"></span>
-													SubCategoryApp1
+													Goals
 												</a>
 											</li>
 										</ul>
