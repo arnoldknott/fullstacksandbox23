@@ -4,11 +4,11 @@
 	let { children }: { children: Snippet } = $props();
 </script>
 
-<div class="h-screen w-screen pt-50">
-	<div id="scrollspy-scrollable-parent" class="grid max-h-96 grid-cols-5 overflow-y-auto">
+<div class="h-screen w-screen">
+	<div id="scrollspy-scrollable-parent" class="grid h-screen grid-cols-5 overflow-y-auto">
 		<aside
 			id="collapsible-sidebar"
-			class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 col-span-2 hidden w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:col-span-1 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
+			class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 col-span-2 hidden w-64 border-e pt-20 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:col-span-1 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
 			tabindex="-1"
 			{@attach initOverlay}
 		>
@@ -65,24 +65,38 @@
 									Loreum 2
 								</a>
 							</li>
-							<li data-scrollspy-group="" class="flex flex-row space-y-0.5">
-								<a
-									class="scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content"
-									href="#sub-category"
+							<li data-scrollspy-group="" class="space-y-0.5">
+								<div class="join w-full">
+									<!-- <a
+									class="collapse-toggle collapse-open:bg-base-content/10"
 									id="sub-menu-category"
+									data-collapse="#sub-menu-category-collapse"
 									{@attach initCollapse}
 								>
-									<span class="icon-[tabler--book] size-5"></span>
-									Sub category
-								</a>
-								<button
-									class="collapse-toggle collapse-open:bg-base-content/10"
-									data-collapse="#sub-menu-category-collapse"
-									aria-label="Sub category menu"
-								>
-									<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"></span>
-								</button>
-
+									<span class="icon-[icon-park-outline--page] size-5"></span>
+									Sub Category
+									<span
+										class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+									></span>
+								</a> -->
+									<a
+										class="scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content join-item"
+										href="#sub-category"
+										id="sub-menu-category"
+										{@attach initCollapse}
+									>
+										<span class="icon-[tabler--book] size-5"></span>
+										Sub category
+									</a>
+									<button
+										class="collapse-toggle collapse-open:bg-base-content/10 join-item"
+										data-collapse="#sub-menu-category-collapse"
+										aria-label="Sub category menu"
+									>
+										<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"
+										></span>
+									</button>
+								</div>
 								<ul
 									id="sub-menu-category-collapse"
 									class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
@@ -230,7 +244,9 @@
 				</ul>
 			</div>
 		</aside>
-		<div class="sm:overlay-layout-open:ps-64 bg-base-100 transition-all duration-300">
+		<div
+			class="sm:overlay-layout-open:ps-64 bg-base-100 col-span-3 transition-all duration-300 sm:col-span-4"
+		>
 			<div class="px-2">
 				<button
 					type="button"
@@ -244,12 +260,10 @@
 					<span class="icon-[tabler--menu-2] size-5"></span>
 				</button>
 			</div>
-		</div>
-		<div
-			class="sm:overlay-layout-open:ps-64 bg-base-100 col-span-3 transition-all duration-300 sm:col-span-4"
-		>
-			<div id="scrollspy" class="max-w-lg space-y-4 pe-1">
-				{@render children?.()}
+			<div class=" bg-base-100 transition-all duration-300">
+				<div id="scrollspy" class="space-y-4 pe-1">
+					{@render children?.()}
+				</div>
 			</div>
 		</div>
 	</div>
