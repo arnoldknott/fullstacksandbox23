@@ -2,7 +2,7 @@
 	import { initCollapse, initOverlay, initScrollspy } from '$lib/userInterface';
 	import Display from '$components/Display.svelte';
 	import type { Snippet } from 'svelte';
-	import { resolve } from '$app/paths';
+	// import { resolve } from '$app/paths';
 	let { children }: { children: Snippet } = $props();
 </script>
 
