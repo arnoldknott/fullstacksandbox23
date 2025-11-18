@@ -75,7 +75,7 @@
 									Loreum 2
 								</a>
 							</li>
-							<li class="space-y-0.5">
+							<li data-scrollspy-group="" class="space-y-0.5">
 								<!-- <a
 										class="collapse-toggle collapse-open:bg-base-content/10"
 										id="sub-menu-category"
@@ -89,12 +89,18 @@
 										></span>
 									</a> -->
 								<a
-									class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:bg-accent-container scrollspy-active:italic"
+									class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
 									id="sub-menu-category"
 									data-collapse="#sub-menu-category-collapse"
+									href="#sub-category"
 									{@attach initCollapse}
 								>
-									<span class="icon-[icon-park-outline--page] size-5"></span>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
 									Sub Category
 									<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"></span>
 								</a>
