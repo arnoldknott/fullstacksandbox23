@@ -2,7 +2,43 @@
 	import { initDropdown, initOverlay } from '$lib/userInterface';
 	import Display from '$components/Display.svelte';
 	import type { Snippet } from 'svelte';
+	import { onMount } from 'svelte';
 	let { children }: { children: Snippet } = $props();
+
+	let sidebar: HTMLElement | undefined = $state();
+
+	// Ensure correct sidebar state on initial mount after client-side navigations,
+	// especially for larger viewports where [--opened:lg] should show the drawer.
+	onMount(() => {
+		// const sidebar = document.getElementById('with-navbar-sidebar');
+		if (sidebar) {
+			const openOnLarge = window.matchMedia('(min-width: 1024px)').matches; // Tailwind lg breakpoint
+			if (openOnLarge) {
+				// Remove any lingering 'hidden' class that prevents visibility
+				sidebar.classList.remove('hidden');
+				window.HSOverlay.open(sidebar);
+				// console.log(window.HSOverlay.getInstance(sidebar));
+				// // Try to fetch FlyonUI overlay instance and open if not already
+				// // @ts-ignore
+				// const instance = window.HSOverlay?.getInstance(sidebar, true);
+				// // @ts-ignore
+				// if (instance && instance.element.isClosed?.()) {
+				// 	// @ts-ignore
+				// 	instance.element.open();
+				// }
+			} else {
+				window.HSOverlay.close(sidebar);
+				// // On small screens keep it closed initially
+				// // @ts-ignore
+				// const instance = window.HSOverlay?.getInstance(sidebar, true);
+				// // @ts-ignore
+				// if (instance && !instance.element.isClosed?.()) {
+				// 	// @ts-ignore
+				// 	instance.element.close();
+				// }
+			}
+		}
+	});
 </script>
 
 <nav
@@ -205,10 +241,12 @@
 
 <aside
 	id="with-navbar-sidebar"
-	class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
+	class="overlay drawer drawer-start border-base-content/20 overlay-open:translate-x-0 w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:z-0 lg:[--overlay-backdrop:false]"
 	tabindex="-1"
 	{@attach initOverlay}
+	bind:this={sidebar}
 >
+	<!-- class="overlay border-base-content/20 overlay-open:translate-x-0 sm:overlay-layout-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden  w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:flex sm:shadow-none sm:flex sm:z-0 lg:[--overlay-backdrop:false]" -->
 	<div class="drawer-body px-2 pt-4">
 		<ul class="menu p-0">
 			<li>
